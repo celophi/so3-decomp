@@ -76,6 +76,35 @@ typedef struct FieldFloatGateState7C
     float unk90;
 } FieldFloatGateState7C;
 
+/** Partial receiver with a word at offset 0xC4. */
+typedef struct FieldAtC4 { u8 pad[0xC4]; u32 value; } FieldAtC4;
+
+/** Partial receiver with a size and its 128-byte rounded form. */
+typedef struct FieldAlignedSize { u8 pad[0xAC]; u32 size; u32 rounded; } FieldAlignedSize;
+
+/** Partial receiver containing float and aligned 16-byte copy fields. */
+typedef struct FieldCopyState
+{
+    u8 pad00[0x94]; float src94;
+    u8 pad98[4]; float dst9C;
+    u8 padA0[0x10]; float srcB0;
+    u8 padB4[4]; float dstB8;
+    u8 padBC[0xC]; float srcC8;
+    u8 padCC[4]; float dstD0;
+    u8 padD4[0x1C]; unsigned __int128 srcF0;
+    u8 pad100[0x10]; unsigned __int128 dst110;
+    u8 pad120[0x20]; unsigned __int128 src140;
+    unsigned __int128 dst150;
+} FieldCopyState;
+
+/** Partial callback receiver with a target and active word. */
+typedef struct FieldCallbackState { u8 pad[0xA8]; void* target; u8 padAC[4]; u32 active; } FieldCallbackState;
+
+/** Linked entry and list owner used for kind lookup. */
+typedef struct FieldCbLink { u8 pad[8]; struct FieldCbLink* next; } FieldCbLink;
+typedef struct FieldCbEntry { FieldCbLink link; u8 padC[0x62]; u16 kind; } FieldCbEntry;
+typedef struct FieldCbOwner { u8 pad[0x10]; FieldCbLink sentinel; } FieldCbOwner;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -125,6 +154,74 @@ u32 func_00202240(const FieldPackedKeySource* object);
  * @return True when the object pointer is nonnull, bit zero is clear and the float value is not positive.
  */
 bool func_00204420(const FieldFloatGateState7C* object);
+
+/**
+ * @brief Copy the receiver's float and aligned vector fields.
+ * @param object Receiver to update.
+ */
+void func_00209B30(FieldCopyState* object);
+
+/**
+ * @brief Perform no action for this receiver.
+ * @param object Receiver of the call.
+ */
+void func_0020BCF0(void* object);
+
+/**
+ * @brief Perform no action for this receiver.
+ * @param object Receiver of the call.
+ */
+void func_0020BD00(void* object);
+
+/**
+ * @brief Perform no action for this receiver.
+ * @param object Receiver of the call.
+ */
+void func_0020BDA0(void* object);
+
+/**
+ * @brief Test whether the lookup helper returns an object.
+ * @param object Receiver to query.
+ * @return True when the helper returns a nonnull object.
+ */
+bool func_0020BDB0(void* object);
+
+/**
+ * @brief Forward the callback when the receiver is active.
+ * @param object Callback receiver.
+ * @param context Context passed to the callback.
+ * @param enabled Value converted to a boolean for the callback.
+ */
+void func_0020BDD0(FieldCallbackState* object, void* context, u32 enabled);
+
+/**
+ * @brief Store a word at offset 0xC4.
+ * @param object Receiver to update.
+ * @param value Word to store.
+ */
+void func_0020BEF0(FieldAtC4* object, u32 value);
+
+/**
+ * @brief Store a size and its 128-byte rounded form.
+ * @param object Receiver to update.
+ * @param size Size to store and round.
+ */
+void func_0020BF50(FieldAlignedSize* object, u32 size);
+
+/**
+ * @brief Find a list entry with the requested kind.
+ * @param object List owner.
+ * @param kind Kind to search for.
+ * @return One if found, otherwise zero.
+ */
+s32 func_0020CB20(FieldCbOwner* object, u16 kind);
+
+/**
+ * @brief Return the receiver unchanged.
+ * @param object Receiver of the call.
+ * @return The receiver.
+ */
+void* func_0020CE30(void* object);
 
 #ifdef __cplusplus
 }
