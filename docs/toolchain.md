@@ -1,8 +1,9 @@
 # Building and matching functions
 
 The build currently reproduces the complete US boot executable and all 15
-recovered EE overlays. The source files are still assembly placeholders, with
-original data kept in binary pieces. Five small C probes also match their
+recovered EE overlays. Most functions are still assembly placeholders, with
+original data kept in binary pieces. The first two source matches are list-sentinel
+comparisons in Field and Lib. Five small C probes also match their
 original function bytes. I'm using that compiler candidate for now, but I haven't
 identified the exact original compiler and flags for every module yet.
 
@@ -27,6 +28,51 @@ Boot is written to `build/boot/SLUS_204.88`, with its comparison report in
 `build/boot/verify.json`. Each overlay has its own rebuild and report under
 `build/overlays/<id>/`. `make verify` repeats the comparison on those existing
 files without rebuilding them.
+
+## SDK code
+
+Confirmed SDK functions stay as `INCLUDE_ASM` in `src/sdk/<module>/`. They are
+excluded from objdiff and decomp.dev progress, but remain in the linked binaries
+and whole-file verification. [config/sdk-functions.json](../config/sdk-functions.json)
+records the reviewed ranges, hashes, and identification evidence.
+
+The first pass identifies 151 EE kernel syscall wrappers in boot. Other library
+and compiler runtime code remains unclassified. The optional analysis commands
+are listed in the [README](../README.md#tools).
+
+## Initial drafts with m2c
+
+I'm using [m2c](https://github.com/matt-kempster/m2c) for the first pass at a
+function. Its PS2 target supports CodeWarrior and C++. The revision and download
+hash are pinned in `config/analysis-tools.json`; the downloaded tool stays local
+under `tools/m2c/`.
+
+```sh
+make m2c
+make decompile MODULE=1070-00 FUNCTION=func_00288650
+```
+
+Run `make split` first if the assembly hasn't been generated. Use `MODULE=boot`
+for the resident executable, or the overlay ID for an overlay. The command
+checks the original binary and the selected function's assembly bytes before
+running m2c. It chooses `mipsee-mwcc-c` or `mipsee-mwcc-c++` from the configured
+source extension. `LANGUAGE=c++` overrides that choice for an experiment.
+
+Each run goes in `working/matching/<function>/<module>/m2c/run-NNN/`, with the
+input assembly, draft, diagnostics, hashes, and command. Repeating it creates a
+new run. Existing candidates and project sources aren't overwritten.
+
+To supply known types and declarations:
+
+```sh
+make decompile MODULE=1070-00 FUNCTION=func_00288650 CONTEXT=working/context.h
+```
+
+The context must contain preprocessed C declarations, even for a C++ target.
+m2c copies it into the run directory. A draft can still contain guessed types,
+unknown fields, or unsupported instructions. C++ mode doesn't recover the
+original class hierarchy. I still need to check the callers, recover the
+interface, and compare the compiled function before moving a draft into `src/`.
 
 ## Replacing a placeholder
 
@@ -65,7 +111,7 @@ references `BattleApp.cpp` at `0x1FCAC8`. There's direct evidence of C++ use in
 those overlays, even though the original classes and source boundaries still
 need to be worked out.
 
-The other 96 files keep the `.c` extension from the initial scaffold. **That
+Other game units keep the `.c` extension from the initial scaffold. **That
 choice is provisional.** I haven't established that all of those functions
 were originally C. Units can move to C++ as the code and interfaces become
 clearer. The boot executable also contains `std::bad_alloc`, though runtime
@@ -79,7 +125,7 @@ The configured subsegment type determines the source language:
 | `cpp` | `name.cpp` | `-lang c++` |
 | `asm` | Generated `name.s` | PS2 assembler |
 
-[tools/compile.py](../tools/compile.py) selects the language by extension and
+[tools/so3/build/compile.py](../tools/so3/build/compile.py) selects the language by extension and
 rejects other extensions. The explicit flag matters: mwccgap's second compiler
 pass uses a temporary `.c` file even when the original source is C++. Both
 passes need the same language setting.
@@ -156,7 +202,7 @@ To run the working candidate's checks:
 make compiler-probe
 ```
 
-This compiles [tools/probes/boot.c](../tools/probes/boot.c), compares full function
+This compiles [tools/so3/build/probes/boot.c](../tools/so3/build/probes/boot.c), compares full function
 lengths and bytes, and writes `build/compiler-probes/report.json`. The probes
 need no SDK headers or libraries and have no code relocations. The checker
 rejects unresolved relocations rather than skipping their bytes. It also uses
@@ -245,9 +291,10 @@ and `.reginfo` agree on global pointer `0x001BDFF0`.
 | `0x044200–0x0B6A80` | 469,120 | Keep resident data and unresolved VU/data contents |
 | `0x0B6A80–0x0B73B0` | 2,352 | Keep original ELF metadata and section headers |
 
-Startup stays in assembly. The five probe functions and the remaining resident
-regions have C placeholders under `src/boot/`. Known entry and probe addresses
-and sizes are recorded in [config/symbols.boot.txt](../config/symbols.boot.txt).
+Startup stays in assembly. The five probe functions and unclassified resident
+code have C placeholders under `src/boot/`; identified syscall wrappers are under
+`src/sdk/boot/`. Explicit function boundaries are recorded in
+[config/symbols.boot.txt](../config/symbols.boot.txt).
 The last observed EE routine returns at `0x00143B24`, followed by its delay-slot
 instruction at `0x00143B28` and padding up to `0x00143B80`. Data follows that
 boundary. This layout comes from inspection; I don't have an original link map.
@@ -258,7 +305,7 @@ the 15 overlays and their separate initializer regions. Splat retains 19 raw
 `.word` entries in the boot assembly region; code, data, and VU boundaries still
 need more work.
 
-[tools/build.py](../tools/build.py) generates a Ninja graph at `build/build.ninja`.
+[tools/so3/build/driver.py](../tools/so3/build/driver.py) generates a Ninja graph at `build/build.ninja`.
 It compiles source, assembles placeholders, turns retained binary pieces into
 objects, links intermediate ELFs, and uses objcopy to write the original layouts.
 The resulting files match without patching any differing bytes after linking.
@@ -290,7 +337,7 @@ and could shift global references incorrectly.
 
 I reproduced the failure against that unmodified upstream revision using
 `test_mixed_c_and_repeated_local_section_relocations` in
-[tools/tests/test_scaffold.py](../tools/tests/test_scaffold.py). The fixture
+[tools/so3/tests/test_scaffold.py](../tools/so3/tests/test_scaffold.py). The fixture
 combines two assembly functions with local references and a C function, without
 a `.rodata` section. Upstream accesses `rodata_section_indices[0]` and raises
 `IndexError: list index out of range` because that list is empty.
@@ -311,10 +358,17 @@ across C, C++, and assembly, a constructor, and overloaded methods. Changing the
 source must change the output, and a failed compile must preserve the previous
 valid object.
 
-Splat's linker inputs use four-byte subalignment. CodeWarrior emits a separate
-`.text` section for each function, so aligning every section to 16 bytes would
-insert unwanted gaps. Placeholders already contain the original padding. When
-replacing a function, check its trailing alignment gap along with its instructions.
+Splat's default input subalignment is four bytes. Field's text and the Lib text
+tail starting at file offset `0xE6B20` override it to 16 bytes: all mapped function
+starts in those regions are 16-byte aligned. Earlier Lib code includes functions
+on eight-byte boundaries, so the override does not cover the entire module.
+
+CodeWarrior emits a separate `.text` section for each function. Assembly
+placeholders contain their original trailing padding, while compiled functions
+rely on the linker to honor alignment. The first 12-byte source replacement
+exposed this: four-byte subalignment placed the next function four bytes early.
+The region-specific settings restore the original gap. Check complete binaries
+as well as individual function bytes when replacing a placeholder.
 
 The build tracks source files, referenced assembly, tools, configuration, and
 compiler files. This MWCC doesn't support `-gccdep`, so changes to any `.h`,

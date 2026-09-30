@@ -5,7 +5,7 @@
   "working_flags": [
     "-O3,p"
   ],
-  "source": "tools/probes/boot.c",
+  "source": "tools/so3/build/probes/boot.c",
   "probes": [
     {
       "symbol": "probe_00101250",

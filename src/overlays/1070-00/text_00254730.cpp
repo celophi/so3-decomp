@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00254730.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00254730);
 
@@ -168,7 +169,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025B3
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025BB50);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025BB70);
+void func_0025BB70(FieldMirroredFlags* object, u32 value)
+{
+    object->unk1dc = value;
+    object->unk1f6_1 = (value & 0x2) != 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025BBA0);
 

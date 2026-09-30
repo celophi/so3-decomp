@@ -2,7 +2,7 @@
 # Section boundaries are provisional; see docs/overlays.md.
 name: Star Ocean 3 US overlay 0075-00 (citemcreation.bin)
 sha1: f63256304b18e3699ba338d35edc3fe156e5ece2
-# SHA-256 is checked by tools/overlays.py before splitting or verification.
+# SHA-256 is checked by tools/so3/build/overlays.py before splitting or verification.
 sha256: 14e5e5d822684823700136c9eaf5e9633f423edf6b5643061cc946f2db9bb217
 options:
   basename: 0075-00

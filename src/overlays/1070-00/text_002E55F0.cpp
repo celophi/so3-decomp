@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_002E55F0.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002E55F0);
 
@@ -28,7 +29,18 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002E5E
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002E60E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002E62E0);
+void func_002E62E0(FieldFloatResetState* object, u8 first, u8 second, u16 third, u16 fourth)
+{
+    object->unk26 = first;
+    object->unk27 = second;
+    object->unk1a = third;
+    object->unk1c = fourth;
+    object->unk08 = object->unk34;
+    object->unk0c = object->unk38;
+    object->unk22 = 0;
+    object->unk28 = 0;
+    object->unk2c = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002E6310);
 
@@ -160,7 +172,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002E9E
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EA090);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EA0E0);
+void func_002EA0E0(FieldFlagOwner4C* object)
+{
+    if (object->unk4c != 0)
+    {
+        object->unk4c->unk4d_4 = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EA110);
 
@@ -188,9 +206,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EBA
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EBA70);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EBA80);
+s32 func_002EBA80(const FieldBufferSlots* object, s32 index)
+{
+    return object->unk134[index];
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EBA90);
+void* func_002EBA90(const FieldBufferSlots* object, s32 index)
+{
+    return object->unk128[index];
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EBAA0);
 
@@ -382,7 +406,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F19
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F1A50);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F2080);
+void func_002F2080(FieldByteFlags70* object)
+{
+    object->unk70_2 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F20A0);
 
@@ -436,11 +463,26 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F43
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F43C0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F43F0);
+void func_002F43F0(FieldResetState40* object)
+{
+    object->unk48 = 0;
+    object->unk4c = -1;
+    object->unk40 = 0;
+    object->unk4e = -1;
+    object->unk50 = -1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F4410);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F4550);
+void func_002F4550(FieldFloatSequenceState* object, FieldFloatPairEntry* values, s32 count, float first, float second)
+{
+    object->unk90 = first;
+    object->unk98 = second / first;
+    object->unk9c = 0.0f;
+    object->unk94 = 0.0f;
+    object->unka4 = count;
+    object->unka0 = values;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F4580);
 

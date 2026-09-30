@@ -8,7 +8,7 @@ COPY disc/ /disc/
 FROM build-inputs AS full-discs
 COPY SHA256SUMS /iso/SHA256SUMS
 # Each layer carries at most 128 MiB from each disc. Both complete ISOs are
-# preserved as ordered parts; tools/ci_inputs.py restore joins and verifies them.
+# preserved as ordered parts; tools/so3/disc/ci_inputs.py restore joins and verifies them.
 COPY parts/000/iso/ /iso/
 COPY parts/001/iso/ /iso/
 COPY parts/002/iso/ /iso/

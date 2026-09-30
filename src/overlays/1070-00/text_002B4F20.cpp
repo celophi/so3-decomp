@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_002B4F20.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B4F20);
 
@@ -24,7 +25,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B5B
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B5C80);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B5CB0);
+void func_002B5CB0(FieldFourValueState48* object, s32 first, s32 second, s32 third, s32 fourth)
+{
+    object->unk44 = 1;
+    object->unk48 = first;
+    object->unk4c = second;
+    object->unk50 = third;
+    object->unk54 = fourth;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B5CD0);
 
@@ -44,7 +52,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B5F
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B69D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B6BC0);
+void func_002B6BC0(FieldFloatPair30* object, float first, float second)
+{
+    object->unk30 = first;
+    object->unk34 = second;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B6BD0);
 

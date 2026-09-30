@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "ccc_version": "v2.1",
+  "patterns_revision": "ae013ee1475dc970db4fdeba3ec88def6b933d43",
+  "downloads": [
+    {
+      "path": "tools/ccc/ccc_v2.1_linux-musl.zip",
+      "url": "https://github.com/chaoticgd/ccc/releases/download/v2.1/ccc_v2.1_linux-musl.zip",
+      "sha256": "ee974cf09aa8ff01b281f699ee5ffee5d849a378061b2498cb07545c65398ef0",
+      "group": "sdk"
+    },
+    {
+      "path": "tools/ghidra-emotionengine-reloaded/r5900_LE_patterns.xml",
+      "url": "https://raw.githubusercontent.com/chaoticgd/ghidra-emotionengine-reloaded/ae013ee1475dc970db4fdeba3ec88def6b933d43/data/patterns/r5900_LE_patterns.xml",
+      "sha256": "1db3752102be9a681fbc79996f6e7c10024fd52187de18f8cb0ca74b9a97dd79",
+      "group": "sdk"
+    },
+    {
+      "path": "tools/ghidra-emotionengine-reloaded/LICENSE",
+      "url": "https://raw.githubusercontent.com/chaoticgd/ghidra-emotionengine-reloaded/ae013ee1475dc970db4fdeba3ec88def6b933d43/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "group": "sdk"
+    },
+    {
+      "group": "m2c",
+      "path": "tools/m2c/708d2d2cb2698f091a92492b328f73b24209f72d.tar.gz",
+      "url": "https://codeload.github.com/matt-kempster/m2c/tar.gz/708d2d2cb2698f091a92492b328f73b24209f72d",
+      "sha256": "f16334a1718c0532ef067bac449fd45174376d9380c4f0d3736c5128a53f57c1"
+    }
+  ],
+  "m2c_revision": "708d2d2cb2698f091a92492b328f73b24209f72d"
+}

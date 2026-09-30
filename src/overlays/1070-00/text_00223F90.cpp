@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00223F90.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_00223F90);
 
@@ -92,7 +93,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002277
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002278B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002279E0);
+void func_002279E0(FieldWordByteState30* object, u32 value, u8 state)
+{
+    object->unk30 = value;
+    object->unk34 = state;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002279F0);
 
@@ -122,9 +127,35 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002284
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002284B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_00228670);
+void func_00228670(FieldFloatResetState1C* object, u8 first_state, u8 second_state, float first, float second)
+{
+    object->unk1c = 0;
+    object->unk1e = 0;
+    object->unk1d = 0;
+    object->unk2c = 0.0f;
+    object->unk28 = 0.0f;
+    object->unk24 = 0.0f;
+    object->unk20 = 0.0f;
+    object->unk1c = first_state;
+    object->unk1d = second_state;
+    object->unk20 = first;
+    object->unk28 = second;
+    if (second == 0.0f)
+    {
+        object->unk1e = object->unk1d;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002286C0);
+void func_002286C0(FieldFloatResetState1C* object)
+{
+    object->unk1c = 0;
+    object->unk1e = 0;
+    object->unk1d = 0;
+    object->unk2c = 0.0f;
+    object->unk28 = 0.0f;
+    object->unk24 = 0.0f;
+    object->unk20 = 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002286E0);
 
@@ -156,7 +187,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002291
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002297A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_00229DF0);
+FieldVector* func_00229DF0(FieldVector* vector, float x, float y, float z, float w)
+{
+    vector->x = x;
+    vector->y = y;
+    vector->z = z;
+    vector->w = w;
+    return vector;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_00229E10);
 

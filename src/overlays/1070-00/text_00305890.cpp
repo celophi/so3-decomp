@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00305890.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00305890);
 
@@ -96,11 +97,25 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A1
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A180);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A190);
+u8 func_0030A190(const FieldTwoSlotState* object)
+{
+    return object->unk66;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A1A0);
+s16 func_0030A1A0(const FieldTwoSlotState* object, s32 index)
+{
+    return object->unk5e[index];
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A1B0);
+void func_0030A1B0(FieldTwoSlotState* object, s16 index)
+{
+    object->unk64 = index;
+    object->unk5e[object->unk64] = -1;
+    object->unk5c[object->unk64] = 0;
+    object->unk7c = 0;
+    object->unk80 = 0;
+    object->unk66 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A1F0);
 
@@ -140,7 +155,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BE
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BEF0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BF10);
+void func_0030BF10(FieldHalfwordByteState105A* object, s16 value, u8 state)
+{
+    object->unk105e = value;
+    object->unk1060 = state;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BF20);
 
@@ -148,7 +167,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BF
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030C120);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030C130);
+void func_0030C130(FieldHalfwordByteState105A* object, s16 value)
+{
+    if (value > 50)
+    {
+        object->unk105a = 50;
+    }
+    object->unk105a = value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030C150);
 
@@ -212,7 +238,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030FF
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00310030);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003100B0);
+FieldIndexedListNode* func_003100B0(const FieldIndexedList* list, s32 index)
+{
+    FieldIndexedListNode* node = list->head->next;
+    for (s32 i = 0; i < index; i++)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = node->next;
+    }
+    return node;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003100F0);
 

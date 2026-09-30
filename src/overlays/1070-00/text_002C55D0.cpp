@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_002C55D0.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002C55D0);
 
@@ -70,7 +71,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CB7
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CB840);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CB980);
+void func_002CB980(FieldLinkedState* object, void* receiver, u32 value)
+{
+    object->unk24 = receiver;
+    object->unk28 = value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CB990);
 
@@ -92,7 +97,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC6
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC6E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC6F0);
+FieldVector* func_002CC6F0(FieldVector* vector, float value)
+{
+    vector->x = value;
+    vector->y = value;
+    vector->z = value;
+    vector->w = value;
+    return vector;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC710);
 

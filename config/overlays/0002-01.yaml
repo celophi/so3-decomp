@@ -2,7 +2,7 @@
 # Section boundaries are provisional; see docs/overlays.md.
 name: Star Ocean 3 US overlay 0002-01 (Lib.bin)
 sha1: 1d9b0d1ff095ff52e4f7299d5102f5cb61c0b9c8
-# SHA-256 is checked by tools/overlays.py before splitting or verification.
+# SHA-256 is checked by tools/so3/build/overlays.py before splitting or verification.
 sha256: 748e51ea1ce9339bb76d3b1455b4b9548c0bf65593a84cfcc930587c12e8d0ef
 options:
   basename: 0002-01
@@ -61,6 +61,13 @@ segments:
       - [0xB4FA0, c, text_0049B820]
       - [0xC5030, c, text_004AB8B0]
       - [0xD6AE0, c, text_004BD360]
+  - name: text_tail
+    type: code
+    start: 0xE6B20
+    vram: 0x4CD3A0
+    # Both existing units use 16-byte function alignment. Earlier Lib code is mixed.
+    subalign: 16
+    subsegments:
       - [0xE6B20, c, text_004CD3A0]
       - [0xF6BC0, c, text_004DD440]
   - [0x103780, bin, data]

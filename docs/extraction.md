@@ -28,8 +28,8 @@ newer with virtual environment support:
 ```sh
 python3 -m venv .venv
 .venv/bin/python -m pip install --require-hashes -r requirements.txt
-.venv/bin/python tools/extract.py "/path/to/disc1.iso"
-.venv/bin/python tools/extract.py "/path/to/disc2.iso"
+.venv/bin/python -m tools.so3.disc.extract "/path/to/disc1.iso"
+.venv/bin/python -m tools.so3.disc.extract "/path/to/disc2.iso"
 ```
 
 Both routes use the same extractor. It checks the entire ISO hash on every run
@@ -173,7 +173,7 @@ diff -qr disc/us-disc1 disc/recheck-us-disc1
 You can check the native Python path against the container in the same way:
 
 ```sh
-.venv/bin/python tools/extract.py "/path/to/disc1.iso" \
+.venv/bin/python -m tools.so3.disc.extract "/path/to/disc1.iso" \
   --output disc/native-us-disc1
 diff -qr disc/us-disc1 disc/native-us-disc1
 ```
@@ -184,7 +184,7 @@ accepts `OUTPUT=` if you want to repeat an audit without replacing an old report
 Run the tool tests with `make test`, or use the native environment:
 
 ```sh
-.venv/bin/python -m unittest discover -s tools/tests -v
+.venv/bin/python -m unittest discover -s tools/so3/tests -v
 ```
 
 The tests use synthetic ISO files and compressed streams, so they don't need

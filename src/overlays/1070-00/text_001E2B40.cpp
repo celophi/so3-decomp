@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_001E2B40.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2B40);
 
@@ -354,7 +355,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EB5
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EB690);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EB720);
+u16 func_001EB720(const FieldHalfwordState94* object)
+{
+    return object->unk94;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EB730);
 
@@ -426,13 +430,25 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED2
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED4D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED580);
+void func_001ED580(FieldDimensionState* object, float first, float second)
+{
+    object->unkfc = first;
+    object->unk100 = second;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED590);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED5A0);
+void func_001ED5A0(FieldDimensionState* object, s32 first, s32 second)
+{
+    object->unkf0 = first;
+    object->unkf1 = second;
+    object->unk10c = object->unkf0 * object->unkf1 - 1;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED5C0);
+void func_001ED5C0(FieldByteStateAD* object, u8 value)
+{
+    object->unkad = value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED5D0);
 
@@ -484,11 +500,42 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDB
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDBC0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDBD0);
+s32 func_001EDBD0(const FieldTimeState* object)
+{
+    s32 value = 0;
+    value += object->hours * 3600;
+    value += object->minutes * 60;
+    value += object->seconds;
+    return value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDC10);
+void func_001EDC10(FieldTimeState* object, u32 value)
+{
+    object->unk00 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDC20);
+void func_001EDC20(FieldTimeState* object, u32 seconds)
+{
+    if (seconds == 0)
+    {
+        object->unk00 = object->hours = object->minutes = object->seconds = 0;
+    }
+    else
+    {
+        object->seconds = seconds % 60;
+        object->minutes = (seconds / 60) % 60;
+        if (seconds >= 3600000)
+        {
+            object->hours = 999;
+            object->minutes = 59;
+            object->seconds = 59;
+        }
+        else
+        {
+            object->hours = seconds / 3600;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDCE0);
 

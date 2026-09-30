@@ -15,3 +15,11 @@
 
 # Generated objdiff configuration
 /objdiff.json
+
+# Optional local analysis tools
+/tools/ccc/
+/tools/*ghidra*/
+/tools/m2c/
+
+# Separate private analysis repository
+/ghidra/
