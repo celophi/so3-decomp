@@ -174,7 +174,6 @@ public:
 };
 
 extern "C" FieldLateVirtual* func_00217A90(void*, s32);
-extern "C" void func_4D65C0(void*);
 
 struct FieldLateFloatArgs
 {
@@ -924,7 +923,7 @@ extern "C" s32 func_001FA2D0(FieldLateCommandStream* stream)
                     if (key == entry->key244)
                     {
                         func_4289B0(entry);
-                        func_4D65C0(entry);
+                        func_004D65C0(entry);
                         entry->unk08();
                     }
                     break;
@@ -932,7 +931,7 @@ extern "C" s32 func_001FA2D0(FieldLateCommandStream* stream)
                     if (key == entry->key254)
                     {
                         func_4289B0(entry);
-                        func_4D65C0(entry);
+                        func_004D65C0(entry);
                         entry->unk08();
                     }
                     break;
@@ -948,7 +947,7 @@ extern "C" s32 func_001FA2D0(FieldLateCommandStream* stream)
             if (entry && entry->kind == 0x4040 && key == entry->key274)
             {
                 func_428C80(entry);
-                func_4D65C0(entry);
+                func_004D65C0(entry);
                 entry->unk08();
             }
         }
@@ -1092,7 +1091,7 @@ extern "C" s32 func_001FD340(void* object)
     FieldLateVirtual* target = func_00217A90(object, 5);
     if (target)
     {
-        func_4D65C0(target);
+        func_004D65C0(target);
         target->unk08();
     }
     return 1;
@@ -1146,7 +1145,7 @@ extern "C" void func_001FD770(void* object)
 extern "C" void func_001FD780(FieldLateDeleting* object)
 {
     func_002D47A0(object);
-    func_4D65C0(object);
+    func_004D65C0(object);
     if (object)
     {
         object->unk00(1);
