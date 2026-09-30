@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00305890.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00305890);
 
@@ -212,7 +213,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030FF
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00310030);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003100B0);
+FieldIndexedListNode* func_003100B0(const FieldIndexedList* list, s32 index)
+{
+    FieldIndexedListNode* node = list->head->next;
+    for (s32 i = 0; i < index; i++)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = node->next;
+    }
+    return node;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003100F0);
 

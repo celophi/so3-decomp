@@ -27,10 +27,37 @@ typedef struct FieldContextE4
     char unk140[1];
 } FieldContextE4;
 
+/** Partial object held in the context-0x38 receiver's indexed slots. */
+typedef struct FieldSlotObject
+{
+    u8 unk00[0xA0];
+    s32 unka0;
+} FieldSlotObject;
+
+/** Partial receiver used by the observed offset-0x78 owners. */
+typedef struct FieldReceiver78
+{
+    s32 unk00;
+    u8 unk04[0x130];
+    s32 unk134;
+    u8 unk138;
+} FieldReceiver78;
+
+/** Partial state initialized by the allocation path in func_0028A8E0. */
+typedef struct FieldAllocatedState
+{
+    u8 unk00[0xC];
+    s32 unk0c;
+    u8 unk10[8];
+    u8 unk18;
+} FieldAllocatedState;
+
 /** Partial object reached through context field 0x38. */
 typedef struct FieldContext38
 {
-    u8 unk00[0x5C0];
+    u8 unk00[0x598];
+    FieldSlotObject* unk598[8];
+    u8 unk5b8[8];
     void* unk5c0;
     void* unk5c4;
 } FieldContext38;
@@ -143,12 +170,27 @@ typedef struct FieldSecondaryState
     u8 unkf17b;
 } FieldSecondaryState;
 
+/** Partial receiver reached through context field 0x08 and its 0xDC pointer. */
+typedef struct FieldContext08Target
+{
+    u8 unk00[0x7C];
+    void* unk7c;
+} FieldContext08Target;
+
+/** Partial object reached through context field 0x08. */
+typedef struct FieldContext08
+{
+    u8 unk00[0xDC];
+    FieldContext08Target* unkdc;
+} FieldContext08;
+
 /** Partial Field context; the pointed-to object types and full extent are unknown. */
 typedef struct FieldContext
 {
     u8 unk00[4];
     void* unk04;
-    u8 unk08[12];
+    FieldContext08* unk08;
+    u8 unk0c[8];
     void* unk14;
     FieldContext18* unk18;
     u8 unk1c[16];
@@ -163,7 +205,15 @@ typedef struct FieldContext
     u8 unk50[4];
     void* unk54;
     FieldContext58* unk58;
-    u8 unk5c[0x84];
+    u8 unk5c[0x80];
+    u8 unkdc_0 : 1;
+    u8 unkdc_1 : 1;
+    u8 unkdc_2_7 : 6;
+    u8 unkdd;
+    u8 unkde_0_2 : 3;
+    u8 unkde_3 : 1;
+    u8 unkde_4_7 : 4;
+    u8 unkdf;
     void* unke0;
     FieldContextE4* unke4;
 } FieldContext;
@@ -528,6 +578,71 @@ void func_0028A130(FieldLargeState* object, float first, float second);
  * @param third Third state word.
  */
 void func_0028A0A0(FieldLargeState* object, s32 first, s32 second, s32 third);
+
+
+/**
+ * @brief Read the receiver word at offset 0x134.
+ * @param object Receiver reached through its owner.
+ * @return The stored word.
+ */
+s32 func_00288180(const FieldReceiver78* object);
+
+/**
+ * @brief Read the receiver state byte at offset 0x138.
+ * @param object Receiver reached through its owner.
+ * @return The stored state byte.
+ */
+u8 func_002886A0(const FieldReceiver78* object);
+
+/**
+ * @brief Set the receiver's leading word.
+ * @param object Receiver to update.
+ * @param value Word to store.
+ */
+void func_00288820(FieldReceiver78* object, s32 value);
+
+/**
+ * @brief Set the state word at offset 0x0C.
+ * @param object Allocated state object.
+ * @param value Word to store.
+ */
+void func_0028B070(FieldAllocatedState* object, s32 value);
+
+/**
+ * @brief Set the state byte at offset 0x18.
+ * @param object Allocated state object.
+ * @param value Byte to store.
+ */
+void func_0028B080(FieldAllocatedState* object, u8 value);
+
+/**
+ * @brief Read the slot object's word at offset 0xA0.
+ * @param object Object obtained from an indexed slot.
+ * @return The stored word.
+ */
+s32 func_0028B170(const FieldSlotObject* object);
+
+/**
+ * @brief Get an object from the eight indexed slots.
+ * @param object Object reached through context field 0x38.
+ * @param index Slot index, from 0 through 7.
+ * @return The stored object pointer, which may be null.
+ */
+FieldSlotObject* func_0028B180(const FieldContext38* object, u8 index);
+
+/**
+ * @brief Replace bit three of the context byte at offset 0xDE.
+ * @param context Field context to update.
+ * @param value Value whose low bit replaces the flag.
+ */
+void func_00288710(FieldContext* context, s32 value);
+
+/**
+ * @brief Replace bit one of the context byte at offset 0xDC.
+ * @param context Field context to update.
+ * @param value Value whose low bit replaces the flag.
+ */
+void func_0028B220(FieldContext* context, s32 value);
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00202FB0.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00202FB0);
 
@@ -354,15 +355,27 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020C7
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020C930);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020CBC0);
+void* func_0020CBC0(const FieldContext08Target* object)
+{
+    return object->unk7c;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020CBD0);
+FieldContext08Target* func_0020CBD0(const FieldContext08* object)
+{
+    return object->unkdc;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020CBE0);
+FieldContext08* func_0020CBE0(const FieldContextRef* ref)
+{
+    return ref->context->unk08;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020CBF0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020CC20);
+u16 func_0020CC20(const FieldObjectFlags* object)
+{
+    return object->unk6e;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020CC30);
 
