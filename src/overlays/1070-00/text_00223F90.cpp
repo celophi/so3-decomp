@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00223F90.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_00223F90);
 
@@ -156,7 +157,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002291
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002297A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_00229DF0);
+FieldVector* func_00229DF0(FieldVector* vector, float x, float y, float z, float w)
+{
+    vector->x = x;
+    vector->y = y;
+    vector->z = z;
+    vector->w = w;
+    return vector;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_00229E10);
 

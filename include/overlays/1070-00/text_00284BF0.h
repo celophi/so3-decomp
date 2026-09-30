@@ -69,11 +69,31 @@ typedef struct FieldContext18
     void* unk3a0;
 } FieldContext18;
 
+/** One of the eight 0x20-byte entries initialized in the context-0x58 object. */
+typedef struct FieldContext58Entry
+{
+    u8 unk00[0x16];
+    u8 unk16_0 : 1;
+    u8 unk16_1 : 1;
+    u8 unk16_2 : 1;
+    u8 unk16_3_7 : 5;
+    u8 unk17[9];
+} FieldContext58Entry;
+
 /** Partial object reached through context field 0x58. */
 typedef struct FieldContext58
 {
-    u8 unk00[0x1B4];
+    u8 unk00[0x14];
+    FieldListNode unk14;
+    u8 unk20[0x90];
+    FieldContext58Entry unkb0[8];
+    s32 unk1b0;
     s32 unk1b4;
+    u8 unk1b8[0x14];
+    void* unk1cc;
+    void* unk1d0;
+    u8 unk1d4[0x18];
+    s8 unk1ec;
 } FieldContext58;
 
 /** Common prefix used by the observed halfword flag accessors. */
@@ -223,6 +243,13 @@ typedef struct FieldContextRef
 {
     FieldContext* context;
 } FieldContextRef;
+
+/** Partial receiver whose word at 0x78 contains independent flags. */
+typedef struct FieldWordFlags
+{
+    u8 unk00[0x78];
+    u32 unk78;
+} FieldWordFlags;
 
 #ifdef __cplusplus
 extern "C" {
@@ -643,6 +670,13 @@ void func_00288710(FieldContext* context, s32 value);
  * @param value Value whose low bit replaces the flag.
  */
 void func_0028B220(FieldContext* context, s32 value);
+
+/**
+ * @brief Set the selected bits in the flag word at offset 0x78.
+ * @param object Object containing the flag word.
+ * @param mask Bits to set.
+ */
+void func_00286050(FieldWordFlags* object, u32 mask);
 
 #ifdef __cplusplus
 }

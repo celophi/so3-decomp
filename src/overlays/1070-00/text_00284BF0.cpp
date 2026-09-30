@@ -25,7 +25,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_002859
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_00285DA0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_00286050);
+void func_00286050(FieldWordFlags* object, u32 mask)
+{
+    object->unk78 |= mask;
+}
 
 FieldVector* func_00286060(FieldVector* vector, float value)
 {
