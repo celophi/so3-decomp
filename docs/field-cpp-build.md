@@ -134,6 +134,14 @@ option.
   real names). Their three destructors and four virtual functions match, and
   the functions' exception entries match the game's. Linking
   `text_001DD3C0` on its own still gives the same bytes as the game.
+- `FieldClass14FE30` (vtable `D_14FE30`) has three bases and a member, so
+  the compiler makes small "thunk" functions that adjust `this` for its
+  secondary bases. Every file that uses the class gets its own copy of each
+  thunk, and the original linker kept only one: the copies in the game sit at
+  `0x1E1530` to `0x1E1588`, at the end of the next file. `config/thunks.*.txt`
+  records where each kept copy is, and the build drops every other copy.
+  With that, its destructor (`func_001DD4A0`) matches and both files still
+  link to the game's bytes.
 
 ## TODO
 

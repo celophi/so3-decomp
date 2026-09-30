@@ -7,6 +7,12 @@ two orders. Linkers place input sections in section-header order, so sorting
 the .text headers (each with its own relocation sections) by each function's
 original address restores the layout. Section contents, symbols and
 relocations are unchanged apart from section indices.
+
+MWCC also emits this-adjusting thunks (`@<offset>@<function>`) after a unit's
+functions, as multiply-defined copies in every unit that emits the vtable.
+The original linker kept one copy. A thunk map records where each kept copy
+is; a unit keeps its copy only when that address is inside the unit, and the
+other copies are renamed out of `.text` so the overlay link discards them.
 """
 
 import re
@@ -16,6 +22,27 @@ from pathlib import Path
 ADDRESS_NAME = re.compile(r'func_([0-9A-F]{8})')
 SYMBOL_LINE = re.compile(r'^(\S+) = (0x[0-9A-Fa-f]+);', re.M)
 SHN_LORESERVE = 0xFF00
+DISCARDED = b'.discarded'
+
+
+def unit_range(config, unit):
+    """Return (start, end) VRAM of a source unit from its Splat configuration."""
+    stem = Path(unit).stem
+    segments = config['segments']
+    for i, segment in enumerate(segments):
+        if not isinstance(segment, dict) or segment.get('type') != 'code':
+            continue
+        subs = segment['subsegments']
+        for j, sub in enumerate(subs):
+            if sub[2] != stem:
+                continue
+            following = subs[j + 1][0] if j + 1 < len(subs) else segment_start(segments[i + 1])
+            return (segment['vram'] + sub[0] - segment['start'], segment['vram'] + following - segment['start'])
+    raise ValueError(f'{unit} is not a code subsegment')
+
+
+def segment_start(segment):
+    return segment['start'] if isinstance(segment, dict) else segment[0]
 
 
 def symbol_addresses(path):
@@ -23,8 +50,14 @@ def symbol_addresses(path):
     return {m.group(1): int(m.group(2), 16) for m in SYMBOL_LINE.finditer(Path(path).read_text())}
 
 
-def order_text_sections(data, addresses):
-    """Return ELF32 little-endian object bytes with .text headers sorted by function address."""
+def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
+    """Return ELF32 little-endian object bytes with .text headers sorted by function address.
+
+    thunks maps compiler thunk names to the original address of their kept copy;
+    keep is the unit's (start, end) VRAM range, outside which thunk copies are
+    discarded. With reorder=False only the thunk rule is applied.
+    """
+    thunks = thunks or {}
     if data[:6] != b'\x7fELF\x01\x01':
         raise ValueError('expected a little-endian ELF32 object')
     shoff = struct.unpack_from('<I', data, 32)[0]
@@ -43,21 +76,37 @@ def order_text_sections(data, addresses):
 
     texts = [i for i, h in enumerate(headers) if name(h) == '.text']
     key = {}
+    dropped = set()
     for offset in symbols:
         label, _, _, info, _, index = struct.unpack_from('<IIIBBH', data, offset)
         if info & 15 != 2 or index not in texts:
             continue
         symbol = symbol_strings[label:].split(b'\0', 1)[0].decode()
         match = ADDRESS_NAME.fullmatch(symbol)
-        address = int(match.group(1), 16) if match else addresses.get(symbol)
+        if symbol.startswith('@'):
+            address = thunks.get(symbol)
+            if address is None:
+                raise ValueError(f'thunk {symbol} is not in the thunk map')
+            if keep is not None and not keep[0] <= address < keep[1]:
+                dropped.add(index)
+        elif not reorder:
+            continue
+        else:
+            address = int(match.group(1), 16) if match else addresses.get(symbol)
         if address is None:
             raise ValueError(f'no original address for {symbol}')
         if index in key and key[index] != address:
             raise ValueError(f'.text section {index} holds more than one function')
         key[index] = address
     missing = [i for i in texts if i not in key]
-    if missing:
+    if reorder and missing:
         raise ValueError(f'.text sections without a function symbol: {missing}')
+    if dropped:
+        data = discard_sections(data, dropped)
+        headers = [list(struct.unpack_from('<10I', data, shoff + i * size)) for i in range(count)]
+        texts = [i for i in texts if i not in dropped]
+    if not reorder:
+        return data
 
     # GNU ld's ELF reader creates a relocation section's target when it reaches
     # that relocation section, so each .text moves together with its own
@@ -85,4 +134,23 @@ def order_text_sections(data, addresses):
         index = struct.unpack_from('<H', data, offset + 14)[0]
         if 0 < index < SHN_LORESERVE:
             struct.pack_into('<H', out, offset + 14, remap[index])
+    return bytes(out)
+
+
+def discard_sections(data, indices):
+    """Rename sections so the overlay link script's /DISCARD/ rule drops them."""
+    shoff = struct.unpack_from('<I', data, 32)[0]
+    size, _, names_index = struct.unpack_from('<HHH', data, 46)
+    names = list(struct.unpack_from('<10I', data, shoff + names_index * size))
+    strings = data[names[4]:names[4] + names[5]]
+    out = bytearray(data)
+    position = strings.find(DISCARDED + b'\0')
+    if position < 0:
+        position = len(strings)
+        strings += DISCARDED + b'\0'
+        names[4], names[5] = len(out), len(strings)
+        out.extend(strings)
+        struct.pack_into('<10I', out, shoff + names_index * size, *names)
+    for index in indices:
+        struct.pack_into('<I', out, shoff + index * size, position)
     return bytes(out)

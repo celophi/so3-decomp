@@ -22,3 +22,19 @@ __dt__16FieldClass150060Fv = 0x001DECD0; // type:func
 __dt__16FieldClass150050Fv = 0x001DED30; // type:func
 func_001DF360__16FieldClass150070Fv = 0x001DF360; // type:func
 func_001DF3D0__16FieldClass150070Fv = 0x001DF3D0; // type:func
+__vt__16FieldClass150010 = 0x00150010; // size:0x1C
+__dt__16FieldClass150010Fv = 0x001DEC40; // type:func
+
+// Lib classes; the names match config/symbols.0002-01.txt.
+__vt__14LibClass178DD0 = 0x00178DD0; // size:0x38
+__dt__14LibClass178DD0Fv = 0x004D7590; // type:func
+__dl__14LibClass178DD0FPv = 0x004DB570; // type:func
+__vt__14LibClass178EA0 = 0x00178EA0; // size:0x84
+__dt__14LibClass178EA0Fv = 0x004DAC70; // type:func
+
+// FieldClass14FE30: a LibClass178DD0 with FieldClass150070 at 0x78,
+// FieldClass1DD400 at 0x90 and a LibClass178EA0 member at 0xA0. Its secondary
+// vtables are __vt__16FieldClass14FE30 + 0x38 and + 0x54 (config/relocs).
+__vt__16FieldClass14FE30 = 0x0014FE30; // size:0x74
+__dt__16FieldClass14FE30Fv = 0x001DD4A0; // type:func
+func_001DD400__16FieldClass1DD400Fv = 0x001DD400; // type:func

@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, verify_compiler
-from tools.so3.build.text_order import order_text_sections, symbol_addresses
+from tools.so3.build.text_order import order_text_sections, symbol_addresses, unit_range
 
 
 def unit_flags(config, unit):
@@ -25,12 +25,30 @@ def deferred(flags):
     return any(a == '-inline' and 'deferred' in b.split(',') for a, b in zip(flags, flags[1:]))
 
 
+def module_of(unit):
+    parts = Path(unit).parts
+    return parts[2] if parts[:2] == ('src', 'overlays') else 'boot'
+
+
 def symbol_map(unit):
     """The Splat symbol map for the module that owns a source unit."""
-    parts = Path(unit).parts
-    module = parts[2] if parts[:2] == ('src', 'overlays') else 'boot'
-    path = Path('config') / f'symbols.{module}.txt'
+    path = Path('config') / f'symbols.{module_of(unit)}.txt'
     return symbol_addresses(path) if path.is_file() else {}
+
+
+def thunk_map(unit):
+    """Original addresses of the kept copies of MWCC this-adjusting thunks."""
+    path = Path('config') / f'thunks.{module_of(unit)}.txt'
+    return symbol_addresses(path) if path.is_file() else {}
+
+
+def overlay_range(unit):
+    """The unit's VRAM range, or None for boot sources."""
+    module = module_of(unit)
+    if module == 'boot':
+        return None
+    import yaml
+    return unit_range(yaml.safe_load((Path('config/overlays') / f'{module}.yaml').read_text()), unit)
 
 
 def main():
@@ -76,10 +94,13 @@ def main():
                 as_flags=['-no-pad-sections'], macro_inc_path=args.macros,
                 temp_dir=args.output.parent,
             )
-        if deferred(selected):
-            # Deferred codegen reverses C functions but not mwccgap's asm stubs;
-            # restore the original layout by function address.
-            temporary.write_bytes(order_text_sections(temporary.read_bytes(), symbol_map(unit)))
+        # Deferred codegen reverses C functions but not mwccgap's asm stubs, so
+        # deferred units are put back in address order. Every C++ unit keeps
+        # only the thunk copies the original linker kept inside it.
+        if deferred(selected) or languages[args.source.suffix] == 'c++':
+            temporary.write_bytes(order_text_sections(
+                temporary.read_bytes(), symbol_map(unit), thunk_map(unit),
+                overlay_range(unit), reorder=deferred(selected)))
         temporary.replace(args.output)
     finally:
         temporary.unlink(missing_ok=True)

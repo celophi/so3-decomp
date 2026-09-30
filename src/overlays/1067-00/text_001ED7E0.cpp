@@ -96,8 +96,6 @@ extern "C" s32 func_433880(void*, s32);
 extern "C" s32 func_139700(s32, void*);
 extern "C" s32 func_0023AEB0(FieldLateRetryNode*, FieldLateRetryOwner*);
 
-extern "C" void func_4DB570(void*);
-
 extern "C" void func_00222840(void*, void*);
 extern "C" void func_00238530(void*, void*);
 
@@ -1002,7 +1000,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001FC0
 
 extern "C" void func_001FC370(void* object)
 {
-    func_4DB570(object);
+    LibClass178DD0::operator delete(object);
 }
 
 extern "C" void func_001FC390(void* object, void* other)

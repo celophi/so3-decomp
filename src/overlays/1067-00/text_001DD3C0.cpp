@@ -7,7 +7,7 @@
 // Not code: 64 zero bytes at the start of .text.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD3C0);
 
-void func_001DD400(void* object)
+void FieldClass1DD400::func_001DD400()
 {
 }
 
@@ -32,8 +32,10 @@ s32 func_001DD490(const void* object)
     return 4;
 }
 
-// Deleting destructor; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD4A0);
+FieldClass14FE30::~FieldClass14FE30()
+{
+    func_004D65C0(&unkA0);
+}
 
 void func_001DD570(FieldFlaggedListObject* list)
 {
@@ -201,7 +203,9 @@ void func_001DEA80(FieldSlotRecordOwner* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DEB50);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DEC40);
+FieldClass150010::~FieldClass150010()
+{
+}
 
 FieldClass150060::~FieldClass150060()
 {

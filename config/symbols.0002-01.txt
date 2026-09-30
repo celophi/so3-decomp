@@ -1,0 +1,6 @@
+// Lib classes named after their vtables in boot data; see docs/field-cpp-build.md.
+__vt__14LibClass178DD0 = 0x00178DD0; // size:0x38
+__dt__14LibClass178DD0Fv = 0x004D7590; // type:func
+__dl__14LibClass178DD0FPv = 0x004DB570; // type:func
+__vt__14LibClass178EA0 = 0x00178EA0; // size:0x84
+__dt__14LibClass178EA0Fv = 0x004DAC70; // type:func

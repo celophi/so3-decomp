@@ -17,6 +17,7 @@ options:
   ld_script_path: build/overlays/0002-01/overlay.ld
   generated_asm_macros_directory: build/overlays/0002-01/include
   cache_path: build/overlays/0002-01/splat.cache
+  symbol_addrs_path: [config/symbols.0002-01.txt]
   undefined_funcs_auto_path: build/overlays/0002-01/undefined_funcs.ld
   undefined_syms_auto_path: build/overlays/0002-01/undefined_syms.ld
   create_c_files: true

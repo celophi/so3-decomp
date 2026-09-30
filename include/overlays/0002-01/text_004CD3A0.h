@@ -12,6 +12,103 @@ typedef struct LibListNode
 } LibListNode;
 
 #ifdef __cplusplus
+/**
+ * Partial Lib base class with its vtable pointer at offset 0x10, with vtable D_178DD0 in boot data.
+ * Its twelve virtual slots are declared in vtable order; slots 5-9 keep opaque parameters
+ * until their Lib implementations are reconstructed.
+ */
+class LibClass178DD0
+{
+public:
+    u8 unk00[0x10];
+
+    /** @brief Destroy the object. */
+    virtual ~LibClass178DD0();
+
+    /**
+     * @brief Link a node before the list's first node and increment the count at offset 0xC.
+     * @param node Node to link.
+     */
+    virtual void func_004CA020(void* node);
+
+    /**
+     * @brief Link a node after the list's last node and increment the count at offset 0xC.
+     * @param node Node to link.
+     */
+    virtual void func_004C9FF0(void* node);
+
+    /**
+     * @brief Link a node after another node and increment the count at offset 0xC.
+     * @param position Node to link after.
+     * @param node Node to link.
+     */
+    virtual void func_004C9FC0(void* position, void* node);
+
+    /**
+     * @brief Unlink a node and decrement the nonzero count at offset 0xC.
+     * @param node Node to unlink; the list itself and null are ignored.
+     */
+    virtual void func_004C9F60(void* node);
+
+    /**
+     * @brief Lib virtual slot 5.
+     * @param value Opaque argument.
+     */
+    virtual void func_004D72A0(void* value);
+
+    /** @brief Lib virtual slot 6. */
+    virtual void func_004D6730();
+
+    /**
+     * @brief Lib virtual slot 7.
+     * @param a Opaque first argument.
+     * @param b Opaque second argument.
+     */
+    virtual void func_004D74F0(void* a, void* b);
+
+    /**
+     * @brief Lib virtual slot 8.
+     * @param a Opaque first argument.
+     * @param b Opaque second argument.
+     */
+    virtual void func_004D7450(void* a, void* b);
+
+    /**
+     * @brief Lib virtual slot 9.
+     * @param a Opaque first argument.
+     * @param b Opaque second argument.
+     * @param c Opaque third argument.
+     */
+    virtual void func_004D73B0(void* a, void* b, void* c);
+
+    /**
+     * @brief Store the attached object pointer at offset 0x70.
+     * @param attached Object pointer to store.
+     */
+    virtual void func_004295B0(void* attached);
+
+    /** @brief Default handler that performs no work. */
+    virtual void func_004295C0();
+
+    /**
+     * @brief Release storage allocated for this class.
+     * @param object Storage to release.
+     */
+    static void operator delete(void* object);
+
+    u8 unk14[0x64];
+};
+
+/** Partial Lib class used as a member object, with vtable D_178EA0 in boot data. */
+class LibClass178EA0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~LibClass178EA0();
+};
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 

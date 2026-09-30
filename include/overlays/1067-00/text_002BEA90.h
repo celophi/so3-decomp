@@ -10,12 +10,49 @@ typedef struct FieldWord1C FieldWord1C;
 typedef struct FieldWord0C FieldWord0C;
 typedef struct FieldWord10 FieldWord10;
 typedef struct FieldWord14 FieldWord14;
+typedef struct FieldWord28 FieldWord28;
+typedef struct FieldInputState FieldInputState;
 typedef struct FieldFlags1C FieldFlags1C;
 typedef struct FieldBytePtr10 FieldBytePtr10;
+typedef struct FieldBitFlags1C FieldBitFlags1C;
+typedef struct FieldInputBlock FieldInputBlock;
+typedef struct FieldEntry90 FieldEntry90;
+typedef struct FieldCollection90 FieldCollection90;
+typedef struct FieldCell40 FieldCell40;
+typedef struct FieldGrid40 FieldGrid40;
+typedef struct FieldSignedWord1C FieldSignedWord1C;
+typedef struct FieldSignedWord0C FieldSignedWord0C;
+typedef struct FieldSignedWord10 FieldSignedWord10;
+typedef struct FieldPointer14 FieldPointer14;
+typedef struct FieldState100 FieldState100;
+typedef struct FieldFloat2C FieldFloat2C;
+typedef struct FieldEntry50 FieldEntry50;
+typedef struct FieldCollection50 FieldCollection50;
+typedef struct FieldCollection FieldCollection;
+typedef struct FieldThing FieldThing;
+typedef struct FieldPair FieldPair;
+typedef struct FieldMotion FieldMotion;
+typedef struct FieldList FieldList;
+typedef struct FieldState28 FieldState28;
+typedef struct FieldSelector FieldSelector;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Clear bit 0 of the flag byte at offset 0x1C.
+ * @param self Receiver to update.
+ */
+void func_002BED50(FieldBitFlags1C* self);
+
+/**
+ * @brief Store input range and whether its first byte is 1.
+ * @param self Receiver to update.
+ * @param data Input byte stream.
+ * @param count Input count.
+ */
+void func_002BF3F0(FieldInputBlock* self, const u8* data, s32 count);
 
 /**
  * @brief Return the fixed value 0.
@@ -220,11 +257,69 @@ float func_002BF610(void* object);
 void func_002BF620(void* object);
 
 /**
+ * @brief Address an indexed 0x90-byte record.
+ * @param self Record collection.
+ * @param index Record index.
+ * @return Indexed record.
+ */
+FieldEntry90* func_002BF690(FieldCollection90* self, s32 index);
+
+/**
+ * @brief Address an indexed 0x40-byte grid cell.
+ * @param self Cell grid.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Indexed cell.
+ */
+FieldCell40* func_002BF6B0(FieldGrid40* self, s32 row, s32 column);
+
+/**
+ * @brief Read the signed word at offset 0x1C.
+ * @param self Receiver.
+ * @return Stored word.
+ */
+s32 func_002BF6D0(const FieldSignedWord1C* self);
+
+/**
+ * @brief Read the signed word at offset 0x0C.
+ * @param self Receiver.
+ * @return Stored word.
+ */
+s32 func_002BF6E0(const FieldSignedWord0C* self);
+
+/**
+ * @brief Read the signed word at offset 0x10.
+ * @param self Receiver.
+ * @return Stored word.
+ */
+s32 func_002BF6F0(const FieldSignedWord10* self);
+
+/**
+ * @brief Return the fixed value 0x20.
+ * @param self Receiver of the call.
+ * @return Fixed value.
+ */
+s32 func_002BF700(void* self);
+
+/**
+ * @brief Test whether the pointer at offset 0x14 is present.
+ * @param self Receiver.
+ * @return Whether the pointer is non-null.
+ */
+bool func_002BF710(const FieldPointer14* self);
+
+/**
  * @brief Return the fixed float value 1.0f.
  * @param object Receiver of the call.
  * @return The fixed float value.
  */
 float func_002BFE60(void* object);
+
+/**
+ * @brief Clear an inactive state flag or activate once.
+ * @param state Receiver to update.
+ */
+void func_002C0390(FieldState100* state);
 
 /**
  * @brief Return the fixed value 3.
@@ -234,11 +329,41 @@ float func_002BFE60(void* object);
 int func_002C0550(void* object);
 
 /**
+ * @brief Clear the word at offset 0x28.
+ * @param self Receiver to update.
+ */
+void func_002C0560(FieldWord28* self);
+
+/**
+ * @brief Read the float at offset 0x2C.
+ * @param self Receiver.
+ * @return Stored float.
+ */
+float func_002C0570(const FieldFloat2C* self);
+
+/**
  * @brief Return the fixed value 1.
  * @param object Receiver of the call.
  * @return The fixed value.
  */
 int func_002C0580(void* object);
+
+/**
+ * @brief Address an indexed 0x40-byte grid cell.
+ * @param self Cell grid.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Indexed cell.
+ */
+FieldCell40* func_002C0590(FieldGrid40* self, s32 row, s32 column);
+
+/**
+ * @brief Address an indexed 0x50-byte record.
+ * @param self Record collection.
+ * @param index Record index.
+ * @return Indexed record.
+ */
+FieldEntry50* func_002C05B0(FieldCollection50* self, s32 index);
 
 /**
  * @brief Perform no action for this receiver.
@@ -449,11 +574,39 @@ float func_002C1760(void* object);
 void func_002C1770(void* object);
 
 /**
+ * @brief Read the word at offset 0x1C.
+ * @param object Receiver to read.
+ * @return The stored word.
+ */
+u32 func_002C17E0(const FieldWord1C* object);
+
+/**
+ * @brief Read the word at offset 0x0C.
+ * @param object Receiver to read.
+ * @return The stored word.
+ */
+u32 func_002C17F0(const FieldWord0C* object);
+
+/**
+ * @brief Read the word at offset 0x10.
+ * @param object Receiver to read.
+ * @return The stored word.
+ */
+u32 func_002C1800(const FieldWord10* object);
+
+/**
  * @brief Return the fixed value 1.
  * @param object Receiver of the call.
  * @return The fixed value.
  */
 int func_002C1810(void* object);
+
+/**
+ * @brief Test the word at offset 0x14.
+ * @param object Receiver to test.
+ * @return True when the word is nonzero.
+ */
+bool func_002C1820(const FieldWord14* object);
 
 /**
  * @brief Return the fixed float value 1.0f.
@@ -470,6 +623,19 @@ float func_002C1F70(void* object);
 int func_002C2000(void* object);
 
 /**
+ * @brief Clear the word at offset 0x28.
+ * @param object Receiver to update.
+ */
+void func_002C2010(FieldWord28* object);
+
+/**
+ * @brief Return the fixed float value 2500.0f.
+ * @param object Receiver of the call.
+ * @return The fixed float value.
+ */
+float func_002C2020(void* object);
+
+/**
  * @brief Return the fixed value 1.
  * @param object Receiver of the call.
  * @return The fixed value.
@@ -481,6 +647,14 @@ int func_002C2040(void* object);
  * @param object Receiver of the call.
  */
 void func_002C2240(void* object);
+
+/**
+ * @brief Store an input pointer and word, then update the byte mode from its first byte.
+ * @param state Receiver to update.
+ * @param input Input byte sequence; at least one byte is required.
+ * @param unk30 Word to store at offset 0x30.
+ */
+void func_002C29D0(FieldInputState* state, u8* input, u32 unk30);
 
 /**
  * @brief Return the fixed value 0.
@@ -670,6 +844,196 @@ int func_002C2BD0(void* object);
  * @param object Receiver of the call.
  */
 void func_002C2BE0(void* object);
+
+/**
+ * @brief Return the fixed float value 0.0f.
+ * @param object Receiver of the call.
+ * @return The fixed float value.
+ */
+float func_002C2BF0(void* object);
+
+/**
+ * @brief Perform no action for this receiver.
+ * @param object Receiver of the call.
+ */
+void func_002C2C00(void* object);
+
+/**
+ * @brief Find a 160-byte indexed entry.
+ * @param object Collection owner.
+ * @param index Entry index.
+ * @return The entry address.
+ */
+char* func_002C2C70(FieldCollection* object, s32 index);
+
+/**
+ * @brief Find a 64-byte grid cell.
+ * @param object Collection owner.
+ * @param row Row index.
+ * @param column Column index.
+ * @return The cell address.
+ */
+char* func_002C2C90(FieldCollection* object, s32 row, s32 column);
+
+/**
+ * @brief Read the word at offset 0x1C.
+ * @param object Collection owner.
+ * @return The stored word.
+ */
+s32 func_002C2CB0(FieldCollection* object);
+
+/**
+ * @brief Read the word at offset 0xC.
+ * @param object Collection owner.
+ * @return The stored word.
+ */
+s32 func_002C2CC0(FieldCollection* object);
+
+/**
+ * @brief Read the word at offset 0x10.
+ * @param object Collection owner.
+ * @return The stored word.
+ */
+s32 func_002C2CD0(FieldCollection* object);
+
+/**
+ * @brief Return the fixed value 32.
+ * @param object Receiver of the call.
+ * @return 32.
+ */
+int func_002C2CE0(void* object);
+
+/**
+ * @brief Test whether the pointer at offset 0x14 is present.
+ * @param object Collection owner.
+ * @return True when the pointer is nonnull.
+ */
+bool func_002C2CF0(FieldCollection* object);
+
+/**
+ * @brief Return the fixed float value 1.0f.
+ * @param object Receiver of the call.
+ * @return The fixed float value.
+ */
+float func_002C3AC0(void* object);
+
+/**
+ * @brief Select the pair and update its comparison flag.
+ * @param object Pair to update.
+ * @param first First compared object.
+ * @param second Second compared object.
+ */
+void func_002C4FC0(FieldPair* object, FieldThing* first, FieldThing* second);
+
+/**
+ * @brief Set the motion selector, rate and flag.
+ * @param object Motion state to update.
+ * @param value Byte value to store.
+ * @param index Selector, or -1 to reuse the current selector.
+ * @param rate New rate.
+ */
+void func_002C5640(FieldMotion* object, u8 value, s16 index, float rate);
+
+/**
+ * @brief Start a motion when its flags permit it.
+ * @param object Motion state to update.
+ * @param value New word value.
+ * @param mode New mode bit.
+ * @param rate New rate.
+ */
+void func_002C5A10(FieldMotion* object, s32 value, s32 mode, float rate);
+
+/**
+ * @brief Mark matching linked-list nodes and clear the owner state.
+ * @param object List owner to update.
+ */
+void func_002C7780(FieldList* object);
+
+/**
+ * @brief Return the fixed value 3.
+ * @param object Receiver of the call.
+ * @return The fixed value.
+ */
+int func_002C9660(void* object);
+
+/**
+ * @brief Clear the word at offset 0x28.
+ * @param object State to update.
+ */
+void func_002C9670(FieldState28* object);
+
+/**
+ * @brief Perform no action for this receiver.
+ * @param object Receiver of the call.
+ */
+void func_002C9680(void* object);
+
+/**
+ * @brief Return the fixed float value 2500.0f.
+ * @param object Receiver of the call.
+ * @return The fixed float value.
+ */
+float func_002C9690(void* object);
+
+/**
+ * @brief Return the fixed value 1.
+ * @param object Receiver of the call.
+ * @return The fixed value.
+ */
+int func_002C96B0(void* object);
+
+/**
+ * @brief Return the fixed value four.
+ * @param object Receiver of the call.
+ * @return Four.
+ */
+int func_002C9A20(void* object);
+
+/**
+ * @brief Store selection pointers and update the mode byte.
+ * @param object Selector to update.
+ * @param value Byte stream to select.
+ * @param context Associated context.
+ */
+void func_002CA150(FieldSelector* object, const u8* value, void* context);
+
+/**
+ * @brief Return a null pointer.
+ * @param object Receiver of the call.
+ * @return Null.
+ */
+void* func_002CA190(void* object);
+
+/**
+ * @brief Perform no action for this receiver.
+ * @param object Receiver of the call.
+ */
+void func_002CA1A0(void* object);
+
+/**
+ * @brief Return the fixed float value 100.0f.
+ * @param object Receiver of the call.
+ * @return The fixed float value.
+ */
+float func_002CA1B0(void* object);
+
+/**
+ * @brief Perform no action for this receiver.
+ * @param object Receiver of the call.
+ */
+void func_002CA1C0(void* object);
+
+/**
+ * @brief Perform no action for this receiver.
+ * @param object Receiver of the call.
+ */
+void func_002CA1D0(void* object);
+
+/**
+ * @brief Perform no action for this receiver.
+ * @param object Receiver of the call.
+ */
+void func_002CA1E0(void* object);
 
 /**
  * @brief Perform no action for this receiver.

@@ -1,3 +1,13 @@
 // The initializer stores the dispatch pointer at 0x00330000 - 0x4950.
 rom:0x14D528 reloc:MIPS_HI16 symbol:D_32B6B0
 rom:0x14D530 reloc:MIPS_LO16 symbol:D_32B6B0
+// FieldClass14FE30's secondary vtables for FieldClass150070 (+0x38) and
+// FieldClass1DD400 (+0x54), in its destructor and in func_001DF100.
+rom:0x140 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FE30 addend:0x38
+rom:0x148 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FE30 addend:0x38
+rom:0x154 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FE30 addend:0x54
+rom:0x15C reloc:MIPS_LO16 symbol:__vt__16FieldClass14FE30 addend:0x54
+rom:0x1DC8 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FE30 addend:0x38
+rom:0x1DE8 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FE30 addend:0x38
+rom:0x1DD0 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FE30 addend:0x54
+rom:0x1DF0 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FE30 addend:0x54

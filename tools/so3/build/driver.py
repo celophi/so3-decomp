@@ -105,7 +105,8 @@ def configure(configs):
                 'tools/so3/build/sdk.py', str(SDK_MANIFEST)]
         deps += options.get('symbol_addrs_path', []) + options.get('reloc_addrs_path', [])
         # compile.py orders deferred units' .text by the module's symbol map.
-        symbol_maps = [p for p in [f'config/symbols.{module}.txt'] if Path(p).is_file()]
+        symbol_maps = [p for p in [f'config/symbols.{module}.txt', f'config/thunks.{module}.txt']
+                       if Path(p).is_file()] + ([] if is_boot else [str(path)])
         deps += ['tools/so3/build/boot.py', 'config/versions.json'] if is_boot else ['tools/so3/build/overlays.py']
         split_command = 'python -m tools.so3.build.boot split' if is_boot else f'python -m tools.so3.build.overlays run-splat --overlay {module}'
         lines += [f'build {" ".join(outputs)}: split {options["target_path"]} | {" ".join(deps)}',

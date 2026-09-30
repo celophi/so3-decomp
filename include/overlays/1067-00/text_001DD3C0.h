@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_1067_00_TEXT_001DD3C0_H
 
 #include "types.h"
+#include "overlays/0002-01/text_004CD3A0.h"
 #include "overlays/1067-00/text_001FD860.h"
 
 /** Partial receiver whose word at offset 0x70 refers to an attached object. */
@@ -99,18 +100,42 @@ public:
 
     /** @brief Default handler that performs no work. */
     virtual void func_001DD410();
+
+    u8 unk04[0x14];
+};
+
+/** Partial 16-byte base class whose first virtual handler is func_001DD400. */
+class FieldClass1DD400
+{
+public:
+    /** @brief Default handler that performs no work. */
+    virtual void func_001DD400();
+
+    u8 unk04[0xC];
+};
+
+/** Partial class with bases at offsets 0x78 and 0x90 and a Lib member at 0xA0, with vtable D_14FE30 in boot data. */
+class FieldClass14FE30 : public LibClass178DD0, public FieldClass150070, public FieldClass1DD400
+{
+public:
+    /** @brief Detach the member at offset 0xA0, then destroy the object. */
+    virtual ~FieldClass14FE30();
+
+    LibClass178EA0 unkA0;
+};
+
+/** Partial class derived from FieldClass150070, with vtable D_150010 in boot data. */
+class FieldClass150010 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150010();
 };
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * @brief Default virtual handler that performs no work.
- * @param object Receiver of the virtual call.
- */
-void func_001DD400(void* object);
 
 /**
  * @brief Store the attached object pointer at offset 0x70.
