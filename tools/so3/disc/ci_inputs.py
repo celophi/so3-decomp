@@ -10,9 +10,9 @@ import shutil
 import sys
 import tempfile
 
-from boot import ORIGINAL, ROOT, original_boot
-from overlays import CONFIGS, load_config
-from so3.formats import require
+from tools.so3.build.boot import ORIGINAL, ROOT, original_boot
+from tools.so3.build.overlays import CONFIGS, load_config
+from tools.so3.formats import require
 
 # Both supported DVDs fit in 35 parts each. Each Docker COPY combines one
 # part per disc, keeping layers near 256 MiB to fit GHCR's upload timeout.

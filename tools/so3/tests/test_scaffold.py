@@ -9,9 +9,8 @@ import sys
 import tempfile
 import unittest
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / 'tools'))
-from build import asm_inputs
+from tools.so3 import ROOT
+from tools.so3.build.driver import asm_inputs
 
 CONFIG = json.loads((ROOT / 'config/compilers.json').read_text())
 COMPILER = ROOT / 'build/compilers' / CONFIG['working_candidate'] / 'mwccps2.exe'
@@ -29,7 +28,7 @@ class SourceDependencyTests(unittest.TestCase):
                 self.assertEqual(asm_inputs(source), [Path('build/unit/first.s'), Path('build/unit/table.s')])
 
     def test_unsupported_language_is_rejected_before_compiling(self):
-        result = subprocess.run([sys.executable, 'tools/compile.py', 'unit.cc', 'unused.o',
+        result = subprocess.run([sys.executable, '-m', 'tools.so3.build.compile', 'unit.cc', 'unused.o',
                                  '--macros', 'unused.inc'], cwd=ROOT, capture_output=True, text=True)
         self.assertEqual(result.returncode, 2)
         self.assertIn('source must use .c (C) or .cpp (C++)', result.stderr)
@@ -66,7 +65,7 @@ class ScaffoldIntegrationTests(unittest.TestCase):
                 source.write_text('#include "include_asm.h"\n' +
                                   (real if matched >= 1 else 'INCLUDE_ASM("unused", real);\n') +
                                   (pending if matched >= 2 else 'INCLUDE_ASM("unused", pending);\n'))
-                self.run_tool(sys.executable, 'tools/compile.py', str(source), str(base),
+                self.run_tool(sys.executable, '-m', 'tools.so3.build.compile', str(source), str(base),
                               '--macros', str(work / 'unused.inc'), '--skip-asm')
                 self.run_tool('objdiff-cli', 'report', 'generate', '-p', str(work),
                               '-o', str(work / 'report.json'))
@@ -140,13 +139,13 @@ int real(void) {
                 support = work / 'support.c'
                 support.write_text('#include "interface.h"\nint c_increment(int value) { return value + 1; }\n')
                 support_objects = [work / 'support.o']
-                self.run_tool(sys.executable, 'tools/compile.py', str(support), str(support_objects[0]),
+                self.run_tool(sys.executable, '-m', 'tools.so3.build.compile', str(support), str(support_objects[0]),
                               '--macros', str(macros))
             source.write_text(prefix + body)
             reference_source = work / ('real' + extension)
             reference_source.write_text('#include "local.h"\n' + body)
             mixed, real = work / 'mixed.o', work / 'real.o'
-            self.run_tool(sys.executable, 'tools/compile.py', str(source), str(mixed), '--macros', str(macros))
+            self.run_tool(sys.executable, '-m', 'tools.so3.build.compile', str(source), str(mixed), '--macros', str(macros))
             # Compile the reference directly, without the assembly processor.
             self.run_tool('wibo', str(COMPILER), '-c', *CONFIG['working_flags'],
                           '-lang', 'c++' if cpp else 'c', f'-I{work}', '-o', str(real), str(reference_source))
@@ -176,7 +175,7 @@ int real(void) {
             # The report object contains real C/C++ only, including its relocations.
             # Compare against direct MWCC output so dropping all code cannot pass.
             progress = work / 'progress.o'
-            self.run_tool(sys.executable, 'tools/compile.py', str(source), str(progress),
+            self.run_tool(sys.executable, '-m', 'tools.so3.build.compile', str(source), str(progress),
                           '--macros', str(macros), '--skip-asm')
             progress_symbols = self.run_tool('mips-ps2-decompals-nm', '--defined-only', str(progress)).stdout
             self.assertNotRegex(progress_symbols, r'(?m) T (first|second)$')
@@ -186,11 +185,11 @@ int real(void) {
             self.assertEqual(link([asm_object, progress], 'progress'), expected)
             # Real source changes must affect the final image.
             source.write_text(prefix + body.replace('RESULT', '10'))
-            self.run_tool(sys.executable, 'tools/compile.py', str(source), str(mixed), '--macros', str(macros))
+            self.run_tool(sys.executable, '-m', 'tools.so3.build.compile', str(source), str(mixed), '--macros', str(macros))
             self.assertNotEqual(link([mixed], 'changed'), expected)
             old_object = mixed.read_bytes()
             source.write_text(prefix + 'this is invalid source;\n')
-            failure = subprocess.run([sys.executable, 'tools/compile.py', str(source), str(mixed),
+            failure = subprocess.run([sys.executable, '-m', 'tools.so3.build.compile', str(source), str(mixed),
                                       '--macros', str(macros)], cwd=ROOT, capture_output=True)
             self.assertNotEqual(failure.returncode, 0)
             self.assertEqual(mixed.read_bytes(), old_object)

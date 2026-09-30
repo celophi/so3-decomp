@@ -10,12 +10,12 @@ import subprocess
 import sys
 import tarfile
 
-from analysis_tools import ROOT, LOCK, checked_file, sha256
-from boot import original_boot
-from build import full_asm_path
-from identify_sdk import functions
-from overlays import load_config
-from so3.sdk import code_units
+from tools.so3.analysis.analysis_tools import ROOT, LOCK, checked_file, sha256
+from tools.so3.build.boot import original_boot
+from tools.so3.build.driver import full_asm_path
+from tools.so3.analysis.identify_sdk import functions
+from tools.so3.build.overlays import load_config
+from tools.so3.build.sdk import code_units
 
 
 def m2c_entry():

@@ -10,7 +10,8 @@ import tarfile
 import urllib.request
 import zipfile
 
-ROOT = Path(__file__).resolve().parents[1]
+from tools.so3 import ROOT
+
 LOCK = ROOT / 'config/analysis-tools.json'
 
 
@@ -27,7 +28,7 @@ def checked_file(path):
     record = next(r for r in records() if r['path'] == relative)
     result = ROOT / relative
     if not result.is_file() or sha256(result.read_bytes()) != record['sha256']:
-        raise ValueError(f'{relative}: missing or changed; run python tools/analysis_tools.py '
+        raise ValueError(f'{relative}: missing or changed; run python -m tools.so3.analysis.analysis_tools '
                          f'--tool {record.get("group", "sdk")}')
     return result
 

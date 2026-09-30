@@ -3,12 +3,10 @@
 import hashlib
 from pathlib import Path
 import shutil
-import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from ci_inputs import split_iso, join_iso
+from tools.so3.disc.ci_inputs import split_iso, join_iso
 
 
 class DiscImageTests(unittest.TestCase):

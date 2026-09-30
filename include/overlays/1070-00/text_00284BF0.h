@@ -92,6 +92,57 @@ typedef struct FieldFlaggedObjectRef
     FieldFlaggedObject* unk1c;
 } FieldFlaggedObjectRef;
 
+/** Partial target reached through the large embedded object's stored pointer. */
+typedef struct FieldLargeTarget
+{
+    u8 unk00[0x8098];
+    s32 unk8098;
+    u8 unk809c[0x10];
+    s32 unk80ac;
+    s32 unk80b0;
+    s32 unk80b4;
+    u8 unk80b8[0xC];
+    float unk80c4;
+    float unk80c8;
+    u8 unk80cc[8];
+    u8 unk80d4;
+} FieldLargeTarget;
+
+/** Partial embedded object used by the connected large-state accessors. */
+typedef struct FieldLargeSubobject
+{
+    u8 unk00[0x15E640];
+    FieldLargeTarget* unk15e640;
+} FieldLargeSubobject;
+
+/** Partial large state; member relationships come from shared caller receivers. */
+typedef struct FieldLargeState
+{
+    u8 unk00[0xC0];
+    FieldLargeSubobject unkc0;
+    u8 unk15e704[0x80];
+    s16 unk15e784;
+    s16 unk15e786;
+    u8 unk15e788[4];
+    u8 unk15e78c;
+    u8 unk15e78d[3];
+    void* unk15e790;
+} FieldLargeState;
+
+/** Partial owner of the byte-state subobject at offset 0x120. */
+typedef struct FieldByteStateOwner
+{
+    u8 unk00[0x120];
+    FieldByteState unk120;
+} FieldByteStateOwner;
+
+/** Separate state reached through the observed secondary global receiver. */
+typedef struct FieldSecondaryState
+{
+    u8 unk00[0xF17B];
+    u8 unkf17b;
+} FieldSecondaryState;
+
 /** Partial Field context; the pointed-to object types and full extent are unknown. */
 typedef struct FieldContext
 {
@@ -365,6 +416,118 @@ FieldFlaggedObject* func_0028B210(const FieldFlaggedObjectRef* object);
  * @param object Object reached through context field 0x38.
  */
 void func_0028B240(FieldContext38* object);
+
+
+/**
+ * @brief Test whether the state word at offset 0x8098 is zero.
+ * @param object Large target object.
+ * @return One when the word is zero, otherwise zero.
+ */
+s32 func_00289470(const FieldLargeTarget* object);
+
+/**
+ * @brief Store the result pointer at offset 0x15E790.
+ * @param object Large state object.
+ * @param value Result pointer to store.
+ */
+void func_00289660(FieldLargeState* object, void* value);
+
+/**
+ * @brief Get the target pointer from the embedded object.
+ * @param object Embedded large subobject.
+ * @return The stored target pointer.
+ */
+FieldLargeTarget* func_00289680(const FieldLargeSubobject* object);
+
+/**
+ * @brief Get the large subobject at offset 0xC0.
+ * @param object Large state object.
+ * @return The embedded subobject.
+ */
+FieldLargeSubobject* func_00289690(FieldLargeState* object);
+
+/**
+ * @brief Read the signed halfword at offset 0x15E786.
+ * @param object Large state object.
+ * @return The stored signed value.
+ */
+s16 func_002898D0(const FieldLargeState* object);
+
+/**
+ * @brief Read the signed halfword at offset 0x15E784.
+ * @param object Large state object.
+ * @return The stored signed value.
+ */
+s16 func_002898E0(const FieldLargeState* object);
+
+/**
+ * @brief Read the state byte at offset 0x15E78C.
+ * @param object Large state object.
+ * @return The stored byte.
+ */
+u8 func_00289CE0(const FieldLargeState* object);
+
+/**
+ * @brief Read the secondary state byte at offset 0xF17B.
+ * @param object Secondary state object.
+ * @return The stored byte.
+ */
+u8 func_00289CF0(const FieldSecondaryState* object);
+
+/**
+ * @brief Set three adjacent state words.
+ * @param object Large target object.
+ * @param first Value for offset 0x80AC.
+ * @param second Value for offset 0x80B0.
+ * @param third Value for offset 0x80B4.
+ */
+void func_0028A100(FieldLargeTarget* object, s32 first, s32 second, s32 third);
+
+/**
+ * @brief Set the two floating-point values at offsets 0x80C4 and 0x80C8.
+ * @param object Large target object.
+ * @param first First value.
+ * @param second Second value.
+ */
+void func_0028A180(FieldLargeTarget* object, float first, float second);
+
+/**
+ * @brief Set the state byte at offset 0x80D4.
+ * @param object Large target object.
+ * @param value Byte to store.
+ */
+void func_0028A7D0(FieldLargeTarget* object, u8 value);
+
+/**
+ * @brief Read the embedded state byte through its accessor.
+ * @param object Owner of the byte-state subobject.
+ * @return The stored byte.
+ */
+u8 func_0028A7E0(const FieldByteStateOwner* object);
+
+/**
+ * @brief Set the target state byte through the embedded object.
+ * @param object Large state object.
+ * @param value Byte to store.
+ */
+void func_0028A790(FieldLargeState* object, u8 value);
+
+/**
+ * @brief Set the target floating-point values through the embedded object.
+ * @param object Large state object.
+ * @param first First value.
+ * @param second Second value.
+ */
+void func_0028A130(FieldLargeState* object, float first, float second);
+
+/**
+ * @brief Set three target state words through the embedded object.
+ * @param object Large state object.
+ * @param first First state word.
+ * @param second Second state word.
+ * @param third Third state word.
+ */
+void func_0028A0A0(FieldLargeState* object, s32 first, s32 second, s32 third);
 
 #ifdef __cplusplus
 }

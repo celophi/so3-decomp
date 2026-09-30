@@ -8,9 +8,9 @@ from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
 
-from extract import CONFIG, ROOT, digest, hash_file, read_at, save, extract_visible
-from so3.archives import ioprp_entries, pack_entries, zls_entries
-from so3.formats import (FormatError, TABLE_OFFSET, TABLE_SIZE, MAX_DECODED_SIZE,
+from tools.so3.disc.extract import CONFIG, ROOT, digest, hash_file, read_at, save, extract_visible
+from tools.so3.disc.archives import ioprp_entries, pack_entries, zls_entries
+from tools.so3.formats import (FormatError, TABLE_OFFSET, TABLE_SIZE, MAX_DECODED_SIZE,
                          classify, decode_chain, elf_info, overlay_info, read_table, require)
 
 

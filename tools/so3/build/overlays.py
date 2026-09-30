@@ -10,9 +10,9 @@ import re
 import subprocess
 import sys
 
-from so3.formats import overlay_info, require
+from tools.so3 import ROOT
+from tools.so3.formats import overlay_info, require
 
-ROOT = Path(__file__).resolve().parents[1]
 BUILD = Path('build/overlays')
 CONFIGS = Path('config/overlays')
 
@@ -79,7 +79,7 @@ def main():
             for path, config, original in configs:
                 verify(path.stem, config, original, args.output)
         else:
-            from build import run
+            from tools.so3.build.driver import run
             run([(path, config) for path, config, _ in configs], args.command)
         return 0
     except (OSError, ValueError, subprocess.CalledProcessError) as error:

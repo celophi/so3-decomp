@@ -13,8 +13,8 @@ import tarfile
 import tempfile
 import urllib.request
 
-from boot import ROOT, original_boot, sha256
-from so3.formats import elf_info, require
+from tools.so3.build.boot import ROOT, original_boot, sha256
+from tools.so3.formats import elf_info, require
 
 CONFIG = ROOT / 'config/compilers.json'
 COMPILERS = ROOT / 'build/compilers'

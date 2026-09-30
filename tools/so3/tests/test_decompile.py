@@ -2,14 +2,11 @@
 
 import copy
 from pathlib import Path
-import sys
 import unittest
 from unittest.mock import patch
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / 'tools'))
-import decompile
-from test_sdk import directory
+from tools.so3.analysis import decompile
+from tools.so3.tests.test_sdk import directory
 
 
 class DecompileTests(unittest.TestCase):

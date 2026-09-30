@@ -6,16 +6,14 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import sys
 import tempfile
 import unittest
 from unittest.mock import patch
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / 'tools'))
-import build
-from identify_sdk import functions, named_patterns
-from so3.sdk import validate_sdk_units
+from tools.so3 import ROOT
+from tools.so3.build import driver as build
+from tools.so3.analysis.identify_sdk import functions, named_patterns
+from tools.so3.build.sdk import validate_sdk_units
 
 
 @contextmanager

@@ -125,7 +125,7 @@ The configured subsegment type determines the source language:
 | `cpp` | `name.cpp` | `-lang c++` |
 | `asm` | Generated `name.s` | PS2 assembler |
 
-[tools/compile.py](../tools/compile.py) selects the language by extension and
+[tools/so3/build/compile.py](../tools/so3/build/compile.py) selects the language by extension and
 rejects other extensions. The explicit flag matters: mwccgap's second compiler
 pass uses a temporary `.c` file even when the original source is C++. Both
 passes need the same language setting.
@@ -202,7 +202,7 @@ To run the working candidate's checks:
 make compiler-probe
 ```
 
-This compiles [tools/probes/boot.c](../tools/probes/boot.c), compares full function
+This compiles [tools/so3/build/probes/boot.c](../tools/so3/build/probes/boot.c), compares full function
 lengths and bytes, and writes `build/compiler-probes/report.json`. The probes
 need no SDK headers or libraries and have no code relocations. The checker
 rejects unresolved relocations rather than skipping their bytes. It also uses
@@ -305,7 +305,7 @@ the 15 overlays and their separate initializer regions. Splat retains 19 raw
 `.word` entries in the boot assembly region; code, data, and VU boundaries still
 need more work.
 
-[tools/build.py](../tools/build.py) generates a Ninja graph at `build/build.ninja`.
+[tools/so3/build/driver.py](../tools/so3/build/driver.py) generates a Ninja graph at `build/build.ninja`.
 It compiles source, assembles placeholders, turns retained binary pieces into
 objects, links intermediate ELFs, and uses objcopy to write the original layouts.
 The resulting files match without patching any differing bytes after linking.
@@ -337,7 +337,7 @@ and could shift global references incorrectly.
 
 I reproduced the failure against that unmodified upstream revision using
 `test_mixed_c_and_repeated_local_section_relocations` in
-[tools/tests/test_scaffold.py](../tools/tests/test_scaffold.py). The fixture
+[tools/so3/tests/test_scaffold.py](../tools/so3/tests/test_scaffold.py). The fixture
 combines two assembly functions with local references and a C function, without
 a `.rodata` section. Upstream accesses `rodata_section_indices[0]` and raises
 `IndexError: list index out of range` because that list is empty.

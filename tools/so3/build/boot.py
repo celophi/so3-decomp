@@ -9,7 +9,8 @@ from pathlib import Path
 import subprocess
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+from tools.so3 import ROOT
+
 ORIGINAL = Path('disc/us-disc1/iso/SLUS_204.88')
 REBUILT = Path('build/boot/SLUS_204.88')
 

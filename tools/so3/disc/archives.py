@@ -2,7 +2,7 @@
 
 import struct
 
-from .formats import require
+from ..formats import require
 
 
 def pack_entries(data):

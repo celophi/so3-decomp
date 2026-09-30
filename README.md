@@ -3,7 +3,8 @@
 Matching decompilation of **Star Ocean: Till the End of Time** for PS2, targeting
 the North American release.
 
-The boot executable and 15 EE overlays currently rebuild byte for byte.
+The boot executable and 15 EE overlays currently rebuild byte for byte. The
+code is still assembly placeholders at this point.
 
 ## Docker environment
 
@@ -39,7 +40,6 @@ outputs without rebuilding, and `make split` runs Splat on its own.
 | Directory | Contents |
 | --- | --- |
 | `src/` | C and C++ source files |
-| `src/sdk/` | Identified SDK assembly placeholders; excluded from objdiff progress |
 | `include/` | Headers |
 | `config/` | Disc hashes, compiler candidates, symbols, and Splat layouts |
 | `tools/` | Extraction, build scripts, compiler probes, and tests |
@@ -82,17 +82,3 @@ and hashes are kept under `dockerfiles/` and in `requirements.txt`.
 
 More detail is in the [extraction](docs/extraction.md),
 [toolchain](docs/toolchain.md), and [overlay](docs/overlays.md) notes.
-
-SDK identification uses optional local tools, without Ghidra:
-
-```sh
-make sdk-scan       # Compare complete functions with named PS2 syscall patterns
-make sdk-symbols    # Recover surviving ELF symbols with CCC
-```
-
-These commands download pinned tools under `tools/` and add their directories to
-`.git/info/exclude`. Downloads are listed in [config/analysis-tools.json](config/analysis-tools.json).
-Results go under `working/sdk-identification/`. Reviewed exclusions are recorded
-in [config/sdk-functions.json](config/sdk-functions.json); SDK units still build
-and pass the same binary checks. The scanner currently covers syscall wrappers,
-not every SDK or compiler runtime function.

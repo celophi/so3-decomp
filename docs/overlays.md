@@ -24,9 +24,9 @@ Those commands cover boot and all configured overlays. For a single overlay,
 open `make shell` and run:
 
 ```sh
-python tools/overlays.py split --overlay 0002-01
-python tools/overlays.py build --overlay 0002-01
-python tools/overlays.py verify --overlay 0002-01
+python -m tools.so3.build.overlays split --overlay 0002-01
+python -m tools.so3.build.overlays build --overlay 0002-01
+python -m tools.so3.build.overlays verify --overlay 0002-01
 ```
 
 `split` generates files. `build` also compiles, assembles, links, and verifies
@@ -45,7 +45,7 @@ data, and checks the Disc 2 copy when it's available.
 | `build/overlays/<id>/rebuilt.bin` | Complete rebuilt MWo3 file |
 | `build/overlays/<id>/verify.json` | Size, SHA-256, and comparison results |
 
-[tools/build.py](../tools/build.py) generates `build/build.ninja` from the layouts
+[tools/so3/build/driver.py](../tools/so3/build/driver.py) generates `build/build.ninja` from the layouts
 and source files. The build uses the pinned CodeWarrior candidate, mwccgap, and
 PS2 binutils. No bytes are patched after linking to make a comparison pass.
 Generated files stay under ignored `build/`.

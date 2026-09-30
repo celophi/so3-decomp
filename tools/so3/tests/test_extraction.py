@@ -4,15 +4,13 @@ from io import BytesIO
 import json
 from pathlib import Path
 import struct
-import sys
 from tempfile import TemporaryDirectory
 import unittest
 
 import pycdlib
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import extract
-from so3.formats import (
+from tools.so3.disc import extract
+from tools.so3.formats import (
     FormatError, MAX_DECODED_SIZE, SECTOR_SIZE, TABLE_OFFSET, TABLE_SEED,
     TABLE_SIGNATURE, TABLE_SIZE, TABLE_SLOTS, decode_chain, elf_info,
     overlay_info, read_table,

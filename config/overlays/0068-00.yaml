@@ -2,7 +2,7 @@
 # Section boundaries are provisional; see docs/overlays.md.
 name: Star Ocean 3 US overlay 0068-00 (cstatus.bin)
 sha1: 274afa1c86edb4e48b18a3c4af6ad3f8c42a077b
-# SHA-256 is checked by tools/overlays.py before splitting or verification.
+# SHA-256 is checked by tools/so3/build/overlays.py before splitting or verification.
 sha256: d391ba308cce4fadf0d15ca130c4f070ac180ca7136cda2224cf348b0ac6282a
 options:
   basename: 0068-00

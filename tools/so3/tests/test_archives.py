@@ -2,14 +2,12 @@
 
 from pathlib import Path
 import struct
-import sys
 from tempfile import TemporaryDirectory
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from inventory import Audit
-from so3.archives import ioprp_entries, pack_entries, zls_entries
-from so3.formats import FormatError
+from tools.so3.disc.inventory import Audit
+from tools.so3.disc.archives import ioprp_entries, pack_entries, zls_entries
+from tools.so3.formats import FormatError
 
 
 def pack(*members):

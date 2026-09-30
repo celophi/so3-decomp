@@ -8,7 +8,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from compiler_probe import COMPILERS, CONFIG, verify_compiler
+from tools.so3.build.compiler_probe import COMPILERS, CONFIG, verify_compiler
 
 
 def main():

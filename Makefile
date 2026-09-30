@@ -39,66 +39,66 @@ shell:
 	$(RUN) -it "$(IMAGE)" bash
 
 test:
-	$(RUN) "$(IMAGE)" python -m unittest discover -s tools/tests -v
+	$(RUN) "$(IMAGE)" python -m unittest discover -s tools/so3/tests -v
 
 extract:
 	@test -n "$(ISO)" || { echo 'Usage: make extract ISO="/path/disc.iso" [OUTPUT=disc/recheck]' >&2; exit 1; }
 	@test -f "$(ISO)" || { echo 'ISO must name an existing file.' >&2; exit 1; }
 	$(RUN) --mount "type=bind,source=$$(realpath -- "$(ISO)"),target=/input/game.iso,readonly" \
-		"$(IMAGE)" python tools/extract.py /input/game.iso $(if $(OUTPUT),--output "$(OUTPUT)")
+		"$(IMAGE)" python -m tools.so3.disc.extract /input/game.iso $(if $(OUTPUT),--output "$(OUTPUT)")
 
 inventory:
 	@test -n "$(ISO)" || { echo 'Usage: make inventory ISO="/path/disc.iso" [OUTPUT=build/inventory/recheck]' >&2; exit 1; }
 	@test -f "$(ISO)" || { echo 'ISO must name an existing file.' >&2; exit 1; }
 	$(RUN) --mount "type=bind,source=$$(realpath -- "$(ISO)"),target=/input/game.iso,readonly" \
-		"$(IMAGE)" python tools/inventory.py /input/game.iso $(if $(OUTPUT),--output "$(OUTPUT)")
+		"$(IMAGE)" python -m tools.so3.disc.inventory /input/game.iso $(if $(OUTPUT),--output "$(OUTPUT)")
 
 # Original game data and compiler downloads stay under ignored directories.
 split:
-	$(RUN) "$(IMAGE)" python tools/build.py split
+	$(RUN) "$(IMAGE)" python -m tools.so3.build split
 
 build:
-	$(RUN) "$(IMAGE)" python tools/build.py build
+	$(RUN) "$(IMAGE)" python -m tools.so3.build build
 
 objdiff-objects:
-	$(RUN) "$(IMAGE)" python tools/build.py objdiff-objects
+	$(RUN) "$(IMAGE)" python -m tools.so3.build objdiff-objects
 
 report:
-	$(RUN) "$(IMAGE)" python tools/build.py report
+	$(RUN) "$(IMAGE)" python -m tools.so3.build report
 
 ci-inputs:
 	@test -f "$(ISO_DISC1)" -a -f "$(ISO_DISC2)" || { echo 'Usage: make ci-inputs ISO_DISC1="/path/disc1.iso" ISO_DISC2="/path/disc2.iso" [OUTPUT=build/ci-inputs]' >&2; exit 1; }
 	$(RUN) --mount "type=bind,source=$$(realpath -- "$(ISO_DISC1)"),target=/input/disc1.iso,readonly" \
 		--mount "type=bind,source=$$(realpath -- "$(ISO_DISC2)"),target=/input/disc2.iso,readonly" \
-		"$(IMAGE)" python tools/ci_inputs.py stage --disc1 /input/disc1.iso --disc2 /input/disc2.iso $(if $(OUTPUT),--output "$(OUTPUT)")
+		"$(IMAGE)" python -m tools.so3.disc.ci_inputs stage --disc1 /input/disc1.iso --disc2 /input/disc2.iso $(if $(OUTPUT),--output "$(OUTPUT)")
 
 verify:
-	$(RUN) "$(IMAGE)" python tools/boot.py verify
-	$(RUN) "$(IMAGE)" python tools/overlays.py verify
+	$(RUN) "$(IMAGE)" python -m tools.so3.build.boot verify
+	$(RUN) "$(IMAGE)" python -m tools.so3.build.overlays verify
 
 compilers:
-	$(RUN) "$(IMAGE)" python tools/compiler_probe.py setup
+	$(RUN) "$(IMAGE)" python -m tools.so3.build.compiler_probe setup
 
 compiler-probe: compilers
-	$(RUN) "$(IMAGE)" python tools/compiler_probe.py check
+	$(RUN) "$(IMAGE)" python -m tools.so3.build.compiler_probe check
 
 compiler-matrix:
-	$(RUN) "$(IMAGE)" python tools/compiler_probe.py setup --all
-	$(RUN) "$(IMAGE)" python tools/compiler_probe.py check --all
+	$(RUN) "$(IMAGE)" python -m tools.so3.build.compiler_probe setup --all
+	$(RUN) "$(IMAGE)" python -m tools.so3.build.compiler_probe check --all
 
 # Optional analysis; normal builds and CI do not download these tools.
 analysis-tools:
-	$(RUN) "$(IMAGE)" python tools/analysis_tools.py
+	$(RUN) "$(IMAGE)" python -m tools.so3.analysis.analysis_tools
 
 sdk-scan: analysis-tools split
-	$(RUN) "$(IMAGE)" python tools/identify_sdk.py scan
+	$(RUN) "$(IMAGE)" python -m tools.so3.analysis.identify_sdk scan
 
 sdk-symbols: analysis-tools
-	$(RUN) "$(IMAGE)" python tools/identify_sdk.py symbols
+	$(RUN) "$(IMAGE)" python -m tools.so3.analysis.identify_sdk symbols
 
 m2c:
-	$(RUN) "$(IMAGE)" python tools/analysis_tools.py --tool m2c
+	$(RUN) "$(IMAGE)" python -m tools.so3.analysis.analysis_tools --tool m2c
 
 decompile:
 	@test -n "$(MODULE)" -a -n "$(FUNCTION)" || { echo 'Usage: make decompile MODULE=1070-00 FUNCTION=func_00288650 [CONTEXT=working/context.h] [LANGUAGE=c++]' >&2; exit 1; }
-	$(RUN) "$(IMAGE)" python tools/decompile.py "$(MODULE)" "$(FUNCTION)" $(if $(CONTEXT),--context "$(CONTEXT)") $(if $(LANGUAGE),--language "$(LANGUAGE)")
+	$(RUN) "$(IMAGE)" python -m tools.so3.analysis.decompile "$(MODULE)" "$(FUNCTION)" $(if $(CONTEXT),--context "$(CONTEXT)") $(if $(LANGUAGE),--language "$(LANGUAGE)")

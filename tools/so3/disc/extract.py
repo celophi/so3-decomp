@@ -11,13 +11,12 @@ from pathlib import Path, PurePosixPath
 import sys
 from tempfile import TemporaryDirectory
 
-from so3.formats import (
+from tools.so3 import ROOT
+from tools.so3.formats import (
     FormatError, TABLE_OFFSET, TABLE_SIZE, TABLE_SLOTS, SECTOR_SIZE,
     classify, decode_chain, elf_info, overlay_info, read_table, require,
 )
 
-
-ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config/versions.json"
 
 

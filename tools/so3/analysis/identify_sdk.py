@@ -10,10 +10,10 @@ import re
 import subprocess
 import xml.etree.ElementTree as ET
 
-from analysis_tools import ROOT, checked_file, sha256
-from boot import original_boot
-from overlays import load_config
-from so3.archives import ioprp_entries
+from tools.so3.analysis.analysis_tools import ROOT, checked_file, sha256
+from tools.so3.build.boot import original_boot
+from tools.so3.build.overlays import load_config
+from tools.so3.disc.archives import ioprp_entries
 
 PATTERNS = 'tools/ghidra-emotionengine-reloaded/r5900_LE_patterns.xml'
 STDUMP = ROOT / 'tools/ccc/ccc_v2.1_linux-musl/stdump'
@@ -121,7 +121,7 @@ def recover_symbols(output):
     archive = checked_file('tools/ccc/ccc_v2.1_linux-musl.zip')
     with zipfile.ZipFile(archive) as z:
         if STDUMP.read_bytes() != z.read('ccc_v2.1_linux-musl/stdump'):
-            raise ValueError('stdump changed; run python tools/analysis_tools.py')
+            raise ValueError('stdump changed; run python -m tools.so3.analysis.analysis_tools')
     output.mkdir(parents=True, exist_ok=True)
     manifest = json.loads(Path('disc/us-disc1/manifest.json').read_text())
     results = []

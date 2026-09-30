@@ -1,13 +1,10 @@
 """Synthetic Metrowerks-style ELF objects; no game or compiler inputs required."""
 
-from pathlib import Path
 import struct
-import sys
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from compiler_probe import object_functions
-from so3.formats import FormatError
+from tools.so3.build.compiler_probe import object_functions
+from tools.so3.formats import FormatError
 
 
 def object_fixture(relocated=False, oversize=False):
