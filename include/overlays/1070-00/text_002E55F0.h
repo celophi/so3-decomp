@@ -25,6 +25,15 @@ typedef struct FieldResetState40
     s16 unk50;
 } FieldResetState40;
 
+/** Partial receiver with three allocations, aligned pointers and sizes. */
+typedef struct FieldBufferSlots
+{
+    u8 unk00[0x11C];
+    void* unk11c[3];
+    void* unk128[3];
+    s32 unk134[3];
+} FieldBufferSlots;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,6 +49,22 @@ void func_002F2080(FieldByteFlags70* object);
  * @param object Receiver to reset.
  */
 void func_002F43F0(FieldResetState40* object);
+
+/**
+ * @brief Read the size of an indexed buffer slot.
+ * @param object Receiver containing the slots.
+ * @param index Slot index, from 0 through 2.
+ * @return The stored buffer size.
+ */
+s32 func_002EBA80(const FieldBufferSlots* object, s32 index);
+
+/**
+ * @brief Read the aligned pointer of an indexed buffer slot.
+ * @param object Receiver containing the slots.
+ * @param index Slot index, from 0 through 2.
+ * @return The stored aligned buffer pointer.
+ */
+void* func_002EBA90(const FieldBufferSlots* object, s32 index);
 
 #ifdef __cplusplus
 }

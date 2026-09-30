@@ -11,6 +11,18 @@ typedef struct FieldFloatPair30
     float unk34;
 } FieldFloatPair30;
 
+/** Partial receiver with an active byte and four signed values. */
+typedef struct FieldFourValueState48
+{
+    u8 unk00[0x44];
+    u8 unk44;
+    u8 unk45[3];
+    s32 unk48;
+    s32 unk4c;
+    s32 unk50;
+    s32 unk54;
+} FieldFourValueState48;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,6 +34,16 @@ extern "C" {
  * @param second Value for offset 0x34.
  */
 void func_002B6BC0(FieldFloatPair30* object, float first, float second);
+
+/**
+ * @brief Set the active byte and four adjacent signed values.
+ * @param object Receiver to update.
+ * @param first Value for offset 0x48.
+ * @param second Value for offset 0x4C.
+ * @param third Value for offset 0x50.
+ * @param fourth Value for offset 0x54.
+ */
+void func_002B5CB0(FieldFourValueState48* object, s32 first, s32 second, s32 third, s32 fourth);
 
 #ifdef __cplusplus
 }

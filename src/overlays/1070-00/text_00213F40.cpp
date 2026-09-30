@@ -422,7 +422,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EE
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EEE0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EF10);
+void func_0021EF10(FieldValueOwner34* object, s32 value)
+{
+    FieldValueState100* target = object->unk34;
+    if (target != 0)
+    {
+        target->unk100 = value;
+        target->unk40 = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EF30);
 

@@ -25,7 +25,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B5B
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B5C80);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B5CB0);
+void func_002B5CB0(FieldFourValueState48* object, s32 first, s32 second, s32 third, s32 fourth)
+{
+    object->unk44 = 1;
+    object->unk48 = first;
+    object->unk4c = second;
+    object->unk50 = third;
+    object->unk54 = fourth;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B5CD0);
 

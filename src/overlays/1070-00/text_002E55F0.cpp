@@ -189,9 +189,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EBA
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EBA70);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EBA80);
+s32 func_002EBA80(const FieldBufferSlots* object, s32 index)
+{
+    return object->unk134[index];
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EBA90);
+void* func_002EBA90(const FieldBufferSlots* object, s32 index)
+{
+    return object->unk128[index];
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EBAA0);
 

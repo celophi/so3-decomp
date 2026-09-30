@@ -127,7 +127,24 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002284
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002284B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_00228670);
+void func_00228670(FieldFloatResetState1C* object, u8 first_state, u8 second_state, float first, float second)
+{
+    object->unk1c = 0;
+    object->unk1e = 0;
+    object->unk1d = 0;
+    object->unk2c = 0.0f;
+    object->unk28 = 0.0f;
+    object->unk24 = 0.0f;
+    object->unk20 = 0.0f;
+    object->unk1c = first_state;
+    object->unk1d = second_state;
+    object->unk20 = first;
+    object->unk28 = second;
+    if (second == 0.0f)
+    {
+        object->unk1e = object->unk1d;
+    }
+}
 
 void func_002286C0(FieldFloatResetState1C* object)
 {

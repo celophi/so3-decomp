@@ -54,6 +54,16 @@ void func_002279E0(FieldWordByteState30* object, u32 value, u8 state);
  */
 void func_002286C0(FieldFloatResetState1C* object);
 
+/**
+ * @brief Reset the state, set two byte/float pairs, and copy the second state when its float is zero.
+ * @param object Receiver to update.
+ * @param first_state First state byte.
+ * @param second_state Second state byte.
+ * @param first Value for offset 0x20.
+ * @param second Value for offset 0x28.
+ */
+void func_00228670(FieldFloatResetState1C* object, u8 first_state, u8 second_state, float first, float second);
+
 #ifdef __cplusplus
 }
 #endif

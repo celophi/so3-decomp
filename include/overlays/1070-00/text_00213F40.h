@@ -21,6 +21,22 @@ typedef struct FieldFloatState30
     float unk30;
 } FieldFloatState30;
 
+/** Partial target containing a value and its update byte. */
+typedef struct FieldValueState100
+{
+    u8 unk00[0x40];
+    u8 unk40;
+    u8 unk41[0xBF];
+    s32 unk100;
+} FieldValueState100;
+
+/** Partial receiver whose optional value target is at offset 0x34. */
+typedef struct FieldValueOwner34
+{
+    u8 unk00[0x34];
+    FieldValueState100* unk34;
+} FieldValueOwner34;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -59,6 +75,13 @@ s16 func_0021EC60(const FieldTraversalRecord* record);
  * @return The stored value multiplied by 0.0625.
  */
 float func_00214DA0(const FieldFloatState30* object);
+
+/**
+ * @brief Update the optional target value and set its update byte.
+ * @param object Receiver whose target may be null.
+ * @param value Signed value to store.
+ */
+void func_0021EF10(FieldValueOwner34* object, s32 value);
 
 #ifdef __cplusplus
 }

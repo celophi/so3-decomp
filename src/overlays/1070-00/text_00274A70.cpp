@@ -135,7 +135,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00276A
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00276CA0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00276D80);
+void func_00276D80(FieldFloatOwner540* object, float value)
+{
+    object->unk540 = value;
+    if (object->unk144 != 0)
+    {
+        object->unk144->unk90 = value;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00276DA0);
 
@@ -157,7 +164,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_002775
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00277610);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00277690);
+void* func_00277690(const FieldPointerOwner588* object)
+{
+    if (object->unk588 == 0)
+    {
+        return 0;
+    }
+    return object->unk588->unk48;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_002776B0);
 
