@@ -97,11 +97,25 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A1
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A180);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A190);
+u8 func_0030A190(const FieldTwoSlotState* object)
+{
+    return object->unk66;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A1A0);
+s16 func_0030A1A0(const FieldTwoSlotState* object, s32 index)
+{
+    return object->unk5e[index];
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A1B0);
+void func_0030A1B0(FieldTwoSlotState* object, s16 index)
+{
+    object->unk64 = index;
+    object->unk5e[object->unk64] = -1;
+    object->unk5c[object->unk64] = 0;
+    object->unk7c = 0;
+    object->unk80 = 0;
+    object->unk66 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A1F0);
 
