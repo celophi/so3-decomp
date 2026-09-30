@@ -1,61 +1,142 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_001ED7E0.h"
+#include "overlays/0002-01/text_004CD3A0.h"
 
+// Constructor; needs recovered classes and global state.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001ED7E0);
 
+// Deleting destructor; needs recovered classes and global state.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDCE0);
 
+// Deleting destructor; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDDF0);
 
+// 128-bit copy; needs a verified 16-byte value type.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDE60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDE80);
+void func_001EDE80(FieldVectorState50* state, float x, float y, float z)
+{
+    state->unk50 = 1;
+    state->unk20[0] = x;
+    state->unk20[1] = y;
+    state->unk20[2] = z;
+    state->unk20[3] = 1.0f;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDEA0);
+void func_001EDEA0(FieldVectorState50* state, float x, float y, float z, float w)
+{
+    state->unk50 = 1;
+    state->unk30[0] = x;
+    state->unk30[1] = y;
+    state->unk30[2] = z;
+    state->unk30[3] = w;
+}
 
+// 128-bit copy; needs a verified 16-byte value type.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDEC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDEE0);
+void func_001EDEE0(FieldVectorState50* state, const float* input)
+{
+    state->unk50 = 1;
+    func_004CE4C0(state->unk30, input);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDF10);
+void func_001EDF10(FieldVectorState50* state, const float* input)
+{
+    state->unk50 = 1;
+    func_004CE4C0(state->unk30, input);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDF40);
+void func_001EDF40(FieldVectorState50* state, float x, float y, float z)
+{
+    float value[4];
+    state->unk50 = 1;
+    value[0] = x;
+    value[1] = y;
+    value[2] = z;
+    value[3] = 1.0f;
+    func_004CE4C0(state->unk30, value);
+}
 
+// 128-bit copy; needs a verified 16-byte value type.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDF80);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDFA0);
+void func_001EDFA0(FieldVectorState50* state, float x, float y, float z)
+{
+    state->unk50 = 1;
+    state->unk40[0] = x;
+    state->unk40[1] = y;
+    state->unk40[2] = z;
+}
 
+// Deleting destructor; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDFC0);
 
+// Deleting destructor; needs recovered classes and global state.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE060);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE150);
+void func_001EE150(FieldByteState60* state)
+{
+    state->unk60 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE160);
+void func_001EE160(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE170);
+s32 func_001EE170(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE180);
+bool func_001EE180(void* object, float value)
+{
+    return value < 0.0f;
+}
 
+// Returns a library global; its symbol mapping is unresolved.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE1A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE1B0);
+void func_001EE1B0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE1C0);
+s32 func_001EE1C0(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE1D0);
+void func_001EE1D0(void* object)
+{
+}
 
+// Calls a library constructor using an unresolved global.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE1E0);
 
+// 128-bit copy; needs a verified 16-byte value type.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE210);
 
+// 128-bit copy; needs a verified 16-byte value type.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE220);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE230);
+void func_001EE230(FieldFloat4At20* state, float x, float y, float z)
+{
+    state->unk20[0] = x;
+    state->unk20[1] = y;
+    state->unk20[2] = z;
+    state->unk20[3] = 1.0f;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE250);
+void func_001EE250(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE260);
+s32 func_001EE260(void* object)
+{
+    return 3;
+}
 
+// Calls a library constructor using an unresolved global.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE270);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE2A0);

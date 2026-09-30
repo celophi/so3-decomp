@@ -16,6 +16,13 @@ extern "C" {
 #endif
 
 /**
+ * @brief Transform a four-float input into an output vector.
+ * @param output Destination vector.
+ * @param input Source vector.
+ */
+void func_004CE4C0(float* output, const float* input);
+
+/**
  * @brief Test whether a list traversal has reached its sentinel.
  * @param sentinel List sentinel.
  * @param node Current node.

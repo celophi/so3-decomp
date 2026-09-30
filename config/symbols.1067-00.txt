@@ -1,2 +1,5 @@
 // Resident object registration helper.
 func_00101560 = 0x00101560; // type:func
+
+// Lib vector transform helper.
+func_004CE4C0 = 0x004CE4C0; // type:func
