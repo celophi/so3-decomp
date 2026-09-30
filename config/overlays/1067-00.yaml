@@ -17,6 +17,8 @@ options:
   ld_script_path: build/overlays/1067-00/overlay.ld
   generated_asm_macros_directory: build/overlays/1067-00/include
   cache_path: build/overlays/1067-00/splat.cache
+  symbol_addrs_path: [config/symbols.1067-00.txt]
+  reloc_addrs_path: [config/relocs.1067-00.txt]
   undefined_funcs_auto_path: build/overlays/1067-00/undefined_funcs.ld
   undefined_syms_auto_path: build/overlays/1067-00/undefined_syms.ld
   create_c_files: true
@@ -49,7 +51,7 @@ segments:
     subalign: 16
     subsegments:
       # Provisional groups at detected function starts, roughly 64 KiB each.
-      - [0x40, c, text_001DD3C0]
+      - [0x40, cpp, text_001DD3C0]
       - [0x10460, c, text_001ED7E0]
       - [0x204E0, cpp, text_001FD860]
       - [0x30620, c, text_0020D9A0]
@@ -72,7 +74,8 @@ segments:
     type: code
     start: 0x14d500
     vram: 0x32a880
+    subalign: 16
     subsegments:
-      - [0x14d500, c, init]
+      - [0x14d500, cpp, init]
   - [0x14d540, bin, init_table]
   - [0x14d580]

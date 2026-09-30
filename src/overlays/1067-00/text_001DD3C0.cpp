@@ -1,63 +1,166 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/1067-00/text_0021DB80.h"
+#include "overlays/1067-00/text_0022DC70.h"
 
+// Not code: 64 zero bytes at the start of .text.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD3C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD400);
+void func_001DD400(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD410);
+void func_001DD410(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD420);
+void func_001DD420(FieldAttachedObject70* object, void* attached)
+{
+    object->unk70 = attached;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD430);
+void func_001DD430(void* object)
+{
+}
 
+// Reads an unresolved $gp-relative global.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD440);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD490);
+s32 func_001DD490(const void* object)
+{
+    return 4;
+}
 
+// Deleting destructor; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD4A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD570);
+void func_001DD570(FieldFlaggedListObject* list)
+{
+    FieldFlaggedListObject* node = list;
+    for (;;)
+    {
+        node = node->next;
+        if (!node || list == node)
+        {
+            break;
+        }
+        if (node->unk78 & 8)
+        {
+            func_002379A0(node, 1);
+        }
+    }
+}
 
+// Reads an unresolved $gp-relative global.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD5E0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD6E0);
+void func_001DD6E0(FieldFlaggedListObject* list)
+{
+    FieldFlaggedListObject* node = list;
+    for (;;)
+    {
+        node = node->next;
+        if (!node || list == node)
+        {
+            break;
+        }
+        if (node->unk78 & 2)
+        {
+            node->unk208 = 0;
+        }
+    }
+}
 
+// Virtual calls; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD730);
 
+// Virtual call; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD7B0);
 
+// Deleting destructor; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD7E0);
 
+// Virtual calls and an unresolved $gp-relative global.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD860);
 
+// 128-bit copy; needs a 16-byte vector type.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD960);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD9A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDB30);
+void func_001DDB30(FieldFlaggedListObject* list)
+{
+    FieldFlaggedListObject* node = list;
+    for (;;)
+    {
+        node = node->next;
+        if (!node || list == node)
+        {
+            break;
+        }
+        if (node->unk78 & 2)
+        {
+            func_00227130(node);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDBA0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDCD0);
+void* func_001DDCD0(void* object)
+{
+    return object;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDCE0);
+bool func_001DDCE0(const FieldFloatGateState7C* object)
+{
+    if (!func_00204420(object))
+    {
+        return false;
+    }
+    return object->unk8c_5 ? false : true;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDD30);
 
+// Returns &object->unk80; subobject type unknown.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDF40);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDF50);
+FieldFlaggedListObject* func_001DDF50(FieldFlaggedListObject* list, s32 key)
+{
+    FieldFlaggedListObject* node = list;
+    for (;;)
+    {
+        node = node->next;
+        if (!node || list == node)
+        {
+            break;
+        }
+        if (!node->unk8c_2 && key == node->unk74 && node->unk7c != 0)
+        {
+            return node;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDFC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE3B0);
+void func_001DE3B0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE3C0);
+void func_001DE3C0(void* object)
+{
+}
 
+// 128-bit copies; needs a 16-byte vector type.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE3D0);
 
+// Calls Lib func_004728A0; needs its declaration and symbol mapping.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE400);
 
+// Reads an unresolved $gp-relative global.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE470);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE4F0);

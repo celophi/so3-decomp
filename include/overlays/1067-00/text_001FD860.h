@@ -69,7 +69,9 @@ typedef struct FieldFloatGateState7C
     void* unk7c;
     u8 unk80[0xC];
     u8 unk8c_0 : 1;
-    u8 unk8c_1_7 : 7;
+    u8 unk8c_1_4 : 4;
+    u8 unk8c_5 : 1;
+    u8 unk8c_6_7 : 2;
     u8 unk8d[3];
     float unk90;
 } FieldFloatGateState7C;

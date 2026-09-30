@@ -102,7 +102,8 @@ def configure(configs):
                     for p, rule in units if rule == 'compile']
         outputs = list(dict.fromkeys(outputs))
         deps = [str(path), 'tools/so3/build/driver.py', 'tools/so3/__init__.py', 'tools/so3/formats.py',
-                'tools/so3/build/sdk.py', str(SDK_MANIFEST)] + options.get('symbol_addrs_path', [])
+                'tools/so3/build/sdk.py', str(SDK_MANIFEST)]
+        deps += options.get('symbol_addrs_path', []) + options.get('reloc_addrs_path', [])
         deps += ['tools/so3/build/boot.py', 'config/versions.json'] if is_boot else ['tools/so3/build/overlays.py']
         split_command = 'python -m tools.so3.build.boot split' if is_boot else f'python -m tools.so3.build.overlays run-splat --overlay {module}'
         lines += [f'build {" ".join(outputs)}: split {options["target_path"]} | {" ".join(deps)}',

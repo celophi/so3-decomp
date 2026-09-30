@@ -1,0 +1,2 @@
+// Resident object registration helper.
+func_00101560 = 0x00101560; // type:func
