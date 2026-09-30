@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_002D55D0.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D55D0);
 
@@ -44,15 +45,33 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D65
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D65F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D6630);
+void func_002D6630(FieldResetState10* object)
+{
+    object->unk10 = 0;
+    object->unk12 = 0;
+    object->unk14 = 0;
+    object->unk18 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D6650);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D6690);
+void func_002D6690(FieldResetState10* object)
+{
+    object->unk10 = 0;
+    object->unk12 = 0;
+    object->unk14 = 0;
+    object->unk18 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D66B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D66F0);
+void func_002D66F0(FieldResetState04* object)
+{
+    object->unk04 = 0;
+    object->unk06 = 0;
+    object->unk08 = 0;
+    object->unk0c = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D6710);
 

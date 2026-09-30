@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_001E2B40.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2B40);
 
@@ -426,13 +427,25 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED2
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED4D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED580);
+void func_001ED580(FieldDimensionState* object, float first, float second)
+{
+    object->unkfc = first;
+    object->unk100 = second;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED590);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED5A0);
+void func_001ED5A0(FieldDimensionState* object, s32 first, s32 second)
+{
+    object->unkf0 = first;
+    object->unkf1 = second;
+    object->unk10c = object->unkf0 * object->unkf1 - 1;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED5C0);
+void func_001ED5C0(FieldByteStateAD* object, u8 value)
+{
+    object->unkad = value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED5D0);
 

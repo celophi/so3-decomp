@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_002B4F20.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B4F20);
 
@@ -44,7 +45,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B5F
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B69D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B6BC0);
+void func_002B6BC0(FieldFloatPair30* object, float first, float second)
+{
+    object->unk30 = first;
+    object->unk34 = second;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002B4F20", func_002B6BD0);
 
