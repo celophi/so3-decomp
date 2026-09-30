@@ -23,6 +23,12 @@ extern "C" {
 void func_004CE4C0(float* output, const float* input);
 
 /**
+ * @brief Detach the object from the owner stored at offset 0x10, then clear that pointer.
+ * @param object Object to detach; the owner receives it through its virtual handler at vtable offset 0x1C.
+ */
+void func_004D65C0(void* object);
+
+/**
  * @brief Test whether a list traversal has reached its sentinel.
  * @param sentinel List sentinel.
  * @param node Current node.

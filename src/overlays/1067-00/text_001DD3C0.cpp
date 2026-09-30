@@ -169,7 +169,30 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE8
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE9C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DEA80);
+void func_001DEA80(FieldSlotRecordOwner* object)
+{
+    s32 i;
+    if (object->unk1c)
+    {
+        for (i = 0; i < object->unk24; i++)
+        {
+            FieldSlotRecord20* record = &object->unk1c[i];
+            record->unk0c = -1;
+            record->unk04 = 0;
+            record->unk10 = 0;
+            record->unk16_0 = 0;
+            record->unk16_1 = 1;
+            record->unk08_0 = 0;
+            record->unk16_2 = 0;
+            record->unk14 = 0;
+            record->unk15 = 0;
+        }
+    }
+    object->unk20 = 0;
+    object->unk2f = 0;
+    object->unk2d = 0;
+    object->unk2e = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DEB50);
 
@@ -395,7 +418,7 @@ void func_001DFC70(FieldEntryArrayObject* object, s32 value)
     object->unk2b_0 = object->unk2a_0_3 == 4 || object->unk2a_4_7 == 4;
 }
 
-u32 func_001DFCD0(const FieldEntryArrayObject* object)
+s32 func_001DFCD0(const FieldEntryArrayObject* object)
 {
     return object->unk18;
 }
@@ -503,12 +526,70 @@ void func_001DFF70(FieldEntryArrayObject* object, s32 count, FieldArrayEntry10* 
     object->unk1c = object->unk04[last].unk00 - object->unk04[0].unk00;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DFFC0);
+s32 func_001DFFC0(const FieldEntryArrayObject* object, s32 index, float* key, float* x, float* y, float* z)
+{
+    if (object->unk04 == 0)
+    {
+        return 0;
+    }
+    if (index >= object->unk22)
+    {
+        return 0;
+    }
+    if (key)
+    {
+        *key = object->unk04[index].unk00;
+    }
+    if (x)
+    {
+        *x = object->unk04[index].unk04;
+    }
+    if (y)
+    {
+        *y = object->unk04[index].unk08;
+    }
+    if (z)
+    {
+        *z = object->unk04[index].unk0c;
+    }
+    return 1;
+}
 
 // Virtual call; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E0080);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E0100);
+s32 func_001E0100(FieldEntryArrayObject* object, s32 index, float key, const float* x, const float* y, const float* z)
+{
+    s16 count;
+    s32 i;
+    if (object->unk04 == 0)
+    {
+        return 0;
+    }
+    count = object->unk20;
+    if (index >= count)
+    {
+        return 0;
+    }
+    if (count >= object->unk22)
+    {
+        return 0;
+    }
+    for (i = count; i > index; i--)
+    {
+        object->unk04[i] = object->unk04[i - 1];
+    }
+    object->unk04[index].unk04 = *x;
+    object->unk04[index].unk08 = *y;
+    object->unk04[index].unk0c = *z;
+    object->unk04[index].unk00 = key;
+    if (index == object->unk20 - 1)
+    {
+        object->unk1c = key - object->unk04[0].unk00;
+    }
+    object->unk20++;
+    return 1;
+}
 
 s32 func_001E0220(FieldEntryArrayObject* object, s32 index, float key, const float* x, const float* y, const float* z)
 {
@@ -531,7 +612,24 @@ s32 func_001E0220(FieldEntryArrayObject* object, s32 index, float key, const flo
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E02C0);
+s32 func_001E02C0(FieldEntryArrayObject* object, const float* x, const float* y, const float* z, float key)
+{
+    if (object->unk04 == 0)
+    {
+        return 0;
+    }
+    if (object->unk20 >= object->unk22)
+    {
+        return 0;
+    }
+    object->unk04[object->unk20].unk04 = *x;
+    object->unk04[object->unk20].unk08 = *y;
+    object->unk04[object->unk20].unk0c = *z;
+    object->unk04[object->unk20].unk00 = key;
+    object->unk1c = key - object->unk04[0].unk00;
+    object->unk20++;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E0380);
 
@@ -558,8 +656,10 @@ void func_001E11E0(FieldFloatSpan1C* object, const float* a, const float* b, con
     }
 }
 
+// Mirror-branch scheduling not matched yet.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E1230);
 
+// Index loop strength reduction not matched yet.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E1310);
 
 // Virtual call; needs recovered classes.
@@ -643,7 +743,34 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E55
 // Calls resident func_121FE0; needs its declaration and symbol mapping.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E5650);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E5690);
+void func_001E5690(FieldSlotRecordOwner1C* object)
+{
+    s32 i;
+    if (object->unk1c)
+    {
+        for (i = 0; i < object->unk24; i++)
+        {
+            FieldSlotRecord1C* record = &object->unk1c[i];
+            record->unk0c = -1;
+            record->unk04 = 0;
+            record->unk10 = 0;
+            record->unk16_0 = 0;
+            record->unk16_1 = 1;
+            record->unk08_0 = 0;
+            record->unk16_2 = 0;
+            record->unk14 = 0;
+            record->unk15 = 0;
+        }
+    }
+    object->unk20 = 0;
+    object->unk2f = 0;
+    object->unk2d = 0;
+    object->unk2e = 0;
+    object->unk14 = 8;
+    object->unk2f = 0;
+    object->unk38 = 2;
+    object->unk3c = -1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E5770);
 
@@ -651,7 +778,30 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E57
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E5A40);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E5AD0);
+void func_001E5AD0(FieldSlotRecordOwner1C* object)
+{
+    s32 i;
+    if (object->unk1c)
+    {
+        for (i = 0; i < object->unk24; i++)
+        {
+            FieldSlotRecord1C* record = &object->unk1c[i];
+            record->unk0c = -1;
+            record->unk04 = 0;
+            record->unk10 = 0;
+            record->unk16_0 = 0;
+            record->unk16_1 = 1;
+            record->unk08_0 = 0;
+            record->unk16_2 = 0;
+            record->unk14 = 0;
+            record->unk15 = 0;
+        }
+    }
+    object->unk20 = 0;
+    object->unk2f = 0;
+    object->unk2d = 0;
+    object->unk2e = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E5BA0);
 
@@ -811,7 +961,20 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E93
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E93E0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E94F0);
+void func_001E94F0(FieldEntryArrayObject30* object)
+{
+    object->unk04 = 0;
+    object->unk42_0_3 = 1;
+    object->unk42_4_7 = 1;
+    object->unk3a = 0;
+    object->unk38 = 0;
+    object->unk3c = -1;
+    object->unk30 = 0;
+    object->unk3e = -1;
+    object->unk40 = -1;
+    object->unk43_0 = 0;
+    object->unk43_1 = 0;
+}
 
 // Reads an unresolved $gp-relative global.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001E9580);

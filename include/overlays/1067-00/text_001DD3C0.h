@@ -51,7 +51,7 @@ typedef struct FieldEntryArrayObject
     u8 unk00[4];
     FieldArrayEntry10* unk04;
     u8 unk08[0x10];
-    u32 unk18;
+    s32 unk18;
     float unk1c;
     s16 unk20;
     s16 unk22;
@@ -212,6 +212,95 @@ typedef struct FieldGatedObject448
     u8 unk8d[0x3BB];
     void* unk448;
 } FieldGatedObject448;
+
+/** Partial 32-byte record reset by func_001DEA80. */
+typedef struct FieldSlotRecord20
+{
+    u8 unk00[4];
+    u32 unk04;
+    u8 unk08_0 : 1;
+    u8 unk08_1_7 : 7;
+    u8 unk09[3];
+    s32 unk0c;
+    u32 unk10;
+    u8 unk14;
+    u8 unk15;
+    u8 unk16_0 : 1;
+    u8 unk16_1 : 1;
+    u8 unk16_2 : 1;
+    u8 unk16_3_7 : 5;
+    u8 unk17[9];
+} FieldSlotRecord20;
+
+/** Partial receiver owning a counted array of 32-byte records at offset 0x1C. */
+typedef struct FieldSlotRecordOwner
+{
+    u8 unk00[0x1C];
+    FieldSlotRecord20* unk1c;
+    u32 unk20;
+    s32 unk24;
+    u8 unk28[5];
+    u8 unk2d;
+    u8 unk2e;
+    u8 unk2f;
+} FieldSlotRecordOwner;
+
+/** Partial receiver with an entry array pointer at offset 4 and entry state at offsets 0x30-0x43. */
+typedef struct FieldEntryArrayObject30
+{
+    u8 unk00[4];
+    FieldArrayEntry10* unk04;
+    u8 unk08[0x28];
+    u32 unk30;
+    u8 unk34[4];
+    s16 unk38;
+    s16 unk3a;
+    s16 unk3c;
+    s16 unk3e;
+    s16 unk40;
+    u8 unk42_0_3 : 4;
+    u8 unk42_4_7 : 4;
+    u8 unk43_0 : 1;
+    u8 unk43_1 : 1;
+    u8 unk43_2_7 : 6;
+} FieldEntryArrayObject30;
+
+/** Partial 28-byte record reset by func_001E5690 and func_001E5AD0. */
+typedef struct FieldSlotRecord1C
+{
+    u8 unk00[4];
+    u32 unk04;
+    u8 unk08_0 : 1;
+    u8 unk08_1_7 : 7;
+    u8 unk09[3];
+    s32 unk0c;
+    u32 unk10;
+    u8 unk14;
+    u8 unk15;
+    u8 unk16_0 : 1;
+    u8 unk16_1 : 1;
+    u8 unk16_2 : 1;
+    u8 unk16_3_7 : 5;
+    u8 unk17[5];
+} FieldSlotRecord1C;
+
+/** Partial receiver owning a counted array of 28-byte records at offset 0x1C. */
+typedef struct FieldSlotRecordOwner1C
+{
+    u8 unk00[0x14];
+    u8 unk14;
+    u8 unk15[7];
+    FieldSlotRecord1C* unk1c;
+    u32 unk20;
+    s32 unk24;
+    u8 unk28[5];
+    u8 unk2d;
+    u8 unk2e;
+    u8 unk2f;
+    u8 unk30[8];
+    s32 unk38;
+    s32 unk3c;
+} FieldSlotRecordOwner1C;
 
 #ifdef __cplusplus
 extern "C" {
@@ -442,11 +531,11 @@ void func_001DFC10(FieldEntryArrayObject* object, s32 value);
 void func_001DFC70(FieldEntryArrayObject* object, s32 value);
 
 /**
- * @brief Read the word at offset 0x18.
+ * @brief Read the signed cycle count at offset 0x18.
  * @param object Receiver to inspect.
- * @return The stored word.
+ * @return The stored count.
  */
-u32 func_001DFCD0(const FieldEntryArrayObject* object);
+s32 func_001DFCD0(const FieldEntryArrayObject* object);
 
 /**
  * @brief Read the signed entry count at offset 0x20.
@@ -699,6 +788,65 @@ void func_001EB690(FieldCountOwner34* object, s32 count);
  * @return 1 when all conditions hold, otherwise 0.
  */
 s32 func_001ECF10(const FieldGatedObject448* object);
+
+/**
+ * @brief Reset every 32-byte record in the counted array at offset 0x1C, then clear the word at offset 0x20 and the bytes at offsets 0x2D-0x2F.
+ * @param object Receiver owning the records; the loop is skipped when the array pointer is null.
+ */
+void func_001DEA80(FieldSlotRecordOwner* object);
+
+/**
+ * @brief Copy one entry's sort value and floats to the optional outputs.
+ * @param object Receiver owning the entry array and its counts.
+ * @param index Entry index; rejected unless below the halfword at offset 0x22.
+ * @param key Optional destination for the sort value.
+ * @param x Optional destination for the first float.
+ * @param y Optional destination for the second float.
+ * @param z Optional destination for the third float.
+ * @return 1 when the entry was read, or 0 when the array is null or the index is rejected.
+ */
+s32 func_001DFFC0(const FieldEntryArrayObject* object, s32 index, float* key, float* x, float* y, float* z);
+
+/**
+ * @brief Insert an entry before the given active index, shifting later entries up by one.
+ * @param object Receiver owning the entry array and its counts.
+ * @param index Insertion index; rejected unless below the active count.
+ * @param key Sort value to store.
+ * @param x First float to store.
+ * @param y Second float to store.
+ * @param z Third float to store.
+ * @return 1 when the entry was inserted, or 0 when the array is null, full or the index is rejected.
+ */
+s32 func_001E0100(FieldEntryArrayObject* object, s32 index, float key, const float* x, const float* y, const float* z);
+
+/**
+ * @brief Append an entry after the active ones and refresh the cached span.
+ * @param object Receiver owning the entry array and its counts.
+ * @param x First float to store.
+ * @param y Second float to store.
+ * @param z Third float to store.
+ * @param key Sort value to store.
+ * @return 1 when the entry was appended, or 0 when the array is null or full.
+ */
+s32 func_001E02C0(FieldEntryArrayObject* object, const float* x, const float* y, const float* z, float key);
+
+/**
+ * @brief Reset every 28-byte record in the counted array at offset 0x1C, then clear the word at offset 0x20 and the bytes at offsets 0x2D-0x2F, and set the byte at offset 0x14 to 8, the word at 0x38 to 2 and the word at 0x3C to -1.
+ * @param object Receiver owning the records; the loop is skipped when the array pointer is null.
+ */
+void func_001E5690(FieldSlotRecordOwner1C* object);
+
+/**
+ * @brief Reset every 28-byte record in the counted array at offset 0x1C, then clear the word at offset 0x20 and the bytes at offsets 0x2D-0x2F.
+ * @param object Receiver owning the records; the loop is skipped when the array pointer is null.
+ */
+void func_001E5AD0(FieldSlotRecordOwner1C* object);
+
+/**
+ * @brief Clear the entry array pointer, counters and flags, and set both nibbles and the three halfword indices to their initial values.
+ * @param object Receiver to reset.
+ */
+void func_001E94F0(FieldEntryArrayObject30* object);
 
 #ifdef __cplusplus
 }

@@ -27,6 +27,18 @@ extern "C" {
 #endif
 
 /**
+ * @brief Run the receiver's virtual cleanup and release its object at offset 0x78.
+ * @param object Receiver to clean up.
+ */
+void func_002DDA70(void* object);
+
+/**
+ * @brief Release the receiver's object at offset 0x8C and allocation at offset 0xA0.
+ * @param object Receiver to clean up.
+ */
+void func_002DCD20(void* object);
+
+/**
  * @brief Read the stored size for a buffer slot.
  * @param object Receiver containing the buffer slots.
  * @param index Slot index.
