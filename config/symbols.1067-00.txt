@@ -9,3 +9,16 @@ func_004D65C0 = 0x004D65C0; // type:func
 
 // Resident operator delete(void*), called by deleting destructors.
 __dl__FPv = 0x00100B40; // type:func
+
+// FieldClass150050 <- FieldClass150060 <- FieldClass150070; vtables are in
+// boot data. See docs/field-cpp-build.md.
+__vt__16FieldClass150050 = 0x00150050; // size:0xC
+__vt__16FieldClass150060 = 0x00150060; // size:0xC
+__vt__16FieldClass150070 = 0x00150070; // size:0x1C
+func_001DD410__16FieldClass150070Fv = 0x001DD410; // type:func
+func_001DD7B0__16FieldClass150070Fv = 0x001DD7B0; // type:func
+__dt__16FieldClass150070Fv = 0x001DD7E0; // type:func
+__dt__16FieldClass150060Fv = 0x001DECD0; // type:func
+__dt__16FieldClass150050Fv = 0x001DED30; // type:func
+func_001DF360__16FieldClass150070Fv = 0x001DF360; // type:func
+func_001DF3D0__16FieldClass150070Fv = 0x001DF3D0; // type:func

@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/0002-01/text_004CD3A0.h"
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/1067-00/text_0021DB80.h"
 #include "overlays/1067-00/text_0022DC70.h"
@@ -10,7 +11,7 @@ void func_001DD400(void* object)
 {
 }
 
-void func_001DD410(void* object)
+void FieldClass150070::func_001DD410()
 {
 }
 
@@ -74,11 +75,15 @@ void func_001DD6E0(FieldFlaggedListObject* list)
 // Virtual calls; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD730);
 
-// Virtual call; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD7B0);
+void FieldClass150070::func_001DD7B0()
+{
+    delete this;
+}
 
-// Deleting destructor; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD7E0);
+FieldClass150070::~FieldClass150070()
+{
+    func_004D65C0(this);
+}
 
 // Virtual calls and an unresolved $gp-relative global.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD860);
@@ -198,8 +203,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DEB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DEC40);
 
-// Deleting destructor; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DECD0);
+FieldClass150060::~FieldClass150060()
+{
+}
 
-// Deleting destructor; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DED30);
+FieldClass150050::~FieldClass150050()
+{
+}

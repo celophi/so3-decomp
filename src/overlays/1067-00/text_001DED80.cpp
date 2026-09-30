@@ -124,7 +124,7 @@ u8 func_001DF350(const FieldByteState14* object)
     return object->unk14;
 }
 
-void func_001DF360(void* object)
+void FieldClass150070::func_001DF360()
 {
 }
 
@@ -135,7 +135,7 @@ void func_001DF370(void* object)
 // Tail call to func_0023AD00; void or forwarded return is unresolved.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF380);
 
-s32 func_001DF3D0(const void* object)
+s32 FieldClass150070::func_001DF3D0()
 {
     return 3;
 }

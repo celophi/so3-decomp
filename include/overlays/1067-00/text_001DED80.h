@@ -334,20 +334,7 @@ u8 func_001DF350(const FieldByteState14* object);
  * @brief Default virtual handler that performs no work.
  * @param object Receiver of the virtual call.
  */
-void func_001DF360(void* object);
-
-/**
- * @brief Default virtual handler that performs no work.
- * @param object Receiver of the virtual call.
- */
 void func_001DF370(void* object);
-
-/**
- * @brief Report the fixed value 3 for this receiver class.
- * @param object Receiver of the virtual call.
- * @return Always 3.
- */
-s32 func_001DF3D0(const void* object);
 
 /**
  * @brief Clear the word at offset 0x4C, then reset the entry array state.

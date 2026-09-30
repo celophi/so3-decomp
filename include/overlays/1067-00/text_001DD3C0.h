@@ -62,6 +62,47 @@ typedef struct FieldSlotRecordOwner
 } FieldSlotRecordOwner;
 
 #ifdef __cplusplus
+/** Root of the FieldClass150070 hierarchy, with vtable D_150050 in boot data. */
+class FieldClass150050
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150050();
+};
+
+/** Intermediate base with only a destructor, with vtable D_150060 in boot data. */
+class FieldClass150060 : public FieldClass150050
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150060();
+};
+
+/** Base class with four virtual handlers, with vtable D_150070 in boot data. */
+class FieldClass150070 : public FieldClass150060
+{
+public:
+    /** @brief Detach the object from the owner at offset 0x10, then destroy it. */
+    virtual ~FieldClass150070();
+
+    /**
+     * @brief Report the fixed value 3 for this class.
+     * @return Always 3.
+     */
+    virtual s32 func_001DF3D0();
+
+    /** @brief Delete the object through its virtual destructor. */
+    virtual void func_001DD7B0();
+
+    /** @brief Default handler that performs no work. */
+    virtual void func_001DF360();
+
+    /** @brief Default handler that performs no work. */
+    virtual void func_001DD410();
+};
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -70,12 +111,6 @@ extern "C" {
  * @param object Receiver of the virtual call.
  */
 void func_001DD400(void* object);
-
-/**
- * @brief Default virtual handler that performs no work.
- * @param object Receiver of the virtual call.
- */
-void func_001DD410(void* object);
 
 /**
  * @brief Store the attached object pointer at offset 0x70.

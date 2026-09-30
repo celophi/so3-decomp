@@ -67,7 +67,7 @@ segments:
       - [0xB11B0, c, text_0028E530]
       - [0xC1660, c, text_0029E9E0]
       - [0xD1660, cpp, text_002AE9E0]
-      - [0xE1710, c, text_002BEA90]
+      - [0xE1710, cpp, text_002BEA90]
       - [0xF1770, cpp, text_002CEAF0]
       - [0x1044F0, c, text_002E1870]
       - [0x1147A0, cpp, text_002F1B20]
