@@ -18,10 +18,8 @@
 
 # Optional local analysis tools
 /tools/ccc/
-/tools/ghidra-emotionengine-reloaded/
+/tools/*ghidra*/
 /tools/m2c/
-/tools/ghidra/
-/tools/pyghidra-mcp/
 
 # Separate private analysis repository
 /ghidra/
