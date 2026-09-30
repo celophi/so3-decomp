@@ -270,7 +270,10 @@ s32 func_004D6DC0(const void* sentinel, const void* node)
     return sentinel == node;
 }
 
-INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004CD3A0", func_004D6DD0);
+LibListNode* func_004D6DD0(const LibListNode* node)
+{
+    return node->next;
+}
 
 INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004CD3A0", func_004D6DE0);
 

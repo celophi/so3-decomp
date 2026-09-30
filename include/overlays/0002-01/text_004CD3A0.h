@@ -3,6 +3,13 @@
 
 #include "types.h"
 
+/** Partial list node; the leading bytes and full object extent are unknown. */
+typedef struct LibListNode
+{
+    u8 unk00[8];
+    struct LibListNode* next;
+} LibListNode;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -14,6 +21,13 @@ extern "C" {
  * @return 1 if node is the sentinel, otherwise 0.
  */
 s32 func_004D6DC0(const void* sentinel, const void* node);
+
+/**
+ * @brief Get the next node in a circular list traversal.
+ * @param node Current node or list sentinel.
+ * @return Next node, which may be the list sentinel.
+ */
+LibListNode* func_004D6DD0(const LibListNode* node);
 
 #ifdef __cplusplus
 }
