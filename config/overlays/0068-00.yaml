@@ -1,0 +1,51 @@
+# MWo3 file offsets map directly from the header load address.
+# Section boundaries are provisional; see docs/overlays.md.
+name: Star Ocean 3 US overlay 0068-00 (cstatus.bin)
+sha1: 274afa1c86edb4e48b18a3c4af6ad3f8c42a077b
+# SHA-256 is checked by tools/overlays.py before splitting or verification.
+sha256: d391ba308cce4fadf0d15ca130c4f070ac180ca7136cda2224cf348b0ac6282a
+options:
+  basename: 0068-00
+  target_path: disc/us-disc1/modules/0068-00.bin
+  base_path: ../..
+  platform: ps2
+  compiler: MWCCPS2
+  asm_path: build/overlays/0068-00/asm
+  asset_path: build/overlays/0068-00/bin
+  src_path: src/overlays/0068-00
+  build_path: build/overlays/0068-00
+  ld_script_path: build/overlays/0068-00/overlay.ld
+  generated_asm_macros_directory: build/overlays/0068-00/include
+  cache_path: build/overlays/0068-00/splat.cache
+  undefined_funcs_auto_path: build/overlays/0068-00/undefined_funcs.ld
+  undefined_syms_auto_path: build/overlays/0068-00/undefined_syms.ld
+  create_c_files: true
+  make_full_disasm_for_code: true
+  auto_decompile_empty_functions: false
+  generated_c_preamble: '#include "include_asm.h"'
+  asm_inc_header: |
+    .set noat
+    .set noreorder
+  migrate_rodata_to_functions: false
+  subalign: 4
+  find_file_boundaries: false
+  disasm_unknown: true
+  gp_value: 0x1bdff0
+  generated_macro_inc_content: |
+    .set Q, $Q
+    .set ACC, $ACC
+    .set I, $I
+    .set R, $R
+segments:
+  - name: header
+    type: bin
+    start: 0x0
+    vram: 0x348380
+  - name: text
+    type: code
+    start: 0x40
+    vram: 0x3483c0
+    subsegments:
+      - [0x40, c, text]
+  - [0x9000, bin, data]
+  - [0x9280]

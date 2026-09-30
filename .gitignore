@@ -1,0 +1,15 @@
+# Local architecture decision records
+/docs/adr/
+
+# Original game files and extraction/build outputs
+/disc/
+/build/
+*.[iI][sS][oO]
+
+# Local Python environment and caches
+/.venv/
+__pycache__/
+*.py[cod]
+
+# Generated objdiff configuration
+/objdiff.json

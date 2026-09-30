@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "versions": {
+    "us-disc1": {
+      "serial": "SLUS-20488",
+      "disc": 1,
+      "region": "US",
+      "revision": "1.00",
+      "iso_size": 4658429952,
+      "iso_sha256": "c2a658f9945330627986f32009dd5d5e7b7e8e5723aeeb22600fc964ff2c161c",
+      "boot_file": "SLUS_204.88",
+      "boot_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "table_sha256": "a5fca502e73f33f113ea4b58516439c4833e18f08083cc55f9d7a2c6b86b1418",
+      "populated_entries": 5883,
+      "sle_key": "66665442b379f0c7e7d51e4b7ba41c7d",
+      "decoded_checks": {
+        "1/7": "59d1ef9e2d7bb3bd1522cc603bc8dddf07c5a5c82f40e605bcfd1050d4ed8d34",
+        "2/0": "1f7412ea6e524209eea14cb5b78006262726af12d7e7b2a1f4d8bb847d24c0de",
+        "2/1": "748e51ea1ce9339bb76d3b1455b4b9548c0bf65593a84cfcc930587c12e8d0ef",
+        "1067/0": "15c14acfb1b6682c20798ac557d956f87e06184afb06709c798afddf47ac4ffd",
+        "1068/0": "1217cee95a95efe32285fd9916f336aefeea0726e4972f23571fbfd568c72105"
+      }
+    },
+    "us-disc2": {
+      "serial": "SLUS-20891",
+      "disc": 2,
+      "region": "US",
+      "revision": "1.00",
+      "iso_size": 4658692096,
+      "iso_sha256": "7144b8d59b063a591f9baabc6adde08d7fea497f9d252f39fc2a99051acdb2f2",
+      "boot_file": "SLUS_208.91",
+      "boot_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "table_sha256": "e75801d0a0899580f97bf406786143a454bfe99e40f8b7e3b66986a9ddfe3949",
+      "populated_entries": 5716,
+      "sle_key": "66665442b379f0c7e7d51e4b7ba41c7d",
+      "decoded_checks": {
+        "1/7": "59d1ef9e2d7bb3bd1522cc603bc8dddf07c5a5c82f40e605bcfd1050d4ed8d34",
+        "2/0": "1f7412ea6e524209eea14cb5b78006262726af12d7e7b2a1f4d8bb847d24c0de",
+        "2/1": "748e51ea1ce9339bb76d3b1455b4b9548c0bf65593a84cfcc930587c12e8d0ef",
+        "1067/0": "15c14acfb1b6682c20798ac557d956f87e06184afb06709c798afddf47ac4ffd",
+        "1068/0": "1217cee95a95efe32285fd9916f336aefeea0726e4972f23571fbfd568c72105"
+      }
+    }
+  }
+}

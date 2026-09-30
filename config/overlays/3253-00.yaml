@@ -1,0 +1,90 @@
+# MWo3 file offsets map directly from the header load address.
+# Section boundaries are provisional; see docs/overlays.md.
+name: Star Ocean 3 US overlay 3253-00 (BattleMain.ovl)
+sha1: 8ba2f76267ec1d932d9b067d1ffb112f7fb08fce
+# SHA-256 is checked by tools/overlays.py before splitting or verification.
+sha256: 06d9d32da8edf322b5b6474322127dd390de43cf2f7b2b8457dce6e04a31f399
+options:
+  basename: 3253-00
+  target_path: disc/us-disc1/modules/3253-00.bin
+  base_path: ../..
+  platform: ps2
+  compiler: MWCCPS2
+  asm_path: build/overlays/3253-00/asm
+  asset_path: build/overlays/3253-00/bin
+  src_path: src/overlays/3253-00
+  build_path: build/overlays/3253-00
+  ld_script_path: build/overlays/3253-00/overlay.ld
+  generated_asm_macros_directory: build/overlays/3253-00/include
+  cache_path: build/overlays/3253-00/splat.cache
+  undefined_funcs_auto_path: build/overlays/3253-00/undefined_funcs.ld
+  undefined_syms_auto_path: build/overlays/3253-00/undefined_syms.ld
+  create_c_files: true
+  make_full_disasm_for_code: true
+  auto_decompile_empty_functions: false
+  generated_c_preamble: '#include "include_asm.h"'
+  asm_inc_header: |
+    .set noat
+    .set noreorder
+  migrate_rodata_to_functions: false
+  subalign: 4
+  find_file_boundaries: false
+  disasm_unknown: true
+  gp_value: 0x1bdff0
+  generated_macro_inc_content: |
+    .set Q, $Q
+    .set ACC, $ACC
+    .set I, $I
+    .set R, $R
+segments:
+  - name: header
+    type: bin
+    start: 0x0
+    vram: 0x1e2b00
+  - name: text
+    type: code
+    start: 0x40
+    vram: 0x1e2b40
+    subsegments:
+      # Provisional groups at detected function starts, roughly 64 KiB each.
+      - [0x40, cpp, text_001E2B40]
+      - [0x10250, cpp, text_001F2D50]
+      - [0x202B0, cpp, text_00202DB0]
+      - [0x303E0, cpp, text_00212EE0]
+      - [0x403E0, cpp, text_00222EE0]
+      - [0x50580, cpp, text_00233080]
+      - [0x60B00, cpp, text_00243600]
+      - [0x70B50, cpp, text_00253650]
+      - [0x82230, cpp, text_00264D30]
+      - [0x925F0, cpp, text_002750F0]
+      - [0xA2600, cpp, text_00285100]
+      - [0xB2CE0, cpp, text_002957E0]
+      - [0xC2FE0, cpp, text_002A5AE0]
+      - [0xD3000, cpp, text_002B5B00]
+      - [0xE3400, cpp, text_002C5F00]
+      - [0xF36C0, cpp, text_002D61C0]
+      - [0x103A40, cpp, text_002E6540]
+      - [0x113B10, cpp, text_002F6610]
+      - [0x123EE0, cpp, text_003069E0]
+      - [0x133FE0, cpp, text_00316AE0]
+      - [0x144100, cpp, text_00326C00]
+      - [0x154140, cpp, text_00336C40]
+      - [0x1641F0, cpp, text_00346CF0]
+      - [0x174440, cpp, text_00356F40]
+      - [0x184470, cpp, text_00366F70]
+      - [0x1945D0, cpp, text_003770D0]
+      - [0x1A4CB0, cpp, text_003877B0]
+      - [0x1B4CC0, cpp, text_003977C0]
+      - [0x1C4CE0, cpp, text_003A77E0]
+      - [0x1D4D70, cpp, text_003B7870]
+      - [0x1E4E50, cpp, text_003C7950]
+      - [0x1F4E50, cpp, text_003D7950]
+  - [0x1f5100, bin, data]
+  - name: init
+    type: code
+    start: 0x208000
+    vram: 0x3eab00
+    subsegments:
+      - [0x208000, cpp, init]
+  - [0x209520, bin, init_table]
+  - [0x209580]

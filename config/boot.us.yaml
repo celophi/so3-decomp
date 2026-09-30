@@ -1,0 +1,62 @@
+name: Star Ocean 3 US boot C scaffold
+sha1: 1f8b172c0c2ff3f0b80bb6763077fdf33e271dcf
+options:
+  basename: boot
+  target_path: disc/us-disc1/iso/SLUS_204.88
+  base_path: ..
+  platform: ps2
+  compiler: MWCCPS2
+  asm_path: build/boot/asm
+  asset_path: build/boot/bin
+  src_path: src/boot
+  build_path: build/boot
+  ld_script_path: build/boot/boot.ld
+  generated_asm_macros_directory: build/boot/include
+  cache_path: build/boot/splat.cache
+  symbol_addrs_path: [config/symbols.boot.txt]
+  undefined_funcs_auto_path: build/boot/undefined_funcs.ld
+  undefined_syms_auto_path: build/boot/undefined_syms.ld
+  create_c_files: true
+  make_full_disasm_for_code: true
+  auto_decompile_empty_functions: false
+  generated_c_preamble: '#include "include_asm.h"'
+  asm_inc_header: |
+    .set noat
+    .set noreorder
+  migrate_rodata_to_functions: false
+  subalign: 4
+  find_file_boundaries: false
+  disasm_unknown: true
+  gp_value: 0x001BDFF0
+  generated_macro_inc_content: |
+    .set Q, $Q
+    .set ACC, $ACC
+    .set I, $I
+    .set R, $R
+segments:
+  - [0x0, bin, elf_header]
+  - name: resident
+    type: code
+    start: 0x680
+    vram: 0x100000
+    subsegments:
+      # Known function boundaries; resident_* chunks are provisional regions.
+      - [0x680, asm, startup]
+      - [0x860, c, resident_001001E0]
+      - [0x18D0, c, func_00101250]
+      - [0x18E0, c, resident_00101260]
+      - [0x1B90, c, func_00101510]
+      - [0x1BD0, c, resident_00101550]
+      - [0xA700, c, func_0010A080]
+      - [0xA730, c, func_0010A0B0]
+      - [0xA760, c, resident_0010A0E0]
+      - [0x1F480, c, func_0011EE00]
+      # Provisional groups at detected function starts, roughly 64 KiB each.
+      - [0x1F4F0, c, resident_0011EE70]
+      - [0x2F778, c, resident_0012F0F8]
+      - [0x3FA60, c, resident_0013F3E0]
+  # The last observed EE routine ends at 0x143B2C; padding extends to 0x143B80.
+  # Preserve the following data/VU region until its internal layout is mapped.
+  - [0x44200, bin, resident_data]
+  - [0xB6A80, bin, elf_metadata]
+  - [0xB73B0]

@@ -1,0 +1,17 @@
+# Repository history, local architecture notes, and staging
+.git
+/docs/adr/
+/working/
+
+# Original game files and generated output
+/disc/
+/build/
+**/*.[iI][sS][oO]
+
+# Local Python environment and caches
+/.venv/
+**/__pycache__/
+**/*.py[cod]
+
+# Generated objdiff configuration
+/objdiff.json

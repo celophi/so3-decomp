@@ -1,0 +1,72 @@
+name: Build and Progress Report
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.repository == 'celophi/so3-decomp'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CI_INPUT_IMAGE: ${{ vars.CI_INPUT_IMAGE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Check private input image configuration
+        shell: bash
+        run: |
+          if [[ ! "$CI_INPUT_IMAGE" =~ ^ghcr\.io/celophi/so3-ci@sha256:[0-9a-f]{64}$ ]]; then
+            echo 'Set CI_INPUT_IMAGE to ghcr.io/celophi/so3-ci@sha256:<digest>.' >&2
+            exit 1
+          fi
+
+      - name: Build development image
+        run: make image
+
+      - name: Copy original files from private image
+        # CI_INPUT_IMAGE pins the build-inputs target; us-v1 retains both full discs.
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: |
+          input_container=''
+          cleanup() {
+            if [[ -n "$input_container" ]]; then
+              docker rm -f "$input_container" >/dev/null
+            fi
+            docker logout ghcr.io >/dev/null
+          }
+          trap cleanup EXIT
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+          docker pull "$CI_INPUT_IMAGE"
+          input_container=$(docker create "$CI_INPUT_IMAGE" /unused)
+          mkdir -p disc
+          docker cp "$input_container:/disc/." disc/
+
+      - name: Build, verify, and generate progress report
+        run: make report
+
+      - name: Test project tools
+        run: make test
+
+      - name: Upload progress report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: SLUS_204.88_report
+          path: build/progress/report.json
+          if-no-files-found: error

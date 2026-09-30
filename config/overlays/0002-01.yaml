@@ -1,0 +1,74 @@
+# MWo3 file offsets map directly from the header load address.
+# Section boundaries are provisional; see docs/overlays.md.
+name: Star Ocean 3 US overlay 0002-01 (Lib.bin)
+sha1: 1d9b0d1ff095ff52e4f7299d5102f5cb61c0b9c8
+# SHA-256 is checked by tools/overlays.py before splitting or verification.
+sha256: 748e51ea1ce9339bb76d3b1455b4b9548c0bf65593a84cfcc930587c12e8d0ef
+options:
+  basename: 0002-01
+  target_path: disc/us-disc1/modules/0002-01.bin
+  base_path: ../..
+  platform: ps2
+  compiler: MWCCPS2
+  asm_path: build/overlays/0002-01/asm
+  asset_path: build/overlays/0002-01/bin
+  src_path: src/overlays/0002-01
+  build_path: build/overlays/0002-01
+  ld_script_path: build/overlays/0002-01/overlay.ld
+  generated_asm_macros_directory: build/overlays/0002-01/include
+  cache_path: build/overlays/0002-01/splat.cache
+  undefined_funcs_auto_path: build/overlays/0002-01/undefined_funcs.ld
+  undefined_syms_auto_path: build/overlays/0002-01/undefined_syms.ld
+  create_c_files: true
+  make_full_disasm_for_code: true
+  auto_decompile_empty_functions: false
+  generated_c_preamble: '#include "include_asm.h"'
+  asm_inc_header: |
+    .set noat
+    .set noreorder
+  migrate_rodata_to_functions: false
+  subalign: 4
+  find_file_boundaries: false
+  disasm_unknown: true
+  gp_value: 0x1bdff0
+  generated_macro_inc_content: |
+    .set Q, $Q
+    .set ACC, $ACC
+    .set I, $I
+    .set R, $R
+segments:
+  - name: header
+    type: bin
+    start: 0x0
+    vram: 0x3e6880
+  - name: text
+    type: code
+    start: 0x40
+    vram: 0x3e68c0
+    subsegments:
+      # Provisional groups at detected function starts, roughly 64 KiB each.
+      - [0x40, c, text_003E68C0]
+      - [0x12840, c, text_003F90C0]
+      - [0x22D40, c, text_004095C0]
+      - [0x331F0, c, text_00419A70]
+      - [0x43280, c, text_00429B00]
+      - [0x540A0, c, text_0043A920]
+      - [0x64360, c, text_0044ABE0]
+      - [0x74490, c, text_0045AD10]
+      - [0x845A0, c, text_0046AE20]
+      - [0x945A0, c, text_0047AE20]
+      - [0xA4A80, c, text_0048B300]
+      - [0xB4FA0, c, text_0049B820]
+      - [0xC5030, c, text_004AB8B0]
+      - [0xD6AE0, c, text_004BD360]
+      - [0xE6B20, c, text_004CD3A0]
+      - [0xF6BC0, c, text_004DD440]
+  - [0x103780, bin, data]
+  - name: init
+    type: code
+    start: 0x120b00
+    vram: 0x507380
+    subsegments:
+      - [0x120b00, c, init]
+  - [0x1210d0, bin, init_table]
+  - [0x121180]
