@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00213F40.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00213F40);
 
@@ -392,13 +393,25 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021E8
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021E9C0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EC30);
+FieldTraversalRecord* func_0021EC30(FieldTraversalRecord* record)
+{
+    return record + 1;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EC40);
+s32 func_0021EC40(const FieldTraversalRecord* record)
+{
+    return (record->unk0a & 0x20) != 0;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EC50);
+FieldTraversalRecord* func_0021EC50(const FieldTraversalRecord* record)
+{
+    return record->children;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EC60);
+s16 func_0021EC60(const FieldTraversalRecord* record)
+{
+    return record->unk0e;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EC70);
 
