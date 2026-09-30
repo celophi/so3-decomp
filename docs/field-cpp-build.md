@@ -148,6 +148,16 @@ option.
   globals now get names like `D_001B65F4`, and ordinary `extern` declarations
   compile to the same gp-relative loads.
 
+## More file boundaries from thunks
+
+Thunks always come after every other function in a file. So wherever the game
+has a run of thunks, the next function starts a new original source file.
+Field has 121 thunks in 46 runs. I used them to split Field's provisional
+units at 45 boundaries, going from 22 units to 65. Every unit still links to
+the game's exact bytes on its own, and the same 637 functions match before
+and after. Files that don't contain any classes with multiple bases leave no
+thunks behind, so some units still hold more than one original file.
+
 ## TODO
 
 - Where the next file ends. `0x1DF3E0` is my best guess, because a new family

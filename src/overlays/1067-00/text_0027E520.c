@@ -1,5 +1,6 @@
 #include "include_asm.h"
 
+
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027E520);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027E580);
@@ -981,13 +982,3 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0028E2
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0028E220);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0028E230);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0028E240);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0028E2B0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0028E3D0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0028E480);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0028E4D0);

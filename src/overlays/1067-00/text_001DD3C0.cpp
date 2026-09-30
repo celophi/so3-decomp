@@ -4,6 +4,8 @@
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/1067-00/text_0021DB80.h"
 #include "overlays/1067-00/text_0022DC70.h"
+#include "overlays/1067-00/text_00202240.h"
+#include "overlays/1067-00/text_0021FB80.h"
 
 // Not code: 64 zero bytes at the start of .text.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD3C0);
