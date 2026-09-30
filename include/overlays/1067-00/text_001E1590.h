@@ -50,15 +50,30 @@ typedef struct FieldSlotRecordOwner1C
 } FieldSlotRecordOwner1C;
 
 #ifdef __cplusplus
-extern "C" {
+/**
+ * Partial class derived from FieldClass150070, with vtable D_150120 in boot data.
+ * Its secondary base at offset 0x14 (vtable D_15013C) is not declared yet.
+ */
+class FieldClass150120 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150120();
+
+    /**
+     * @brief Report the fixed value 4 for this class.
+     * @return Always 4.
+     */
+    virtual s32 func_001DF3D0();
+
+    /** @brief Queue the object on the resident object queue without detaching it. */
+    virtual void func_001DD7B0();
+};
 #endif
 
-/**
- * @brief Report the fixed value 4 for this receiver class.
- * @param object Receiver of the virtual call.
- * @return Always 4.
- */
-s32 func_001E1590(const void* object);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief Report the fixed value 0 for this receiver class.

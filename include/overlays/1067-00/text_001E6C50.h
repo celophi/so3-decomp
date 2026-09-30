@@ -150,6 +150,46 @@ typedef struct FieldEntryArrayObject30
 } FieldEntryArrayObject30;
 
 #ifdef __cplusplus
+/** Partial class derived from FieldClass150070, with vtable D_150330 in boot data. */
+class FieldClass150330 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150330();
+
+    /** @brief Detach the object and queue it on the resident object queue. */
+    virtual void func_001DD7B0();
+};
+
+/** Partial class derived from FieldClass150070, with vtable D_150460 in boot data. */
+class FieldClass150460 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150460();
+};
+
+/** Partial class derived from FieldClass150460, with vtable D_150490 in boot data. */
+class FieldClass150490 : public FieldClass150460
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150490();
+};
+
+/** Partial class derived from FieldClass150490, with vtable D_1504C0 in boot data. */
+class FieldClass1504C0 : public FieldClass150490
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1504C0();
+
+    /** @brief Detach the object and queue it on the resident object queue. */
+    virtual void func_001DD7B0();
+};
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 

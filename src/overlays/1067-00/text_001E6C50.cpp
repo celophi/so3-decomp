@@ -147,8 +147,11 @@ void func_001E94F0(FieldEntryArrayObject30* object)
     object->unk43_1 = 0;
 }
 
-// Reads an unresolved $gp-relative global.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9580);
+void FieldClass150330::func_001DD7B0()
+{
+    func_004D65C0(this);
+    func_0011ED90(D_001B65F4, this);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E95B0);
 
@@ -229,8 +232,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001EB5
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001EB590);
 
-// Reads an unresolved $gp-relative global.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001EB660);
+void FieldClass1504C0::func_001DD7B0()
+{
+    func_004D65C0(this);
+    func_0011ED90(D_001B65F4, this);
+}
 
 void func_001EB690(FieldCountOwner34* object, s32 count)
 {

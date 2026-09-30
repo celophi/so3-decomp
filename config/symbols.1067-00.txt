@@ -44,3 +44,9 @@ func_001DD7B0__16FieldClass150010Fv = 0x001DF320; // type:func
 
 // Resident helper that takes a boot manager object and an object.
 func_0011ED90 = 0x0011ED90; // type:func
+
+// Slot overrides in classes derived from FieldClass150070.
+func_001DF3D0__16FieldClass150120Fv = 0x001E1590; // type:func
+func_001DD7B0__16FieldClass150120Fv = 0x001E15A0; // type:func
+func_001DD7B0__16FieldClass150330Fv = 0x001E9580; // type:func
+func_001DD7B0__16FieldClass1504C0Fv = 0x001EB660; // type:func

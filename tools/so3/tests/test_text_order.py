@@ -73,6 +73,29 @@ class TextOrderTests(unittest.TestCase):
         self.assertEqual(unit_range(config, 'src/x/a.cpp'), (0x1000, 0x1040))
         self.assertEqual(unit_range(config, 'src/x/b.cpp'), (0x1040, 0x10C0))
 
+    def test_inline_copy_outside_the_unit_is_discarded(self):
+        data = order_text_sections(multidef_fixture(), {'second': 0x300}, {}, keep=(0x100, 0x200), reorder=False)
+        self.assertEqual(section_names(data), ['.text', '.discarded'])
+
+    def test_kept_inline_copy_puts_the_unit_in_address_order(self):
+        data = order_text_sections(multidef_fixture(), {'first': 0x180, 'second': 0x100}, {},
+                                   keep=(0x100, 0x200), reorder=False)
+        self.assertEqual(text_payloads(data), [b'BBBB', b'AAAA'])
+
+    def test_unmapped_inline_copy_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'multiply-defined function second is not in the symbol map'):
+            order_text_sections(multidef_fixture(), {}, {}, keep=(0x100, 0x200), reorder=False)
+
+
+def multidef_fixture():
+    """first (AAAA) and a multiply-defined copy named second (BBBB)."""
+    data = bytearray(object_fixture())
+    shoff = struct.unpack_from('<I', data, 32)[0]
+    symtab = struct.unpack_from('<10I', data, shoff + 4 * 40)
+    info = symtab[4] + 2 * 16 + 12
+    data[info] = (13 << 4) | 2
+    return bytes(data)
+
 
 def thunk_fixture():
     """Two .text sections: first (AAAA) and its thunk @8@fir (TTTT)."""

@@ -89,11 +89,6 @@ void FieldClass150070::func_001DD7B0()
     delete this;
 }
 
-FieldClass150070::~FieldClass150070()
-{
-    func_004D65C0(this);
-}
-
 // Virtual calls and an unresolved $gp-relative global.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD860);
 
@@ -211,13 +206,5 @@ void func_001DEA80(FieldSlotRecordOwner* object)
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DEB50);
 
 FieldClass150010::~FieldClass150010()
-{
-}
-
-FieldClass150060::~FieldClass150060()
-{
-}
-
-FieldClass150050::~FieldClass150050()
 {
 }

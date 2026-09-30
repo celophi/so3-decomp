@@ -8,11 +8,12 @@ the .text headers (each with its own relocation sections) by each function's
 original address restores the layout. Section contents, symbols and
 relocations are unchanged apart from section indices.
 
-MWCC also emits this-adjusting thunks (`@<offset>@<function>`) after a unit's
-functions, as multiply-defined copies in every unit that emits the vtable.
-The original linker kept one copy. A thunk map records where each kept copy
-is; a unit keeps its copy only when that address is inside the unit, and the
-other copies are renamed out of `.text` so the overlay link discards them.
+MWCC also emits this-adjusting thunks (`@<offset>@<function>`) and
+out-of-line copies of inline functions as multiply-defined copies in every
+unit that needs them. The original linker kept one copy of each. The thunk
+map (thunks) and symbol map (addresses) record where each kept copy is; a unit
+keeps its copy only when that address is inside the unit, and the other
+copies are renamed out of `.text` so the overlay link discards them.
 """
 
 import re
@@ -22,6 +23,7 @@ from pathlib import Path
 ADDRESS_NAME = re.compile(r'func_([0-9A-F]{8})')
 SYMBOL_LINE = re.compile(r'^(\S+) = (0x[0-9A-Fa-f]+);', re.M)
 SHN_LORESERVE = 0xFF00
+STB_MULTIDEF = 13  # MWCC's binding for thunks and inline-function copies
 DISCARDED = b'.discarded'
 
 
@@ -77,16 +79,23 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
     texts = [i for i, h in enumerate(headers) if name(h) == '.text']
     key = {}
     dropped = set()
+    copies = set()
     for offset in symbols:
         label, _, _, info, _, index = struct.unpack_from('<IIIBBH', data, offset)
         if info & 15 != 2 or index not in texts:
             continue
         symbol = symbol_strings[label:].split(b'\0', 1)[0].decode()
         match = ADDRESS_NAME.fullmatch(symbol)
-        if symbol.startswith('@'):
-            address = thunks.get(symbol)
+        if symbol.startswith('@') or info >> 4 >= STB_MULTIDEF:
+            # Thunks and out-of-line copies of inline functions are emitted in
+            # every unit that needs them; keep the copy the original linker kept.
+            address = thunks.get(symbol) if symbol.startswith('@') else (
+                int(match.group(1), 16) if match else addresses.get(symbol))
             if address is None:
-                raise ValueError(f'thunk {symbol} is not in the thunk map')
+                kind = 'thunk' if symbol.startswith('@') else 'multiply-defined function'
+                source = 'thunk map' if symbol.startswith('@') else 'symbol map'
+                raise ValueError(f'{kind} {symbol} is not in the {source}')
+            copies.add(index)
             if keep is not None and not keep[0] <= address < keep[1]:
                 dropped.add(index)
         elif not reorder:
@@ -101,6 +110,12 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
     missing = [i for i in texts if i not in key]
     if reorder and missing:
         raise ValueError(f'.text sections without a function symbol: {missing}')
+    kept_copies = [i for i in copies if i not in dropped]
+    if not reorder and kept_copies:
+        # Where the compiler and the original linker placed kept copies
+        # differs (for example the order of inline destructor copies), so any
+        # unit that keeps one is placed in original address order.
+        return order_text_sections(data, addresses, thunks, keep, reorder=True)
     if dropped:
         data = discard_sections(data, dropped)
         headers = [list(struct.unpack_from('<10I', data, shoff + i * size)) for i in range(count)]

@@ -5,8 +5,9 @@ overlay (`1067-00`) was built. The short version:
 
 - The first original source file in Field covers addresses `0x1DD400` to
   `0x1DED80`.
-- That file was compiled with two inlining settings that change where its
-  functions end up. With them, I can rebuild its functions exactly.
+- Its base-class destructors are small inline functions in a header. The
+  compiler pastes them into other destructors and also leaves one copy of
+  each in the file. With that, I can rebuild its functions exactly.
 - The original build turned RTTI off and left C++ exceptions on. I've switched
   the project to `-RTTI off` to match.
 
@@ -61,65 +62,35 @@ their symbol files. I'm doing the same.
 copy of another destructor, `func_001DD7E0`, instead of calling it. Copying a
 small function into its caller like this is called inlining.
 
-The strange part is that `func_001DD7E0` sits at a higher address, so it
-comes later in the output. With CodeWarrior's normal settings, an ordinary
-function is only inlined when it's marked `inline`. Even with automatic
-inlining on, it can only be inlined if it appears earlier in the file. Either
-way, the order in the game shouldn't happen.
+A destructor in a different file, `func_001E5030`, pastes in the same code.
+The compiler can only inline code it can see while compiling that file, so
+these destructors must be written in a header as inline functions.
 
-I tested every explanation I could think of against all 15 CodeWarrior PS2
-versions I have. They all behave the same way in these tests:
+When a class's destructor is inline, the compiler still leaves one normal
+copy of it in the file, because the class's vtable needs an address for it:
 
-| Idea | Why it doesn't fit |
-| --- | --- |
-| The destructors were marked `inline` | Their copies would land next to other copies or at the end of the file, not where they are in the game |
-| The linker kept duplicate copies | Every small function in Field is referenced; there are no leftover duplicates |
-| Automatic inlining for the whole program | Six functions I already matched would change, because they'd swallow the small functions they call |
-| A different compiler version | All 15 versions produce the same order |
+- The copy of `FieldClass150070`'s destructor goes right after that class's
+  first non-inline virtual function. That's exactly what the game shows:
+  `func_001DD7E0` follows `func_001DD7B0`.
+- The copies of the two base destructors (`FieldClass150060` and
+  `FieldClass150050`) go at the very end of the file, which is where
+  `func_001DECD0` and `func_001DED30` are. The last one ends at `0x1DED7C`, so
+  the next file starts at `0x1DED80`.
 
-## Automatic inlining plus reverse order
+Every other file that uses these classes gets its own copies too, and the
+original linker kept only one of each. The build does the same: a unit keeps
+a copy only if the game's copy lives inside that unit, and drops the rest.
 
-CodeWarrior has an option called deferred inlining. The compiler reads the
-whole file first, then writes its functions out, and it writes them in
-reverse order. Combined with automatic inlining (`-inline auto,deferred`),
-it can inline a function no matter where it appears in the file.
+One detail my compiler gets wrong on its own: it writes the two base
+destructor copies in the opposite order to the game. So for any file that
+keeps such copies, `tools/so3/build/text_order.py` puts the functions back in
+the game's address order after compiling. It only changes the order, not the
+code, and linking the file on its own gives the same 6,592 bytes as the game.
 
-I wrote a small test file shaped like this part of Field and compiled it with
-those settings. The output order and the code match the game:
-
-| Address | Function | What it is |
-| --- | --- | --- |
-| `0x1DD410` | `func_001DD410` | empty virtual function |
-| `0x1DD4A0` | `func_001DD4A0` | destructor that inlines the next ones |
-| `0x1DD7B0` | `func_001DD7B0` | virtual function that deletes the object |
-| `0x1DD7E0` | `func_001DD7E0` | destructor of the class behind vtable `D_150070` |
-| `0x1DEC40` | `func_001DEC40` | destructor of a class derived from it |
-| `0x1DECD0` | `func_001DECD0` | base class destructor (vtable `D_150060`) |
-| `0x1DED30` | `func_001DED30` | root class destructor (vtable `D_150050`) |
-
-All seven come out in this order. The six that correspond to real game code
-are byte for byte identical, apart from addresses the linker fills in. The
-last function ends at `0x1DED7C`, so the next file starts at `0x1DED80`.
-
-This also means the original source for this file was written in reverse:
-the root destructor at the top, and the functions near `0x1DD400` at the
-bottom.
-
-My source for this file stays in address order anyway, like every other
-unit. Most of it is still `INCLUDE_ASM` placeholders, and the tool that fills
-those in (mwccgap) uses `asm` stub functions. CodeWarrior writes `asm`
-functions out straight away, even in deferred mode, so a half-finished file
-would come out in a mix of two orders whichever way I wrote it. To avoid
-that, `tools/so3/build/text_order.py` puts a deferred unit's functions back in
-original address order after compiling. It only changes the order, not the
-code. Linking the unit on its own gives the same 6,592 bytes as the game with
-either source order.
-
-The setting was per file, not for the whole game. The file that starts at
-`0x1DF3E0` doesn't inline its small helpers, so it wasn't built with
-automatic inlining. `#pragma auto_inline on` plus `#pragma defer_codegen on`
-at the top of a file gives exactly the same result as the command-line
-option.
+I first thought this file needed special inlining settings (automatic
+inlining with reversed output). That also fit the order, but the inline
+destructors explain everything without them, and the file matches with the
+normal settings, so I dropped that idea.
 
 ## Changes
 
@@ -127,8 +98,8 @@ option.
   far still matches with it.
 - `text_001DD3C0` is split at `0x1DED80`. Everything from there on moved to
   a new unit, `text_001DED80`.
-- `config/compilers.json` has a `unit_flags` list, and `text_001DD3C0` uses
-  `-inline auto,deferred`. All matched functions still match.
+- `config/compilers.json` has a `unit_flags` list for files that need extra
+  compiler settings. None do yet.
 - The first real classes are in: `FieldClass150050`, `FieldClass150060` and
   `FieldClass150070` (named after their vtable addresses until I know their
   real names). Their three destructors and four virtual functions match, and
@@ -160,8 +131,8 @@ thunks behind, so some units still hold more than one original file.
 
 ## TODO
 
-- Where the next file ends. `0x1DF3E0` is my best guess, because a new family
-  of classes starts there, but I haven't proved it yet.
+- Why the game's two base destructor copies are in the opposite order to my
+  compiler's output.
 - What the 64 zero bytes at the start of Field's code (`0x1DD3C0`) are. They
   look like padding, not a function.
 - The exact original compiler version. The tests here don't tell the 15

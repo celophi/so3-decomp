@@ -3,13 +3,15 @@
 #include "boot/resident_data.h"
 #include "overlays/1067-00/text_0022DC70.h"
 
-s32 func_001E1590(const void* object)
+s32 FieldClass150120::func_001DF3D0()
 {
     return 4;
 }
 
-// Reads an unresolved $gp-relative global.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E15A0);
+void FieldClass150120::func_001DD7B0()
+{
+    func_0011ED90(D_001B65F4, this);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E15C0);
 

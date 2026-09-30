@@ -7,13 +7,7 @@
     "-RTTI",
     "off"
   ],
-  "unit_flags": [
-    {
-      "source": "src/overlays/1067-00/text_001DD3C0.cpp",
-      "flags": ["-inline", "auto,deferred"],
-      "evidence": "docs/field-cpp-build.md"
-    }
-  ],
+  "unit_flags": [],
   "source": "tools/so3/build/probes/boot.c",
   "probes": [
     {

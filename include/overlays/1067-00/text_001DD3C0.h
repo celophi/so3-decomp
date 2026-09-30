@@ -68,7 +68,9 @@ class FieldClass150050
 {
 public:
     /** @brief Destroy the object. */
-    virtual ~FieldClass150050();
+    virtual ~FieldClass150050()
+    {
+    }
 };
 
 /** Intermediate base with only a destructor, with vtable D_150060 in boot data. */
@@ -76,7 +78,9 @@ class FieldClass150060 : public FieldClass150050
 {
 public:
     /** @brief Destroy the object. */
-    virtual ~FieldClass150060();
+    virtual ~FieldClass150060()
+    {
+    }
 };
 
 /** Base class with four virtual handlers, with vtable D_150070 in boot data. */
@@ -84,7 +88,10 @@ class FieldClass150070 : public FieldClass150060
 {
 public:
     /** @brief Detach the object from the owner at offset 0x10, then destroy it. */
-    virtual ~FieldClass150070();
+    virtual ~FieldClass150070()
+    {
+        func_004D65C0(this);
+    }
 
     /**
      * @brief Report the fixed value 3 for this class.

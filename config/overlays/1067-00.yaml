@@ -102,7 +102,7 @@ segments:
       - [0xB4800, c, text_00291B80]
       - [0xB59A0, c, text_00292D20]
       - [0xB6120, c, text_002934A0]
-      - [0xB6290, c, text_00293610]
+      - [0xB6290, cpp, text_00293610]
       - [0xC1660, c, text_0029E9E0]
       - [0xD1660, cpp, text_002AE9E0]
       - [0xDF190, cpp, text_002BC510]
