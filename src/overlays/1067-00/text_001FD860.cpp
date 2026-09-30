@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_001FD860.h"
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FD860);
 
@@ -108,7 +109,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FF4
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FF460);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FF4A0);
+void func_001FF4A0(FieldFlaggedPointerA0* object, void* value)
+{
+    if ((object->unk70 & 0x10) && object->unka0 == value)
+    {
+        object->unka0 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FF4D0);
 
@@ -180,9 +187,49 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_002015
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00201660);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_002016F0);
+void func_002016F0(FieldResourceList14* object, s32 first, s32 second)
+{
+    FieldResourceListNode* node = &object->unk14;
+    for (;;)
+    {
+        node = node->next;
+        if (&object->unk14 == node)
+        {
+            break;
+        }
+        FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
+        u8 enabled = entry->unk49_1;
+        if (enabled && (enabled ? entry->unk49_3 : 1) &&
+            (((entry->unk1c == 0x43484152 || entry->unk1c == 0x41545243) &&
+              first == (u16)entry->unk20) ||
+             (entry->unk1c == 0x414E494D && second == (u16)entry->unk20)))
+        {
+            entry->unk40--;
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_002017B0);
+void func_002017B0(FieldResourceList14* object, s32 first, s32 second)
+{
+    FieldResourceListNode* node = &object->unk14;
+    for (;;)
+    {
+        node = node->next;
+        if (&object->unk14 == node)
+        {
+            break;
+        }
+        FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
+        u8 enabled = entry->unk49_1;
+        if (enabled && (enabled ? entry->unk49_3 : 1) &&
+            (((entry->unk1c == 0x43484152 || entry->unk1c == 0x41545243) &&
+              first == (u16)entry->unk20) ||
+             (entry->unk1c == 0x414E494D && second == (u16)entry->unk20)))
+        {
+            entry->unk40++;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00201870);
 
@@ -192,7 +239,25 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00201C
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00201D70);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00201E20);
+u32 func_00201E20(FieldResourceList14* object, u32 kind, u32 key)
+{
+    FieldResourceListNode* node = &object->unk14;
+    FieldResourceListNode* sentinel = node;
+    for (;;)
+    {
+        node = node->next;
+        if (!node || sentinel == node)
+        {
+            break;
+        }
+        FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
+        if (kind == entry->unk1c && key == entry->unk20)
+        {
+            return entry->unk49_1 ? entry->unk18 : entry->unk14;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00201EA0);
 
@@ -208,7 +273,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_002021
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00202230);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00202240);
+u32 func_00202240(const FieldPackedKeySource* object)
+{
+    return (object->unk14 << 19) | (((u32)*object->unk0c << 16) | object->unk08->unk3ac);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00202270);
 
@@ -280,7 +348,18 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_002042
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00204370);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00204420);
+bool func_00204420(const FieldFloatGateState7C* object)
+{
+    if (object->unk7c == 0)
+    {
+        return false;
+    }
+    if (object->unk8c_0)
+    {
+        return false;
+    }
+    return !(object->unk90 > 0.0f);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_00204480);
 

@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_002CEAF0.h"
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CEAF0);
 
@@ -148,21 +149,91 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3C10);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3C20);
+s32 func_002D3C20(const FieldBufferSlots* object, s32 index)
+{
+    return object->unk134[index];
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3C30);
+void* func_002D3C30(const FieldBufferSlots* object, s32 index)
+{
+    return object->unk128[index];
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3C40);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3CC0);
+FieldResourceRecord* func_002D3CC0(const FieldBufferSlots* object, s32 index)
+{
+    if (index < 0)
+    {
+        return 0;
+    }
+    if (object->unk114 == 0)
+    {
+        return 0;
+    }
+    FieldResourceRecord* record = (FieldResourceRecord*)(((u32)object->unk114 + 127) & ~0x7F);
+    for (s32 position = 0; ; position++)
+    {
+        if (position == index)
+        {
+            return record;
+        }
+        record = record->next_offset == 0 ? 0 : (FieldResourceRecord*)((u8*)record + record->next_offset);
+        if (record == 0)
+        {
+            break;
+        }
+    }
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3D40);
+u8 func_002D3D40(FieldBufferSlots* object, void* allocation, s32 size)
+{
+    object->unk118 = size;
+    if (object->unk118 <= 0)
+    {
+        return 0;
+    }
+    if (object->unk114 != 0)
+    {
+        return 0;
+    }
+    object->unk114 = allocation;
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3D80);
+void* func_002D3D80(const FieldBufferSlots* object, u8 index)
+{
+    if (index >= 64)
+    {
+        return 0;
+    }
+    return (void*)(((u32)object->unk14[index] + 127) & ~0x7F);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3DC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3E40);
+u8 func_002D3E40(FieldBufferSlots* object, void* allocation, u8 index)
+{
+    if (allocation == 0)
+    {
+        return 0;
+    }
+    if (index < 0)
+    {
+        return 0;
+    }
+    if (index >= 64)
+    {
+        return 0;
+    }
+    if (object->unk14[index] != 0)
+    {
+        return 0;
+    }
+    object->unk14[index] = allocation;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3EB0);
 

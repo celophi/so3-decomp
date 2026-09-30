@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_002AE9E0.h"
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002AE9E0);
 
@@ -256,15 +257,33 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7D
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7D60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7DA0);
+void func_002B7DA0(FieldResetState10* object)
+{
+    object->unk10 = 0;
+    object->unk12 = 0;
+    object->unk14 = 0;
+    object->unk18 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7DC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7E00);
+void func_002B7E00(FieldResetState10* object)
+{
+    object->unk10 = 0;
+    object->unk12 = 0;
+    object->unk14 = 0;
+    object->unk18 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7E20);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7E60);
+void func_002B7E60(FieldResetState04* object)
+{
+    object->unk04 = 0;
+    object->unk06 = 0;
+    object->unk08 = 0;
+    object->unk0c = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7E80);
 
@@ -292,13 +311,34 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B81
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8350);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B83C0);
+void func_002B83C0(FieldSequenceState20* object)
+{
+    object->unk04 = 0;
+    object->state.unk12_0_3 = 1;
+    object->state.unk12_4_7 = 1;
+    object->state.unk0a = 0;
+    object->state.unk08 = 0;
+    object->state.unk0c = -1;
+    object->state.unk00 = 0;
+    object->state.unk0e = -1;
+    object->state.unk10 = -1;
+    object->state.unk13_0 = 0;
+    object->state.unk13_1 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8450);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B84A0);
+void func_002B84A0(FieldSequenceState20* object, u8 mode)
+{
+    object->state.unk12_0_3 = mode;
+    object->state.unk13_0 = object->state.unk12_0_3 == 4 || object->state.unk12_4_7 == 4;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8500);
+void func_002B8500(FieldSequenceState20* object, u8 mode)
+{
+    object->state.unk12_4_7 = mode;
+    object->state.unk13_0 = object->state.unk12_0_3 == 4 || object->state.unk12_4_7 == 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8560);
 
@@ -324,13 +364,34 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B87
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B87F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8860);
+void func_002B8860(FieldSequenceState10* object)
+{
+    object->unk04 = 0;
+    object->state.unk12_0_3 = 1;
+    object->state.unk12_4_7 = 1;
+    object->state.unk0a = 0;
+    object->state.unk08 = 0;
+    object->state.unk0c = -1;
+    object->state.unk00 = 0;
+    object->state.unk0e = -1;
+    object->state.unk10 = -1;
+    object->state.unk13_0 = 0;
+    object->state.unk13_1 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B88F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8990);
+void func_002B8990(FieldSequenceState10* object, u8 mode)
+{
+    object->state.unk12_0_3 = mode;
+    object->state.unk13_0 = object->state.unk12_0_3 == 4 || object->state.unk12_4_7 == 4;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B89F0);
+void func_002B89F0(FieldSequenceState10* object, u8 mode)
+{
+    object->state.unk12_4_7 = mode;
+    object->state.unk13_0 = object->state.unk12_0_3 == 4 || object->state.unk12_4_7 == 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8A50);
 
@@ -352,13 +413,34 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8BE0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8C50);
+void func_002B8C50(FieldSequenceState40* object)
+{
+    object->unk04 = 0;
+    object->state.unk12_0_3 = 1;
+    object->state.unk12_4_7 = 1;
+    object->state.unk0a = 0;
+    object->state.unk08 = 0;
+    object->state.unk0c = -1;
+    object->state.unk00 = 0;
+    object->state.unk0e = -1;
+    object->state.unk10 = -1;
+    object->state.unk13_0 = 0;
+    object->state.unk13_1 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8CE0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8D30);
+void func_002B8D30(FieldSequenceState40* object, u8 mode)
+{
+    object->state.unk12_0_3 = mode;
+    object->state.unk13_0 = object->state.unk12_0_3 == 4 || object->state.unk12_4_7 == 4;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8D90);
+void func_002B8D90(FieldSequenceState40* object, u8 mode)
+{
+    object->state.unk12_4_7 = mode;
+    object->state.unk13_0 = object->state.unk12_0_3 == 4 || object->state.unk12_4_7 == 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8DF0);
 
@@ -528,11 +610,19 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BA8
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BABE0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BAC40);
+void func_002BAC40(FieldSequenceState10* object, u8 mode)
+{
+    object->state.unk12_0_3 = mode;
+    object->state.unk13_0 = object->state.unk12_0_3 == 4 || object->state.unk12_4_7 == 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BACA0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BAD00);
+void func_002BAD00(FieldSequenceState40* object, u8 mode)
+{
+    object->state.unk12_0_3 = mode;
+    object->state.unk13_0 = object->state.unk12_0_3 == 4 || object->state.unk12_4_7 == 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BAD60);
 
@@ -544,13 +634,30 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BAE
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BAE80);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BAE90);
+void func_002BAE90(FieldSequenceState40* object)
+{
+    object->unk04 = 0;
+    object->state.unk12_0_3 = 1;
+    object->state.unk12_4_7 = 1;
+    object->state.unk0a = 0;
+    object->state.unk08 = 0;
+    object->state.unk0c = -1;
+    object->state.unk00 = 0;
+    object->state.unk0e = -1;
+    object->state.unk10 = -1;
+    object->state.unk13_0 = 0;
+    object->state.unk13_1 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BAF20);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BAFD0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB020);
+void func_002BB020(FieldSequenceState40* object, u8 mode)
+{
+    object->state.unk12_4_7 = mode;
+    object->state.unk13_0 = object->state.unk12_0_3 == 4 || object->state.unk12_4_7 == 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB080);
 
@@ -634,13 +741,30 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB9
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBA00);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBA30);
+void func_002BBA30(FieldSequenceState10* object)
+{
+    object->unk04 = 0;
+    object->state.unk12_0_3 = 1;
+    object->state.unk12_4_7 = 1;
+    object->state.unk0a = 0;
+    object->state.unk08 = 0;
+    object->state.unk0c = -1;
+    object->state.unk00 = 0;
+    object->state.unk0e = -1;
+    object->state.unk10 = -1;
+    object->state.unk13_0 = 0;
+    object->state.unk13_1 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBAC0);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBB60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBBC0);
+void func_002BBBC0(FieldSequenceState10* object, u8 mode)
+{
+    object->state.unk12_4_7 = mode;
+    object->state.unk13_0 = object->state.unk12_0_3 == 4 || object->state.unk12_4_7 == 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBC20);
 
