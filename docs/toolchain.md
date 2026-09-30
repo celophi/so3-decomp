@@ -28,6 +28,17 @@ Boot is written to `build/boot/SLUS_204.88`, with its comparison report in
 `build/overlays/<id>/`. `make verify` repeats the comparison on those existing
 files without rebuilding them.
 
+## SDK code
+
+Confirmed SDK functions stay as `INCLUDE_ASM` in `src/sdk/<module>/`. They are
+excluded from objdiff and decomp.dev progress, but remain in the linked binaries
+and whole-file verification. [config/sdk-functions.json](../config/sdk-functions.json)
+records the reviewed ranges, hashes, and identification evidence.
+
+The first pass identifies 151 EE kernel syscall wrappers in boot. Other library
+and compiler runtime code remains unclassified. The optional analysis commands
+are listed in the [README](../README.md#tools).
+
 ## Replacing a placeholder
 
 [src/boot/func_00101510.c](../src/boot/func_00101510.c) is a small example of
@@ -65,7 +76,7 @@ references `BattleApp.cpp` at `0x1FCAC8`. There's direct evidence of C++ use in
 those overlays, even though the original classes and source boundaries still
 need to be worked out.
 
-The other 96 files keep the `.c` extension from the initial scaffold. **That
+Other game units keep the `.c` extension from the initial scaffold. **That
 choice is provisional.** I haven't established that all of those functions
 were originally C. Units can move to C++ as the code and interfaces become
 clearer. The boot executable also contains `std::bad_alloc`, though runtime
@@ -245,9 +256,10 @@ and `.reginfo` agree on global pointer `0x001BDFF0`.
 | `0x044200–0x0B6A80` | 469,120 | Keep resident data and unresolved VU/data contents |
 | `0x0B6A80–0x0B73B0` | 2,352 | Keep original ELF metadata and section headers |
 
-Startup stays in assembly. The five probe functions and the remaining resident
-regions have C placeholders under `src/boot/`. Known entry and probe addresses
-and sizes are recorded in [config/symbols.boot.txt](../config/symbols.boot.txt).
+Startup stays in assembly. The five probe functions and unclassified resident
+code have C placeholders under `src/boot/`; identified syscall wrappers are under
+`src/sdk/boot/`. Explicit function boundaries are recorded in
+[config/symbols.boot.txt](../config/symbols.boot.txt).
 The last observed EE routine returns at `0x00143B24`, followed by its delay-slot
 instruction at `0x00143B28` and padding up to `0x00143B80`. Data follows that
 boundary. This layout comes from inspection; I don't have an original link map.

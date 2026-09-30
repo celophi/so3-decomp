@@ -8,7 +8,7 @@ HOST_GID := $(shell id -g)
 RUN = $(DOCKER) run --rm --user "$(HOST_UID):$(HOST_GID)" \
 	--mount "type=bind,source=$(PROJECT_DIR),target=/so3" --workdir /so3
 
-.PHONY: help image shell test extract inventory split build verify objdiff-objects report ci-inputs compilers compiler-probe compiler-matrix
+.PHONY: help image shell test extract inventory split build verify objdiff-objects report ci-inputs compilers compiler-probe compiler-matrix analysis-tools sdk-scan sdk-symbols
 help:
 	@printf '%s\n' \
 		'make image                         Build dockerfiles/dev.dockerfile' \
@@ -20,6 +20,9 @@ help:
 		'make report                        Build, verify, and generate the decomp.dev report' \
 		'make objdiff-objects                Build original and C/C++-only comparison objects' \
 		'make ci-inputs ISO_DISC1=... ISO_DISC2=...  Stage both discs for the private image' \
+		'make analysis-tools                Fetch optional local SDK analysis tools' \
+		'make sdk-scan                      Scan named SDK patterns after splitting' \
+		'make sdk-symbols                   Recover ELF symbols with standalone CCC' \
 		'make compilers                     Fetch the pinned working compiler candidate' \
 		'make compiler-probe                Compile and compare five boot functions' \
 		'make compiler-matrix               Fetch and compare all 15 candidates' \
@@ -80,3 +83,13 @@ compiler-probe: compilers
 compiler-matrix:
 	$(RUN) "$(IMAGE)" python tools/compiler_probe.py setup --all
 	$(RUN) "$(IMAGE)" python tools/compiler_probe.py check --all
+
+# Optional analysis; normal builds and CI do not download these tools.
+analysis-tools:
+	$(RUN) "$(IMAGE)" python tools/analysis_tools.py
+
+sdk-scan: analysis-tools split
+	$(RUN) "$(IMAGE)" python tools/identify_sdk.py scan
+
+sdk-symbols: analysis-tools
+	$(RUN) "$(IMAGE)" python tools/identify_sdk.py symbols

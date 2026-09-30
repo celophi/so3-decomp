@@ -8,7 +8,7 @@ options:
   compiler: MWCCPS2
   asm_path: build/boot/asm
   asset_path: build/boot/bin
-  src_path: src/boot
+  src_path: src
   build_path: build/boot
   ld_script_path: build/boot/boot.ld
   generated_asm_macros_directory: build/boot/include
@@ -42,19 +42,42 @@ segments:
     subsegments:
       # Known function boundaries; resident_* chunks are provisional regions.
       - [0x680, asm, startup]
-      - [0x860, c, resident_001001E0]
-      - [0x18D0, c, func_00101250]
-      - [0x18E0, c, resident_00101260]
-      - [0x1B90, c, func_00101510]
-      - [0x1BD0, c, resident_00101550]
-      - [0xA700, c, func_0010A080]
-      - [0xA730, c, func_0010A0B0]
-      - [0xA760, c, resident_0010A0E0]
-      - [0x1F480, c, func_0011EE00]
+      - [0x860, c, boot/resident_001001E0]
+      - [0x18D0, c, boot/func_00101250]
+      - [0x18E0, c, boot/resident_00101260]
+      - [0x1B90, c, boot/func_00101510]
+      - [0x1BD0, c, boot/resident_00101550]
+      - [0xA700, c, boot/func_0010A080]
+      - [0xA730, c, boot/func_0010A0B0]
+      - [0xA760, c, boot/resident_0010A0E0]
+      - [0x1F480, c, boot/func_0011EE00]
       # Provisional groups at detected function starts, roughly 64 KiB each.
-      - [0x1F4F0, c, resident_0011EE70]
-      - [0x2F778, c, resident_0012F0F8]
-      - [0x3FA60, c, resident_0013F3E0]
+      - [0x1F4F0, c, boot/resident_0011EE70]
+      # Confirmed kernel syscall veneers are excluded from progress.
+      - [0x21FC0, c, sdk/boot/syscalls_00121940]
+      - [0x22860, c, boot/resident_001221E0]
+      - [0x2A9C8, c, sdk/boot/syscalls_0012A348]
+      - [0x2A9E8, c, boot/resident_0012A368]
+      - [0x2AAC0, c, sdk/boot/syscalls_0012A440]
+      - [0x2AAE0, c, boot/resident_0012A460]
+      - [0x2AB20, c, sdk/boot/syscalls_0012A4A0]
+      - [0x2AB30, c, boot/resident_0012A4B0]
+      - [0x2AB50, c, sdk/boot/syscalls_0012A4D0]
+      - [0x2AB70, c, boot/resident_0012A4F0]
+      - [0x2B398, c, sdk/boot/syscalls_0012AD18]
+      - [0x2B3A8, c, boot/resident_0012AD28]
+      - [0x2B3E8, c, sdk/boot/syscalls_0012AD68]
+      - [0x2B3F8, c, boot/resident_0012AD78]
+      - [0x2B440, c, sdk/boot/syscalls_0012ADC0]
+      - [0x2B450, c, boot/resident_0012ADD0]
+      - [0x2B5A8, c, sdk/boot/syscalls_0012AF28]
+      - [0x2B5B8, c, boot/resident_0012AF38]
+      - [0x2B808, c, sdk/boot/syscalls_0012B188]
+      - [0x2B818, c, boot/resident_0012B198]
+      - [0x2B860, c, sdk/boot/syscalls_0012B1E0]
+      - [0x2B870, c, boot/resident_0012B1F0]
+      - [0x2F778, c, boot/resident_0012F0F8]
+      - [0x3FA60, c, boot/resident_0013F3E0]
   # The last observed EE routine ends at 0x143B2C; padding extends to 0x143B80.
   # Preserve the following data/VU region until its internal layout is mapped.
   - [0x44200, bin, resident_data]

@@ -15,3 +15,7 @@
 
 # Generated objdiff configuration
 /objdiff.json
+
+# Optional local analysis tools
+/tools/ccc/
+/tools/ghidra-emotionengine-reloaded/

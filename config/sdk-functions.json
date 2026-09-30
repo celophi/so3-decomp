@@ -1,0 +1,1656 @@
+{
+  "schema_version": 1,
+  "reference": {
+    "url": "https://github.com/chaoticgd/ghidra-emotionengine-reloaded/blob/ae013ee1475dc970db4fdeba3ec88def6b933d43/data/patterns/r5900_LE_patterns.xml",
+    "sha256": "1db3752102be9a681fbc79996f6e7c10024fd52187de18f8cb0ca74b9a97dd79"
+  },
+  "scope": "Reviewed SDK exclusions only; aliases are upstream labels, not proven unique names or an SDK version.",
+  "units": [
+    {
+      "module": "boot",
+      "source": "src/sdk/boot/syscalls_00121940.c",
+      "start": 139200,
+      "end": 141408,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Sony EE kernel syscall wrappers",
+      "evidence": "exact full-function match against the pinned named syscall patterns",
+      "functions": [
+        {
+          "name": "func_00121940",
+          "offset": 139200,
+          "address": 1186112,
+          "size": 16,
+          "sha256": "e56c20a39fe01d3826e9b3fa7b05b3a74f895c39ae940662de685e80b7232229",
+          "aliases": [
+            "RFU000_FullReset"
+          ]
+        },
+        {
+          "name": "func_00121950",
+          "offset": 139216,
+          "address": 1186128,
+          "size": 16,
+          "sha256": "ea8220dfbb906e35654db5cb889a05add39a38c2651011127b04e09cec546d51",
+          "aliases": [
+            "ResetEE"
+          ]
+        },
+        {
+          "name": "func_00121960",
+          "offset": 139232,
+          "address": 1186144,
+          "size": 16,
+          "sha256": "8a6757f7c69327bab3934513e3852f7fdf2b7561dfc5102b71c01765d7e242b7",
+          "aliases": [
+            "SetGsCrt"
+          ]
+        },
+        {
+          "name": "func_00121970",
+          "offset": 139248,
+          "address": 1186160,
+          "size": 16,
+          "sha256": "8066a9ddf86cbf3b2ffb65f87253b86433f9c42d1488af8b8791378d5aad345d",
+          "aliases": [
+            "RFU003"
+          ]
+        },
+        {
+          "name": "func_00121980",
+          "offset": 139264,
+          "address": 1186176,
+          "size": 16,
+          "sha256": "70a82c49d864d097db0d123bf99801c2c205415fc6b633fe1396583a3c957ec5",
+          "aliases": [
+            "_Exit"
+          ]
+        },
+        {
+          "name": "func_00121990",
+          "offset": 139280,
+          "address": 1186192,
+          "size": 16,
+          "sha256": "6b7475a7cdd447533670619a18908c1ccd329c55fd97eb18e33fde7184afb1d9",
+          "aliases": [
+            "RFU005_ResumeIntrDispatch"
+          ]
+        },
+        {
+          "name": "func_001219A0",
+          "offset": 139296,
+          "address": 1186208,
+          "size": 16,
+          "sha256": "88d7573d57d856bd5d707fec8ad3c9c216ea52c10068125398fee7dd0d842429",
+          "aliases": [
+            "_LoadExecPS2"
+          ]
+        },
+        {
+          "name": "func_001219B0",
+          "offset": 139312,
+          "address": 1186224,
+          "size": 16,
+          "sha256": "eef8b2985f64d6eae94cc4d5194352616094e5358f5d9392d3ce5a4b71ced6e2",
+          "aliases": [
+            "_ExecPS2"
+          ]
+        },
+        {
+          "name": "func_001219C0",
+          "offset": 139328,
+          "address": 1186240,
+          "size": 16,
+          "sha256": "c9954b4c2ee25878782512ca07bee21492bb788a99853a51ad97739f2d595e3c",
+          "aliases": [
+            "RFU008_ResumeT3IntrDispatch"
+          ]
+        },
+        {
+          "name": "func_001219D0",
+          "offset": 139344,
+          "address": 1186256,
+          "size": 16,
+          "sha256": "2ad8e1c3f53686162abb35a13f3ce0e407f24faebfa80b2631f3bbbb50ceb491",
+          "aliases": [
+            "RFU009"
+          ]
+        },
+        {
+          "name": "func_001219E0",
+          "offset": 139360,
+          "address": 1186272,
+          "size": 16,
+          "sha256": "8b355c58d27263300c11a2604010845199d322282b9caffcce849a51b5a441bc",
+          "aliases": [
+            "AddSbusIntcHandler"
+          ]
+        },
+        {
+          "name": "func_001219F0",
+          "offset": 139376,
+          "address": 1186288,
+          "size": 16,
+          "sha256": "fd130a7978031251186223d8df8df08f516104dae336fe18831a1823fc7aca76",
+          "aliases": [
+            "RemoveSbusIntcHandler"
+          ]
+        },
+        {
+          "name": "func_00121A00",
+          "offset": 139392,
+          "address": 1186304,
+          "size": 16,
+          "sha256": "e615d275e085aef1652de7355bd971d67c3492473c64e566e7580c95e3e68c41",
+          "aliases": [
+            "Interrupt2Iop"
+          ]
+        },
+        {
+          "name": "func_00121A10",
+          "offset": 139408,
+          "address": 1186320,
+          "size": 16,
+          "sha256": "fb383daf80ce1d54e217c6f1a977d271067b421c29e096298b9957519eba5670",
+          "aliases": [
+            "SetVTLBRefillHandler"
+          ]
+        },
+        {
+          "name": "func_00121A20",
+          "offset": 139424,
+          "address": 1186336,
+          "size": 16,
+          "sha256": "36e9e5edba060d89c2b88d436fd82be2ede917544c24d5df29f96ca2306021cc",
+          "aliases": [
+            "SetVCommonHandler"
+          ]
+        },
+        {
+          "name": "func_00121A30",
+          "offset": 139440,
+          "address": 1186352,
+          "size": 16,
+          "sha256": "bffddb5dd80deb092ec1defade678db3f82cb8baa993c1c200dbf2c0ccf7e574",
+          "aliases": [
+            "SetVInterruptHandler"
+          ]
+        },
+        {
+          "name": "func_00121A40",
+          "offset": 139456,
+          "address": 1186368,
+          "size": 16,
+          "sha256": "531210b73f8542bd15829d70ca393d04d9434ae40a4a4a584a9068fe544aa2dc",
+          "aliases": [
+            "AddIntcHandler",
+            "AddIntcHandler2"
+          ]
+        },
+        {
+          "name": "func_00121A50",
+          "offset": 139472,
+          "address": 1186384,
+          "size": 16,
+          "sha256": "531210b73f8542bd15829d70ca393d04d9434ae40a4a4a584a9068fe544aa2dc",
+          "aliases": [
+            "AddIntcHandler",
+            "AddIntcHandler2"
+          ]
+        },
+        {
+          "name": "func_00121A60",
+          "offset": 139488,
+          "address": 1186400,
+          "size": 16,
+          "sha256": "2152d18038e81641f58165da69b83674eb1ef96cb427a9a7fbc1c27bc8a93afd",
+          "aliases": [
+            "RemoveIntcHandler"
+          ]
+        },
+        {
+          "name": "func_00121A70",
+          "offset": 139504,
+          "address": 1186416,
+          "size": 16,
+          "sha256": "e2c7ba24824d7861fa22647c10e29076894be7cb15bd4adc7d0c4c99bd5fe847",
+          "aliases": [
+            "AddDmacHandler",
+            "AddDmacHandler2"
+          ]
+        },
+        {
+          "name": "func_00121A80",
+          "offset": 139520,
+          "address": 1186432,
+          "size": 16,
+          "sha256": "e2c7ba24824d7861fa22647c10e29076894be7cb15bd4adc7d0c4c99bd5fe847",
+          "aliases": [
+            "AddDmacHandler",
+            "AddDmacHandler2"
+          ]
+        },
+        {
+          "name": "func_00121A90",
+          "offset": 139536,
+          "address": 1186448,
+          "size": 16,
+          "sha256": "0a8f8d01319052db6f178dad9c9066aa5c308392976ad7925d389768aa14ffce",
+          "aliases": [
+            "RemoveDmacHandler"
+          ]
+        },
+        {
+          "name": "func_00121AA0",
+          "offset": 139552,
+          "address": 1186464,
+          "size": 16,
+          "sha256": "33905591b4e0db2acec64369bab3e5ad62733dd7246554afd121c175b8664aec",
+          "aliases": [
+            "_EnableIntc"
+          ]
+        },
+        {
+          "name": "func_00121AB0",
+          "offset": 139568,
+          "address": 1186480,
+          "size": 16,
+          "sha256": "e315a953d45b1bfc3df260331967b96f9d9062cc567dcaf8f2cdce24763fda49",
+          "aliases": [
+            "_DisableIntc"
+          ]
+        },
+        {
+          "name": "func_00121AC0",
+          "offset": 139584,
+          "address": 1186496,
+          "size": 16,
+          "sha256": "771b359f87fd827362fefa683baaa5b36423b57e123edc1fe8e9563504f07382",
+          "aliases": [
+            "_EnableDmac"
+          ]
+        },
+        {
+          "name": "func_00121AD0",
+          "offset": 139600,
+          "address": 1186512,
+          "size": 16,
+          "sha256": "f75368c7c6ba02cd47dcac4706b01fb271d8e125b7dc7feaa8dd735c39af1ba2",
+          "aliases": [
+            "_DisableDmac"
+          ]
+        },
+        {
+          "name": "func_00121AE0",
+          "offset": 139616,
+          "address": 1186528,
+          "size": 16,
+          "sha256": "3c59284c95f244a03b900f24f843463a12d41b1e26c74a7227802c1a05f4cac0",
+          "aliases": [
+            "SetAlarm"
+          ]
+        },
+        {
+          "name": "func_00121AF0",
+          "offset": 139632,
+          "address": 1186544,
+          "size": 16,
+          "sha256": "f0b005ad39fdf49c92aab9c743efcb69e40bae1845bb2e039efb2166fb94aaf5",
+          "aliases": [
+            "ReleaseAlarm"
+          ]
+        },
+        {
+          "name": "func_00121B00",
+          "offset": 139648,
+          "address": 1186560,
+          "size": 16,
+          "sha256": "f4647ec7fa28d0e76e993c2610ba44f11203abac46bf1beb956ae46ca495fa66",
+          "aliases": [
+            "_iEnableIntc"
+          ]
+        },
+        {
+          "name": "func_00121B10",
+          "offset": 139664,
+          "address": 1186576,
+          "size": 16,
+          "sha256": "8d268f73e6cec5a6687608704622bc234f586ae016096c1d23564d8fd5ed21b7",
+          "aliases": [
+            "_iDisableIntc"
+          ]
+        },
+        {
+          "name": "func_00121B20",
+          "offset": 139680,
+          "address": 1186592,
+          "size": 16,
+          "sha256": "344439e7577c94e7c8732077cc39199f385d427e53ea45a58dbe1b42e48d5311",
+          "aliases": [
+            "_iEnableDmac"
+          ]
+        },
+        {
+          "name": "func_00121B30",
+          "offset": 139696,
+          "address": 1186608,
+          "size": 16,
+          "sha256": "2299d893df6fc3c567eaae4675ccdb36b046fd5f9881f6e5f914e0cfd4773296",
+          "aliases": [
+            "_iDisableDmac"
+          ]
+        },
+        {
+          "name": "func_00121B40",
+          "offset": 139712,
+          "address": 1186624,
+          "size": 16,
+          "sha256": "92dfe4bcae6129aaa697f14c861b091ff60255a966cb6da1cb12baee1192e6ec",
+          "aliases": [
+            "iSetAlarm"
+          ]
+        },
+        {
+          "name": "func_00121B50",
+          "offset": 139728,
+          "address": 1186640,
+          "size": 16,
+          "sha256": "da7a1d16c508ddf51d05a4859e673550113a0ac4a1a41c69a3a7335d8cc1a806",
+          "aliases": [
+            "iReleaseAlarm"
+          ]
+        },
+        {
+          "name": "func_00121B60",
+          "offset": 139744,
+          "address": 1186656,
+          "size": 16,
+          "sha256": "40d9221f2061000b8228d4160f051a3171767982b5ba1f3b63f750576172744c",
+          "aliases": [
+            "CreateThread"
+          ]
+        },
+        {
+          "name": "func_00121B70",
+          "offset": 139760,
+          "address": 1186672,
+          "size": 16,
+          "sha256": "98eff20d8f78d8b5a232436097c2a1390caf00b61c73e494bd9ab35fc61070a8",
+          "aliases": [
+            "DeleteThread"
+          ]
+        },
+        {
+          "name": "func_00121B80",
+          "offset": 139776,
+          "address": 1186688,
+          "size": 16,
+          "sha256": "aff0b33b3ff75096eade9015f441d3a45bb3847219acd03f4de73186d10b42d2",
+          "aliases": [
+            "_StartThread"
+          ]
+        },
+        {
+          "name": "func_00121B90",
+          "offset": 139792,
+          "address": 1186704,
+          "size": 16,
+          "sha256": "80877837e0ac40033a3c2da9f186008923b3d88b028a00071f52f7205f017046",
+          "aliases": [
+            "ExitThread"
+          ]
+        },
+        {
+          "name": "func_00121BA0",
+          "offset": 139808,
+          "address": 1186720,
+          "size": 16,
+          "sha256": "ae06fb8f1b3931443d10c57f2ac37fcd968a5b49e55695a33c2872fa2e7a7ec8",
+          "aliases": [
+            "ExitDeleteThread"
+          ]
+        },
+        {
+          "name": "func_00121BB0",
+          "offset": 139824,
+          "address": 1186736,
+          "size": 16,
+          "sha256": "9290163af6880de36683a5db2f207c89a57a54ba3aca47f66a794cbbd9070f83",
+          "aliases": [
+            "TerminateThread"
+          ]
+        },
+        {
+          "name": "func_00121BC0",
+          "offset": 139840,
+          "address": 1186752,
+          "size": 16,
+          "sha256": "cb36ff3be60c8a5902a9c224e807d2f095f48331076bacf06f6f34e76ab32a2f",
+          "aliases": [
+            "iTerminateThread"
+          ]
+        },
+        {
+          "name": "func_00121BD0",
+          "offset": 139856,
+          "address": 1186768,
+          "size": 16,
+          "sha256": "4f32a2872b22f8a7302eee6b7749805f31be6b1203d932a276993b2a57bf98e0",
+          "aliases": [
+            "DisableDispatchThread"
+          ]
+        },
+        {
+          "name": "func_00121BE0",
+          "offset": 139872,
+          "address": 1186784,
+          "size": 16,
+          "sha256": "773ff37cc3cfc2236ddefa5578f5dbf6ce5f66aa5e468d0784c5a200b881c216",
+          "aliases": [
+            "EnableDispatchThread"
+          ]
+        },
+        {
+          "name": "func_00121BF0",
+          "offset": 139888,
+          "address": 1186800,
+          "size": 16,
+          "sha256": "ef7444e46d0ba0426d2ecb637caa1e6f71212d4928225852f34b19ffd94ff03b",
+          "aliases": [
+            "ChangeThreadPriority"
+          ]
+        },
+        {
+          "name": "func_00121C00",
+          "offset": 139904,
+          "address": 1186816,
+          "size": 16,
+          "sha256": "5d8b7d1dc85e0c2f2d316779f93f6ccdb5a9e5bc8d01174e0fa929f837e6c4f5",
+          "aliases": [
+            "iChangeThreadPriority"
+          ]
+        },
+        {
+          "name": "func_00121C10",
+          "offset": 139920,
+          "address": 1186832,
+          "size": 16,
+          "sha256": "dafe67deda7c6e664dd1e27e02a177fa43618fa55c5fc7b8253af561f34cf04e",
+          "aliases": [
+            "RotateThreadReadyQueue"
+          ]
+        },
+        {
+          "name": "func_00121C20",
+          "offset": 139936,
+          "address": 1186848,
+          "size": 16,
+          "sha256": "38cfd818d5fc50413c10e22a619d4bf39c2b37caa61ddad978536c0e3c631b6d",
+          "aliases": [
+            "_iRotateThreadReadyQueue"
+          ]
+        },
+        {
+          "name": "func_00121C30",
+          "offset": 139952,
+          "address": 1186864,
+          "size": 16,
+          "sha256": "64adfb31977fb29487c92e8a045430198c02fbfbc3324f536083d106014e4246",
+          "aliases": [
+            "ReleaseWaitThread"
+          ]
+        },
+        {
+          "name": "func_00121C40",
+          "offset": 139968,
+          "address": 1186880,
+          "size": 16,
+          "sha256": "4e44f15d1e780571f4532ef3f189fccee59847692472ee45d581e42fefa99b0b",
+          "aliases": [
+            "iReleaseWaitThread"
+          ]
+        },
+        {
+          "name": "func_00121C50",
+          "offset": 139984,
+          "address": 1186896,
+          "size": 16,
+          "sha256": "c112eedc7463dfca16594f740970e0f84669f28330e309d1bcdb21e1a43a05aa",
+          "aliases": [
+            "GetThreadId"
+          ]
+        },
+        {
+          "name": "func_00121C60",
+          "offset": 140000,
+          "address": 1186912,
+          "size": 16,
+          "sha256": "328a3a74a1552362aaab378aede3063351e9ce9ea1f22cdf29bc05d239e83752",
+          "aliases": [
+            "ReferThreadStatus"
+          ]
+        },
+        {
+          "name": "func_00121C70",
+          "offset": 140016,
+          "address": 1186928,
+          "size": 16,
+          "sha256": "0bfbd15cb2871d5685aa93a4140a9b22fcc1a4691e63d2cb7aa309d1b82d6b40",
+          "aliases": [
+            "iReferThreadStatus"
+          ]
+        },
+        {
+          "name": "func_00121C80",
+          "offset": 140032,
+          "address": 1186944,
+          "size": 16,
+          "sha256": "96fe7c015508955bcd67491be7976e3f991fe5bdf74e8ae0c3675451b9f0bc81",
+          "aliases": [
+            "SleepThread"
+          ]
+        },
+        {
+          "name": "func_00121C90",
+          "offset": 140048,
+          "address": 1186960,
+          "size": 16,
+          "sha256": "51eb8bab785aac875e2406a88f461e59e61706de1584fdde013af6455de3ab16",
+          "aliases": [
+            "WakeupThread"
+          ]
+        },
+        {
+          "name": "func_00121CA0",
+          "offset": 140064,
+          "address": 1186976,
+          "size": 16,
+          "sha256": "c3134f8fffdb70aa06a4fc082ae9fc9b79952365b55aeb7e325d33219cd82d2c",
+          "aliases": [
+            "_iWakeupThread"
+          ]
+        },
+        {
+          "name": "func_00121CB0",
+          "offset": 140080,
+          "address": 1186992,
+          "size": 16,
+          "sha256": "ea5cbd193010114e86b4d9405038a1a983f99feb837a9c5d863f43751f23bdc5",
+          "aliases": [
+            "CancelWakeupThread"
+          ]
+        },
+        {
+          "name": "func_00121CC0",
+          "offset": 140096,
+          "address": 1187008,
+          "size": 16,
+          "sha256": "88c0a2ff039963b5c7cfa047ff672913fe5768ec87585ae7078f6625b6efc41d",
+          "aliases": [
+            "iCancelWakeupThread"
+          ]
+        },
+        {
+          "name": "func_00121CD0",
+          "offset": 140112,
+          "address": 1187024,
+          "size": 16,
+          "sha256": "ce3706d3089d7149f30547798502ac48cb4ac2c6ee1c2daf6b07b32bcf50daaa",
+          "aliases": [
+            "SuspendThread"
+          ]
+        },
+        {
+          "name": "func_00121CE0",
+          "offset": 140128,
+          "address": 1187040,
+          "size": 16,
+          "sha256": "0704a05eaca4066bac08c61b585f6cfd47ac435373de4b0b49063756a6c6ed71",
+          "aliases": [
+            "_iSuspendThread"
+          ]
+        },
+        {
+          "name": "func_00121CF0",
+          "offset": 140144,
+          "address": 1187056,
+          "size": 16,
+          "sha256": "1e35a8f1d57d3a7d4812ac9d98194947bb637a102f018dbe12f94230ada33e9f",
+          "aliases": [
+            "ResumeThread"
+          ]
+        },
+        {
+          "name": "func_00121D00",
+          "offset": 140160,
+          "address": 1187072,
+          "size": 16,
+          "sha256": "744e117d8c5c88115d9dd6f9fc07797a486cfdfaf7bd8bbbe2ac4e9273247d30",
+          "aliases": [
+            "iResumeThread"
+          ]
+        },
+        {
+          "name": "func_00121D10",
+          "offset": 140176,
+          "address": 1187088,
+          "size": 16,
+          "sha256": "79b1453488a24283eeb888bbd783af4711fb5423bfd3402e09635dd02fce8094",
+          "aliases": [
+            "JoinThread"
+          ]
+        },
+        {
+          "name": "func_00121D20",
+          "offset": 140192,
+          "address": 1187104,
+          "size": 16,
+          "sha256": "75831fa24a2ca24b0f9e0726025e3490bcf68e855eef7295503e460245b37ddf",
+          "aliases": [
+            "RFU060_SetupThread"
+          ]
+        },
+        {
+          "name": "func_00121D30",
+          "offset": 140208,
+          "address": 1187120,
+          "size": 16,
+          "sha256": "460fc6dacb45468d935ecbee51f4b5dafa52d2dbf9c707ba64ef70d018b64a22",
+          "aliases": [
+            "RFU061_SetupHeap"
+          ]
+        },
+        {
+          "name": "func_00121D40",
+          "offset": 140224,
+          "address": 1187136,
+          "size": 16,
+          "sha256": "65effb4d4675be95eb85ec3982082b569d0aab33d4f930700916525c9d573ec5",
+          "aliases": [
+            "EndOfHeap"
+          ]
+        },
+        {
+          "name": "func_00121D50",
+          "offset": 140240,
+          "address": 1187152,
+          "size": 16,
+          "sha256": "f766e10c2a338c73556f74e508a2af782d03cb0010b2afc7e650efada9e3fdc4",
+          "aliases": [
+            "RFU063"
+          ]
+        },
+        {
+          "name": "func_00121D60",
+          "offset": 140256,
+          "address": 1187168,
+          "size": 16,
+          "sha256": "15cc8cb76a3cfe6bfe1ac778a1c2886a9f8ff27642af4d7c43aa536cbeabfe09",
+          "aliases": [
+            "CreateSema"
+          ]
+        },
+        {
+          "name": "func_00121D70",
+          "offset": 140272,
+          "address": 1187184,
+          "size": 16,
+          "sha256": "3ca5c070183107898782fbcc8b2c18a933e2fc7bbcc3e1c56e011fabe69dada8",
+          "aliases": [
+            "DeleteSema"
+          ]
+        },
+        {
+          "name": "func_00121D80",
+          "offset": 140288,
+          "address": 1187200,
+          "size": 16,
+          "sha256": "582e1e7cc46f248cc93ac09c60ee94a9d04ddac963c093d7acf9776a3ef9079e",
+          "aliases": [
+            "SignalSema"
+          ]
+        },
+        {
+          "name": "func_00121D90",
+          "offset": 140304,
+          "address": 1187216,
+          "size": 16,
+          "sha256": "7047ae663ed3ac9a0034b2064fd449409612395ace7b07a1e5202fca43dc0205",
+          "aliases": [
+            "iSignalSema"
+          ]
+        },
+        {
+          "name": "func_00121DA0",
+          "offset": 140320,
+          "address": 1187232,
+          "size": 16,
+          "sha256": "9b10a1be68e962ca43e5a42fb7ceae3ccf7abef57cb030eba9bebcf10aa0bd4c",
+          "aliases": [
+            "WaitSema"
+          ]
+        },
+        {
+          "name": "func_00121DB0",
+          "offset": 140336,
+          "address": 1187248,
+          "size": 16,
+          "sha256": "17d11659b5652ae322bc89fb5f456f39b651b78972606584e9606d3a48eef5b3",
+          "aliases": [
+            "PollSema"
+          ]
+        },
+        {
+          "name": "func_00121DC0",
+          "offset": 140352,
+          "address": 1187264,
+          "size": 16,
+          "sha256": "e5219c493daf7da52e963b11a4e2dc3e058471e1dacbd000a8e5df143d4fd7d7",
+          "aliases": [
+            "iPollSema"
+          ]
+        },
+        {
+          "name": "func_00121DD0",
+          "offset": 140368,
+          "address": 1187280,
+          "size": 16,
+          "sha256": "ef2da384d211ab502924f0829d97483ea97ae7a1b8f7826c463ebb9d383a3829",
+          "aliases": [
+            "ReferSemaStatus"
+          ]
+        },
+        {
+          "name": "func_00121DE0",
+          "offset": 140384,
+          "address": 1187296,
+          "size": 16,
+          "sha256": "7333534686856a5e92637af98592b7568e256db563bef669a8d2dd4e1c1e8ec2",
+          "aliases": [
+            "iReferSemaStatus"
+          ]
+        },
+        {
+          "name": "func_00121DF0",
+          "offset": 140400,
+          "address": 1187312,
+          "size": 16,
+          "sha256": "86224202681ebaa04c28726170bd8fad72c049794e96472f1e246d064511911e",
+          "aliases": [
+            "RFU073"
+          ]
+        },
+        {
+          "name": "func_00121E00",
+          "offset": 140416,
+          "address": 1187328,
+          "size": 16,
+          "sha256": "cb60a79d0e764e5735caa3ccf3113d58b141e67b9b7e20140a5fe88222a9a8ae",
+          "aliases": [
+            "SetOsdConfigParam"
+          ]
+        },
+        {
+          "name": "func_00121E10",
+          "offset": 140432,
+          "address": 1187344,
+          "size": 16,
+          "sha256": "06705d7ea041d0fe71c7609a93301ee414a4222f8a45bece8e9f6f2d2b86324f",
+          "aliases": [
+            "GetOsdConfigParam"
+          ]
+        },
+        {
+          "name": "func_00121E20",
+          "offset": 140448,
+          "address": 1187360,
+          "size": 16,
+          "sha256": "8a22bb35788a3d649df250b1ed17ce33f13af3dabc8ca6cf6b503d6bdb05cd83",
+          "aliases": [
+            "GetGsHParam"
+          ]
+        },
+        {
+          "name": "func_00121E30",
+          "offset": 140464,
+          "address": 1187376,
+          "size": 16,
+          "sha256": "323a5b4f4056e83c33527a906a9c4a75fb5ab0b5d79e088b000eec093952fae3",
+          "aliases": [
+            "GetGsVParam"
+          ]
+        },
+        {
+          "name": "func_00121E40",
+          "offset": 140480,
+          "address": 1187392,
+          "size": 16,
+          "sha256": "87086634a02582129a11ecde51726beee3918fe385abcfe0e3cd35af144fe12f",
+          "aliases": [
+            "SetGsHParam"
+          ]
+        },
+        {
+          "name": "func_00121E50",
+          "offset": 140496,
+          "address": 1187408,
+          "size": 16,
+          "sha256": "da079fabde7d53b2eb015f87e50ef0c009c580c3223e707ef75091e643f50152",
+          "aliases": [
+            "SetGsVParam"
+          ]
+        },
+        {
+          "name": "func_00121E60",
+          "offset": 140512,
+          "address": 1187424,
+          "size": 16,
+          "sha256": "1009d138effae8d6d71d156d58cea876908cbf12c827584860b596f466404553",
+          "aliases": [
+            "RFU080_CreateEventFlag"
+          ]
+        },
+        {
+          "name": "func_00121E70",
+          "offset": 140528,
+          "address": 1187440,
+          "size": 16,
+          "sha256": "7f81d3fc77d60819b3494c45e0e93b537b3f85a16af6f6adcb1dd7238cf56096",
+          "aliases": [
+            "RFU081_DeleteEventFlag"
+          ]
+        },
+        {
+          "name": "func_00121E80",
+          "offset": 140544,
+          "address": 1187456,
+          "size": 16,
+          "sha256": "6f9ea10bef7aa52438052a1d26ab7a64d6fd95a4f0eb4190f76b4bdc88bd49d0",
+          "aliases": [
+            "RFU082_SetEventFlag"
+          ]
+        },
+        {
+          "name": "func_00121E90",
+          "offset": 140560,
+          "address": 1187472,
+          "size": 16,
+          "sha256": "a82fe0c1082e69cf49f035355420d87743ebaf8b55604d6ea9ec68a512307f8f",
+          "aliases": [
+            "RFU083_iSetEventFlag"
+          ]
+        },
+        {
+          "name": "func_00121EA0",
+          "offset": 140576,
+          "address": 1187488,
+          "size": 16,
+          "sha256": "29f0458053cb8b2477b7b3d46f0b3c651dda0d26c8dd5263a69944672ccf4b88",
+          "aliases": [
+            "RFU084_ClearEventFlag"
+          ]
+        },
+        {
+          "name": "func_00121EB0",
+          "offset": 140592,
+          "address": 1187504,
+          "size": 16,
+          "sha256": "e7998dbfd39ccf4998b041907f9650c5f23b294ce3eac9bab2d7e5f0de1d3f63",
+          "aliases": [
+            "RFU085_iClearEventFlag"
+          ]
+        },
+        {
+          "name": "func_00121EC0",
+          "offset": 140608,
+          "address": 1187520,
+          "size": 16,
+          "sha256": "5b9f78f3e73c7ea6c207f1fafa3eb08bd39824a946d5255efe46e7b639ebe3bd",
+          "aliases": [
+            "RFU086_WaitEvnetFlag"
+          ]
+        },
+        {
+          "name": "func_00121ED0",
+          "offset": 140624,
+          "address": 1187536,
+          "size": 16,
+          "sha256": "048f07323bfe12b91e27146205c25b493ddbf051c42303fbc46ce9dc59d6a52b",
+          "aliases": [
+            "RFU087_PollEvnetFlag"
+          ]
+        },
+        {
+          "name": "func_00121EE0",
+          "offset": 140640,
+          "address": 1187552,
+          "size": 16,
+          "sha256": "9c762169b17054d7cd7118474c194f7a87f6e63490aa1e9d07e5833ca8e4ee6e",
+          "aliases": [
+            "RFU088_iPollEvnetFlag"
+          ]
+        },
+        {
+          "name": "func_00121EF0",
+          "offset": 140656,
+          "address": 1187568,
+          "size": 16,
+          "sha256": "3c23830425305d37e4f8b5dcb8ddd3009bda937f35efda3b22dc157e13670adf",
+          "aliases": [
+            "RFU089_ReferEventFlagStatus"
+          ]
+        },
+        {
+          "name": "func_00121F00",
+          "offset": 140672,
+          "address": 1187584,
+          "size": 16,
+          "sha256": "56ab875a3a76c3cdc5227c5fe3198a4d79340aaf455a31466bac61ec05128e2b",
+          "aliases": [
+            "RFU090_iReferEventFlagStatus"
+          ]
+        },
+        {
+          "name": "func_00121F10",
+          "offset": 140688,
+          "address": 1187600,
+          "size": 16,
+          "sha256": "5cffb5c83dc7ac7cf5c0983aec069574a8c40c492e5b8ce7f0544a82699a4574",
+          "aliases": [
+            "RFU091"
+          ]
+        },
+        {
+          "name": "func_00121F20",
+          "offset": 140704,
+          "address": 1187616,
+          "size": 16,
+          "sha256": "4176237c1544651365ccb5a8348f7eef58448b872ff26ca48fd009a04fa199a8",
+          "aliases": [
+            "EnableIntcHandler"
+          ]
+        },
+        {
+          "name": "func_00121F30",
+          "offset": 140720,
+          "address": 1187632,
+          "size": 16,
+          "sha256": "8658d6634a8d88f9a6fe29c70e4fd8f163a901d5949ff0f06e99686386b4c501",
+          "aliases": [
+            "iEnableIntcHandler"
+          ]
+        },
+        {
+          "name": "func_00121F40",
+          "offset": 140736,
+          "address": 1187648,
+          "size": 16,
+          "sha256": "5e3079a2e45198e352865a18879fa9d283896e3f3cf869d4c2ca03cc64107531",
+          "aliases": [
+            "DisableIntcHandler"
+          ]
+        },
+        {
+          "name": "func_00121F50",
+          "offset": 140752,
+          "address": 1187664,
+          "size": 16,
+          "sha256": "9cdf0990a26018c0461662648f6b3e1df5efa74743675446713dd459cca0699f",
+          "aliases": [
+            "iDisableIntcHandler"
+          ]
+        },
+        {
+          "name": "func_00121F60",
+          "offset": 140768,
+          "address": 1187680,
+          "size": 16,
+          "sha256": "019a48dda49a51bf5bf29c7719b8617d66c1f21199b37fbd859895a48452cdc4",
+          "aliases": [
+            "EnableDmacHandler"
+          ]
+        },
+        {
+          "name": "func_00121F70",
+          "offset": 140784,
+          "address": 1187696,
+          "size": 16,
+          "sha256": "a41b04b30cbf378cd4f87f3ab7534fe134c158b2efbc9696ba7b2f89cdf9c3b9",
+          "aliases": [
+            "iEnableDmacHandler"
+          ]
+        },
+        {
+          "name": "func_00121F80",
+          "offset": 140800,
+          "address": 1187712,
+          "size": 16,
+          "sha256": "f4942373aeab070bccafaab925505650a2bb73123770fb6a42d88e8164201d57",
+          "aliases": [
+            "DisableDmacHandler"
+          ]
+        },
+        {
+          "name": "func_00121F90",
+          "offset": 140816,
+          "address": 1187728,
+          "size": 16,
+          "sha256": "3252d0dbb59bca71f472f8c8448ba2560bae4511301d927e2ba6dfa45e34d0a3",
+          "aliases": [
+            "iDisableDmacHandler"
+          ]
+        },
+        {
+          "name": "func_00121FA0",
+          "offset": 140832,
+          "address": 1187744,
+          "size": 16,
+          "sha256": "cc098c6f4e1a84b177eb435c59830559e71f1707a58e4871d12d195a11d172bb",
+          "aliases": [
+            "KSeg0"
+          ]
+        },
+        {
+          "name": "func_00121FB0",
+          "offset": 140848,
+          "address": 1187760,
+          "size": 16,
+          "sha256": "83b70a958b55c3f20f9c0c6f2ffae5b4636f23dc89ed6019316bc3d87b891977",
+          "aliases": [
+            "EnableCache"
+          ]
+        },
+        {
+          "name": "func_00121FC0",
+          "offset": 140864,
+          "address": 1187776,
+          "size": 16,
+          "sha256": "0c274e66ac8dbee83c8297ad8a63994112040016fa3b74a32dcbef33956a03eb",
+          "aliases": [
+            "DisableCache"
+          ]
+        },
+        {
+          "name": "func_00121FD0",
+          "offset": 140880,
+          "address": 1187792,
+          "size": 16,
+          "sha256": "1344bfb92e3622b12313439b8bb3068f0473cc2e019652532d5d2eb7a3a09b33",
+          "aliases": [
+            "GetCop0"
+          ]
+        },
+        {
+          "name": "func_00121FE0",
+          "offset": 140896,
+          "address": 1187808,
+          "size": 16,
+          "sha256": "5981c1e46292010b462c1aa96986db0e142b6d8d72e68d4ed765af16db6ee74f",
+          "aliases": [
+            "FlushCache"
+          ]
+        },
+        {
+          "name": "func_00121FF0",
+          "offset": 140912,
+          "address": 1187824,
+          "size": 16,
+          "sha256": "f6fdf576c7f02f378868455c3cd3be82852e97b4a2c4b95c09b85003c344db07",
+          "aliases": [
+            "CpuConfig"
+          ]
+        },
+        {
+          "name": "func_00122000",
+          "offset": 140928,
+          "address": 1187840,
+          "size": 16,
+          "sha256": "640c583d21e8b9e2261f9854667bb2dad2376ff5e3f85611ea52ece4d65d8d0c",
+          "aliases": [
+            "iGetCop0"
+          ]
+        },
+        {
+          "name": "func_00122010",
+          "offset": 140944,
+          "address": 1187856,
+          "size": 16,
+          "sha256": "a93ab6774f54164854602c7b6740ac6dc40197ac4998f4a4cadf7a5e12438c36",
+          "aliases": [
+            "iFlushCache"
+          ]
+        },
+        {
+          "name": "func_00122020",
+          "offset": 140960,
+          "address": 1187872,
+          "size": 16,
+          "sha256": "ed3ee6b299358b4a0cbba493b2446bd2b7addc9d5ed1226fc380b50ad50b36a1",
+          "aliases": [
+            "iCpuConfig"
+          ]
+        },
+        {
+          "name": "func_00122030",
+          "offset": 140976,
+          "address": 1187888,
+          "size": 16,
+          "sha256": "616a076c71d8a18119e9d56b2aafecd3139bf3c3ac7f1aabadf820ab24d59178",
+          "aliases": [
+            "sceSifStopDma"
+          ]
+        },
+        {
+          "name": "func_00122040",
+          "offset": 140992,
+          "address": 1187904,
+          "size": 16,
+          "sha256": "c6ae6c171de5f1cde66407bcf2ed03f9f3b4fdc6b2e03d102b6b525bd50269e5",
+          "aliases": [
+            "SetCPUTimerHandler"
+          ]
+        },
+        {
+          "name": "func_00122050",
+          "offset": 141008,
+          "address": 1187920,
+          "size": 16,
+          "sha256": "de4f83199278310f6299ae5c0b1494407e426b9b0c49340385248a60cec8648d",
+          "aliases": [
+            "SetCPUTimer"
+          ]
+        },
+        {
+          "name": "func_00122060",
+          "offset": 141024,
+          "address": 1187936,
+          "size": 16,
+          "sha256": "081dbba6f76deeb98a34bae4d5f4a9c5b7c8bb0614fba26dc077bd2b04766d21",
+          "aliases": [
+            "SetOsdConfigParam2"
+          ]
+        },
+        {
+          "name": "func_00122070",
+          "offset": 141040,
+          "address": 1187952,
+          "size": 16,
+          "sha256": "c138d3f89d0ccab5167eb9d37d787f228841108d87ab1f8362be0bbc878a15c3",
+          "aliases": [
+            "GetOsdConfigParam2"
+          ]
+        },
+        {
+          "name": "func_00122080",
+          "offset": 141056,
+          "address": 1187968,
+          "size": 16,
+          "sha256": "239633d72d27eb4019da55751bd678703d5beeb2f3a69956cc0b0bb5d0ab82e2",
+          "aliases": [
+            "GsGetIMR"
+          ]
+        },
+        {
+          "name": "func_00122090",
+          "offset": 141072,
+          "address": 1187984,
+          "size": 16,
+          "sha256": "c3e8d50d512cfdf2507c528a37e918569aafdd239f73de64f270b06544a90d49",
+          "aliases": [
+            "iGsGetIMR"
+          ]
+        },
+        {
+          "name": "func_001220A0",
+          "offset": 141088,
+          "address": 1188000,
+          "size": 16,
+          "sha256": "ee78a8ad79634621bb6870f48677ec5b74dd82566e7cf348598eff42358ff439",
+          "aliases": [
+            "GsPutIMR"
+          ]
+        },
+        {
+          "name": "func_001220B0",
+          "offset": 141104,
+          "address": 1188016,
+          "size": 16,
+          "sha256": "51f9fc322861bd91d78d6d833824230b6f497b9445f229c8646e2d9d7506dd2b",
+          "aliases": [
+            "iGsPutIMR"
+          ]
+        },
+        {
+          "name": "func_001220C0",
+          "offset": 141120,
+          "address": 1188032,
+          "size": 16,
+          "sha256": "42a25c4fae4b837f5d8ab3a63f4821dc4874a8769dd131bd8390b675b171798f",
+          "aliases": [
+            "SetPgifHandler"
+          ]
+        },
+        {
+          "name": "func_001220D0",
+          "offset": 141136,
+          "address": 1188048,
+          "size": 16,
+          "sha256": "6d30148233a828ffe961acc0f6bbc668842794aa561c676586b1298e4aff7595",
+          "aliases": [
+            "SetVSyncFlag"
+          ]
+        },
+        {
+          "name": "func_001220E0",
+          "offset": 141152,
+          "address": 1188064,
+          "size": 16,
+          "sha256": "01ace03e1efe48bdf1100ed060d468ba2b2623ee9360601bd53789edf49c71ea",
+          "aliases": [
+            "RFU116_SetSyscall"
+          ]
+        },
+        {
+          "name": "func_001220F0",
+          "offset": 141168,
+          "address": 1188080,
+          "size": 16,
+          "sha256": "778c84a15596134eea0b0a47a070a188521e557240431258aca068e722fc5c0b",
+          "aliases": [
+            "_print"
+          ]
+        },
+        {
+          "name": "func_00122100",
+          "offset": 141184,
+          "address": 1188096,
+          "size": 16,
+          "sha256": "735b6d7d635fd6f5250dad1db348db6a4df5ef66efd2d8d3c9cbeaa6b4d0f10e",
+          "aliases": [
+            "sceSifDmaStat"
+          ]
+        },
+        {
+          "name": "func_00122110",
+          "offset": 141200,
+          "address": 1188112,
+          "size": 16,
+          "sha256": "8e1cb196dde9ab36c7b1c047bf6ce05a7cea4ba0124f15211461b830553670b0",
+          "aliases": [
+            "isceSifDmaStat"
+          ]
+        },
+        {
+          "name": "func_00122120",
+          "offset": 141216,
+          "address": 1188128,
+          "size": 16,
+          "sha256": "41cb12c03fa12fd2d62b7d7b48b255c3576515aee1677b29c754c24f774434b2",
+          "aliases": [
+            "sceSifSetDma"
+          ]
+        },
+        {
+          "name": "func_00122130",
+          "offset": 141232,
+          "address": 1188144,
+          "size": 16,
+          "sha256": "3cf31e9a23543413c06d6105cd3829ebd18c8dd04bb15bd183131b16d744a515",
+          "aliases": [
+            "isceSifSetDma"
+          ]
+        },
+        {
+          "name": "func_00122140",
+          "offset": 141248,
+          "address": 1188160,
+          "size": 16,
+          "sha256": "01c4a2c99fc43ac7a88f07db566838ed586a651d2469ee67b15330ab8a17f2a1",
+          "aliases": [
+            "sceSifSetDChain"
+          ]
+        },
+        {
+          "name": "func_00122150",
+          "offset": 141264,
+          "address": 1188176,
+          "size": 16,
+          "sha256": "a438924aacedf090e1cdda7df9d750cbe44ef20e1518820ce052a36e38d52e45",
+          "aliases": [
+            "isceSifSetDChain"
+          ]
+        },
+        {
+          "name": "func_00122160",
+          "offset": 141280,
+          "address": 1188192,
+          "size": 16,
+          "sha256": "b80e5efebaf7051c0d99b6f4329003f6befca0d3964c2a18452c7a2ba117c73d",
+          "aliases": [
+            "sceSifSetReg"
+          ]
+        },
+        {
+          "name": "func_00122170",
+          "offset": 141296,
+          "address": 1188208,
+          "size": 16,
+          "sha256": "2d9be8c5bcf0074642a0adcb70fd6741794ae46ab28e3ff4ebab59aff0efd8db",
+          "aliases": [
+            "sceSifGetReg"
+          ]
+        },
+        {
+          "name": "func_00122180",
+          "offset": 141312,
+          "address": 1188224,
+          "size": 16,
+          "sha256": "e1475fed89ff653dbb3f7e99c0334924d40b9f9fe2d07265a95cd6e37fbebeaf",
+          "aliases": [
+            "_ExecOSD"
+          ]
+        },
+        {
+          "name": "func_00122190",
+          "offset": 141328,
+          "address": 1188240,
+          "size": 16,
+          "sha256": "ab34b8a34c2778f478f14e947aad1d56510c53051bfd799b1bc73a87ab648fdc",
+          "aliases": [
+            "Deci2Call"
+          ]
+        },
+        {
+          "name": "func_001221A0",
+          "offset": 141344,
+          "address": 1188256,
+          "size": 16,
+          "sha256": "0c4fe83e4d25ae54381b31f419eff6b0aaf456fec7c2d8d353627bfba1e9ad62",
+          "aliases": [
+            "PSMode"
+          ]
+        },
+        {
+          "name": "func_001221B0",
+          "offset": 141360,
+          "address": 1188272,
+          "size": 16,
+          "sha256": "ea246bd401a4215c18470bf23e346359c576076e5068d9051db5e5d86e09f25d",
+          "aliases": [
+            "MachineType"
+          ]
+        },
+        {
+          "name": "func_001221C0",
+          "offset": 141376,
+          "address": 1188288,
+          "size": 16,
+          "sha256": "9ee3a1a77394777f9bed4ccca0a7127db1055b9e2cbf9b7fd9c1a5246495c0eb",
+          "aliases": [
+            "GetMemorySize"
+          ]
+        },
+        {
+          "name": "func_001221D0",
+          "offset": 141392,
+          "address": 1188304,
+          "size": 16,
+          "sha256": "b65bfd3928487c94b2f9e8e0e28e923151ab8a93b06a17889d5685580bf0a6df",
+          "aliases": [
+            "_InitTLB"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "boot",
+      "source": "src/sdk/boot/syscalls_0012A348.c",
+      "start": 174536,
+      "end": 174568,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Sony EE kernel syscall wrappers",
+      "evidence": "exact full-function match against the pinned named syscall patterns",
+      "functions": [
+        {
+          "name": "func_0012A348",
+          "offset": 174536,
+          "address": 1221448,
+          "size": 16,
+          "sha256": "5cffb5c83dc7ac7cf5c0983aec069574a8c40c492e5b8ce7f0544a82699a4574",
+          "aliases": [
+            "RFU091"
+          ]
+        },
+        {
+          "name": "func_0012A358",
+          "offset": 174552,
+          "address": 1221464,
+          "size": 16,
+          "sha256": "01ace03e1efe48bdf1100ed060d468ba2b2623ee9360601bd53789edf49c71ea",
+          "aliases": [
+            "RFU116_SetSyscall"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "boot",
+      "source": "src/sdk/boot/syscalls_0012A440.c",
+      "start": 174784,
+      "end": 174816,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Sony EE kernel syscall wrappers",
+      "evidence": "exact full-function match against the pinned named syscall patterns",
+      "functions": [
+        {
+          "name": "func_0012A440",
+          "offset": 174784,
+          "address": 1221696,
+          "size": 16,
+          "sha256": "e7998dbfd39ccf4998b041907f9650c5f23b294ce3eac9bab2d7e5f0de1d3f63",
+          "aliases": [
+            "RFU085_iClearEventFlag"
+          ]
+        },
+        {
+          "name": "func_0012A450",
+          "offset": 174800,
+          "address": 1221712,
+          "size": 16,
+          "sha256": "5b9f78f3e73c7ea6c207f1fafa3eb08bd39824a946d5255efe46e7b639ebe3bd",
+          "aliases": [
+            "RFU086_WaitEvnetFlag"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "boot",
+      "source": "src/sdk/boot/syscalls_0012A4A0.c",
+      "start": 174880,
+      "end": 174896,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Sony EE kernel syscall wrappers",
+      "evidence": "exact full-function match against the pinned named syscall patterns",
+      "functions": [
+        {
+          "name": "func_0012A4A0",
+          "offset": 174880,
+          "address": 1221792,
+          "size": 16,
+          "sha256": "048f07323bfe12b91e27146205c25b493ddbf051c42303fbc46ce9dc59d6a52b",
+          "aliases": [
+            "RFU087_PollEvnetFlag"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "boot",
+      "source": "src/sdk/boot/syscalls_0012A4D0.c",
+      "start": 174928,
+      "end": 174960,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Sony EE kernel syscall wrappers",
+      "evidence": "exact full-function match against the pinned named syscall patterns",
+      "functions": [
+        {
+          "name": "func_0012A4D0",
+          "offset": 174928,
+          "address": 1221840,
+          "size": 16,
+          "sha256": "9c762169b17054d7cd7118474c194f7a87f6e63490aa1e9d07e5833ca8e4ee6e",
+          "aliases": [
+            "RFU088_iPollEvnetFlag"
+          ]
+        },
+        {
+          "name": "func_0012A4E0",
+          "offset": 174944,
+          "address": 1221856,
+          "size": 16,
+          "sha256": "3c23830425305d37e4f8b5dcb8ddd3009bda937f35efda3b22dc157e13670adf",
+          "aliases": [
+            "RFU089_ReferEventFlagStatus"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "boot",
+      "source": "src/sdk/boot/syscalls_0012AD18.c",
+      "start": 177048,
+      "end": 177064,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Sony EE kernel syscall wrappers",
+      "evidence": "exact full-function match against the pinned named syscall patterns",
+      "functions": [
+        {
+          "name": "func_0012AD18",
+          "offset": 177048,
+          "address": 1223960,
+          "size": 16,
+          "sha256": "01ace03e1efe48bdf1100ed060d468ba2b2623ee9360601bd53789edf49c71ea",
+          "aliases": [
+            "RFU116_SetSyscall"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "boot",
+      "source": "src/sdk/boot/syscalls_0012AD68.c",
+      "start": 177128,
+      "end": 177144,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Sony EE kernel syscall wrappers",
+      "evidence": "exact full-function match against the pinned named syscall patterns",
+      "functions": [
+        {
+          "name": "func_0012AD68",
+          "offset": 177128,
+          "address": 1224040,
+          "size": 16,
+          "sha256": "01ace03e1efe48bdf1100ed060d468ba2b2623ee9360601bd53789edf49c71ea",
+          "aliases": [
+            "RFU116_SetSyscall"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "boot",
+      "source": "src/sdk/boot/syscalls_0012ADC0.c",
+      "start": 177216,
+      "end": 177232,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Sony EE kernel syscall wrappers",
+      "evidence": "exact full-function match against the pinned named syscall patterns",
+      "functions": [
+        {
+          "name": "func_0012ADC0",
+          "offset": 177216,
+          "address": 1224128,
+          "size": 16,
+          "sha256": "5cffb5c83dc7ac7cf5c0983aec069574a8c40c492e5b8ce7f0544a82699a4574",
+          "aliases": [
+            "RFU091"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "boot",
+      "source": "src/sdk/boot/syscalls_0012AF28.c",
+      "start": 177576,
+      "end": 177592,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Sony EE kernel syscall wrappers",
+      "evidence": "exact full-function match against the pinned named syscall patterns",
+      "functions": [
+        {
+          "name": "func_0012AF28",
+          "offset": 177576,
+          "address": 1224488,
+          "size": 16,
+          "sha256": "01ace03e1efe48bdf1100ed060d468ba2b2623ee9360601bd53789edf49c71ea",
+          "aliases": [
+            "RFU116_SetSyscall"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "boot",
+      "source": "src/sdk/boot/syscalls_0012B188.c",
+      "start": 178184,
+      "end": 178200,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Sony EE kernel syscall wrappers",
+      "evidence": "exact full-function match against the pinned named syscall patterns",
+      "functions": [
+        {
+          "name": "func_0012B188",
+          "offset": 178184,
+          "address": 1225096,
+          "size": 16,
+          "sha256": "01ace03e1efe48bdf1100ed060d468ba2b2623ee9360601bd53789edf49c71ea",
+          "aliases": [
+            "RFU116_SetSyscall"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "boot",
+      "source": "src/sdk/boot/syscalls_0012B1E0.c",
+      "start": 178272,
+      "end": 178288,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Sony EE kernel syscall wrappers",
+      "evidence": "exact full-function match against the pinned named syscall patterns",
+      "functions": [
+        {
+          "name": "func_0012B1E0",
+          "offset": 178272,
+          "address": 1225184,
+          "size": 16,
+          "sha256": "5cffb5c83dc7ac7cf5c0983aec069574a8c40c492e5b8ce7f0544a82699a4574",
+          "aliases": [
+            "RFU091"
+          ]
+        }
+      ]
+    }
+  ]
+}
