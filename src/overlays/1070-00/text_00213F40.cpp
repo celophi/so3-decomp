@@ -47,31 +47,71 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002143
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214390);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214490);
+s32 func_00214490(const FieldCheckedState7C* object)
+{
+    u32 check = object->unka8 ^ (object->unk60 ^ (object->unk58 + object->unk5c));
+    if (object->unka0 != check)
+    {
+        return 0;
+    }
+    return object->unk6c ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002144E0);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214550);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214650);
+s32 func_00214650(const FieldCheckedState7C* object)
+{
+    u32 check = object->unka8 ^ (object->unk60 ^ (object->unk58 + object->unk5c));
+    if (object->unka0 != check)
+    {
+        return 0;
+    }
+    return object->unk60 ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214690);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214700);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002148D0);
+s32 func_002148D0(const FieldCheckedState7C* object)
+{
+    u32 check = object->unka8 ^ (object->unk54 ^ (object->unk4c + object->unk50));
+    if (object->unk9c != check)
+    {
+        return 0;
+    }
+    return object->unk50 ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214910);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214980);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214AA0);
+s32 func_00214AA0(const FieldCheckedState7C* object)
+{
+    u32 check = object->unka8 ^ (object->unk48 ^ (object->unk40 + object->unk44));
+    if (object->unk98 != check)
+    {
+        return 0;
+    }
+    return object->unk48 ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214AE0);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214B70);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214C70);
+s32 func_00214C70(const FieldCheckedState7C* object)
+{
+    u32 check = object->unka8 ^ (object->unk3c ^ (object->unk34 + object->unk38));
+    if (object->unk94 != check)
+    {
+        return 0;
+    }
+    return object->unk3c ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214CB0);
 

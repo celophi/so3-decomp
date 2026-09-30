@@ -151,9 +151,20 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BD
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BE80);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BE90);
+void* func_0030BE90(const FieldHalfwordByteState105A* object, s16 index)
+{
+    s32 count = object->unk1050;
+    if (index < 0 || count < index)
+    {
+        return 0;
+    }
+    return func_003100B0(&object->unk104c, index)->value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BEF0);
+void func_0030BEF0(FieldHalfwordByteState105A* object, void* value)
+{
+    func_0030FED0(&object->unk104c, value);
+}
 
 void func_0030BF10(FieldHalfwordByteState105A* object, s16 value, u8 state)
 {

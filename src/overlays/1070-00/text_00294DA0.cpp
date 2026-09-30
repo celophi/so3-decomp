@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00294DA0.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00294DA0);
 
@@ -40,7 +41,17 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002962
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00296300);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00296310);
+void func_00296310(FieldFloatRangeState20* object, float first, float second, float third)
+{
+    object->unk20 = second;
+    object->unk24 = first;
+    object->unk28 = object->unk20 - object->unk24;
+    object->unk2c = third;
+    object->unk30 = 0.0f;
+    object->unk34 = 1.0f;
+    object->unk38_0 = 1;
+    object->unk38_1 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00296370);
 
@@ -96,7 +107,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00297A
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00297D60);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00297E10);
+FieldInitialWordPair* func_00297E10(FieldInitialWordPair* object)
+{
+    object->unk00 = 0x40A00000;
+    object->unk04 = -1;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00297E30);
 

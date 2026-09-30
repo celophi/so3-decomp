@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_002A4F10.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A4F10);
 
@@ -368,11 +369,72 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B27
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B28C0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B2950);
+s32 func_002B2950(FieldResourceList14* object, s32 first, s32 second)
+{
+    FieldListNode* node = &object->unk14;
+    s32 count = 0;
+    for (;;)
+    {
+        node = node->next;
+        if (&object->unk14 == node)
+        {
+            break;
+        }
+        FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
+        if (entry->unk49_1 &&
+            (((entry->unk1c == 0x43484152 || entry->unk1c == 0x41545243) &&
+              first == (u16)entry->unk20) ||
+             (entry->unk1c == 0x414E494D && second == (u16)entry->unk20)))
+        {
+            count++;
+        }
+    }
+    return count;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B29F0);
+void func_002B29F0(FieldResourceList14* object, s32 first, s32 second)
+{
+    FieldListNode* node = &object->unk14;
+    for (;;)
+    {
+        node = node->next;
+        if (&object->unk14 == node)
+        {
+            break;
+        }
+        FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
+        u8 enabled = entry->unk49_1;
+        if (enabled && (enabled ? entry->unk49_3 : 1) &&
+            (((entry->unk1c == 0x43484152 || entry->unk1c == 0x41545243) &&
+              first == (u16)entry->unk20) ||
+             (entry->unk1c == 0x414E494D && second == (u16)entry->unk20)))
+        {
+            entry->unk40--;
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B2AB0);
+void func_002B2AB0(FieldResourceList14* object, s32 first, s32 second)
+{
+    FieldListNode* node = &object->unk14;
+    for (;;)
+    {
+        node = node->next;
+        if (&object->unk14 == node)
+        {
+            break;
+        }
+        FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
+        u8 enabled = entry->unk49_1;
+        if (enabled && (enabled ? entry->unk49_3 : 1) &&
+            (((entry->unk1c == 0x43484152 || entry->unk1c == 0x41545243) &&
+              first == (u16)entry->unk20) ||
+             (entry->unk1c == 0x414E494D && second == (u16)entry->unk20)))
+        {
+            entry->unk40++;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B2B70);
 
@@ -382,7 +444,25 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B30
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B3090);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B3140);
+u32 func_002B3140(FieldResourceList14* object, u32 kind, u32 key)
+{
+    FieldListNode* node = &object->unk14;
+    FieldListNode* sentinel = node;
+    for (;;)
+    {
+        node = node->next;
+        if (!node || sentinel == node)
+        {
+            break;
+        }
+        FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
+        if (kind == entry->unk1c && key == entry->unk20)
+        {
+            return entry->unk49_1 ? entry->unk18 : entry->unk14;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B31C0);
 

@@ -40,6 +40,15 @@ typedef struct FieldPointerOwner588
     FieldPointerState48* unk588;
 } FieldPointerOwner588;
 
+/** Partial receiver for the observed conditional state update. */
+typedef struct FieldCappedByte4A4
+{
+    u8 unk00[0x4A4];
+    s8 unk4a4;
+    u8 unk4a5_0 : 1;
+    u8 unk4a5_1_7 : 7;
+} FieldCappedByte4A4;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -64,6 +73,13 @@ void func_00276D80(FieldFloatOwner540* object, float value);
  * @return The stored object pointer, or null when the linked record is absent.
  */
 void* func_00277690(const FieldPointerOwner588* object);
+
+/**
+ * @brief Cap the signed byte at four and set its update flag.
+ * @param object Receiver containing the value and flag.
+ * @param value Signed value to store; values above four are capped.
+ */
+void func_00276FE0(FieldCappedByte4A4* object, s8 value);
 
 #ifdef __cplusplus
 }

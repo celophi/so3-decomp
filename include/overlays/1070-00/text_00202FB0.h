@@ -53,6 +53,23 @@ typedef struct FieldByteFlags81
     u8 unk81_1_7 : 7;
 } FieldByteFlags81;
 
+/** Partial element of the context-0x34 list, with state and a signed key. */
+typedef struct FieldStateListElement3C
+{
+    FieldListNode link;
+    u8 unk0c[9];
+    u8 unk15;
+    u8 unk16[0x26];
+    s32 unk3c;
+} FieldStateListElement3C;
+
+/** Partial receiver reached through context field 0x34. */
+typedef struct FieldContext34
+{
+    u8 unk00[0x14];
+    FieldListNode unk14;
+} FieldContext34;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -150,6 +167,23 @@ void func_0020D810(FieldBytePairOwner* object, float value);
  * @return True when the flag is set.
  */
 bool func_00203BE0(const FieldByteFlags81* object);
+
+/**
+ * @brief Find a list element by its signed key.
+ * @param object Receiver containing the circular list.
+ * @param key Key to find.
+ * @param unused Unused caller-supplied argument.
+ * @return The matching element, or null when no element matches.
+ */
+FieldStateListElement3C* func_002058F0(FieldContext34* object, s32 key, s32 unused);
+
+/**
+ * @brief Find an element by the stored word at offset 0x14.
+ * @param object Receiver containing the list.
+ * @param key Stored word to find.
+ * @return The matching element, or null at a null link or the sentinel.
+ */
+FieldFlagListElement* func_00209E40(FieldContext58* object, u32 key);
 
 #ifdef __cplusplus
 }

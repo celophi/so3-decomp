@@ -1,7 +1,7 @@
 #ifndef SO3_OVERLAYS_1070_00_TEXT_001E2B40_H
 #define SO3_OVERLAYS_1070_00_TEXT_001E2B40_H
 
-#include "types.h"
+#include "overlays/1070-00/text_00284BF0.h"
 
 /** Partial receiver used by the connected byte-dimension and float-pair setters. */
 typedef struct FieldDimensionState
@@ -38,6 +38,19 @@ typedef struct FieldTimeState
     s16 minutes;
     s16 seconds;
 } FieldTimeState;
+
+/** Partial keyed list element containing float state and a flag byte. */
+typedef struct FieldKeyedFlagElement28
+{
+    FieldListNode link;
+    u8 unk0c[0x10];
+    float unk1c;
+    u32 unk20;
+    float unk24;
+    u32 unk28;
+    u8 unk2c_0 : 1;
+    u8 unk2c_1_7 : 7;
+} FieldKeyedFlagElement28;
 
 #ifdef __cplusplus
 extern "C" {
@@ -93,6 +106,13 @@ void func_001EDC10(FieldTimeState* object, u32 value);
  * @param seconds Total seconds to split.
  */
 void func_001EDC20(FieldTimeState* object, u32 seconds);
+
+/**
+ * @brief Clear the float and word state, store an integer as a float, and set flag bit zero.
+ * @param object List element to update.
+ * @param value Signed value to convert and store.
+ */
+void func_001E7020(FieldKeyedFlagElement28* object, s32 value);
 
 #ifdef __cplusplus
 }

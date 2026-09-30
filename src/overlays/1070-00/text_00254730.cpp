@@ -133,7 +133,25 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259E
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259E70);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259EC0);
+void func_00259EC0(FieldKeyedFlagOwnerD8* object, u32 key, s32 value)
+{
+    FieldListNode* sentinel = &object->unkd8->unk14;
+    FieldListNode* node = sentinel;
+    for (;;)
+    {
+        node = node->next;
+        if (node == 0 || sentinel == node)
+        {
+            break;
+        }
+        FieldKeyedFlagElement28* element = (FieldKeyedFlagElement28*)node;
+        if (key == element->unk28)
+        {
+            func_001E7020(element, value);
+            break;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259F10);
 
@@ -175,7 +193,13 @@ void func_0025BB70(FieldMirroredFlags* object, u32 value)
     object->unk1f6_1 = (value & 0x2) != 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025BBA0);
+void func_0025BBA0(FieldMirroredFlags* object, void* data, u32 flags)
+{
+    object->unk1f6_0 = 0;
+    object->unk1d0 = data;
+    object->unk1dc = flags;
+    object->unk1f6_1 = (flags & 0x2) != 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025BBF0);
 
@@ -287,7 +311,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00261F
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00262000);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00262060);
+void func_00262060(FieldPointerReset66* object)
+{
+    object->unk14 = 0;
+    object->unk18 = 0;
+    object->unk66_1 = 0;
+    object->unk10 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00262090);
 
@@ -307,11 +337,38 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00262F
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_002630E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00263230);
+FieldKeyedListElement54* func_00263230(FieldKeyedFloatState98* object, u32 key)
+{
+    FieldListNode* node = &object->link;
+    for (;;)
+    {
+        node = node->next;
+        if (&object->link == node)
+        {
+            break;
+        }
+        if (key == ((FieldKeyedListElement54*)node)->unk54)
+        {
+            return (FieldKeyedListElement54*)node;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00263280);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00263B20);
+void func_00263B20(FieldKeyedFloatState98* object, u32 key, u16 flags, float first, float second, float third, float fourth, float fifth)
+{
+    object->unkac = 300.0f;
+    object->unk98 = key;
+    object->unk9c = first;
+    object->unka0 = second;
+    object->unka8 = third;
+    object->unkb0 = fourth;
+    object->unkb8 = 2;
+    object->unkb4 = (object->unkb4 & ~0xFF) | flags;
+    object->unka4 = fifth;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00263B70);
 

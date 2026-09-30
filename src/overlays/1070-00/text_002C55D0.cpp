@@ -204,7 +204,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D1C
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D1C70);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D1DE0);
+s32 func_002D1DE0(const FieldBitCountState* object)
+{
+    s32 limit = object->unk00;
+    s32 count = 0;
+    for (s32 index = 0; index < limit; index++)
+    {
+        if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
+        {
+            count++;
+        }
+    }
+    return count;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D1E40);
 
@@ -218,7 +230,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D22
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D22F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D2490);
+s32 func_002D2490(const FieldBitCountState* object)
+{
+    s32 limit = object->unk00;
+    s32 count = 0;
+    for (s32 index = 0; index < limit; index++)
+    {
+        if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
+        {
+            count++;
+        }
+    }
+    return count;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D24F0);
 
@@ -232,7 +256,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D29
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D29B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D2B50);
+s32 func_002D2B50(const FieldBitCountState* object)
+{
+    s32 limit = object->unk00;
+    s32 count = 0;
+    for (s32 index = 0; index < limit; index++)
+    {
+        if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
+        {
+            count++;
+        }
+    }
+    return count;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D2BB0);
 
@@ -244,7 +280,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D2F
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D2FE0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D3180);
+s32 func_002D3180(const FieldBitCountState* object)
+{
+    s32 limit = object->unk00;
+    s32 count = 0;
+    for (s32 index = 0; index < limit; index++)
+    {
+        if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
+        {
+            count++;
+        }
+    }
+    return count;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D31E0);
 
@@ -252,7 +300,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D34
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D3550);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D36F0);
+s32 func_002D36F0(const FieldBitCountState* object)
+{
+    s32 limit = object->unk00;
+    s32 count = 0;
+    for (s32 index = 0; index < limit; index++)
+    {
+        if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
+        {
+            count++;
+        }
+    }
+    return count;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D3750);
 
@@ -264,7 +324,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D3B
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D3B90);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D3D30);
+s32 func_002D3D30(const FieldBitCountState* object)
+{
+    s32 limit = object->unk00;
+    s32 count = 0;
+    for (s32 index = 0; index < limit; index++)
+    {
+        if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
+        {
+            count++;
+        }
+    }
+    return count;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D3D90);
 
@@ -274,7 +346,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D40
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D4120);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D42B0);
+s32 func_002D42B0(const FieldBitCountState* object)
+{
+    s32 limit = object->unk00;
+    s32 count = 0;
+    for (s32 index = 0; index < limit; index++)
+    {
+        if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
+        {
+            count++;
+        }
+    }
+    return count;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D4310);
 
@@ -284,7 +368,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D46
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D46B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D4850);
+s32 func_002D4850(const FieldBitCountState* object)
+{
+    s32 limit = object->unk00;
+    s32 count = 0;
+    for (s32 index = 0; index < limit; index++)
+    {
+        if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
+        {
+            count++;
+        }
+    }
+    return count;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D48B0);
 

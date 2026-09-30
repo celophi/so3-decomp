@@ -53,14 +53,34 @@ typedef struct FieldCheckedState00
     s32 unk10c;
 } FieldCheckedState00;
 
-/** Partial receiver containing a checked halfword group at offset 0x7C. */
+/** Partial receiver containing checked word and halfword groups. */
 typedef struct FieldCheckedState7C
 {
-    u8 unk00[0x7C];
+    u8 unk00[0x34];
+    u32 unk34;
+    u32 unk38;
+    u32 unk3c;
+    u32 unk40;
+    u32 unk44;
+    u32 unk48;
+    u32 unk4c;
+    u32 unk50;
+    u32 unk54;
+    u32 unk58;
+    u32 unk5c;
+    u32 unk60;
+    u8 unk64[8];
+    u32 unk6c;
+    u8 unk70[0xC];
     s16 unk7c;
     s16 unk7e;
     s16 unk80;
-    u8 unk82[0x26];
+    u8 unk82[0x12];
+    u32 unk94;
+    u32 unk98;
+    u32 unk9c;
+    u32 unka0;
+    u8 unka4[4];
     s32 unka8;
     s32 unkac;
 } FieldCheckedState7C;
@@ -131,6 +151,41 @@ s32 func_00214200(const FieldCheckedState00* object);
  * @return The decoded value, or zero when the check does not match.
  */
 s32 func_00214320(const FieldCheckedState7C* object);
+
+/**
+ * @brief Validate the word group at offset 0x58 and decode the value at offset 0x6C.
+ * @param object Receiver to inspect.
+ * @return The decoded value, or zero when the check does not match.
+ */
+s32 func_00214490(const FieldCheckedState7C* object);
+
+/**
+ * @brief Validate the word group at offset 0x58 and decode its stored value.
+ * @param object Receiver to inspect.
+ * @return The decoded value, or zero when the check does not match.
+ */
+s32 func_00214650(const FieldCheckedState7C* object);
+
+/**
+ * @brief Validate the word group at offset 0x4C and decode the value at offset 0x50.
+ * @param object Receiver to inspect.
+ * @return The decoded value, or zero when the check does not match.
+ */
+s32 func_002148D0(const FieldCheckedState7C* object);
+
+/**
+ * @brief Validate the word group at offset 0x40 and decode the value at offset 0x48.
+ * @param object Receiver to inspect.
+ * @return The decoded value, or zero when the check does not match.
+ */
+s32 func_00214AA0(const FieldCheckedState7C* object);
+
+/**
+ * @brief Validate the word group at offset 0x34 and decode the value at offset 0x3C.
+ * @param object Receiver to inspect.
+ * @return The decoded value, or zero when the check does not match.
+ */
+s32 func_00214C70(const FieldCheckedState7C* object);
 
 #ifdef __cplusplus
 }

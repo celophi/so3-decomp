@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00244310.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_00244310);
 
@@ -386,7 +387,24 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_00248F
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_00249170);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_002492E0);
+FieldKeyedListElement18* func_002492E0(FieldContext38* object, u32 key)
+{
+    FieldListNode* node = &object->unk4c4;
+    FieldListNode* sentinel = node;
+    for (;;)
+    {
+        node = node->next;
+        if (sentinel == node)
+        {
+            break;
+        }
+        if (key == ((FieldKeyedListElement18*)node)->unk18)
+        {
+            return (FieldKeyedListElement18*)node;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_00249320);
 

@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00234310.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_00234310);
 
@@ -206,7 +207,20 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_00239F
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023A190);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023A2D0);
+void func_0023A2D0(FieldConditionalState103C* object)
+{
+    if (!object->unk103c_2)
+    {
+        object->unk103c_2 = 1;
+        if (object->unkcb != 0 && object->unk100c >= 3)
+        {
+            object->unkabd = 0;
+            object->unk100c = 7;
+            object->unk1008 &= ~0x80000;
+            object->unk1008 |= 0x80000000;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023A350);
 
@@ -266,7 +280,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023BC
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023BC60);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023BCA0);
+void func_0023BCA0(FieldConditionalLinkA0* object, void* target)
+{
+    if ((object->unk70 & 0x10) && object->unka0 == target)
+    {
+        object->unka0 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023BCD0);
 
@@ -308,7 +328,21 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023D2
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023D3A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023D480);
+bool func_0023D480(const FieldSlotObject* object)
+{
+    if ((object->unkf3 == 1 || object->unkf3 == 2) && object->unkf2 == 0)
+    {
+        return true;
+    }
+    if (!(object->unka4 < object->unka8))
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023D4E0);
 

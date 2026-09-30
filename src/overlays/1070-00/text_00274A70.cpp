@@ -146,7 +146,15 @@ void func_00276D80(FieldFloatOwner540* object, float value)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00276DA0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00276FE0);
+void func_00276FE0(FieldCappedByte4A4* object, s8 value)
+{
+    if (value > 4)
+    {
+        value = 4;
+    }
+    object->unk4a4 = value;
+    object->unk4a5_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00277020);
 

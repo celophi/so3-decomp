@@ -14,6 +14,46 @@ typedef struct FieldIndexedList
     FieldIndexedListNode* head;
 } FieldIndexedList;
 
+/** Partial owner containing the starting value for a float transition. */
+typedef struct FieldFloatOwner544
+{
+    u8 unk00[0x544];
+    float unk544;
+} FieldFloatOwner544;
+
+/** Partial receiver containing float transitions and their word flags. */
+typedef struct FieldFloatTransitions70
+{
+    FieldFloatOwner544* owner;
+    u8 unk04[0x6C];
+    u32 unk70;
+    float unk74;
+    float unk78;
+    float unk7c;
+    u8 unk80[0x30];
+    float unkb0;
+    float unkb4;
+    u8 unkb8[4];
+    float unkbc;
+    float unkc0;
+    float unkc4;
+    u8 unkc8[0x18];
+    float unke0;
+    float unke4;
+    float unke8;
+    float unkec;
+    u8 unkf0[4];
+    float unkf4;
+    float unkf8;
+    u8 unkfc[8];
+    float unk104;
+    float unk108;
+    u8 unk10c[4];
+    float unk110;
+    float unk114;
+    float unk118;
+} FieldFloatTransitions70;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,6 +80,38 @@ FieldIndexedListNode* func_001FA7A0(const FieldIndexedList* list, s32 index);
  * @return The selected node, or null if the chain ends first.
  */
 FieldIndexedListNode* func_001FA8A0(const FieldIndexedList* list, s32 index);
+
+/**
+ * @brief Initialize a float transition from its owner value.
+ * @param object Receiver containing the transition state.
+ * @param target Requested endpoint.
+ * @param duration Transition duration; nonpositive values use the unscaled difference.
+ */
+void func_001FE6D0(FieldFloatTransitions70* object, float target, float duration);
+
+/**
+ * @brief Initialize a float transition from the value at offset 0xF8.
+ * @param object Receiver containing the transition state.
+ * @param target Requested endpoint; the 0x7F7FFFFF float sentinel selects the saved endpoint.
+ * @param duration Transition duration; zero leaves the difference unscaled.
+ */
+void func_001FEB00(FieldFloatTransitions70* object, float target, float duration);
+
+/**
+ * @brief Initialize a float transition from the value at offset 0xF4.
+ * @param object Receiver containing the transition state.
+ * @param target Requested endpoint; the 0x7F7FFFFF float sentinel selects the saved endpoint.
+ * @param duration Transition duration; zero leaves the difference unscaled.
+ */
+void func_001FEB70(FieldFloatTransitions70* object, float target, float duration);
+
+/**
+ * @brief Initialize a float transition or apply its endpoint immediately.
+ * @param object Receiver containing the transition state.
+ * @param target Requested endpoint.
+ * @param duration Transition duration; zero applies the endpoint immediately.
+ */
+void func_001FEBE0(FieldFloatTransitions70* object, float target, float duration);
 
 #ifdef __cplusplus
 }

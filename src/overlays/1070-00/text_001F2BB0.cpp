@@ -1,6 +1,8 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_001F2BB0.h"
 
+#define FIELD_USE_SAVED_FLOAT_TARGET 3.402823466e38f
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F2BB0);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F2C50);
@@ -372,7 +374,21 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FE5
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FE5F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FE6D0);
+void func_001FE6D0(FieldFloatTransitions70* object, float target, float duration)
+{
+    object->unke0 = object->owner->unk544;
+    object->unke4 = target;
+    object->unke8 = duration;
+    if (duration > 0.0f)
+    {
+        object->unkec = (object->unke4 - object->unke0) / object->unke8;
+    }
+    else
+    {
+        object->unkec = object->unke4 - object->unke0;
+    }
+    object->unk70 |= 0x200;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FE740);
 
@@ -384,11 +400,54 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FEA
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FEAB0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FEB00);
+void func_001FEB00(FieldFloatTransitions70* object, float target, float duration)
+{
+    if (target == FIELD_USE_SAVED_FLOAT_TARGET)
+    {
+        target = object->unk108;
+    }
+    object->unk114 = target - object->unkf8;
+    if (duration)
+    {
+        object->unk114 /= duration;
+    }
+    object->unk118 = target;
+    object->unk110 = duration;
+    object->unk70 |= 0x8;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FEB70);
+void func_001FEB70(FieldFloatTransitions70* object, float target, float duration)
+{
+    if (target == FIELD_USE_SAVED_FLOAT_TARGET)
+    {
+        target = object->unk104;
+    }
+    object->unk78 = target - object->unkf4;
+    if (duration)
+    {
+        object->unk78 /= duration;
+    }
+    object->unk7c = target;
+    object->unk74 = duration;
+    object->unk70 |= 0x4;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FEBE0);
+void func_001FEBE0(FieldFloatTransitions70* object, float target, float duration)
+{
+    if (duration)
+    {
+        object->unkbc = duration;
+        object->unkc4 = target;
+        object->unkc0 = (target - object->unkb0) / duration;
+        object->unk70 |= 0x20;
+    }
+    else
+    {
+        object->unkb0 = target;
+        object->unkb4 = target;
+        object->unk70 &= ~0x20;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FEC40);
 

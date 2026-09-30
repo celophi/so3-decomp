@@ -177,7 +177,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E6D
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E6E30);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7020);
+void func_001E7020(FieldKeyedFlagElement28* object, s32 value)
+{
+    object->unk1c = 0.0f;
+    object->unk20 = 0;
+    object->unk24 = (float)value;
+    object->unk2c_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7050);
 

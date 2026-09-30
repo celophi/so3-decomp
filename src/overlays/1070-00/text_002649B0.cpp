@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_002649B0.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_002649B0);
 
@@ -806,13 +807,28 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026F6
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026F7A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026F810);
+u32 func_0026F810(FieldPackedKeySource* object)
+{
+    return (object->unk14 << 19) | (((u32)*object->unk0c << 16) | object->unk08->unk3ac);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026F840);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026F8E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026FB50);
+void func_0026FB50(FieldKeyedFloatOwner3A0* object)
+{
+    object->unk3a4 = 0.0f;
+    if (object->unk3a0 != 0)
+    {
+        u32 flags = object->unk3bb_2 ? 0x20 : 0;
+        func_00263B20(object->unk3a0, object->unk3ac | (flags << 16), 4, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f);
+        FieldKeyedFloatState98* state = object->unk3a0;
+        state->unk94 = -1;
+        state->unk88 = 0;
+        object->unk3a0->unkb4 |= 0x100;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026FBF0);
 
@@ -902,7 +918,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00273D
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00273E80);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00273EA0);
+void func_00273EA0(FieldFloatTransition330* object, float value, float duration)
+{
+    if (duration == 0.0f)
+    {
+        object->unk330 = value;
+    }
+    else
+    {
+        object->unk33c = value;
+        object->unk338 = duration;
+        object->unk334 = (value - object->unk330) / duration;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00273EE0);
 
