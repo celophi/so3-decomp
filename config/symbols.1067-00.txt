@@ -7,8 +7,14 @@ func_004CE4C0 = 0x004CE4C0; // type:func
 // Lib owner detach helper.
 func_004D65C0 = 0x004D65C0; // type:func
 
+// Lib table update helper.
+func_004728A0 = 0x004728A0; // type:func
+
 // Resident operator delete(void*), called by deleting destructors.
 __dl__FPv = 0x00100B40; // type:func
+
+// Resident operator delete[](void*).
+__dla__FPv = 0x00100BE0; // type:func
 
 // FieldClass150050 <- FieldClass150060 <- FieldClass150070; vtables are in
 // boot data. See docs/field-cpp-build.md.
@@ -50,3 +56,7 @@ func_001DF3D0__16FieldClass150120Fv = 0x001E1590; // type:func
 func_001DD7B0__16FieldClass150120Fv = 0x001E15A0; // type:func
 func_001DD7B0__16FieldClass150330Fv = 0x001E9580; // type:func
 func_001DD7B0__16FieldClass1504C0Fv = 0x001EB660; // type:func
+func_001DF3D0__16FieldClass14FE30Fv = 0x001DD490; // type:func
+__vt__16FieldClass150120 = 0x00150120; // size:0x30
+__dt__16FieldClass150120Fv = 0x001E5030; // type:func
+func_001DDB30__16FieldClass150120Fv = 0x001E4EF0; // type:func

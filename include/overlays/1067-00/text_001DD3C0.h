@@ -108,25 +108,43 @@ public:
     /** @brief Default handler that performs no work. */
     virtual void func_001DD410();
 
-    u8 unk04[0x14];
+    u8 unk04[0x10];
 };
 
-/** Partial 16-byte base class whose first virtual handler is func_001DD400. */
+/**
+ * Partial base class with two virtual handlers. Slot 1 is named after its
+ * lowest known override (func_001DDB30); no implementation of its own is known.
+ */
 class FieldClass1DD400
 {
 public:
     /** @brief Default handler that performs no work. */
     virtual void func_001DD400();
 
-    u8 unk04[0xC];
+    /** @brief Virtual handler slot 1; see the overriding classes. */
+    virtual void func_001DDB30();
+};
+
+/** Partial 16-byte, 8-byte-aligned FieldClass1DD400 used as the base at offset 0x90 of FieldClass14FE30 (vtable part D_14FE84). */
+class FieldClass14FE84 : public FieldClass1DD400
+{
+public:
+    u8 unk04[4];
+    u64 unk08;
 };
 
 /** Partial class with bases at offsets 0x78 and 0x90 and a Lib member at 0xA0, with vtable D_14FE30 in boot data. */
-class FieldClass14FE30 : public LibClass178DD0, public FieldClass150070, public FieldClass1DD400
+class FieldClass14FE30 : public LibClass178DD0, public FieldClass150070, public FieldClass14FE84
 {
 public:
     /** @brief Detach the member at offset 0xA0, then destroy the object. */
     virtual ~FieldClass14FE30();
+
+    /**
+     * @brief Report the fixed value 4 for this class.
+     * @return Always 4.
+     */
+    virtual s32 func_001DF3D0();
 
     /** @brief Detach the FieldClass150070 base and queue it on the resident object queue. */
     virtual void func_001DD7B0();
@@ -168,13 +186,6 @@ void func_001DD420(FieldAttachedObject70* object, void* attached);
  * @param object Receiver of the virtual call.
  */
 void func_001DD430(void* object);
-
-/**
- * @brief Report the fixed value 4 for this receiver class.
- * @param object Receiver of the virtual call.
- * @return Always 4.
- */
-s32 func_001DD490(const void* object);
 
 /**
  * @brief Call func_002379A0 with a nonzero flag for each listed object whose flag bit 3 is set.
@@ -233,6 +244,20 @@ void func_001DE3C0(void* object);
  * @param object Receiver owning the records; the loop is skipped when the array pointer is null.
  */
 void func_001DEA80(FieldSlotRecordOwner* object);
+
+/**
+ * @brief Update the table of every listed object that has one at offset 0x7C.
+ * @param list Head of a circular object list; traversal stops on return to it or at a null link.
+ * @param flag Nonzero to enable the setting passed to func_004728A0.
+ */
+void func_001DE400(FieldFlaggedListObject* list, s32 flag);
+
+/**
+ * @brief Append listed objects to the field context's queue, all of them or only those with a nonzero word at offset 0x70.
+ * @param list Head of a circular object list; traversal stops on return to it or at a null link.
+ * @param only_keyed Nonzero to skip objects whose word at offset 0x70 is zero.
+ */
+void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed);
 
 #ifdef __cplusplus
 }

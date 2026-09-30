@@ -2,6 +2,8 @@
 #include "boot/resident_data.h"
 #include "overlays/0002-01/text_004CD3A0.h"
 #include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/1067-00/text_0024C4B0.h"
+#include "overlays/0002-01/text_0046AE20.h"
 #include "overlays/1067-00/text_0021DB80.h"
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/1067-00/text_00202240.h"
@@ -34,7 +36,7 @@ void FieldClass14FE30::func_001DD7B0()
     func_0011ED90(D_001B65F4, static_cast<FieldClass150070*>(this));
 }
 
-s32 func_001DD490(const void* object)
+s32 FieldClass14FE30::func_001DF3D0()
 {
     return 4;
 }
@@ -166,11 +168,40 @@ void func_001DE3C0(void* object)
 // 128-bit copies; needs a 16-byte vector type.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE3D0);
 
-// Calls Lib func_004728A0; needs its declaration and symbol mapping.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE400);
+void func_001DE400(FieldFlaggedListObject* list, s32 flag)
+{
+    FieldFlaggedListObject* node = list;
+    for (;;)
+    {
+        node = node->next;
+        if (!node || list == node)
+        {
+            break;
+        }
+        if (node->unk7c)
+        {
+            func_004728A0(node->unk7c, flag != 0, 0);
+        }
+    }
+}
 
-// Reads an unresolved $gp-relative global.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE470);
+void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed)
+{
+    FieldFlaggedListObject* node = list->next;
+    for (;;)
+    {
+        FieldFlaggedListObject* current = node;
+        if (!node || list == node)
+        {
+            break;
+        }
+        node = node->next;
+        if (!only_keyed || current->unk70)
+        {
+            func_0024CE10(D_001B6430->context->unk40, current);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE4F0);
 

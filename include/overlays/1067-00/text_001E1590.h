@@ -50,11 +50,8 @@ typedef struct FieldSlotRecordOwner1C
 } FieldSlotRecordOwner1C;
 
 #ifdef __cplusplus
-/**
- * Partial class derived from FieldClass150070, with vtable D_150120 in boot data.
- * Its secondary base at offset 0x14 (vtable D_15013C) is not declared yet.
- */
-class FieldClass150120 : public FieldClass150070
+/** Partial class with a FieldClass1DD400 base at offset 0x14, with vtable D_150120 in boot data. */
+class FieldClass150120 : public FieldClass150070, public FieldClass1DD400
 {
 public:
     /** @brief Destroy the object. */
@@ -68,6 +65,12 @@ public:
 
     /** @brief Queue the object on the resident object queue without detaching it. */
     virtual void func_001DD7B0();
+
+    /** @brief FieldClass1DD400 slot 1 override. */
+    virtual void func_001DDB30();
+
+    u8 unk18[0x2C];
+    u8* unk44[10];
 };
 #endif
 

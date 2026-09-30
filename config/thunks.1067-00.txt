@@ -3,3 +3,6 @@
 // FieldClass14FE30 (vtable D_14FE30); kept copies end text_001DED80.
 @120@__dt__16FieldClass14FE30Fv = 0x001E1570;
 @120@func_001DD7B0__16FieldClass14FE30Fv = 0x001E1550;
+@120@func_001DF3D0__16FieldClass14FE30Fv = 0x001E1560;
+// FieldClass150120 (vtable D_150120); kept copy ends text_001E1590.
+@20@func_001DDB30__16FieldClass150120Fv = 0x001E6C40;

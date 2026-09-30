@@ -36,7 +36,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E48
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E4E50);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E4EF0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001DDB30__16FieldClass150120Fv);
 
 void func_001E5020(FieldWordByte30* object, u32 word, u8 value)
 {
@@ -44,7 +44,18 @@ void func_001E5020(FieldWordByte30* object, u32 word, u8 value)
     object->unk34 = value;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E5030);
+FieldClass150120::~FieldClass150120()
+{
+    s32 i;
+    for (i = 0; i < 10; i++)
+    {
+        if (unk44[i])
+        {
+            delete[] unk44[i];
+            unk44[i] = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E5110);
 
@@ -144,5 +155,3 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E6C
 // Compiler-generated this-adjustment thunk; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E6C30);
 
-// Compiler-generated this-adjustment thunk; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E6C40);

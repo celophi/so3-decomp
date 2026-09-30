@@ -118,6 +118,14 @@ normal settings, so I dropped that idea.
   YAML marks the small block `0x1B6000` to `0x1B7000` as valid. All 92 such
   globals now get names like `D_001B65F4`, and ordinary `extern` declarations
   compile to the same gp-relative loads.
+- For a class with several bases, the compiler lays out its vtable like this:
+  first the main base's slots, then one block for each other base, and last
+  the class's own new functions and its overrides of the other bases'
+  functions. Knowing that, I could work out the base classes'
+  sizes from where they sit in the game's vtables. With the corrected layout,
+  `FieldClass150120`'s destructor (`func_001E5030`) and another
+  `FieldClass14FE30` function (`func_001DD490`) now match, and all four
+  affected files still link to the game's bytes.
 
 ## More file boundaries from thunks
 
@@ -128,6 +136,68 @@ units at 45 boundaries, going from 22 units to 65. Every unit still links to
 the game's exact bytes on its own, and the same 637 functions match before
 and after. Files that don't contain any classes with multiple bases leave no
 thunks behind, so some units still hold more than one original file.
+
+## How to add a Field class
+
+These are the steps and rules I follow when I turn Field functions into class
+methods.
+
+**Names.** I don't know the real class names, so each class is named after its
+vtable address, like `FieldClass150120`. A method I can't name yet keeps the
+name of the first function that fills its vtable slot, like `func_001DF3D0`.
+Other classes that override that slot use the same name, because in C++ an
+override must have the same name as the function it replaces. The compiler
+turns those names into mangled ones, such as `__dt__16FieldClass150120Fv`, and
+only the config files use them. The source keeps the readable names.
+
+**Config files.** For each new class I add:
+
+- The vtable and every method's address to `config/symbols.1067-00.txt`, by
+  mangled name.
+- Each thunk the class needs to `config/thunks.1067-00.txt`, with the
+  address of the copy the game kept. The build stops with an error if a thunk
+  is missing, so I can't forget one.
+- Any code that points into the middle of a vtable to
+  `config/relocs.1067-00.txt`, as the vtable plus an offset (for example
+  `__vt__16FieldClass150120` + `0x1C`). A class with more than one base
+  keeps the vtables for its other bases inside its main vtable, so the game's
+  code points at those spots.
+
+**Working out the layout.** The vtable tells me more than the order of the
+functions:
+
+- It starts with two zero words, then one slot per virtual function.
+- For a class with several bases, the main base's slots come first, then a
+  block for each other base, then the class's own new functions and its
+  overrides of the other bases' functions.
+- A thunk's name gives the offset of the base it adjusts for. `@120@...`
+  means that base starts at `0x78` (120) in the object. The gaps between
+  those offsets give the size of each base class.
+- The functions around the vtable show which methods were inline. A
+  destructor that another file pastes in has to be inline in a header.
+
+**Things the compiler does that matter for matching:**
+
+- Calling a base class's method moves `this` to that base without checking
+  for null. A `static_cast` to the base pointer adds a null check. When a
+  function needs a base's address without that check, I bind a reference to
+  the base (`FieldClass150070& base = *this;`) and take its address.
+- A destructor takes a hidden flag. The compiler passes `-1` when it destroys
+  a member, `0` when it destroys a base, and calls `operator delete` when the
+  flag is positive.
+- Global `operator delete` is `__dl__FPv` at `0x100B40`, and `operator
+  delete[]` is `__dla__FPv` at `0x100BE0`. `delete[]` on an array of plain
+  bytes calls `__dla__FPv` directly. A class with its own `operator delete`
+  calls it by the class's mangled name, like
+  `__dl__14LibClass178DD0FPv`.
+- A 16-byte value copied with the R5900's 128-bit loads and stores has to be
+  `unsigned __int128`. A struct of four floats marked 16-byte aligned doesn't
+  get those instructions.
+
+**Checking it.** A class change can move other functions, so after each change
+I recompile every file that uses the header and link each changed file on its
+own at its original address. Every function that matched before has to still
+match, and the linked file has to come out identical to the game's bytes.
 
 ## TODO
 
