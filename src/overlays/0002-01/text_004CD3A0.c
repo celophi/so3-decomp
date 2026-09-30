@@ -1,3 +1,4 @@
+#include "overlays/0002-01/text_004CD3A0.h"
 #include "include_asm.h"
 
 INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004CD3A0", func_004CD3A0);
@@ -264,7 +265,10 @@ INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004CD3A0", func_004D6C
 
 INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004CD3A0", func_004D6DB0);
 
-INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004CD3A0", func_004D6DC0);
+s32 func_004D6DC0(const void* sentinel, const void* node)
+{
+    return sentinel == node;
+}
 
 INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004CD3A0", func_004D6DD0);
 

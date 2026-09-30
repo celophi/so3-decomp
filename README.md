@@ -3,8 +3,7 @@
 Matching decompilation of **Star Ocean: Till the End of Time** for PS2, targeting
 the North American release.
 
-The boot executable and 15 EE overlays currently rebuild byte for byte. The
-code is still assembly placeholders at this point.
+The boot executable and 15 EE overlays currently rebuild byte for byte.
 
 ## Docker environment
 

@@ -8,7 +8,7 @@ HOST_GID := $(shell id -g)
 RUN = $(DOCKER) run --rm --user "$(HOST_UID):$(HOST_GID)" \
 	--mount "type=bind,source=$(PROJECT_DIR),target=/so3" --workdir /so3
 
-.PHONY: help image shell test extract inventory split build verify objdiff-objects report ci-inputs compilers compiler-probe compiler-matrix analysis-tools sdk-scan sdk-symbols
+.PHONY: help image shell test extract inventory split build verify objdiff-objects report ci-inputs compilers compiler-probe compiler-matrix analysis-tools sdk-scan sdk-symbols m2c decompile
 help:
 	@printf '%s\n' \
 		'make image                         Build dockerfiles/dev.dockerfile' \
@@ -21,6 +21,8 @@ help:
 		'make objdiff-objects                Build original and C/C++-only comparison objects' \
 		'make ci-inputs ISO_DISC1=... ISO_DISC2=...  Stage both discs for the private image' \
 		'make analysis-tools                Fetch optional local SDK analysis tools' \
+		'make m2c                           Fetch the pinned local m2c decompiler' \
+		'make decompile MODULE=... FUNCTION=...  Save an m2c draft in working/matching' \
 		'make sdk-scan                      Scan named SDK patterns after splitting' \
 		'make sdk-symbols                   Recover ELF symbols with standalone CCC' \
 		'make compilers                     Fetch the pinned working compiler candidate' \
@@ -93,3 +95,10 @@ sdk-scan: analysis-tools split
 
 sdk-symbols: analysis-tools
 	$(RUN) "$(IMAGE)" python tools/identify_sdk.py symbols
+
+m2c:
+	$(RUN) "$(IMAGE)" python tools/analysis_tools.py --tool m2c
+
+decompile:
+	@test -n "$(MODULE)" -a -n "$(FUNCTION)" || { echo 'Usage: make decompile MODULE=1070-00 FUNCTION=func_00288650 [CONTEXT=working/context.h] [LANGUAGE=c++]' >&2; exit 1; }
+	$(RUN) "$(IMAGE)" python tools/decompile.py "$(MODULE)" "$(FUNCTION)" $(if $(CONTEXT),--context "$(CONTEXT)") $(if $(LANGUAGE),--language "$(LANGUAGE)")

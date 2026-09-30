@@ -61,6 +61,13 @@ segments:
       - [0xB4FA0, c, text_0049B820]
       - [0xC5030, c, text_004AB8B0]
       - [0xD6AE0, c, text_004BD360]
+  - name: text_tail
+    type: code
+    start: 0xE6B20
+    vram: 0x4CD3A0
+    # Both existing units use 16-byte function alignment. Earlier Lib code is mixed.
+    subalign: 16
+    subsegments:
       - [0xE6B20, c, text_004CD3A0]
       - [0xF6BC0, c, text_004DD440]
   - [0x103780, bin, data]

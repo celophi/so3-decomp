@@ -1,8 +1,9 @@
 # Building and matching functions
 
 The build currently reproduces the complete US boot executable and all 15
-recovered EE overlays. The source files are still assembly placeholders, with
-original data kept in binary pieces. Five small C probes also match their
+recovered EE overlays. Most functions are still assembly placeholders, with
+original data kept in binary pieces. The first two source matches are list-sentinel
+comparisons in Field and Lib. Five small C probes also match their
 original function bytes. I'm using that compiler candidate for now, but I haven't
 identified the exact original compiler and flags for every module yet.
 
@@ -38,6 +39,40 @@ records the reviewed ranges, hashes, and identification evidence.
 The first pass identifies 151 EE kernel syscall wrappers in boot. Other library
 and compiler runtime code remains unclassified. The optional analysis commands
 are listed in the [README](../README.md#tools).
+
+## Initial drafts with m2c
+
+I'm using [m2c](https://github.com/matt-kempster/m2c) for the first pass at a
+function. Its PS2 target supports CodeWarrior and C++. The revision and download
+hash are pinned in `config/analysis-tools.json`; the downloaded tool stays local
+under `tools/m2c/`.
+
+```sh
+make m2c
+make decompile MODULE=1070-00 FUNCTION=func_00288650
+```
+
+Run `make split` first if the assembly hasn't been generated. Use `MODULE=boot`
+for the resident executable, or the overlay ID for an overlay. The command
+checks the original binary and the selected function's assembly bytes before
+running m2c. It chooses `mipsee-mwcc-c` or `mipsee-mwcc-c++` from the configured
+source extension. `LANGUAGE=c++` overrides that choice for an experiment.
+
+Each run goes in `working/matching/<function>/<module>/m2c/run-NNN/`, with the
+input assembly, draft, diagnostics, hashes, and command. Repeating it creates a
+new run. Existing candidates and project sources aren't overwritten.
+
+To supply known types and declarations:
+
+```sh
+make decompile MODULE=1070-00 FUNCTION=func_00288650 CONTEXT=working/context.h
+```
+
+The context must contain preprocessed C declarations, even for a C++ target.
+m2c copies it into the run directory. A draft can still contain guessed types,
+unknown fields, or unsupported instructions. C++ mode doesn't recover the
+original class hierarchy. I still need to check the callers, recover the
+interface, and compare the compiled function before moving a draft into `src/`.
 
 ## Replacing a placeholder
 
@@ -323,10 +358,17 @@ across C, C++, and assembly, a constructor, and overloaded methods. Changing the
 source must change the output, and a failed compile must preserve the previous
 valid object.
 
-Splat's linker inputs use four-byte subalignment. CodeWarrior emits a separate
-`.text` section for each function, so aligning every section to 16 bytes would
-insert unwanted gaps. Placeholders already contain the original padding. When
-replacing a function, check its trailing alignment gap along with its instructions.
+Splat's default input subalignment is four bytes. Field's text and the Lib text
+tail starting at file offset `0xE6B20` override it to 16 bytes: all mapped function
+starts in those regions are 16-byte aligned. Earlier Lib code includes functions
+on eight-byte boundaries, so the override does not cover the entire module.
+
+CodeWarrior emits a separate `.text` section for each function. Assembly
+placeholders contain their original trailing padding, while compiled functions
+rely on the linker to honor alignment. The first 12-byte source replacement
+exposed this: four-byte subalignment placed the next function four bytes early.
+The region-specific settings restore the original gap. Check complete binaries
+as well as individual function bytes when replacing a placeholder.
 
 The build tracks source files, referenced assembly, tools, configuration, and
 compiler files. This MWCC doesn't support `-gccdep`, so changes to any `.h`,
