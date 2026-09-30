@@ -2,3 +2,4 @@
 // original linker kept. tools/so3/build/text_order.py drops every other copy.
 // FieldClass14FE30 (vtable D_14FE30); kept copies end text_001DED80.
 @120@__dt__16FieldClass14FE30Fv = 0x001E1570;
+@120@func_001DD7B0__16FieldClass14FE30Fv = 0x001E1550;

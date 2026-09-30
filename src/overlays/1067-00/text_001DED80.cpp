@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "boot/resident_data.h"
 #include "overlays/1067-00/text_001DED80.h"
 #include "overlays/1067-00/text_0022DC70.h"
 
@@ -111,13 +112,16 @@ void func_001DF300(void* object)
 {
 }
 
-s32 func_001DF310(const void* object)
+s32 FieldClass150010::func_001DF3D0()
 {
     return 3;
 }
 
-// Reads an unresolved $gp-relative global.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF320);
+void FieldClass150010::func_001DD7B0()
+{
+    func_004D65C0(this);
+    func_0011ED90(D_001B65F4, this);
+}
 
 u8 func_001DF350(const FieldByteState14* object)
 {

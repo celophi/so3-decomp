@@ -38,3 +38,9 @@ __dt__14LibClass178EA0Fv = 0x004DAC70; // type:func
 __vt__16FieldClass14FE30 = 0x0014FE30; // size:0x74
 __dt__16FieldClass14FE30Fv = 0x001DD4A0; // type:func
 func_001DD400__16FieldClass1DD400Fv = 0x001DD400; // type:func
+func_001DD7B0__16FieldClass14FE30Fv = 0x001DD440; // type:func
+func_001DF3D0__16FieldClass150010Fv = 0x001DF310; // type:func
+func_001DD7B0__16FieldClass150010Fv = 0x001DF320; // type:func
+
+// Resident helper that takes a boot manager object and an object.
+func_0011ED90 = 0x0011ED90; // type:func

@@ -121,6 +121,9 @@ public:
     /** @brief Detach the member at offset 0xA0, then destroy the object. */
     virtual ~FieldClass14FE30();
 
+    /** @brief Detach the FieldClass150070 base and queue it on the resident object queue. */
+    virtual void func_001DD7B0();
+
     LibClass178EA0 unkA0;
 };
 
@@ -130,6 +133,15 @@ class FieldClass150010 : public FieldClass150070
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass150010();
+
+    /**
+     * @brief Report the fixed value 3 for this class.
+     * @return Always 3.
+     */
+    virtual s32 func_001DF3D0();
+
+    /** @brief Detach the object and queue it on the resident object queue. */
+    virtual void func_001DD7B0();
 };
 #endif
 

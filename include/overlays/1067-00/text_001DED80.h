@@ -317,13 +317,6 @@ void func_001DF2F0(void* object);
 void func_001DF300(void* object);
 
 /**
- * @brief Report the fixed value 3 for this receiver class.
- * @param object Receiver of the virtual call.
- * @return Always 3.
- */
-s32 func_001DF310(const void* object);
-
-/**
  * @brief Read the byte at offset 0x14.
  * @param object Receiver to inspect.
  * @return The stored byte.

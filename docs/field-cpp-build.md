@@ -142,6 +142,11 @@ option.
   records where each kept copy is, and the build drops every other copy.
   With that, its destructor (`func_001DD4A0`) matches and both files still
   link to the game's bytes.
+- Globals in the main program that Field reads through the `$gp` register now
+  have names. Splat only names addresses it considers valid, so the 1067
+  YAML marks the small block `0x1B6000` to `0x1B7000` as valid. All 92 such
+  globals now get names like `D_001B65F4`, and ordinary `extern` declarations
+  compile to the same gp-relative loads.
 
 ## TODO
 
