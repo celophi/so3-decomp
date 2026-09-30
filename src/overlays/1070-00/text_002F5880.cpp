@@ -1,6 +1,14 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_002F5880.h"
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002F5880", func_002F5880);
+void func_002F5880(FieldResetState18* object)
+{
+    object->unk20 = 0;
+    object->unk24 = -1;
+    object->unk18 = 0;
+    object->unk26 = -1;
+    object->unk28 = -1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002F5880", func_002F58A0);
 

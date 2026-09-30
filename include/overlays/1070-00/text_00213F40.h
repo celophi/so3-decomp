@@ -14,6 +14,13 @@ typedef struct FieldTraversalRecord
     u8 unk10[0x10];
 } FieldTraversalRecord;
 
+/** Partial receiver whose scaled float value is at offset 0x30. */
+typedef struct FieldFloatState30
+{
+    u8 unk00[0x30];
+    float unk30;
+} FieldFloatState30;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -45,6 +52,13 @@ FieldTraversalRecord* func_0021EC50(const FieldTraversalRecord* record);
  * @return The stored index, including the observed -1 sentinel.
  */
 s16 func_0021EC60(const FieldTraversalRecord* record);
+
+/**
+ * @brief Read the stored float scaled by one sixteenth.
+ * @param object Receiver to inspect.
+ * @return The stored value multiplied by 0.0625.
+ */
+float func_00214DA0(const FieldFloatState30* object);
 
 #ifdef __cplusplus
 }

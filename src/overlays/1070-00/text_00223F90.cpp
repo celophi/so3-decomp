@@ -93,7 +93,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002277
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002278B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002279E0);
+void func_002279E0(FieldWordByteState30* object, u32 value, u8 state)
+{
+    object->unk30 = value;
+    object->unk34 = state;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002279F0);
 
@@ -125,7 +129,16 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002284
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_00228670);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002286C0);
+void func_002286C0(FieldFloatResetState1C* object)
+{
+    object->unk1c = 0;
+    object->unk1e = 0;
+    object->unk1d = 0;
+    object->unk2c = 0.0f;
+    object->unk28 = 0.0f;
+    object->unk24 = 0.0f;
+    object->unk20 = 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002286E0);
 

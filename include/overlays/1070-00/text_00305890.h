@@ -18,6 +18,16 @@ typedef struct FieldTwoSlotState
     s32 unk80;
 } FieldTwoSlotState;
 
+/** Partial receiver for the connected halfword and byte setters. */
+typedef struct FieldHalfwordByteState105A
+{
+    u8 unk00[0x105A];
+    s16 unk105a;
+    u8 unk105c[2];
+    s16 unk105e;
+    u8 unk1060;
+} FieldHalfwordByteState105A;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -51,6 +61,21 @@ s16 func_0030A1A0(const FieldTwoSlotState* object, s32 index);
  * @param index Slot index, 0 or 1.
  */
 void func_0030A1B0(FieldTwoSlotState* object, s16 index);
+
+/**
+ * @brief Set the signed halfword at offset 0x105E and its adjacent state byte.
+ * @param object Receiver to update.
+ * @param value Signed halfword to store.
+ * @param state State byte to store.
+ */
+void func_0030BF10(FieldHalfwordByteState105A* object, s16 value, u8 state);
+
+/**
+ * @brief Store the signed halfword, preserving the preliminary write for values above 50.
+ * @param object Receiver to update.
+ * @param value Signed halfword ultimately stored at offset 0x105A.
+ */
+void func_0030C130(FieldHalfwordByteState105A* object, s16 value);
 
 #ifdef __cplusplus
 }

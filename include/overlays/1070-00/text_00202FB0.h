@@ -45,6 +45,14 @@ typedef struct FieldBytePairOwner
     u8 unk590_2_7 : 6;
 } FieldBytePairOwner;
 
+/** Partial receiver whose flag byte is at offset 0x81. */
+typedef struct FieldByteFlags81
+{
+    u8 unk00[0x81];
+    u8 unk81_0 : 1;
+    u8 unk81_1_7 : 7;
+} FieldByteFlags81;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -135,6 +143,13 @@ void func_0020DC50(FieldBytePairOwner* object);
 
 void func_0020D240(FieldBytePairOwner* object);
 void func_0020D810(FieldBytePairOwner* object, float value);
+
+/**
+ * @brief Test bit zero of the flag byte at offset 0x81.
+ * @param object Receiver to inspect.
+ * @return True when the flag is set.
+ */
+bool func_00203BE0(const FieldByteFlags81* object);
 
 #ifdef __cplusplus
 }
