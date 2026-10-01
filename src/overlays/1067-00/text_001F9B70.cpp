@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "sdk/boot/syscalls_00121940.h"
 #include "overlays/1067-00/text_001F9B70.h"
 #include "overlays/1067-00/text_002CEAF0.h"
 #include "overlays/0002-01/text_004CD3A0.h"
@@ -76,7 +77,6 @@ struct FieldLateFlag30
     unsigned char unk30_1 : 1;
 };
 
-extern "C" void func_121FE0(void*);
 
 struct FieldLateRetryNode
 {
