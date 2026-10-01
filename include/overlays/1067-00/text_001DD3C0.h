@@ -4,6 +4,7 @@
 #include "types.h"
 #include "overlays/0002-01/text_004CD3A0.h"
 #include "overlays/1067-00/text_001FD860.h"
+#include "overlays/1067-00/text_0022DC70.h"
 
 /** Partial receiver whose word at offset 0x70 refers to an attached object. */
 typedef struct FieldAttachedObject70
@@ -30,38 +31,6 @@ typedef struct FieldFlaggedListObject
     u32 unk208;
 } FieldFlaggedListObject;
 
-/** Partial 32-byte record reset by func_001DEA80. */
-typedef struct FieldSlotRecord20
-{
-    u8 unk00[4];
-    u32 unk04;
-    u8 unk08_0 : 1;
-    u8 unk08_1_7 : 7;
-    u8 unk09[3];
-    s32 unk0c;
-    u32 unk10;
-    u8 unk14;
-    u8 unk15;
-    u8 unk16_0 : 1;
-    u8 unk16_1 : 1;
-    u8 unk16_2 : 1;
-    u8 unk16_3_7 : 5;
-    u8 unk17[9];
-} FieldSlotRecord20;
-
-/** Partial receiver owning a counted array of 32-byte records at offset 0x1C. */
-typedef struct FieldSlotRecordOwner
-{
-    u8 unk00[0x1C];
-    FieldSlotRecord20* unk1c;
-    u32 unk20;
-    s32 unk24;
-    u8 unk28[5];
-    u8 unk2d;
-    u8 unk2e;
-    u8 unk2f;
-} FieldSlotRecordOwner;
-
 #ifdef __cplusplus
 /** Root of the FieldClass150070 hierarchy, with vtable D_150050 in boot data. */
 class FieldClass150050
@@ -87,6 +56,16 @@ public:
 class FieldClass150070 : public FieldClass150060
 {
 public:
+    /** @brief Clear the list links, state bytes and owner pointer. */
+    FieldClass150070()
+    {
+        unk04 = 0;
+        unk08 = 0;
+        unk0e = 0;
+        unk0f = 0;
+        unk10 = 0;
+    }
+
     /** @brief Detach the object from the owner at offset 0x10, then destroy it. */
     virtual ~FieldClass150070()
     {
@@ -108,12 +87,18 @@ public:
     /** @brief Default handler that performs no work. */
     virtual void func_001DD410();
 
-    u8 unk04[0x10];
+    void* unk04;
+    void* unk08;
+    u8 unk0c[2];
+    u8 unk0e;
+    u8 unk0f;
+    void* unk10;
 };
 
 /**
- * Partial base class with two virtual handlers. Slot 1 is named after its
- * lowest known override (func_001DDB30); no implementation of its own is known.
+ * Partial base class with two virtual handlers, with vtable D_150000 in boot
+ * data. Slot 1 is named after its lowest known override (func_001DDB30); its
+ * own implementation is func_001DF370.
  */
 class FieldClass1DD400
 {
@@ -121,7 +106,7 @@ public:
     /** @brief Default handler that performs no work. */
     virtual void func_001DD400();
 
-    /** @brief Virtual handler slot 1; see the overriding classes. */
+    /** @brief Default handler that performs no work. */
     virtual void func_001DDB30();
 };
 
@@ -152,12 +137,25 @@ public:
     LibClass178EA0 unkA0;
 };
 
-/** Partial class derived from FieldClass150070, with vtable D_150010 in boot data. */
+/**
+ * Partial class derived from FieldClass150070, with vtable D_150010 in boot
+ * data. Slots 5-7 are pure virtual (zero vtable entries); they are named after
+ * FieldClass14FFB0's implementations.
+ */
 class FieldClass150010 : public FieldClass150070
 {
 public:
+    /** @brief Set the byte at offset 0x14 to 5 and clear the byte at offset 0x15. */
+    FieldClass150010()
+    {
+        unk14 = 5;
+        unk15 = 0;
+    }
+
     /** @brief Destroy the object. */
-    virtual ~FieldClass150010();
+    virtual ~FieldClass150010()
+    {
+    }
 
     /**
      * @brief Report the fixed value 3 for this class.
@@ -167,6 +165,110 @@ public:
 
     /** @brief Detach the object and queue it on the resident object queue. */
     virtual void func_001DD7B0();
+
+    /**
+     * @brief Pure virtual handler slot 5.
+     * @param flag Value tested for nonzero by FieldClass14FFB0's implementation.
+     */
+    virtual void func_001E0A50(s32 flag) = 0;
+
+    /** @brief Pure virtual handler slot 6. */
+    virtual void func_001E07A0() = 0;
+
+    /** @brief Pure virtual handler slot 7. */
+    virtual void func_001DF640() = 0;
+
+    /**
+     * @brief Read the byte at offset 0x14.
+     * @return The stored byte.
+     */
+    virtual u8 func_001DF350();
+
+    u8 unk14;
+    u8 unk15;
+};
+
+/**
+ * Partial 32-byte record with vtable D_150040 in boot data. Its base keeps its
+ * vtable pointer at offset 0x18, after the base's data.
+ */
+class FieldClass150040 : public FieldClass1530C0
+{
+public:
+    /** @brief Construct the base, then clear bits 0 and 1 at offset 0x1C. */
+    FieldClass150040();
+
+    /**
+     * @brief Clear bits 0 and 1 at offset 0x1C, then run the base handler.
+     * @return The base handler's result.
+     */
+    virtual s32 func_0023AD00();
+
+    u8 unk1c_0 : 1;
+    u8 unk1c_1 : 1;
+    u8 unk1c_2_7 : 6;
+    u8 unk1d[3];
+};
+
+/**
+ * Partial FieldClass150010 with a FieldClass1DD400 base at offset 0x18 and a
+ * counted array of FieldClass150040 records at offset 0x1C, with vtable
+ * D_14FFB0 in boot data. The FieldClass1DD400 vtable part is D_14FFDC
+ * (__vt__16FieldClass14FFB0 + 0x2C).
+ */
+class FieldClass14FFB0 : public FieldClass150010, public FieldClass1DD400
+{
+public:
+    /** @brief Clear the record array and state, set the defaults, then reset the records. */
+    FieldClass14FFB0();
+
+    /** @brief Free the record array, then destroy the object. */
+    virtual ~FieldClass14FFB0();
+
+    /**
+     * @brief Virtual handler slot 5.
+     * @param flag Value tested for nonzero.
+     */
+    virtual void func_001E0A50(s32 flag);
+
+    /** @brief Virtual handler slot 6. */
+    virtual void func_001E07A0();
+
+    /** @brief Virtual handler slot 7. */
+    virtual void func_001DF640();
+
+    /** @brief First virtual handler introduced by this class. */
+    virtual void func_001DF3E0();
+
+    /** @brief Second virtual handler introduced by this class. */
+    virtual void func_001E0F60();
+
+    /** @brief Reset every record, then clear the word at offset 0x20 and the bytes at offsets 0x2D-0x2F. */
+    virtual void func_001DEA80();
+
+    /** @brief Virtual handler called by the destructor before the record array is freed. */
+    virtual void func_001DF780();
+
+    /** @brief FieldClass1DD400 slot 1 override. */
+    virtual void func_001DDB30();
+
+    /**
+     * @brief Replace the record array with count newly constructed records.
+     * @param count Number of records to allocate.
+     */
+    void func_001DE8B0(s32 count);
+
+    FieldClass150040* unk1c;
+    u32 unk20;
+    s32 unk24;
+    s32 unk28;
+    u8 unk2c;
+    u8 unk2d;
+    u8 unk2e;
+    u8 unk2f;
+    u8 unk30_0 : 1;
+    u8 unk30_1 : 1;
+    u8 unk30_2_7 : 6;
 };
 #endif
 
@@ -238,12 +340,6 @@ void func_001DE3B0(void* object);
  * @param object Receiver of the virtual call.
  */
 void func_001DE3C0(void* object);
-
-/**
- * @brief Reset every 32-byte record in the counted array at offset 0x1C, then clear the word at offset 0x20 and the bytes at offsets 0x2D-0x2F.
- * @param object Receiver owning the records; the loop is skipped when the array pointer is null.
- */
-void func_001DEA80(FieldSlotRecordOwner* object);
 
 /**
  * @brief Update the table of every listed object that has one at offset 0x7C.

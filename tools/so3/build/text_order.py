@@ -13,7 +13,10 @@ out-of-line copies of inline functions as multiply-defined copies in every
 unit that needs them. The original linker kept one copy of each. The thunk
 map (thunks) and symbol map (addresses) record where each kept copy is; a unit
 keeps its copy only when that address is inside the unit, and the other
-copies are renamed out of `.text` so the overlay link discards them.
+copies are renamed out of `.text` so the overlay link discards them. Their
+public symbols become undefined references to the kept copies. Mapped vtables
+are supplied by resident data; their generated definitions likewise become
+references before the overlay linker discards their sections.
 """
 
 import re
@@ -57,7 +60,8 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
 
     thunks maps compiler thunk names to the original address of their kept copy;
     keep is the unit's (start, end) VRAM range, outside which thunk copies are
-    discarded. With reorder=False only the thunk rule is applied.
+    discarded. With reorder=False only copy selection and resident vtable
+    references are processed.
     """
     thunks = thunks or {}
     if data[:6] != b'\x7fELF\x01\x01':
@@ -120,6 +124,11 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
         data = discard_sections(data, dropped)
         headers = [list(struct.unpack_from('<10I', data, shoff + i * size)) for i in range(count)]
         texts = [i for i in texts if i not in dropped]
+    if keep is not None:
+        # Overlay vtables live in retained resident data, not these generated
+        # sections. GNU ld diagnoses duplicate definitions before /DISCARD/.
+        vtables = {i for i, h in enumerate(headers) if name(h) == '.vtables'}
+        data = undefine_symbols(data, vtables, addresses)
     if not reorder:
         return data
 
@@ -168,4 +177,32 @@ def discard_sections(data, indices):
         struct.pack_into('<10I', out, shoff + names_index * size, *names)
     for index in indices:
         struct.pack_into('<I', out, shoff + index * size, position)
+    return undefine_symbols(bytes(out), indices)
+
+
+def undefine_symbols(data, indices, mapped=None):
+    """Make public definitions in discarded sections resolve to their retained owners.
+
+    Symbol indices and relocation records stay unchanged. Local section symbols
+    remain local; they are used by metadata that is discarded with the section.
+    If mapped is supplied, only symbols with known resident addresses change.
+    """
+    if not indices:
+        return data
+    shoff = struct.unpack_from('<I', data, 32)[0]
+    size, count = struct.unpack_from('<HH', data, 46)
+    out = bytearray(data)
+    for i in range(count):
+        header = struct.unpack_from('<10I', data, shoff + i * size)
+        if header[1] != 2:
+            continue
+        strings_header = struct.unpack_from('<10I', data, shoff + header[6] * size)
+        strings = data[strings_header[4]:strings_header[4] + strings_header[5]]
+        for offset in range(header[4], header[4] + header[5], header[9]):
+            label, value, length, info, other, index = struct.unpack_from('<IIIBBH', data, offset)
+            symbol = strings[label:].split(b'\0', 1)[0].decode()
+            if index in indices and info >> 4 and (mapped is None or symbol in mapped):
+                # MWCC's multiply-defined binding is not a GNU weak symbol.
+                # Use a normal external reference, including for thunk copies.
+                struct.pack_into('<IIIBBH', out, offset, label, 0, 0, 0x10 | (info & 15), other, 0)
     return bytes(out)

@@ -28,6 +28,49 @@ void func_002379A0(void* object, s32 flag);
 
 #ifdef __cplusplus
 }
+
+/**
+ * Partial base of 32-byte records, with vtable D_1530C0 in boot data. Its
+ * vtable pointer follows its data at offset 0x18.
+ */
+class FieldClass1530C0
+{
+public:
+    /** @brief Clear the state words and flags, and set bit 1 at offset 0x16. */
+    FieldClass1530C0()
+    {
+        unk0c = -1;
+        unk04 = 0;
+        unk10 = 0;
+        unk16_0 = 0;
+        unk16_1 = 1;
+        unk08_0 = 0;
+        unk16_2 = 0;
+        unk14 = 0;
+        unk15 = 0;
+    }
+
+    u8 unk00[4];
+    void* unk04;
+    u8 unk08_0 : 1;
+    u8 unk08_1_7 : 7;
+    u8 unk09[3];
+    s32 unk0c;
+    u32 unk10;
+    u8 unk14;
+    u8 unk15;
+    u8 unk16_0 : 1;
+    u8 unk16_1 : 1;
+    u8 unk16_2 : 1;
+    u8 unk16_3_7 : 5;
+    u8 unk17;
+
+    /**
+     * @brief Delete the object at offset 0x4 when it is set and bit 1 at offset 0x16 is set.
+     * @return 1 when the object was deleted, otherwise 0.
+     */
+    virtual s32 func_0023AD00();
+};
 #endif
 
 #endif

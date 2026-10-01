@@ -16,3 +16,10 @@ rom:0x7CD8 reloc:MIPS_HI16 symbol:__vt__16FieldClass150120 addend:0x1C
 rom:0x7CE0 reloc:MIPS_LO16 symbol:__vt__16FieldClass150120 addend:0x1C
 rom:0x7DA4 reloc:MIPS_HI16 symbol:__vt__16FieldClass150120 addend:0x1C
 rom:0x7DBC reloc:MIPS_LO16 symbol:__vt__16FieldClass150120 addend:0x1C
+// FieldClass14FFB0's FieldClass1DD400 vtable part (+0x2C), in its constructor, destructor and func_0025EAD0.
+rom:0x181C reloc:MIPS_HI16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
+rom:0x1848 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
+rom:0x21F0 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
+rom:0x21F8 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
+rom:0x81770 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
+rom:0x81778 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FFB0 addend:0x2C

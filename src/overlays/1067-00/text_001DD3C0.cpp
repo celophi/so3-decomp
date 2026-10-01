@@ -205,18 +205,43 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE4F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE8B0);
+void FieldClass14FFB0::func_001DE8B0(s32 count)
+{
+    if (unk30_0)
+    {
+        if (unk1c)
+        {
+            delete[] unk1c;
+        }
+        unk1c = new(0) FieldClass150040[count];
+    }
+    else
+    {
+        void* heap = func_00100C80(D_001B6430->context->unk6c);
+        if (unk1c)
+        {
+            delete[] unk1c;
+        }
+        unk1c = new(0) FieldClass150040[count];
+        func_00100C80(heap);
+    }
+    unk24 = count;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE9C0);
+FieldClass150040::FieldClass150040()
+{
+    unk1c_0 = 0;
+    unk1c_1 = 0;
+}
 
-void func_001DEA80(FieldSlotRecordOwner* object)
+void FieldClass14FFB0::func_001DEA80()
 {
     s32 i;
-    if (object->unk1c)
+    if (unk1c)
     {
-        for (i = 0; i < object->unk24; i++)
+        for (i = 0; i < unk24; i++)
         {
-            FieldSlotRecord20* record = &object->unk1c[i];
+            FieldClass150040* record = &unk1c[i];
             record->unk0c = -1;
             record->unk04 = 0;
             record->unk10 = 0;
@@ -228,14 +253,19 @@ void func_001DEA80(FieldSlotRecordOwner* object)
             record->unk15 = 0;
         }
     }
-    object->unk20 = 0;
-    object->unk2f = 0;
-    object->unk2d = 0;
-    object->unk2e = 0;
+    unk20 = 0;
+    unk2f = 0;
+    unk2d = 0;
+    unk2e = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DEB50);
-
-FieldClass150010::~FieldClass150010()
+FieldClass14FFB0::FieldClass14FFB0()
 {
+    unk1c = 0;
+    unk24 = 0;
+    unk28 = 0x34BC0;
+    unk2c = 0x80;
+    unk30_1 = 0;
+    unk30_0 = 0;
+    func_001DEA80();
 }
