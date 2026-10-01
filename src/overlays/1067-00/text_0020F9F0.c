@@ -12,7 +12,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FC
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FC70);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FCE0);
+void func_0020FCE0(FieldFlags141C* object)
+{
+    object->bit1 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FD00);
 
@@ -62,7 +65,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210D60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210DA0);
+void func_00210DA0(FieldFlags10A1* object)
+{
+    object->bit2 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210DC0);
 
@@ -110,11 +116,20 @@ void func_00212450(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00212460);
+void func_00212460(FieldFlags107C* object)
+{
+    object->bit1 = 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00212480);
+void func_00212480(FieldFlags10A1* object)
+{
+    object->bit0 = 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002124A0);
+void func_002124A0(FieldFlags10A1* object)
+{
+    object->bit1 = 1;
+}
 
 void func_002124C0(void* object)
 {

@@ -60,14 +60,23 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E76
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E78B0);
 
-// 128-bit copy; needs a 16-byte vector type.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E7E90);
+void func_001E7E90(FieldVectorSlots50* object, const unsigned __int128* value)
+{
+    object->ready = 1;
+    object->slots[0] = *value;
+}
 
-// 128-bit copy; needs a 16-byte vector type.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E7EB0);
+void func_001E7EB0(FieldVectorSlots50* object, const unsigned __int128* value)
+{
+    object->ready = 1;
+    object->slots[2] = *value;
+}
 
-// 128-bit copy; needs a 16-byte vector type.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E7ED0);
+void func_001E7ED0(FieldVectorSlots50* object, const unsigned __int128* value)
+{
+    object->ready = 1;
+    object->slots[1] = *value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E7EF0);
 

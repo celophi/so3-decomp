@@ -56,6 +56,12 @@ extern "C" {
  */
 void func_002F2460(void* object);
 
+/**
+ * @brief Read a byte from the current global target.
+ * @return The target byte at offset 0x140.
+ */
+u8 func_002F2880(void);
+
 #ifdef __cplusplus
 }
 #endif

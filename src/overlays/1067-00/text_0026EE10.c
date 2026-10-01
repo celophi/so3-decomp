@@ -5,6 +5,28 @@
 #include "overlays/1067-00/text_0026EE10.h"
 
 
+typedef struct FieldContext26FF70
+{
+    u8 unk00[0x8C];
+    u32 value;
+} FieldContext26FF70;
+
+struct FieldRoot26FF70
+{
+    u8 unk00[0x7C];
+    void* unk7C;
+    u8 unk80[0x28];
+    void* unkA8;
+    u8 unkAC[4];
+    void* unkB0;
+    u8 unkB4[0x24];
+    FieldContext26FF70* unkD8;
+};
+
+extern void func_45B210(void* object, void* value);
+extern void func_45B110(void* object, void* value);
+extern void func_0020DDD0(void* object, FieldContext26FF70* context);
+
 typedef struct FieldWords270E90
 {
     u32 words[4];
@@ -86,7 +108,18 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026FE
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026FF10);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026FF70);
+void func_0026FF70(FieldRoot26FF70* root)
+{
+    void* object = root->unkA8;
+    FieldContext26FF70* context;
+    func_45B210(object, root->unkB0);
+    func_45B110(object, root->unk7C);
+    context = root->unkD8;
+    if (context->value != 0)
+    {
+        func_0020DDD0(object, context);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026FFD0);
 

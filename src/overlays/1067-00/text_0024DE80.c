@@ -1,6 +1,24 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_0024DE80.h"
 
+/** Partial value pair attached at receiver offset 0x11C. */
+typedef struct FieldValues24
+{
+    u8 pad[0x24];
+    u32 first;
+    u32 second;
+} FieldValues24;
+
+struct FieldObject11CValues
+{
+    u8 pad[0x11C];
+    FieldValues24* values;
+};
+
+extern void* D_001B663C;
+extern void func_4D9250(void* target, u32 first, u32 second);
+extern void func_4D00B0(void* object);
+
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024DE80);
 
@@ -56,7 +74,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024FB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_00250600);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_002507B0);
+void func_002507B0(FieldObject11CValues* object)
+{
+    func_4D9250(D_001B663C, object->values->first, object->values->second);
+    func_4D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_002507F0);
 
@@ -82,14 +104,20 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_002539
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_00253B30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_00254180);
+void func_00254180(FieldObject153730* object)
+{
+    object->bit0 = 1;
+}
 
 s32 func_002541A0(FieldObject153730* object)
 {
     return 3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_002541B0);
+void func_002541B0(FieldObject153730* object)
+{
+    object->unk60 = 9;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_002541C0);
 

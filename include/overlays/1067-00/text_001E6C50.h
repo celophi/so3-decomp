@@ -14,6 +14,14 @@ typedef struct FieldFlagObject20
     u8 unk20_1_7 : 7;
 } FieldFlagObject20;
 
+/** Partial receiver with three aligned 128-bit slots and a ready byte at offset 0x50. */
+typedef struct FieldVectorSlots50
+{
+    u8 unk00[0x20];
+    unsigned __int128 slots[3];
+    u8 ready;
+} FieldVectorSlots50;
+
 /** Four adjacent floats in a 16-byte record. */
 typedef struct FieldFloat4
 {
@@ -192,6 +200,27 @@ public:
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Mark the receiver ready and copy a 128-bit value into slot 0.
+ * @param object Receiver containing the slots.
+ * @param value Value to copy.
+ */
+void func_001E7E90(FieldVectorSlots50* object, const unsigned __int128* value);
+
+/**
+ * @brief Mark the receiver ready and copy a 128-bit value into slot 2.
+ * @param object Receiver containing the slots.
+ * @param value Value to copy.
+ */
+void func_001E7EB0(FieldVectorSlots50* object, const unsigned __int128* value);
+
+/**
+ * @brief Mark the receiver ready and copy a 128-bit value into slot 1.
+ * @param object Receiver containing the slots.
+ * @param value Value to copy.
+ */
+void func_001E7ED0(FieldVectorSlots50* object, const unsigned __int128* value);
 
 /**
  * @brief Store the word at offset 0x18.

@@ -3,6 +3,34 @@
 
 #include "types.h"
 
+/** Partial receiver with byte flags at offset 0x141C. */
+typedef struct FieldFlags141C
+{
+    u8 unk00[0x141C];
+    u8 bit0 : 1;
+    u8 bit1 : 1;
+    u8 rest : 6;
+} FieldFlags141C;
+
+/** Partial receiver with byte flags at offset 0x107C. */
+typedef struct FieldFlags107C
+{
+    u8 unk00[0x107C];
+    u8 bit0 : 1;
+    u8 bit1 : 1;
+    u8 rest : 6;
+} FieldFlags107C;
+
+/** Partial receiver with byte flags at offset 0x10A1. */
+typedef struct FieldFlags10A1
+{
+    u8 unk00[0x10A1];
+    u8 bit0 : 1;
+    u8 bit1 : 1;
+    u8 bit2 : 1;
+    u8 rest : 5;
+} FieldFlags10A1;
+
 typedef struct FieldState6C
 {
     u8 unknown[0x6C];
@@ -12,6 +40,36 @@ typedef struct FieldState6C
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Set bit 1 of the receiver byte at offset 0x141C.
+ * @param object Receiver containing the flag byte.
+ */
+void func_0020FCE0(FieldFlags141C* object);
+
+/**
+ * @brief Set bit 2 of the receiver byte at offset 0x10A1.
+ * @param object Receiver containing the flag byte.
+ */
+void func_00210DA0(FieldFlags10A1* object);
+
+/**
+ * @brief Set bit 1 of the receiver byte at offset 0x107C.
+ * @param object Receiver containing the flag byte.
+ */
+void func_00212460(FieldFlags107C* object);
+
+/**
+ * @brief Set bit 0 of the receiver byte at offset 0x10A1.
+ * @param object Receiver containing the flag byte.
+ */
+void func_00212480(FieldFlags10A1* object);
+
+/**
+ * @brief Set bit 1 of the receiver byte at offset 0x10A1.
+ * @param object Receiver containing the flag byte.
+ */
+void func_002124A0(FieldFlags10A1* object);
 
 /**
  * @brief Store a 16-bit value in the field at offset 0x6C.

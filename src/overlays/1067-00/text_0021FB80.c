@@ -3,6 +3,7 @@
 #include "boot/resident_0010A0E0.h"
 #include "overlays/0002-01/text_004CD3A0.h"
 #include "overlays/1067-00/text_0021FB80.h"
+#include "overlays/1067-00/text_0022DC70.h"
 
 
 typedef struct FieldObject220150
@@ -50,6 +51,43 @@ struct FieldObject29250
     u8 unk61[0x8F];
     u8 unkF0;
 };
+
+struct FieldObject22CC0
+{
+    u8 unk00[0x204];
+    u32 flags;
+};
+
+typedef struct FieldContext10Object22CC0
+{
+    u8 unk00[0x24];
+    void* value;
+} FieldContext10Object22CC0;
+
+typedef struct FieldContext22CC0
+{
+    u8 unk00[0x10];
+    FieldContext10Object22CC0* unk10;
+    u8 unk14[0x28];
+    void* unk3C;
+} FieldContext22CC0;
+
+extern s32 func_001EF150(void* context_object, FieldObject22CC0* object, void* value);
+
+typedef struct FieldOwner29310
+{
+    u8 unk00[0x5C4];
+    void* linked;
+} FieldOwner29310;
+
+typedef struct FieldContext29310
+{
+    u8 unk00[0x38];
+    FieldOwner29310* owner;
+} FieldContext29310;
+
+extern s32 func_00202310(void* object);
+extern void func_4CEE30(float* vector);
 
 struct FieldObject2B440
 {
@@ -120,7 +158,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00221A
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00221CE0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002227F0);
+void func_002227F0(void* object)
+{
+    func_00233660((FieldObject232640*)object);
+    while (!func_00202310(object))
+    {
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00222840);
 
@@ -140,7 +184,22 @@ void func_002228E0(FieldObject228E0* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00222930);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00222CC0);
+s32 func_00222CC0(FieldObject22CC0* object)
+{
+    FieldContext22CC0* context;
+    void* value;
+    if (object->flags & 0x200)
+    {
+        return 0;
+    }
+    context = (FieldContext22CC0*)D_001B6430->context;
+    value = context->unk10->value;
+    if (value != 0)
+    {
+        return func_001EF150(context->unk3C, object, value);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00222D20);
 
@@ -261,7 +320,16 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002274
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00227610);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002276F0);
+void func_002276F0(void* unused0, void* unused1, float* output)
+{
+    float vector[4];
+    vector[0] = 0.0f;
+    vector[1] = 0.0f;
+    vector[2] = 0.0f;
+    vector[3] = 1.0f;
+    func_4CEE30(vector);
+    func_004CE4C0(output, vector);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00227740);
 
@@ -299,7 +367,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002292
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002292F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00229310);
+void func_00229310(void* object)
+{
+    FieldContext29310* context = (FieldContext29310*)D_001B6430->context;
+    FieldOwner29310* owner = context->owner;
+    if (object == owner->linked)
+    {
+        owner->linked = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00229340);
 

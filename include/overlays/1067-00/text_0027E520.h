@@ -70,8 +70,10 @@ typedef struct FieldObject156A50
     u8 unk00[0xC];
     s32 unk0C;
     s32 unk10;
-    u8 unk14[8];
+    u8* base14;
+    u8 unk18[4];
     FieldBitset154E80* unk1C;
+    u8* base20;
 } FieldObject156A50;
 
 /** Partial array owner associated with table D_156980. */
@@ -80,8 +82,10 @@ typedef struct FieldObject156980
     u8 unk00[0xC];
     s32 unk0C;
     s32 unk10;
-    u8 unk14[8];
+    u8* base14;
+    u8 unk18[4];
     FieldBitset154E80* unk1C;
+    u8* base20;
 } FieldObject156980;
 
 /** Partial array owner associated with table D_1568B0. */
@@ -90,8 +94,10 @@ typedef struct FieldObject1568B0
     u8 unk00[0xC];
     s32 unk0C;
     s32 unk10;
-    u8 unk14[8];
+    u8* base14;
+    u8 unk18[4];
     FieldBitset154E80* unk1C;
+    u8* base20;
 } FieldObject1568B0;
 
 /** Partial array owner associated with table D_1567E0. */
@@ -100,8 +106,10 @@ typedef struct FieldObject1567E0
     u8 unk00[0xC];
     s32 unk0C;
     s32 unk10;
-    u8 unk14[8];
+    u8* base14;
+    u8 unk18[4];
     FieldBitset154E80* unk1C;
+    u8* base20;
 } FieldObject1567E0;
 
 /** Partial array owner associated with table D_156710. */
@@ -110,8 +118,10 @@ typedef struct FieldObject156710
     u8 unk00[0xC];
     s32 unk0C;
     s32 unk10;
-    u8 unk14[8];
+    u8* base14;
+    u8 unk18[4];
     FieldBitset154E80* unk1C;
+    u8* base20;
 } FieldObject156710;
 
 /** Partial array owner associated with table D_156640. */
@@ -120,8 +130,10 @@ typedef struct FieldObject156640
     u8 unk00[0xC];
     s32 unk0C;
     s32 unk10;
-    u8 unk14[8];
+    u8* base14;
+    u8 unk18[4];
     FieldBitset154E80* unk1C;
+    u8* base20;
 } FieldObject156640;
 
 /** Partial receiver containing its signed iteration count. */
@@ -148,8 +160,10 @@ typedef struct FieldObject156E90
     u8 unk00[0xC];
     s32 unk0C;
     s32 unk10;
-    u8 unk14[8];
+    u8* base14;
+    u8 unk18[4];
     FieldBitset154E80* unk1C;
+    u8* base20;
 } FieldObject156E90;
 
 
@@ -337,6 +351,20 @@ s32 func_00282790(FieldObject1559A0* object);
 void func_00282820(FieldObject1559A0* object, float value);
 
 /**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_00282830(FieldObject1559A0* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_002828A0(FieldObject1559A0* object);
+
+/**
  * @brief Report the default mode value.
  * @param object Callback receiver.
  * @return Always zero.
@@ -384,6 +412,20 @@ s32 func_00282990(FieldObject155C50* object);
  * @param value Scalar value supplied by the caller.
  */
 void func_00282A20(FieldObject155C50* object, float value);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_00282A30(FieldObject155C50* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_00282AA0(FieldObject155C50* object);
 
 /**
  * @brief Report the default mode value.
@@ -435,6 +477,20 @@ s32 func_00282B90(FieldObject155E60* object);
 void func_00282C20(FieldObject155E60* object, float value);
 
 /**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_00282C30(FieldObject155E60* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_00282CA0(FieldObject155E60* object);
+
+/**
  * @brief Report the default mode value.
  * @param object Callback receiver.
  * @return Always zero.
@@ -482,6 +538,20 @@ s32 func_00282D90(FieldObject156220* object);
  * @param value Scalar value supplied by the caller.
  */
 void func_00282E20(FieldObject156220* object, float value);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_00282E30(FieldObject156220* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_00282EA0(FieldObject156220* object);
 
 /**
  * @brief Report the default mode value.
@@ -533,6 +603,20 @@ s32 func_00282F90(FieldObject1564D0* object);
 void func_00283020(FieldObject1564D0* object, float value);
 
 /**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_00283030(FieldObject1564D0* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_002830A0(FieldObject1564D0* object);
+
+/**
  * @brief Report the default mode value.
  * @param object Callback receiver.
  * @return Always zero.
@@ -582,11 +666,42 @@ s32 func_00283190(FieldObject156080* object);
 void func_00283220(FieldObject156080* object, float value);
 
 /**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_00283230(FieldObject156080* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_002832A0(FieldObject156080* object);
+
+/**
  * @brief Report the default mode value.
  * @param object Callback receiver.
  * @return Always zero.
  */
 u8 func_00283260(FieldObject156080* object);
+
+/**
+ * @brief Get the address of an element in the 128-byte-stride array.
+ * @param object Receiver holding the array base.
+ * @param index Element index.
+ * @return Address of the indexed element.
+ */
+void* func_00283320(FieldObject156A50* object, s32 index);
+
+/**
+ * @brief Get an address in the receiver's 64-byte-stride grid.
+ * @param object Receiver holding the grid width and base.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Address selected by the row and column.
+ */
+void* func_00283330(FieldObject156A50* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
@@ -617,6 +732,30 @@ s32 func_00283370(FieldObject156A50* object);
 u32 func_00283380(FieldObject156A50* object);
 
 /**
+ * @brief Report whether the receiver has an array at offset 0x14.
+ * @param object Receiver holding the optional array.
+ * @return One when the array exists, otherwise zero.
+ */
+s32 func_00283390(FieldObject156A50* object);
+
+/**
+ * @brief Get the address of an element in the 80-byte-stride array.
+ * @param object Receiver holding the array base.
+ * @param index Element index.
+ * @return Address of the indexed element.
+ */
+void* func_00283440(FieldObject156980* object, s32 index);
+
+/**
+ * @brief Get an address in the receiver's 64-byte-stride grid.
+ * @param object Receiver holding the grid width and base.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Address selected by the row and column.
+ */
+void* func_00283460(FieldObject156980* object, s32 row, s32 column);
+
+/**
  * @brief Get the associated bitset object.
  * @param object Callback receiver.
  * @return Stored bitset object pointer.
@@ -643,6 +782,30 @@ s32 func_002834A0(FieldObject156980* object);
  * @return Always 1.
  */
 u32 func_002834B0(FieldObject156980* object);
+
+/**
+ * @brief Report whether the receiver has an array at offset 0x14.
+ * @param object Receiver holding the optional array.
+ * @return One when the array exists, otherwise zero.
+ */
+s32 func_002834C0(FieldObject156980* object);
+
+/**
+ * @brief Get the address of an element in the 112-byte-stride array.
+ * @param object Receiver holding the array base.
+ * @param index Element index.
+ * @return Address of the indexed element.
+ */
+void* func_00283570(FieldObject1568B0* object, s32 index);
+
+/**
+ * @brief Get an address in the receiver's 64-byte-stride grid.
+ * @param object Receiver holding the grid width and base.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Address selected by the row and column.
+ */
+void* func_00283590(FieldObject1568B0* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
@@ -673,6 +836,30 @@ s32 func_002835D0(FieldObject1568B0* object);
 u32 func_002835E0(FieldObject1568B0* object);
 
 /**
+ * @brief Report whether the receiver has an array at offset 0x14.
+ * @param object Receiver holding the optional array.
+ * @return One when the array exists, otherwise zero.
+ */
+s32 func_002835F0(FieldObject1568B0* object);
+
+/**
+ * @brief Get the address of an element in the 128-byte-stride array.
+ * @param object Receiver holding the array base.
+ * @param index Element index.
+ * @return Address of the indexed element.
+ */
+void* func_002836A0(FieldObject1567E0* object, s32 index);
+
+/**
+ * @brief Get an address in the receiver's 64-byte-stride grid.
+ * @param object Receiver holding the grid width and base.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Address selected by the row and column.
+ */
+void* func_002836B0(FieldObject1567E0* object, s32 row, s32 column);
+
+/**
  * @brief Get the associated bitset object.
  * @param object Callback receiver.
  * @return Stored bitset object pointer.
@@ -699,6 +886,30 @@ s32 func_002836F0(FieldObject1567E0* object);
  * @return Always 0x20.
  */
 u32 func_00283700(FieldObject1567E0* object);
+
+/**
+ * @brief Report whether the receiver has an array at offset 0x14.
+ * @param object Receiver holding the optional array.
+ * @return One when the array exists, otherwise zero.
+ */
+s32 func_00283710(FieldObject1567E0* object);
+
+/**
+ * @brief Get the address of an element in the 96-byte-stride array.
+ * @param object Receiver holding the array base.
+ * @param index Element index.
+ * @return Address of the indexed element.
+ */
+void* func_002837C0(FieldObject156710* object, s32 index);
+
+/**
+ * @brief Get an address in the receiver's 64-byte-stride grid.
+ * @param object Receiver holding the grid width and base.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Address selected by the row and column.
+ */
+void* func_002837E0(FieldObject156710* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
@@ -729,6 +940,30 @@ s32 func_00283820(FieldObject156710* object);
 u32 func_00283830(FieldObject156710* object);
 
 /**
+ * @brief Report whether the receiver has an array at offset 0x14.
+ * @param object Receiver holding the optional array.
+ * @return One when the array exists, otherwise zero.
+ */
+s32 func_00283840(FieldObject156710* object);
+
+/**
+ * @brief Get the address of an element in the 128-byte-stride array.
+ * @param object Receiver holding the array base.
+ * @param index Element index.
+ * @return Address of the indexed element.
+ */
+void* func_002838F0(FieldObject156640* object, s32 index);
+
+/**
+ * @brief Get an address in the receiver's 64-byte-stride grid.
+ * @param object Receiver holding the grid width and base.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Address selected by the row and column.
+ */
+void* func_00283900(FieldObject156640* object, s32 row, s32 column);
+
+/**
  * @brief Get the associated bitset object.
  * @param object Callback receiver.
  * @return Stored bitset object pointer.
@@ -755,6 +990,13 @@ s32 func_00283940(FieldObject156640* object);
  * @return Always 0x20.
  */
 u32 func_00283950(FieldObject156640* object);
+
+/**
+ * @brief Report whether the receiver has an array at offset 0x14.
+ * @param object Receiver holding the optional array.
+ * @return One when the array exists, otherwise zero.
+ */
+s32 func_00283960(FieldObject156640* object);
 
 /**
  * @brief Return the default floating-point value.
@@ -873,6 +1115,13 @@ void func_00288650(FieldObject156C80* object, FieldFloatSourceAF0* actor);
 float func_00288660(FieldObject156C80* object);
 
 /**
+ * @brief Report the callback's default state.
+ * @param object Callback receiver.
+ * @return Always one.
+ */
+s32 func_00288680(FieldObject156C80* object);
+
+/**
  * @brief Perform the default callback without changing the receiver.
  * @param object Callback receiver.
  */
@@ -884,6 +1133,12 @@ void func_00289450(FieldObject156D50* object);
  * @return Always 100.0f.
  */
 float func_00289460(FieldObject156D50* object);
+
+/**
+ * @brief Leave the callback receiver unchanged.
+ * @param object Callback receiver.
+ */
+void func_00289470(FieldObject156D50* object);
 
 /**
  * @brief Handle the resource callback without changing the receiver.
@@ -915,11 +1170,42 @@ s32 func_00289510(FieldObject156D50* object);
 void func_002895A0(FieldObject156D50* object, float value);
 
 /**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_002895B0(FieldObject156D50* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_00289620(FieldObject156D50* object);
+
+/**
  * @brief Get the default byte mode.
  * @param object Callback receiver.
  * @return Always zero.
  */
 u8 func_002895E0(FieldObject156D50* object);
+
+/**
+ * @brief Get the address of an element in the 112-byte-stride array.
+ * @param object Receiver holding the array base.
+ * @param index Element index.
+ * @return Address of the indexed element.
+ */
+void* func_002896A0(FieldObject156E90* object, s32 index);
+
+/**
+ * @brief Get an address in the receiver's 64-byte-stride grid.
+ * @param object Receiver holding the grid width and base.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Address selected by the row and column.
+ */
+void* func_002896C0(FieldObject156E90* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
@@ -948,6 +1234,13 @@ s32 func_00289700(FieldObject156E90* object);
  * @return Always 1.
  */
 u32 func_00289710(FieldObject156E90* object);
+
+/**
+ * @brief Report whether the receiver has an array at offset 0x14.
+ * @param object Receiver holding the optional array.
+ * @return One when the array exists, otherwise zero.
+ */
+s32 func_00289720(FieldObject156E90* object);
 
 /**
  * @brief Return the default floating-point value.

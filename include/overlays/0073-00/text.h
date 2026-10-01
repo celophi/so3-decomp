@@ -14,16 +14,84 @@ extern "C" {
 void func_00348400(void* object);
 
 /**
+ * @brief Return the field at byte offset 0x20.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u32 func_003484C0(void* object);
+
+/**
+ * @brief Store the field at byte offset 0x20.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
+void func_00348630(void* object, u32 value);
+
+/**
+ * @brief Return the field at byte offset 0x98.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u32 func_00348640(void* object);
+
+/**
+ * @brief Return the field at byte offset 0x9C.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u32 func_003499A0(void* object);
+
+/**
+ * @brief Store the field at byte offset 0x98.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
+void func_00349B20(void* object, u32 value);
+
+/**
+ * @brief Return the field at byte offset 0x4.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u32 func_00349B30(void* object);
+
+/**
+ * @brief Set the fields of two optional linked objects.
+ * @param object Object containing the linked fields.
+ */
+void func_00349E70(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
 void func_0034DCF0(void* object);
 
 /**
+ * @brief Return the field at byte offset 0x24.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u32 func_0034DD00(void* object);
+
+/**
+ * @brief Update a linked object according to the signed state field.
+ * @param object Object containing the linked fields.
+ */
+void func_0034EC30(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
 void func_003507B0(void* object);
+
+/**
+ * @brief Store the field at byte offset 0x9C.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
+void func_00350D10(void* object, u32 value);
 
 /**
  * @brief Perform no work.
@@ -43,6 +111,62 @@ s32 func_00351030(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00351040(void* object);
+
+/**
+ * @brief Store the field at byte offset 0xC.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
+void func_00351050(void* object, u8 value);
+
+/**
+ * @brief Return the field at byte offset 0xC.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u8 func_00351060(void* object);
+
+/**
+ * @brief Store the field at byte offset 0x8.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
+void func_00351070(void* object, u8 value);
+
+/**
+ * @brief Return the field at byte offset 0x8.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u8 func_00351080(void* object);
+
+/**
+ * @brief Store the field at byte offset 0xA.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
+void func_00351090(void* object, u16 value);
+
+/**
+ * @brief Return the field at byte offset 0xA.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u16 func_003510A0(void* object);
+
+/**
+ * @brief Store the field at byte offset 0x4.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
+void func_003510B0(void* object, u32 value);
+
+/**
+ * @brief Return the field at byte offset 0x10.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u32 func_003510C0(void* object);
 
 /**
  * @brief Perform no work.
@@ -229,6 +353,20 @@ void func_00351280(void* object);
 void func_00351290(void* object);
 
 /**
+ * @brief Return the field at byte offset 0xD.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u8 func_003512A0(void* object);
+
+/**
+ * @brief Store the field at byte offset 0xD.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
+void func_003512B0(void* object, u8 value);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -267,11 +405,46 @@ s32 func_00351300(void* object);
 s32 func_00351310(void* object);
 
 /**
+ * @brief Return bit zero of the byte at offset 0x38.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u32 func_00351320(void* object);
+
+/**
+ * @brief Return the field at byte offset 0x34.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+u32 func_00351330(void* object);
+
+/**
  * @brief Return the fixed value 4.
  * @param object Receiver or first argument; unused.
  * @return Always 4.
  */
 s32 func_00351340(void* object);
+
+/**
+ * @brief Store the field at byte offset 0x24.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
+void func_00351350(void* object, u32 value);
+
+/**
+ * @brief Store the field at byte offset 0x28.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
+void func_00351360(void* object, u8 value);
+
+/**
+ * @brief Return the field at byte offset 0x28.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
+s8 func_00351370(void* object);
 
 /**
  * @brief Return the fixed value 0.

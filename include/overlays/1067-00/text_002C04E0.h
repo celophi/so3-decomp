@@ -4,9 +4,18 @@
 #include "types.h"
 #include "overlays/1067-00/text_002BEA90.h"
 
+typedef struct FieldFloat48 FieldFloat48;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Decrease a positive float by the current field time step.
+ * @param object Receiver containing the float at offset 0x48.
+ */
+void func_002C95B0(FieldFloat48* object);
+
 
 /**
  * @brief Return the fixed value 3.

@@ -4,6 +4,9 @@
 #include "types.h"
 #include "overlays/1067-00/text_001DD3C0.h"
 
+typedef struct FieldByte60AE9E0 FieldByte60AE9E0;
+typedef struct FieldFloat4CAE9E0 FieldFloat4CAE9E0;
+
 /** Shared sequence fields with signed counters, halfword indices, and packed modes. */
 typedef struct FieldSequenceTail
 {
@@ -77,6 +80,51 @@ typedef struct FieldSequenceState30
     FieldSequenceTail state;
 } FieldSequenceState30;
 
+/** Four words reset together by several sequence callbacks. */
+typedef struct FieldResetWords00
+{
+    u32 words[4];
+} FieldResetWords00;
+
+/** Partial target with a halfword flag field at offset 0x6A. */
+typedef struct FieldFlagTarget2AFD90
+{
+    u8 unk00[0x6A];
+    u16 flags;
+} FieldFlagTarget2AFD90;
+
+/** Partial receiver with a flag target at offset 0x1B4. */
+typedef struct FieldFlagOwner2AFD90
+{
+    u8 unk00[0x1B4];
+    FieldFlagTarget2AFD90* target;
+} FieldFlagOwner2AFD90;
+
+/** Partial target with two state bits at offset 0x34. */
+typedef struct FieldFlagTarget2B0BC0
+{
+    u8 unk00[0x34];
+    u8 first : 1;
+    u8 second : 1;
+    u8 rest : 6;
+} FieldFlagTarget2B0BC0;
+
+/** Partial receiver with an optional state target at offset 0x20. */
+typedef struct FieldFlagOwner2B0BC0
+{
+    u8 unk00[0x20];
+    FieldFlagTarget2B0BC0* target;
+} FieldFlagOwner2B0BC0;
+
+/** Partial receiver with a value array and signed selector. */
+typedef struct FieldSampleOwner2B7480
+{
+    u8 unk00[4];
+    float* values;
+    u8 unk08[0x10];
+    s16 index;
+} FieldSampleOwner2B7480;
+
 /** Opaque common callback base with table D_154D50. */
 typedef struct FieldObject154D50 FieldObject154D50;
 #ifdef __cplusplus
@@ -98,6 +146,83 @@ typedef struct FieldSequenceVectorC0
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Store four in the receiver's byte at offset 0x60.
+ * @param object Receiver containing the byte.
+ */
+void func_002B0A80(FieldByte60AE9E0* object);
+
+/**
+ * @brief Copy the receiver's float at offset 0x4C to an output location.
+ * @param object Receiver containing the float.
+ * @param output Destination for the value.
+ */
+void func_002B74B0(const FieldFloat4CAE9E0* object, float* output);
+
+#ifdef __cplusplus
+/**
+ * @brief Test the two low state bits of the optional target.
+ * @param object Receiver holding the optional target.
+ * @return True when either bit is set; false when both are clear or the target is absent.
+ */
+bool func_002B0BC0(FieldFlagOwner2B0BC0* object);
+#endif
+
+/**
+ * @brief Write the selected value minus the value at index one when an array exists.
+ * @param object Receiver holding the value array and selector.
+ * @param output Destination for the difference.
+ */
+void func_002B7480(FieldSampleOwner2B7480* object, float* output);
+
+/**
+ * @brief Set the low bit of the attached target's halfword flags when present.
+ * @param object Receiver holding the optional target.
+ */
+void func_002AFD90(FieldFlagOwner2AFD90* object);
+
+/**
+ * @brief Clear the low bit of the attached target's halfword flags when present.
+ * @param object Receiver holding the optional target.
+ */
+void func_002AFDB0(FieldFlagOwner2AFD90* object);
+
+/**
+ * @brief Clear the receiver's four words.
+ * @param object Receiver containing the words.
+ */
+void func_002B8090(FieldResetWords00* object);
+
+/**
+ * @brief Clear the receiver's four words.
+ * @param object Receiver containing the words.
+ */
+void func_002B85E0(FieldResetWords00* object);
+
+/**
+ * @brief Clear the receiver's four words.
+ * @param object Receiver containing the words.
+ */
+void func_002B8EB0(FieldResetWords00* object);
+
+/**
+ * @brief Clear the receiver's four words.
+ * @param object Receiver containing the words.
+ */
+void func_002BB200(FieldResetWords00* object);
+
+/**
+ * @brief Clear the receiver's four words.
+ * @param object Receiver containing the words.
+ */
+void func_002BB8F0(FieldResetWords00* object);
+
+/**
+ * @brief Clear the receiver's four words.
+ * @param object Receiver containing the words.
+ */
+void func_002BBDB0(FieldResetWords00* object);
 
 /**
  * @brief Clear two halfwords and two words beginning at offset 0x10.
@@ -321,6 +446,13 @@ s16 func_002B8A60(FieldSequenceState10* object);
  * @return Current value of the signed sequence halfword.
  */
 s16 func_002B8A70(FieldSequenceState10* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 0.0f.
+ */
+float func_002B8A80(FieldSequenceState10* object);
 
 /**
  * @brief Read the sequence record pointer.

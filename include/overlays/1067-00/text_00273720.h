@@ -82,6 +82,15 @@ typedef struct FieldObject1552E0
     FieldObject154E60* unk24;
 } FieldObject1552E0;
 
+/** Partial receiver with an embedded buffer after the word at offset 0x618. */
+typedef struct FieldEmbeddedBuffer75210
+{
+    u8 unk00[0x618];
+    u32 unk618;
+    u8 unk61C[4];
+    u8 unk620;
+} FieldEmbeddedBuffer75210;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -380,6 +389,13 @@ s32 func_002751F0(void* object);
  * @return Always 0.
  */
 s32 func_00275200(void* object);
+
+/**
+ * @brief Return the embedded buffer when the receiver's state word is nonzero.
+ * @param object Receiver containing the state word and buffer.
+ * @return Address of the buffer at offset 0x620, or zero.
+ */
+u8* func_00275210(FieldEmbeddedBuffer75210* object);
 
 /**
  * @brief Return the fixed value 0.

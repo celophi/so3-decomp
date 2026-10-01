@@ -1,6 +1,36 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_00305890.h"
 
+struct FieldSharedStatus149
+{
+    u8 unk00[0x45];
+    u8 unk45;
+    u8 unk46[0x103];
+    u8 unk149;
+};
+
+struct FieldSharedStatus261
+{
+    u8 unk00[0x45];
+    u8 unk45;
+    u8 unk46[0x103];
+    u8 unk149;
+    u8 unk14a[0x117];
+    u8 unk261;
+};
+
+struct FieldHalfword1050
+{
+    u8 unk00[0x1050];
+    u16 unk1050;
+};
+
+struct FieldByte121E
+{
+    u8 unk00[0x121e];
+    u8 unk121e;
+};
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00305890);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003059F0);
@@ -9,7 +39,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00305A
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00305A90);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00305B70);
+void func_00305B70(FieldSharedStatus149* object, u32 unused, u8 value)
+{
+    object->unk45 = value;
+    object->unk149 = value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00305B80);
 
@@ -94,7 +128,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00309E
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00309F40);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A0B0);
+void func_0030A0B0(FieldSharedStatus261* object, u32 unused, u8 value)
+{
+    object->unk45 = value;
+    object->unk149 = value;
+    object->unk261 = value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030A0C0);
 
@@ -149,7 +188,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030B0
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030B0B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BAC0);
+u16 func_0030BAC0(const FieldHalfword1050* object)
+{
+    return object->unk1050;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BAD0);
 
@@ -157,7 +199,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BC
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BD80);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BE80);
+u8 func_0030BE80(const FieldByte121E* object)
+{
+    return object->unk121e;
+}
 
 void* func_0030BE90(const FieldHalfwordByteState105A* object, s16 index)
 {

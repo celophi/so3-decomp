@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+typedef struct FieldStatus331 FieldStatus331;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,6 +37,13 @@ void func_0024C540(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_0024D000(void* object);
+
+/**
+ * @brief Save the current status byte, set it to 3, clear flag bit 0, and store a value.
+ * @param object Receiver containing the status bytes.
+ * @param value Value to store at offset 0x333.
+ */
+void func_0024D440(FieldStatus331* object, u8 value);
 
 #ifdef __cplusplus
 }

@@ -75,6 +75,37 @@ void func_00271750(FieldState271750* object);
  */
 void func_00272290(FieldFlag272290* object);
 
+typedef struct FieldRoot26FF70 FieldRoot26FF70;
+
+/**
+ * @brief Test the active bit of a context entry selected by key.
+ * @param context Context containing entries.
+ * @param key Entry key.
+ * @return One when the selected entry has its active bit set, otherwise zero.
+ */
+s32 func_0026F690(void* context, u32 key);
+
+/**
+ * @brief Find a context entry by key and apply the supplied word.
+ * @param context Context containing entries.
+ * @param key Entry key.
+ * @param value Word to apply.
+ */
+void func_0026F730(void* context, u32 key, u32 value);
+
+/**
+ * @brief Find a context entry by halfword key and process it.
+ * @param context Context containing entries.
+ * @param key Halfword entry key.
+ */
+void func_0026FF10(void* context, u16 key);
+
+/**
+ * @brief Apply the receiver's field values and update its active context.
+ * @param root Receiver holding the values and context.
+ */
+void func_0026FF70(FieldRoot26FF70* root);
+
 /**
  * @brief Test a field-context entry by selector.
  * @param context Field-context object.

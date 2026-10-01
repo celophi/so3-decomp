@@ -57,6 +57,7 @@ typedef struct FieldScalarPair293610
 
 typedef struct FieldObject1583E0 FieldObject1583E0;
 typedef struct FieldObject158650 FieldObject158650;
+typedef struct FieldObject158D00 FieldObject158D00;
 
 typedef struct FieldObject175360 FieldObject175360;
 typedef struct FieldObject175370 FieldObject175370;
@@ -650,6 +651,14 @@ void func_0029BDE0(FieldObject157AF0* object, float value);
  * @return Always true.
  */
 bool func_0029B6D0(FieldObject157AF0* object);
+
+/**
+ * @brief Get a pointer within an indexed 0x120-byte array element, preserving a null element address.
+ * @param object Object owning the array.
+ * @param index Signed element index.
+ * @return Address at offset 0xF0 within the indexed element, or null when the element address is null.
+ */
+void* func_0029B6E0(FieldObject158D00* object, s32 index);
 
 /**
  * @brief Perform no work.

@@ -94,11 +94,21 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC1
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC300);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC6B0);
+void func_002CC6B0(FieldVectorSlots880* object, const unsigned __int128* value)
+{
+    object->unk890 = *value;
+    object->unk50 = 1;
+    object->unk20 = *value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC6D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC6E0);
+void func_002CC6E0(unsigned __int128* first, unsigned __int128* second, const unsigned __int128* source)
+{
+    unsigned __int128 value = *source;
+    *second = value;
+    *first = value;
+}
 
 FieldVector* func_002CC6F0(FieldVector* vector, float value)
 {
@@ -115,7 +125,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC8
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC850);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CCB50);
+void func_002CCB50(FieldVectorBits* value)
+{
+    value->bits = 0;
+    value->vector.w = 1.0f;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CCB60);
 
@@ -152,11 +166,26 @@ s32 func_002CD940(void* object)
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD950);
+void func_002CD950(FieldVectorSlots880* object, const unsigned __int128* value)
+{
+    object->unk880 = *value;
+    object->unk50 = 1;
+    object->unk30 = *value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD970);
+void func_002CD970(FieldVectorSlots880* object, const unsigned __int128* value)
+{
+    object->unk880 = *value;
+    object->unk50 = 1;
+    object->unk30 = *value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD990);
+void func_002CD990(FieldVectorSlots880* object, const unsigned __int128* value)
+{
+    object->unk890 = *value;
+    object->unk50 = 1;
+    object->unk20 = *value;
+}
 
 s32 func_002CD9B0(void* object)
 {
@@ -429,6 +458,9 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D55
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D5540);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D5570);
+void func_002D5570(const FieldFloat4C* object, float* result)
+{
+    *result = object->unk4c;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D5580);

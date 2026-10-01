@@ -1,6 +1,16 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002CEAF0.h"
 
+/** Partial object with byte values at 0x18 and 0x88, and flags at 0x1A. */
+typedef struct FieldD1440Object
+{
+    u8 pad00[0x18];
+    u8 value18;
+    u8 pad19;
+    u16 flags;
+    u8 pad1c[0x6C];
+    u8 value88;
+} FieldD1440Object;
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CEAF0);
 
@@ -98,7 +108,27 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D0D
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1100);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1440);
+s32 func_002D1440(FieldD1440Object* object, u8 value, u32 flags)
+{
+    object->value18 = value;
+    if (flags != 0)
+    {
+        object->flags = flags;
+    }
+    else
+    {
+        object->flags = 0;
+    }
+    if (((u16)flags) & 8)
+    {
+        object->value88 = 0;
+    }
+    else
+    {
+        object->value88 = 1;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1480);
 

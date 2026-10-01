@@ -1,4 +1,31 @@
 #include "include_asm.h"
+#include "overlays/3253-00/text_00285100.h"
+
+struct BattleObject2E0B
+{
+    u8 pad[0x2DC8];
+    u32 unk2DC8;
+    u8 pad2DCC[0x38];
+    u8 unk2E04;
+    u8 unk2E05;
+    u8 unk2E06;
+    u8 unk2E07;
+    u8 unk2E08;
+    u8 pad2E09[2];
+    u8 unk2E0B;
+};
+
+struct BattleObject2F26
+{
+    u8 pad[0x2EEC];
+    u32 unk2EEC;
+    u8 pad2EF0[0x30];
+    u8 unk2F20;
+    u8 unk2F21;
+    u8 unk2F22;
+    u8 pad2F23[3];
+    u8 unk2F26;
+};
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_00285100);
 
@@ -68,7 +95,28 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_0028CE
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_0028DFE0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_0028E2A0);
+void func_0028E2A0(BattleObject2E0B* object, u8 current, u8 previous)
+{
+    if ((u32)(previous - 1) <= 1 || previous == 3)
+    {
+        object->unk2E04 = 0;
+    }
+    if (previous >= 5 && current == 0)
+    {
+        object->unk2E06 = 0;
+        object->unk2E0B = 0;
+        object->unk2E08 = 0;
+    }
+    if (current == 5 || current == 10 || current == 12 || current == 13)
+    {
+        object->unk2DC8 = 0;
+    }
+    if (current == 6 || current == 7)
+    {
+        object->unk2E06 = 0;
+        object->unk2E08 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_0028E350);
 
@@ -90,7 +138,26 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_002920
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_00292750);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_00292930);
+void func_00292930(BattleObject2F26* object, u8 current, u8 previous)
+{
+    if (previous == 1)
+    {
+        object->unk2F20 = 0;
+    }
+    if (previous >= 5 && current == 0)
+    {
+        object->unk2F22 = 0;
+        object->unk2F26 = 0;
+    }
+    if (current == 5 || current == 10 || current == 12 || current == 13)
+    {
+        object->unk2EEC = 0;
+    }
+    if (current == 6 || current == 7)
+    {
+        object->unk2F22 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_002929D0);
 

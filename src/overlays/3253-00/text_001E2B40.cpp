@@ -1,6 +1,32 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_001E2B40.h"
 
+struct BattleField70
+{
+    u8 pad[0x70];
+    u32 unk70;
+};
+
+struct BattleFieldD68
+{
+    u8 pad[0xD68];
+    u32 unkD68;
+};
+
+struct BattleHalfwordPair
+{
+    s16 unk0;
+    s16 unk2;
+};
+
+struct BattleVectorSlot50
+{
+    u8 pad[0x20];
+    unsigned __int128 slot;
+    u8 pad30[0x20];
+    u8 ready;
+};
+
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001E2B40);
 
 s32 func_001E2B80(void* object)
@@ -50,7 +76,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001E5C
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001E5CE0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001E5D40);
+void func_001E5D40(BattleField70* object, u32 value)
+{
+    object->unk70 = value;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001E5D50);
 
@@ -80,7 +109,11 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001E84
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001E8530);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001E85A0);
+void func_001E85A0(BattleVectorSlot50* object, const unsigned __int128* value)
+{
+    object->ready = 1;
+    object->slot = *value;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001E85C0);
 
@@ -190,9 +223,17 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001ECB
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001ECBE0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001ECC50);
+s16 func_001ECC50(BattleHalfwordPair* object, s16 value)
+{
+    object->unk2 = value;
+    return object->unk2;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001ECC60);
+s16 func_001ECC60(BattleHalfwordPair* object, s16 value)
+{
+    object->unk0 = value;
+    return object->unk0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001ECC70);
 
@@ -226,7 +267,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001EF1
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001EF1D0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001F02B0);
+u32 func_001F02B0(const BattleFieldD68* object)
+{
+    return object->unkD68;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001E2B40", func_001F02C0);
 

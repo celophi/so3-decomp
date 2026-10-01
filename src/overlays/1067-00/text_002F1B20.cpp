@@ -1,6 +1,22 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002F1B20.h"
 
+/** Partial target with a byte at offset 0x140. */
+struct FieldByte140
+{
+    u8 pad[0x140];
+    u8 value;
+};
+
+/** Partial global state with a target pointer at offset 0x20. */
+struct FieldGlobal20
+{
+    u8 pad[0x20];
+    FieldByte140* target;
+};
+
+extern "C" FieldGlobal20* D_001B643C;
+
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F1B20);
 
@@ -20,7 +36,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F24
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F2740);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F2880);
+extern "C" u8 func_002F2880(void)
+{
+    return D_001B643C->target->value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F2890);
 

@@ -1,13 +1,23 @@
 #include "include_asm.h"
 #include "overlays/0002-00/text_001FF0A0.h"
 
+typedef struct FieldU8At060
+{
+    u8 pad[0x60];
+    u8 value;
+} FieldU8At060;
+
+
 INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001FF0A0", func_001FF0A0);
 
 INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001FF0A0", func_001FF3A0);
 
 INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001FF0A0", func_001FF730);
 
-INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001FF0A0", func_001FF9D0);
+void func_001FF9D0(void* object)
+{
+    ((FieldU8At060*)object)->value = 0;
+}
 
 INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001FF0A0", func_001FF9E0);
 

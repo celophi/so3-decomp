@@ -1,6 +1,21 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002636B0.h"
 
+/** Partial receiver and guarded nested state for the constant reset. */
+typedef struct FieldInnerC000
+{
+    u8 pad00[0x3C];
+    u8 active;
+    u8 pad3d[0x33];
+    float value;
+} FieldInnerC000;
+
+typedef struct FieldOuterC000
+{
+    u8 pad00[0xD4];
+    FieldInnerC000* inner;
+} FieldOuterC000;
+
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002636B0);
 
@@ -501,7 +516,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026BE
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026BF10);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026C000);
+void func_0026C000(FieldOuterC000* object)
+{
+    FieldInnerC000* inner = object->inner;
+    if (inner != 0)
+    {
+        inner->value = 128.0f;
+        inner->active = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026C030);
 

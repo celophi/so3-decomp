@@ -1,6 +1,19 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002F9C90.h"
 
+/** Partial receiver with a byte at offset 0x60. */
+struct FieldByte60F9C90
+{
+    u8 pad[0x60];
+    u8 value;
+};
+
+/** Partial receiver with a byte at offset 4. */
+struct FieldByte4F9C90
+{
+    u8 pad[4];
+    u8 value;
+};
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002F9C90);
 
@@ -115,7 +128,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FCB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FCC50);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FD1B0);
+extern "C" void func_002FD1B0(FieldFloatState5C* object, float first, float second, float third, float fourth, float fifth)
+{
+    object->enabled = 1;
+    object->values[0] = first;
+    object->values[1] = second;
+    object->values[2] = third;
+    object->values[3] = fourth;
+    object->values[4] = fifth;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FD1D0);
 
@@ -123,7 +144,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FD2
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FD2E0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FD480);
+extern "C" s32 func_002FD480(const FieldStatus14* object)
+{
+    return object->status == 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FD490);
 
@@ -159,7 +183,10 @@ s32 func_002FE870(FieldClass150070* object)
     return 3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FE880);
+extern "C" void func_002FE880(FieldByte60F9C90* object)
+{
+    object->value = 9;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FE890);
 
@@ -183,7 +210,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_00300D
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_00300EB0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_00301090);
+extern "C" void func_00301090(FieldByte4F9C90* object)
+{
+    object->value = 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_003010A0);
 

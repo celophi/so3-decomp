@@ -1,11 +1,17 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_0020D9A0.h"
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020D9A0", func_0020D9A0);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020D9A0", func_0020DA30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020D9A0", func_0020DBC0);
+void func_0020DBC0(FieldNodeLink* object, void* entry, void* context, s32 index)
+{
+    object->context = context;
+    object->entry = entry;
+    object->index = index;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020D9A0", func_0020DBD0);
 

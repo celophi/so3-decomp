@@ -31,9 +31,44 @@ typedef struct FieldHalfwordByteState105A
     u8 unk1060;
 } FieldHalfwordByteState105A;
 
+typedef struct FieldSharedStatus149 FieldSharedStatus149;
+typedef struct FieldSharedStatus261 FieldSharedStatus261;
+typedef struct FieldHalfword1050 FieldHalfword1050;
+typedef struct FieldByte121E FieldByte121E;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Store a status byte in two fields.
+ * @param object Receiver to update.
+ * @param unused Unused callback argument.
+ * @param value Status byte to store.
+ */
+void func_00305B70(FieldSharedStatus149* object, u32 unused, u8 value);
+
+/**
+ * @brief Store a status byte in three fields.
+ * @param object Receiver to update.
+ * @param unused Unused callback argument.
+ * @param value Status byte to store.
+ */
+void func_0030A0B0(FieldSharedStatus261* object, u32 unused, u8 value);
+
+/**
+ * @brief Read the unsigned halfword at offset 0x1050.
+ * @param object Receiver to inspect.
+ * @return Stored unsigned halfword.
+ */
+u16 func_0030BAC0(const FieldHalfword1050* object);
+
+/**
+ * @brief Read the byte at offset 0x121E.
+ * @param object Receiver to inspect.
+ * @return Stored byte.
+ */
+u8 func_0030BE80(const FieldByte121E* object);
 
 /**
  * @brief Find a node by advancing from the first list element.

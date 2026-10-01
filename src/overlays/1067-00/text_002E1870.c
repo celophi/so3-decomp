@@ -1,5 +1,30 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002E1870.h"
+#include "overlays/1067-00/field_runtime.h"
+
+/** Partial attached state with two status words. */
+typedef struct FieldAttached148
+{
+    u8 pad[0x48];
+    u32 value48;
+    u8 pad4C[0xFC];
+    u32 value148;
+} FieldAttached148;
+
+/** Partial active holder of the attached state. */
+typedef struct FieldInner20
+{
+    u8 pad[0x14];
+    FieldAttached148* attached;
+    u8 pad18[8];
+    u8 active20;
+} FieldInner20;
+
+struct FieldOuter14
+{
+    u8 pad[0x14];
+    FieldInner20* inner;
+};
 
 // Packed-record checksum; repeated-load code generation remains unresolved.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E1870);
@@ -114,9 +139,36 @@ s16 func_002ECF90(FieldObject15B9A0* object, s32 index)
     return object->unk5E[index];
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002ECFA0);
+void func_002ECFA0(FieldObject15B9A0* object, s16 index)
+{
+    object->unk64 = index;
+    object->unk5E[object->unk64] = -1;
+    object->unk5C[object->unk64] = 0;
+    object->unk80 = 0;
+    object->unk84 = 0;
+    object->unk68 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002ECFE0);
+u16 func_002ECFE0(const FieldOuter14* object)
+{
+    FieldAttached148* attached;
+    u16 flags;
+    if (!object->inner->active20)
+    {
+        return 0;
+    }
+    attached = object->inner->attached;
+    flags = 0;
+    if (attached->value48 == 2)
+    {
+        flags |= 1;
+    }
+    if (attached->value148 == 2)
+    {
+        flags |= 2;
+    }
+    return flags;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002ED040);
 
@@ -140,9 +192,20 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EDF
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EDFD0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EE9B0);
+u16 func_002EE9B0(const FieldObject2EDFD0* object)
+{
+    return object->unk1050;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EE9C0);
+s32 func_002EE9C0(FieldObject2EDFD0* object, void* value)
+{
+    if (value == 0)
+    {
+        return 0;
+    }
+    object->unk1254 = value;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EE9E0);
 
@@ -150,7 +213,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EEB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EEC90);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EED90);
+u8 func_002EED90(const FieldObject2EDFD0* object)
+{
+    return object->unk121E;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EEDA0);
 
@@ -162,7 +228,16 @@ void func_002EEE20(FieldObject2EDFD0* object, s16 value, u8 flag)
     object->unk1060 = flag;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EEE30);
+void* func_002EEE30(void* object, s32 index)
+{
+    FieldRuntimeRoot* root;
+    FieldRuntimeSections* sections;
+    u8* base;
+    root = func_10D8E0();
+    sections = func_101290(root);
+    base = (u8*)func_101440(sections, 4);
+    return base + 0xC6B0 + (index - 1) * 24;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EEE90);
 

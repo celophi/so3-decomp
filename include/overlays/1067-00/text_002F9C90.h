@@ -6,9 +6,58 @@
 
 #include "overlays/1067-00/text_001DD3C0.h"
 
+typedef struct FieldByte60F9C90 FieldByte60F9C90;
+typedef struct FieldByte4F9C90 FieldByte4F9C90;
+
+/** Partial receiver with an enable byte and five floats at offsets 0x5C-0x74. */
+typedef struct FieldFloatState5C
+{
+    u8 unk00[0x5C];
+    u8 enabled;
+    u8 unk5D[7];
+    float values[5];
+} FieldFloatState5C;
+
+/** Partial receiver with a signed halfword at offset 0x14. */
+typedef struct FieldStatus14
+{
+    u8 unk00[0x14];
+    s16 status;
+} FieldStatus14;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Store nine in the receiver's byte at offset 0x60.
+ * @param object Receiver containing the byte.
+ */
+void func_002FE880(FieldByte60F9C90* object);
+
+/**
+ * @brief Store one in the receiver's byte at offset 4.
+ * @param object Receiver containing the byte.
+ */
+void func_00301090(FieldByte4F9C90* object);
+
+/**
+ * @brief Enable the receiver and store five float values.
+ * @param object Receiver containing the enable byte and values.
+ * @param first First value to store.
+ * @param second Second value to store.
+ * @param third Third value to store.
+ * @param fourth Fourth value to store.
+ * @param fifth Fifth value to store.
+ */
+void func_002FD1B0(FieldFloatState5C* object, float first, float second, float third, float fourth, float fifth);
+
+/**
+ * @brief Return whether the receiver's halfword at offset 0x14 is zero.
+ * @param object Receiver containing the halfword.
+ * @return Nonzero if the halfword is zero.
+ */
+s32 func_002FD480(const FieldStatus14* object);
 
 /**
  * @brief Reset the byte counts and associated totals.

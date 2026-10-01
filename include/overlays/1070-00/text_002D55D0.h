@@ -64,9 +64,138 @@ typedef struct FieldSequenceState40
     FieldSequenceTail state;
 } FieldSequenceState40;
 
+/** Four leading words observed in the receiver for func_002D69A0. */
+typedef struct FieldWords002D69A0
+{
+    u32 words[4];
+} FieldWords002D69A0;
+
+/** Four leading words observed in the receiver for func_002D6F20. */
+typedef struct FieldWords002D6F20
+{
+    u32 words[4];
+} FieldWords002D6F20;
+
+/** Four leading words observed in the receiver for func_002D7B20. */
+typedef struct FieldWords002D7B20
+{
+    u32 words[4];
+} FieldWords002D7B20;
+
+/** Four leading words observed in the receiver for func_002D9F40. */
+typedef struct FieldWords002D9F40
+{
+    u32 words[4];
+} FieldWords002D9F40;
+
+/** Four leading words observed in the receiver for func_002DA640. */
+typedef struct FieldWords002DA640
+{
+    u32 words[4];
+} FieldWords002DA640;
+
+/** Four leading words observed in the receiver for func_002DAB20. */
+typedef struct FieldWords002DAB20
+{
+    u32 words[4];
+} FieldWords002DAB20;
+
+/** Entry with the observed 0xA0-byte stride. */
+typedef struct FieldEntryA0
+{
+    u8 bytes[0xA0];
+} FieldEntryA0;
+
+/** Partial receiver containing a pointer to 0xA0-byte entries. */
+typedef struct FieldEntryArray14
+{
+    u8 unk00[0x14];
+    FieldEntryA0* entries;
+} FieldEntryArray14;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Clear the receiver's four leading words.
+ * @param object Receiver to clear.
+ */
+void func_002D69A0(FieldWords002D69A0* object);
+
+/**
+ * @brief Clear the receiver's four leading words.
+ * @param object Receiver to clear.
+ */
+void func_002D6F20(FieldWords002D6F20* object);
+
+/**
+ * @brief Clear the receiver's four leading words.
+ * @param object Receiver to clear.
+ */
+void func_002D7B20(FieldWords002D7B20* object);
+
+/**
+ * @brief Clear the receiver's four leading words.
+ * @param object Receiver to clear.
+ */
+void func_002D9F40(FieldWords002D9F40* object);
+
+/**
+ * @brief Clear the receiver's four leading words.
+ * @param object Receiver to clear.
+ */
+void func_002DA640(FieldWords002DA640* object);
+
+/**
+ * @brief Clear the receiver's four leading words.
+ * @param object Receiver to clear.
+ */
+void func_002DAB20(FieldWords002DAB20* object);
+
+/**
+ * @brief Return the fixed floating-point value 2500.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 2500.0.
+ */
+float func_002DB030(void* object);
+
+/**
+ * @brief Return the fixed floating-point value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 100.0.
+ */
+float func_002DBA30(void* object);
+
+/**
+ * @brief Return the fixed floating-point value 1.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 1.0.
+ */
+float func_002DCAD0(void* object);
+
+/**
+ * @brief Return the fixed floating-point value 2500.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 2500.0.
+ */
+float func_002E2E90(void* object);
+
+/**
+ * @brief Return the fixed floating-point value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 100.0.
+ */
+float func_002E39B0(void* object);
+
+/**
+ * @brief Return the indexed address of a 0xA0-byte entry.
+ * @param object Receiver containing the entry array.
+ * @param index Entry index.
+ * @return Address of the selected entry.
+ */
+FieldEntryA0* func_002DBC70(const FieldEntryArray14* object, s32 index);
+
 
 /**
  * @brief Clear two halfwords and two words beginning at offset 0x10.

@@ -14,11 +14,26 @@ void func_0023D3B0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023D390", func_0023D3C0);
+void func_0023D3C0(FieldFlags4B5* object, u8 value)
+{
+    object->bit0 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023D390", func_0023D3E0);
+void func_0023D3E0(FieldFlags8C* object, u32 value, u32 enable)
+{
+    if (enable != 0)
+    {
+        object->bit5 = value ? 0 : 1;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023D390", func_0023D420);
+void func_0023D420(FieldVectorSlot20* object, const unsigned __int128* value)
+{
+    if (value != 0)
+    {
+        object->value = *value;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023D390", func_0023D440);
 
