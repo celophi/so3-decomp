@@ -44,7 +44,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021E3
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021E780);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021E840);
+s32 func_0021E840(void* object)
+{
+    return 2;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021E850);
 

@@ -1,8 +1,11 @@
 #include "include_asm.h"
+#include "overlays/0073-00/text.h"
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003483C0);
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00348400);
+void func_00348400(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00348410);
 
@@ -96,7 +99,9 @@ INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_0034DB20);
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_0034DC00);
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_0034DCF0);
+void func_0034DCF0(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_0034DD00);
 
@@ -156,7 +161,9 @@ INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00350740);
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00350790);
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003507B0);
+void func_003507B0(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003507C0);
 
@@ -172,11 +179,18 @@ INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00350F00);
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00350F60);
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351020);
+void func_00351020(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351030);
+s32 func_00351030(void* object)
+{
+    return 3;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351040);
+void func_00351040(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351050);
 
@@ -194,85 +208,170 @@ INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003510B0);
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003510C0);
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003510D0);
+void func_003510D0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003510E0);
+void func_003510E0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003510F0);
+void func_003510F0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351100);
+void func_00351100(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351110);
+void func_00351110(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351120);
+void func_00351120(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351130);
+void func_00351130(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351140);
+void func_00351140(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351150);
+void func_00351150(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351160);
+void func_00351160(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351170);
+void func_00351170(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351180);
+void func_00351180(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351190);
+void func_00351190(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003511A0);
+void func_003511A0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003511B0);
+void func_003511B0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003511C0);
+void func_003511C0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003511D0);
+void func_003511D0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003511E0);
+s32 func_003511E0(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003511F0);
+s32 func_003511F0(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351200);
+s32 func_00351200(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351210);
+s32 func_00351210(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351220);
+s32 func_00351220(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351230);
+s32 func_00351230(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351240);
+s32 func_00351240(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351250);
+s32 func_00351250(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351260);
+s32 func_00351260(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351270);
+s32 func_00351270(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351280);
+void func_00351280(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351290);
+void func_00351290(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003512A0);
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003512B0);
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003512C0);
+void func_003512C0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003512D0);
+void func_003512D0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003512E0);
+void func_003512E0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003512F0);
+void func_003512F0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351300);
+s32 func_00351300(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351310);
+s32 func_00351310(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351320);
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351330);
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351340);
+s32 func_00351340(void* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351350);
 
@@ -280,25 +379,51 @@ INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351360);
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351370);
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351380);
+s32 func_00351380(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351390);
+s32 func_00351390(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003513A0);
+void func_003513A0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003513B0);
+s32 func_003513B0(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003513C0);
+void func_003513C0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003513D0);
+void func_003513D0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003513E0);
+void func_003513E0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003513F0);
+s32 func_003513F0(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351400);
+s32 func_00351400(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351410);
+s32 func_00351410(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351420);
 

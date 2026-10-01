@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/3253-00/text_00264D30.h"
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00264D30);
 
@@ -22,25 +23,40 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002674
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267510);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267670);
+s32 func_00267670(void* object)
+{
+    return 3;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267680);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267690);
+s32 func_00267690(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002676A0);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267760);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002677A0);
+s32 func_002677A0(void* object)
+{
+    return 5;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002677B0);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267840);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267890);
+s32 func_00267890(void* object)
+{
+    return 7;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002678A0);
+s32 func_002678A0(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002678B0);
 
@@ -54,7 +70,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002679
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267950);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267960);
+s32 func_00267960(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267970);
 
@@ -66,7 +85,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267A
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267AD0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267B20);
+s32 func_00267B20(void* object)
+{
+    return 6;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267B30);
 
@@ -76,23 +98,36 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267B
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267C10);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267C70);
+void func_00267C70(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267C80);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267C90);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267D30);
+void func_00267D30(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267D40);
+void func_00267D40(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267D50);
+void func_00267D50(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267D60);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267D70);
+s32 func_00267D70(void* object)
+{
+    return 4;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267D80);
+void func_00267D80(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00267D90);
 
@@ -104,7 +139,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002681
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002682F0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268380);
+s32 func_00268380(void* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268390);
 
@@ -114,13 +152,25 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002685
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268560);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002685D0);
+s32 func_002685D0(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002685E0);
+s32 func_002685E0(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002685F0);
+s32 func_002685F0(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268600);
+s32 func_00268600(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268610);
 
@@ -128,7 +178,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002686
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268630);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268640);
+s32 func_00268640(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268650);
 
@@ -152,7 +205,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002688
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268940);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268950);
+s32 func_00268950(void* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268960);
 
@@ -160,19 +216,36 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002689
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268A00);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268A90);
+s32 func_00268A90(void* object)
+{
+    return 12;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268AA0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268B30);
+s32 func_00268B30(void* object)
+{
+    return 5;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268B40);
+void func_00268B40(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268B50);
+s32 func_00268B50(void* object)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268B60);
+s32 func_00268B60(void* object)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268B70);
+s32 func_00268B70(void* object)
+{
+    return 5;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00268B80);
 
@@ -284,7 +357,9 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002696
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002696F0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00269D50);
+void func_00269D50(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00269D60);
 
@@ -296,15 +371,21 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026A0
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026A0E0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026A3F0);
+void func_0026A3F0(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026A400);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026A8F0);
+void func_0026A8F0(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026A900);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026A970);
+void func_0026A970(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026A980);
 
@@ -398,7 +479,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026FC
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026FDC0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026FEB0);
+s32 func_0026FEB0(void* object)
+{
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026FEC0);
 
@@ -450,7 +534,9 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002724
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00272650);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00272980);
+void func_00272980(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00272990);
 
@@ -460,9 +546,13 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00272A
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00273130);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00273A70);
+void func_00273A70(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00273A80);
+void func_00273A80(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00273A90);
 

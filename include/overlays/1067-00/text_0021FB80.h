@@ -42,6 +42,27 @@ typedef struct FieldObject152410 FieldObject152410;
  */
 s32 func_00224FC0(FieldObject152410* object);
 
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00224C30(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00224CD0(void* object);
+
+/**
+ * @brief Return the fixed value 3.
+ * @param object Receiver or first argument; unused.
+ * @return Always 3.
+ */
+s32 func_00229240(void* object);
+
 #ifdef __cplusplus
 }
 #endif

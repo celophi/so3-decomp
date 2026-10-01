@@ -713,6 +713,13 @@ FieldObject175370* func_0029BE20(FieldObject157AF0* object);
  */
 void func_0029BE60(void* object);
 
+/**
+ * @brief Return the fixed value 35.
+ * @param object Receiver or first argument; unused.
+ * @return Always 35.
+ */
+s32 func_00295C90(void* object);
+
 #ifdef __cplusplus
 }
 #endif

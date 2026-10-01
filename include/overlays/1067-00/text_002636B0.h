@@ -109,4 +109,318 @@ void func_0026E0F0(void* object);
 void func_0026E170(void* object);
 void* func_0026E1A0(void* object, s32 flags);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00263CC0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00263CD0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00263CE0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00263CF0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00263D00(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00263D10(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00263D20(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00263D30(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00263D40(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00263D50(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00263D60(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00263D70(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00263E80(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00263F40(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264770(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264780(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264790(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002647A0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002647B0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002647C0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002647D0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002647E0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002647F0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264800(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264810(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264820(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264830(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264840(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264850(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264860(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264870(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264880(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264890(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002648A0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_002648B0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_002648C0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_002648D0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_002648E0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_002648F0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00264900(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00264910(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00264920(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00264930(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00264940(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264950(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264960(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00264990(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_0026E390(void* object);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

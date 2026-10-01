@@ -113,6 +113,101 @@ void func_001FEB70(FieldFloatTransitions70* object, float target, float duration
  */
 void func_001FEBE0(FieldFloatTransitions70* object, float target, float duration);
 
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_001F9E40(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_001F9E50(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_001F9E60(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_001F9E70(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_001F9E80(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_001F9E90(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_001F9EA0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_001F9EB0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_001F9EC0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_001F9ED0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_001FAFC0(void* object);
+
+/**
+ * @brief Return the fixed value 14.
+ * @param object Receiver or first argument; unused.
+ * @return Always 14.
+ */
+s32 func_001FBDF0(void* object);
+
+/**
+ * @brief Return the fixed value 5.
+ * @param object Receiver or first argument; unused.
+ * @return Always 5.
+ */
+s32 func_001FE2D0(void* object);
+
+/**
+ * @brief Return the fixed value 14.
+ * @param object Receiver or first argument; unused.
+ * @return Always 14.
+ */
+s32 func_001FE370(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002010C0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

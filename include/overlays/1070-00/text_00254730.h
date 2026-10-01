@@ -125,6 +125,41 @@ FieldKeyedListElement54* func_00263230(FieldKeyedFloatState98* object, u32 key);
  */
 void func_00259EC0(FieldKeyedFlagOwnerD8* object, u32 key, s32 value);
 
+/**
+ * @brief Return the fixed value 16.
+ * @param object Receiver or first argument; unused.
+ * @return Always 16.
+ */
+s32 func_00255410(void* object);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_00255420(void* object);
+
+/**
+ * @brief Return the fixed value 9.
+ * @param object Receiver or first argument; unused.
+ * @return Always 9.
+ */
+s32 func_00257120(void* object);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_0025C390(void* object);
+
+/**
+ * @brief Return the fixed value 3.
+ * @param object Receiver or first argument; unused.
+ * @return Always 3.
+ */
+s32 func_00261490(void* object);
+
 #ifdef __cplusplus
 }
 #endif

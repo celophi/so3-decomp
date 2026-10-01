@@ -95,6 +95,41 @@ s32 func_002D42B0(const FieldBitCountState* object);
  */
 s32 func_002D4850(const FieldBitCountState* object);
 
+/**
+ * @brief Return the fixed value 2.
+ * @param object Receiver or first argument; unused.
+ * @return Always 2.
+ */
+s32 func_002CAF30(void* object);
+
+/**
+ * @brief Return the fixed value 2.
+ * @param object Receiver or first argument; unused.
+ * @return Always 2.
+ */
+s32 func_002CD940(void* object);
+
+/**
+ * @brief Return the fixed value 3.
+ * @param object Receiver or first argument; unused.
+ * @return Always 3.
+ */
+s32 func_002CD9B0(void* object);
+
+/**
+ * @brief Return the fixed value 9.
+ * @param object Receiver or first argument; unused.
+ * @return Always 9.
+ */
+s32 func_002CDA70(void* object);
+
+/**
+ * @brief Return the fixed value 14.
+ * @param object Receiver or first argument; unused.
+ * @return Always 14.
+ */
+s32 func_002D1C40(void* object);
+
 #ifdef __cplusplus
 }
 #endif

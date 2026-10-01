@@ -47,7 +47,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CAC
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CAEA0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CAF30);
+s32 func_002CAF30(void* object)
+{
+    return 2;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CAF40);
 
@@ -144,7 +147,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD6
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD870);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD940);
+s32 func_002CD940(void* object)
+{
+    return 2;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD950);
 
@@ -152,7 +158,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD9
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD990);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD9B0);
+s32 func_002CD9B0(void* object)
+{
+    return 3;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD9C0);
 
@@ -160,7 +169,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD9
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CD9E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CDA70);
+s32 func_002CDA70(void* object)
+{
+    return 9;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CDA80);
 
@@ -198,7 +210,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D1B
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D1BA0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D1C40);
+s32 func_002D1C40(void* object)
+{
+    return 14;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D1C50);
 

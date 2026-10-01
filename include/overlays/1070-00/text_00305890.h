@@ -102,6 +102,45 @@ void func_0030BEF0(FieldHalfwordByteState105A* object, void* value);
  */
 void func_0030FED0(FieldIndexedList* list, void* value);
 
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_00305C20(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00305C30(void* object);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_0030A180(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_0030F200(void* object);
+
+/**
+ * @brief Return the fixed value 9.
+ * @param object Receiver or first argument; unused.
+ * @return Always 9.
+ */
+s32 func_003106C0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003108C0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

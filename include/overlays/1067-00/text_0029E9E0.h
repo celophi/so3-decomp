@@ -919,6 +919,128 @@ void func_002A5560(FieldObject158240* object, u8* header, FieldResourceRecord273
  */
 void func_002AD830(FieldObject158860* object, const FieldVectorSource150* source);
 
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_0029F100(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_0029F110(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_0029F120(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_0029F130(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_0029F170(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002A2370(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_002A2380(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002A2390(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_002A23A0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002A23E0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002A55E0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_002A55F0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002A5600(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_002A5610(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002AD9C0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002AE9A0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_002AE9B0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002AE9C0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_002AE9D0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

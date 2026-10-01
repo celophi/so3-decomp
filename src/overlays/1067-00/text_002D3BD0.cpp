@@ -14,7 +14,9 @@ s32 func_002D3BD0(FieldClass150070* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D3BE0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D3C10);
+void func_002D3C10(void* object)
+{
+}
 
 s32 func_002D3C20(const FieldBufferSlots* object, s32 index)
 {

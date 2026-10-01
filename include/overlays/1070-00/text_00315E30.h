@@ -94,6 +94,13 @@ u8 func_003186B0(const FieldStateTargets* object, u8 key);
  */
 void func_00318A30(FieldStateTargets* object);
 
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_00316440(void* object);
+
 #ifdef __cplusplus
 }
 #endif

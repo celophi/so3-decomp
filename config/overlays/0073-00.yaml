@@ -45,6 +45,8 @@ segments:
     type: code
     start: 0x40
     vram: 0x3483c0
+    # All mapped functions in this segment start on 16-byte boundaries (ADR 0010).
+    subalign: 16
     subsegments:
       - [0x40, c, text]
   - [0x9c80, bin, data]

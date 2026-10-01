@@ -102,7 +102,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D1
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D230);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D2A0);
+void func_0023D2A0(void* object)
+{
+}
 
 s32 func_0023D2B0(FieldObject153270* object)
 {

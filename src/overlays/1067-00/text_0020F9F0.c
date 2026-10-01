@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_0020F9F0.h"
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020F9F0);
@@ -15,7 +16,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FC
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FD00);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FDD0);
+s32 func_0020FDD0(void* object)
+{
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FDE0);
 
@@ -81,7 +85,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002116
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00211A90);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00211BF0);
+s32 func_00211BF0(void* object)
+{
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00211C00);
 
@@ -91,9 +98,14 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002123
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002123F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00212440);
+s32 func_00212440(void* object)
+{
+    return 13;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00212450);
+void func_00212450(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00212460);
 
@@ -101,11 +113,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002124
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002124A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002124C0);
+void func_002124C0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002124D0);
+void func_002124D0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002124E0);
+void func_002124E0(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002124F0);
 

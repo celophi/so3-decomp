@@ -75,6 +75,12 @@ s32 func_002D3BD0(FieldClass150070* object);
 s32 func_002D4D40(FieldClass150070* object);
 #endif
 
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002D3C10(void* object);
+
 #ifdef __cplusplus
 }
 #endif

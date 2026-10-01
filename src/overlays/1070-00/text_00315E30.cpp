@@ -5,7 +5,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00315E
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003160A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316440);
+s32 func_00316440(void* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316450);
 

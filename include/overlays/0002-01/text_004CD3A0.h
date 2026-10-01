@@ -169,6 +169,59 @@ void* func_004D6DE0(void* object);
  */
 void* func_004D99A0(void* object);
 
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_004D00A0(void* object);
+
+/**
+ * @brief Return the fixed value 16.
+ * @param object Receiver or first argument; unused.
+ * @return Always 16.
+ */
+s32 func_004D0160(void* object);
+
+/**
+ * @brief Return the fixed value 10.
+ * @param object Receiver or first argument; unused.
+ * @return Always 10.
+ */
+s32 func_004D5810(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_004D5820(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_004D5D70(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_004D66F0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_004D9B50(void* object);
+
+/**
+ * @brief Return the fixed value 8.
+ * @param object Receiver or first argument; unused.
+ * @return Always 8.
+ */
+s32 func_004DAFD0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

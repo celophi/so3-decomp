@@ -16,6 +16,12 @@ extern "C" {
  */
 s32 func_00291410(FieldObject157160* object);
 
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00291B60(void* object);
+
 #ifdef __cplusplus
 }
 #endif

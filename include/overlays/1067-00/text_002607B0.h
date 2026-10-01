@@ -38,6 +38,20 @@ u8 func_00262BA0(const FieldObject15AE70* object);
  */
 s32 func_00263680(FieldObject153E00* object);
 
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00261D20(void* object);
+
+/**
+ * @brief Return the fixed value 2.
+ * @param object Receiver or first argument; unused.
+ * @return Always 2.
+ */
+s32 func_00263610(void* object);
+
 #ifdef __cplusplus
 }
 #endif

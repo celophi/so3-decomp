@@ -1,6 +1,8 @@
 #ifndef SO3_BOOT_RESIDENT_00101550_H
 #define SO3_BOOT_RESIDENT_00101550_H
 
+#include "types.h"
+
 /** Dispatch table whose complete layout is not yet known. */
 typedef struct ResidentDispatchTable ResidentDispatchTable;
 

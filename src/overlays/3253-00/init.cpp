@@ -1,8 +1,11 @@
 #include "include_asm.h"
+#include "overlays/3253-00/init.h"
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/init", func_003EAB00);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/init", func_003EAB30);
+void func_003EAB30(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/init", func_003EAB40);
 

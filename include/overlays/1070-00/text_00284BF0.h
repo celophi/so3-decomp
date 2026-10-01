@@ -685,6 +685,34 @@ void func_0028B220(FieldContext* context, s32 value);
  */
 void func_00286050(FieldWordFlags* object, u32 mask);
 
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_00288030(void* object);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_0028B460(void* object);
+
+/**
+ * @brief Return the fixed value 9.
+ * @param object Receiver or first argument; unused.
+ * @return Always 9.
+ */
+s32 func_0028B4E0(void* object);
+
+/**
+ * @brief Return the fixed value 3.
+ * @param object Receiver or first argument; unused.
+ * @return Always 3.
+ */
+s32 func_0028F9F0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

@@ -50,6 +50,11 @@ typedef struct FieldStateTargets
 extern "C" {
 #endif
 
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002F2460(void* object);
 
 #ifdef __cplusplus
 }

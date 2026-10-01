@@ -24,6 +24,12 @@ u16 func_0023B3A0(FieldState23B3A0* object);
  */
 s32 func_0023D2B0(FieldObject153270* object);
 
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_0023D2A0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

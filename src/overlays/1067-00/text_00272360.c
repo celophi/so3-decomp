@@ -10,9 +10,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002728
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272950);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002729A0);
+void func_002729A0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002729B0);
+void func_002729B0(void* object)
+{
+}
 
 s32 func_002729C0(FieldObject154EF0* object)
 {
@@ -21,7 +25,10 @@ s32 func_002729C0(FieldObject154EF0* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002729D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272A40);
+s32 func_00272A40(void* object)
+{
+    return 300;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272A50);
 
@@ -37,13 +44,20 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272C
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272D00);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272D60);
+s32 func_00272D60(void* object)
+{
+    return -1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272D70);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272DD0);
+void func_00272DD0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272DE0);
+void func_00272DE0(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272DF0);
 
@@ -53,7 +67,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272E
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272F20);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272F90);
+s32 func_00272F90(void* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272FA0);
 

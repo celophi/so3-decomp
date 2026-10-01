@@ -24,6 +24,40 @@ s32 func_00278300(FieldObject155540* object);
  */
 s32 func_0027D320(FieldObject1557B0* object);
 
+/**
+ * @brief Return the fixed value 1.
+ * @param object Receiver or first argument; unused.
+ * @return Always 1.
+ */
+s32 func_00277320(void* object);
+
+/**
+ * @brief Return the fixed value 1.
+ * @param object Receiver or first argument; unused.
+ * @return Always 1.
+ */
+s32 func_00277630(void* object);
+
+/**
+ * @brief Return the fixed value 1.
+ * @param object Receiver or first argument; unused.
+ * @return Always 1.
+ */
+s32 func_00277640(void* object);
+
+/**
+ * @brief Return the fixed value 1.
+ * @param object Receiver or first argument; unused.
+ * @return Always 1.
+ */
+s32 func_00277CA0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00278950(void* object);
+
 #ifdef __cplusplus
 }
 #endif

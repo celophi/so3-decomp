@@ -76,6 +76,8 @@ segments:
     type: code
     start: 0x120b00
     vram: 0x507380
+    # All mapped functions in this segment start on 16-byte boundaries (ADR 0010).
+    subalign: 16
     subsegments:
       - [0x120b00, c, init]
   - [0x1210d0, bin, init_table]

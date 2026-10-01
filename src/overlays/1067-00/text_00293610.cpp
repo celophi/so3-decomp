@@ -179,7 +179,10 @@ bool func_00295C10(FieldObject1584B0* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295C30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295C90);
+s32 func_00295C90(void* object)
+{
+    return 35;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295CA0);
 

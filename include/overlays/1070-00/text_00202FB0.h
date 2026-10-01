@@ -185,6 +185,66 @@ FieldStateListElement3C* func_002058F0(FieldContext34* object, s32 key, s32 unus
  */
 FieldFlagListElement* func_00209E40(FieldContext58* object, u32 key);
 
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00203900(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00203940(void* object);
+
+/**
+ * @brief Return the fixed value 2.
+ * @param object Receiver or first argument; unused.
+ * @return Always 2.
+ */
+s32 func_00204470(void* object);
+
+/**
+ * @brief Return the fixed value 3.
+ * @param object Receiver or first argument; unused.
+ * @return Always 3.
+ */
+s32 func_002059A0(void* object);
+
+/**
+ * @brief Return the fixed value 3.
+ * @param object Receiver or first argument; unused.
+ * @return Always 3.
+ */
+s32 func_00205BD0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00206BD0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00206BE0(void* object);
+
+/**
+ * @brief Return the fixed value 2.
+ * @param object Receiver or first argument; unused.
+ * @return Always 2.
+ */
+s32 func_0020B400(void* object);
+
+/**
+ * @brief Return the fixed value 2.
+ * @param object Receiver or first argument; unused.
+ * @return Always 2.
+ */
+s32 func_0020C480(void* object);
+
 #ifdef __cplusplus
 }
 #endif

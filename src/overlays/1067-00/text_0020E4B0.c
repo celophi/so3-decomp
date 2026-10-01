@@ -1,13 +1,20 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_0020E4B0.h"
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020E4B0);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020E4C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020E4E0);
+s32 func_0020E4E0(void* object)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020E4F0);
+s32 func_0020E4F0(void* object)
+{
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020E500);
 

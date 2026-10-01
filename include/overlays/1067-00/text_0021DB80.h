@@ -17,6 +17,13 @@ typedef struct FieldObject1522C0 FieldObject1522C0;
  */
 s32 func_0021FB30(FieldObject1522C0* object);
 
+/**
+ * @brief Return the fixed value 2.
+ * @param object Receiver or first argument; unused.
+ * @return Always 2.
+ */
+s32 func_0021E840(void* object);
+
 #ifdef __cplusplus
 }
 #endif

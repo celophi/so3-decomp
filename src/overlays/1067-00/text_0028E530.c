@@ -71,6 +71,8 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E530", func_002919
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E530", func_00291A70);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E530", func_00291B60);
+void func_00291B60(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E530", func_00291B70);

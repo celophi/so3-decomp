@@ -1,11 +1,18 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_0023D390.h"
 
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023D390", func_0023D390);
+void func_0023D390(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023D390", func_0023D3A0);
+void func_0023D3A0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023D390", func_0023D3B0);
+void func_0023D3B0(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023D390", func_0023D3C0);
 

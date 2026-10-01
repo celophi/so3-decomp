@@ -44,6 +44,12 @@ typedef struct FieldObject1530D0 FieldObject1530D0;
  */
 s32 func_0023B1A0(FieldObject1530D0* object);
 
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00238520(void* object);
+
 #ifdef __cplusplus
 }
 

@@ -45,6 +45,8 @@ segments:
     type: code
     start: 0x40
     vram: 0x1dd3c0
+    # All mapped functions in this segment start on 16-byte boundaries (ADR 0010).
+    subalign: 16
     subsegments:
       # Provisional groups at detected function starts, roughly 64 KiB each.
       - [0x40, c, text_001DD3C0]
@@ -84,6 +86,8 @@ segments:
     type: code
     start: 0x207a80
     vram: 0x3e4e00
+    # All mapped functions in this segment start on 16-byte boundaries (ADR 0010).
+    subalign: 16
     subsegments:
       - [0x207a80, c, init]
   - [0x209030, bin, init_table]
