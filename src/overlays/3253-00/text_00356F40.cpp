@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/3253-00/text_00356F40.h"
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00356F40", func_00356F40);
 
@@ -210,7 +211,9 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00356F40", func_00363C
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00356F40", func_00363CD0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00356F40", func_00363D40);
+void func_00363D40(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00356F40", func_00363D50);
 

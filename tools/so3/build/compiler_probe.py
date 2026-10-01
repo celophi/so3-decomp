@@ -16,7 +16,7 @@ import urllib.request
 from tools.so3.build.boot import ROOT, original_boot, sha256
 from tools.so3.formats import elf_info, require
 
-CONFIG = ROOT / 'config/compilers.json'
+CONFIG = ROOT / 'config/manifests/compilers.json'
 COMPILERS = ROOT / 'build/compilers'
 RESULTS = ROOT / 'build/compiler-probes'
 
@@ -161,7 +161,7 @@ def main():
     parser.add_argument('command', choices=('setup', 'check'))
     selection = parser.add_mutually_exclusive_group()
     selection.add_argument('--all', action='store_true', help='All candidates and optimization settings')
-    selection.add_argument('--candidate', help='Candidate ID from config/compilers.json')
+    selection.add_argument('--candidate', help='Candidate ID from config/manifests/compilers.json')
     args = parser.parse_args()
     os.chdir(ROOT)
     try:

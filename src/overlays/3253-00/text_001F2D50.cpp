@@ -1,10 +1,13 @@
 #include "include_asm.h"
+#include "overlays/3253-00/text_001F2D50.h"
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001F2D50", func_001F2D50);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001F2D50", func_001F3050);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001F2D50", func_001F3540);
+void func_001F3540(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001F2D50", func_001F3550);
 

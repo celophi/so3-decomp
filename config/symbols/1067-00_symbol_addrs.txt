@@ -1,0 +1,127 @@
+// Resident object registration helper.
+func_00101560 = 0x00101560; // type:func
+
+// Lib vector transform helper.
+func_004CE4C0 = 0x004CE4C0; // type:func
+
+// Lib owner detach helper.
+func_004D65C0 = 0x004D65C0; // type:func
+
+// Lib table update helper.
+func_004728A0 = 0x004728A0; // type:func
+
+// Lib table entry iteration and batch helpers.
+func_00472EB0 = 0x00472EB0; // type:func
+func_00473940 = 0x00473940; // type:func
+func_004D4010 = 0x004D4010; // type:func
+
+// Resident operator delete(void*), called by deleting destructors.
+__dl__FPv = 0x00100B40; // type:func
+
+// Resident operator new(size_t, s32) and operator new[](size_t, s32); the
+// second argument is ignored. func_00100C80 swaps the heap they use.
+__nw__FUii = 0x00100AC0; // type:func
+__nwa__FUii = 0x00100B00; // type:func
+func_00100C80 = 0x00100C80; // type:func
+
+// MWCC runtime array construction helper.
+__construct_new_array = 0x00142F10; // type:func
+
+// Resident operator delete[](void*).
+__dla__FPv = 0x00100BE0; // type:func
+
+// FieldClass150050 <- FieldClass150060 <- FieldClass150070; vtables are in
+// boot data.
+__vt__16FieldClass150050 = 0x00150050; // size:0xC
+__vt__16FieldClass150060 = 0x00150060; // size:0xC
+__vt__16FieldClass150070 = 0x00150070; // size:0x1C
+func_001DD410__16FieldClass150070Fv = 0x001DD410; // type:func
+func_001DD7B0__16FieldClass150070Fv = 0x001DD7B0; // type:func
+__dt__16FieldClass150070Fv = 0x001DD7E0; // type:func
+__dt__16FieldClass150060Fv = 0x001DECD0; // type:func
+__dt__16FieldClass150050Fv = 0x001DED30; // type:func
+func_001DF360__16FieldClass150070Fv = 0x001DF360; // type:func
+func_001DF3D0__16FieldClass150070Fv = 0x001DF3D0; // type:func
+__vt__16FieldClass150010 = 0x00150010; // size:0x2C
+__dt__16FieldClass150010Fv = 0x001DEC40; // type:func
+
+// Lib classes; the names match config/symbols/0002-01_symbol_addrs.txt.
+__vt__14LibClass178DD0 = 0x00178DD0; // size:0x38
+__dt__14LibClass178DD0Fv = 0x004D7590; // type:func
+__dl__14LibClass178DD0FPv = 0x004DB570; // type:func
+__vt__14LibClass178EA0 = 0x00178EA0; // size:0x84
+__dt__14LibClass178EA0Fv = 0x004DAC70; // type:func
+
+// FieldClass14FE30: a LibClass178DD0 with FieldClass150070 at 0x78,
+// FieldClass1DD400 at 0x90 and a LibClass178EA0 member at 0xA0. Its secondary
+// vtables are __vt__16FieldClass14FE30 + 0x38 and + 0x54 (config/relocations/1067-00_reloc_addrs.txt).
+__vt__16FieldClass14FE30 = 0x0014FE30; // size:0x74
+__dt__16FieldClass14FE30Fv = 0x001DD4A0; // type:func
+func_001DD400__16FieldClass1DD400Fv = 0x001DD400; // type:func
+func_001DD7B0__16FieldClass14FE30Fv = 0x001DD440; // type:func
+func_001DF3D0__16FieldClass150010Fv = 0x001DF310; // type:func
+func_001DD7B0__16FieldClass150010Fv = 0x001DF320; // type:func
+
+// EE kernel syscall 100 (FlushCache), an SDK wrapper in boot.
+func_00121FE0 = 0x00121FE0; // type:func
+
+// Resident helper that takes a boot manager object and an object.
+func_0011ED90 = 0x0011ED90; // type:func
+
+// Slot overrides in classes derived from FieldClass150070.
+func_001DF3D0__16FieldClass150120Fv = 0x001E1590; // type:func
+func_001DD7B0__16FieldClass150120Fv = 0x001E15A0; // type:func
+func_001DD7B0__16FieldClass150330Fv = 0x001E9580; // type:func
+func_001DD7B0__16FieldClass1504C0Fv = 0x001EB660; // type:func
+func_001DF3D0__16FieldClass14FE30Fv = 0x001DD490; // type:func
+__vt__16FieldClass150120 = 0x00150120; // size:0x30
+__dt__16FieldClass150120Fv = 0x001E5030; // type:func
+func_001DDB30__16FieldClass150120Fv = 0x001E4EF0; // type:func
+
+// FieldClass14FFB0: a FieldClass150010 with FieldClass1DD400 (vtable D_150000)
+// at 0x18 and FieldClass150040 records. Its FieldClass1DD400 vtable part is
+// __vt__16FieldClass14FFB0 + 0x2C (config/relocations/1067-00_reloc_addrs.txt).
+__vt__16FieldClass14FFB0 = 0x0014FFB0; // size:0x50
+__vt__16FieldClass1DD400 = 0x00150000; // size:0x10
+__ct__16FieldClass14FFB0Fv = 0x001DEB50; // type:func
+__dt__16FieldClass14FFB0Fv = 0x001DF550; // type:func
+func_001DE8B0__16FieldClass14FFB0Fi = 0x001DE8B0; // type:func
+func_001DEA80__16FieldClass14FFB0Fv = 0x001DEA80; // type:func
+func_001DF3E0__16FieldClass14FFB0Fv = 0x001DF3E0; // type:func
+func_001DF640__16FieldClass14FFB0Fv = 0x001DF640; // type:func
+func_001DF780__16FieldClass14FFB0Fv = 0x001DF780; // type:func
+func_001DDB30__16FieldClass14FFB0Fv = 0x001DF800; // type:func
+func_001E07A0__16FieldClass14FFB0Fv = 0x001E07A0; // type:func
+func_001E0A50__16FieldClass14FFB0Fi = 0x001E0A50; // type:func
+func_001E0F60__16FieldClass14FFB0Fv = 0x001E0F60; // type:func
+func_001DF350__16FieldClass150010Fv = 0x001DF350; // type:func
+func_001DDB30__16FieldClass1DD400Fv = 0x001DF370; // type:func
+
+// FieldClass150040 records and their base FieldClass1530C0.
+__vt__16FieldClass150040 = 0x00150040; // size:0xC
+__vt__16FieldClass1530C0 = 0x001530C0; // size:0xC
+__ct__16FieldClass150040Fv = 0x001DE9C0; // type:func
+func_0023AD00__16FieldClass150040Fv = 0x001DF380; // type:func
+func_0023AD00__16FieldClass1530C0Fv = 0x0023AD00; // type:func
+
+// Field object classes: FieldClass150F90 <- FieldClass151510 <- FieldClass152430
+// <- FieldClass150EB0 <- FieldClass152F00 (from constructor chains).
+__vt__16FieldClass150F90 = 0x00150F90; // size:0x48
+__vt__16FieldClass151510 = 0x00151510; // size:0x54
+__vt__16FieldClass152430 = 0x00152430; // size:0x88
+__vt__16FieldClass150EB0 = 0x00150EB0; // size:0x98
+__vt__16FieldClass152F00 = 0x00152F00; // size:0x9C
+func_00205710__16FieldClass152430FPC10FieldVec4A = 0x00227460; // type:func
+func_001DE3D0__16FieldClass152430Fv = 0x001DE3D0; // type:func
+func_00205710__16FieldClass152F00FPC10FieldVec4A = 0x001DD960; // type:func
+__ct__16FieldClass150F90Fv = 0x00205480; // type:func
+
+// FieldClass1515D0 <- FieldClass154D20 <- FieldClass153570 (vtable pointer at
+// offset 0xC; FieldClass153570 is created by FieldClass151510::func_0020BF00).
+__vt__16FieldClass1515D0 = 0x001515D0; // size:0xC
+__vt__16FieldClass154D20 = 0x00154D20; // size:0x1C
+__vt__16FieldClass153570 = 0x00153570; // size:0x1C
+func_001DDCD0__16FieldClass154D20Fv = 0x001DDCD0; // type:func
+func_001DDCD0__16FieldClass153570Fv = 0x001DDF40; // type:func
+__vt__16FieldClass152350 = 0x00152350; // size:0x10
+func_0045BD20 = 0x0045BD20; // type:func

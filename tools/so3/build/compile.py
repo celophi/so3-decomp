@@ -9,6 +9,46 @@ import subprocess
 import sys
 
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, verify_compiler
+from tools.so3.build.text_order import order_text_sections, symbol_addresses, unit_range
+
+
+def unit_flags(config, unit):
+    """Return the working flags plus any flags configured for one source unit."""
+    extra = [entry['flags'] for entry in config.get('unit_flags', []) if Path(entry['source']) == Path(unit)]
+    if len(extra) > 1:
+        raise ValueError(f'{unit} has more than one unit_flags entry')
+    return [*config['working_flags'], *(extra[0] if extra else [])]
+
+
+def deferred(flags):
+    """Whether -inline selects deferred code generation."""
+    return any(a == '-inline' and 'deferred' in b.split(',') for a, b in zip(flags, flags[1:]))
+
+
+def module_of(unit):
+    parts = Path(unit).parts
+    return parts[2] if parts[:2] == ('src', 'overlays') else 'boot'
+
+
+def symbol_map(unit):
+    """The Splat symbol map for the module that owns a source unit."""
+    path = Path('config/symbols') / f'{module_of(unit)}_symbol_addrs.txt'
+    return symbol_addresses(path) if path.is_file() else {}
+
+
+def thunk_map(unit):
+    """Original addresses of the kept copies of MWCC this-adjusting thunks."""
+    path = Path('config/thunks') / f'{module_of(unit)}_thunk_addrs.txt'
+    return symbol_addresses(path) if path.is_file() else {}
+
+
+def overlay_range(unit):
+    """The unit's VRAM range, or None for boot sources."""
+    module = module_of(unit)
+    if module == 'boot':
+        return None
+    import yaml
+    return unit_range(yaml.safe_load((Path('config/overlays') / f'{module}.yaml').read_text()), unit)
 
 
 def main():
@@ -18,6 +58,8 @@ def main():
     parser.add_argument('--macros', required=True, type=Path)
     parser.add_argument('--skip-asm', action='store_true',
                         help='compile only C/C++ for objdiff progress reporting')
+    parser.add_argument('--unit', type=Path,
+                        help='production source whose unit_flags apply (default: the source itself)')
     args = parser.parse_args()
     languages = {'.c': 'c', '.cpp': 'c++'}
     if args.source.suffix not in languages:
@@ -26,14 +68,16 @@ def main():
     record = next(r for r in config['candidates'] if r['id'] == config['working_candidate'])
     compiler = COMPILERS / record['id']
     verify_compiler(record, compiler)
-    # Installed at a hash-pinned revision, with dockerfiles/mwccgap.patch applied.
+    # Installed at a hash-pinned revision, with dockerfiles/patches/mwccgap.patch applied.
     sys.path.insert(0, '/opt/mwccgap')
     from mwccgap.mwccgap import process_c_file
     os.environ['MWCIncludes'] = ''
     args.output.parent.mkdir(parents=True, exist_ok=True)
     temporary = args.output.with_suffix(args.output.suffix + '.tmp')
+    unit = args.unit or args.source
+    selected = unit_flags(config, unit)
     flags = ['-DSO3_ASM_PROCESSOR', f'-I{args.source.parent}', '-Iinclude',
-             *config['working_flags'], '-lang', languages[args.source.suffix]]
+             *selected, '-lang', languages[args.source.suffix]]
     try:
         if args.skip_asm:
             # include_asm.h expands the placeholders to nothing. Keep these
@@ -50,6 +94,13 @@ def main():
                 as_flags=['-no-pad-sections'], macro_inc_path=args.macros,
                 temp_dir=args.output.parent,
             )
+        # Deferred codegen reverses C functions but not mwccgap's asm stubs, so
+        # deferred units are put back in address order. Every C++ unit keeps
+        # only the thunk copies the original linker kept inside it.
+        if deferred(selected) or languages[args.source.suffix] == 'c++':
+            temporary.write_bytes(order_text_sections(
+                temporary.read_bytes(), symbol_map(unit), thunk_map(unit),
+                overlay_range(unit), reorder=deferred(selected)))
         temporary.replace(args.output)
     finally:
         temporary.unlink(missing_ok=True)

@@ -20,7 +20,7 @@ def sha256(data):
 
 
 def expected_hash():
-    profiles = json.loads((ROOT / 'config/versions.json').read_text())['versions']
+    profiles = json.loads((ROOT / 'config/manifests/versions.json').read_text())['versions']
     return profiles['us-disc1']['boot_sha256']
 
 

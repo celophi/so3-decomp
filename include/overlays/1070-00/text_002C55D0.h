@@ -11,6 +11,14 @@ typedef struct FieldLinkedState
     u32 unk28;
 } FieldLinkedState;
 
+/** Partial receiver describing a bit limit and its packed 64-bit words. */
+typedef struct FieldBitCountState
+{
+    s32 unk00;
+    u8 unk04[0x10];
+    u64* unk14;
+} FieldBitCountState;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,6 +38,97 @@ FieldVector* func_002CC6F0(FieldVector* vector, float value);
  * @param value Word to store.
  */
 void func_002CB980(FieldLinkedState* object, void* receiver, u32 value);
+
+/**
+ * @brief Count the set bits below the stored signed bit limit.
+ * @param object Receiver containing the bit limit and packed words.
+ * @return The number of set bits, or zero for a nonpositive limit.
+ */
+s32 func_002D1DE0(const FieldBitCountState* object);
+
+/**
+ * @brief Count the set bits below the stored signed bit limit.
+ * @param object Receiver containing the bit limit and packed words.
+ * @return The number of set bits, or zero for a nonpositive limit.
+ */
+s32 func_002D2490(const FieldBitCountState* object);
+
+/**
+ * @brief Count the set bits below the stored signed bit limit.
+ * @param object Receiver containing the bit limit and packed words.
+ * @return The number of set bits, or zero for a nonpositive limit.
+ */
+s32 func_002D2B50(const FieldBitCountState* object);
+
+/**
+ * @brief Count the set bits below the stored signed bit limit.
+ * @param object Receiver containing the bit limit and packed words.
+ * @return The number of set bits, or zero for a nonpositive limit.
+ */
+s32 func_002D3180(const FieldBitCountState* object);
+
+/**
+ * @brief Count the set bits below the stored signed bit limit.
+ * @param object Receiver containing the bit limit and packed words.
+ * @return The number of set bits, or zero for a nonpositive limit.
+ */
+s32 func_002D36F0(const FieldBitCountState* object);
+
+/**
+ * @brief Count the set bits below the stored signed bit limit.
+ * @param object Receiver containing the bit limit and packed words.
+ * @return The number of set bits, or zero for a nonpositive limit.
+ */
+s32 func_002D3D30(const FieldBitCountState* object);
+
+/**
+ * @brief Count the set bits below the stored signed bit limit.
+ * @param object Receiver containing the bit limit and packed words.
+ * @return The number of set bits, or zero for a nonpositive limit.
+ */
+s32 func_002D42B0(const FieldBitCountState* object);
+
+/**
+ * @brief Count the set bits below the stored signed bit limit.
+ * @param object Receiver containing the bit limit and packed words.
+ * @return The number of set bits, or zero for a nonpositive limit.
+ */
+s32 func_002D4850(const FieldBitCountState* object);
+
+/**
+ * @brief Return the fixed value 2.
+ * @param object Receiver or first argument; unused.
+ * @return Always 2.
+ */
+s32 func_002CAF30(void* object);
+
+/**
+ * @brief Return the fixed value 2.
+ * @param object Receiver or first argument; unused.
+ * @return Always 2.
+ */
+s32 func_002CD940(void* object);
+
+/**
+ * @brief Return the fixed value 3.
+ * @param object Receiver or first argument; unused.
+ * @return Always 3.
+ */
+s32 func_002CD9B0(void* object);
+
+/**
+ * @brief Return the fixed value 9.
+ * @param object Receiver or first argument; unused.
+ * @return Always 9.
+ */
+s32 func_002CDA70(void* object);
+
+/**
+ * @brief Return the fixed value 14.
+ * @param object Receiver or first argument; unused.
+ * @return Always 14.
+ */
+s32 func_002D1C40(void* object);
 
 #ifdef __cplusplus
 }

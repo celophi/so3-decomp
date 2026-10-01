@@ -1,0 +1,25 @@
+// The initializer stores the dispatch pointer at 0x00330000 - 0x4950.
+rom:0x14D528 reloc:MIPS_HI16 symbol:D_32B6B0
+rom:0x14D530 reloc:MIPS_LO16 symbol:D_32B6B0
+// FieldClass14FE30's secondary vtables for FieldClass150070 (+0x38) and
+// FieldClass1DD400 (+0x54), in its destructor and in func_001DF100.
+rom:0x140 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FE30 addend:0x38
+rom:0x148 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FE30 addend:0x38
+rom:0x154 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FE30 addend:0x54
+rom:0x15C reloc:MIPS_LO16 symbol:__vt__16FieldClass14FE30 addend:0x54
+rom:0x1DC8 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FE30 addend:0x38
+rom:0x1DE8 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FE30 addend:0x38
+rom:0x1DD0 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FE30 addend:0x54
+rom:0x1DF0 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FE30 addend:0x54
+// FieldClass150120's FieldClass1DD400 vtable part (+0x1C), in its destructor and func_001E5110.
+rom:0x7CD8 reloc:MIPS_HI16 symbol:__vt__16FieldClass150120 addend:0x1C
+rom:0x7CE0 reloc:MIPS_LO16 symbol:__vt__16FieldClass150120 addend:0x1C
+rom:0x7DA4 reloc:MIPS_HI16 symbol:__vt__16FieldClass150120 addend:0x1C
+rom:0x7DBC reloc:MIPS_LO16 symbol:__vt__16FieldClass150120 addend:0x1C
+// FieldClass14FFB0's FieldClass1DD400 vtable part (+0x2C), in its constructor, destructor and func_0025EAD0.
+rom:0x181C reloc:MIPS_HI16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
+rom:0x1848 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
+rom:0x21F0 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
+rom:0x21F8 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
+rom:0x81770 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
+rom:0x81778 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FFB0 addend:0x2C

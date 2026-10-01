@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import re
 
-MANIFEST = Path('config/sdk-functions.json')
+MANIFEST = Path('config/manifests/sdk-functions.json')
 INCLUDE = re.compile(r'INCLUDE_ASM\("([^"\n]+)",\s*([\w.$]+)\);')
 
 

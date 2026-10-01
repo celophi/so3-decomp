@@ -1,10 +1,14 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00315E30.h"
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00315E30);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003160A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316440);
+s32 func_00316440(void* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316450);
 
@@ -14,7 +18,17 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003165
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316610);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316670);
+void func_00316670(FieldMarkedObjectSlots* object, void* target)
+{
+    for (s32 index = 0; index < 32; index++)
+    {
+        if (object->unk18[index] == target)
+        {
+            object->unk98[index] = 1;
+            return;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003166C0);
 
@@ -50,7 +64,16 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316E
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003171A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003173D0);
+void func_003173D0(FieldHalfwordBuckets* object)
+{
+    for (s32 index = 0; index < 750; index++)
+    {
+        object->unk2f0c[index] = 0;
+    }
+    object->unk2f04 = 0;
+    object->unk2f08 = 0;
+    object->unk2f0a = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00317460);
 
@@ -62,7 +85,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003179
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00317A30);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00317CD0);
+u16 func_00317CD0(const FieldHalfwordBuckets* object, u8 category, u16 index)
+{
+    u16 value = 0;
+    if (category < 8)
+    {
+        const FieldHalfwordBucket* bucket = object->buckets + category;
+        if (index < bucket->count)
+        {
+            value = bucket->values[index];
+        }
+    }
+    return value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00317D20);
 
@@ -74,7 +109,21 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003180
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00318100);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003186B0);
+extern "C" u8 func_003186B0(const FieldStateTargets* object, u8 key)
+{
+    const u8 count = object->unk87;
+    u8 result = 0;
+    const FieldStateTargetEntry* entry = object->entries;
+    for (s32 i = 0; i < count; i++, entry++)
+    {
+        if (key == entry->unk1c)
+        {
+            result = entry->unk1f;
+            break;
+        }
+    }
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00318700);
 
@@ -86,7 +135,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003188
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003189D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00318A30);
+void func_00318A30(FieldStateTargets* object)
+{
+    FieldStateTargetEntry* entry = object->entries;
+    for (s32 index = 0; index < object->unk87; index++)
+    {
+        entry->target->unk0a = 2;
+        entry++;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00318A70);
 

@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "boot/resident_001221E0.h"
 
 INCLUDE_ASM("build/boot/asm/nonmatchings/boot/resident_001221E0", func_001221E0);
 
@@ -12,19 +13,34 @@ INCLUDE_ASM("build/boot/asm/nonmatchings/boot/resident_001221E0", func_001223A8)
 
 INCLUDE_ASM("build/boot/asm/nonmatchings/boot/resident_001221E0", func_00122420);
 
-INCLUDE_ASM("build/boot/asm/nonmatchings/boot/resident_001221E0", func_00122448);
+s32 func_00122448(void* object)
+{
+    return -1;
+}
 
-INCLUDE_ASM("build/boot/asm/nonmatchings/boot/resident_001221E0", func_00122450);
+s32 func_00122450(void* object)
+{
+    return -1;
+}
 
-INCLUDE_ASM("build/boot/asm/nonmatchings/boot/resident_001221E0", func_00122458);
+s32 func_00122458(void* object)
+{
+    return -1;
+}
 
 INCLUDE_ASM("build/boot/asm/nonmatchings/boot/resident_001221E0", func_00122460);
 
-INCLUDE_ASM("build/boot/asm/nonmatchings/boot/resident_001221E0", func_00122510);
+s32 func_00122510(void* object)
+{
+    return 1;
+}
 
 INCLUDE_ASM("build/boot/asm/nonmatchings/boot/resident_001221E0", func_00122518);
 
-INCLUDE_ASM("build/boot/asm/nonmatchings/boot/resident_001221E0", func_00122530);
+s32 func_00122530(void* object)
+{
+    return 1;
+}
 
 INCLUDE_ASM("build/boot/asm/nonmatchings/boot/resident_001221E0", func_00122538);
 

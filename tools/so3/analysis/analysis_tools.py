@@ -12,7 +12,7 @@ import zipfile
 
 from tools.so3 import ROOT
 
-LOCK = ROOT / 'config/analysis-tools.json'
+LOCK = ROOT / 'config/manifests/analysis-tools.json'
 
 
 def sha256(data):

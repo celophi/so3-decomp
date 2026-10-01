@@ -12,7 +12,7 @@ import unittest
 from tools.so3 import ROOT
 from tools.so3.build.driver import asm_inputs
 
-CONFIG = json.loads((ROOT / 'config/compilers.json').read_text())
+CONFIG = json.loads((ROOT / 'config/manifests/compilers.json').read_text())
 COMPILER = ROOT / 'build/compilers' / CONFIG['working_candidate'] / 'mwccps2.exe'
 AVAILABLE = COMPILER.exists() and Path('/opt/mwccgap').exists() and shutil.which('mips-ps2-decompals-as')
 

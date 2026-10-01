@@ -118,11 +118,11 @@ class SdkTests(unittest.TestCase):
             raw = Path('original.bin').read_bytes() + bytes(8)
             Path('original.bin').write_bytes(raw)
             manifest['units'][0]['binary_sha256'] = hashlib.sha256(raw).hexdigest()
-            Path('config').mkdir()
-            Path('config/sdk-functions.json').write_text(json.dumps(manifest))
+            Path('config/manifests').mkdir(parents=True)
+            Path('config/manifests/sdk-functions.json').write_text(json.dumps(manifest))
             Path('src/boot').mkdir()
             Path('src/boot/game.c').write_text('int game(void) { return 0; }\n')
-            with patch.object(build, 'CONFIG', ROOT / 'config/compilers.json'):
+            with patch.object(build, 'CONFIG', ROOT / 'config/manifests/compilers.json'):
                 build.configure(configs)
             ninja = Path('build/build.ninja').read_text()
             report = json.loads(Path('objdiff.json').read_text())

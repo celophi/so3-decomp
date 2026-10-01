@@ -18,10 +18,13 @@ typedef struct FieldTwoSlotState
     s32 unk80;
 } FieldTwoSlotState;
 
-/** Partial receiver for the connected halfword and byte setters. */
+/** Partial receiver with an embedded list, its count, and adjacent state values. */
 typedef struct FieldHalfwordByteState105A
 {
-    u8 unk00[0x105A];
+    u8 unk00[0x104C];
+    FieldIndexedList unk104c;
+    s32 unk1050;
+    u8 unk1054[6];
     s16 unk105a;
     u8 unk105c[2];
     s16 unk105e;
@@ -76,6 +79,67 @@ void func_0030BF10(FieldHalfwordByteState105A* object, s16 value, u8 state);
  * @param value Signed halfword ultimately stored at offset 0x105A.
  */
 void func_0030C130(FieldHalfwordByteState105A* object, s16 value);
+
+/**
+ * @brief Read a stored list value after checking the signed index against the count.
+ * @param object Receiver containing the list and count.
+ * @param index Signed index to look up; negative values and values above the count are rejected.
+ * @return The selected node value, or null if the index is rejected.
+ */
+void* func_0030BE90(const FieldHalfwordByteState105A* object, s16 index);
+
+/**
+ * @brief Append a value to the embedded indexed list.
+ * @param object Receiver containing the list.
+ * @param value Value pointer to append.
+ */
+void func_0030BEF0(FieldHalfwordByteState105A* object, void* value);
+
+/**
+ * @brief Append a value in a newly allocated node and increment the stored list count.
+ * @param list Indexed list prefix with its count stored immediately after the head pointer.
+ * @param value Value pointer to append.
+ */
+void func_0030FED0(FieldIndexedList* list, void* value);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_00305C20(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00305C30(void* object);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_0030A180(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_0030F200(void* object);
+
+/**
+ * @brief Return the fixed value 9.
+ * @param object Receiver or first argument; unused.
+ * @return Always 9.
+ */
+s32 func_003106C0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003108C0(void* object);
 
 #ifdef __cplusplus
 }

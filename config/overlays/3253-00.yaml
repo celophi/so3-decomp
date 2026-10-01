@@ -1,8 +1,5 @@
-# MWo3 file offsets map directly from the header load address.
-# Section boundaries are provisional; see docs/overlays.md.
 name: Star Ocean 3 US overlay 3253-00 (BattleMain.ovl)
 sha1: 8ba2f76267ec1d932d9b067d1ffb112f7fb08fce
-# SHA-256 is checked by tools/so3/build/overlays.py before splitting or verification.
 sha256: 06d9d32da8edf322b5b6474322127dd390de43cf2f7b2b8457dce6e04a31f399
 options:
   basename: 3253-00
@@ -45,8 +42,8 @@ segments:
     type: code
     start: 0x40
     vram: 0x1e2b40
+    subalign: 16
     subsegments:
-      # Provisional groups at detected function starts, roughly 64 KiB each.
       - [0x40, cpp, text_001E2B40]
       - [0x10250, cpp, text_001F2D50]
       - [0x202B0, cpp, text_00202DB0]
@@ -84,6 +81,7 @@ segments:
     type: code
     start: 0x208000
     vram: 0x3eab00
+    subalign: 16
     subsegments:
       - [0x208000, cpp, init]
   - [0x209520, bin, init_table]

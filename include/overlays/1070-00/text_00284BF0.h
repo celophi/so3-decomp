@@ -32,6 +32,11 @@ typedef struct FieldSlotObject
 {
     u8 unk00[0xA0];
     s32 unka0;
+    float unka4;
+    float unka8;
+    u8 unkac[0x46];
+    s8 unkf2;
+    s8 unkf3;
 } FieldSlotObject;
 
 /** Partial receiver used by the observed offset-0x78 owners. */
@@ -55,7 +60,9 @@ typedef struct FieldAllocatedState
 /** Partial object reached through context field 0x38. */
 typedef struct FieldContext38
 {
-    u8 unk00[0x598];
+    u8 unk00[0x4C4];
+    FieldListNode unk4c4;
+    u8 unk4d0[0xC8];
     FieldSlotObject* unk598[8];
     u8 unk5b8[8];
     void* unk5c0;
@@ -677,6 +684,34 @@ void func_0028B220(FieldContext* context, s32 value);
  * @param mask Bits to set.
  */
 void func_00286050(FieldWordFlags* object, u32 mask);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_00288030(void* object);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_0028B460(void* object);
+
+/**
+ * @brief Return the fixed value 9.
+ * @param object Receiver or first argument; unused.
+ * @return Always 9.
+ */
+s32 func_0028B4E0(void* object);
+
+/**
+ * @brief Return the fixed value 3.
+ * @param object Receiver or first argument; unused.
+ * @return Always 3.
+ */
+s32 func_0028F9F0(void* object);
 
 #ifdef __cplusplus
 }

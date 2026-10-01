@@ -25,10 +25,13 @@ typedef struct FieldResetState40
     s16 unk50;
 } FieldResetState40;
 
-/** Partial receiver with three allocations, aligned pointers and sizes. */
+/** Partial receiver containing an allocation table and three buffer slots. */
 typedef struct FieldBufferSlots
 {
-    u8 unk00[0x11C];
+    u8 unk00[0x14];
+    void* unk14[64];
+    void* unk114;
+    s32 unk118;
     void* unk11c[3];
     void* unk128[3];
     s32 unk134[3];
@@ -91,6 +94,59 @@ typedef struct FieldFlagOwner4C
     FieldFlagTarget4D* unk4c;
 } FieldFlagOwner4C;
 
+/** Partial receiver containing two pointers and halfword and byte state. */
+typedef struct FieldResetStateCC
+{
+    u8 unk00[0xCC];
+    void* unkcc;
+    u8 unkd0;
+    u8 unkd1[0x37];
+    void* unk108;
+    u16 unk10c;
+    u16 unk10e;
+    u8 unk110;
+    u8 unk111;
+    u8 unk112;
+    u8 unk113;
+    u8 unk114;
+} FieldResetStateCC;
+
+/** Resource slot containing packed state and two pointers. */
+typedef struct FieldResourceSlotEntry
+{
+    u64 unk00;
+    u64 unk08;
+    void* unk10;
+    void* unk14;
+} FieldResourceSlotEntry;
+
+/** Partial receiver containing sixteen resource slots. */
+typedef struct FieldResourceSlots
+{
+    u8 unk00[0x10A8];
+    FieldResourceSlotEntry unk10a8[16];
+    u8 unk1228[0x84];
+    u8 unk12ac;
+} FieldResourceSlots;
+
+/** Fields decoded from two packed resource-state words. */
+typedef struct FieldResourceStateValues
+{
+    u16 unk00;
+    u16 unk02;
+    u8 unk04;
+    u8 unk05;
+    u8 unk06;
+    u8 unk07;
+} FieldResourceStateValues;
+
+/** Partial header of a variable-length resource record. */
+typedef struct FieldResourceRecord
+{
+    u8 unk00[0xC];
+    u32 next_offset;
+} FieldResourceRecord;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -148,6 +204,180 @@ void func_002EA0E0(FieldFlagOwner4C* object);
  * @param second Float value used to calculate the ratio.
  */
 void func_002F4550(FieldFloatSequenceState* object, FieldFloatPairEntry* values, s32 count, float first, float second);
+
+/**
+ * @brief Store a size and install the allocation if the size is positive and the slot is empty.
+ * @param object Receiver containing the allocation slot.
+ * @param allocation Allocation to install.
+ * @param size Allocation size to store.
+ * @return One if the allocation was installed, otherwise zero.
+ */
+u8 func_002EBBA0(FieldBufferSlots* object, void* allocation, s32 size);
+
+/**
+ * @brief Read an allocation pointer rounded up to a 128-byte boundary.
+ * @param object Receiver containing the allocation table.
+ * @param index Allocation index.
+ * @return The aligned pointer, or null if the index is outside the table.
+ */
+void* func_002EBBE0(const FieldBufferSlots* object, u8 index);
+
+/**
+ * @brief Clear two pointers and the associated halfword and byte state.
+ * @param object Receiver to reset.
+ */
+void func_002EE2D0(FieldResetStateCC* object);
+
+/**
+ * @brief Decode six packed state fields when bit zero of the receiver flag is set.
+ * @param object Receiver containing resource slots and its state flag.
+ * @param index Resource slot index, from 0 through 15.
+ * @param output Destination for the decoded fields.
+ * @return One if fields were written, otherwise zero.
+ */
+s32 func_002EFA70(const FieldResourceSlots* object, s32 index, FieldResourceStateValues* output);
+
+/**
+ * @brief Install two pointers in the first available resource slot.
+ * @param object Receiver containing the slots.
+ * @param resource Resource pointer to install.
+ * @param target Optional target pointer to install.
+ * @return The slot index, or minus one if every slot is occupied.
+ */
+s32 func_002EFAF0(FieldResourceSlots* object, void* resource, void* target);
+
+/**
+ * @brief Find an indexed record by following relative offsets in the aligned resource allocation.
+ * @param object Receiver containing the resource allocation.
+ * @param index Zero-based record index.
+ * @return The record header, or null if the allocation or indexed record is absent.
+ */
+FieldResourceRecord* func_002EBB20(const FieldBufferSlots* object, s32 index);
+
+/**
+ * @brief Install an allocation into an empty table entry.
+ * @param object Receiver containing the allocation table.
+ * @param allocation Non-null allocation to install.
+ * @param index Table index, from 0 through 63.
+ * @return One if the allocation was installed, otherwise zero.
+ */
+u8 func_002EBCA0(FieldBufferSlots* object, void* allocation, u8 index);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002E5630(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002E5640(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002E5650(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002E5660(void* object);
+
+/**
+ * @brief Return the fixed value 1.
+ * @param object Receiver or first argument; unused.
+ * @return Always 1.
+ */
+s32 func_002E5890(void* object);
+
+/**
+ * @brief Return the fixed value 3.
+ * @param object Receiver or first argument; unused.
+ * @return Always 3.
+ */
+s32 func_002E7E60(void* object);
+
+/**
+ * @brief Return the fixed value 14.
+ * @param object Receiver or first argument; unused.
+ * @return Always 14.
+ */
+s32 func_002EBA30(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002EBA70(void* object);
+
+/**
+ * @brief Return the fixed value 9.
+ * @param object Receiver or first argument; unused.
+ * @return Always 9.
+ */
+s32 func_002ECBD0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002EE900(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002EE910(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002EFA60(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002F0080(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002F0090(void* object);
+
+/**
+ * @brief Return the fixed value 5.
+ * @param object Receiver or first argument; unused.
+ * @return Always 5.
+ */
+s32 func_002F02C0(void* object);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_002F03C0(void* object);
+
+/**
+ * @brief Return the fixed value 9.
+ * @param object Receiver or first argument; unused.
+ * @return Always 9.
+ */
+s32 func_002F2280(void* object);
+
+/**
+ * @brief Return the fixed value 14.
+ * @param object Receiver or first argument; unused.
+ * @return Always 14.
+ */
+s32 func_002F34A0(void* object);
 
 #ifdef __cplusplus
 }
