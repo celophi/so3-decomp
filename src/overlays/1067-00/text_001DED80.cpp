@@ -123,37 +123,41 @@ void FieldClass150010::func_001DD7B0()
     func_0011ED90(D_001B65F4, this);
 }
 
-u8 func_001DF350(const FieldByteState14* object)
+u8 FieldClass150010::func_001DF350()
 {
-    return object->unk14;
+    return unk14;
 }
 
 void FieldClass150070::func_001DF360()
 {
 }
 
-void func_001DF370(void* object)
+void FieldClass1DD400::func_001DDB30()
 {
 }
 
-// Tail call to func_0023AD00; void or forwarded return is unresolved.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF380);
+s32 FieldClass150040::func_0023AD00()
+{
+    unk1c_0 = 0;
+    unk1c_1 = 0;
+    return FieldClass1530C0::func_0023AD00();
+}
 
 s32 FieldClass150070::func_001DF3D0()
 {
     return 3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF3E0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF3E0__16FieldClass14FFB0Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF550);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", __dt__16FieldClass14FFB0Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF640);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF640__16FieldClass14FFB0Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF780);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF780__16FieldClass14FFB0Fv);
 
 // Calls resident func_121FE0; needs its declaration and symbol mapping.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF800);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DDB30__16FieldClass14FFB0Fv);
 
 void func_001DF850(FieldEntryArrayObject* object)
 {
@@ -435,11 +439,11 @@ s32 func_001E02C0(FieldEntryArrayObject* object, const float* x, const float* y,
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E0380);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E07A0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E07A0__16FieldClass14FFB0Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E0A50);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E0A50__16FieldClass14FFB0Fi);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E0F60);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E0F60__16FieldClass14FFB0Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1100);
 

@@ -89,12 +89,31 @@ typedef struct FieldObject157AF0
     FieldVector4 unk90;
 } FieldObject157AF0;
 
-/** Partial receiver for the distinct D_157BC0 class hierarchy. */
+typedef struct FieldLinkedObject157BC0 FieldLinkedObject157BC0;
+
+/** Partial scalar and vector state of the D_157BC0 class hierarchy. */
 typedef struct FieldObject157BC0
 {
-    u8 unk00[0x2C];
+    u8 unk00[0x28];
+    float unk28;
     s32 unk2C;
-    u8 unk30[0x30];
+    float unk30;
+    float unk34;
+    float unk38;
+    float unk3C;
+    float unk40;
+    float unk44;
+    FieldLinkedObject157BC0* unk48;
+    u8 unk4C;
+    u8 unk4D;
+    u8 unk4E;
+    u8 unk4F;
+    FieldLinkedObject157BC0* unk50;
+    u8 unk54;
+    u8 unk55;
+    u8 unk56;
+    u8 unk57;
+    u8 unk58[8];
     FieldVector4 unk60;
     FieldVector4 unk70;
     FieldVector4 unk80;

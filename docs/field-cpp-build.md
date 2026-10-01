@@ -126,6 +126,14 @@ normal settings, so I dropped that idea.
   `FieldClass150120`'s destructor (`func_001E5030`) and another
   `FieldClass14FE30` function (`func_001DD490`) now match, and all four
   affected files still link to the game's bytes.
+- The first constructors are in. `func_001DEB50` builds a `FieldClass14FFB0`,
+  and `func_001DE9C0` builds one of the 32-byte records that class keeps in an
+  array. `func_001DE8B0` allocates that array. All three match, and so does
+  the exception entry the compiler writes for the constructor. It names
+  `FieldClass150010`'s destructor as the cleanup, which confirms the
+  class order. Working these out showed that `FieldClass150010` has 9 slots,
+  not 5 (three of them are pure virtual), and that the two link words at +4
+  and +8 belong to `FieldClass150060`, not `FieldClass150070`.
 
 ## More file boundaries from thunks
 
@@ -166,15 +174,26 @@ only the config files use them. The source keeps the readable names.
 **Working out the layout.** The vtable tells me more than the order of the
 functions:
 
-- It starts with two zero words, then one slot per virtual function.
+- It starts with two zero words, then one slot per virtual function. A zero
+  in a slot is a pure virtual function, not the end of the table.
 - For a class with several bases, the main base's slots come first, then a
   block for each other base, then the class's own new functions and its
-  overrides of the other bases' functions.
+  overrides of the other bases' functions. New functions never go into the
+  main base's block. So when that block is longer than the main base's own
+  vtable seems to be, the base has more slots than it looks like.
 - A thunk's name gives the offset of the base it adjusts for. `@120@...`
   means that base starts at `0x78` (120) in the object. The gaps between
   those offsets give the size of each base class.
 - The functions around the vtable show which methods were inline. A
   destructor that another file pastes in has to be inline in a header.
+
+**Reading a constructor.** A constructor stores each class's vtable in turn,
+from the root class down, so the stores list the whole chain of bases. Each
+class's constructor stores its vtable first and then sets its own fields.
+That means a field set before a class's vtable store belongs to one of its
+bases. A class whose first virtual function comes after its own data keeps its
+vtable pointer after that data, not at offset 0 (for example `FieldClass1530C0`
+at `0x18`).
 
 **Things the compiler does that matter for matching:**
 
@@ -190,6 +209,11 @@ functions:
   bytes calls `__dla__FPv` directly. A class with its own `operator delete`
   calls it by the class's mangled name, like
   `__dl__14LibClass178DD0FPv`.
+- Field allocates with `new(0)`. The game's `operator new` and `operator
+  new[]` take a second argument (`__nw__FUii` at `0x100AC0` and
+  `__nwa__FUii` at `0x100B00`), which the resident code ignores. Plain `new`
+  calls a different function and adds a null check that the game's array
+  allocations don't have.
 - A 16-byte value copied with the R5900's 128-bit loads and stores has to be
   `unsigned __int128`. A struct of four floats marked 16-byte aligned doesn't
   get those instructions.

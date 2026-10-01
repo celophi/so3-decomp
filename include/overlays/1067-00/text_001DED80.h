@@ -4,13 +4,6 @@
 #include "types.h"
 #include "overlays/1067-00/text_001DD3C0.h"
 
-/** Partial receiver with a byte at offset 0x14. */
-typedef struct FieldByteState14
-{
-    u8 unk00[0x14];
-    u8 unk14;
-} FieldByteState14;
-
 /** 16-byte entry of the array owned by FieldEntryArrayObject: a sort value followed by three floats. */
 typedef struct FieldArrayEntry10
 {
@@ -125,19 +118,6 @@ void func_001DF2F0(void* object);
  * @param object Receiver of the virtual call.
  */
 void func_001DF300(void* object);
-
-/**
- * @brief Read the byte at offset 0x14.
- * @param object Receiver to inspect.
- * @return The stored byte.
- */
-u8 func_001DF350(const FieldByteState14* object);
-
-/**
- * @brief Default virtual handler that performs no work.
- * @param object Receiver of the virtual call.
- */
-void func_001DF370(void* object);
 
 /**
  * @brief Clear the word at offset 0x4C, then reset the entry array state.

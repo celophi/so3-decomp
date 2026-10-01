@@ -42,25 +42,33 @@ public:
     }
 };
 
-/** Intermediate base with only a destructor, with vtable D_150060 in boot data. */
+/** Intermediate base with two link words, with vtable D_150060 in boot data. */
 class FieldClass150060 : public FieldClass150050
 {
 public:
+    /** @brief Clear the link words. */
+    FieldClass150060()
+    {
+        unk04 = 0;
+        unk08 = 0;
+    }
+
     /** @brief Destroy the object. */
     virtual ~FieldClass150060()
     {
     }
+
+    void* unk04;
+    void* unk08;
 };
 
 /** Base class with four virtual handlers, with vtable D_150070 in boot data. */
 class FieldClass150070 : public FieldClass150060
 {
 public:
-    /** @brief Clear the list links, state bytes and owner pointer. */
+    /** @brief Clear the state bytes and owner pointer. */
     FieldClass150070()
     {
-        unk04 = 0;
-        unk08 = 0;
         unk0e = 0;
         unk0f = 0;
         unk10 = 0;
@@ -87,8 +95,6 @@ public:
     /** @brief Default handler that performs no work. */
     virtual void func_001DD410();
 
-    void* unk04;
-    void* unk08;
     u8 unk0c[2];
     u8 unk0e;
     u8 unk0f;

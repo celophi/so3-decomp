@@ -63,7 +63,7 @@ void func_001DD570(FieldFlaggedListObject* list)
     }
 }
 
-// Reads an unresolved $gp-relative global.
+// Virtual calls on list items; needs the item class.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD5E0);
 
 void func_001DD6E0(FieldFlaggedListObject* list)
@@ -83,7 +83,7 @@ void func_001DD6E0(FieldFlaggedListObject* list)
     }
 }
 
-// Virtual calls; needs recovered classes.
+// Virtual calls on list items; needs the item class.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD730);
 
 void FieldClass150070::func_001DD7B0()
@@ -91,7 +91,7 @@ void FieldClass150070::func_001DD7B0()
     delete this;
 }
 
-// Virtual calls and an unresolved $gp-relative global.
+// Virtual calls on list items; needs the item class.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD860);
 
 // 128-bit copy; needs a 16-byte vector type.
@@ -203,6 +203,7 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed)
     }
 }
 
+// VU0 vector-length code; needs the vector class and the D_155640 class.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE4F0);
 
 void FieldClass14FFB0::func_001DE8B0(s32 count)
@@ -261,10 +262,10 @@ void FieldClass14FFB0::func_001DEA80()
 
 FieldClass14FFB0::FieldClass14FFB0()
 {
-    unk1c = 0;
+    unk2c = 0x80;
     unk24 = 0;
     unk28 = 0x34BC0;
-    unk2c = 0x80;
+    unk1c = 0;
     unk30_1 = 0;
     unk30_0 = 0;
     func_001DEA80();
