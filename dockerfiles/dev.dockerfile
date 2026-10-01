@@ -44,15 +44,15 @@ RUN curl --fail --location --retry 3 \
     && chmod 755 /usr/local/bin/objdiff-cli
 
 COPY requirements.txt /opt/so3/requirements.txt
-COPY dockerfiles/build-requirements.txt dockerfiles/requirements.txt /opt/so3/dockerfiles/
+COPY dockerfiles/requirements/ /opt/so3/dockerfiles/requirements/
 # Disable isolated builds so source-only dependencies use our pinned backends.
-RUN python -m pip install --require-hashes --only-binary=:all: -r /opt/so3/dockerfiles/build-requirements.txt \
-    && python -m pip install --require-hashes --no-build-isolation -r /opt/so3/dockerfiles/requirements.txt \
+RUN python -m pip install --require-hashes --only-binary=:all: -r /opt/so3/dockerfiles/requirements/build-requirements.txt \
+    && python -m pip install --require-hashes --no-build-isolation -r /opt/so3/dockerfiles/requirements/requirements.txt \
     && python -m pip check
 
 # mwccgap's MIT license is retained in /opt/mwccgap/LICENSE. The patch fixes
-# local-symbol relocation imports; see docs/toolchain.md.
-COPY dockerfiles/mwccgap.patch /opt/so3/mwccgap.patch
+# local-symbol relocation imports.
+COPY dockerfiles/patches/mwccgap.patch /opt/so3/mwccgap.patch
 RUN curl --fail --location --retry 3 \
         https://codeload.github.com/mkst/mwccgap/tar.gz/147598b36b198f267e80adbe04dd5804d070dbb3 \
         -o /tmp/mwccgap.tar.gz \

@@ -1,8 +1,5 @@
-# MWo3 file offsets map directly from the header load address.
-# Section boundaries are provisional; see docs/overlays.md.
 name: Star Ocean 3 US overlay 0069-00 (cskill.bin)
 sha1: fc3c01fc2e7917917e1002086cdd036e5213dd6c
-# SHA-256 is checked by tools/so3/build/overlays.py before splitting or verification.
 sha256: 38c19c5dda5adace88ba8a6653ca3b5fd8f482948d21e9e051f3ac073f788f0f
 options:
   basename: 0069-00
@@ -45,7 +42,6 @@ segments:
     type: code
     start: 0x40
     vram: 0x3483c0
-    # All mapped functions in this segment start on 16-byte boundaries (ADR 0010).
     subalign: 16
     subsegments:
       - [0x40, c, text]

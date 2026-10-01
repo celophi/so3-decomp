@@ -1,8 +1,5 @@
-# MWo3 file offsets map directly from the header load address.
-# Section boundaries are provisional; see docs/overlays.md.
 name: Star Ocean 3 US Field overlay 1067-00 (header y)
 sha1: ac30f64711db100d67762f197d2e0a9dff406add
-# SHA-256 is checked by tools/so3/build/overlays.py before splitting or verification.
 sha256: 15c14acfb1b6682c20798ac557d956f87e06184afb06709c798afddf47ac4ffd
 options:
   basename: 1067-00
@@ -17,8 +14,8 @@ options:
   ld_script_path: build/overlays/1067-00/overlay.ld
   generated_asm_macros_directory: build/overlays/1067-00/include
   cache_path: build/overlays/1067-00/splat.cache
-  symbol_addrs_path: [config/symbols.1067-00.txt]
-  reloc_addrs_path: [config/relocs.1067-00.txt]
+  symbol_addrs_path: [config/symbols/1067-00_symbol_addrs.txt]
+  reloc_addrs_path: [config/relocations/1067-00_reloc_addrs.txt]
   undefined_funcs_auto_path: build/overlays/1067-00/undefined_funcs.ld
   undefined_syms_auto_path: build/overlays/1067-00/undefined_syms.ld
   create_c_files: true
@@ -33,7 +30,6 @@ options:
   find_file_boundaries: false
   disasm_unknown: true
   gp_value: 0x1bdff0
-  # Boot globals reached through $gp live in the resident image below the overlay.
   global_vram_start: 0x1B6000
   global_vram_end: 0x1B7000
   generated_macro_inc_content: |
@@ -50,16 +46,10 @@ segments:
     type: code
     start: 0x40
     vram: 0x1dd3c0
-    # All mapped US Field functions start on 16-byte boundaries.
     subalign: 16
     subsegments:
-      # Provisional groups at detected function starts, roughly 64 KiB each, split at
-      # original TU ends marked by this-adjusting thunk clusters.
       - [0x40, cpp, text_001DD3C0]
-      # Original TU boundary: func_001DED30 (last of the 0x1DD400 TU) ends at 0x1DED7C.
       - [0x1A00, cpp, text_001DED80]
-      # Original TU boundaries after this-adjusting thunk clusters (0x1E1530-0x1E1588
-      # and 0x1E6C20-0x1E6C48); MWCC emits thunks at the end of a TU.
       - [0x4210, cpp, text_001E1590]
       - [0x98D0, cpp, text_001E6C50]
       - [0x10460, cpp, text_001ED7E0]

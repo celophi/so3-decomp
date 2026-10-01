@@ -1,6 +1,3 @@
-# Local architecture decision records
-/docs/adr/
-
 # Original game files and extraction/build outputs
 /disc/
 /build/

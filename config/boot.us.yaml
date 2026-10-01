@@ -13,7 +13,7 @@ options:
   ld_script_path: build/boot/boot.ld
   generated_asm_macros_directory: build/boot/include
   cache_path: build/boot/splat.cache
-  symbol_addrs_path: [config/symbols.boot.txt]
+  symbol_addrs_path: [config/symbols/boot_symbol_addrs.txt]
   undefined_funcs_auto_path: build/boot/undefined_funcs.ld
   undefined_syms_auto_path: build/boot/undefined_syms.ld
   create_c_files: true
@@ -40,7 +40,6 @@ segments:
     start: 0x680
     vram: 0x100000
     subsegments:
-      # Known function boundaries; resident_* chunks are provisional regions.
       - [0x680, asm, startup]
       - [0x860, c, boot/resident_001001E0]
       - [0x18D0, c, boot/func_00101250]
@@ -51,9 +50,7 @@ segments:
       - [0xA730, c, boot/func_0010A0B0]
       - [0xA760, c, boot/resident_0010A0E0]
       - [0x1F480, c, boot/func_0011EE00]
-      # Provisional groups at detected function starts, roughly 64 KiB each.
       - [0x1F4F0, c, boot/resident_0011EE70]
-      # Confirmed kernel syscall veneers are excluded from progress.
       - [0x21FC0, c, sdk/boot/syscalls_00121940]
       - [0x22860, c, boot/resident_001221E0]
       - [0x2A9C8, c, sdk/boot/syscalls_0012A348]
@@ -78,8 +75,6 @@ segments:
       - [0x2B870, c, boot/resident_0012B1F0]
       - [0x2F778, c, boot/resident_0012F0F8]
       - [0x3FA60, c, boot/resident_0013F3E0]
-  # The last observed EE routine ends at 0x143B2C; padding extends to 0x143B80.
-  # Preserve the following data/VU region until its internal layout is mapped.
   - [0x44200, bin, resident_data]
   - [0xB6A80, bin, elf_metadata]
   - [0xB73B0]

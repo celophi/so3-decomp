@@ -1,8 +1,5 @@
-# MWo3 file offsets map directly from the header load address.
-# Section boundaries are provisional; see docs/overlays.md.
 name: Star Ocean 3 US overlay 0002-01 (Lib.bin)
 sha1: 1d9b0d1ff095ff52e4f7299d5102f5cb61c0b9c8
-# SHA-256 is checked by tools/so3/build/overlays.py before splitting or verification.
 sha256: 748e51ea1ce9339bb76d3b1455b4b9548c0bf65593a84cfcc930587c12e8d0ef
 options:
   basename: 0002-01
@@ -17,7 +14,7 @@ options:
   ld_script_path: build/overlays/0002-01/overlay.ld
   generated_asm_macros_directory: build/overlays/0002-01/include
   cache_path: build/overlays/0002-01/splat.cache
-  symbol_addrs_path: [config/symbols.0002-01.txt]
+  symbol_addrs_path: [config/symbols/0002-01_symbol_addrs.txt]
   undefined_funcs_auto_path: build/overlays/0002-01/undefined_funcs.ld
   undefined_syms_auto_path: build/overlays/0002-01/undefined_syms.ld
   create_c_files: true
@@ -47,7 +44,6 @@ segments:
     start: 0x40
     vram: 0x3e68c0
     subsegments:
-      # Provisional groups at detected function starts, roughly 64 KiB each.
       - [0x40, c, text_003E68C0]
       - [0x12840, c, text_003F90C0]
       - [0x22D40, c, text_004095C0]
@@ -66,7 +62,6 @@ segments:
     type: code
     start: 0xE6B20
     vram: 0x4CD3A0
-    # Both existing units use 16-byte function alignment. Earlier Lib code is mixed.
     subalign: 16
     subsegments:
       - [0xE6B20, c, text_004CD3A0]
@@ -76,7 +71,6 @@ segments:
     type: code
     start: 0x120b00
     vram: 0x507380
-    # All mapped functions in this segment start on 16-byte boundaries (ADR 0010).
     subalign: 16
     subsegments:
       - [0x120b00, c, init]

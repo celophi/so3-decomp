@@ -17,7 +17,7 @@ from tools.so3.formats import (
     classify, decode_chain, elf_info, overlay_info, read_table, require,
 )
 
-CONFIG = ROOT / "config/versions.json"
+CONFIG = ROOT / "config/manifests/versions.json"
 
 
 def digest(data: bytes) -> str:
@@ -227,7 +227,7 @@ def main(argv=None) -> int:
         size = args.iso.stat().st_size
         candidates = [(name, profile) for name, profile in profiles.items()
                       if profile["iso_size"] == size and (args.version is None or args.version == name)]
-        require(len(candidates) == 1, "unrecognized disc size or wrong --version; supported inputs are in config/versions.json")
+        require(len(candidates) == 1, "unrecognized disc size or wrong --version; supported inputs are in config/manifests/versions.json")
         name, profile = candidates[0]
         destination = args.output if args.output is not None else ROOT / "disc" / name
         manifest = extract(args.iso, destination, profile)

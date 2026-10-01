@@ -1,6 +1,6 @@
 # Locked for CPython 3.12 on Linux x86_64 (the development container).
 # Includes Splat's MIPS extra and all transitive dependencies.
--r ../requirements.txt
+-r ../../requirements.txt
 -r build-requirements.txt
 
 colorama==0.4.6 \

@@ -32,13 +32,13 @@ def module_of(unit):
 
 def symbol_map(unit):
     """The Splat symbol map for the module that owns a source unit."""
-    path = Path('config') / f'symbols.{module_of(unit)}.txt'
+    path = Path('config/symbols') / f'{module_of(unit)}_symbol_addrs.txt'
     return symbol_addresses(path) if path.is_file() else {}
 
 
 def thunk_map(unit):
     """Original addresses of the kept copies of MWCC this-adjusting thunks."""
-    path = Path('config') / f'thunks.{module_of(unit)}.txt'
+    path = Path('config/thunks') / f'{module_of(unit)}_thunk_addrs.txt'
     return symbol_addresses(path) if path.is_file() else {}
 
 
@@ -68,7 +68,7 @@ def main():
     record = next(r for r in config['candidates'] if r['id'] == config['working_candidate'])
     compiler = COMPILERS / record['id']
     verify_compiler(record, compiler)
-    # Installed at a hash-pinned revision, with dockerfiles/mwccgap.patch applied.
+    # Installed at a hash-pinned revision, with dockerfiles/patches/mwccgap.patch applied.
     sys.path.insert(0, '/opt/mwccgap')
     from mwccgap.mwccgap import process_c_file
     os.environ['MWCIncludes'] = ''

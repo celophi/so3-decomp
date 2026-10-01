@@ -69,7 +69,7 @@ def stage(output, disc1, disc2):
         require(target not in inputs, f'duplicate CI input: {target}')
         inputs[target] = data
     require(len(inputs) > 1, 'no overlay configurations found')
-    profiles = json.loads((ROOT / 'config/versions.json').read_text())['versions']
+    profiles = json.loads((ROOT / 'config/manifests/versions.json').read_text())['versions']
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = Path(tempfile.mkdtemp(prefix='.ci-inputs-', dir=output.parent))
     try:
@@ -92,7 +92,7 @@ def stage(output, disc1, disc2):
 
 def restore(source, output):
     require(not output.exists(), f'{output} already exists; choose a new --output directory')
-    profiles = json.loads((ROOT / 'config/versions.json').read_text())['versions']
+    profiles = json.loads((ROOT / 'config/manifests/versions.json').read_text())['versions']
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = Path(tempfile.mkdtemp(prefix='.restored-isos-', dir=output.parent))
     try:

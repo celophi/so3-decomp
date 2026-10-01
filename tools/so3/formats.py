@@ -1,6 +1,5 @@
 """Bounded readers for SO3's resource table, SLZ/SLE blocks, and code headers.
 
-Format references and their limitations are recorded in docs/extraction.md.
 ISO9660 is handled separately by pycdlib.
 """
 

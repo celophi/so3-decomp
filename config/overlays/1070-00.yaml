@@ -1,8 +1,5 @@
-# MWo3 file offsets map directly from the header load address.
-# Section boundaries are provisional; see docs/overlays.md.
 name: Star Ocean 3 US overlay 1070-00 (Field.bin)
 sha1: 60359decb1cf209d591b4b89207e28239c03327e
-# SHA-256 is checked by tools/so3/build/overlays.py before splitting or verification.
 sha256: 70d4fa07abf8c7cead5f6cef829ac86dc0d894d12a6cb5214c79b900b1a6a671
 options:
   basename: 1070-00
@@ -45,10 +42,8 @@ segments:
     type: code
     start: 0x40
     vram: 0x1e2b40
-    # All mapped Field functions start on 16-byte boundaries.
     subalign: 16
     subsegments:
-      # Provisional groups at detected function starts, roughly 64 KiB each.
       - [0x40, cpp, text_001E2B40]
       - [0x100B0, cpp, text_001F2BB0]
       - [0x204B0, cpp, text_00202FB0]
@@ -74,7 +69,6 @@ segments:
     type: code
     start: 0x161d00
     vram: 0x344800
-    # All mapped functions in this segment start on 16-byte boundaries (ADR 0010).
     subalign: 16
     subsegments:
       - [0x161d00, cpp, init]
