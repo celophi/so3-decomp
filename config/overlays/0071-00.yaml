@@ -45,5 +45,6 @@ segments:
     subalign: 16
     subsegments:
       - [0x40, c, text]
+  - [0xa9e0, bin, text_padding]
   - [0xaa00, bin, data]
   - [0xab80]
