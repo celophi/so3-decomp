@@ -389,6 +389,90 @@ void func_002B7C80(FieldSequenceVectorC0* object, FieldVec4B* output);
 
 #endif
 
+/**
+ * @brief Read the signed sequence word.
+ * @param object Sequence receiver.
+ * @return Current value of the signed sequence word.
+ */
+s32 func_002BB080(FieldSequenceState40* object);
+
+/**
+ * @brief Read the signed sequence halfword.
+ * @param object Sequence receiver.
+ * @return Current value of the signed sequence halfword.
+ */
+s16 func_002BB090(FieldSequenceState40* object);
+
+/**
+ * @brief Read the signed sequence halfword.
+ * @param object Sequence receiver.
+ * @return Current value of the signed sequence halfword.
+ */
+s16 func_002BB0A0(FieldSequenceState40* object);
+
+/**
+ * @brief Read the sequence record pointer.
+ * @param object Sequence receiver.
+ * @return Current value of the sequence record pointer.
+ */
+void* func_002BB3D0(FieldSequenceState40* object);
+
+/**
+ * @brief Read the signed sequence word.
+ * @param object Sequence receiver.
+ * @return Current value of the signed sequence word.
+ */
+s32 func_002BB7C0(FieldSequenceState30* object);
+
+/**
+ * @brief Read the signed sequence halfword.
+ * @param object Sequence receiver.
+ * @return Current value of the signed sequence halfword.
+ */
+s16 func_002BB7D0(FieldSequenceState30* object);
+
+/**
+ * @brief Read the signed sequence halfword.
+ * @param object Sequence receiver.
+ * @return Current value of the signed sequence halfword.
+ */
+s16 func_002BB7E0(FieldSequenceState30* object);
+
+/**
+ * @brief Read the sequence record pointer.
+ * @param object Sequence receiver.
+ * @return Current value of the sequence record pointer.
+ */
+void* func_002BB960(FieldSequenceState30* object);
+
+/**
+ * @brief Read the signed sequence word.
+ * @param object Sequence receiver.
+ * @return Current value of the signed sequence word.
+ */
+s32 func_002BBC20(FieldSequenceState10* object);
+
+/**
+ * @brief Read the signed sequence halfword.
+ * @param object Sequence receiver.
+ * @return Current value of the signed sequence halfword.
+ */
+s16 func_002BBC30(FieldSequenceState10* object);
+
+/**
+ * @brief Read the signed sequence halfword.
+ * @param object Sequence receiver.
+ * @return Current value of the signed sequence halfword.
+ */
+s16 func_002BBC40(FieldSequenceState10* object);
+
+/**
+ * @brief Read the sequence record pointer.
+ * @param object Sequence receiver.
+ * @return Current value of the sequence record pointer.
+ */
+void* func_002BC010(FieldSequenceState10* object);
+
 #ifdef __cplusplus
 }
 #endif

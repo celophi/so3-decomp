@@ -53,13 +53,28 @@ typedef struct FieldScalarPair293610
     s32 unk04;
 } FieldScalarPair293610;
 
+typedef struct FieldObject1583E0 FieldObject1583E0;
+typedef struct FieldObject158650 FieldObject158650;
+
+typedef struct FieldObject175360 FieldObject175360;
+typedef struct FieldObject175370 FieldObject175370;
+
+/** Partial receiver containing two callback object links. */
+typedef struct FieldObject1577B0Links
+{
+    u8 unk00[0xB0];
+    FieldObject175360* unkB0;
+    FieldObject175370* unkB4;
+} FieldObject1577B0Links;
+
 /** Partial receiver containing parallel byte and four-float buffers. */
 typedef struct FieldVectorBuffer293610
 {
     u8 unk00[0xB0];
     u8* unkB0;
     FieldVector4* unkB4;
-    u8 unkB8[8];
+    FieldObject175360* unkB8;
+    FieldObject175370* unkBC;
     s32 unkC0;
     s32 unkC4;
 } FieldVectorBuffer293610;
@@ -208,6 +223,83 @@ bool func_00295A90(FieldObject158240* object);
  * @return Whether the linked state is not one.
  */
 bool func_00295C10(FieldObject1584B0* object);
+
+/**
+ * @brief Store the linked object at B8.
+ * @param object Receiver to update.
+ * @param value Linked object to store.
+ */
+void func_00295DB0(FieldVectorBuffer293610* object, FieldObject175360* value);
+
+/**
+ * @brief Read the linked object at B8.
+ * @param object Receiver to inspect.
+ * @return Stored linked object.
+ */
+FieldObject175360* func_00295DC0(FieldVectorBuffer293610* object);
+
+/**
+ * @brief Store the linked object at BC.
+ * @param object Receiver to update.
+ * @param value Linked object to store.
+ */
+void func_00295DD0(FieldVectorBuffer293610* object, FieldObject175370* value);
+
+/**
+ * @brief Read the linked object at BC.
+ * @param object Receiver to inspect.
+ * @return Stored linked object.
+ */
+FieldObject175370* func_00295DE0(FieldVectorBuffer293610* object);
+
+/**
+ * @brief Store the linked object at B0.
+ * @param object Receiver to update.
+ * @param value Linked object to store.
+ */
+void func_00295DF0(FieldObject1577B0Links* object, FieldObject175360* value);
+
+/**
+ * @brief Read the linked object at B0.
+ * @param object Receiver to inspect.
+ * @return Stored linked object.
+ */
+FieldObject175360* func_00295E00(FieldObject1577B0Links* object);
+
+/**
+ * @brief Store the linked object at B4.
+ * @param object Receiver to update.
+ * @param value Linked object to store.
+ */
+void func_00295E10(FieldObject1577B0Links* object, FieldObject175370* value);
+
+/**
+ * @brief Read the linked object at B4.
+ * @param object Receiver to inspect.
+ * @return Stored linked object.
+ */
+FieldObject175370* func_00295E20(FieldObject1577B0Links* object);
+
+/**
+ * @brief Report the default callback state.
+ * @param object Callback receiver.
+ * @return Always true.
+ */
+bool func_00295DA0(FieldVectorBuffer293610* object);
+
+/**
+ * @brief Report the default callback state.
+ * @param object Callback receiver.
+ * @return Always false.
+ */
+bool func_00295E30(FieldObject1583E0* object);
+
+/**
+ * @brief Report the default callback state.
+ * @param object Callback receiver.
+ * @return Always false.
+ */
+bool func_00295E40(FieldObject158650* object);
 
 /**
  * @brief Append a byte and an optional four-float value while capacity remains.

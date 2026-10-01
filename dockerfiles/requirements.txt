@@ -42,5 +42,9 @@ spimdisasm==1.42.4 \
 splat64[mips]==0.50.0 \
     --hash=sha256:fc9b70d67d63b57e8e6318340a4ccf6bd95617ffb2e72803cd86a676aeeca6a9
 
+# Settings parser for tools/decomp-permuter (it bundles its own pycparser).
+toml==0.10.2 \
+    --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b
+
 tqdm==4.67.1 \
     --hash=sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2

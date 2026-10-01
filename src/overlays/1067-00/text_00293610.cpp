@@ -200,27 +200,60 @@ extern "C" void func_00295D30(FieldVectorBuffer293610* object, u8 value, const F
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295D90);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295DA0);
+bool func_00295DA0(FieldVectorBuffer293610* object)
+{
+    return true;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295DB0);
+void func_00295DB0(FieldVectorBuffer293610* object, FieldObject175360* value)
+{
+    object->unkB8 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295DC0);
+FieldObject175360* func_00295DC0(FieldVectorBuffer293610* object)
+{
+    return object->unkB8;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295DD0);
+void func_00295DD0(FieldVectorBuffer293610* object, FieldObject175370* value)
+{
+    object->unkBC = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295DE0);
+FieldObject175370* func_00295DE0(FieldVectorBuffer293610* object)
+{
+    return object->unkBC;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295DF0);
+void func_00295DF0(FieldObject1577B0Links* object, FieldObject175360* value)
+{
+    object->unkB0 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295E00);
+FieldObject175360* func_00295E00(FieldObject1577B0Links* object)
+{
+    return object->unkB0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295E10);
+void func_00295E10(FieldObject1577B0Links* object, FieldObject175370* value)
+{
+    object->unkB4 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295E20);
+FieldObject175370* func_00295E20(FieldObject1577B0Links* object)
+{
+    return object->unkB4;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295E30);
+bool func_00295E30(FieldObject1583E0* object)
+{
+    return false;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295E40);
+bool func_00295E40(FieldObject158650* object)
+{
+    return false;
+}
 
 // Vector dispatcher; runtime layouts and vector-unit operations remain unresolved.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295E50);

@@ -130,6 +130,33 @@ typedef struct FieldObject156C80
 } FieldObject156C80;
 
 
+/** Base callback receiver identified by table D_156D50. */
+typedef struct FieldObject156D50 FieldObject156D50;
+
+/** Partial array owner associated with table D_156E90. */
+typedef struct FieldObject156E90
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    u8 unk14[8];
+    FieldBitset154E80* unk1C;
+} FieldObject156E90;
+
+
+/** Callback receiver identified by table D_157020. */
+typedef struct FieldObject157020 FieldObject157020;
+
+/** Partial receiver containing the state bit at offset 0x30. */
+typedef struct FieldObject157040
+{
+    u8 unk00[0x30];
+    u8 unk30_0_5 : 6;
+    u8 unk30_6 : 1;
+    u8 unk30_7 : 1;
+} FieldObject157040;
+
+
 typedef struct FieldScriptObject151D40 FieldScriptObject151D40;
 
 #ifdef __cplusplus
@@ -818,6 +845,110 @@ void func_00288650(FieldObject156C80* object, FieldFloatSourceAF0* actor);
  * @return Always 2500.0f.
  */
 float func_00288660(FieldObject156C80* object);
+
+/**
+ * @brief Perform the default callback without changing the receiver.
+ * @param object Callback receiver.
+ */
+void func_00289450(FieldObject156D50* object);
+
+/**
+ * @brief Return the default floating-point limit.
+ * @param object Callback receiver.
+ * @return Always 100.0f.
+ */
+float func_00289460(FieldObject156D50* object);
+
+/**
+ * @brief Handle the resource callback without changing the receiver.
+ * @param object Callback receiver.
+ * @param resource Resource descriptor supplied by the dispatcher.
+ * @param records Resource records supplied by the dispatcher.
+ */
+void func_00289480(FieldObject156D50* object, FieldResourceHeader273720* resource, FieldResourceRecord273720* records);
+
+/**
+ * @brief Get the first default element count.
+ * @param object Callback receiver.
+ * @return Always zero.
+ */
+s32 func_002894D0(FieldObject156D50* object);
+
+/**
+ * @brief Get the second default element count.
+ * @param object Callback receiver.
+ * @return Always zero.
+ */
+s32 func_00289510(FieldObject156D50* object);
+
+/**
+ * @brief Handle the floating-point callback without changing the receiver.
+ * @param object Callback receiver.
+ * @param value Floating-point value supplied by the dispatcher.
+ */
+void func_002895A0(FieldObject156D50* object, float value);
+
+/**
+ * @brief Get the default byte mode.
+ * @param object Callback receiver.
+ * @return Always zero.
+ */
+u8 func_002895E0(FieldObject156D50* object);
+
+/**
+ * @brief Get the associated bitset object.
+ * @param object Callback receiver.
+ * @return Stored bitset object pointer.
+ */
+FieldBitset154E80* func_002896E0(FieldObject156E90* object);
+
+/**
+ * @brief Get the first configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0xC.
+ */
+s32 func_002896F0(FieldObject156E90* object);
+
+/**
+ * @brief Get the second configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0x10.
+ */
+s32 func_00289700(FieldObject156E90* object);
+
+/**
+ * @brief Report the supported operation flags.
+ * @param object Callback receiver.
+ * @return Always 1.
+ */
+u32 func_00289710(FieldObject156E90* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 1.0f.
+ */
+float func_00289EB0(FieldObject156E90* object);
+
+/**
+ * @brief Report the default signed category.
+ * @param object Callback receiver.
+ * @return Always 4.
+ */
+s32 func_0028E130(FieldObject157020* object);
+
+/**
+ * @brief Report the default signed category.
+ * @param object Callback receiver.
+ * @return Always 2.
+ */
+s32 func_0028E1E0(FieldObject157040* object);
+
+/**
+ * @brief Set bit 6 of the receiver state byte.
+ * @param object Callback receiver.
+ */
+void func_0028E1F0(FieldObject157040* object);
 
 #ifdef __cplusplus
 }
