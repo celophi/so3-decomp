@@ -1,6 +1,19 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002AE9E0.h"
 
+/** Partial receiver with a byte at offset 0x60. */
+struct FieldByte60AE9E0
+{
+    u8 pad[0x60];
+    u8 value;
+};
+
+/** Partial receiver with a float at offset 0x4C. */
+struct FieldFloat4CAE9E0
+{
+    u8 pad[0x4C];
+    float value;
+};
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002AE9E0);
 
@@ -74,9 +87,23 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002AFB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002AFCA0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002AFD90);
+void func_002AFD90(FieldFlagOwner2AFD90* object)
+{
+    FieldFlagTarget2AFD90* target = object->target;
+    if (target != 0)
+    {
+        target->flags |= 1;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002AFDB0);
+void func_002AFDB0(FieldFlagOwner2AFD90* object)
+{
+    FieldFlagTarget2AFD90* target = object->target;
+    if (target != 0)
+    {
+        target->flags &= 0xFFFE;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002AFDD0);
 
@@ -88,7 +115,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B09
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B0A10);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B0A80);
+extern "C" void func_002B0A80(FieldByte60AE9E0* object)
+{
+    object->value = 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B0A90);
 
@@ -99,7 +129,15 @@ s32 func_002B0B20(FieldClass150070* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B0B30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B0BC0);
+bool func_002B0BC0(FieldFlagOwner2B0BC0* object)
+{
+    FieldFlagTarget2B0BC0* target = object->target;
+    if (target == 0)
+    {
+        return false;
+    }
+    return target->first || target->second;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B0C00);
 
@@ -239,9 +277,19 @@ void func_002B7440(FieldSequenceVectorA0* object, FieldVec4B* output)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7460);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7480);
+void func_002B7480(FieldSampleOwner2B7480* object, float* output)
+{
+    float* values = object->values;
+    if (values != 0)
+    {
+        *output = values[2 * object->index - 1] - values[1];
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B74B0);
+extern "C" void func_002B74B0(const FieldFloat4CAE9E0* object, float* output)
+{
+    *output = object->value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B74C0);
 
@@ -336,7 +384,13 @@ s16 func_002B8080(FieldSequenceState30* object)
     return object->state.unk08;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8090);
+void func_002B8090(FieldResetWords00* object)
+{
+    object->words[0] = 0;
+    object->words[1] = 0;
+    object->words[2] = 0;
+    object->words[3] = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B80B0);
 
@@ -397,7 +451,13 @@ s16 func_002B8580(FieldSequenceState20* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8590);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B85E0);
+void func_002B85E0(FieldResetWords00* object)
+{
+    object->words[0] = 0;
+    object->words[1] = 0;
+    object->words[2] = 0;
+    object->words[3] = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8600);
 
@@ -460,7 +520,10 @@ s16 func_002B8A70(FieldSequenceState10* object)
     return object->state.unk0a;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8A80);
+extern "C" float func_002B8A80(FieldSequenceState10* object)
+{
+    return 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8A90);
 
@@ -542,7 +605,13 @@ void func_002B8E50(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8E60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8EB0);
+void func_002B8EB0(FieldResetWords00* object)
+{
+    object->words[0] = 0;
+    object->words[1] = 0;
+    object->words[2] = 0;
+    object->words[3] = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8ED0);
 
@@ -829,7 +898,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB1
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB1B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB200);
+void func_002BB200(FieldResetWords00* object)
+{
+    object->words[0] = 0;
+    object->words[1] = 0;
+    object->words[2] = 0;
+    object->words[3] = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB220);
 
@@ -896,7 +971,13 @@ void func_002BB8B0(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB8C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB8F0);
+void func_002BB8F0(FieldResetWords00* object)
+{
+    object->words[0] = 0;
+    object->words[1] = 0;
+    object->words[2] = 0;
+    object->words[3] = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB910);
 
@@ -982,7 +1063,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBD
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBD50);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBDB0);
+void func_002BBDB0(FieldResetWords00* object)
+{
+    object->words[0] = 0;
+    object->words[1] = 0;
+    object->words[2] = 0;
+    object->words[3] = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBDD0);
 

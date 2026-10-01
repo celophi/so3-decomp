@@ -258,9 +258,144 @@ typedef struct FieldWordFlags
     u32 unk78;
 } FieldWordFlags;
 
+/** Partial receiver with a byte flag at offset 0x2F0. */
+typedef struct FieldFlag2F0
+{
+    u8 unk00[0x2F0];
+    u8 unk2f0;
+} FieldFlag2F0;
+
+/** Partial target with three word fields used by linked value setters. */
+typedef struct FieldTargetValues
+{
+    u8 unk00[0x1FC];
+    u32 unk1fc;
+    u8 unk200[0x37C];
+    u32 unk57c;
+    u32 unk580;
+} FieldTargetValues;
+
+/** Partial link containing a target pointer at offset 0x7C. */
+typedef struct FieldTargetLink
+{
+    u8 unk00[0x7C];
+    FieldTargetValues* unk7c;
+} FieldTargetLink;
+
+/** Partial receiver containing a target link and a word value. */
+typedef struct FieldValueSource
+{
+    u8 unk00[0x10];
+    FieldTargetLink* unk10;
+    u8 unk14[8];
+    u32 unk1c;
+} FieldValueSource;
+
+/** Partial receiver with a word and a pointer to a source word. */
+typedef struct FieldWordSource540
+{
+    u8 unk00[0x18];
+    u32 unk18;
+    u8 unk1c[0x524];
+    const u32* unk540;
+} FieldWordSource540;
+
+/** Partial target with a floating-point field at offset 0x78. */
+typedef struct FieldFloatTarget78
+{
+    u8 unk00[0x78];
+    float unk78;
+} FieldFloatTarget78;
+
+/** Partial receiver with a target pointer and floating-point value. */
+typedef struct FieldFloatSource10
+{
+    u8 unk00[0x10];
+    FieldFloatTarget78* unk10;
+    u8 unk14[8];
+    float unk1c;
+} FieldFloatSource10;
+
+/** Partial word array beginning at offset 0x24. */
+typedef struct FieldIndexedWords24
+{
+    u8 unk00[0x24];
+    u32 words[1];
+} FieldIndexedWords24;
+
+/** Partial receiver with a word-array pointer at offset 0x10. */
+typedef struct FieldIndexedSource10
+{
+    u8 unk00[0x10];
+    FieldIndexedWords24* unk10;
+} FieldIndexedSource10;
+
+/** Reference to a receiver with an indexed word array. */
+typedef struct FieldIndexedRef
+{
+    FieldIndexedSource10* source;
+} FieldIndexedRef;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Copy the pointed-to word into the receiver and return zero.
+ * @param object Receiver to update.
+ * @return Always zero.
+ */
+s32 func_0028F860(FieldWordSource540* object);
+
+/**
+ * @brief Copy a floating-point value into the linked target.
+ * @param object Receiver containing the target and value.
+ * @return Always 1.
+ */
+s32 func_00292690(const FieldFloatSource10* object);
+
+/**
+ * @brief Read an indexed word through the receiver's source pointer.
+ * @param object Reference to the source receiver.
+ * @param index Word index.
+ * @return Selected word.
+ */
+u32 func_00289CC0(const FieldIndexedRef* object, s32 index);
+
+
+/**
+ * @brief Copy one 128-bit value into another location.
+ * @param destination Destination value.
+ * @param source Source value.
+ */
+void func_002880B0(unsigned __int128* destination, const unsigned __int128* source);
+
+/**
+ * @brief Set the receiver byte flag at offset 0x2F0.
+ * @param object Receiver to update.
+ */
+void func_0028E440(FieldFlag2F0* object);
+
+/**
+ * @brief Copy the receiver's word into the linked target at offset 0x580.
+ * @param object Receiver containing the link and word.
+ * @return Always 1.
+ */
+s32 func_00290450(const FieldValueSource* object);
+
+/**
+ * @brief Copy the receiver's word into the linked target at offset 0x57C.
+ * @param object Receiver containing the link and word.
+ * @return Always 1.
+ */
+s32 func_00290470(const FieldValueSource* object);
+
+/**
+ * @brief Copy the receiver's word into the linked target at offset 0x1FC.
+ * @param object Receiver containing the link and word.
+ * @return Always 1.
+ */
+s32 func_00291890(const FieldValueSource* object);
 
 /**
  * @brief Test whether a list traversal has reached its sentinel.

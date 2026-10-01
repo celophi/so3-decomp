@@ -14,6 +14,12 @@ extern "C" {
  */
 s32 func_002050C0(void* object);
 
+/**
+ * @brief Clear the byte at offset 0x60.
+ * @param object Object containing the byte.
+ */
+void func_001FF9D0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

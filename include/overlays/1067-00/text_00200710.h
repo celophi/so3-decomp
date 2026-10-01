@@ -48,6 +48,25 @@ s32 func_00201510(void* object);
 s32 func_00201520(void* object);
 
 /**
+ * @brief Return the current field frame delta.
+ * @param object Receiver of the call; unused.
+ * @return Current frame delta.
+ */
+float func_00201530(void* object);
+
+/**
+ * @brief Add an object to the resident object queue.
+ * @param object Object to queue.
+ */
+void func_00201540(void* object);
+
+/**
+ * @brief Detach an object and add it to the resident object queue.
+ * @param object Object to detach and queue.
+ */
+void func_00201560(void* object);
+
+/**
  * @brief Return the fixed value twelve.
  * @param object Receiver of the call.
  * @return Twelve.

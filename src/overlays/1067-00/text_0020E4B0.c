@@ -1,10 +1,21 @@
 #include "include_asm.h"
+#include "boot/resident_data.h"
 #include "overlays/1067-00/text_0020E4B0.h"
+
+/** Partial field context with a word at offset 0x50. */
+typedef struct FieldContextE4C0
+{
+    u8 unk00[0x50];
+    u32 value;
+} FieldContextE4C0;
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020E4B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020E4C0);
+s32 func_0020E4C0(void* object)
+{
+    return ((FieldContextE4C0*)D_001B6430->context)->value != 0;
+}
 
 s32 func_0020E4E0(void* object)
 {

@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+typedef struct FieldOuterC000 FieldOuterC000;
+
 /** Partial field object with two object pointers and a signed state byte. */
 typedef struct FieldObject153E20
 {
@@ -418,6 +420,12 @@ void func_00264990(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_0026E390(void* object);
+
+/**
+ * @brief Set a present nested object's float to 128.0f and mark it active.
+ * @param object Receiver containing the optional nested object.
+ */
+void func_0026C000(FieldOuterC000* object);
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,8 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_00200710.h"
+#include "boot/resident_data.h"
+#include "boot/resident_0010A0E0.h"
+#include "overlays/0002-01/text_004CD3A0.h"
 
 typedef unsigned __int128 FieldLocalQword;
 extern "C" s32 func_0022A160(void*);
@@ -15,6 +18,7 @@ union FieldLocalVector4
 };
 extern "C" void func_00228DD0(FieldTransform*);
 extern "C" bool func_00227280(FieldState3BA*);
+extern "C" float D_001B6688;
 
 struct FieldSlot { u8 pad[0x20]; FieldLocalQword unk20; };
 struct FieldState704 { u8 pad[0x704]; u32 unk704; };
@@ -114,11 +118,21 @@ extern "C" s32 func_00201520(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201530);
+extern "C" float func_00201530(void* object)
+{
+    return D_001B6688;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201540);
+extern "C" void func_00201540(void* object)
+{
+    func_0011ED90(D_001B65F4, object);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201560);
+extern "C" void func_00201560(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201590);
 

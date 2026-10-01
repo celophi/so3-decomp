@@ -38,6 +38,14 @@ void func_00227130(void* object);
 void func_002274F0(void* object, const FieldVector2624* vector, float scale);
 
 /**
+ * @brief Build a four-float value, pass it through the library helper, and copy it to output.
+ * @param unused0 Unused first argument.
+ * @param unused1 Unused second argument.
+ * @param output Destination for the four floats.
+ */
+void func_002276F0(void* unused0, void* unused1, float* output);
+
+/**
  * @brief Set two state bits and a float when the receiver allows the update.
  * @param object Receiver with state bytes at offsets 0x6D2 and 0x6D3.
  * @param flag Value stored in bit 7 at offset 0x6D2.
@@ -50,16 +58,37 @@ typedef struct FieldObject29250 FieldObject29250;
 typedef struct FieldObject2B440 FieldObject2B440;
 
 /**
+ * @brief Initialize the receiver and poll it until the helper returns nonzero.
+ * @param object Receiver to initialize and poll.
+ */
+void func_002227F0(void* object);
+
+/**
  * @brief Set state from the current resident table record.
  * @param object Receiver whose state byte is updated.
  */
 void func_002228E0(FieldObject228E0* object);
+
+typedef struct FieldObject22CC0 FieldObject22CC0;
+
+/**
+ * @brief Process the receiver when its field flag is clear and context data is present.
+ * @param object Receiver to process.
+ * @return Helper result, or zero when the receiver is ineligible.
+ */
+s32 func_00222CC0(FieldObject22CC0* object);
 
 /**
  * @brief Copy the receiver byte at offset 0xF0 to offset 0x60.
  * @param object Receiver to update.
  */
 void func_00229250(FieldObject29250* object);
+
+/**
+ * @brief Clear the resident owner's link when it points to this object.
+ * @param object Object to detach from the owner.
+ */
+void func_00229310(void* object);
 
 /**
  * @brief Copy the receiver byte at offset 0x94 to offset 0x60.

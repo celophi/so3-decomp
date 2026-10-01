@@ -33,11 +33,19 @@ typedef struct FieldCheckedWordsState1870
 /** Partial receiver whose constructor installs the table at 0x0015B9A0. */
 typedef struct FieldObject15B9A0
 {
-    u8 unk00[0x5E];
+    u8 unk00[0x5C];
+    u8 unk5C[2];
     s16 unk5E[2];
-    u8 unk62[6];
+    u8 unk62[2];
+    s16 unk64;
+    u8 unk66[2];
     u8 unk68;
+    u8 unk69[0x17];
+    u32 unk80;
+    u32 unk84;
 } FieldObject15B9A0;
+
+typedef struct FieldOuter14 FieldOuter14;
 
 typedef struct FieldTransferDescriptor2EDFD0 FieldTransferDescriptor2EDFD0;
 
@@ -55,17 +63,38 @@ typedef struct FieldObject2EDFD0
 {
     u8 unk00[0xFF8];
     FieldTransfer2EDFD0 unkFF8;
-    u8 unk1008[0x50];
+    u8 unk1008[0x48];
+    u16 unk1050;
+    u8 unk1052[6];
     s16 unk1058;
     s16 unk105A;
     u8 unk105C[2];
     s16 unk105E;
     u8 unk1060;
+    u8 unk1061[0x1BD];
+    u8 unk121E;
+    u8 unk121F[0x35];
+    void* unk1254;
 } FieldObject2EDFD0;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Return the receiver's unsigned halfword at offset 0x1050.
+ * @param object Receiver containing the halfword.
+ * @return Stored halfword.
+ */
+u16 func_002EE9B0(const FieldObject2EDFD0* object);
+
+/**
+ * @brief Store a nonnull pointer in the receiver.
+ * @param object Receiver containing the pointer field at offset 0x1254.
+ * @param value Pointer to store.
+ * @return One if stored, or zero when value is null.
+ */
+s32 func_002EE9C0(FieldObject2EDFD0* object, void* value);
 
 /**
  * @brief Decode the value stored in unk50 after validating its check word.
@@ -103,6 +132,20 @@ s32 func_002E8440(const FieldCheckedWordsState1870* object);
 s32 func_002E8600(const FieldCheckedWordsState1870* object);
 
 /**
+ * @brief Select a halfword slot and clear the receiver's related state.
+ * @param object Receiver containing the indexed state.
+ * @param index Slot to select.
+ */
+void func_002ECFA0(FieldObject15B9A0* object, s16 index);
+
+/**
+ * @brief Report which of two attached status words equal two.
+ * @param object Receiver with the nested status object.
+ * @return Bit 0 for the first word and bit 1 for the second, or zero when inactive.
+ */
+u16 func_002ECFE0(const FieldOuter14* object);
+
+/**
  * @brief Return the receiver's fixed type code.
  * @param object Receiver; unused.
  * @return Type code 4.
@@ -123,6 +166,21 @@ u8 func_002ECF80(FieldObject15B9A0* object);
  * @return Selected signed halfword.
  */
 s16 func_002ECF90(FieldObject15B9A0* object, s32 index);
+
+/**
+ * @brief Read the receiver's byte at offset 0x121E.
+ * @param object Receiver containing the byte.
+ * @return Stored byte.
+ */
+u8 func_002EED90(const FieldObject2EDFD0* object);
+
+/**
+ * @brief Get an indexed 24-byte record in resource section four.
+ * @param object Receiver; unused.
+ * @param index One-based record index.
+ * @return Address of the indexed record.
+ */
+void* func_002EEE30(void* object, s32 index);
 
 /**
  * @brief Store the halfword and byte state values.

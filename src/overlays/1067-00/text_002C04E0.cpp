@@ -1,6 +1,15 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002C04E0.h"
 
+/** Partial receiver with a float at offset 0x48. */
+struct FieldFloat48
+{
+    u8 pad[0x48];
+    float value;
+};
+
+extern "C" float D_001B6688;
+
 struct FieldTable14
 {
     u8 pad[0x14];
@@ -872,7 +881,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C94
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C9500);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C95B0);
+extern "C" void func_002C95B0(FieldFloat48* object)
+{
+    if (object->value > 0.0f)
+    {
+        object->value -= D_001B6688;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C95E0);
 

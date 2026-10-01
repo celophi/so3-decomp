@@ -2,19 +2,32 @@
 #include "boot/resident_data.h"
 #include "sdk/boot/syscalls_00121940.h"
 #include "overlays/1067-00/text_001ED7E0.h"
+#include "overlays/1067-00/text_001DED80_callbacks.h"
 #include "overlays/1067-00/text_002CEAF0.h"
 #include "overlays/0002-01/text_004CD3A0.h"
 #include "overlays/1067-00/text_0022DC70.h"
+#include "overlays/1067-00/text_0021FB80.h"
+#include "overlays/1067-00/text_001FF260.h"
 #include "overlays/1067-00/text_002DBC50.h"
 
 extern "C" void func_4D9F40(FieldWordAt210*, const FieldWordAt210*);
 extern "C" u32 D_001B65B4;
+extern "C" u8 D_50CD30[];
 
 
 struct FieldScriptCursorF32 { u8 pad[0x548]; float* current; };
 struct FieldScriptCursorS8 { u8 pad[0x548]; s8* current; };
 struct FieldScriptCursorS32 { u8 pad[0x548]; s32* current; };
 struct FieldScriptCursorU32 { u8 pad[0x548]; u32* current; };
+struct FieldContext18F2420 { u8 unk00[0x18]; void* target; };
+struct FieldContext14F0E40 { u8 unk00[0x14]; u8* object; };
+struct FieldObjectBit240
+{
+    u8 pad[0x240];
+    u8 unk240_0_1 : 2;
+    u8 unk240_2 : 1;
+    u8 unk240_3_7 : 5;
+};
 struct FieldFloatA4 { u8 pad[0xA4]; float value; };
 struct FieldPair57C { u8 pad[0x57C]; FieldFloatA4* first; FieldFloatA4* second; };
 struct FieldFloat1F8 { u8 pad[0x1F8]; float value; };
@@ -51,6 +64,8 @@ struct FieldRecords {
 extern "C" void* func_0020F520(void*);
 extern "C" void func_00232450(void*);
 extern "C" void func_00232520(void*, s32);
+extern "C" void func_002099B0(u8* object);
+extern "C" void func_002097F0(u8* object, float first, float second);
 
 struct FieldLateNodePrefix
 {
@@ -321,8 +336,10 @@ bool func_001EE180(void* object, float value)
     return value < 0.0f;
 }
 
-// Returns a library global; its symbol mapping is unresolved.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE1A0);
+void* func_001EE1A0()
+{
+    return D_50CD30;
+}
 
 void func_001EE1B0(void* object)
 {
@@ -370,8 +387,11 @@ s32 func_001EE260(void* object)
     return 3;
 }
 
-// Calls a library constructor using an unresolved global.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE270);
+void func_001EE270(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE2A0);
 
@@ -425,7 +445,14 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F03
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F04D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F0620);
+extern "C" s32 func_001F0620(FieldScriptCursorF32* cursor)
+{
+    float first = *cursor->current++;
+    float second = *cursor->current;
+    FieldContext14F0E40* context = (FieldContext14F0E40*)D_001B6430->context;
+    func_002097F0(context->object + 0x30, first, second);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F0670);
 
@@ -435,7 +462,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F09
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F0A80);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F0B40);
+s32 func_001F0B40(FieldScriptCursorU32* cursor)
+{
+    FieldContext14F0E40* context = (FieldContext14F0E40*)D_001B6430->context;
+    FieldObjectBit240* object = (FieldObjectBit240*)context->object;
+    object->unk240_2 = (*cursor->current & 1) != 0;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F0B80);
 
@@ -443,7 +476,14 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F0C
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F0D20);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F0E40);
+s32 func_001F0E40(void* unused)
+{
+    FieldContext14F0E40* context = (FieldContext14F0E40*)D_001B6430->context;
+    u8* object = context->object;
+    func_001FF400(object + 0x250);
+    func_002099B0(object + 0x30);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F0E80);
 
@@ -493,7 +533,11 @@ void func_001F1F70(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F1FA0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F2040);
+void func_001F2040(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 extern "C" s32 func_001F2070(FieldScriptCursorF32* cursor)
 {
@@ -519,7 +563,15 @@ extern "C" s32 func_001F23E0(FieldScriptCursorF32* cursor)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F2420);
+s32 func_001F2420(FieldScriptCursorU32* cursor)
+{
+    FieldContext18F2420* context = (FieldContext18F2420*)D_001B6430->context;
+    if (context->target != 0)
+    {
+        func_00220150(context->target, (*cursor->current & 1) != 0);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F2470);
 
@@ -776,7 +828,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F7A
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F7A90);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F7B40);
+s32 func_001F7B40(void* cursor)
+{
+    void* object = func_0020F520(cursor);
+    func_001DEDF0(D_001B6430->context->unk04, object);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F7B80);
 
@@ -839,7 +896,10 @@ extern "C" void* func_001F8C80(void* object)
     return (char*)object + 0x1F0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F8C90);
+void func_001F8C90(void* object)
+{
+    func_0011ED90(D_001B65F4, object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F8CB0);
 

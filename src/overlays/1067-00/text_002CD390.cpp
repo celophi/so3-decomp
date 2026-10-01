@@ -1,6 +1,38 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002CD390.h"
 
+/** Partial initializer receiver with byte, halfword, and float fields. */
+/** Partial receiver with a float at 0x14 and a state bit at 0x604. */
+struct FieldStateCD390
+{
+    u8 pad00[0x14];
+    float value;
+    u8 pad18[0x5EC];
+    u8 enabled : 1;
+    u8 other : 7;
+};
+
+struct FieldStateCE420
+{
+    u8 pad00[8];
+    float unk08;
+    float unk0c;
+    u8 pad10[0xA];
+    u16 unk1a;
+    u16 unk1c;
+    u8 pad1e[4];
+    u16 unk22;
+    u8 pad24[2];
+    u8 unk26;
+    u8 unk27;
+    u8 unk28;
+    u8 pad29[3];
+    u32 unk2c;
+    u8 pad30[4];
+    float unk34;
+    float unk38;
+};
+
 struct FieldTable14
 {
     u8 pad[0x14];
@@ -255,7 +287,15 @@ struct FieldSelector
 };
 extern "C" s8 D_30EAFC[];
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CD390);
+extern "C" s32 func_002CD390(FieldStateCD390* object)
+{
+    if (object->enabled)
+    {
+        object->value = 1.0f;
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CD3C0);
 
@@ -289,7 +329,18 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE0
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE220);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE420);
+extern "C" void func_002CE420(FieldStateCE420* object, u8 first, u8 second, u16 third, u16 fourth)
+{
+    object->unk26 = first;
+    object->unk27 = second;
+    object->unk1a = third;
+    object->unk1c = fourth;
+    object->unk08 = object->unk34;
+    object->unk0c = object->unk38;
+    object->unk22 = 0;
+    object->unk28 = 0;
+    object->unk2c = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE450);
 

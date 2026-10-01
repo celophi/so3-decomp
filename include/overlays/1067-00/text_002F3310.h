@@ -6,9 +6,17 @@
 
 #include "overlays/1067-00/text_001DD3C0.h"
 
+typedef struct FieldByte60F3310 FieldByte60F3310;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Store two in the receiver's byte at offset 0x60.
+ * @param object Receiver containing the byte.
+ */
+void func_002F9760(FieldByte60F3310* object);
 
 
 #ifdef __cplusplus

@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_00293610.h"
+#include "overlays/1067-00/text_0029E9E0.h"
 
 extern "C" float D_001B6688;
 extern "C" u8 D_001B6448;
@@ -412,7 +413,16 @@ bool func_0029B6D0(FieldObject157AF0* object)
     return true;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029B6E0);
+void* func_0029B6E0(FieldObject158D00* object, s32 index)
+{
+    FieldArrayEntry158D00* item = &object->unk14[index];
+    void* result = item;
+    if (item != 0)
+    {
+        result = &item->unk20[0xD0];
+    }
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029B710);
 

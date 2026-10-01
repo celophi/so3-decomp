@@ -1,4 +1,34 @@
 #include "include_asm.h"
+#include "overlays/3454-00/text_001ED3E0.h"
+
+typedef struct StateEntryF5E10
+{
+    u8 unk00[4];
+    u8 unk04;
+    u8 unk05[7];
+} StateEntryF5E10;
+
+struct StateF5E10
+{
+    u8 unk0000[0x3000];
+    StateEntryF5E10 entries[4];
+};
+
+struct StateF5E60
+{
+    u8 unk0000[0x2F90];
+    s32 unk2F90;
+    s32 unk2F94;
+    u8 unk2F98[0xC];
+    s32 unk2FA4;
+    u8 unk2FA8[0xC];
+    s32 unk2FB4;
+    u8 unk2FB8[0xC];
+    s32 unk2FC4;
+    s32 unk2FC8;
+    u8 unk2FCC[8];
+    s32 unk2FD4;
+};
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001ED3E0);
 
@@ -10,7 +40,11 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F24
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F24C0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F2520);
+void func_001F2520(CachedDescriptorF2520* cache, DescriptorF2520* descriptor)
+{
+    cache->descriptor = descriptor;
+    cache->unk04 = descriptor->unk06;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F2530);
 
@@ -50,49 +84,169 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5C
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5C70);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5CD0);
+RecordF5C* func_001F5CD0(RecordF5C* record, void* value)
+{
+    record->unk0C = value;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5CE0);
+RecordF5C* func_001F5CE0(RecordF5C* record)
+{
+    record->unk00 = -1;
+    record->unk04 = -1;
+    record->unk08 = -1;
+    record->unk0C = 0;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5D00);
+RecordF5C* func_001F5D00(RecordF5C* record, void* value)
+{
+    record->unk0C = value;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5D10);
+RecordF5C* func_001F5D10(RecordF5C* record)
+{
+    record->unk00 = -1;
+    record->unk04 = -1;
+    record->unk08 = -1;
+    record->unk0C = 0;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5D30);
+RecordF5C* func_001F5D30(RecordF5C* record)
+{
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5D40);
+RecordF5C* func_001F5D40(RecordF5C* record, void* value)
+{
+    record->unk0C = value;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5D50);
+RecordF5C* func_001F5D50(RecordF5C* record)
+{
+    record->unk00 = -1;
+    record->unk04 = -1;
+    record->unk08 = -1;
+    record->unk0C = 0;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5D70);
+RecordF5C* func_001F5D70(RecordF5C* record, void* value)
+{
+    record->unk0C = value;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5D80);
+RecordF5C* func_001F5D80(RecordF5C* record)
+{
+    record->unk00 = -1;
+    record->unk04 = -1;
+    record->unk08 = -1;
+    record->unk0C = 0;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5DA0);
+RecordF5C* func_001F5DA0(RecordF5C* record, void* value)
+{
+    record->unk0C = value;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5DB0);
+RecordF5C* func_001F5DB0(RecordF5C* record)
+{
+    record->unk00 = -1;
+    record->unk04 = -1;
+    record->unk08 = -1;
+    record->unk0C = 0;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5DD0);
+RecordF5C* func_001F5DD0(RecordF5C* record)
+{
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5DE0);
+RecordF5C* func_001F5DE0(RecordF5C* record, void* value)
+{
+    record->unk0C = value;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5DF0);
+RecordF5C* func_001F5DF0(RecordF5C* record)
+{
+    record->unk00 = -1;
+    record->unk04 = -1;
+    record->unk08 = -1;
+    record->unk0C = 0;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5E10);
+void func_001F5E10(StateF5E10* state)
+{
+    state->entries[0].unk04 = 0;
+    state->entries[1].unk04 = 0;
+    state->entries[2].unk04 = 0;
+    state->entries[3].unk04 = 0;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5E30);
+RecordF5C* func_001F5E30(RecordF5C* record, void* value)
+{
+    record->unk0C = value;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5E40);
+RecordF5C* func_001F5E40(RecordF5C* record)
+{
+    record->unk00 = -1;
+    record->unk04 = -1;
+    record->unk08 = -1;
+    record->unk0C = 0;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5E60);
+void func_001F5E60(StateF5E60* state)
+{
+    state->unk2F90 = 0;
+    state->unk2F94 = 0;
+    state->unk2FA4 = 0;
+    state->unk2FB4 = 0;
+    state->unk2FC4 = 0;
+    state->unk2FC8 = 0;
+    state->unk2FD4 = -1;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5E90);
+RecordF5C* func_001F5E90(RecordF5C* record, void* value)
+{
+    record->unk0C = value;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5EA0);
+RecordF5C* func_001F5EA0(RecordF5C* record, void* value)
+{
+    record->unk0C = value;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5EB0);
+RecordF5C* func_001F5EB0(RecordF5C* record)
+{
+    record->unk00 = -1;
+    record->unk04 = -1;
+    record->unk08 = -1;
+    record->unk0C = 0;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5ED0);
+RecordF5C* func_001F5ED0(RecordF5C* record)
+{
+    record->unk00 = -1;
+    record->unk04 = -1;
+    record->unk08 = -1;
+    record->unk0C = 0;
+    return record;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F5EF0);
 

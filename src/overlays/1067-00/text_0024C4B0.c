@@ -1,6 +1,17 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_0024C4B0.h"
 
+/** Partial receiver with status bytes at offsets 0x331-0x334. */
+typedef struct FieldStatus331
+{
+    u8 pad00[0x331];
+    u8 state;
+    u8 previous;
+    u8 value;
+    u8 unk334_0 : 1;
+    u8 unk334_1_7 : 7;
+} FieldStatus331;
+
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024C4B0);
 
@@ -51,7 +62,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024D2
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024D3D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024D440);
+void func_0024D440(FieldStatus331* object, u8 value)
+{
+    object->previous = object->state;
+    object->state = 3;
+    object->unk334_0 = 0;
+    object->value = value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024D470);
 

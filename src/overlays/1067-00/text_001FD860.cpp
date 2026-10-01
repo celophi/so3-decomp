@@ -1,5 +1,28 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_001FD860.h"
+#include "boot/resident_data.h"
+
+struct FieldScriptCursorU32
+{
+    u8 pad[0x548];
+    u32* current;
+};
+
+struct FieldContextDE
+{
+    u8 pad[0xDE];
+    u8 unkde_0_4 : 5;
+    u8 unkde_5 : 1;
+    u8 unkde_6_7 : 2;
+};
+
+struct FieldContextBit4
+{
+    u8 pad[0xDE];
+    u8 unkde_0_3 : 4;
+    u8 unkde_4 : 1;
+    u8 unkde_5_7 : 3;
+};
 
 typedef unsigned __int128 FieldLocalQword;
 extern "C" s32 func_0022A160(void*);
@@ -118,7 +141,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDBF0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDC90);
+s32 func_001FDC90(FieldScriptCursorU32* object)
+{
+    bool low_bit = (*object->current & 1) != 0;
+    ((FieldContextBit4*)D_001B6430->context)->unkde_4 = !low_bit;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDCD0);
 
@@ -134,7 +162,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDF
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FE010);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FE230);
+s32 func_001FE230(FieldScriptCursorU32* object)
+{
+    ((FieldContextDE*)D_001B6430->context)->unkde_5 = *object->current != 0;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FE270);
 

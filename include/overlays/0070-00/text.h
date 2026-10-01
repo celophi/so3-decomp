@@ -3,9 +3,406 @@
 
 #include "types.h"
 
+typedef struct ItemRecord ItemRecord;
+typedef struct StatusRecord StatusRecord;
+typedef struct DisplayRecord DisplayRecord;
+typedef struct Record00349C50 Record00349C50;
+typedef struct Record0034C800 Record0034C800;
+typedef struct Record00350BD0 Record00350BD0;
+typedef struct TransformRecord TransformRecord;
+typedef struct ScreenOwner ScreenOwner;
+typedef struct Record00353A50 Record00353A50;
+typedef struct Record00352960 Record00352960;
+typedef struct Record00352EE0 Record00352EE0;
+typedef struct Record003531B0 Record003531B0;
+typedef struct ItemListNode ItemListNode;
+typedef struct ItemListOwner ItemListOwner;
+typedef struct AngleOwner AngleOwner;
+typedef struct ControlOwner ControlOwner;
+
+/** Four float components stored on a 16-byte boundary. */
+typedef struct Vector4
+{
+    float x;
+    float y;
+    float z;
+    float w;
+} __attribute__((aligned(16))) Vector4;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Set the attached control's flag and one of two float values.
+ * @param owner Record holding the control.
+ * @param ignored Unused second argument.
+ * @param flag Value to store and choice of float value.
+ */
+void func_00350F70(ControlOwner* owner, s32 ignored, s32 flag);
+
+/**
+ * @brief Increase the attached angle and clamp it at its limit.
+ * @param owner Record holding the angle.
+ */
+void func_0034F340(AngleOwner* owner);
+
+/**
+ * @brief Decrease the attached angle and clamp it at zero.
+ * @param owner Record holding the angle.
+ */
+void func_0034F2E0(AngleOwner* owner);
+
+/**
+ * @brief Follow links from the node after the head.
+ * @param owner List owner to search.
+ * @param index Number of links to follow.
+ * @return Reached node, or null if the chain ends first.
+ */
+ItemListNode* func_00354480(ItemListOwner* owner, s32 index);
+
+/**
+ * @brief Follow links from the node after the head.
+ * @param owner List owner to search.
+ * @param index Number of links to follow.
+ * @return Reached node, or null if the chain ends first.
+ */
+ItemListNode* func_003545E0(ItemListOwner* owner, s32 index);
+
+/**
+ * @brief Initialize a display record and run cleanup when requested.
+ * @param display Display record to initialize.
+ * @param flag Cleanup flag.
+ * @return The display record.
+ */
+DisplayRecord* func_00353E40(DisplayRecord* display, s16 flag);
+
+/**
+ * @brief Initialize a record and run cleanup when requested.
+ * @param record Record to initialize.
+ * @param flag Cleanup flag.
+ * @return The record.
+ */
+Record00352960* func_00352960(Record00352960* record, s16 flag);
+
+/**
+ * @brief Initialize a record and run cleanup when requested.
+ * @param record Record to initialize.
+ * @param flag Cleanup flag.
+ * @return The record.
+ */
+Record00352EE0* func_00352EE0(Record00352EE0* record, s16 flag);
+
+/**
+ * @brief Initialize a record and run cleanup when requested.
+ * @param record Record to initialize.
+ * @param flag Cleanup flag.
+ * @return The record.
+ */
+Record003531B0* func_003531B0(Record003531B0* record, s16 flag);
+
+/**
+ * @brief Initialize an item record and run cleanup when requested.
+ * @param item Item record to initialize.
+ * @param flag Cleanup flag.
+ * @return The item record.
+ */
+ItemRecord* func_00348400(ItemRecord* item, s16 flag);
+
+/**
+ * @brief Initialize a screen owner and run cleanup when requested.
+ * @param owner Screen owner to initialize.
+ * @param flag Cleanup flag.
+ * @return The screen owner.
+ */
+ScreenOwner* func_00351F50(ScreenOwner* owner, s16 flag);
+
+/**
+ * @brief Initialize a record and run cleanup when requested.
+ * @param record Record to initialize.
+ * @param flag Cleanup flag.
+ * @return The record.
+ */
+Record00353A50* func_00353A50(Record00353A50* record, s16 flag);
+
+/**
+ * @brief Copy three components and a unit fourth component to the field at 0x30.
+ * @param record Transform record to update.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
+void func_00353C50(TransformRecord* record, float x, float y, float z);
+
+/**
+ * @brief Copy a four-component value to the field at 0x20.
+ * @param record Transform record to update.
+ * @param value Components to copy.
+ */
+void func_00353B30(TransformRecord* record, const Vector4* value);
+
+/**
+ * @brief Copy a four-component value to the field at 0x20.
+ * @param record Transform record to update.
+ * @param value Components to copy.
+ */
+void func_00353B50(TransformRecord* record, const Vector4* value);
+
+/**
+ * @brief Copy a four-component value to the field at 0x30.
+ * @param record Transform record to update.
+ * @param value Components to copy.
+ */
+void func_00353BB0(TransformRecord* record, const Vector4* value);
+
+/**
+ * @brief Copy a four-component value to the field at 0x30.
+ * @param record Transform record to update.
+ * @param value Components to copy.
+ */
+void func_00353BD0(TransformRecord* record, const Vector4* value);
+
+/**
+ * @brief Copy a four-component value to the field at 0x40.
+ * @param record Transform record to update.
+ * @param value Components to copy.
+ */
+void func_00353C90(TransformRecord* record, const Vector4* value);
+
+/**
+ * @brief Copy a four-component value to the field at 0x40.
+ * @param record Transform record to update.
+ * @param value Components to copy.
+ */
+void func_00353CB0(TransformRecord* record, const Vector4* value);
+
+/**
+ * @brief Store three components at 0x20 with a unit fourth component.
+ * @param record Transform record to update.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
+void func_00353B70(TransformRecord* record, float x, float y, float z);
+
+/**
+ * @brief Store four components at 0x30.
+ * @param record Transform record to update.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ * @param w Fourth component.
+ */
+void func_00353B90(TransformRecord* record, float x, float y, float z, float w);
+
+/**
+ * @brief Store three components at 0x40.
+ * @param record Transform record to update.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
+void func_00353CD0(TransformRecord* record, float x, float y, float z);
+
+/**
+ * @brief Check whether a float is negative.
+ * @param value Value to check.
+ * @return One if negative, otherwise zero.
+ */
+s32 func_00353D00(float value);
+
+/**
+ * @brief Set two fields of the attached screen record when present.
+ * @param owner Record holding the screen pointer.
+ */
+void func_00351FB0(ScreenOwner* owner);
+
+/**
+ * @brief Read the word field at 0x38.
+ * @param record Record to read.
+ * @return Current field value.
+ */
+u32 func_00349C50(Record00349C50* record);
+
+/**
+ * @brief Read the word field at 0x40.
+ * @param record Record to read.
+ * @return Current field value.
+ */
+u32 func_0034C800(Record0034C800* record);
+
+/**
+ * @brief Store the byte field at 0x12C.
+ * @param record Record to update.
+ * @param value Value to store.
+ */
+void func_00350BD0(Record00350BD0* record, u8 value);
+
+/**
+ * @brief Return the external table at 0x50CD30.
+ * @return Pointer to the table.
+ */
+u8* func_00353D20(void);
+
+/**
+ * @brief Copy the byte field at 0xA8 to the field at 0x60.
+ * @param display Display record to update.
+ */
+void func_00353E30(DisplayRecord* display);
+
+/**
+ * @brief Store the word field at 0x24.
+ * @param state Status record to update.
+ * @param value Value to store.
+ */
+void func_00353F70(StatusRecord* state, u32 value);
+
+/**
+ * @brief Read the word field at 0x24.
+ * @param state Status record to read.
+ * @return Current field value.
+ */
+u32 func_00353F80(StatusRecord* state);
+
+/**
+ * @brief Store the signed byte field at 0x28.
+ * @param state Status record to update.
+ * @param value Value to store.
+ */
+void func_00353F90(StatusRecord* state, s8 value);
+
+/**
+ * @brief Read the signed byte field at 0x28.
+ * @param state Status record to read.
+ * @return Current field value.
+ */
+s8 func_00353FA0(StatusRecord* state);
+
+/**
+ * @brief Read the low bit of the byte field at 0x3C.
+ * @param state Status record to read.
+ * @return Low bit of the field.
+ */
+u32 func_00354050(StatusRecord* state);
+
+/**
+ * @brief Store the byte field at 0xC.
+ * @param item Item record to update.
+ * @param value Value to store.
+ */
+void func_00348460(ItemRecord* item, u8 value);
+
+/**
+ * @brief Read the byte field at 0xC.
+ * @param item Item record to read.
+ * @return Current field value.
+ */
+u8 func_00348470(ItemRecord* item);
+
+/**
+ * @brief Store the byte field at 0x8.
+ * @param item Item record to update.
+ * @param value Value to store.
+ */
+void func_00348480(ItemRecord* item, u8 value);
+
+/**
+ * @brief Read the byte field at 0x8.
+ * @param item Item record to read.
+ * @return Current field value.
+ */
+u8 func_00348490(ItemRecord* item);
+
+/**
+ * @brief Store the halfword field at 0xA.
+ * @param item Item record to update.
+ * @param value Value to store.
+ */
+void func_003484A0(ItemRecord* item, u16 value);
+
+/**
+ * @brief Read the halfword field at 0xA.
+ * @param item Item record to read.
+ * @return Current field value.
+ */
+u16 func_003484B0(ItemRecord* item);
+
+/**
+ * @brief Store the word field at 0x98.
+ * @param item Item record to update.
+ * @param value Value to store.
+ */
+void func_003484C0(ItemRecord* item, u32 value);
+
+/**
+ * @brief Read the word field at 0x98.
+ * @param item Item record to read.
+ * @return Current field value.
+ */
+u32 func_003484D0(ItemRecord* item);
+
+/**
+ * @brief Store the word field at 0x9C.
+ * @param item Item record to update.
+ * @param value Value to store.
+ */
+void func_003484E0(ItemRecord* item, u32 value);
+
+/**
+ * @brief Read the word field at 0x9C.
+ * @param item Item record to read.
+ * @return Current field value.
+ */
+u32 func_003484F0(ItemRecord* item);
+
+/**
+ * @brief Store the word field at 0x4.
+ * @param item Item record to update.
+ * @param value Value to store.
+ */
+void func_00348500(ItemRecord* item, u32 value);
+
+/**
+ * @brief Read the word field at 0x4.
+ * @param item Item record to read.
+ * @return Current field value.
+ */
+u32 func_00348510(ItemRecord* item);
+
+/**
+ * @brief Read the word field at 0x10.
+ * @param item Item record to read.
+ * @return Current field value.
+ */
+u32 func_00348520(ItemRecord* item);
+
+/**
+ * @brief Read the byte field at 0xD.
+ * @param item Item record to read.
+ * @return Current field value.
+ */
+u8 func_00348710(ItemRecord* item);
+
+/**
+ * @brief Store the byte field at 0xD.
+ * @param item Item record to update.
+ * @param value Value to store.
+ */
+void func_00348720(ItemRecord* item, u8 value);
+
+/**
+ * @brief Read the word field at 0x20.
+ * @param item Item record to read.
+ * @return Current field value.
+ */
+u32 func_003487B0(ItemRecord* item);
+
+/**
+ * @brief Store the word field at 0x20.
+ * @param item Item record to update.
+ * @param value Value to store.
+ */
+void func_003489F0(ItemRecord* item, u32 value);
 
 /**
  * @brief Perform no work.

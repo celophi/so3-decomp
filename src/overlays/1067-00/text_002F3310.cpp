@@ -1,6 +1,12 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002F3310.h"
 
+/** Partial receiver with a byte at offset 0x60. */
+struct FieldByte60F3310
+{
+    u8 pad[0x60];
+    u8 value;
+};
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3310);
 
@@ -58,7 +64,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F8E
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F9130);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F9760);
+extern "C" void func_002F9760(FieldByte60F3310* object)
+{
+    object->value = 2;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F9770);
 

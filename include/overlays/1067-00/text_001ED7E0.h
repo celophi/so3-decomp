@@ -176,6 +176,12 @@ s32 func_001EE170(void* object);
 bool func_001EE180(void* object, float value);
 
 /**
+ * @brief Return the address of D_50CD30.
+ * @return Address of the data.
+ */
+void* func_001EE1A0();
+
+/**
  * @brief Perform no action for this receiver.
  * @param object Receiver of the call.
  */
@@ -223,6 +229,26 @@ void func_001EE250(void* object);
 s32 func_001EE260(void* object);
 
 /**
+ * @brief Clean up the receiver and add it to the resident queue.
+ * @param object Receiver to clean up and queue.
+ */
+void func_001EE270(void* object);
+
+/**
+ * @brief Pass two float operands to the current resident field object.
+ * @param cursor Cursor holding the operands.
+ * @return One.
+ */
+s32 func_001F0620(FieldScriptCursorF32* cursor);
+
+/**
+ * @brief Reset two parts of the current resident field object.
+ * @param unused Callback argument; unused.
+ * @return One.
+ */
+s32 func_001F0E40(void* unused);
+
+/**
  * @brief Run two cleanup helpers on the receiver.
  * @param object Receiver to clean up.
  */
@@ -242,6 +268,12 @@ s32 func_001F1F60(void* object);
 void func_001F1F70(void* object);
 
 /**
+ * @brief Clean up the receiver and add it to the resident queue.
+ * @param object Receiver to clean up and queue.
+ */
+void func_001F2040(void* object);
+
+/**
  * @brief Copy the current float operand to two receiver objects.
  * @param cursor Operand cursor.
  * @return One.
@@ -249,11 +281,31 @@ void func_001F1F70(void* object);
 s32 func_001F2070(FieldScriptCursorF32* cursor);
 
 /**
+ * @brief Add the current cursor object to the resident list.
+ * @param cursor Cursor used to fetch the object.
+ * @return One.
+ */
+s32 func_001F7B40(void* cursor);
+
+/**
+ * @brief Add the receiver to the resident queue.
+ * @param object Receiver to queue.
+ */
+void func_001F8C90(void* object);
+
+/**
  * @brief Store the current float operand in the receiver.
  * @param cursor Operand cursor.
  * @return One.
  */
 s32 func_001F23E0(FieldScriptCursorF32* cursor);
+
+/**
+ * @brief Pass the current bit to the resident field target when present.
+ * @param cursor Cursor holding the current word.
+ * @return One.
+ */
+s32 func_001F2420(FieldScriptCursorU32* cursor);
 
 /**
  * @brief Reset the records and related state fields.
@@ -304,6 +356,13 @@ s32 func_001F4840(FieldScriptCursorS32* cursor);
  * @return One.
  */
 s32 func_001F49C0(FieldScriptCursorU32* cursor);
+
+/**
+ * @brief Set bit 2 of the current field object byte from the script word's low bit.
+ * @param cursor Operand cursor.
+ * @return Always 1.
+ */
+s32 func_001F0B40(FieldScriptCursorU32* cursor);
 
 /**
  * @brief Copy three components and flags from the receiver to the cursor.

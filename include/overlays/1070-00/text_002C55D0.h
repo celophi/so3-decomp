@@ -19,9 +19,85 @@ typedef struct FieldBitCountState
     u64* unk14;
 } FieldBitCountState;
 
+/** Partial receiver with four vector fields and a state byte. */
+typedef struct FieldVectorSlots880
+{
+    u8 unk00[0x20];
+    unsigned __int128 unk20;
+    unsigned __int128 unk30;
+    u8 unk40[0x10];
+    u8 unk50;
+    u8 unk51[0x82F];
+    unsigned __int128 unk880;
+    unsigned __int128 unk890;
+} FieldVectorSlots880;
+
+/** Vector storage that can be cleared as a single 128-bit value. */
+typedef union FieldVectorBits
+{
+    FieldVector vector;
+    unsigned __int128 bits;
+} FieldVectorBits;
+
+/** Partial receiver with a floating-point value at offset 0x4C. */
+typedef struct FieldFloat4C
+{
+    u8 unk00[0x4C];
+    float unk4c;
+} FieldFloat4C;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Copy a vector into fields 0x890 and 0x20, and set the state byte.
+ * @param object Receiver to update.
+ * @param value Vector to copy.
+ */
+void func_002CC6B0(FieldVectorSlots880* object, const unsigned __int128* value);
+
+/**
+ * @brief Copy one vector into two destinations.
+ * @param first First destination.
+ * @param second Second destination.
+ * @param source Vector to copy.
+ */
+void func_002CC6E0(unsigned __int128* first, unsigned __int128* second, const unsigned __int128* source);
+
+/**
+ * @brief Clear a vector and set its final component to one.
+ * @param value Vector to reset.
+ */
+void func_002CCB50(FieldVectorBits* value);
+
+/**
+ * @brief Copy a vector into fields 0x880 and 0x30, and set the state byte.
+ * @param object Receiver to update.
+ * @param value Vector to copy.
+ */
+void func_002CD950(FieldVectorSlots880* object, const unsigned __int128* value);
+
+/**
+ * @brief Copy a vector into fields 0x880 and 0x30, and set the state byte.
+ * @param object Receiver to update.
+ * @param value Vector to copy.
+ */
+void func_002CD970(FieldVectorSlots880* object, const unsigned __int128* value);
+
+/**
+ * @brief Copy a vector into fields 0x890 and 0x20, and set the state byte.
+ * @param object Receiver to update.
+ * @param value Vector to copy.
+ */
+void func_002CD990(FieldVectorSlots880* object, const unsigned __int128* value);
+
+/**
+ * @brief Copy the receiver's floating-point value into an output location.
+ * @param object Receiver containing the value.
+ * @param result Output location.
+ */
+void func_002D5570(const FieldFloat4C* object, float* result);
 
 /**
  * @brief Set all four vector components to one value.

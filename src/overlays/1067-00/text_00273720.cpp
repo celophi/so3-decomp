@@ -72,7 +72,14 @@ s32 func_00275200(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275210);
+extern "C" u8* func_00275210(FieldEmbeddedBuffer75210* object)
+{
+    if (object->unk618 != 0)
+    {
+        return &object->unk620;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275230);
 

@@ -186,6 +186,7 @@ typedef struct FieldMotion FieldMotion;
 typedef struct FieldMotion2 FieldMotion2;
 typedef struct FieldMotion3 FieldMotion3;
 typedef struct FieldMotion4 FieldMotion4;
+typedef struct FieldScriptCursorU32 FieldScriptCursorU32;
 
 #ifdef __cplusplus
 extern "C" {
@@ -210,6 +211,20 @@ s32 func_001FDA50(void);
  * @return Zero when the selected object succeeds, otherwise one.
  */
 s32 func_001FE950(u8* object, s32 has_index);
+
+/**
+ * @brief Set field-context bit 5 from the current script word.
+ * @param object Receiver containing the current script word pointer.
+ * @return Always 1.
+ */
+s32 func_001FE230(FieldScriptCursorU32* object);
+
+/**
+ * @brief Set field-context bit 4 when the current script word has a clear low bit.
+ * @param object Receiver containing the current script word pointer.
+ * @return Always 1.
+ */
+s32 func_001FDC90(FieldScriptCursorU32* object);
 
 /**
  * @brief Clear bit 0x40 in the word at offset 0x204.
