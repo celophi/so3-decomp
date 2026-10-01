@@ -266,105 +266,255 @@ s32 func_00212D30(FieldScriptObject151D40* object, u32 count)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212D40);
+s32 func_00212D40(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212D50);
+s32 func_00212D50(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212D60);
+s32 func_00212D60(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212D70);
+s32 func_00212D70(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212D80);
+s32 func_00212D80(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212D90);
+s32 func_00212D90(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212DA0);
+s32 func_00212DA0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212DB0);
+s32 func_00212DB0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212DC0);
+s32 func_00212DC0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212DD0);
+s32 func_00212DD0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212DE0);
+s32 func_00212DE0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212DF0);
+s32 func_00212DF0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212E00);
+s32 func_00212E00(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212E10);
+s32 func_00212E10(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212E20);
+s32 func_00212E20(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212E30);
+s32 func_00212E30(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212E40);
+s32 func_00212E40(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212E50);
+s32 func_00212E50(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212E60);
+s32 func_00212E60(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212E70);
+s32 func_00212E70(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212E80);
+s32 func_00212E80(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212E90);
+s32 func_00212E90(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212EA0);
+s32 func_00212EA0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212EB0);
+s32 func_00212EB0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212EC0);
+s32 func_00212EC0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212ED0);
+s32 func_00212ED0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212EE0);
+s32 func_00212EE0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212EF0);
+s32 func_00212EF0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212F00);
+s32 func_00212F00(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212F10);
+s32 func_00212F10(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212F20);
+s32 func_00212F20(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212F30);
+s32 func_00212F30(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212F40);
+s32 func_00212F40(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212F50);
+s32 func_00212F50(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212F60);
+s32 func_00212F60(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212F70);
+s32 func_00212F70(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212F80);
+s32 func_00212F80(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212F90);
+s32 func_00212F90(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212FA0);
+s32 func_00212FA0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212FB0);
+s32 func_00212FB0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212FC0);
+s32 func_00212FC0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212FD0);
+s32 func_00212FD0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212FE0);
+s32 func_00212FE0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00212FF0);
+s32 func_00212FF0(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00213000);
+s32 func_00213000(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00213010);
+s32 func_00213010(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00213020);
+s32 func_00213020(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00213030);
+s32 func_00213030(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00213040);
+s32 func_00213040(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00213050);
+s32 func_00213050(FieldScriptObject151D40* object, u32 count)
+{
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00213060);
 

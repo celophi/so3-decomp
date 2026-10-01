@@ -260,7 +260,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A22
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A2330);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A2360);
+/**
+ * @brief Store the floating-point value at offset 0x38.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A2360(FieldObject157F00* object, float value)
+{
+    object->unk38 = value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A2370);
 
@@ -276,7 +284,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A23
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A23F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A4EC0);
+/**
+ * @brief Report the default enabled callback state.
+ * @param object Object being queried.
+ * @return Always true.
+ */
+bool func_002A4EC0(FieldObject158240* object)
+{
+    return true;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A4ED0);
 
@@ -284,53 +300,197 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A4F
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5310);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5410);
+/**
+ * @brief Store the floating-point value at offset 0x28.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A5410(FieldObject158240* object, float value)
+{
+    object->unk28 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5420);
+/**
+ * @brief Store the floating-point value at offset 0x30.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A5420(FieldObject158240* object, float value)
+{
+    object->unk30 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5430);
+/**
+ * @brief Read the floating-point value at offset 0x30.
+ * @param object Object to inspect.
+ * @return Stored value.
+ */
+float func_002A5430(FieldObject158240* object)
+{
+    return object->unk30;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5440);
+/**
+ * @brief Store the byte state at offset 0x4D.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A5440(FieldObject158240* object, u8 value)
+{
+    object->unk4D = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5450);
+/**
+ * @brief Read the byte state at offset 0x4D.
+ * @param object Object to inspect.
+ * @return Stored value.
+ */
+u8 func_002A5450(FieldObject158240* object)
+{
+    return object->unk4D;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5460);
+/**
+ * @brief Store the floating-point value at offset 0x34.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A5460(FieldObject158240* object, float value)
+{
+    object->unk34 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5470);
+/**
+ * @brief Store the byte state at offset 0x56.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A5470(FieldObject158240* object, u8 value)
+{
+    object->unk56 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5480);
+/**
+ * @brief Read the byte state at offset 0x56.
+ * @param object Object to inspect.
+ * @return Stored value.
+ */
+u8 func_002A5480(FieldObject158240* object)
+{
+    return object->unk56;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5490);
+/**
+ * @brief Store the floating-point value at offset 0x44.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A5490(FieldObject158240* object, float value)
+{
+    object->unk44 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A54A0);
+/**
+ * @brief Read the floating-point value at offset 0x44.
+ * @param object Object to inspect.
+ * @return Stored value.
+ */
+float func_002A54A0(FieldObject158240* object)
+{
+    return object->unk44;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A54B0);
+/**
+ * @brief Read the floating-point value at offset 0x28.
+ * @param object Object to inspect.
+ * @return Stored value.
+ */
+float func_002A54B0(FieldObject158240* object)
+{
+    return object->unk28;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A54C0);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A54D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A54E0);
+/**
+ * @brief Store the byte state at offset 0x4F.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A54E0(FieldObject158240* object, u8 value)
+{
+    object->unk4F = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A54F0);
+/**
+ * @brief Store the byte state at offset 0x4E.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A54F0(FieldObject158240* object, u8 value)
+{
+    object->unk4E = value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5500);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5510);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5520);
+/**
+ * @brief Store the byte state at offset 0x55.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A5520(FieldObject158240* object, u8 value)
+{
+    object->unk55 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5530);
+/**
+ * @brief Store the floating-point value at offset 0x3C.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A5530(FieldObject158240* object, float value)
+{
+    object->unk3C = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5540);
+/**
+ * @brief Store the byte state at offset 0x54.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A5540(FieldObject158240* object, u8 value)
+{
+    object->unk54 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5550);
+/**
+ * @brief Store the floating-point value at offset 0x40.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A5550(FieldObject158240* object, float value)
+{
+    object->unk40 = value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5560);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A55A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A55D0);
+/**
+ * @brief Store the floating-point value at offset 0x38.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_002A55D0(FieldObject158240* object, float value)
+{
+    object->unk38 = value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A55E0);
 
@@ -344,15 +504,55 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A56
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5640);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5660);
+/**
+ * @brief Get the associated bitset object.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+FieldBitset158DD0* func_002A5660(FieldObject158DD0* object)
+{
+    return object->unk1C;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5670);
+/**
+ * @brief Get the first signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5670(FieldObject158DD0* object)
+{
+    return object->unk0C;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5680);
+/**
+ * @brief Get the second signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5680(FieldObject158DD0* object)
+{
+    return object->unk10;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5690);
+/**
+ * @brief Report supported operation flags.
+ * @param object Object to query.
+ * @return Supported flags.
+ */
+u32 func_002A5690(FieldObject158DD0* object)
+{
+    return 0x3F;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A56A0);
+/**
+ * @brief Test whether the primary array is present.
+ * @param object Object to query.
+ * @return Whether the array is present.
+ */
+bool func_002A56A0(FieldObject158DD0* object)
+{
+    return object->unk14 != 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A56B0);
 
@@ -360,15 +560,55 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A57
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5730);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5750);
+/**
+ * @brief Get the associated bitset object.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+FieldBitset154E80* func_002A5750(FieldObject158D00* object)
+{
+    return object->unk1C;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5760);
+/**
+ * @brief Get the first signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5760(FieldObject158D00* object)
+{
+    return object->unk0C;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5770);
+/**
+ * @brief Get the second signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5770(FieldObject158D00* object)
+{
+    return object->unk10;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5780);
+/**
+ * @brief Report supported operation flags.
+ * @param object Object to query.
+ * @return Supported flags.
+ */
+u32 func_002A5780(FieldObject158D00* object)
+{
+    return 0x2F;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5790);
+/**
+ * @brief Test whether the primary array is present.
+ * @param object Object to query.
+ * @return Whether the array is present.
+ */
+bool func_002A5790(FieldObject158D00* object)
+{
+    return object->unk14 != 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A57A0);
 
@@ -376,7 +616,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A58
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5820);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5840);
+/**
+ * @brief Get the associated bitset object.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+FieldBitset154E80* func_002A5840(FieldObject158C30* object)
+{
+    return object->unk1C;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5850);
 

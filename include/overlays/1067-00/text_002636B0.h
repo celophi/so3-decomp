@@ -27,4 +27,48 @@ void func_00263CA0(FieldObject153E20* object, s8 value);
 /** @brief Read the signed state byte at offset 0x28. */
 s8 func_00263CB0(const FieldObject153E20* object);
 
+/** Partial shared field base object used by the D_15AE70 vtable family. */
+typedef struct FieldObject15AE70
+{
+    void* vtable;
+    void* unk04;
+    u8 unk08;
+    u8 unk09;
+    u16 unk0A;
+    u8 unk0C;
+    u8 unk0D;
+    u8 unk0E[2];
+    void* unk10;
+    u8 unk14[0x84];
+    void* unk98;
+    void* unk9C;
+} FieldObject15AE70;
+
+/** @brief Store the unsigned byte at offset 0x0C. */
+void func_002646C0(FieldObject15AE70* object, u8 value);
+/** @brief Read the unsigned byte at offset 0x0C. */
+u8 func_002646D0(const FieldObject15AE70* object);
+/** @brief Store the unsigned byte at offset 0x08. */
+void func_002646E0(FieldObject15AE70* object, u8 value);
+/** @brief Store the unsigned halfword at offset 0x0A. */
+void func_002646F0(FieldObject15AE70* object, u16 value);
+/** @brief Store the object pointer at offset 0x98. */
+void func_00264700(FieldObject15AE70* object, void* value);
+/** @brief Read the object pointer at offset 0x98. */
+void* func_00264710(const FieldObject15AE70* object);
+/** @brief Store the object pointer at offset 0x9C. */
+void func_00264720(FieldObject15AE70* object, void* value);
+/** @brief Read the object pointer at offset 0x9C. */
+void* func_00264730(const FieldObject15AE70* object);
+/** @brief Store the object pointer at offset 0x04. */
+void func_00264740(FieldObject15AE70* object, void* value);
+/** @brief Read the object pointer at offset 0x04. */
+void* func_00264750(const FieldObject15AE70* object);
+/** @brief Read the object pointer at offset 0x10. */
+void* func_00264760(const FieldObject15AE70* object);
+/** @brief Read the unsigned byte at offset 0x0D. */
+u8 func_00264970(const FieldObject15AE70* object);
+/** @brief Store the unsigned byte at offset 0x0D. */
+void func_00264980(FieldObject15AE70* object, u8 value);
+
 #endif

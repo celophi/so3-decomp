@@ -113,27 +113,60 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002646
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264650);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002646C0);
+void func_002646C0(FieldObject15AE70* object, u8 value)
+{
+    object->unk0C = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002646D0);
+u8 func_002646D0(const FieldObject15AE70* object)
+{
+    return object->unk0C;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002646E0);
+void func_002646E0(FieldObject15AE70* object, u8 value)
+{
+    object->unk08 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002646F0);
+void func_002646F0(FieldObject15AE70* object, u16 value)
+{
+    object->unk0A = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264700);
+void func_00264700(FieldObject15AE70* object, void* value)
+{
+    object->unk98 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264710);
+void* func_00264710(const FieldObject15AE70* object)
+{
+    return object->unk98;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264720);
+void func_00264720(FieldObject15AE70* object, void* value)
+{
+    object->unk9C = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264730);
+void* func_00264730(const FieldObject15AE70* object)
+{
+    return object->unk9C;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264740);
+void func_00264740(FieldObject15AE70* object, void* value)
+{
+    object->unk04 = value;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264750);
+void* func_00264750(const FieldObject15AE70* object)
+{
+    return object->unk04;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264760);
+void* func_00264760(const FieldObject15AE70* object)
+{
+    return object->unk10;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264770);
 
@@ -199,9 +232,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002649
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264960);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264970);
+u8 func_00264970(const FieldObject15AE70* object)
+{
+    return object->unk0D;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264980);
+void func_00264980(FieldObject15AE70* object, u8 value)
+{
+    object->unk0D = value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264990);
 
