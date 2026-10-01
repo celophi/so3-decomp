@@ -17,6 +17,13 @@ extern "C" {
  */
 void func_00227130(void* object);
 
+/**
+ * @brief Update a type-0x10 object with a flag.
+ * @param object FieldClass152350 receiver.
+ * @param flag Value of bit 4 at offset 0x6D2 when called from func_001DD9A0.
+ */
+void func_00220150(void* object, s32 flag);
+
 #ifdef __cplusplus
 }
 #endif
@@ -81,13 +88,6 @@ public:
     /** @brief Virtual handler slot 31. */
     virtual void func_002270D0();
 
-    u8 unkC0[0xB0];
-    FieldVec4A unk170;
-    FieldVec4A unk180;
-    FieldVec4A unk190;
-    u8 unk1a0[0x64];
-    u32 unk204;
-    u32 unk208;
 };
 
 /**
@@ -151,6 +151,23 @@ public:
 
     u8 unk3a0[0x190];
     FieldVec4B unk530;
+};
+
+/**
+ * Partial FieldClass152F00 with vtable D_152350 in boot data. Its constructor
+ * (func_00224A00) sets type bit 0x10 in unk78. New virtual slots are not
+ * declared yet.
+ */
+class FieldClass152350 : public FieldClass152F00
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass152350();
+
+    u8 unk540[0x192];
+    u8 unk6d2_0_3 : 4;
+    u8 unk6d2_4 : 1;
+    u8 unk6d2_5_7 : 3;
 };
 #endif
 

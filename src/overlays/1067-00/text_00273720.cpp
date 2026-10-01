@@ -126,17 +126,45 @@ float func_00275B30(FieldObject1552E0* object)
     return 100.0f;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275B40);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275B40(FieldObject1552E0* object, float value)
+{
+}
 
 void func_00275B50(void* object, FieldResourceHeader273720* header, FieldResourceRecord273720* records)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275B60);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275B60(FieldObject1552E0* object, u8 value)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275B70);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275B70(FieldObject1552E0* object, float value)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275B80);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275B80(FieldObject1552E0* object, float value)
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275B90);
 
@@ -145,9 +173,23 @@ s32 func_00275BA0(FieldObject1552E0* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275BB0);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275BB0(FieldObject1552E0* object, u8 value)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275BC0);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275BC0(FieldObject1552E0* object, u8 value)
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275BD0);
 
@@ -156,13 +198,41 @@ s32 func_00275BE0(FieldObject1552E0* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275BF0);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275BF0(FieldObject1552E0* object, u8 value)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275C00);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275C00(FieldObject1552E0* object, float value)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275C10);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275C10(FieldObject1552E0* object, float value)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275C20);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275C20(FieldObject1552E0* object, u8 value)
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275C30);
 
@@ -176,7 +246,15 @@ void func_00275C70(void* object, float value)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275C80);
+/**
+ * @brief Report the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always zero.
+ */
+float func_00275C80(FieldObject1552E0* object)
+{
+    return 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275C90);
 
@@ -187,13 +265,43 @@ u8 func_00275CB0(FieldObject1552E0* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275CC0);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275CC0(FieldObject1552E0* object, u8 value)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275CD0);
+/**
+ * @brief Report the default byte value.
+ * @param object Callback receiver.
+ * @return Always zero.
+ */
+u8 func_00275CD0(FieldObject1552E0* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275CE0);
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275CE0(FieldObject1552E0* object, float value)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275CF0);
+/**
+ * @brief Report the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always zero.
+ */
+float func_00275CF0(FieldObject1552E0* object)
+{
+    return 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275D00);
 

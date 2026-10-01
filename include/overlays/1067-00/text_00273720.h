@@ -255,6 +255,111 @@ bool func_00275DE0(FieldObject1552E0* object);
  */
 float func_00276460(FieldObject1552E0* object);
 
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275B40(FieldObject1552E0* object, float value);
+
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275B60(FieldObject1552E0* object, u8 value);
+
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275B70(FieldObject1552E0* object, float value);
+
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275B80(FieldObject1552E0* object, float value);
+
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275BB0(FieldObject1552E0* object, u8 value);
+
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275BC0(FieldObject1552E0* object, u8 value);
+
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275BF0(FieldObject1552E0* object, u8 value);
+
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275C00(FieldObject1552E0* object, float value);
+
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275C10(FieldObject1552E0* object, float value);
+
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275C20(FieldObject1552E0* object, u8 value);
+
+/**
+ * @brief Report the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always zero.
+ */
+float func_00275C80(FieldObject1552E0* object);
+
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275CC0(FieldObject1552E0* object, u8 value);
+
+/**
+ * @brief Report the default byte value.
+ * @param object Callback receiver.
+ * @return Always zero.
+ */
+u8 func_00275CD0(FieldObject1552E0* object);
+
+/**
+ * @brief Leave the receiver unchanged for the default scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00275CE0(FieldObject1552E0* object, float value);
+
+/**
+ * @brief Report the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always zero.
+ */
+float func_00275CF0(FieldObject1552E0* object);
+
 #ifdef __cplusplus
 }
 #endif

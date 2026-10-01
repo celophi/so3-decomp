@@ -500,9 +500,28 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A56
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5610);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5620);
+/**
+ * @brief Get an indexed primary array element.
+ * @param object Object owning the array.
+ * @param index Signed element index.
+ * @return Address of the indexed element.
+ */
+FieldArrayEntry158DD0* func_002A5620(FieldObject158DD0* object, s32 index)
+{
+    return &object->unk14[index];
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5640);
+/**
+ * @brief Get an element from a secondary array row.
+ * @param object Object owning the array.
+ * @param row Signed primary element index.
+ * @param column Signed index within its secondary row.
+ * @return Address of the indexed secondary element.
+ */
+FieldObject154E60* func_002A5640(FieldObject158DD0* object, s32 row, s32 column)
+{
+    return &object->unk20[row * (object->unk10 - 1) + column];
+}
 
 /**
  * @brief Get the associated bitset object.
@@ -556,9 +575,28 @@ bool func_002A56A0(FieldObject158DD0* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A56B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5710);
+/**
+ * @brief Get an indexed primary array element.
+ * @param object Object owning the array.
+ * @param index Signed element index.
+ * @return Address of the indexed element.
+ */
+FieldArrayEntry158D00* func_002A5710(FieldObject158D00* object, s32 index)
+{
+    return &object->unk14[index];
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5730);
+/**
+ * @brief Get an element from a secondary array row.
+ * @param object Object owning the array.
+ * @param row Signed primary element index.
+ * @param column Signed index within its secondary row.
+ * @return Address of the indexed secondary element.
+ */
+FieldObject154E60* func_002A5730(FieldObject158D00* object, s32 row, s32 column)
+{
+    return &object->unk20[row * (object->unk10 - 1) + column];
+}
 
 /**
  * @brief Get the associated bitset object.
@@ -612,9 +650,28 @@ bool func_002A5790(FieldObject158D00* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A57A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5800);
+/**
+ * @brief Get an indexed primary array element.
+ * @param object Object owning the array.
+ * @param index Signed element index.
+ * @return Address of the indexed element.
+ */
+FieldArrayEntry158C30* func_002A5800(FieldObject158C30* object, s32 index)
+{
+    return &object->unk14[index];
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5820);
+/**
+ * @brief Get an element from a secondary array row.
+ * @param object Object owning the array.
+ * @param row Signed primary element index.
+ * @param column Signed index within its secondary row.
+ * @return Address of the indexed secondary element.
+ */
+FieldObject154E60* func_002A5820(FieldObject158C30* object, s32 row, s32 column)
+{
+    return &object->unk20[row * (object->unk10 - 1) + column];
+}
 
 /**
  * @brief Get the associated bitset object.
@@ -679,7 +736,17 @@ FieldObject158A58* func_002A58F0(FieldObject158B60* object, s32 index)
     return &object->unk14[index];
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5910);
+/**
+ * @brief Get an element from a secondary array row.
+ * @param object Object owning the array.
+ * @param row Signed primary element index.
+ * @param column Signed index within its secondary row.
+ * @return Address of the indexed secondary element.
+ */
+FieldObject154E60* func_002A5910(FieldObject158B60* object, s32 row, s32 column)
+{
+    return &object->unk20[row * (object->unk10 - 1) + column];
+}
 
 /**
  * @brief Get the associated bitset object.
@@ -744,7 +811,17 @@ FieldObject158A78* func_002A59E0(FieldObject158A90* object, s32 index)
     return &object->unk14[index];
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5A00);
+/**
+ * @brief Get an element from a secondary array row.
+ * @param object Object owning the array.
+ * @param row Signed primary element index.
+ * @param column Signed index within its secondary row.
+ * @return Address of the indexed secondary element.
+ */
+FieldObject154E60* func_002A5A00(FieldObject158A90* object, s32 row, s32 column)
+{
+    return &object->unk20[row * (object->unk10 - 1) + column];
+}
 
 /**
  * @brief Get the associated bitset object.

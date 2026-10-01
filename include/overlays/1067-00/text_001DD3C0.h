@@ -377,6 +377,36 @@ extern "C" void func_001DD730(FieldClass150060* list);
 #endif
 
 #ifdef __cplusplus
+class FieldClass151510;
+
+/**
+ * @brief Update the type-0x2 and type-0x20000 objects in a list through slots 12 and 14.
+ *
+ * Objects whose word at offset 0x70 has its sign bit set are skipped. With mode
+ * 2 or more, each object's own bits 5 and 6 at offset 0x8C select the settings
+ * and type-0x10 objects are also passed to func_00220150; otherwise mode and arg
+ * are passed to slot 12.
+ * @param list Head of a circular object list.
+ * @param mode Setting passed to slot 12, or 2 or more to use each object's own settings.
+ * @param arg Update argument passed to slot 12 when mode is below 2.
+ */
+extern "C" void func_001DD9A0(FieldClass150060* list, s8 mode, s32 arg);
+
+/**
+ * @brief Test the listed type-0x1 objects other than self with func_0045BD20.
+ *
+ * Objects with type bit 0x10000 but not 0x200, failing func_00204420, with bit 3
+ * at offset 0x204 set, or without an object at offset 0xA8 are skipped.
+ * @param list Head of a circular object list; traversal stops on return to it or at a null link.
+ * @param self Object to skip; nothing is tested when bit 22 at its offset 0x204 is set.
+ * @param arg0 First argument passed to func_0045BD20.
+ * @param arg1 Second argument passed to func_0045BD20.
+ * @return 1 when a test succeeds, otherwise 0.
+ */
+extern "C" s32 func_001DDBA0(FieldClass150060* list, FieldClass151510* self, void* arg0, void* arg1);
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -410,13 +440,6 @@ void func_001DD6E0(FieldFlaggedListObject* list);
  * @param list Head of a circular object list; traversal stops on return to it or at a null link.
  */
 void func_001DDB30(FieldFlaggedListObject* list);
-
-/**
- * @brief Return the receiver unchanged.
- * @param object Receiver of the virtual call.
- * @return object.
- */
-void* func_001DDCD0(void* object);
 
 /**
  * @brief Combine the func_00204420 test with a clear bit 5 at offset 0x8C.

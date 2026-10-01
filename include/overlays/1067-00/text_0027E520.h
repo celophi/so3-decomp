@@ -53,6 +53,85 @@ typedef struct FieldFloatSourceAF0 FieldFloatSourceAF0;
 typedef struct FieldResourceHeader273720 FieldResourceHeader273720;
 typedef struct FieldResourceRecord273720 FieldResourceRecord273720;
 
+typedef struct FieldBitset154E80 FieldBitset154E80;
+
+/** Partial array owner associated with table D_156A50. */
+typedef struct FieldObject156A50
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    u8 unk14[8];
+    FieldBitset154E80* unk1C;
+} FieldObject156A50;
+
+/** Partial array owner associated with table D_156980. */
+typedef struct FieldObject156980
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    u8 unk14[8];
+    FieldBitset154E80* unk1C;
+} FieldObject156980;
+
+/** Partial array owner associated with table D_1568B0. */
+typedef struct FieldObject1568B0
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    u8 unk14[8];
+    FieldBitset154E80* unk1C;
+} FieldObject1568B0;
+
+/** Partial array owner associated with table D_1567E0. */
+typedef struct FieldObject1567E0
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    u8 unk14[8];
+    FieldBitset154E80* unk1C;
+} FieldObject1567E0;
+
+/** Partial array owner associated with table D_156710. */
+typedef struct FieldObject156710
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    u8 unk14[8];
+    FieldBitset154E80* unk1C;
+} FieldObject156710;
+
+/** Partial array owner associated with table D_156640. */
+typedef struct FieldObject156640
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    u8 unk14[8];
+    FieldBitset154E80* unk1C;
+} FieldObject156640;
+
+/** Partial receiver containing its signed iteration count. */
+typedef struct FieldObject156B70
+{
+    u8 unk00[0x28];
+    s32 unk28;
+} FieldObject156B70;
+
+/** Partial receiver containing its signed iteration count. */
+typedef struct FieldObject156C80
+{
+    u8 unk00[0x28];
+    s32 unk28;
+} FieldObject156C80;
+
+
+typedef struct FieldScriptObject151D40 FieldScriptObject151D40;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -441,6 +520,304 @@ s32 func_00283150(FieldObject156080* object);
  * @return Zero entries.
  */
 s32 func_00283190(FieldObject156080* object);
+
+/**
+ * @brief Leave the receiver unchanged for the scalar callback.
+ * @param object Callback receiver.
+ * @param value Scalar value supplied by the caller.
+ */
+void func_00283220(FieldObject156080* object, float value);
+
+/**
+ * @brief Report the default mode value.
+ * @param object Callback receiver.
+ * @return Always zero.
+ */
+u8 func_00283260(FieldObject156080* object);
+
+/**
+ * @brief Get the associated bitset object.
+ * @param object Callback receiver.
+ * @return Stored bitset object pointer.
+ */
+FieldBitset154E80* func_00283350(FieldObject156A50* object);
+
+/**
+ * @brief Get the first configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0xC.
+ */
+s32 func_00283360(FieldObject156A50* object);
+
+/**
+ * @brief Get the second configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0x10.
+ */
+s32 func_00283370(FieldObject156A50* object);
+
+/**
+ * @brief Report the supported operation flags.
+ * @param object Callback receiver.
+ * @return Always 0x20.
+ */
+u32 func_00283380(FieldObject156A50* object);
+
+/**
+ * @brief Get the associated bitset object.
+ * @param object Callback receiver.
+ * @return Stored bitset object pointer.
+ */
+FieldBitset154E80* func_00283480(FieldObject156980* object);
+
+/**
+ * @brief Get the first configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0xC.
+ */
+s32 func_00283490(FieldObject156980* object);
+
+/**
+ * @brief Get the second configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0x10.
+ */
+s32 func_002834A0(FieldObject156980* object);
+
+/**
+ * @brief Report the supported operation flags.
+ * @param object Callback receiver.
+ * @return Always 1.
+ */
+u32 func_002834B0(FieldObject156980* object);
+
+/**
+ * @brief Get the associated bitset object.
+ * @param object Callback receiver.
+ * @return Stored bitset object pointer.
+ */
+FieldBitset154E80* func_002835B0(FieldObject1568B0* object);
+
+/**
+ * @brief Get the first configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0xC.
+ */
+s32 func_002835C0(FieldObject1568B0* object);
+
+/**
+ * @brief Get the second configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0x10.
+ */
+s32 func_002835D0(FieldObject1568B0* object);
+
+/**
+ * @brief Report the supported operation flags.
+ * @param object Callback receiver.
+ * @return Always 0x20.
+ */
+u32 func_002835E0(FieldObject1568B0* object);
+
+/**
+ * @brief Get the associated bitset object.
+ * @param object Callback receiver.
+ * @return Stored bitset object pointer.
+ */
+FieldBitset154E80* func_002836D0(FieldObject1567E0* object);
+
+/**
+ * @brief Get the first configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0xC.
+ */
+s32 func_002836E0(FieldObject1567E0* object);
+
+/**
+ * @brief Get the second configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0x10.
+ */
+s32 func_002836F0(FieldObject1567E0* object);
+
+/**
+ * @brief Report the supported operation flags.
+ * @param object Callback receiver.
+ * @return Always 0x20.
+ */
+u32 func_00283700(FieldObject1567E0* object);
+
+/**
+ * @brief Get the associated bitset object.
+ * @param object Callback receiver.
+ * @return Stored bitset object pointer.
+ */
+FieldBitset154E80* func_00283800(FieldObject156710* object);
+
+/**
+ * @brief Get the first configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0xC.
+ */
+s32 func_00283810(FieldObject156710* object);
+
+/**
+ * @brief Get the second configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0x10.
+ */
+s32 func_00283820(FieldObject156710* object);
+
+/**
+ * @brief Report the supported operation flags.
+ * @param object Callback receiver.
+ * @return Always 1.
+ */
+u32 func_00283830(FieldObject156710* object);
+
+/**
+ * @brief Get the associated bitset object.
+ * @param object Callback receiver.
+ * @return Stored bitset object pointer.
+ */
+FieldBitset154E80* func_00283920(FieldObject156640* object);
+
+/**
+ * @brief Get the first configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0xC.
+ */
+s32 func_00283930(FieldObject156640* object);
+
+/**
+ * @brief Get the second configured dimension.
+ * @param object Callback receiver.
+ * @return Signed dimension stored at offset 0x10.
+ */
+s32 func_00283940(FieldObject156640* object);
+
+/**
+ * @brief Report the supported operation flags.
+ * @param object Callback receiver.
+ * @return Always 0x20.
+ */
+u32 func_00283950(FieldObject156640* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 1.0f.
+ */
+float func_00286400(FieldObject156A50* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 1.0f.
+ */
+float func_00286410(FieldObject156980* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 1.0f.
+ */
+float func_00286420(FieldObject1568B0* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 1.0f.
+ */
+float func_00286430(FieldObject1567E0* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 1.0f.
+ */
+float func_00286440(FieldObject156710* object);
+
+/**
+ * @brief Return the default floating-point value.
+ * @param object Callback receiver.
+ * @return Always 1.0f.
+ */
+float func_00286450(FieldObject156640* object);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Callback receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00286620(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Callback receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00286880(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Callback receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00286890(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Callback receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002868A0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Report the supported operation flags.
+ * @param object Callback receiver.
+ * @return Always 3.
+ */
+u32 func_00288220(FieldObject156B70* object);
+
+/**
+ * @brief Reset the signed iteration count.
+ * @param object Callback receiver.
+ * @param actor Actor supplied by the dispatcher.
+ */
+void func_00288230(FieldObject156B70* object, FieldFloatSourceAF0* actor);
+
+/**
+ * @brief Return the floating-point limit.
+ * @param object Callback receiver.
+ * @return Always 2500.0f.
+ */
+float func_00288240(FieldObject156B70* object);
+
+/**
+ * @brief Report the supported operation flags.
+ * @param object Callback receiver.
+ * @return Always 3.
+ */
+u32 func_00288640(FieldObject156C80* object);
+
+/**
+ * @brief Reset the signed iteration count.
+ * @param object Callback receiver.
+ * @param actor Actor supplied by the dispatcher.
+ */
+void func_00288650(FieldObject156C80* object, FieldFloatSourceAF0* actor);
+
+/**
+ * @brief Return the floating-point limit.
+ * @param object Callback receiver.
+ * @return Always 2500.0f.
+ */
+float func_00288660(FieldObject156C80* object);
 
 #ifdef __cplusplus
 }

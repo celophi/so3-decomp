@@ -4,6 +4,7 @@
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/1067-00/text_0024C4B0.h"
 #include "overlays/0002-01/text_0046AE20.h"
+#include "overlays/0002-01/text_0045AD10.h"
 #include "overlays/1067-00/text_0021DB80.h"
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/1067-00/text_00202240.h"
@@ -144,6 +145,7 @@ void FieldClass152F00::func_00205710(const FieldVec4A* value)
     unk530 = *value;
 }
 
+// Slot 12 argument conversion differs (97.37%); see working notes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD9A0);
 
 void func_001DDB30(FieldFlaggedListObject* list)
@@ -163,11 +165,56 @@ void func_001DDB30(FieldFlaggedListObject* list)
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDBA0);
-
-void* func_001DDCD0(void* object)
+s32 func_001DDBA0(FieldClass150060* list, FieldClass151510* self, void* arg0, void* arg1)
 {
-    return object;
+    if (self->test_unk204(0x400000))
+    {
+        return 0;
+    }
+    FieldClass150060* link = list;
+    FieldClass150060* skip = self;
+    for (;;)
+    {
+        link = link->unk08;
+        if (!link || list == link)
+        {
+            break;
+        }
+        if (link == skip)
+        {
+            continue;
+        }
+        FieldClass150F90* object = static_cast<FieldClass150F90*>(link);
+        u32 flags = object->unk78;
+        if (!(flags & 0x1))
+        {
+            continue;
+        }
+        if ((flags & 0x10000) && !(flags & 0x200))
+        {
+            continue;
+        }
+        FieldClass151510* body = static_cast<FieldClass151510*>(object);
+        if (!body->func_00204420())
+        {
+            continue;
+        }
+        if (body->test_unk204(0x8))
+        {
+            continue;
+        }
+        FieldClass154D20* shape = body->unkA8;
+        if (shape && func_0045BD20(shape->func_001DDCD0(), arg0, arg1))
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+FieldClass1515D0* FieldClass154D20::func_001DDCD0()
+{
+    return this;
 }
 
 bool func_001DDCE0(const FieldFloatGateState7C* object)
@@ -181,8 +228,10 @@ bool func_001DDCE0(const FieldFloatGateState7C* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDD30);
 
-// Returns &object->unk80; subobject type unknown.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDF40);
+FieldClass1515D0* FieldClass153570::func_001DDCD0()
+{
+    return &unk80;
+}
 
 FieldFlaggedListObject* func_001DDF50(FieldFlaggedListObject* list, s32 key)
 {

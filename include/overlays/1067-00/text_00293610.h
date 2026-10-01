@@ -13,6 +13,39 @@ typedef struct FieldClass157400
 
 typedef struct FieldClass1587E8 FieldClass1587E8;
 
+/** Partial scalar state of the distinct D_158240 hierarchy. */
+typedef struct FieldObject158240
+{
+    u8 unk00[0x28];
+    float unk28;
+    s32 unk2C;
+    float unk30;
+    float unk34;
+    float unk38;
+    float unk3C;
+    float unk40;
+    float unk44;
+    u8 unk48[4];
+    u8 unk4C;
+    u8 unk4D;
+    u8 unk4E;
+    u8 unk4F;
+    u8 unk50[4];
+    u8 unk54;
+    u8 unk55;
+    u8 unk56;
+    u8 unk57;
+    u8 unk58[0x48];
+    u8* unkA0;
+} FieldObject158240;
+
+/** Partial receiver for the distinct D_1584B0 hierarchy. */
+typedef struct FieldObject1584B0
+{
+    u8 unk00[0xA0];
+    u8* unkA0;
+} FieldObject1584B0;
+
 /** Partial scalar initializer receiver embedded at parent offset 0x50. */
 typedef struct FieldScalarPair293610
 {
@@ -161,6 +194,20 @@ u8 func_002937F0(FieldClass1587E8* object, void* context);
  * @return The initialized receiver.
  */
 FieldScalarPair293610* func_00294FD0(FieldScalarPair293610* object);
+
+/**
+ * @brief Test whether the linked byte state differs from one.
+ * @param object Object to inspect.
+ * @return Whether the linked state is not one.
+ */
+bool func_00295A90(FieldObject158240* object);
+
+/**
+ * @brief Test whether the linked byte state differs from one.
+ * @param object Object to inspect.
+ * @return Whether the linked state is not one.
+ */
+bool func_00295C10(FieldObject1584B0* object);
 
 /**
  * @brief Append a byte and an optional four-float value while capacity remains.
@@ -491,6 +538,13 @@ void func_0029BD60(FieldObject157AF0* object, float value);
  * @param value Value to store.
  */
 void func_0029BDE0(FieldObject157AF0* object, float value);
+
+/**
+ * @brief Report the default enabled callback state.
+ * @param object Callback receiver.
+ * @return Always true.
+ */
+bool func_0029B6D0(FieldObject157AF0* object);
 
 #ifdef __cplusplus
 }

@@ -30,32 +30,33 @@ typedef struct FieldObject157F00
     u8 unk57;
 } FieldObject157F00;
 
-/** Partial scalar state of the distinct D_158240 hierarchy. */
-typedef struct FieldObject158240
-{
-    u8 unk00[0x28];
-    float unk28;
-    s32 unk2C;
-    float unk30;
-    float unk34;
-    float unk38;
-    float unk3C;
-    float unk40;
-    float unk44;
-    u8 unk48[4];
-    u8 unk4C;
-    u8 unk4D;
-    u8 unk4E;
-    u8 unk4F;
-    u8 unk50[4];
-    u8 unk54;
-    u8 unk55;
-    u8 unk56;
-} FieldObject158240;
-
 typedef struct FieldArrayEntry158DD0 FieldArrayEntry158DD0;
 typedef struct FieldArrayEntry158D00 FieldArrayEntry158D00;
 typedef struct FieldBitset158DD0 FieldBitset158DD0;
+
+/** Complete 0x170-byte array extent constructed by func_002A7E20. */
+struct FieldArrayEntry158DD0
+{
+    u8 unk00[0x10];
+    FieldVector4 unk10;
+    u8 unk20[0x150];
+};
+
+/** Complete 0x120-byte array extent constructed by func_002A7630. */
+struct FieldArrayEntry158D00
+{
+    u8 unk00[0x10];
+    FieldVector4 unk10;
+    u8 unk20[0x100];
+};
+
+/** Complete 0xB0-byte array extent constructed by func_002A6E70. */
+struct FieldArrayEntry158C30
+{
+    u8 unk00[0x10];
+    FieldVector4 unk10;
+    u8 unk20[0x90];
+};
 
 /** Partial array owner associated with table D_158DD0. */
 typedef struct FieldObject158DD0
@@ -66,6 +67,7 @@ typedef struct FieldObject158DD0
     FieldArrayEntry158DD0* unk14;
     u8 unk18[4];
     FieldBitset158DD0* unk1C;
+    FieldObject154E60* unk20;
 } FieldObject158DD0;
 
 /** Partial array owner initialized by func_002A56B0. */
@@ -77,6 +79,7 @@ typedef struct FieldObject158D00
     FieldArrayEntry158D00* unk14;
     u8 unk18[4];
     FieldBitset154E80* unk1C;
+    FieldObject154E60* unk20;
 } FieldObject158D00;
 
 typedef struct FieldArrayEntry158C30 FieldArrayEntry158C30;
@@ -90,6 +93,7 @@ typedef struct FieldObject158C30
     FieldArrayEntry158C30* unk14;
     u8 unk18[4];
     FieldBitset154E80* unk1C;
+    FieldObject154E60* unk20;
 } FieldObject158C30;
 
 /** Aligned 0x60-byte array element constructed by func_002A5FD0. */
@@ -122,6 +126,7 @@ typedef struct FieldObject158B60
     FieldObject158A58* unk14;
     FieldObject158A58* unk18;
     FieldBitset154E80* unk1C;
+    FieldObject154E60* unk20;
 } FieldObject158B60;
 
 /** Partial array owner initialized by func_002A5980. */
@@ -133,6 +138,7 @@ typedef struct FieldObject158A90
     FieldObject158A78* unk14;
     FieldObject158A78* unk18;
     FieldBitset154E80* unk1C;
+    FieldObject154E60* unk20;
 } FieldObject158A90;
 
 #ifdef __cplusplus
@@ -791,6 +797,75 @@ bool func_002A5A60(FieldObject158A90* object);
  * @return Always true.
  */
 bool func_002AD9D0(FieldObject158860* object);
+
+/**
+ * @brief Get an indexed primary array element.
+ * @param object Object owning the array.
+ * @param index Signed element index.
+ * @return Address of the indexed element.
+ */
+FieldArrayEntry158DD0* func_002A5620(FieldObject158DD0* object, s32 index);
+
+/**
+ * @brief Get an element from a secondary array row.
+ * @param object Object owning the array.
+ * @param row Signed primary element index.
+ * @param column Signed index within its secondary row.
+ * @return Address of the indexed secondary element.
+ */
+FieldObject154E60* func_002A5640(FieldObject158DD0* object, s32 row, s32 column);
+
+/**
+ * @brief Get an indexed primary array element.
+ * @param object Object owning the array.
+ * @param index Signed element index.
+ * @return Address of the indexed element.
+ */
+FieldArrayEntry158D00* func_002A5710(FieldObject158D00* object, s32 index);
+
+/**
+ * @brief Get an element from a secondary array row.
+ * @param object Object owning the array.
+ * @param row Signed primary element index.
+ * @param column Signed index within its secondary row.
+ * @return Address of the indexed secondary element.
+ */
+FieldObject154E60* func_002A5730(FieldObject158D00* object, s32 row, s32 column);
+
+/**
+ * @brief Get an indexed primary array element.
+ * @param object Object owning the array.
+ * @param index Signed element index.
+ * @return Address of the indexed element.
+ */
+FieldArrayEntry158C30* func_002A5800(FieldObject158C30* object, s32 index);
+
+/**
+ * @brief Get an element from a secondary array row.
+ * @param object Object owning the array.
+ * @param row Signed primary element index.
+ * @param column Signed index within its secondary row.
+ * @return Address of the indexed secondary element.
+ */
+FieldObject154E60* func_002A5820(FieldObject158C30* object, s32 row, s32 column);
+
+/**
+ * @brief Get an element from a secondary array row.
+ * @param object Object owning the array.
+ * @param row Signed primary element index.
+ * @param column Signed index within its secondary row.
+ * @return Address of the indexed secondary element.
+ */
+FieldObject154E60* func_002A5910(FieldObject158B60* object, s32 row, s32 column);
+
+/**
+ * @brief Get an element from a secondary array row.
+ * @param object Object owning the array.
+ * @param row Signed primary element index.
+ * @param column Signed index within its secondary row.
+ * @return Address of the indexed secondary element.
+ */
+FieldObject154E60* func_002A5A00(FieldObject158A90* object, s32 row, s32 column);
 
 #ifdef __cplusplus
 }

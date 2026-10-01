@@ -142,6 +142,14 @@ normal settings, so I dropped that idea.
   `+0x78` (for example `0x2` for `FieldClass152430`). Code that walks the list
   checks that bit before it treats an object as that class. With
   `FieldClass150F90` declared, `func_001DD5E0` and `func_001DD730` match.
+- Field has two four-float vector classes, which I call `FieldVec4A` and
+  `FieldVec4B` until I know their names. Both are 16-byte aligned and copy all
+  four floats with one 128-bit load and store. `FieldVec4B` differs in one
+  way: assigning to it returns a copy, and that copy leaves an extra store to
+  an unused stack slot in the game's code. That stray store is how I could
+  tell which members use which class. With these classes,
+  `FieldClass150F90`'s constructor (`func_00205480`), `func_001DD960` and
+  `func_001DE3D0` match, and so do their exception entries.
 
 ## More file boundaries from thunks
 
@@ -229,8 +237,14 @@ bit belongs to, I look for the constructor that sets it.
   calls a different function and adds a null check that the game's array
   allocations don't have.
 - A 16-byte value copied with the R5900's 128-bit loads and stores has to be
-  `unsigned __int128`. A struct of four floats marked 16-byte aligned doesn't
-  get those instructions.
+  copied as `unsigned __int128`. A struct of four floats marked 16-byte
+  aligned doesn't get those instructions on its own, so the vector classes
+  copy through a 128-bit pointer cast. A union with an `unsigned __int128`
+  member gives the same loads and stores. But the compiler then removes
+  `FieldVec4B`'s extra stack store, which the game's code still has.
+- A vector built from four floats, such as `FieldVec4A(0, 0, 0, 1)`, is
+  written to a stack temporary one float at a time and then copied with one
+  128-bit load and store.
 
 **Checking it.** A class change can move other functions, so after each change
 I recompile every file that uses the header and link each changed file on its

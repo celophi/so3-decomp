@@ -310,20 +310,20 @@ public:
     virtual void func_00204EC0(void* arg);
 
     /**
-     * @brief Virtual handler slot 12.
-     * @param arg0 First argument whose meaning is not yet known.
-     * @param arg1 Second argument whose meaning is not yet known.
+     * @brief Update the table at offset 0x7C and, when enabling, run slot 14; optionally store the setting in bit 5 at offset 0x8C.
+     * @param enable Nonzero to enable.
+     * @param update Nonzero to store !enable in bit 5 at offset 0x8C.
      */
-    virtual void func_00204370(void* arg0, void* arg1);
+    virtual void func_00204370(u8 enable, s32 update);
 
     /** @brief Default handler that performs no work. */
     virtual void func_001DE3B0();
 
     /**
-     * @brief Virtual handler slot 14.
-     * @param arg Argument whose meaning is not yet known.
+     * @brief Store !enable in bit 6 at offset 0x8C, then update the matching table entries.
+     * @param enable Nonzero to enable.
      */
-    virtual void func_002042A0(void* arg);
+    virtual void func_002042A0(s32 enable);
 
     /**
      * @brief Copy a 16-byte vector to offset 0x20.

@@ -139,6 +139,45 @@ void func_00209C90(FieldMotion4* object, float target, float duration);
 
 #ifdef __cplusplus
 /**
+ * Partial 16-byte class with vtable D_1515D0 in boot data. Its vtable pointer
+ * follows its data at offset 0xC.
+ */
+class FieldClass1515D0
+{
+public:
+    void* unk00;
+    u32 unk04;
+    u8 unk08;
+    u8 unk09[3];
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1515D0();
+};
+
+/** Partial FieldClass1515D0 with four more virtual slots, with vtable D_154D20 in boot data. */
+class FieldClass154D20 : public FieldClass1515D0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass154D20();
+
+    /** @brief Virtual handler slot 1. */
+    virtual void func_0020BDA0();
+
+    /** @brief Virtual handler slot 2. */
+    virtual void func_0020BD00();
+
+    /**
+     * @brief Return the FieldClass1515D0 part to use.
+     * @return This object.
+     */
+    virtual FieldClass1515D0* func_001DDCD0();
+
+    /** @brief Virtual handler slot 4. */
+    virtual void func_0020BCF0();
+};
+
+/**
  * Partial FieldClass150F90 with three more virtual slots, with vtable D_151510
  * in boot data. Its constructor (func_0020BF70) sets type bit 0x1 in unk78.
  * Overrides of earlier slots are not declared yet.
@@ -161,11 +200,32 @@ public:
      */
     virtual void func_0020BF50(void* arg);
 
+    /**
+     * @brief Test bits of the word at offset 0x204.
+     * @param mask Bits to test.
+     * @return True when any bit in mask is set.
+     */
+    bool test_unk204(u32 mask) const
+    {
+        if (unk204 & mask)
+        {
+            return true;
+        }
+        return false;
+    }
+
     float unkA0;
     float unkA4;
-    u32 unkA8;
+    FieldClass154D20* unkA8;
     u32 unkAC;
     u32 unkB0;
+    u8 unkB4[0xBC];
+    FieldVec4A unk170;
+    FieldVec4A unk180;
+    FieldVec4A unk190;
+    u8 unk1a0[0x64];
+    u32 unk204;
+    u32 unk208;
 };
 #endif
 
