@@ -32,6 +32,89 @@ typedef struct FieldFlaggedListObject
 } FieldFlaggedListObject;
 
 #ifdef __cplusplus
+/**
+ * 16-byte aligned four-float vector. Assignment copies all 16 bytes with one
+ * 128-bit load and store.
+ */
+class FieldVec4A
+{
+public:
+    /** @brief Leave the components uninitialized. */
+    FieldVec4A()
+    {
+    }
+
+    /**
+     * @brief Set the four components.
+     * @param px First component.
+     * @param py Second component.
+     * @param pz Third component.
+     * @param pw Fourth component.
+     */
+    FieldVec4A(float px, float py, float pz, float pw)
+    {
+        x = px;
+        y = py;
+        z = pz;
+        w = pw;
+    }
+
+    /**
+     * @brief Copy all four components.
+     * @param other Vector to copy.
+     * @return This vector.
+     */
+    FieldVec4A& operator=(const FieldVec4A& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+        return *this;
+    }
+
+    float x;
+    float y;
+    float z;
+    float w;
+} __attribute__((aligned(16)));
+
+/**
+ * Second 16-byte aligned four-float vector type. It has a copy constructor and
+ * its assignment from FieldVec4A returns a copy, which leaves a 16-byte stack
+ * temporary in the caller.
+ */
+class FieldVec4B
+{
+public:
+    /** @brief Leave the components uninitialized. */
+    FieldVec4B()
+    {
+    }
+
+    /**
+     * @brief Copy all four components.
+     * @param other Vector to copy.
+     */
+    FieldVec4B(const FieldVec4B& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+    }
+
+    /**
+     * @brief Copy all four components from a FieldVec4A.
+     * @param other Vector to copy.
+     * @return A copy of this vector.
+     */
+    FieldVec4B operator=(const FieldVec4A& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+        return *this;
+    }
+
+    float x;
+    float y;
+    float z;
+    float w;
+} __attribute__((aligned(16)));
+
 /** Root of the FieldClass150070 hierarchy, with vtable D_150050 in boot data. */
 class FieldClass150050
 {
@@ -42,7 +125,7 @@ public:
     }
 };
 
-/** Intermediate base with two link words, with vtable D_150060 in boot data. */
+/** Intermediate base with two list links, with vtable D_150060 in boot data. */
 class FieldClass150060 : public FieldClass150050
 {
 public:
@@ -58,8 +141,8 @@ public:
     {
     }
 
-    void* unk04;
-    void* unk08;
+    FieldClass150060* unk04;
+    FieldClass150060* unk08;
 };
 
 /** Base class with four virtual handlers, with vtable D_150070 in boot data. */
@@ -276,6 +359,21 @@ public:
     u8 unk30_1 : 1;
     u8 unk30_2_7 : 6;
 };
+
+/**
+ * @brief Pass the table entries of each listed type-0x8 object to the D_001B661C manager.
+ *
+ * Objects whose func_00204420 check fails or that have no table at offset 0x7C
+ * are skipped. At most 32 entries are collected per object.
+ * @param list Head of a circular object list; traversal stops on return to it or at a null link.
+ */
+extern "C" void func_001DD5E0(FieldClass150060* list);
+
+/**
+ * @brief Detach and release every listed object.
+ * @param list Head of a circular object list; traversal stops on return to it or at a null link.
+ */
+extern "C" void func_001DD730(FieldClass150060* list);
 #endif
 
 #ifdef __cplusplus

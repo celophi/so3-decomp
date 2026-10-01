@@ -27,6 +27,7 @@ extern "C" {
 extern const ResidentDispatchTable D_159070;
 extern ResidentObjectQueue* D_001B65F4;
 extern ResidentContextRef* D_001B6430;
+extern void* D_001B661C;
 
 #ifdef __cplusplus
 }

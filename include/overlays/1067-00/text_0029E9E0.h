@@ -79,12 +79,61 @@ typedef struct FieldObject158D00
     FieldBitset154E80* unk1C;
 } FieldObject158D00;
 
+typedef struct FieldArrayEntry158C30 FieldArrayEntry158C30;
+
 /** Partial base initialized by func_002A57A0. */
 typedef struct FieldObject158C30
 {
-    u8 unk00[0x1C];
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    FieldArrayEntry158C30* unk14;
+    u8 unk18[4];
     FieldBitset154E80* unk1C;
 } FieldObject158C30;
+
+/** Aligned 0x60-byte array element constructed by func_002A5FD0. */
+typedef struct FieldObject158A78
+{
+    u8 unk00[0x10];
+    FieldVector4 unk10;
+    FieldVector4 unk20;
+    u8 unk30[0x30];
+} FieldObject158A78;
+
+/** Aligned 0x90-byte array element constructed by func_002A66D0. */
+typedef struct FieldObject158A58
+{
+    u8 unk00[0x10];
+    FieldVector4 unk10;
+    u8 unk20[0x10];
+    FieldVector4 unk30;
+    FieldVector4 unk40;
+    FieldVector4 unk50;
+    u8 unk60[0x30];
+} FieldObject158A58;
+
+/** Partial array owner initialized by func_002A5890. */
+typedef struct FieldObject158B60
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    FieldObject158A58* unk14;
+    FieldObject158A58* unk18;
+    FieldBitset154E80* unk1C;
+} FieldObject158B60;
+
+/** Partial array owner initialized by func_002A5980. */
+typedef struct FieldObject158A90
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    FieldObject158A78* unk14;
+    FieldObject158A78* unk18;
+    FieldBitset154E80* unk1C;
+} FieldObject158A90;
 
 #ifdef __cplusplus
 extern "C" {
@@ -621,6 +670,127 @@ bool func_002A5790(FieldObject158D00* object);
  * @return Stored value.
  */
 FieldBitset154E80* func_002A5840(FieldObject158C30* object);
+
+/**
+ * @brief Get the first signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5850(FieldObject158C30* object);
+
+/**
+ * @brief Get the second signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5860(FieldObject158C30* object);
+
+/**
+ * @brief Report supported operation flags.
+ * @param object Object to query.
+ * @return Supported flags.
+ */
+u32 func_002A5870(FieldObject158C30* object);
+
+/**
+ * @brief Test whether the primary array is present.
+ * @param object Object to query.
+ * @return Whether the array is present.
+ */
+bool func_002A5880(FieldObject158C30* object);
+
+/**
+ * @brief Get an indexed primary array element.
+ * @param object Object to query.
+ * @param index Signed element index.
+ * @return Address of the indexed element.
+ */
+FieldObject158A58* func_002A58F0(FieldObject158B60* object, s32 index);
+
+/**
+ * @brief Get the associated bitset object.
+ * @param object Object to query.
+ * @return Stored bitset object pointer.
+ */
+FieldBitset154E80* func_002A5930(FieldObject158B60* object);
+
+/**
+ * @brief Get the first signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5940(FieldObject158B60* object);
+
+/**
+ * @brief Get the second signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5950(FieldObject158B60* object);
+
+/**
+ * @brief Report supported operation flags.
+ * @param object Object to query.
+ * @return Supported flags.
+ */
+u32 func_002A5960(FieldObject158B60* object);
+
+/**
+ * @brief Test whether the primary array is present.
+ * @param object Object to query.
+ * @return Whether the array is present.
+ */
+bool func_002A5970(FieldObject158B60* object);
+
+/**
+ * @brief Get an indexed primary array element.
+ * @param object Object to query.
+ * @param index Signed element index.
+ * @return Address of the indexed element.
+ */
+FieldObject158A78* func_002A59E0(FieldObject158A90* object, s32 index);
+
+/**
+ * @brief Get the associated bitset object.
+ * @param object Object to query.
+ * @return Stored bitset object pointer.
+ */
+FieldBitset154E80* func_002A5A20(FieldObject158A90* object);
+
+/**
+ * @brief Get the first signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5A30(FieldObject158A90* object);
+
+/**
+ * @brief Get the second signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5A40(FieldObject158A90* object);
+
+/**
+ * @brief Report supported operation flags.
+ * @param object Object to query.
+ * @return Supported flags.
+ */
+u32 func_002A5A50(FieldObject158A90* object);
+
+/**
+ * @brief Test whether the primary array is present.
+ * @param object Object to query.
+ * @return Whether the array is present.
+ */
+bool func_002A5A60(FieldObject158A90* object);
+
+/**
+ * @brief Report the default enabled callback state.
+ * @param object Object to query.
+ * @return Always true.
+ */
+bool func_002AD9D0(FieldObject158860* object);
 
 #ifdef __cplusplus
 }

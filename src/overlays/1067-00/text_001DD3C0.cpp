@@ -63,8 +63,38 @@ void func_001DD570(FieldFlaggedListObject* list)
     }
 }
 
-// Virtual calls on list items; needs the item class.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD5E0);
+void func_001DD5E0(FieldClass150060* list)
+{
+    void* entries[0x20];
+    FieldClass150060* link = list;
+    for (;;)
+    {
+        link = link->unk08;
+        if (!link || list == link)
+        {
+            break;
+        }
+        FieldClass150F90* object = static_cast<FieldClass150F90*>(link);
+        if ((object->unk78 & 0x8) && object->func_00204420())
+        {
+            void* table = object->unk7c;
+            if (table)
+            {
+                s32 count = 0;
+                void* entry = func_00473940(table, 0);
+                while (entry && count < 0x20)
+                {
+                    entries[count++] = entry;
+                    entry = func_00472EB0(table, entry);
+                }
+                if (count > 0)
+                {
+                    func_004D4010(D_001B661C, count, entries);
+                }
+            }
+        }
+    }
+}
 
 void func_001DD6E0(FieldFlaggedListObject* list)
 {
@@ -83,19 +113,36 @@ void func_001DD6E0(FieldFlaggedListObject* list)
     }
 }
 
-// Virtual calls on list items; needs the item class.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD730);
+void func_001DD730(FieldClass150060* list)
+{
+    FieldClass150060* current;
+    FieldClass150060* node = list->unk08;
+    for (;;)
+    {
+        current = node;
+        if (!node || list == node)
+        {
+            break;
+        }
+        node = node->unk08;
+        func_004D65C0(current);
+        static_cast<FieldClass150070*>(current)->func_001DD7B0();
+    }
+}
 
 void FieldClass150070::func_001DD7B0()
 {
     delete this;
 }
 
-// Virtual calls on list items; needs the item class.
+// Needs FieldClass153330 (slot 37) and the unknown type-0x20 class.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD860);
 
-// 128-bit copy; needs a 16-byte vector type.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD960);
+void FieldClass152F00::func_00205710(const FieldVec4A* value)
+{
+    FieldClass150EB0::func_00205710(value);
+    unk530 = *value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD9A0);
 
@@ -165,8 +212,11 @@ void func_001DE3C0(void* object)
 {
 }
 
-// 128-bit copies; needs a 16-byte vector type.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE3D0);
+void FieldClass152430::func_001DE3D0()
+{
+    unk170 = unk20;
+    unk190 = FieldVec4A(0.0f, 0.0f, 0.0f, 1.0f);
+}
 
 void func_001DE400(FieldFlaggedListObject* list, s32 flag)
 {

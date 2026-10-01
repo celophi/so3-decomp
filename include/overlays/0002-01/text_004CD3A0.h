@@ -120,6 +120,14 @@ extern "C" {
 void func_004CE4C0(float* output, const float* input);
 
 /**
+ * @brief Pass a batch of table entry handles to the manager.
+ * @param manager Manager object that receives the entries.
+ * @param count Number of entries.
+ * @param entries Entry handles.
+ */
+void func_004D4010(void* manager, s32 count, void** entries);
+
+/**
  * @brief Detach the object from the owner stored at offset 0x10, then clear that pointer.
  * @param object Object to detach; the owner receives it through its virtual handler at vtable offset 0x1C.
  */

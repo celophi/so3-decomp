@@ -144,7 +144,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002273
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002273B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00227460);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00205710__16FieldClass152430FPC10FieldVec4A);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002274F0);
 

@@ -137,4 +137,36 @@ void func_00209C90(FieldMotion4* object, float target, float duration);
 }
 #endif
 
+#ifdef __cplusplus
+/**
+ * Partial FieldClass150F90 with three more virtual slots, with vtable D_151510
+ * in boot data. Its constructor (func_0020BF70) sets type bit 0x1 in unk78.
+ * Overrides of earlier slots are not declared yet.
+ */
+class FieldClass151510 : public FieldClass150F90
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass151510();
+
+    /** @brief Virtual handler slot 16. */
+    virtual void func_0020BE50();
+
+    /** @brief Virtual handler slot 17. */
+    virtual void func_0020BF00();
+
+    /**
+     * @brief Virtual handler slot 18.
+     * @param arg Argument whose meaning is not yet known.
+     */
+    virtual void func_0020BF50(void* arg);
+
+    float unkA0;
+    float unkA4;
+    u32 unkA8;
+    u32 unkAC;
+    u32 unkB0;
+};
+#endif
+
 #endif

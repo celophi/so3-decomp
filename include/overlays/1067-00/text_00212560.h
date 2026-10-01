@@ -809,6 +809,830 @@ s32 func_00213040(FieldScriptObject151D40* object, u32 count);
  */
 s32 func_00213050(FieldScriptObject151D40* object, u32 count);
 
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213060(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213070(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213080(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213090(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002130A0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002130B0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002130C0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Copy the first command word to the global word.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002130D0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002130F0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213100(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213110(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213120(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213130(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213140(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213150(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213160(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213170(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213180(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213190(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002131A0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002131B0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002131C0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002131D0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002131E0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002131F0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213200(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213210(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213220(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213230(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213240(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213250(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213260(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213270(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213280(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213290(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002132A0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002132B0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002132C0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002132D0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002132E0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002132F0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213300(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213310(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213320(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213330(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213340(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213350(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213360(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213370(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213380(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213390(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002133A0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002133B0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002133C0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002133D0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002133E0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002133F0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213400(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213410(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213420(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213430(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213440(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213450(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213460(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213470(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213480(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213490(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002134A0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002134B0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002134C0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002134D0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002134E0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002134F0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213500(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213510(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213520(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213530(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213540(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213550(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213560(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213570(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213580(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213590(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002135A0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002135B0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002135C0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002135D0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002135E0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002135F0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213600(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213610(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213620(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213630(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213640(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213650(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213660(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213670(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213680(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_00213690(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002136A0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002136B0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002136C0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Complete this script command without changing its receiver.
+ * @param object Script command receiver.
+ * @param count Number of command operand words.
+ * @return One to advance to the following command.
+ */
+s32 func_002136D0(FieldScriptObject151D40* object, u32 count);
+
 #ifdef __cplusplus
 }
 #endif

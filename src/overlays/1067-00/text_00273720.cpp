@@ -204,7 +204,10 @@ FieldObject1550E8* func_00275D70(FieldObject1552E0* object, s32 index)
     return &object->unk14[index];
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00273720", func_00275D80);
+FieldObject154E60* func_00275D80(FieldObject1552E0* object, s32 row, s32 column)
+{
+    return &object->unk20[row * (object->unk10 - 1) + column];
+}
 
 FieldBitset154E80* func_00275DA0(FieldObject1552E0* object)
 {

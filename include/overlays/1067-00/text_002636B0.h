@@ -71,4 +71,30 @@ u8 func_00264970(const FieldObject15AE70* object);
 /** @brief Store the unsigned byte at offset 0x0D. */
 void func_00264980(FieldObject15AE70* object, u8 value);
 
+/** Partial field object using the D_15AD40 vtable. */
+typedef struct FieldObject15AD40
+{
+    u8 unk00[0x12C];
+    u8 unk12C;
+} FieldObject15AD40;
+
+/** Partial field object using the D_1549D0 vtable. */
+typedef struct FieldObject1549D0
+{
+    u8 unk00[0x38];
+    void* unk38;
+    u8 unk3C;
+} FieldObject1549D0;
+
+/** @brief Store the unsigned byte at offset 0x12C. */
+void func_00265490(FieldObject15AD40* object, u8 value);
+/** @brief Return the zero result for the shared field callback at slot 0xB0. */
+u8 func_0026E3A0(const FieldObject15AE70* object);
+/** @brief Return the zero result for the shared field callback at slot 0xB4. */
+u8 func_0026E3B0(const FieldObject15AE70* object);
+/** @brief Read the unsigned byte at offset 0x3C. */
+u8 func_0026E3C0(const FieldObject1549D0* object);
+/** @brief Read the object pointer at offset 0x38. */
+void* func_0026E3D0(const FieldObject1549D0* object);
+
 #endif

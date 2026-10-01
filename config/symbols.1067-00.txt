@@ -10,6 +10,11 @@ func_004D65C0 = 0x004D65C0; // type:func
 // Lib table update helper.
 func_004728A0 = 0x004728A0; // type:func
 
+// Lib table entry iteration and batch helpers.
+func_00472EB0 = 0x00472EB0; // type:func
+func_00473940 = 0x00473940; // type:func
+func_004D4010 = 0x004D4010; // type:func
+
 // Resident operator delete(void*), called by deleting destructors.
 __dl__FPv = 0x00100B40; // type:func
 
@@ -95,3 +100,16 @@ __vt__16FieldClass1530C0 = 0x001530C0; // size:0xC
 __ct__16FieldClass150040Fv = 0x001DE9C0; // type:func
 func_0023AD00__16FieldClass150040Fv = 0x001DF380; // type:func
 func_0023AD00__16FieldClass1530C0Fv = 0x0023AD00; // type:func
+
+// Field object classes: FieldClass150F90 <- FieldClass151510 <- FieldClass152430
+// <- FieldClass150EB0 <- FieldClass152F00 (constructor chains; see
+// docs/field-cpp-build.md).
+__vt__16FieldClass150F90 = 0x00150F90; // size:0x48
+__vt__16FieldClass151510 = 0x00151510; // size:0x54
+__vt__16FieldClass152430 = 0x00152430; // size:0x88
+__vt__16FieldClass150EB0 = 0x00150EB0; // size:0x98
+__vt__16FieldClass152F00 = 0x00152F00; // size:0x9C
+func_00205710__16FieldClass152430FPC10FieldVec4A = 0x00227460; // type:func
+func_001DE3D0__16FieldClass152430Fv = 0x001DE3D0; // type:func
+func_00205710__16FieldClass152F00FPC10FieldVec4A = 0x001DD960; // type:func
+__ct__16FieldClass150F90Fv = 0x00205480; // type:func

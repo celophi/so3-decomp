@@ -61,7 +61,12 @@ typedef struct FieldObject1550E8
     float unk70;
     u8 unk74[0xC];
 } FieldObject1550E8;
-typedef struct FieldObject154E60 FieldObject154E60;
+/** Complete 64-byte polymorphic secondary-array element. */
+typedef struct FieldObject154E60
+{
+    void* vtable;
+    u8 unk04[0x3C];
+} FieldObject154E60;
 typedef struct FieldBitset154E80 FieldBitset154E80;
 
 /** Partial array owner initialized by func_00275D10 with table D_1552E0. */
@@ -198,6 +203,15 @@ u8 func_00275CB0(FieldObject1552E0* object);
  * @return Address of the indexed element.
  */
 FieldObject1550E8* func_00275D70(FieldObject1552E0* object, s32 index);
+
+/**
+ * @brief Get an indexed element from the secondary array.
+ * @param object Object owning the secondary array.
+ * @param row Signed row index.
+ * @param column Signed column index.
+ * @return Address of the indexed secondary element.
+ */
+FieldObject154E60* func_00275D80(FieldObject1552E0* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.

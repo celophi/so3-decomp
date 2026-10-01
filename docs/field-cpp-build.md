@@ -134,6 +134,14 @@ normal settings, so I dropped that idea.
   class order. Working these out showed that `FieldClass150010` has 9 slots,
   not 5 (three of them are pure virtual), and that the two link words at +4
   and +8 belong to `FieldClass150060`, not `FieldClass150070`.
+- The objects in the field's main object list belong to one big family of
+  classes. Its base is `FieldClass150F90` (16 vtable slots), and the
+  constructors show the chain above it: `FieldClass151510` (19 slots),
+  `FieldClass152430` (32) and `FieldClass153330` (39), with other classes
+  branching off. Each class's constructor sets its own bit in the flag word at
+  `+0x78` (for example `0x2` for `FieldClass152430`). Code that walks the list
+  checks that bit before it treats an object as that class. With
+  `FieldClass150F90` declared, `func_001DD5E0` and `func_001DD730` match.
 
 ## More file boundaries from thunks
 
@@ -194,6 +202,12 @@ That means a field set before a class's vtable store belongs to one of its
 bases. A class whose first virtual function comes after its own data keeps its
 vtable pointer after that data, not at offset 0 (for example `FieldClass1530C0`
 at `0x18`).
+
+**Type flags.** Field objects record their class in the flag word at `+0x78`.
+When a function tests one of those bits and then uses fields or slots that the
+base class doesn't have, it is treating the object as that subclass. I write
+that as a `static_cast` to the subclass after the test. To find which class a
+bit belongs to, I look for the constructor that sets it.
 
 **Things the compiler does that matter for matching:**
 

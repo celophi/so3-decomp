@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_00200710.h"
+#include "overlays/1067-00/text_001DD3C0.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -241,6 +242,122 @@ void func_00207400(FieldState634* object);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+/**
+ * Partial base of the field object classes, with vtable D_150F90 in boot data.
+ * Derived classes set a type bit in unk78 (0x1 FieldClass151510, 0x2
+ * FieldClass152430, 0x400 FieldClass153330, 0x20000 FieldClass15B090). Slots
+ * 9 and 15 are still implemented as the C functions func_00204420 and
+ * func_00205710.
+ */
+class FieldClass150F90 : public FieldClass150070
+{
+public:
+    /** @brief Set the default vectors, clear the table pointers and flags, and set unk74 to -1 and unk90 to 3.0. */
+    FieldClass150F90();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150F90();
+
+    /**
+     * @brief Report the fixed value 4 for this class.
+     * @return Always 4.
+     */
+    virtual s32 func_001DF3D0();
+
+    /** @brief Virtual handler slot 2. */
+    virtual void func_001DD7B0();
+
+    /** @brief Virtual handler slot 3. */
+    virtual void func_001DF360();
+
+    /** @brief Virtual handler slot 5. */
+    virtual void func_00204210();
+
+    /**
+     * @brief Virtual handler slot 6.
+     * @param arg Argument whose meaning is not yet known.
+     */
+    virtual void func_00204A10(void* arg);
+
+    /** @brief Virtual handler slot 7. */
+    virtual void func_00204E40();
+
+    /**
+     * @brief Virtual handler slot 8.
+     * @param arg Argument whose meaning is not yet known.
+     */
+    virtual void func_00204480(void* arg);
+
+    /**
+     * @brief Test the table pointer, bit 0 at offset 0x8C and the float at offset 0x90.
+     * @return True when the table at offset 0x7C is set, bit 0 at offset 0x8C is clear and the float is not positive.
+     */
+    virtual bool func_00204420();
+
+    /**
+     * @brief Virtual handler slot 10.
+     * @return A value whose meaning is not yet known.
+     */
+    virtual s32 func_00205140();
+
+    /**
+     * @brief Virtual handler slot 11.
+     * @param arg Argument whose meaning is not yet known.
+     */
+    virtual void func_00204EC0(void* arg);
+
+    /**
+     * @brief Virtual handler slot 12.
+     * @param arg0 First argument whose meaning is not yet known.
+     * @param arg1 Second argument whose meaning is not yet known.
+     */
+    virtual void func_00204370(void* arg0, void* arg1);
+
+    /** @brief Default handler that performs no work. */
+    virtual void func_001DE3B0();
+
+    /**
+     * @brief Virtual handler slot 14.
+     * @param arg Argument whose meaning is not yet known.
+     */
+    virtual void func_002042A0(void* arg);
+
+    /**
+     * @brief Copy a 16-byte vector to offset 0x20.
+     * @param value Vector to copy.
+     */
+    virtual void func_00205710(const FieldVec4A* value);
+
+    u8 unk14[0xC];
+    FieldVec4A unk20;
+    FieldVec4A unk30;
+    FieldVec4A unk40;
+    FieldVec4A unk50;
+    FieldVec4A unk60;
+    s32 unk70;
+    s32 unk74;
+    u32 unk78;
+    void* unk7c;
+    void* unk80;
+    u32 unk84;
+    u32 unk88;
+    u8 unk8c_0 : 1;
+    u8 unk8c_1 : 1;
+    u8 unk8c_2 : 1;
+    u8 unk8c_3 : 1;
+    u8 unk8c_4 : 1;
+    u8 unk8c_5 : 1;
+    u8 unk8c_6 : 1;
+    u8 unk8c_7 : 1;
+    u8 unk8d_0 : 1;
+    u8 unk8d_1 : 1;
+    u8 unk8d_2_7 : 6;
+    u8 unk8e[2];
+    float unk90;
+};
 #endif
 
 #endif

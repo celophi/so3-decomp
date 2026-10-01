@@ -256,7 +256,30 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002052
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002053D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00205480);
+FieldClass150F90::FieldClass150F90()
+{
+    unk7c = 0;
+    unk80 = 0;
+    unk84 = 0;
+    unk20 = FieldVec4A(0.0f, 0.0f, 0.0f, 1.0f);
+    unk40 = FieldVec4A(1.0f, 1.0f, 1.0f, 1.0f);
+    unk30 = FieldVec4A(0.0f, 0.0f, 0.0f, 1.0f);
+    unk60 = unk50 = FieldVec4A(1.0f, 1.0f, 1.0f, 1.0f);
+    unk88 = 0;
+    unk78 = 0;
+    unk74 = -1;
+    unk90 = 3.0f;
+    unk8c_2 = 0;
+    unk8c_0 = 0;
+    unk8c_1 = 0;
+    unk8c_3 = 0;
+    unk8c_4 = 0;
+    unk8c_5 = 0;
+    unk8c_6 = 0;
+    unk8c_7 = 0;
+    unk8d_0 = 0;
+    unk8d_1 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00205670);
 

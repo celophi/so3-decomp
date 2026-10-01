@@ -626,45 +626,175 @@ FieldBitset154E80* func_002A5840(FieldObject158C30* object)
     return object->unk1C;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5850);
+/**
+ * @brief Get the first signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5850(FieldObject158C30* object)
+{
+    return object->unk0C;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5860);
+/**
+ * @brief Get the second signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5860(FieldObject158C30* object)
+{
+    return object->unk10;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5870);
+/**
+ * @brief Report supported operation flags.
+ * @param object Object to query.
+ * @return Supported flags.
+ */
+u32 func_002A5870(FieldObject158C30* object)
+{
+    return 0x27;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5880);
+/**
+ * @brief Test whether the primary array is present.
+ * @param object Object to query.
+ * @return Whether the array is present.
+ */
+bool func_002A5880(FieldObject158C30* object)
+{
+    return object->unk14 != 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5890);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A58F0);
+/**
+ * @brief Get an indexed primary array element.
+ * @param object Object to query.
+ * @param index Signed element index.
+ * @return Address of the indexed element.
+ */
+FieldObject158A58* func_002A58F0(FieldObject158B60* object, s32 index)
+{
+    return &object->unk14[index];
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5910);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5930);
+/**
+ * @brief Get the associated bitset object.
+ * @param object Object to query.
+ * @return Stored bitset object pointer.
+ */
+FieldBitset154E80* func_002A5930(FieldObject158B60* object)
+{
+    return object->unk1C;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5940);
+/**
+ * @brief Get the first signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5940(FieldObject158B60* object)
+{
+    return object->unk0C;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5950);
+/**
+ * @brief Get the second signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5950(FieldObject158B60* object)
+{
+    return object->unk10;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5960);
+/**
+ * @brief Report supported operation flags.
+ * @param object Object to query.
+ * @return Supported flags.
+ */
+u32 func_002A5960(FieldObject158B60* object)
+{
+    return 0x23;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5970);
+/**
+ * @brief Test whether the primary array is present.
+ * @param object Object to query.
+ * @return Whether the array is present.
+ */
+bool func_002A5970(FieldObject158B60* object)
+{
+    return object->unk14 != 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5980);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A59E0);
+/**
+ * @brief Get an indexed primary array element.
+ * @param object Object to query.
+ * @param index Signed element index.
+ * @return Address of the indexed element.
+ */
+FieldObject158A78* func_002A59E0(FieldObject158A90* object, s32 index)
+{
+    return &object->unk14[index];
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5A00);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5A20);
+/**
+ * @brief Get the associated bitset object.
+ * @param object Object to query.
+ * @return Stored bitset object pointer.
+ */
+FieldBitset154E80* func_002A5A20(FieldObject158A90* object)
+{
+    return object->unk1C;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5A30);
+/**
+ * @brief Get the first signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5A30(FieldObject158A90* object)
+{
+    return object->unk0C;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5A40);
+/**
+ * @brief Get the second signed dimension.
+ * @param object Object to query.
+ * @return Stored value.
+ */
+s32 func_002A5A40(FieldObject158A90* object)
+{
+    return object->unk10;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5A50);
+/**
+ * @brief Report supported operation flags.
+ * @param object Object to query.
+ * @return Supported flags.
+ */
+u32 func_002A5A50(FieldObject158A90* object)
+{
+    return 0x21;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5A60);
+/**
+ * @brief Test whether the primary array is present.
+ * @param object Object to query.
+ * @return Whether the array is present.
+ */
+bool func_002A5A60(FieldObject158A90* object)
+{
+    return object->unk14 != 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5A70);
 
@@ -774,7 +904,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD9
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD9C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD9D0);
+/**
+ * @brief Report the default enabled callback state.
+ * @param object Object to query.
+ * @return Always true.
+ */
+bool func_002AD9D0(FieldObject158860* object)
+{
+    return true;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD9E0);
 
