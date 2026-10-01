@@ -223,6 +223,17 @@ public:
     /** @brief Detach the FieldClass150070 base and queue it on the resident object queue. */
     virtual void func_001DD7B0();
 
+    /**
+     * @brief Sort the list items by height, then run their per-frame handlers.
+     *
+     * Items are collected into a temporary array and bubble-sorted from the
+     * second entry on by unk464 (type-0x400 objects) or the y component of
+     * unk20. Unless the context object at offset 0x8 has a positive float at
+     * offset 0x90, live type-0x2 items then run slots 21, 23 and 24; every live
+     * item runs slot 13. Nothing happens when bit 7 at context offset 0xDD is set.
+     */
+    virtual void func_004D6730();
+
     LibClass178EA0 unkA0;
 };
 
@@ -374,6 +385,17 @@ extern "C" void func_001DD5E0(FieldClass150060* list);
  * @param list Head of a circular object list; traversal stops on return to it or at a null link.
  */
 extern "C" void func_001DD730(FieldClass150060* list);
+
+/**
+ * @brief Run each listed object's type-specific update.
+ *
+ * Type-0x400 objects run slot 37 with 1; type-0x20000 objects are detached and
+ * released; type-0x20 objects without an object at offset 0x148 copy the vector
+ * at offset 0x670 through slot 15. Afterwards the D_001B645C holder, if any,
+ * releases its attached object and clears its word at offset 0x250.
+ * @param list Head of a circular object list; traversal stops on return to it or at a null link.
+ */
+extern "C" void func_001DD860(FieldClass150060* list);
 #endif
 
 #ifdef __cplusplus

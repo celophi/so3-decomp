@@ -3,6 +3,15 @@
 
 #include "types.h"
 
+/** Partial holder of an attached object at offset 0x20, reached through D_001B645C. */
+typedef struct FieldHeldObject20
+{
+    u8 unk00[0x20];
+    void* unk20;
+    u8 unk24[0x22C];
+    s32 unk250;
+} FieldHeldObject20;
+
 /** Partial receiver containing its signed iteration count. */
 typedef struct FieldObject1559A0
 {
@@ -162,6 +171,14 @@ typedef struct FieldScriptObject151D40 FieldScriptObject151D40;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern FieldHeldObject20* D_001B645C;
+
+/**
+ * @brief Detach and release the object at offset 0x20 through its virtual handler at vtable offset 0x10, then clear the pointer.
+ * @param object Holder of the attached object; nothing happens when the pointer is null.
+ */
+void func_0027E7D0(FieldHeldObject20* object);
 
 /**
  * @brief Report the supported operation flags.

@@ -189,7 +189,6 @@ public:
     virtual void unk00(s32);
 };
 
-extern "C" void func_002D47A0(FieldLateDeleting*);
 
 
 class FieldLateIndexedObject

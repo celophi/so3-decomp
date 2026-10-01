@@ -193,6 +193,85 @@ public:
 };
 
 /**
+ * Partial FieldClass152430 with vtable D_153330 in boot data. Its constructor
+ * (func_00249000, in text_0023DC90) sets type bit 0x400 in unk78. Its seven
+ * new virtual slots (32-38) are not declared yet.
+ */
+class FieldClass153330 : public FieldClass152430
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass153330();
+
+    /**
+     * @brief Virtual handler slot 32.
+     * @param arg0 First argument whose meaning is not yet known.
+     * @param arg1 Second argument whose meaning is not yet known.
+     * @param arg2 Third argument whose meaning is not yet known.
+     * @param value Float argument whose meaning is not yet known.
+     */
+    virtual void func_002485B0(void* arg0, void* arg1, void* arg2, float value);
+
+    /** @brief Default handler that performs no work. */
+    virtual void func_0023D390();
+
+    /** @brief Default handler that performs no work. */
+    virtual void func_0023D3A0();
+
+    /** @brief Default handler that performs no work. */
+    virtual void func_0023D3B0();
+
+    /** @brief Virtual handler slot 36. */
+    virtual void func_00247940();
+
+    /**
+     * @brief Virtual handler slot 37.
+     * @param flag Value whose meaning is not yet known; func_001DD860 passes 1.
+     */
+    virtual void func_0023DE90(s32 flag);
+
+    /**
+     * @brief Virtual handler slot 38.
+     * @param arg Argument whose meaning is not yet known.
+     */
+    virtual void func_0023D3C0(void* arg);
+
+    u8 unk210[0x254];
+    float unk464;
+};
+
+/**
+ * Partial 0x6A0-byte FieldClass152F00 with vtable D_152FE0 in boot data. Its
+ * constructor is inlined in the factory func_001F87F0, which sets type bit 0x20
+ * through func_001F8A70. Overrides and new virtual slots are not declared yet.
+ */
+class FieldClass152FE0 : public FieldClass152F00
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass152FE0();
+
+    u8 unk540[0x110];
+    FieldVec4A unk650;
+    FieldVec4A unk660;
+    FieldVec4A unk670;
+    float unk680;
+    u32 unk684;
+    u32 unk688;
+    u8 unk68c[4];
+    s32 unk690;
+    s32 unk694;
+    u8 unk698[4];
+    u8 unk69c;
+    u8 unk69d;
+    u8 unk69e;
+    u8 unk69f_0 : 1;
+    u8 unk69f_1 : 1;
+    u8 unk69f_2 : 1;
+    u8 unk69f_3_7 : 5;
+};
+
+/**
  * Partial FieldClass152F00 with vtable D_152350 in boot data. Its constructor
  * (func_00224A00) sets type bit 0x10 in unk78. New virtual slots are not
  * declared yet.

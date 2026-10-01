@@ -9,6 +9,7 @@
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/1067-00/text_00202240.h"
 #include "overlays/1067-00/text_0021FB80.h"
+#include "overlays/1067-00/text_0027E520.h"
 
 // Not code: 64 zero bytes at the start of .text.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD3C0);
@@ -136,8 +137,43 @@ void FieldClass150070::func_001DD7B0()
     delete this;
 }
 
-// Needs FieldClass153330 (slot 37) and the unknown type-0x20 class.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD860);
+void func_001DD860(FieldClass150060* list)
+{
+    FieldClass150F90* current;
+    FieldClass150060* node = list->unk08;
+    for (;;)
+    {
+        current = static_cast<FieldClass150F90*>(node);
+        if (!node || list == node)
+        {
+            break;
+        }
+        node = node->unk08;
+        if (current->unk78 & 0x400)
+        {
+            static_cast<FieldClass153330*>(current)->func_0023DE90(1);
+        }
+        else if (current->unk78 & 0x20000)
+        {
+            func_004D65C0(current);
+            current->func_001DD7B0();
+        }
+        else if (current->unk78 & 0x20)
+        {
+            FieldClass152FE0* actor = static_cast<FieldClass152FE0*>(current);
+            if (!actor->test_unk148())
+            {
+                actor->func_00205710(&actor->unk670);
+            }
+        }
+    }
+    FieldHeldObject20* holder = D_001B645C;
+    if (holder)
+    {
+        func_0027E7D0(holder);
+        holder->unk250 = 0;
+    }
+}
 
 void FieldClass152F00::func_00205710(const FieldVec4A* value)
 {
@@ -251,7 +287,83 @@ FieldFlaggedListObject* func_001DDF50(FieldFlaggedListObject* list, s32 key)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDFC0);
+void FieldClass14FE30::func_004D6730()
+{
+    if (D_001B6430->context->unkdd_7)
+    {
+        return;
+    }
+    unk60 = LibClass178DD0::unk0c;
+    unk6c = new(0) void*[unk60];
+    func_004D6AF0(this, unk6c);
+    bool swapped;
+    do
+    {
+        swapped = false;
+        for (s32 i = 1; i < unk60 - 1; i++)
+        {
+            FieldClass150F90* first = static_cast<FieldClass150F90*>(unk6c[i]);
+            FieldClass150F90* second = static_cast<FieldClass150F90*>(unk6c[i + 1]);
+            float first_key = (first->unk78 & 0x400) ? static_cast<FieldClass153330*>(first)->unk464 : first->unk20.y;
+            float second_key = (second->unk78 & 0x400) ? static_cast<FieldClass153330*>(second)->unk464 : second->unk20.y;
+            if (first_key > second_key)
+            {
+                unk6c[i] = second;
+                swapped = true;
+                unk6c[i + 1] = first;
+            }
+        }
+    } while (swapped);
+    s32 count = unk60;
+    FieldClass150F90* focus = static_cast<FieldClass150F90*>(D_001B6430->context->unk08->unkdc);
+    if (!focus || (focus && focus->unk90 <= 0.0f))
+    {
+        for (unk5c = 0; unk5c < unk60; unk5c++)
+        {
+            FieldClass150F90* object = static_cast<FieldClass150F90*>(unk6c[unk5c]);
+            if (object && object->unk0e && !object->test_unk70(0x80000000))
+            {
+                func_004D6700(this, object);
+            }
+        }
+        for (s32 i = 0; i < count; i++)
+        {
+            FieldClass150F90* object = static_cast<FieldClass150F90*>(unk6c[i]);
+            if (object && object->unk0e && !object->test_unk70(0x80000000) && (object->unk78 & 0x2))
+            {
+                static_cast<FieldClass152430*>(object)->func_001DE3D0();
+            }
+        }
+        for (s32 i = 0; i < count; i++)
+        {
+            FieldClass150F90* object = static_cast<FieldClass150F90*>(unk6c[i]);
+            if (object && object->unk0e && !object->test_unk70(0x80000000) && (object->unk78 & 0x2)
+                && object->func_00204420())
+            {
+                static_cast<FieldClass152430*>(object)->func_00227CC0();
+            }
+        }
+        for (s32 i = 0; i < count; i++)
+        {
+            FieldClass150F90* object = static_cast<FieldClass150F90*>(unk6c[i]);
+            if (object && object->unk0e && !object->test_unk70(0x80000000) && (object->unk78 & 0x2)
+                && object->func_00204420())
+            {
+                static_cast<FieldClass152430*>(object)->func_001DE3C0();
+            }
+        }
+    }
+    for (s32 j = 0; j < count; j++)
+    {
+        FieldClass150F90* object = static_cast<FieldClass150F90*>(unk6c[j]);
+        if (object && object->unk0e && !object->test_unk70(0x80000000))
+        {
+            object->func_001DE3B0();
+        }
+    }
+    delete[] unk6c;
+    unk6c = 0;
+}
 
 void func_001DE3B0(void* object)
 {

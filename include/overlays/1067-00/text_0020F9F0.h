@@ -3,9 +3,22 @@
 
 #include "types.h"
 
+typedef struct FieldState6C
+{
+    u8 unknown[0x6C];
+    u16 unk6c;
+} FieldState6C;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Store a 16-bit value in the field at offset 0x6C.
+ * @param object State containing the field.
+ * @param value Value to store.
+ */
+void func_00210140(FieldState6C* object, u16 value);
 
 /**
  * @brief Return the fixed value 1.

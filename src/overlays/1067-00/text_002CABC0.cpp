@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002CABC0.h"
+#include "boot/resident_data.h"
 
 struct FieldTable14
 {
@@ -148,6 +149,8 @@ struct FieldCollection50
     u8 pad[0x14];
     FieldEntry50* entries;
 };
+// The field overlay uses this shorter alias for resident func_0011C8C0.
+extern "C" u32 func_11C8C0(void* table, s32 index);
 extern "C" void func_113EA0();
 extern "C" void func_4C74E0(FieldState100* state);
 extern "C" void func_462320(FieldState100* state, s32, s32);
@@ -259,7 +262,30 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CAB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CAE30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CB100);
+void func_002CB100(FieldStateCB100* object, u32 mask)
+{
+    object->mask = mask;
+    if (mask & 1)
+    {
+        object->unk4b5_2 = 0;
+    }
+    if (mask & 2)
+    {
+        object->unk4b5_0 = 0;
+    }
+    if (mask & 4)
+    {
+        object->unk4b5_5 = 1;
+    }
+    if (mask & 0x10)
+    {
+        object->unk4b5_6 = 1;
+    }
+    if (mask & 0x100)
+    {
+        object->unk4b6_2 = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CB1D0);
 
@@ -275,7 +301,11 @@ extern "C" int func_002CBAA0(void* object) { return 9; }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CBAB0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CBAE0);
+u32 func_002CBAE0()
+{
+    return ((func_11C8C0(D_001B65E4, 0xD7E) + 0x7FF) & ~0x7FF)
+        + ((func_11C8C0(D_001B65E4, 0xD7F) + 0x7FF) & ~0x7FF);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CBB30);
 

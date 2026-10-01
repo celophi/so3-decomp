@@ -125,3 +125,8 @@ func_001DDCD0__16FieldClass154D20Fv = 0x001DDCD0; // type:func
 func_001DDCD0__16FieldClass153570Fv = 0x001DDF40; // type:func
 __vt__16FieldClass152350 = 0x00152350; // size:0x10
 func_0045BD20 = 0x0045BD20; // type:func
+
+// Lib list helpers used by FieldClass14FE30::func_004D6730.
+func_004D6700 = 0x004D6700; // type:func
+func_004D6AF0 = 0x004D6AF0; // type:func
+func_004D6730__16FieldClass14FE30Fv = 0x001DDFC0; // type:func
