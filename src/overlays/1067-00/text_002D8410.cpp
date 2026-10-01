@@ -2,7 +2,15 @@
 #include "overlays/1067-00/text_002D8410.h"
 
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D8410", func_002D8410);
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 4.
+ */
+s32 func_002D8410(FieldClass150070* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D8410", func_002D8420);
 

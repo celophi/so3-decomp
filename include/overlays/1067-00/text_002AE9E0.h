@@ -474,6 +474,15 @@ s16 func_002BBC40(FieldSequenceState10* object);
 void* func_002BC010(FieldSequenceState10* object);
 
 #ifdef __cplusplus
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 14.
+ */
+s32 func_002BC220(FieldClass150070* object);
+#endif
+
+#ifdef __cplusplus
 }
 #endif
 

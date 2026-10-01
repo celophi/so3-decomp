@@ -1,10 +1,19 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_002BC510.h"
 #include "overlays/1067-00/text_002AE9E0.h"
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BC510", func_002BC510);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BC510", func_002BC5A0);
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 9.
+ */
+s32 func_002BC5A0(FieldClass150070* object)
+{
+    return 9;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BC510", func_002BC5B0);
 

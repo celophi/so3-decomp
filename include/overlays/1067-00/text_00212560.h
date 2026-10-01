@@ -6,6 +6,13 @@
 /** Opaque script receiver using the table at 0x151D40. */
 typedef struct FieldScriptObject151D40 FieldScriptObject151D40;
 
+/** A 16-byte script-resource record with a signed key and opaque payload. */
+typedef struct FieldScriptRecord217590
+{
+    s32 unk00;
+    u8 unk04[12];
+} FieldScriptRecord217590;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1632,6 +1639,22 @@ s32 func_002136C0(FieldScriptObject151D40* object, u32 count);
  * @return One to advance to the following command.
  */
 s32 func_002136D0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Find a record in the script resource's sentinel-terminated table.
+ * @param object Script receiver containing the resource header.
+ * @param key Record key to find, or -1 to return the first record.
+ * @return Matching record, or null when the table is absent or the key is missing.
+ */
+FieldScriptRecord217590* func_00217590(FieldScriptObject151D40* object, s32 key);
+
+/**
+ * @brief Read a script variable word or a packed runtime flag.
+ * @param object Script receiver containing local variable words.
+ * @param key Encoded storage selector and index, or 0xFFFF for the current word.
+ * @return Stored word or normalized flag value; zero for an unknown selector.
+ */
+u32 func_00217920(FieldScriptObject151D40* object, s32 key);
 
 #ifdef __cplusplus
 }

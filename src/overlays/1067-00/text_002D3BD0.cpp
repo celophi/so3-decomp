@@ -2,7 +2,15 @@
 #include "overlays/1067-00/text_002D3BD0.h"
 
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D3BD0);
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 14.
+ */
+s32 func_002D3BD0(FieldClass150070* object)
+{
+    return 14;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D3BE0);
 
@@ -120,7 +128,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D4B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D4CA0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D4D40);
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 9.
+ */
+s32 func_002D4D40(FieldClass150070* object)
+{
+    return 9;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D4D50);
 

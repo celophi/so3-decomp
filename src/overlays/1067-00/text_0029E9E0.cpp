@@ -117,7 +117,25 @@ void func_0029F070(FieldObject157BC0* object, float value)
     object->unk40 = value;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_0029F080);
+/**
+ * @brief Bind the resource bytes and records and set the mode from byte zero.
+ * @param object Receiver to update.
+ * @param header Resource header bytes.
+ * @param records Resource records to bind.
+ */
+void func_0029F080(FieldObject157BC0* object, u8* header, FieldResourceRecord273720* records)
+{
+    object->unkA0 = header;
+    object->unkA4 = records;
+    if (*object->unkA0 == 1)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_0029F0C0);
 
@@ -134,7 +152,19 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_0029F1
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_0029F130);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_0029F140);
+/**
+ * @brief Clear the index and copy four aligned values from the source.
+ * @param object Receiver to update.
+ * @param source Source of the four aligned values.
+ */
+void func_0029F140(FieldObject157BC0* object, const FieldVectorSource150* source)
+{
+    object->unk2C = 0;
+    object->unk60 = source->unk150;
+    object->unk70 = source->unk160;
+    object->unk80 = source->unk170;
+    object->unk90 = source->unk180;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_0029F170);
 
@@ -256,7 +286,25 @@ void func_002A22E0(FieldObject157F00* object, float value)
     object->unk40 = value;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A22F0);
+/**
+ * @brief Bind the resource bytes and records and set the mode from byte zero.
+ * @param object Receiver to update.
+ * @param header Resource header bytes.
+ * @param records Resource records to bind.
+ */
+void func_002A22F0(FieldObject157F00* object, u8* header, FieldResourceRecord273720* records)
+{
+    object->unkA0 = header;
+    object->unkA4 = records;
+    if (*object->unkA0 == 1)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A2330);
 
@@ -278,7 +326,19 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A23
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A23A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A23B0);
+/**
+ * @brief Clear the index and copy four aligned values from the source.
+ * @param object Receiver to update.
+ * @param source Source of the four aligned values.
+ */
+void func_002A23B0(FieldObject157F00* object, const FieldVectorSource150* source)
+{
+    object->unk2C = 0;
+    object->unk60 = source->unk150;
+    object->unk70 = source->unk160;
+    object->unk80 = source->unk170;
+    object->unk90 = source->unk180;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A23E0);
 
@@ -478,7 +538,25 @@ void func_002A5550(FieldObject158240* object, float value)
     object->unk40 = value;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A5560);
+/**
+ * @brief Bind the resource bytes and records and set the mode from byte zero.
+ * @param object Receiver to update.
+ * @param header Resource header bytes.
+ * @param records Resource records to bind.
+ */
+void func_002A5560(FieldObject158240* object, u8* header, FieldResourceRecord273720* records)
+{
+    object->unkA0 = header;
+    object->unkA4 = records;
+    if (*object->unkA0 == 1)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A55A0);
 
@@ -965,7 +1043,19 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD7
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD760);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD830);
+/**
+ * @brief Clear the index and copy four aligned values from the source.
+ * @param object Receiver to update.
+ * @param source Source of the four aligned values.
+ */
+void func_002AD830(FieldObject158860* object, const FieldVectorSource150* source)
+{
+    object->unk2C = 0;
+    object->unk60 = source->unk150;
+    object->unk70 = source->unk160;
+    object->unk80 = source->unk170;
+    object->unk90 = source->unk180;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD860);
 

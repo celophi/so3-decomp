@@ -24,6 +24,24 @@ void func_00227130(void* object);
  */
 void func_00220150(void* object, s32 flag);
 
+typedef struct FieldObject152320 FieldObject152320;
+
+/**
+ * @brief Report the fixed category for this object.
+ * @param object Receiver.
+ * @return Always 14.
+ */
+s32 func_0021FC10(FieldObject152320* object);
+
+typedef struct FieldObject152410 FieldObject152410;
+
+/**
+ * @brief Report the fixed category for this object.
+ * @param object Receiver.
+ * @return Always 2.
+ */
+s32 func_00224FC0(FieldObject152410* object);
+
 #ifdef __cplusplus
 }
 #endif

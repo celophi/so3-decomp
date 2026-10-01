@@ -4,6 +4,8 @@
 #include "types.h"
 #include "overlays/1067-00/text_002CEAF0.h"
 
+#include "overlays/1067-00/text_001DD3C0.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -57,6 +59,21 @@ void* func_002D3D80(const FieldBufferSlots* object, u8 index);
  * @return One when attached, or zero when rejected.
  */
 u8 func_002D3E40(FieldBufferSlots* object, void* allocation, u8 index);
+
+#ifdef __cplusplus
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 14.
+ */
+s32 func_002D3BD0(FieldClass150070* object);
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 9.
+ */
+s32 func_002D4D40(FieldClass150070* object);
+#endif
 
 #ifdef __cplusplus
 }

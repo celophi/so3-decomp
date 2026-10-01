@@ -15,6 +15,15 @@ extern "C" {
  */
 s32 func_0024CE10(void* queue, void* object);
 
+typedef struct FieldObject153590 FieldObject153590;
+
+/**
+ * @brief Report the fixed category for this object.
+ * @param object Receiver.
+ * @return Always 8.
+ */
+s32 func_0024CC30(FieldObject153590* object);
+
 #ifdef __cplusplus
 }
 

@@ -76,7 +76,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CFD
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CFD80);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CFE00);
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 3.
+ */
+s32 func_002CFE00(FieldClass150070* object)
+{
+    return 3;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CFE10);
 
@@ -140,6 +148,14 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D39
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3A50);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3BB0);
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 4.
+ */
+s32 func_002D3BB0(FieldClass150070* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3BC0);

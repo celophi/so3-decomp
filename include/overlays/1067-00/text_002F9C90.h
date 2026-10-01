@@ -4,6 +4,8 @@
 #include "types.h"
 #include "overlays/1067-00/text_002F3310.h"
 
+#include "overlays/1067-00/text_001DD3C0.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,6 +38,15 @@ u8 func_002FB510(const FieldStateTargets* object, u8 key);
  * @param object Receiver containing the target entries.
  */
 void func_002FB8A0(FieldStateTargets* object);
+
+#ifdef __cplusplus
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 3.
+ */
+s32 func_002FE870(FieldClass150070* object);
+#endif
 
 #ifdef __cplusplus
 }

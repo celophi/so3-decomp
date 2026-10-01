@@ -28,6 +28,13 @@ typedef struct FieldObject157F00
     u8 unk55;
     u8 unk56;
     u8 unk57;
+    u8 unk58[8];
+    FieldVector4 unk60;
+    FieldVector4 unk70;
+    FieldVector4 unk80;
+    FieldVector4 unk90;
+    u8* unkA0;
+    FieldResourceRecord273720* unkA4;
 } FieldObject157F00;
 
 typedef struct FieldArrayEntry158DD0 FieldArrayEntry158DD0;
@@ -866,6 +873,51 @@ FieldObject154E60* func_002A5910(FieldObject158B60* object, s32 row, s32 column)
  * @return Address of the indexed secondary element.
  */
 FieldObject154E60* func_002A5A00(FieldObject158A90* object, s32 row, s32 column);
+
+/**
+ * @brief Bind the resource bytes and records and set the mode from byte zero.
+ * @param object Receiver to update.
+ * @param header Resource header bytes.
+ * @param records Resource records to bind.
+ */
+void func_0029F080(FieldObject157BC0* object, u8* header, FieldResourceRecord273720* records);
+
+/**
+ * @brief Clear the index and copy four aligned values from the source.
+ * @param object Receiver to update.
+ * @param source Source of the four aligned values.
+ */
+void func_0029F140(FieldObject157BC0* object, const FieldVectorSource150* source);
+
+/**
+ * @brief Bind the resource bytes and records and set the mode from byte zero.
+ * @param object Receiver to update.
+ * @param header Resource header bytes.
+ * @param records Resource records to bind.
+ */
+void func_002A22F0(FieldObject157F00* object, u8* header, FieldResourceRecord273720* records);
+
+/**
+ * @brief Clear the index and copy four aligned values from the source.
+ * @param object Receiver to update.
+ * @param source Source of the four aligned values.
+ */
+void func_002A23B0(FieldObject157F00* object, const FieldVectorSource150* source);
+
+/**
+ * @brief Bind the resource bytes and records and set the mode from byte zero.
+ * @param object Receiver to update.
+ * @param header Resource header bytes.
+ * @param records Resource records to bind.
+ */
+void func_002A5560(FieldObject158240* object, u8* header, FieldResourceRecord273720* records);
+
+/**
+ * @brief Clear the index and copy four aligned values from the source.
+ * @param object Receiver to update.
+ * @param source Source of the four aligned values.
+ */
+void func_002AD830(FieldObject158860* object, const FieldVectorSource150* source);
 
 #ifdef __cplusplus
 }

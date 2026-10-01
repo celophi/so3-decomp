@@ -12,7 +12,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F37
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F37D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3860);
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 9.
+ */
+s32 func_002F3860(FieldClass150070* object)
+{
+    return 9;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3870);
 

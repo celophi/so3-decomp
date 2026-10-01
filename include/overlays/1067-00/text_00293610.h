@@ -12,6 +12,7 @@ typedef struct FieldClass157400
 } FieldClass157400;
 
 typedef struct FieldClass1587E8 FieldClass1587E8;
+typedef struct FieldResourceRecord273720 FieldResourceRecord273720;
 
 /** Partial scalar state of the distinct D_158240 hierarchy. */
 typedef struct FieldObject158240
@@ -37,6 +38,7 @@ typedef struct FieldObject158240
     u8 unk57;
     u8 unk58[0x48];
     u8* unkA0;
+    FieldResourceRecord273720* unkA4;
 } FieldObject158240;
 
 /** Partial receiver for the distinct D_1584B0 hierarchy. */
@@ -87,7 +89,7 @@ typedef struct FieldObject158860
 {
     u8 unk00[0x28];
     float unk28;
-    u8 unk2C[4];
+    s32 unk2C;
     float unk30;
     float unk34;
     float unk38;
@@ -104,6 +106,13 @@ typedef struct FieldObject158860
     u8 unk55;
     u8 unk56;
     u8 unk57;
+    u8 unk58[8];
+    FieldVector4 unk60;
+    FieldVector4 unk70;
+    FieldVector4 unk80;
+    FieldVector4 unk90;
+    u8* unkA0;
+    FieldResourceRecord273720* unkA4;
 } FieldObject158860;
 
 typedef struct FieldLinkedObject157AF0 FieldLinkedObject157AF0;
@@ -135,6 +144,8 @@ typedef struct FieldObject157AF0
     FieldVector4 unk70;
     FieldVector4 unk80;
     FieldVector4 unk90;
+    u8* unkA0;
+    FieldResourceRecord273720* unkA4;
 } FieldObject157AF0;
 
 typedef struct FieldLinkedObject157BC0 FieldLinkedObject157BC0;
@@ -166,6 +177,8 @@ typedef struct FieldObject157BC0
     FieldVector4 unk70;
     FieldVector4 unk80;
     FieldVector4 unk90;
+    u8* unkA0;
+    FieldResourceRecord273720* unkA4;
 } FieldObject157BC0;
 
 /** Partial source containing four aligned values starting at offset 0x150. */
@@ -637,6 +650,68 @@ void func_0029BDE0(FieldObject157AF0* object, float value);
  * @return Always true.
  */
 bool func_0029B6D0(FieldObject157AF0* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Callback receiver.
+ */
+void func_00295D90(FieldVectorBuffer293610* object);
+
+/**
+ * @brief Bind the resource bytes and records and set the mode from byte zero.
+ * @param object Callback receiver.
+ * @param header Resource header bytes.
+ * @param records Resource records to bind.
+ */
+void func_00298B40(FieldObject158860* object, u8* header, FieldResourceRecord273720* records);
+
+/**
+ * @brief Perform no work.
+ * @param object Callback receiver.
+ */
+void func_00298BF0(FieldObject157AF0* object);
+
+/**
+ * @brief Bind the resource bytes and records and set the mode from byte zero.
+ * @param object Callback receiver.
+ * @param header Resource header bytes.
+ * @param records Resource records to bind.
+ */
+void func_0029BD70(FieldObject157AF0* object, u8* header, FieldResourceRecord273720* records);
+
+/**
+ * @brief Ignore the supplied linked object.
+ * @param object Callback receiver.
+ * @param value Unused linked object.
+ */
+void func_0029BDF0(FieldObject157AF0* object, FieldObject175360* value);
+
+/**
+ * @brief Report that no linked object is available.
+ * @param object Callback receiver.
+ * @return Null.
+ */
+FieldObject175360* func_0029BE00(FieldObject157AF0* object);
+
+/**
+ * @brief Ignore the supplied linked object.
+ * @param object Callback receiver.
+ * @param value Unused linked object.
+ */
+void func_0029BE10(FieldObject157AF0* object, FieldObject175370* value);
+
+/**
+ * @brief Report that no linked object is available.
+ * @param object Callback receiver.
+ * @return Null.
+ */
+FieldObject175370* func_0029BE20(FieldObject157AF0* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Callback receiver.
+ */
+void func_0029BE60(void* object);
 
 #ifdef __cplusplus
 }

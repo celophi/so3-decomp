@@ -279,9 +279,24 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CBA
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CBB30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CCDF0);
+/**
+ * @brief Set the callback subobject's first flag.
+ * @param object Callback subobject to update.
+ */
+void func_002CCDF0(FieldCallback15AD20* object)
+{
+    object->unk04_0 = 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CCE10);
+/**
+ * @brief Set the receiver's second flag.
+ * @param object Receiver to update.
+ */
+void func_002CCE10(FieldObject15ACF0* object)
+{
+    object->unk39_1 = 1;
+}
+
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CCE30);
 

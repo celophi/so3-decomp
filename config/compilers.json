@@ -5,7 +5,9 @@
   "working_flags": [
     "-O3,p",
     "-RTTI",
-    "off"
+    "off",
+    "-inline",
+    "level=4"
   ],
   "unit_flags": [],
   "source": "tools/so3/build/probes/boot.c",

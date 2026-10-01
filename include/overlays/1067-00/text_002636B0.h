@@ -97,4 +97,16 @@ u8 func_0026E3C0(const FieldObject1549D0* object);
 /** @brief Read the object pointer at offset 0x38. */
 void* func_0026E3D0(const FieldObject1549D0* object);
 
+/** Field object callbacks used by secondary-base adjustment thunks. */
+void func_00264CB0(void* object);
+void* func_00264D30(void* object, s32 flags);
+void func_00265870(void* object, float value);
+void func_002658E0(void* object, s32 value);
+u8 func_0026DAF0(void* object);
+u8 func_0026DF90(void* object, void* value);
+void func_0026E050(void* object);
+void func_0026E0F0(void* object);
+void func_0026E170(void* object);
+void* func_0026E1A0(void* object, s32 flags);
+
 #endif

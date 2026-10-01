@@ -4,7 +4,10 @@
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0021FB80);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0021FC10);
+s32 func_0021FC10(FieldObject152320* object)
+{
+    return 14;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0021FC20);
 
@@ -84,7 +87,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224E
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224E80);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224FC0);
+s32 func_00224FC0(FieldObject152410* object)
+{
+    return 2;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224FD0);
 

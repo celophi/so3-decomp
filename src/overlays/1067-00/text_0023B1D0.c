@@ -1,5 +1,11 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_0023B1D0.h"
 
+struct FieldState23B3A0
+{
+    u8 unk00[0x90];
+    u16 unk90;
+};
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B1D0);
 
@@ -7,7 +13,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B2
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B310);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B3A0);
+u16 func_0023B3A0(FieldState23B3A0* object)
+{
+    return object->unk90;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B3B0);
 
@@ -95,7 +104,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D2
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D2A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D2B0);
+s32 func_0023D2B0(FieldObject153270* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D2C0);
 

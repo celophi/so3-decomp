@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_002764D0.h"
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002764D0);
@@ -65,7 +66,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002782
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002782D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278300);
+s32 func_00278300(FieldObject155540* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278310);
 
@@ -221,7 +225,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027D0
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027D200);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027D320);
+s32 func_0027D320(FieldObject1557B0* object)
+{
+    return 2;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027D330);
 

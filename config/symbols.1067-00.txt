@@ -62,6 +62,9 @@ func_001DD7B0__16FieldClass14FE30Fv = 0x001DD440; // type:func
 func_001DF3D0__16FieldClass150010Fv = 0x001DF310; // type:func
 func_001DD7B0__16FieldClass150010Fv = 0x001DF320; // type:func
 
+// EE kernel syscall 100 (FlushCache), an SDK wrapper in boot.
+func_00121FE0 = 0x00121FE0; // type:func
+
 // Resident helper that takes a boot manager object and an object.
 func_0011ED90 = 0x0011ED90; // type:func
 

@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "boot/resident_data.h"
+#include "sdk/boot/syscalls_00121940.h"
 #include "overlays/1067-00/text_001DED80.h"
 #include "overlays/1067-00/text_0022DC70.h"
 
@@ -150,14 +151,36 @@ s32 FieldClass150070::func_001DF3D0()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF3E0__16FieldClass14FFB0Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", __dt__16FieldClass14FFB0Fv);
+FieldClass14FFB0::~FieldClass14FFB0()
+{
+    if (unk1c)
+    {
+        func_001DF780();
+        delete[] unk1c;
+        unk1c = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF640__16FieldClass14FFB0Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF780__16FieldClass14FFB0Fv);
+void FieldClass14FFB0::func_001DF780()
+{
+    s32 i;
+    for (i = 0; i < unk24; i++)
+    {
+        FieldClass150040* record = &unk1c[i];
+        record->func_0023AD00();
+    }
+}
 
-// Calls resident func_121FE0; needs its declaration and symbol mapping.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DDB30__16FieldClass14FFB0Fv);
+void FieldClass14FFB0::func_001DDB30()
+{
+    if (!unk30_1)
+    {
+        func_00121FE0(0);
+        unk30_1 = 1;
+    }
+}
 
 void func_001DF850(FieldEntryArrayObject* object)
 {
@@ -478,8 +501,6 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E14
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1500);
 
-// Compiler-generated this-adjustment thunk; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1530);
 
 // Compiler-generated this-adjustment thunk; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1540);

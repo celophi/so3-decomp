@@ -161,7 +161,12 @@ verified section mapping and interfaces for functions that use them.
 ## Compiler findings
 
 The current working configuration is **CodeWarrior PS2 3.0 build 52, July 22
-2003, with `-O3,p`**. I haven't uniquely identified it as the original compiler.
+2003, with `-O3,p -RTTI off -inline level=4`**. I haven't uniquely identified it
+as the original compiler. The two later flags come from Field evidence: the
+vtables have no RTTI pointers, and some destructors inline four levels of base
+destructors, which the default depth of three doesn't reach (see
+[field-cpp-build.md](field-cpp-build.md)). Adding `-inline level=4` changed no
+existing match in any module.
 
 The comparison on 2026-09-29 covered 15 archived PS2 compiler candidates from
 September 2000 through May 2004. Their versions, archive hashes, and individual

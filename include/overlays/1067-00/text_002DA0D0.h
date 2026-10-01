@@ -4,10 +4,21 @@
 #include "types.h"
 #include "overlays/1067-00/text_002D8410.h"
 
+#include "overlays/1067-00/text_001DD3C0.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+
+#ifdef __cplusplus
+/**
+ * @brief Report this object's type value.
+ * @param object Callback receiver.
+ * @return Always 9.
+ */
+s32 func_002DA170(FieldClass150070* object);
+#endif
 
 #ifdef __cplusplus
 }

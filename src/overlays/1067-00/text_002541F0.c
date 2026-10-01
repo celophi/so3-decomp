@@ -1,7 +1,11 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_002541F0.h"
 
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002541F0", func_002541F0);
+s32 func_002541F0(FieldObject1537C0* object)
+{
+    return 3;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002541F0", func_00254200);
 

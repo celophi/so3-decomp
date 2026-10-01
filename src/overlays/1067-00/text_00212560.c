@@ -1,12 +1,55 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_00212560.h"
 
+/** Opaque resident runtime root and its resource-section directory. */
+typedef struct FieldRuntimeRoot FieldRuntimeRoot;
+typedef struct FieldRuntimeSections FieldRuntimeSections;
+
+/** Resource section containing packed flags and variable words. */
+typedef struct FieldRuntimeValues
+{
+    u8 unk00[4];
+    u8 unk04[0x180];
+    u8 unk184[4];
+    u32 unk188[];
+} FieldRuntimeValues;
+
+/**
+ * @brief Get the resident runtime root.
+ * @return Resident root pointer.
+ */
+FieldRuntimeRoot* func_10D8E0(void);
+
+/**
+ * @brief Get the runtime root's resource-section directory.
+ * @param root Resident runtime root.
+ * @return Embedded section directory.
+ */
+FieldRuntimeSections* func_101290(FieldRuntimeRoot* root);
+
+/**
+ * @brief Find a resource section by its directory key.
+ * @param sections Resource-section directory.
+ * @param key Section key to find.
+ * @return Section data, or null when no entry matches.
+ */
+void* func_101440(FieldRuntimeSections* sections, s32 key);
+
+typedef struct FieldScriptData217590
+{
+    u8 unk00[8];
+    u32 unk08;
+} FieldScriptData217590;
+
 struct FieldScriptObject151D40
 {
-    u8 unk00[0x4C8];
+    u8 unk00[0x424];
+    u32 unk424;
+    u32 unk428[40];
     unsigned char unk4C8_0 : 1;
     unsigned char unk4C8_1 : 7;
-    u8 unk4C9[0x7F];
+    u8 unk4C9[0x7B];
+    FieldScriptData217590* unk544;
     const u32* unk548;
 };
 
@@ -1040,13 +1083,68 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_002136
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217320);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217590);
+FieldScriptRecord217590* func_00217590(FieldScriptObject151D40* object, s32 key)
+{
+    FieldScriptRecord217590* record;
+    u32 offset;
+    FieldScriptData217590* data;
+
+    data = object->unk544;
+    offset = data->unk08;
+    if (offset == 0)
+    {
+        return 0;
+    }
+    record = (FieldScriptRecord217590*)((u8*)data + offset);
+    if (key == -1)
+    {
+        return record;
+    }
+    if (record->unk00 != -1)
+    {
+        do
+        {
+            if (record->unk00 == key)
+            {
+                return record;
+            }
+            record++;
+        } while (record->unk00 != -1);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217600);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217780);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217920);
+u32 func_00217920(FieldScriptObject151D40* object, s32 key)
+{
+    FieldRuntimeValues* values;
+    s32 index;
+    if (key == 0xFFFF)
+    {
+        return object->unk424;
+    }
+    values = func_101440(func_101290(func_10D8E0()), 4);
+    switch (key & 0xF000)
+    {
+    case 0:
+        return object->unk428[key & 0xFFF];
+    case 0x1000:
+        return values->unk188[key & 0xFFF];
+    case 0x2000:
+    case 0x3000:
+    case 0x4000:
+        index = (key & 0xFFFF) - 0x2000;
+        return (values->unk04[index / 8] & (1 << (index % 8))) != 0;
+    case 0x5000:
+        index = key & 0xFFF;
+        return (values->unk184[index / 8] & (1 << (index % 8))) != 0;
+    default:
+        return 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217A90);
 

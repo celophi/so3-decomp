@@ -10,6 +10,8 @@ overlay (`1067-00`) was built. The short version:
   each in the file. With that, I can rebuild its functions exactly.
 - The original build turned RTTI off and left C++ exceptions on. I've switched
   the project to `-RTTI off` to match.
+- The original also inlined deeper than the compiler's default. I've added
+  `-inline level=4`.
 
 ## Why the file boundaries matter
 
@@ -150,6 +152,14 @@ normal settings, so I dropped that idea.
   tell which members use which class. With these classes,
   `FieldClass150F90`'s constructor (`func_00205480`), `func_001DD960` and
   `func_001DE3D0` match, and so do their exception entries.
+
+- `FieldClass14FFB0`'s destructor pastes in all four base destructors
+  (`FieldClass150010`, `150070`, `150060` and `150050`). My compiler only
+  inlines three levels deep by default, so it called the last one instead.
+  With `-inline level=4` the destructor matches. A function in a different
+  file (`func_00217920`) also only matches with exactly level 4, not 8 and
+  not the "bottom-up" option, so I set it for the whole project. Every
+  function that matched before still matches.
 
 ## More file boundaries from thunks
 

@@ -198,7 +198,9 @@ extern "C" void func_00295D30(FieldVectorBuffer293610* object, u8 value, const F
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295D90);
+void func_00295D90(FieldVectorBuffer293610* object)
+{
+}
 
 bool func_00295DA0(FieldVectorBuffer293610* object)
 {
@@ -365,7 +367,19 @@ void func_00298B30(FieldObject158860* object, float value)
     object->unk40 = value;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00298B40);
+void func_00298B40(FieldObject158860* object, u8* header, FieldResourceRecord273720* records)
+{
+    object->unkA0 = header;
+    object->unkA4 = records;
+    if (*object->unkA0 == 1)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00298B80);
 
@@ -383,7 +397,9 @@ void func_00298BC0(FieldObject157AF0* object, const FieldVectorSource150* source
     object->unk90 = source->unk180;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00298BF0);
+void func_00298BF0(FieldObject157AF0* object)
+{
+}
 
 // Vector dispatcher; runtime layouts and vector-unit operations remain unresolved.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00298C00);
@@ -504,7 +520,19 @@ void func_0029BD60(FieldObject157AF0* object, float value)
     object->unk40 = value;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029BD70);
+void func_0029BD70(FieldObject157AF0* object, u8* header, FieldResourceRecord273720* records)
+{
+    object->unkA0 = header;
+    object->unkA4 = records;
+    if (*object->unkA0 == 1)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029BDB0);
 
@@ -513,13 +541,23 @@ void func_0029BDE0(FieldObject157AF0* object, float value)
     object->unk38 = value;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029BDF0);
+void func_0029BDF0(FieldObject157AF0* object, FieldObject175360* value)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029BE00);
+FieldObject175360* func_0029BE00(FieldObject157AF0* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029BE10);
+void func_0029BE10(FieldObject157AF0* object, FieldObject175370* value)
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029BE20);
+FieldObject175370* func_0029BE20(FieldObject157AF0* object)
+{
+    return 0;
+}
 
 void func_0029BE30(FieldObject157BC0* object, const FieldVectorSource150* source)
 {
@@ -530,7 +568,9 @@ void func_0029BE30(FieldObject157BC0* object, const FieldVectorSource150* source
     object->unk90 = source->unk180;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029BE60);
+void func_0029BE60(void* object)
+{
+}
 
 // Vector dispatcher; runtime layouts and vector-unit operations remain unresolved.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029BE70);
