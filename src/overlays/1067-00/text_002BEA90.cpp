@@ -253,6 +253,23 @@ struct FieldSelector
     void* unk30;
     u8 unk34;
 };
+struct FieldRuntime
+{
+    u8 pad00[0x5EC];
+    float rate;
+};
+
+struct FieldProgressState
+{
+    u8 pad00[0xCE];
+    u8 changed;
+    u8 padCF[0x11];
+    float progress;
+    u8 padE4[0x174];
+    u16 mode;
+};
+
+extern "C" FieldRuntime* D_001B657C;
 extern "C" s8 D_30EAFC[];
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BEA90);
@@ -478,7 +495,19 @@ extern "C" float func_002BFE60(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BFE70);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BFF40);
+extern "C" void func_002BFF40(FieldProgressState* self)
+{
+    if (self->mode == 1)
+    {
+        self->progress += 128.0f * D_001B657C->rate;
+        if (self->progress >= 128.0f)
+        {
+            self->progress = 128.0f;
+            self->mode = 0;
+        }
+        self->changed = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BFF90);
 

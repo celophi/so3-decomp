@@ -35,6 +35,7 @@ typedef struct FieldMotion FieldMotion;
 typedef struct FieldList FieldList;
 typedef struct FieldState28 FieldState28;
 typedef struct FieldSelector FieldSelector;
+typedef struct FieldProgressState FieldProgressState;
 
 #ifdef __cplusplus
 extern "C" {
@@ -314,6 +315,12 @@ bool func_002BF710(const FieldPointer14* self);
  * @return The fixed float value.
  */
 float func_002BFE60(void* object);
+
+/**
+ * @brief Advance a progress value while its mode is active.
+ * @param self Receiver to update.
+ */
+void func_002BFF40(FieldProgressState* self);
 
 /**
  * @brief Clear an inactive state flag or activate once.

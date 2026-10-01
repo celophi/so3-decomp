@@ -201,6 +201,19 @@ public:
     virtual void func_0020BF50(void* arg);
 
     /**
+     * @brief Test whether an object is stored at offset 0x148.
+     * @return True when the pointer at offset 0x148 is set.
+     */
+    bool test_unk148() const
+    {
+        if (unk148)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @brief Test bits of the word at offset 0x204.
      * @param mask Bits to test.
      * @return True when any bit in mask is set.
@@ -219,7 +232,9 @@ public:
     FieldClass154D20* unkA8;
     u32 unkAC;
     u32 unkB0;
-    u8 unkB4[0xBC];
+    u8 unkB4[0x94];
+    void* unk148;
+    u8 unk14c[0x24];
     FieldVec4A unk170;
     FieldVec4A unk180;
     FieldVec4A unk190;

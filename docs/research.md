@@ -1,4 +1,6 @@
-# Compiler research
+# Research
+
+## Compiler
 
 I think SO3 was built with CodeWarrior for PS2. I'm using **3.0 build 52
 (July 22, 2003)** with these flags for now:
@@ -43,3 +45,24 @@ libraries and IOP code may have used different tools too.
 The compiler versions and current flags are in
 [config/manifests/compilers.json](../config/manifests/compilers.json). `make compiler-probe` checks
 the current candidate; `make compiler-matrix` runs the full comparison.
+
+## Field and Battle modules
+
+The disc has two copies of both the Field and Battle programs:
+
+| Module | Name in its header | Load address |
+| --- | --- | --- |
+| `1067-00` | `y` | `0x1DD380` |
+| `3454-00` | `i` | `0x1DD380` |
+| `1070-00` | `Field.bin` | `0x1E2B00` |
+| `3253-00` | `BattleMain.ovl` | `0x1E2B00` |
+
+I think the game only uses the first two. `boot.bin` loads archive entry 1067,
+Field 1067 loads Battle 3454, and Battle 3454 goes back to 1067. I couldn't
+find anything that loads 1070 or 3253, either by entry number or by name, so
+they look like leftovers from an older build. Both discs carry the same copies.
+
+I haven't confirmed this while the game is running, and something could still
+compute those entry numbers. If it holds up, the two unused modules are 3.28 MB
+of the 8.59 MB of code that progress currently counts.
+

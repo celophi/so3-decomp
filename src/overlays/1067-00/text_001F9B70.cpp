@@ -2,6 +2,7 @@
 #include "sdk/boot/syscalls_00121940.h"
 #include "overlays/1067-00/text_001F9B70.h"
 #include "overlays/1067-00/text_002CEAF0.h"
+#include "overlays/1067-00/text_002D3BD0.h"
 #include "overlays/0002-01/text_004CD3A0.h"
 
 extern "C" void func_4D9F40(FieldWordAt210*, const FieldWordAt210*);
@@ -45,7 +46,7 @@ struct FieldRecords {
     u8 byte2F;
 };
 extern "C" void* func_0020F520(void*);
-extern "C" void func_00232090(void*, s8);
+extern "C" void func_00232090(FieldObject232090*, s8);
 extern "C" void func_00232450(void*);
 extern "C" void func_00232520(void*, s32);
 
@@ -188,7 +189,6 @@ public:
     virtual void unk00(s32);
 };
 
-extern "C" void func_002D47A0(FieldLateDeleting*);
 
 
 class FieldLateIndexedObject

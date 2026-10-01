@@ -1,11 +1,14 @@
 #include "include_asm.h"
+#include "boot/resident_data.h"
 #include "sdk/boot/syscalls_00121940.h"
 #include "overlays/1067-00/text_001ED7E0.h"
 #include "overlays/1067-00/text_002CEAF0.h"
 #include "overlays/0002-01/text_004CD3A0.h"
+#include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/1067-00/text_002DBC50.h"
 
 extern "C" void func_4D9F40(FieldWordAt210*, const FieldWordAt210*);
+extern "C" u32 D_001B65B4;
 
 
 struct FieldScriptCursorF32 { u8 pad[0x548]; float* current; };
@@ -46,7 +49,6 @@ struct FieldRecords {
     u8 byte2F;
 };
 extern "C" void* func_0020F520(void*);
-extern "C" void func_00232090(void*, s8);
 extern "C" void func_00232450(void*);
 extern "C" void func_00232520(void*, s32);
 
@@ -189,7 +191,6 @@ public:
     virtual void unk00(s32);
 };
 
-extern "C" void func_002D47A0(FieldLateDeleting*);
 
 
 class FieldLateIndexedObject
@@ -336,8 +337,11 @@ void func_001EE1D0(void* object)
 {
 }
 
-// Calls a library constructor using an unresolved global.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EE1E0);
+void func_001EE1E0(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 void func_001EE210(FieldVectorState50* state, const FieldQword* input)
 {
@@ -481,7 +485,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F1E
 
 extern "C" s32 func_001F1F60(void* object) { return 16; }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F1F70);
+void func_001F1F70(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F1FA0);
 
@@ -556,14 +564,19 @@ extern "C" void func_001F2DE0(FieldRecords* state)
 }
 
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F2EB0);
+extern "C" s32 func_001F2EB0(FieldScriptCursorU32* cursor, u32 count)
+{
+    D_001B65B4 = *cursor->current;
+    D_001B6430->context->unkd4 = *cursor->current;
+    return 1;
+}
 
 extern "C" s32 func_001F2EE0(void* object) { return 1; }
 
 extern "C" s32 func_001F2EF0(FieldScriptCursorS8* cursor)
 {
     void* state = func_0020F520(cursor);
-    func_00232090(state, *cursor->current);
+    func_00232090((FieldObject232090*)state, *cursor->current);
     return 1;
 }
 

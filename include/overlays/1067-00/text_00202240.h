@@ -4,10 +4,17 @@
 #include "types.h"
 #include "overlays/1067-00/text_00200710.h"
 #include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/1067-00/text_00202240_callbacks.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Release the receiver's attached field resources.
+ * @param object Receiver to clear.
+ */
+void func_00202840(void* object);
 
 /**
  * @brief Combine the receiver and owner components into a packed resource key.
@@ -330,6 +337,20 @@ public:
      * @param value Vector to copy.
      */
     virtual void func_00205710(const FieldVec4A* value);
+
+    /**
+     * @brief Test bits of the word at offset 0x70.
+     * @param mask Bits to test.
+     * @return True when any bit in mask is set.
+     */
+    bool test_unk70(u32 mask) const
+    {
+        if (unk70 & mask)
+        {
+            return true;
+        }
+        return false;
+    }
 
     u8 unk14[0xC];
     FieldVec4A unk20;

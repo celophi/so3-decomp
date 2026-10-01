@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_1067_00_TEXT_001ED7E0_H
 
 #include "types.h"
+#include "overlays/1067-00/text_001ED7E0_callbacks.h"
 
 /** One 16-byte value also accessed as four floats. */
 typedef unsigned __int128 FieldQword;
@@ -194,6 +195,12 @@ s32 func_001EE1C0(void* object);
 void func_001EE1D0(void* object);
 
 /**
+ * @brief Clean up the receiver and add it to the resident queue.
+ * @param object Receiver to clean up and queue.
+ */
+void func_001EE1E0(void* object);
+
+/**
  * @brief Set four floats at offset 0x20, using one as the last component.
  * @param state Receiver to update.
  * @param x First component.
@@ -229,6 +236,12 @@ void func_001F0F90(void* object);
 s32 func_001F1F60(void* object);
 
 /**
+ * @brief Clean up the receiver and add it to the resident queue.
+ * @param object Receiver to clean up and queue.
+ */
+void func_001F1F70(void* object);
+
+/**
  * @brief Copy the current float operand to two receiver objects.
  * @param cursor Operand cursor.
  * @return One.
@@ -254,6 +267,14 @@ void func_001F2DE0(FieldRecords* state);
  * @return One.
  */
 s32 func_001F2EE0(void* object);
+
+/**
+ * @brief Copy the current script operand to the shared word and field context.
+ * @param cursor Current script operand cursor.
+ * @param count Operand count supplied by the script dispatcher; unused.
+ * @return Always 1.
+ */
+s32 func_001F2EB0(FieldScriptCursorU32* cursor, u32 count);
 
 /**
  * @brief Pass the signed byte operand to the receiver.

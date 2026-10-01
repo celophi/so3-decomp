@@ -1,5 +1,27 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002CABC0.h"
+#include "boot/resident_data.h"
+
+struct FieldNameEntry
+{
+    u8 unk00[0x0C];
+    s16 name_index;
+    u8 unk0E[0x12];
+};
+
+struct FieldNameGroup
+{
+    u8 unk00[2];
+    s16 count;
+    u8 unk04[4];
+    const u8* names;
+};
+
+struct FieldNameOwner
+{
+    u8 unk00[0x4C4];
+    char name[1];
+};
 
 struct FieldTable14
 {
@@ -148,6 +170,10 @@ struct FieldCollection50
     u8 pad[0x14];
     FieldEntry50* entries;
 };
+// This overlay uses shorter aliases for these resident functions.
+extern "C" u32 func_11C8C0(void* table, s32 index);
+extern "C" char* func_13CD50(char* dest, const char* src, u32 count);
+extern "C" s32 func_13C800(const char* left, const char* right);
 extern "C" void func_113EA0();
 extern "C" void func_4C74E0(FieldState100* state);
 extern "C" void func_462320(FieldState100* state, s32, s32);
@@ -259,7 +285,30 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CAB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CAE30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CB100);
+void func_002CB100(FieldStateCB100* object, u32 mask)
+{
+    object->mask = mask;
+    if (mask & 1)
+    {
+        object->unk4b5_2 = 0;
+    }
+    if (mask & 2)
+    {
+        object->unk4b5_0 = 0;
+    }
+    if (mask & 4)
+    {
+        object->unk4b5_5 = 1;
+    }
+    if (mask & 0x10)
+    {
+        object->unk4b5_6 = 1;
+    }
+    if (mask & 0x100)
+    {
+        object->unk4b6_2 = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CB1D0);
 
@@ -269,13 +318,34 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CB5
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CB710);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CB9D0);
+FieldNameEntry* func_002CB9D0(FieldNameOwner* object, FieldNameGroup** group_ptr)
+{
+    FieldNameEntry* entry;
+    FieldNameGroup* group = *group_ptr;
+    entry = (FieldNameEntry*)((u8*)group + 0x30);
+    char buffer[17];
+    for (s32 index = 0; index < group->count; index++, entry++)
+    {
+        const char* source = (const char*)(group->names + entry->name_index * 0x14 + 4);
+        func_13CD50(buffer, source, 16);
+        buffer[16] = 0;
+        if (func_13C800(buffer, object->name) == 0)
+        {
+            return entry;
+        }
+    }
+    return 0;
+}
 
 extern "C" int func_002CBAA0(void* object) { return 9; }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CBAB0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CBAE0);
+u32 func_002CBAE0()
+{
+    return ((func_11C8C0(D_001B65E4, 0xD7E) + 0x7FF) & ~0x7FF)
+        + ((func_11C8C0(D_001B65E4, 0xD7F) + 0x7FF) & ~0x7FF);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CBB30);
 

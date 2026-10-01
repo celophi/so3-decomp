@@ -29,7 +29,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FE
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210010);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210140);
+void func_00210140(FieldState6C* object, u16 value)
+{
+    object->unk6c = value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210150);
 

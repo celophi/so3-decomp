@@ -5,6 +5,7 @@
 
 /** Opaque script receiver using the table at 0x151D40. */
 typedef struct FieldScriptObject151D40 FieldScriptObject151D40;
+typedef struct FieldObject217CE0 FieldObject217CE0;
 
 /** A 16-byte script-resource record with a signed key and opaque payload. */
 typedef struct FieldScriptRecord217590
@@ -16,6 +17,13 @@ typedef struct FieldScriptRecord217590
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Set a byte on each attached object in the receiver's pointer array.
+ * @param object Receiver holding 16 slots and one extra attachment.
+ * @param value Byte to store on each non-null attachment.
+ */
+void func_00217CE0(FieldObject217CE0* object, u8 value);
 
 /**
  * @brief Set the low flag bit from the low bit of the command value.
@@ -1647,6 +1655,14 @@ s32 func_002136D0(FieldScriptObject151D40* object, u32 count);
  * @return Matching record, or null when the table is absent or the key is missing.
  */
 FieldScriptRecord217590* func_00217590(FieldScriptObject151D40* object, s32 key);
+
+/**
+ * @brief Write a script variable word or packed runtime flag.
+ * @param object Script receiver containing local variable words.
+ * @param key Encoded storage selector and index, or 0xFFFF for the current word.
+ * @param value Value to write; packed flags use its truth value.
+ */
+void func_00217780(FieldScriptObject151D40* object, s32 key, u32 value);
 
 /**
  * @brief Read a script variable word or a packed runtime flag.

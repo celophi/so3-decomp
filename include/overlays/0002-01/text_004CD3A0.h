@@ -20,7 +20,8 @@ typedef struct LibListNode
 class LibClass178DD0
 {
 public:
-    u8 unk00[0x10];
+    u8 unk00[0xC];
+    s32 unk0c;
 
     /** @brief Destroy the object. */
     virtual ~LibClass178DD0();
@@ -96,7 +97,12 @@ public:
      */
     static void operator delete(void* object);
 
-    u8 unk14[0x64];
+    u8 unk14[0x48];
+    s32 unk5c;
+    s32 unk60;
+    u8 unk64[8];
+    void** unk6c;
+    u8 unk70[8];
 };
 
 /** Partial Lib class used as a member object, with vtable D_178EA0 in boot data. */
@@ -126,6 +132,20 @@ void func_004CE4C0(float* output, const float* input);
  * @param entries Entry handles.
  */
 void func_004D4010(void* manager, s32 count, void** entries);
+
+/**
+ * @brief Pass one list item to its virtual handler at vtable offset 0x14.
+ * @param list List that owns the item.
+ * @param item Item to process.
+ */
+void func_004D6700(void* list, void* item);
+
+/**
+ * @brief Fill an array with the list's items.
+ * @param list List whose items are collected.
+ * @param items Array that receives the item pointers.
+ */
+void func_004D6AF0(void* list, void** items);
 
 /**
  * @brief Detach the object from the owner stored at offset 0x10, then clear that pointer.

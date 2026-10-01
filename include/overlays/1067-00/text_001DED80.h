@@ -3,10 +3,18 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/1067-00/text_001DED80_callbacks.h"
 
 /** 16-byte entry of the array owned by FieldEntryArrayObject: a sort value followed by three floats. */
 typedef struct FieldArrayEntry10
 {
+#ifdef __cplusplus
+    /** @brief Leave the entry uninitialized; arrays of entries carry an allocation header. */
+    FieldArrayEntry10()
+    {
+    }
+
+#endif
     float unk00;
     float unk04;
     float unk08;
@@ -51,15 +59,6 @@ typedef struct FieldFloatSpan1C
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * @brief Find a listed object whose flag word shares a bit with the mask and whose word at offset 0x70 matches the key.
- * @param list Head of a circular object list; traversal stops on return to it or at a null link.
- * @param key Value compared with the word at offset 0x70.
- * @param mask Bits tested against the flag word at offset 0x78.
- * @return The first matching object, or null if none matches.
- */
-FieldFlaggedListObject* func_001DEE30(FieldFlaggedListObject* list, s32 key, u32 mask);
 
 /**
  * @brief Call func_00234000 for each listed object whose flag bit 3 is set.
@@ -313,6 +312,360 @@ s32 func_001E02C0(FieldEntryArrayObject* object, const float* x, const float* y,
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+/** Root of the keyframe classes, with only a destructor, with vtable D_14FF50 in boot data. */
+class FieldClass14FF50
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass14FF50()
+    {
+    }
+};
+
+/**
+ * Partial keyframe base with a counted array of 16-byte entries, with vtable
+ * D_150090 in boot data. Slots 14, 16 and 30-33 are pure virtual. Many slots
+ * are still implemented as the C functions above (FieldEntryArrayObject
+ * describes the same layout); slots are named after the first implementation.
+ */
+class FieldClass150090 : public FieldClass14FF50
+{
+public:
+    /** @brief Free the entry array, then destroy the object. */
+    virtual ~FieldClass150090();
+
+    /**
+     * @brief Replace the entry array with count new entries.
+     * @param count Number of entries.
+     */
+    virtual void func_001DFB70(s32 count);
+
+    /**
+     * @brief Use an external entry array.
+     * @param count Number of entries.
+     * @param entries Entries to use.
+     */
+    virtual void func_001DFF70(s32 count, FieldArrayEntry10* entries);
+
+    /**
+     * @brief Virtual handler slot 3.
+     * @param value Value whose meaning is not yet known.
+     */
+    virtual void func_001DFC10(s32 value);
+
+    /**
+     * @brief Virtual handler slot 4.
+     * @param value Value whose meaning is not yet known.
+     */
+    virtual void func_001DFC70(s32 value);
+
+    /**
+     * @brief Virtual handler slot 5.
+     * @return A value whose meaning is not yet known.
+     */
+    virtual s32 func_001DFCD0() const;
+
+    /**
+     * @brief Append an entry through slot 24.
+     * @param x First component, or null.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @param key Sort value.
+     * @return The result of slot 24.
+     */
+    virtual s32 func_001E1470(const float* x, const float* y, const float* z, float key);
+
+    /** @brief Default handler that performs no work. */
+    virtual void func_001DF220();
+
+    /**
+     * @brief Set an entry through slot 25.
+     * @param index Entry index.
+     * @param key Sort value.
+     * @param x First component, or null.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @return The result of slot 25.
+     */
+    virtual s32 func_001E14A0(s32 index, float key, const float* x, const float* y, const float* z);
+
+    /**
+     * @brief Insert an entry through slot 26.
+     * @param index Entry index.
+     * @param key Sort value.
+     * @param x First component, or null.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @return The result of slot 26.
+     */
+    virtual s32 func_001E14D0(s32 index, float key, const float* x, const float* y, const float* z);
+
+    /**
+     * @brief Read an entry.
+     * @param index Entry index.
+     * @param key Receives the sort value, or null.
+     * @param x Receives the first component, or null.
+     * @param y Receives the second component, or null.
+     * @param z Receives the third component, or null.
+     * @return A status value.
+     */
+    virtual s32 func_001DF2E0(s32 index, float* key, float* x, float* y, float* z) const;
+
+    /**
+     * @brief Add an entry through slot 27.
+     * @param x First component, or null.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @param key Sort value.
+     */
+    virtual void func_001E1500(const float* x, const float* y, const float* z, float key);
+
+    /** @brief Default handler that performs no work. */
+    virtual void func_001DF300();
+
+    /**
+     * @brief Find the entry for a sort value.
+     * @param key Sort value.
+     * @return An entry index.
+     */
+    virtual s32 func_001DFF20(float key) const;
+
+    /**
+     * @brief Pure virtual handler slot 14.
+     * @param out Receives a value.
+     */
+    virtual void func_001DFA40(float* out) const = 0;
+
+    /**
+     * @brief Virtual handler slot 15.
+     * @param value Value whose meaning is not yet known.
+     * @return A value whose meaning is not yet known.
+     */
+    virtual float func_001DFDE0(float value) const;
+
+    /**
+     * @brief Pure virtual handler slot 16.
+     * @param out Receives a value.
+     */
+    virtual void func_001DFA30(float* out) const = 0;
+
+    /**
+     * @brief Virtual handler slot 17.
+     * @return A value whose meaning is not yet known.
+     */
+    virtual float func_001DFED0() const;
+
+    /**
+     * @brief Store slot 30's value for a sort value.
+     * @param key Sort value.
+     * @param out Receives the value.
+     */
+    virtual void func_001DFD50(float key, float* out);
+
+    /**
+     * @brief Virtual handler slot 19.
+     * @return A value whose meaning is not yet known.
+     */
+    virtual s16 func_001DFCE0() const;
+
+    /** @brief Delete the object through its virtual destructor. */
+    virtual void func_001DF230();
+
+    /**
+     * @brief Virtual handler slot 21.
+     * @return An entry.
+     */
+    virtual FieldArrayEntry10* func_001DFD80() const;
+
+    /** @brief Reset the entry state. */
+    virtual void func_001DFAE0();
+
+    /**
+     * @brief Virtual handler slot 23.
+     * @return A value whose meaning is not yet known.
+     */
+    virtual s16 func_001DFCF0() const;
+
+    /**
+     * @brief Default append handler.
+     * @param x First component, or null.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @param key Sort value.
+     * @return A status value.
+     */
+    virtual s32 func_001DFD00(const float* x, const float* y, const float* z, float key);
+
+    /**
+     * @brief Default set handler.
+     * @param index Entry index.
+     * @param key Sort value.
+     * @param x First component, or null.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @return A status value.
+     */
+    virtual s32 func_001DFD10(s32 index, float key, const float* x, const float* y, const float* z);
+
+    /**
+     * @brief Default insert handler.
+     * @param index Entry index.
+     * @param key Sort value.
+     * @param x First component, or null.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @return A status value.
+     */
+    virtual s32 func_001DFD20(s32 index, float key, const float* x, const float* y, const float* z);
+
+    /**
+     * @brief Default add handler.
+     * @param x First component, or null.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @param key Sort value.
+     */
+    virtual void func_001DFD30(const float* x, const float* y, const float* z, float key);
+
+    /**
+     * @brief Virtual handler slot 28.
+     * @return A value whose meaning is not yet known.
+     */
+    virtual float func_001DFD40() const;
+
+    /**
+     * @brief Virtual handler slot 29.
+     * @param key Sort value.
+     * @return A value whose meaning is not yet known.
+     */
+    virtual float func_001DFE70(float key);
+
+    /**
+     * @brief Pure virtual evaluation slot 30.
+     * @param key Sort value.
+     * @return The value for key.
+     */
+    virtual float func_001E0380(float key) = 0;
+
+    /**
+     * @brief Pure virtual append slot 31.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     * @param key Sort value.
+     * @return A status value.
+     */
+    virtual s32 func_001E02C0(const float* x, const float* y, const float* z, float key) = 0;
+
+    /**
+     * @brief Pure virtual set slot 32.
+     * @param index Entry index.
+     * @param key Sort value.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     * @return A status value.
+     */
+    virtual s32 func_001E0220(s32 index, float key, const float* x, const float* y, const float* z) = 0;
+
+    /**
+     * @brief Pure virtual insert slot 33.
+     * @param index Entry index.
+     * @param key Sort value.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     * @return A status value.
+     */
+    virtual s32 func_001E0100(s32 index, float key, const float* x, const float* y, const float* z) = 0;
+
+    /** @brief Free the entry array unless bit 1 at offset 0x2B marks it as external. */
+    void func_001DFD90();
+
+    FieldArrayEntry10* unk04;
+    u8 unk08[0x10];
+    s32 unk18;
+    float unk1c;
+    s16 unk20;
+    s16 unk22;
+    s16 unk24;
+    s16 unk26;
+    s16 unk28;
+    u8 unk2a_0_3 : 4;
+    u8 unk2a_4_7 : 4;
+    u8 unk2b_0 : 1;
+    u8 unk2b_1 : 1;
+    u8 unk2b_2_7 : 6;
+    u8 unk2c[0x20];
+    u32 unk4c;
+    float unk50;
+};
+
+/** Partial three-component keyframe class, with vtable D_14FEB0 in boot data. */
+class FieldClass14FEB0 : public FieldClass150090
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass14FEB0()
+    {
+    }
+
+    /**
+     * @brief Append an entry, using 0 for a missing second or third component.
+     * @param x First component.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @param key Sort value.
+     * @return The result of slot 31.
+     */
+    virtual s32 func_001E1470(const float* x, const float* y, const float* z, float key);
+
+    /**
+     * @brief Set an entry, using 0 for a missing second or third component.
+     * @param index Entry index.
+     * @param key Sort value.
+     * @param x First component.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @return The result of slot 32.
+     */
+    virtual s32 func_001E14A0(s32 index, float key, const float* x, const float* y, const float* z);
+
+    /**
+     * @brief Insert an entry, using 0 for a missing second or third component.
+     * @param index Entry index.
+     * @param key Sort value.
+     * @param x First component.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @return The result of slot 33.
+     */
+    virtual s32 func_001E14D0(s32 index, float key, const float* x, const float* y, const float* z);
+
+    /**
+     * @brief Add an entry, using 0 for a missing second or third component.
+     * @param x First component.
+     * @param y Second component, or null.
+     * @param z Third component, or null.
+     * @param key Sort value.
+     */
+    virtual void func_001E1500(const float* x, const float* y, const float* z, float key);
+
+    /** @brief Add an all-zero entry with sort value 0 through slot 11. */
+    virtual void func_001DF300();
+
+    /**
+     * @brief Virtual handler slot 34.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     * @param key Sort value.
+     */
+    virtual void func_001E0080(const float* x, const float* y, const float* z, float key);
+};
 #endif
 
 #endif

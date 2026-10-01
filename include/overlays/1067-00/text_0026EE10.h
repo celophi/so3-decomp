@@ -3,6 +3,11 @@
 
 #include "types.h"
 
+typedef struct FieldWords270E90 FieldWords270E90;
+typedef struct FieldState270EE0 FieldState270EE0;
+typedef struct FieldFlag272290 FieldFlag272290;
+typedef struct FieldState271750 FieldState271750;
+
 /** @brief Return the type value for the D_154BB0 callback table. */
 s32 func_0026EED0(const void* object);
 /** @brief Return the type value for the D_154BF0 callback table. */
@@ -19,5 +24,85 @@ void func_002721A0(void* object);
 void func_00272220(void* object);
 /** @brief Destroy the owner after adjusting from the embedded base at offset 0x14. */
 void* func_00272350(void* object, s32 flags);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Detach and queue the receiver.
+ * @param object Receiver to detach and queue.
+ */
+void func_0026EEA0(void* object);
+
+/**
+ * @brief Clear four words and return the receiver.
+ * @param object Receiver to reset.
+ * @return The receiver.
+ */
+FieldWords270E90* func_00270E90(FieldWords270E90* object);
+
+/**
+ * @brief Store the flags and update flag bit 1.
+ * @param object Receiver to update.
+ * @param flags Value to store and test.
+ */
+void func_00270EB0(FieldState270EE0* object, u32 flags);
+
+/**
+ * @brief Clear flag bit 0, store two words, and update flag bit 1.
+ * @param object Receiver to update.
+ * @param value Word stored at offset 0x1D0.
+ * @param flags Word stored at offset 0x1E0 and tested for bit 1.
+ */
+void func_00270EE0(FieldState270EE0* object, u32 value, u32 flags);
+
+/**
+ * @brief Detach and queue the receiver.
+ * @param object Receiver to detach and queue.
+ */
+void func_00272090(void* object);
+
+/**
+ * @brief Set state 10 when the receiver reports category 1.
+ * @param object Receiver to inspect and update.
+ */
+void func_00271750(FieldState271750* object);
+
+/**
+ * @brief Clear the low bit of the receiver's flag byte.
+ * @param object Receiver to update.
+ */
+void func_00272290(FieldFlag272290* object);
+
+/**
+ * @brief Test a field-context entry by selector.
+ * @param context Field-context object.
+ * @param selector Entry selector.
+ * @return Nonzero when a matching entry is active.
+ */
+s32 func_0026F870(void* context, s32 selector);
+
+/**
+ * @brief Apply a selected field-context entry and callback word.
+ * @param context Field-context object.
+ * @param selector Entry selector.
+ * @param value Callback word.
+ * @return Zero.
+ */
+s32 func_0026F8F0(void* context, s32 selector, u32 value);
+
+/**
+ * @brief Apply the selected field-context entry with an alternate mode.
+ * @param context Field-context object.
+ * @param selector Entry selector.
+ * @param value Callback word.
+ * @return 1 when an entry is applied; otherwise 0.
+ */
+s32 func_0026FA40(void* context, s32 selector, u32 value);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

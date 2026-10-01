@@ -6,9 +6,80 @@
 
 #include "overlays/1067-00/text_001DD3C0.h"
 
+/** Partial state receiver with a byte flag at offset 0x28. */
+typedef struct FieldState2D5060
+{
+    u8 unk00[0x28];
+    u8 unk28;
+} FieldState2D5060;
+
+/** Partial list node with a next link and attached Field object. */
+typedef struct FieldLinkedAttached2D4A30
+{
+    u8 unk00[0x08];
+    struct FieldLinkedAttached2D4A30* next;
+    u8 unk0c[0x34];
+    FieldClass150070* unk40;
+} FieldLinkedAttached2D4A30;
+
+struct FieldReset2D4160;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Detach the object and queue it for disposal.
+ * @param object Callback receiver.
+ */
+void func_002D3BE0(FieldClass150070* object);
+
+/**
+ * @brief Clear three receiver fields after releasing attached resources.
+ * @param object Receiver to reset.
+ */
+void func_002D4160(FieldReset2D4160* object);
+
+/**
+ * @brief Return the overlay data area at D_30EC10.
+ * @param object Callback receiver; unused.
+ * @return Address of the overlay data area.
+ */
+void* func_002D3EB0(void* object);
+
+/**
+ * @brief Clear attached objects in a circular list.
+ * @param list Sentinel node of the list.
+ */
+void func_002D4A30(FieldLinkedAttached2D4A30* list);
+
+/**
+ * @brief Detach and dispose of the attached object, then clear the pointer.
+ * @param object Receiver with the attached object at offset 0x40.
+ */
+void func_002D47A0(void* object);
+
+/**
+ * @brief Detach the object and queue it for disposal.
+ * @param object Callback receiver.
+ */
+void func_002D4D50(FieldClass150070* object);
+
+/**
+ * @brief Set the byte flag at offset 0x28.
+ * @param object State receiver.
+ */
+void func_002D5060(FieldState2D5060* object);
+
+/**
+ * @brief Attach an allocation to an empty buffer slot and store its aligned address.
+ * @param object Receiver containing the three buffer slots.
+ * @param allocation Allocation to attach.
+ * @param size Allocation size; must be positive.
+ * @param index Slot index from zero to two.
+ * @return One when attached, or zero when rejected.
+ */
+u8 func_002D3C40(FieldBufferSlots* object, void* allocation, s32 size, s32 index);
 
 /**
  * @brief Read the stored size for a buffer slot.
@@ -50,6 +121,14 @@ u8 func_002D3D40(FieldBufferSlots* object, void* allocation, s32 size);
  * @return The aligned pointer, or null for an out-of-range index.
  */
 void* func_002D3D80(const FieldBufferSlots* object, u8 index);
+
+/**
+ * @brief Queue an attached allocation and clear its slot.
+ * @param object Receiver containing the allocation table.
+ * @param index Allocation slot index.
+ * @return One when the slot was cleared, or zero when it was empty or invalid.
+ */
+u8 func_002D3DC0(FieldBufferSlots* object, u8 index);
 
 /**
  * @brief Attach a non-null allocation to an empty allocation slot.
