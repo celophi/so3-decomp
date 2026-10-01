@@ -2,6 +2,27 @@
 #include "overlays/1067-00/text_002CABC0.h"
 #include "boot/resident_data.h"
 
+struct FieldNameEntry
+{
+    u8 unk00[0x0C];
+    s16 name_index;
+    u8 unk0E[0x12];
+};
+
+struct FieldNameGroup
+{
+    u8 unk00[2];
+    s16 count;
+    u8 unk04[4];
+    const u8* names;
+};
+
+struct FieldNameOwner
+{
+    u8 unk00[0x4C4];
+    char name[1];
+};
+
 struct FieldTable14
 {
     u8 pad[0x14];
@@ -149,8 +170,10 @@ struct FieldCollection50
     u8 pad[0x14];
     FieldEntry50* entries;
 };
-// The field overlay uses this shorter alias for resident func_0011C8C0.
+// This overlay uses shorter aliases for these resident functions.
 extern "C" u32 func_11C8C0(void* table, s32 index);
+extern "C" char* func_13CD50(char* dest, const char* src, u32 count);
+extern "C" s32 func_13C800(const char* left, const char* right);
 extern "C" void func_113EA0();
 extern "C" void func_4C74E0(FieldState100* state);
 extern "C" void func_462320(FieldState100* state, s32, s32);
@@ -295,7 +318,24 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CB5
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CB710);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CB9D0);
+FieldNameEntry* func_002CB9D0(FieldNameOwner* object, FieldNameGroup** group_ptr)
+{
+    FieldNameEntry* entry;
+    FieldNameGroup* group = *group_ptr;
+    entry = (FieldNameEntry*)((u8*)group + 0x30);
+    char buffer[17];
+    for (s32 index = 0; index < group->count; index++, entry++)
+    {
+        const char* source = (const char*)(group->names + entry->name_index * 0x14 + 4);
+        func_13CD50(buffer, source, 16);
+        buffer[16] = 0;
+        if (func_13C800(buffer, object->name) == 0)
+        {
+            return entry;
+        }
+    }
+    return 0;
+}
 
 extern "C" int func_002CBAA0(void* object) { return 9; }
 

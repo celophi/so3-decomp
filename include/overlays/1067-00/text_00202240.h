@@ -4,6 +4,7 @@
 #include "types.h"
 #include "overlays/1067-00/text_00200710.h"
 #include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/1067-00/text_00202240_callbacks.h"
 
 #ifdef __cplusplus
 extern "C" {

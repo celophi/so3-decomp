@@ -41,6 +41,10 @@ typedef struct FieldStateCB100
     u32 mask;
 } FieldStateCB100;
 
+struct FieldNameEntry;
+struct FieldNameGroup;
+struct FieldNameOwner;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -58,6 +62,14 @@ void func_002CB5B0(FieldFlags1C* object, u32 flags);
  * @param mask Bits selecting which state fields to update.
  */
 void func_002CB100(FieldStateCB100* object, u32 mask);
+
+/**
+ * @brief Find a record whose name matches the receiver's name.
+ * @param object Receiver containing the name to find.
+ * @param group_ptr Pointer to the record group.
+ * @return Matching record, or null if none matches.
+ */
+FieldNameEntry* func_002CB9D0(FieldNameOwner* object, FieldNameGroup** group_ptr);
 
 /**
  * @brief Sum the two resource sizes rounded up to 2,048-byte boundaries.

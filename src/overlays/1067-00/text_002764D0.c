@@ -1,16 +1,187 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002764D0.h"
+#include "boot/resident_data.h"
+#include "boot/resident_0010A0E0.h"
+#include "overlays/0002-01/text_004CD3A0.h"
 
+
+typedef struct FieldFlagState271B0
+{
+    u8 unk00[0x428];
+    s32 unk428;
+    u8 unk42c[0x171];
+    u8 unk59d_0 : 1;
+    u8 unk59d_1 : 1;
+    u8 unk59d_2_7 : 6;
+} FieldFlagState271B0;
+
+typedef struct FieldFlagState2B320
+{
+    u8 unk00[0x24];
+    s32 unk24;
+    u8 unk28[0x24];
+    u8 unk4c_0 : 1;
+    u8 unk4c_1 : 1;
+    u8 unk4c_2 : 1;
+    u8 unk4c_3 : 1;
+    u8 unk4c_4 : 1;
+    u8 unk4c_5 : 1;
+    u8 unk4c_6_7 : 2;
+    u8 unk4d[0x1C];
+    u8 unk69_0 : 1;
+    u8 unk69_1 : 1;
+    u8 unk69_2_7 : 6;
+} FieldFlagState2B320;
+
+typedef struct FieldEntry293F0
+{
+    u8 unk00[4];
+    u32 unk04;
+    u8 unk08[0x14];
+    u8 unk1c_0 : 1;
+    u8 unk1c_1_7 : 7;
+    u8 unk1d[3];
+} FieldEntry293F0;
+
+typedef struct FieldEntryOwner293F0
+{
+    u8 unk00[0x1C];
+    FieldEntry293F0* entries;
+} FieldEntryOwner293F0;
+
+typedef struct FieldLookupNode2BF70
+{
+    u8 unk00[8];
+    struct FieldLookupNode2BF70* next;
+    u8 unk0c[8];
+    u32 unk14;
+} FieldLookupNode2BF70;
+
+typedef struct FieldLookupList2BF70
+{
+    u8 unk00[0x14];
+    FieldLookupNode2BF70 head;
+} FieldLookupList2BF70;
+
+typedef struct FieldFlagEntry2BB00
+{
+    u8 unk00_0 : 1;
+    u8 unk00_1 : 1;
+    u8 unk00_2 : 1;
+    u8 unk00_3_7 : 5;
+    u8 unk01[0x1F];
+} FieldFlagEntry2BB00;
+
+typedef struct FieldFlagTable2BB00
+{
+    u8 unk00[0xCC];
+    FieldFlagEntry2BB00 entries[8];
+} FieldFlagTable2BB00;
+
+typedef struct FieldFloatState28F00
+{
+    u8 unk00[0x340];
+    float unk340;
+    float unk344;
+    float unk348;
+    float unk34c;
+} FieldFloatState28F00;
+
+typedef struct FieldState2BAF0
+{
+    u8 unk00[0x1CC];
+    u32 unk1cc;
+    u8 unk1d0[0x18];
+    u8 unk1e8;
+} FieldState2BAF0;
+
+typedef struct FieldState2B390
+{
+    u8 unk00[0x1E4];
+    u32 unk1e4;
+    u8 unk1e8[2];
+    u8 unk1ea_0_3 : 4;
+    u8 unk1ea_4 : 1;
+    u8 unk1ea_5_7 : 3;
+} FieldState2B390;
+
+typedef struct FieldQword27A9A0
+{
+    u32 words[4];
+} __attribute__((aligned(16))) FieldQword27A9A0;
+
+typedef struct FieldState27B2A0
+{
+    u8 unk00[0x14];
+    u32 unk14;
+    u32 unk18;
+    u8 unk1c[0x0C];
+    u32 unk28;
+    u32 unk2c;
+    u32 unk30;
+    u32 unk34;
+} FieldState27B2A0;
+
+typedef struct FieldSource2A550
+{
+    u8 unk00[0x70];
+    u32 unk70;
+} FieldSource2A550;
+
+typedef struct FieldState2A550
+{
+    u8 unk00[0x14];
+    u32 unk14;
+    u32 unk18;
+    u8 unk1c[0x0C];
+    u32 unk28;
+    u32 unk2c;
+    u32 unk30;
+    u8 unk34[0x1C];
+    u32 unk50;
+    u32 unk54;
+    u8 unk58[0x10];
+    u8 unk68;
+    u8 unk69_0 : 1;
+    u8 unk69_1_7 : 7;
+} FieldState2A550;
+
+typedef struct FieldState27A9A0
+{
+    u8 unk00[0x14];
+    u32 unk14;
+    u32 unk18;
+    u8 unk1c[0x0C];
+    u32 unk28;
+    u32 unk2c;
+    u32 unk30;
+    u8 unk34[0x24C];
+    FieldQword27A9A0 unk280;
+    FieldQword27A9A0 unk290;
+} FieldState27A9A0;
+
+
+/* US Field uses shortened names for these resident copy and fill routines. */
+extern void* func_13A4C0(void* destination, const void* source, u32 size);
+extern void* func_13A678(void* destination, s32 value, u32 size);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002764D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00276BE0);
+s32 func_00276BE0(FieldFlagState271B0* object)
+{
+    object->unk428 = D_001B6430->context->unkdc;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00276C00);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00276CE0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00276DF0);
+s32 func_00276DF0(void* object)
+{
+    D_001B6430->context->unk44->unk52_0 = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00276E20);
 
@@ -20,7 +191,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002771
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00277160);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002771B0);
+s32 func_002771B0(FieldFlagState271B0* object)
+{
+    object->unk59d_1 = object->unk428 != 0;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002771E0);
 
@@ -35,7 +210,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002775
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002775C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00277610);
+s32 func_00277610(FieldFlagState271B0* object)
+{
+    D_001B6448 = (object->unk428 & 1) != 0;
+    return 1;
+}
 
 s32 func_00277630(void* object)
 {
@@ -74,9 +253,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00277F
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278250);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002782A0);
+void func_002782A0(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002782D0);
+void func_002782D0(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 s32 func_00278300(FieldObject155540* object)
 {
@@ -113,7 +300,19 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278D
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278EE0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278F00);
+void func_00278F00(FieldFloatState28F00* object, float target, float duration)
+{
+    if (duration == 0.0f)
+    {
+        object->unk340 = target;
+    }
+    else
+    {
+        object->unk34c = target;
+        object->unk348 = duration;
+        object->unk344 = (target - object->unk340) / duration;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278F40);
 
@@ -129,7 +328,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002792
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279360);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002793F0);
+void func_002793F0(FieldEntryOwner293F0* object)
+{
+    s32 index;
+    for (index = 0; index < 26; index++)
+    {
+        if (object->entries[index].unk04 == 0)
+        {
+            object->entries[index].unk1c_0 = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279440);
 
@@ -143,21 +352,80 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279E
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279EF0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027A3E0);
+void func_0027A3E0(FieldFlagState2B320* object)
+{
+    object->unk4c_3 = 0;
+    object->unk24 = -3;
+    object->unk69_1 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027A420);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027A550);
+void func_0027A550(FieldState2A550* object, u32 value14, const FieldSource2A550* source,
+                   const void* data, u32 value18, u32 value28, u32 value2c, u32 value30)
+{
+    object->unk14 = value14;
+    object->unk54 = source->unk70;
+    object->unk18 = value18;
+    object->unk28 = value28;
+    object->unk2c = value2c;
+    object->unk30 = value30;
+    if (data != 0)
+    {
+        func_13A4C0(object->unk58, data, 0x10);
+    }
+    else
+    {
+        func_13A678(object->unk58, 0, 0x10);
+    }
+    object->unk68 = 0;
+    object->unk69_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027A5E0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027A6B0);
+void func_0027A6B0(FieldFlagState2B320* object)
+{
+    object->unk4c_3 = 0;
+    object->unk24 = -3;
+    object->unk69_1 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027A6F0);
+void func_0027A6F0(FieldState2A550* object, u32 value14, u32 value50,
+                   const void* data, u32 value18, u32 value28, u32 value2c, u32 value30)
+{
+    object->unk14 = value14;
+    object->unk18 = value18;
+    object->unk28 = value28;
+    object->unk2c = value2c;
+    object->unk30 = value30;
+    if (data != 0)
+    {
+        func_13A4C0(object->unk58, data, 0x10);
+    }
+    else
+    {
+        func_13A678(object->unk58, 0, 0x10);
+    }
+    object->unk68 = 0;
+    object->unk50 = value50;
+    object->unk69_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027A780);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027A9A0);
+void func_0027A9A0(FieldState27A9A0* object, u32 value14,
+                   const FieldQword27A9A0* first, const FieldQword27A9A0* second,
+                   u32 value18, u32 value28, u32 value2c, u32 value30)
+{
+    object->unk28 = value28;
+    object->unk2c = value2c;
+    object->unk30 = value30;
+    object->unk14 = value14;
+    object->unk18 = value18;
+    object->unk280 = *first;
+    object->unk290 = *second;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027A9D0);
 
@@ -171,15 +439,35 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027AF
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B140);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B2A0);
+void func_0027B2A0(FieldState27B2A0* object, u32 value14, u32 value18,
+                   u32 value28, u32 value34, u32 value2c, u32 value30)
+{
+    object->unk14 = value14;
+    object->unk18 = value18;
+    object->unk28 = value28;
+    object->unk34 = value34;
+    object->unk2c = value2c;
+    object->unk30 = value30;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B2C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B320);
+void func_0027B320(FieldFlagState2B320* object)
+{
+    object->unk4c_3 = 0;
+    object->unk24 = -3;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B350);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B390);
+void func_0027B390(FieldState2B390* object, u32 value, s32 force)
+{
+    if (value != object->unk1e4 || force != 0)
+    {
+        object->unk1ea_4 = 1;
+        object->unk1e4 = value;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B3D0);
 
@@ -197,9 +485,21 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B7
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B7D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027BAF0);
+void func_0027BAF0(FieldState2BAF0* object, u32 value, s32 unused)
+{
+    object->unk1cc = value;
+    object->unk1e8 = 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027BB00);
+s32 func_0027BB00(FieldFlagTable2BB00* object, s8 index)
+{
+    FieldFlagEntry2BB00* entry = &object->entries[index];
+    if (entry->unk00_2)
+    {
+        return 1;
+    }
+    return entry->unk00_0 ? 2 : 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027BB50);
 
@@ -207,13 +507,44 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027BC
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027BDD0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027BF70);
+FieldLookupNode2BF70* func_0027BF70(FieldLookupList2BF70* object, u32 key)
+{
+    FieldLookupNode2BF70* node = &object->head;
+    FieldLookupNode2BF70* head = node;
+    while (1)
+    {
+        node = node->next;
+        if (node == 0)
+        {
+            break;
+        }
+        if (head == node)
+        {
+            break;
+        }
+        if (key == node->unk14)
+        {
+            return node;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027BFC0);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027C020);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027C080);
+void func_0027C080(FieldFlagState2B320* object)
+{
+    if (!object->unk4c_5)
+    {
+        object->unk4c_0 = 1;
+    }
+    else
+    {
+        object->unk4c_3 = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027C0D0);
 

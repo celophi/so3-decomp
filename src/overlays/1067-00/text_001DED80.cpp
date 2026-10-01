@@ -72,8 +72,6 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF0
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF100);
 
-// Deleting destructor; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF1C0);
 
 void func_001DF220(void* object)
 {
@@ -82,8 +80,6 @@ void func_001DF220(void* object)
 // Virtual call; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF230);
 
-// Deleting destructor; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF260);
 
 s32 func_001DF2B0(const void* object)
 {
@@ -188,18 +184,55 @@ void func_001DF850(FieldEntryArrayObject* object)
     func_001DFAE0(object);
 }
 
-// Virtual call; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF870);
+s32 FieldClass14FEB0::func_001E1470(const float* x, const float* y, const float* z, float key)
+{
+    float y_value;
+    float z_value;
+    z_value = (z == 0) ? 0.0f : *z;
+    z = &z_value;
+    y_value = (y == 0) ? 0.0f : *y;
+    y = &y_value;
+    return func_001E02C0(x, y, z, key);
+}
 
-// Virtual call; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF8D0);
+s32 FieldClass14FEB0::func_001E14A0(s32 index, float key, const float* x, const float* y, const float* z)
+{
+    float y_value;
+    float z_value;
+    z_value = (z == 0) ? 0.0f : *z;
+    z = &z_value;
+    y_value = (y == 0) ? 0.0f : *y;
+    y = &y_value;
+    return func_001E0220(index, key, x, y, z);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF930);
+s32 FieldClass14FEB0::func_001E14D0(s32 index, float key, const float* x, const float* y, const float* z)
+{
+    float y_value;
+    float z_value;
+    z_value = (z == 0) ? 0.0f : *z;
+    z = &z_value;
+    y_value = (y == 0) ? 0.0f : *y;
+    y = &y_value;
+    return func_001E0100(index, key, x, y, z);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF990);
+void FieldClass14FEB0::func_001E1500(const float* x, const float* y, const float* z, float key)
+{
+    float y_value;
+    float z_value;
+    z_value = (z == 0) ? 0.0f : *z;
+    z = &z_value;
+    y_value = (y == 0) ? 0.0f : *y;
+    y = &y_value;
+    func_001E0080(x, y, z, key);
+}
 
-// Virtual call; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF9F0);
+void FieldClass14FEB0::func_001DF300()
+{
+    float zero = 0.0f;
+    func_001E1500(&zero, &zero, &zero, 0.0f);
+}
 
 void func_001DFA30(const FieldEntryArrayObject* object, float* out)
 {
@@ -215,8 +248,10 @@ void func_001DFA40(const FieldEntryArrayObject* object, float* out)
     }
 }
 
-// Deleting destructor; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DFA70);
+FieldClass150090::~FieldClass150090()
+{
+    func_001DFD90();
+}
 
 void func_001DFAE0(FieldEntryArrayObject* object)
 {
@@ -286,16 +321,24 @@ float func_001DFD40(const void* object)
     return 0.0f;
 }
 
-// Virtual call; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DFD50);
+void FieldClass150090::func_001DFD50(float key, float* out)
+{
+    *out = func_001E0380(key);
+}
 
 FieldArrayEntry10* func_001DFD80(const FieldEntryArrayObject* object)
 {
     return object->unk04;
 }
 
-// Array delete through func_100BE0; needs the element type.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DFD90);
+void FieldClass150090::func_001DFD90()
+{
+    if (!unk2b_1)
+    {
+        delete[] unk04;
+    }
+    unk04 = 0;
+}
 
 float func_001DFDE0(const FieldEntryArrayObject* object, float value)
 {
@@ -491,15 +534,25 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E12
 // Index loop strength reduction not matched yet.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1310);
 
-// Virtual call; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1470);
+s32 FieldClass150090::func_001E1470(const float* x, const float* y, const float* z, float key)
+{
+    return func_001DFD00(x, y, z, key);
+}
 
-// Virtual call; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E14A0);
+s32 FieldClass150090::func_001E14A0(s32 index, float key, const float* x, const float* y, const float* z)
+{
+    return func_001DFD10(index, key, x, y, z);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E14D0);
+s32 FieldClass150090::func_001E14D0(s32 index, float key, const float* x, const float* y, const float* z)
+{
+    return func_001DFD20(index, key, x, y, z);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1500);
+void FieldClass150090::func_001E1500(const float* x, const float* y, const float* z, float key)
+{
+    func_001DFD30(x, y, z, key);
+}
 
 
 // Compiler-generated this-adjustment thunk; needs recovered classes.

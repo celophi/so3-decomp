@@ -1,45 +1,25 @@
 #include "include_asm.h"
+#include "overlays/1067-00/field_runtime.h"
 #include "overlays/1067-00/text_00212560.h"
-
-/** Opaque resident runtime root and its resource-section directory. */
-typedef struct FieldRuntimeRoot FieldRuntimeRoot;
-typedef struct FieldRuntimeSections FieldRuntimeSections;
-
-/** Resource section containing packed flags and variable words. */
-typedef struct FieldRuntimeValues
-{
-    u8 unk00[4];
-    u8 unk04[0x180];
-    u8 unk184[4];
-    u32 unk188[];
-} FieldRuntimeValues;
-
-/**
- * @brief Get the resident runtime root.
- * @return Resident root pointer.
- */
-FieldRuntimeRoot* func_10D8E0(void);
-
-/**
- * @brief Get the runtime root's resource-section directory.
- * @param root Resident runtime root.
- * @return Embedded section directory.
- */
-FieldRuntimeSections* func_101290(FieldRuntimeRoot* root);
-
-/**
- * @brief Find a resource section by its directory key.
- * @param sections Resource-section directory.
- * @param key Section key to find.
- * @return Section data, or null when no entry matches.
- */
-void* func_101440(FieldRuntimeSections* sections, s32 key);
 
 typedef struct FieldScriptData217590
 {
     u8 unk00[8];
     u32 unk08;
 } FieldScriptData217590;
+
+typedef struct FieldAttached217CE0
+{
+    u8 unk00[0xCD];
+    u8 flag;
+} FieldAttached217CE0;
+
+struct FieldObject217CE0
+{
+    u8 unk00[0x554];
+    FieldAttached217CE0* slots[16];
+    FieldAttached217CE0* special;
+};
 
 struct FieldScriptObject151D40
 {
@@ -1150,7 +1130,22 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217A
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217AD0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217CE0);
+void func_00217CE0(FieldObject217CE0* object, u8 value)
+{
+    s32 i;
+    for (i = 0; i < 16; i++)
+    {
+        FieldAttached217CE0* attached = object->slots[i];
+        if (attached != 0)
+        {
+            attached->flag = value;
+        }
+    }
+    if (object->special != 0)
+    {
+        object->special->flag = value;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217D20);
 

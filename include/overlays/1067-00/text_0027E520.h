@@ -175,6 +175,15 @@ extern "C" {
 extern FieldHeldObject20* D_001B645C;
 
 /**
+ * @brief Create up to count entries for a value and apply their float setting.
+ * @param data Entry owner.
+ * @param value Value passed to the entry lookup.
+ * @param count Maximum entries to create.
+ * @param strength Float setting stored on each created entry.
+ */
+void func_0027EB80(void* data, void* value, s32 count, float strength);
+
+/**
  * @brief Detach and release the object at offset 0x20 through its virtual handler at vtable offset 0x10, then clear the pointer.
  * @param object Holder of the attached object; nothing happens when the pointer is null.
  */

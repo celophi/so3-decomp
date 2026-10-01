@@ -3,12 +3,62 @@
 
 #include "overlays/1067-00/text_002636B0.h"
 
+typedef struct FieldObject261810 FieldObject261810;
+typedef struct FieldObject262910 FieldObject262910;
+typedef struct FieldObject262F70 FieldObject262F70;
+typedef struct FieldObject262E20 FieldObject262E20;
+typedef struct FieldObject262490 FieldObject262490;
 typedef struct FieldObject153D20 FieldObject153D20;
 typedef struct FieldObject153E00 FieldObject153E00;
+
+/** Four aligned floating-point components used by the field vector helpers. */
+typedef struct FieldVector2624
+{
+    float x;
+    float y;
+    float z;
+    float w;
+} __attribute__((aligned(16))) FieldVector2624;
+
+/** Aligned four-float value that can be cleared as one packed word. */
+typedef union FieldVector262900
+{
+    float floats[4];
+    unsigned __int128 packed;
+} FieldVector262900;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Initialize the receiver after its base initializer.
+ * @param object Receiver to initialize.
+ * @return The receiver.
+ */
+FieldObject262910* func_00262910(FieldObject262910* object);
+
+/**
+ * @brief Restore the receiver's table pointer and delete it when the signed flag is positive.
+ * @param object Receiver to release, or null.
+ * @param flags Signed deletion flag.
+ * @return The original receiver pointer.
+ */
+FieldObject262F70* func_00262F70(FieldObject262F70* object, s16 flags);
+
+/**
+ * @brief Restore two table pointers, call the base cleanup, and optionally delete the receiver.
+ * @param object Receiver to release, or null.
+ * @param flags Signed deletion flag.
+ * @return The original receiver pointer.
+ */
+FieldObject262E20* func_00262E20(FieldObject262E20* object, s16 flags);
+
+/**
+ * @brief Clear an aligned vector and set its fourth component to 1.0.
+ * @param vector Vector to initialize.
+ */
+void func_00262900(FieldVector262900* vector);
 
 /**
  * @brief Report the fixed type value for this receiver.
@@ -37,6 +87,66 @@ u8 func_00262BA0(const FieldObject15AE70* object);
  * @return Always 3.
  */
 s32 func_00263680(FieldObject153E00* object);
+
+/**
+ * @brief Copy an aligned vector to receiver offsets 0x890 and 0x20, and set byte 0x50.
+ * @param object Receiver to update.
+ * @param vector Vector to copy.
+ */
+void func_00262490(FieldObject262490* object, const FieldVector2624* vector);
+
+/**
+ * @brief Copy an aligned vector to receiver offsets 0x880 and 0x30, and set byte 0x50.
+ * @param object Receiver to update.
+ * @param vector Vector to copy.
+ */
+void func_00263620(FieldObject262490* object, const FieldVector2624* vector);
+
+/**
+ * @brief Copy an aligned vector to receiver offsets 0x880 and 0x30, and set byte 0x50.
+ * @param object Receiver to update.
+ * @param vector Vector to copy.
+ */
+void func_00263640(FieldObject262490* object, const FieldVector2624* vector);
+
+/**
+ * @brief Copy an aligned vector to receiver offsets 0x890 and 0x20, and set byte 0x50.
+ * @param object Receiver to update.
+ * @param vector Vector to copy.
+ */
+void func_00263660(FieldObject262490* object, const FieldVector2624* vector);
+
+/**
+ * @brief Copy one aligned vector to two destinations.
+ * @param first First destination.
+ * @param second Second destination.
+ * @param source Vector to copy.
+ */
+void func_002624C0(FieldVector2624* first, FieldVector2624* second,
+                   const FieldVector2624* source);
+
+/**
+ * @brief Set all four vector components to one value.
+ * @param vector Vector to update.
+ * @param value Value to store in each component.
+ * @return The vector.
+ */
+FieldVector2624* func_002624D0(FieldVector2624* vector, float value);
+
+/**
+ * @brief Return the supplied vector pointer.
+ * @param vector Vector to return.
+ * @return The supplied pointer.
+ */
+FieldVector2624* func_002624F0(FieldVector2624* vector);
+
+/**
+ * @brief Store two pointers at receiver offsets 0x24 and 0x28.
+ * @param object Receiver to update.
+ * @param first Pointer stored at 0x24.
+ * @param second Pointer stored at 0x28.
+ */
+void func_00261810(FieldObject261810* object, void* first, void* second);
 
 /**
  * @brief Return the fixed value 0.

@@ -46,7 +46,7 @@ struct FieldRecords {
     u8 byte2F;
 };
 extern "C" void* func_0020F520(void*);
-extern "C" void func_00232090(void*, s8);
+extern "C" void func_00232090(FieldObject232090*, s8);
 extern "C" void func_00232450(void*);
 extern "C" void func_00232520(void*, s32);
 
