@@ -336,7 +336,33 @@ INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003483C0", func_0034D9
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003483C0", func_0034D980);
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003483C0", func_0034DA30);
+void func_0034DA30(ItemCreationFlagResetOwner* object)
+{
+    object->unk17c[0]->unk3f = 0;
+    object->unk17c[1]->unk3f = 0;
+    object->unk17c[2]->unk3f = 0;
+    object->unk17c[3]->unk3f = 0;
+    object->unk17c[4]->unk3f = 0;
+    object->unk17c[5]->unk3f = 0;
+    object->unk17c[6]->unk3f = 0;
+    object->unk17c[7]->unk3f = 0;
+    object->unk17c[8]->unk3f = 0;
+    object->unk1a4[0]->unk3f = 0;
+    object->unk1a4[1]->unk3f = 0;
+    object->unk1a4[2]->unk3f = 0;
+    object->unk1b4[0]->unk3f = 0;
+    object->unk1b4[1]->unk3f = 0;
+    object->unk1b4[2]->unk3f = 0;
+    object->unk1b4[3]->unk3f = 0;
+    object->unk1b4[4]->unk3f = 0;
+    object->unk1b4[5]->unk3f = 0;
+    object->unk1b4[6]->unk3f = 0;
+    object->unk1b4[7]->unk3f = 0;
+    object->unk1b4[8]->unk3f = 0;
+    object->unk1dc[0]->unk3f = 0;
+    object->unk1dc[1]->unk3f = 0;
+    object->unk1dc[2]->unk3f = 0;
+}
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003483C0", func_0034DB00);
 
@@ -540,7 +566,75 @@ INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003483C0", func_003564
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003483C0", func_003565A0);
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003483C0", func_00356780);
+void func_00356780(ItemCreationFlagGroups* object, u16 group)
+{
+    s32 index;
+    for (index = 0; index < 12; index++)
+    {
+        ItemCreationFlagNode* node = object->unk174[index];
+        if (node != 0)
+        {
+            node->unk3f = 0;
+        }
+    }
+    switch (group)
+    {
+    case 0:
+        if (object->unk174[0] != 0)
+        {
+            object->unk174[0]->unk3f = 1;
+        }
+        if (object->unk174[1] != 0)
+        {
+            object->unk174[1]->unk3f = 1;
+        }
+        if (object->unk174[2] != 0)
+        {
+            object->unk174[2]->unk3f = 1;
+        }
+        if (object->unk174[3] != 0)
+        {
+            object->unk174[3]->unk3f = 1;
+        }
+        break;
+    case 1:
+        if (object->unk174[4] != 0)
+        {
+            object->unk174[4]->unk3f = 1;
+        }
+        if (object->unk174[5] != 0)
+        {
+            object->unk174[5]->unk3f = 1;
+        }
+        if (object->unk174[6] != 0)
+        {
+            object->unk174[6]->unk3f = 1;
+        }
+        if (object->unk174[7] != 0)
+        {
+            object->unk174[7]->unk3f = 1;
+        }
+        break;
+    case 2:
+        if (object->unk174[8] != 0)
+        {
+            object->unk174[8]->unk3f = 1;
+        }
+        if (object->unk174[9] != 0)
+        {
+            object->unk174[9]->unk3f = 1;
+        }
+        if (object->unk174[10] != 0)
+        {
+            object->unk174[10]->unk3f = 1;
+        }
+        if (object->unk174[11] != 0)
+        {
+            object->unk174[11]->unk3f = 1;
+        }
+        break;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003483C0", func_003568B0);
 

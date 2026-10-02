@@ -1,6 +1,9 @@
 #include "include_asm.h"
 #include "overlays/0074-00/text.h"
 
+extern u8 func_28E3D0(void* object);
+extern void func_2FD940(void* pointer);
+
 struct ObjectFields
 {
     u8 unknown_0[0x4];
@@ -50,7 +53,18 @@ typedef struct ObjectElement
     float position;
     u8 unknown_20[0x1C];
     u8 active;
+    u8 unknown_3d[2];
+    u8 field_3f;
+    u8 unknown_40[0x30];
+    float field_70;
 } ObjectElement;
+
+struct ObjectCleanup
+{
+    u8 unknown_0[0xE4];
+    void* field_e4;
+    u8 field_e8;
+};
 
 struct ObjectElements5
 {
@@ -64,6 +78,39 @@ struct ObjectElements6
     u8 unknown_0[0x138];
     ObjectElement* first[6];
     ObjectElement* second[6];
+};
+
+struct ObjectElementsGrid6
+{
+    u8 unknown_0[0x138];
+    ObjectElement* columns[6][6];
+};
+
+struct ObjectToggleFields4
+{
+    u8 unknown_0[0xA8];
+    ObjectElement* field_a8;
+    ObjectElement* field_ac;
+    u8 unknown_b0[0x88];
+    ObjectElement* first[5];
+    ObjectElement* second[5];
+    u8 unknown_160[0x24];
+    ObjectElement* extra;
+};
+
+struct ObjectToggleFields
+{
+    u8 unknown_0[0xA8];
+    ObjectElement* field_a8;
+    ObjectElement* field_ac;
+    u8 unknown_b0[0x88];
+    ObjectElement* first[6];
+    ObjectElement* second[6];
+    ObjectElement* third[6];
+    ObjectElement* fourth[6];
+    ObjectElement* fifth[6];
+    ObjectElement* sixth[6];
+    ObjectElement* seventh[6];
 };
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_003483C0);
@@ -325,7 +372,41 @@ INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_00349A40);
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_00349B40);
 
-INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_00349FF0);
+void func_00349FF0(ObjectToggleFields4* object, u8 value, s32 selected)
+{
+    object->first[0]->field_3f = value;
+    object->second[0]->field_3f = value;
+    object->first[1]->field_3f = value;
+    object->second[1]->field_3f = value;
+    object->first[2]->field_3f = value;
+    object->second[2]->field_3f = value;
+    object->first[3]->field_3f = value;
+    object->second[3]->field_3f = value;
+    if (object->extra != 0)
+    {
+        object->extra->field_3f = 1;
+    }
+    if (object->field_ac != 0)
+    {
+        object->field_ac->field_3f = selected;
+        if (selected != 0)
+        {
+            ObjectElement* control = object->field_ac;
+            control->field_70 = 128.0f;
+            control->active = 1;
+        }
+        else
+        {
+            ObjectElement* control = object->field_ac;
+            control->field_70 = 64.0f;
+            control->active = 1;
+        }
+    }
+    if (object->field_a8 != 0)
+    {
+        object->field_a8->field_3f = selected;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034A0A0);
 
@@ -372,7 +453,43 @@ void func_0034AE80(ObjectField12C* object, u8 value)
     object->field_12c = value;
 }
 
-INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034AE90);
+void func_0034AE90(ObjectToggleFields* object, u8 value, s32 selected)
+{
+    object->first[0]->field_3f = value;
+    object->second[0]->field_3f = value;
+    object->first[1]->field_3f = value;
+    object->second[1]->field_3f = value;
+    object->first[2]->field_3f = value;
+    object->second[2]->field_3f = value;
+    object->first[3]->field_3f = value;
+    object->second[3]->field_3f = value;
+    object->first[4]->field_3f = value;
+    object->second[4]->field_3f = value;
+    if (object->third[0] != 0)
+    {
+        object->third[0]->field_3f = 1;
+    }
+    if (object->field_ac != 0)
+    {
+        object->field_ac->field_3f = selected;
+        if (selected != 0)
+        {
+            ObjectElement* control = object->field_ac;
+            control->field_70 = 128.0f;
+            control->active = 1;
+        }
+        else
+        {
+            ObjectElement* control = object->field_ac;
+            control->field_70 = 64.0f;
+            control->active = 1;
+        }
+    }
+    if (object->field_a8 != 0)
+    {
+        object->field_a8->field_3f = selected;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034AF50);
 
@@ -413,7 +530,15 @@ INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034B5B0);
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034BA30);
 
-INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034BAB0);
+s32 func_0034BAB0(ObjectCleanup* object)
+{
+    if (object->field_e4 != 0)
+    {
+        func_2FD940(object->field_e4);
+        object->field_e8 = 1;
+    }
+    return 2;
+}
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034BB00);
 
@@ -425,7 +550,44 @@ INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034C6D0);
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034C750);
 
-INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034C7D0);
+void func_0034C7D0(ObjectToggleFields* object, s32 value, s32 selected)
+{
+    s32 i = 0;
+    value &= 0xFF;
+    for (; i < 5; i++)
+    {
+        object->first[i]->field_3f = value;
+        object->second[i]->field_3f = value;
+        object->third[i]->field_3f = value;
+        object->fourth[i]->field_3f = value;
+        object->fifth[i]->field_3f = value;
+        object->sixth[i]->field_3f = value;
+    }
+    if (object->seventh[0] != 0)
+    {
+        object->seventh[0]->field_3f = 1;
+    }
+    if (object->field_ac != 0)
+    {
+        object->field_ac->field_3f = selected;
+        if (selected != 0)
+        {
+            ObjectElement* control = object->field_ac;
+            control->field_70 = 128.0f;
+            control->active = 1;
+        }
+        else
+        {
+            ObjectElement* control = object->field_ac;
+            control->field_70 = 64.0f;
+            control->active = 1;
+        }
+    }
+    if (object->field_a8 != 0)
+    {
+        object->field_a8->field_3f = selected;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034C890);
 
@@ -447,7 +609,35 @@ INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034CD10);
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034CE00);
 
-INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034CF20);
+void func_0034CF20(ObjectElementsGrid6* object, float position)
+{
+    s32 i = 0;
+    float current = position + 16.0f;
+    do
+    {
+        ObjectElement* element;
+        element = object->columns[0][i];
+        element->position = current;
+        element->active = 1;
+        element = object->columns[1][i];
+        element->position = current;
+        element->active = 1;
+        element = object->columns[2][i];
+        element->position = current;
+        element->active = 1;
+        element = object->columns[3][i];
+        element->position = current;
+        element->active = 1;
+        element = object->columns[4][i];
+        element->position = current;
+        element->active = 1;
+        element = object->columns[5][i];
+        element->position = current;
+        element->active = 1;
+        current += 28.0f;
+        i++;
+    } while (i < 6);
+}
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_0034CFB0);
 
@@ -503,7 +693,10 @@ INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_003510D0);
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_00351460);
 
-INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_00351540);
+s32 func_00351540(u8* object)
+{
+    return func_28E3D0(object + 0x54) != 0;
+}
 
 INCLUDE_ASM("build/overlays/0074-00/asm/nonmatchings/text", func_00351570);
 

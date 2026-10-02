@@ -10,9 +10,82 @@
 #include "overlays/1067-00/text_00202240.h"
 #include "overlays/1067-00/text_0021FB80.h"
 #include "overlays/1067-00/text_0027E520.h"
+#include "overlays/1067-00/text_002764D0.h"
+#include "overlays/1067-00/text_002AE9E0.h"
+#include "vu0.h"
 
-// Not code: 64 zero bytes at the start of .text.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD3C0);
+/** @brief Object at field context offset 0x30; the list at offset 0x14 owns FieldClass155640. */
+class FieldContextObject30
+{
+public:
+    u8 unk00[0x14];
+    LibClass178DD0 unk14;
+
+    /** @brief Add node to the list at offset 0x14, which is also passed as the first argument. */
+    void insert(void* node)
+    {
+        void* self = &unk14;
+        unk14.func_004D73B0(self, node, (void*)-1);
+    }
+};
+
+/** @brief Vector passed to the VU0 length helper; copied as one quadword. */
+class FieldDelta
+{
+public:
+    FieldDelta() {}
+    FieldDelta(const FieldDelta& other) { *(unsigned __int128*)this = *(const unsigned __int128*)&other; }
+    FieldDelta(const FieldVec4A& other) { *(unsigned __int128*)this = *(const unsigned __int128*)&other; }
+    FieldDelta operator=(const FieldDelta& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+        return *this;
+    }
+
+    float x, y, z, w;
+} __attribute__((aligned(16)));
+
+/** @brief Return a - b in x, y and z; w keeps a's value. */
+static inline FieldDelta field_delta(const FieldVec4A& a, const FieldVec4A& b)
+{
+    FieldVec4A result;
+    result = a;
+    result.x -= b.x;
+    result.y -= b.y;
+    result.z -= b.z;
+    return result;
+}
+
+/** @brief Length of v's x, y and z through the VU0 helper. */
+static inline float field_length(const FieldDelta& v)
+{
+    FieldVec4A out;
+    vu0_length_xyz(&out, &v);
+    return out.x;
+}
+
+/** @brief Report whether node is the list head, ending a circular walk. */
+static inline bool is_list_head(const void* head, const void* node)
+{
+    if (head == node)
+    {
+        return true;
+    }
+    return false;
+}
+
+/** @brief Report whether area equals the item's area word, or the context default when it is -1. */
+static inline bool same_area(s32 area, const FieldClass152FE0* item)
+{
+    s32 item_area = item->unk694 == -1 ? D_001B6430->context->unkaa : item->unk694;
+    return item_area == area;
+}
+
+/** @brief Report whether kind equals the item's kind byte at offset 0x69C. */
+static inline bool same_kind(u8 kind, const FieldClass152FE0* item)
+{
+    return item->unk69c == kind;
+}
 
 void FieldClass1DD400::func_001DD400()
 {
@@ -181,8 +254,48 @@ void FieldClass152F00::func_00205710(const FieldVec4A* value)
     unk530 = *value;
 }
 
-// Slot 12 argument conversion differs (97.37%); see working notes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DD9A0);
+void func_001DD9A0(FieldClass150060* list, s8 mode, s32 arg)
+{
+    FieldClass150060* link = list;
+    if (mode >= 2)
+    {
+        for (;;)
+        {
+            link = link->unk08;
+            if (list == link)
+            {
+                break;
+            }
+            FieldClass150F90* object = static_cast<FieldClass150F90*>(link);
+            if ((object->unk78 & 0x20002) && !object->test_unk70(0x80000000))
+            {
+                object->func_00204370(!object->unk8c_5, 0);
+                object->func_002042A0(!object->unk8c_6);
+                if (object->unk78 & 0x10)
+                {
+                    FieldClass152350* actor = static_cast<FieldClass152350*>(object);
+                    func_00220150(actor, actor->unk6d2_4);
+                }
+            }
+        }
+    }
+    else
+    {
+        for (;;)
+        {
+            link = link->unk08;
+            if (!link || list == link)
+            {
+                break;
+            }
+            FieldClass150F90* object = static_cast<FieldClass150F90*>(link);
+            if ((object->unk78 & 0x20002) && !object->test_unk70(0x80000000))
+            {
+                object->func_00204370(mode, arg);
+            }
+        }
+    }
+}
 
 void func_001DDB30(FieldFlaggedListObject* list)
 {
@@ -262,7 +375,71 @@ bool func_001DDCE0(const FieldFloatGateState7C* object)
     return object->unk8c_5 ? false : true;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DDD30);
+bool func_001DDD30(FieldListOwner94* list, FieldClass151510** target)
+{
+    if ((*target)->test_unk204(0x400000))
+    {
+        return false;
+    }
+    bool active = false;
+    if (((*target)->unk78 & 0x10) && static_cast<FieldClass152350*>(*target)->unk638 > 0.0f)
+    {
+        active = true;
+    }
+    FieldClass150060* link = list;
+    FieldClass154D20* own = (*target)->unkA8;
+    for (;;)
+    {
+        link = link->unk08;
+        if (!link || list == link)
+        {
+            break;
+        }
+        if (link == *target)
+        {
+            continue;
+        }
+        FieldClass150F90* object = static_cast<FieldClass150F90*>(link);
+        u32 flags = object->unk78;
+        if (!(flags & 0x1))
+        {
+            continue;
+        }
+        if ((flags & 0x10000) && !(flags & 0x200))
+        {
+            continue;
+        }
+        if ((flags & 0x10) && static_cast<FieldClass152350*>(object)->unk638 > 0.0f)
+        {
+            continue;
+        }
+        FieldClass151510* body = static_cast<FieldClass151510*>(object);
+        if (!body->func_00204420())
+        {
+            continue;
+        }
+        if (body->test_unk204(0x8))
+        {
+            continue;
+        }
+        if (((*target)->unk78 & 0x20) && static_cast<FieldClass152FE0*>(*target)->unk69f_0 && (body->unk78 & 0x10))
+        {
+            continue;
+        }
+        if ((body->unk78 & 0x20) && (static_cast<FieldClass152FE0*>(body)->unk69f_0 || active))
+        {
+            continue;
+        }
+        FieldClass154D20* shape = body->unkA8;
+        if (shape && func_0045F5A0(shape->func_001DDCD0(), own->func_001DDCD0()))
+        {
+            list->unk94 = body;
+            *target = body;
+            return true;
+        }
+    }
+    return false;
+}
 
 FieldClass1515D0* FieldClass153570::func_001DDCD0()
 {
@@ -414,8 +591,80 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed)
     }
 }
 
-// VU0 vector-length code; needs the vector class and the D_155640 class.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DD3C0", func_001DE4F0);
+void FieldClass14FE30::func_001DF360()
+{
+    ResidentContext* ctx = D_001B6430->context;
+    if (ctx->unkdd_4 || func_002B0BC0((FieldFlagOwner2B0BC0*)ctx) || D_001B6430->context->unkde_1
+        || D_001B6430->context->unkdd_5 || !D_001B6430->context->unk08->unkdc)
+    {
+        return;
+    }
+    if (D_001B6430->context->unkdd_6)
+    {
+        return;
+    }
+    func_004D6730();
+    FieldClass150F90* focus = static_cast<FieldClass150F90*>(D_001B6430->context->unk08->unkdc);
+    if (!focus)
+    {
+        return;
+    }
+    if (!focus->func_00204420())
+    {
+        return;
+    }
+    if (D_001B6430->context->unk38->unk4c8_0)
+    {
+        return;
+    }
+    if (D_001B6430->context->unk08->unkf5_3)
+    {
+        return;
+    }
+    const FieldVec4A* center = &static_cast<FieldClass150F90*>(D_001B6430->context->unk18)->unk20;
+    FieldClass152FE0* nearest = 0;
+    float best = 3.4028235e38f;
+    FieldClass150060* node = reinterpret_cast<FieldClass150060*>(this);
+    for (;;)
+    {
+        node = node->unk08;
+        if (!node || is_list_head(this, node))
+        {
+            break;
+        }
+        FieldClass152FE0* item = static_cast<FieldClass152FE0*>(node);
+        if (!(item->unk78 & 0x20) || item->test_unk70(0x80000000) || item->unk690 == -1)
+        {
+            continue;
+        }
+        FieldDelta delta;
+        delta = field_delta(item->unk20, *center);
+        float distance = field_length(delta);
+        if (distance < best)
+        {
+            best = distance;
+            nearest = item;
+        }
+    }
+    if (!nearest)
+    {
+        return;
+    }
+    FieldClass155640* sound = static_cast<FieldClass155640*>(D_001B6430->context->unk1c);
+    if (!sound)
+    {
+        sound = new(0) FieldClass155640;
+        D_001B6430->context->unk1c = sound;
+        static_cast<FieldContextObject30*>(D_001B6430->context->unk30)->insert(sound);
+    }
+    s32 current_id = sound->unk7c8;
+    if (nearest->unk690 != current_id || !same_area(sound->unk7cc, nearest) || !same_kind(sound->unk7d4, nearest))
+    {
+        s32 id = nearest->unk690;
+        u8 kind = nearest->unk69c;
+        sound->func_00279EA0(id, (nearest->unk694 == -1 ? D_001B6430->context->unkaa : nearest->unk694), kind, -1, 1);
+    }
+}
 
 void FieldClass14FFB0::func_001DE8B0(s32 count)
 {

@@ -228,55 +228,152 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00298C
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B830);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B860);
+void func_0029B860(FieldState29B860* object, float value)
+{
+    object->unk28 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B870);
+void func_0029B870(FieldState29B860* object, float value)
+{
+    object->unk30 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B880);
+float func_0029B880(FieldState29B860* object)
+{
+    return object->unk30;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B890);
+void func_0029B890(FieldState29B860* object, u8 value)
+{
+    object->unk4d = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B8A0);
+u8 func_0029B8A0(FieldState29B860* object)
+{
+    return object->unk4d;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B8B0);
+void func_0029B8B0(FieldState29B860* object, float value)
+{
+    object->unk34 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B8C0);
+void func_0029B8C0(FieldState29B860* object, u8 value)
+{
+    object->unk56 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B8D0);
+u8 func_0029B8D0(FieldState29B860* object)
+{
+    return object->unk56;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B8E0);
+void func_0029B8E0(FieldState29B860* object, float value)
+{
+    object->unk44 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B8F0);
+float func_0029B8F0(FieldState29B860* object)
+{
+    return object->unk44;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B900);
+float func_0029B900(FieldState29B860* object)
+{
+    return object->unk28;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B910);
+void func_0029B910(FieldState29B860* object, u32 value)
+{
+    object->unk48 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B920);
+u32 func_0029B920(FieldState29B860* object)
+{
+    return object->unk48;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B930);
+void func_0029B930(FieldState29B860* object, u8 value)
+{
+    object->unk4f = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B940);
+void func_0029B940(FieldState29B860* object, u8 value)
+{
+    object->unk4e = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B950);
+void func_0029B950(FieldState29B860* object, u32 value)
+{
+    object->unk50 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B960);
+u32 func_0029B960(FieldState29B860* object)
+{
+    return object->unk50;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B970);
+void func_0029B970(FieldState29B860* object, u8 value)
+{
+    object->unk55 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B980);
+void func_0029B980(FieldState29B860* object, float value)
+{
+    object->unk3c = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B990);
+void func_0029B990(FieldState29B860* object, u8 value)
+{
+    object->unk54 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B9A0);
+void func_0029B9A0(FieldState29B860* object, float value)
+{
+    object->unk40 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B9B0);
+void func_0029B9B0(FieldState29B860* object, const u8* data, u32 value)
+{
+    object->unka0 = data;
+    object->unka4 = value;
+    if (*object->unka0 == 1)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B9F0);
+void func_0029B9F0(FieldState29B860* object, s32 value)
+{
+    object->unka0 = 0;
+    object->unka4 = 0;
+    if (value != 0)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029BA20);
+void func_0029BA20(FieldState29B860* object, float value)
+{
+    object->unk38 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029BA30);
+void func_0029BA30(FieldState29B860* object, const FieldCopySource29BA30* source)
+{
+    object->unk2c = 0;
+    object->unk60 = source->unk150;
+    object->unk70 = source->unk160;
+    object->unk80 = source->unk170;
+    object->unk90 = source->unk180;
+}
 
 void func_0029BA60(void* object)
 {
@@ -295,53 +392,143 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029E5
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029E990);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EA90);
+void func_0029EA90(FieldState29EA90* object, float value)
+{
+    object->unk28 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EAA0);
+void func_0029EAA0(FieldState29EA90* object, float value)
+{
+    object->unk30 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EAB0);
+float func_0029EAB0(FieldState29EA90* object)
+{
+    return object->unk30;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EAC0);
+void func_0029EAC0(FieldState29EA90* object, u8 value)
+{
+    object->unk4d = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EAD0);
+u8 func_0029EAD0(FieldState29EA90* object)
+{
+    return object->unk4d;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EAE0);
+void func_0029EAE0(FieldState29EA90* object, float value)
+{
+    object->unk34 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EAF0);
+void func_0029EAF0(FieldState29EA90* object, u8 value)
+{
+    object->unk56 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EB00);
+u8 func_0029EB00(FieldState29EA90* object)
+{
+    return object->unk56;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EB10);
+void func_0029EB10(FieldState29EA90* object, float value)
+{
+    object->unk44 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EB20);
+float func_0029EB20(FieldState29EA90* object)
+{
+    return object->unk44;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EB30);
+float func_0029EB30(FieldState29EA90* object)
+{
+    return object->unk28;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EB40);
+void func_0029EB40(FieldState29EA90* object, u32 value)
+{
+    object->unk48 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EB50);
+u32 func_0029EB50(FieldState29EA90* object)
+{
+    return object->unk48;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EB60);
+void func_0029EB60(FieldState29EA90* object, u8 value)
+{
+    object->unk4f = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EB70);
+void func_0029EB70(FieldState29EA90* object, u8 value)
+{
+    object->unk4e = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EB80);
+void func_0029EB80(FieldState29EA90* object, u32 value)
+{
+    object->unk50 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EB90);
+u32 func_0029EB90(FieldState29EA90* object)
+{
+    return object->unk50;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EBA0);
+void func_0029EBA0(FieldState29EA90* object, u8 value)
+{
+    object->unk55 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EBB0);
+void func_0029EBB0(FieldState29EA90* object, float value)
+{
+    object->unk3c = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EBC0);
+void func_0029EBC0(FieldState29EA90* object, u8 value)
+{
+    object->unk54 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EBD0);
+void func_0029EBD0(FieldState29EA90* object, float value)
+{
+    object->unk40 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EBE0);
+void func_0029EBE0(FieldState29EA90* object, const u8* data, u32 value)
+{
+    object->unka0 = data;
+    object->unka4 = value;
+    if (*object->unka0 == 1)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EC20);
+void func_0029EC20(FieldState29EA90* object, s32 value)
+{
+    object->unka0 = 0;
+    object->unka4 = 0;
+    if (value != 0)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029EC50);
+void func_0029EC50(FieldState29EA90* object, float value)
+{
+    object->unk38 = value;
+}
 
 void func_0029EC60(void* object)
 {
@@ -361,7 +548,14 @@ s32 func_0029EC90(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029ECA0);
+void func_0029ECA0(FieldState29EA90* object, const FieldCopySource29ECA0* source)
+{
+    object->unk2c = 0;
+    object->unk60 = source->unk150;
+    object->unk70 = source->unk160;
+    object->unk80 = source->unk170;
+    object->unk90 = source->unk180;
+}
 
 void func_0029ECD0(void* object)
 {
@@ -380,53 +574,143 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A18
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1CA0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1DA0);
+void func_002A1DA0(FieldState2A1DA0* object, float value)
+{
+    object->unk28 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1DB0);
+void func_002A1DB0(FieldState2A1DA0* object, float value)
+{
+    object->unk30 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1DC0);
+float func_002A1DC0(FieldState2A1DA0* object)
+{
+    return object->unk30;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1DD0);
+void func_002A1DD0(FieldState2A1DA0* object, u8 value)
+{
+    object->unk4d = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1DE0);
+u8 func_002A1DE0(FieldState2A1DA0* object)
+{
+    return object->unk4d;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1DF0);
+void func_002A1DF0(FieldState2A1DA0* object, float value)
+{
+    object->unk34 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1E00);
+void func_002A1E00(FieldState2A1DA0* object, u8 value)
+{
+    object->unk56 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1E10);
+u8 func_002A1E10(FieldState2A1DA0* object)
+{
+    return object->unk56;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1E20);
+void func_002A1E20(FieldState2A1DA0* object, float value)
+{
+    object->unk44 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1E30);
+float func_002A1E30(FieldState2A1DA0* object)
+{
+    return object->unk44;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1E40);
+float func_002A1E40(FieldState2A1DA0* object)
+{
+    return object->unk28;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1E50);
+void func_002A1E50(FieldState2A1DA0* object, u32 value)
+{
+    object->unk48 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1E60);
+u32 func_002A1E60(FieldState2A1DA0* object)
+{
+    return object->unk48;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1E70);
+void func_002A1E70(FieldState2A1DA0* object, u8 value)
+{
+    object->unk4f = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1E80);
+void func_002A1E80(FieldState2A1DA0* object, u8 value)
+{
+    object->unk4e = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1E90);
+void func_002A1E90(FieldState2A1DA0* object, u32 value)
+{
+    object->unk50 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1EA0);
+u32 func_002A1EA0(FieldState2A1DA0* object)
+{
+    return object->unk50;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1EB0);
+void func_002A1EB0(FieldState2A1DA0* object, u8 value)
+{
+    object->unk55 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1EC0);
+void func_002A1EC0(FieldState2A1DA0* object, float value)
+{
+    object->unk3c = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1ED0);
+void func_002A1ED0(FieldState2A1DA0* object, u8 value)
+{
+    object->unk54 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1EE0);
+void func_002A1EE0(FieldState2A1DA0* object, float value)
+{
+    object->unk40 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1EF0);
+void func_002A1EF0(FieldState2A1DA0* object, const u8* data, u32 value)
+{
+    object->unka0 = data;
+    object->unka4 = value;
+    if (*object->unka0 == 1)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1F30);
+void func_002A1F30(FieldState2A1DA0* object, s32 value)
+{
+    object->unka0 = 0;
+    object->unka4 = 0;
+    if (value != 0)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1F60);
+void func_002A1F60(FieldState2A1DA0* object, float value)
+{
+    object->unk38 = value;
+}
 
 void func_002A1F70(void* object)
 {
@@ -446,7 +730,14 @@ s32 func_002A1FA0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002A1FB0);
+void func_002A1FB0(FieldState2A1DA0* object, const FieldCopySource2A1FB0* source)
+{
+    object->unk2c = 0;
+    object->unk60 = source->unk150;
+    object->unk70 = source->unk160;
+    object->unk80 = source->unk170;
+    object->unk90 = source->unk180;
+}
 
 void func_002A1FE0(void* object)
 {

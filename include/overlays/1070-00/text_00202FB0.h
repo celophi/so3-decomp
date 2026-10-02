@@ -10,7 +10,8 @@ typedef struct FieldFlagListElement
     u8 unk0c[8];
     u32 unk14;
     u32 unk18;
-    u8 unk1c[0xC];
+    u32 unk1c;
+    u8 unk20[8];
     s32 unk28;
     s32 unk2c;
     s32 unk30;
@@ -70,9 +71,145 @@ typedef struct FieldContext34
     FieldListNode unk14;
 } FieldContext34;
 
+/** A 28-byte queue record with byte flags and neutral word fields. */
+typedef struct FieldRecord1C
+{
+    u8 unk00[4];
+    u32 unk04;
+    u8 unk08_0 : 1;
+    u8 unk08_1_7 : 7;
+    u8 unk09[3];
+    s32 unk0c;
+    u32 unk10;
+    u8 unk14;
+    u8 unk15;
+    u8 unk16_0 : 1;
+    u8 unk16_1 : 1;
+    u8 unk16_2 : 1;
+    u8 unk16_3_7 : 5;
+    u8 unk17[5];
+} FieldRecord1C;
+
+/** Partial owner of the record array, limit, and next record index. */
+typedef struct FieldRecordQueue
+{
+    u8 unk00[0x1C];
+    FieldRecord1C* unk1c;
+    u32 unk20;
+    s32 unk24;
+    u8 unk28[9];
+    u8 unk31;
+    u8 unk32;
+    u8 unk33;
+} FieldRecordQueue;
+
+/** A 24-byte queue record with byte flags and neutral word fields. */
+typedef struct FieldRecord18
+{
+    u8 unk00[4];
+    u32 unk04;
+    u8 unk08_0 : 1;
+    u8 unk08_1_7 : 7;
+    u8 unk09[3];
+    s32 unk0c;
+    u32 unk10;
+    u8 unk14;
+    u8 unk15;
+    u8 unk16_0 : 1;
+    u8 unk16_1 : 1;
+    u8 unk16_2 : 1;
+    u8 unk16_3_7 : 5;
+    u8 unk17;
+} FieldRecord18;
+
+/** Partial owner of the record array, limit, and next record index. */
+typedef struct FieldRecordQueue18
+{
+    u8 unk00[0x1C];
+    FieldRecord18* unk1c;
+    u32 unk20;
+    s32 unk24;
+    u8 unk28[9];
+    u8 unk31;
+    u8 unk32;
+    u8 unk33;
+    u8 unk34_0 : 1;
+    u8 unk34_1_7 : 7;
+} FieldRecordQueue18;
+
+/** Partial receiver containing three aligned vector values. */
+typedef struct FieldVectorProduct560
+{
+    u8 unk00[0x560];
+    unsigned __int128 unk560;
+    unsigned __int128 unk570;
+    unsigned __int128 unk580;
+} FieldVectorProduct560;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Copy an aligned vector and update its product with the stored vector.
+ * @param object Receiver containing the source vectors and product.
+ * @param source 16-byte aligned vector data to copy.
+ */
+void func_0020CBF0(FieldVectorProduct560* object, const unsigned __int128* source);
+
+/**
+ * @brief Multiply all four components of two aligned vectors.
+ * @param out 16-byte aligned destination vector.
+ * @param left 16-byte aligned first source vector.
+ * @param right 16-byte aligned second source vector.
+ */
+void func_0020CC30(FieldVector* out, const FieldVector* left, const FieldVector* right);
+
+/**
+ * @brief Copy one aligned 128-bit value.
+ * @param out Destination value.
+ * @param source Source value.
+ */
+void func_0020CC50(unsigned __int128* out, const unsigned __int128* source);
+
+/**
+ * @brief Set the 24-byte queue owner's state flag at byte 0x34.
+ * @param object Queue whose state flag is set.
+ */
+void func_0020C120(FieldRecordQueue18* object);
+
+/**
+ * @brief Set flag bit zero on list elements whose selected word key matches.
+ * @param object Context containing the list sentinel.
+ * @param key Word key to compare with the element's selected key field.
+ */
+void func_00209230(FieldContext58* object, u32 key);
+
+/**
+ * @brief Initialize a 24-byte queue record's word values, flags, and byte fields.
+ * @param record Record to initialize.
+ * @return The initialized record.
+ */
+FieldRecord18* func_002096A0(FieldRecord18* record);
+
+/**
+ * @brief Reinitialize 24-byte queue records and clear word and byte state.
+ * @param object Queue whose records and state are reset.
+ */
+void func_00209720(FieldRecordQueue18* object);
+
+/**
+ * @brief Reinitialize queue records and clear word and byte state.
+ * @param object Queue whose records and state are reset.
+ */
+void func_00204480(FieldRecordQueue* object);
+
+/**
+ * @brief Initialize a queue record's word values, flags, and byte fields.
+ * @param record Record to initialize.
+ * @return The initialized record.
+ */
+FieldRecord1C* func_00205620(FieldRecord1C* record);
 
 /**
  * @brief Read the object pointer at offset 0x7C.

@@ -298,7 +298,7 @@ public:
         unk15 = 0;
     }
 
-    u8 unk00[4];
+    u32 unk00;
     void* unk04;
     u8 unk08_0 : 1;
     u8 unk08_1_7 : 7;
@@ -312,6 +312,35 @@ public:
     u8 unk16_2 : 1;
     u8 unk16_3_7 : 5;
     u8 unk17;
+
+    /** @brief Run slot 2 to release the object at offset 0x4, then reset the fields as the constructor does. */
+    void release()
+    {
+        func_0023AD00();
+        unk0c = -1;
+        unk04 = 0;
+        unk10 = 0;
+        unk16_0 = 0;
+        unk16_1 = 1;
+        unk08_0 = 0;
+        unk16_2 = 0;
+        unk14 = 0;
+        unk15 = 0;
+    }
+
+    /**
+     * @brief Return the word at offset 4, rounded up to 128 bytes unless bit 0
+     *        at offset 8 or bit 2 at offset 0x16 is set.
+     * @return The raw or rounded value.
+     */
+    u32 rounded_unk04() const
+    {
+        if (unk08_0 || unk16_2)
+        {
+            return (u32)unk04;
+        }
+        return ((u32)unk04 + 0x7F) & ~0x7F;
+    }
 
     /**
      * @brief Delete the object at offset 0x4 when it is set and bit 1 at offset 0x16 is set.

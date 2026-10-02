@@ -330,7 +330,7 @@ public:
      * @brief Store !enable in bit 6 at offset 0x8C, then update the matching table entries.
      * @param enable Nonzero to enable.
      */
-    virtual void func_002042A0(s32 enable);
+    virtual void func_002042A0(u8 enable);
 
     /**
      * @brief Copy a 16-byte vector to offset 0x20.

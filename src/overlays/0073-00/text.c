@@ -1,13 +1,62 @@
 #include "include_asm.h"
 #include "overlays/0073-00/text.h"
 
+typedef struct
+{
+    u8 pad_00[0x3C];
+    u8 active;
+    u8 pad_3d[0x57];
+    u32 color;
+} TacticsIcon;
+
+typedef struct TacticsIconNode
+{
+    TacticsIcon* icon;
+    struct TacticsIconNode* next;
+} TacticsIconNode;
+
+typedef struct
+{
+    u8 pad_00[4];
+    TacticsIconNode* next;
+} TacticsIconList;
+
+typedef struct
+{
+    u8 pad_00[0x2C];
+    TacticsIconList* list;
+} TacticsIconOwner;
+
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003483C0);
 
 void func_00348400(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00348410);
+void func_00348410(void* object, s16 selected)
+{
+    s32 index = 0;
+    TacticsIconNode* node = ((TacticsIconOwner*)object)->list->next;
+    if (node != 0)
+    {
+        do
+        {
+            TacticsIcon* icon = node->icon;
+            if (index == selected)
+            {
+                icon->color = 0x288080;
+                icon->active = 1;
+            }
+            else
+            {
+                icon->color = 0x808080;
+                icon->active = 1;
+            }
+            node = node->next;
+            index++;
+        } while (node != 0);
+    }
+}
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00348480);
 
@@ -540,7 +589,21 @@ INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351630);
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003516C0);
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351750);
+TacticsListNode* func_00351750(TacticsList* list, s32 index)
+{
+    TacticsListNode* node = list->head->next;
+    s32 i;
+    for (i = 0; i < index; i++)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = node->next;
+    }
+    return node;
+}
+
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351790);
 
@@ -550,7 +613,21 @@ INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351890);
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351920);
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003519A0);
+TacticsListNode* func_003519A0(TacticsList* list, s32 index)
+{
+    TacticsListNode* node = list->head->next;
+    s32 i;
+    for (i = 0; i < index; i++)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = node->next;
+    }
+    return node;
+}
+
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_003519E0);
 
@@ -560,7 +637,21 @@ INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351AE0);
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351B70);
 
-INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351BF0);
+TacticsListNode* func_00351BF0(TacticsList* list, s32 index)
+{
+    TacticsListNode* node = list->head->next;
+    s32 i;
+    for (i = 0; i < index; i++)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = node->next;
+    }
+    return node;
+}
+
 
 INCLUDE_ASM("build/overlays/0073-00/asm/nonmatchings/text", func_00351C30);
 

@@ -37,6 +37,8 @@ def pieces(config):
         else:
             require(segment['type'] == 'code', 'expected a code segment')
             for sub in segment['subsegments']:
+                if sub[1] == 'pad':
+                    continue  # zero fill emitted by the linker script; no object
                 require(len(sub) == 3 and sub[1] in ('asm', 'c', 'cpp'),
                         'expected an asm/c/cpp subsegment')
                 key, suffix, rule = (('asm_path', '.s', 'assemble') if sub[1] == 'asm'

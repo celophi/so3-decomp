@@ -3,9 +3,58 @@
 
 #include "types.h"
 
+typedef struct Record001E94E0 Record001E94E0;
+
+/** @brief Partial state layout for the two selectable reset modes. */
+typedef struct BootState1E1A40
+{
+    u8 unk00[0x18];
+    s16 unk18;
+    s16 unk1A;
+    s16 unk1C;
+    u8 unk1E;
+    u8 unk1F[9];
+    u8 unk28;
+    u8 unk29;
+    u8 unk2A;
+    u8 unk2B;
+    u8 unk2C;
+    u8 unk2D;
+    u8 unk2E[0xD06];
+    u8 unkD34;
+    u8 unkD35[2];
+    u8 unkD37[2];
+    u8 unkD39[0xC3];
+    s32 unkDFC[2];
+    s32 unkE04[2];
+} BootState1E1A40;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Reset the shared state and the fields selected by mode 0 or 1.
+ * @param object State receiving the reset.
+ * @param mode Mode to store and reset; other values reset only shared fields.
+ */
+void func_001E1A40(BootState1E1A40* object, s16 mode);
+
+/**
+ * @brief Store mode 1 or 2 and reset the state for selector 0.
+ * @param object State receiving the mode and reset.
+ * @param mode Mode to store; values other than 1 or 2 have no effect.
+ */
+void func_001E0DE0(BootState1E1A40* object, u8 mode);
+
+/**
+ * @brief Query a mode's byte and reset selector 0 when the reset flag is set.
+ * @param object State containing the mode bytes and reset flag.
+ * @param mode Mode 0 or 1 to query; other values return zero without a reset.
+ * @param kind Select guarded values with 1, or the direct mode byte otherwise.
+ * @return The selected byte before any reset.
+ */
+u8 func_001E1410(BootState1E1A40* object, u16 mode, u16 kind);
 
 /**
  * @brief Perform no work.
@@ -258,6 +307,162 @@ float func_001E9380(void* object);
  * @return One if nonzero, otherwise zero.
  */
 s32 func_001E9460(void* object);
+
+/**
+ * @brief Mark a record active and set its float values.
+ * @param object Record to update.
+ * @param first First float value.
+ * @param second Second float value.
+ * @param third Third float value.
+ */
+void func_001DD620(u8* object, float first, float second, float third);
+
+/**
+ * @brief Mark a record active and set three float values.
+ * @param object Record to update.
+ * @param first First float value.
+ * @param second Second float value.
+ * @param third Third float value.
+ */
+void func_001DDED0(u8* object, float first, float second, float third);
+
+/**
+ * @brief Set three float values and a final value of 1.0f.
+ * @param object Record to update.
+ * @param first First float value.
+ * @param second Second float value.
+ * @param third Third float value.
+ */
+void func_001E0520(u8* object, float first, float second, float third);
+
+/**
+ * @brief Mark a record active and set four float values.
+ * @param object Record to update.
+ * @param first First float value.
+ * @param second Second float value.
+ * @param third Third float value.
+ * @param fourth Fourth float value.
+ */
+void func_001E0630(u8* object, float first, float second, float third, float fourth);
+
+/**
+ * @brief Clear the first four words of a record.
+ * @param object Record to clear.
+ * @return The record pointer.
+ */
+void* func_001DFE50(u32* object);
+
+/**
+ * @brief Initialize a record pointer to the fixed table.
+ * @param object Pointer field to initialize.
+ * @return The record pointer.
+ */
+void* func_001DFE70(void** object);
+
+/**
+ * @brief Check whether a float is negative.
+ * @param object Receiver or first argument; unused.
+ * @param value Float to test.
+ * @return One if negative, otherwise zero.
+ */
+s32 func_001E0890(void* object, float value);
+
+/**
+ * @brief Return the fixed table address.
+ * @param object Receiver or first argument; unused.
+ * @return Address of the fixed table.
+ */
+void* func_001E08B0(void* object);
+
+/**
+ * @brief Clear six consecutive words starting at offset 0x20.
+ * @param object Record to clear.
+ */
+void func_001E9650(u32* object);
+
+/**
+ * @brief Copy 16 bytes to offset 0x20.
+ * @param object Destination record.
+ * @param value 16-byte value to copy.
+ */
+void func_001E0500(u8* object, const unsigned __int128* value);
+
+/**
+ * @brief Copy 16 bytes to offset 0x20.
+ * @param object Destination record.
+ * @param value 16-byte value to copy.
+ */
+void func_001E0510(u8* object, const unsigned __int128* value);
+
+/**
+ * @brief Mark a record active and copy 16 bytes to offset 0x20.
+ * @param object Destination record.
+ * @param value 16-byte value to copy.
+ */
+void func_001E05F0(u8* object, const unsigned __int128* value);
+
+/**
+ * @brief Mark a record active and copy 16 bytes to offset 0x20.
+ * @param object Destination record.
+ * @param value 16-byte value to copy.
+ */
+void func_001E0610(u8* object, const unsigned __int128* value);
+
+/**
+ * @brief Mark a record active and copy 16 bytes to offset 0x30.
+ * @param object Destination record.
+ * @param value 16-byte value to copy.
+ */
+void func_001E0650(u8* object, const unsigned __int128* value);
+
+/**
+ * @brief Mark a record active and copy 16 bytes to offset 0x30.
+ * @param object Destination record.
+ * @param value 16-byte value to copy.
+ */
+void func_001E0670(u8* object, const unsigned __int128* value);
+
+/**
+ * @brief Mark a record active and copy 16 bytes to offset 0x40.
+ * @param object Destination record.
+ * @param value 16-byte value to copy.
+ */
+void func_001E0730(u8* object, const unsigned __int128* value);
+
+/**
+ * @brief Mark a record active and copy 16 bytes to offset 0x40.
+ * @param object Destination record.
+ * @param value 16-byte value to copy.
+ */
+void func_001E0750(u8* object, const unsigned __int128* value);
+
+/**
+ * @brief Forward to the owner 0x640 bytes before the embedded object.
+ * @param object Pointer to the embedded object.
+ */
+void func_001E9590(u8* object);
+
+/**
+ * @brief Forward to the owner 0x640 bytes before the embedded object.
+ * @param object Pointer to the embedded object.
+ */
+void func_001E95A0(u8* object);
+
+/**
+ * @brief Set the value byte and active flag.
+ * @param object Record to update.
+ * @param value Byte to store.
+ */
+void func_001E94E0(Record001E94E0* object, u8 value);
+
+/**
+ * @brief Mark a record active and copy a four-float value into it.
+ * @param object Record to update.
+ * @param first First float value.
+ * @param second Second float value.
+ * @param third Third float value.
+ */
+void func_001E06F0(u8* object, float first, float second, float third);
 
 #ifdef __cplusplus
 }

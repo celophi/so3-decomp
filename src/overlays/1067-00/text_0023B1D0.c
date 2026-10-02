@@ -162,11 +162,6 @@ struct FieldNode23D310
     FieldNode23D310* next;
 };
 
-struct FieldObject23D310
-{
-    FieldNode23D310* first;
-};
-
 struct FieldObject23B280
 {
     u8 unk00[0x3C];
@@ -184,22 +179,6 @@ struct FieldObject23B280
     float x_base;
     float y_base;
     u16 count;
-};
-
-struct FieldObject23B1D0
-{
-    u8 unk00[0x3C];
-    u8 flag3C;
-    u8 unk3D[3];
-    u8 point40[0x10];
-    float x;
-    float y;
-    u8 unk58[0x1D];
-    u8 flag75;
-    u8 unk76[6];
-    FieldObject23D310 nodes;
-    u8 unk80[8];
-    s32 selected;
 };
 
 struct FieldGlobal643C

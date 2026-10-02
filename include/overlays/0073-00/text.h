@@ -7,11 +7,29 @@
 extern "C" {
 #endif
 
+typedef struct TacticsListNode
+{
+    void* value;
+    struct TacticsListNode* next;
+} TacticsListNode;
+
+typedef struct TacticsList
+{
+    TacticsListNode* head;
+} TacticsList;
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
 void func_00348400(void* object);
+
+/**
+ * @brief Mark each icon active and color the selected one differently.
+ * @param object Holder of the icon list.
+ * @param selected Index of the icon to color differently.
+ */
+void func_00348410(void* object, s16 selected);
 
 /**
  * @brief Return the field at byte offset 0x20.
@@ -511,6 +529,30 @@ s32 func_00351400(void* object);
  * @return Always 0.
  */
 s32 func_00351410(void* object);
+
+/**
+ * @brief Return the node at an index in a linked list.
+ * @param list List containing the nodes.
+ * @param index Zero-based node index.
+ * @return The node, or null if the list ends before the index.
+ */
+TacticsListNode* func_00351750(TacticsList* list, s32 index);
+
+/**
+ * @brief Return the node at an index in a linked list.
+ * @param list List containing the nodes.
+ * @param index Zero-based node index.
+ * @return The node, or null if the list ends before the index.
+ */
+TacticsListNode* func_003519A0(TacticsList* list, s32 index);
+
+/**
+ * @brief Return the node at an index in a linked list.
+ * @param list List containing the nodes.
+ * @param index Zero-based node index.
+ * @return The node, or null if the list ends before the index.
+ */
+TacticsListNode* func_00351BF0(TacticsList* list, s32 index);
 
 #ifdef __cplusplus
 }

@@ -13,6 +13,8 @@ typedef struct
     u32 field_40;
 } ConfigControl;
 
+typedef struct ConfigOwnedItem ConfigOwnedItem;
+
 typedef struct ConfigNode
 {
     void* value;
@@ -681,6 +683,30 @@ void func_00352CD0(ConfigListOwner* list, void* value);
  * @return The original object pointer.
  */
 void* func_00352400(void* object, s32 flags);
+
+/**
+ * @brief Release an embedded member and the object when requested.
+ * @param object Object containing the embedded member.
+ * @param flags Controls whether the object is freed.
+ * @return The original object pointer.
+ */
+void* func_0034EAD0(void* object, s32 flags);
+
+/**
+ * @brief Release the attached item and optionally free the owner.
+ * @param object Owner of the attached item.
+ * @param flags A positive signed 16-bit value requests freeing the owner.
+ * @return The original object pointer.
+ */
+ConfigOwnedItem* func_00352750(ConfigOwnedItem* object, s32 flags);
+
+/**
+ * @brief Release the attached item and optionally free the owner.
+ * @param object Owner of the attached item.
+ * @param flags A positive signed 16-bit value requests freeing the owner.
+ * @return The original object pointer.
+ */
+ConfigOwnedItem* func_00352A70(ConfigOwnedItem* object, s32 flags);
 
 #ifdef __cplusplus
 }

@@ -3,6 +3,9 @@
 
 #include "types.h"
 
+typedef struct EquipLinkedList EquipLinkedList;
+typedef struct EquipWordList EquipWordList;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -231,6 +234,62 @@ void func_00351620(void* object, s8 value);
  * @return Value stored at offset 0x28.
  */
 s8 func_00351630(void* object);
+
+/**
+ * @brief Append a value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_003517D0(EquipLinkedList* list, s16 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351A20(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351B70(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351C00(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351C90(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351D20(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351DB0(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351E40(EquipWordList* list, u32 value);
 
 /**
  * @brief Advance from the first linked node by a number of steps.

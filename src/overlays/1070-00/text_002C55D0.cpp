@@ -101,7 +101,10 @@ void func_002CC6B0(FieldVectorSlots880* object, const unsigned __int128* value)
     object->unk20 = *value;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002CC6D0);
+extern "C" void func_002CC6D0(unsigned __int128* vector)
+{
+    *vector = 0;
+}
 
 void func_002CC6E0(unsigned __int128* first, unsigned __int128* second, const unsigned __int128* source)
 {
@@ -246,7 +249,30 @@ s32 func_002D1C40(void* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D1C50);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D1C70);
+void func_002D1C70(FieldRecordQueue* object, u32 value, u8 kind, u8 flag)
+{
+    if (object->unk31 < object->unk24)
+    {
+        FieldRecord1C* record = &object->unk1c[object->unk31];
+        record->unk0c = -1;
+        record->unk04 = 0;
+        record->unk10 = 0;
+        record->unk16_0 = 0;
+        record->unk16_1 = 1;
+        record->unk08_0 = 0;
+        record->unk16_2 = 0;
+        record->unk14 = 0;
+        record->unk15 = 0;
+        record = &object->unk1c[object->unk31];
+        record->unk04 = value;
+        record->unk08_0 = 1;
+        object->unk1c[object->unk31].unk16_1 = flag;
+        object->unk1c[object->unk31].unk16_0 = 1;
+        object->unk1c[object->unk31].unk14 = object->unk31;
+        object->unk1c[object->unk31].unk15 = kind;
+        object->unk31++;
+    }
+}
 
 s32 func_002D1DE0(const FieldBitCountState* object)
 {
@@ -456,7 +482,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D55
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D5520);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D5540);
+extern "C" void func_002D5540(void* object, float* result)
+{
+    float* values = *(float**)((u8*)object + 4);
+    if (values != 0)
+    {
+        s16 count = *(s16*)((u8*)object + 0x18);
+        *result = values[count * 2 - 1] - values[1];
+    }
+}
 
 void func_002D5570(const FieldFloat4C* object, float* result)
 {

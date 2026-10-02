@@ -651,6 +651,37 @@ void* func_003508F0(void* object, s32 flags);
 void* func_0034F6F0(void* object, s32 flags);
 
 /**
+ * @brief Advance the index within its eleven-item group.
+ * @param object Object containing the index at offset 0x110.
+ */
+void func_003495C0(void* object);
+
+/**
+ * @brief Move the index back within its eleven-item group.
+ * @param object Object containing the index at offset 0x110.
+ */
+void func_00349640(void* object);
+
+/**
+ * @brief Advance the index, wrapping at the end of its eleven-item range.
+ * @param object Object containing the index at offset 0x110.
+ */
+void func_003496C0(void* object);
+
+/**
+ * @brief Move the index back, wrapping at the start of its eleven-item range.
+ * @param object Object containing the index at offset 0x110.
+ */
+void func_00349730(void* object);
+
+/**
+ * @brief Initialize the base state, embedded lists, and remaining fields.
+ * @param object Object to initialize.
+ * @return Initialized object.
+ */
+void* func_0034F780(void* object);
+
+/**
  * @brief Initialize a status object and clear its state fields.
  * @param object Status object to initialize.
  * @return Initialized object.

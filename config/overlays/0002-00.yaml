@@ -47,6 +47,8 @@ segments:
       - [0x40, c, text_001DD3C0]
       - [0x10160, c, text_001ED4E0]
       - [0x21D20, c, text_001FF0A0]
+      # Linker padding: the data section starts on a 128-byte boundary.
+      - [0x27D60, pad, text_end_align]
   - [0x27d80, bin, data]
   - name: init
     type: code

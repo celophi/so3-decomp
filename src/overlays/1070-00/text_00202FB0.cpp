@@ -1,5 +1,23 @@
 #include "include_asm.h"
+#include "vu0.h"
 #include "overlays/1070-00/text_00202FB0.h"
+
+/** Partial list element with a word key at offset 0x54. */
+typedef struct FieldKeyListElement54
+{
+    FieldFlagListElement base;
+    u8 unk50[4];
+    u32 unk54;
+} FieldKeyListElement54;
+
+/** Partial list element with a word key at offset 0x270. */
+typedef struct FieldKeyListElement270
+{
+    FieldFlagListElement base;
+    u8 unk50[0x220];
+    u32 unk270;
+} FieldKeyListElement270;
+
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00202FB0);
 
@@ -88,7 +106,29 @@ s32 func_00204470(void* object)
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00204480);
+void func_00204480(FieldRecordQueue* object)
+{
+    if (object->unk1c != 0)
+    {
+        for (s32 index = 0; index < object->unk24; index++)
+        {
+            FieldRecord1C* record = &object->unk1c[index];
+            record->unk0c = -1;
+            record->unk04 = 0;
+            record->unk10 = 0;
+            record->unk16_0 = 0;
+            record->unk16_1 = 1;
+            record->unk08_0 = 0;
+            record->unk16_2 = 0;
+            record->unk14 = 0;
+            record->unk15 = 0;
+        }
+    }
+    object->unk20 = 0;
+    object->unk33 = 0;
+    object->unk31 = 0;
+    object->unk32 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00204550);
 
@@ -108,7 +148,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002054
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00205480);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00205620);
+FieldRecord1C* func_00205620(FieldRecord1C* record)
+{
+    record->unk0c = -1;
+    record->unk04 = 0;
+    record->unk10 = 0;
+    record->unk16_0 = 0;
+    record->unk16_1 = 1;
+    record->unk08_0 = 0;
+    record->unk16_2 = 0;
+    record->unk14 = 0;
+    record->unk15 = 0;
+    return record;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002056A0);
 
@@ -309,7 +361,38 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002090
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002091E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00209230);
+void func_00209230(FieldContext58* object, u32 key)
+{
+    enum
+    {
+        FIELD_LIST_FLAG_1 = 0x2,
+        FIELD_LIST_FLAG_3 = 0x8
+    };
+    FieldListNode* node = &object->unk14;
+    for (;;)
+    {
+        node = node->next;
+        if (&object->unk14 == node)
+        {
+            break;
+        }
+        FieldFlagListElement* element = (FieldFlagListElement*)node;
+        if (element->unk1c & FIELD_LIST_FLAG_1)
+        {
+            if (key == ((FieldKeyListElement54*)element)->unk54)
+            {
+                element->unk4c_0 = 1;
+            }
+        }
+        else if (element->unk1c & FIELD_LIST_FLAG_3)
+        {
+            if (key == ((FieldKeyListElement270*)element)->unk270)
+            {
+                element->unk4c_0 = 1;
+            }
+        }
+    }
+}
 
 void func_002092C0(FieldContext58* object)
 {
@@ -331,9 +414,43 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002093
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002093C0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002096A0);
+FieldRecord18* func_002096A0(FieldRecord18* record)
+{
+    record->unk0c = -1;
+    record->unk04 = 0;
+    record->unk10 = 0;
+    record->unk16_0 = 0;
+    record->unk16_1 = 1;
+    record->unk08_0 = 0;
+    record->unk16_2 = 0;
+    record->unk14 = 0;
+    record->unk15 = 0;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00209720);
+void func_00209720(FieldRecordQueue18* object)
+{
+    if (object->unk1c != 0)
+    {
+        for (s32 index = 0; index < object->unk24; index++)
+        {
+            FieldRecord18* record = &object->unk1c[index];
+            record->unk0c = -1;
+            record->unk04 = 0;
+            record->unk10 = 0;
+            record->unk16_0 = 0;
+            record->unk16_1 = 1;
+            record->unk08_0 = 0;
+            record->unk16_2 = 0;
+            record->unk14 = 0;
+            record->unk15 = 0;
+        }
+    }
+    object->unk20 = 0;
+    object->unk33 = 0;
+    object->unk31 = 0;
+    object->unk32 = 0;
+}
 
 void func_002097F0(FieldContext58* object, void* value, s32 unused)
 {
@@ -437,7 +554,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020BF
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020C0B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020C120);
+void func_0020C120(FieldRecordQueue18* object)
+{
+    object->unk34_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020C140);
 
@@ -479,16 +599,26 @@ FieldContext08* func_0020CBE0(const FieldContextRef* ref)
     return ref->context->unk08;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020CBF0);
+void func_0020CBF0(FieldVectorProduct560* object, const unsigned __int128* source)
+{
+    object->unk560 = *source;
+    vu0_multiply_xyzw(&object->unk580, &object->unk560, &object->unk570);
+}
 
 u16 func_0020CC20(const FieldObjectFlags* object)
 {
     return object->unk6e;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020CC30);
+void func_0020CC30(FieldVector* out, const FieldVector* left, const FieldVector* right)
+{
+    vu0_multiply_xyzw(out, left, right);
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020CC50);
+void func_0020CC50(unsigned __int128* out, const unsigned __int128* source)
+{
+    *out = *source;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020CC60);
 
