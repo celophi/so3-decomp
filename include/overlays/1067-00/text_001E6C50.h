@@ -4,16 +4,6 @@
 #include "types.h"
 #include "overlays/1067-00/text_001E1590.h"
 
-/** Partial base receiver with a word at offset 0x18 and flag bit 0 at offset 0x20. */
-typedef struct FieldFlagObject20
-{
-    u8 unk00[0x18];
-    u32 unk18;
-    u8 unk1c[4];
-    u8 unk20_0 : 1;
-    u8 unk20_1_7 : 7;
-} FieldFlagObject20;
-
 /** Partial receiver with three aligned 128-bit slots and a ready byte at offset 0x50. */
 typedef struct FieldVectorSlots50
 {
@@ -21,25 +11,6 @@ typedef struct FieldVectorSlots50
     unsigned __int128 slots[3];
     u8 ready;
 } FieldVectorSlots50;
-
-/** Four adjacent floats in a 16-byte record. */
-typedef struct FieldFloat4
-{
-    float unk00;
-    float unk04;
-    float unk08;
-    float unk0c;
-} FieldFloat4;
-
-/** Partial receiver with flag bit 0 at offset 0x20 and six 16-byte float records at offset 0x130. */
-typedef struct FieldRecordObject130
-{
-    u8 unk00[0x20];
-    u8 unk20_0 : 1;
-    u8 unk20_1_7 : 7;
-    u8 unk21[0x10F];
-    FieldFloat4 unk130[6];
-} FieldRecordObject130;
 
 /** Partial receiver with three words at offsets 0x10-0x18 and flag bit 1 at offset 0x66. */
 typedef struct FieldStateReset66
@@ -85,18 +56,6 @@ typedef struct FieldHalfword3A
     u8 unk00[0x3A];
     s16 unk3a;
 } FieldHalfword3A;
-
-/** Partial receiver with a pointer at offset 0x30, a signed counter at offset 0xC0 and flags at offset 0xC4. */
-typedef struct FieldCounterObjectC0
-{
-    u8 unk00[0x30];
-    void* unk30;
-    u8 unk34[0x8C];
-    s32 unkc0;
-    u8 unkc4_0 : 1;
-    u8 unkc4_1 : 1;
-    u8 unkc4_2_7 : 6;
-} FieldCounterObjectC0;
 
 /** Partial record with a leading pointer, flag byte at offset 0xA and signed halfword at offset 0xE. */
 typedef struct FieldPackedRecord0E
@@ -158,6 +117,108 @@ typedef struct FieldEntryArrayObject30
 } FieldEntryArrayObject30;
 
 #ifdef __cplusplus
+/**
+ * Partial class derived from FieldClass150070, with vtable D_150220 in boot
+ * data. Holds a source record pointer at offset 0x18 and a done flag at bit 0
+ * of offset 0x20; slot 8 is pure virtual.
+ */
+class FieldClass150220 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150220()
+    {
+    }
+
+    /**
+     * @brief Store the source record pointer at offset 0x18.
+     * @param source Record to store.
+     */
+    virtual void func_001E6CF0(void* source);
+
+    /**
+     * @brief Set flag bit 0 at offset 0x20.
+     * @param matrix 4x4 matrix used by the overrides; ignored here.
+     */
+    virtual void func_001E73D0(const void* matrix);
+
+    /** @brief Clear flag bit 0 at offset 0x20. */
+    virtual void func_001E6D00();
+
+    /**
+     * @brief Build the object's state from a source record and an optional matrix.
+     * @param source Source record, stored at offset 0x18.
+     * @param matrix Optional 4x4 matrix.
+     * @param scale Scale factor; ignored by FieldClass150250.
+     */
+    virtual void func_001E6D80(void* source, const void* matrix, float scale) = 0;
+
+    u8 unk14[4];
+    void* unk18;
+    u8 unk1c[4];
+    u8 unk20_0 : 1;
+    u8 unk20_1_7 : 7;
+};
+
+/** Partial class derived from FieldClass150220, with vtable D_1501F0 in boot data. */
+class FieldClass1501F0 : public FieldClass150220
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1501F0();
+
+    /**
+     * @brief Unless flag bit 0 at offset 0x20 is set, pass the matrix and the vectors at offsets 0x1C0 and 0x1D0 to func_433730, then set the flag.
+     * @param matrix 4x4 matrix.
+     */
+    virtual void func_001E73D0(const void* matrix);
+
+    /**
+     * @brief Build the vectors at offset 0x30 and 0x1C0 from a source record and an optional matrix.
+     * @param source Source record, stored at offset 0x18.
+     * @param matrix Optional 4x4 matrix.
+     * @param scale Scale applied to the source's first float.
+     */
+    virtual void func_001E6D80(void* source, const void* matrix, float scale);
+};
+
+/** One 16-byte record of four floats. */
+struct FieldFloat4
+{
+    float unk00;
+    float unk04;
+    float unk08;
+    float unk0c;
+};
+
+/** Partial class derived from FieldClass150220 with six 16-byte records at offset 0x130, with vtable D_150250 in boot data. */
+class FieldClass150250 : public FieldClass150220
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150250();
+
+    /**
+     * @brief Unless flag bit 0 at offset 0x20 is set, transform the eight vectors at offset 0x30 and the vector at offset 0x190 by the matrix, then set the flag.
+     * @param matrix 4x4 matrix.
+     */
+    virtual void func_001E73D0(const void* matrix);
+
+    /** @brief Clear flag bit 0 at offset 0x20 and the last float of each record at offset 0x130. */
+    virtual void func_001E6D00();
+
+    /**
+     * @brief Build the eight corner vectors at offset 0x30 from a source record, optionally transformed by a matrix.
+     * @param source Source record, stored at offset 0x18.
+     * @param matrix Optional 4x4 matrix.
+     * @param scale Unused by this class.
+     */
+    virtual void func_001E6D80(void* source, const void* matrix, float scale);
+
+    u8 unk24[0x10C];
+    FieldFloat4 unk130[6];
+};
+
 /** Partial class derived from FieldClass150070, with vtable D_150330 in boot data. */
 class FieldClass150330 : public FieldClass150070
 {
@@ -174,7 +235,9 @@ class FieldClass150460 : public FieldClass150070
 {
 public:
     /** @brief Destroy the object. */
-    virtual ~FieldClass150460();
+    virtual ~FieldClass150460()
+    {
+    }
 };
 
 /** Partial class derived from FieldClass150460, with vtable D_150490 in boot data. */
@@ -182,18 +245,39 @@ class FieldClass150490 : public FieldClass150460
 {
 public:
     /** @brief Destroy the object. */
-    virtual ~FieldClass150490();
+    virtual ~FieldClass150490()
+    {
+    }
 };
 
-/** Partial class derived from FieldClass150490, with vtable D_1504C0 in boot data. */
+/**
+ * Partial class derived from FieldClass150490, with vtable D_1504C0 in boot
+ * data. Owns a list of FieldClass150070 objects at offset 0x38.
+ */
 class FieldClass1504C0 : public FieldClass150490
 {
 public:
-    /** @brief Destroy the object. */
+    /** @brief Detach and delete every object in the list at offset 0x38, then destroy the object. */
     virtual ~FieldClass1504C0();
 
     /** @brief Detach the object and queue it on the resident object queue. */
     virtual void func_001DD7B0();
+
+    /** @brief Advance the counter at offset 0xC0, then call func_001EA730 when the pointer at offset 0x30 and flag bit 1 at offset 0xC4 are set. */
+    virtual void func_001DF360();
+
+    /** @brief Update the object; func_001DF360 calls it after advancing the counter when the gating flags are set. */
+    void func_001EA730();
+
+    u8 unk14[0x1C];
+    void* unk30;
+    u8 unk34[4];
+    LibClass178DD0 unk38;
+    u8 unkb0[0x10];
+    s32 unkc0;
+    u8 unkc4_0 : 1;
+    u8 unkc4_1 : 1;
+    u8 unkc4_2_7 : 6;
 };
 #endif
 
@@ -221,31 +305,6 @@ void func_001E7EB0(FieldVectorSlots50* object, const unsigned __int128* value);
  * @param value Value to copy.
  */
 void func_001E7ED0(FieldVectorSlots50* object, const unsigned __int128* value);
-
-/**
- * @brief Store the word at offset 0x18.
- * @param object Receiver to update.
- * @param value Word to store.
- */
-void func_001E6CF0(FieldFlagObject20* object, u32 value);
-
-/**
- * @brief Clear flag bit 0 at offset 0x20.
- * @param object Receiver to update.
- */
-void func_001E6D00(FieldFlagObject20* object);
-
-/**
- * @brief Set flag bit 0 at offset 0x20.
- * @param object Receiver to update.
- */
-void func_001E73D0(FieldFlagObject20* object);
-
-/**
- * @brief Clear flag bit 0 at offset 0x20 and the last float of each of the six records at offset 0x130.
- * @param object Receiver to update.
- */
-void func_001E7520(FieldRecordObject130* object);
 
 /**
  * @brief Clear the words at offsets 0x10-0x18 and flag bit 1 at offset 0x66.
@@ -294,18 +353,6 @@ void* func_001E9E80(void* object);
  * @return object.
  */
 void* func_001E9E90(void* object);
-
-/**
- * @brief Update the receiver; func_001EA9B0 calls it after advancing the counter when the gating flags are set.
- * @param object Receiver to process.
- */
-void func_001EA730(FieldCounterObjectC0* object);
-
-/**
- * @brief Advance the counter at offset 0xC0, then call func_001EA730 when the pointer at offset 0x30 is set and flag bit 1 at offset 0xC4 is set.
- * @param object Receiver to update.
- */
-void func_001EA9B0(FieldCounterObjectC0* object);
 
 /**
  * @brief Test bit 5 of the flag byte at offset 0xA.

@@ -9,7 +9,12 @@
     "-inline",
     "level=4"
   ],
-  "unit_flags": [],
+  "unit_flags": [
+    {
+      "source": "src/overlays/1067-00/text_001E6C50.cpp",
+      "flags": ["-inline", "level=5"]
+    }
+  ],
   "source": "tools/so3/build/probes/boot.c",
   "probes": [
     {

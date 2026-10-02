@@ -28,6 +28,14 @@ The C++ code in Field gives me a better idea of the other settings:
 - C++ exceptions appear to have been enabled. The exception records produced
   for the functions I've checked match the game's, so I'm leaving them on.
 
+Level 4 isn't enough everywhere, though. One destructor in Field's
+`text_001E6C50` sits on a chain of six classes, and the game copies all five
+base destructors into it. Level 4 stops one short and calls the last one
+instead. So that file gets `-inline level=5` on its own, through the
+`unit_flags` list in the compiler config. Everything else in the file matches
+at both levels. My guess is that the original files weren't all built with the
+same settings, but one file isn't much to go on yet.
+
 There's one awkward detail: the main executable contains the string
 `MW MIPS C Compiler (2.4.1.01)`, while the three matching compiler builds write
 `3.0.0`. Several older releases write the same `2.4.1.01` string. It could

@@ -80,6 +80,35 @@ __vt__16FieldClass150120 = 0x00150120; // size:0x30
 __dt__16FieldClass150120Fv = 0x001E5030; // type:func
 func_001DDB30__16FieldClass150120FPv = 0x001E4EF0; // type:func
 
+// FieldClass150220 (inline destructor; kept copy in text_001E6C50) and its
+// subclasses FieldClass1501F0 and FieldClass150250. Slot 8 is pure virtual in
+// FieldClass150220 and named after its lowest implementer.
+__vt__16FieldClass150220 = 0x00150220; // size:0x2C
+__vt__16FieldClass1501F0 = 0x001501F0; // size:0x2C
+__vt__16FieldClass150250 = 0x00150250; // size:0x2C
+__dt__16FieldClass150220Fv = 0x001E73F0; // type:func
+func_001E6CF0__16FieldClass150220FPv = 0x001E6CF0; // type:func
+func_001E73D0__16FieldClass150220FPCv = 0x001E73D0; // type:func
+func_001E6D00__16FieldClass150220Fv = 0x001E6D00; // type:func
+__dt__16FieldClass1501F0Fv = 0x001E6C50; // type:func
+__dt__16FieldClass150250Fv = 0x001E7480; // type:func
+func_001E73D0__16FieldClass1501F0FPCv = 0x001E6D20; // type:func
+func_001E6D80__16FieldClass1501F0FPvPCvf = 0x001E6D80; // type:func
+func_001E73D0__16FieldClass150250FPCv = 0x001E7100; // type:func
+func_001E6D80__16FieldClass150250FPvPCvf = 0x001E71A0; // type:func
+func_001E6D00__16FieldClass150250Fv = 0x001E7520; // type:func
+
+// FieldClass150460 <- FieldClass150490 <- FieldClass1504C0. The first two have
+// inline destructors; their kept copies are in text_001E6C50.
+__vt__16FieldClass150460 = 0x00150460; // size:0x28
+__vt__16FieldClass150490 = 0x00150490; // size:0x2C
+__vt__16FieldClass1504C0 = 0x001504C0; // size:0x2C
+__dt__16FieldClass150460Fv = 0x001EB500; // type:func
+__dt__16FieldClass150490Fv = 0x001EB460; // type:func
+__dt__16FieldClass1504C0Fv = 0x001EAD40; // type:func
+func_001DF360__16FieldClass1504C0Fv = 0x001EA9B0; // type:func
+func_001EA730__16FieldClass1504C0Fv = 0x001EA730; // type:func
+
 // FieldClass14FFB0: a FieldClass150010 with FieldClass1DD400 (vtable D_150000)
 // at 0x18 and FieldClass150040 records. Its FieldClass1DD400 vtable part is
 // __vt__16FieldClass14FFB0 + 0x2C (config/relocations/1067-00_reloc_addrs.txt).
