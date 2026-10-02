@@ -6,13 +6,6 @@
 #include "overlays/1067-00/text_001FD860.h"
 #include "overlays/1067-00/text_0022DC70.h"
 
-/** Partial receiver whose word at offset 0x70 refers to an attached object. */
-typedef struct FieldAttachedObject70
-{
-    u8 unk00[0x70];
-    void* unk70;
-} FieldAttachedObject70;
-
 /** Partial object linked into a circular list, with flag and state words. */
 typedef struct FieldFlaggedListObject
 {
@@ -241,6 +234,15 @@ public:
     virtual ~FieldClass14FE30();
 
     /**
+     * @brief Release the object's storage through the Lib heap.
+     * @param object Storage to release.
+     */
+    static void operator delete(void* object)
+    {
+        func_004DB570(object);
+    }
+
+    /**
      * @brief Report the fixed value 4 for this class.
      * @return Always 4.
      */
@@ -272,6 +274,31 @@ public:
     virtual void func_001DF360();
 
     LibClass178EA0 unkA0;
+};
+
+/**
+ * Lib list class with vtable D_1502A0 in boot data. It adds no data to
+ * LibClass178DD0; its sentinel is the list's first 12 bytes (unk00).
+ */
+class FieldClass1502A0 : public LibClass178DD0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1502A0()
+    {
+    }
+
+    /**
+     * @brief Store the attached object pointer at offset 0x70.
+     * @param attached Object pointer to store.
+     */
+    virtual void func_004295B0(void* attached);
+
+    /** @brief Default handler that performs no work. */
+    virtual void func_004295C0();
+
+    /** @brief Detach and delete every listed object; traversal stops on return to the sentinel or at a null link. */
+    virtual void func_001DD730();
 };
 
 /**
@@ -441,12 +468,6 @@ public:
 extern "C" void func_001DD5E0(FieldClass150060* list);
 
 /**
- * @brief Detach and release every listed object.
- * @param list Head of a circular object list; traversal stops on return to it or at a null link.
- */
-extern "C" void func_001DD730(FieldClass150060* list);
-
-/**
  * @brief Run each listed object's type-specific update.
  *
  * Type-0x400 objects run slot 37 with 1; type-0x20000 objects are detached and
@@ -513,24 +534,14 @@ public:
  * @return True when an object is found; it is also stored at the list's offset 0x94.
  */
 extern "C" bool func_001DDD30(FieldListOwner94* list, FieldClass151510** target);
+
+/** Resident Lib list that many Field objects insert themselves into. */
+extern "C" LibClass178DD0* D_001B6614;
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * @brief Store the attached object pointer at offset 0x70.
- * @param object Receiver to update.
- * @param attached Object pointer to store.
- */
-void func_001DD420(FieldAttachedObject70* object, void* attached);
-
-/**
- * @brief Default virtual handler that performs no work.
- * @param object Receiver of the virtual call.
- */
-void func_001DD430(void* object);
 
 /**
  * @brief Call func_002379A0 with a nonzero flag for each listed object whose flag bit 3 is set.

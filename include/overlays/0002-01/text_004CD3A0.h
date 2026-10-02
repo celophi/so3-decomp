@@ -23,6 +23,9 @@ public:
     u8 unk00[0xC];
     s32 unk0c;
 
+    /** @brief Construct an empty list. */
+    LibClass178DD0();
+
     /** @brief Destroy the object. */
     virtual ~LibClass178DD0();
 
@@ -91,18 +94,13 @@ public:
     /** @brief Default handler that performs no work. */
     virtual void func_004295C0();
 
-    /**
-     * @brief Release storage allocated for this class.
-     * @param object Storage to release.
-     */
-    static void operator delete(void* object);
-
     u8 unk14[0x48];
     s32 unk5c;
     s32 unk60;
     u8 unk64[8];
     void** unk6c;
-    u8 unk70[8];
+    void* unk70;
+    u8 unk74[4];
 };
 
 /** Partial Lib class used as a member object, with vtable D_178EA0 in boot data. */
@@ -146,6 +144,15 @@ void func_004D6700(void* list, void* item);
  * @param items Array that receives the item pointers.
  */
 void func_004D6AF0(void* list, void** items);
+
+/**
+ * @brief Release heap storage, choosing between two resident heap release routines by a resident flag.
+ *
+ * Several Field classes route their operator delete here; the Lib list class's own
+ * deleting destructor uses the global operator delete instead.
+ * @param object Storage to release; null is ignored.
+ */
+void func_004DB570(void* object);
 
 /**
  * @brief Detach the object from the owner stored at offset 0x10, then clear that pointer.

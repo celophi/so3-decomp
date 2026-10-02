@@ -81,12 +81,12 @@ void FieldClass150070::func_001DD410()
 {
 }
 
-void func_001DD420(FieldAttachedObject70* object, void* attached)
+void FieldClass1502A0::func_004295B0(void* attached)
 {
-    object->unk70 = attached;
+    unk70 = attached;
 }
 
-void func_001DD430(void* object)
+void FieldClass1502A0::func_004295C0()
 {
 }
 
@@ -174,8 +174,9 @@ void func_001DD6E0(FieldFlaggedListObject* list)
     }
 }
 
-void func_001DD730(FieldClass150060* list)
+void FieldClass1502A0::func_001DD730()
 {
+    FieldClass150060* list = (FieldClass150060*)unk00;
     FieldClass150060* current;
     FieldClass150060* node = list->unk08;
     for (;;)

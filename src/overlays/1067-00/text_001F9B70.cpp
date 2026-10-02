@@ -367,7 +367,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FC0
 
 extern "C" void func_001FC370(void* object)
 {
-    LibClass178DD0::operator delete(object);
+    func_004DB570(object);
 }
 
 extern "C" void func_001FC390(void* object, void* other)

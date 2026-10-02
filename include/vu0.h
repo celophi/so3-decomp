@@ -53,4 +53,27 @@ static inline void vu0_multiply_xyzw(void* out, const void* left, const void* ri
         : "memory");
 }
 
+/**
+ * @brief Load the four rows of a 4x4 matrix into vf1-vf4.
+ *
+ * The rows stay in place for the Lib transform func_004336E0, which callers
+ * then run once per vector.
+ * @param matrix 16-byte aligned matrix of four rows.
+ * @see Fatal Frame does the same thing with vf4-vf7 (Vu0LoadMatrix in
+ *      https://github.com/Mikompilation/Himuro, src/graphics/graph3d/libsg.h).
+ * @see Silent Hill 2 loads vf1-vf4 the same way in shMulMatrix
+ *      (https://github.com/dreamingmoths/memory-of-alessa, SH2_common/sh_vu0.c).
+ */
+static inline void vu0_load_matrix(const void* matrix)
+{
+    asm __volatile__(
+        "lqc2      $vf1, 0x0(%0)\n"
+        "lqc2      $vf2, 0x10(%0)\n"
+        "lqc2      $vf3, 0x20(%0)\n"
+        "lqc2      $vf4, 0x30(%0)\n"
+        :
+        : "r"(matrix)
+        : "memory");
+}
+
 #endif
