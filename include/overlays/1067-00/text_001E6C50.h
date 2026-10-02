@@ -3,6 +3,8 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_001E1590.h"
+#include "overlays/1067-00/text_0023DC90.h"
+#include "boot/resident_0011EE70.h"
 
 /** Partial receiver with three aligned 128-bit slots and a ready byte at offset 0x50. */
 typedef struct FieldVectorSlots50
@@ -293,6 +295,22 @@ public:
     u8 unkbc_1_7 : 7;
 };
 
+/** Partial object with flag bit 4 at offset 0xC, referenced by FieldClass150330 at offset 0x1C. */
+struct FieldFlags0C
+{
+    u8 unk00[0xC];
+    u8 unk0c_0_3 : 4;
+    u8 unk0c_4 : 1;
+    u8 unk0c_5_7 : 3;
+};
+
+/** Two vertex indices of one line segment. */
+struct FieldIndexPair
+{
+    s16 unk00;
+    s16 unk02;
+};
+
 /** Partial class derived from FieldClass150070, with vtable D_150330 in boot data. */
 class FieldClass150330 : public FieldClass150070
 {
@@ -306,14 +324,23 @@ public:
     /** @brief Detach the object and queue it on the resident object queue. */
     virtual void func_001DD7B0();
 
-    u8 unk14[4];
+    /**
+     * @brief Append one line segment between two vertices to a packet.
+     * @param packet Packet to append to.
+     * @param from First vertex.
+     * @param to Second vertex.
+     * @param color Packed colour, alpha in the top byte.
+     */
+    void func_001E9690(ResidentPacket* packet, const FieldVec4A* from, const FieldVec4A* to, u32 color);
+
+    u32 unk14;
     u32 unk18;
-    u32 unk1c;
+    FieldFlags0C* unk1c;
     u32 unk20;
     void* unk24;
-    void* unk28;
-    void* unk2c;
-    u32 unk30;
+    FieldVec4A* unk28;
+    FieldIndexPair* unk2c;
+    float unk30;
     u8 unk34[4];
     s16 unk38;
     s16 unk3a;
@@ -364,7 +391,19 @@ public:
     /** @brief Construct the object with its state cleared. */
     FieldClass1504F0();
 
-    u8 unk14[0x39];
+    /**
+     * @brief Release the Lib slot at offset 0x3C and the object at offset 0x40, reset the target's
+     * state flags (resetting its scale first unless flag bit 0 or 1 is set), then destroy the object.
+     */
+    virtual ~FieldClass1504F0();
+
+    FieldObject24B6B0* unk14;
+    void* unk18;
+    u8 unk1c[0x20];
+    s32 unk3c;
+    FieldClass150070* unk40;
+    u8 unk44[8];
+    u8 unk4c;
     u8 unk4d_0 : 1;
     u8 unk4d_1 : 1;
     u8 unk4d_2 : 1;
@@ -393,6 +432,14 @@ public:
     virtual ~FieldClass150490()
     {
     }
+
+    /**
+     * @brief Add the object's GS register writes to a packet; this class adds none.
+     * @param packet Packet to append to.
+     */
+    virtual void func_001EAC90(ResidentPacket* packet)
+    {
+    }
 };
 
 /**
@@ -414,6 +461,19 @@ public:
     /** @brief Update the object; func_001DF360 calls it after advancing the counter when the gating flags are set. */
     void func_001EA730();
 
+    /**
+     * @brief When the pointer at offset 0x30 and flag bit 1 at offset 0xC4 are set, set the packet's byte at
+     * offset 0x15 and wrap func_001EAA10's output in GS register writes.
+     * @param packet Packet to append to.
+     */
+    virtual void func_001EAC90(ResidentPacket* packet);
+
+    /**
+     * @brief Append the object's own GS data to a packet.
+     * @param packet Packet to append to.
+     */
+    void func_001EAA10(ResidentPacket* packet);
+
     u8 unk14[0x1C];
     void* unk30;
     u8 unk34[4];
@@ -422,7 +482,10 @@ public:
     s32 unkc0;
     u8 unkc4_0 : 1;
     u8 unkc4_1 : 1;
-    u8 unkc4_2_7 : 6;
+    u8 unkc4_2 : 1;
+    u8 unkc4_3 : 1;
+    u8 unkc4_4 : 1;
+    u8 unkc4_5_7 : 3;
 };
 #endif
 

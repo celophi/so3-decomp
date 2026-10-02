@@ -4,14 +4,6 @@
 #include "overlays/1067-00/text_0027E520.h"
 
 
-struct FieldObject24B6B0
-{
-    u8 unk00[0x80];
-    void* target;
-    u32 unk84;
-    s32 value;
-};
-
 typedef struct FieldContextDC49880
 {
     u8 unk00[0x7C];

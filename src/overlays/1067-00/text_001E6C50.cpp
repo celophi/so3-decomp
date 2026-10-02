@@ -4,7 +4,11 @@
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/0002-01/text_00429B00.h"
 #include "overlays/0002-01/text_004BD360.h"
+#include "overlays/0002-01/text_0045AD10.h"
 #include "vu0.h"
+
+/* Lib.bin (0002-01) data, not owned by this overlay: GS register values passed to func_0011F140. */
+extern "C" u64 D_4ED330[];
 
 FieldClass1501F0::~FieldClass1501F0()
 {
@@ -286,7 +290,7 @@ s32 func_001E95B0(s32 flag)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9690);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9690__16FieldClass150330FP14ResidentPacketPC10FieldVec4APC10FieldVec4AUi);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9A50);
 
@@ -340,9 +344,75 @@ void FieldClass1504C0::func_001DF360()
     func_001EA730();
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001EAA10);
+void FieldClass1504C0::func_001EAA10(ResidentPacket* packet)
+{
+    FieldClass150060* node = (FieldClass150060*)unk38.unk00;
+    for (;;)
+    {
+        node = node->unk08;
+        if (!node || (FieldClass150060*)unk38.unk00 == node)
+        {
+            break;
+        }
+        FieldClass150330* item = static_cast<FieldClass150330*>(node);
+        if (!item->unk3c_1)
+        {
+            continue;
+        }
+        switch (item->unk3c_3_5)
+        {
+        case 0:
+            if (!unkc4_2)
+            {
+                continue;
+            }
+            if (item->unk1c->unk0c_4 && unkc0 % 3 != 0)
+            {
+                continue;
+            }
+            break;
+        case 1:
+            if (!unkc4_3)
+            {
+                continue;
+            }
+            break;
+        case 2:
+            if (!unkc4_4)
+            {
+                continue;
+            }
+            break;
+        }
+        if (!item->unk3c_0 || D_001B6430->context->unkdd.unk7)
+        {
+            continue;
+        }
+        if (item->unk30 < 1.0f)
+        {
+            item->unk30 += D_001B6688 / 15.0f;
+        }
+        u32 color = (item->unk14 & 0xFFFFFF) | ((u32)(128.0f * item->unk30) << 24);
+        for (s32 i = 0; i < item->unk3a; i++)
+        {
+            item->func_001E9690(packet, &item->unk28[item->unk2c[i].unk00], &item->unk28[item->unk2c[i].unk02], color);
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001EAC90);
+void FieldClass1504C0::func_001EAC90(ResidentPacket* packet)
+{
+    if (unk30 == 0 || !unkc4_1)
+    {
+        return;
+    }
+    packet->unk15 = 1;
+    func_0011F140(packet, D_4ED330[0]);
+    func_0011EF00(packet, 0x48, 0x3000D);
+    func_0011EF90(packet, 0x2C1);
+    func_001EAA10(packet);
+    func_0011EF00(packet, 0x48, 0x5000D);
+}
 
 FieldClass1504C0::~FieldClass1504C0()
 {
@@ -422,6 +492,30 @@ s32 func_001ECF10(const FieldGatedObject448* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001ECF60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001ECFF0);
+FieldClass1504F0::~FieldClass1504F0()
+{
+    if (unk3c != -1)
+    {
+        func_00465430(D_001B657C, unk3c);
+    }
+    if (unk40)
+    {
+        unk40->func_001DD7B0();
+        unk40 = 0;
+    }
+    FieldObject24B6B0* target = unk14;
+    if (target)
+    {
+        u8 flags = target->unk590_0 | target->unk590_1;
+        if (!flags)
+        {
+            FieldVec4A scale(1.0f, 1.0f, 1.0f, 1.0f);
+            func_00249880(target, &scale);
+            target->unk590_2 = 0;
+        }
+        target->unk590_3 = 0;
+    }
+    D_001B6430->context->unk64->unk48 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001ED160);

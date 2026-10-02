@@ -63,6 +63,13 @@ typedef struct ResidentContextObject58
     float unk1e0;
 } ResidentContextObject58;
 
+/** Partial object at field context offset 0x64. */
+typedef struct ResidentContextObject64
+{
+    u8 unk00[0x48];
+    void* unk48;
+} ResidentContextObject64;
+
 /** Partial field context reached through D_001B6430. */
 typedef struct ResidentContext
 {
@@ -84,7 +91,9 @@ typedef struct ResidentContext
     ResidentContextObject52* unk44;
     u8 unk48[0x10];
     ResidentContextObject58* unk58;
-    u8 unk5c[0x10];
+    u8 unk5c[8];
+    ResidentContextObject64* unk64;
+    u8 unk68[4];
     void* unk6c;
     u8 unk70[0x38];
     u16 unka8;
@@ -125,6 +134,7 @@ extern FieldRuntime* D_001B657C;
 extern u8 D_001B6448;
 extern void* D_001B6458;
 extern void* D_001B661C;
+extern float D_001B6688;
 
 #ifdef __cplusplus
 }

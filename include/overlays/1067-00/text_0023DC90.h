@@ -8,7 +8,20 @@
 extern "C" {
 #endif
 
-typedef struct FieldObject24B6B0 FieldObject24B6B0;
+/** Partial object passed to func_00249880, with a target at offset 0x80 and state flags at offset 0x590. */
+typedef struct FieldObject24B6B0
+{
+    u8 unk00[0x80];
+    void* target;
+    u32 unk84;
+    s32 value;
+    u8 unk8c[0x504];
+    u8 unk590_0 : 1;
+    u8 unk590_1 : 1;
+    u8 unk590_2 : 1;
+    u8 unk590_3 : 1;
+    u8 unk590_4_7 : 4;
+} FieldObject24B6B0;
 typedef struct FieldObject24B4C0 FieldObject24B4C0;
 typedef struct FieldObject24B490 FieldObject24B490;
 typedef struct FieldObject24C380 FieldObject24C380;
