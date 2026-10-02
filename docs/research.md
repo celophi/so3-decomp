@@ -66,3 +66,35 @@ I haven't confirmed this while the game is running, and something could still
 compute those entry numbers. If it holds up, the two unused modules are 3.28 MB
 of the 8.59 MB of code that progress currently counts.
 
+
+## Sony libraries in Lib.bin
+
+`Lib.bin` (`0002-01`) is a module the rest of the game shares. Most of it is
+tri-Ace's own code, but near the start there's a block of Sony code: the
+library the game uses to play its videos (`libmpeg`) and the one it uses to
+drive the PS2's video decoding hardware (`libipu`).
+
+The game was built with version 2.7 of Sony's SDK. Sony's libraries carry a
+version tag, and every tag I found in the game matches my 2.7.2 copy.
+
+I compared that copy with the original module, and the code matches exactly
+from 0x3E6900 to 0x3EEB50, with its data in the right places too. SDK 3.0's
+version doesn't match, so the version matters. The Ratchet & Clank decomp
+found the same library, down to the typos in Sony's error messages ("picure",
+"sutructure").
+
+Since this isn't tri-Ace's code, I've given those functions their Sony names
+and taken them out of the progress count. They stay in the build as the
+original assembly.
+
+A few things I'm not sure about yet:
+
+- One small piece of the library's data, its own version tag, is missing from
+  the game. I think the linker left it out because nothing uses it.
+- The library calls 11 functions in the main executable. I know what Sony
+  calls them, but I haven't checked the executable's code against the SDK
+  yet, so I haven't named them.
+- Some other code in `Lib.bin` uses the video hardware too. It's probably the
+  game's own movie code.
+
+The next step is to check the main executable against the same SDK.

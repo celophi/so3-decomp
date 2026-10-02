@@ -74,6 +74,13 @@ class SdkTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'exactly the reviewed'):
                 validate_sdk_units(configs, manifest)
 
+    def test_overlay_sdk_directory_is_recognised_only_under_its_module(self):
+        from tools.so3.build.sdk import sdk_path
+        self.assertTrue(sdk_path('src/sdk/boot/calls.c'))
+        self.assertTrue(sdk_path('src/overlays/0002-01/sdk/libmpeg_003E6900.c'))
+        self.assertFalse(sdk_path('src/overlays/0002-01/text_003E68C0.c'))
+        self.assertFalse(sdk_path('src/overlays/sdk/calls.c'))
+
     def test_other_modules_can_build_independently(self):
         with directory():
             configs, manifest = self.fixture()

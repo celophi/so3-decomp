@@ -27,7 +27,9 @@ def code_units(config):
 
 
 def sdk_path(source):
-    return Path(source).is_relative_to('src/sdk')
+    """SDK units live in src/sdk/ (boot) or src/overlays/<module>/sdk/."""
+    parts = Path(source).parts
+    return Path(source).is_relative_to('src/sdk') or (len(parts) > 3 and parts[:2] == ('src', 'overlays') and parts[3] == 'sdk')
 
 
 def validate_sdk_units(configs, manifest=None):

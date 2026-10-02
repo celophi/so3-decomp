@@ -44,7 +44,12 @@ segments:
     start: 0x40
     vram: 0x3e68c0
     subsegments:
-      - [0x40, c, text_003E68C0]
+      # Linker padding: .text starts on a 128-byte boundary after the 64-byte MWo3 header.
+      - [0x40, pad, text_align]
+      # Sony SDK 2.7 libmpeg and libipu, excluded from progress (config/manifests/sdk-functions.json).
+      - [0x80, c, sdk/libmpeg_003E6900]
+      - [0x7CA0, c, sdk/libipu_003EE520]
+      - [0x82D0, c, text_003E68C0]
       - [0x12840, c, text_003F90C0]
       - [0x22D40, c, text_004095C0]
       - [0x331F0, c, text_00419A70]
