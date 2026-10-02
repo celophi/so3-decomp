@@ -67,57 +67,34 @@ compute those entry numbers. If it holds up, the two unused modules are 3.28 MB
 of the 8.59 MB of code that progress currently counts.
 
 
-## Sony SDK in Lib.bin
+## Sony libraries in Lib.bin
 
-`0002-01` (`Lib.bin` in its header) is mostly tri-Ace code shared by the
-other modules: C++ classes with CodeWarrior vtables and exception records,
-the memory card save code (it uses `So3Sys.ico`, `So3Btl.ico` and `icon.sys`),
-and character data. It also contains Sony's MPEG decoder library, `libmpeg`,
-and the IPU library it runs on, `libipu`.
+`Lib.bin` (`0002-01`) is a module the rest of the game shares. Most of it is
+tri-Ace's own code, but near the start there's a block of Sony code: the
+library the game uses to play its videos (`libmpeg`) and the one it uses to
+drive the PS2's video decoding hardware (`libipu`).
 
-The game was linked against SDK 2.7. Sony libraries carry version tags, and
-every tag in the executable and in `Lib.bin` matches the 2.7.2 runtime:
-`libcdvd`, `libdbc`, `libkernl`, `libmc` and `libpad2` are 2710; `libdma`,
-`libgraph` and `libipu` are 2700.
+The game was built with version 2.7 of Sony's SDK. Sony's libraries carry a
+version tag, and every tag I found in the game matches my 2.7.2 copy.
 
-Certain:
+I compared that copy with the original module, and the code matches exactly
+from 0x3E6900 to 0x3EEB50, with its data in the right places too. SDK 3.0's
+version doesn't match, so the version matters. The Ratchet & Clank decomp
+found the same library, down to the typos in Sony's error messages ("picure",
+"sutructure").
 
-- `libmpeg` and `libipu` occupy **0x3E6900-0x3EEB50** in `Lib.bin`. I compared
-  every linked member of the 2.7.2 `libmpeg.a` and `libipu.a` with the original
-  module, masking relocated fields. Each member's whole `.text` matches
-  contiguously, in archive order, with only zero padding for 8-byte function
-  alignment between members: mpc.o, csc.o, bit.o, pack.o, mpeg.o, init.o,
-  defhandler.o, libipu.o, ipuinit.o.
-- All 404 internal calls land on the matched functions, and all 53 address
-  references to data land on the matched data sections: `.data` at
-  0x4EB700-0x4EB980, `.rodata` (the decoder strings) at 0x501780-0x501C8B,
-  and `mpc.o`'s `.bss` at 0x507A00.
-- `etc.o` (`_zeroBlockRAW16`) isn't linked. No other 2.7.2 library appears in
-  `Lib.bin`. As a control, SDK 3.0's `libmpeg` matches only 17 of 127
-  functions.
-- The 149 functions carry their Sony names in the symbol map. The two static
-  `setD4_CHCR` functions (one each in `libipu.o` and `ipuinit.o`) keep their
-  addresses, `func_003EE598` and `func_003EE8B0`, because the name isn't unique.
-  The range is split into `src/overlays/0002-01/sdk/libmpeg_003E6900.c` and
-  `libipu_003EE520.c` and excluded from progress through
-  `config/manifests/sdk-functions.json`. An earlier C version of
-  `sceMpegDelete` was returned to assembly.
+Since this isn't tri-Ace's code, I've given those functions their Sony names
+and taken them out of the progress count. They stay in the build as the
+original assembly.
 
-Ratchet & Clank's decomp reached the same library independently: all 32
-decoder strings here, including Sony's typos ("modion type", "picure",
-"sutructure"), are in its `libmpeg` too.
+A few things I'm not sure about yet:
 
-Not settled yet:
+- One small piece of the library's data, its own version tag, is missing from
+  the game. I think the linker left it out because nothing uses it.
+- The library calls 11 functions in the main executable. I know what Sony
+  calls them, but I haven't checked the executable's code against the SDK
+  yet, so I haven't named them.
+- Some other code in `Lib.bin` uses the video hardware too. It's probably the
+  game's own movie code.
 
-- `mpeg.o`'s only data is the 16-byte tag `PsIIlibmpeg 2700`, and it isn't in
-  `Lib.bin`; zeros fill that spot before `var.o`'s data. I think the linker
-  dropped it because nothing references it, but I haven't proved that.
-- The library calls 11 functions in the executable. The reference objects
-  name them `AddDmacHandler2`, `RemoveDmacHandler`, `DisableDmac`,
-  `EnableDmac`, `FlushCache`, `DIntr`, `EIntr`, `scePrintf`, `__muldi3`,
-  `memset` and `sprintf`. Those names come from relocations, not from matching
-  the executable's code, so I haven't applied them. The syscall pattern labels
-  agree for `FlushCache` and `RemoveDmacHandler`. For 0x121A80 the pattern
-  label says `AddDmacHandler`, while `libipu` calls it `AddDmacHandler2`.
-- `text_004095C0` also programs the IPU (around 0x416724-0x41832C) without
-  being part of either library. It is probably the game's own movie code.
+The next step is to check the main executable against the same SDK.
