@@ -234,6 +234,17 @@ public:
      */
     virtual void func_004D6730();
 
+    /**
+     * @brief Point the context's FieldClass155640 at the nearest live type-0x20 list item.
+     *
+     * Skipped while context flags or the focus object block it. Otherwise runs
+     * the per-frame list handler, then finds the type-0x20 item nearest to the
+     * context object at offset 0x18 among those with a valid word at offset
+     * 0x690. The context's FieldClass155640, created on first use, is updated
+     * through func_00279EA0 when its settings differ from that item's.
+     */
+    virtual void func_001DF360();
+
     LibClass178EA0 unkA0;
 };
 
@@ -426,6 +437,33 @@ extern "C" void func_001DD9A0(FieldClass150060* list, s8 mode, s32 arg);
  * @return 1 when a test succeeds, otherwise 0.
  */
 extern "C" s32 func_001DDBA0(FieldClass150060* list, FieldClass151510* self, void* arg0, void* arg1);
+
+/**
+ * Partial list head reached through a listed object's owner pointer at offset
+ * 0x10, recording the last object found by func_001DDD30.
+ */
+class FieldListOwner94 : public FieldClass150060
+{
+public:
+    u8 unk0c[0x88];
+    FieldClass150060* unk94;
+};
+
+/**
+ * @brief Find the first listed type-0x1 object whose shape passes func_0045F5A0 against the target's shape.
+ *
+ * Objects equal to the target, with type bit 0x10000 but not 0x200, type-0x10
+ * objects with a positive float at offset 0x638, objects failing
+ * func_00204420, with bit 3 at offset 0x204 set, or without an object at offset
+ * 0xA8 are skipped. When the target is a type-0x20 object with bit 0 at offset
+ * 0x69F set, type-0x10 objects are skipped; type-0x20 objects are skipped when
+ * their own bit 0 at offset 0x69F is set or the target is a type-0x10 object
+ * with a positive float at offset 0x638.
+ * @param list Head of a circular object list; traversal stops on return to it or at a null link.
+ * @param target In: object whose shape is tested; nothing is tested when bit 22 at its offset 0x204 is set. Out: the object found.
+ * @return True when an object is found; it is also stored at the list's offset 0x94.
+ */
+extern "C" bool func_001DDD30(FieldListOwner94* list, FieldClass151510** target);
 #endif
 
 #ifdef __cplusplus

@@ -3,6 +3,43 @@
 
 #include "types.h"
 
+/** Linked nodes used by the indexed list helpers. */
+typedef struct SkillListNode
+{
+    void* value;
+    struct SkillListNode* next;
+} SkillListNode;
+
+/** List storage begins with an anchor node. */
+typedef struct SkillList
+{
+    SkillListNode* head;
+    u32 count;
+} SkillList;
+
+typedef struct RecordWithMethods RecordWithMethods;
+typedef struct ListOwnerWithMethods ListOwnerWithMethods;
+typedef struct StatusOwner003534C0 StatusOwner003534C0;
+typedef struct StatusOwner003580D0 StatusOwner003580D0;
+typedef struct Record0035E2A0 Record0035E2A0;
+typedef struct Record0035BE50 Record0035BE50;
+typedef struct Record0035DDE0 Record0035DDE0;
+typedef struct Record0035DE40 Record0035DE40;
+typedef struct Record0035D4A0 Record0035D4A0;
+typedef struct Record0035D3E0 Record0035D3E0;
+typedef struct Record00349DB0 Record00349DB0;
+typedef struct Record0034BC40 Record0034BC40;
+typedef struct Record00351790 Record00351790;
+typedef struct Record00355420 Record00355420;
+typedef struct Record00355490 Record00355490;
+typedef struct Record00355500 Record00355500;
+typedef struct Record003610F0 Record003610F0;
+typedef struct Record00361060 Record00361060;
+typedef struct Record003611B0 Record003611B0;
+typedef struct Record003620F0 Record003620F0;
+typedef struct Record00363740 Record00363740;
+typedef struct Record00364810 Record00364810;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -398,6 +435,19 @@ u32 func_0034C7C0(u8* object);
 u8* func_00357EE0(u8* object);
 
 /**
+ * @brief Handle the pending action when both status flags are set.
+ * @param object Receiver storage.
+ */
+void func_003581B0(void* object);
+
+/**
+ * @brief Update list item display values for the selected index.
+ * @param object Receiver storage containing the list.
+ * @param selected Selected list index.
+ */
+void func_0035CCE0(void* object, s16 selected);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -668,6 +718,22 @@ u8 func_0035C420(u8* object);
 u32 func_0035C430(u8* object);
 
 /**
+ * @brief Find a node by walking from the list anchor.
+ * @param list List to search.
+ * @param index Number of links to follow from the first node.
+ * @return Node at the given index, or 0 if an earlier link is null.
+ */
+SkillListNode* func_0035C890(SkillList* list, s32 index);
+
+/**
+ * @brief Find a node by walking from the list anchor.
+ * @param list List to search.
+ * @param index Number of links to follow from the first node.
+ * @return Node at the given index, or 0 if an earlier link is null.
+ */
+SkillListNode* func_0035CAE0(SkillList* list, s32 index);
+
+/**
  * @brief Initialize the receiver metadata and return its address.
  * @param object Receiver storage.
  * @return Address of the receiver.
@@ -680,6 +746,28 @@ u8* func_0035D300(u8* object);
  * @return Address of the receiver.
  */
 u8* func_003611F0(u8* object);
+
+/**
+ * @brief Apply mode 1 to the primary record when the selector permits it.
+ * @param record Receiver with primary, mode, and state references.
+ * @return Primary operation's status, or zero when a guard prevents it.
+ */
+s32 func_003620F0(Record003620F0* record);
+
+/**
+ * @brief Apply mode 0 to the primary record when the selector permits it.
+ * @param record Receiver with primary, mode, and state references.
+ * @return Primary operation's status, or zero when a guard prevents it.
+ */
+s32 func_00362170(Record003620F0* record);
+
+/**
+ * @brief Update the primary record's selection and derived status items.
+ * @param record Primary receiver.
+ * @param mode Nonzero advances selection; zero moves it backward.
+ * @return Zero without a selection, otherwise 4.
+ */
+s32 func_00363740(Record00363740* record, s32 mode);
 
 /**
  * @brief Initialize the receiver metadata and return its address.
@@ -720,6 +808,391 @@ s32 func_003647F0(void* object);
  * @param object Receiver storage.
  */
 void func_00364800(u8* object);
+
+/**
+ * @brief Update the status bytes selected by a mode value.
+ * @param object Receiver with pointers to status records.
+ * @param mode Zero clears all seven records; a positive or negative value selects one of two records.
+ */
+void func_00349920(u8* object, s32 mode);
+
+/**
+ * @brief Append a value to the list.
+ * @param list List to extend.
+ * @param value Value stored in the new node.
+ */
+void func_0035C9D0(SkillList* list, void* value);
+
+/**
+ * @brief Append a value to the list.
+ * @param list List to extend.
+ * @param value Value stored in the new node.
+ */
+void func_0035CB20(SkillList* list, void* value);
+
+/**
+ * @brief Append a value to the list.
+ * @param list List to extend.
+ * @param value Value stored in the new node.
+ */
+void func_0035CBB0(SkillList* list, void* value);
+
+/**
+ * @brief Append a value to the list.
+ * @param list List to extend.
+ * @param value Value stored in the new node.
+ */
+void func_0035C440(SkillList* list, void* value);
+
+/**
+ * @brief Append a value to the list.
+ * @param list List to extend.
+ * @param value Value stored in the new node.
+ */
+void func_0035C4D0(SkillList* list, void* value);
+
+/**
+ * @brief Append a value to the list.
+ * @param list List to extend.
+ * @param value Value stored in the new node.
+ */
+void func_0035C560(SkillList* list, void* value);
+
+/**
+ * @brief Append a value to the list.
+ * @param list List to extend.
+ * @param value Value stored in the new node.
+ */
+void func_0035C5F0(SkillList* list, void* value);
+
+/**
+ * @brief Append a value to the list.
+ * @param list List to extend.
+ * @param value Value stored in the new node.
+ */
+void func_0035C780(SkillList* list, void* value);
+
+/**
+ * @brief Append a value to the list.
+ * @param list List to extend.
+ * @param value Value stored in the new node.
+ */
+void func_003649E0(SkillList* list, void* value);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_00349840(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_00349E20(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_00353380(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_00357E80(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_00358070(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_003591A0(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_0035A500(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_0035AB60(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_0035AEA0(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_0035D2A0(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_003635B0(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_00364610(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_00364880(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record and optionally free its storage.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+Record0035DE40* func_0035DE40(Record0035DE40* record, s16 flag);
+
+/**
+ * @brief Release nested state and optionally free the record.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+Record00349DB0* func_00349DB0(Record00349DB0* record, s16 flag);
+
+/**
+ * @brief Release nested state and optionally free the record.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+Record0034BC40* func_0034BC40(Record0034BC40* record, s16 flag);
+
+/**
+ * @brief Release nested state and optionally free the record.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+Record00351790* func_00351790(Record00351790* record, s16 flag);
+
+/**
+ * @brief Release nested state and optionally free the record.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+RecordWithMethods* func_00351A60(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release nested state and optionally free the record.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+Record00355420* func_00355420(Record00355420* record, s16 flag);
+
+/**
+ * @brief Release nested state and optionally free the record.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+Record00355500* func_00355500(Record00355500* record, s16 flag);
+
+/**
+ * @brief Release nested state and optionally free the record.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+Record003610F0* func_003610F0(Record003610F0* record, s16 flag);
+
+/**
+ * @brief Release nested state and optionally free the record.
+ * @param record Record to release.
+ * @param flag Free the storage when positive.
+ * @return The original record pointer.
+ */
+Record00364810* func_00364810(Record00364810* record, s16 flag);
+
+/**
+ * @brief Reset the record fields and initialize its child state.
+ * @param record Record to initialize.
+ * @param arg1 First integer argument passed to the child initializer.
+ * @param arg2 Second integer argument passed to the child initializer.
+ * @param arg3 Pointer passed to the child initializer.
+ * @param first First float argument; unused here.
+ * @param second Second float argument; unused here.
+ * @param third Float value passed to the child initializer.
+ * @return One on completion.
+ */
+s32 func_0035D3E0(Record0035D3E0* record, s32 arg1, s32 arg2, void* arg3, float first, float second, float third);
+
+/**
+ * @brief Clear the list, release its storage, and optionally free the owner.
+ * @param record List owner to release.
+ * @param flag Free the owner when positive.
+ * @return The original owner pointer.
+ */
+ListOwnerWithMethods* func_0035C700(ListOwnerWithMethods* record, s16 flag);
+
+/**
+ * @brief Clear the list, release its storage, and optionally free the owner.
+ * @param record List owner to release.
+ * @param flag Free the owner when positive.
+ * @return The original owner pointer.
+ */
+ListOwnerWithMethods* func_0035C950(ListOwnerWithMethods* record, s16 flag);
+
+/**
+ * @brief Clear the list, release its storage, and optionally free the owner.
+ * @param record List owner to release.
+ * @param flag Free the owner when positive.
+ * @return The original owner pointer.
+ */
+ListOwnerWithMethods* func_00364AF0(ListOwnerWithMethods* record, s16 flag);
+
+/**
+ * @brief Update six item fields and sum values other than -1.
+ * @param owner Record containing the items and values.
+ * @param mode Value stored in the first item's byte; zero clears the other item bytes.
+ * @return Sum of the six values, with -1 treated as zero, or zero when mode is zero.
+ */
+s32 func_003534C0(StatusOwner003534C0* owner, s32 mode);
+
+/**
+ * @brief Update four item values and status bytes.
+ * @param owner Record containing the four item pointers.
+ * @param first Value used by the first item and third-item selection.
+ * @param second Value used by the second item.
+ * @param third Value used by the third item.
+ */
+void func_003580D0(StatusOwner003580D0* owner, s32 first, s32 second, s32 third);
+
+/**
+ * @brief Mark the record, detach its nested registration, and enqueue it.
+ * @param record Record to detach and enqueue.
+ */
+void func_003611B0(Record003611B0* record);
+
+/**
+ * @brief Reset the record's method table and optionally free its storage.
+ * @param record Record to release, or null.
+ * @param flag Positive values release the record's storage.
+ * @return Original record pointer.
+ */
+RecordWithMethods* func_0035C050(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the record's base state and optionally free its storage.
+ * @param record Record to release, or null.
+ * @param flag Positive values release the record's storage.
+ * @return Original record pointer.
+ */
+RecordWithMethods* func_0035C0A0(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Release the derived record's base state and optionally free its storage.
+ * @param record Record to release, or null.
+ * @param flag Positive values release the record's storage.
+ * @return Original record pointer.
+ */
+Record00355490* func_00355490(Record00355490* record, s16 flag);
+
+/**
+ * @brief Release the nested record state and optionally free its storage.
+ * @param record Record to release, or null.
+ * @param flag Positive values release the record's storage.
+ * @return Original record pointer.
+ */
+Record00361060* func_00361060(Record00361060* record, s16 flag);
+
+/**
+ * @brief Release the nested record state and optionally free its storage.
+ * @param record Record to release, or null.
+ * @param flag Positive values release the record's storage.
+ * @return Original record pointer.
+ */
+Record0035D4A0* func_0035D4A0(Record0035D4A0* record, s16 flag);
+
+/**
+ * @brief Select the previous child node, wrapping a negative index to seven.
+ * @param record Owner of the child selection; inactive children are unchanged.
+ */
+void func_0035E2A0(Record0035E2A0* record);
+
+/**
+ * @brief Select the next child node, wrapping indices of eight or greater to zero.
+ * @param record Owner of the child selection; inactive children are unchanged.
+ */
+void func_0035E2F0(Record0035E2A0* record);
+
+/**
+ * @brief Remap child node indices zero, one, and two to three, five, and six.
+ * @param record Owner of the child selection; inactive children are unchanged.
+ */
+void func_0035E340(Record0035E2A0* record);
+
+/**
+ * @brief Remap child indices three through seven to zero, one, one, two, and two.
+ * @param record Owner of the child selection; inactive children are unchanged.
+ */
+void func_0035E3C0(Record0035E2A0* record);
+
+/**
+ * @brief Allocate and initialize the record's selection state.
+ * @param record Owner of the selection state.
+ * @return One when initialization succeeds, or zero on failure.
+ */
+s32 func_0035BE50(Record0035BE50* record);
+
+/**
+ * @brief Reset the packet buffer, append its initial register packet, and update the record.
+ * @param record Record whose optional packet buffer is reset.
+ */
+void func_0035DDE0(Record0035DDE0* record);
+
+void func_0035D540(Record0035DDE0* record);
 
 #ifdef __cplusplus
 }

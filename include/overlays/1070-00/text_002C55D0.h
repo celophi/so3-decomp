@@ -1,7 +1,7 @@
 #ifndef SO3_OVERLAYS_1070_00_TEXT_002C55D0_H
 #define SO3_OVERLAYS_1070_00_TEXT_002C55D0_H
 
-#include "overlays/1070-00/text_00284BF0.h"
+#include "overlays/1070-00/text_00202FB0.h"
 
 /** Partial receiver storing a linked object and an additional word value. */
 typedef struct FieldLinkedState
@@ -49,6 +49,15 @@ typedef struct FieldFloat4C
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Initialize and append a record while the next index is below the limit.
+ * @param object Queue containing the record array and next index.
+ * @param value Word value to store in the record.
+ * @param kind Byte value to store in field 0x15.
+ * @param flag Value whose low bit sets field 0x16 bit 1.
+ */
+void func_002D1C70(FieldRecordQueue* object, u32 value, u8 kind, u8 flag);
 
 /**
  * @brief Copy a vector into fields 0x890 and 0x20, and set the state byte.
@@ -205,6 +214,19 @@ s32 func_002CDA70(void* object);
  * @return Always 14.
  */
 s32 func_002D1C40(void* object);
+
+/**
+ * @brief Clear a 128-bit vector value.
+ * @param vector Value to clear.
+ */
+void func_002CC6D0(unsigned __int128* vector);
+
+/**
+ * @brief Write the difference between selected floats in an eight-byte record array.
+ * @param object Object containing the array pointer and count.
+ * @param result Destination for the difference; unchanged if the array is absent.
+ */
+void func_002D5540(void* object, float* result);
 
 #ifdef __cplusplus
 }

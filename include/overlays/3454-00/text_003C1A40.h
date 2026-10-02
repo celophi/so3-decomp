@@ -807,6 +807,116 @@ void func_003D1A20(void* object);
  */
 void func_003D1A30(void* object);
 
+/**
+ * @brief Return the fixed value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 100.0.
+ */
+float func_003D13D0(void* object);
+
+/**
+ * @brief Return the fixed value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 100.0.
+ */
+float func_003D15D0(void* object);
+
+/**
+ * @brief Return the fixed value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 100.0.
+ */
+float func_003D17D0(void* object);
+
+/**
+ * @brief Return the fixed value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 100.0.
+ */
+float func_003D19D0(void* object);
+
+/**
+ * @brief Return the fixed value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_003D1530(void* object);
+
+/**
+ * @brief Return the fixed value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_003D15A0(void* object);
+
+/**
+ * @brief Return the fixed value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_003D1730(void* object);
+
+/**
+ * @brief Return the fixed value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_003D17A0(void* object);
+
+/**
+ * @brief Return the fixed value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_003D1930(void* object);
+
+/**
+ * @brief Return the fixed value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_003D19A0(void* object);
+
+/**
+ * @brief Return the fixed value 1.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 1.0.
+ */
+float func_003CB9B0(void* object);
+
+/**
+ * @brief Return the fixed value 1.0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 1.0.
+ */
+float func_003CB9F0(void* object);
+
+/**
+ * @brief Clear the word at offset 0x44.
+ * @param object Object with the field.
+ */
+void func_003CB9A0(u8* object);
+
+/**
+ * @brief Clear the word at offset 0x44.
+ * @param object Object with the field.
+ */
+void func_003CB9E0(u8* object);
+
+/**
+ * @brief Store two words at offsets 0xB0 and 0xB4.
+ * @param object Object with the two fields.
+ * @param first Word stored at offset 0xB0.
+ * @param second Word stored at offset 0xB4.
+ */
+void func_003CBE90(u8* object, u32 first, u32 second);
+
+/**
+ * @brief Clear the words at offsets 0xB0 and 0xB4.
+ * @param object Object with the two fields.
+ */
+void func_003CBEA0(u8* object);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,6 +1,94 @@
 #include "include_asm.h"
 #include "overlays/0075-00/text_003684D0.h"
+#include "overlays/0075-00/text_00358440.h"
+#include "overlays/0075-00/text_003483C0.h"
+#include "overlays/1067-00/text_0023B1D0.h"
 
+enum
+{
+    ITEM_CREATION_FLAG_0 = 0x1,
+    ITEM_CREATION_FLAG_1 = 0x2,
+    ITEM_CREATION_FLAG_2 = 0x4,
+    ITEM_CREATION_FLAG_3 = 0x8,
+    ITEM_CREATION_FLAG_4 = 0x10,
+    ITEM_CREATION_FLAG_5 = 0x20,
+    ITEM_CREATION_FLAG_6 = 0x40,
+    ITEM_CREATION_FLAG_7 = 0x80
+};
+
+typedef struct ItemCreationRuntimeRecord
+{
+    u16 unk00;
+    u8 unk02[0x32];
+} ItemCreationRuntimeRecord;
+
+typedef struct ItemCreationRuntimeRecordState
+{
+    u8 unk00[0x10F80];
+    ItemCreationRuntimeRecord unk10f80[5];
+} ItemCreationRuntimeRecordState;
+
+typedef struct ItemCreationRuntimeRoot ItemCreationRuntimeRoot;
+typedef struct ItemCreationRuntimeDirectory ItemCreationRuntimeDirectory;
+typedef struct ItemCreationRuntimeFlags
+{
+    u8 unk00[0x7A];
+    u8 unk7a;
+    u8 unk7b;
+} ItemCreationRuntimeFlags;
+
+typedef struct ItemCreationColorDisplay
+{
+    u8 unk00[0x3C];
+    u8 unk3c;
+    u8 unk3d[0x57];
+    u32 unk94;
+} ItemCreationColorDisplay;
+
+typedef struct ItemCreationListDisplay
+{
+    u8 unk00[0x2C];
+    ItemCreationList unk2c;
+    u8 unk30[0x78];
+    ItemCreationSelectedDisplayState* unka8;
+} ItemCreationListDisplay;
+
+typedef struct ItemCreationThreeSlotDisplay
+{
+    u8 unk00[0x120];
+    ItemCreationSelectedDisplayState* unk120;
+    u8 unk124;
+    u8 unk125;
+    u8 unk126[2];
+    ItemCreationColorDisplay* unk128[3];
+    ItemCreationColorDisplay* unk134[3];
+} ItemCreationThreeSlotDisplay;
+
+typedef struct ItemCreationTransferDisplay
+{
+    u8 unk00[0x3C];
+    u8 unk3c;
+    u8 unk3d[2];
+    u8 unk3f;
+    u8 unk40[0x10];
+    float unk50;
+    float unk54;
+    u8 unk58[0x1D];
+    u8 unk75;
+} ItemCreationTransferDisplay;
+
+struct ItemCreationOptionDisplay
+{
+    u8 unk00[0xC8];
+    FieldObject23CEA0* unkc8;
+};
+
+// Resident interfaces are scoped here because the shared declarations belong to another overlay.
+ItemCreationRuntimeRoot* func_10D8E0(void);
+ItemCreationRuntimeDirectory* func_101290(ItemCreationRuntimeRoot* root);
+ItemCreationRuntimeFlags* func_101440(ItemCreationRuntimeDirectory* directory, s32 key);
+
+extern ItemCreationRuntimeRecordState* D_001B64F8;
 extern u8 D_50CD30[];
 extern void func_4CE4C0(void* destination, const float* source);
 
@@ -28,13 +116,171 @@ INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_003690
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_003693A0);
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00369400);
+void func_00369400(ItemCreationSelection* object)
+{
+    object->unk00[0][0] = 136.0f;
+    object->unk00[0][1] = 164.0f;
+    object->unk00[1][0] = 136.0f;
+    object->unk00[1][1] = 180.0f;
+    object->unk00[2][0] = 60.0f;
+    object->unk00[2][1] = 168.0f;
+    object->unk00[3][0] = 348.0f;
+    object->unk00[3][1] = 44.0f;
+    object->unk00[4][0] = 340.0f;
+    object->unk00[4][1] = 92.0f;
+    object->unk00[5][0] = 212.0f;
+    object->unk00[5][1] = 196.0f;
+    object->unk00[6][0] = 160.0f;
+    object->unk00[6][1] = 96.0f;
+    object->unk00[7][0] = 96.0f;
+    object->unk00[7][1] = 80.0f;
+    object->unk00[8][0] = 108.0f;
+    object->unk00[8][1] = 56.0f;
+    object->unk00[9][0] = 60.0f;
+    object->unk00[9][1] = 16.0f;
+    object->unk00[10][0] = 380.0f;
+    object->unk00[10][1] = 20.0f;
+    object->unk00[11][0] = 16.0f;
+    object->unk00[11][1] = 198.0f;
+    object->unk6d[0] = 1;
+    object->unk6d[1] = 2;
+    object->unk6d[2] = 0;
+    object->unk6d[3] = 5;
+    object->unk6d[4] = 4;
+    object->unk6d[5] = 3;
+    object->unk6d[6] = 10;
+    object->unk6d[7] = 9;
+    object->unk6d[8] = 8;
+    object->unk6d[9] = 7;
+    object->unk6d[10] = 6;
+    object->unk6d[11] = 11;
+}
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00369510);
+void func_00369510(ItemCreationSelection* object)
+{
+    s32 enabled;
+    ItemCreationRuntimeFlags* flags = func_101440(func_101290(func_10D8E0()), 4);
+    if (flags != 0)
+    {
+        enabled = (flags->unk7a & ITEM_CREATION_FLAG_4) != 0;
+        if (enabled)
+        {
+            object->unk60[0] = 1;
+        }
+        enabled = (flags->unk7a & ITEM_CREATION_FLAG_5) != 0;
+        if (enabled)
+        {
+            object->unk60[1] = 1;
+        }
+        enabled = (flags->unk7a & ITEM_CREATION_FLAG_6) != 0;
+        if (enabled)
+        {
+            object->unk60[2] = 1;
+        }
+        enabled = (flags->unk7a & ITEM_CREATION_FLAG_7) != 0;
+        if (enabled)
+        {
+            object->unk60[3] = 1;
+        }
+        enabled = (flags->unk7b & ITEM_CREATION_FLAG_0) != 0;
+        if (enabled)
+        {
+            object->unk60[4] = 1;
+        }
+        enabled = (flags->unk7b & ITEM_CREATION_FLAG_1) != 0;
+        if (enabled)
+        {
+            object->unk60[5] = 1;
+        }
+        enabled = (flags->unk7b & ITEM_CREATION_FLAG_2) != 0;
+        if (enabled)
+        {
+            object->unk60[6] = 1;
+        }
+        enabled = (flags->unk7b & ITEM_CREATION_FLAG_3) != 0;
+        if (enabled)
+        {
+            object->unk60[7] = 1;
+        }
+        enabled = (flags->unk7b & ITEM_CREATION_FLAG_4) != 0;
+        if (enabled)
+        {
+            object->unk60[8] = 1;
+        }
+        enabled = (flags->unk7b & ITEM_CREATION_FLAG_5) != 0;
+        if (enabled)
+        {
+            object->unk60[9] = 1;
+        }
+        enabled = (flags->unk7b & ITEM_CREATION_FLAG_6) != 0;
+        if (enabled)
+        {
+            object->unk60[10] = 1;
+        }
+        enabled = (flags->unk7b & ITEM_CREATION_FLAG_7) != 0;
+        if (enabled)
+        {
+            object->unk60[11] = 1;
+        }
+        if (object->unk79 == 1 || object->unk79 == 2)
+        {
+            object->unk60[5] = 0;
+            object->unk60[6] = 0;
+            object->unk60[7] = 0;
+            object->unk60[8] = 0;
+            object->unk60[9] = 0;
+            object->unk60[10] = 0;
+            object->unk60[11] = 0;
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_003696B0);
+u8 func_003696B0(ItemCreationSelection* object, u16 direction)
+{
+    s32 selected = object->unk6d[object->unk6c - 1];
+    s32 slot;
+    s32 index;
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00369780);
+    do
+    {
+        switch (direction)
+        {
+        case 1:
+        case 4:
+            selected--;
+            break;
+        case 3:
+        case 2:
+            selected++;
+            break;
+        }
+        if (selected < 0)
+        {
+            selected = 11;
+        }
+        if (selected >= 12)
+        {
+            selected = 0;
+        }
+        slot = -1;
+        for (index = 0; index < 12; index++)
+        {
+            if (selected == object->unk6d[index])
+            {
+                slot = index + 1;
+                break;
+            }
+        }
+    } while (!object->unk60[slot - 1]);
+    object->unk6c = slot;
+    return object->unk6c;
+}
+
+s32 func_00369780(ItemCreationSelection* object)
+{
+    func_00369510(object);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_003697A0);
 
@@ -42,9 +288,163 @@ INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_003697
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_003698E0);
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00369B80);
+void func_00369B80(ItemCreationSelectedDisplayState* object, s32 value)
+{
+    ItemCreationSelection* selection;
+    ItemCreationFlagResetOwner* owner;
+    s32 selected;
+    switch (object->unk129)
+    {
+    case 0:
+        if (value == -1)
+        {
+            object->unk129 = 0;
+            object->unk12a = 0;
+            object->unk12b = 0;
+            object->unk12c = 0;
+            object->unk12d = 0;
+        }
+        else
+        {
+            object->unk12a = value;
+            object->unk129 = 1;
+        }
+        break;
+    case 1:
+        if (value == -1)
+        {
+            object->unk12b = 0;
+            object->unk129 = 0;
+        }
+        else
+        {
+            object->unk12b = value;
+            object->unk129 = 2;
+        }
+        break;
+    case 2:
+        if (value == -1)
+        {
+            object->unk12c = 0;
+            object->unk129 = 1;
+        }
+        else
+        {
+            object->unk12c = value;
+            object->unk129 = 3;
+        }
+        break;
+    case 3:
+        if (value == -1)
+        {
+            object->unk12d = 0;
+            object->unk129 = 2;
+            break;
+        }
+        object->unk12d = value;
+        if (object->unk12b != 0)
+        {
+            u8 code = object->unk12c == 0 ? 0 : object->unk12c + 1;
+            if (object->unk40 != 0)
+            {
+                object->unk40->unk188[object->unk12b] = code;
+            }
+        }
+        if (object->unk12d != 0)
+        {
+            u8 code = object->unk12a == 0 ? 0 : object->unk12a + 1;
+            if (object->unk40 != 0)
+            {
+                object->unk40->unk188[object->unk12d] = code;
+            }
+        }
+        selected = object->unk12a;
+        if (object->unkf8 != 0)
+        {
+            func_0036A780(object, selected, 1);
+            func_0034D340(object->unkf8);
+            if (object->unkf8->unkc8 != 0)
+            {
+                func_0023CEA0(object->unkf8->unkc8, 0);
+            }
+        }
+        object->unk129 = 0;
+        object->unk12a = 0;
+        object->unk12b = 0;
+        object->unk12c = 0;
+        object->unk12d = 0;
+        owner = object->unkf4;
+        if (owner != 0)
+        {
+            const float* position;
+            ItemCreationTransferDisplay* display;
+            float x;
+            float y;
+            owner->unk160->unk6c = selected;
+            selection = owner->unk160;
+            if ((u8)selected <= 0)
+            {
+                position = 0;
+            }
+            else if ((u8)selected > 12)
+            {
+                position = 0;
+            }
+            else
+            {
+                position = selection->unk00[(u8)selected - 1];
+            }
+            display = owner->unk15c;
+            x = position[0];
+            y = position[1];
+            display->unk50 = x;
+            display->unk54 = y;
+            display->unk75 = 1;
+            display->unk3c = 1;
+            owner = object->unkf4;
+            switch (owner->unk164->unk129)
+            {
+            case 0:
+                owner->unk16c->unk3f = 0;
+                owner->unk15c->unk3f = 1;
+                break;
+            case 1:
+                break;
+            case 2:
+                owner->unk15c->unk3f = 1;
+                break;
+            case 3:
+                break;
+            }
+            func_0034DA30(object->unkf4);
+            func_0034DB00(object->unkf4, selected);
+        }
+        if (object->unkfc != 0)
+        {
+            object->unk77[0] = 0;
+            object->unk77[1] = 0;
+            object->unk77[2] = 0;
+            object->unk77[3] = 0;
+            object->unk77[4] = 0;
+            object->unk77[5] = 0;
+            func_0034D340(object->unkfc);
+            if (object->unkfc->unkc8 != 0)
+            {
+                func_0023CEA0(object->unkfc->unkc8, 0);
+            }
+        }
+        break;
+    }
+}
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00369EB0);
+void func_00369EB0(ItemCreationRuntimeRecordSelection* object)
+{
+    object->unk7e[0] = D_001B64F8->unk10f80[0].unk00;
+    object->unk7e[1] = D_001B64F8->unk10f80[1].unk00;
+    object->unk7e[2] = D_001B64F8->unk10f80[2].unk00;
+    object->unk7e[3] = D_001B64F8->unk10f80[3].unk00;
+    object->unk7e[4] = D_001B64F8->unk10f80[4].unk00;
+}
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00369F20);
 
@@ -52,11 +452,164 @@ INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00369F
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036A050);
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036A500);
+void func_0036A500(ItemCreationSelectedDisplayState* object, ItemCreationSlotView* selected, u16 index)
+{
+    if (selected != 0 && object->unkb8 != 0 && object->unkbc != 0 && object->unkc0 != 0)
+    {
+        u8 value = 0;
+        ItemCreationDetailDisplay* display;
+        object->unk118 = selected;
+        if (object->unk118 == object->unkb8)
+        {
+            value = object->unk5a[index];
+        }
+        else if (object->unk118 == object->unkbc)
+        {
+            value = object->unk68[index];
+        }
+        display = object->unkc0;
+        display->unk101 = value;
+        if (display->unka8 != 0)
+        {
+            display->unk102 = 0;
+            display->unk102 = func_00369FA0(display->unka8, display->unk101);
+        }
+        func_00358850(display);
+        object->unk118 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036A5D0);
+void func_0036A5D0(ItemCreationSelectedDisplayState* object, u8 mode)
+{
+    switch (mode)
+    {
+    case 1:
+        if (object->unka8 != 0)
+        {
+            ItemCreationListDisplay* display = object->unka8;
+            if (display->unka8 != 0)
+            {
+                s32 index;
+                for (index = 0; index < 8; index++)
+                {
+                    ItemCreationListNode* node = func_0036F230(&display->unk2c, index);
+                    ItemCreationColorDisplay* view = node->unk00;
+                    if (view != 0)
+                    {
+                        u8 slot = index + 1;
+                        if (display->unka8->unk4e[slot - 1] != 0)
+                        {
+                            view->unk94 = 0x808080;
+                            view->unk3c = 1;
+                        }
+                        else
+                        {
+                            view->unk94 = 0x505050;
+                            view->unk3c = 1;
+                        }
+                    }
+                }
+            }
+        }
+        if (object->unkb0 != 0)
+        {
+            ItemCreationThreeSlotDisplay* display = object->unkb0;
+            s32 index;
+            display->unk125 = display->unk120->unk57;
+            for (index = 0; index < 3; index++)
+            {
+                if (index < display->unk125)
+                {
+                    ItemCreationColorDisplay* view = display->unk128[index];
+                    view->unk94 = 0x1E8CFF;
+                    view->unk3c = 1;
+                    view = display->unk134[index];
+                    view->unk94 = 0x1E8CFF;
+                    view->unk3c = 1;
+                }
+                else
+                {
+                    ItemCreationColorDisplay* view = display->unk128[index];
+                    view->unk94 = 0x505050;
+                    view->unk3c = 1;
+                    view = display->unk134[index];
+                    view->unk94 = 0x505050;
+                    view->unk3c = 1;
+                }
+            }
+        }
+        break;
+    case 6:
+        if (object->unkf8 != 0)
+        {
+            func_0034D340(object->unkf8);
+        }
+        break;
+    case 7:
+        if (object->unkfc != 0)
+        {
+            func_0034D340(object->unkfc);
+        }
+        break;
+    }
+}
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036A780);
+void func_0036A780(ItemCreationOptionState* object, u16 option, u8 list)
+{
+    s32 clear_index;
+    u16 count;
+    s32 index;
+    u8 selected;
+
+    if (object->unk40 != 0 && (option == 0 ? 0 : option + 1) > 1 && (option == 0 ? 0 : option + 1) < 13)
+    {
+        clear_index = 0;
+        do
+        {
+            switch (list)
+            {
+            case 1:
+                object->unk71[clear_index] = 0;
+                break;
+            case 2:
+                object->unk77[clear_index] = 0;
+                break;
+            }
+            clear_index++;
+        } while (clear_index < 6);
+        selected = 0;
+        switch (list)
+        {
+        case 1:
+            object->unk58 = option;
+            selected = object->unk58;
+            break;
+        case 2:
+            object->unk59 = option;
+            selected = object->unk59;
+            break;
+        }
+        count = 0;
+        index = 32;
+        do
+        {
+            s32 code = object->unk40->unk188[index];
+            if (code > 1 && code == (selected == 0 ? 0 : selected + 1))
+            {
+                switch (list)
+                {
+                case 1:
+                    object->unk71[count++] = index;
+                    break;
+                case 2:
+                    object->unk77[count++] = index;
+                    break;
+                }
+            }
+            index++;
+        } while (index <= 59);
+    }
+}
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036A8F0);
 
@@ -377,7 +930,21 @@ INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036EE
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036EEF0);
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036EF70);
+void* func_0036EF70(u8* object, s32 index)
+{
+    u8* node = *(u8**)object;
+    s32 current = 0;
+    node = *(u8**)(node + 4);
+    for (current = 0; current < index; current++)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = *(u8**)(node + 4);
+    }
+    return node;
+}
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036EFB0);
 
@@ -385,11 +952,39 @@ INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036F0
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036F0D0);
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036F160);
+void* func_0036F160(u8* object, s32 index)
+{
+    u8* node = *(u8**)object;
+    s32 current = 0;
+    node = *(u8**)(node + 4);
+    for (current = 0; current < index; current++)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = *(u8**)(node + 4);
+    }
+    return node;
+}
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036F1A0);
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036F230);
+ItemCreationListNode* func_0036F230(ItemCreationList* object, s32 index)
+{
+    ItemCreationListNode* node = object->unk00;
+    s32 current = 0;
+    node = node->unk04;
+    for (current = 0; current < index; current++)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = node->unk04;
+    }
+    return node;
+}
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036F270);
 

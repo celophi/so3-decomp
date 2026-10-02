@@ -12,8 +12,12 @@ typedef struct ObjectField20 ObjectField20;
 typedef struct ObjectField34 ObjectField34;
 typedef struct ObjectField12C ObjectField12C;
 typedef struct ObjectStatusFields ObjectStatusFields;
+typedef struct ObjectCleanup ObjectCleanup;
 typedef struct ObjectElements5 ObjectElements5;
 typedef struct ObjectElements6 ObjectElements6;
+typedef struct ObjectElementsGrid6 ObjectElementsGrid6;
+typedef struct ObjectToggleFields4 ObjectToggleFields4;
+typedef struct ObjectToggleFields ObjectToggleFields;
 
 
 /**
@@ -516,6 +520,51 @@ void func_0034A480(ObjectElements5* object, float position);
  * @param position Base position before the first offset.
  */
 void func_0034B260(ObjectElements6* object, float position);
+
+/**
+ * @brief Update four pairs of element status and optional controls.
+ * @param object Object containing the element arrays and controls.
+ * @param value Value assigned to the first four element pairs.
+ * @param selected Value assigned to the optional controls.
+ */
+void func_00349FF0(ObjectToggleFields4* object, u8 value, s32 selected);
+
+/**
+ * @brief Update six columns of element status and optional controls.
+ * @param object Object containing the element arrays and controls.
+ * @param value Value assigned to the first five rows, using its low byte.
+ * @param selected Value assigned to the optional controls.
+ */
+void func_0034C7D0(ObjectToggleFields* object, s32 value, s32 selected);
+
+/**
+ * @brief Update element status and optional controls.
+ * @param object Object containing the element arrays and controls.
+ * @param value Value assigned to the first five element pairs.
+ * @param selected Value assigned to the optional controls.
+ */
+void func_0034AE90(ObjectToggleFields* object, u8 value, s32 selected);
+
+/**
+ * @brief Set the positions and active flags of 6 columns of elements.
+ * @param object Object containing the element arrays.
+ * @param position Base position before the first offset.
+ */
+void func_0034CF20(ObjectElementsGrid6* object, float position);
+
+/**
+ * @brief Process the field at offset 0xE4 when present.
+ * @param object Object containing the field.
+ * @return Always 2.
+ */
+s32 func_0034BAB0(ObjectCleanup* object);
+
+/**
+ * @brief Check the value associated with the field at offset 0x54.
+ * @param object Object containing the field.
+ * @return Nonzero if the value is set.
+ */
+s32 func_00351540(u8* object);
 
 #ifdef __cplusplus
 }

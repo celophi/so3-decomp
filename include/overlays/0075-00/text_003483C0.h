@@ -3,9 +3,64 @@
 
 #include "types.h"
 
+typedef struct ItemCreationOptionDisplay ItemCreationOptionDisplay;
+
+/** Partial nested object with a flag byte. */
+typedef struct ItemCreationFlagNode
+{
+    u8 unk00[0x3F];
+    u8 unk3f;
+} ItemCreationFlagNode;
+
+/** Partial owner of twelve nested flag objects. */
+typedef struct ItemCreationFlagGroups
+{
+    u8 unk00[0x174];
+    ItemCreationFlagNode* unk174[12];
+} ItemCreationFlagGroups;
+
+/** Partial owner of the nested flag objects cleared by its reset routine. */
+typedef struct ItemCreationFlagResetOwner
+{
+    u8 unk00[0x15C];
+    struct ItemCreationTransferDisplay* unk15c;
+    struct ItemCreationSelection* unk160;
+    struct ItemCreationSelectedDisplayState* unk164;
+    u8 unk168[4];
+    struct ItemCreationTransferDisplay* unk16c;
+    u8 unk170[0xC];
+    ItemCreationFlagNode* unk17c[9];
+    u8 unk1a0[4];
+    ItemCreationFlagNode* unk1a4[3];
+    u8 unk1b0[4];
+    ItemCreationFlagNode* unk1b4[9];
+    u8 unk1d8[4];
+    ItemCreationFlagNode* unk1dc[3];
+} ItemCreationFlagResetOwner;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Refresh an option display from its current option list.
+ * @param object Option display to refresh.
+ */
+void func_0034D340(ItemCreationOptionDisplay* object);
+
+/**
+ * @brief Refresh the option markers for the selected option.
+ * @param object Owner of the option markers.
+ * @param option Selected option byte.
+ */
+void func_0034DB00(ItemCreationFlagResetOwner* object, u8 option);
+
+/**
+ * @brief Clear all twelve nested flags and enable the selected group of four.
+ * @param object Owner of the optional nested objects.
+ * @param group Group to enable, from zero through two; other values leave all flags clear.
+ */
+void func_00356780(ItemCreationFlagGroups* object, u16 group);
 
 /**
  * @brief Perform no work.
@@ -367,6 +422,12 @@ void func_003527C0(void* object, u16 value);
  * @param value Value to store or test.
  */
 void func_00352DC0(u8* object, u32 unused, u8 value);
+
+/**
+ * @brief Clear the flag byte in 24 nested objects.
+ * @param object Object holding the nested pointers.
+ */
+void func_0034DA30(ItemCreationFlagResetOwner* object);
 
 #ifdef __cplusplus
 }

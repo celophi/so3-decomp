@@ -14,6 +14,8 @@ options:
   ld_script_path: build/overlays/0069-00/overlay.ld
   generated_asm_macros_directory: build/overlays/0069-00/include
   cache_path: build/overlays/0069-00/splat.cache
+  symbol_addrs_path: [config/symbols/0069-00_symbol_addrs.txt]
+  reloc_addrs_path: [config/relocations/0069-00_reloc_addrs.txt]
   undefined_funcs_auto_path: build/overlays/0069-00/undefined_funcs.ld
   undefined_syms_auto_path: build/overlays/0069-00/undefined_syms.ld
   create_c_files: true
@@ -28,6 +30,8 @@ options:
   find_file_boundaries: false
   disasm_unknown: true
   gp_value: 0x1bdff0
+  global_vram_start: 0x1B6000
+  global_vram_end: 0x1B7000
   generated_macro_inc_content: |
     .set Q, $Q
     .set ACC, $ACC

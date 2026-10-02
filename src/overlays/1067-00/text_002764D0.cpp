@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002764D0.h"
+#include "overlays/1067-00/text_002CABC0.h"
 #include "boot/resident_data.h"
 #include "boot/resident_0010A0E0.h"
 #include "overlays/0002-01/text_004CD3A0.h"
@@ -107,8 +108,8 @@ typedef struct FieldState2B390
 
 typedef struct FieldQword27A9A0
 {
-    u32 words[4];
-} __attribute__((aligned(16))) FieldQword27A9A0;
+    unsigned __int128 value;
+} FieldQword27A9A0;
 
 typedef struct FieldState27B2A0
 {
@@ -162,8 +163,9 @@ typedef struct FieldState27A9A0
 
 
 /* US Field uses shortened names for these resident copy and fill routines. */
-extern void* func_13A4C0(void* destination, const void* source, u32 size);
-extern void* func_13A678(void* destination, s32 value, u32 size);
+extern "C" void* func_13A4C0(void* destination, const void* source, u32 size);
+extern "C" void* func_13A678(void* destination, s32 value, u32 size);
+extern "C" u32 func_11C8C0(void* table, s32 index);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002764D0);
 
@@ -326,7 +328,14 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002791
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279280);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279360);
+FieldClass155640::~FieldClass155640()
+{
+    ResidentContext* context = D_001B6430->context;
+    if (this == context->unk1c)
+    {
+        context->unk1c = 0;
+    }
+}
 
 void func_002793F0(FieldEntryOwner293F0* object)
 {
@@ -342,15 +351,202 @@ void func_002793F0(FieldEntryOwner293F0* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279440);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279540);
+/**
+ * @brief Build the LibClass3F5B80 option bits from the field context's word at offset 0xD0.
+ * @return Bits 0, 1, 2, 4 and 3 for context bits 1, 2, 3, 4 and 5.
+ */
+static inline u8 settings_option_flags()
+{
+    u32 bits = 0;
+    u32 options = D_001B6430->context->unkd0;
+    bits |= (options & 0x2) != 0;
+    bits |= (options & 0x4) ? 0x2 : 0;
+    bits |= (options & 0x8) ? 0x4 : 0;
+    bits |= (options & 0x10) ? 0x10 : 0;
+    bits |= (options & 0x20) ? 0x8 : 0;
+    return bits;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002797D0);
+void FieldClass155640::func_001E0F60()
+{
+    if (!unk30_1)
+    {
+        return;
+    }
+    if (unk15 == 1)
+    {
+        if (field_records_blocked())
+        {
+            return;
+        }
+        FieldClass150040* record = &unk1c[unk2e];
+        if (!record->unk1c_1)
+        {
+            record->unk1c_0 = 1;
+        }
+        else
+        {
+            record->unk1c_0 = 0;
+            record->unk1c_1 = 0;
+        }
+        if (unk7d6_0)
+        {
+            unk7d6_0 = 0;
+            u8 flags = settings_option_flags();
+            LibClass3F5B80 source;
+            source.func_003F4EB0(unk7c8, unk7d4, unk7cc, flags);
+            func_002797D0(&source);
+            unk34.func_003F5AC0();
+            unk34.func_003F4EB0(unk7c8, unk7d4, unk7cc, flags);
+        }
+        for (; unk2e < unk2d; unk2e++)
+        {
+            FieldClass150040* next = &unk1c[unk2e];
+            if (!next->unk16_0 && !next->unk1c_0 && next->unk0c != -1)
+            {
+                break;
+            }
+        }
+        if (unk2e >= unk2d)
+        {
+            unk15 = 5;
+        }
+        else
+        {
+            unk15 = 0;
+        }
+    }
+    unk30_1 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279B80);
+void FieldClass155640::func_002797D0(LibClass3F5B80* source)
+{
+    for (s32 i = 0; i < 0x1A; i++)
+    {
+        FieldClass150040* record = &unk1c[i];
+        if (i == 0)
+        {
+            record->unk0c = 0xD7E;
+            record->unk00 = (func_002CBAE0() + 0x7FF) & ~0x7FF;
+            record->unk14 = i;
+            record->unk15 = 3;
+            record->unk16_2 = 1;
+            record->unk1c_1 = 0;
+            continue;
+        }
+        if (i == 2 && !unk7d6_1)
+        {
+            record->release();
+            record->unk16_0 = 1;
+            continue;
+        }
+        if (source->func_003F4B50(i) == -1)
+        {
+            record->release();
+            record->unk16_0 = 1;
+            // The original reads the member's entry here too and ignores it.
+            unk34.func_003F4B50(i);
+            continue;
+        }
+        record->unk16_0 = 0;
+        if (unk34.func_003F4B50(i) != source->func_003F4B50(i))
+        {
+            record->release();
+            s32 size = -1;
+            if (i == 2)
+            {
+                size = 0x9C000;
+            }
+            s32 value = source->func_003F4B50(i);
+            record = &unk1c[i];
+            record->unk0c = value;
+            if (size <= 0)
+            {
+                record->unk00 = (func_11C8C0(D_001B65E4, record->unk0c) + 0x7FF) & ~0x7FF;
+            }
+            else
+            {
+                record->unk00 = (size + 0x7FF) & ~0x7FF;
+            }
+            record->unk14 = i;
+            record->unk15 = 3;
+            record->unk16_2 = 1;
+            record->unk1c_0 = 0;
+        }
+    }
+    unk2e = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279EA0);
+void FieldClass155640::func_00279B80()
+{
+    unk7d0 = 0x1E;
+    LibClass3F5B80 source;
+    u8 flags = settings_option_flags();
+    source.func_003F4EB0(unk7c8, unk7d4, unk7cc, flags);
+    unk2d = unk24 = 0x1A;
+    if (unk15 == 1)
+    {
+        unk7d6_0 = 1;
+        unk30_1 = 1;
+        for (s32 i = 1; i < 0x1A; i++)
+        {
+            FieldClass150040* record = &unk1c[i];
+            if (unk34.func_003F4B50(i) != source.func_003F4B50(i))
+            {
+                u32 word = record->unk00;
+                u32 size = record->rounded_unk04();
+                func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+                record->unk1c_0 = 0;
+                record->unk1c_1 = 1;
+            }
+            else
+            {
+                u32 word = record->unk00;
+                u32 size = record->rounded_unk04();
+                record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+                if (record->unk10)
+                {
+                    unk30_1 = 0;
+                }
+            }
+        }
+    }
+    else
+    {
+        func_002797D0(&source);
+        unk34.func_003F5AC0();
+        unk34.func_003F4EB0(unk7c8, unk7d4, unk7cc, flags);
+        while (unk2e < unk2d)
+        {
+            FieldClass150040* next = &unk1c[unk2e];
+            if (!next->unk16_0 && !next->unk1c_0 && next->unk0c != -1)
+            {
+                break;
+            }
+            unk2e++;
+        }
+        if (unk2e >= unk2d)
+        {
+            unk15 = 5;
+        }
+        else
+        {
+            unk15 = 0;
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279EF0);
+void FieldClass155640::func_00279EA0(s32 id, s32 area, u8 kind, s8 mode, bool flag)
+{
+    unk7c8 = id;
+    unk7cc = area;
+    unk7d4 = kind;
+    unk7d6_1 = flag;
+    unk7d5 = mode;
+    func_00279B80();
+}
+
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_001E0A50__16FieldClass155640Fi);
 
 void func_0027A3E0(FieldFlagState2B320* object)
 {

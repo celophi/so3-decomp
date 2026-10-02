@@ -1,4 +1,6 @@
 #include "include_asm.h"
+#include "vu0.h"
+#include "boot/resident_data.h"
 #include "overlays/1067-00/text_00207AF0.h"
 
 typedef unsigned __int128 FieldLocalQword;
@@ -49,6 +51,18 @@ struct FieldMotion {
     u8 pad04[0x6C];
     u32 flags;
     u8 pad74[0x6C];
+    float start;
+    float target;
+    float duration;
+    float step;
+};
+struct FieldState260 { u8 pad[0x260]; FieldVec4A unk260; };
+struct FieldMotionRange {
+    u8 pad00[0x10];
+    FieldVec4A position;
+    u8 pad20[0x50];
+    u32 flags;
+    u8 pad74[0x114];
     float start;
     float target;
     float duration;
@@ -201,7 +215,37 @@ extern "C" void func_00209780(FieldMotion* object, float target, float duration)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_002097F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_002098C0);
+extern "C" void func_002098C0(FieldMotionRange* object, float target, float duration)
+{
+    if (target == 0.0f)
+    {
+        FieldVec4A measured;
+        FieldVec4A delta;
+        FieldVec4A length;
+        const FieldVec4A& center = static_cast<FieldState260*>(D_001B6430->context->unk14)->unk260;
+        delta = object->position;
+        delta.x -= center.x;
+        delta.y -= center.y;
+        delta.z -= center.z;
+        measured = delta;
+        vu0_length_xyz(&length, &measured);
+        object->target = length.x;
+    }
+    else
+    {
+        object->target = target;
+    }
+    if (duration == 0.0f)
+    {
+        object->start = object->target;
+    }
+    else
+    {
+        object->duration = duration;
+        object->step = (object->target - object->start) / object->duration;
+        object->flags |= 0x100;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_002099B0);
 

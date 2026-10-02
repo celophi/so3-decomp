@@ -6,9 +6,20 @@
 typedef struct ItemRecord ItemRecord;
 typedef struct StatusRecord StatusRecord;
 typedef struct DisplayRecord DisplayRecord;
+typedef struct Record00349190 Record00349190;
 typedef struct Record00349C50 Record00349C50;
 typedef struct Record0034C800 Record0034C800;
+typedef struct Record00349BF0 Record00349BF0;
+typedef struct Record0034C7A0 Record0034C7A0;
+typedef struct Record0034C6A0 Record0034C6A0;
 typedef struct Record00350BD0 Record00350BD0;
+typedef struct Record00353EF0 Record00353EF0;
+typedef struct Record00350C20 Record00350C20;
+typedef struct Record00350FC0 Record00350FC0;
+typedef struct Record003540E0 Record003540E0;
+typedef struct Record003542F0 Record003542F0;
+typedef struct Record00354740 Record00354740;
+typedef struct Record0034E8B0 Record0034E8B0;
 typedef struct TransformRecord TransformRecord;
 typedef struct ScreenOwner ScreenOwner;
 typedef struct Record00353A50 Record00353A50;
@@ -32,6 +43,98 @@ typedef struct Vector4
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Initialize a record and pass its setup arguments to the shared initializer.
+ * @param record Record to initialize.
+ * @param arg1 First integer setup argument.
+ * @param arg2 Second integer setup argument.
+ * @param arg3 Pointer setup argument.
+ * @param first First float input; unused by this routine.
+ * @param second Second float input; unused by this routine.
+ * @param third Float passed to the shared initializer.
+ * @return Always 1.
+ */
+s32 func_00349190(Record00349190* record, s32 arg1, s32 arg2, void* arg3, float first, float second, float third);
+
+/**
+ * @brief Initialize a record and run cleanup when requested.
+ * @param record Record to initialize.
+ * @param flag Cleanup flag.
+ * @return The record.
+ */
+Record00349BF0* func_00349BF0(Record00349BF0* record, s16 flag);
+
+/**
+ * @brief Initialize a record and run cleanup when requested.
+ * @param record Record to initialize.
+ * @param flag Cleanup flag.
+ * @return The record.
+ */
+Record0034C7A0* func_0034C7A0(Record0034C7A0* record, s16 flag);
+
+/**
+ * @brief Initialize a record and its embedded part.
+ * @param record Record to initialize.
+ * @param flag Cleanup flag.
+ * @return The record.
+ */
+Record0034C6A0* func_0034C6A0(Record0034C6A0* record, s16 flag);
+
+/**
+ * @brief Initialize a record and run cleanup when requested.
+ * @param record Record to initialize.
+ * @param flag Cleanup flag.
+ * @return The record.
+ */
+Record00353EF0* func_00353EF0(Record00353EF0* record, s16 flag);
+
+/**
+ * @brief Clean up a record and its attached object when present.
+ * @param record Record to clean up.
+ * @param flag Cleanup flag.
+ * @return The record.
+ */
+Record00350C20* func_00350C20(Record00350C20* record, s16 flag);
+
+/**
+ * @brief Set positions and flags for three rows of fourteen slots.
+ * @param owner Record holding the slot arrays.
+ * @param start Starting vertical position before the first offset.
+ */
+void func_00350FC0(Record00350FC0* owner, float start);
+
+/**
+ * @brief Update slot flags and the attached control's float value.
+ * @param record Record holding the slots and controls.
+ * @param flag Flag stored in paired slots.
+ * @param control_flag Flag stored in the optional controls.
+ */
+void func_0034E8B0(Record0034E8B0* record, u8 flag, s32 control_flag);
+
+/**
+ * @brief Free list nodes and optionally the owner.
+ * @param record List owner to clean up.
+ * @param flag Cleanup flag.
+ * @return The list owner.
+ */
+Record003540E0* func_003540E0(Record003540E0* record, s16 flag);
+
+/**
+ * @brief Free list nodes and optionally the owner.
+ * @param record List owner to clean up.
+ * @param flag Cleanup flag.
+ * @return The list owner.
+ */
+Record003542F0* func_003542F0(Record003542F0* record, s16 flag);
+
+/**
+ * @brief Free list nodes and optionally the owner.
+ * @param record List owner to clean up.
+ * @param flag Cleanup flag.
+ * @return The list owner.
+ */
+Record00354740* func_00354740(Record00354740* record, s16 flag);
 
 /**
  * @brief Set the attached control's flag and one of two float values.

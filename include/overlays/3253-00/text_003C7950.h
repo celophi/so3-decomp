@@ -3,6 +3,42 @@
 
 #include "types.h"
 
+/** Partial Battle record-array interface with fields at offsets 0x0C-0x20. */
+struct BattleArrayAccess
+{
+    u8 unk00[0xC];
+    u32 unk0c;
+    s32 unk10;
+    u8* unk14;
+    u32 unk18;
+    u32 unk1c;
+    u8* unk20;
+};
+
+/** Partial object with adjacent words at offsets 0xB0 and 0xB4. */
+struct BattlePairedWords
+{
+    u8 unk00[0xB0];
+    u32 unkB0;
+    u32 unkB4;
+};
+
+/** Partial receiver with two pointers and a state byte at offset 0x50. */
+struct BattleLinkState
+{
+    u8 unk00[0x48];
+    u8* unk48;
+    void* unk4c;
+    u8 unk50;
+};
+
+/** Partial receiver with a state byte at offset 0x60. */
+struct BattleState60
+{
+    u8 unk00[0x60];
+    u8 unk60;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1538,6 +1574,609 @@ s32 func_003CFEF0(void* object);
  * @return Always 1.
  */
 s32 func_003D0670(void* object);
+
+
+/**
+ * @brief Store both words at offsets 0xB0 and 0xB4.
+ * @param object Receiver.
+ * @param first First word.
+ * @param second Second word.
+ */
+void func_003C7950(BattlePairedWords* object, u32 first, u32 second);
+
+/**
+ * @brief Clear both words at offsets 0xB0 and 0xB4.
+ * @param object Receiver.
+ */
+void func_003C7960(BattlePairedWords* object);
+
+/**
+ * @brief Return 100.
+ * @param object Receiver.
+ * @return 100.0f.
+ */
+float func_003CCE80(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CCFE0(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CD050(void* object);
+
+/**
+ * @brief Return 100.
+ * @param object Receiver.
+ * @return 100.0f.
+ */
+float func_003CD080(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CD1E0(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CD250(void* object);
+
+/**
+ * @brief Return 100.
+ * @param object Receiver.
+ * @return 100.0f.
+ */
+float func_003CD280(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CD3E0(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CD450(void* object);
+
+/**
+ * @brief Return 100.
+ * @param object Receiver.
+ * @return 100.0f.
+ */
+float func_003CD480(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CD5E0(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CD650(void* object);
+
+/**
+ * @brief Return 100.
+ * @param object Receiver.
+ * @return 100.0f.
+ */
+float func_003CD680(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CD7E0(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CD850(void* object);
+
+/**
+ * @brief Return 100.
+ * @param object Receiver.
+ * @return 100.0f.
+ */
+float func_003CD880(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CD9E0(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CDA50(void* object);
+
+/**
+ * @brief Return 100.
+ * @param object Receiver.
+ * @return 100.0f.
+ */
+float func_003CDA80(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CDBE0(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CDC50(void* object);
+
+/**
+ * @brief Return 100.
+ * @param object Receiver.
+ * @return 100.0f.
+ */
+float func_003CDC80(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CDDE0(void* object);
+
+/**
+ * @brief Return zero.
+ * @param object Receiver.
+ * @return 0.0f.
+ */
+float func_003CDE50(void* object);
+
+/**
+ * @brief Find a record in the array at offset 0x14.
+ * @param object Receiver.
+ * @param index Record index.
+ * @return Selected record address.
+ */
+u8* func_003CE510(const BattleArrayAccess* object, s32 index);
+
+/**
+ * @brief Find a record in the two-dimensional array at offset 0x20.
+ * @param object Receiver.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Selected record address.
+ */
+u8* func_003CE530(const BattleArrayAccess* object, s32 row, s32 column);
+
+/**
+ * @brief Read the word at offset 0x0C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CE550(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x10.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CE560(const BattleArrayAccess* object);
+
+/**
+ * @brief Find a record in the array at offset 0x14.
+ * @param object Receiver.
+ * @param index Record index.
+ * @return Selected record address.
+ */
+u8* func_003CE620(const BattleArrayAccess* object, s32 index);
+
+/**
+ * @brief Find a record in the two-dimensional array at offset 0x20.
+ * @param object Receiver.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Selected record address.
+ */
+u8* func_003CE640(const BattleArrayAccess* object, s32 row, s32 column);
+
+/**
+ * @brief Read the word at offset 0x1C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CE660(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x0C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CE670(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x10.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CE680(const BattleArrayAccess* object);
+
+/**
+ * @brief Check whether the record pointer at offset 0x14 is set.
+ * @param object Receiver.
+ * @return True when the pointer is nonnull.
+ */
+bool func_003CE6A0(const BattleArrayAccess* object);
+
+/**
+ * @brief Find a record in the array at offset 0x14.
+ * @param object Receiver.
+ * @param index Record index.
+ * @return Selected record address.
+ */
+u8* func_003CE750(const BattleArrayAccess* object, s32 index);
+
+/**
+ * @brief Find a record in the two-dimensional array at offset 0x20.
+ * @param object Receiver.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Selected record address.
+ */
+u8* func_003CE770(const BattleArrayAccess* object, s32 row, s32 column);
+
+/**
+ * @brief Read the word at offset 0x1C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CE790(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x0C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CE7A0(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x10.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CE7B0(const BattleArrayAccess* object);
+
+/**
+ * @brief Find a record in the array at offset 0x14.
+ * @param object Receiver.
+ * @param index Record index.
+ * @return Selected record address.
+ */
+u8* func_003CEEC0(const BattleArrayAccess* object, s32 index);
+
+/**
+ * @brief Find a record in the two-dimensional array at offset 0x20.
+ * @param object Receiver.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Selected record address.
+ */
+u8* func_003CEEE0(const BattleArrayAccess* object, s32 row, s32 column);
+
+/**
+ * @brief Read the word at offset 0x0C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CEF00(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x10.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CEF10(const BattleArrayAccess* object);
+
+/**
+ * @brief Find a record in the array at offset 0x14.
+ * @param object Receiver.
+ * @param index Record index.
+ * @return Selected record address.
+ */
+u8* func_003CF620(const BattleArrayAccess* object, s32 index);
+
+/**
+ * @brief Find a record in the two-dimensional array at offset 0x20.
+ * @param object Receiver.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Selected record address.
+ */
+u8* func_003CF640(const BattleArrayAccess* object, s32 row, s32 column);
+
+/**
+ * @brief Read the word at offset 0x1C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CF660(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x0C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CF670(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x10.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CF680(const BattleArrayAccess* object);
+
+/**
+ * @brief Find a record in the array at offset 0x14.
+ * @param object Receiver.
+ * @param index Record index.
+ * @return Selected record address.
+ */
+u8* func_003CFD80(const BattleArrayAccess* object, s32 index);
+
+/**
+ * @brief Find a record in the two-dimensional array at offset 0x20.
+ * @param object Receiver.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Selected record address.
+ */
+u8* func_003CFD90(const BattleArrayAccess* object, s32 row, s32 column);
+
+/**
+ * @brief Read the word at offset 0x0C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CFDB0(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x10.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CFDC0(const BattleArrayAccess* object);
+
+/**
+ * @brief Find a record in the array at offset 0x14.
+ * @param object Receiver.
+ * @param index Record index.
+ * @return Selected record address.
+ */
+u8* func_003CFE80(const BattleArrayAccess* object, s32 index);
+
+/**
+ * @brief Find a record in the two-dimensional array at offset 0x20.
+ * @param object Receiver.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Selected record address.
+ */
+u8* func_003CFEA0(const BattleArrayAccess* object, s32 row, s32 column);
+
+/**
+ * @brief Read the word at offset 0x1C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CFEC0(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x0C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CFED0(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x10.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003CFEE0(const BattleArrayAccess* object);
+
+/**
+ * @brief Check whether the record pointer at offset 0x14 is set.
+ * @param object Receiver.
+ * @return True when the pointer is nonnull.
+ */
+bool func_003CFF00(const BattleArrayAccess* object);
+
+/**
+ * @brief Find a record in the array at offset 0x14.
+ * @param object Receiver.
+ * @param index Record index.
+ * @return Selected record address.
+ */
+u8* func_003D0600(const BattleArrayAccess* object, s32 index);
+
+/**
+ * @brief Find a record in the two-dimensional array at offset 0x20.
+ * @param object Receiver.
+ * @param row Row index.
+ * @param column Column index.
+ * @return Selected record address.
+ */
+u8* func_003D0620(const BattleArrayAccess* object, s32 row, s32 column);
+
+/**
+ * @brief Read the word at offset 0x1C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003D0640(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x0C.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003D0650(const BattleArrayAccess* object);
+
+/**
+ * @brief Read the word at offset 0x10.
+ * @param object Receiver.
+ * @return Stored word.
+ */
+u32 func_003D0660(const BattleArrayAccess* object);
+
+/**
+ * @brief Return one.
+ * @param object Receiver.
+ * @return 1.0f.
+ */
+float func_003D39F0(void* object);
+
+/**
+ * @brief Return one.
+ * @param object Receiver.
+ * @return 1.0f.
+ */
+float func_003D3A00(void* object);
+
+/**
+ * @brief Return one.
+ * @param object Receiver.
+ * @return 1.0f.
+ */
+float func_003D3A10(void* object);
+
+/**
+ * @brief Return one.
+ * @param object Receiver.
+ * @return 1.0f.
+ */
+float func_003D3A20(void* object);
+
+/**
+ * @brief Return one.
+ * @param object Receiver.
+ * @return 1.0f.
+ */
+float func_003D3A30(void* object);
+
+/**
+ * @brief Return one.
+ * @param object Receiver.
+ * @return 1.0f.
+ */
+float func_003D3A40(void* object);
+
+/**
+ * @brief Return one.
+ * @param object Receiver.
+ * @return 1.0f.
+ */
+float func_003D3A50(void* object);
+
+/**
+ * @brief Return one.
+ * @param object Receiver.
+ * @return 1.0f.
+ */
+float func_003D3A60(void* object);
+
+
+/**
+ * @brief Store two pointers and check whether the first points to byte 1.
+ * @param object Receiver to update.
+ * @param first First pointer.
+ * @param second Second pointer.
+ */
+void func_003CB8F0(BattleLinkState* object, u8* first, void* second);
+
+/**
+ * @brief Store two pointers and check whether the first points to byte 1.
+ * @param object Receiver to update.
+ * @param first First pointer.
+ * @param second Second pointer.
+ */
+void func_003CC010(BattleLinkState* object, u8* first, void* second);
+
+/**
+ * @brief Store two pointers and check whether the first points to byte 1.
+ * @param object Receiver to update.
+ * @param first First pointer.
+ * @param second Second pointer.
+ */
+void func_003CC730(BattleLinkState* object, u8* first, void* second);
+
+/**
+ * @brief Store two pointers and check whether the first points to byte 1.
+ * @param object Receiver to update.
+ * @param first First pointer.
+ * @param second Second pointer.
+ */
+void func_003CCE10(BattleLinkState* object, u8* first, void* second);
+
+/**
+ * @brief Clear both pointers and set the state byte from a flag.
+ * @param object Receiver to update.
+ * @param flag Nonzero sets the state byte to 1.
+ */
+void func_003CB910(BattleLinkState* object, s32 flag);
+
+/**
+ * @brief Clear both pointers and set the state byte from a flag.
+ * @param object Receiver to update.
+ * @param flag Nonzero sets the state byte to 1.
+ */
+void func_003CC030(BattleLinkState* object, s32 flag);
+
+/**
+ * @brief Clear both pointers and set the state byte from a flag.
+ * @param object Receiver to update.
+ * @param flag Nonzero sets the state byte to 1.
+ */
+void func_003CC750(BattleLinkState* object, s32 flag);
+
+/**
+ * @brief Clear both pointers and set the state byte from a flag.
+ * @param object Receiver to update.
+ * @param flag Nonzero sets the state byte to 1.
+ */
+void func_003CCE30(BattleLinkState* object, s32 flag);
+
+/**
+ * @brief Set the byte at offset 0x60 to 9.
+ * @param object Receiver to update.
+ */
+void func_003D6CC0(BattleState60* object);
 
 #ifdef __cplusplus
 }

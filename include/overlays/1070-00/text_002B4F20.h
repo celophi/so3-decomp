@@ -480,6 +480,171 @@ void func_002BEF20(void* object);
  */
 void func_002BEF30(void* object);
 
+
+/**
+ * @brief Clear the word at offset 0x28.
+ * @param object Receiver to update.
+ */
+void func_002B6DF0(void* object);
+
+/**
+ * @brief Return the fixed float value 2500.0.
+ * @param object Receiver or first argument; unused.
+ * @return The fixed value.
+ */
+float func_002B6E00(void* object);
+
+/**
+ * @brief Return the fixed float value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return The fixed value.
+ */
+float func_002B80A0(void* object);
+
+/**
+ * @brief Return the word at offset 0x1C.
+ * @param object Receiver containing the field.
+ * @return The selected value.
+ */
+u32 func_002B8320(void* object);
+
+/**
+ * @brief Return the word at offset 0xC.
+ * @param object Receiver containing the field.
+ * @return The selected value.
+ */
+u32 func_002B8330(void* object);
+
+/**
+ * @brief Return the word at offset 0x10.
+ * @param object Receiver containing the field.
+ * @return The selected value.
+ */
+u32 func_002B8340(void* object);
+
+/**
+ * @brief Test whether the word at offset 0x14 is nonzero.
+ * @param object Receiver containing the field.
+ * @return The selected value.
+ */
+s32 func_002B8360(void* object);
+
+/**
+ * @brief Return the fixed float value 1.0.
+ * @param object Receiver or first argument; unused.
+ * @return The fixed value.
+ */
+float func_002B8AC0(void* object);
+
+/**
+ * @brief Clear the word at offset 0x28.
+ * @param object Receiver to update.
+ */
+void func_002B91E0(void* object);
+
+/**
+ * @brief Return the float at offset 0x2C.
+ * @param object Receiver containing the field.
+ * @return The selected value.
+ */
+float func_002B91F0(void* object);
+
+/**
+ * @brief Set the byte at offset 0x60 to 10.
+ * @param object Receiver to update.
+ */
+void func_002BEEF0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return The fixed value.
+ */
+s32 func_002B8080(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_002B8100(void* object);
+
+/**
+ * @brief Return the fixed float value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return The fixed value.
+ */
+float func_002B81F0(void* object);
+
+/**
+ * @brief Return the fixed float value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return The fixed value.
+ */
+float func_002B8260(void* object);
+
+/**
+ * @brief Return the fixed float value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return The fixed value.
+ */
+float func_002BA210(void* object);
+
+/**
+ * @brief Return the fixed float value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return The fixed value.
+ */
+float func_002BA360(void* object);
+
+/**
+ * @brief Return the fixed float value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return The fixed value.
+ */
+float func_002BA3D0(void* object);
+
+/**
+ * @brief Return the word at offset 0x1C.
+ * @param object Receiver containing the field.
+ * @return The selected value.
+ */
+u32 func_002BA450(void* object);
+
+/**
+ * @brief Return the word at offset 0xC.
+ * @param object Receiver containing the field.
+ * @return The selected value.
+ */
+u32 func_002BA460(void* object);
+
+/**
+ * @brief Return the word at offset 0x10.
+ * @param object Receiver containing the field.
+ * @return The selected value.
+ */
+u32 func_002BA470(void* object);
+
+/**
+ * @brief Test whether the word at offset 0x14 is nonzero.
+ * @param object Receiver containing the field.
+ * @return The selected value.
+ */
+s32 func_002BA490(void* object);
+
+/**
+ * @brief Return the fixed float value 1.0.
+ * @param object Receiver or first argument; unused.
+ * @return The fixed value.
+ */
+float func_002BABF0(void* object);
+
+/**
+ * @brief Return the signed halfword at offset 0x14.
+ * @param object Receiver containing the field.
+ * @return The selected value.
+ */
+s16 func_002BACC0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

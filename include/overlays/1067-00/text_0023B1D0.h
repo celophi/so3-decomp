@@ -20,6 +20,29 @@ typedef struct FieldObject23C180 FieldObject23C180;
 typedef struct FieldObject23B1D0 FieldObject23B1D0;
 typedef struct FieldObject23B280 FieldObject23B280;
 
+/** Linked nodes used by the field coordinate selector. */
+struct FieldObject23D310
+{
+    FieldNode23D310* first;
+};
+
+/** Coordinate selection state and its currently selected node index. */
+struct FieldObject23B1D0
+{
+    u8 unk00[0x3C];
+    u8 flag3C;
+    u8 unk3D[3];
+    u8 point40[0x10];
+    float x;
+    float y;
+    u8 unk58[0x1D];
+    u8 flag75;
+    u8 unk76[6];
+    FieldObject23D310 nodes;
+    u8 unk80[8];
+    s32 selected;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif

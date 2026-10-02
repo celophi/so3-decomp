@@ -80,6 +80,18 @@ typedef struct
     ConfigIconList* list;
 } ConfigIconOwner;
 
+struct ConfigOwnedItem
+{
+    void* item;
+    u8 pad_04[4];
+    void* methods;
+};
+
+extern void func_00352860(ConfigOwnedItem* object);
+extern void func_00352B80(ConfigOwnedItem* object);
+extern u8 D_182210[];
+extern u8 D_182200[];
+
 extern void* func_100AC0(s32 size, s32 flags);
 extern void func_2642D0(void* object);
 extern u8 D_182170[];
@@ -90,9 +102,17 @@ typedef struct
     void* methods;
 } ConfigShell;
 
+typedef struct
+{
+    void* methods;
+    u8 pad_04[0x3C];
+    u8 member_40[1];
+} ConfigEmbeddedOwner;
+
 extern void func_264230(void* object, s32 flags);
 extern void func_2CEAF0(void* object, s32 flags);
 extern void func_4618F0(void* object, s32 flags);
+extern void func_4C48B0(void* object, s32 flags);
 extern void func_100B40(void* object);
 extern u8 D_181960[];
 extern u8 D_181A70[];
@@ -102,6 +122,7 @@ extern u8 D_181E70[];
 extern u8 D_181F70[];
 extern u8 D_182070[];
 extern u8 D_181A60[];
+extern u8 D_175110[];
 
 INCLUDE_ASM("build/overlays/0071-00/asm/nonmatchings/text", func_003483C0);
 
@@ -552,7 +573,20 @@ INCLUDE_ASM("build/overlays/0071-00/asm/nonmatchings/text", func_0034E330);
 
 INCLUDE_ASM("build/overlays/0071-00/asm/nonmatchings/text", func_0034E5D0);
 
-INCLUDE_ASM("build/overlays/0071-00/asm/nonmatchings/text", func_0034EAD0);
+void* func_0034EAD0(void* object, s32 flags)
+{
+    if (object != 0)
+    {
+        ((ConfigEmbeddedOwner*)object)->methods = D_175110;
+        func_4618F0(((ConfigEmbeddedOwner*)object)->member_40, -1);
+        func_4C48B0(object, 0);
+        if ((s16)flags > 0)
+        {
+            func_100B40(object);
+        }
+    }
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/0071-00/asm/nonmatchings/text", func_0034EB40);
 
@@ -827,7 +861,24 @@ ConfigNode* func_00352690(ConfigListOwner* owner, s32 index)
 
 INCLUDE_ASM("build/overlays/0071-00/asm/nonmatchings/text", func_003526D0);
 
-INCLUDE_ASM("build/overlays/0071-00/asm/nonmatchings/text", func_00352750);
+ConfigOwnedItem* func_00352750(ConfigOwnedItem* object, s32 flags)
+{
+    if (object != 0)
+    {
+        object->methods = D_182210;
+        func_00352860(object);
+        if (object->item != 0)
+        {
+            func_100B40(object->item);
+            object->item = 0;
+        }
+        if ((s16)flags > 0)
+        {
+            func_100B40(object);
+        }
+    }
+    return object;
+}
 
 void func_003527D0(ConfigListOwner* list, void* value)
 {
@@ -899,7 +950,24 @@ ConfigNode* func_003529B0(ConfigListOwner* owner, s32 index)
 
 INCLUDE_ASM("build/overlays/0071-00/asm/nonmatchings/text", func_003529F0);
 
-INCLUDE_ASM("build/overlays/0071-00/asm/nonmatchings/text", func_00352A70);
+ConfigOwnedItem* func_00352A70(ConfigOwnedItem* object, s32 flags)
+{
+    if (object != 0)
+    {
+        object->methods = D_182200;
+        func_00352B80(object);
+        if (object->item != 0)
+        {
+            func_100B40(object->item);
+            object->item = 0;
+        }
+        if ((s16)flags > 0)
+        {
+            func_100B40(object);
+        }
+    }
+    return object;
+}
 
 void func_00352AF0(ConfigListOwner* list, void* value)
 {

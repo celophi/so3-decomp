@@ -20,6 +20,12 @@ s32 func_002050C0(void* object);
  */
 void func_001FF9D0(void* object);
 
+/**
+ * @brief Forward to the cleanup routine for the containing object.
+ * @param object Embedded object at offset 0x90.
+ */
+void func_002050D0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

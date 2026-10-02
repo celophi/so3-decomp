@@ -1,0 +1,6 @@
+func_0011ED90 = 0x0011ED90; // type:func
+D_001B65F4 = 0x001B65F4; // size:0x4
+func_2CEAF0 = 0x002CEAF0; // type:func
+func_2BC410 = 0x002BC410; // type:func
+func_2CEBE0 = 0x002CEBE0; // type:func
+D_4ED330 = 0x004ED330; // size:0x8

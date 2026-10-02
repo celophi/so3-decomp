@@ -16,6 +16,16 @@ extern "C" {
  */
 s32 func_0045BD20(void* object, void* arg0, void* arg1);
 
+/**
+ * @brief Run func_0045EBD0 on the objects referenced by the first words of two objects.
+ *
+ * The word at offset 0xC of each referenced object is stored in a global first.
+ * @param object Object whose first word refers to the first tested object.
+ * @param other Object whose first word refers to the second tested object.
+ * @return The func_0045EBD0 result.
+ */
+s32 func_0045F5A0(void* object, void* other);
+
 #ifdef __cplusplus
 }
 #endif

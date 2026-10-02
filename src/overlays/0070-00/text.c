@@ -40,6 +40,20 @@ struct DisplayRecord
     u8 unka8;
 };
 
+struct Record00349190
+{
+    u8 unk00[0x20];
+    u32 unk20;
+    u32 unk24;
+    u32 unk28;
+    float unk2c;
+    u8 unk30[0x3C];
+    u16 unk6c;
+    u8 unk6e[0x46];
+    u32 unkb4;
+    u32 unkb8;
+};
+
 struct Record00349C50
 {
     u8 unk00[0x38];
@@ -52,10 +66,86 @@ struct Record0034C800
     u32 unk40;
 };
 
+struct Record00349BF0
+{
+    u8 unk00[0x2C];
+    void* unk2c;
+};
+
+struct Record0034C7A0
+{
+    u8 unk00[0x38];
+    void* unk38;
+};
+
+struct Record0034C6A0
+{
+    void* methods;
+    u8 unk04[0x3C];
+    u8 unk40;
+};
+
 struct Record00350BD0
 {
     u8 unk00[0x12C];
     u8 unk12c;
+};
+
+struct Record003540E0
+{
+    void* head;
+    u32 count;
+    void* methods;
+};
+
+struct Record003542F0
+{
+    void* head;
+    u32 count;
+    void* methods;
+};
+
+struct Record00354740
+{
+    void* head;
+    u32 count;
+    void* methods;
+};
+
+struct Record00353EF0
+{
+    void* methods;
+    u8 unk04[0xE4];
+    void* unke8;
+    u8 unkec[0xC0];
+    Record003542F0 embedded;
+};
+
+struct Record00350C20
+{
+    void* methods;
+    u8 unk04[0xE4];
+    void* unke8;
+    u8 unkec[0x88];
+    void* unk174;
+};
+
+struct SlotRecord
+{
+    u8 unk00[0x18];
+    float unk18;
+    float unk1c;
+    u8 unk20[0x1C];
+    u8 unk3c;
+};
+
+struct Record00350FC0
+{
+    u8 unk00[0xF0];
+    struct SlotRecord* first[14];
+    u8 unk128[0x10];
+    struct SlotRecord* second[14];
+    struct SlotRecord* third[14];
 };
 
 struct TransformRecord
@@ -143,6 +233,19 @@ struct ControlOwner
     struct ControlScreen* unkac;
 };
 
+struct Record0034E8B0
+{
+    u8 unk00[0xA8];
+    struct ControlScreen* unka8;
+    struct ControlScreen* unkac;
+    u8 unkb0[0x88];
+    struct ControlScreen* first[6];
+    u8 unk150[0x24];
+    struct ControlScreen* unk174;
+    u8 unk178[8];
+    struct ControlScreen* second[6];
+};
+
 extern u8 D_184280[];
 extern u8 D_184390[];
 extern u8 D_1844B0[];
@@ -150,10 +253,29 @@ extern u8 D_1849F0[];
 extern u8 D_184AF0[];
 extern u8 D_184BF0[];
 extern u8 D_184CF0[];
+extern u8 D_1844A0[];
+extern u8 D_1843F0[];
+extern u8 D_175110[];
+extern u8 D_1848D0[];
+extern u8 D_1849C4[];
+extern u8 D_1847B0[];
+extern u8 D_1848A4[];
+extern u8 D_184ED8[];
+extern u8 D_184EC8[];
+extern u8 D_184EB8[];
 extern u8 D_50CD30[];
 extern void func_2CEAF0(void* object, s32 flags);
 extern void func_100B40(void* object);
 extern void func_4CE4C0(Vector4* destination, const Vector4* source);
+extern void func_2BC410(Record00349BF0* record, s32 flag);
+extern void func_4618F0(void* record, s32 flag);
+extern void func_4C48B0(void* record, s32 flag);
+extern void func_003541F0(Record003540E0* record);
+extern void func_00354400(Record003542F0* record);
+extern void func_003547C0(Record00354740* record);
+extern void func_2CD9F0(void* record, s32 flag);
+extern void func_4C4A90(void* object);
+extern void func_44B110(void* object, s32 arg1, s32 arg2, void* arg3, float value, s32 flag);
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_003483C0);
 
@@ -404,7 +526,18 @@ INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00348C40);
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_003490F0);
 
-INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00349190);
+s32 func_00349190(Record00349190* record, s32 arg1, s32 arg2, void* arg3, float first, float second, float third)
+{
+    record->unk6c = 0x6006;
+    record->unk20 = 0;
+    record->unk24 = 0;
+    record->unk28 = 0;
+    record->unk2c = 1.0f;
+    func_44B110(record, arg1, arg2, arg3, third, 0);
+    record->unkb4 = 0;
+    record->unkb8 = 0;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_003491F0);
 
@@ -416,7 +549,19 @@ INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_003492F0);
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00349B90);
 
-INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00349BF0);
+Record00349BF0* func_00349BF0(Record00349BF0* record, s16 flag)
+{
+    if (record != 0)
+    {
+        record->unk2c = D_1844A0;
+        func_2BC410(record, 0);
+        if (flag > 0)
+        {
+            func_100B40(record);
+        }
+    }
+    return record;
+}
 
 u32 func_00349C50(Record00349C50* record)
 {
@@ -447,11 +592,36 @@ INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_0034B770);
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_0034B830);
 
-INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_0034C6A0);
+Record0034C6A0* func_0034C6A0(Record0034C6A0* record, s16 flag)
+{
+    if (record != 0)
+    {
+        record->methods = D_175110;
+        func_4618F0(&record->unk40, -1);
+        func_4C48B0(record, 0);
+        if (flag > 0)
+        {
+            func_100B40(record);
+        }
+    }
+    return record;
+}
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_0034C710);
 
-INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_0034C7A0);
+Record0034C7A0* func_0034C7A0(Record0034C7A0* record, s16 flag)
+{
+    if (record != 0)
+    {
+        record->unk38 = D_1843F0;
+        func_4618F0(record, -1);
+        if (flag > 0)
+        {
+            func_100B40(record);
+        }
+    }
+    return record;
+}
 
 u32 func_0034C800(Record0034C800* record)
 {
@@ -480,7 +650,45 @@ INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_0034E7A0);
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_0034E7E0);
 
-INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_0034E8B0);
+void func_0034E8B0(Record0034E8B0* record, u8 flag, s32 control_flag)
+{
+    record->first[0]->unk3f = flag;
+    record->second[0]->unk3f = flag;
+    record->first[1]->unk3f = flag;
+    record->second[1]->unk3f = flag;
+    record->first[2]->unk3f = flag;
+    record->second[2]->unk3f = flag;
+    record->first[3]->unk3f = flag;
+    record->second[3]->unk3f = flag;
+    record->first[4]->unk3f = flag;
+    record->second[4]->unk3f = flag;
+    record->first[5]->unk3f = flag;
+    record->second[5]->unk3f = flag;
+    if (record->unk174 != 0)
+    {
+        record->unk174->unk3f = 1;
+    }
+    if (record->unkac != 0)
+    {
+        record->unkac->unk3f = control_flag;
+        if (control_flag != 0)
+        {
+            struct ControlScreen* screen = record->unkac;
+            screen->unk70 = 128.0f;
+            screen->unk3c = 1;
+        }
+        else
+        {
+            struct ControlScreen* screen = record->unkac;
+            screen->unk70 = 64.0f;
+            screen->unk3c = 1;
+        }
+    }
+    if (record->unka8 != 0)
+    {
+        record->unka8->unk3f = control_flag;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_0034E980);
 
@@ -545,7 +753,24 @@ void func_00350BD0(Record00350BD0* record, u8 value)
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00350BE0);
 
-INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00350C20);
+Record00350C20* func_00350C20(Record00350C20* record, s16 flag)
+{
+    if (record != 0)
+    {
+        record->methods = D_1847B0;
+        record->unke8 = D_1848A4;
+        if (record->unk174 != 0)
+        {
+            func_4C4A90(record->unk174);
+        }
+        func_2CD9F0(record, 0);
+        if (flag > 0)
+        {
+            func_100B40(record);
+        }
+    }
+    return record;
+}
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00350CB0);
 
@@ -573,7 +798,27 @@ void func_00350F70(ControlOwner* owner, s32 ignored, s32 flag)
     }
 }
 
-INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00350FC0);
+void func_00350FC0(Record00350FC0* owner, float start)
+{
+    s32 index;
+    float value = start + 16.0f;
+    for (index = 0; index < 14; index++)
+    {
+        struct SlotRecord* slot = owner->first[index];
+        slot->unk18 = 24.0f;
+        slot->unk1c = value;
+        slot->unk3c = 1;
+        slot = owner->second[index];
+        slot->unk18 = 326.0f;
+        slot->unk1c = value;
+        slot->unk3c = 1;
+        slot = owner->third[index];
+        slot->unk18 = 334.0f;
+        slot->unk1c = value;
+        slot->unk3c = 1;
+        value += 28.0f;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00351040);
 
@@ -878,7 +1123,21 @@ s32 func_00353EE0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00353EF0);
+Record00353EF0* func_00353EF0(Record00353EF0* record, s16 flag)
+{
+    if (record != 0)
+    {
+        record->methods = D_1848D0;
+        record->unke8 = D_1849C4;
+        func_003542F0(&record->embedded, -1);
+        func_2CD9F0(record, 0);
+        if (flag > 0)
+        {
+            func_100B40(record);
+        }
+    }
+    return record;
+}
 
 void func_00353F70(StatusRecord* state, u32 value)
 {
@@ -953,7 +1212,24 @@ u32 func_00354050(StatusRecord* state)
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00354060);
 
-INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_003540E0);
+Record003540E0* func_003540E0(Record003540E0* record, s16 flag)
+{
+    if (record != 0)
+    {
+        record->methods = D_184ED8;
+        func_003541F0(record);
+        if (record->head != 0)
+        {
+            func_100B40(record->head);
+            record->head = 0;
+        }
+        if (flag > 0)
+        {
+            func_100B40(record);
+        }
+    }
+    return record;
+}
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00354160);
 
@@ -961,7 +1237,24 @@ INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_003541F0);
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00354270);
 
-INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_003542F0);
+Record003542F0* func_003542F0(Record003542F0* record, s16 flag)
+{
+    if (record != 0)
+    {
+        record->methods = D_184EC8;
+        func_00354400(record);
+        if (record->head != 0)
+        {
+            func_100B40(record->head);
+            record->head = 0;
+        }
+        if (flag > 0)
+        {
+            func_100B40(record);
+        }
+    }
+    return record;
+}
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00354370);
 
@@ -1005,7 +1298,24 @@ INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00354620);
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_003546B0);
 
-INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_00354740);
+Record00354740* func_00354740(Record00354740* record, s16 flag)
+{
+    if (record != 0)
+    {
+        record->methods = D_184EB8;
+        func_003547C0(record);
+        if (record->head != 0)
+        {
+            func_100B40(record->head);
+            record->head = 0;
+        }
+        if (flag > 0)
+        {
+            func_100B40(record);
+        }
+    }
+    return record;
+}
 
 INCLUDE_ASM("build/overlays/0070-00/asm/nonmatchings/text", func_003547C0);
 

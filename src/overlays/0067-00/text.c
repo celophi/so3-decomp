@@ -73,14 +73,28 @@ typedef struct
 
 typedef struct EquipLinkedNode
 {
-    u8 pad_00[4];
+    s16 value;
+    u8 pad_02[2];
     struct EquipLinkedNode* next;
 } EquipLinkedNode;
 
-typedef struct
+struct EquipLinkedList
 {
     EquipLinkedNode* head;
-} EquipLinkedList;
+    u32 count;
+};
+
+typedef struct EquipWordNode
+{
+    u32 value;
+    struct EquipWordNode* next;
+} EquipWordNode;
+
+struct EquipWordList
+{
+    EquipWordNode* head;
+    u32 count;
+};
 
 typedef struct
 {
@@ -155,6 +169,7 @@ extern u8 D_182990[];
 extern u8 D_182B90[];
 extern u8 D_182C90[];
 extern void func_2CEAF0(void* object, s32 flags);
+extern void* func_100AC0(s32 size, s32 align);
 extern void func_100B40(void* object);
 
 
@@ -880,7 +895,24 @@ INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_003516D0);
 
 INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351750);
 
-INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_003517D0);
+void func_003517D0(EquipLinkedList* list, s16 value)
+{
+    EquipLinkedNode* node;
+    EquipLinkedNode* cursor;
+    node = (EquipLinkedNode*)func_100AC0(8, 0);
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351860);
 
@@ -904,13 +936,30 @@ INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351920);
 
 INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_003519A0);
 
-INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351A20);
+void func_00351A20(EquipWordList* list, u32 value)
+{
+    EquipWordNode* node;
+    EquipWordNode* cursor;
+    node = (EquipWordNode*)func_100AC0(8, 0);
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351AB0);
 
 void* func_00351B30(void* object, s32 count)
 {
-    EquipLinkedNode* node = ((EquipLinkedList*)object)->head->next;
+    EquipWordNode* node = ((EquipWordList*)object)->head->next;
     s32 index = 0;
     while (index < count)
     {
@@ -924,17 +973,119 @@ void* func_00351B30(void* object, s32 count)
     return node;
 }
 
-INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351B70);
+void func_00351B70(EquipWordList* list, u32 value)
+{
+    EquipWordNode* node;
+    EquipWordNode* cursor;
+    node = (EquipWordNode*)func_100AC0(8, 0);
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351C00);
+void func_00351C00(EquipWordList* list, u32 value)
+{
+    EquipWordNode* node;
+    EquipWordNode* cursor;
+    node = (EquipWordNode*)func_100AC0(8, 0);
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351C90);
+void func_00351C90(EquipWordList* list, u32 value)
+{
+    EquipWordNode* node;
+    EquipWordNode* cursor;
+    node = (EquipWordNode*)func_100AC0(8, 0);
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351D20);
+void func_00351D20(EquipWordList* list, u32 value)
+{
+    EquipWordNode* node;
+    EquipWordNode* cursor;
+    node = (EquipWordNode*)func_100AC0(8, 0);
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351DB0);
+void func_00351DB0(EquipWordList* list, u32 value)
+{
+    EquipWordNode* node;
+    EquipWordNode* cursor;
+    node = (EquipWordNode*)func_100AC0(8, 0);
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351E40);
+void func_00351E40(EquipWordList* list, u32 value)
+{
+    EquipWordNode* node;
+    EquipWordNode* cursor;
+    node = (EquipWordNode*)func_100AC0(8, 0);
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0067-00/asm/nonmatchings/text", func_00351ED0);
 

@@ -12,9 +12,47 @@ typedef struct ResidentRegisteredObject
     const ResidentDispatchTable* dispatch;
 } ResidentRegisteredObject;
 
+/** Partial resident object reached through D_001B65E8. */
+typedef struct ResidentObject1B65E8
+{
+    u8 unk00[0x30];
+    u8 unk30;
+} ResidentObject1B65E8;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Run the object's two update steps until the second reports no more work.
+ * @param object Object to update.
+ * @return Nonzero while the object is still busy.
+ */
+s32 func_00102AA0(ResidentObject1B65E8* object);
+
+/**
+ * @brief Submit a request to the object at D_001B65E8.
+ * @param object Receiving object.
+ * @param key First request word.
+ * @param size Request size.
+ * @param mask Third request word.
+ * @param word Fourth request word.
+ * @param mode Fifth request word.
+ * @return Request result; meaning not yet known.
+ */
+s32 func_00103640(ResidentObject1B65E8* object, s32 key, u32 size, u32 mask, u32 word, s32 mode);
+
+/**
+ * @brief Submit the alternative request form to the object at D_001B65E8.
+ * @param object Receiving object.
+ * @param key First request word.
+ * @param size Request size.
+ * @param mask Third request word.
+ * @param word Fourth request word.
+ * @param mode Fifth request word.
+ * @return Request result; meaning not yet known.
+ */
+s32 func_00103B20(ResidentObject1B65E8* object, s32 key, u32 size, u32 mask, u32 word, s32 mode);
 
 /**
  * @brief Initialize the dispatch pointer and register the object.

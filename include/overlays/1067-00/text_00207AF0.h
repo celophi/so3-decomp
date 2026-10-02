@@ -4,6 +4,8 @@
 #include "types.h"
 #include "overlays/1067-00/text_00207580.h"
 
+typedef struct FieldMotionRange FieldMotionRange;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -108,6 +110,19 @@ void func_00207EE0(void* object);
  * @param duration Duration used for the rate.
  */
 void func_00209780(FieldMotion* object, float target, float duration);
+
+/**
+ * @brief Set a range target and its change rate.
+ *
+ * A zero target is replaced by the xyz distance from the receiver's position
+ * to the vector at offset 0x260 of the field context's object at offset 0x14.
+ * A zero duration copies the target to the start; otherwise the step is the
+ * start-to-target change per unit of duration and flag 0x100 is set.
+ * @param object Range receiver.
+ * @param target New target value, or zero to measure it.
+ * @param duration Duration used for the rate, or zero for an immediate change.
+ */
+void func_002098C0(FieldMotionRange* object, float target, float duration);
 
 /**
  * @brief Set the first motion target and rate, substituting the fallback sentinel.

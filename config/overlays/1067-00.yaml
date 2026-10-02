@@ -48,7 +48,9 @@ segments:
     vram: 0x1dd3c0
     subalign: 16
     subsegments:
-      - [0x40, cpp, text_001DD3C0]
+      # Linker padding: .text starts on a 128-byte boundary after the 64-byte MWo3 header.
+      - [0x40, pad, text_align]
+      - [0x80, cpp, text_001DD3C0]
       - [0x1A00, cpp, text_001DED80]
       - [0x4210, cpp, text_001E1590]
       - [0x98D0, cpp, text_001E6C50]
@@ -84,7 +86,7 @@ segments:
       - [0x91A90, c, text_0026EE10]
       - [0x94FE0, c, text_00272360]
       - [0x963A0, cpp, text_00273720]
-      - [0x99150, c, text_002764D0]
+      - [0x99150, cpp, text_002764D0]
       - [0xA0000, c, text_0027D380]
       - [0xA11A0, c, text_0027E520]
       - [0xB0EC0, c, text_0028E240]

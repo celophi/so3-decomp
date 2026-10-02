@@ -70,6 +70,11 @@ extern void func_00348AE0(void* object);
 extern void func_4C48B0(void* object, s32 flags);
 extern void func_28E2B0(void* object, s32 flags);
 extern void func_2FD940(void* object);
+extern void func_2CEBE0(void* object);
+extern void func_00351020(void* list);
+extern void func_00350E10(void* list);
+extern void func_00350B70(void* list);
+extern void func_00349440(void* object, s32 value);
 
 INCLUDE_ASM("build/overlays/0068-00/asm/nonmatchings/text", func_003483C0);
 
@@ -312,13 +317,61 @@ INCLUDE_ASM("build/overlays/0068-00/asm/nonmatchings/text", func_00349390);
 
 INCLUDE_ASM("build/overlays/0068-00/asm/nonmatchings/text", func_00349440);
 
-INCLUDE_ASM("build/overlays/0068-00/asm/nonmatchings/text", func_003495C0);
+void func_003495C0(void* object)
+{
+    s32 value = *(s32*)((u8*)object + 0x110);
+    s32 quotient = value / 11;
+    s32 remainder = value % 11;
+    if (remainder == 10)
+    {
+        func_00349440(object, quotient * 11);
+    }
+    else
+    {
+        func_00349440(object, value + 1);
+    }
+}
 
-INCLUDE_ASM("build/overlays/0068-00/asm/nonmatchings/text", func_00349640);
+void func_00349640(void* object)
+{
+    s32 value = *(s32*)((u8*)object + 0x110);
+    s32 quotient = value / 11;
+    s32 remainder = value % 11;
+    if (remainder == 0)
+    {
+        func_00349440(object, quotient * 11 + 10);
+    }
+    else
+    {
+        func_00349440(object, value - 1);
+    }
+}
 
-INCLUDE_ASM("build/overlays/0068-00/asm/nonmatchings/text", func_003496C0);
+void func_003496C0(void* object)
+{
+    s32 value = *(s32*)((u8*)object + 0x110);
+    if (value / 11 == 8)
+    {
+        func_00349440(object, value % 11);
+    }
+    else
+    {
+        func_00349440(object, value + 11);
+    }
+}
 
-INCLUDE_ASM("build/overlays/0068-00/asm/nonmatchings/text", func_00349730);
+void func_00349730(void* object)
+{
+    s32 value = *(s32*)((u8*)object + 0x110);
+    if (value / 11 == 0)
+    {
+        func_00349440(object, value % 11 + 88);
+    }
+    else
+    {
+        func_00349440(object, value - 11);
+    }
+}
 
 INCLUDE_ASM("build/overlays/0068-00/asm/nonmatchings/text", func_003497A0);
 
@@ -466,7 +519,96 @@ void* func_0034F6F0(void* object, s32 flags)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/0068-00/asm/nonmatchings/text", func_0034F780);
+void* func_0034F780(void* object)
+{
+    func_2CEBE0(object);
+    *(void**)object = D_1889C0;
+    func_00351020((u8*)object + 0xE4);
+    func_00350E10((u8*)object + 0xF0);
+    func_00350B70((u8*)object + 0xFC);
+    *(u32*)((u8*)object + 0xA8) = 0;
+    *(u8*)((u8*)object + 0xAC) = 0;
+    *(u32*)((u8*)object + 0xB0) = 0;
+    *(u32*)((u8*)object + 0x108) = 0;
+    *(u32*)((u8*)object + 0x10C) = 0;
+    *(u32*)((u8*)object + 0x110) = 0;
+    *(u32*)((u8*)object + 0x114) = 0;
+    *(u32*)((u8*)object + 0x118) = 0;
+    *(u32*)((u8*)object + 0x11C) = 0;
+    *(u32*)((u8*)object + 0x120) = 0;
+    *(u32*)((u8*)object + 0x124) = 0;
+    *(u32*)((u8*)object + 0x128) = 0;
+    *(u32*)((u8*)object + 0x12C) = 0;
+    *(u32*)((u8*)object + 0x130) = 0;
+    *(u32*)((u8*)object + 0x134) = 0;
+    *(u32*)((u8*)object + 0x13C) = 0;
+    *(u32*)((u8*)object + 0x140) = 0;
+    *(u32*)((u8*)object + 0x144) = 0;
+    *(u32*)((u8*)object + 0x148) = 0;
+    *(u32*)((u8*)object + 0x14C) = 0;
+    *(u32*)((u8*)object + 0x150) = 0;
+    *(u32*)((u8*)object + 0x154) = 0;
+    *(u32*)((u8*)object + 0x158) = 0;
+    *(u32*)((u8*)object + 0x15C) = 0;
+    *(u32*)((u8*)object + 0x160) = 0;
+    *(u32*)((u8*)object + 0x164) = 0;
+    *(u32*)((u8*)object + 0x168) = 0;
+    *(u32*)((u8*)object + 0x16C) = 0;
+    *(u32*)((u8*)object + 0x170) = 0;
+    *(u32*)((u8*)object + 0x174) = 0;
+    *(u32*)((u8*)object + 0x178) = 0;
+    *(u32*)((u8*)object + 0x17C) = 0;
+    *(u32*)((u8*)object + 0x180) = 0;
+    *(u32*)((u8*)object + 0x184) = 0;
+    *(u32*)((u8*)object + 0x188) = 0;
+    *(u32*)((u8*)object + 0x18C) = 0;
+    *(u32*)((u8*)object + 0x190) = 0;
+    *(u32*)((u8*)object + 0x194) = 0;
+    *(u32*)((u8*)object + 0x1DC) = 0;
+    *(u32*)((u8*)object + 0x198) = 0x822;
+    *(u32*)((u8*)object + 0x19C) = 0x822;
+    *(u32*)((u8*)object + 0x1A0) = 0x822;
+    *(u32*)((u8*)object + 0x1A4) = 0x822;
+    *(u32*)((u8*)object + 0x1A8) = 0x822;
+    *(u32*)((u8*)object + 0x1AC) = 0x822;
+    *(u32*)((u8*)object + 0x1B0) = 0;
+    *(u32*)((u8*)object + 0xB4) = 0;
+    *(u32*)((u8*)object + 0xDC) = 0;
+    *(u16*)((u8*)object + 0xBC) = 0;
+    *(u32*)((u8*)object + 0xC0) = 0;
+    *(u32*)((u8*)object + 0xC4) = 0;
+    *(u8*)((u8*)object + 0xC8) = 0;
+    *(u8*)((u8*)object + 0xC9) = 0;
+    *(u8*)((u8*)object + 0xCA) = 0;
+    *(u8*)((u8*)object + 0xCB) = 0;
+    *(u8*)((u8*)object + 0xCC) = 0;
+    *(u8*)((u8*)object + 0xCD) = 0;
+    *(u8*)((u8*)object + 0xCE) = 0;
+    *(u8*)((u8*)object + 0xCF) = 0;
+    *(u32*)((u8*)object + 0xD0) = 0;
+    *(u32*)((u8*)object + 0xD4) = 0;
+    *(u32*)((u8*)object + 0xD8) = 0;
+    *(u8*)((u8*)object + 0x1B4) = 0;
+    *(u8*)((u8*)object + 0x1B5) = 0;
+    *(u32*)((u8*)object + 0x1B8) = 0;
+    *(float*)((u8*)object + 0x1BC) = 50.0f;
+    *(u32*)((u8*)object + 0x1C0) = 0;
+    *(float*)((u8*)object + 0x1C4) = 98.0f;
+    *(u8*)((u8*)object + 0x1D0) = 0;
+    *(u32*)((u8*)object + 0x1D4) = 0;
+    *(u8*)((u8*)object + 0x1D8) = 0;
+    *(u8*)((u8*)object + 0x1D9) = 0;
+    *(u8*)((u8*)object + 0x1DA) = 0;
+    *(u32*)((u8*)object + 0x1E0) = 0;
+    *(u32*)((u8*)object + 0x1F0) = 0;
+    *(u32*)((u8*)object + 0x1E4) = 0;
+    *(u32*)((u8*)object + 0x1F4) = 0;
+    *(u32*)((u8*)object + 0x1E8) = 0;
+    *(u32*)((u8*)object + 0x1F8) = 0;
+    *(u32*)((u8*)object + 0x1EC) = 0;
+    *(u32*)((u8*)object + 0x1FC) = 0;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/0068-00/asm/nonmatchings/text", func_0034F920);
 

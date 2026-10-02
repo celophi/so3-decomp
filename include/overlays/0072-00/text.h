@@ -20,6 +20,11 @@ typedef struct Overlay0072Object003494F0 Overlay0072Object003494F0;
 typedef struct Overlay0072Object00358FC0 Overlay0072Object00358FC0;
 typedef struct Overlay0072Object00359000 Overlay0072Object00359000;
 typedef struct Overlay0072Object003590E0 Overlay0072Object003590E0;
+typedef struct Overlay0072CtorObject0034D0E0 Overlay0072CtorObject0034D0E0;
+typedef struct Overlay0072CtorObject0034DC00 Overlay0072CtorObject0034DC00;
+typedef struct Overlay0072CtorObject0034DB40 Overlay0072CtorObject0034DB40;
+typedef struct Overlay0072ListNode Overlay0072ListNode;
+typedef struct Overlay0072List Overlay0072List;
 
 #ifdef __cplusplus
 extern "C" {
@@ -755,6 +760,85 @@ void func_003590E0(Overlay0072Object003590E0* object, const unsigned __int128* v
  * @param value Value to copy.
  */
 void func_00359100(Overlay0072Object003590E0* object, const unsigned __int128* value);
+
+/**
+ * @brief Initialize the object and set state 6.
+ * @param object Object to initialize.
+ * @return The initialized object.
+ */
+Overlay0072CtorObject0034D0E0* func_0034D0E0(Overlay0072CtorObject0034D0E0* object);
+
+/**
+ * @brief Initialize the object and set state 5.
+ * @param object Object to initialize.
+ * @return The initialized object.
+ */
+Overlay0072CtorObject0034D0E0* func_0034D120(Overlay0072CtorObject0034D0E0* object);
+
+/**
+ * @brief Initialize the object and set state 3.
+ * @param object Object to initialize.
+ * @return The initialized object.
+ */
+Overlay0072CtorObject0034D0E0* func_0034D230(Overlay0072CtorObject0034D0E0* object);
+
+/**
+ * @brief Initialize the object and set state 4.
+ * @param object Object to initialize.
+ * @return The initialized object.
+ */
+Overlay0072CtorObject0034D0E0* func_0034D270(Overlay0072CtorObject0034D0E0* object);
+
+/**
+ * @brief Initialize the object and set state 13.
+ * @param object Object to initialize.
+ * @return The initialized object.
+ */
+Overlay0072CtorObject0034DC00* func_0034DC00(Overlay0072CtorObject0034DC00* object);
+
+/**
+ * @brief Initialize the object and its four floating-point fields to zero.
+ * @param object Object to initialize.
+ * @return The initialized object.
+ */
+Overlay0072CtorObject0034DB40* func_0034DB40(Overlay0072CtorObject0034DB40* object);
+
+/**
+ * @brief Set the same value in several byte fields.
+ * @param object Object to update.
+ * @param unused Second argument; unused.
+ * @param value Value for each field.
+ */
+void func_0034D880(u8* object, void* unused, u8 value);
+
+/**
+ * @brief Append a value to the list when allocation succeeds.
+ * @param list List to extend.
+ * @param value Value to append.
+ */
+void func_003596F0(Overlay0072List* list, void* value);
+
+/**
+ * @brief Append a value to the list when allocation succeeds.
+ * @param list List to extend.
+ * @param value Value to append.
+ */
+void func_00359780(Overlay0072List* list, void* value);
+
+/**
+ * @brief Find the list node at the given index.
+ * @param list List to search.
+ * @param index Zero-based index after the head node.
+ * @return Matching node, or null if the chain ends early.
+ */
+Overlay0072ListNode* func_00359810(Overlay0072List* list, s32 index);
+
+/**
+ * @brief Append a value to the list when allocation succeeds.
+ * @param list List to extend.
+ * @param value Value to append.
+ */
+void func_00359850(Overlay0072List* list, void* value);
 
 #ifdef __cplusplus
 }

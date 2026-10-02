@@ -50,4 +50,9 @@ s32 func_002050C0(void* object)
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001FF0A0", func_002050D0);
+extern void func_001FF9E0(void* object);
+
+void func_002050D0(void* object)
+{
+    func_001FF9E0((u8*)object - 0x90);
+}

@@ -366,7 +366,9 @@ public:
     /** @brief Destroy the object. */
     virtual ~FieldClass152350();
 
-    u8 unk540[0x192];
+    u8 unk540[0xF8];
+    float unk638;
+    u8 unk63c[0x96];
     u8 unk6d2_0_3 : 4;
     u8 unk6d2_4 : 1;
     u8 unk6d2_5_7 : 3;

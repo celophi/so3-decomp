@@ -3,6 +3,87 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+#include "boot/resident_data.h"
+#include "overlays/0002-01/text_003E68C0.h"
+#include "overlays/1067-00/text_001DD3C0.h"
+
+/**
+ * Partial 0x7D8-byte FieldClass14FFB0 with vtable D_155640 in boot data
+ * (FieldClass1DD400 part at +0x2C). The field context keeps one instance at
+ * offset 0x1C; it is created on first use and inserted into the context's
+ * offset 0x30 list (FieldClass14FE30::func_001DF360, func_00258AC0).
+ */
+class FieldClass155640 : public FieldClass14FFB0
+{
+public:
+    /** @brief Reset the records and settings; the settings start unset (-1). */
+    FieldClass155640()
+    {
+        FieldClass14FFB0::func_001DEA80();
+        func_001DE8B0(0x1A);
+        unk7d6_0 = 0;
+        unk7d6_1 = 0;
+        unk14 = 2;
+        unk7d0 = 0;
+        unk7c8 = -1;
+        unk7cc = -1;
+        unk7d5 = -1;
+    }
+
+    /** @brief Clear the field context's pointer to this object, then destroy it. */
+    virtual ~FieldClass155640();
+
+    /**
+     * @brief Override of FieldClass14FFB0 slot 7.
+     * @param flag Value whose meaning is not yet known.
+     */
+    virtual void func_001E0A50(s32 flag);
+
+    /**
+     * @brief Advance to the next pending record, refilling the buffers first when requested.
+     *
+     * Does nothing unless bit 1 at offset 0x30 is set, and clears it afterwards.
+     * In state 1, and unless field_records_blocked() reports a block, toggles
+     * the current record's bits; if bit 0 at offset 0x7D6 is set, clears it and
+     * refills a temporary LibClass3F5B80 and the member at 0x34 from the
+     * settings and the field context's word at offset 0xD0. Then skips records
+     * that are finished, already handled or unused and sets state 0, or 5 when
+     * none remain.
+     */
+    virtual void func_001E0F60();
+
+    /** @brief Rebuild the records from the current settings. */
+    void func_00279B80();
+
+    /**
+     * @brief Rebuild the records from a filled LibClass3F5B80.
+     * @param source Filled object to read.
+     */
+    void func_002797D0(LibClass3F5B80* source);
+
+    /**
+     * @brief Store new settings, then rebuild the records through func_00279B80.
+     * @param id Setting stored at offset 0x7C8.
+     * @param area Setting stored at offset 0x7CC.
+     * @param kind Setting stored at offset 0x7D4.
+     * @param mode Setting stored at offset 0x7D5.
+     * @param flag Stored in bit 1 at offset 0x7D6.
+     */
+    void func_00279EA0(s32 id, s32 area, u8 kind, s8 mode, bool flag);
+
+    LibClass3F5B80 unk34;
+    s32 unk7c8;
+    s32 unk7cc;
+    s32 unk7d0;
+    u8 unk7d4;
+    s8 unk7d5;
+    u8 unk7d6_0 : 1;
+    u8 unk7d6_1 : 1;
+    u8 unk7d6_2_7 : 6;
+};
+#endif
+
 typedef struct FieldFlaggedListObject FieldFlaggedListObject;
 typedef struct FieldObject22E680 FieldObject22E680;
 typedef struct FieldObject155540 FieldObject155540;

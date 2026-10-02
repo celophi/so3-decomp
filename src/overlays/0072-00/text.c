@@ -186,7 +186,52 @@ struct Overlay0072Object00359C10
     struct Overlay0072Nested00359C20* field_18;
 };
 
+struct Overlay0072CtorObject0034D0E0
+{
+    void* table;
+    u8 unknown_4[0x34];
+    u8 state;
+    u8 unknown_39[7];
+    s32 field_40;
+};
+
+struct Overlay0072CtorObject0034DC00
+{
+    void* table;
+    u8 unknown_4[0x34];
+    u8 state;
+};
+
+struct Overlay0072CtorObject0034DB40
+{
+    void* table;
+    u8 unknown_4[0x34];
+    u8 state;
+};
+
+struct Overlay0072ListNode
+{
+    void* value;
+    Overlay0072ListNode* next;
+};
+
+struct Overlay0072List
+{
+    Overlay0072ListNode* head;
+    s32 count;
+};
+
 extern u8 D_50CD30[];
+extern void* func_100AC0(s32 size, s32 flags);
+extern void func_4C4960(void* object);
+extern void func_464B10(void* object);
+extern u8 D_172870[];
+extern u8 D_172600[];
+extern u8 D_1725D0[];
+extern u8 D_1746A0[];
+extern u8 D_174F20[];
+extern u8 D_178750[];
+extern void func_4C7FB0(Overlay0072CtorObject0034DB40* object, float x, float y, float z, float w);
 
 INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_003483C0);
 
@@ -401,17 +446,45 @@ INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034CF90);
 
 INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D070);
 
-INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D0E0);
+Overlay0072CtorObject0034D0E0* func_0034D0E0(Overlay0072CtorObject0034D0E0* object)
+{
+    func_4C4960(object);
+    object->table = D_172870;
+    object->field_40 = 0;
+    object->state = 6;
+    return object;
+}
 
-INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D120);
+Overlay0072CtorObject0034D0E0* func_0034D120(Overlay0072CtorObject0034D0E0* object)
+{
+    func_4C4960(object);
+    object->table = D_172600;
+    object->field_40 = 0;
+    object->state = 5;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D160);
 
 INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D1D0);
 
-INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D230);
+Overlay0072CtorObject0034D0E0* func_0034D230(Overlay0072CtorObject0034D0E0* object)
+{
+    func_4C4960(object);
+    object->table = D_1725D0;
+    object->field_40 = 0;
+    object->state = 3;
+    return object;
+}
 
-INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D270);
+Overlay0072CtorObject0034D0E0* func_0034D270(Overlay0072CtorObject0034D0E0* object)
+{
+    func_4C4960(object);
+    object->table = D_1746A0;
+    object->field_40 = 0;
+    object->state = 4;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D2B0);
 
@@ -421,7 +494,22 @@ INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D3A0);
 
 INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D5B0);
 
-INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D880);
+void func_0034D880(u8* object, void* unused, u8 value)
+{
+    object[0x45] = value;
+    object[0xD5] = value;
+    object[0x1E9] = value;
+    object[0x3FD] = value;
+    object[0x4FD] = value;
+    object[0x5FD] = value;
+    object[0x6FD] = value;
+    object[0x7FD] = value;
+    object[0x8FD] = value;
+    object[0xA11] = value;
+    object[0x2E9] = value;
+    object[0xC39] = value;
+    object[0xB25] = value;
+}
 
 INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034D8C0);
 
@@ -429,11 +517,24 @@ INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034DA90);
 
 INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034DAF0);
 
-INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034DB40);
+Overlay0072CtorObject0034DB40* func_0034DB40(Overlay0072CtorObject0034DB40* object)
+{
+    func_464B10(object);
+    object->table = D_178750;
+    object->state = 11;
+    func_4C7FB0(object, 0.0f, 0.0f, 0.0f, 0.0f);
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034DBA0);
 
-INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034DC00);
+Overlay0072CtorObject0034DC00* func_0034DC00(Overlay0072CtorObject0034DC00* object)
+{
+    func_464B10(object);
+    object->table = D_174F20;
+    object->state = 13;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_0034DC40);
 
@@ -1081,13 +1182,78 @@ s32 func_003596E0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_003596F0);
+void func_003596F0(Overlay0072List* list, void* value)
+{
+    Overlay0072ListNode* node = (Overlay0072ListNode*)func_100AC0(8, 0);
+    Overlay0072ListNode* cursor;
 
-INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_00359780);
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_00359810);
+void func_00359780(Overlay0072List* list, void* value)
+{
+    Overlay0072ListNode* node = (Overlay0072ListNode*)func_100AC0(8, 0);
+    Overlay0072ListNode* cursor;
 
-INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_00359850);
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
+
+Overlay0072ListNode* func_00359810(Overlay0072List* list, s32 index)
+{
+    Overlay0072ListNode* node = list->head->next;
+    s32 i;
+
+    for (i = 0; i < index; i++)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = node->next;
+    }
+    return node;
+}
+
+void func_00359850(Overlay0072List* list, void* value)
+{
+    Overlay0072ListNode* node = (Overlay0072ListNode*)func_100AC0(8, 0);
+    Overlay0072ListNode* cursor;
+
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0072-00/asm/nonmatchings/text", func_003598E0);
 

@@ -1,0 +1,8 @@
+D_001B64F8 = 0x001B64F8; // size:0x4
+func_23B3A0 = 0x0023B3A0; // type:func
+func_23B3B0 = 0x0023B3B0; // type:func
+func_10D8E0 = 0x0010D8E0; // type:func
+func_101290 = 0x00101290; // type:func
+func_101440 = 0x00101440; // type:func
+func_4CE4C0 = 0x004CE4C0; // type:func
+D_50CD30 = 0x0050CD30;
