@@ -47,8 +47,9 @@ __dt__16FieldClass150010Fv = 0x001DEC40; // type:func
 
 // Lib classes; the names match config/symbols/0002-01_symbol_addrs.txt.
 __vt__14LibClass178DD0 = 0x00178DD0; // size:0x38
+__ct__14LibClass178DD0Fv = 0x004D7620; // type:func
 __dt__14LibClass178DD0Fv = 0x004D7590; // type:func
-__dl__14LibClass178DD0FPv = 0x004DB570; // type:func
+func_004DB570 = 0x004DB570; // type:func
 __vt__14LibClass178EA0 = 0x00178EA0; // size:0x84
 __dt__14LibClass178EA0Fv = 0x004DAC70; // type:func
 
@@ -73,12 +74,22 @@ func_0011ED90 = 0x0011ED90; // type:func
 func_001DF3D0__16FieldClass150120Fv = 0x001E1590; // type:func
 func_001DD7B0__16FieldClass150120Fv = 0x001E15A0; // type:func
 func_001DD7B0__16FieldClass150330Fv = 0x001E9580; // type:func
+__vt__16FieldClass150330 = 0x00150330; // size:0x1C
+__ct__16FieldClass150330Fv = 0x001EA650; // type:func
+__dt__16FieldClass150330Fv = 0x001EA540; // type:func
 func_001DD7B0__16FieldClass1504C0Fv = 0x001EB660; // type:func
 func_001DF3D0__16FieldClass14FE30Fv = 0x001DD490; // type:func
 func_001DF360__16FieldClass14FE30Fv = 0x001DE4F0; // type:func
 __vt__16FieldClass150120 = 0x00150120; // size:0x30
 __dt__16FieldClass150120Fv = 0x001E5030; // type:func
 func_001DDB30__16FieldClass150120FPv = 0x001E4EF0; // type:func
+
+// Lib vector transforms by a 4x4 matrix in vf1-vf4 (include/overlays/0002-01/text_00429B00.h).
+func_004336E0 = 0x004336E0; // type:func
+func_00433730 = 0x00433730; // type:func
+// Lib VU0 trigonometric approximations (include/overlays/0002-01/text_004BD360.h).
+func_004CC3E0 = 0x004CC3E0; // type:func
+func_004CC690 = 0x004CC690; // type:func
 
 // FieldClass150220 (inline destructor; kept copy in text_001E6C50) and its
 // subclasses FieldClass1501F0 and FieldClass150250. Slot 8 is pure virtual in
@@ -87,16 +98,42 @@ __vt__16FieldClass150220 = 0x00150220; // size:0x2C
 __vt__16FieldClass1501F0 = 0x001501F0; // size:0x2C
 __vt__16FieldClass150250 = 0x00150250; // size:0x2C
 __dt__16FieldClass150220Fv = 0x001E73F0; // type:func
-func_001E6CF0__16FieldClass150220FPv = 0x001E6CF0; // type:func
-func_001E73D0__16FieldClass150220FPCv = 0x001E73D0; // type:func
+func_001E6CF0__16FieldClass150220FP17FieldRecord150220 = 0x001E6CF0; // type:func
+func_001E73D0__16FieldClass150220FPC13FieldMatrix44 = 0x001E73D0; // type:func
 func_001E6D00__16FieldClass150220Fv = 0x001E6D00; // type:func
 __dt__16FieldClass1501F0Fv = 0x001E6C50; // type:func
 __dt__16FieldClass150250Fv = 0x001E7480; // type:func
-func_001E73D0__16FieldClass1501F0FPCv = 0x001E6D20; // type:func
-func_001E6D80__16FieldClass1501F0FPvPCvf = 0x001E6D80; // type:func
-func_001E73D0__16FieldClass150250FPCv = 0x001E7100; // type:func
-func_001E6D80__16FieldClass150250FPvPCvf = 0x001E71A0; // type:func
+func_001E73D0__16FieldClass1501F0FPC13FieldMatrix44 = 0x001E6D20; // type:func
+func_001E6D80__16FieldClass1501F0FP17FieldRecord150220PC13FieldMatrix44f = 0x001E6D80; // type:func
+func_001E73D0__16FieldClass150250FPC13FieldMatrix44 = 0x001E7100; // type:func
+func_001E6D80__16FieldClass150250FP17FieldRecord150220PC13FieldMatrix44f = 0x001E71A0; // type:func
 func_001E6D00__16FieldClass150250Fv = 0x001E7520; // type:func
+
+// FieldClass1502A0: Lib list class (no added data) with inline destructor;
+// kept copy in text_001E6C50, slot methods in text_001DD3C0. FieldClass1502E0
+// derives from it; FieldClass150320 keeps its vtable pointer at 0xC.
+__vt__16FieldClass1502A0 = 0x001502A0; // size:0x3C
+__vt__16FieldClass1502E0 = 0x001502E0; // size:0x3C
+__vt__16FieldClass150320 = 0x00150320; // size:0xC
+__dt__16FieldClass1502A0Fv = 0x001E8FF0; // type:func
+func_004295B0__16FieldClass1502A0FPv = 0x001DD420; // type:func
+func_004295C0__16FieldClass1502A0Fv = 0x001DD430; // type:func
+func_001DD730__16FieldClass1502A0Fv = 0x001DD730; // type:func
+__ct__16FieldClass1502E0Fv = 0x001E8F50; // type:func
+__dt__16FieldClass1502E0Fv = 0x001E8E50; // type:func
+func_001E8E00__16FieldClass1502E0FUiUsfffff = 0x001E8E00; // type:func
+__dt__16FieldClass150320Fv = 0x001E9120; // type:func
+func_001E9050__16FieldClass150320Fv = 0x001E9050; // type:func
+
+// FieldClass150440 (inline destructor; kept copy in text_001E6C50; operator
+// delete forwards to func_004DB570) and its subclass FieldClass150420.
+__vt__16FieldClass150440 = 0x00150440; // size:0x1C
+__vt__16FieldClass150420 = 0x00150420; // size:0x1C
+__dt__16FieldClass150440Fv = 0x001ECE80; // type:func
+__dt__16FieldClass150420Fv = 0x001ECDE0; // type:func
+
+// FieldClass1504F0: single instance in D_001B6428; constructor in text_001ED7E0.
+__ct__16FieldClass1504F0Fv = 0x001ED7E0; // type:func
 
 // FieldClass150460 <- FieldClass150490 <- FieldClass1504C0. The first two have
 // inline destructors; their kept copies are in text_001E6C50.

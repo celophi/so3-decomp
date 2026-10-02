@@ -34,22 +34,6 @@ typedef struct FieldKeyedListNode54
     u32 unk54;
 } FieldKeyedListNode54;
 
-/** Partial receiver with a key, five float parameters, a constant float, a flag halfword and a mode word at offsets 0x98-0xB8. */
-typedef struct FieldMotionParams98
-{
-    u8 unk00[0x98];
-    u32 unk98;
-    float unk9c;
-    float unka0;
-    float unka4;
-    float unka8;
-    float unkac;
-    float unkb0;
-    u16 unkb4;
-    u8 unkb6[2];
-    s32 unkb8;
-} FieldMotionParams98;
-
 /** Partial receiver with a signed halfword at offset 0x3A. */
 typedef struct FieldHalfword3A
 {
@@ -117,6 +101,22 @@ typedef struct FieldEntryArrayObject30
 } FieldEntryArrayObject30;
 
 #ifdef __cplusplus
+/** 16-byte aligned 4x4 float matrix stored as four rows; column 3 of the first three rows holds the translation. */
+struct FieldMatrix44
+{
+    float m[4][4];
+} __attribute__((aligned(16)));
+
+/** Partial source record for FieldClass150220: three floats followed by a vector at offset 0x10. */
+struct FieldRecord150220
+{
+    float unk00;
+    float unk04;
+    float unk08;
+    u8 unk0c[4];
+    FieldVec4A unk10;
+};
+
 /**
  * Partial class derived from FieldClass150070, with vtable D_150220 in boot
  * data. Holds a source record pointer at offset 0x18 and a done flag at bit 0
@@ -134,13 +134,13 @@ public:
      * @brief Store the source record pointer at offset 0x18.
      * @param source Record to store.
      */
-    virtual void func_001E6CF0(void* source);
+    virtual void func_001E6CF0(FieldRecord150220* source);
 
     /**
      * @brief Set flag bit 0 at offset 0x20.
      * @param matrix 4x4 matrix used by the overrides; ignored here.
      */
-    virtual void func_001E73D0(const void* matrix);
+    virtual void func_001E73D0(const FieldMatrix44* matrix);
 
     /** @brief Clear flag bit 0 at offset 0x20. */
     virtual void func_001E6D00();
@@ -151,10 +151,10 @@ public:
      * @param matrix Optional 4x4 matrix.
      * @param scale Scale factor; ignored by FieldClass150250.
      */
-    virtual void func_001E6D80(void* source, const void* matrix, float scale) = 0;
+    virtual void func_001E6D80(FieldRecord150220* source, const FieldMatrix44* matrix, float scale) = 0;
 
     u8 unk14[4];
-    void* unk18;
+    FieldRecord150220* unk18;
     u8 unk1c[4];
     u8 unk20_0 : 1;
     u8 unk20_1_7 : 7;
@@ -168,30 +168,33 @@ public:
     virtual ~FieldClass1501F0();
 
     /**
-     * @brief Unless flag bit 0 at offset 0x20 is set, pass the matrix and the vectors at offsets 0x1C0 and 0x1D0 to func_433730, then set the flag.
+     * @brief Unless flag bit 0 at offset 0x20 is set, pass the matrix and transform the vector at offset 0x1C0 into 0x1D0 with func_00433730, then set the flag.
      * @param matrix 4x4 matrix.
      */
-    virtual void func_001E73D0(const void* matrix);
+    virtual void func_001E73D0(const FieldMatrix44* matrix);
 
     /**
-     * @brief Build the vectors at offset 0x30 and 0x1C0 from a source record and an optional matrix.
-     * @param source Source record, stored at offset 0x18.
+     * @brief Store the scaled source radius at offset 0x1E0 and, with a matrix, build a pole and three rings
+     * of eight points at offset 0x30 on a dome of that radius; set the vector at offset 0x1C0 from the
+     * matrix translation (or from the source centre without one) plus the source centre.
+     * @param source Source record, stored at offset 0x18; its first float is the radius.
      * @param matrix Optional 4x4 matrix.
-     * @param scale Scale applied to the source's first float.
+     * @param scale Scale applied to the radius stored at offset 0x1E0.
      */
-    virtual void func_001E6D80(void* source, const void* matrix, float scale);
+    virtual void func_001E6D80(FieldRecord150220* source, const FieldMatrix44* matrix, float scale);
+
+    u8 unk24[0x19C];
+    FieldVec4A unk1c0;
+    FieldVec4A unk1d0;
+    float unk1e0;
 };
 
-/** One 16-byte record of four floats. */
-struct FieldFloat4
-{
-    float unk00;
-    float unk04;
-    float unk08;
-    float unk0c;
-};
-
-/** Partial class derived from FieldClass150220 with six 16-byte records at offset 0x130, with vtable D_150250 in boot data. */
+/**
+ * Partial class derived from FieldClass150220, with vtable D_150250 in boot
+ * data. Holds eight corner vectors at offset 0x30, their transformed copies at
+ * 0xB0, six vectors at 0x130 built from them, and a centre vector at 0x190
+ * with its transformed copy at 0x1A0.
+ */
 class FieldClass150250 : public FieldClass150220
 {
 public:
@@ -202,9 +205,9 @@ public:
      * @brief Unless flag bit 0 at offset 0x20 is set, transform the eight vectors at offset 0x30 and the vector at offset 0x190 by the matrix, then set the flag.
      * @param matrix 4x4 matrix.
      */
-    virtual void func_001E73D0(const void* matrix);
+    virtual void func_001E73D0(const FieldMatrix44* matrix);
 
-    /** @brief Clear flag bit 0 at offset 0x20 and the last float of each record at offset 0x130. */
+    /** @brief Clear flag bit 0 at offset 0x20 and the w component of each vector at offset 0x130. */
     virtual void func_001E6D00();
 
     /**
@@ -213,22 +216,164 @@ public:
      * @param matrix Optional 4x4 matrix.
      * @param scale Unused by this class.
      */
-    virtual void func_001E6D80(void* source, const void* matrix, float scale);
+    virtual void func_001E6D80(FieldRecord150220* source, const FieldMatrix44* matrix, float scale);
 
-    u8 unk24[0x10C];
-    FieldFloat4 unk130[6];
+    u8 unk24[0xC];
+    FieldVec4A unk30[8];
+    FieldVec4A unkb0[8];
+    FieldVec4A unk130[6];
+    FieldVec4A unk190;
+    FieldVec4A unk1a0;
+};
+
+/**
+ * Partial class with its vtable pointer at offset 0xC, after its data, with
+ * vtable D_150320 in boot data. It owns an array of 12-byte entries at offset 4
+ * with the count at offset 8.
+ */
+class FieldClass150320
+{
+public:
+    void* unk00;
+    void* unk04;
+    s32 unk08;
+
+    /** @brief Release the entries, then destroy the object. */
+    virtual ~FieldClass150320();
+
+    /** @brief Release each entry's object through the manager at offset 0, then delete the entry array. */
+    void func_001E9050();
+};
+
+/**
+ * Partial Lib list class derived from FieldClass1502A0, with vtable D_1502E0 in
+ * boot data. Owns two FieldClass150070 objects at offset 0x80 and a
+ * FieldClass150320 at offset 0x90.
+ */
+class FieldClass1502E0 : public FieldClass1502A0
+{
+public:
+    /** @brief Construct the list and set the parameter block at offsets 0x7C-0xBC to its defaults. */
+    FieldClass1502E0();
+
+    /** @brief Delete the owned objects and every listed object, then destroy the list. */
+    virtual ~FieldClass1502E0();
+
+    /**
+     * @brief Store the key and float parameters, the fixed value 300.0f, the low flag bits at offset 0xB4 and mode 2.
+     * @param key Word stored at offset 0x98.
+     * @param flags Value merged into the low byte of the halfword at offset 0xB4, preserving its high byte.
+     * @param a Float stored at offset 0x9C.
+     * @param b Float stored at offset 0xA0.
+     * @param c Float stored at offset 0xA8.
+     * @param d Float stored at offset 0xB0.
+     * @param e Float stored at offset 0xA4.
+     */
+    void func_001E8E00(u32 key, u16 flags, float a, float b, float c, float d, float e);
+
+    u8 unk78[4];
+    void* unk7c;
+    FieldClass150070* unk80[2];
+    u32 unk88;
+    u32 unk8c;
+    FieldClass150320* unk90;
+    s32 unk94;
+    u32 unk98;
+    float unk9c;
+    float unka0;
+    float unka4;
+    float unka8;
+    float unkac;
+    float unkb0;
+    u16 unkb4;
+    u8 unkb6;
+    u8 unkb7;
+    s32 unkb8;
+    u8 unkbc_0 : 1;
+    u8 unkbc_1_7 : 7;
 };
 
 /** Partial class derived from FieldClass150070, with vtable D_150330 in boot data. */
 class FieldClass150330 : public FieldClass150070
 {
 public:
-    /** @brief Destroy the object. */
+    /** @brief Clear the words, array pointers and halfwords, and set flag bit 1 at offset 0x3C. */
+    FieldClass150330();
+
+    /** @brief Delete the three arrays at offsets 0x24-0x2C, then destroy the object. */
     virtual ~FieldClass150330();
 
     /** @brief Detach the object and queue it on the resident object queue. */
     virtual void func_001DD7B0();
+
+    u8 unk14[4];
+    u32 unk18;
+    u32 unk1c;
+    u32 unk20;
+    void* unk24;
+    void* unk28;
+    void* unk2c;
+    u32 unk30;
+    u8 unk34[4];
+    s16 unk38;
+    s16 unk3a;
+    u8 unk3c_0 : 1;
+    u8 unk3c_1 : 1;
+    u8 unk3c_2 : 1;
+    s8 unk3c_3_5 : 3;
+    u8 unk3c_6_7 : 2;
 };
+
+/**
+ * Partial class derived from FieldClass150070, with vtable D_150440 in boot
+ * data. Its storage is released through the Lib heap.
+ */
+class FieldClass150440 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150440()
+    {
+    }
+
+    /**
+     * @brief Release the object's storage through the Lib heap.
+     * @param object Storage to release.
+     */
+    static void operator delete(void* object)
+    {
+        func_004DB570(object);
+    }
+};
+
+/** Partial class derived from FieldClass150440, with vtable D_150420 in boot data. */
+class FieldClass150420 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150420();
+};
+
+/**
+ * Partial 0x50-byte class derived from FieldClass150070, with vtable D_1504F0
+ * in boot data. At most one exists at a time, in D_001B6428.
+ */
+class FieldClass1504F0 : public FieldClass150070
+{
+public:
+    /** @brief Construct the object with its state cleared. */
+    FieldClass1504F0();
+
+    u8 unk14[0x39];
+    u8 unk4d_0 : 1;
+    u8 unk4d_1 : 1;
+    u8 unk4d_2 : 1;
+    u8 unk4d_3_7 : 5;
+    u8 unk4e[2];
+};
+
+/** The current FieldClass1504F0, or null. */
+extern "C" FieldClass1504F0* D_001B6428;
 
 /** Partial class derived from FieldClass150070, with vtable D_150460 in boot data. */
 class FieldClass150460 : public FieldClass150070
@@ -321,19 +466,6 @@ void func_001E7560(FieldStateReset66* object);
 FieldKeyedListNode54* func_001E8490(FieldKeyedListNode54* list, u32 key);
 
 /**
- * @brief Store the key and float parameters, the fixed value 300.0f, the low flag bits at offset 0xB4 and mode 2.
- * @param object Receiver to configure.
- * @param key Word stored at offset 0x98.
- * @param flags Value merged into the low byte of the halfword at offset 0xB4, preserving its high byte.
- * @param a Float stored at offset 0x9C.
- * @param b Float stored at offset 0xA0.
- * @param c Float stored at offset 0xA8.
- * @param d Float stored at offset 0xB0.
- * @param e Float stored at offset 0xA4.
- */
-void func_001E8E00(FieldMotionParams98* object, u32 key, u16 flags, float a, float b, float c, float d, float e);
-
-/**
  * @brief Read the signed halfword at offset 0x3A.
  * @param object Receiver to inspect.
  * @return The stored halfword.
@@ -394,6 +526,17 @@ s32 func_001ECF10(const FieldGatedObject448* object);
  * @param object Receiver to reset.
  */
 void func_001E94F0(FieldEntryArrayObject30* object);
+
+/**
+ * @brief Create the FieldClass1504F0 instance and insert it into D_001B6614.
+ *
+ * When flag is set and bit 3 of the field context byte at offset 0xDE is clear,
+ * the bit is written clear and nothing is created. Nothing is created while an
+ * instance exists.
+ * @param flag Stored in flag bit 2 at offset 0x4D of the new object.
+ * @return 1 when an object was created and inserted, otherwise 0.
+ */
+s32 func_001E95B0(s32 flag);
 
 #ifdef __cplusplus
 }

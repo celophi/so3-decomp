@@ -223,8 +223,8 @@ extern "C" FieldLateIndexedObject* D_507CD0[];
 extern "C" void func_4289B0(FieldLateIndexedObject*);
 extern "C" void func_428C80(FieldLateIndexedObject*);
 
-// Constructor; needs recovered classes and global state.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001ED7E0);
+// FieldClass1504F0 constructor; needs recovered classes and global state.
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", __ct__16FieldClass1504F0Fv);
 
 // Deleting destructor; needs recovered classes and global state.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EDCE0);

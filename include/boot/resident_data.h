@@ -99,7 +99,11 @@ typedef struct ResidentContext
     ResidentContextFlagsDD unkdd;
     u8 unkde_0 : 1;
     u8 unkde_1 : 1;
-    u8 unkde_2_7 : 6;
+    u8 unkde_2 : 1;
+    u8 unkde_3 : 1;
+    u8 unkde_4 : 1;
+    u8 unkde_5 : 1;
+    u8 unkde_6_7 : 2;
 } ResidentContext;
 
 /** Partial holder of the current field context. */

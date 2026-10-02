@@ -2,12 +2,15 @@
 #include "overlays/1067-00/text_001E6C50.h"
 #include "boot/resident_data.h"
 #include "overlays/1067-00/text_0022DC70.h"
+#include "overlays/0002-01/text_00429B00.h"
+#include "overlays/0002-01/text_004BD360.h"
+#include "vu0.h"
 
 FieldClass1501F0::~FieldClass1501F0()
 {
 }
 
-void FieldClass150220::func_001E6CF0(void* source)
+void FieldClass150220::func_001E6CF0(FieldRecord150220* source)
 {
     unk18 = source;
 }
@@ -17,17 +20,82 @@ void FieldClass150220::func_001E6D00()
     unk20_0 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E73D0__16FieldClass1501F0FPCv);
+void FieldClass1501F0::func_001E73D0(const FieldMatrix44* matrix)
+{
+    if (unk20_0)
+    {
+        return;
+    }
+    func_00433730(matrix, &unk1c0, &unk1d0);
+    unk20_0 = 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E6D80__16FieldClass1501F0FPvPCvf);
+// The pole copy leaves no dead stack store but the ring copies do; vector member types unresolved.
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E6D80__16FieldClass1501F0FP17FieldRecord150220PC13FieldMatrix44f);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E6FC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E73D0__16FieldClass150250FPCv);
+void FieldClass150250::func_001E73D0(const FieldMatrix44* matrix)
+{
+    s32 i;
+    if (unk20_0)
+    {
+        return;
+    }
+    vu0_load_matrix(matrix);
+    for (i = 0; i < 8; i++)
+    {
+        func_004336E0(&unk30[i], &unkb0[i]);
+    }
+    func_004336E0(&unk190, &unk1a0);
+    unk20_0 = 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E6D80__16FieldClass150250FPvPCvf);
+void FieldClass150250::func_001E6D80(FieldRecord150220* source, const FieldMatrix44* matrix, float scale)
+{
+    const FieldVec4A* center = &source->unk10;
+    unk18 = source;
+    for (s32 i = 0; i < 8; i++)
+    {
+        unk30[i] = *center;
+        unk30[i].w = 1.0f;
+    }
+    unk30[0].x += source->unk00;
+    unk30[0].y -= source->unk04;
+    unk30[0].z += source->unk08;
+    unk30[1].x += source->unk00;
+    unk30[1].y -= source->unk04;
+    unk30[1].z -= source->unk08;
+    unk30[2].x += source->unk00;
+    unk30[2].y += source->unk04;
+    unk30[2].z += source->unk08;
+    unk30[3].x += source->unk00;
+    unk30[3].y += source->unk04;
+    unk30[3].z -= source->unk08;
+    unk30[4].x -= source->unk00;
+    unk30[4].y -= source->unk04;
+    unk30[4].z += source->unk08;
+    unk30[5].x -= source->unk00;
+    unk30[5].y -= source->unk04;
+    unk30[5].z -= source->unk08;
+    unk30[6].x -= source->unk00;
+    unk30[6].y += source->unk04;
+    unk30[6].z += source->unk08;
+    unk30[7].x -= source->unk00;
+    unk30[7].y += source->unk04;
+    unk30[7].z -= source->unk08;
+    unk190 = *center;
+    if (matrix)
+    {
+        vu0_load_matrix(matrix);
+        for (s32 i = 0; i < 8; i++)
+        {
+            func_004336E0(&unk30[i], &unk30[i]);
+        }
+    }
+}
 
-void FieldClass150220::func_001E73D0(const void* matrix)
+void FieldClass150220::func_001E73D0(const FieldMatrix44* matrix)
 {
     unk20_0 = 1;
 }
@@ -42,7 +110,7 @@ void FieldClass150250::func_001E6D00()
     unk20_0 = 0;
     for (i = 0; i < 6; i++)
     {
-        unk130[i].unk0c = 0.0f;
+        unk130[i].w = 0.0f;
     }
 }
 
@@ -108,28 +176,60 @@ FieldKeyedListNode54* func_001E8490(FieldKeyedListNode54* list, u32 key)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E84E0);
 
-void func_001E8E00(FieldMotionParams98* object, u32 key, u16 flags, float a, float b, float c, float d, float e)
+void FieldClass1502E0::func_001E8E00(u32 key, u16 flags, float a, float b, float c, float d, float e)
 {
-    object->unkac = 300.0f;
-    object->unk98 = key;
-    object->unk9c = a;
-    object->unka0 = b;
-    object->unka8 = c;
-    object->unkb0 = d;
-    object->unkb8 = 2;
-    object->unkb4 = (object->unkb4 & ~0xFF) | flags;
-    object->unka4 = e;
+    unkac = 300.0f;
+    unk98 = key;
+    unk9c = a;
+    unka0 = b;
+    unka8 = c;
+    unkb0 = d;
+    unkb8 = 2;
+    unkb4 = (unkb4 & ~0xFF) | flags;
+    unka4 = e;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E8E50);
+FieldClass1502E0::~FieldClass1502E0()
+{
+    s32 i;
+    delete unk90;
+    unk90 = 0;
+    unk7c = 0;
+    for (i = 0; i < 2; i++)
+    {
+        if (unk80[i])
+        {
+            unk80[i]->func_001DD7B0();
+            unk80[i] = 0;
+        }
+    }
+    func_001DD730();
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E8F50);
+FieldClass1502E0::FieldClass1502E0()
+{
+    unk7c = 0;
+    unk8c = 0;
+    unk90 = 0;
+    unkb6 = 0;
+    unkac = 0.0f;
+    unkb8 = 2;
+    unk94 = -1;
+    unkb0 = 1.0f;
+    unka4 = -1.0f;
+    unk80[0] = 0;
+    unk80[1] = 0;
+    unk88 = 0;
+    unkb4 = 0x100;
+    unkbc_0 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E8FF0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9050__16FieldClass150320Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9050);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9120);
+FieldClass150320::~FieldClass150320()
+{
+    func_001E9050();
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9180);
 
@@ -164,7 +264,27 @@ void FieldClass150330::func_001DD7B0()
     func_0011ED90(D_001B65F4, this);
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E95B0);
+s32 func_001E95B0(s32 flag)
+{
+    if (!flag || D_001B6430->context->unkde_3)
+    {
+        if (!D_001B6428)
+        {
+            FieldClass1504F0* object = new(0) FieldClass1504F0;
+            if (object)
+            {
+                object->unk4d_2 = flag;
+                D_001B6614->func_004D74F0(object, (void*)-1);
+                return 1;
+            }
+        }
+    }
+    else
+    {
+        D_001B6430->context->unkde_3 = 0;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9690);
 
@@ -189,9 +309,24 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9E
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001EA2E0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001EA540);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", __dt__16FieldClass150330Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001EA650);
+FieldClass150330::FieldClass150330()
+{
+    unk3c_0 = 0;
+    unk3c_1 = 1;
+    unk3c_2 = 0;
+    unk24 = 0;
+    unk28 = 0;
+    unk2c = 0;
+    unk38 = 0;
+    unk3a = 0;
+    unk18 = 0;
+    unk1c = 0;
+    unk20 = 0;
+    unk3c_3_5 = 0;
+    unk30 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001EA730__16FieldClass1504C0Fv);
 
@@ -272,9 +407,9 @@ void func_001EB690(FieldCountOwner34* object, s32 count)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001EB6B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001ECDE0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001ECE80);
+FieldClass150420::~FieldClass150420()
+{
+}
 
 s32 func_001ECF10(const FieldGatedObject448* object)
 {
