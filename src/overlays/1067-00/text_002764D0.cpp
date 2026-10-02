@@ -1,5 +1,7 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002764D0.h"
+#include "boot/resident_0011EE70.h"
+#include "sdk/boot/syscalls_00121940.h"
 #include "overlays/1067-00/text_002CABC0.h"
 #include "boot/resident_data.h"
 #include "boot/resident_0010A0E0.h"
@@ -163,6 +165,8 @@ typedef struct FieldState27A9A0
 
 
 /* US Field uses shortened names for these resident copy and fill routines. */
+extern "C" s32 func_4339F0();
+extern "C" s32 func_433880(void*, s32);
 extern "C" void* func_13A4C0(void* destination, const void* source, u32 size);
 extern "C" void* func_13A678(void* destination, s32 value, u32 size);
 extern "C" u32 func_11C8C0(void* table, s32 index);
@@ -546,7 +550,148 @@ void FieldClass155640::func_00279EA0(s32 id, s32 area, u8 kind, s8 mode, bool fl
     func_00279B80();
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_001E0A50__16FieldClass155640Fi);
+void FieldClass155640::func_001E0A50(s32 flag)
+{
+    ResidentContext* context = D_001B6430->context;
+    ResidentContextFlagsDD* flags = &context->unkdd;
+    if (flags->unk4 && unk2e > 0)
+    {
+        if (unk15 == 0)
+        {
+            if (!field_records_blocked())
+            {
+                unk15 = 5;
+            }
+        }
+        else
+        {
+            FieldClass14FFB0::func_001E0A50(flag);
+        }
+        return;
+    }
+    if (flags->unk6)
+    {
+        if (unk15 == 10 || unk15 == 7)
+        {
+            FieldClass14FFB0::func_001E0A50(flag);
+            return;
+        }
+        if (unk15 == 1)
+        {
+            flag = 1;
+        }
+        else
+        {
+            return;
+        }
+    }
+    if (unk15 == 0 && flag == 0)
+    {
+        if (unk30_1)
+        {
+            return;
+        }
+        if (!(context->unk58->unk1e0 <= 0.0f))
+        {
+            return;
+        }
+        if (field_records_blocked())
+        {
+            return;
+        }
+        if (func_0011F9D0(D_001B6430->context->unk24))
+        {
+            return;
+        }
+        if (unk2e == 0)
+        {
+            if (unk7d0 > 0)
+            {
+                unk7d0--;
+                return;
+            }
+            FieldClass1530D0* owner = static_cast<FieldClass1530D0*>(static_cast<LibClass178DD0*>(unk10));
+            FieldClass150060* link = (FieldClass150060*)owner->unk00;
+            bool busy = false;
+            for (;;)
+            {
+                link = link->unk08;
+                if ((FieldClass150060*)owner->unk00 == link)
+                {
+                    break;
+                }
+                FieldClass150010* item = static_cast<FieldClass150010*>(link);
+                if (item->func_001DF350() == 1 && this != item && item->func_001E07A0() == 2)
+                {
+                    busy = true;
+                }
+            }
+            if (busy)
+            {
+                return;
+            }
+        }
+        if (func_4339F0() < 0x177000)
+        {
+            return;
+        }
+        for (; unk2e < unk2d; unk2e++)
+        {
+            FieldClass150040* next = &unk1c[unk2e];
+            if (!next->unk16_0 && !next->unk1c_0 && next->unk0c != -1)
+            {
+                break;
+            }
+        }
+        bool finished;
+        if (unk2e >= unk2d)
+        {
+            unk15 = 5;
+            finished = true;
+        }
+        else
+        {
+            unk15 = 0;
+            finished = false;
+        }
+        if (finished)
+        {
+            return;
+        }
+        FieldClass150040* record = &unk1c[unk2e];
+        record->func_0023AD00();
+        if (!record->rounded_unk04())
+        {
+            u32 word = record->unk00;
+            func_00121FE0(0);
+            s32 size = func_433880((void*)word, 0x40);
+            if (!size)
+            {
+                return;
+            }
+            record->unk04 = size;
+            record->unk08_0 = 0;
+        }
+        func_001DF3E0();
+        return;
+    }
+    if (unk15 == 1 && flag == 1)
+    {
+        for (s32 i = 0; i < unk2d; i++)
+        {
+            FieldClass150040* record = &unk1c[i];
+            u32 word = record->unk00;
+            u32 size = record->rounded_unk04();
+            func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+            record->unk1c_0 = 0;
+            record->unk1c_1 = 1;
+        }
+        unk2e = 0;
+        unk15 = 9;
+        return;
+    }
+    FieldClass14FFB0::func_001E0A50(flag);
+}
 
 void func_0027A3E0(FieldFlagState2B320* object)
 {

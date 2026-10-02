@@ -50,7 +50,6 @@ typedef struct FieldRecords FieldRecords;
 typedef struct FieldScriptVec FieldScriptVec;
 typedef struct FieldLateNodes FieldLateNodes;
 typedef struct FieldLateFlag30 FieldLateFlag30;
-typedef struct FieldLateRetryOwner FieldLateRetryOwner;
 typedef struct FieldLateCommandStream FieldLateCommandStream;
 typedef struct FieldLatePointer40 FieldLatePointer40;
 typedef struct FieldLateLarge FieldLateLarge;
@@ -456,14 +455,16 @@ void func_001F9050(FieldLateNodes* object);
  */
 void func_001F90D0(FieldLateFlag30* object);
 
+#ifdef __cplusplus
 /**
- * @brief Retry a buffer operation up to eight times while continuation is allowed.
- * @param owner Owner of the retry state.
- * @param buffer Buffer passed to the operation.
- * @param mode Selects the operation.
- * @return The operation result, or zero after retries stop.
+ * @brief Retry a 0x80-byte read up to eight times while the owner list allows it.
+ * @param owner Record loader whose word at offset 0x10 points to its FieldClass1530D0 list.
+ * @param buffer Buffer passed to the read.
+ * @param mode Selects the read (nonzero: func_433AA0/func_433880, zero: func_139700).
+ * @return The read result, or zero after retries stop. Same body as func_001E1100.
  */
-s32 func_001F9A80(FieldLateRetryOwner* owner, void* buffer, s32 mode);
+s32 func_001F9A80(class FieldClass150070* owner, void* buffer, s32 mode);
+#endif
 
 #ifdef __cplusplus
 }

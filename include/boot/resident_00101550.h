@@ -55,6 +55,22 @@ s32 func_00103640(ResidentObject1B65E8* object, s32 key, u32 size, u32 mask, u32
 s32 func_00103B20(ResidentObject1B65E8* object, s32 key, u32 size, u32 mask, u32 word, s32 mode);
 
 /**
+ * @brief Submit a resident request with an owner and two extra words; meaning not yet known.
+ * @param object Resident object D_001B65E8.
+ * @param key First request word.
+ * @param size Second request word.
+ * @param mask Third request word.
+ * @param value Fourth request word.
+ * @param owner Owner passed through to the request.
+ * @param word Sixth request word.
+ * @param mode Seventh request word.
+ * @param flag Eighth request word.
+ * @return Request result; meaning not yet known.
+ */
+s32 func_00103E70(ResidentObject1B65E8* object, s32 key, u32 size, u32 mask, s32 value, void* owner, u32 word, s32 mode,
+                  s32 flag);
+
+/**
  * @brief Initialize the dispatch pointer and register the object.
  * @param object Object to register.
  * @return The registered object.

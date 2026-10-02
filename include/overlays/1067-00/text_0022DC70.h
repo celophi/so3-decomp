@@ -299,7 +299,7 @@ public:
     }
 
     u32 unk00;
-    void* unk04;
+    u32 unk04;
     u8 unk08_0 : 1;
     u8 unk08_1_7 : 7;
     u8 unk09[3];

@@ -57,6 +57,7 @@ __dt__14LibClass178EA0Fv = 0x004DAC70; // type:func
 // vtables are __vt__16FieldClass14FE30 + 0x38 and + 0x54 (config/relocations/1067-00_reloc_addrs.txt).
 __vt__16FieldClass14FE30 = 0x0014FE30; // size:0x74
 __dt__16FieldClass14FE30Fv = 0x001DD4A0; // type:func
+__ct__16FieldClass14FE30Fv = 0x001DF100; // type:func
 func_001DD400__16FieldClass1DD400Fv = 0x001DD400; // type:func
 func_001DD7B0__16FieldClass14FE30Fv = 0x001DD440; // type:func
 func_001DF3D0__16FieldClass150010Fv = 0x001DF310; // type:func
@@ -77,7 +78,7 @@ func_001DF3D0__16FieldClass14FE30Fv = 0x001DD490; // type:func
 func_001DF360__16FieldClass14FE30Fv = 0x001DE4F0; // type:func
 __vt__16FieldClass150120 = 0x00150120; // size:0x30
 __dt__16FieldClass150120Fv = 0x001E5030; // type:func
-func_001DDB30__16FieldClass150120Fv = 0x001E4EF0; // type:func
+func_001DDB30__16FieldClass150120FPv = 0x001E4EF0; // type:func
 
 // FieldClass14FFB0: a FieldClass150010 with FieldClass1DD400 (vtable D_150000)
 // at 0x18 and FieldClass150040 records. Its FieldClass1DD400 vtable part is
@@ -91,12 +92,12 @@ func_001DEA80__16FieldClass14FFB0Fv = 0x001DEA80; // type:func
 func_001DF3E0__16FieldClass14FFB0Fv = 0x001DF3E0; // type:func
 func_001DF640__16FieldClass14FFB0Fv = 0x001DF640; // type:func
 func_001DF780__16FieldClass14FFB0Fv = 0x001DF780; // type:func
-func_001DDB30__16FieldClass14FFB0Fv = 0x001DF800; // type:func
+func_001DDB30__16FieldClass14FFB0FPv = 0x001DF800; // type:func
 func_001E07A0__16FieldClass14FFB0Fv = 0x001E07A0; // type:func
 func_001E0A50__16FieldClass14FFB0Fi = 0x001E0A50; // type:func
 func_001E0F60__16FieldClass14FFB0Fv = 0x001E0F60; // type:func
 func_001DF350__16FieldClass150010Fv = 0x001DF350; // type:func
-func_001DDB30__16FieldClass1DD400Fv = 0x001DF370; // type:func
+func_001DDB30__16FieldClass1DD400FPv = 0x001DF370; // type:func
 
 // FieldClass150040 records and their base FieldClass1530C0.
 __vt__16FieldClass150040 = 0x00150040; // size:0xC
@@ -143,6 +144,8 @@ func_003F5AC0__14LibClass3F5B80Fv = 0x003F5AC0; // type:func
 func_00102AA0 = 0x00102AA0; // type:func
 func_00103640 = 0x00103640; // type:func
 func_00103B20 = 0x00103B20; // type:func
+func_00103E70 = 0x00103E70; // type:func
+func_0011F9D0 = 0x0011F9D0; // type:func
 func_003F4B50__14LibClass3F5B80Fi = 0x003F4B50; // type:func
 
 // Lib list helpers used by FieldClass14FE30::func_004D6730.
@@ -164,6 +167,7 @@ func_001E14A0__16FieldClass150090FifPCfPCfPCf = 0x001E14A0; // type:func
 func_001E14D0__16FieldClass150090FifPCfPCfPCf = 0x001E14D0; // type:func
 func_001E1500__16FieldClass150090FPCfPCfPCff = 0x001E1500; // type:func
 func_001E1470__16FieldClass14FEB0FPCfPCfPCff = 0x001DF870; // type:func
+func_001E0080__16FieldClass14FEB0FPCfPCfPCff = 0x001E0080; // type:func
 func_001E14A0__16FieldClass14FEB0FifPCfPCfPCf = 0x001DF8D0; // type:func
 func_001E14D0__16FieldClass14FEB0FifPCfPCfPCf = 0x001DF930; // type:func
 func_001E1500__16FieldClass14FEB0FPCfPCfPCff = 0x001DF990; // type:func

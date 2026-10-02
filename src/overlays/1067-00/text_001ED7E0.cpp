@@ -96,22 +96,10 @@ struct FieldLateFlag30
 };
 
 
-struct FieldLateRetryNode
-{
-    u8 unk00[0x20];
-    s32 unk20;
-};
-
-struct FieldLateRetryOwner
-{
-    u8 unk00[0x10];
-    void* unk10;
-};
-
 extern "C" void func_433AA0();
 extern "C" s32 func_433880(void*, s32);
 extern "C" s32 func_139700(s32, void*);
-extern "C" s32 func_0023AEB0(FieldLateRetryNode*, FieldLateRetryOwner*);
+extern "C" s32 func_0023AEB0(FieldClass1530D0* owner, FieldClass150070* loader);
 
 extern "C" void func_00222840(void*, void*);
 extern "C" void func_00238530(void*, void*);
@@ -931,13 +919,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F93
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F98E0);
 
-extern "C" s32 func_001F9A80(FieldLateRetryOwner* owner, void* buffer, s32 mode)
+extern "C" s32 func_001F9A80(FieldClass150070* owner, void* buffer, s32 mode)
 {
-    FieldLateRetryNode* node = (FieldLateRetryNode*)owner->unk10;
-    if (node)
-    {
-        node = (FieldLateRetryNode*)((char*)node - 0x14);
-    }
+    FieldClass1530D0* node = static_cast<FieldClass1530D0*>(static_cast<LibClass178DD0*>(owner->unk10));
     for (s32 i = 0; i < 8; i++)
     {
         s32 result;
@@ -954,7 +938,7 @@ extern "C" s32 func_001F9A80(FieldLateRetryOwner* owner, void* buffer, s32 mode)
         {
             return result;
         }
-        if (node->unk20 == 1 || !func_0023AEB0(node, owner))
+        if (node->LibClass178DD0::unk0c == 1 || !func_0023AEB0(node, owner))
         {
             break;
         }

@@ -67,7 +67,7 @@ public:
     virtual void func_001DD7B0();
 
     /** @brief FieldClass1DD400 slot 1 override. */
-    virtual void func_001DDB30();
+    virtual void func_001DDB30(void* arg);
 
     u8 unk18[0x2C];
     u8* unk44[10];

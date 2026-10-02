@@ -14,20 +14,6 @@
 #include "overlays/1067-00/text_002AE9E0.h"
 #include "vu0.h"
 
-/** @brief Object at field context offset 0x30; the list at offset 0x14 owns FieldClass155640. */
-class FieldContextObject30
-{
-public:
-    u8 unk00[0x14];
-    LibClass178DD0 unk14;
-
-    /** @brief Add node to the list at offset 0x14, which is also passed as the first argument. */
-    void insert(void* node)
-    {
-        void* self = &unk14;
-        unk14.func_004D73B0(self, node, (void*)-1);
-    }
-};
 
 /** @brief Vector passed to the VU0 length helper; copied as one quadword. */
 class FieldDelta
@@ -466,7 +452,7 @@ FieldFlaggedListObject* func_001DDF50(FieldFlaggedListObject* list, s32 key)
 
 void FieldClass14FE30::func_004D6730()
 {
-    if (D_001B6430->context->unkdd_7)
+    if (D_001B6430->context->unkdd.unk7)
     {
         return;
     }
@@ -594,12 +580,12 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed)
 void FieldClass14FE30::func_001DF360()
 {
     ResidentContext* ctx = D_001B6430->context;
-    if (ctx->unkdd_4 || func_002B0BC0((FieldFlagOwner2B0BC0*)ctx) || D_001B6430->context->unkde_1
-        || D_001B6430->context->unkdd_5 || !D_001B6430->context->unk08->unkdc)
+    if (ctx->unkdd.unk4 || func_002B0BC0((FieldFlagOwner2B0BC0*)ctx) || D_001B6430->context->unkde_1
+        || D_001B6430->context->unkdd.unk5 || !D_001B6430->context->unk08->unkdc)
     {
         return;
     }
-    if (D_001B6430->context->unkdd_6)
+    if (D_001B6430->context->unkdd.unk6)
     {
         return;
     }
@@ -655,7 +641,7 @@ void FieldClass14FE30::func_001DF360()
     {
         sound = new(0) FieldClass155640;
         D_001B6430->context->unk1c = sound;
-        static_cast<FieldContextObject30*>(D_001B6430->context->unk30)->insert(sound);
+        static_cast<FieldClass1530D0*>(D_001B6430->context->unk30)->insert(sound);
     }
     s32 current_id = sound->unk7c8;
     if (nearest->unk690 != current_id || !same_area(sound->unk7cc, nearest) || !same_kind(sound->unk7d4, nearest))

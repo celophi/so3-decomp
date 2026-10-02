@@ -15,7 +15,9 @@ typedef struct ResidentContext08
     u8 unke0[0x15];
     u8 unkf5_0_2 : 3;
     u8 unkf5_3 : 1;
-    u8 unkf5_4_7 : 4;
+    u8 unkf5_4 : 1;
+    u8 unkf5_5 : 1;
+    u8 unkf5_6_7 : 2;
 } ResidentContext08;
 
 /** Partial attached receiver reached through the field context at offset 0x44. */
@@ -41,6 +43,26 @@ typedef struct ResidentContextObject38
     u8 unk4c8_1_7 : 7;
 } ResidentContextObject38;
 
+/** Flag byte at field context offset 0xDD (a separate member: functions testing two of its bits keep its address). */
+typedef struct ResidentContextFlagsDD
+{
+    u8 unk0 : 1;
+    u8 unk1 : 1;
+    u8 unk2 : 1;
+    u8 unk3 : 1;
+    u8 unk4 : 1;
+    u8 unk5 : 1;
+    u8 unk6 : 1;
+    u8 unk7 : 1;
+} ResidentContextFlagsDD;
+
+/** Partial object at field context offset 0x58. */
+typedef struct ResidentContextObject58
+{
+    u8 unk00[0x1E0];
+    float unk1e0;
+} ResidentContextObject58;
+
 /** Partial field context reached through D_001B6430. */
 typedef struct ResidentContext
 {
@@ -51,7 +73,9 @@ typedef struct ResidentContext
     void* unk14;
     void* unk18;
     void* unk1c;
-    u8 unk20[0x10];
+    u8 unk20[4];
+    void* unk24;
+    u8 unk28[8];
     void* unk30;
     u8 unk34[4];
     ResidentContextObject38* unk38;
@@ -59,7 +83,7 @@ typedef struct ResidentContext
     void* unk40;
     ResidentContextObject52* unk44;
     u8 unk48[0x10];
-    void* unk58;
+    ResidentContextObject58* unk58;
     u8 unk5c[0x10];
     void* unk6c;
     u8 unk70[0x38];
@@ -72,14 +96,7 @@ typedef struct ResidentContext
     u32 unkd4;
     u8 unkd8[4];
     s8 unkdc;
-    u8 unkdd_0 : 1;
-    u8 unkdd_1 : 1;
-    u8 unkdd_2 : 1;
-    u8 unkdd_3 : 1;
-    u8 unkdd_4 : 1;
-    u8 unkdd_5 : 1;
-    u8 unkdd_6 : 1;
-    u8 unkdd_7 : 1;
+    ResidentContextFlagsDD unkdd;
     u8 unkde_0 : 1;
     u8 unkde_1 : 1;
     u8 unkde_2_7 : 6;

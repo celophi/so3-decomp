@@ -26,7 +26,10 @@ typedef struct FieldEntryArrayObject
 {
     u8 unk00[4];
     FieldArrayEntry10* unk04;
-    u8 unk08[0x10];
+    float unk08;
+    float unk0c;
+    float unk10;
+    float unk14;
     s32 unk18;
     float unk1c;
     s16 unk20;
@@ -234,6 +237,24 @@ float func_001DFDE0(const FieldEntryArrayObject* object, float value);
  * @return The span, or 0.0f when fewer than two entries exist.
  */
 float func_001DFED0(const FieldEntryArrayObject* object);
+
+/**
+ * @brief Report the base gate result only while field context flags allow it.
+ * @param object Receiver passed on to func_00204420.
+ * @return false while context flag bit 5 at offset 0xF5 of the object at offset 0x08 is clear,
+ *         or context bit 7 at 0xDD or bit 1 at 0xDE is set; otherwise func_00204420(object).
+ */
+bool func_001DED80(const FieldFloatGateState7C* object);
+
+/**
+ * @brief Wrap a key into the entry span, recording the whole number of spans at offset 0x18.
+ * @param object Receiver owning the entry array, the span at offset 0x1C and the count at 0x20.
+ * @param key Key to wrap.
+ * @return key minus the recorded number of spans; mirrored back from the last entry on odd counts
+ *         when the low nibble at 0x2A is 3 and the count is negative, or the high nibble is 3 and
+ *         the count is positive. key unchanged when the count is zero.
+ */
+float func_001E1230(FieldEntryArrayObject* object, float key);
 
 /**
  * @brief Test whether an entry has exactly the given sort value.
@@ -586,7 +607,10 @@ public:
     void func_001DFD90();
 
     FieldArrayEntry10* unk04;
-    u8 unk08[0x10];
+    float unk08;
+    float unk0c;
+    float unk10;
+    float unk14;
     s32 unk18;
     float unk1c;
     s16 unk20;
