@@ -98,24 +98,6 @@ struct FieldLateFlag30
     unsigned char unk30_1 : 1;
 };
 
-
-struct FieldLateRetryNode
-{
-    u8 unk00[0x20];
-    s32 unk20;
-};
-
-struct FieldLateRetryOwner
-{
-    u8 unk00[0x10];
-    void* unk10;
-};
-
-extern "C" void func_433AA0();
-extern "C" s32 func_433880(void*, s32);
-extern "C" s32 func_139700(s32, void*);
-extern "C" s32 func_0023AEB0(FieldLateRetryNode*, FieldLateRetryOwner*);
-
 extern "C" void func_00222840(void*, void*);
 extern "C" void func_00238530(void*, void*);
 
