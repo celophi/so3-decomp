@@ -36,7 +36,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E48
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001E4E50);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001DDB30__16FieldClass150120Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E1590", func_001DDB30__16FieldClass150120FPv);
 
 void func_001E5020(FieldWordByte30* object, u32 word, u8 value)
 {

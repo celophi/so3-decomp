@@ -3,12 +3,52 @@
 #include "sdk/boot/syscalls_00121940.h"
 #include "overlays/1067-00/text_001DED80.h"
 #include "overlays/1067-00/text_0022DC70.h"
+#include "overlays/1067-00/text_00202240.h"
+#include "overlays/1067-00/text_002DBC50.h"
 
-// Reads an unresolved $gp-relative global.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DED80);
+/** Partial owner of a keyframe track at offset 0x90 (the class with vtable D_15B890). */
+struct FieldTrackOwner15B890
+{
+    u8 unk00[0x90];
+    FieldClass150090* unk90;
+};
 
-// Virtual call; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DEDF0);
+/**
+ * @brief Run func_002DDA70 on the owner, then destroy and clear its keyframe track at offset 0x90.
+ * @param object Owner; virtual slot 15 of D_15B890.
+ */
+extern "C" void func_001DF040(FieldTrackOwner15B890* object);
+
+extern "C" void func_433AA0();
+extern "C" s32 func_433880(void*, s32);
+extern "C" s32 func_139700(s32, void*);
+extern "C" s32 func_0023AEB0(FieldClass1530D0* owner, FieldClass150070* loader);
+
+/**
+ * @brief Read 0x80 bytes into buffer, retrying up to eight times while the node allows it.
+ * @param owner Record loader whose word at offset 0x10 points to its FieldClass1530D0 list.
+ * @param buffer Destination passed to the read.
+ * @param mode Nonzero to read through func_433AA0/func_433880, zero for func_139700.
+ * @return The first nonzero read result, or 0 once the node's word at 0x20 is 1, func_0023AEB0
+ *         fails or eight reads fail. Same body as func_001F9A80 in text_001ED7E0.
+ */
+extern "C" s32 func_001E1100(FieldClass150070* owner, void* buffer, s32 mode);
+
+bool func_001DED80(const FieldFloatGateState7C* object)
+{
+    ResidentContext* context = D_001B6430->context;
+    if (!context->unk08->unkf5_5 || context->unkdd.unk7 || context->unkde_1)
+    {
+        return false;
+    }
+    return func_00204420(object);
+}
+
+void func_001DEDF0(void* list, void* object)
+{
+    func_004D65C0(object);
+    static_cast<FieldClass150070*>(object)->func_001DD7B0();
+}
 
 FieldFlaggedListObject* func_001DEE30(FieldFlaggedListObject* list, s32 key, u32 mask)
 {
@@ -64,13 +104,22 @@ void func_001DEF00(FieldFlaggedListObject* list)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DEF70);
 
-// Virtual call; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF040);
+void func_001DF040(FieldTrackOwner15B890* object)
+{
+    func_002DDA70(object);
+    if (object->unk90)
+    {
+        object->unk90->func_001DF230();
+        object->unk90 = 0;
+    }
+}
 
 // Deleting destructor; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF090);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF100);
+// 99.94%: the FieldClass1DD400 base sits at 0x90, but FieldClass150070 ends at 0x8C
+// and no vtable is stored for anything in between (working/matching/ctor-layout).
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", __ct__16FieldClass14FE30Fv);
 
 
 void func_001DF220(void* object)
@@ -129,7 +178,7 @@ void FieldClass150070::func_001DF360()
 {
 }
 
-void FieldClass1DD400::func_001DDB30()
+void FieldClass1DD400::func_001DDB30(void* arg)
 {
 }
 
@@ -145,7 +194,21 @@ s32 FieldClass150070::func_001DF3D0()
     return 3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF3E0__16FieldClass14FFB0Fv);
+void FieldClass14FFB0::func_001DF3E0()
+{
+    FieldClass150040* record = &unk1c[unk2e];
+    if (record->rounded_unk04())
+    {
+        FieldClass1DD400* owner = this;
+        u32 first = record->unk00;
+        func_00103E70(D_001B65E8, record->unk0c, record->rounded_unk04(), 0x80000000, unk28, owner, first, 0, 1);
+        u32 word = record->unk00;
+        u32 size = record->rounded_unk04();
+        record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+        unk15 = 1;
+        unk30_1 = 0;
+    }
+}
 
 FieldClass14FFB0::~FieldClass14FFB0()
 {
@@ -157,7 +220,38 @@ FieldClass14FFB0::~FieldClass14FFB0()
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF640__16FieldClass14FFB0Fv);
+s32 FieldClass14FFB0::func_001DF640()
+{
+    switch (unk15)
+    {
+    case 1:
+    {
+        FieldClass150040* record = unk1c;
+        for (s32 i = 0; i < unk2d; i++, record++)
+        {
+            const FieldClass1530C0* entry = record;
+            if (!entry->unk08_0)
+            {
+                u32 word = entry->unk00;
+                u32 size = entry->rounded_unk04();
+                func_00103B20(D_001B65E8, entry->unk0c, size, 0x80000000, word, 0);
+            }
+        }
+        unk15 = 7;
+        break;
+    }
+    case 9:
+    case 10:
+        unk15 = 7;
+        break;
+    case 7:
+        break;
+    default:
+        func_001DD7B0();
+        return 1;
+    }
+    return 0;
+}
 
 void FieldClass14FFB0::func_001DF780()
 {
@@ -169,7 +263,7 @@ void FieldClass14FFB0::func_001DF780()
     }
 }
 
-void FieldClass14FFB0::func_001DDB30()
+void FieldClass14FFB0::func_001DDB30(void* arg)
 {
     if (!unk30_1)
     {
@@ -427,8 +521,14 @@ s32 func_001DFFC0(const FieldEntryArrayObject* object, s32 index, float* key, fl
     return 1;
 }
 
-// Virtual call; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E0080);
+void FieldClass14FEB0::func_001E0080(const float* x, const float* y, const float* z, float key)
+{
+    func_001DFC10(6);
+    unk0c = *x;
+    unk10 = *y;
+    unk14 = *z;
+    unk08 = key;
+}
 
 s32 func_001E0100(FieldEntryArrayObject* object, s32 index, float key, const float* x, const float* y, const float* z)
 {
@@ -505,13 +605,180 @@ s32 func_001E02C0(FieldEntryArrayObject* object, const float* x, const float* y,
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E0380);
 
+// 93.70%: control flow and loads match; only callee-saved register colouring
+// differs (working/matching/func_001E07A0/1067-00/notes.md).
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E07A0__16FieldClass14FFB0Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E0A50__16FieldClass14FFB0Fi);
+void FieldClass14FFB0::func_001E0A50(s32 flag)
+{
+    switch (unk15)
+    {
+    case 0:
+        if (!flag && unk1c)
+        {
+            func_00121FE0(0);
+            FieldClass150040* record = &unk1c[unk2e];
+            s32 size = func_001E1100(this, (void*)((record->unk00 + 0x7FF) & ~0x7FF), 1);
+            if (size)
+            {
+                record->unk04 = size;
+                record->unk08_0 = 0;
+                func_001DF3E0();
+            }
+        }
+        break;
+    case 1:
+        if (flag == 1)
+        {
+            for (s32 i = 0; i < unk2d; i++)
+            {
+                FieldClass150040* record = &unk1c[i];
+                u32 word = record->unk00;
+                u32 size = record->rounded_unk04();
+                func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+            }
+            unk15 = 9;
+        }
+        else
+        {
+            FieldClass150040* record = &unk1c[unk2e];
+            u32 word = record->unk00;
+            u32 size = record->rounded_unk04();
+            if (!func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0) && !field_records_blocked())
+            {
+                func_001DDB30(0);
+            }
+        }
+        break;
+    case 9:
+        if (!flag)
+        {
+            func_001DF3E0();
+        }
+        break;
+    case 10:
+    {
+        bool done = true;
+        FieldClass150040* records = unk1c;
+        for (s32 i = 0; i < unk2d; i++)
+        {
+            FieldClass150040* record = &records[i];
+            u32 word = record->unk00;
+            u32 size = record->rounded_unk04();
+            record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+            if (record->unk10)
+            {
+                done = false;
+            }
+        }
+        if (field_records_blocked())
+        {
+            done = false;
+        }
+        if (done)
+        {
+            for (s32 i = 0; i < unk24; i++, records++)
+            {
+                records->func_0023AD00();
+            }
+            unk2e = 0;
+            unk15 = 0;
+        }
+        break;
+    }
+    case 7:
+    {
+        bool done = true;
+        FieldClass150040* record = unk1c;
+        for (s32 i = 0; i < unk2d; i++, record++)
+        {
+            u32 word = record->unk00;
+            u32 size = record->rounded_unk04();
+            record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+            if (record->unk10)
+            {
+                done = false;
+            }
+        }
+        if (field_records_blocked())
+        {
+            done = false;
+        }
+        if (done)
+        {
+            func_001DD7B0();
+        }
+        break;
+    }
+    }
+    func_001E0F60();
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E0F60__16FieldClass14FFB0Fv);
+void FieldClass14FFB0::func_001E0F60()
+{
+    if (!unk30_1)
+    {
+        return;
+    }
+    if (unk15 == 1)
+    {
+        if (field_records_blocked())
+        {
+            return;
+        }
+        FieldClass150040* record = &unk1c[unk2e];
+        u32 word = record->unk00;
+        u32 size = record->rounded_unk04();
+        if (func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0))
+        {
+            return;
+        }
+        while (unk2e < unk2d)
+        {
+            unk2e++;
+            if (!unk1c[unk2e].unk16_0)
+            {
+                break;
+            }
+        }
+        if (unk2e >= unk2d)
+        {
+            unk15 = 5;
+        }
+        else
+        {
+            unk15 = 0;
+        }
+    }
+    unk30_1 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1100);
+s32 func_001E1100(FieldClass150070* owner, void* buffer, s32 mode)
+{
+    FieldClass1530D0* node = static_cast<FieldClass1530D0*>(static_cast<LibClass178DD0*>(owner->unk10));
+    for (s32 i = 0; i < 8; i++)
+    {
+        s32 result;
+        if (mode)
+        {
+            func_433AA0();
+            result = func_433880(buffer, 0x80);
+        }
+        else
+        {
+            result = func_139700(0x80, buffer);
+        }
+        if (result)
+        {
+            return result;
+        }
+        if (node->LibClass178DD0::unk0c == 1 || !func_0023AEB0(node, owner))
+        {
+            break;
+        }
+    }
+    return 0;
+}
 
 void func_001E11E0(FieldFloatSpan1C* object, const float* a, const float* b, const float* c, const float* d, float start, float end)
 {
@@ -528,8 +795,31 @@ void func_001E11E0(FieldFloatSpan1C* object, const float* a, const float* b, con
     }
 }
 
-// Mirror-branch scheduling not matched yet.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1230);
+float func_001E1230(FieldEntryArrayObject* object, float key)
+{
+    float first = object->unk04[0].unk00;
+    float cycles = (key - first) / object->unk1c;
+    if (key < first)
+    {
+        cycles -= 1.0f;
+    }
+    object->unk18 = cycles;
+    if (object->unk18 != 0)
+    {
+        float result = key - object->unk18 * object->unk1c;
+        if ((object->unk2a_0_3 == 3 && object->unk18 < 0) || (object->unk2a_4_7 == 3 && object->unk18 > 0))
+        {
+            s32 index = object->unk20 - 1;
+            float last = object->unk04[index].unk00;
+            if (object->unk18 & 1)
+            {
+                result = first + (last - result);
+            }
+        }
+        return result;
+    }
+    return key;
+}
 
 // Index loop strength reduction not matched yet.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1310);

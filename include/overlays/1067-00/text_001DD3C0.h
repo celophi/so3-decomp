@@ -195,8 +195,34 @@ public:
     /** @brief Default handler that performs no work. */
     virtual void func_001DD400();
 
-    /** @brief Default handler that performs no work. */
-    virtual void func_001DDB30();
+    /**
+     * @brief Default handler that performs no work.
+     * @param arg Pointer argument; the FieldClass14FFB0 state machine passes null and
+     *        FieldClass150120's override reads its word at offset 0x1C.
+     */
+    virtual void func_001DDB30(void* arg);
+};
+
+/**
+ * Field context object at offset 0x30, with vtable D_1530D0 in boot data; its
+ * methods (destructor 0x23B0C0, func_0023AEB0) are in text_0022DC70. A
+ * FieldClass150070 list node that owns a Lib list (the LibClass178DD0 base at
+ * offset 0x14) of record loaders, FieldClass150010 objects whose word at offset
+ * 0x10 points back to that list. The list's first 12 bytes (unk00) are its
+ * sentinel node: the word at +8 is the first loader.
+ */
+class FieldClass1530D0 : public FieldClass150070, public LibClass178DD0
+{
+public:
+    virtual ~FieldClass1530D0();
+
+    /** @brief Append node to the record-loader list (Lib virtual slot 9, position -1). */
+    void insert(void* node)
+    {
+        LibClass178DD0& list = *this;
+        void* self = &list;
+        list.func_004D73B0(self, node, (void*)-1);
+    }
 };
 
 /** Partial 16-byte, 8-byte-aligned FieldClass1DD400 used as the base at offset 0x90 of FieldClass14FE30 (vtable part D_14FE84). */
@@ -284,10 +310,10 @@ public:
     virtual void func_001E0A50(s32 flag) = 0;
 
     /** @brief Pure virtual handler slot 6. */
-    virtual void func_001E07A0() = 0;
+    virtual s32 func_001E07A0() = 0;
 
     /** @brief Pure virtual handler slot 7. */
-    virtual void func_001DF640() = 0;
+    virtual s32 func_001DF640() = 0;
 
     /**
      * @brief Read the byte at offset 0x14.
@@ -342,13 +368,36 @@ public:
      */
     virtual void func_001E0A50(s32 flag);
 
-    /** @brief Virtual handler slot 6. */
-    virtual void func_001E07A0();
+    /**
+     * @brief Finish the record requests according to the state at offset 0x15.
+     *
+     * State 1 releases every record not flagged by bit 0 at its offset 0x08 and moves to
+     * state 10. State 10 only reports. State 9 waits while field_records_blocked() reports
+     * a block; otherwise, like any other state, it notes whether a record still has a
+     * nonzero rounded size, runs virtual slot 0 of the first count (offset 0x24) records,
+     * and resets the state and the record index at offset 0x2E.
+     * @return 1 if that scan found such a record, otherwise 2 if a record still has a
+     *         nonzero rounded size, otherwise 0.
+     */
+    virtual s32 func_001E07A0();
 
-    /** @brief Virtual handler slot 7. */
-    virtual void func_001DF640();
+    /**
+     * @brief Advance the record release state at offset 0x15.
+     *
+     * State 7 is finished; states 9 and 10 become 7. In state 1 every record not flagged by
+     * bit 0 at its offset 0x08 is released through func_00103B20, then the state becomes 7.
+     * Any other state releases the object through virtual slot 2 (func_001DD7B0).
+     * @return 1 after releasing the object, otherwise 0.
+     */
+    virtual s32 func_001DF640();
 
-    /** @brief First virtual handler introduced by this class. */
+    /**
+     * @brief Start the request for the current record (index at offset 0x2E).
+     *
+     * Does nothing when the record's rounded size is zero. Otherwise passes it to func_00103E70
+     * and func_00103640, keeps the second result at the record's offset 0x10, sets state 1 at
+     * offset 0x15 and clears bit 1 at offset 0x30.
+     */
     virtual void func_001DF3E0();
 
     /** @brief Second virtual handler introduced by this class. */
@@ -360,8 +409,8 @@ public:
     /** @brief Virtual handler called by the destructor before the record array is freed. */
     virtual void func_001DF780();
 
-    /** @brief FieldClass1DD400 slot 1 override. */
-    virtual void func_001DDB30();
+    /** @brief FieldClass1DD400 slot 1 override; ignores arg. */
+    virtual void func_001DDB30(void* arg);
 
     /**
      * @brief Replace the record array with count newly constructed records.
