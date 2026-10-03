@@ -1,0 +1,40 @@
+rom:0xB38A0 reloc:MIPS_GPREL16 symbol:D_001B66B4
+rom:0xB236C reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB23C0 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB247C reloc:MIPS_GPREL16 symbol:D_001B64B0
+rom:0xB2490 reloc:MIPS_GPREL16 symbol:D_001B64B0
+rom:0xB3AB4 reloc:MIPS_GPREL16 symbol:D_001B66B4
+rom:0xB36B4 reloc:MIPS_GPREL16 symbol:D_001B64B0
+rom:0xB3B2C reloc:MIPS_GPREL16 symbol:D_001B64CC
+rom:0xB3B34 reloc:MIPS_GPREL16 symbol:D_001B66BC
+rom:0xB3B40 reloc:MIPS_GPREL16 symbol:D_001B66BC
+rom:0xB3B50 reloc:MIPS_GPREL16 symbol:D_001B66BC
+rom:0xB5474 reloc:MIPS_GPREL16 symbol:D_001B66B4
+rom:0xB5564 reloc:MIPS_GPREL16 symbol:D_001B66B4
+rom:0xB53A4 reloc:MIPS_GPREL16 symbol:D_001B6554
+rom:0xB53AC reloc:MIPS_GPREL16 symbol:D_001B6560
+rom:0xB30F0 reloc:MIPS_HI16 symbol:__vt__16FieldClass172110 addend:0x1C
+rom:0xB30F8 reloc:MIPS_LO16 symbol:__vt__16FieldClass172110 addend:0x1C
+rom:0xB3714 reloc:MIPS_HI16 symbol:__vt__16FieldClass172110 addend:0x1C
+rom:0xB3730 reloc:MIPS_LO16 symbol:__vt__16FieldClass172110 addend:0x1C
+rom:0xB25D0 reloc:MIPS_HI16 symbol:__vt__16FieldClass16C970 addend:0x2C
+rom:0xB25D8 reloc:MIPS_LO16 symbol:__vt__16FieldClass16C970 addend:0x2C
+rom:0xB2630 reloc:MIPS_GPREL16 symbol:D_001B64B0
+rom:0xB2EB0 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB2C10 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB2C50 reloc:MIPS_GPREL16 symbol:D_001B6610
+rom:0xB2C6C reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB2818 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB28A8 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB2958 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB2998 reloc:MIPS_GPREL16 symbol:D_001B6610
+rom:0xB29B4 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB2A78 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB2AB8 reloc:MIPS_GPREL16 symbol:D_001B6610
+rom:0xB2AD4 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0x1B994 reloc:MIPS_HI16 symbol:__vt__16FieldClass172140 addend:0x1C
+rom:0x1B9AC reloc:MIPS_LO16 symbol:__vt__16FieldClass172140 addend:0x1C
+rom:0x1BB10 reloc:MIPS_HI16 symbol:__vt__16FieldClass172140 addend:0x1C
+rom:0x1BB18 reloc:MIPS_LO16 symbol:__vt__16FieldClass172140 addend:0x1C
+rom:0x1CEE8 reloc:MIPS_HI16 symbol:__vt__16FieldClass172140 addend:0x1C
+rom:0x1CF00 reloc:MIPS_LO16 symbol:__vt__16FieldClass172140 addend:0x1C

@@ -1,7 +1,60 @@
 #ifndef SO3_OVERLAYS_1070_00_TEXT_00202FB0_H
 #define SO3_OVERLAYS_1070_00_TEXT_00202FB0_H
 
-#include "overlays/1070-00/text_00284BF0.h"
+#include "overlays/1070-00/text_001E2B40.h"
+
+#ifdef __cplusplus
+struct FieldEntry1C;
+
+/** Partial request base with three abstract handlers and a type byte. */
+class FieldClass16C940 : public FieldClass16AB90
+{
+public:
+    /** Destroy the request base through its primary interface. */
+    virtual ~FieldClass16C940()
+    {
+    }
+    virtual s32 func_slot0c();
+    virtual void func_slot10();
+    virtual void func_slot1c(s32 flag) = 0;
+    virtual s32 func_slot20() = 0;
+    virtual s32 func_slot24() = 0;
+    virtual u8 func_slot28();
+    u8 unk14;
+    u8 unk15;
+};
+/** Request receiver with a secondary callback interface at offset 0x18. */
+class FieldClass16C970 : public FieldClass16C940, public FieldClass16AB60
+{
+public:
+    /** Release the entry buffer and notification token, then destroy the request. */
+    virtual ~FieldClass16C970();
+    /** Advance record requests according to the current state and supplied flag. */
+    virtual void func_slot1c(s32 flag);
+    /** Finish or reset record requests and report whether their addresses remain set. */
+    virtual s32 func_slot20();
+    /** Release the records in state 1, or detach and delete the request. */
+    virtual s32 func_slot24();
+    virtual void func_slot3c();
+    virtual void func_slot40();
+    virtual void func_slot44();
+    virtual void func_slot48();
+    /** Mark the request callback as complete; the callback value is unused. */
+    virtual void func_slot0c(void* arg);
+    FieldEntry1C* unk1c;
+    s32 unk20;
+    s32 unk24;
+    s32 unk28;
+    s32 unk2c;
+    u8 unk30;
+    u8 unk31;
+    u8 unk32;
+    u8 unk33;
+    u8 unk34_0 : 1;
+    u8 unk34_1_7 : 7;
+};
+#endif
+
 
 /** Partial element in the context-0x58 circular list. */
 typedef struct FieldFlagListElement
@@ -327,6 +380,15 @@ static inline void advance_record_queue(Queue* object)
 }
 
 extern "C" {
+
+/**
+ * @brief Retry a value request up to eight times while the owner allows it.
+ * @param owner Request owner whose attached node controls further retries.
+ * @param value Opaque word passed to the resident request helper.
+ * @param mode Nonzero selects the first request helper.
+ * @return First nonzero helper result, or zero when retries stop.
+ */
+s32 func_002069A0(FieldClass16AB90* owner, u32 value, s32 mode);
 #endif
 
 /**
@@ -334,12 +396,6 @@ extern "C" {
  * @param object Receiver whose flag is cleared.
  */
 void func_00203920(FieldWordFlags204* object);
-
-/**
- * @brief Set bit zero of the receiver's flag byte at offset 0x34.
- * @param object Receiver whose flag is set.
- */
-void func_002068F0(FieldByteFlags34* object);
 
 /**
  * @brief Set bit one of the pointed-to receiver's flag byte at offset 0x2C.

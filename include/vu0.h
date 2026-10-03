@@ -76,4 +76,20 @@ static inline void vu0_load_matrix(const void* matrix)
         : "memory");
 }
 
+/**
+ * @brief Load a four-component vector into vf1.
+ * @param vector Pointer to a 16-byte aligned vector.
+ */
+static inline void vu0_load_vf1(const void* vector)
+{
+    asm __volatile__("lqc2 $vf1, 0(%0)" : : "r"(vector) : "memory");
+}
+
+/** @brief Extend the initialized vf26/vf27 XYZ bounds with vf1. */
+static inline void vu0_extend_bounds()
+{
+    asm __volatile__("vmini.xyz $vf26, $vf26, $vf1\n"
+                     "vmax.xyz $vf27, $vf27, $vf1");
+}
+
 #endif

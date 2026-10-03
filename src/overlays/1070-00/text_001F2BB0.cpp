@@ -451,11 +451,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FE3
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FE430);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FE510);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", __dt__16FieldClass16C478Fv);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FE590);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FE5F0);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", __dt__16FieldClass172140Fv);
 
 void func_001FE6D0(FieldFloatTransitions70* object, float target, float duration)
 {

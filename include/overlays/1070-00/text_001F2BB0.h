@@ -1,7 +1,68 @@
 #ifndef SO3_OVERLAYS_1070_00_TEXT_001F2BB0_H
 #define SO3_OVERLAYS_1070_00_TEXT_001F2BB0_H
 
-#include "types.h"
+#include "overlays/1070-00/text_001E2B40.h"
+#include "overlays/1070-00/text_00213F40.h"
+
+#ifdef __cplusplus
+extern "C" void func_100CB0(void* storage);
+
+/** Release the allocation prefix preceding curve-entry storage. */
+static inline void release_curve_buffer(void* buffer)
+{
+    if (buffer)
+    {
+        func_100CB0((u8*)buffer - 0x10);
+    }
+}
+/** Interpolation table with its secondary dispatch pointer after the table fields. */
+class FieldClass16C478
+{
+public:
+    FieldFloatCurve curve;
+    /** Release the curve entries and clear their pointer. */
+    virtual ~FieldClass16C478()
+    {
+        if (curve.entries)
+        {
+            release_curve_buffer(curve.entries);
+            curve.entries = 0;
+        }
+    }
+};
+/** Float transition receiver with the interpolation base at offset 0x14. */
+class FieldClass172140 : public FieldClass16AB90, public FieldClass16C478
+{
+public:
+    /** Destroy both observed base interfaces. */
+    virtual ~FieldClass172140()
+    {
+    }
+    /** Delete the receiver through its virtual destructor. */
+    virtual void func_slot10();
+    /** Return the receiver type value 4. */
+    virtual s32 func_slot0c();
+    /** Advance the active transition through its interpolation curve. */
+    virtual void func_slot14();
+    /**
+     * @brief Initialize the float transition and its control flags.
+     * @param first Initial value.
+     * @param second Final value.
+     * @param third Progress limit.
+     */
+    void func_00296310(float first, float second, float third);
+    float unk20;
+    float unk24;
+    float unk28;
+    float unk2c;
+    float unk30;
+    float unk34;
+    u8 unk38_0 : 1;
+    u8 unk38_1 : 1;
+    u8 unk38_2_7 : 6;
+};
+#endif
+
 /** Common node prefix used by the indexed lists; full extent is unknown. */
 typedef struct FieldIndexedListNode
 {

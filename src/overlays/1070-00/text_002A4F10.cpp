@@ -509,7 +509,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A8E
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A8E90);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A8F10);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", __dt__16FieldClass173810Fv);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A8FF0);
 
@@ -519,7 +519,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A95
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A9630);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A96C0);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", __dt__16FieldClass1738E0Fv);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A97A0);
 
@@ -529,7 +529,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A9D
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A9DF0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A9E90);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", __dt__16FieldClass1739B0Fv);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A9F70);
 
@@ -539,7 +539,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002AA5
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002AA5E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002AA690);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", __dt__16FieldClass173A80Fv);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002AA770);
 
