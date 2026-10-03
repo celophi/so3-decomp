@@ -850,7 +850,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -868,7 +868,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -911,7 +911,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -929,7 +929,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -967,7 +967,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -983,7 +983,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -1022,7 +1022,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1039,7 +1039,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -1088,7 +1088,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1104,7 +1104,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -1146,7 +1146,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1162,7 +1162,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -1199,7 +1199,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1213,7 +1213,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -1251,7 +1251,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1266,7 +1266,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -1318,7 +1318,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1335,7 +1335,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -1377,7 +1377,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1394,7 +1394,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -1431,7 +1431,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1446,7 +1446,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -1484,7 +1484,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1500,7 +1500,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -1548,7 +1548,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1563,7 +1563,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -1604,7 +1604,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1619,7 +1619,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -1655,7 +1655,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1668,7 +1668,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -1705,7 +1705,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1719,7 +1719,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -1777,7 +1777,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1792,7 +1792,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -1840,7 +1840,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1855,7 +1855,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -1898,7 +1898,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1911,7 +1911,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -1955,7 +1955,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -1969,7 +1969,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -2023,7 +2023,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2036,7 +2036,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -2083,7 +2083,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2096,7 +2096,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -2138,7 +2138,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2149,7 +2149,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -2192,7 +2192,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2204,7 +2204,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -2428,7 +2428,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2446,7 +2446,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -2489,7 +2489,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2507,7 +2507,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -2545,7 +2545,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2561,7 +2561,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -2600,7 +2600,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2617,7 +2617,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -2666,7 +2666,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2682,7 +2682,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -2724,7 +2724,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2740,7 +2740,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -2777,7 +2777,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2791,7 +2791,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -2829,7 +2829,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2844,7 +2844,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -2896,7 +2896,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2913,7 +2913,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -2955,7 +2955,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -2972,7 +2972,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -3009,7 +3009,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3024,7 +3024,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -3062,7 +3062,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3078,7 +3078,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -3126,7 +3126,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3141,7 +3141,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -3182,7 +3182,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3197,7 +3197,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -3233,7 +3233,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3246,7 +3246,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -3283,7 +3283,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3297,7 +3297,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -3355,7 +3355,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3370,7 +3370,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -3418,7 +3418,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3433,7 +3433,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -3476,7 +3476,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3489,7 +3489,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -3533,7 +3533,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3547,7 +3547,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -3601,7 +3601,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3614,7 +3614,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -3661,7 +3661,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3674,7 +3674,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -3716,7 +3716,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3727,7 +3727,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -3770,7 +3770,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -3782,7 +3782,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -4033,7 +4033,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4051,7 +4051,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -4094,7 +4094,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4112,7 +4112,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -4150,7 +4150,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4166,7 +4166,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -4205,7 +4205,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4222,7 +4222,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -4271,7 +4271,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4287,7 +4287,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -4329,7 +4329,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4345,7 +4345,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -4382,7 +4382,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4396,7 +4396,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -4434,7 +4434,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4449,7 +4449,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -4501,7 +4501,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4518,7 +4518,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -4560,7 +4560,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4577,7 +4577,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -4614,7 +4614,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4629,7 +4629,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -4667,7 +4667,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4683,7 +4683,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -4731,7 +4731,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4746,7 +4746,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -4787,7 +4787,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4802,7 +4802,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -4838,7 +4838,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4851,7 +4851,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -4888,7 +4888,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4902,7 +4902,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -4960,7 +4960,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -4975,7 +4975,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -5023,7 +5023,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5038,7 +5038,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -5081,7 +5081,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5094,7 +5094,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -5138,7 +5138,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5152,7 +5152,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -5206,7 +5206,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5219,7 +5219,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -5266,7 +5266,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5279,7 +5279,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -5321,7 +5321,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5332,7 +5332,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -5375,7 +5375,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5387,7 +5387,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -5638,7 +5638,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5656,7 +5656,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -5699,7 +5699,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5717,7 +5717,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -5755,7 +5755,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5771,7 +5771,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -5810,7 +5810,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5827,7 +5827,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -5876,7 +5876,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5892,7 +5892,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -5934,7 +5934,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -5950,7 +5950,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -5987,7 +5987,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6001,7 +6001,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -6039,7 +6039,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6054,7 +6054,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -6106,7 +6106,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6123,7 +6123,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -6165,7 +6165,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6182,7 +6182,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -6219,7 +6219,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6234,7 +6234,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -6272,7 +6272,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6288,7 +6288,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -6336,7 +6336,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6351,7 +6351,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -6392,7 +6392,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6407,7 +6407,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -6443,7 +6443,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6456,7 +6456,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -6493,7 +6493,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6507,7 +6507,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -6565,7 +6565,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6580,7 +6580,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -6628,7 +6628,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6643,7 +6643,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -6686,7 +6686,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6699,7 +6699,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -6743,7 +6743,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6757,7 +6757,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             out->control.word[0] = stamp_value;
                             *(u32*)current_control = stamp_value;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             output->control.word[0] = stamp_value;
                             processed += samples;
                             output += samples;
@@ -6811,7 +6811,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 value = ee_max(value, 0.0f);
                                 out->attributes.value[3] = value;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6824,7 +6824,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -6871,7 +6871,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6884,7 +6884,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -6926,7 +6926,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6937,7 +6937,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
@@ -6980,7 +6980,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 *(unsigned __int128*)current_control = *(const unsigned __int128*)previous->control.data();
                                 out->control.raw = *(const unsigned __int128*)current_control;
                                 ee_prefetch(previous - 1);
-                                vu0_extend_bounds();
+                                vu0_extend_bounds_vf1();
                             }
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
@@ -6992,7 +6992,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             float* current_control = current->control.data();
                             out->control.raw = *(const unsigned __int128*)current_control;
                             ee_prefetch(source - 1);
-                            vu0_extend_bounds();
+                            vu0_extend_bounds_vf1();
                             processed += samples;
                             output += samples;
                         }
