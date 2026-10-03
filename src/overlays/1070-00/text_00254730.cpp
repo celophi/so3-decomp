@@ -1,6 +1,42 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_00254730.h"
 
+/** Minimal observed prefix whose flag byte is at offset 0x04. */
+typedef struct FieldSetFlag04
+{
+    u8 unk00[4];
+    u8 unk04_0 : 1;
+    u8 unk04_1_7 : 7;
+} FieldSetFlag04;
+
+/** Minimal observed prefix whose flag byte is at offset 0x20. */
+typedef struct FieldSetFlag20
+{
+    u8 unk00[0x20];
+    u8 unk20_0 : 1;
+    u8 unk20_1_7 : 7;
+} FieldSetFlag20;
+
+/** Partial receiver with a flag byte and six separately observed word slots. */
+typedef struct FieldWordReset20
+{
+    u8 unk00[0x20];
+    u8 unk20_0 : 1;
+    u8 unk20_1_7 : 7;
+    u8 unk21[0x11B];
+    u32 unk13c;
+    u8 unk140[0xC];
+    u32 unk14c;
+    u8 unk150[0xC];
+    u32 unk15c;
+    u8 unk160[0xC];
+    u32 unk16c;
+    u8 unk170[0xC];
+    u32 unk17c;
+    u8 unk180[0xC];
+    u32 unk18c;
+} FieldWordReset20;
+
 /** Partial list element with a signed key and signed state byte. */
 typedef struct FieldKeyedStateElementE4
 {
@@ -105,7 +141,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_002571
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_002571B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00258310);
+void func_00258310(void* object)
+{
+    FieldSetFlag04* state = (FieldSetFlag04*)object;
+
+    state->unk04_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00258330);
 
@@ -131,13 +172,29 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00258E
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00258EA0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_002590D0);
+void func_002590D0(void* object)
+{
+    FieldSetFlag20* state = (FieldSetFlag20*)object;
+
+    state->unk20_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_002590F0);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259180);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259220);
+void func_00259220(void* object)
+{
+    FieldWordReset20* state = (FieldWordReset20*)object;
+
+    state->unk20_0 = 0;
+    state->unk13c = 0;
+    state->unk14c = 0;
+    state->unk15c = 0;
+    state->unk16c = 0;
+    state->unk17c = 0;
+    state->unk18c = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259260);
 

@@ -17,7 +17,7 @@ typedef struct BootState1F0D60
     u8 unk00[4];
     BootRecord48F0E90* entries;
     u8 unk08[0x38];
-    u32 unk40;
+    s32 unk40;
     float span;
     s16 count;
     s16 capacity;
@@ -31,12 +31,13 @@ typedef struct BootState1F0D60
     u8 unk53_other : 6;
 } BootState1F0D60;
 
-/** @brief A 16-byte record containing a scalar key and value. */
+/** @brief A scalar key followed by three independent float values. */
 typedef struct BootKeyEntry16
 {
     float key;
     float value;
-    u8 unk08[8];
+    float second;
+    float third;
 } BootKeyEntry16;
 
 /** @brief Partial array receiver with counts, storage, and packed controls. */
@@ -45,7 +46,7 @@ typedef struct BootState1F12B0
     u8 unk00[4];
     BootKeyEntry16* entries;
     u8 unk08[0x10];
-    u32 unk18;
+    s32 unk18;
     float span;
     s16 count;
     s16 capacity;
@@ -99,7 +100,7 @@ typedef struct BootState1F1AD0
     u8 unk00[4];
     BootVectorKeyEntry1F1D30* entries;
     u8 unk08[0x18];
-    u32 unk20;
+    s32 unk20;
     float span;
     s16 count;
     s16 capacity;
@@ -126,7 +127,7 @@ typedef struct BootState1F1FC0
     u8 unk00[4];
     BootFloatEntry1F33B0* entries;
     u8 unk08[8];
-    u32 unk10;
+    s32 unk10;
     float span;
     s16 count;
     s16 capacity;
@@ -214,26 +215,6 @@ typedef struct BootState1F47F0
     u8 unk43_other : 6;
 } BootState1F47F0;
 
-/** @brief A scalar key followed by three independent float values. */
-typedef struct BootTripleFloatEntry16
-{
-    float key;
-    float first;
-    float second;
-    float third;
-} BootTripleFloatEntry16;
-
-/** @brief Partial indexed record receiver with observed span and signed counts. */
-typedef struct BootState1F3FE0
-{
-    u8 unk00[4];
-    BootTripleFloatEntry16* entries;
-    u8 unk08[0x14];
-    float span;
-    s16 count;
-    s16 capacity;
-} BootState1F3FE0;
-
 /** Settings record initialized before calls to the resident rendering interface. */
 typedef struct BootSettings1F86C0
 {
@@ -283,6 +264,30 @@ extern "C" {
 #endif
 
 /**
+ * @brief Copy an indexed entry's key and values to the requested outputs.
+ * @param object Record-array receiver.
+ * @param index Nonnegative entry index, checked against capacity.
+ * @param key Optional output for the entry key.
+ * @param first Optional output for the first value.
+ * @param second Optional output for the second value.
+ * @param third Optional output for the third value.
+ * @return One if read, or zero if storage is absent or the index is outside capacity.
+ */
+s32 func_001F3D80(BootState1F12B0* object, s32 index, float* key, float* first, float* second, float* third);
+
+/**
+ * @brief Insert three values and their key before an existing entry.
+ * @param object Record-array receiver with a nonnegative entry count.
+ * @param index Nonnegative insertion index, less than the current entry count.
+ * @param first First value to copy after moving existing entries.
+ * @param second Second value to copy after moving existing entries.
+ * @param third Third value to copy after moving existing entries.
+ * @param key Key associated with the inserted entry.
+ * @return One if inserted, or zero if storage, index, or remaining capacity is invalid.
+ */
+s32 func_001F3EC0(BootState1F12B0* object, s32 index, const float* first, const float* second, const float* third, float key);
+
+/**
  * @brief Replace an indexed three-value entry and update the span for the last entry.
  * @param object Record-array receiver.
  * @param index Nonnegative entry index, checked against capacity.
@@ -292,7 +297,50 @@ extern "C" {
  * @param key Key associated with the entry.
  * @return One if stored, or zero if storage is absent or the index is outside capacity.
  */
-s32 func_001F3FE0(BootState1F3FE0* object, s32 index, const float* first, const float* second, const float* third, float key);
+s32 func_001F3FE0(BootState1F12B0* object, s32 index, const float* first, const float* second, const float* third, float key);
+
+/**
+ * @brief Append three values and their key, updating the span and entry count.
+ * @param object Record-array receiver with a nonnegative entry count.
+ * @param first First value to copy.
+ * @param second Second value to copy.
+ * @param third Third value to copy.
+ * @param key Key associated with the new entry.
+ * @return One if appended, or zero if storage is absent or capacity is exhausted.
+ */
+s32 func_001F4080(BootState1F12B0* object, const float* first, const float* second, const float* third, float key);
+
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param object Receiver with 48-byte records and a nonzero cached key span.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
+float func_001F09B0(BootState1F0D60* object, float key);
+
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param object Receiver with vector-key records and a nonzero cached key span.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
+float func_001F1740(BootState1F1AD0* object, float key);
+
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param object Receiver with float-key entries and a nonzero cached key span.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
+float func_001F5090(BootState1F1FC0* object, float key);
+
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param object Receiver with record storage and a nonzero cached key span.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
+float func_001F4D90(BootState1F12B0* object, float key);
 
 /**
  * @brief Reset 48-byte record storage, counts, packed controls, and cached indices.

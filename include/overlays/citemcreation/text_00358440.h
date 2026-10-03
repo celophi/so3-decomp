@@ -3,12 +3,83 @@
 
 #include "types.h"
 
+/** Partial item display with its decoded halfword and adjacent byte. */
+typedef struct ItemCreationAllocationDisplay
+{
+    u8 unk00[0x3C];
+    u8 unk3c;
+    u8 unk3d[2];
+    u8 unk3f;
+    u8 unk40[0xBC];
+    u16 unkfc;
+    u8 unkfe;
+} ItemCreationAllocationDisplay;
+
+/** Two nested markers allocated for each checked item display. */
+typedef struct ItemCreationAllocationDisplayPair
+{
+    struct ItemCreationFlagNode* unk00;
+    struct ItemCreationFlagNode* unk04;
+} ItemCreationAllocationDisplayPair;
+
+/** Partial owner of three checked item displays, marker pairs, and quantity displays. */
+typedef struct ItemCreationCheckedAllocationView
+{
+    u8 unk00[0x10C];
+    s16 unk10c;
+    u8 unk10e[0xE];
+    ItemCreationAllocationDisplay* unk11c[3];
+    ItemCreationAllocationDisplayPair unk128[3];
+    struct ItemCreationValueDisplay* unk140[3];
+} ItemCreationCheckedAllocationView;
+
 /** Partial owner of the value display refreshed from a checked record. */
 typedef struct ItemCreationCheckedValueOwner
 {
     u8 unk00[0xE4];
     struct ItemCreationValueDisplay* unke4;
 } ItemCreationCheckedValueOwner;
+
+/** Partial owner of two value displays refreshed from the current checked record. */
+typedef struct ItemCreationTwoCheckedValueOwner
+{
+    u8 unk00[0xD0];
+    struct ItemCreationValueDisplay* unkd0;
+    u8 unkd4[4];
+    struct ItemCreationValueDisplay* unkd8;
+} ItemCreationTwoCheckedValueOwner;
+
+/** Partial panel with paired markers, selected-state codes and value displays. */
+typedef struct ItemCreationPanelView
+{
+    u8 unk00[0x38];
+    struct ItemCreationListNode* unk38;
+    u8 unk3c[0x6C];
+    struct ItemCreationSelectedDisplayState* unka8;
+    u8 unkac[0x24];
+    u8 unkd0[8];
+    u16 unkd8;
+    u8 unkda[0xA];
+    struct ItemCreationValueDisplay* unke4;
+    struct ItemCreationPanelMarker* unke8[9];
+    u8 unk10c;
+    u8 unk10d;
+    u8 unk10e[2];
+    u32 unk110[3];
+    u8 unk11c[4];
+    struct ItemCreationValueDisplay* unk120;
+} ItemCreationPanelView;
+
+/** Partial resource view with nine assigned and fourteen available displays. */
+typedef struct ItemCreationAvailableResourceView
+{
+    u8 unk00[0xA8];
+    struct ItemCreationIndexedResourceDisplay* unka8[9];
+    struct ItemCreationIndexedResourceDisplay* unkcc[14];
+    u8 unk104[0x1C];
+    struct ItemCreationSelectedDisplayState* unk120;
+    u8 unk124;
+} ItemCreationAvailableResourceView;
 
 /** Partial owner of two color displays, a selector, and its target display. */
 typedef struct ItemCreationTwoColorOwner
@@ -34,7 +105,16 @@ typedef struct ItemCreationNineSlotView
     struct FieldResourceDisplay2D5CF0* unk13c[9];
     u8 unk160[0x30];
     u8 unk190;
-    u8 unk191[0x61];
+    u8 unk191[3];
+    struct ItemCreationFlagNode* unk194[3];
+    struct ItemCreationFlagNode* unk1a0[3];
+    struct ItemCreationFlagNode* unk1ac[3];
+    struct ItemCreationColorDisplay* unk1b8[3];
+    struct ItemCreationColorDisplay* unk1c4[3];
+    struct ItemCreationColorDisplay* unk1d0[3];
+    struct ItemCreationColorDisplay* unk1dc[3];
+    u8 unk1e8[9];
+    u8 unk1f1;
     u8 unk1f2[9];
 } ItemCreationNineSlotView;
 
@@ -96,10 +176,37 @@ extern "C" {
 #endif
 
 /**
+ * @brief Update a checked item display and its quantity, or hide the displays for an empty item.
+ * @param object Owner of the checked item and quantity displays.
+ * @param value Signed item index; zero hides the displays.
+ * @param quantity Quantity to display, or -1 to hide its display.
+ * @param index Index of the display to update.
+ */
+void func_0035E150(ItemCreationCheckedAllocationView* object, s16 value, s32 quantity, s8 index);
+
+/**
  * @brief Display the checked record's decoded value, or zero for an invalid checksum.
  * @param object Owner of the optional value display.
  */
 void func_00366CB0(ItemCreationCheckedValueOwner* object);
+
+/**
+ * @brief Refresh each optional display from the checked resident value.
+ * @param object Owner of the two optional value displays.
+ */
+void func_00359C80(ItemCreationTwoCheckedValueOwner* object);
+
+/**
+ * @brief Update panel marker visibility and values from the selected state.
+ * @param object Panel associated with the selected state.
+ */
+void func_00366050(ItemCreationPanelView* object);
+
+/**
+ * @brief Refresh the available and assigned resource displays from the selected state.
+ * @param object Resource view with an optional associated selected state.
+ */
+void func_00366F10(ItemCreationAvailableResourceView* object);
 
 /**
  * @brief Advance the selector and refresh the colors and target of two item displays.
@@ -112,6 +219,12 @@ void func_0035F710(ItemCreationTwoColorOwner* object);
  * @param object Owner of the item displays, selector, and target display.
  */
 void func_0035F7F0(ItemCreationTwoColorOwner* object);
+
+/**
+ * @brief Refresh the assigned-group markers, colors, and the two group grids.
+ * @param object Nine-slot view containing three assigned-group displays.
+ */
+void func_00363D20(ItemCreationNineSlotView* object);
 
 /**
  * @brief Refresh the nine item-resource displays and their assigned-item codes.

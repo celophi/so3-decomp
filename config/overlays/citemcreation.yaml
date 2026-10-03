@@ -45,10 +45,12 @@ segments:
     type: code
     start: 0x40
     vram: 0x3483c0
-    subalign: 16
+    subalign: null
     subsegments:
       - [0x40, c, text_003483C0]
-      - [0x100C0, c, text_00358440]
+      - [0x100C0, cpp, text_00358440]
       - [0x20150, c, text_003684D0]
-  - [0x27080, bin, data]
+      - [0x27080, databin, data]
+      - [0x27470, .rodata, text_00358440]
+      - [0x274AC, rodatabin, rodata_0036F82C]
   - [0x27700]

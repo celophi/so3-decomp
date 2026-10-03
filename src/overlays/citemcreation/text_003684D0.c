@@ -14,7 +14,14 @@ enum
     ITEM_CREATION_FLAG_4 = 0x10,
     ITEM_CREATION_FLAG_5 = 0x20,
     ITEM_CREATION_FLAG_6 = 0x40,
-    ITEM_CREATION_FLAG_7 = 0x80
+    ITEM_CREATION_FLAG_7 = 0x80,
+    ITEM_CREATION_FLAG_8 = 0x100
+};
+
+struct ItemCreationAssignedRecord
+{
+    u8 unk00[0x30];
+    u16 unk30;
 };
 
 typedef struct ItemCreationRuntimeRecord
@@ -71,6 +78,14 @@ ItemCreationRuntimeFlags* func_101440(ItemCreationRuntimeDirectory* directory, s
 extern ItemCreationRuntimeRecordState* D_001B64F8;
 extern u8 D_50CD30[];
 extern void func_4CE4C0(void* destination, const float* source);
+
+static inline void enable_record_flag(ItemCreationSelectedDisplayState* object, u16 mask)
+{
+    if (object->unk134 != 0)
+    {
+        object->unk134->unk30 |= mask;
+    }
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_003684D0);
 
@@ -817,7 +832,55 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036AAA0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036AE20);
+void func_0036AE20(ItemCreationSelectedDisplayState* object)
+{
+    if (object->unk134 != 0)
+    {
+        object->unk130 = object->unk134->unk30;
+        if (object->unk130 & ITEM_CREATION_FLAG_0)
+        {
+            enable_record_flag(object, ITEM_CREATION_FLAG_0);
+            object->unk4e[0] = 1;
+        }
+        if (object->unk130 & ITEM_CREATION_FLAG_1)
+        {
+            enable_record_flag(object, ITEM_CREATION_FLAG_1);
+            object->unk4e[1] = 1;
+        }
+        if (object->unk130 & ITEM_CREATION_FLAG_2)
+        {
+            enable_record_flag(object, ITEM_CREATION_FLAG_2);
+            object->unk4e[2] = 1;
+        }
+        if (object->unk130 & ITEM_CREATION_FLAG_3)
+        {
+            enable_record_flag(object, ITEM_CREATION_FLAG_3);
+            object->unk4e[3] = 1;
+        }
+        if (object->unk130 & ITEM_CREATION_FLAG_4)
+        {
+            enable_record_flag(object, ITEM_CREATION_FLAG_4);
+            object->unk4e[4] = 1;
+        }
+        if (object->unk130 & ITEM_CREATION_FLAG_5)
+        {
+            enable_record_flag(object, ITEM_CREATION_FLAG_5);
+            object->unk4e[5] = 1;
+        }
+        if (object->unk130 & ITEM_CREATION_FLAG_6)
+        {
+            enable_record_flag(object, ITEM_CREATION_FLAG_6);
+            object->unk4e[6] = 1;
+        }
+        if (object->unk130 & ITEM_CREATION_FLAG_7)
+        {
+            enable_record_flag(object, ITEM_CREATION_FLAG_7);
+            object->unk4e[7] = 1;
+        }
+        enable_record_flag(object, ITEM_CREATION_FLAG_8);
+        object->unk56 = 1;
+    }
+}
 
 u8 func_0036AFE0(ItemCreationSelectedDisplayState* object)
 {
@@ -929,7 +992,11 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036DDC0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036DEA0);
+void func_0036DEA0(ItemCreationSelectedDisplayState* object)
+{
+    func_0036A8F0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036DED0);
 
@@ -1203,9 +1270,50 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036ED30);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036EDB0);
+void func_0036EDB0(ItemCreationCountedList* object, void* record)
+{
+    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    if (node != 0)
+    {
+        ItemCreationListNode* tail;
+        ItemCreationListNode* next;
+        node->unk00 = record;
+        node->unk04 = 0;
+        tail = object->unk00;
+        next = tail->unk04;
+        while (next != 0)
+        {
+            tail = next;
+            next = next->unk04;
+        }
+        tail->unk04 = node;
+        object->unk04++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036EE40);
+void func_0036EE40(ItemCreationCountedList* object, ItemCreationListNode* after, void* const* record)
+{
+    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    node->unk00 = *record;
+    if (after != 0)
+    {
+        node->unk04 = after->unk04;
+        after->unk04 = node;
+    }
+    else
+    {
+        ItemCreationListNode* tail = object->unk00;
+        ItemCreationListNode* next = tail->unk04;
+        while (next != 0)
+        {
+            tail = next;
+            next = next->unk04;
+        }
+        tail->unk04 = node;
+        node->unk04 = 0;
+    }
+    object->unk04++;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036EEF0);
 
@@ -1225,11 +1333,68 @@ void* func_0036EF70(u8* object, s32 index)
     return node;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036EFB0);
+void func_0036EFB0(ItemCreationCountedList* object, void* value)
+{
+    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    if (node != 0)
+    {
+        ItemCreationListNode* tail;
+        ItemCreationListNode* next;
+        node->unk00 = value;
+        node->unk04 = 0;
+        tail = object->unk00;
+        next = tail->unk04;
+        while (next != 0)
+        {
+            tail = next;
+            next = next->unk04;
+        }
+        tail->unk04 = node;
+        object->unk04++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036F040);
+void func_0036F040(ItemCreationCountedList* object, void* value)
+{
+    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    if (node != 0)
+    {
+        ItemCreationListNode* tail;
+        ItemCreationListNode* next;
+        node->unk00 = value;
+        node->unk04 = 0;
+        tail = object->unk00;
+        next = tail->unk04;
+        while (next != 0)
+        {
+            tail = next;
+            next = next->unk04;
+        }
+        tail->unk04 = node;
+        object->unk04++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036F0D0);
+void func_0036F0D0(ItemCreationCountedList* object, void* value)
+{
+    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    if (node != 0)
+    {
+        ItemCreationListNode* tail;
+        ItemCreationListNode* next;
+        node->unk00 = value;
+        node->unk04 = 0;
+        tail = object->unk00;
+        next = tail->unk04;
+        while (next != 0)
+        {
+            tail = next;
+            next = next->unk04;
+        }
+        tail->unk04 = node;
+        object->unk04++;
+    }
+}
 
 void* func_0036F160(u8* object, s32 index)
 {
@@ -1247,7 +1412,26 @@ void* func_0036F160(u8* object, s32 index)
     return node;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036F1A0);
+void func_0036F1A0(ItemCreationCountedList* object, void* value)
+{
+    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    if (node != 0)
+    {
+        ItemCreationListNode* tail;
+        ItemCreationListNode* next;
+        node->unk00 = value;
+        node->unk04 = 0;
+        tail = object->unk00;
+        next = tail->unk04;
+        while (next != 0)
+        {
+            tail = next;
+            next = next->unk04;
+        }
+        tail->unk04 = node;
+        object->unk04++;
+    }
+}
 
 ItemCreationListNode* func_0036F230(ItemCreationList* object, s32 index)
 {
@@ -1265,7 +1449,26 @@ ItemCreationListNode* func_0036F230(ItemCreationList* object, s32 index)
     return node;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036F270);
+void func_0036F270(ItemCreationCountedList* object, void* value)
+{
+    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    if (node != 0)
+    {
+        ItemCreationListNode* tail;
+        ItemCreationListNode* next;
+        node->unk00 = value;
+        node->unk04 = 0;
+        tail = object->unk00;
+        next = tail->unk04;
+        while (next != 0)
+        {
+            tail = next;
+            next = next->unk04;
+        }
+        tail->unk04 = node;
+        object->unk04++;
+    }
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036F300);
 

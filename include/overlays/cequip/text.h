@@ -5,6 +5,7 @@
 
 typedef struct EquipLinkedList EquipLinkedList;
 typedef struct EquipWordList EquipWordList;
+typedef struct EquipPositionOwner EquipPositionOwner;
 
 #ifdef __cplusplus
 extern "C" {
@@ -633,6 +634,12 @@ s32 func_003516C0(void* object);
  * @return The original object pointer.
  */
 void* func_00348CB0(void* object, s32 flags);
+
+/**
+ * @brief Hold the display position until its timer expires, then scroll and wrap it.
+ * @param object Equipment state containing the display receiver and movement bounds.
+ */
+void func_00348D10(EquipPositionOwner* object);
 
 /**
  * @brief Release the object's base state and optionally its storage.

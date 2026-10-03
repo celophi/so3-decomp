@@ -639,6 +639,13 @@ s32 func_00203900(void* object);
 void func_00203940(void* object);
 
 /**
+ * @brief Test whether any of the three observed float fields is nonzero.
+ * @param object Non-null receiver containing floats at offsets 0x180 through 0x188.
+ * @return True when any field compares unequal to zero, including unordered values.
+ */
+bool func_00203950(const void* object);
+
+/**
  * @brief Return the fixed value 2.
  * @param object Receiver or first argument; unused.
  * @return Always 2.

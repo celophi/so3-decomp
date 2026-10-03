@@ -152,6 +152,26 @@ extern "C" {
 #endif
 
 /**
+ * @brief Set bit zero of the receiver's flag byte at offset 0x28.
+ * @param object Receiver to update.
+ */
+void func_002F2FD0(void* object);
+
+/**
+ * @brief Set bit zero of the receiver's flag byte at offset 0x50.
+ * @param object Receiver to update.
+ */
+void func_002F3C90(void* object);
+
+/**
+ * @brief Update two floats and set the update byte when the receiver has a target.
+ * @param object Receiver whose optional target is inspected.
+ * @param first Value stored in the first observed float field.
+ * @param second Value stored in the second observed float field.
+ */
+void func_002ED110(const void* object, float first, float second);
+
+/**
  * @brief Set bit two of the flag byte at offset 0x70.
  * @param object Receiver to update.
  */

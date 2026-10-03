@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/ctactics/text.h"
+#include "main/resident_data.h"
 
 typedef struct
 {
@@ -26,6 +27,63 @@ typedef struct
     u8 pad_00[0x2C];
     TacticsIconList* list;
 } TacticsIconOwner;
+
+typedef struct TacticsPosition
+{
+    float x;
+    float y;
+    float z;
+    float w;
+} TacticsPosition;
+
+/** Partial Lib display receiver holding its position and refresh flag. */
+typedef struct TacticsPositionTarget
+{
+    u8 pad_00[0x18];
+    TacticsPosition position;
+    u8 pad_28[0x14];
+    u8 active;
+} TacticsPositionTarget;
+
+/** Partial tactics position state; the complete receiver extent is unknown. */
+struct TacticsPositionOwner
+{
+    u8 pad_00[0xA8];
+    TacticsPositionTarget* target;
+    s32 distance;
+    s16 timer;
+    u8 state;
+    u8 pad_b3[5];
+    float initial_x;
+    float base_x;
+    float width;
+};
+
+/** Partial preset receiver; the complete object extent is unknown. */
+struct TacticsPresetOwner
+{
+    u8 pad_00[0xC0];
+    TacticsPresetPosition position;
+};
+
+static inline void tactics_set_position(TacticsPositionTarget* target, float x, float y, float z, float w);
+
+/**
+ * @brief Store the display position and mark it for refresh.
+ * @param target Display receiver to update.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Third position component.
+ * @param w Fourth position component.
+ */
+static inline void tactics_set_position(TacticsPositionTarget* target, float x, float y, float z, float w)
+{
+    target->position.x = x;
+    target->position.y = y;
+    target->position.z = z;
+    target->position.w = w;
+    target->active = 1;
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003483C0);
 
@@ -243,7 +301,55 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034EFA0);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034F0E0);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034F190);
+/**
+ * @brief Select a preset display position, clearing it for an invalid index.
+ * @param object Receiver holding the position pair.
+ * @param index Zero-based preset index.
+ * @return The receiver's updated position pair.
+ */
+TacticsPresetPosition* func_0034F190(TacticsPresetOwner* object, s32 index)
+{
+    switch (index)
+    {
+    case 0:
+        object->position.x = 96.0f;
+        object->position.y = 68.0f;
+        break;
+    case 1:
+        object->position.x = 96.0f;
+        object->position.y = 188.0f;
+        break;
+    case 2:
+        object->position.x = 96.0f;
+        object->position.y = 308.0f;
+        break;
+    case 3:
+        object->position.x = 390.0f;
+        object->position.y = 38.0f;
+        break;
+    case 4:
+        object->position.x = 390.0f;
+        object->position.y = 110.0f;
+        break;
+    case 5:
+        object->position.x = 390.0f;
+        object->position.y = 182.0f;
+        break;
+    case 6:
+        object->position.x = 390.0f;
+        object->position.y = 254.0f;
+        break;
+    case 7:
+        object->position.x = 390.0f;
+        object->position.y = 326.0f;
+        break;
+    default:
+        object->position.x = 0.0f;
+        object->position.y = 0.0f;
+        break;
+    }
+    return &object->position;
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034F290);
 
@@ -251,7 +357,35 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034FC70);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034FCD0);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034FD60);
+/**
+ * @brief Hold the display position until its timer expires, then scroll and wrap it.
+ * @param object Tactics state containing the display receiver and movement bounds.
+ */
+void func_0034FD60(TacticsPositionOwner* object)
+{
+    TacticsPositionTarget* target = object->target;
+    float x = target->position.x;
+    float y = target->position.y;
+    float z = target->position.z;
+    float w = target->position.w;
+    if (object->state == 0)
+    {
+        tactics_set_position(target, object->initial_x, y, z, w);
+        object->timer++;
+        if (!((float)object->timer <= 120.0f))
+        {
+            object->timer = 0;
+            object->state = 1;
+        }
+        return;
+    }
+    x -= 108.0f * D_001B6690;
+    if (x < object->base_x - (float)object->distance)
+    {
+        x = 2.0f + (object->base_x + object->width);
+    }
+    tactics_set_position(target, x, y, z, w);
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034FE50);
 

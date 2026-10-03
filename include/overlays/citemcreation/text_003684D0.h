@@ -43,6 +43,13 @@ typedef struct ItemCreationList
     ItemCreationListNode* unk00;
 } ItemCreationList;
 
+/** Partial sentinel-based list with its stored node count. */
+typedef struct ItemCreationCountedList
+{
+    ItemCreationListNode* unk00;
+    s32 unk04;
+} ItemCreationCountedList;
+
 /** Partial option-code table through entry 59. */
 typedef struct ItemCreationOptionTable
 {
@@ -57,7 +64,8 @@ typedef struct ItemCreationSelectedDisplayState
     ItemCreationOptionTable* unk40;
     u8 unk44[3];
     u8 unk47;
-    u8 unk48[5];
+    void* unk48;
+    u8 unk4c;
     u8 unk4d;
     u8 unk4e[8];
     u8 unk56;
@@ -92,7 +100,11 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unk12b;
     u8 unk12c;
     u8 unk12d;
-    u8 unk12e[0x9A];
+    u8 unk12e[2];
+    u16 unk130;
+    u8 unk132[2];
+    struct ItemCreationAssignedRecord* unk134;
+    u8 unk138[0x90];
     u32 unk1c8[3];
 } ItemCreationSelectedDisplayState;
 
@@ -109,21 +121,6 @@ typedef struct ItemCreationSelection
 /** Option lists are part of the same selected display state. */
 typedef ItemCreationSelectedDisplayState ItemCreationOptionState;
 
-/**
- * Updates the selected item or completes an exchange between the two views.
- * @param object Selection state.
- * @param selected Selected view, or null when clearing the selection.
- * @param index Signed item index; -1 clears the pending selection.
- */
-void func_0036A050(ItemCreationSelectedDisplayState* object, void* selected, s16 index);
-
-/**
- * Refreshes the display allocated for a group of three assigned items.
- * @param object Selection state.
- * @param group Byte-sized assigned-item group index.
- */
-void func_003698E0(ItemCreationSelectedDisplayState* object, u8 group);
-
 /** Partial destination for five resident record halfwords. */
 typedef struct ItemCreationRuntimeRecordSelection
 {
@@ -134,6 +131,46 @@ typedef struct ItemCreationRuntimeRecordSelection
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Update the selected item or complete an exchange between the two views.
+ * @param object Selection state.
+ * @param selected Selected view, or null when clearing the selection.
+ * @param index Signed item index; -1 clears the pending selection.
+ */
+void func_0036A050(ItemCreationSelectedDisplayState* object, void* selected, s16 index);
+
+/**
+ * @brief Refresh the display allocated for a group of three assigned items.
+ * @param object Selection state.
+ * @param group Byte-sized assigned-item group index.
+ */
+void func_003698E0(ItemCreationSelectedDisplayState* object, u8 group);
+
+/**
+ * @brief Allocate a node and append its value to the sentinel-based list.
+ * @param object List containing a valid sentinel node.
+ * @param value Value to append; may be null.
+ */
+void func_0036F270(ItemCreationCountedList* object, void* value);
+
+/**
+ * @brief Restore enabled selection flags from its saved assigned-item record.
+ * @param object Selection state with an optional assigned-item record.
+ */
+void func_0036AE20(ItemCreationSelectedDisplayState* object);
+
+/**
+ * @brief Save the assigned-item state to resident records.
+ * @param object Selection state containing the assigned items.
+ */
+void func_0036A8F0(ItemCreationSelectedDisplayState* object);
+
+/**
+ * @brief Save assigned items and append the selection state to the resident queue.
+ * @param object Selection state to save and enqueue.
+ */
+void func_0036DEA0(ItemCreationSelectedDisplayState* object);
 
 /**
  * @brief Hold the starting position, then advance and wrap the horizontal scroll.
@@ -549,12 +586,55 @@ u8* func_0036E760(void);
 void func_0036E690(u8* object, float x, float y, float z);
 
 /**
+ * @brief Append a value to the sentinel list and increase its node count.
+ * @param object List containing the sentinel and stored count.
+ * @param value Value stored in the appended node.
+ */
+void func_0036F1A0(ItemCreationCountedList* object, void* value);
+
+/**
+ * @brief Append a value to the sentinel list and increase its node count.
+ * @param object List containing the sentinel and stored count.
+ * @param value Value stored in the appended node.
+ */
+void func_0036F040(ItemCreationCountedList* object, void* value);
+
+/**
+ * @brief Append a value to the sentinel list and increase its node count.
+ * @param object List containing the sentinel and stored count.
+ * @param value Value stored in the appended node.
+ */
+void func_0036EFB0(ItemCreationCountedList* object, void* value);
+
+/**
+ * @brief Append a record pointer to the sentinel list and increase its node count.
+ * @param object List containing the sentinel and stored count.
+ * @param record Record pointer stored in the appended node.
+ */
+void func_0036EDB0(ItemCreationCountedList* object, void* record);
+
+/**
+ * @brief Insert a record pointer after a node, or append it when no node is supplied.
+ * @param object List containing the sentinel and stored count.
+ * @param after Node to insert after, or null to append.
+ * @param record Pointer to the record pointer copied into the new node.
+ */
+void func_0036EE40(ItemCreationCountedList* object, ItemCreationListNode* after, void* const* record);
+
+/**
  * @brief Follow the linked nodes at offset 4 up to the requested index.
  * @param object Object holding the first node pointer.
  * @param index Number of links to follow.
  * @return Reached node, or null if the chain ends early.
  */
 void* func_0036EF70(u8* object, s32 index);
+
+/**
+ * @brief Append a value to the sentinel list and increase its node count.
+ * @param object List containing the sentinel and stored count.
+ * @param value Value stored in the appended node.
+ */
+void func_0036F0D0(ItemCreationCountedList* object, void* value);
 
 /**
  * @brief Follow the linked nodes at offset 4 up to the requested index.

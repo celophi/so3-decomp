@@ -296,7 +296,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_0028A1
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_0028A210);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_0028A250);
+s32 func_0028A250(s32 first, s32 second)
+{
+    s32 product = first * second;
+    s32 half = product * 9 / 2;
+    s32 subtotal = half + 1283948;
+    return subtotal + product * 8 + 677824;
+}
 
 void func_0028A290(FieldWordState* object, s32 value)
 {

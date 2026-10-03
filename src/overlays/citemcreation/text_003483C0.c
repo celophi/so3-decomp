@@ -3,6 +3,7 @@
 #include "overlays/citemcreation/text_00358440.h"
 #include "overlays/citemcreation/text_003684D0.h"
 #include "overlays/1067-00/text_0023B1D0.h"
+#include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_002D5260.h"
 
 enum
@@ -42,6 +43,17 @@ typedef struct ItemCreationRuntime643C
     FieldBufferSlots* unk20;
 } ItemCreationRuntime643C;
 
+/** Partial owner linking an option list, index display, and transfer display. */
+struct ItemCreationOptionTransferOwner
+{
+    u8 unk00[0xA8];
+    u8 unka8;
+    u8 unka9[0x1B];
+    ItemCreationSelectedDisplayState* unkc4;
+    FieldObject23CEA0* unkc8;
+    ItemCreationFlagResetOwner* unkcc;
+};
+
 // These external interfaces are scoped here because their owning code is in other overlays.
 extern ItemCreationColorRecordState* D_001B64F8;
 extern ItemCreationRuntime643C* D_001B643C;
@@ -51,6 +63,37 @@ u16 func_23B3A0(FieldState23B3A0* object);
 u32 func_23B3B0(FieldState23B3A0* object, u16 direction);
 
 /**
+ * @brief Read the low byte of the selected grid index.
+ * @param display Six-slot index display.
+ * @return The byte-sized selected index.
+ */
+static inline u8 selected_option_index(FieldObject23CEA0* display);
+
+/**
+ * @brief Read an option byte from either list.
+ * @param state State containing the adjacent option lists.
+ * @param list List selector, one or two.
+ * @param index Selected six-slot index, from zero through five.
+ * @return Stored option byte, or zero for an unsupported list or index.
+ */
+static inline u32 option_list_value(ItemCreationSelectedDisplayState* state, u8 list, s32 index);
+
+/**
+ * @brief Convert an option code to its displayed list index.
+ * @param value Option code, or zero for an empty entry.
+ * @return Code minus 31, or zero for an empty entry.
+ */
+static inline u32 option_list_index(u8 value);
+
+/**
+ * @brief Store the selected index for either option list.
+ * @param object Owner of the option marker selections.
+ * @param list List selector, one or two.
+ * @param value Byte-sized list index to store.
+ */
+static inline void set_option_list_index(ItemCreationFlagResetOwner* object, u8 list, u8 value);
+
+/**
  * @brief Offset one displayed coordinate from its origin.
  * @param origin Base coordinate.
  * @param offset Coordinate displacement.
@@ -58,17 +101,24 @@ u32 func_23B3B0(FieldState23B3A0* object, u16 direction);
  */
 static inline float shifted_position(float origin, float offset);
 
-static inline float shifted_position(float origin, float offset)
-{
-    return origin + offset;
-}
-
 /**
  * @brief Test whether the selector's control byte is clear.
  * @param object Selector state to test.
  * @return One when the control byte is zero, or zero otherwise.
  */
 static inline s32 selector_inactive(FieldState23B3A0* object);
+
+/**
+ * @brief Convert a selected item value to its resource slot.
+ * @param value Selected item value, or zero for an empty entry.
+ * @return Resource slot corresponding to the selected value.
+ */
+static inline u32 item_resource_index(u8 value);
+
+static inline float shifted_position(float origin, float offset)
+{
+    return origin + offset;
+}
 
 static inline s32 selector_inactive(FieldState23B3A0* object)
 {
@@ -78,13 +128,6 @@ static inline s32 selector_inactive(FieldState23B3A0* object)
     }
     return 1;
 }
-
-/**
- * @brief Convert a selected item value to its resource slot.
- * @param value Selected item value, or zero for an empty entry.
- * @return Resource slot corresponding to the selected value.
- */
-static inline u32 item_resource_index(u8 value);
 
 static inline u32 item_resource_index(u8 value)
 {
@@ -579,7 +622,108 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034CD90);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034CE00);
+static inline u8 selected_option_index(FieldObject23CEA0* display)
+{
+    return display->unk114;
+}
+
+static inline u32 option_list_value(ItemCreationSelectedDisplayState* state, u8 list, s32 index)
+{
+    if (index < 0)
+    {
+        return 0;
+    }
+    if (index > 6)
+    {
+        return 0;
+    }
+    switch (list)
+    {
+    case 1:
+        return state->unk71[index];
+    case 2:
+        return state->unk77[index];
+    default:
+        return 0;
+    }
+}
+
+static inline u32 option_list_index(u8 value)
+{
+    if (value == 0)
+    {
+        return 0;
+    }
+    return value - 31;
+}
+
+static inline void set_option_list_index(ItemCreationFlagResetOwner* object, u8 list, u8 value)
+{
+    switch (list)
+    {
+    case 1:
+        object->unk179 = value;
+        break;
+    case 2:
+        object->unk1b1 = value;
+        break;
+    }
+}
+
+/**
+ * @brief Transfer the selected option into its list display and refresh the option markers.
+ * @param object Owner of the six-slot option list, valid selected index, and marker display.
+ */
+void func_0034CE00(ItemCreationOptionTransferOwner* object)
+{
+    ItemCreationFlagResetOwner* target = object->unkcc;
+    ItemCreationSelectedDisplayState* state;
+    u8 status;
+    u8 list;
+    u32 value;
+    u8 result;
+    if (target != 0 && (state = object->unkc4) != 0)
+    {
+        list = object->unka8;
+        status = state->unk129;
+        if (list == 1)
+        {
+            switch (status)
+            {
+            case 1:
+            case 2:
+            case 3:
+                value = option_list_value(state, list, selected_option_index(object->unkc8));
+                result = value;
+                if (value != 0)
+                {
+                    result = option_list_index(value);
+                }
+                set_option_list_index(target, list, result);
+                func_0034DB00(target, 0xFF);
+                break;
+            }
+        }
+        list = object->unka8;
+        if (list == 2)
+        {
+            switch (status)
+            {
+            case 3:
+                value = option_list_value(object->unkc4, list, selected_option_index(object->unkc8));
+                result = value;
+                if (value != 0)
+                {
+                    result = option_list_index(value);
+                }
+                target = object->unkcc;
+                set_option_list_index(target, list, result);
+                func_0034DB00(target, 0xFF);
+                break;
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D030);
 
@@ -729,7 +873,11 @@ void func_0034F9B0(ItemCreationFlagResetOwner* object, u16 direction)
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034FA70);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034FD50);
+s32 func_0034FD50(ItemCreationFlagResetOwner* object, void* associated)
+{
+    func_002CE8D0((FieldObjectCE8D0*)object, associated, 16.0f, 72.0f, 17);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034FD80);
 

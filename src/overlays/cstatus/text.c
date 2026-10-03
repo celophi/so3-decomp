@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/cstatus/text.h"
+#include "main/resident_data.h"
 
 struct StatusObject
 {
@@ -46,6 +47,38 @@ struct OverlayList
     void* methods;
 };
 
+typedef struct StatusPosition
+{
+    float x;
+    float y;
+    float z;
+    float w;
+} StatusPosition;
+
+/** Partial Lib display receiver holding its position and refresh flag. */
+typedef struct StatusPositionTarget
+{
+    u8 pad_00[0x18];
+    StatusPosition position;
+    u8 pad_28[0x14];
+    u8 active;
+} StatusPositionTarget;
+
+/** Partial status position state; the complete receiver extent is unknown. */
+struct StatusPositionOwner
+{
+    u8 pad_00[0xA8];
+    StatusPositionTarget* target;
+    s32 distance;
+    u8 pad_b0[2];
+    s16 timer;
+    u8 state;
+    u8 pad_b5[7];
+    float initial_x;
+    float base_x;
+    float width;
+};
+
 extern u8 D_188890[];
 extern u8 D_1889C0[];
 extern u8 D_188CC0[];
@@ -75,6 +108,25 @@ extern void func_00351020(void* list);
 extern void func_00350E10(void* list);
 extern void func_00350B70(void* list);
 extern void func_00349440(void* object, s32 value);
+
+static inline void status_set_position(StatusPositionTarget* target, float x, float y, float z, float w);
+
+/**
+ * @brief Store the display position and mark it for refresh.
+ * @param target Display receiver to update.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Third position component.
+ * @param w Fourth position component.
+ */
+static inline void status_set_position(StatusPositionTarget* target, float x, float y, float z, float w)
+{
+    target->position.x = x;
+    target->position.y = y;
+    target->position.z = z;
+    target->position.w = w;
+    target->active = 1;
+}
 
 INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_003483C0);
 
@@ -610,7 +662,35 @@ void* func_0034F780(void* object)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_0034F920);
+/**
+ * @brief Hold the display position until its timer expires, then scroll and wrap it.
+ * @param object Status state containing the display receiver and movement bounds.
+ */
+void func_0034F920(StatusPositionOwner* object)
+{
+    StatusPositionTarget* target = object->target;
+    float x = target->position.x;
+    float y = target->position.y;
+    float z = target->position.z;
+    float w = target->position.w;
+    if (object->state == 0)
+    {
+        status_set_position(target, object->initial_x, y, z, w);
+        object->timer++;
+        if (!((float)object->timer <= 120.0f))
+        {
+            object->timer = 0;
+            object->state = 1;
+        }
+        return;
+    }
+    x -= 108.0f * D_001B6690;
+    if (x < object->base_x - (float)object->distance)
+    {
+        x = 2.0f + (object->base_x + object->width);
+    }
+    status_set_position(target, x, y, z, w);
+}
 
 INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_0034FA10);
 
