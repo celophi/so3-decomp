@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/text_004095C0.h"
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004095C0);
 

@@ -59,6 +59,26 @@ extern "C" {
 #endif
 
 /**
+ * @brief Store fixed word bits and set the byte on an optional target.
+ * @param object Non-null receiver containing a nullable pointer to the writable target.
+ */
+void func_001F77D0(const void* object);
+
+/**
+ * @brief Return the observed unsigned byte value.
+ * @param object Non-null receiver containing the readable byte.
+ * @return Stored byte value, extended to a word.
+ */
+u32 func_001F9EE0(const void* object);
+
+/**
+ * @brief Return the observed word bits.
+ * @param object Non-null receiver containing the aligned readable word.
+ * @return Stored word bits.
+ */
+u32 func_001F9EF0(const void* object);
+
+/**
  * @brief Return the supplied object pointer.
  * @param object Object or subobject pointer.
  * @return The same pointer.

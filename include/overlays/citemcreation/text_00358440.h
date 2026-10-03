@@ -3,6 +3,11 @@
 
 #include "types.h"
 
+typedef struct ItemCreationCategoryOwner ItemCreationCategoryOwner;
+typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
+typedef struct ItemCreationIdentifierOwner ItemCreationIdentifierOwner;
+struct ItemCreationAllocationRecord;
+
 /** Partial item display with its decoded halfword and adjacent byte. */
 typedef struct ItemCreationAllocationDisplay
 {
@@ -313,6 +318,21 @@ void func_003641F0(void* object);
 void func_0035B480(u8* object, float start);
 
 /**
+ * @brief Fill six item rows from a category's collected records and update their visibility.
+ * @param object Owner of the record rows and category selection.
+ * @param start First collected-record index to display.
+ */
+void func_0035B4E0(ItemCreationIdentifierOwner* object, s32 start);
+
+/**
+ * @brief Test whether a category is rejected by the selected mode or has no accepted records.
+ * @param object Category display containing its selected state and mode.
+ * @param category Category entry containing the zero-based catalog index.
+ * @return One when its catalog fields fail the mode test or no collected record passes it; otherwise zero.
+ */
+u8 func_0035CAD0(ItemCreationCategoryOwner* object, const ItemCreationCategoryRecord* category);
+
+/**
  * @brief Write the byte at offset 0x12C.
  * @param object Object containing the field.
  * @param value Value to store.
@@ -365,6 +385,16 @@ void func_0035C4D0(u8* object, void* unused, u32 value);
  * @param object Object holding the nested pointer.
  */
 void func_0035E2D0(u8* object);
+
+#ifdef __cplusplus
+/**
+ * @brief Test whether a record is empty, rejected by the selected mode, or already assigned.
+ * @param object Owner of the selected mode and assigned identifier pairs.
+ * @param record Packed item record to test; null is accepted as an empty record.
+ * @return True for an empty record, a failed mode predicate, or an assigned identifier.
+ */
+bool func_0035B310(ItemCreationIdentifierOwner* object, const struct ItemCreationAllocationRecord* record);
+#endif
 
 #ifdef __cplusplus
 }

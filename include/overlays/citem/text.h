@@ -45,6 +45,14 @@ extern "C" {
 #endif
 
 /**
+ * @brief Compare the low ten-bit definition keys of two list entries.
+ * @param left First list node containing an item record.
+ * @param right Second list node containing an item record.
+ * @return Signed difference between their definition keys.
+ */
+s32 func_00351E40(const ItemListNode* left, const ItemListNode* right);
+
+/**
  * @brief Initialize a record and pass its setup arguments to the shared initializer.
  * @param record Record to initialize.
  * @param arg1 First integer setup argument.
@@ -157,6 +165,13 @@ void func_0034F340(AngleOwner* owner);
 void func_0034F2E0(AngleOwner* owner);
 
 /**
+ * @brief Append a payload to the list when node allocation succeeds.
+ * @param owner List with a sentinel head and element count.
+ * @param value Payload stored in the new node.
+ */
+void func_00354370(ItemListOwner* owner, void* value);
+
+/**
  * @brief Follow links from the node after the head.
  * @param owner List owner to search.
  * @param index Number of links to follow.
@@ -165,12 +180,40 @@ void func_0034F2E0(AngleOwner* owner);
 ItemListNode* func_00354480(ItemListOwner* owner, s32 index);
 
 /**
+ * @brief Append a payload to the list when node allocation succeeds.
+ * @param owner List with a sentinel head and element count.
+ * @param value Payload stored in the new node.
+ */
+void func_003544C0(ItemListOwner* owner, void* value);
+
+/**
+ * @brief Append a payload to the list when node allocation succeeds.
+ * @param owner List with a sentinel head and element count.
+ * @param value Payload stored in the new node.
+ */
+void func_00354550(ItemListOwner* owner, void* value);
+
+/**
  * @brief Follow links from the node after the head.
  * @param owner List owner to search.
  * @param index Number of links to follow.
  * @return Reached node, or null if the chain ends first.
  */
 ItemListNode* func_003545E0(ItemListOwner* owner, s32 index);
+
+/**
+ * @brief Append a payload to the list when node allocation succeeds.
+ * @param owner List with a sentinel head and element count.
+ * @param value Payload stored in the new node.
+ */
+void func_00354620(ItemListOwner* owner, void* value);
+
+/**
+ * @brief Append a payload to the list when node allocation succeeds.
+ * @param owner List with a sentinel head and element count.
+ * @param value Payload stored in the new node.
+ */
+void func_003546B0(ItemListOwner* owner, void* value);
 
 /**
  * @brief Initialize a display record and run cleanup when requested.

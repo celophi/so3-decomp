@@ -87,6 +87,73 @@ extern "C" {
 #endif
 
 /**
+ * @brief Test whether the receiver's word at offset 0x0C is nonzero.
+ * @param object Non-null receiver to inspect.
+ * @return True when the observed word is nonzero.
+ */
+bool func_00261FC0(const void* object);
+
+/**
+ * @brief Write the two float outputs when the input does not compare less than or equal to zero.
+ * @param object First argument; unused.
+ * @param input Non-null input containing a float at offset 0x04.
+ * @param zero_output Output for zero; writable when the input is accepted.
+ * @param small_output Output for 0.05; writable when the input is accepted.
+ * @return False when the input compares less than or equal to zero; true otherwise, including NaN.
+ */
+bool func_002553D0(void* object, const void* input, float* zero_output, float* small_output);
+
+/**
+ * @brief Store the supplied word in the receiver at offset 0x18.
+ * @param object Receiver to update.
+ * @param value Word bits to store.
+ */
+void func_002589F0(void* object, u32 value);
+
+/**
+ * @brief Store the supplied word in the receiver at offset 0x3B4.
+ * @param object Receiver to update.
+ * @param value Word bits to store.
+ */
+void func_00261A00(void* object, u32 value);
+
+/**
+ * @brief Set bit zero of the receiver's flag byte at offset 0x34.
+ * @param object Receiver to update.
+ */
+void func_00256140(void* object);
+
+/**
+ * @brief Set bit zero of the receiver's flag byte at offset 0x34.
+ * @param object Receiver to update.
+ */
+void func_00256E40(void* object);
+
+/**
+ * @brief Store nine in the receiver's byte at offset 0x60.
+ * @param object Receiver to update.
+ */
+void func_002614A0(void* object);
+
+/**
+ * @brief Set bit zero of the receiver's flag byte at offset 0x04.
+ * @param object Receiver to update.
+ */
+void func_00261470(void* object);
+
+/**
+ * @brief Clear bit zero of the receiver's flag byte at offset 0x20.
+ * @param object Receiver to update.
+ */
+void func_00258A00(void* object);
+
+/**
+ * @brief Set bit one of the receiver's flag byte at offset 0x39.
+ * @param object Receiver to update.
+ */
+void func_00258330(void* object);
+
+/**
  * @brief Set bit zero of the receiver's flag byte at offset 0x04.
  * @param object Receiver to update.
  */
@@ -103,6 +170,12 @@ void func_002590D0(void* object);
  * @param object Receiver to reset.
  */
 void func_00259220(void* object);
+
+/**
+ * @brief Consume the update flag and advance the byte index past flagged records.
+ * @param object Non-null writable receiver with readable records through its advancement limit.
+ */
+void func_002563A0(void* object);
 
 /**
  * @brief Consume an update and advance the 28-byte record queue past flagged entries.

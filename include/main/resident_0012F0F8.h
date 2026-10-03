@@ -31,6 +31,15 @@ void func_0013A738(void* object);
  */
 void func_0013A740(void* object);
 
+/**
+ * @brief Fill a destination range with the low byte of a value.
+ * @param destination First byte of the destination range.
+ * @param value Value whose low byte fills the range.
+ * @param size Number of bytes to fill.
+ * @return The original destination pointer.
+ */
+void* func_0013A678(void* destination, s32 value, u32 size);
+
 #ifdef __cplusplus
 }
 #endif

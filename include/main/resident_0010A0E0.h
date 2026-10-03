@@ -20,6 +20,12 @@ extern "C" {
 #endif
 
 /**
+ * @brief Advance the resident random sequence and return its next word.
+ * @return Next unsigned random word.
+ */
+u32 func_0010CF80(void);
+
+/**
  * @brief Append an object to the ring buffer unless it is full.
  * @param queue Queue to append to.
  * @param object Object to append; null is accepted and ignored.

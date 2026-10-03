@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/citem/text.h"
+#include "main/resident_001001E0.h"
 
 #define ANGLE_STEP_RADIANS 0.008726646f
 #define ANGLE_LIMIT_RADIANS 0.5235988f
@@ -198,9 +199,23 @@ struct ItemListNode
     struct ItemListNode* next;
 };
 
+typedef struct ItemSortRecord
+{
+    u8 unk00[2];
+    u16 table_index;
+} ItemSortRecord;
+
+typedef struct ItemSortDefinition
+{
+    u8 unk00[0x10];
+    u16 sort_key_bits;
+    u8 unk12[0xE];
+} ItemSortDefinition;
+
 struct ItemListOwner
 {
     ItemListNode* head;
+    u32 count;
 };
 
 struct AngleState
@@ -246,6 +261,8 @@ struct Record0034E8B0
     struct ControlScreen* second[6];
 };
 
+/* Resident pointer viewed through the 32-byte item definition format. */
+extern ItemSortDefinition* D_001B64F0;
 extern u8 D_184280[];
 extern u8 D_184390[];
 extern u8 D_1844B0[];
@@ -830,7 +847,14 @@ INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003518B0);
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00351D50);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00351E40);
+s32 func_00351E40(const ItemListNode* left, const ItemListNode* right)
+{
+    const ItemSortRecord* first = (const ItemSortRecord*)left->value;
+    const ItemSortRecord* second = (const ItemSortRecord*)right->value;
+    const ItemSortDefinition* first_definition = &D_001B64F0[first->table_index];
+    const ItemSortDefinition* second_definition = &D_001B64F0[second->table_index];
+    return (first_definition->sort_key_bits & 0x3FF) - (second_definition->sort_key_bits & 0x3FF);
+}
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00351E80);
 
@@ -1256,7 +1280,23 @@ Record003542F0* func_003542F0(Record003542F0* record, s16 flag)
     return record;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354370);
+void func_00354370(ItemListOwner* owner, void* value)
+{
+    ItemListNode* node = (ItemListNode*)func_00100AC0(sizeof(ItemListNode), 0);
+    if (node != 0)
+    {
+        ItemListNode* tail;
+        node->value = value;
+        node->next = 0;
+        tail = owner->head;
+        while (tail->next != 0)
+        {
+            tail = tail->next;
+        }
+        tail->next = node;
+        owner->count++;
+    }
+}
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354400);
 
@@ -1275,9 +1315,41 @@ ItemListNode* func_00354480(ItemListOwner* owner, s32 index)
     return node;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003544C0);
+void func_003544C0(ItemListOwner* owner, void* value)
+{
+    ItemListNode* node = (ItemListNode*)func_00100AC0(sizeof(ItemListNode), 0);
+    if (node != 0)
+    {
+        ItemListNode* tail;
+        node->value = value;
+        node->next = 0;
+        tail = owner->head;
+        while (tail->next != 0)
+        {
+            tail = tail->next;
+        }
+        tail->next = node;
+        owner->count++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354550);
+void func_00354550(ItemListOwner* owner, void* value)
+{
+    ItemListNode* node = (ItemListNode*)func_00100AC0(sizeof(ItemListNode), 0);
+    if (node != 0)
+    {
+        ItemListNode* tail;
+        node->value = value;
+        node->next = 0;
+        tail = owner->head;
+        while (tail->next != 0)
+        {
+            tail = tail->next;
+        }
+        tail->next = node;
+        owner->count++;
+    }
+}
 
 ItemListNode* func_003545E0(ItemListOwner* owner, s32 index)
 {
@@ -1294,9 +1366,41 @@ ItemListNode* func_003545E0(ItemListOwner* owner, s32 index)
     return node;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354620);
+void func_00354620(ItemListOwner* owner, void* value)
+{
+    ItemListNode* node = (ItemListNode*)func_00100AC0(sizeof(ItemListNode), 0);
+    if (node != 0)
+    {
+        ItemListNode* tail;
+        node->value = value;
+        node->next = 0;
+        tail = owner->head;
+        while (tail->next != 0)
+        {
+            tail = tail->next;
+        }
+        tail->next = node;
+        owner->count++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003546B0);
+void func_003546B0(ItemListOwner* owner, void* value)
+{
+    ItemListNode* node = (ItemListNode*)func_00100AC0(sizeof(ItemListNode), 0);
+    if (node != 0)
+    {
+        ItemListNode* tail;
+        node->value = value;
+        node->next = 0;
+        tail = owner->head;
+        while (tail->next != 0)
+        {
+            tail = tail->next;
+        }
+        tail->next = node;
+        owner->count++;
+    }
+}
 
 Record00354740* func_00354740(Record00354740* record, s16 flag)
 {

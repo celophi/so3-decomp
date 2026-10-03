@@ -48,7 +48,7 @@ segments:
     vram: 0x3483c0
     subalign: null
     subsegments:
-      - [0x40, c, text]
+      - [0x40, cpp, text]
       - [0x9C80, databin, data]
       - [0x9D70, .rodata, text]
       - [0x9D90, rodatabin, rodata_00352110]

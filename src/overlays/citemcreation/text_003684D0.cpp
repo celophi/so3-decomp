@@ -1,9 +1,13 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
+#include "main/resident_0010A0E0.h"
 #include "overlays/citemcreation/text_003684D0.h"
 #include "overlays/citemcreation/text_00358440.h"
 #include "overlays/citemcreation/text_003483C0.h"
 #include "overlays/1067-00/text_0023B1D0.h"
+#include "overlays/1067-00/text_002F9C90.h"
+#include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_004095C0.h"
 
 enum
 {
@@ -22,6 +26,14 @@ struct ItemCreationAssignedRecord
 {
     u8 unk00[0x30];
     u16 unk30;
+};
+
+struct ItemCreationTransformState
+{
+    u8 unk00[0x30];
+    float unk30[4];
+    u8 unk40[0x10];
+    u8 unk50;
 };
 
 typedef struct ItemCreationRuntimeRecord
@@ -71,13 +83,15 @@ struct ItemCreationOptionDisplay
 };
 
 // Resident interfaces are scoped here because the shared declarations belong to another overlay.
-ItemCreationRuntimeRoot* func_10D8E0(void);
-ItemCreationRuntimeDirectory* func_101290(ItemCreationRuntimeRoot* root);
-ItemCreationRuntimeFlags* func_101440(ItemCreationRuntimeDirectory* directory, s32 key);
+extern "C"
+{
+    ItemCreationRuntimeRoot* func_10D8E0(void);
+    ItemCreationRuntimeDirectory* func_101290(ItemCreationRuntimeRoot* root);
+    ItemCreationRuntimeFlags* func_101440(ItemCreationRuntimeDirectory* directory, s32 key);
 
-extern ItemCreationRuntimeRecordState* D_001B64F8;
-extern u8 D_50CD30[];
-extern void func_4CE4C0(void* destination, const float* source);
+    extern ItemCreationRuntimeRecordState* D_001B64F8;
+    extern u8 D_50CD30[];
+}
 
 static inline void enable_record_flag(ItemCreationSelectedDisplayState* object, u16 mask)
 {
@@ -710,7 +724,7 @@ void func_0036A5D0(ItemCreationSelectedDisplayState* object, u8 mode)
                 for (index = 0; index < 8; index++)
                 {
                     ItemCreationListNode* node = func_0036F230(&display->unk2c, index);
-                    ItemCreationColorDisplay* view = node->unk00;
+                    ItemCreationColorDisplay* view = (ItemCreationColorDisplay*)node->unk00;
                     if (view != 0)
                     {
                         u8 slot = index + 1;
@@ -973,11 +987,125 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036BC90);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036BF30);
+void func_0036BF30(ItemCreationSelectedDisplayState* object, s32 index, s32 enabled)
+{
+    ItemCreationAllocationRecord* records[100];
+    object->unk148[index] = enabled;
+    object->unk1b1[index] = 0;
+    if (object->unk1b4[index] == 0)
+    {
+        object->unk1b1[index] = 1;
+        object->unk148[index] = 0;
+    }
+    if (enabled != 0 && object->unk1b4[index] != 0)
+    {
+        s32 category = 0;
+        if (object->unk1c3[index] >= 2)
+        {
+            switch (object->unk1c0[index])
+            {
+                case 1:
+                    category = 20;
+                    break;
+                case 2:
+                    category = 23;
+                    break;
+                case 3:
+                    category = 36;
+                    break;
+                case 4:
+                    category = 37;
+                    break;
+                case 5:
+                    category = 33;
+                    break;
+                case 6:
+                    category = 30;
+                    break;
+                case 7:
+                    category = 31;
+                    break;
+                case 8:
+                    category = 32;
+                    break;
+            }
+            if (func_0040CF90(D_001B64F8, records, (u16)category) != 0)
+            {
+                func_0040C9F0(D_001B64F8, func_0040D890(records[0]));
+            }
+        }
+    }
+    object->unk188[index][0] = 0;
+    object->unk188[index][1] = 0;
+    object->unk188[index][2] = 0;
+    object->unk191[index][0] = 1;
+    object->unk191[index][1] = 1;
+    object->unk191[index][2] = 1;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036C080);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036C1C0);
+void func_0036C1C0(ItemCreationSelectedDisplayState* object)
+{
+    if (object->unk1b1[0] == 0 || object->unk1b1[1] == 0 || object->unk1b1[2] == 0)
+    {
+        s32 index;
+        s32 group;
+        s32 value;
+        for (;;)
+        {
+            index = func_0010CF80() % 9;
+            group = index / 3;
+            if (object->unk1b4[group] == 0)
+            {
+                continue;
+            }
+            if (object->unk1b1[group] != 0)
+            {
+                continue;
+            }
+            if (func_002FB510(object->unk1b4[group], index % 3) == 3)
+            {
+                continue;
+            }
+            value = object->unk68[index];
+            if (value > 0)
+            {
+                break;
+            }
+        }
+        if (value >= 32 && value < 60)
+        {
+            s32 resource = value + 596;
+            if (object->unk19c != 0)
+            {
+                func_002FD940(object->unk19c);
+                object->unk1a8 = 1;
+            }
+            object->unk1a0 = resource;
+            object->unk1a4 = 0;
+        }
+        else
+        {
+            s32 resource = (value - 60) * 9 + 538;
+            s32 code = object->unk1c0[group];
+            if (object->unk19c != 0)
+            {
+                func_002FD940(object->unk19c);
+                object->unk1a8 = 1;
+            }
+            object->unk1a0 = resource;
+            if (code != 0)
+            {
+                object->unk1a4 = resource + code;
+            }
+            else
+            {
+                object->unk1a4 = 0;
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036C340);
 
@@ -1063,19 +1191,28 @@ void func_0036E610(u8* object, const unsigned __int128* value)
     *(unsigned __int128*)(object + 0x30) = *value;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036E630);
+void func_0036E630(ItemCreationTransformState* object, const float* input)
+{
+    object->unk50 = 1;
+    func_004CE4C0(object->unk30, input);
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036E660);
+void func_0036E660(ItemCreationTransformState* object, const float* input)
+{
+    object->unk50 = 1;
+    func_004CE4C0(object->unk30, input);
+}
 
 void func_0036E690(u8* object, float x, float y, float z)
 {
+    ItemCreationTransformState* transform = (ItemCreationTransformState*)object;
     float value[4];
-    object[0x50] = 1;
+    transform->unk50 = 1;
     value[0] = x;
     value[1] = y;
     value[2] = z;
     value[3] = 1.0f;
-    func_4CE4C0(object + 0x30, value);
+    func_004CE4C0(transform->unk30, value);
 }
 
 void func_0036E6D0(u8* object, const unsigned __int128* value)
@@ -1105,7 +1242,12 @@ s32 func_0036E730(void* object)
 
 s32 func_0036E740(void* object, float value)
 {
-    return value < 0.0f;
+    s32 result = 1;
+    if (!(value < 0.0f))
+    {
+        result = 0;
+    }
+    return result;
 }
 
 u8* func_0036E760(void)
@@ -1272,7 +1414,7 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_
 
 void func_0036EDB0(ItemCreationCountedList* object, void* record)
 {
-    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    ItemCreationListNode* node = (ItemCreationListNode*)func_00100AC0(sizeof(ItemCreationListNode), 0);
     if (node != 0)
     {
         ItemCreationListNode* tail;
@@ -1293,7 +1435,7 @@ void func_0036EDB0(ItemCreationCountedList* object, void* record)
 
 void func_0036EE40(ItemCreationCountedList* object, ItemCreationListNode* after, void* const* record)
 {
-    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    ItemCreationListNode* node = (ItemCreationListNode*)func_00100AC0(sizeof(ItemCreationListNode), 0);
     node->unk00 = *record;
     if (after != 0)
     {
@@ -1335,7 +1477,7 @@ void* func_0036EF70(u8* object, s32 index)
 
 void func_0036EFB0(ItemCreationCountedList* object, void* value)
 {
-    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    ItemCreationListNode* node = (ItemCreationListNode*)func_00100AC0(sizeof(ItemCreationListNode), 0);
     if (node != 0)
     {
         ItemCreationListNode* tail;
@@ -1356,7 +1498,7 @@ void func_0036EFB0(ItemCreationCountedList* object, void* value)
 
 void func_0036F040(ItemCreationCountedList* object, void* value)
 {
-    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    ItemCreationListNode* node = (ItemCreationListNode*)func_00100AC0(sizeof(ItemCreationListNode), 0);
     if (node != 0)
     {
         ItemCreationListNode* tail;
@@ -1377,7 +1519,7 @@ void func_0036F040(ItemCreationCountedList* object, void* value)
 
 void func_0036F0D0(ItemCreationCountedList* object, void* value)
 {
-    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    ItemCreationListNode* node = (ItemCreationListNode*)func_00100AC0(sizeof(ItemCreationListNode), 0);
     if (node != 0)
     {
         ItemCreationListNode* tail;
@@ -1414,7 +1556,7 @@ void* func_0036F160(u8* object, s32 index)
 
 void func_0036F1A0(ItemCreationCountedList* object, void* value)
 {
-    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    ItemCreationListNode* node = (ItemCreationListNode*)func_00100AC0(sizeof(ItemCreationListNode), 0);
     if (node != 0)
     {
         ItemCreationListNode* tail;
@@ -1451,7 +1593,7 @@ ItemCreationListNode* func_0036F230(ItemCreationList* object, s32 index)
 
 void func_0036F270(ItemCreationCountedList* object, void* value)
 {
-    ItemCreationListNode* node = func_00100AC0(sizeof(ItemCreationListNode), 0);
+    ItemCreationListNode* node = (ItemCreationListNode*)func_00100AC0(sizeof(ItemCreationListNode), 0);
     if (node != 0)
     {
         ItemCreationListNode* tail;

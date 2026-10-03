@@ -1,6 +1,9 @@
 #include "include_asm.h"
 #include "overlays/ctactics/text.h"
 #include "main/resident_data.h"
+#include "overlays/1067-00/text_0023B1D0.h"
+#include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_003F90C0.h"
 
 typedef struct
 {
@@ -66,7 +69,107 @@ struct TacticsPresetOwner
     TacticsPresetPosition position;
 };
 
+/** Partial next-selection callback receiver; its complete extent is unknown. */
+struct TacticsSelectionOwner
+{
+    u8 pad_00[0xB0];
+    FieldObject23B1D0* selection;
+};
+
+/** Partial dual-selector callback receiver; its complete extent is unknown. */
+struct TacticsDualSelectionOwner
+{
+    u8 pad_00[0xB8];
+    FieldObject23B1D0* first;
+    FieldObject23B1D0* second;
+    u8 use_second;
+};
+
+/** Partial tactics receiver holding a grid selection and the corresponding display list. */
+struct TacticsGridOwner
+{
+    u8 pad_00[0x2C];
+    TacticsList nodes;
+    u8 pad_30[0x7C];
+    TacticsPositionTarget* target;
+    u8 pad_b0[4];
+    FieldObject23CEA0* grid;
+    u8 pad_b8[8];
+    TacticsPositionTarget* indicators[3];
+    u8 pad_cc[3];
+    u8 selected;
+    float base_x;
+    float base_y;
+};
+
+/** Partial selection storage of the native Field grid receiver. */
+typedef struct TacticsGrid23D170
+{
+    u8 pad_00[0x114];
+    s16 selected;
+} TacticsGrid23D170;
+
+/** Partial tactics receiver holding the bounded display list and its grid cursor. */
+struct TacticsHighlightOwner
+{
+    u8 pad_00[0x2C];
+    TacticsList nodes;
+    u8 pad_30[0x80];
+    TacticsGrid23D170* grid;
+    u8 pad_b4[0x24];
+    FieldObject23BE00* cursor;
+};
+
+/** Partial saved selection reached through the resident reference's first pointer. */
+typedef struct TacticsSavedGridSelection
+{
+    u8 pad_00[0x20];
+    u8 selected;
+} TacticsSavedGridSelection;
+
+/** Partial resident reference used by the tactics selection callbacks. */
+typedef struct TacticsGridSelectionRef
+{
+    TacticsSavedGridSelection* state;
+} TacticsGridSelectionRef;
+
+extern "C" TacticsGridSelectionRef* D_001B643C;
+
+static inline bool tactics_selection_inactive(FieldObject23B1D0* selection);
+
+static inline u8 tactics_grid_empty(FieldObject23CEA0* grid);
+
 static inline void tactics_set_position(TacticsPositionTarget* target, float x, float y, float z, float w);
+
+static inline void tactics_set_xy(TacticsPositionTarget* target, float x, float y);
+
+/**
+ * @brief Report whether the grid's control byte is clear.
+ * @param grid Field grid containing the control byte.
+ * @return One when the control byte is zero; otherwise zero.
+ */
+static inline u8 tactics_grid_empty(FieldObject23CEA0* grid)
+{
+    if (grid->unkE5)
+    {
+        return 0;
+    }
+    return 1;
+}
+
+/**
+ * @brief Test whether the selection control byte is clear.
+ * @param selection Field coordinate selector.
+ * @return True when the control byte is zero.
+ */
+static inline bool tactics_selection_inactive(FieldObject23B1D0* selection)
+{
+    if (selection->flag75)
+    {
+        return false;
+    }
+    return true;
+}
 
 /**
  * @brief Store the display position and mark it for refresh.
@@ -82,6 +185,19 @@ static inline void tactics_set_position(TacticsPositionTarget* target, float x, 
     target->position.y = y;
     target->position.z = z;
     target->position.w = w;
+    target->active = 1;
+}
+
+/**
+ * @brief Store the horizontal and vertical position and mark the display active.
+ * @param target Display receiver to update.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ */
+static inline void tactics_set_xy(TacticsPositionTarget* target, float x, float y)
+{
+    target->position.x = x;
+    target->position.y = y;
     target->active = 1;
 }
 
@@ -176,7 +292,26 @@ u32 func_00349B30(void* object)
     return *(u32*)((u8*)object + 0x4);
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00349B40);
+/**
+ * @brief Save the enabled grid selection and copy its node position to the display.
+ * @param object Tactics receiver holding the grid, node list, and display target.
+ * @return Zero when the grid's control byte is clear; otherwise one.
+ */
+u8 func_00349B40(TacticsGridOwner* object)
+{
+    if (tactics_grid_empty(object->grid) == 1)
+    {
+        return 0;
+    }
+    object->selected = object->grid->unk114;
+    D_001B643C->state->selected = object->selected;
+    TacticsPosition* position =
+        &((TacticsPositionTarget*)func_00351BF0(&object->nodes, object->selected)->value)->position;
+    LibBounds4C69B0* bounds = func_004C69B0(
+        (LibObject178750*)func_00351BF0(&object->nodes, object->selected)->value);
+    tactics_set_position(object->target, position->x, position->y, bounds->unk08, 24.0f);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00349C10);
 
@@ -202,7 +337,46 @@ void func_00349E70(void* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00349EB0);
+/**
+ * @brief Place the present indicators using the selected grid row's coordinate pairs.
+ * @param object Tactics receiver holding the grid, indicators, and base coordinates.
+ */
+void func_00349EB0(TacticsGridOwner* object)
+{
+    if (object->grid != 0)
+    {
+        float first = 0.0f;
+        float second = 0.0f;
+        s16 index = object->grid->unk114;
+        if (object->indicators[0] != 0)
+        {
+            func_00408600(index, 0, &first, &second);
+            first /= 42.0f;
+            second /= 42.0f;
+            first -= 10.0f + 0.2f * (250.0f - second);
+            tactics_set_xy(object->indicators[0], -14.400001f + (object->base_x + first),
+                -16.0f + (object->base_y + second));
+        }
+        if (object->indicators[1] != 0)
+        {
+            func_00408600(index, 1, &first, &second);
+            first /= 42.0f;
+            second /= 42.0f;
+            first -= 10.0f + 0.2f * (250.0f - second);
+            tactics_set_xy(object->indicators[1], -14.400001f + (object->base_x + first),
+                -16.0f + (object->base_y + second));
+        }
+        if (object->indicators[2] != 0)
+        {
+            func_00408600(index, 2, &first, &second);
+            first /= 42.0f;
+            second /= 42.0f;
+            first -= 10.0f + 0.2f * (250.0f - second);
+            tactics_set_xy(object->indicators[2], -14.400001f + (object->base_x + first),
+                -16.0f + (object->base_y + second));
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034A120);
 
@@ -216,13 +390,139 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034AEC0);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034AF20);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034AFB0);
+/**
+ * @brief Advance the chosen selector one entry, wrapping after its eighth entry.
+ * @param object Tactics receiver containing two selectors and the selector choice byte.
+ */
+void func_0034AFB0(TacticsDualSelectionOwner* object)
+{
+    FieldObject23B1D0* selection;
+    if (object->use_second)
+    {
+        selection = object->second;
+    }
+    else
+    {
+        selection = object->first;
+    }
+    if (tactics_selection_inactive(selection))
+    {
+        return;
+    }
+    s32 index = selection->selected + 1;
+    if (index >= 8)
+    {
+        index = 0;
+    }
+    func_0023B1D0(selection, index, 0);
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034B020);
+/**
+ * @brief Move the chosen selector back one entry, wrapping to its eighth entry.
+ * @param object Tactics receiver containing two selectors and the selector choice byte.
+ */
+void func_0034B020(TacticsDualSelectionOwner* object)
+{
+    FieldObject23B1D0* selection;
+    if (object->use_second)
+    {
+        selection = object->second;
+    }
+    else
+    {
+        selection = object->first;
+    }
+    if (tactics_selection_inactive(selection))
+    {
+        return;
+    }
+    s32 index = selection->selected - 1;
+    if (index < 0)
+    {
+        index = 7;
+    }
+    func_0023B1D0(selection, index, 0);
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034B080);
+/**
+ * @brief Map the chosen selector's first three entries to entries three, five, and six.
+ * @param object Tactics receiver containing two selectors and the selector choice byte.
+ */
+void func_0034B080(TacticsDualSelectionOwner* object)
+{
+    FieldObject23B1D0* selection;
+    if (object->use_second)
+    {
+        selection = object->second;
+    }
+    else
+    {
+        selection = object->first;
+    }
+    if (tactics_selection_inactive(selection))
+    {
+        return;
+    }
+    s32 index = selection->selected;
+    switch (index)
+    {
+        case 0:
+            index = 3;
+            break;
+        case 1:
+            index = 5;
+            break;
+        case 2:
+            index = 6;
+            break;
+        default:
+            return;
+    }
+    func_0023B1D0(selection, index, 0);
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034B120);
+/**
+ * @brief Map the chosen selector's last five entries back to its first three.
+ * @param object Tactics receiver containing two selectors and the selector choice byte.
+ */
+void func_0034B120(TacticsDualSelectionOwner* object)
+{
+    FieldObject23B1D0* selection;
+    if (object->use_second)
+    {
+        selection = object->second;
+    }
+    else
+    {
+        selection = object->first;
+    }
+    if (tactics_selection_inactive(selection))
+    {
+        return;
+    }
+    s32 index = selection->selected;
+    switch (index)
+    {
+        case 3:
+            index = 0;
+            break;
+        case 4:
+            index = 1;
+            break;
+        case 5:
+            index = 1;
+            break;
+        case 6:
+            index = 2;
+            break;
+        case 7:
+            index = 2;
+            break;
+        default:
+            return;
+    }
+    func_0023B1D0(selection, index, 0);
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034B1E0);
 
@@ -251,7 +551,38 @@ u32 func_0034DD00(void* object)
     return *(u32*)((u8*)object + 0x24);
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034DD10);
+/**
+ * @brief Color up to six list displays and place the cursor for the selected grid entry.
+ * @param object Tactics receiver holding the display list, grid, and cursor.
+ */
+void func_0034DD10(TacticsHighlightOwner* object)
+{
+    s16 selected = object->grid->selected;
+    s32 index = 0;
+    TacticsListNode* node = object->nodes.head->next;
+    while (node != 0)
+    {
+        if (index >= 6)
+        {
+            break;
+        }
+        TacticsIcon* display = (TacticsIcon*)node->value;
+        if (index == selected)
+        {
+            display->color = 0x288080;
+            display->active = 1;
+            func_0023B9B0(object->cursor, index,
+                func_004C69B0((LibObject178750*)display)->unk08);
+        }
+        else
+        {
+            display->color = 0x808080;
+            display->active = 1;
+        }
+        node = node->next;
+        index++;
+    }
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034DDE0);
 
@@ -287,13 +618,107 @@ void func_0034EC30(void* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034EC80);
+/**
+ * @brief Advance the enabled coordinate selector, wrapping after its eighth entry.
+ * @param object Tactics receiver holding the coordinate selector.
+ */
+void func_0034EC80(TacticsSelectionOwner* object)
+{
+    FieldObject23B1D0* selection = object->selection;
+    if (tactics_selection_inactive(selection))
+    {
+        return;
+    }
+    s32 index = selection->selected + 1;
+    if (index >= 8)
+    {
+        index = 0;
+    }
+    func_0023B1D0(selection, index, 0);
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034ECD0);
+/**
+ * @brief Move the enabled coordinate selector back, wrapping to its eighth entry.
+ * @param object Tactics receiver holding the coordinate selector.
+ */
+void func_0034ECD0(TacticsSelectionOwner* object)
+{
+    FieldObject23B1D0* selection = object->selection;
+    if (tactics_selection_inactive(selection))
+    {
+        return;
+    }
+    s32 index = selection->selected - 1;
+    if (index < 0)
+    {
+        index = 7;
+    }
+    func_0023B1D0(selection, index, 0);
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034ED20);
+/**
+ * @brief Map the first three selector entries to entries three, five, and six.
+ * @param object Tactics receiver holding the enabled coordinate selector.
+ */
+void func_0034ED20(TacticsSelectionOwner* object)
+{
+    FieldObject23B1D0* selection = object->selection;
+    if (tactics_selection_inactive(selection))
+    {
+        return;
+    }
+    s32 index = selection->selected;
+    switch (index)
+    {
+        case 0:
+            index = 3;
+            break;
+        case 1:
+            index = 5;
+            break;
+        case 2:
+            index = 6;
+            break;
+        default:
+            return;
+    }
+    func_0023B1D0(selection, index, 0);
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034EDA0);
+/**
+ * @brief Map the last five selector entries back to the first three.
+ * @param object Tactics receiver holding the enabled coordinate selector.
+ */
+void func_0034EDA0(TacticsSelectionOwner* object)
+{
+    FieldObject23B1D0* selection = object->selection;
+    if (tactics_selection_inactive(selection))
+    {
+        return;
+    }
+    s32 index = selection->selected;
+    switch (index)
+    {
+        case 3:
+            index = 0;
+            break;
+        case 4:
+            index = 1;
+            break;
+        case 5:
+            index = 1;
+            break;
+        case 6:
+            index = 2;
+            break;
+        case 7:
+            index = 2;
+            break;
+        default:
+            return;
+    }
+    func_0023B1D0(selection, index, 0);
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034EE50);
 
@@ -397,7 +822,14 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003506E0);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00350740);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00350790);
+/**
+ * @brief Enqueue the receiver for deferred processing.
+ * @param object Receiver to append to the resident object queue.
+ */
+void func_00350790(void* object)
+{
+    func_0011ED90(D_001B65F4, object);
+}
 
 void func_003507B0(void* object)
 {
