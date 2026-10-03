@@ -78,8 +78,11 @@ def configure(configs):
              'rule binary_object',
              '  command = ${binutils}objcopy -I binary -O elf32-littlemips -B mips:5900 $in $out',
              '  description = BIN $in',
+             'rule absolute_symbols',
+             '  command = python -m tools.so3.build.linker_symbols --output $out $in',
+             '  description = SYMS $out',
              'rule link',
-             '  command = ${binutils}ld -EL -T $layout -T $functions -T $symbols -o $out',
+             '  command = ${binutils}ld -EL -T $layout -T $functions -T $symbols $absolute_symbols -o $out',
              '  description = LD $out',
              'rule binary_image', '  command = ${binutils}objcopy -O binary $in $out',
              '  description = IMAGE $out',
@@ -100,6 +103,11 @@ def configure(configs):
         out = Path(options['build_path'])
         layout = options['ld_script_path']
         funcs, syms = options['undefined_funcs_auto_path'], options['undefined_syms_auto_path']
+        maps = options.get('symbol_addrs_path', [])
+        absolute = out / 'absolute_symbols.ld' if maps else None
+        if absolute:
+            lines += [f'build {absolute}: absolute_symbols {" ".join(maps)} | '
+                      'tools/so3/build/linker_symbols.py tools/so3/build/text_order.py']
         include = options['generated_asm_macros_directory']
         macro = f'{include}/macro.inc'
         units = pieces(config)
@@ -160,8 +168,10 @@ def configure(configs):
         rebuilt = out / ('SLUS_204.88' if is_main else 'rebuilt.bin')
         verify_command = (f'python -m tools.so3.build.main verify --output {rebuilt} --report {out}/verify.json'
                           if is_main else f'python -m tools.so3.build.overlays verify --overlay {module}')
-        lines += [f'build {out}/linked.elf: link {" ".join(objects)} | {layout} {funcs} {syms}',
+        lines += [f'build {out}/linked.elf: link {" ".join(objects)} | {layout} {funcs} {syms}'
+                  + (f' {absolute}' if absolute else ''),
                   f'  layout = {layout}', f'  functions = {funcs}', f'  symbols = {syms}',
+                  f'  absolute_symbols = -T {absolute}' if absolute else '  absolute_symbols =',
                   f'build {rebuilt}: binary_image {out}/linked.elf',
                   f'build {out}/verify.json: verify {rebuilt} | {options["target_path"]} {" ".join(deps)}',
                   f'  verify_command = {verify_command}', f'  module = {module}', '']
