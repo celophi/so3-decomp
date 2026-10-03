@@ -24,7 +24,9 @@ typedef struct FieldResourceRecord
 
 typedef struct FieldD1440Object FieldD1440Object;
 
+#ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {

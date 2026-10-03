@@ -31,3 +31,6 @@ rom:0x7B7D0 reloc:MIPS_HI16 symbol:__vt__16FieldClass155640 addend:0x2C
 rom:0x7B7D8 reloc:MIPS_LO16 symbol:__vt__16FieldClass155640 addend:0x2C
 rom:0x9C000 reloc:MIPS_HI16 symbol:__vt__16FieldClass155640 addend:0x2C
 rom:0x9C008 reloc:MIPS_LO16 symbol:__vt__16FieldClass155640 addend:0x2C
+// FieldClass1504C0::func_001EAC90 loads D_4ED330 through $at.
+rom:0xD958 reloc:MIPS_HI16 symbol:D_4ED330
+rom:0xD95C reloc:MIPS_LO16 symbol:D_4ED330

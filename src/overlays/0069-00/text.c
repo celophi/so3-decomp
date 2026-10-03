@@ -74,9 +74,36 @@ typedef struct StatusOwner003580D0
     StatusItem* items[4];
 } StatusOwner003580D0;
 
+/** Display storage whose value is a selected detail pointer. */
+typedef struct StatusPointerItem
+{
+    u8 unk00[0x3C];
+    u8 unk3c;
+    u8 unk3d[0xBF];
+    void* unkfc;
+} StatusPointerItem;
+
+/** Fixed-stride detail records containing two encoded signed status values. */
+typedef struct StatusDetail
+{
+    u8 unk00[0x18];
+    s16 first;
+    s16 second;
+    u8 unk1c[4];
+    u8 unk20[0xD4];
+    u32 checksum;
+    u8 unkf8[0x14];
+    u32 key;
+    u8 unk110[4];
+} StatusDetail;
+
 typedef struct Record003581B0Inner
 {
-    u8 unk00[0x12];
+    void* entries;
+    StatusDetail* details;
+    s8 codes[8];
+    u8 unk10;
+    s8 index;
     u8 flag;
 } Record003581B0Inner;
 
@@ -84,7 +111,11 @@ typedef struct Record003581B0
 {
     u8 unk00[0xA8];
     Record003581B0Inner* inner;
-    u8 unkac[0x48];
+    StatusPointerItem* pointer_item;
+    u8 unkb0[0x1C];
+    StatusItem* second_item;
+    StatusItem* first_item;
+    u8 unkd4[0x20];
     u8 flag;
 } Record003581B0;
 
@@ -123,6 +154,46 @@ typedef struct Record0035DE40
     void* methods;
 } Record0035DE40;
 
+/** Selection state used by the mode query. */
+typedef struct QuerySelection
+{
+    u8 unk00[0xE5];
+    u8 flag;
+    u8 unke6[0x2E];
+    s16 index;
+} QuerySelection;
+
+typedef struct QueryDisplay
+{
+    u8 unk00[0x3F];
+    u8 flag;
+} QueryDisplay;
+
+/** The two display recipients reached by the mode query. */
+typedef struct QueryStatus
+{
+    u8 unk00[0x10C];
+    QueryDisplay* first;
+    QueryDisplay* second;
+} QueryStatus;
+
+typedef struct QueryParent
+{
+    u8 unk00[0x50];
+    QueryStatus* status;
+} QueryParent;
+
+/** Partial mode-query receiver with a six-element signed mode table. */
+typedef struct Record00352B30
+{
+    u8 unk00[0xA8];
+    QuerySelection* selection;
+    u8 unkac[0x58];
+    u32 unk104;
+    s16 modes[6];
+    QueryParent* parent;
+} Record00352B30;
+
 typedef struct Record0035D4A0
 {
     void* methods;
@@ -134,9 +205,13 @@ typedef struct Record0035D4A0
 
 typedef struct ListItem0035CCE0
 {
-    u8 unk00[0x3C];
+    u8 unk00[0x18];
+    SkillVector4 position;
+    u8 unk28[0x14];
     u8 unk3c;
-    u8 unk3d[0x57];
+    u8 unk3d[2];
+    u8 unk3f;
+    u8 unk40[0x54];
     u32 unk94;
 } ListItem0035CCE0;
 
@@ -145,6 +220,112 @@ typedef struct ListNode0035CCE0
     ListItem0035CCE0* value;
     struct ListNode0035CCE0* next;
 } ListNode0035CCE0;
+
+/** Partial metric storage returned for a display item. */
+typedef struct DisplayMetrics
+{
+    u8 unk00[8];
+    float unk08;
+} DisplayMetrics;
+
+/** Partial receiver for the paired six-row display lists. */
+typedef struct Record003538F0
+{
+    u8 unk00[0x2C];
+    SkillList first;
+    u8 unk34[0x78];
+    FieldObject23CEB0* selection;
+    FieldObject23BAB0* display;
+    u8 unkb4[0x24];
+    SkillList second;
+} Record003538F0;
+
+/** Partial display receiver with counter and horizontal position controls. */
+typedef struct Record0035A560
+{
+    u8 unk00[0xA8];
+    ListItem0035CCE0* display;
+    s32 limit;
+    u8 unkb0[2];
+    s16 counter;
+    u8 active;
+    u8 unkb5[0x13];
+    float first_x;
+    float origin;
+    float offset;
+} Record0035A560;
+
+/** Partial display owner exposing the position used by grid setup. */
+typedef struct SkillDisplayOwner
+{
+    u8 unk00[0x40];
+    float x;
+    float y;
+} SkillDisplayOwner;
+
+/** Partial receiver containing two grid targets and their display objects. */
+typedef struct Record0034B190
+{
+    u8 unk00[0x10];
+    SkillDisplayOwner* owner;
+    u8 unk14[0x60];
+    SkillList display_list;
+    u8 unk7c[0x10];
+    SkillList item_list;
+    u8 unk94[0x14];
+    FieldObject23CEB0* first_grid;
+    FieldObject23CEB0* second_grid;
+    FieldObject23BE00* first_display;
+    FieldObject23BE00* second_display;
+    u8 unkb8[8];
+    float first_spacing;
+    float second_spacing;
+    u8 unkc8[0x20];
+    float first_x;
+    float first_y;
+    float second_x;
+    float second_y;
+} Record0034B190;
+
+/** Partial paired-list receiver with selection flags and display references. */
+typedef struct Record0034C1F0
+{
+    u8 unk00[0x10];
+    SkillDisplayOwner* owner;
+    u8 unk14[0x18];
+    SkillList list;
+    u8 unk34[0x40];
+    SkillList display_list;
+    u8 unk7c[0x2C];
+    u8 state;
+    u8 mode;
+    u8 unkaa[0xA];
+    FieldObject23CEB0* selection;
+    u8 unkb8[0x20];
+    FieldObject23B950* recipient;
+    u8 unkdc[0xC];
+    s32 values[42];
+    u8 unk190[0x54];
+    u8 colors[42];
+    u8 unk20e[2];
+    SkillList second;
+    u8 unk218[4];
+    float spacing;
+    float offset;
+} Record0034C1F0;
+
+typedef struct Record0034C110
+{
+    u8 unk00[0x2C];
+    ListNode0035CCE0* first;
+    u8 unk30[0x88];
+    SkillVector4 first_position;
+    SkillVector4 second_position;
+    u8 unkd8[0x138];
+    ListNode0035CCE0* second;
+    u8 unk214[8];
+    float spacing;
+} Record0034C110;
 
 typedef struct ListOwner0035CCE0
 {
@@ -208,11 +389,17 @@ typedef struct Record00361060
     Record003610F0 nested;
 } Record00361060;
 
+typedef struct Record00364720
+{
+    Record00361060 base;
+    ListOwnerWithMethods list;
+} Record00364720;
+
 typedef struct Record00364810
 {
     void* methods;
     u8 unk04[0xB8];
-    u8 nested;
+    ListOwnerWithMethods nested;
 } Record00364810;
 
 typedef struct Record0035D3E0
@@ -263,6 +450,9 @@ extern void func_44B210(void* record);
 extern u8 D_183C48[];
 extern u8 D_183C38[];
 extern u8 D_184258[];
+extern u8 D_184268[];
+extern u8 D_183D60[];
+extern u8 D_183D84[];
 extern void func_0035C810(ListOwnerWithMethods* record);
 extern void func_0035CA60(ListOwnerWithMethods* record);
 extern void func_00364B70(ListOwnerWithMethods* record);
@@ -276,19 +466,25 @@ extern u8 D_183270[];
 extern u8 D_159FE0[];
 extern u8 D_183470[];
 extern u8 D_183DA0[];
-extern void func_00364960(void* object, s32 flag);
 extern void func_44B110(void* object, s32 arg1, s32 arg2, void* arg3, float value, s32 flag);
 extern void* func_100AC0(u32 size, s32 flags);
 extern void func_2CEBE0(void* object);
 extern void func_003648E0(void* object);
 extern void func_0035C8D0(void* object);
-extern void func_00358200(void* object);
 extern void func_4CE4C0(void* destination, const void* source);
+
+void func_420D20(FieldObject23B850* object, u32 color);
+void func_4C6190(void* owner, void* object);
+
+void func_0034BD30(Record0034C1F0* record, s32 index);
+void* func_4C69B0(void* item);
+s32 func_4C6A40(void* item);
 
 static inline RecordWithMethods* release_record182f50(RecordWithMethods* record, s16 flag);
 static inline RecordWithMethods* release_record182f60(RecordWithMethods* record, s16 flag);
 static inline Record003610F0* release_record183da0(Record003610F0* record, s16 flag);
 static inline Record0035DE40* release_record183e50(Record0035DE40* record, s16 flag);
+static inline Record00361060* release_record175030(Record00361060* record, s16 flag);
 
 /**
  * @brief Reset the base record's method table and optionally free its storage.
@@ -361,6 +557,28 @@ static inline Record0035DE40* release_record183e50(Record0035DE40* record, s16 f
     {
         record->methods = D_183E50;
         func_2BC410(record, 0);
+        if (flag > 0)
+        {
+            func_100B40(record);
+        }
+    }
+    return record;
+}
+
+/**
+ * @brief Release the embedded record and base state, then optionally free the owner.
+ * @param record Record to release, or null.
+ * @param flag Positive values release the record's storage.
+ * @return Original record pointer.
+ */
+static inline Record00361060* release_record175030(Record00361060* record, s16 flag)
+{
+    if (record != 0)
+    {
+        record->methods = D_175030;
+        record->nested.methods = D_175054;
+        release_record183da0(&record->nested, -1);
+        func_4C48B0(record, 0);
         if (flag > 0)
         {
             func_100B40(record);
@@ -708,9 +926,65 @@ INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034AF90);
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034B090);
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034B190);
+s32 func_0034B190(Record0034B190* record)
+{
+    float x;
+    float y;
+    FieldObject23BE00* display;
+    if (record->second_grid == 0)
+    {
+        return 0;
+    }
+    x = record->owner->x + record->second_x;
+    y = record->owner->y + record->second_y;
+    display = func_100AC0(108, 0);
+    if (display != 0)
+    {
+        display = func_0023BE00(display);
+    }
+    record->second_display = display;
+    func_0023BB20(record->second_display, record->second_grid, 0x808080, record->second_x, record->second_y, 96.0f, 1.0f);
+    func_4C6190(record->owner, record->second_display);
+    func_0035C440(&record->item_list, record->second_display);
+    func_0023CE80((FieldObject23CE80*)record->second_grid, 1, 2);
+    func_0023CE60((FieldObject23CE80*)record->second_grid, 0.0f, record->second_spacing);
+    record->second_grid->unkF2 = 0;
+    record->second_grid->unk119 = 1;
+    func_0023CF50(record->second_grid, 0, x, y);
+    func_0023CEA0((FieldObject23CEA0*)record->second_grid, 0);
+    func_0035C4D0(&record->display_list, record->second_grid);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034B2C0);
+s32 func_0034B2C0(Record0034B190* record)
+{
+    float x;
+    float y;
+    FieldObject23BE00* display;
+    if (record->first_grid == 0)
+    {
+        return 0;
+    }
+    x = record->owner->x + record->first_x;
+    y = record->owner->y + record->first_y;
+    display = func_100AC0(108, 0);
+    if (display != 0)
+    {
+        display = func_0023BE00(display);
+    }
+    record->first_display = display;
+    func_0023BB20(record->first_display, record->first_grid, 0x808080, record->first_x, record->first_y, 48.0f, 1.0f);
+    func_4C6190(record->owner, record->first_display);
+    func_0035C440(&record->item_list, record->first_display);
+    func_0023CE80((FieldObject23CE80*)record->first_grid, 1, 7);
+    func_0023CE60((FieldObject23CE80*)record->first_grid, 0.0f, record->first_spacing);
+    record->first_grid->unkF2 = 0;
+    record->first_grid->unk119 = 1;
+    func_0023CF50(record->first_grid, 0, x, y);
+    func_0023CEA0((FieldObject23CEA0*)record->first_grid, 0);
+    func_0035C4D0(&record->display_list, record->first_grid);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034B3F0);
 
@@ -758,13 +1032,152 @@ u8* func_0034BCB0(u8* object)
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034BD30);
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034BEE0);
+void func_0034BEE0(Record0034C1F0* record)
+{
+    s32 index;
+    for (index = 0; index < 42; index++)
+    {
+        ListItem0035CCE0* first = func_0035CAE0(&record->list, index)->value;
+        ListItem0035CCE0* second = func_0035C890(&record->second, index)->value;
+        if (record->values[index] == 0 && index > 0)
+        {
+            first->unk3f = 0;
+            second->unk3f = 0;
+        }
+        else if (index == record->selection->unk114)
+        {
+            if (record->colors[index] != 0)
+            {
+                first->unk94 = 0x288080;
+                first->unk3c = 1;
+                second->unk94 = 0x288080;
+                second->unk3c = 1;
+            }
+            else
+            {
+                first->unk94 = 0x505050;
+                first->unk3c = 1;
+                second->unk94 = 0x505050;
+                second->unk3c = 1;
+            }
+            func_0034BD30(record, index);
+            func_4C69B0(first);
+            func_4C6A40(first);
+        }
+        else if (record->colors[index] != 0)
+        {
+            first->unk94 = 0x808080;
+            first->unk3c = 1;
+            second->unk94 = 0x288080;
+            second->unk3c = 1;
+        }
+        else
+        {
+            first->unk94 = 0x505050;
+            first->unk3c = 1;
+            second->unk94 = 0x505050;
+            second->unk3c = 1;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034C060);
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034C110);
+void func_0034C110(Record0034C110* record, float offset)
+{
+    s32 index = 0;
+    ListNode0035CCE0* first = record->first->next;
+    ListNode0035CCE0* second = record->second->next;
+    while (first != 0)
+    {
+        ListItem0035CCE0* item = first->value;
+        float z;
+        float w;
+        float second_z;
+        float second_w;
+        float row;
+        float x;
+        float y;
+        float second_x;
+        float second_y;
+        row = (float)index;
+        x = record->first_position.x;
+        y = record->first_position.y;
+        z = record->first_position.z;
+        w = record->first_position.w;
+        y -= offset;
+        y += record->spacing * row;
+        item->position.x = x;
+        item->position.y = y;
+        item->position.z = z;
+        item->position.w = w;
+        item->unk3c = 1;
+        item = first->value;
+        item->unk94 = 0x808080;
+        item->unk3c = 1;
+        first = first->next;
+        if (second != 0)
+        {
+            second_x = record->second_position.x;
+            second_y = record->second_position.y;
+            second_z = record->second_position.z;
+            second_w = record->second_position.w;
+            second_y -= offset;
+            second_y += record->spacing * row;
+            item = second->value;
+            item->position.x = second_x;
+            item->position.y = second_y;
+            item->position.z = second_z;
+            item->position.w = second_w;
+            item->unk3c = 1;
+            item = second->value;
+            item->unk94 = 0x288080;
+            item->unk3c = 1;
+            second = second->next;
+        }
+        index++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034C1F0);
+void func_0034C1F0(Record0034C1F0* record)
+{
+    SkillListNode* node = func_0035CAE0(&record->list, record->selection->unk114);
+    if (record->recipient != 0)
+    {
+        if (record->state != 0 && record->mode == 2)
+        {
+            record->recipient->flag3F = 0;
+        }
+        else
+        {
+            record->recipient->flag3F = 1;
+        }
+    }
+    if (node != 0)
+    {
+        if (record->recipient == 0)
+        {
+            FieldObject23B950* recipient = func_100AC0(sizeof(FieldObject23B950), 0);
+            if (recipient != 0)
+            {
+                recipient = func_0023B950(recipient);
+            }
+            record->recipient = recipient;
+            func_0023B850((FieldObject23B850*)record->recipient, node->value, 0x288080);
+            func_4C6190(record->owner, record->recipient);
+        }
+        func_0023B7E0(record->recipient, node->value);
+        if (record->colors[record->selection->unk114] != 0)
+        {
+            func_420D20((FieldObject23B850*)record->recipient, 0x288080);
+        }
+        else
+        {
+            func_420D20((FieldObject23B850*)record->recipient, 0x505050);
+        }
+        func_0023B780(record->recipient);
+    }
+}
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034C320);
 
@@ -800,7 +1213,39 @@ INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034DF00);
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034E0B0);
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034E260);
+s32 func_0034E260(Record0034C1F0* record, s16 row_count)
+{
+    float first;
+    float second;
+    if (row_count == 0)
+    {
+        return 1;
+    }
+    if (record->owner == 0)
+    {
+        return 0;
+    }
+    first = record->owner->x + record->offset;
+    second = 16.0f + record->owner->y;
+    func_0023CE80((FieldObject23CE80*)record->selection, 1, row_count);
+    func_0023CE60((FieldObject23CE80*)record->selection, 0.0f, record->spacing);
+    record->selection->unkF2 = 0;
+    record->selection->unk119 = 0;
+    record->selection->unk116 = 36;
+    func_0023CF50(record->selection, 0, first, second);
+    func_0035C4D0(&record->display_list, record->selection);
+    if (record->selection != 0)
+    {
+        FieldObject23B950* recipient = record->recipient;
+        if (recipient != 0)
+        {
+            recipient->unk28 = 0;
+            recipient->flag3C = 1;
+        }
+        func_0023CEA0((FieldObject23CEA0*)record->selection, 0);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0034E380);
 
@@ -877,7 +1322,41 @@ INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_00352920);
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_00352A90);
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_00352B30);
+s32 func_00352B30(Record00352B30* record)
+{
+    QuerySelection* selection = record->selection;
+    u8 inactive = !selection->flag;
+    s16 index;
+    s16 mode;
+    QueryDisplay* display;
+
+    if (inactive == 1)
+    {
+        return 0;
+    }
+    index = selection->index;
+    if (record->unk104 == 0)
+    {
+        return 3;
+    }
+    mode = record->modes[index];
+    if (mode == 4 || mode == 5)
+    {
+        func_003522C0(record);
+        display = record->parent->status->first;
+        if (display != 0)
+        {
+            display->flag = 0;
+        }
+        display = record->parent->status->second;
+        if (display != 0)
+        {
+            display->flag = 0;
+        }
+        return 1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_00352C00);
 
@@ -942,7 +1421,33 @@ INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_00353720);
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_003538A0);
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_003538F0);
+void func_003538F0(Record003538F0* record)
+{
+    s32 index;
+    for (index = 0; index < 6; index++)
+    {
+        ListItem0035CCE0* first = func_0035CAE0(&record->first, index)->value;
+        ListItem0035CCE0* second = func_0035CAE0(&record->second, index)->value;
+        if (index == record->selection->unk114)
+        {
+            DisplayMetrics* metrics;
+            first->unk94 = 0x288080;
+            first->unk3c = 1;
+            second->unk94 = 0x288080;
+            second->unk3c = 1;
+            metrics = func_4C69B0(first);
+            func_0023BAB0(record->display, first->position.x,
+                         1.0f + (24.0f + first->position.y), 16.0f + metrics->unk08);
+        }
+        else
+        {
+            first->unk94 = 0x808080;
+            first->unk3c = 1;
+            second->unk94 = 0x808080;
+            second->unk3c = 1;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_003539F0);
 
@@ -1164,7 +1669,36 @@ void func_003581B0(void* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_00358200);
+void func_00358200(Record003581B0* record)
+{
+    StatusDetail* detail;
+    u32 key;
+    s32 value;
+    StatusPointerItem* pointer_item;
+    StatusItem* item;
+
+    pointer_item = record->pointer_item;
+    pointer_item->unkfc = record->inner->details[record->inner->index].unk20;
+    pointer_item->unk3c = 1;
+    detail = &record->inner->details[record->inner->index];
+    key = detail->key;
+    value = (detail->checksum != (((detail->second + key) ^ detail->first) ^ key)) ? 0 : (detail->first ^ 0x7E93);
+    item = record->first_item;
+    item->unkfc = value;
+    item->unk3c = 1;
+    if (record->inner != 0)
+    {
+        detail = &record->inner->details[record->inner->index];
+        if (detail != 0)
+        {
+            key = detail->key;
+            value = (detail->checksum != (((detail->second + key) ^ detail->first) ^ key)) ? 0 : (detail->second ^ 0x7E93);
+            item = record->second_item;
+            item->unkfc = value;
+            item->unk3c = 1;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_00358310);
 
@@ -1227,7 +1761,42 @@ RecordWithMethods* func_0035A500(RecordWithMethods* record, s16 flag)
     return record;
 }
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0035A560);
+void func_0035A560(Record0035A560* record)
+{
+    ListItem0035CCE0* display = record->display;
+    float x = display->position.x;
+    float y = display->position.y;
+    float z = display->position.z;
+    float w = display->position.w;
+    if (record->active == 0)
+    {
+        display->position.x = record->first_x;
+        display->position.y = y;
+        display->position.z = z;
+        display->position.w = w;
+        display->unk3c = 1;
+        record->counter++;
+        if (!((float)record->counter <= 120.0f))
+        {
+            record->counter = 0;
+            record->active = 1;
+        }
+        return;
+    }
+    {
+        float origin = record->origin;
+        x -= 108.0f * D_001B6690;
+        if (x < origin - (float)record->limit)
+        {
+            x = 2.0f + (origin + record->offset);
+        }
+        display->position.x = x;
+        display->position.y = y;
+        display->position.z = z;
+        display->position.w = w;
+        display->unk3c = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0035A650);
 
@@ -1995,18 +2564,7 @@ INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_0035FAA0);
 
 Record00361060* func_00361060(Record00361060* record, s16 flag)
 {
-    if (record != 0)
-    {
-        record->methods = D_175030;
-        record->nested.methods = D_175054;
-        release_record183da0(&record->nested, -1);
-        func_4C48B0(record, 0);
-        if (flag > 0)
-        {
-            func_100B40(record);
-        }
-    }
-    return record;
+    return release_record175030(record, flag);
 }
 
 Record003610F0* func_003610F0(Record003610F0* record, s16 flag)
@@ -2203,7 +2761,21 @@ u8* func_00364670(u8* object)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_00364720);
+Record00364720* func_00364720(Record00364720* record, s16 flag)
+{
+    if (record != 0)
+    {
+        record->base.methods = D_183D60;
+        record->base.nested.methods = D_183D84;
+        func_00364AF0(&record->list, -1);
+        release_record175030(&record->base, 0);
+        if (flag > 0)
+        {
+            func_100B40(record);
+        }
+    }
+    return record;
+}
 
 void func_003647E0(void* object)
 {
@@ -2250,7 +2822,24 @@ RecordWithMethods* func_00364880(RecordWithMethods* record, s16 flag)
 
 INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_003648E0);
 
-INCLUDE_ASM("build/overlays/0069-00/asm/nonmatchings/text", func_00364960);
+ListOwnerWithMethods* func_00364960(ListOwnerWithMethods* record, s16 flag)
+{
+    if (record != 0)
+    {
+        record->methods = D_184268;
+        func_00364A70(record);
+        if (record->head != 0)
+        {
+            func_100B40(record->head);
+            record->head = 0;
+        }
+        if (flag > 0)
+        {
+            func_100B40(record);
+        }
+    }
+    return record;
+}
 
 void func_003649E0(SkillList* list, void* value)
 {

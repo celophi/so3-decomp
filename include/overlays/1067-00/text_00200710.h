@@ -34,6 +34,16 @@ void func_002017B0(FieldResourceList14* object, s32 first, s32 second);
 u32 func_00201E20(FieldResourceList14* object, u32 kind, u32 key);
 
 /**
+ * @brief Find the data of a resource entry.
+ * @param object Resource list to search.
+ * @param kind Resource kind to match.
+ * @param key Resource key to match.
+ * @param mode Lookup option; zero in the known callers.
+ * @return The entry's data, or null when no matching entry exists.
+ */
+void* func_00201EA0(FieldResourceList14* object, u32 kind, u32 key, s32 mode);
+
+/**
  * @brief Return the fixed value one.
  * @param object Receiver of the call.
  * @return One.

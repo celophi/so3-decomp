@@ -3,14 +3,32 @@
 
 #include "types.h"
 
-/** Partial receiver layout for the paired packed-field setters. */
+/** @brief A 48-byte record containing its observed scalar key at offset 0x0C. */
+typedef struct BootRecord48F0E90
+{
+    u8 unk00[0x0C];
+    float key;
+    u8 unk10[0x20];
+} BootRecord48F0E90;
+
+/** @brief Partial record-array receiver with counts, span, and packed controls. */
 typedef struct BootState1F0D60
 {
-    u8 pad00[0x52];
+    u8 unk00[4];
+    BootRecord48F0E90* entries;
+    u8 unk08[0x38];
+    u32 unk40;
+    float span;
+    s16 count;
+    s16 capacity;
+    s16 unk4C;
+    s16 unk4E;
+    s16 unk50;
     u8 unk52_lo : 4;
     u8 unk52_hi : 4;
     u8 unk53_bit0 : 1;
-    u8 unk53_other : 7;
+    u8 unk53_bit1 : 1;
+    u8 unk53_other : 6;
 } BootState1F0D60;
 
 /** Partial receiver layout for the paired packed-field setters. */
@@ -149,9 +167,64 @@ typedef struct BootFloatHistory1F48D0
     float unk1C[2];
 } BootFloatHistory1F48D0;
 
+/** @brief Partial scalar record containing four inputs and its endpoint range. */
+typedef struct BootScalarRangeFE50
+{
+    float unk00;
+    float unk04;
+    float unk08;
+    float unk0C;
+    float unk10;
+    float unk14;
+    float unk18;
+} BootScalarRangeFE50;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Reset 48-byte record storage, counts, packed controls, and cached indices.
+ * @param object Receiver to reset without releasing its current storage.
+ */
+void func_001F0C80(BootState1F0D60* object);
+
+/**
+ * @brief Bind external 48-byte records and cache their first-to-last key span.
+ * @param object Array receiver.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
+void func_001F0D10(BootState1F0D60* object, s32 count, BootRecord48F0E90* entries);
+
+/**
+ * @brief Test whether the 48-byte record array contains an exactly equal key.
+ * @param object Receiver with valid storage when its count is positive.
+ * @param key Scalar key to find.
+ * @return One for an equal key, or zero when none is present.
+ */
+s32 func_001F0E90(BootState1F0D60* object, float key);
+
+/**
+ * @brief Return the last-to-first key difference, or zero below two records.
+ * @param object Receiver with valid storage when its count is at least two.
+ * @return Difference between the last and first scalar keys, or zero.
+ */
+float func_001F0F00(BootState1F0D60* object);
+
+/**
+ * @brief Store four scalar inputs and an endpoint span, substituting one for zero.
+ * @param object Receiver of the inputs, endpoints, and span.
+ * @param first Input stored at offset 0x00.
+ * @param second Input stored at offset 0x08.
+ * @param third Input stored at offset 0x04.
+ * @param fourth Input stored at offset 0x0C.
+ * @param start First endpoint.
+ * @param end Second endpoint.
+ */
+void func_001EFE50(BootScalarRangeFE50* object, const float* first,
+    const float* second, const float* third, const float* fourth,
+    float start, float end);
 
 /**
  * @brief Reset vector-key storage, counts, control fields, and cached indices.

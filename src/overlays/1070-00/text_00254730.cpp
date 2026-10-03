@@ -1,6 +1,26 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_00254730.h"
 
+/** Partial list element with a signed key and signed state byte. */
+typedef struct FieldKeyedStateElementE4
+{
+    FieldListNode link;
+    u8 unk0c[0xD8];
+    s16 unke4;
+    u8 unke6[0x17];
+    s8 unkfd;
+} FieldKeyedStateElementE4;
+
+/** Partial record with a relative next offset and a trailing word discriminator. */
+typedef struct FieldRelativeRecord18
+{
+    u32 unk00;
+    u8 unk04[8];
+    u32 unk0c;
+    u8 unk10[8];
+    u32 unk18;
+} FieldRelativeRecord18;
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00254730);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00254FB0);
@@ -27,7 +47,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_002554
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00255460);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_002556A0);
+void func_002556A0(FieldRecordQueue* object)
+{
+    advance_record_queue(object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00255770);
 
@@ -138,7 +161,27 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259B
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259DC0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259E20);
+s32 func_00259E20(const FieldKeyedFlagOwnerD8* object, u32 key)
+{
+    FieldListNode* node;
+    FieldKeyedFlagList14* list = object->unkd8;
+    FieldListNode* sentinel = &list->unk14;
+    node = sentinel;
+    for (;;)
+    {
+        node = node->next;
+        if (node == 0 || sentinel == node)
+        {
+            break;
+        }
+        FieldKeyedFlagElement28* element = (FieldKeyedFlagElement28*)node;
+        if (key == element->unk28)
+        {
+            return element->unk2c_0;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259E70);
 
@@ -166,7 +209,38 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259F
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259FD0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025A040);
+s32 func_0025A040(const FieldKeyedFlagOwnerD8* object, s32 key)
+{
+    const FieldListNode* node = &object->unkdc;
+    const FieldListNode* sentinel = node;
+    for (;;)
+    {
+        node = node->next;
+        bool absent = !node;
+        if (absent || sentinel == node)
+        {
+            break;
+        }
+        const FieldKeyedStateElementE4* element = (const FieldKeyedStateElementE4*)node;
+        if (key == element->unke4)
+        {
+            bool active;
+            if (element->unkfd <= 0 || element->unkfd >= 6)
+            {
+                active = false;
+            }
+            else
+            {
+                active = true;
+            }
+            if (active)
+            {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025A0C0);
 
@@ -194,7 +268,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025B2
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025B370);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025BB50);
+FieldFloatRecord16* func_0025BB50(FieldFloatRecord16* object)
+{
+    object->unk00 = object->unk04 = object->unk08 = object->unk0c = 0.0f;
+    return object;
+}
 
 void func_0025BB70(FieldMirroredFlags* object, u32 value)
 {
@@ -324,7 +402,23 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00261F
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00261FF0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00262000);
+s32 func_00262000(const void* source)
+{
+    const FieldRelativeRecord18* record = (const FieldRelativeRecord18*)source;
+    for (;;)
+    {
+        if (record->unk00 == 0x53414648)
+        {
+            break;
+        }
+        record = record->unk0c == 0 ? 0 : (const FieldRelativeRecord18*)((const u8*)record + record->unk0c);
+        if (record == 0)
+        {
+            return 0;
+        }
+    }
+    return record->unk18 == 8;
+}
 
 void func_00262060(FieldPointerReset66* object)
 {

@@ -39,6 +39,12 @@ def pieces(config):
             for sub in segment['subsegments']:
                 if sub[1] == 'pad':
                     continue  # zero fill emitted by the linker script; no object
+                if len(sub) == 3 and sub[1].startswith('.'):
+                    continue  # a section of that unit's own object; no new object
+                if len(sub) == 3 and sub[1] in ('databin', 'rodatabin'):
+                    # Splat writes asm/data/<name>.s, which .incbin's the extracted bytes.
+                    result.append((Path(options['asm_path']) / 'data' / (sub[2] + '.s'), 'assemble'))
+                    continue
                 require(len(sub) == 3 and sub[1] in ('asm', 'c', 'cpp'),
                         'expected an asm/c/cpp subsegment')
                 key, suffix, rule = (('asm_path', '.s', 'assemble') if sub[1] == 'asm'

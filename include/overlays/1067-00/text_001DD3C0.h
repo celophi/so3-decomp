@@ -77,10 +77,8 @@ public:
 class FieldVec4B
 {
 public:
-    /** @brief Leave the components uninitialized. */
-    FieldVec4B()
-    {
-    }
+    /** @brief Leave the components uninitialized; defined out of line in text_001E6C50. */
+    FieldVec4B();
 
     /**
      * @brief Copy all four components.
@@ -92,13 +90,84 @@ public:
     }
 
     /**
+     * @brief Set the four components.
+     * @param px First component.
+     * @param py Second component.
+     * @param pz Third component.
+     * @param pw Fourth component.
+     */
+    FieldVec4B(float px, float py, float pz, float pw)
+    {
+        x = px;
+        y = py;
+        z = pz;
+        w = pw;
+    }
+
+    /**
+     * @brief Copy all four components from a FieldVec4A.
+     * @param other Vector to copy.
+     */
+    FieldVec4B(const FieldVec4A& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+    }
+
+    /**
      * @brief Copy all four components from a FieldVec4A.
      * @param other Vector to copy.
      * @return A copy of this vector.
      */
+    /**
+     * @brief Copy all four components from a FieldVec4A without returning a copy.
+     * @param other Vector to copy.
+     */
+    void set(const FieldVec4A& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+    }
+
     FieldVec4B operator=(const FieldVec4A& other)
     {
         *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+        return *this;
+    }
+
+    /**
+     * @brief Scale all four components.
+     * @param scale Factor to multiply by.
+     * @return A copy of this vector.
+     */
+    FieldVec4B operator*=(float scale)
+    {
+        x *= scale;
+        y *= scale;
+        z *= scale;
+        w *= scale;
+        return *this;
+    }
+
+    /**
+     * @brief Add the first three components of another vector.
+     * @param other Vector to add.
+     * @return A copy of this vector.
+     */
+    FieldVec4B add(const FieldVec4A& other)
+    {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+        return *this;
+    }
+
+    /**
+     * @brief Add the first three components of another vector.
+     * @param other Vector to add.
+     * @return A copy of this vector.
+     */
+    FieldVec4B operator+=(const FieldVec4A& other)
+    {
+        add(other);
         return *this;
     }
 

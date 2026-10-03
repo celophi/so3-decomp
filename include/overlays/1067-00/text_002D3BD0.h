@@ -4,7 +4,11 @@
 #include "types.h"
 #include "overlays/1067-00/text_002CEAF0.h"
 
+#ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
+#else
+typedef struct FieldClass150070 FieldClass150070;
+#endif
 
 /** Partial state receiver with a byte flag at offset 0x28. */
 typedef struct FieldState2D5060
@@ -22,7 +26,7 @@ typedef struct FieldLinkedAttached2D4A30
     FieldClass150070* unk40;
 } FieldLinkedAttached2D4A30;
 
-struct FieldReset2D4160;
+typedef struct FieldReset2D4160 FieldReset2D4160;
 
 #ifdef __cplusplus
 extern "C" {

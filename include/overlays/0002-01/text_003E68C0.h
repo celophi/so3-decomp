@@ -37,6 +37,30 @@ public:
     u8 unk00[0x790];
     void* unk790;
 };
+
+/**
+ * Partial Lib root class with its vtable pointer at offset 0, with vtable
+ * D_171EA0 in boot data (its own bases D_171E90 and D_171E80 are not modelled).
+ * Slots 1, 3 and 4 keep placeholder signatures.
+ */
+class LibClass171EA0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~LibClass171EA0();
+
+    /** @brief Virtual slot 1. */
+    virtual void func_003EEBC0();
+
+    /** @brief Delete the object through its virtual destructor; null is ignored. */
+    virtual void func_003EF740();
+
+    /** @brief Virtual slot 3. */
+    virtual void func_003EEBD0();
+
+    /** @brief Virtual slot 4. */
+    virtual void func_003EEBE0();
+};
 #endif
 
 #endif

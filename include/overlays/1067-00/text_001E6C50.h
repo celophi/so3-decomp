@@ -3,6 +3,9 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_001E1590.h"
+#include "overlays/1067-00/text_0023DC90.h"
+#include "boot/resident_0011EE70.h"
+#include "overlays/0002-01/text_004BD360.h"
 
 /** Partial receiver with three aligned 128-bit slots and a ready byte at offset 0x50. */
 typedef struct FieldVectorSlots50
@@ -211,6 +214,13 @@ public:
     virtual void func_001E6D00();
 
     /**
+     * @brief Return the vector of one face, building it from three transformed corners when its w is zero.
+     * @param face Face index, 0 to 5.
+     * @return The face's vector at offset 0x130.
+     */
+    FieldVec4A* func_001E6FC0(s32 face);
+
+    /**
      * @brief Build the eight corner vectors at offset 0x30 from a source record, optionally transformed by a matrix.
      * @param source Source record, stored at offset 0x18.
      * @param matrix Optional 4x4 matrix.
@@ -234,7 +244,7 @@ public:
 class FieldClass150320
 {
 public:
-    void* unk00;
+    LibClass178220* unk00;
     void* unk04;
     s32 unk08;
 
@@ -243,6 +253,60 @@ public:
 
     /** @brief Release each entry's object through the manager at offset 0, then delete the entry array. */
     void func_001E9050();
+};
+
+class FieldClass150EB0;
+
+/**
+ * Partial 0x70-byte keyed animation node derived from FieldClass150070, with
+ * vtable D_150280 in boot data. FieldClass1502E0 keeps a list of them; the
+ * node owns two Lib objects and refers back to its FieldClass150EB0 owner.
+ */
+class FieldClass150280 : public FieldClass150070
+{
+public:
+    /** @brief Construct a node with no key (-1) and mode 2. */
+    FieldClass150280();
+
+    /** @brief Release the Lib objects of a loaded node, then destroy it. */
+    virtual ~FieldClass150280();
+
+    /**
+     * @brief Advance the node's animation by a time step and return its current vector.
+     * @param arg Pointer argument passed through by FieldClass1502E0::func_001E81D0; not used here.
+     * @param flag8 Flag bit 8 of the list's halfword at offset 0xB4.
+     * @param flag9 Flag bit 9 of the list's halfword at offset 0xB4.
+     * @param step Time step.
+     * @return The node's vector.
+     */
+    FieldVec4A func_001E78B0(void* arg, bool flag8, bool flag9, float step);
+
+    LibClass178220* unk14;
+    LibClass178370* unk18;
+    FieldClass150EB0* unk1c;
+    u32 unk20;
+    u32 unk24;
+    u32 unk28;
+    float unk2c;
+    float unk30;
+    float unk34;
+    u8 unk38[8];
+    FieldVec4A unk40;
+    u32 unk50;
+    s32 unk54;
+    s32 unk58;
+    s32 unk5c;
+    float unk60;
+    u16 unk64;
+    u8 unk66_0 : 1;
+    u8 unk66_1 : 1;
+    u8 unk66_2 : 1;
+    u8 unk66_3 : 1;
+    u8 unk66_4 : 1;
+    u8 unk66_5 : 1;
+    u8 unk66_6 : 1;
+    u8 unk66_7 : 1;
+    u8 unk67[9];
 };
 
 /**
@@ -271,8 +335,47 @@ public:
      */
     void func_001E8E00(u32 key, u16 flags, float a, float b, float c, float d, float e);
 
-    u8 unk78[4];
-    void* unk7c;
+    /**
+     * @brief Load the 'ANIM' resource for a key into a new list node, unless a node with that key exists.
+     * @param key Resource key, stored in the node at offset 0x54.
+     * @return 1 when a node was added, otherwise 0.
+     */
+    s32 func_001E82B0(s32 key);
+
+    /**
+     * @brief Advance the selected node and return its vector, or (0, 0, 0, 1) when none applies.
+     * @param arg Pointer argument passed through to FieldClass150280::func_001E78B0.
+     * @param step Time step.
+     * @return The selected node's vector.
+     */
+    FieldVec4B func_001E81D0(void* arg, float step);
+
+    /**
+     * @brief Find the listed node with a key.
+     * @param key Key compared with each node's word at offset 0x54.
+     * @return The first matching node, or null when none matches.
+     */
+    FieldClass150280* find(s32 key)
+    {
+        FieldClass150060* list = (FieldClass150060*)unk00;
+        FieldClass150060* node = list;
+        for (;;)
+        {
+            node = node->unk08;
+            if (list == node)
+            {
+                break;
+            }
+            if (key == static_cast<FieldClass150280*>(node)->unk54)
+            {
+                return static_cast<FieldClass150280*>(node);
+            }
+        }
+        return 0;
+    }
+
+    FieldClass150EB0* unk78;
+    FieldClass150280* unk7c;
     FieldClass150070* unk80[2];
     u32 unk88;
     u32 unk8c;
@@ -293,6 +396,55 @@ public:
     u8 unkbc_1_7 : 7;
 };
 
+/**
+ * 32-byte shape record. The first 16 bytes are read as a FieldVec4B of half
+ * extents, so the flag byte at offset 0xC overlaps its fourth component.
+ */
+struct FieldShapeRecord20
+{
+    float unk00;
+    float unk04;
+    float unk08;
+    u8 unk0c_0_3 : 4;
+    u8 unk0c_4 : 1;
+    u8 unk0c_5 : 1;
+    u8 unk0c_6_7 : 2;
+    u8 unk0d[3];
+    FieldVec4A unk10;
+};
+
+/** Partial owner of FieldClass150330 shapes: an object at offset 4, an index at 0xC and a vector at 0x10. */
+struct FieldShapeOwner18
+{
+    u8 unk00[4];
+    void* unk04;
+    u8 unk08[4];
+    s16 unk0c;
+    u8 unk0e[2];
+    FieldVec4A unk10;
+};
+
+/** Two vertex indices of one line segment. */
+struct FieldIndexPair
+{
+    /** @brief Leave the indices uninitialized. */
+    FieldIndexPair();
+
+    /**
+     * @brief Set both indices.
+     * @param from First vertex index.
+     * @param to Second vertex index.
+     */
+    FieldIndexPair(s16 from, s16 to)
+    {
+        unk00 = from;
+        unk02 = to;
+    }
+
+    s16 unk00;
+    s16 unk02;
+};
+
 /** Partial class derived from FieldClass150070, with vtable D_150330 in boot data. */
 class FieldClass150330 : public FieldClass150070
 {
@@ -306,14 +458,45 @@ public:
     /** @brief Detach the object and queue it on the resident object queue. */
     virtual void func_001DD7B0();
 
-    u8 unk14[4];
-    u32 unk18;
-    u32 unk1c;
-    u32 unk20;
-    void* unk24;
-    void* unk28;
-    void* unk2c;
-    u32 unk30;
+    /**
+     * @brief Append one line segment between two vertices to a packet.
+     * @param packet Packet to append to.
+     * @param from First vertex.
+     * @param to Second vertex.
+     * @param color Packed colour, alpha in the top byte.
+     */
+    void func_001E9690(ResidentPacket* packet, const FieldVec4B* from, const FieldVec4B* to, u32 color);
+
+    /**
+     * @brief Set up the shape from its owner and record, build its vertices, and move them to the record's centre.
+     * @param owner Owner stored at offset 0x18; its object at offset 4 is stored at offset 0x20.
+     * @param record Shape record stored at offset 0x1C; its low four flag bits select the shape.
+     * @param color Packed colour stored at offset 0x14.
+     * @param flag Stored in flag bit 2 at offset 0x3C; enlarges the shape by 5%.
+     */
+    void func_001EA2E0(FieldShapeOwner18* owner, FieldShapeRecord20* record, u32 color, s32 flag);
+
+    /**
+     * @brief Allocate and build the eight vertices and twelve edges of the box between two corners.
+     * @param low Lower corner.
+     * @param high Upper corner.
+     */
+    void func_001E9B80(const FieldVec4B* low, const FieldVec4B* high);
+
+    /**
+     * @brief Build the vertices and segments of a round shape.
+     * @param radius Shape radius.
+     */
+    void func_001E9EA0(float radius);
+
+    u32 unk14;
+    FieldShapeOwner18* unk18;
+    FieldShapeRecord20* unk1c;
+    void* unk20;
+    FieldVec4B* unk24;
+    FieldVec4B* unk28;
+    FieldIndexPair* unk2c;
+    float unk30;
     u8 unk34[4];
     s16 unk38;
     s16 unk3a;
@@ -364,7 +547,19 @@ public:
     /** @brief Construct the object with its state cleared. */
     FieldClass1504F0();
 
-    u8 unk14[0x39];
+    /**
+     * @brief Release the Lib slot at offset 0x3C and the object at offset 0x40, reset the target's
+     * state flags (resetting its scale first unless flag bit 0 or 1 is set), then destroy the object.
+     */
+    virtual ~FieldClass1504F0();
+
+    FieldObject24B6B0* unk14;
+    void* unk18;
+    u8 unk1c[0x20];
+    s32 unk3c;
+    FieldClass150070* unk40;
+    u8 unk44[8];
+    u8 unk4c;
     u8 unk4d_0 : 1;
     u8 unk4d_1 : 1;
     u8 unk4d_2 : 1;
@@ -393,6 +588,14 @@ public:
     virtual ~FieldClass150490()
     {
     }
+
+    /**
+     * @brief Add the object's GS register writes to a packet; this class adds none.
+     * @param packet Packet to append to.
+     */
+    virtual void func_001EAC90(ResidentPacket* packet)
+    {
+    }
 };
 
 /**
@@ -414,6 +617,19 @@ public:
     /** @brief Update the object; func_001DF360 calls it after advancing the counter when the gating flags are set. */
     void func_001EA730();
 
+    /**
+     * @brief When the pointer at offset 0x30 and flag bit 1 at offset 0xC4 are set, set the packet's byte at
+     * offset 0x15 and wrap func_001EAA10's output in GS register writes.
+     * @param packet Packet to append to.
+     */
+    virtual void func_001EAC90(ResidentPacket* packet);
+
+    /**
+     * @brief Append the object's own GS data to a packet.
+     * @param packet Packet to append to.
+     */
+    void func_001EAA10(ResidentPacket* packet);
+
     u8 unk14[0x1C];
     void* unk30;
     u8 unk34[4];
@@ -422,7 +638,10 @@ public:
     s32 unkc0;
     u8 unkc4_0 : 1;
     u8 unkc4_1 : 1;
-    u8 unkc4_2_7 : 6;
+    u8 unkc4_2 : 1;
+    u8 unkc4_3 : 1;
+    u8 unkc4_4 : 1;
+    u8 unkc4_5_7 : 3;
 };
 #endif
 
@@ -471,20 +690,6 @@ FieldKeyedListNode54* func_001E8490(FieldKeyedListNode54* list, u32 key);
  * @return The stored halfword.
  */
 s16 func_001E9380(const FieldHalfword3A* object);
-
-/**
- * @brief Return the receiver unchanged.
- * @param object Receiver to return.
- * @return object.
- */
-void* func_001E9E80(void* object);
-
-/**
- * @brief Return the receiver unchanged.
- * @param object Receiver to return.
- * @return object.
- */
-void* func_001E9E90(void* object);
 
 /**
  * @brief Test bit 5 of the flag byte at offset 0xA.

@@ -156,3 +156,7 @@ sceIpuStopDMA = 0x003EE610; // type:func
 sceIpuRestartDMA = 0x003EE6F8; // type:func
 sceIpuSync = 0x003EE848; // type:func
 sceIpuInit = 0x003EE918; // type:func
+
+// Lib classes used by Field (D_171EA0 root; D_178220 and D_178370 derived).
+__ct__14LibClass178220Fv = 0x004C04A0; // type:func
+__ct__14LibClass178370Fv = 0x004C2E60; // type:func

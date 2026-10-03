@@ -262,7 +262,22 @@ void* func_001EFE30(void* object)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001ED4E0", func_001EFE50);
+void func_001EFE50(BootScalarRangeFE50* object, const float* first,
+    const float* second, const float* third, const float* fourth,
+    float start, float end)
+{
+    object->unk00 = *first;
+    object->unk10 = start;
+    object->unk08 = *second;
+    object->unk04 = *third;
+    object->unk14 = end;
+    object->unk0C = *fourth;
+    object->unk18 = end - start;
+    if (object->unk18 == 0.0f)
+    {
+        object->unk18 = 1.0f;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001ED4E0", func_001EFEA0);
 
@@ -343,9 +358,32 @@ INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001ED4E0", func_001F0A
 
 INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001ED4E0", func_001F0C10);
 
-INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001ED4E0", func_001F0C80);
+void func_001F0C80(BootState1F0D60* object)
+{
+    object->entries = 0;
+    object->unk52_lo = 1;
+    object->unk52_hi = 1;
+    object->capacity = 0;
+    object->count = 0;
+    object->unk4C = -1;
+    object->unk40 = 0;
+    object->unk4E = -1;
+    object->unk50 = -1;
+    object->unk53_bit0 = 0;
+    object->unk53_bit1 = 0;
+}
 
-INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001ED4E0", func_001F0D10);
+void func_001F0D10(BootState1F0D60* object, s32 count, BootRecord48F0E90* entries)
+{
+    s32 last_index = count - 1;
+    BootRecord48F0E90* last;
+    object->unk53_bit1 = 1;
+    object->entries = entries;
+    object->capacity = count;
+    object->count = count;
+    last = object->entries + last_index;
+    object->span = last->key - object->entries[0].key;
+}
 
 void func_001F0D60(BootState1F0D60* state, u32 value)
 {
@@ -393,7 +431,18 @@ void func_001F0E80(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001ED4E0", func_001F0E90);
+s32 func_001F0E90(BootState1F0D60* object, float key)
+{
+    s32 index;
+    for (index = 0; index < object->count; index++)
+    {
+        if (key == object->entries[index].key)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void func_001F0EE0(void* object)
 {
@@ -403,7 +452,18 @@ void func_001F0EE0(void* object)
     *(u32*)((u8*)object + 0xC) = 0;
 }
 
-INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001ED4E0", func_001F0F00);
+float func_001F0F00(BootState1F0D60* object)
+{
+    s32 last_index;
+    BootRecord48F0E90* last_entry;
+    if (object->count < 2)
+    {
+        return 0.0f;
+    }
+    last_index = object->count - 1;
+    last_entry = object->entries + last_index;
+    return last_entry->key - object->entries[0].key;
+}
 
 INCLUDE_ASM("build/overlays/0002-00/asm/nonmatchings/text_001ED4E0", func_001F0F50);
 

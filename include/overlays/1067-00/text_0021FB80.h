@@ -213,6 +213,8 @@ public:
 
 };
 
+class FieldClass1502E0;
+
 /**
  * Partial FieldClass152430 with four more virtual slots, with vtable D_150EB0
  * in boot data. Its constructor (func_002036F0, in text_00202240) sets type
@@ -250,6 +252,8 @@ public:
 
     u8 unk210[0x180];
     FieldVec4B unk390;
+    FieldClass1502E0* unk3a0;
+    u8 unk3a4[0x1C];
 };
 
 /**
@@ -272,7 +276,7 @@ public:
     /** @brief Virtual handler slot 36. */
     virtual void func_002378E0();
 
-    u8 unk3a0[0x190];
+    u8 unk3c0[0x170];
     FieldVec4B unk530;
 };
 

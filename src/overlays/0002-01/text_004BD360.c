@@ -66,7 +66,7 @@ INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004BD360", func_004C02
 
 INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004BD360", func_004C0370);
 
-INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004BD360", func_004C04A0);
+INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004BD360", __ct__14LibClass178220Fv);
 
 INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004BD360", func_004C0530);
 
@@ -170,7 +170,7 @@ INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004BD360", func_004C2C
 
 INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004BD360", func_004C2CD0);
 
-INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004BD360", func_004C2E60);
+INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004BD360", __ct__14LibClass178370Fv);
 
 INCLUDE_ASM("build/overlays/0002-01/asm/nonmatchings/text_004BD360", func_004C2F50);
 

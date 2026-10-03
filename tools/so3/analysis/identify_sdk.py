@@ -93,8 +93,8 @@ def scan(output):
             end = following[0] if isinstance(following, list) else following['start']
             subs = segment['subsegments']
             for i, (offset, kind, stem) in enumerate(subs):
-                if kind == 'pad':
-                    continue
+                if kind not in ('asm', 'c', 'cpp'):
+                    continue  # padding, data and rodata subsegments hold no functions
                 asm = Path(options['asm_path']) / (stem + '.s')
                 limit = subs[i+1][0] if i+1 < len(subs) else end
                 for function, raw in functions(asm, original, offset, limit,

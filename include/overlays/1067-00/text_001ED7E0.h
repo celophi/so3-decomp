@@ -215,12 +215,6 @@ void func_001EE1E0(void* object);
 void func_001EE230(FieldFloat4At20* state, float x, float y, float z);
 
 /**
- * @brief Perform no action for this receiver.
- * @param object Receiver of the call.
- */
-void func_001EE250(void* object);
-
-/**
  * @brief Return three for this receiver.
  * @param object Receiver of the call.
  * @return Three.

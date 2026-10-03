@@ -10,7 +10,9 @@ typedef struct FieldRuntime FieldRuntime;
 /** Partial object at offset 0x8 of the field context. */
 typedef struct ResidentContext08
 {
-    u8 unk00[0xDC];
+    u8 unk00[0xB8];
+    s32 unkb8;
+    u8 unkbc[0x20];
     void* unkdc;
     u8 unke0[0x15];
     u8 unkf5_0_2 : 3;
@@ -63,6 +65,13 @@ typedef struct ResidentContextObject58
     float unk1e0;
 } ResidentContextObject58;
 
+/** Partial object at field context offset 0x64. */
+typedef struct ResidentContextObject64
+{
+    u8 unk00[0x48];
+    void* unk48;
+} ResidentContextObject64;
+
 /** Partial field context reached through D_001B6430. */
 typedef struct ResidentContext
 {
@@ -75,7 +84,8 @@ typedef struct ResidentContext
     void* unk1c;
     u8 unk20[4];
     void* unk24;
-    u8 unk28[8];
+    u8 unk28[4];
+    struct FieldResourceList14* unk2c;
     void* unk30;
     u8 unk34[4];
     ResidentContextObject38* unk38;
@@ -84,7 +94,9 @@ typedef struct ResidentContext
     ResidentContextObject52* unk44;
     u8 unk48[0x10];
     ResidentContextObject58* unk58;
-    u8 unk5c[0x10];
+    u8 unk5c[8];
+    ResidentContextObject64* unk64;
+    u8 unk68[4];
     void* unk6c;
     u8 unk70[0x38];
     u16 unka8;
@@ -125,6 +137,8 @@ extern FieldRuntime* D_001B657C;
 extern u8 D_001B6448;
 extern void* D_001B6458;
 extern void* D_001B661C;
+extern float D_001B6688;
+extern float D_001B6690;
 
 #ifdef __cplusplus
 }

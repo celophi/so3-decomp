@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "boot/resident_data.h"
 #include "overlays/0075-00/text_003684D0.h"
 #include "overlays/0075-00/text_00358440.h"
 #include "overlays/0075-00/text_003483C0.h"
@@ -37,14 +38,6 @@ typedef struct ItemCreationRuntimeFlags
     u8 unk7b;
 } ItemCreationRuntimeFlags;
 
-typedef struct ItemCreationColorDisplay
-{
-    u8 unk00[0x3C];
-    u8 unk3c;
-    u8 unk3d[0x57];
-    u32 unk94;
-} ItemCreationColorDisplay;
-
 typedef struct ItemCreationListDisplay
 {
     u8 unk00[0x2C];
@@ -63,19 +56,6 @@ typedef struct ItemCreationThreeSlotDisplay
     ItemCreationColorDisplay* unk128[3];
     ItemCreationColorDisplay* unk134[3];
 } ItemCreationThreeSlotDisplay;
-
-typedef struct ItemCreationTransferDisplay
-{
-    u8 unk00[0x3C];
-    u8 unk3c;
-    u8 unk3d[2];
-    u8 unk3f;
-    u8 unk40[0x10];
-    float unk50;
-    float unk54;
-    u8 unk58[0x1D];
-    u8 unk75;
-} ItemCreationTransferDisplay;
 
 struct ItemCreationOptionDisplay
 {
@@ -106,7 +86,41 @@ INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00368A
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00368B30);
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00368BD0);
+void func_00368BD0(ItemCreationScrollState* object)
+{
+    ItemCreationScrollPosition* position = object->unkac;
+    float x = position->unk18;
+    float y = position->unk1c;
+    float z = position->unk20;
+    float w = position->unk24;
+    float start;
+    if (object->unkba == 0)
+    {
+        position->unk18 = object->unkc0;
+        position->unk1c = y;
+        position->unk20 = z;
+        position->unk24 = w;
+        position->unk3c = 1;
+        object->unkb8++;
+        if (!((float)object->unkb8 <= 120.0f))
+        {
+            object->unkb8 = 0;
+            object->unkba = 1;
+        }
+        return;
+    }
+    start = object->unkc4;
+    x -= 108.0f * D_001B6690;
+    if (x < start - (float)object->unkb0)
+    {
+        x = start + object->unkc8 + 2.0f;
+    }
+    position->unk18 = x;
+    position->unk1c = y;
+    position->unk20 = z;
+    position->unk24 = w;
+    position->unk3c = 1;
+}
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00368CC0);
 
@@ -450,9 +464,197 @@ INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00369F
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_00369FA0);
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036A050);
+void func_0036A050(ItemCreationSelectedDisplayState* object, void* selected, s16 index)
+{
+    switch (object->unk128)
+    {
+    case 0:
+        if (index == -1)
+        {
+            object->unk120 = 0;
+            object->unk11c = 0;
+            object->unk126 = -1;
+            object->unk124 = -1;
+            object->unk128 = 0;
+        }
+        else
+        {
+            object->unk11c = selected;
+            object->unk120 = 0;
+            object->unk124 = index;
+            object->unk128 = 1;
+        }
+        break;
+    case 1:
+        if (index == -1)
+        {
+            object->unk120 = 0;
+            object->unk11c = 0;
+            object->unk126 = -1;
+            object->unk124 = -1;
+            object->unk128 = 0;
+        }
+        else
+        {
+            object->unk120 = selected;
+            object->unk126 = index;
+            object->unk128 = 2;
+        }
+        break;
+    }
+    if (object->unk11c != 0 && object->unk120 != 0 && object->unk128 == 2)
+    {
+        void* first = object->unk11c;
+        void* second = object->unk120;
+        u8 first_value = 0;
+        u8 second_value = 0;
+        ItemCreationFourteenSlotView* fourteen;
+        ItemCreationNineSlotView* nine;
 
-void func_0036A500(ItemCreationSelectedDisplayState* object, ItemCreationSlotView* selected, u16 index)
+        if (first == object->unkb8)
+        {
+            first_value = object->unk5a[(u16)object->unk124];
+        }
+        else if (first == object->unkbc)
+        {
+            first_value = object->unk68[(u16)object->unk124];
+        }
+        if (second == object->unkb8)
+        {
+            second_value = object->unk5a[(u16)object->unk126];
+        }
+        else if (second == object->unkbc)
+        {
+            second_value = object->unk68[(u16)object->unk126];
+        }
+        if (first == object->unkb8)
+        {
+            object->unk5a[(u16)object->unk124] = second_value;
+        }
+        else if (first == object->unkbc)
+        {
+            object->unk68[(u16)object->unk124] = second_value;
+        }
+        if (object->unk120 == object->unkb8)
+        {
+            s32 marker;
+            object->unk5a[(u16)object->unk126] = first_value;
+            fourteen = object->unkb8;
+            if (fourteen->unkb4 != 0)
+            {
+                s32 active = fourteen->unkb4->unk114;
+                for (marker = 0; marker < 14; marker++)
+                {
+                    if (active == marker)
+                    {
+                        fourteen->unkb8[marker]->unk3f = 1;
+                    }
+                    else
+                    {
+                        fourteen->unkb8[marker]->unk3f = 0;
+                    }
+                }
+            }
+        }
+        else if (object->unk120 == object->unkbc)
+        {
+            object->unk68[(u16)object->unk126] = first_value;
+            func_00361220(object->unkbc);
+        }
+        func_00364D20(object->unkb8);
+        func_003614B0(object->unkbc);
+        first = object->unk11c;
+        fourteen = object->unkb8;
+        if (fourteen == first)
+        {
+            FieldObject23CEA0* restore;
+            FieldObject23CEA0* display = fourteen->unkb4;
+            if (display == fourteen->unkb0)
+            {
+                s16 selected_index = display->unk114;
+                float x;
+                float y;
+                restore = fourteen->unkac;
+                restore->unkE0 = 128.0f;
+                restore->unkAE = 1;
+                x = display->unkC0;
+                y = display->unkC4;
+                restore = fourteen->unkac;
+                restore->unkC0 = x;
+                restore->unkC4 = y;
+                restore->unkE5 = 1;
+                restore->unkAE = 1;
+                restore = fourteen->unkac;
+                restore->index = selected_index;
+                func_0023CB30(restore);
+                func_0023C7B0(fourteen->unkac);
+                func_0023CEA0(fourteen->unkb0, 0);
+                fourteen->unkb4 = fourteen->unkac;
+            }
+            func_00364090(object->unkb8, 0);
+            if (object->unkb8 == object->unk120)
+            {
+                func_00364090(object->unkb8, 1);
+            }
+            else if (object->unkbc == object->unk120)
+            {
+                func_00360E60(object->unkbc, 1);
+                func_003698E0(object, (u8)(object->unk126 / 3));
+            }
+        }
+        else
+        {
+            nine = object->unkbc;
+            if (nine == first)
+            {
+                FieldObject23CEA0* restore;
+                FieldObject23CEA0* display = nine->unkb4;
+                if (display == nine->unkb0)
+                {
+                    s16 selected_index = display->unk114;
+                    float x;
+                    float y;
+                        restore = nine->unkac;
+                    restore->unkE0 = 128.0f;
+                    restore->unkAE = 1;
+                    x = display->unkC0;
+                    y = display->unkC4;
+                    restore = nine->unkac;
+                    restore->unkC0 = x;
+                    restore->unkC4 = y;
+                    restore->unkE5 = 1;
+                    restore->unkAE = 1;
+                    restore = nine->unkac;
+                    restore->index = selected_index;
+                    func_0023CB30(restore);
+                    func_0023C7B0(nine->unkac);
+                    func_0023CEA0(nine->unkb0, 0);
+                    nine->unkb4 = nine->unkac;
+                }
+                func_00360E60(object->unkbc, 0);
+                if (object->unkb8 == object->unk120)
+                {
+                    func_00364090(object->unkb8, 1);
+                    func_003698E0(object, (u8)(object->unk124 / 3));
+                }
+                else if (object->unkbc == object->unk120)
+                {
+                    func_00360E60(object->unkbc, 1);
+                    func_003698E0(object, (u8)(object->unk124 / 3));
+                    func_003698E0(object, (u8)(object->unk126 / 3));
+                }
+            }
+        }
+        func_0036A500(object, object->unk120, object->unk126);
+        object->unk120 = 0;
+        object->unk11c = 0;
+        object->unk126 = -1;
+        object->unk124 = -1;
+        object->unk128 = 0;
+    }
+}
+
+void func_0036A500(ItemCreationSelectedDisplayState* object, void* selected, s16 index)
 {
     if (selected != 0 && object->unkb8 != 0 && object->unkbc != 0 && object->unkc0 != 0)
     {
@@ -461,11 +663,11 @@ void func_0036A500(ItemCreationSelectedDisplayState* object, ItemCreationSlotVie
         object->unk118 = selected;
         if (object->unk118 == object->unkb8)
         {
-            value = object->unk5a[index];
+            value = object->unk5a[(u16)index];
         }
         else if (object->unk118 == object->unkbc)
         {
-            value = object->unk68[index];
+            value = object->unk68[(u16)index];
         }
         display = object->unkc0;
         display->unk101 = value;
@@ -617,9 +819,86 @@ INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036AA
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036AE20);
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036AFE0);
+u8 func_0036AFE0(ItemCreationSelectedDisplayState* object)
+{
+    u8 code;
+    switch (D_001B6430->context->unk08->unkb8)
+    {
+    case 31:
+        code = 1;
+        break;
+    case 32:
+        code = 2;
+        break;
+    case 94:
+        code = 3;
+        break;
+    case 113:
+        code = 4;
+        break;
+    case 142:
+        code = 5;
+        break;
+    case 499:
+        code = 6;
+        break;
+    case 575:
+        code = 7;
+        break;
+    case 602:
+        code = 8;
+        break;
+    case 652:
+        code = 9;
+        break;
+    case 664:
+        code = 10;
+        break;
+    case 805:
+        code = 11;
+        break;
+    case 1135:
+        code = 12;
+        break;
+    default:
+        code = 0;
+        break;
+    }
+    return code;
+}
 
-INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036B0E0);
+u16 func_0036B0E0(void* object)
+{
+    switch (D_001B6430->context->unk08->unkb8)
+    {
+    case 31:
+        return 0x3521;
+    case 32:
+        return 0x3522;
+    case 94:
+        return 0x3523;
+    case 113:
+        return 0x3524;
+    case 142:
+        return 0x3525;
+    case 499:
+        return 0x3526;
+    case 575:
+        return 0x3527;
+    case 602:
+        return 0x3528;
+    case 652:
+        return 0x3529;
+    case 664:
+        return 0x352A;
+    case 805:
+        return 0x352B;
+    case 1135:
+        return 0x352C;
+    default:
+        return 0x3520;
+    }
+}
 
 INCLUDE_ASM("build/overlays/0075-00/asm/nonmatchings/text_003684D0", func_0036B1E0);
 

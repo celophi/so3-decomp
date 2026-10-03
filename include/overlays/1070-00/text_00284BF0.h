@@ -99,7 +99,11 @@ typedef struct FieldContext58
     u8 unk1b8[0x14];
     void* unk1cc;
     void* unk1d0;
-    u8 unk1d4[0x18];
+    float unk1d4;
+    float unk1d8;
+    float unk1dc;
+    float unk1e0;
+    u8 unk1e4[8];
     s8 unk1ec;
 } FieldContext58;
 

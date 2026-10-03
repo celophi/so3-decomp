@@ -8,6 +8,16 @@ extern "C" {
 #endif
 
 /**
+ * @brief Release one slot of the manager's table of 0x50-byte slots at offset 0x14.
+ *
+ * A slot in use has its object queued on the resident object queue, then is
+ * cleared and marked free, and the data cache is flushed.
+ * @param manager Slot manager.
+ * @param index Slot to release.
+ */
+void func_00465430(void* manager, s32 index);
+
+/**
  * @brief Run the test at offset 0x30 of the object referenced by the first word of object.
  * @param object Object whose first word refers to the tested object.
  * @param arg0 First argument passed to the test.

@@ -3,7 +3,32 @@
 
 #include "types.h"
 
-typedef struct ItemCreationSlotView ItemCreationSlotView;
+/** Partial display coordinate vector and dirty flag. */
+typedef struct ItemCreationScrollPosition
+{
+    u8 unk00[0x18];
+    float unk18;
+    float unk1c;
+    float unk20;
+    float unk24;
+    u8 unk28[0x14];
+    u8 unk3c;
+} ItemCreationScrollPosition;
+
+/** Partial timed horizontal scroll state. */
+typedef struct ItemCreationScrollState
+{
+    u8 unk00[0xAC];
+    ItemCreationScrollPosition* unkac;
+    s32 unkb0;
+    u8 unkb4[4];
+    s16 unkb8;
+    u8 unkba;
+    u8 unkbb[5];
+    float unkc0;
+    float unkc4;
+    float unkc8;
+} ItemCreationScrollState;
 
 /** Partial node of a sentinel-based display list. */
 typedef struct ItemCreationListNode
@@ -30,7 +55,9 @@ typedef struct ItemCreationSelectedDisplayState
 {
     u8 unk00[0x40];
     ItemCreationOptionTable* unk40;
-    u8 unk44[9];
+    u8 unk44[3];
+    u8 unk47;
+    u8 unk48[5];
     u8 unk4d;
     u8 unk4e[8];
     u8 unk56;
@@ -46,16 +73,20 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unkac[4];
     struct ItemCreationThreeSlotDisplay* unkb0;
     u8 unkb4[4];
-    ItemCreationSlotView* unkb8;
-    ItemCreationSlotView* unkbc;
+    struct ItemCreationFourteenSlotView* unkb8;
+    struct ItemCreationNineSlotView* unkbc;
     struct ItemCreationDetailDisplay* unkc0;
     u8 unkc4[0x30];
     struct ItemCreationFlagResetOwner* unkf4;
     struct ItemCreationOptionDisplay* unkf8;
     struct ItemCreationOptionDisplay* unkfc;
     u8 unk100[0x18];
-    ItemCreationSlotView* unk118;
-    u8 unk11c[0xD];
+    void* unk118;
+    void* unk11c;
+    void* unk120;
+    s16 unk124;
+    s16 unk126;
+    u8 unk128;
     u8 unk129;
     u8 unk12a;
     u8 unk12b;
@@ -76,6 +107,21 @@ typedef struct ItemCreationSelection
 /** Option lists are part of the same selected display state. */
 typedef ItemCreationSelectedDisplayState ItemCreationOptionState;
 
+/**
+ * Updates the selected item or completes an exchange between the two views.
+ * @param object Selection state.
+ * @param selected Selected view, or null when clearing the selection.
+ * @param index Signed item index; -1 clears the pending selection.
+ */
+void func_0036A050(ItemCreationSelectedDisplayState* object, void* selected, s16 index);
+
+/**
+ * Refreshes the display allocated for a group of three assigned items.
+ * @param object Selection state.
+ * @param group Byte-sized assigned-item group index.
+ */
+void func_003698E0(ItemCreationSelectedDisplayState* object, u8 group);
+
 /** Partial destination for five resident record halfwords. */
 typedef struct ItemCreationRuntimeRecordSelection
 {
@@ -88,12 +134,18 @@ extern "C" {
 #endif
 
 /**
+ * @brief Hold the starting position, then advance and wrap the horizontal scroll.
+ * @param object State containing the display coordinates and scroll limits.
+ */
+void func_00368BD0(ItemCreationScrollState* object);
+
+/**
  * @brief Update the detail display with an item selected from either slot view.
  * @param object State owning the item arrays and views.
  * @param selected Slot view supplying the item, or another nonnull view to clear the item.
  * @param index Index into the array belonging to the selected slot view.
  */
-void func_0036A500(ItemCreationSelectedDisplayState* object, ItemCreationSlotView* selected, u16 index);
+void func_0036A500(ItemCreationSelectedDisplayState* object, void* selected, s16 index);
 
 /**
  * @brief Refresh selection colors or one option display.
@@ -157,6 +209,20 @@ void func_00369EB0(ItemCreationRuntimeRecordSelection* object);
  * @param list List to rebuild, one or two.
  */
 void func_0036A780(ItemCreationOptionState* object, u16 option, u8 list);
+
+/**
+ * @brief Map the resident context code to a one-based selection slot.
+ * @param object Selected display state; unused.
+ * @return One through twelve for mapped codes, or zero otherwise.
+ */
+u8 func_0036AFE0(ItemCreationSelectedDisplayState* object);
+
+/**
+ * @brief Map the resident context code to its associated identifier.
+ * @param object Receiver; unused.
+ * @return Identifier 0x3521 through 0x352C for mapped codes, or 0x3520 otherwise.
+ */
+u16 func_0036B0E0(void* object);
 
 /**
  * @brief Return the fixed value -1.

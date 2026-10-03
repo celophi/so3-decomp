@@ -4,7 +4,16 @@
 #include "types.h"
 #include "overlays/1067-00/text_002D3BD0.h"
 
+#ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
+#endif
+
+/** Partial resource display with its caller-controlled marker byte. */
+typedef struct FieldResourceDisplay2D5CF0
+{
+    u8 unk00[0x3F];
+    u8 unk3F;
+} FieldResourceDisplay2D5CF0;
 
 /** Partial receiver with a one-bit flag at offset 0x14AC. */
 typedef struct FieldFlagState2D7AA0
@@ -138,6 +147,15 @@ typedef struct FieldState2D82F0
 #ifdef __cplusplus
 extern "C" {
 #endif
+/**
+ * @brief Replace non-null resource pointers and a nonzero index, then mark the display for refresh.
+ * @param object Resource display to update.
+ * @param allocation Allocation pointer, or null to retain the current pointer.
+ * @param record Resource record, or null to retain the current record.
+ * @param index Nonzero value whose low byte replaces the current resource index.
+ */
+void func_002D5CF0(FieldResourceDisplay2D5CF0* object, void* allocation, FieldResourceRecord* record, u32 index);
+
 /**
  * @brief Set the receiver's active bit and run its imported update routine.
  * @param object Receiver to update.

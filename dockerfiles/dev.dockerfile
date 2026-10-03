@@ -1,7 +1,8 @@
-# Build from the repository root:
+# Build this from the repository root:
 #   docker build --platform linux/amd64 -t so3-dev -f dockerfiles/dev.dockerfile .
-# Mount the checkout at /so3 when running; game data stays outside the image.
-# Python 3.12.14 / Debian 13. The digest pins the complete base image.
+# Mount your checkout at /so3 when you run it. Game data never goes in the image.
+# Python 3.12.14 on Debian 13. The digest pins the whole base image, so it
+# can't change underneath us.
 FROM python:3.12.14-slim-trixie@sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -10,8 +11,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     XDG_CACHE_HOME=/tmp/so3-cache
 
-# Release binaries below target Linux x86_64. Freeze apt's package indexes too;
-# only snapshot expiry is disabled, and Debian signature checks remain enabled.
+# The release binaries below are built for x86_64 Linux. I also pin apt to a
+# dated Debian snapshot. The expiry check is off because the date never moves,
+# but Debian's signatures are still checked.
 RUN test "$(dpkg --print-architecture)" = amd64 \
     && rm /etc/apt/sources.list.d/debian.sources \
     && printf '%s\n' \
@@ -23,7 +25,8 @@ RUN test "$(dpkg --print-architecture)" = amd64 \
     && apt-get install -y --no-install-recommends build-essential ca-certificates curl file git \
     && rm -rf /var/lib/apt/lists/*
 
-# PS2-aware GNU binutils v0.10, including R5900 and Metrowerks relocation support.
+# GNU binutils v0.10 with PS2 support, including the R5900 instructions and
+# Metrowerks relocations.
 RUN curl --fail --location --retry 3 \
         https://github.com/decompals/binutils-mips-ps2-decompals/releases/download/v0.10/binutils-mips-ps2-decompals-linux-x86-64.tar.gz \
         -o /tmp/ps2-binutils.tar.gz \
@@ -31,7 +34,8 @@ RUN curl --fail --location --retry 3 \
     && tar -xzf /tmp/ps2-binutils.tar.gz -C /usr/local/bin \
     && rm /tmp/ps2-binutils.tar.gz
 
-# Use wibo's stable static i686 build on the x86_64 Linux host.
+# wibo runs the Windows compiler on Linux. I use its stable static i686 build.
+# objdiff compares what I compile against the original.
 RUN curl --fail --location --retry 3 \
         https://github.com/decompals/wibo/releases/download/1.2.0/wibo-i686 \
         -o /usr/local/bin/wibo \
@@ -45,13 +49,16 @@ RUN curl --fail --location --retry 3 \
 
 COPY requirements.txt /opt/so3/requirements.txt
 COPY dockerfiles/requirements/ /opt/so3/dockerfiles/requirements/
-# Disable isolated builds so source-only dependencies use our pinned backends.
+# Isolated builds are off, so packages that only ship as source build with the
+# pinned build tools instead of whatever pip would download.
 RUN python -m pip install --require-hashes --only-binary=:all: -r /opt/so3/dockerfiles/requirements/build-requirements.txt \
     && python -m pip install --require-hashes --no-build-isolation -r /opt/so3/dockerfiles/requirements/requirements.txt \
     && python -m pip check
 
-# mwccgap's MIT license is retained in /opt/mwccgap/LICENSE. The patch fixes
-# local-symbol relocation imports.
+# mwccgap is what makes INCLUDE_ASM work with the Metrowerks compiler. It's MIT
+# licensed, and the license stays in /opt/mwccgap/LICENSE. My patch fixes how it
+# imports relocations to local symbols, lets me choose where its temporary files
+# go, and makes it skip splat's `nonmatching` marker in .rodata.
 COPY dockerfiles/patches/mwccgap.patch /opt/so3/mwccgap.patch
 RUN curl --fail --location --retry 3 \
         https://codeload.github.com/mkst/mwccgap/tar.gz/147598b36b198f267e80adbe04dd5804d070dbb3 \

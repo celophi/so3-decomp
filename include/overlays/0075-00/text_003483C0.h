@@ -2,6 +2,46 @@
 #define SO3_OVERLAYS_0075_00_TEXT_003483C0_H
 
 #include "types.h"
+#include "overlays/0075-00/text_003684D0.h"
+
+/** Partial owner of four displayed position pairs and their update flags. */
+typedef struct ItemCreationFourPositionDisplay
+{
+    u8 unk00[0x1C];
+    float unk1c;
+    float unk20;
+    u8 unk24[0x1C];
+    u8 unk40;
+    u8 unk41[0xEF];
+    float unk130;
+    float unk134;
+    u8 unk138[0x1C];
+    u8 unk154;
+    u8 unk155[0xEF];
+    float unk244;
+    float unk248;
+    u8 unk24c[0x1C];
+    u8 unk268;
+    u8 unk269[0xEF];
+    float unk358;
+    float unk35c;
+    u8 unk360[0x1C];
+    u8 unk37c;
+} ItemCreationFourPositionDisplay;
+
+/** Partial owner of the six alternate marker flags and their display. */
+typedef struct ItemCreationFlagToggleOwner
+{
+    u8 unk00[0x15C];
+    struct ItemCreationNested* unk15c;
+    u8 unk160[0x2C];
+    struct ItemCreationNested* unk18c;
+    struct ItemCreationNested* unk190;
+    struct ItemCreationNested* unk194;
+    struct ItemCreationNested* unk198;
+    struct ItemCreationNested* unk19c;
+    struct ItemCreationNested* unk1a0;
+} ItemCreationFlagToggleOwner;
 
 typedef struct ItemCreationOptionDisplay ItemCreationOptionDisplay;
 
@@ -12,6 +52,23 @@ typedef struct ItemCreationFlagNode
     u8 unk3f;
 } ItemCreationFlagNode;
 
+/** Partial color display with its update byte and packed color. */
+typedef struct ItemCreationColorDisplay
+{
+    u8 unk00[0x3C];
+    u8 unk3c;
+    u8 unk3d[0x57];
+    u32 unk94;
+} ItemCreationColorDisplay;
+
+/** Partial owner of eight color displays and an optional auxiliary flag. */
+typedef struct ItemCreationEightColorOwner
+{
+    u8 unk00[0x168];
+    ItemCreationColorDisplay* unk168[8];
+    ItemCreationFlagNode* unk188;
+} ItemCreationEightColorOwner;
+
 /** Partial owner of twelve nested flag objects. */
 typedef struct ItemCreationFlagGroups
 {
@@ -19,11 +76,27 @@ typedef struct ItemCreationFlagGroups
     ItemCreationFlagNode* unk174[12];
 } ItemCreationFlagGroups;
 
+/** Partial display containing the position state and its update flags. */
+typedef struct ItemCreationTransferDisplay
+{
+    u8 unk00[0x3C];
+    u8 unk3c;
+    u8 unk3d[2];
+    u8 unk3f;
+    u8 unk40[0x10];
+    float unk50;
+    float unk54;
+    u8 unk58[0x1D];
+    u8 unk75;
+} ItemCreationTransferDisplay;
+
 /** Partial owner of the nested flag objects cleared by its reset routine. */
 typedef struct ItemCreationFlagResetOwner
 {
-    u8 unk00[0x15C];
-    struct ItemCreationTransferDisplay* unk15c;
+    u8 unk00[0xDC];
+    ItemCreationSelection unkdc;
+    u8 unk158[4];
+    ItemCreationTransferDisplay* unk15c;
     struct ItemCreationSelection* unk160;
     struct ItemCreationSelectedDisplayState* unk164;
     u8 unk168[4];
@@ -41,6 +114,49 @@ typedef struct ItemCreationFlagResetOwner
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Position the four item displays relative to a shared origin.
+ * @param object Owner of the four position pairs and update flags.
+ * @param x Horizontal origin.
+ * @param y Vertical position for all four displays.
+ */
+void func_00352B00(ItemCreationFourPositionDisplay* object, float x, float y);
+
+/**
+ * @brief Set alternate marker flags and update their associated display setting.
+ * @param object Owner of the optional marker and display objects.
+ * @param mode Zero or one selects the marker group; other values leave the state unchanged.
+ */
+void func_0034A670(ItemCreationFlagToggleOwner* object, u8 mode);
+
+/**
+ * @brief Dim eight displays, then brighten those selected by an item's resident flags.
+ * @param object Owner of the eight optional displays and auxiliary flag.
+ * @param selected Item from one through twelve; other values leave the displays dim.
+ */
+void func_0034A7A0(ItemCreationEightColorOwner* object, u8 selected);
+
+/**
+ * @brief Rebuild and refresh the option list selected by the transfer state.
+ * @param object Owner of the selection and transfer state.
+ * @param option Option to display, or 0xFF to use the current selection.
+ */
+void func_0034D980(ItemCreationFlagResetOwner* object, u8 option);
+
+/**
+ * @brief Move the transfer display and refresh its selected option markers and list.
+ * @param object Owner of the selection and optional transfer display.
+ * @param direction Direction used to advance the embedded selection.
+ */
+void func_0034E4D0(ItemCreationFlagResetOwner* object, u16 direction);
+
+/**
+ * @brief Move the optional transfer display using the embedded selection.
+ * @param object Owner of the selection and optional transfer display.
+ * @param direction Direction used to advance the embedded selection.
+ */
+void func_0034F9B0(ItemCreationFlagResetOwner* object, u16 direction);
 
 /**
  * @brief Refresh an option display from its current option list.
