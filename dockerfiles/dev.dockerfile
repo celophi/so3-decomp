@@ -51,7 +51,8 @@ RUN python -m pip install --require-hashes --only-binary=:all: -r /opt/so3/docke
     && python -m pip check
 
 # mwccgap's MIT license is retained in /opt/mwccgap/LICENSE. The patch fixes
-# local-symbol relocation imports.
+# local-symbol relocation imports, adds a temporary-file directory option, and
+# skips splat's `nonmatching` marker in .rodata (docs/adr/0013).
 COPY dockerfiles/patches/mwccgap.patch /opt/so3/mwccgap.patch
 RUN curl --fail --location --retry 3 \
         https://codeload.github.com/mkst/mwccgap/tar.gz/147598b36b198f267e80adbe04dd5804d070dbb3 \

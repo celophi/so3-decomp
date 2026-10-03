@@ -3,6 +3,43 @@
 
 #include "types.h"
 
+/** Partial view with nine markers and two twelve-marker groups. */
+typedef struct ItemCreationNineSlotView
+{
+    u8 unk00[0xA8];
+    struct ItemCreationSelectedDisplayState* unka8;
+    struct FieldObject23CEA0* unkac;
+    struct FieldObject23CEA0* unkb0;
+    struct FieldObject23CEA0* unkb4;
+    struct ItemCreationFlagNode* unkb8[9];
+    struct ItemCreationFlagNode* unkdc[12];
+    struct ItemCreationFlagNode* unk10c[12];
+    struct FieldResourceDisplay2D5CF0* unk13c[9];
+    u8 unk160[0x30];
+    u8 unk190;
+    u8 unk191[0x61];
+    u8 unk1f2[9];
+} ItemCreationNineSlotView;
+
+/** Partial view with three activatable displays and fourteen selection markers. */
+typedef struct ItemCreationFourteenSlotView
+{
+    u8 unk00[0xA8];
+    struct ItemCreationSelectedDisplayState* unka8;
+    struct FieldObject23CEA0* unkac;
+    struct FieldObject23CEA0* unkb0;
+    struct FieldObject23CEA0* unkb4;
+    struct ItemCreationFlagNode* unkb8[14];
+    struct FieldResourceDisplay2D5CF0* unkf0[14];
+} ItemCreationFourteenSlotView;
+
+/** Partial state containing three triples of item bytes. */
+typedef struct ItemCreationTripleState
+{
+    u8 unk00[0x1F2];
+    u8 unk1f2[3][3];
+} ItemCreationTripleState;
+
 /** Partial detail display containing its selected byte and associated mask. */
 typedef struct ItemCreationDetailDisplay
 {
@@ -42,6 +79,46 @@ extern "C" {
 #endif
 
 /**
+ * @brief Refresh the nine item-resource displays and their assigned-item codes.
+ * @param object View containing the item-resource displays and selection state.
+ */
+void func_003614B0(ItemCreationNineSlotView* object);
+
+/**
+ * @brief Refresh the fourteen item-resource displays and their marker bytes.
+ * @param object View containing the item-resource displays and selection state.
+ */
+void func_00364D20(ItemCreationFourteenSlotView* object);
+
+/**
+ * @brief Activate the selected display and refresh its markers, or deactivate the displays and clear their markers.
+ * @param object View containing nine markers and two twelve-marker groups.
+ * @param mode One activates the selected display; zero deactivates displays; other values do nothing.
+ */
+void func_00360E60(ItemCreationNineSlotView* object, u16 mode);
+
+/**
+ * @brief Clear the view markers and mark the group selected by the current display index.
+ * @param object View containing the markers and selected display.
+ */
+void func_00361220(ItemCreationNineSlotView* object);
+
+/**
+ * @brief Activate a selected display and its marker, or deactivate the current displays and markers.
+ * @param object View containing the displays and fourteen selection markers.
+ * @param mode One activates the selected display; zero deactivates the current displays; other values do nothing.
+ */
+void func_00364090(ItemCreationFourteenSlotView* object, u16 mode);
+
+/**
+ * @brief Report whether any byte in a selected item triple is nonzero.
+ * @param object State containing the three item triples.
+ * @param index Triple index, zero through two; other values report zero.
+ * @return One when a byte in the selected triple is nonzero, or zero otherwise.
+ */
+u8 func_003623C0(ItemCreationTripleState* object, u8 index);
+
+/**
  * @brief Refresh the detail display from its selected item and mask.
  * @param object Detail display to refresh.
  */
@@ -66,6 +143,13 @@ void func_0035AF70(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_0035AF80(void* object);
+
+/**
+ * @brief Confirm the active slot and update its alternate field display.
+ * @param object Fourteen-slot view linked to the selection state.
+ * @return 1 when the active selection was processed, or 0 when unavailable.
+ */
+u8 func_003644F0(ItemCreationFourteenSlotView* object);
 
 /**
  * @brief Perform no work.

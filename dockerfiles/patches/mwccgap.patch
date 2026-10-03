@@ -184,3 +184,17 @@ index 536d385..c7a092b 100755
  
      o_file.parent.mkdir(exist_ok=True, parents=True)
      o_file.write_bytes(compiled_elf.pack())
+diff --git i/mwccgap/preprocessor.py w/mwccgap/preprocessor.py
+index 597dd53..fb0c5ba 100644
+--- i/mwccgap/preprocessor.py
++++ w/mwccgap/preprocessor.py
+@@ -80,6 +80,9 @@ class Preprocessor:
+                     continue
+                 if line.startswith("enddlabel") or line.startswith("nmlabel"):
+                     continue
++                if line.startswith("nonmatching"):
++                    # splat marks migrated rodata symbols as it does functions
++                    continue
+ 
+                 if line.startswith("glabel") or line.startswith("dlabel"):
+                     _, current_symbol = line.removesuffix(LOCAL_SUFFIX).split(" ")

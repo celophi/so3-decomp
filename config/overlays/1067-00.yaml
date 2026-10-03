@@ -14,7 +14,7 @@ options:
   ld_script_path: build/overlays/1067-00/overlay.ld
   generated_asm_macros_directory: build/overlays/1067-00/include
   cache_path: build/overlays/1067-00/splat.cache
-  symbol_addrs_path: [config/symbols/1067-00_symbol_addrs.txt]
+  symbol_addrs_path: [config/symbols/1067-00_symbol_addrs.txt, config/symbols/1067-00_data_addrs.txt]
   reloc_addrs_path: [config/relocations/1067-00_reloc_addrs.txt]
   undefined_funcs_auto_path: build/overlays/1067-00/undefined_funcs.ld
   undefined_syms_auto_path: build/overlays/1067-00/undefined_syms.ld
@@ -25,7 +25,7 @@ options:
   asm_inc_header: |
     .set noat
     .set noreorder
-  migrate_rodata_to_functions: false
+  migrate_rodata_to_functions: true
   subalign: 4
   find_file_boundaries: false
   disasm_unknown: true
@@ -46,7 +46,7 @@ segments:
     type: code
     start: 0x40
     vram: 0x1dd3c0
-    subalign: 16
+    subalign: null  # no SUBALIGN: .text is 16-aligned by the compiler; data/rodata keep their own alignment
     subsegments:
       # Linker padding: .text starts on a 128-byte boundary after the 64-byte MWo3 header.
       - [0x40, pad, text_align]
@@ -114,7 +114,12 @@ segments:
       - [0x1147A0, cpp, text_002F1B20]
       - [0x115F90, cpp, text_002F3310]
       - [0x11C910, cpp, text_002F9C90]
-  - [0x123d80, bin, data]
+      # Initialized data, then .rodata from 0x31A780 (128-byte aligned), laid out per unit in
+      # text order. A unit whose object supplies its own rodata gets a `.rodata` subsegment.
+      - [0x123D80, databin, data]
+      - [0x13D400, rodatabin, rodata_31A780]
+      - [0x13D440, .rodata, text_001E6C50]
+      - [0x13D460, rodatabin, rodata_31A7E0]
   - name: init
     type: code
     start: 0x14d500

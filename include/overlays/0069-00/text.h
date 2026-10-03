@@ -20,7 +20,11 @@ typedef struct SkillList
 typedef struct RecordWithMethods RecordWithMethods;
 typedef struct ListOwnerWithMethods ListOwnerWithMethods;
 typedef struct StatusOwner003534C0 StatusOwner003534C0;
+typedef struct Record003538F0 Record003538F0;
+typedef struct Record00352B30 Record00352B30;
+typedef struct Record0035A560 Record0035A560;
 typedef struct StatusOwner003580D0 StatusOwner003580D0;
+typedef struct Record003581B0 Record003581B0;
 typedef struct Record0035E2A0 Record0035E2A0;
 typedef struct Record0035BE50 Record0035BE50;
 typedef struct Record0035DDE0 Record0035DDE0;
@@ -39,6 +43,10 @@ typedef struct Record003611B0 Record003611B0;
 typedef struct Record003620F0 Record003620F0;
 typedef struct Record00363740 Record00363740;
 typedef struct Record00364810 Record00364810;
+typedef struct Record00364720 Record00364720;
+typedef struct Record0034C110 Record0034C110;
+typedef struct Record0034C1F0 Record0034C1F0;
+typedef struct Record0034B190 Record0034B190;
 
 #ifdef __cplusplus
 extern "C" {
@@ -441,6 +449,12 @@ u8* func_00357EE0(u8* object);
 void func_003581B0(void* object);
 
 /**
+ * @brief Refresh the selected detail pointer and checksum-protected status values.
+ * @param record Selection and status display storage.
+ */
+void func_00358200(Record003581B0* record);
+
+/**
  * @brief Update list item display values for the selected index.
  * @param object Receiver storage containing the list.
  * @param selected Selected list index.
@@ -734,6 +748,47 @@ SkillListNode* func_0035C890(SkillList* list, s32 index);
 SkillListNode* func_0035CAE0(SkillList* list, s32 index);
 
 /**
+ * @brief Update paired-list positions and color values using the row spacing.
+ * @param record Receiver with the two lists and their base positions.
+ * @param offset Vertical offset subtracted from both base positions.
+ */
+void func_0034C110(Record0034C110* record, float offset);
+
+/**
+ * @brief Update paired-list item visibility and colors for the current selection.
+ * @param record Receiver containing paired lists and selection values.
+ */
+void func_0034BEE0(Record0034C1F0* record);
+
+/**
+ * @brief Refresh the selected item's display receiver and color.
+ * @param record Receiver containing the item list and selection state.
+ */
+void func_0034C1F0(Record0034C1F0* record);
+
+/**
+ * @brief Configure the second grid and register its newly allocated display object.
+ * @param record Receiver containing the second grid and display owner.
+ * @return One after setup, otherwise zero without the second grid.
+ */
+s32 func_0034B190(Record0034B190* record);
+
+/**
+ * @brief Configure the first grid and register its newly allocated display object.
+ * @param record Receiver containing the first grid and display owner.
+ * @return One after setup, otherwise zero without the first grid.
+ */
+s32 func_0034B2C0(Record0034B190* record);
+
+/**
+ * @brief Configure the selection grid position and register its display state.
+ * @param record Receiver with the display owner and selection grid.
+ * @param row_count Number of grid rows; zero leaves the grid unchanged.
+ * @return One for zero rows or completed setup, otherwise zero without a display owner.
+ */
+s32 func_0034E260(Record0034C1F0* record, s16 row_count);
+
+/**
  * @brief Initialize the receiver metadata and return its address.
  * @param object Receiver storage.
  * @return Address of the receiver.
@@ -789,6 +844,14 @@ u8* func_00363610(u8* object);
  * @return Address of the receiver.
  */
 u8* func_00364670(u8* object);
+
+/**
+ * @brief Release the embedded list and base state, then optionally free the owner.
+ * @param record Record to release, or null.
+ * @param flag Positive values release the record's storage.
+ * @return Original record pointer.
+ */
+Record00364720* func_00364720(Record00364720* record, s16 flag);
 
 /**
  * @brief Perform no work.
@@ -873,6 +936,20 @@ void func_0035C5F0(SkillList* list, void* value);
 void func_0035C780(SkillList* list, void* value);
 
 /**
+ * @brief Release the list nodes and anchor, then optionally free the owner.
+ * @param record List owner to release, or null.
+ * @param flag Positive values release the owner's storage.
+ * @return Original owner pointer.
+ */
+ListOwnerWithMethods* func_00364960(ListOwnerWithMethods* record, s16 flag);
+
+/**
+ * @brief Release linked nodes after the anchor and clear the list when nonempty.
+ * @param record List owner whose nodes are released.
+ */
+void func_00364A70(ListOwnerWithMethods* record);
+
+/**
  * @brief Append a value to the list.
  * @param list List to extend.
  * @param value Value stored in the new node.
@@ -934,6 +1011,12 @@ RecordWithMethods* func_003591A0(RecordWithMethods* record, s16 flag);
  * @return The original record pointer.
  */
 RecordWithMethods* func_0035A500(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Advance the display horizontally after the initial counter phase.
+ * @param record Record containing the display, counter, and position controls.
+ */
+void func_0035A560(Record0035A560* record);
 
 /**
  * @brief Release the record and optionally free its storage.
@@ -1101,6 +1184,12 @@ ListOwnerWithMethods* func_00364AF0(ListOwnerWithMethods* record, s16 flag);
 s32 func_003534C0(StatusOwner003534C0* owner, s32 mode);
 
 /**
+ * @brief Color the paired six-row lists and position the selected-row display.
+ * @param record Record containing the lists, selection, and display receiver.
+ */
+void func_003538F0(Record003538F0* record);
+
+/**
  * @brief Update four item values and status bytes.
  * @param owner Record containing the four item pointers.
  * @param first Value used by the first item and third-item selection.
@@ -1193,6 +1282,19 @@ s32 func_0035BE50(Record0035BE50* record);
 void func_0035DDE0(Record0035DDE0* record);
 
 void func_0035D540(Record0035DDE0* record);
+
+/**
+ * @brief Apply the selected mode and notify its receiver.
+ * @param record Selection and mode storage.
+ */
+void func_003522C0(Record00352B30* record);
+
+/**
+ * @brief Apply an eligible selected mode and hide its status displays.
+ * @param record Selection, mode and status display storage.
+ * @return Zero when inactive or ineligible, three when unavailable, or one after applying the mode.
+ */
+s32 func_00352B30(Record00352B30* record);
 
 #ifdef __cplusplus
 }

@@ -34,6 +34,13 @@ typedef struct FieldObject24C380 FieldObject24C380;
 void func_00249880(FieldObject24B6B0* object, const void* value);
 
 /**
+ * @brief Build a vector from three 16-byte points; FieldClass150250 uses it for each face of its box.
+ * @param points Array of three 16-byte aligned points.
+ * @param result 16-byte aligned destination.
+ */
+void func_0023E2F0(const void* points, void* result);
+
+/**
  * @brief Select the target word, retaining it for sentinel -2.
  * @param object Target receiver.
  * @param value Word to select.

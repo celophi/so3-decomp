@@ -2,10 +2,58 @@
 #define SO3_OVERLAYS_0002_01_TEXT_004BD360_H
 
 #include "types.h"
+#include "overlays/0002-01/text_003E68C0.h"
+
+#ifdef __cplusplus
+/**
+ * Partial 0x70-byte Lib animation object, with vtable D_178220 in boot data.
+ * It holds a data block at offset 0x30 (owned unless the byte at 0x68 is set)
+ * and an array at offset 0x40.
+ */
+class LibClass178220 : public LibClass171EA0
+{
+public:
+    /** @brief Construct an empty object. */
+    LibClass178220();
+
+    u8 unk04[0x2C];
+    void* unk30;
+    u8 unk34[0xC];
+    u8* unk40;
+    u8 unk44[0x24];
+    u8 unk68;
+    u8 unk69[5];
+    u8 unk6e;
+    u8 unk6f;
+};
+
+/** Partial 0xD0-byte Lib object, with vtable D_178370 in boot data. */
+class LibClass178370 : public LibClass171EA0
+{
+public:
+    /** @brief Construct an empty object. */
+    LibClass178370();
+
+    u8 unk04[0xCC];
+};
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Release the data a LibClass178220 builds from its block at offset 0x40.
+ * @param object Object to update.
+ */
+void func_004BDD10(void* object);
+
+/**
+ * @brief Bind a LibClass178220 to a second object.
+ * @param object Object to update.
+ * @param target Object to bind; FieldClass150EB0 passes its object at offset 0x7C.
+ */
+void func_004BFE10(void* object, void* target);
 
 /**
  * @brief Evaluate a VU0 polynomial approximation of a trigonometric function.

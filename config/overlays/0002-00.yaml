@@ -5,6 +5,7 @@ options:
   basename: 0002-00
   target_path: disc/us-disc1/modules/0002-00.bin
   base_path: ../..
+  symbol_addrs_path: [config/symbols/0002-00_symbol_addrs.txt]
   platform: ps2
   compiler: MWCCPS2
   asm_path: build/overlays/0002-00/asm
@@ -28,6 +29,8 @@ options:
   find_file_boundaries: false
   disasm_unknown: true
   gp_value: 0x1bdff0
+  global_vram_start: 0x1B65F0
+  global_vram_end: 0x205E38
   generated_macro_inc_content: |
     .set Q, $Q
     .set ACC, $ACC

@@ -1,3 +1,4 @@
+D_001B6430 = 0x001B6430; // size:0x4
 D_001B64F8 = 0x001B64F8; // size:0x4
 func_23B3A0 = 0x0023B3A0; // type:func
 func_23B3B0 = 0x0023B3B0; // type:func

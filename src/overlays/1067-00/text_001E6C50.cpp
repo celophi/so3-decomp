@@ -5,6 +5,8 @@
 #include "overlays/0002-01/text_00429B00.h"
 #include "overlays/0002-01/text_004BD360.h"
 #include "overlays/0002-01/text_0045AD10.h"
+#include "overlays/1067-00/text_00200710.h"
+#include "overlays/1067-00/text_0021FB80.h"
 #include "vu0.h"
 
 /* Lib.bin (0002-01) data, not owned by this overlay: GS register values passed to func_0011F140. */
@@ -37,7 +39,50 @@ void FieldClass1501F0::func_001E73D0(const FieldMatrix44* matrix)
 // The pole copy leaves no dead stack store but the ring copies do; vector member types unresolved.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E6D80__16FieldClass1501F0FP17FieldRecord150220PC13FieldMatrix44f);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E6FC0);
+FieldVec4A* FieldClass150250::func_001E6FC0(s32 face)
+{
+    if (unk130[face].w == 0.0f)
+    {
+        FieldVec4A points[3];
+        switch (face)
+        {
+        case 0:
+            points[0] = unkb0[0];
+            points[1] = unkb0[4];
+            points[2] = unkb0[5];
+            break;
+        case 1:
+            points[0] = unkb0[0];
+            points[1] = unkb0[1];
+            points[2] = unkb0[3];
+            break;
+        case 2:
+            points[0] = unkb0[5];
+            points[1] = unkb0[4];
+            points[2] = unkb0[6];
+            break;
+        case 3:
+            points[0] = unkb0[0];
+            points[1] = unkb0[2];
+            points[2] = unkb0[6];
+            break;
+        case 4:
+            points[0] = unkb0[1];
+            points[1] = unkb0[5];
+            points[2] = unkb0[7];
+            break;
+        case 5:
+            points[0] = unkb0[2];
+            points[1] = unkb0[3];
+            points[2] = unkb0[7];
+            break;
+        }
+        func_0023E2F0(points, &unk130[face]);
+    }
+    return &unk130[face];
+}
+
+INCLUDE_RODATA("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", D_31A7D8);
 
 void FieldClass150250::func_001E73D0(const FieldMatrix44* matrix)
 {
@@ -132,7 +177,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E76
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E76B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E78B0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E78B0__16FieldClass150280FPvbbf);
 
 void func_001E7E90(FieldVectorSlots50* object, const unsigned __int128* value)
 {
@@ -152,13 +197,114 @@ void func_001E7ED0(FieldVectorSlots50* object, const unsigned __int128* value)
     object->slots[1] = *value;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E7EF0);
+FieldClass150280::~FieldClass150280()
+{
+    if (unk66_1)
+    {
+        FieldClass1502E0* list = unk1c->unk3a0;
+        if (list && list->unk90 && unk14 == list->unk90->unk00)
+        {
+            list->unk90->func_001E9050();
+        }
+        if (unk66_3 && unk14)
+        {
+            func_004BDD10(unk14);
+        }
+        unk66_3 = 0;
+        if (unk14)
+        {
+            unk14->func_003EF740();
+            unk14 = 0;
+        }
+        if (unk18)
+        {
+            unk18->func_003EF740();
+            unk18 = 0;
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E8050);
+FieldClass150280::FieldClass150280()
+{
+    unk14 = 0;
+    unk18 = 0;
+    unk50 = 0;
+    unk20 = 0;
+    unk24 = 0;
+    unk28 = 0;
+    unk54 = -1;
+    unk2c = 0.0f;
+    unk58 = 2;
+    unk40 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk64 = 0;
+    unk60 = 1.0f;
+    unk34 = -1.0f;
+    unk30 = 0.0f;
+    unk5c = -1;
+    unk66_0 = 0;
+    unk66_1 = 0;
+    unk66_2 = 0;
+    unk66_3 = 0;
+    unk66_4 = 0;
+    unk66_5 = 0;
+    unk66_6 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E81D0);
+FieldVec4B FieldClass1502E0::func_001E81D0(void* arg, float step)
+{
+    FieldVec4B result(0.0f, 0.0f, 0.0f, 1.0f);
+    if (unk7c && unkac <= 0.0f)
+    {
+        result = unk7c->func_001E78B0(arg, unkb4 & 0x100 ? true : false, unkb4 & 0x200 ? true : false, step);
+        unkb8 = unk7c->unk58;
+        if (unk90 && !(unk7c->unk2c < 0.0f))
+        {
+            delete unk90;
+            unk90 = 0;
+        }
+    }
+    return result;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E82B0);
+s32 FieldClass1502E0::func_001E82B0(s32 key)
+{
+    if (find(key))
+    {
+        return 0;
+    }
+    void* data = func_00201EA0(D_001B6430->context->unk2c, 'ANIM', key, 0);
+    if (!data)
+    {
+        return 0;
+    }
+    FieldClass150280* item = new(0) FieldClass150280;
+    if (!item)
+    {
+        return 0;
+    }
+    FieldClass150EB0* owner = unk78;
+    item->unk14 = new(0) LibClass178220;
+    item->unk18 = new(0) LibClass178370;
+    item->unk66_1 = 1;
+    item->unk54 = key;
+    item->unk1c = owner;
+    LibClass178220* anim = item->unk14;
+    if (anim->unk40)
+    {
+        func_004BDD10(anim);
+        delete[] anim->unk40;
+    }
+    anim->unk6e = 0;
+    if (!anim->unk68)
+    {
+        operator delete(anim->unk30);
+    }
+    anim->unk68 = 1;
+    anim->unk30 = (void*)(((u32)data + 0x7F) & ~0x7F);
+    func_004BFE10(item->unk14, item->unk1c->unk7c);
+    func_004D74F0(item, (void*)-1);
+    return 1;
+}
 
 FieldKeyedListNode54* func_001E8490(FieldKeyedListNode54* list, u32 key)
 {
@@ -290,30 +436,169 @@ s32 func_001E95B0(s32 flag)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9690__16FieldClass150330FP14ResidentPacketPC10FieldVec4APC10FieldVec4AUi);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9690__16FieldClass150330FP14ResidentPacketPC10FieldVec4BPC10FieldVec4BUi);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9A50);
 
 // Returns &object->unk90; subobject type unknown.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9B70);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9B80);
-
-void* func_001E9E80(void* object)
+void FieldClass150330::func_001E9B80(const FieldVec4B* low, const FieldVec4B* high)
 {
-    return object;
+    unk38 = 8;
+    unk3a = 12;
+    unk24 = new(0) FieldVec4B[unk38];
+    unk28 = new(0) FieldVec4B[unk38];
+    unk2c = new(0) FieldIndexPair[unk3a];
+    unk24[0] = FieldVec4A(high->x, low->y, high->z, 1.0f);
+    unk24[1] = FieldVec4A(low->x, low->y, high->z, 1.0f);
+    unk24[2] = FieldVec4A(low->x, low->y, low->z, 1.0f);
+    unk24[3] = FieldVec4A(high->x, low->y, low->z, 1.0f);
+    unk24[4] = FieldVec4A(high->x, high->y, high->z, 1.0f);
+    unk24[5] = FieldVec4A(low->x, high->y, high->z, 1.0f);
+    unk24[6] = FieldVec4A(low->x, high->y, low->z, 1.0f);
+    unk24[7] = FieldVec4A(high->x, high->y, low->z, 1.0f);
+    unk2c[0] = FieldIndexPair(0, 1);
+    unk2c[1] = FieldIndexPair(1, 2);
+    unk2c[2] = FieldIndexPair(2, 3);
+    unk2c[3] = FieldIndexPair(3, 0);
+    unk2c[4] = FieldIndexPair(4, 5);
+    unk2c[5] = FieldIndexPair(5, 6);
+    unk2c[6] = FieldIndexPair(6, 7);
+    unk2c[7] = FieldIndexPair(7, 4);
+    unk2c[8] = FieldIndexPair(0, 4);
+    unk2c[9] = FieldIndexPair(1, 5);
+    unk2c[10] = FieldIndexPair(2, 6);
+    unk2c[11] = FieldIndexPair(3, 7);
 }
 
-void* func_001E9E90(void* object)
+FieldIndexPair::FieldIndexPair()
 {
-    return object;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E9EA0);
+FieldVec4B::FieldVec4B()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001EA2E0);
+void FieldClass150330::func_001E9EA0(float radius)
+{
+    s32 vertex = 0;
+    s32 edge = 0;
+    s32 ring_start;
+    unk38 = 14;
+    unk3a = 30;
+    unk24 = new(0) FieldVec4B[unk38];
+    unk28 = new(0) FieldVec4B[unk38];
+    unk2c = new(0) FieldIndexPair[unk3a];
+    for (s32 band = 0; band < 4; band++)
+    {
+        if (band == 0)
+        {
+            unk24[vertex].set(FieldVec4A(0.0f, radius, 0.0f, 1.0f));
+            vertex++;
+        }
+        else if (band == 3)
+        {
+            unk24[vertex].set(FieldVec4A(0.0f, -radius, 0.0f, 1.0f));
+            for (s32 i = 0; i < 6; i++)
+            {
+                unk2c[edge + i] = FieldIndexPair(ring_start + i, vertex);
+            }
+            return;
+        }
+        else
+        {
+            ring_start = vertex;
+            float pitch = 1.5707964f - 1.0471976f * band;
+            float ring = radius * func_004CC3E0(pitch);
+            float height = radius * func_004CC690(pitch);
+            for (s32 i = 0; i < 6; i++)
+            {
+                float yaw = 1.0471976f * i;
+                unk24[vertex].set(FieldVec4A(ring * func_004CC3E0(yaw), height, ring * func_004CC690(yaw), 1.0f));
+                vertex++;
+            }
+            switch (band)
+            {
+            case 1:
+                for (s32 i = 0; i < 6; i++)
+                {
+                    unk2c[edge++] = FieldIndexPair(0, i + ring_start);
+                    unk2c[edge++] = FieldIndexPair(i + ring_start, ring_start + (i == 5 ? 0 : i + 1));
+                }
+                break;
+            default:
+                for (s32 i = 0; i < 6; i++)
+                {
+                    unk2c[edge++] = FieldIndexPair(i + ring_start - 6, i + ring_start);
+                    unk2c[edge++] = FieldIndexPair(i + ring_start, ring_start + (i == 5 ? 0 : i + 1));
+                }
+                break;
+            }
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", __dt__16FieldClass150330Fv);
+void FieldClass150330::func_001EA2E0(FieldShapeOwner18* owner, FieldShapeRecord20* record, u32 color, s32 flag)
+{
+    unk3c_2 = flag;
+    unk18 = owner;
+    unk1c = record;
+    unk14 = color;
+    unk20 = unk18->unk04;
+    FieldVec4B size = *(const FieldVec4B*)record;
+    if (unk3c_2)
+    {
+        size *= 1.05f;
+    }
+    switch (record->unk0c_0_3)
+    {
+    case 0:
+    {
+        FieldVec4B low(size);
+        FieldVec4B high(size);
+        low *= -1.0f;
+        func_001E9B80(&low, &high);
+        break;
+    }
+    case 1:
+        if (unk3c_2)
+        {
+            FieldVec4B low(FieldVec4A(size.x, size.x, size.x, 1.0f));
+            FieldVec4B high(low);
+            low *= -1.0f;
+            func_001E9B80(&low, &high);
+        }
+        else
+        {
+            func_001E9EA0(size.x);
+        }
+        break;
+    }
+    for (s32 i = 0; i < unk38; i++)
+    {
+        unk24[i] += unk1c->unk10;
+    }
+}
+
+FieldClass150330::~FieldClass150330()
+{
+    if (unk28)
+    {
+        delete[] unk28;
+        unk28 = 0;
+    }
+    if (unk2c)
+    {
+        delete[] unk2c;
+        unk2c = 0;
+    }
+    if (unk24)
+    {
+        delete[] unk24;
+        unk24 = 0;
+    }
+}
 
 FieldClass150330::FieldClass150330()
 {

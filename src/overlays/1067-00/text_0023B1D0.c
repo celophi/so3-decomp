@@ -17,7 +17,7 @@ void func_467570(FieldObject23D020* object, s32 enabled, s32 first, s32 second, 
 void func_465B20(FieldRuntime* runtime, FieldObject23D020* object);
 void func_421170(FieldObject23B850* object, FieldTarget23B850* target,
                  float x, float y, float z, float scale);
-void func_420D20(FieldObject23B850* object, void* extra);
+void func_420D20(FieldObject23B850* object, u32 color);
 
 struct FieldObject23C180
 {
@@ -40,18 +40,6 @@ struct FieldObject23B850
 {
     u8 unk00[0x58];
     FieldTarget23B850* target;
-};
-
-struct FieldObject23B950
-{
-    void** table;
-    u8 unk04[0x34];
-    u8 state;
-    u8 unk39[7];
-    u32 unk40;
-    u8 unk44[0x14];
-    void* target;
-    u8 unk5C;
 };
 
 struct FieldObject23D020
@@ -82,33 +70,8 @@ struct FieldObject23D020
     u32 unk12C;
 };
 
-struct FieldObject23CE80
-{
-    u8 unk00[0xF0];
-    u8 width;
-    u8 height;
-    u8 unkF2[0xA];
-    float unkFC;
-    float unk100;
-    u8 unk104[8];
-    s16 count;
-};
 
-struct FieldObject23CEA0
-{
-    u8 unk00[0xAD];
-    u8 unkAD;
-};
 
-struct FieldObject23CB30
-{
-    u8 unk00[0xF0];
-    u8 width;
-    u8 unkF1[0x1F];
-    s16 row_count;
-    s16 index;
-    s16 total;
-};
 
 struct FieldObject23BAB0
 {
@@ -125,29 +88,6 @@ struct FieldObject23BAB0
     float unk64;
 };
 
-struct FieldObject23CEB0
-{
-    u8 unk00[0xAE];
-    u8 unkAE;
-    u8 unkAF[0x11];
-    float unkC0;
-    float unkC4;
-    u8 unkC8[0x1D];
-    u8 unkE5;
-    u8 unkE6[0xA];
-    u8 width;
-    u8 unkF1[3];
-    float unkF4;
-    float unkF8;
-    float unkFC;
-    float unk100;
-    float unk104;
-    float unk108;
-    u8 unk10C[4];
-    s16 unk110;
-    s16 count;
-    s16 unk114;
-};
 
 struct FieldState23B3A0
 {
@@ -261,7 +201,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B7
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B7E0);
 
-void func_0023B850(FieldObject23B850* object, FieldTarget23B850* target, void* extra)
+void func_0023B850(FieldObject23B850* object, FieldTarget23B850* target, u32 color)
 {
     object->target = target;
     if (object->target != 0)
@@ -272,7 +212,7 @@ void func_0023B850(FieldObject23B850* object, FieldTarget23B850* target, void* e
     {
         func_421170(object, target, 0.0f, 0.0f, 0.0f, 0.0f);
     }
-    func_420D20(object, extra);
+    func_420D20(object, color);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B8D0);
@@ -367,7 +307,7 @@ void func_0023CB30(FieldObject23CB30* object)
     s32 row_count = object->row_count;
     s32 width = object->width;
     s32 index = object->index;
-    object->total = index + row_count * width;
+    object->unk114 = index + row_count * width;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023CB50);

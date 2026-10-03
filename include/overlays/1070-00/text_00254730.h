@@ -2,6 +2,16 @@
 #define SO3_OVERLAYS_1070_00_TEXT_00254730_H
 
 #include "overlays/1070-00/text_001E2B40.h"
+#include "overlays/1070-00/text_00202FB0.h"
+
+/** Four floating-point components initialized by the array callback. */
+typedef struct FieldFloatRecord16
+{
+    float unk00;
+    float unk04;
+    float unk08;
+    float unk0c;
+} FieldFloatRecord16;
 
 /** Partial receiver whose word flags include a mirrored bit in a flag byte. */
 typedef struct FieldMirroredFlags
@@ -64,16 +74,30 @@ typedef struct FieldKeyedFlagList14
     FieldListNode unk14;
 } FieldKeyedFlagList14;
 
-/** Partial receiver containing the keyed-list owner at offset 0xD8. */
+/** Partial receiver containing a list owner at 0xD8 and a second sentinel at 0xDC. */
 typedef struct FieldKeyedFlagOwnerD8
 {
     u8 unk00[0xD8];
     FieldKeyedFlagList14* unkd8;
+    FieldListNode unkdc;
 } FieldKeyedFlagOwnerD8;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Consume an update and advance the 28-byte record queue past flagged entries.
+ * @param object Record queue to update.
+ */
+void func_002556A0(FieldRecordQueue* object);
+
+/**
+ * @brief Clear all four floating-point components of an array record.
+ * @param object Record to initialize.
+ * @return The initialized record.
+ */
+FieldFloatRecord16* func_0025BB50(FieldFloatRecord16* object);
 
 /**
  * @brief Store the word flags and mirror bit one into the flag byte.
@@ -87,6 +111,13 @@ void func_0025BB70(FieldMirroredFlags* object, u32 value);
  * @param object Receiver to reset.
  */
 void func_00262060(FieldPointerReset66* object);
+
+/**
+ * @brief Follow relative record offsets to a tag and test its word discriminator.
+ * @param source Non-null starting record.
+ * @return One if the first record tagged 0x53414648 has word 0x18 equal to eight, otherwise zero.
+ */
+s32 func_00262000(const void* source);
 
 /**
  * @brief Store the data pointer and flags, clear bit zero, and mirror flag bit one.
@@ -116,6 +147,22 @@ void func_00263B20(FieldKeyedFloatState98* object, u32 key, u16 flags, float fir
  * @return The matching element, or null after returning to the sentinel.
  */
 FieldKeyedListElement54* func_00263230(FieldKeyedFloatState98* object, u32 key);
+
+/**
+ * @brief Read bit zero from the first list element with the supplied word key.
+ * @param object Receiver containing the keyed list owner.
+ * @param key Word key to find.
+ * @return The matching element's bit zero, or zero when no element matches.
+ */
+s32 func_00259E20(const FieldKeyedFlagOwnerD8* object, u32 key);
+
+/**
+ * @brief Test whether a matching signed key has a state byte from one through five.
+ * @param object Receiver containing the circular-list sentinel at offset 0xDC.
+ * @param key Signed key to compare with the elements' signed halfwords.
+ * @return One if any matching element has a state in range, otherwise zero.
+ */
+s32 func_0025A040(const FieldKeyedFlagOwnerD8* object, s32 key);
 
 /**
  * @brief Reset the keyed list element and store the supplied signed value as a float.

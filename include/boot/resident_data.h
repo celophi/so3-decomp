@@ -10,7 +10,9 @@ typedef struct FieldRuntime FieldRuntime;
 /** Partial object at offset 0x8 of the field context. */
 typedef struct ResidentContext08
 {
-    u8 unk00[0xDC];
+    u8 unk00[0xB8];
+    s32 unkb8;
+    u8 unkbc[0x20];
     void* unkdc;
     u8 unke0[0x15];
     u8 unkf5_0_2 : 3;
@@ -82,7 +84,8 @@ typedef struct ResidentContext
     void* unk1c;
     u8 unk20[4];
     void* unk24;
-    u8 unk28[8];
+    u8 unk28[4];
+    struct FieldResourceList14* unk2c;
     void* unk30;
     u8 unk34[4];
     ResidentContextObject38* unk38;
@@ -135,6 +138,7 @@ extern u8 D_001B6448;
 extern void* D_001B6458;
 extern void* D_001B661C;
 extern float D_001B6688;
+extern float D_001B6690;
 
 #ifdef __cplusplus
 }
