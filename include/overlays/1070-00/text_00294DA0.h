@@ -156,6 +156,34 @@ typedef struct FieldBytePointerA0
 } FieldBytePointerA0;
 
 #ifdef __cplusplus
+/** Partial first base of FieldEntry29B830, covering offsets 0x00-0x13F. */
+class FieldEntryHead29B830
+{
+public:
+    u8 unk00[0x140];
+};
+
+/** Partial second base of FieldEntry29B830, placed at offset 0x140. */
+class FieldEntryTail29B830
+{
+public:
+    u8 unk00[0x30];
+};
+
+/** 0x170-byte array element; func_0029B830 converts it to its base at 0x140. */
+class FieldEntry29B830 : public FieldEntryHead29B830, public FieldEntryTail29B830
+{
+};
+
+/** Partial receiver holding an array of FieldEntry29B830 at offset 0x14. */
+typedef struct FieldEntryOwner29B830
+{
+    u8 unk00[0x14];
+    FieldEntry29B830* unk14;
+} FieldEntryOwner29B830;
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -320,6 +348,16 @@ void func_002A1FE0(void* object);
  * @return Always 1.
  */
 s32 func_002A4AC0(void* object);
+
+#ifdef __cplusplus
+/**
+ * @brief Return the base at offset 0x140 of an array entry.
+ * @param object Receiver holding the entry array.
+ * @param index Entry index.
+ * @return The entry's FieldEntryTail29B830 base, or null if the entry address is null.
+ */
+FieldEntryTail29B830* func_0029B830(FieldEntryOwner29B830* object, s32 index);
+#endif
 
 /**
  * @brief Set the unk28 float value.

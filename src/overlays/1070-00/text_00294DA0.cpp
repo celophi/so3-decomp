@@ -229,7 +229,10 @@ s32 func_00298CB0(void* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00298CC0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_0029B830);
+FieldEntryTail29B830* func_0029B830(FieldEntryOwner29B830* object, s32 index)
+{
+    return &object->unk14[index];
+}
 
 void func_0029B860(FieldState29B860* object, float value)
 {
