@@ -1,6 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_001E1590.h"
-#include "boot/resident_data.h"
+#include "main/resident_data.h"
 #include "overlays/1067-00/text_0022DC70.h"
 
 s32 FieldClass150120::func_001DF3D0()

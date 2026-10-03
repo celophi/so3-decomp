@@ -51,7 +51,7 @@ void func_0024D440(FieldStatus331* object, u8 value);
 #include "overlays/1067-00/text_00207AF0.h"
 
 /**
- * Partial 0x140-byte FieldClass154D20 with vtable D_153570 in boot data and a
+ * Partial 0x140-byte FieldClass154D20 with vtable D_153570 in main data and a
  * FieldClass1515D0 member at offset 0x80. Its constructor is func_0024CB40.
  * Overrides other than slot 3 are not declared yet.
  */

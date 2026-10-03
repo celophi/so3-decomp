@@ -10,7 +10,7 @@ import shutil
 import sys
 import tempfile
 
-from tools.so3.build.boot import ORIGINAL, ROOT, original_boot
+from tools.so3.build.main import ORIGINAL, ROOT, original_main
 from tools.so3.build.overlays import CONFIGS, load_config
 from tools.so3.formats import require
 
@@ -60,7 +60,7 @@ def join_iso(source, target, ident, profile, part_size=PART_SIZE):
 
 def stage(output, disc1, disc2):
     require(not output.exists(), f'{output} already exists; choose a new --output directory')
-    inputs = {ORIGINAL: original_boot()}
+    inputs = {ORIGINAL: original_main()}
     for path in sorted(CONFIGS.glob('*.yaml')):
         config, data = load_config(path)
         target = Path(config['options']['target_path'])

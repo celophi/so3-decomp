@@ -1,6 +1,6 @@
 #include "include_asm.h"
-#include "boot/resident_data.h"
-#include "sdk/boot/syscalls_00121940.h"
+#include "main/resident_data.h"
+#include "sdk/main/syscalls_00121940.h"
 #include "overlays/1067-00/text_001F9B70.h"
 #include "overlays/1067-00/text_0026EE10.h"
 #include "overlays/1067-00/text_0027E520.h"
@@ -8,7 +8,7 @@
 #include "overlays/1067-00/text_00257750.h"
 #include "overlays/1067-00/text_002CEAF0.h"
 #include "overlays/1067-00/text_002D3BD0.h"
-#include "overlays/0002-01/text_004CD3A0.h"
+#include "overlays/lib/text_004CD3A0.h"
 
 extern "C" void func_4D9F40(FieldWordAt210*, const FieldWordAt210*);
 extern "C" u8 D_001B6518;

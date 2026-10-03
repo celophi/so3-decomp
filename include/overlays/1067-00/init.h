@@ -1,7 +1,7 @@
 #ifndef SO3_OVERLAYS_1067_00_INIT_H
 #define SO3_OVERLAYS_1067_00_INIT_H
 
-#include "boot/resident_00101550.h"
+#include "main/resident_00101550.h"
 #include "types.h"
 
 /** Partial module object containing its dispatch prefix and state flags. */

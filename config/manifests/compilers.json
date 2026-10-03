@@ -15,7 +15,7 @@
       "flags": ["-inline", "level=5"]
     }
   ],
-  "source": "tools/so3/build/probes/boot.c",
+  "source": "tools/so3/build/probes/main.c",
   "probes": [
     {
       "symbol": "probe_00101250",

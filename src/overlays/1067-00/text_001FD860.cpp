@@ -1,6 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_001FD860.h"
-#include "boot/resident_data.h"
+#include "main/resident_data.h"
 
 struct FieldScriptCursorU32
 {

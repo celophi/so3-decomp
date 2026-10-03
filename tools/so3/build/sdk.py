@@ -27,7 +27,7 @@ def code_units(config):
 
 
 def sdk_path(source):
-    """SDK units live in src/sdk/ (boot) or src/overlays/<module>/sdk/."""
+    """SDK units live in src/sdk/ (main) or src/overlays/<module>/sdk/."""
     parts = Path(source).parts
     return Path(source).is_relative_to('src/sdk') or (len(parts) > 3 and parts[:2] == ('src', 'overlays') and parts[3] == 'sdk')
 
@@ -37,9 +37,9 @@ def validate_sdk_units(configs, manifest=None):
     if manifest is None:
         manifest = json.loads(MANIFEST.read_text())
     known = {}
-    selected = {"boot" if path.name == "boot.us.yaml" else path.stem for path, _ in configs}
+    selected = {"main" if path.name == "main.us.yaml" else path.stem for path, _ in configs}
     for path, config in configs:
-        module = 'boot' if path.name == 'boot.us.yaml' else path.stem
+        module = 'main' if path.name == 'main.us.yaml' else path.stem
         for unit in code_units(config):
             if sdk_path(unit['source']):
                 if unit['source'] in known:

@@ -1,8 +1,8 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_00200710.h"
-#include "boot/resident_data.h"
-#include "boot/resident_0010A0E0.h"
-#include "overlays/0002-01/text_004CD3A0.h"
+#include "main/resident_data.h"
+#include "main/resident_0010A0E0.h"
+#include "overlays/lib/text_004CD3A0.h"
 
 typedef unsigned __int128 FieldLocalQword;
 extern "C" s32 func_0022A160(void*);

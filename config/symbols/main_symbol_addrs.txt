@@ -1,0 +1,10 @@
+// Entry point and the five byte-verified probe functions.
+// Function names are placeholders; original symbols have not been recovered.
+_start = 0x00100008; // type:func
+func_00101250 = 0x00101250; // type:func size:0x10
+func_00101510 = 0x00101510; // type:func size:0x40
+func_0010A080 = 0x0010A080; // type:func size:0x28
+func_0010A0B0 = 0x0010A0B0; // type:func size:0x30
+func_0011EE00 = 0x0011EE00; // type:func size:0x68
+// Called from 0x0012AD48. Keep this boundary after separating syscall units.
+func_00122B38 = 0x00122B38; // type:func size:0xD4

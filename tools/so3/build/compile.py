@@ -27,7 +27,7 @@ def deferred(flags):
 
 def module_of(unit):
     parts = Path(unit).parts
-    return parts[2] if parts[:2] == ('src', 'overlays') else 'boot'
+    return parts[2] if parts[:2] == ('src', 'overlays') else 'main'
 
 
 def symbol_map(unit):
@@ -43,9 +43,9 @@ def thunk_map(unit):
 
 
 def overlay_range(unit):
-    """The unit's VRAM range, or None for boot sources."""
+    """The unit's VRAM range, or None for main sources."""
     module = module_of(unit)
-    if module == 'boot':
+    if module == 'main':
         return None
     import yaml
     return unit_range(yaml.safe_load((Path('config/overlays') / f'{module}.yaml').read_text()), unit)

@@ -31,7 +31,7 @@ __construct_new_array = 0x00142F10; // type:func
 __dla__FPv = 0x00100BE0; // type:func
 
 // FieldClass150050 <- FieldClass150060 <- FieldClass150070; vtables are in
-// boot data.
+// main data.
 __vt__16FieldClass150050 = 0x00150050; // size:0xC
 __vt__16FieldClass150060 = 0x00150060; // size:0xC
 __vt__16FieldClass150070 = 0x00150070; // size:0x1C
@@ -45,7 +45,7 @@ func_001DF3D0__16FieldClass150070Fv = 0x001DF3D0; // type:func
 __vt__16FieldClass150010 = 0x00150010; // size:0x2C
 __dt__16FieldClass150010Fv = 0x001DEC40; // type:func
 
-// Lib classes; the names match config/symbols/0002-01_symbol_addrs.txt.
+// Lib classes; the names match config/symbols/lib_symbol_addrs.txt.
 __vt__14LibClass178DD0 = 0x00178DD0; // size:0x38
 __ct__14LibClass178DD0Fv = 0x004D7620; // type:func
 __dt__14LibClass178DD0Fv = 0x004D7590; // type:func
@@ -64,10 +64,10 @@ func_001DD7B0__16FieldClass14FE30Fv = 0x001DD440; // type:func
 func_001DF3D0__16FieldClass150010Fv = 0x001DF310; // type:func
 func_001DD7B0__16FieldClass150010Fv = 0x001DF320; // type:func
 
-// EE kernel syscall 100 (FlushCache), an SDK wrapper in boot.
+// EE kernel syscall 100 (FlushCache), an SDK wrapper in main.
 func_00121FE0 = 0x00121FE0; // type:func
 
-// Resident helper that takes a boot manager object and an object.
+// Resident helper that takes a manager object from main and an object.
 func_0011ED90 = 0x0011ED90; // type:func
 
 // Slot overrides in classes derived from FieldClass150070.
@@ -91,10 +91,10 @@ __vt__16FieldClass150120 = 0x00150120; // size:0x30
 __dt__16FieldClass150120Fv = 0x001E5030; // type:func
 func_001DDB30__16FieldClass150120FPv = 0x001E4EF0; // type:func
 
-// Lib vector transforms by a 4x4 matrix in vf1-vf4 (include/overlays/0002-01/text_00429B00.h).
+// Lib vector transforms by a 4x4 matrix in vf1-vf4 (include/overlays/lib/text_00429B00.h).
 func_004336E0 = 0x004336E0; // type:func
 func_00433730 = 0x00433730; // type:func
-// Lib VU0 trigonometric approximations (include/overlays/0002-01/text_004BD360.h).
+// Lib VU0 trigonometric approximations (include/overlays/lib/text_004BD360.h).
 func_004CC3E0 = 0x004CC3E0; // type:func
 func_004CC690 = 0x004CC690; // type:func
 
@@ -139,7 +139,7 @@ __dt__16FieldClass150280Fv = 0x001E7EF0; // type:func
 func_001E82B0__16FieldClass1502E0Fi = 0x001E82B0; // type:func
 func_001E81D0__16FieldClass1502E0FPvf = 0x001E81D0; // type:func
 func_001E78B0__16FieldClass150280FPvbbf = 0x001E78B0; // type:func
-// Lib classes built by FieldClass1502E0::func_001E82B0 (names match 0002-01).
+// Lib classes built by FieldClass1502E0::func_001E82B0 (names match lib).
 __ct__14LibClass178220Fv = 0x004C04A0; // type:func
 __ct__14LibClass178370Fv = 0x004C2E60; // type:func
 func_004BDD10 = 0x004BDD10; // type:func
@@ -158,7 +158,7 @@ __dt__16FieldClass150420Fv = 0x001ECDE0; // type:func
 __ct__16FieldClass1504F0Fv = 0x001ED7E0; // type:func
 __vt__16FieldClass1504F0 = 0x001504F0; // size:0x1C
 __dt__16FieldClass1504F0Fv = 0x001ECFF0; // type:func
-// Lib slot release (include/overlays/0002-01/text_0045AD10.h).
+// Lib slot release (include/overlays/lib/text_0045AD10.h).
 func_00465430 = 0x00465430; // type:func
 
 // FieldClass150460 <- FieldClass150490 <- FieldClass1504C0. The first two have
@@ -172,7 +172,7 @@ __dt__16FieldClass1504C0Fv = 0x001EAD40; // type:func
 func_001EAC90__16FieldClass150490FP14ResidentPacket = 0x001EE250; // type:func
 func_001EAC90__16FieldClass1504C0FP14ResidentPacket = 0x001EAC90; // type:func
 func_001EAA10__16FieldClass1504C0FP14ResidentPacket = 0x001EAA10; // type:func
-// Resident GS packet helpers (include/boot/resident_0011EE70.h).
+// Resident GS packet helpers (include/main/resident_0011EE70.h).
 func_0011EF00 = 0x0011EF00; // type:func
 func_0011EF90 = 0x0011EF90; // type:func
 func_0011F140 = 0x0011F140; // type:func

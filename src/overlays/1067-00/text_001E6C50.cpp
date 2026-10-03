@@ -1,15 +1,15 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_001E6C50.h"
-#include "boot/resident_data.h"
+#include "main/resident_data.h"
 #include "overlays/1067-00/text_0022DC70.h"
-#include "overlays/0002-01/text_00429B00.h"
-#include "overlays/0002-01/text_004BD360.h"
-#include "overlays/0002-01/text_0045AD10.h"
+#include "overlays/lib/text_00429B00.h"
+#include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_0045AD10.h"
 #include "overlays/1067-00/text_00200710.h"
 #include "overlays/1067-00/text_0021FB80.h"
 #include "vu0.h"
 
-/* Lib.bin (0002-01) data, not owned by this overlay: GS register values passed to func_0011F140. */
+/* Lib.bin data, not owned by this overlay: GS register values passed to func_0011F140. */
 extern "C" u64 D_4ED330[];
 
 FieldClass1501F0::~FieldClass1501F0()

@@ -1,5 +1,5 @@
 #include "include_asm.h"
-#include "boot/resident_data.h"
+#include "main/resident_data.h"
 #include "overlays/1067-00/text_0020E4B0.h"
 
 /** Partial field context with a word at offset 0x50. */

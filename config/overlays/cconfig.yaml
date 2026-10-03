@@ -1,0 +1,50 @@
+name: Star Ocean 3 US overlay cconfig (0071-00, cconfig.bin)
+sha1: c69c4c66b3ded95d9e7c16f10b2b9bafd8ea5e33
+sha256: 0418ba065c2f8937ee7d2f8014482550959becff49abc97b457183f6708a901e
+options:
+  basename: cconfig
+  target_path: disc/us-disc1/modules/0071-00.bin
+  base_path: ../..
+  platform: ps2
+  compiler: MWCCPS2
+  asm_path: build/overlays/cconfig/asm
+  asset_path: build/overlays/cconfig/bin
+  src_path: src/overlays/cconfig
+  build_path: build/overlays/cconfig
+  ld_script_path: build/overlays/cconfig/overlay.ld
+  generated_asm_macros_directory: build/overlays/cconfig/include
+  cache_path: build/overlays/cconfig/splat.cache
+  undefined_funcs_auto_path: build/overlays/cconfig/undefined_funcs.ld
+  undefined_syms_auto_path: build/overlays/cconfig/undefined_syms.ld
+  create_c_files: true
+  make_full_disasm_for_code: true
+  auto_decompile_empty_functions: false
+  generated_c_preamble: '#include "include_asm.h"'
+  asm_inc_header: |
+    .set noat
+    .set noreorder
+  migrate_rodata_to_functions: false
+  subalign: 4
+  find_file_boundaries: false
+  disasm_unknown: true
+  gp_value: 0x1bdff0
+  generated_macro_inc_content: |
+    .set Q, $Q
+    .set ACC, $ACC
+    .set I, $I
+    .set R, $R
+segments:
+  - name: header
+    type: bin
+    start: 0x0
+    vram: 0x348380
+  - name: text
+    type: code
+    start: 0x40
+    vram: 0x3483c0
+    subalign: 16
+    subsegments:
+      - [0x40, c, text]
+  - [0xa9e0, bin, text_padding]
+  - [0xaa00, bin, data]
+  - [0xab80]

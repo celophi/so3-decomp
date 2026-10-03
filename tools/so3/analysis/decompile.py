@@ -11,7 +11,7 @@ import sys
 import tarfile
 
 from tools.so3.analysis.analysis_tools import ROOT, LOCK, checked_file, sha256
-from tools.so3.build.boot import original_boot
+from tools.so3.build.main import original_main
 from tools.so3.build.driver import full_asm_path
 from tools.so3.analysis.identify_sdk import functions
 from tools.so3.build.overlays import load_config
@@ -70,14 +70,14 @@ def reserve_run(function, module):
 
 
 def decompile(module, function, context=None, language=None):
-    if not re.fullmatch(r'boot|[0-9]{4}-[0-9]{2}', module):
-        raise ValueError('module must be boot or an overlay ID such as 1070-00')
+    if not re.fullmatch(r'[a-z0-9]+(?:-[0-9]{2})?', module):
+        raise ValueError('module must be main or an overlay name such as lib or 1070-00')
     if not re.fullmatch(r'[A-Za-z_][\w.$]*', function):
         raise ValueError('invalid function name')
-    if module == 'boot':
+    if module == 'main':
         import yaml
-        config = yaml.safe_load((ROOT / 'config/boot.us.yaml').read_text())
-        original = original_boot()
+        config = yaml.safe_load((ROOT / 'config/main.us.yaml').read_text())
+        original = original_main()
     else:
         config, original = load_config(Path('config/overlays') / (module + '.yaml'))
     identity, assembly = function_input(config, original, function)
@@ -113,7 +113,7 @@ def decompile(module, function, context=None, language=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('module', help='boot or an overlay ID, e.g. 1070-00')
+    parser.add_argument('module', help='main or an overlay name, e.g. lib or 1070-00')
     parser.add_argument('function', help='exact Splat symbol name')
     parser.add_argument('--context', type=Path, help='preprocessed C declarations and types')
     parser.add_argument('--language', choices=('c', 'c++'), help='override the configured source language')

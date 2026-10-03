@@ -336,7 +336,7 @@ s32 func_001E02C0(FieldEntryArrayObject* object, const float* x, const float* y,
 #endif
 
 #ifdef __cplusplus
-/** Root of the keyframe classes, with only a destructor, with vtable D_14FF50 in boot data. */
+/** Root of the keyframe classes, with only a destructor, with vtable D_14FF50 in main data. */
 class FieldClass14FF50
 {
 public:
@@ -348,7 +348,7 @@ public:
 
 /**
  * Partial keyframe base with a counted array of 16-byte entries, with vtable
- * D_150090 in boot data. Slots 14, 16 and 30-33 are pure virtual. Many slots
+ * D_150090 in main data. Slots 14, 16 and 30-33 are pure virtual. Many slots
  * are still implemented as the C functions above (FieldEntryArrayObject
  * describes the same layout); slots are named after the first implementation.
  */
@@ -628,7 +628,7 @@ public:
     float unk50;
 };
 
-/** Partial three-component keyframe class, with vtable D_14FEB0 in boot data. */
+/** Partial three-component keyframe class, with vtable D_14FEB0 in main data. */
 class FieldClass14FEB0 : public FieldClass150090
 {
 public:

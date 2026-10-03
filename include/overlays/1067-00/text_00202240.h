@@ -253,7 +253,7 @@ void func_00207400(FieldState634* object);
 
 #ifdef __cplusplus
 /**
- * Partial base of the field object classes, with vtable D_150F90 in boot data.
+ * Partial base of the field object classes, with vtable D_150F90 in main data.
  * Derived classes set a type bit in unk78 (0x1 FieldClass151510, 0x2
  * FieldClass152430, 0x400 FieldClass153330, 0x20000 FieldClass15B090). Slots
  * 9 and 15 are still implemented as the C functions func_00204420 and

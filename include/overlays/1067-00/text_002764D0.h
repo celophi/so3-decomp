@@ -4,12 +4,12 @@
 #include "types.h"
 
 #ifdef __cplusplus
-#include "boot/resident_data.h"
-#include "overlays/0002-01/text_003E68C0.h"
+#include "main/resident_data.h"
+#include "overlays/lib/text_003E68C0.h"
 #include "overlays/1067-00/text_001DD3C0.h"
 
 /**
- * Partial 0x7D8-byte FieldClass14FFB0 with vtable D_155640 in boot data
+ * Partial 0x7D8-byte FieldClass14FFB0 with vtable D_155640 in main data
  * (FieldClass1DD400 part at +0x2C). The field context keeps one instance at
  * offset 0x1C; it is created on first use and inserted into the context's
  * offset 0x30 list (FieldClass14FE30::func_001DF360, func_00258AC0).

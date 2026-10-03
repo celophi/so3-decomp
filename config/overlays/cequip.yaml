@@ -1,0 +1,48 @@
+name: Star Ocean 3 US overlay cequip (0067-00, cequip.bin)
+sha1: a1cb87e1174a01e2bf16b710d9ca736398e4cfa0
+sha256: 4678a0530b8162a8945ac311590b9b31fcfbe198af272945133cedcc12a10d96
+options:
+  basename: cequip
+  target_path: disc/us-disc1/modules/0067-00.bin
+  base_path: ../..
+  platform: ps2
+  compiler: MWCCPS2
+  asm_path: build/overlays/cequip/asm
+  asset_path: build/overlays/cequip/bin
+  src_path: src/overlays/cequip
+  build_path: build/overlays/cequip
+  ld_script_path: build/overlays/cequip/overlay.ld
+  generated_asm_macros_directory: build/overlays/cequip/include
+  cache_path: build/overlays/cequip/splat.cache
+  undefined_funcs_auto_path: build/overlays/cequip/undefined_funcs.ld
+  undefined_syms_auto_path: build/overlays/cequip/undefined_syms.ld
+  create_c_files: true
+  make_full_disasm_for_code: true
+  auto_decompile_empty_functions: false
+  generated_c_preamble: '#include "include_asm.h"'
+  asm_inc_header: |
+    .set noat
+    .set noreorder
+  migrate_rodata_to_functions: false
+  subalign: 4
+  find_file_boundaries: false
+  disasm_unknown: true
+  gp_value: 0x1bdff0
+  generated_macro_inc_content: |
+    .set Q, $Q
+    .set ACC, $ACC
+    .set I, $I
+    .set R, $R
+segments:
+  - name: header
+    type: bin
+    start: 0x0
+    vram: 0x348380
+  - name: text
+    type: code
+    start: 0x40
+    vram: 0x3483c0
+    subalign: 16
+    subsegments:
+      - [0x40, c, text]
+  - [0x9c00]

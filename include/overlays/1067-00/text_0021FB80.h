@@ -154,7 +154,7 @@ s32 func_00229240(void* object);
 #ifdef __cplusplus
 /**
  * Partial FieldClass151510 with 13 more virtual slots, with vtable D_152430 in
- * boot data. Its constructor (func_00229020) sets type bit 0x2 in unk78.
+ * main data. Its constructor (func_00229020) sets type bit 0x2 in unk78.
  * Overrides of earlier slots other than slot 15 are not declared yet.
  */
 class FieldClass152430 : public FieldClass151510
@@ -217,7 +217,7 @@ class FieldClass1502E0;
 
 /**
  * Partial FieldClass152430 with four more virtual slots, with vtable D_150EB0
- * in boot data. Its constructor (func_002036F0, in text_00202240) sets type
+ * in main data. Its constructor (func_002036F0, in text_00202240) sets type
  * bit 0x4 in unk78. It is declared here because it derives from
  * FieldClass152430.
  */
@@ -258,7 +258,7 @@ public:
 
 /**
  * Partial FieldClass150EB0 with one more virtual slot, with vtable D_152F00 in
- * boot data. Its constructor (func_00238940, in text_0022DC70) sets type bit
+ * main data. Its constructor (func_00238940, in text_0022DC70) sets type bit
  * 0x8 in unk78. It is declared here because it derives from FieldClass152430.
  */
 class FieldClass152F00 : public FieldClass150EB0
@@ -281,7 +281,7 @@ public:
 };
 
 /**
- * Partial FieldClass152430 with vtable D_153330 in boot data. Its constructor
+ * Partial FieldClass152430 with vtable D_153330 in main data. Its constructor
  * (func_00249000, in text_0023DC90) sets type bit 0x400 in unk78. Its seven
  * new virtual slots (32-38) are not declared yet.
  */
@@ -329,7 +329,7 @@ public:
 };
 
 /**
- * Partial 0x6A0-byte FieldClass152F00 with vtable D_152FE0 in boot data. Its
+ * Partial 0x6A0-byte FieldClass152F00 with vtable D_152FE0 in main data. Its
  * constructor is inlined in the factory func_001F87F0, which sets type bit 0x20
  * through func_001F8A70. Overrides and new virtual slots are not declared yet.
  */
@@ -360,7 +360,7 @@ public:
 };
 
 /**
- * Partial FieldClass152F00 with vtable D_152350 in boot data. Its constructor
+ * Partial FieldClass152F00 with vtable D_152350 in main data. Its constructor
  * (func_00224A00) sets type bit 0x10 in unk78. New virtual slots are not
  * declared yet.
  */

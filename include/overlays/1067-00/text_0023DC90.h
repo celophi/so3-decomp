@@ -2,7 +2,7 @@
 #define SO3_OVERLAYS_1067_00_TEXT_0023DC90_H
 
 #include "types.h"
-#include "boot/resident_data.h"
+#include "main/resident_data.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -11,7 +11,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 
 from tools.so3.analysis.analysis_tools import ROOT, checked_file, sha256
-from tools.so3.build.boot import original_boot
+from tools.so3.build.main import original_main
 from tools.so3.build.overlays import load_config
 from tools.so3.disc.archives import ioprp_entries
 
@@ -78,12 +78,12 @@ def functions(path, original, start, end, base):
 def scan(output):
     import yaml
     patterns = named_patterns(checked_file(PATTERNS))
-    boot = Path('config/boot.us.yaml')
-    configs = [(boot, yaml.safe_load(boot.read_text()), original_boot())]
+    main_config = Path('config/main.us.yaml')
+    configs = [(main_config, yaml.safe_load(main_config.read_text()), original_main())]
     configs += [(p, *load_config(p)) for p in sorted(Path('config/overlays').glob('*.yaml'))]
     matches, counts = [], {}
     for path, config, original in configs:
-        module = 'boot' if path == boot else path.stem
+        module = 'main' if path == main_config else path.stem
         options, segments = config['options'], config['segments']
         counts[module] = 0
         for index, segment in enumerate(segments[:-1]):

@@ -61,12 +61,12 @@ def verify(ident, config, original, output=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=('split', 'build', 'verify', 'run-splat'))
-    parser.add_argument('--overlay', help='resource-block ID, e.g. 0002-01')
+    parser.add_argument('--overlay', help='overlay name, e.g. lib or 1067-00')
     parser.add_argument('--output', type=Path, help='alternate rebuilt file for verify --overlay')
     args = parser.parse_args()
     os.chdir(ROOT)
     try:
-        require(args.overlay is None or re.fullmatch(r'\d{4}-\d{2}', args.overlay), 'invalid overlay ID')
+        require(args.overlay is None or re.fullmatch(r'[a-z0-9]+(?:-[0-9]{2})?', args.overlay), 'invalid overlay name')
         require(args.output is None or (args.command == 'verify' and args.overlay),
                 '--output requires verify --overlay')
         require(args.command != 'run-splat' or args.overlay, 'run-splat requires --overlay')

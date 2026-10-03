@@ -2,7 +2,7 @@
 #define SO3_OVERLAYS_1067_00_TEXT_0028E530_H
 
 #include "types.h"
-#include "boot/resident_data.h"
+#include "main/resident_data.h"
 
 typedef struct FieldObject157160 FieldObject157160;
 
