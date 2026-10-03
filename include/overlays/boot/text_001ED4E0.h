@@ -31,24 +31,59 @@ typedef struct BootState1F0D60
     u8 unk53_other : 6;
 } BootState1F0D60;
 
-/** Partial receiver layout for the paired packed-field setters. */
+/** @brief A 16-byte record containing a scalar key and value. */
+typedef struct BootKeyEntry16
+{
+    float key;
+    float value;
+    u8 unk08[8];
+} BootKeyEntry16;
+
+/** @brief Partial array receiver with counts, storage, and packed controls. */
 typedef struct BootState1F12B0
 {
-    u8 pad00[0x2A];
+    u8 unk00[4];
+    BootKeyEntry16* entries;
+    u8 unk08[0x10];
+    u32 unk18;
+    float span;
+    s16 count;
+    s16 capacity;
+    s16 unk24;
+    s16 unk26;
+    s16 unk28;
     u8 unk2A_lo : 4;
     u8 unk2A_hi : 4;
     u8 unk2B_bit0 : 1;
-    u8 unk2B_other : 7;
+    u8 unk2B_bit1 : 1;
+    u8 unk2B_other : 6;
 } BootState1F12B0;
 
-/** Partial receiver layout for the paired packed-field setters. */
+/** @brief A 32-byte record with a scalar key and an aligned payload. */
+typedef struct BootKeyEntry32
+{
+    float key;
+    u8 unk04[0x1C];
+} __attribute__((aligned(16))) BootKeyEntry32;
+
+/** @brief Partial array receiver with counts, storage, and packed controls. */
 typedef struct BootState1F1580
 {
-    u8 pad00[0x42];
+    u8 unk00[4];
+    BootKeyEntry32* entries;
+    u8 unk08[0x28];
+    u32 unk30;
+    float span;
+    s16 count;
+    s16 capacity;
+    s16 unk3C;
+    s16 unk3E;
+    s16 unk40;
     u8 unk42_lo : 4;
     u8 unk42_hi : 4;
     u8 unk43_bit0 : 1;
-    u8 unk43_other : 7;
+    u8 unk43_bit1 : 1;
+    u8 unk43_other : 6;
 } BootState1F1580;
 
 /** Three float components followed by their scalar key. */
@@ -105,35 +140,99 @@ typedef struct BootState1F1FC0
     u8 unk23_other : 6;
 } BootState1F1FC0;
 
-/** Partial receiver layout for the paired packed-field setters. */
+/** @brief A 48-byte record containing a scalar key and an aligned payload. */
+typedef struct BootKeyEntry48
+{
+    float key;
+    u8 unk04[0x2C];
+} __attribute__((aligned(16))) BootKeyEntry48;
+
+/** @brief Partial 48-byte record-array receiver with packed control fields. */
 typedef struct BootState1F4730
 {
-    u8 pad00[0x52];
+    u8 unk00[4];
+    BootKeyEntry48* entries;
+    u8 unk08[0x38];
+    u32 unk40;
+    float span;
+    s16 count;
+    s16 capacity;
+    s16 unk4C;
+    s16 unk4E;
+    s16 unk50;
     u8 unk52_lo : 4;
     u8 unk52_hi : 4;
     u8 unk53_bit0 : 1;
-    u8 unk53_other : 7;
+    u8 unk53_bit1 : 1;
+    u8 unk53_other : 6;
 } BootState1F4730;
 
-/** Partial receiver layout for the paired packed-field setters. */
+/** @brief An eight-byte record with an observed signed scalar key. */
+typedef struct BootShortKeyEntry8
+{
+    u8 unk00[6];
+    s16 key;
+} BootShortKeyEntry8;
+
+/** @brief Partial record-array receiver with counts, span, and packed controls. */
 typedef struct BootState1F4790
 {
-    u8 pad00[0x22];
+    u8 unk00[4];
+    BootShortKeyEntry8* entries;
+    u8 unk08[8];
+    u32 unk10;
+    float span;
+    s16 count;
+    s16 capacity;
+    s16 unk1C;
+    s16 unk1E;
+    s16 unk20;
     u8 unk22_lo : 4;
     u8 unk22_hi : 4;
     u8 unk23_bit0 : 1;
-    u8 unk23_other : 7;
+    u8 unk23_bit1 : 1;
+    u8 unk23_other : 6;
 } BootState1F4790;
 
-/** Partial receiver layout for the paired packed-field setters. */
+/** @brief Partial 32-byte record-array receiver with packed control fields. */
 typedef struct BootState1F47F0
 {
-    u8 pad00[0x42];
+    u8 unk00[4];
+    BootKeyEntry32* entries;
+    u8 unk08[0x28];
+    u32 unk30;
+    float span;
+    s16 count;
+    s16 capacity;
+    s16 unk3C;
+    s16 unk3E;
+    s16 unk40;
     u8 unk42_lo : 4;
     u8 unk42_hi : 4;
     u8 unk43_bit0 : 1;
-    u8 unk43_other : 7;
+    u8 unk43_bit1 : 1;
+    u8 unk43_other : 6;
 } BootState1F47F0;
+
+/** @brief A scalar key followed by three independent float values. */
+typedef struct BootTripleFloatEntry16
+{
+    float key;
+    float first;
+    float second;
+    float third;
+} BootTripleFloatEntry16;
+
+/** @brief Partial indexed record receiver with observed span and signed counts. */
+typedef struct BootState1F3FE0
+{
+    u8 unk00[4];
+    BootTripleFloatEntry16* entries;
+    u8 unk08[0x14];
+    float span;
+    s16 count;
+    s16 capacity;
+} BootState1F3FE0;
 
 /** Settings record initialized before calls to the resident rendering interface. */
 typedef struct BootSettings1F86C0
@@ -184,6 +283,18 @@ extern "C" {
 #endif
 
 /**
+ * @brief Replace an indexed three-value entry and update the span for the last entry.
+ * @param object Record-array receiver.
+ * @param index Nonnegative entry index, checked against capacity.
+ * @param first First value to copy.
+ * @param second Second value to copy.
+ * @param third Third value to copy.
+ * @param key Key associated with the entry.
+ * @return One if stored, or zero if storage is absent or the index is outside capacity.
+ */
+s32 func_001F3FE0(BootState1F3FE0* object, s32 index, const float* first, const float* second, const float* third, float key);
+
+/**
  * @brief Reset 48-byte record storage, counts, packed controls, and cached indices.
  * @param object Receiver to reset without releasing its current storage.
  */
@@ -196,6 +307,190 @@ void func_001F0C80(BootState1F0D60* object);
  * @param entries External storage containing the specified number of entries.
  */
 void func_001F0D10(BootState1F0D60* object, s32 count, BootRecord48F0E90* entries);
+
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param object Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
+float func_001F1010(BootState1F0D60* object, float key);
+
+/**
+ * @brief Release owned record-array storage and clear the array pointer.
+ * @param object Receiver whose packed ownership flag distinguishes external storage.
+ */
+void func_001F10C0(BootState1F0D60* object);
+
+/**
+ * @brief Release owned record-array storage and clear the array pointer.
+ * @param object Receiver whose packed ownership flag distinguishes external storage.
+ */
+void func_001F0960(BootState1F47F0* object);
+
+/**
+ * @brief Release owned record-array storage and clear the array pointer.
+ * @param object Receiver whose packed ownership flag distinguishes external storage.
+ */
+void func_001F21C0(BootState1F4790* object);
+
+/**
+ * @brief Release owned record-array storage and clear the array pointer.
+ * @param object Receiver whose packed ownership flag distinguishes external storage.
+ */
+void func_001F2280(BootState1F4730* object);
+
+/**
+ * @brief Reset array storage, counts, packed controls, and cached indices.
+ * @param object Receiver to reset without releasing its current storage.
+ */
+void func_001F1180(BootState1F12B0* object);
+
+/**
+ * @brief Reset array storage, counts, packed controls, and cached indices.
+ * @param object Receiver to reset without releasing its current storage.
+ */
+void func_001F14F0(BootState1F1580* object);
+
+/**
+ * @brief Release owned array storage and clear the array pointer.
+ * @param object Receiver whose packed ownership flag distinguishes external storage.
+ */
+void func_001F1430(BootState1F12B0* object);
+
+/**
+ * @brief Release owned array storage and clear the array pointer.
+ * @param object Receiver whose packed ownership flag distinguishes external storage.
+ */
+void func_001F16F0(BootState1F1580* object);
+
+/**
+ * @brief Release owned array storage and clear the array pointer.
+ * @param object Receiver whose packed ownership flag distinguishes external storage.
+ */
+void func_001F1DD0(BootState1F1AD0* object);
+
+/**
+ * @brief Release owned array storage and clear the array pointer.
+ * @param object Receiver whose packed ownership flag distinguishes external storage.
+ */
+void func_001F2100(BootState1F1FC0* object);
+
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param object Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
+float func_001F29D0(BootState1F1580* object, float key);
+
+/**
+ * @brief Return the last-to-first key difference, or zero below two records.
+ * @param object Receiver with valid storage when its count is at least two.
+ * @return Difference between the last and first scalar keys, or zero.
+ */
+float func_001F2AC0(BootState1F1580* object);
+
+/**
+ * @brief Test whether the 32-byte record array contains an exactly equal key.
+ * @param object Receiver with valid storage when its count is positive.
+ * @param key Scalar key to find.
+ * @return One for an equal key, or zero when none is present.
+ */
+s32 func_001F2B10(BootState1F1580* object, float key);
+
+/**
+ * @brief Bind external 32-byte records and cache their first-to-last key span.
+ * @param object Array receiver.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
+void func_001F2C60(BootState1F1580* object, s32 count, BootKeyEntry32* entries);
+
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param object Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
+float func_001F2DE0(BootState1F12B0* object, float key);
+
+/**
+ * @brief Find the value stored with the first exactly equal scalar key.
+ * @param object Receiver with valid storage when its count is positive.
+ * @param key Scalar key to find.
+ * @return The first matching value, or zero when the key is absent.
+ */
+float func_001F2E70(BootState1F12B0* object, float key);
+
+/**
+ * @brief Return the last-to-first key difference, or zero below two records.
+ * @param object Receiver with valid storage when its count is at least two.
+ * @return Difference between the last and first scalar keys, or zero.
+ */
+float func_001F2ED0(BootState1F12B0* object);
+
+/**
+ * @brief Test whether the 16-byte record array contains an exactly equal key.
+ * @param object Receiver with valid storage when its count is positive.
+ * @param key Scalar key to find.
+ * @return One for an equal key, or zero when none is present.
+ */
+s32 func_001F2F20(BootState1F12B0* object, float key);
+
+/**
+ * @brief Bind external 16-byte records and cache their first-to-last key span.
+ * @param object Array receiver.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
+void func_001F2F70(BootState1F12B0* object, s32 count, BootKeyEntry16* entries);
+
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param object Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
+float func_001F5E20(BootState1F47F0* object, float key);
+
+/**
+ * @brief Return the last-to-first key difference, or zero below two records.
+ * @param object Receiver with valid storage when its count is at least two.
+ * @return Difference between the last and first scalar keys, or zero.
+ */
+float func_001F5F10(BootState1F47F0* object);
+
+/**
+ * @brief Test whether the 32-byte record array contains an exactly equal key.
+ * @param object Receiver with valid storage when its count is positive.
+ * @param key Scalar key to find.
+ * @return One for an equal key, or zero when none is present.
+ */
+s32 func_001F5F60(BootState1F47F0* object, float key);
+
+/**
+ * @brief Return the last-to-first key difference, or zero below two records.
+ * @param object Receiver with valid storage when its count is at least two.
+ * @return Difference between the last and first scalar keys, or zero.
+ */
+float func_001F5C50(BootState1F4730* object);
+
+/**
+ * @brief Test whether the 48-byte record array contains an exactly equal key.
+ * @param object Receiver with valid storage when its count is positive.
+ * @param key Scalar key to find.
+ * @return One for an equal key, or zero when none is present.
+ */
+s32 func_001F5BE0(BootState1F4730* object, float key);
+
+/**
+ * @brief Bind external 48-byte records and cache their first-to-last key span.
+ * @param object Array receiver.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
+void func_001F5A00(BootState1F4730* object, s32 count, BootKeyEntry48* entries);
 
 /**
  * @brief Test whether the 48-byte record array contains an exactly equal key.
@@ -448,6 +743,57 @@ void func_001F4790(BootState1F4790* state, u32 value);
 void func_001F47F0(BootState1F47F0* state, u32 value);
 
 /**
+ * @brief Reset array storage, counts, packed controls, and cached indices.
+ * @param object Receiver to reset without releasing its current storage.
+ */
+void func_001F4980(BootState1F47F0* object);
+
+/**
+ * @brief Bind external 32-byte records and cache their first-to-last key span.
+ * @param object Array receiver.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
+void func_001F5FB0(BootState1F47F0* object, s32 count, BootKeyEntry32* entries);
+
+/**
+ * @brief Reset signed-key entry storage, counts, control fields, and cached indices.
+ * @param object Array receiver to reset without releasing its current storage.
+ */
+void func_001F52D0(BootState1F4790* object);
+
+/**
+ * @brief Bind external entry storage and cache its first-to-last key span.
+ * @param object Array receiver.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
+void func_001F5400(BootState1F4790* object, s32 count, BootShortKeyEntry8* entries);
+
+/**
+ * @brief Test whether the array contains a signed entry key equal to the given float.
+ * @param object Receiver with valid storage when its count is positive.
+ * @param key Key to find.
+ * @return One if a matching key exists, or zero otherwise.
+ */
+s32 func_001F55F0(BootState1F4790* object, float key);
+
+/**
+ * @brief Compute the difference between the last and first entry keys.
+ * @param object Receiver with valid storage when it has at least two entries.
+ * @return Key span, or zero when fewer than two entries exist.
+ */
+float func_001F5670(BootState1F4790* object);
+
+/**
+ * @brief Wrap a key by the span between the first and last entries.
+ * @param object Receiver with valid nonempty storage and a nonzero key span.
+ * @param key Key whose normalized span quotient must fit in a signed word.
+ * @return Key with the computed whole spans subtracted.
+ */
+float func_001F5810(BootState1F4790* object, float key);
+
+/**
  * @brief Set the high packed value and flag whether either packed value is 4.
  * @param state Receiver containing the packed values and status bit.
  * @param value Value to store, truncated to four bits.
@@ -460,6 +806,20 @@ void func_001F4AC0(BootState1F47F0* state, u32 value);
  * @param value Value to store, truncated to four bits.
  */
 void func_001F5460(BootState1F4790* state, u32 value);
+
+/**
+ * @brief Reset 48-byte record storage, counts, packed controls, and cached indices.
+ * @param object Receiver to reset without releasing its current storage.
+ */
+void func_001F58C0(BootState1F4730* object);
+
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param object Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
+float func_001F5D60(BootState1F4730* object, float key);
 
 /**
  * @brief Set the high packed value and flag whether either packed value is 4.

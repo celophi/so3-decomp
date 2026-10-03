@@ -132,6 +132,7 @@ extern const ResidentDispatchTable D_159070;
 extern ResidentObject1B65E4* D_001B65E4;
 extern ResidentObject1B65E8* D_001B65E8;
 extern ResidentObjectQueue* D_001B65F4;
+extern ResidentRequest112400* D_001B65F8;
 extern ResidentContextRef* D_001B6430;
 extern FieldRuntime* D_001B657C;
 extern u8 D_001B6448;

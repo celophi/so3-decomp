@@ -90,6 +90,92 @@ typedef struct FieldByteFlags81
     u8 unk81_1_7 : 7;
 } FieldByteFlags81;
 
+/** Partial receiver whose flag word is at offset 0x204. */
+typedef struct FieldWordFlags204
+{
+    u8 unk00[0x204];
+    u32 unk204;
+} FieldWordFlags204;
+
+/** Partial receiver whose flag byte is at offset 0x34. */
+typedef struct FieldByteFlags34
+{
+    u8 unk00[0x34];
+    u8 unk34_0 : 1;
+    u8 unk34_1_7 : 7;
+} FieldByteFlags34;
+
+/** Partial pointed-to receiver whose flag byte is at offset 0x2C. */
+typedef struct FieldByteFlags2C
+{
+    u8 unk00[0x2C];
+    u8 unk2c_0 : 1;
+    u8 unk2c_1 : 1;
+    u8 unk2c_2_7 : 6;
+} FieldByteFlags2C;
+
+/** Partial owner of the receiver with flags at offset 0x2C. */
+typedef struct FieldFlags2COwner
+{
+    u8 unk00[4];
+    FieldByteFlags2C* unk04;
+} FieldFlags2COwner;
+
+/** Partial pointed-to receiver whose flag byte is at offset 0x7AF. */
+typedef struct FieldByteFlags7AF
+{
+    u8 unk00[0x7AF];
+    u8 unk7af_0 : 1;
+    u8 unk7af_1_7 : 7;
+} FieldByteFlags7AF;
+
+/** Partial owner of the receiver with flags at offset 0x7AF. */
+typedef struct FieldFlags7AFOwner
+{
+    u8 unk00[4];
+    FieldByteFlags7AF* unk04;
+} FieldFlags7AFOwner;
+
+/** Partial receiver whose adjacent state bytes begin at offset 0x321. */
+typedef struct FieldStateBytes321
+{
+    u8 unk00[0x321];
+    u8 unk321;
+    u8 unk322;
+    u8 unk323;
+    u8 unk324_0 : 1;
+    u8 unk324_1_7 : 7;
+} FieldStateBytes321;
+
+/** Partial receiver with two zero-tested words and a flag byte at offset 0x8C. */
+typedef struct FieldWordFlags8C
+{
+    u8 unk00[0x80];
+    u32 unk80;
+    u8 unk84[8];
+    u8 unk8c_0_4 : 5;
+    u8 unk8c_5 : 1;
+    u8 unk8c_6_7 : 2;
+    u8 unk8d[0x3BB];
+    u32 unk448;
+} FieldWordFlags8C;
+
+/** Partial receiver containing the observed flag byte at offset 0x8C. */
+typedef struct FieldByteFlags8C
+{
+    u8 unk00[0x8C];
+    u8 unk8c_0_4 : 5;
+    u8 unk8c_5 : 1;
+    u8 unk8c_6_7 : 2;
+} FieldByteFlags8C;
+
+/** Partial receiver containing an aligned 16-byte value at offset 0x20. */
+typedef struct FieldAlignedValue20
+{
+    u8 unk00[0x20];
+    unsigned __int128 unk20;
+} FieldAlignedValue20;
+
 /** Partial element of the context-0x34 list, with state and a signed key. */
 typedef struct FieldStateListElement3C
 {
@@ -242,6 +328,59 @@ static inline void advance_record_queue(Queue* object)
 
 extern "C" {
 #endif
+
+/**
+ * @brief Clear bit six of the receiver's flag word at offset 0x204.
+ * @param object Receiver whose flag is cleared.
+ */
+void func_00203920(FieldWordFlags204* object);
+
+/**
+ * @brief Set bit zero of the receiver's flag byte at offset 0x34.
+ * @param object Receiver whose flag is set.
+ */
+void func_002068F0(FieldByteFlags34* object);
+
+/**
+ * @brief Set bit one of the pointed-to receiver's flag byte at offset 0x2C.
+ * @param object Owner of the receiver whose flag is set.
+ */
+void func_0020F730(FieldFlags2COwner* object);
+
+/**
+ * @brief Set bit zero of the pointed-to receiver's flag byte at offset 0x7AF.
+ * @param object Owner of the receiver whose flag is set.
+ */
+void func_0020FAC0(FieldFlags7AFOwner* object);
+
+/**
+ * @brief Preserve the prior state, select state three, and update the adjacent flags.
+ * @param object Receiver whose state and flags are updated.
+ * @param value Value whose low byte is stored at offset 0x323.
+ */
+void func_00207020(FieldStateBytes321* object, u32 value);
+
+/**
+ * @brief Test two nonzero words and the cleared bit-five flag at offset 0x8C.
+ * @param object Receiver to inspect.
+ * @return One when both words are nonzero and the flag is clear, otherwise zero.
+ */
+s32 func_0020DDA0(const FieldWordFlags8C* object);
+
+/**
+ * @brief Conditionally set flag bit five according to whether the supplied value is zero.
+ * @param object Receiver whose flag byte is updated.
+ * @param value Zero to set the flag, or a nonzero value to clear it.
+ * @param update Nonzero to update the flag, or zero to preserve it.
+ */
+void func_0020F6D0(FieldByteFlags8C* object, u32 value, u32 update);
+
+/**
+ * @brief Copy an aligned 16-byte value when the source is present.
+ * @param object Receiver containing the aligned destination value.
+ * @param source Aligned value to copy, or null to preserve the destination.
+ */
+void func_0020F710(FieldAlignedValue20* object, const unsigned __int128* source);
 
 /**
  * @brief Consume an update and advance the 24-byte record queue past flagged entries.

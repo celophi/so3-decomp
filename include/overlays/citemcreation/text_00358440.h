@@ -3,6 +3,23 @@
 
 #include "types.h"
 
+/** Partial owner of the value display refreshed from a checked record. */
+typedef struct ItemCreationCheckedValueOwner
+{
+    u8 unk00[0xE4];
+    struct ItemCreationValueDisplay* unke4;
+} ItemCreationCheckedValueOwner;
+
+/** Partial owner of two color displays, a selector, and its target display. */
+typedef struct ItemCreationTwoColorOwner
+{
+    u8 unk00[0xB4];
+    struct ItemCreationColorDisplay* unkb4[2];
+    u8 unkbc[0x10];
+    struct FieldState23B3A0* unkcc;
+    struct FieldObject23B950* unkd0;
+} ItemCreationTwoColorOwner;
+
 /** Partial view with nine markers and two twelve-marker groups. */
 typedef struct ItemCreationNineSlotView
 {
@@ -77,6 +94,24 @@ typedef struct ItemCreationPairOwner
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Display the checked record's decoded value, or zero for an invalid checksum.
+ * @param object Owner of the optional value display.
+ */
+void func_00366CB0(ItemCreationCheckedValueOwner* object);
+
+/**
+ * @brief Advance the selector and refresh the colors and target of two item displays.
+ * @param object Owner of the item displays, selector, and target display.
+ */
+void func_0035F710(ItemCreationTwoColorOwner* object);
+
+/**
+ * @brief Move the selector backward and refresh the colors and target of two item displays.
+ * @param object Owner of the item displays, selector, and target display.
+ */
+void func_0035F7F0(ItemCreationTwoColorOwner* object);
 
 /**
  * @brief Refresh the nine item-resource displays and their assigned-item codes.

@@ -88,13 +88,6 @@ struct FieldObject23BAB0
     float unk64;
 };
 
-
-struct FieldState23B3A0
-{
-    u8 unk00[0x90];
-    u16 unk90;
-};
-
 struct FieldNode23D310
 {
     float x;

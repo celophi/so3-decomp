@@ -14,7 +14,15 @@ void func_001E2C30(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2C40);
+/**
+ * @brief Copy an aligned 16-byte value to offset 0x20.
+ * @param object Receiver containing the aligned destination value.
+ * @param source Aligned value to copy.
+ */
+void func_001E2C40(FieldCopy2C40* object, const unsigned __int128* source)
+{
+    object->unk20 = *source;
+}
 
 void func_001E2C50(void* object)
 {
@@ -46,7 +54,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2E
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2E80);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2F20);
+void func_001E2F20(FieldWordStateD4* object, u32 value)
+{
+    object->unkd4 = value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2F30);
 
@@ -67,7 +78,10 @@ void func_001E30D0(void* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E30E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E3660);
+u8 func_001E3660(const FieldByteState14* object)
+{
+    return object->unk14;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E3670);
 
@@ -104,7 +118,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E44
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E44B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E4540);
+void* func_001E4540(void* object)
+{
+    return (u8*)object + 0x90;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E4550);
 
@@ -118,7 +135,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E48
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E48B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E4A00);
+void func_001E4A00(unsigned __int128* first, unsigned __int128* second, const unsigned __int128* source)
+{
+    unsigned __int128 value = *source;
+    *second = value;
+    *first = value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E4A10);
 
@@ -130,11 +152,40 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E4E
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E4F90);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E5000);
+/**
+ * @brief Copy an aligned 16-byte value to offset 0x20.
+ * @param object Receiver containing the aligned destination value.
+ * @param source Aligned value to copy.
+ */
+void func_001E5000(FieldCopy5000* object, const unsigned __int128* source)
+{
+    object->unk20 = *source;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E5010);
+/**
+ * @brief Copy an aligned 16-byte value to offset 0x20.
+ * @param object Receiver containing the aligned destination value.
+ * @param source Aligned value to copy.
+ */
+void func_001E5010(FieldCopy5010* object, const unsigned __int128* source)
+{
+    object->unk20 = *source;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E5020);
+/**
+ * @brief Store three floating-point values and set the following value to one.
+ * @param object Receiver whose values are initialized.
+ * @param first Value to store at offset 0x20.
+ * @param second Value to store at offset 0x24.
+ * @param third Value to store at offset 0x28.
+ */
+void func_001E5020(FieldFloatValues20* object, float first, float second, float third)
+{
+    object->unk20 = first;
+    object->unk24 = second;
+    object->unk28 = third;
+    object->unk2c = 1.0f;
+}
 
 void func_001E5040(void* object)
 {
@@ -159,7 +210,16 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E53
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E5440);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E5750);
+/**
+ * @brief Set the update byte to one and copy an aligned 16-byte value.
+ * @param object Receiver containing the update byte and destination value.
+ * @param source Aligned value to copy.
+ */
+void func_001E5750(FieldCopy5750* object, const unsigned __int128* source)
+{
+    object->unk50 = 1;
+    object->unk20 = *source;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E5770);
 
@@ -205,7 +265,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E6D
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E6D40);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E6D60);
+void func_001E6D60(FieldWordState70* object, u32 value)
+{
+    object->unk70 = value;
+}
 
 void func_001E6D70(void* object)
 {
@@ -277,38 +340,89 @@ s32 func_001E7820(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7830);
+s32 func_001E7830(const FieldWordState704* object)
+{
+    return object->unk704 != 0;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7840);
+void* func_001E7840(void* object)
+{
+    return (u8*)object + 0x79C;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7850);
+u8 func_001E7850(const FieldByteState794* object)
+{
+    return object->unk794;
+}
 
 s32 func_001E7860(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7870);
+void func_001E7870(FieldByteFlagState210* object, u32 value)
+{
+    object->unk210 = value;
+    object->unk59d_3 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7890);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E78E0);
+void* func_001E78E0(void* object)
+{
+    return (u8*)object + 0x90;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E78F0);
+void* func_001E78F0(void* object)
+{
+    return (u8*)object + 0x1D0;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7900);
+void* func_001E7900(void* object)
+{
+    return (u8*)object + 0x1E0;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7910);
+void* func_001E7910(void* object)
+{
+    return (u8*)object + 0x1F0;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7920);
+void func_001E7920(FieldCopy7920* object, const unsigned __int128* source)
+{
+    object->unk50 = 1;
+    object->unk20 = *source;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7940);
+void func_001E7940(FieldFloatUpdate7940* object, float first, float second, float third)
+{
+    object->unk50 = 1;
+    object->unk20 = first;
+    object->unk24 = second;
+    object->unk28 = third;
+    object->unk2c = 1.0f;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7960);
+void func_001E7960(FieldFloatUpdate7960* object, float first, float second, float third, float fourth)
+{
+    object->unk50 = 1;
+    object->unk30 = first;
+    object->unk34 = second;
+    object->unk38 = third;
+    object->unk3c = fourth;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7980);
+void func_001E7980(FieldCopy7980* object, const unsigned __int128* source)
+{
+    object->unk50 = 1;
+    object->unk30 = *source;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E79A0);
+void func_001E79A0(FieldCopy79A0* object, const unsigned __int128* source)
+{
+    object->unk50 = 1;
+    object->unk30 = *source;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E79C0);
 
@@ -316,11 +430,25 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E79
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7A20);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7A60);
+void func_001E7A60(FieldCopy7A60* object, const unsigned __int128* source)
+{
+    object->unk50 = 1;
+    object->unk40 = *source;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7A80);
+void func_001E7A80(FieldCopy7A80* object, const unsigned __int128* source)
+{
+    object->unk50 = 1;
+    object->unk40 = *source;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7AA0);
+void func_001E7AA0(FieldFloatUpdate7AA0* object, float first, float second, float third)
+{
+    object->unk50 = 1;
+    object->unk40 = first;
+    object->unk44 = second;
+    object->unk48 = third;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7AC0);
 
