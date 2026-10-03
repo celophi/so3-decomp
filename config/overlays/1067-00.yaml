@@ -46,7 +46,10 @@ segments:
     type: code
     start: 0x40
     vram: 0x1dd3c0
-    subalign: null  # no SUBALIGN: .text is 16-aligned by the compiler; data/rodata keep their own alignment
+    # No SUBALIGN here. The compiler already puts every function on a 16-byte
+    # boundary, and forcing 16 on the data below would move it off the game's
+    # addresses.
+    subalign: null
     subsegments:
       # Linker padding: .text starts on a 128-byte boundary after the 64-byte MWo3 header.
       - [0x40, pad, text_align]
@@ -114,8 +117,9 @@ segments:
       - [0x1147A0, cpp, text_002F1B20]
       - [0x115F90, cpp, text_002F3310]
       - [0x11C910, cpp, text_002F9C90]
-      # Initialized data, then .rodata from 0x31A780 (128-byte aligned), laid out per unit in
-      # text order. A unit whose object supplies its own rodata gets a `.rodata` subsegment.
+      # Field's data starts here, and its rodata starts at 0x31A780. The rodata is in
+      # the same order as the code files, so when a file's own rodata is compiled, I
+      # give it a .rodata entry and it lands where the game had it.
       - [0x123D80, databin, data]
       - [0x13D400, rodatabin, rodata_31A780]
       - [0x13D440, .rodata, text_001E6C50]

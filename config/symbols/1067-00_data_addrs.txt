@@ -1,6 +1,6 @@
-// Field (1067-00) data and rodata symbols with their established names (ADR 0012).
-// Inside the code segment splat would name them with eight hex digits; these keep the
-// unpadded names that sources and generated assembly already use.
+// The names Field (1067-00) already uses for its data and rodata. Field's data
+// is part of its code segment now, so splat would name these with eight hex digits
+// (D_003013A0 instead of D_3013A0). Listing them here keeps the old names.
 D_301100 = 0x00301100;
 D_301380 = 0x00301380;
 D_3013A0 = 0x003013A0;
@@ -579,8 +579,8 @@ jtbl_32A820 = 0x0032A820;
 D_32A838 = 0x0032A838;
 jtbl_32A840 = 0x0032A840;
 
-// Resident globals Field reads through $gp (0x1B6000-0x1B7000), with the eight-digit names
-// sources use (docs/field-cpp-build.md).
+// Globals in the main program that Field reads through $gp (0x1B6000-0x1B7000).
+// These keep the eight-digit names the sources already use.
 D_001B6018 = 0x001B6018;
 D_001B61B4 = 0x001B61B4;
 D_001B61BC = 0x001B61BC;
