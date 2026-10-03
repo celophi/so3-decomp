@@ -85,6 +85,12 @@ typedef struct FieldCheckedState7C
     s32 unkac;
 } FieldCheckedState7C;
 
+/** Partial 0x1C-byte array entry handled by func_0021A970. */
+typedef struct FieldEntry1C
+{
+    u8 unk00[0x1C];
+} FieldEntry1C;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -282,6 +288,14 @@ void func_00219670(void* object);
  * @return Always 12.
  */
 s32 func_0021A960(void* object);
+
+/**
+ * @brief Pass the entry's word at offset 0x4 to func_100D60 and clear it, if bit 1 of its
+ *        byte at offset 0x16 is set.
+ * @param entry Entry to update.
+ * @return 1 if the word was passed on and cleared, otherwise 0.
+ */
+s32 func_0021A970(FieldEntry1C* entry);
 
 /**
  * @brief Return the fixed value 3.

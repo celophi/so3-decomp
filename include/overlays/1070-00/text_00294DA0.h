@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_1070_00_TEXT_00294DA0_H
 
 #include "types.h"
+#include "overlays/1070-00/text_00213F40.h"
 
 /** Partial receiver with six float values and two control flags. */
 typedef struct FieldFloatRangeState20
@@ -148,6 +149,61 @@ typedef struct FieldCopySource2A1FB0
     unsigned __int128 unk180;
 } FieldCopySource2A1FB0;
 
+/** Partial receiver whose word at offset 0xA0 points to a byte flag. */
+typedef struct FieldBytePointerA0
+{
+    u8 unk00[0xA0];
+    u8* unka0;
+} FieldBytePointerA0;
+
+/** Partial receiver with two parallel arrays sharing a capacity and count. */
+typedef struct FieldParallelArrays298B70
+{
+    u8 unk00[0xB0];
+    u8* unkb0;
+    unsigned __int128* unkb4;
+    u8 unkb8[8];
+    s32 unkc0;
+    s32 unkc4;
+} FieldParallelArrays298B70;
+
+/** Partial receiver holding an array of FieldEntry1C and its count. */
+typedef struct FieldEntryArray295A10
+{
+    u8 unk00[0x1C];
+    FieldEntry1C* unk1c;
+    u8 unk20[4];
+    s32 unk24;
+} FieldEntryArray295A10;
+
+#ifdef __cplusplus
+/** Partial first base of FieldEntry29B830, covering offsets 0x00-0x13F. */
+class FieldEntryHead29B830
+{
+public:
+    u8 unk00[0x140];
+};
+
+/** Partial second base of FieldEntry29B830, placed at offset 0x140. */
+class FieldEntryTail29B830
+{
+public:
+    u8 unk00[0x30];
+};
+
+/** 0x170-byte array element; func_0029B830 converts it to its base at 0x140. */
+class FieldEntry29B830 : public FieldEntryHead29B830, public FieldEntryTail29B830
+{
+};
+
+/** Partial receiver holding an array of FieldEntry29B830 at offset 0x14. */
+typedef struct FieldEntryOwner29B830
+{
+    u8 unk00[0x14];
+    FieldEntry29B830* unk14;
+} FieldEntryOwner29B830;
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -169,6 +225,12 @@ void func_00296310(FieldFloatRangeState20* object, float first, float second, fl
 FieldInitialWordPair* func_00297E10(FieldInitialWordPair* object);
 
 /**
+ * @brief Run func_0021A970 on each entry in the unk1c array.
+ * @param object Receiver holding the array and its unk24 count.
+ */
+void func_00295A10(FieldEntryArray295A10* object);
+
+/**
  * @brief Return the fixed value 4.
  * @param object Receiver or first argument; unused.
  * @return Always 4.
@@ -188,6 +250,24 @@ s32 func_00296300(void* object);
  * @return Always 5.
  */
 s32 func_00296570(void* object);
+
+/**
+ * @brief Test whether the byte pointed to by offset 0xA0 differs from 1.
+ * @param object Receiver holding the byte pointer.
+ * @return 1 if the byte isn't 1, otherwise 0.
+ */
+s32 func_002988D0(FieldBytePointerA0* object);
+
+/**
+ * @brief Append a byte and an optional quadword to the parallel arrays.
+ * @param object Receiver whose unkc4 count is checked against its unkc0 capacity.
+ * @param value Byte stored in the unkb0 array.
+ * @param data Quadword copied into the unkb4 array, or null to leave that entry unchanged.
+ *
+ * When the arrays are full, this reports an error through func_115C20 with the
+ * "progparticles.h" string instead and leaves the count unchanged.
+ */
+void func_00298B70(FieldParallelArrays298B70* object, u8 value, const unsigned __int128* data);
 
 /**
  * @brief Perform no work.
@@ -306,6 +386,16 @@ void func_002A1FE0(void* object);
  * @return Always 1.
  */
 s32 func_002A4AC0(void* object);
+
+#ifdef __cplusplus
+/**
+ * @brief Return the base at offset 0x140 of an array entry.
+ * @param object Receiver holding the entry array.
+ * @param index Entry index.
+ * @return The entry's FieldEntryTail29B830 base, or null if the entry address is null.
+ */
+FieldEntryTail29B830* func_0029B830(FieldEntryOwner29B830* object, s32 index);
+#endif
 
 /**
  * @brief Set the unk28 float value.
