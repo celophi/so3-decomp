@@ -148,6 +148,13 @@ typedef struct FieldCopySource2A1FB0
     unsigned __int128 unk180;
 } FieldCopySource2A1FB0;
 
+/** Partial receiver whose word at offset 0xA0 points to a byte flag. */
+typedef struct FieldBytePointerA0
+{
+    u8 unk00[0xA0];
+    u8* unka0;
+} FieldBytePointerA0;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -188,6 +195,13 @@ s32 func_00296300(void* object);
  * @return Always 5.
  */
 s32 func_00296570(void* object);
+
+/**
+ * @brief Test whether the byte pointed to by offset 0xA0 differs from 1.
+ * @param object Receiver holding the byte pointer.
+ * @return 1 if the byte isn't 1, otherwise 0.
+ */
+s32 func_002988D0(FieldBytePointerA0* object);
 
 /**
  * @brief Perform no work.

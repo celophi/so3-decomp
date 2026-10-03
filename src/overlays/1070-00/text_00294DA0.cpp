@@ -169,7 +169,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002988
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00298860);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002988D0);
+s32 func_002988D0(FieldBytePointerA0* object)
+{
+    return *object->unka0 != 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002988F0);
 
