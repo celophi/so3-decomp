@@ -221,6 +221,13 @@ extern "C" {
 #endif
 
 /**
+ * @brief Clear the eight observed word slots.
+ * @param object Non-null receiver containing the writable slots.
+ * @param value Caller-supplied scalar; unused.
+ */
+void func_001E7600(void* object, s32 value);
+
+/**
  * @brief Set the byte at 0x50 to one and copy an aligned 16-byte value to 0x30.
  * @param object Receiver containing the byte and destination value.
  * @param source Aligned value loaded after the byte is stored.
@@ -413,6 +420,12 @@ void func_001E5750(FieldCopy5750* object, const unsigned __int128* source);
 void func_001E5020(FieldFloatValues20* object, float first, float second, float third);
 
 /**
+ * @brief Store the low halfword of the observed scaled sum.
+ * @param object Non-null receiver providing readable inputs and a writable result.
+ */
+void func_001ED200(void* object);
+
+/**
  * @brief Set the adjacent floating-point values at offsets 0xFC and 0x100.
  * @param object Receiver to update.
  * @param first Value for offset 0xFC.
@@ -441,6 +454,18 @@ void func_001ED5C0(FieldByteStateAD* object, u8 value);
  * @return The stored halfword.
  */
 u16 func_001EB720(const FieldHalfwordState94* object);
+
+/**
+ * @brief Clear the observed byte at offset 0x60.
+ * @param object Non-null receiver containing the writable byte.
+ */
+void func_001EDA00(void* object);
+
+/**
+ * @brief Copy the byte at offset 0xA8 into the byte at offset 0x60.
+ * @param object Receiver with a readable source byte and writable destination byte.
+ */
+void func_001EDB20(void* object);
 
 /**
  * @brief Convert the stored hours, minutes and seconds to seconds.
@@ -713,6 +738,48 @@ void func_001EDB10(void* object);
 s32 func_001EDB30(void* object);
 
 /**
+ * @brief Store the supplied bits in the observed word.
+ * @param object Non-null receiver containing the writable word.
+ * @param value Word bits to store.
+ */
+void func_001EE190(void* object, u32 value);
+
+/**
+ * @brief Return the bits stored in the observed word.
+ * @param object Non-null receiver containing the readable word.
+ * @return Stored word bits.
+ */
+u32 func_001EE1A0(const void* object);
+
+/**
+ * @brief Store the supplied bits in the observed word.
+ * @param object Non-null receiver containing the writable word.
+ * @param value Word bits to store.
+ */
+void func_001EE1B0(void* object, u32 value);
+
+/**
+ * @brief Return the bits stored in the observed word.
+ * @param object Non-null receiver containing the readable word.
+ * @return Stored word bits.
+ */
+u32 func_001EE1C0(const void* object);
+
+/**
+ * @brief Store the low byte of the supplied bits.
+ * @param object Non-null receiver containing the writable byte.
+ * @param value Bits whose low byte is stored.
+ */
+void func_001EE1D0(void* object, u32 value);
+
+/**
+ * @brief Return the observed signed byte value.
+ * @param object Non-null receiver containing the readable byte.
+ * @return Stored signed byte value, extended to a word.
+ */
+s32 func_001EE1E0(const void* object);
+
+/**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
  * @return Always 0.
@@ -783,6 +850,97 @@ void func_001EE3D0(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_001EE490(void* object);
+
+/**
+ * @brief Store the low byte of the supplied bits.
+ * @param object Non-null receiver containing the writable byte.
+ * @param value Bits whose low byte is stored.
+ */
+void func_001EED50(void* object, u32 value);
+
+/**
+ * @brief Return the observed unsigned byte value.
+ * @param object Non-null receiver containing the readable byte.
+ * @return Stored byte value, extended to a word.
+ */
+u32 func_001EED60(const void* object);
+
+/**
+ * @brief Store the low byte of the supplied bits.
+ * @param object Non-null receiver containing the writable byte.
+ * @param value Bits whose low byte is stored.
+ */
+void func_001EED70(void* object, u32 value);
+
+/**
+ * @brief Return the observed unsigned byte value.
+ * @param object Non-null receiver containing the readable byte.
+ * @return Stored byte value, extended to a word.
+ */
+u32 func_001EED80(const void* object);
+
+/**
+ * @brief Store the low halfword of the supplied bits.
+ * @param object Non-null receiver containing the aligned writable halfword.
+ * @param value Bits whose low halfword is stored.
+ */
+void func_001EED90(void* object, u32 value);
+
+/**
+ * @brief Return the observed unsigned halfword value.
+ * @param object Non-null receiver containing the aligned readable halfword.
+ * @return Stored halfword value, extended to a word.
+ */
+u32 func_001EEDA0(const void* object);
+
+/**
+ * @brief Store the supplied word bits.
+ * @param object Non-null receiver containing the aligned writable word.
+ * @param value Word bits to store.
+ */
+void func_001EEDB0(void* object, u32 value);
+
+/**
+ * @brief Return the observed word bits.
+ * @param object Non-null receiver containing the aligned readable word.
+ * @return Stored word bits.
+ */
+u32 func_001EEDC0(const void* object);
+
+/**
+ * @brief Store the supplied word bits.
+ * @param object Non-null receiver containing the aligned writable word.
+ * @param value Word bits to store.
+ */
+void func_001EEDD0(void* object, u32 value);
+
+/**
+ * @brief Return the observed word bits.
+ * @param object Non-null receiver containing the aligned readable word.
+ * @return Stored word bits.
+ */
+u32 func_001EEDE0(const void* object);
+
+/**
+ * @brief Store the supplied word bits.
+ * @param object Non-null receiver containing the aligned writable word.
+ * @param value Word bits to store.
+ */
+void func_001EEDF0(void* object, u32 value);
+
+/**
+ * @brief Return the observed word bits.
+ * @param object Non-null receiver containing the aligned readable word.
+ * @return Stored word bits.
+ */
+u32 func_001EEE00(const void* object);
+
+/**
+ * @brief Return the observed word bits.
+ * @param object Non-null receiver containing the aligned readable word.
+ * @return Stored word bits.
+ */
+u32 func_001EEE10(const void* object);
 
 /**
  * @brief Perform no work.
@@ -987,10 +1145,31 @@ void func_001EF000(void* object);
 void func_001EF010(void* object);
 
 /**
+ * @brief Return the observed unsigned byte value.
+ * @param object Non-null receiver containing the readable byte.
+ * @return Stored byte value, extended to a word.
+ */
+u32 func_001EF020(const void* object);
+
+/**
+ * @brief Store the low byte of the supplied bits.
+ * @param object Non-null receiver containing the writable byte.
+ * @param value Bits whose low byte is stored.
+ */
+void func_001EF030(void* object, u32 value);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
 void func_001EF040(void* object);
+
+/**
+ * @brief Store the low byte of the supplied bits.
+ * @param object Non-null receiver containing the writable byte.
+ * @param value Bits whose low byte is stored.
+ */
+void func_001F00D0(void* object, u32 value);
 
 #ifdef __cplusplus
 }

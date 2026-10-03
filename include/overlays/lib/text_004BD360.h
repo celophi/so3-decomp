@@ -4,6 +4,18 @@
 #include "types.h"
 #include "overlays/lib/text_003E68C0.h"
 
+/** Opaque Lib text receiver using the main table D_178750. */
+typedef struct LibObject178750 LibObject178750;
+
+/** Four scalar float bounds returned from the receiver at offset 0xE8. */
+typedef struct LibBounds4C69B0
+{
+    float unk00;
+    float unk04;
+    float unk08;
+    float unk0c;
+} LibBounds4C69B0;
+
 #ifdef __cplusplus
 /**
  * Partial 0x70-byte Lib animation object, with vtable D_178220 in main data.
@@ -41,6 +53,13 @@ public:
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Rebuild the receiver's data and return its scalar bounds.
+ * @param object Lib text receiver to rebuild.
+ * @return Bounds at offset 0xE8, or null when rebuilding fails.
+ */
+LibBounds4C69B0* func_004C69B0(LibObject178750* object);
 
 /**
  * @brief Release the data a LibClass178220 builds from its block at offset 0x40.

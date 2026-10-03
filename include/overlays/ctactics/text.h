@@ -4,7 +4,11 @@
 #include "types.h"
 
 typedef struct TacticsPositionOwner TacticsPositionOwner;
+typedef struct TacticsGridOwner TacticsGridOwner;
+typedef struct TacticsHighlightOwner TacticsHighlightOwner;
 typedef struct TacticsPresetOwner TacticsPresetOwner;
+typedef struct TacticsSelectionOwner TacticsSelectionOwner;
+typedef struct TacticsDualSelectionOwner TacticsDualSelectionOwner;
 
 typedef struct TacticsPresetPosition
 {
@@ -15,6 +19,79 @@ typedef struct TacticsPresetPosition
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Save the enabled grid selection and copy its node position to the display.
+ * @param object Tactics receiver holding the grid, node list, and display target.
+ * @return Zero when the grid's control byte is clear; otherwise one.
+ */
+u8 func_00349B40(TacticsGridOwner* object);
+
+/**
+ * @brief Color up to six list displays and place the cursor for the selected grid entry.
+ * @param object Tactics receiver holding the display list, grid, and cursor.
+ */
+void func_0034DD10(TacticsHighlightOwner* object);
+
+/**
+ * @brief Place the present indicators using the selected grid row's coordinate pairs.
+ * @param object Tactics receiver holding the grid, indicators, and base coordinates.
+ */
+void func_00349EB0(TacticsGridOwner* object);
+
+/**
+ * @brief Advance the enabled coordinate selector, wrapping after its eighth entry.
+ * @param object Tactics receiver holding the coordinate selector.
+ */
+void func_0034EC80(TacticsSelectionOwner* object);
+
+/**
+ * @brief Move the enabled coordinate selector back, wrapping to its eighth entry.
+ * @param object Tactics receiver holding the coordinate selector.
+ */
+void func_0034ECD0(TacticsSelectionOwner* object);
+
+/**
+ * @brief Map the first three selector entries to entries three, five, and six.
+ * @param object Tactics receiver holding the enabled coordinate selector.
+ */
+void func_0034ED20(TacticsSelectionOwner* object);
+
+/**
+ * @brief Map the last five selector entries back to the first three.
+ * @param object Tactics receiver holding the enabled coordinate selector.
+ */
+void func_0034EDA0(TacticsSelectionOwner* object);
+
+/**
+ * @brief Advance the chosen selector one entry, wrapping after its eighth entry.
+ * @param object Tactics receiver containing two selectors and the selector choice byte.
+ */
+void func_0034AFB0(TacticsDualSelectionOwner* object);
+
+/**
+ * @brief Move the chosen selector back one entry, wrapping to its eighth entry.
+ * @param object Tactics receiver containing two selectors and the selector choice byte.
+ */
+void func_0034B020(TacticsDualSelectionOwner* object);
+
+/**
+ * @brief Map the chosen selector's first three entries to entries three, five, and six.
+ * @param object Tactics receiver containing two selectors and the selector choice byte.
+ */
+void func_0034B080(TacticsDualSelectionOwner* object);
+
+/**
+ * @brief Map the chosen selector's last five entries back to its first three.
+ * @param object Tactics receiver containing two selectors and the selector choice byte.
+ */
+void func_0034B120(TacticsDualSelectionOwner* object);
+
+/**
+ * @brief Enqueue the receiver for deferred processing.
+ * @param object Receiver to append to the resident object queue.
+ */
+void func_00350790(void* object);
 
 /**
  * @brief Hold the display position until its timer expires, then scroll and wrap it.

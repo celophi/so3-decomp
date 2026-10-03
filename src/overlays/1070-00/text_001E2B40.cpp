@@ -1,6 +1,138 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_001E2B40.h"
 
+/** Minimal observed prefix containing the byte fields accessed here. */
+struct FieldByteClear60
+{
+    u8 unk00[0x60];
+    u8 unk60;
+};
+
+/** Minimal observed prefix containing the byte fields accessed here. */
+struct FieldByteCopyA8
+{
+    u8 unk00[0x60];
+    u8 unk60;
+    u8 unk61[0x47];
+    u8 unka8;
+};
+
+/** Observed signed input halfwords and the stored result bits. */
+struct FieldHalfwordUpdate114
+{
+    u8 unk00[0xF0];
+    u8 unkf0;
+    u8 unkf1[0x1F];
+    s16 unk110;
+    s16 unk112;
+    u16 unk114;
+};
+
+/** Minimal observed prefix containing the eight cleared word slots. */
+struct FieldWordReset30
+{
+    u8 unk00[0x14];
+    u32 unk14;
+    u32 unk18;
+    u32 unk1c;
+    u32 unk20;
+    u32 unk24;
+    u32 unk28;
+    u32 unk2c;
+    u32 unk30;
+};
+
+/** Minimal observed prefix containing the accessed word bits. */
+struct FieldWordAccess20
+{
+    u8 unk00[0x20];
+    u32 unk20;
+};
+
+/** Minimal observed prefix containing the accessed word bits. */
+struct FieldWordAccess24
+{
+    u8 unk00[0x24];
+    u32 unk24;
+};
+
+/** Minimal observed prefix containing the accessed byte. */
+struct FieldByteStore28
+{
+    u8 unk00[0x28];
+    u8 unk28;
+};
+
+/** Minimal observed prefix containing the accessed byte. */
+struct FieldSignedByteRead28
+{
+    u8 unk00[0x28];
+    s8 unk28;
+};
+
+/** Minimal observed prefix containing the unsigned byte. */
+struct FieldUnsignedByteAccess0C
+{
+    u8 unk00[0x0C];
+    u8 unk0C;
+};
+
+/** Minimal observed prefix containing the unsigned byte. */
+struct FieldUnsignedByteAccess08
+{
+    u8 unk00[0x08];
+    u8 unk08;
+};
+
+/** Minimal observed prefix containing the unsigned halfword. */
+struct FieldUnsignedHalfwordAccess0A
+{
+    u8 unk00[0x0A];
+    u16 unk0A;
+};
+
+/** Minimal observed prefix containing the accessed word. */
+struct FieldWordAccess98
+{
+    u8 unk00[0x98];
+    u32 unk98;
+};
+
+/** Minimal observed prefix containing the accessed word. */
+struct FieldWordAccess9C
+{
+    u8 unk00[0x9C];
+    u32 unk9C;
+};
+
+/** Minimal observed prefix containing the accessed word. */
+struct FieldWordAccess04
+{
+    u8 unk00[0x04];
+    u32 unk04;
+};
+
+/** Minimal observed prefix containing the accessed word. */
+struct FieldWordRead10
+{
+    u8 unk00[0x10];
+    u32 unk10;
+};
+
+/** Minimal observed prefix containing the unsigned byte. */
+struct FieldUnsignedByteAccess0D
+{
+    u8 unk00[0x0D];
+    u8 unk0D;
+};
+
+/** Minimal observed prefix containing the unsigned byte. */
+struct FieldByteStore12C
+{
+    u8 unk00[0x12C];
+    u8 unk12C;
+};
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2B40);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2B80);
@@ -309,7 +441,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E74
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E74C0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7600);
+void func_001E7600(void* object, s32 value)
+{
+    FieldWordReset30* state = (FieldWordReset30*)object;
+
+    state->unk14 = 0;
+    state->unk18 = 0;
+    state->unk1c = 0;
+    state->unk20 = 0;
+    state->unk24 = 0;
+    state->unk28 = 0;
+    state->unk2c = 0;
+    state->unk30 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7630);
 
@@ -633,7 +777,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ECE
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ECEA0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED200);
+void func_001ED200(void* object)
+{
+    FieldHalfwordUpdate114* state = (FieldHalfwordUpdate114*)object;
+
+    state->unk114 = state->unk110 * state->unkf0 + state->unk112;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED220);
 
@@ -673,7 +822,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED8
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED9A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDA00);
+void func_001EDA00(void* object)
+{
+    FieldByteClear60* state = (FieldByteClear60*)object;
+
+    state->unk60 = 0;
+}
 
 void func_001EDA10(void* object)
 {
@@ -711,7 +865,12 @@ void func_001EDB10(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDB20);
+void func_001EDB20(void* object)
+{
+    FieldByteCopyA8* state = (FieldByteCopyA8*)object;
+
+    state->unk60 = state->unka8;
+}
 
 s32 func_001EDB30(void* object)
 {
@@ -781,17 +940,47 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE1
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE160);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE190);
+void func_001EE190(void* object, u32 value)
+{
+    FieldWordAccess20* state = (FieldWordAccess20*)object;
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE1A0);
+    state->unk20 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE1B0);
+u32 func_001EE1A0(const void* object)
+{
+    const FieldWordAccess20* state = (const FieldWordAccess20*)object;
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE1C0);
+    return state->unk20;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE1D0);
+void func_001EE1B0(void* object, u32 value)
+{
+    FieldWordAccess24* state = (FieldWordAccess24*)object;
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE1E0);
+    state->unk24 = value;
+}
+
+u32 func_001EE1C0(const void* object)
+{
+    const FieldWordAccess24* state = (const FieldWordAccess24*)object;
+
+    return state->unk24;
+}
+
+void func_001EE1D0(void* object, u32 value)
+{
+    FieldByteStore28* state = (FieldByteStore28*)object;
+
+    state->unk28 = value;
+}
+
+s32 func_001EE1E0(const void* object)
+{
+    const FieldSignedByteRead28* state = (const FieldSignedByteRead28*)object;
+
+    return state->unk28;
+}
 
 s32 func_001EE1F0(void* object)
 {
@@ -891,31 +1080,96 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EEC
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EECE0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EED50);
+void func_001EED50(void* object, u32 value)
+{
+    FieldUnsignedByteAccess0C* state = (FieldUnsignedByteAccess0C*)object;
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EED60);
+    state->unk0C = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EED70);
+u32 func_001EED60(const void* object)
+{
+    const FieldUnsignedByteAccess0C* state = (const FieldUnsignedByteAccess0C*)object;
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EED80);
+    return state->unk0C;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EED90);
+void func_001EED70(void* object, u32 value)
+{
+    FieldUnsignedByteAccess08* state = (FieldUnsignedByteAccess08*)object;
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EEDA0);
+    state->unk08 = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EEDB0);
+u32 func_001EED80(const void* object)
+{
+    const FieldUnsignedByteAccess08* state = (const FieldUnsignedByteAccess08*)object;
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EEDC0);
+    return state->unk08;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EEDD0);
+void func_001EED90(void* object, u32 value)
+{
+    FieldUnsignedHalfwordAccess0A* state = (FieldUnsignedHalfwordAccess0A*)object;
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EEDE0);
+    state->unk0A = value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EEDF0);
+u32 func_001EEDA0(const void* object)
+{
+    const FieldUnsignedHalfwordAccess0A* state = (const FieldUnsignedHalfwordAccess0A*)object;
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EEE00);
+    return state->unk0A;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EEE10);
+void func_001EEDB0(void* object, u32 value)
+{
+    FieldWordAccess98* state = (FieldWordAccess98*)object;
+
+    state->unk98 = value;
+}
+
+u32 func_001EEDC0(const void* object)
+{
+    const FieldWordAccess98* state = (const FieldWordAccess98*)object;
+
+    return state->unk98;
+}
+
+void func_001EEDD0(void* object, u32 value)
+{
+    FieldWordAccess9C* state = (FieldWordAccess9C*)object;
+
+    state->unk9C = value;
+}
+
+u32 func_001EEDE0(const void* object)
+{
+    const FieldWordAccess9C* state = (const FieldWordAccess9C*)object;
+
+    return state->unk9C;
+}
+
+void func_001EEDF0(void* object, u32 value)
+{
+    FieldWordAccess04* state = (FieldWordAccess04*)object;
+
+    state->unk04 = value;
+}
+
+u32 func_001EEE00(const void* object)
+{
+    const FieldWordAccess04* state = (const FieldWordAccess04*)object;
+
+    return state->unk04;
+}
+
+u32 func_001EEE10(const void* object)
+{
+    const FieldWordRead10* state = (const FieldWordRead10*)object;
+
+    return state->unk10;
+}
 
 void func_001EEE20(void* object)
 {
@@ -1055,9 +1309,19 @@ void func_001EF010(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EF020);
+u32 func_001EF020(const void* object)
+{
+    const FieldUnsignedByteAccess0D* state = (const FieldUnsignedByteAccess0D*)object;
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EF030);
+    return state->unk0D;
+}
+
+void func_001EF030(void* object, u32 value)
+{
+    FieldUnsignedByteAccess0D* state = (FieldUnsignedByteAccess0D*)object;
+
+    state->unk0D = value;
+}
 
 void func_001EF040(void* object)
 {
@@ -1107,7 +1371,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EFD
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EFFA0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001F00D0);
+void func_001F00D0(void* object, u32 value)
+{
+    FieldByteStore12C* state = (FieldByteStore12C*)object;
+
+    state->unk12C = value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001F00E0);
 

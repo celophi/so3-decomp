@@ -3,6 +3,36 @@
 
 #define FIELD_USE_SAVED_FLOAT_TARGET 3.402823466e38f
 
+/** Minimal observed prefix containing the accessed value. */
+struct FieldUnsignedByteRead3C
+{
+    u8 unk00[0x3C];
+    u8 unk3C;
+};
+
+/** Minimal observed prefix containing the accessed value. */
+struct FieldWordRead38
+{
+    u8 unk00[0x38];
+    u32 unk38;
+};
+
+/** Minimal target prefix containing the written byte and word. */
+struct FieldWordTarget74
+{
+    u8 unk00[0x40];
+    u8 unk40;
+    u8 unk41[0x33];
+    u32 unk74;
+};
+
+/** Minimal receiver prefix containing the optional writable target. */
+struct FieldNullableWordOwnerD4
+{
+    u8 unk00[0xD4];
+    FieldWordTarget74* unkD4;
+};
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F2BB0);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F2C50);
@@ -69,7 +99,17 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F76
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F76F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F77D0);
+void func_001F77D0(const void* object)
+{
+    const FieldNullableWordOwnerD4* state = (const FieldNullableWordOwnerD4*)object;
+    FieldWordTarget74* target = state->unkD4;
+
+    if (target)
+    {
+        target->unk74 = 0x43000000;
+        target->unk40 = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F7800);
 
@@ -157,9 +197,19 @@ s32 func_001F9ED0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F9EE0);
+u32 func_001F9EE0(const void* object)
+{
+    const FieldUnsignedByteRead3C* state = (const FieldUnsignedByteRead3C*)object;
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F9EF0);
+    return state->unk3C;
+}
+
+u32 func_001F9EF0(const void* object)
+{
+    const FieldWordRead38* state = (const FieldWordRead38*)object;
+
+    return state->unk38;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F9F00);
 

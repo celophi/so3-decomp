@@ -2,9 +2,12 @@
 #define SO3_OVERLAYS_1067_00_TEXT_002F9C90_H
 
 #include "types.h"
+#ifdef __cplusplus
 #include "overlays/1067-00/text_002F3310.h"
-
 #include "overlays/1067-00/text_001DD3C0.h"
+#else
+#include "overlays/1067-00/text_002F1B20.h"
+#endif
 
 typedef struct FieldByte60F9C90 FieldByte60F9C90;
 typedef struct FieldByte4F9C90 FieldByte4F9C90;
@@ -53,6 +56,12 @@ void func_00301090(FieldByte4F9C90* object);
 void func_002FD1B0(FieldFloatState5C* object, float first, float second, float third, float fourth, float fifth);
 
 /**
+ * @brief Advance cancellation state or clear the receiver's associated object.
+ * @param object Receiver with a signed status at offset 0x14 and associated resources.
+ */
+void func_002FD940(FieldStatus14* object);
+
+/**
  * @brief Return whether the receiver's halfword at offset 0x14 is zero.
  * @param object Receiver containing the halfword.
  * @return Nonzero if the halfword is zero.
@@ -96,6 +105,27 @@ void func_002FB8A0(FieldStateTargets* object);
  */
 s32 func_002FE870(FieldClass150070* object);
 #endif
+
+/**
+ * @brief Test whether an identifier contains a qualifying nonempty entry.
+ * @param identifier Signed item identifier.
+ * @return One when the predicate holds, otherwise zero.
+ */
+u8 func_002FBED0(s16 identifier);
+
+/**
+ * @brief Test whether an identifier passes the empty-entry predicate.
+ * @param identifier Signed item identifier.
+ * @return One when the predicate holds, otherwise zero.
+ */
+u8 func_002FC730(s16 identifier);
+
+/**
+ * @brief Test whether an identifier passes the nonempty-entry predicate.
+ * @param identifier Signed item identifier.
+ * @return One when the predicate holds, otherwise zero.
+ */
+u8 func_002FC880(s16 identifier);
 
 #ifdef __cplusplus
 }

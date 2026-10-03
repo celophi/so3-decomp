@@ -33,6 +33,69 @@ extern "C" {
 #endif
 
 /**
+ * @brief Set flag bit two while preserving the other bits in the byte.
+ * @param object Non-null writable receiver containing the flag byte.
+ */
+void func_0023A870(void* object);
+
+/**
+ * @brief Set flag bit zero while preserving the other bits in the byte.
+ * @param object Non-null writable receiver containing the flag byte.
+ */
+void func_0023BA90(void* object);
+
+/**
+ * @brief Set flag bit one while preserving the other bits in the byte.
+ * @param object Non-null writable receiver containing the flag byte.
+ */
+void func_0023BAB0(void* object);
+
+/**
+ * @brief Set flag bit one while preserving the other bits in the byte.
+ * @param object Non-null writable receiver containing the flag byte.
+ */
+void func_002399E0(void* object);
+
+/**
+ * @brief Set flag bit one while preserving the other bits in the byte.
+ * @param object Non-null writable receiver containing the flag byte.
+ */
+void func_0023BA70(void* object);
+
+/**
+ * @brief Copy the byte at offset 0xF0 into the byte at offset 0x60.
+ * @param object Receiver with a readable source byte and writable destination byte.
+ */
+void func_0023C4F0(void* object);
+
+/**
+ * @brief Copy the byte at offset 0x94 into the byte at offset 0x60.
+ * @param object Receiver with a readable source byte and writable destination byte.
+ */
+void func_0023E5D0(void* object);
+
+/**
+ * @brief Store 0 in the observed word and return 1.
+ * @param object Non-null receiver containing the writable word.
+ * @return Always 1.
+ */
+s32 func_0023ED60(void* object);
+
+/**
+ * @brief Store 1 in the observed word and return 1.
+ * @param object Non-null receiver containing the writable word.
+ * @return Always 1.
+ */
+s32 func_0023F940(void* object);
+
+/**
+ * @brief Set flag bit zero and store the supplied word bits.
+ * @param object Non-null writable receiver to update.
+ * @param value Word bits to store.
+ */
+void func_00243630(void* object, u32 value);
+
+/**
  * @brief Clear the linked pointer when flag bit four is set and the pointer matches.
  * @param object Receiver containing the flags and linked pointer.
  * @param target Pointer to compare.

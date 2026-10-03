@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+typedef struct ItemCreationTransformState ItemCreationTransformState;
+
 /** Partial display coordinate vector and dirty flag. */
 typedef struct ItemCreationScrollPosition
 {
@@ -84,7 +86,9 @@ typedef struct ItemCreationSelectedDisplayState
     struct ItemCreationFourteenSlotView* unkb8;
     struct ItemCreationNineSlotView* unkbc;
     struct ItemCreationDetailDisplay* unkc0;
-    u8 unkc4[0x30];
+    u8 unkc4[0xC];
+    struct ItemCreationModeDisplay* unkd0;
+    u8 unkd4[0x20];
     struct ItemCreationFlagResetOwner* unkf4;
     struct ItemCreationOptionDisplay* unkf8;
     struct ItemCreationOptionDisplay* unkfc;
@@ -104,8 +108,26 @@ typedef struct ItemCreationSelectedDisplayState
     u16 unk130;
     u8 unk132[2];
     struct ItemCreationAssignedRecord* unk134;
-    u8 unk138[0x90];
+    u8 unk138[0x10];
+    u8 unk148[3];
+    u8 unk14b[0x3D];
+    u8 unk188[3][3];
+    s8 unk191[3][3];
+    u8 unk19a[2];
+    struct FieldStatus14* unk19c;
+    s32 unk1a0;
+    s32 unk1a4;
+    u8 unk1a8;
+    u8 unk1a9[8];
+    u8 unk1b1[3];
+    struct FieldStateTargets* unk1b4[3];
+    u8 unk1c0[3];
+    u8 unk1c3[5];
     u32 unk1c8[3];
+    u8 unk1d4[0xC];
+    s8 unk1e0;
+    u8 unk1e1;
+    s16 unk1e2[3][2];
 } ItemCreationSelectedDisplayState;
 
 /** Partial selection state with twelve float pairs and a byte permutation. */
@@ -131,6 +153,14 @@ typedef struct ItemCreationRuntimeRecordSelection
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Set one selected slot's enabled state, consume an available category record, and reset its three status bytes.
+ * @param object Selection state containing the three assigned slots.
+ * @param index Slot index from zero through two.
+ * @param enabled Full-word state copied into the slot byte and tested for zero.
+ */
+void func_0036BF30(ItemCreationSelectedDisplayState* object, s32 index, s32 enabled);
 
 /**
  * @brief Update the selected item or complete an exchange between the two views.
@@ -586,6 +616,20 @@ u8* func_0036E760(void);
 void func_0036E690(u8* object, float x, float y, float z);
 
 /**
+ * @brief Update the four-float transform and set its marker.
+ * @param object Transform state to update.
+ * @param input Source float vector.
+ */
+void func_0036E630(ItemCreationTransformState* object, const float* input);
+
+/**
+ * @brief Update the four-float transform and set its marker.
+ * @param object Transform state to update.
+ * @param input Source float vector.
+ */
+void func_0036E660(ItemCreationTransformState* object, const float* input);
+
+/**
  * @brief Append a value to the sentinel list and increase its node count.
  * @param object List containing the sentinel and stored count.
  * @param value Value stored in the appended node.
@@ -651,6 +695,12 @@ void* func_0036F160(u8* object, s32 index);
  * @return Reached node, or null if the chain ends early.
  */
 ItemCreationListNode* func_0036F230(ItemCreationList* object, s32 index);
+
+/**
+ * @brief Choose an eligible assigned item and schedule its display resource.
+ * @param object Selection state with assigned items, target states, and display resources.
+ */
+void func_0036C1C0(ItemCreationSelectedDisplayState* object);
 
 #ifdef __cplusplus
 }

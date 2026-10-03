@@ -217,6 +217,15 @@ void func_0023BF50(void* object);
 FieldObject23B950* func_0023B950(FieldObject23B950* object);
 
 /**
+ * @brief Position the display using its grid target, signed index, and supplied size.
+ * @param object Display receiver holding the grid target and position values.
+ * @param index Signed cell index; negative values leave the display unchanged.
+ * @param size Positive size stored in the display and used for its position.
+ * @return One when updated; zero for no target, a nonpositive size, or a negative index.
+ */
+s32 func_0023B9B0(FieldObject23BE00* object, s16 index, float size);
+
+/**
  * @brief Restore three table pointers, call base cleanup, and optionally delete the receiver.
  * @param object Receiver to release, or null.
  * @param flags Signed deletion flag.
