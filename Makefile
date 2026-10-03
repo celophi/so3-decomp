@@ -14,9 +14,9 @@ help:
 		'make image                         Build dockerfiles/dev.dockerfile' \
 		'make shell                         Open the development container' \
 		'make test                          Run tool tests in the container' \
-		'make split                         Split boot and all configured overlays with Splat' \
-		'make build                         Compile, assemble, and verify boot and overlays' \
-		'make verify                        Check the existing boot and overlay rebuilds' \
+		'make split                         Split main and all configured overlays with Splat' \
+		'make build                         Compile, assemble, and verify main and overlays' \
+		'make verify                        Check the existing main and overlay rebuilds' \
 		'make report                        Build, verify, and generate the decomp.dev report' \
 		'make objdiff-objects                Build original and C/C++-only comparison objects' \
 		'make ci-inputs ISO_DISC1=... ISO_DISC2=...  Stage both discs for the private image' \
@@ -26,7 +26,7 @@ help:
 		'make sdk-scan                      Scan named SDK patterns after splitting' \
 		'make sdk-symbols                   Recover ELF symbols with standalone CCC' \
 		'make compilers                     Fetch the pinned working compiler candidate' \
-		'make compiler-probe                Compile and compare five boot functions' \
+		'make compiler-probe                Compile and compare five main functions' \
 		'make compiler-matrix               Fetch and compare all 15 candidates' \
 		'make extract ISO="/path/disc.iso"   Extract a verified disc (mounted read-only)' \
 		'make inventory ISO="/path/disc.iso" Audit nested containers and IOPRP code' \
@@ -73,7 +73,7 @@ ci-inputs:
 		"$(IMAGE)" python -m tools.so3.disc.ci_inputs stage --disc1 /input/disc1.iso --disc2 /input/disc2.iso $(if $(OUTPUT),--output "$(OUTPUT)")
 
 verify:
-	$(RUN) "$(IMAGE)" python -m tools.so3.build.boot verify
+	$(RUN) "$(IMAGE)" python -m tools.so3.build.main verify
 	$(RUN) "$(IMAGE)" python -m tools.so3.build.overlays verify
 
 compilers:

@@ -1,6 +1,6 @@
 #include "include_asm.h"
-#include "boot/resident_data.h"
-#include "overlays/0002-01/text_004CD3A0.h"
+#include "main/resident_data.h"
+#include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_001ED7E0_callbacks.h"
 #include "overlays/1067-00/text_0026EE10.h"
 

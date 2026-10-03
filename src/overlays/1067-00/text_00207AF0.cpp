@@ -1,6 +1,6 @@
 #include "include_asm.h"
 #include "vu0.h"
-#include "boot/resident_data.h"
+#include "main/resident_data.h"
 #include "overlays/1067-00/text_00207AF0.h"
 
 typedef unsigned __int128 FieldLocalQword;

@@ -1,5 +1,5 @@
 #include "overlays/1067-00/init.h"
-#include "boot/resident_data.h"
+#include "main/resident_data.h"
 
 void func_0032A880(void)
 {

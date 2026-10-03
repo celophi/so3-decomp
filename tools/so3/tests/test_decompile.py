@@ -54,14 +54,14 @@ class DecompileTests(unittest.TestCase):
 
     def test_reruns_preserve_existing_drafts(self):
         with directory() as root, patch.object(decompile, 'ROOT', root):
-            first = decompile.reserve_run('func_1000', 'boot')
+            first = decompile.reserve_run('func_1000', 'main')
             (first / 'draft.c').write_text('my edited candidate')
-            second = decompile.reserve_run('func_1000', 'boot')
+            second = decompile.reserve_run('func_1000', 'main')
             self.assertNotEqual(first, second)
             self.assertEqual((first / 'draft.c').read_text(), 'my edited candidate')
             self.assertEqual(list(second.iterdir()), [])
 
     def test_cli_identifiers_cannot_escape_workspace(self):
-        for module, name in [('../boot', 'func_1000'), ('boot', '../../draft')]:
+        for module, name in [('../main', 'func_1000'), ('main', '../../draft')]:
             with self.subTest(module=module, name=name), self.assertRaises(ValueError):
                 decompile.decompile(module, name)

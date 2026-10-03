@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch hash-pinned CodeWarrior candidates and compare reconstructed boot probes."""
+"""Fetch hash-pinned CodeWarrior candidates and compare reconstructed main executable probes."""
 
 import argparse
 import io
@@ -13,7 +13,7 @@ import tarfile
 import tempfile
 import urllib.request
 
-from tools.so3.build.boot import ROOT, original_boot, sha256
+from tools.so3.build.main import ROOT, original_main, sha256
 from tools.so3.formats import elf_info, require
 
 CONFIG = ROOT / 'config/manifests/compilers.json'
@@ -95,7 +95,7 @@ def object_functions(data):
 
 
 def reference_probes(config):
-    data = original_boot()
+    data = original_main()
     loads = elf_info(data)['load_segments']
     expected = {}
     for probe in config['probes']:

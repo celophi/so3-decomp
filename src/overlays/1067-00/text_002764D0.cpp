@@ -1,11 +1,11 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002764D0.h"
-#include "boot/resident_0011EE70.h"
-#include "sdk/boot/syscalls_00121940.h"
+#include "main/resident_0011EE70.h"
+#include "sdk/main/syscalls_00121940.h"
 #include "overlays/1067-00/text_002CABC0.h"
-#include "boot/resident_data.h"
-#include "boot/resident_0010A0E0.h"
-#include "overlays/0002-01/text_004CD3A0.h"
+#include "main/resident_data.h"
+#include "main/resident_0010A0E0.h"
+#include "overlays/lib/text_004CD3A0.h"
 
 
 typedef struct FieldFlagState271B0

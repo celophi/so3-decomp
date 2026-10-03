@@ -4,8 +4,8 @@
 #include "types.h"
 #include "overlays/1067-00/text_001E1590.h"
 #include "overlays/1067-00/text_0023DC90.h"
-#include "boot/resident_0011EE70.h"
-#include "overlays/0002-01/text_004BD360.h"
+#include "main/resident_0011EE70.h"
+#include "overlays/lib/text_004BD360.h"
 
 /** Partial receiver with three aligned 128-bit slots and a ready byte at offset 0x50. */
 typedef struct FieldVectorSlots50
@@ -121,7 +121,7 @@ struct FieldRecord150220
 };
 
 /**
- * Partial class derived from FieldClass150070, with vtable D_150220 in boot
+ * Partial class derived from FieldClass150070, with vtable D_150220 in main
  * data. Holds a source record pointer at offset 0x18 and a done flag at bit 0
  * of offset 0x20; slot 8 is pure virtual.
  */
@@ -163,7 +163,7 @@ public:
     u8 unk20_1_7 : 7;
 };
 
-/** Partial class derived from FieldClass150220, with vtable D_1501F0 in boot data. */
+/** Partial class derived from FieldClass150220, with vtable D_1501F0 in main data. */
 class FieldClass1501F0 : public FieldClass150220
 {
 public:
@@ -193,7 +193,7 @@ public:
 };
 
 /**
- * Partial class derived from FieldClass150220, with vtable D_150250 in boot
+ * Partial class derived from FieldClass150220, with vtable D_150250 in main
  * data. Holds eight corner vectors at offset 0x30, their transformed copies at
  * 0xB0, six vectors at 0x130 built from them, and a centre vector at 0x190
  * with its transformed copy at 0x1A0.
@@ -238,7 +238,7 @@ public:
 
 /**
  * Partial class with its vtable pointer at offset 0xC, after its data, with
- * vtable D_150320 in boot data. It owns an array of 12-byte entries at offset 4
+ * vtable D_150320 in main data. It owns an array of 12-byte entries at offset 4
  * with the count at offset 8.
  */
 class FieldClass150320
@@ -259,7 +259,7 @@ class FieldClass150EB0;
 
 /**
  * Partial 0x70-byte keyed animation node derived from FieldClass150070, with
- * vtable D_150280 in boot data. FieldClass1502E0 keeps a list of them; the
+ * vtable D_150280 in main data. FieldClass1502E0 keeps a list of them; the
  * node owns two Lib objects and refers back to its FieldClass150EB0 owner.
  */
 class FieldClass150280 : public FieldClass150070
@@ -311,7 +311,7 @@ public:
 
 /**
  * Partial Lib list class derived from FieldClass1502A0, with vtable D_1502E0 in
- * boot data. Owns two FieldClass150070 objects at offset 0x80 and a
+ * main data. Owns two FieldClass150070 objects at offset 0x80 and a
  * FieldClass150320 at offset 0x90.
  */
 class FieldClass1502E0 : public FieldClass1502A0
@@ -445,7 +445,7 @@ struct FieldIndexPair
     s16 unk02;
 };
 
-/** Partial class derived from FieldClass150070, with vtable D_150330 in boot data. */
+/** Partial class derived from FieldClass150070, with vtable D_150330 in main data. */
 class FieldClass150330 : public FieldClass150070
 {
 public:
@@ -508,7 +508,7 @@ public:
 };
 
 /**
- * Partial class derived from FieldClass150070, with vtable D_150440 in boot
+ * Partial class derived from FieldClass150070, with vtable D_150440 in main
  * data. Its storage is released through the Lib heap.
  */
 class FieldClass150440 : public FieldClass150070
@@ -529,7 +529,7 @@ public:
     }
 };
 
-/** Partial class derived from FieldClass150440, with vtable D_150420 in boot data. */
+/** Partial class derived from FieldClass150440, with vtable D_150420 in main data. */
 class FieldClass150420 : public FieldClass150440
 {
 public:
@@ -539,7 +539,7 @@ public:
 
 /**
  * Partial 0x50-byte class derived from FieldClass150070, with vtable D_1504F0
- * in boot data. At most one exists at a time, in D_001B6428.
+ * in main data. At most one exists at a time, in D_001B6428.
  */
 class FieldClass1504F0 : public FieldClass150070
 {
@@ -570,7 +570,7 @@ public:
 /** The current FieldClass1504F0, or null. */
 extern "C" FieldClass1504F0* D_001B6428;
 
-/** Partial class derived from FieldClass150070, with vtable D_150460 in boot data. */
+/** Partial class derived from FieldClass150070, with vtable D_150460 in main data. */
 class FieldClass150460 : public FieldClass150070
 {
 public:
@@ -580,7 +580,7 @@ public:
     }
 };
 
-/** Partial class derived from FieldClass150460, with vtable D_150490 in boot data. */
+/** Partial class derived from FieldClass150460, with vtable D_150490 in main data. */
 class FieldClass150490 : public FieldClass150460
 {
 public:
@@ -599,7 +599,7 @@ public:
 };
 
 /**
- * Partial class derived from FieldClass150490, with vtable D_1504C0 in boot
+ * Partial class derived from FieldClass150490, with vtable D_1504C0 in main
  * data. Owns a list of FieldClass150070 objects at offset 0x38.
  */
 class FieldClass1504C0 : public FieldClass150490

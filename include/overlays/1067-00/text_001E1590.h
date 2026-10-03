@@ -50,7 +50,7 @@ typedef struct FieldSlotRecordOwner1C
 } FieldSlotRecordOwner1C;
 
 #ifdef __cplusplus
-/** Partial class with a FieldClass1DD400 base at offset 0x14, with vtable D_150120 in boot data. */
+/** Partial class with a FieldClass1DD400 base at offset 0x14, with vtable D_150120 in main data. */
 class FieldClass150120 : public FieldClass150070, public FieldClass1DD400
 {
 public:

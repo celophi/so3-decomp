@@ -2,7 +2,7 @@
 #define SO3_OVERLAYS_1067_00_TEXT_001DD3C0_H
 
 #include "types.h"
-#include "overlays/0002-01/text_004CD3A0.h"
+#include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_001FD860.h"
 #include "overlays/1067-00/text_0022DC70.h"
 
@@ -177,7 +177,7 @@ public:
     float w;
 } __attribute__((aligned(16)));
 
-/** Root of the FieldClass150070 hierarchy, with vtable D_150050 in boot data. */
+/** Root of the FieldClass150070 hierarchy, with vtable D_150050 in main data. */
 class FieldClass150050
 {
 public:
@@ -187,7 +187,7 @@ public:
     }
 };
 
-/** Intermediate base with two list links, with vtable D_150060 in boot data. */
+/** Intermediate base with two list links, with vtable D_150060 in main data. */
 class FieldClass150060 : public FieldClass150050
 {
 public:
@@ -207,7 +207,7 @@ public:
     FieldClass150060* unk08;
 };
 
-/** Base class with four virtual handlers, with vtable D_150070 in boot data. */
+/** Base class with four virtual handlers, with vtable D_150070 in main data. */
 class FieldClass150070 : public FieldClass150060
 {
 public:
@@ -247,7 +247,7 @@ public:
 };
 
 /**
- * Partial base class with two virtual handlers, with vtable D_150000 in boot
+ * Partial base class with two virtual handlers, with vtable D_150000 in main
  * data. Slot 1 is named after its lowest known override (func_001DDB30); its
  * own implementation is func_001DF370.
  */
@@ -266,7 +266,7 @@ public:
 };
 
 /**
- * Field context object at offset 0x30, with vtable D_1530D0 in boot data; its
+ * Field context object at offset 0x30, with vtable D_1530D0 in main data; its
  * methods (destructor 0x23B0C0, func_0023AEB0) are in text_0022DC70. A
  * FieldClass150070 list node that owns a Lib list (the LibClass178DD0 base at
  * offset 0x14) of record loaders, FieldClass150010 objects whose word at offset
@@ -295,7 +295,7 @@ public:
     u64 unk08;
 };
 
-/** Partial class with bases at offsets 0x78 and 0x90 and a Lib member at 0xA0, with vtable D_14FE30 in boot data. */
+/** Partial class with bases at offsets 0x78 and 0x90 and a Lib member at 0xA0, with vtable D_14FE30 in main data. */
 class FieldClass14FE30 : public LibClass178DD0, public FieldClass150070, public FieldClass14FE84
 {
 public:
@@ -346,7 +346,7 @@ public:
 };
 
 /**
- * Lib list class with vtable D_1502A0 in boot data. It adds no data to
+ * Lib list class with vtable D_1502A0 in main data. It adds no data to
  * LibClass178DD0; its sentinel is the list's first 12 bytes (unk00).
  */
 class FieldClass1502A0 : public LibClass178DD0
@@ -371,7 +371,7 @@ public:
 };
 
 /**
- * Partial class derived from FieldClass150070, with vtable D_150010 in boot
+ * Partial class derived from FieldClass150070, with vtable D_150010 in main
  * data. Slots 5-7 are pure virtual (zero vtable entries); they are named after
  * FieldClass14FFB0's implementations.
  */
@@ -422,7 +422,7 @@ public:
 };
 
 /**
- * Partial 32-byte record with vtable D_150040 in boot data. Its base keeps its
+ * Partial 32-byte record with vtable D_150040 in main data. Its base keeps its
  * vtable pointer at offset 0x18, after the base's data.
  */
 class FieldClass150040 : public FieldClass1530C0
@@ -446,7 +446,7 @@ public:
 /**
  * Partial FieldClass150010 with a FieldClass1DD400 base at offset 0x18 and a
  * counted array of FieldClass150040 records at offset 0x1C, with vtable
- * D_14FFB0 in boot data. The FieldClass1DD400 vtable part is D_14FFDC
+ * D_14FFB0 in main data. The FieldClass1DD400 vtable part is D_14FFDC
  * (__vt__16FieldClass14FFB0 + 0x2C).
  */
 class FieldClass14FFB0 : public FieldClass150010, public FieldClass1DD400

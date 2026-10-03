@@ -31,22 +31,22 @@ class SdkTests(unittest.TestCase):
     def fixture(self):
         raw = bytes.fromhex('010003240c0000000800e00300000000')
         Path('original.bin').write_bytes(raw)
-        source = Path('src/sdk/boot/calls.c')
+        source = Path('src/sdk/main/calls.c')
         source.parent.mkdir(parents=True)
-        source.write_text('#include "include_asm.h"\nINCLUDE_ASM("asm/nonmatchings/sdk/boot/calls", func_1000);\n')
-        unit = {'module': 'boot', 'source': str(source), 'binary': 'original.bin',
+        source.write_text('#include "include_asm.h"\nINCLUDE_ASM("asm/nonmatchings/sdk/main/calls", func_1000);\n')
+        unit = {'module': 'main', 'source': str(source), 'binary': 'original.bin',
                 'binary_sha256': hashlib.sha256(raw).hexdigest(), 'start': 0, 'end': 16,
                 'functions': [{'name': 'func_1000', 'offset': 0, 'address': 0x1000,
                                'size': 16, 'sha256': hashlib.sha256(raw).hexdigest()}]}
         config = {'options': {'src_path': 'src', 'asm_path': 'asm', 'target_path': 'original.bin'},
                   'segments': [{'type': 'code', 'start': 0, 'vram': 0x1000,
-                                'subsegments': [[0, 'c', 'sdk/boot/calls']]}, [16]]}
-        return [(Path('config/boot.us.yaml'), config)], {'units': [unit]}
+                                'subsegments': [[0, 'c', 'sdk/main/calls']]}, [16]]}
+        return [(Path('config/main.us.yaml'), config)], {'units': [unit]}
 
     def test_exclusion_requires_exact_reviewed_coverage_and_unchanged_bytes(self):
         with directory():
             configs, manifest = self.fixture()
-            self.assertEqual(validate_sdk_units(configs, manifest), {'src/sdk/boot/calls.c'})
+            self.assertEqual(validate_sdk_units(configs, manifest), {'src/sdk/main/calls.c'})
             for change in ('missing_function', 'short_function', 'wrong_address', 'wrong_hash'):
                 bad = copy.deepcopy(manifest)
                 f = bad['units'][0]['functions'][0]
@@ -69,16 +69,16 @@ class SdkTests(unittest.TestCase):
             configs, manifest = self.fixture()
             with self.assertRaisesRegex(ValueError, 'unreviewed'):
                 validate_sdk_units(configs, {'units': []})
-            source = Path('src/sdk/boot/calls.c')
+            source = Path('src/sdk/main/calls.c')
             source.write_text(source.read_text() + 'int game_function(void) { return 3; }\n')
             with self.assertRaisesRegex(ValueError, 'exactly the reviewed'):
                 validate_sdk_units(configs, manifest)
 
     def test_overlay_sdk_directory_is_recognised_only_under_its_module(self):
         from tools.so3.build.sdk import sdk_path
-        self.assertTrue(sdk_path('src/sdk/boot/calls.c'))
-        self.assertTrue(sdk_path('src/overlays/0002-01/sdk/libmpeg_003E6900.c'))
-        self.assertFalse(sdk_path('src/overlays/0002-01/text_003E68C0.c'))
+        self.assertTrue(sdk_path('src/sdk/main/calls.c'))
+        self.assertTrue(sdk_path('src/overlays/lib/sdk/libmpeg_003E6900.c'))
+        self.assertFalse(sdk_path('src/overlays/lib/text_003E68C0.c'))
         self.assertFalse(sdk_path('src/overlays/sdk/calls.c'))
 
     def test_other_modules_can_build_independently(self):
@@ -86,7 +86,7 @@ class SdkTests(unittest.TestCase):
             configs, manifest = self.fixture()
             config = copy.deepcopy(configs[0][1])
             config['segments'][0]['subsegments'][0][2] = 'game'
-            self.assertEqual(validate_sdk_units([(Path('0002-00.yaml'), config)], manifest), set())
+            self.assertEqual(validate_sdk_units([(Path('boot.yaml'), config)], manifest), set())
 
     def test_patterns_keep_aliases_and_reject_wildcards(self):
         with directory():
@@ -117,27 +117,27 @@ class SdkTests(unittest.TestCase):
         with directory():
             configs, manifest = self.fixture()
             options = configs[0][1]['options']
-            options.update(asset_path='bin', build_path='build/boot', ld_script_path='boot.ld',
+            options.update(asset_path='bin', build_path='build/main', ld_script_path='main.ld',
                            undefined_funcs_auto_path='funcs.ld', undefined_syms_auto_path='syms.ld',
                            generated_asm_macros_directory='include')
-            configs[0][1]['segments'][0]['subsegments'].append([16, 'c', 'boot/game'])
+            configs[0][1]['segments'][0]['subsegments'].append([16, 'c', 'main/game'])
             configs[0][1]['segments'][-1] = [24]
             raw = Path('original.bin').read_bytes() + bytes(8)
             Path('original.bin').write_bytes(raw)
             manifest['units'][0]['binary_sha256'] = hashlib.sha256(raw).hexdigest()
             Path('config/manifests').mkdir(parents=True)
             Path('config/manifests/sdk-functions.json').write_text(json.dumps(manifest))
-            Path('src/boot').mkdir()
-            Path('src/boot/game.c').write_text('int game(void) { return 0; }\n')
+            Path('src/main').mkdir()
+            Path('src/main/game.c').write_text('int game(void) { return 0; }\n')
             with patch.object(build, 'CONFIG', ROOT / 'config/manifests/compilers.json'):
                 build.configure(configs)
             ninja = Path('build/build.ninja').read_text()
             report = json.loads(Path('objdiff.json').read_text())
-            self.assertIn('build build/boot/src/sdk/boot/calls.c.o: compile src/sdk/boot/calls.c', ninja)
-            self.assertIn('build build/boot/linked.elf: link build/boot/src/sdk/boot/calls.c.o', ninja)
+            self.assertIn('build build/main/src/sdk/main/calls.c.o: compile src/sdk/main/calls.c', ninja)
+            self.assertIn('build build/main/linked.elf: link build/main/src/sdk/main/calls.c.o', ninja)
             self.assertNotIn('build/progress/src/sdk', ninja)
-            self.assertIn('asm/boot/game.s.o: assemble asm/boot/game.s', ninja)
-            self.assertEqual([u['metadata']['source_path'] for u in report['units']], ['src/boot/game.c'])
+            self.assertIn('asm/main/game.s.o: assemble asm/main/game.s', ninja)
+            self.assertEqual([u['metadata']['source_path'] for u in report['units']], ['src/main/game.c'])
 
 
 if __name__ == '__main__':

@@ -278,7 +278,7 @@ void func_00238520(void* object);
 }
 
 /**
- * Partial base of 32-byte records, with vtable D_1530C0 in boot data. Its
+ * Partial base of 32-byte records, with vtable D_1530C0 in main data. Its
  * vtable pointer follows its data at offset 0x18.
  */
 class FieldClass1530C0

@@ -1,0 +1,80 @@
+name: Star Ocean 3 US main executable C scaffold
+sha1: 1f8b172c0c2ff3f0b80bb6763077fdf33e271dcf
+options:
+  basename: main
+  target_path: disc/us-disc1/iso/SLUS_204.88
+  base_path: ..
+  platform: ps2
+  compiler: MWCCPS2
+  asm_path: build/main/asm
+  asset_path: build/main/bin
+  src_path: src
+  build_path: build/main
+  ld_script_path: build/main/main.ld
+  generated_asm_macros_directory: build/main/include
+  cache_path: build/main/splat.cache
+  symbol_addrs_path: [config/symbols/main_symbol_addrs.txt]
+  undefined_funcs_auto_path: build/main/undefined_funcs.ld
+  undefined_syms_auto_path: build/main/undefined_syms.ld
+  create_c_files: true
+  make_full_disasm_for_code: true
+  auto_decompile_empty_functions: false
+  generated_c_preamble: '#include "include_asm.h"'
+  asm_inc_header: |
+    .set noat
+    .set noreorder
+  migrate_rodata_to_functions: false
+  subalign: 4
+  find_file_boundaries: false
+  disasm_unknown: true
+  gp_value: 0x001BDFF0
+  generated_macro_inc_content: |
+    .set Q, $Q
+    .set ACC, $ACC
+    .set I, $I
+    .set R, $R
+segments:
+  - [0x0, bin, elf_header]
+  - name: resident
+    type: code
+    start: 0x680
+    vram: 0x100000
+    subsegments:
+      - [0x680, asm, startup]
+      - [0x860, c, main/resident_001001E0]
+      - [0x18D0, c, main/func_00101250]
+      - [0x18E0, c, main/resident_00101260]
+      - [0x1B90, c, main/func_00101510]
+      - [0x1BD0, c, main/resident_00101550]
+      - [0xA700, c, main/func_0010A080]
+      - [0xA730, c, main/func_0010A0B0]
+      - [0xA760, c, main/resident_0010A0E0]
+      - [0x1F480, c, main/func_0011EE00]
+      - [0x1F4F0, c, main/resident_0011EE70]
+      - [0x21FC0, c, sdk/main/syscalls_00121940]
+      - [0x22860, c, main/resident_001221E0]
+      - [0x2A9C8, c, sdk/main/syscalls_0012A348]
+      - [0x2A9E8, c, main/resident_0012A368]
+      - [0x2AAC0, c, sdk/main/syscalls_0012A440]
+      - [0x2AAE0, c, main/resident_0012A460]
+      - [0x2AB20, c, sdk/main/syscalls_0012A4A0]
+      - [0x2AB30, c, main/resident_0012A4B0]
+      - [0x2AB50, c, sdk/main/syscalls_0012A4D0]
+      - [0x2AB70, c, main/resident_0012A4F0]
+      - [0x2B398, c, sdk/main/syscalls_0012AD18]
+      - [0x2B3A8, c, main/resident_0012AD28]
+      - [0x2B3E8, c, sdk/main/syscalls_0012AD68]
+      - [0x2B3F8, c, main/resident_0012AD78]
+      - [0x2B440, c, sdk/main/syscalls_0012ADC0]
+      - [0x2B450, c, main/resident_0012ADD0]
+      - [0x2B5A8, c, sdk/main/syscalls_0012AF28]
+      - [0x2B5B8, c, main/resident_0012AF38]
+      - [0x2B808, c, sdk/main/syscalls_0012B188]
+      - [0x2B818, c, main/resident_0012B198]
+      - [0x2B860, c, sdk/main/syscalls_0012B1E0]
+      - [0x2B870, c, main/resident_0012B1F0]
+      - [0x2F778, c, main/resident_0012F0F8]
+      - [0x3FA60, c, main/resident_0013F3E0]
+  - [0x44200, bin, resident_data]
+  - [0xB6A80, bin, elf_metadata]
+  - [0xB73B0]

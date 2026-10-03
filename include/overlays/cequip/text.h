@@ -1,0 +1,705 @@
+#ifndef SO3_OVERLAYS_CEQUIP_TEXT_H
+#define SO3_OVERLAYS_CEQUIP_TEXT_H
+
+#include "types.h"
+
+typedef struct EquipLinkedList EquipLinkedList;
+typedef struct EquipWordList EquipWordList;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Set the value at object offset 0xC.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_00348400(void* object, u8 value);
+
+/**
+ * @brief Read the value at object offset 0xC.
+ * @param object Object to read.
+ * @return Value stored at offset 0xC.
+ */
+u8 func_00348410(void* object);
+
+/**
+ * @brief Set the value at object offset 0x8.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_00348420(void* object, u8 value);
+
+/**
+ * @brief Read the value at object offset 0x8.
+ * @param object Object to read.
+ * @return Value stored at offset 0x8.
+ */
+u8 func_00348430(void* object);
+
+/**
+ * @brief Set the value at object offset 0xA.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_00348440(void* object, u16 value);
+
+/**
+ * @brief Read the value at object offset 0xA.
+ * @param object Object to read.
+ * @return Value stored at offset 0xA.
+ */
+u16 func_00348450(void* object);
+
+/**
+ * @brief Set the value at object offset 0x98.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_00348460(void* object, u32 value);
+
+/**
+ * @brief Read the value at object offset 0x98.
+ * @param object Object to read.
+ * @return Value stored at offset 0x98.
+ */
+u32 func_00348470(void* object);
+
+/**
+ * @brief Set the value at object offset 0x9C.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_00348480(void* object, u32 value);
+
+/**
+ * @brief Read the value at object offset 0x9C.
+ * @param object Object to read.
+ * @return Value stored at offset 0x9C.
+ */
+u32 func_00348490(void* object);
+
+/**
+ * @brief Set the value at object offset 0x4.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_003484A0(void* object, u32 value);
+
+/**
+ * @brief Read the value at object offset 0x4.
+ * @param object Object to read.
+ * @return Value stored at offset 0x4.
+ */
+u32 func_003484B0(void* object);
+
+/**
+ * @brief Read the value at object offset 0x10.
+ * @param object Object to read.
+ * @return Value stored at offset 0x10.
+ */
+u32 func_003484C0(void* object);
+
+/**
+ * @brief Read the value at object offset 0xD.
+ * @param object Object to read.
+ * @return Value stored at offset 0xD.
+ */
+u8 func_003486B0(void* object);
+
+/**
+ * @brief Set the value at object offset 0xD.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_003486C0(void* object, u8 value);
+
+/**
+ * @brief Mark each icon active and color the selected one differently.
+ * @param object Holder of the icon list.
+ * @param selected Index of the icon to color differently.
+ */
+void func_003486E0(void* object, s16 selected);
+
+/**
+ * @brief Read the value at object offset 0x20.
+ * @param object Object to read.
+ * @return Value stored at offset 0x20.
+ */
+u32 func_003487B0(void* object);
+
+/**
+ * @brief Set the value at object offset 0x20.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_003488C0(void* object, u32 value);
+
+/**
+ * @brief Toggle the target object's flag byte.
+ * @param object Object holding the target reference.
+ * @return Always 1.
+ */
+s32 func_00349690(void* object);
+
+/**
+ * @brief Position and activate two rows of display targets.
+ * @param object Holder of the display targets.
+ * @param offset Position adjustment.
+ */
+void func_00349B30(void* object, float offset);
+
+/**
+ * @brief Set the value at object offset 0x12C.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_0034A390(void* object, u8 value);
+
+/**
+ * @brief Toggle the target object's flag byte.
+ * @param object Object holding the target reference.
+ * @return Always 1.
+ */
+s32 func_0034A460(void* object);
+
+/**
+ * @brief Read the value at object offset 0x34.
+ * @param object Object to read.
+ * @return Value stored at offset 0x34.
+ */
+u32 func_0034A710(void* object);
+
+/**
+ * @brief Store a nested value and select one of two scale settings.
+ * @param object Holder of the nested state.
+ * @param unused Unused second argument.
+ * @param value Value to store and test.
+ */
+void func_0034A720(void* object, s32 unused, s32 value);
+
+/**
+ * @brief Position and activate three rows of display targets.
+ * @param object Holder of the display targets.
+ * @param offset Position adjustment.
+ */
+void func_0034A770(void* object, float offset);
+
+/**
+ * @brief Read the value at object offset 0x38.
+ * @param object Object to read.
+ * @return Value stored at offset 0x38.
+ */
+u32 func_0034AC10(void* object);
+
+/**
+ * @brief Toggle the target object's flag byte.
+ * @param object Object holding the target reference.
+ * @return Always 1.
+ */
+s32 func_0034CFE0(void* object);
+
+/**
+ * @brief Read the low flag at object offset 0x3C.
+ * @param object Object to read.
+ * @return Low flag bit.
+ */
+u32 func_003515E0(void* object);
+
+/**
+ * @brief Set the value at object offset 0x24.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_00351600(void* object, u32 value);
+
+/**
+ * @brief Read the value at object offset 0x24.
+ * @param object Object to read.
+ * @return Value stored at offset 0x24.
+ */
+u32 func_00351610(void* object);
+
+/**
+ * @brief Set the value at object offset 0x28.
+ * @param object Object to update.
+ * @param value Value to store.
+ */
+void func_00351620(void* object, s8 value);
+
+/**
+ * @brief Read the value at object offset 0x28.
+ * @param object Object to read.
+ * @return Value stored at offset 0x28.
+ */
+s8 func_00351630(void* object);
+
+/**
+ * @brief Append a value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_003517D0(EquipLinkedList* list, s16 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351A20(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351B70(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351C00(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351C90(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351D20(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351DB0(EquipWordList* list, u32 value);
+
+/**
+ * @brief Append a word value to the linked list.
+ * @param list List to update.
+ * @param value Value to append.
+ */
+void func_00351E40(EquipWordList* list, u32 value);
+
+/**
+ * @brief Advance from the first linked node by a number of steps.
+ * @param object Holder of the linked list.
+ * @param count Number of links to follow.
+ * @return Reached node, or null if the chain ends early.
+ */
+void* func_003518E0(void* object, s32 count);
+
+/**
+ * @brief Advance from the first linked node by a number of steps.
+ * @param object Holder of the linked list.
+ * @param count Number of links to follow.
+ * @return Reached node, or null if the chain ends early.
+ */
+void* func_00351B30(void* object, s32 count);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003484D0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003484E0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003484F0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00348500(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00348510(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00348520(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00348530(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00348540(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00348550(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00348560(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00348570(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00348580(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00348590(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003485A0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003485B0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003485C0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003485D0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003485E0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_003485F0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00348600(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00348610(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00348620(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00348630(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00348640(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00348650(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00348660(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00348670(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00348680(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00348690(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003486A0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003486D0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00349680(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003509A0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00351350(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00351360(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00351370(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00351380(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00351390(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_003513A0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_003513B0(void* object);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_003515F0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00351640(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_00351650(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00351660(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00351670(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00351680(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00351690(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_003516A0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_003516B0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_003516C0(void* object);
+
+/**
+ * @brief Release the object's base state and optionally its storage.
+ * @param object Object to release, or null.
+ * @param flags Positive low halfword requests storage release.
+ * @return The original object pointer.
+ */
+void* func_00348CB0(void* object, s32 flags);
+
+/**
+ * @brief Release the object's base state and optionally its storage.
+ * @param object Object to release, or null.
+ * @param flags Positive low halfword requests storage release.
+ * @return The original object pointer.
+ */
+void* func_00349230(void* object, s32 flags);
+
+/**
+ * @brief Release the object's base state and optionally its storage.
+ * @param object Object to release, or null.
+ * @param flags Positive low halfword requests storage release.
+ * @return The original object pointer.
+ */
+void* func_00349560(void* object, s32 flags);
+
+/**
+ * @brief Release the object's base state and optionally its storage.
+ * @param object Object to release, or null.
+ * @param flags Positive low halfword requests storage release.
+ * @return The original object pointer.
+ */
+void* func_0034B370(void* object, s32 flags);
+
+/**
+ * @brief Release the object's base state and optionally its storage.
+ * @param object Object to release, or null.
+ * @param flags Positive low halfword requests storage release.
+ * @return The original object pointer.
+ */
+void* func_0034C400(void* object, s32 flags);
+
+/**
+ * @brief Release the object's base state and optionally its storage.
+ * @param object Object to release, or null.
+ * @param flags Positive low halfword requests storage release.
+ * @return The original object pointer.
+ */
+void* func_0034DD30(void* object, s32 flags);
+
+/**
+ * @brief Release the object's base state and optionally its storage.
+ * @param object Object to release, or null.
+ * @param flags Positive low halfword requests storage release.
+ * @return The original object pointer.
+ */
+void* func_003514C0(void* object, s32 flags);
+
+/**
+ * @brief Release the object's base state and optionally its storage.
+ * @param object Object to release, or null.
+ * @param flags Positive low halfword requests storage release.
+ * @return The original object pointer.
+ */
+void* func_00351520(void* object, s32 flags);
+
+/**
+ * @brief Release the object's base state and optionally its storage.
+ * @param object Object to release, or null.
+ * @param flags Positive low halfword requests storage release.
+ * @return The original object pointer.
+ */
+void* func_00351580(void* object, s32 flags);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

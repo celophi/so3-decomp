@@ -7,8 +7,8 @@
   "scope": "Reviewed SDK exclusions only; aliases are upstream labels, not proven unique names or an SDK version.",
   "units": [
     {
-      "module": "boot",
-      "source": "src/sdk/boot/syscalls_00121940.c",
+      "module": "main",
+      "source": "src/sdk/main/syscalls_00121940.c",
       "start": 139200,
       "end": 141408,
       "binary": "disc/us-disc1/iso/SLUS_204.88",
@@ -1403,8 +1403,8 @@
       ]
     },
     {
-      "module": "boot",
-      "source": "src/sdk/boot/syscalls_0012A348.c",
+      "module": "main",
+      "source": "src/sdk/main/syscalls_0012A348.c",
       "start": 174536,
       "end": 174568,
       "binary": "disc/us-disc1/iso/SLUS_204.88",
@@ -1435,8 +1435,8 @@
       ]
     },
     {
-      "module": "boot",
-      "source": "src/sdk/boot/syscalls_0012A440.c",
+      "module": "main",
+      "source": "src/sdk/main/syscalls_0012A440.c",
       "start": 174784,
       "end": 174816,
       "binary": "disc/us-disc1/iso/SLUS_204.88",
@@ -1467,8 +1467,8 @@
       ]
     },
     {
-      "module": "boot",
-      "source": "src/sdk/boot/syscalls_0012A4A0.c",
+      "module": "main",
+      "source": "src/sdk/main/syscalls_0012A4A0.c",
       "start": 174880,
       "end": 174896,
       "binary": "disc/us-disc1/iso/SLUS_204.88",
@@ -1489,8 +1489,8 @@
       ]
     },
     {
-      "module": "boot",
-      "source": "src/sdk/boot/syscalls_0012A4D0.c",
+      "module": "main",
+      "source": "src/sdk/main/syscalls_0012A4D0.c",
       "start": 174928,
       "end": 174960,
       "binary": "disc/us-disc1/iso/SLUS_204.88",
@@ -1521,8 +1521,8 @@
       ]
     },
     {
-      "module": "boot",
-      "source": "src/sdk/boot/syscalls_0012AD18.c",
+      "module": "main",
+      "source": "src/sdk/main/syscalls_0012AD18.c",
       "start": 177048,
       "end": 177064,
       "binary": "disc/us-disc1/iso/SLUS_204.88",
@@ -1543,8 +1543,8 @@
       ]
     },
     {
-      "module": "boot",
-      "source": "src/sdk/boot/syscalls_0012AD68.c",
+      "module": "main",
+      "source": "src/sdk/main/syscalls_0012AD68.c",
       "start": 177128,
       "end": 177144,
       "binary": "disc/us-disc1/iso/SLUS_204.88",
@@ -1565,8 +1565,8 @@
       ]
     },
     {
-      "module": "boot",
-      "source": "src/sdk/boot/syscalls_0012ADC0.c",
+      "module": "main",
+      "source": "src/sdk/main/syscalls_0012ADC0.c",
       "start": 177216,
       "end": 177232,
       "binary": "disc/us-disc1/iso/SLUS_204.88",
@@ -1587,8 +1587,8 @@
       ]
     },
     {
-      "module": "boot",
-      "source": "src/sdk/boot/syscalls_0012AF28.c",
+      "module": "main",
+      "source": "src/sdk/main/syscalls_0012AF28.c",
       "start": 177576,
       "end": 177592,
       "binary": "disc/us-disc1/iso/SLUS_204.88",
@@ -1609,8 +1609,8 @@
       ]
     },
     {
-      "module": "boot",
-      "source": "src/sdk/boot/syscalls_0012B188.c",
+      "module": "main",
+      "source": "src/sdk/main/syscalls_0012B188.c",
       "start": 178184,
       "end": 178200,
       "binary": "disc/us-disc1/iso/SLUS_204.88",
@@ -1631,8 +1631,8 @@
       ]
     },
     {
-      "module": "boot",
-      "source": "src/sdk/boot/syscalls_0012B1E0.c",
+      "module": "main",
+      "source": "src/sdk/main/syscalls_0012B1E0.c",
       "start": 178272,
       "end": 178288,
       "binary": "disc/us-disc1/iso/SLUS_204.88",
@@ -1653,8 +1653,8 @@
       ]
     },
     {
-      "module": "0002-01",
-      "source": "src/overlays/0002-01/sdk/libmpeg_003E6900.c",
+      "module": "lib",
+      "source": "src/overlays/lib/sdk/libmpeg_003E6900.c",
       "start": 128,
       "end": 31904,
       "binary": "disc/us-disc1/modules/0002-01.bin",
@@ -3227,8 +3227,8 @@
       ]
     },
     {
-      "module": "0002-01",
-      "source": "src/overlays/0002-01/sdk/libipu_003EE520.c",
+      "module": "lib",
+      "source": "src/overlays/lib/sdk/libipu_003EE520.c",
       "start": 31904,
       "end": 33488,
       "binary": "disc/us-disc1/modules/0002-01.bin",

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate and run the boot/overlay build, including C, C++, and assembly units."""
+"""Generate and run the main/overlay build, including C, C++, and assembly units."""
 
 import argparse
 import json
@@ -9,7 +9,7 @@ import re
 import subprocess
 import sys
 
-from tools.so3.build.boot import ROOT, original_boot
+from tools.so3.build.main import ROOT, original_main
 from tools.so3.build.compiler_probe import CONFIG, setup
 from tools.so3.build.overlays import CONFIGS, load_config
 from tools.so3.formats import require
@@ -95,15 +95,15 @@ def configure(configs):
     report_units, categories = [], []
     for path, config in configs:
         options = config['options']
-        is_boot = path.name == 'boot.us.yaml'
-        module = 'boot' if is_boot else path.stem
+        is_main = path.name == 'main.us.yaml'
+        module = 'main' if is_main else path.stem
         out = Path(options['build_path'])
         layout = options['ld_script_path']
         funcs, syms = options['undefined_funcs_auto_path'], options['undefined_syms_auto_path']
         include = options['generated_asm_macros_directory']
         macro = f'{include}/macro.inc'
         units = pieces(config)
-        categories.append({'id': module, 'name': 'Boot' if is_boot else module})
+        categories.append({'id': module, 'name': 'Main' if is_main else module})
         outputs = [layout, funcs, syms, macro] + [str(p) for p, _ in units]
         outputs += [str(a) for p, rule in units if rule == 'compile' for a in asm_inputs(p)]
         outputs += [str(full_asm_path(options, p))
@@ -115,9 +115,9 @@ def configure(configs):
         # compile.py orders deferred units' .text by the module's symbol map.
         symbol_maps = [p for p in [f'config/symbols/{module}_symbol_addrs.txt',
                                  f'config/thunks/{module}_thunk_addrs.txt']
-                       if Path(p).is_file()] + ([] if is_boot else [str(path)])
-        deps += ['tools/so3/build/boot.py', 'config/manifests/versions.json'] if is_boot else ['tools/so3/build/overlays.py']
-        split_command = 'python -m tools.so3.build.boot split' if is_boot else f'python -m tools.so3.build.overlays run-splat --overlay {module}'
+                       if Path(p).is_file()] + ([] if is_main else [str(path)])
+        deps += ['tools/so3/build/main.py', 'config/manifests/versions.json'] if is_main else ['tools/so3/build/overlays.py']
+        split_command = 'python -m tools.so3.build.main split' if is_main else f'python -m tools.so3.build.overlays run-splat --overlay {module}'
         lines += [f'build {" ".join(outputs)}: split {options["target_path"]} | {" ".join(deps)}',
                   f'  split_command = {split_command}', f'  module = {module}']
         objects = []
@@ -157,9 +157,9 @@ def configure(configs):
                 metadata['auto_generated'] = True
             report_units.append(unit)
             all_progress.append(unit['target_path'])
-        rebuilt = out / ('SLUS_204.88' if is_boot else 'rebuilt.bin')
-        verify_command = (f'python -m tools.so3.build.boot verify --output {rebuilt} --report {out}/verify.json'
-                          if is_boot else f'python -m tools.so3.build.overlays verify --overlay {module}')
+        rebuilt = out / ('SLUS_204.88' if is_main else 'rebuilt.bin')
+        verify_command = (f'python -m tools.so3.build.main verify --output {rebuilt} --report {out}/verify.json'
+                          if is_main else f'python -m tools.so3.build.overlays verify --overlay {module}')
         lines += [f'build {out}/linked.elf: link {" ".join(objects)} | {layout} {funcs} {syms}',
                   f'  layout = {layout}', f'  functions = {funcs}', f'  symbols = {syms}',
                   f'build {rebuilt}: binary_image {out}/linked.elf',
@@ -215,8 +215,8 @@ def main():
     args = parser.parse_args()
     os.chdir(ROOT)
     try:
-        original_boot()
-        path = Path('config/boot.us.yaml')
+        original_main()
+        path = Path('config/main.us.yaml')
         configs = [(path, yaml.safe_load(path.read_text()))]
         configs += [(p, load_config(p)[0]) for p in sorted(CONFIGS.glob('*.yaml'))]
         run(configs, args.command)

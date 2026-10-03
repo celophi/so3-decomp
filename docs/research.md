@@ -70,6 +70,10 @@ Field 1067 loads Battle 3454, and Battle 3454 goes back to 1067. I couldn't
 find anything that loads 1070 or 3253, either by entry number or by name, so
 they look like leftovers from an older build. Both discs carry the same copies.
 
+These four keep their archive entry numbers because their header names can't be
+trusted. The other modules are named after their headers (`boot`, `lib`, `citem`
+and so on), and the main executable is `main`.
+
 I haven't confirmed this while the game is running, and something could still
 compute those entry numbers. If it holds up, the two unused modules are 3.28 MB
 of the 8.59 MB of code that progress currently counts.
@@ -77,7 +81,7 @@ of the 8.59 MB of code that progress currently counts.
 
 ## Sony libraries in Lib.bin
 
-`Lib.bin` (`0002-01`) is a module the rest of the game shares. Most of it is
+`Lib.bin` (`lib`) is a module the rest of the game shares. Most of it is
 tri-Ace's own code, but near the start there's a block of Sony code: the
 library the game uses to play its videos (`libmpeg`) and the one it uses to
 drive the PS2's video decoding hardware (`libipu`).

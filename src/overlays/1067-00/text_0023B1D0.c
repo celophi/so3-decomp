@@ -1,5 +1,5 @@
 #include "include_asm.h"
-#include "boot/resident_data.h"
+#include "main/resident_data.h"
 #include "overlays/1067-00/text_0023B1D0.h"
 
 void func_44B210(void* object);

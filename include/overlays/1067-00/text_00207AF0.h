@@ -154,7 +154,7 @@ void func_00209C90(FieldMotion4* object, float target, float duration);
 
 #ifdef __cplusplus
 /**
- * Partial 16-byte class with vtable D_1515D0 in boot data. Its vtable pointer
+ * Partial 16-byte class with vtable D_1515D0 in main data. Its vtable pointer
  * follows its data at offset 0xC.
  */
 class FieldClass1515D0
@@ -169,7 +169,7 @@ public:
     virtual ~FieldClass1515D0();
 };
 
-/** Partial FieldClass1515D0 with four more virtual slots, with vtable D_154D20 in boot data. */
+/** Partial FieldClass1515D0 with four more virtual slots, with vtable D_154D20 in main data. */
 class FieldClass154D20 : public FieldClass1515D0
 {
 public:
@@ -194,7 +194,7 @@ public:
 
 /**
  * Partial FieldClass150F90 with three more virtual slots, with vtable D_151510
- * in boot data. Its constructor (func_0020BF70) sets type bit 0x1 in unk78.
+ * in main data. Its constructor (func_0020BF70) sets type bit 0x1 in unk78.
  * Overrides of earlier slots are not declared yet.
  */
 class FieldClass151510 : public FieldClass150F90
