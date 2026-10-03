@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_1070_00_TEXT_00294DA0_H
 
 #include "types.h"
+#include "overlays/1070-00/text_00213F40.h"
 
 /** Partial receiver with six float values and two control flags. */
 typedef struct FieldFloatRangeState20
@@ -166,6 +167,15 @@ typedef struct FieldParallelArrays298B70
     s32 unkc4;
 } FieldParallelArrays298B70;
 
+/** Partial receiver holding an array of FieldEntry1C and its count. */
+typedef struct FieldEntryArray295A10
+{
+    u8 unk00[0x1C];
+    FieldEntry1C* unk1c;
+    u8 unk20[4];
+    s32 unk24;
+} FieldEntryArray295A10;
+
 #ifdef __cplusplus
 /** Partial first base of FieldEntry29B830, covering offsets 0x00-0x13F. */
 class FieldEntryHead29B830
@@ -213,6 +223,12 @@ void func_00296310(FieldFloatRangeState20* object, float first, float second, fl
  * @return The supplied receiver.
  */
 FieldInitialWordPair* func_00297E10(FieldInitialWordPair* object);
+
+/**
+ * @brief Run func_0021A970 on each entry in the unk1c array.
+ * @param object Receiver holding the array and its unk24 count.
+ */
+void func_00295A10(FieldEntryArray295A10* object);
 
 /**
  * @brief Return the fixed value 4.

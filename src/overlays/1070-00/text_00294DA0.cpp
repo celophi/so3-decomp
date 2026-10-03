@@ -19,7 +19,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002956
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002958F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00295A10);
+void func_00295A10(FieldEntryArray295A10* object)
+{
+    s32 i;
+
+    for (i = 0; i < object->unk24; i++)
+    {
+        func_0021A970(&object->unk1c[i]);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00295A80);
 
