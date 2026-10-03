@@ -6,10 +6,17 @@
 typedef struct OverlayList OverlayList;
 typedef struct StatusObject StatusObject;
 typedef struct StateC000 StateC000;
+typedef struct StatusPositionOwner StatusPositionOwner;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Hold the display position until its timer expires, then scroll and wrap it.
+ * @param object Status state containing the display receiver and movement bounds.
+ */
+void func_0034F920(StatusPositionOwner* object);
 
 /**
  * @brief Perform no work.

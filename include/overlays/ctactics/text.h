@@ -3,9 +3,32 @@
 
 #include "types.h"
 
+typedef struct TacticsPositionOwner TacticsPositionOwner;
+typedef struct TacticsPresetOwner TacticsPresetOwner;
+
+typedef struct TacticsPresetPosition
+{
+    float x;
+    float y;
+} TacticsPresetPosition;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Hold the display position until its timer expires, then scroll and wrap it.
+ * @param object Tactics state containing the display receiver and movement bounds.
+ */
+void func_0034FD60(TacticsPositionOwner* object);
+
+/**
+ * @brief Select a preset display position, clearing it for an invalid index.
+ * @param object Receiver holding the position pair.
+ * @param index Zero-based preset index.
+ * @return The receiver's updated position pair.
+ */
+TacticsPresetPosition* func_0034F190(TacticsPresetOwner* object, s32 index);
 
 typedef struct TacticsListNode
 {

@@ -44,6 +44,7 @@ typedef struct ItemCreationFlagToggleOwner
 } ItemCreationFlagToggleOwner;
 
 typedef struct ItemCreationOptionDisplay ItemCreationOptionDisplay;
+typedef struct ItemCreationOptionTransferOwner ItemCreationOptionTransferOwner;
 
 /** Partial nested object with a flag byte. */
 typedef struct ItemCreationFlagNode
@@ -174,11 +175,15 @@ typedef struct ItemCreationFlagResetOwner
     struct ItemCreationSelectedDisplayState* unk164;
     u8 unk168[4];
     struct ItemCreationTransferDisplay* unk16c;
-    u8 unk170[0xC];
+    u8 unk170[9];
+    u8 unk179;
+    u8 unk17a[2];
     ItemCreationFlagNode* unk17c[9];
     u8 unk1a0[4];
     ItemCreationFlagNode* unk1a4[3];
-    u8 unk1b0[4];
+    u8 unk1b0;
+    u8 unk1b1;
+    u8 unk1b2[2];
     ItemCreationFlagNode* unk1b4[9];
     u8 unk1d8[4];
     ItemCreationFlagNode* unk1dc[3];
@@ -187,6 +192,12 @@ typedef struct ItemCreationFlagResetOwner
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Transfer the selected option into its list display and refresh the option markers.
+ * @param object Owner of the six-slot option list, valid selected index, and marker display.
+ */
+void func_0034CE00(ItemCreationOptionTransferOwner* object);
 
 /**
  * @brief Refresh the nine resource displays and count their active entries.
@@ -278,6 +289,14 @@ void func_0034E4D0(ItemCreationFlagResetOwner* object, u16 direction);
  * @param direction Direction used to advance the embedded selection.
  */
 void func_0034F9B0(ItemCreationFlagResetOwner* object, u16 direction);
+
+/**
+ * @brief Initialize the view display at its fixed coordinates and report success.
+ * @param object View that owns the display.
+ * @param associated Associated object forwarded to the field initializer.
+ * @return Always one.
+ */
+s32 func_0034FD50(ItemCreationFlagResetOwner* object, void* associated);
 
 /**
  * @brief Refresh an option display from its current option list.

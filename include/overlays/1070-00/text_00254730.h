@@ -87,6 +87,24 @@ extern "C" {
 #endif
 
 /**
+ * @brief Set bit zero of the receiver's flag byte at offset 0x04.
+ * @param object Receiver to update.
+ */
+void func_00258310(void* object);
+
+/**
+ * @brief Set bit zero of the receiver's flag byte at offset 0x20.
+ * @param object Receiver to update.
+ */
+void func_002590D0(void* object);
+
+/**
+ * @brief Clear flag bit zero and the six observed word slots in the receiver.
+ * @param object Receiver to reset.
+ */
+void func_00259220(void* object);
+
+/**
  * @brief Consume an update and advance the 28-byte record queue past flagged entries.
  * @param object Record queue to update.
  */

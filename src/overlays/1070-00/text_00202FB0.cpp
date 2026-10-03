@@ -18,6 +18,14 @@ typedef struct FieldKeyListElement270
     u32 unk270;
 } FieldKeyListElement270;
 
+/** Partial receiver with three independently observed scalar float fields. */
+typedef struct FieldFloatPredicate180
+{
+    u8 unk00[0x180];
+    float unk180;
+    float unk184;
+    float unk188;
+} FieldFloatPredicate180;
 
 static inline FieldStateListElement3C* find_state_element(FieldContext34* object, s32 key);
 
@@ -97,7 +105,11 @@ void func_00203940(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00203950);
+bool func_00203950(const void* object)
+{
+    const FieldFloatPredicate180* state = (const FieldFloatPredicate180*)object;
+    return state->unk180 != 0.0f || state->unk184 != 0.0f || state->unk188 != 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002039C0);
 

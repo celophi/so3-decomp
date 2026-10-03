@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/cequip/text.h"
+#include "main/resident_data.h"
 
 typedef struct
 {
@@ -154,6 +155,40 @@ typedef struct
     EquipLayoutTarget* second[9];
     EquipLayoutTarget* third[9];
 } EquipLayout;
+
+/** Four scalar position components stored with four-byte alignment. */
+typedef struct EquipPosition
+{
+    float x;
+    float y;
+    float z;
+    float w;
+} EquipPosition;
+
+/** Partial Lib display receiver holding its position and refresh flag. */
+typedef struct EquipPositionTarget
+{
+    u8 pad_00[0x18];
+    EquipPosition position;
+    u8 pad_28[0x14];
+    u8 active;
+} EquipPositionTarget;
+
+/** Partial equipment position state; the complete receiver extent is unknown. */
+struct EquipPositionOwner
+{
+    u8 pad_00[0xA8];
+    EquipPositionTarget* target;
+    s32 distance;
+    u8 pad_b0[2];
+    s16 timer;
+    u8 state;
+    u8 pad_b5[7];
+    float initial_x;
+    float base_x;
+    float width;
+};
+
 typedef struct
 {
     void* methods;
@@ -172,6 +207,25 @@ extern void func_2CEAF0(void* object, s32 flags);
 extern void* func_100AC0(s32 size, s32 align);
 extern void func_100B40(void* object);
 
+static inline void equip_set_position(EquipPositionTarget* target, float x, float y, float z, float w);
+
+
+/**
+ * @brief Copy the scalar position and mark the display receiver for refresh.
+ * @param target Display receiver to update.
+ * @param x Horizontal position component.
+ * @param y Vertical position component.
+ * @param z Third position component.
+ * @param w Fourth position component.
+ */
+static inline void equip_set_position(EquipPositionTarget* target, float x, float y, float z, float w)
+{
+    target->position.x = x;
+    target->position.y = y;
+    target->position.z = z;
+    target->position.w = w;
+    target->active = 1;
+}
 
 INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_003483C0);
 
@@ -445,7 +499,35 @@ void* func_00348CB0(void* object, s32 flags)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_00348D10);
+/**
+ * @brief Hold the display position until its timer expires, then scroll and wrap it.
+ * @param object Equipment state containing the display receiver and movement bounds.
+ */
+void func_00348D10(EquipPositionOwner* object)
+{
+    EquipPositionTarget* target = object->target;
+    float x = target->position.x;
+    float y = target->position.y;
+    float z = target->position.z;
+    float w = target->position.w;
+    if (object->state == 0)
+    {
+        equip_set_position(target, object->initial_x, y, z, w);
+        object->timer++;
+        if (!((float)object->timer <= 120.0f))
+        {
+            object->timer = 0;
+            object->state = 1;
+        }
+        return;
+    }
+    x -= 108.0f * D_001B6690;
+    if (x < object->base_x - (float)object->distance)
+    {
+        x = 2.0f + (object->base_x + object->width);
+    }
+    equip_set_position(target, x, y, z, w);
+}
 
 INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_00348E00);
 

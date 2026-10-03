@@ -345,6 +345,15 @@ extern "C" {
 #endif
 
 /**
+ * @brief Compute the observed signed product-based amount with fixed additive terms.
+ * @param first First signed factor; intermediate products and sums must be representable.
+ * @param second Second signed factor.
+ * @return Nine times the product divided by two, plus eight times the product and fixed amounts.
+ * Division truncates toward zero.
+ */
+s32 func_0028A250(s32 first, s32 second);
+
+/**
  * @brief Copy the pointed-to word into the receiver and return zero.
  * @param object Receiver to update.
  * @return Always zero.

@@ -1,6 +1,39 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_002E55F0.h"
 
+/** Partial receiver whose flag byte is at offset 0x28. */
+typedef struct FieldSetFlag28
+{
+    u8 unk00[0x28];
+    u8 unk28_0 : 1;
+    u8 unk28_1_7 : 7;
+} FieldSetFlag28;
+
+/** Partial receiver whose flag byte is at offset 0x50. */
+typedef struct FieldSetFlag50
+{
+    u8 unk00[0x50];
+    u8 unk50_0 : 1;
+    u8 unk50_1_7 : 7;
+} FieldSetFlag50;
+
+/** Partial target with two observed float fields and an update byte. */
+typedef struct FieldFloatPairTarget24
+{
+    u8 unk00[0x24];
+    float unk24;
+    float unk28;
+    u8 unk2c[0x14];
+    u8 unk40;
+} FieldFloatPairTarget24;
+
+/** Partial receiver with an optional mutable target at offset 0x30. */
+typedef struct FieldFloatPairOwner30
+{
+    u8 unk00[0x30];
+    FieldFloatPairTarget24* unk30;
+} FieldFloatPairOwner30;
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002E55F0);
 
 void func_002E5630(void* object)
@@ -352,7 +385,18 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002ECF
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002ED100);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002ED110);
+void func_002ED110(const void* object, float first, float second)
+{
+    const FieldFloatPairOwner30* state = (const FieldFloatPairOwner30*)object;
+    FieldFloatPairTarget24* target = state->unk30;
+
+    if (target != 0)
+    {
+        target->unk24 = first;
+        target->unk28 = second;
+        target->unk40 = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002ED140);
 
@@ -569,7 +613,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F22
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F2F30);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F2FD0);
+void func_002F2FD0(void* object)
+{
+    FieldSetFlag28* state = (FieldSetFlag28*)object;
+
+    state->unk28_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F2FF0);
 
@@ -588,7 +637,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F34
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F34E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F3C90);
+void func_002F3C90(void* object)
+{
+    FieldSetFlag50* state = (FieldSetFlag50*)object;
+
+    state->unk50_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002F3CB0);
 
