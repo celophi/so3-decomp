@@ -12,6 +12,9 @@ typedef struct ResidentObjectQueue
     void* entries[0x400];
 } ResidentObjectQueue;
 
+/** Opaque receiver for resident request allocation. */
+typedef struct ResidentRequest112400 ResidentRequest112400;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -23,6 +26,19 @@ extern "C" {
  * @return 1 when the object was appended or is null, 0 when the queue is full.
  */
 s32 func_0011ED90(ResidentObjectQueue* queue, void* object);
+
+/**
+ * @brief Allocate a resident request using its selector and packed values.
+ * @param receiver Resident request storage.
+ * @param arg1 First request value; its low 16 bits are stored.
+ * @param arg2 Request selector.
+ * @param arg3 Value forwarded to request dispatch.
+ * @param arg4 Value stored and packed into the upper byte.
+ * @param arg5 Value packed into the next byte.
+ * @param arg6 Value packed into the lower 16 bits.
+ * @return Request identifier, zero on dispatch failure, one when disabled, or minus one when unavailable.
+ */
+s32 func_00112400(ResidentRequest112400* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
 
 #ifdef __cplusplus
 }

@@ -5,6 +5,12 @@
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "overlays/1067-00/text_002D5260.h"
 
+enum
+{
+    ITEM_CREATION_COLOR_BRIGHT = 0x808080,
+    ITEM_CREATION_COLOR_SELECTED = 0x288080
+};
+
 /** Partial resident directory containing the item-resource buffers. */
 typedef struct ItemCreationResourceDirectory
 {
@@ -13,6 +19,27 @@ typedef struct ItemCreationResourceDirectory
 } ItemCreationResourceDirectory;
 
 extern ItemCreationResourceDirectory* D_001B643C;
+
+/** Partial record containing a checked value and its checksum fields. */
+typedef struct ItemCreationCheckedRecord
+{
+    u8 unk00[0x34];
+    u32 unk34;
+    u8 unk38[0x6C];
+    u16 unka4;
+    u16 unka6;
+} ItemCreationCheckedRecord;
+
+/** Partial resident directory containing the current checked record. */
+typedef struct ItemCreationRecordDirectory6430
+{
+    u8 unk00[4];
+    ItemCreationCheckedRecord* unk04;
+} ItemCreationRecordDirectory6430;
+
+// These external interfaces are scoped here because their owning code is in other overlays.
+extern ItemCreationRecordDirectory6430* D_001B6430;
+u16 func_457470(u16 seed, const u8* buffer, s32 length);
 
 /**
  * @brief Convert an item byte to its allocation-table index.
@@ -42,8 +69,8 @@ static inline u32 item_assigned_code(u8 value)
     return value - 31;
 }
 
-extern u32 func_23B3B0(void* item, u32 flag);
-extern u32 func_23B3A0(void* item);
+extern u32 func_23B3B0(FieldState23B3A0* item, u16 flag);
+extern u16 func_23B3A0(FieldState23B3A0* item);
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00358440);
 
@@ -257,9 +284,59 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035F2D0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035F710);
+void func_0035F710(ItemCreationTwoColorOwner* object)
+{
+    if (object->unkcc != 0 && (u8)func_23B3B0(object->unkcc, 1) != 1)
+    {
+        u16 selected = func_23B3A0(object->unkcc);
+        if (object->unkcc != 0)
+        {
+            s32 index;
+            for (index = 0; index < 2; index++)
+            {
+                ItemCreationColorDisplay* display = object->unkb4[index];
+                if (index == selected)
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_SELECTED;
+                    display->unk3c = 1;
+                    func_0023B7E0(object->unkd0, (FieldTarget23B850*)display);
+                }
+                else
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
+                    display->unk3c = 1;
+                }
+            }
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035F7F0);
+void func_0035F7F0(ItemCreationTwoColorOwner* object)
+{
+    if (object->unkcc != 0 && (u8)func_23B3B0(object->unkcc, 0) != 1)
+    {
+        u16 selected = func_23B3A0(object->unkcc);
+        if (object->unkcc != 0)
+        {
+            s32 index;
+            for (index = 0; index < 2; index++)
+            {
+                ItemCreationColorDisplay* display = object->unkb4[index];
+                if (index == selected)
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_SELECTED;
+                    display->unk3c = 1;
+                    func_0023B7E0(object->unkd0, (FieldTarget23B850*)display);
+                }
+                else
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
+                    display->unk3c = 1;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035F8D0);
 
@@ -634,7 +711,30 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003661F0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00366CB0);
+void func_00366CB0(ItemCreationCheckedValueOwner* object)
+{
+    if (object->unke4 != 0)
+    {
+        ItemCreationCheckedRecord* record = D_001B6430->unk04;
+        const u8* end = (const u8*)&record->unka4;
+        u16 checksum = record->unka4;
+        ItemCreationValueDisplay* display;
+        u32 value;
+
+        if (checksum != (u16)func_457470(record->unka6, ((u8*)record + 0x26),
+            end - ((const u8*)record + 0x26)))
+        {
+            value = 0;
+        }
+        else
+        {
+            value = record->unk34 ^ 0x7CE3C7F7;
+        }
+        display = object->unke4;
+        display->unkfc = value;
+        display->unk3c = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00366D40);
 

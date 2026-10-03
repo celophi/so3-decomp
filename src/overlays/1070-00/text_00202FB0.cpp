@@ -84,7 +84,14 @@ s32 func_00203900(void* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00203910);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00203920);
+/**
+ * @brief Clear bit six of the receiver's flag word at offset 0x204.
+ * @param object Receiver whose flag is cleared.
+ */
+void func_00203920(FieldWordFlags204* object)
+{
+    object->unk204 &= ~0x40;
+}
 
 void func_00203940(void* object)
 {
@@ -245,7 +252,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002067
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206880);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002068F0);
+/**
+ * @brief Set bit zero of the receiver's flag byte at offset 0x34.
+ * @param object Receiver whose flag is set.
+ */
+void func_002068F0(FieldByteFlags34* object)
+{
+    object->unk34_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206910);
 
@@ -287,7 +301,18 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206E
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206FC0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00207020);
+/**
+ * @brief Preserve the prior state, select state three, and update the adjacent flags.
+ * @param object Receiver whose state and flags are updated.
+ * @param value Value whose low byte is stored at offset 0x323.
+ */
+void func_00207020(FieldStateBytes321* object, u32 value)
+{
+    object->unk322 = object->unk321;
+    object->unk321 = 3;
+    object->unk324_0 = 0;
+    object->unk323 = value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00207050);
 
@@ -775,7 +800,19 @@ void func_0020DC50(FieldBytePairOwner* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020DCE0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020DDA0);
+/**
+ * @brief Test two nonzero words and the cleared bit-five flag at offset 0x8C.
+ * @param object Receiver to inspect.
+ * @return One when both words are nonzero and the flag is clear, otherwise zero.
+ */
+s32 func_0020DDA0(const FieldWordFlags8C* object)
+{
+    if (object->unk80 == 0 || object->unk448 == 0 || object->unk8c_5 != 0)
+    {
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020DDF0);
 
@@ -803,17 +840,54 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020F5
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020F600);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020F6D0);
+/**
+ * @brief Conditionally set flag bit five according to whether the supplied value is zero.
+ * @param object Receiver whose flag byte is updated.
+ * @param value Zero to set the flag, or a nonzero value to clear it.
+ * @param update Nonzero to update the flag, or zero to preserve it.
+ */
+void func_0020F6D0(FieldByteFlags8C* object, u32 value, u32 update)
+{
+    if (update != 0)
+    {
+        object->unk8c_5 = !value;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020F710);
+/**
+ * @brief Copy an aligned 16-byte value when the source is present.
+ * @param object Receiver containing the aligned destination value.
+ * @param source Aligned value to copy, or null to preserve the destination.
+ */
+void func_0020F710(FieldAlignedValue20* object, const unsigned __int128* source)
+{
+    if (source != 0)
+    {
+        object->unk20 = *source;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020F730);
+/**
+ * @brief Set bit one of the pointed-to receiver's flag byte at offset 0x2C.
+ * @param object Owner of the receiver whose flag is set.
+ */
+void func_0020F730(FieldFlags2COwner* object)
+{
+    object->unk04->unk2c_1 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020F750);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020F840);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020FAC0);
+/**
+ * @brief Set bit zero of the pointed-to receiver's flag byte at offset 0x7AF.
+ * @param object Owner of the receiver whose flag is set.
+ */
+void func_0020FAC0(FieldFlags7AFOwner* object)
+{
+    object->unk04->unk7af_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020FAE0);
 

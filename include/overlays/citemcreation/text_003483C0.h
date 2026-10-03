@@ -61,6 +61,79 @@ typedef struct ItemCreationColorDisplay
     u32 unk94;
 } ItemCreationColorDisplay;
 
+/** Partial value display with its update, visibility, and value fields. */
+typedef struct ItemCreationValueDisplay
+{
+    u8 unk00[0x3C];
+    u8 unk3c;
+    u8 unk3d[2];
+    u8 unk3f;
+    u8 unk40[0xBC];
+    u32 unkfc;
+} ItemCreationValueDisplay;
+
+/** Partial wrapper containing an optional display marker. */
+typedef struct ItemCreationMarkerOwner
+{
+    u8 unk00[0x30];
+    ItemCreationFlagNode* unk30;
+} ItemCreationMarkerOwner;
+
+/** Partial owner of nine resource displays and three assigned-item groups. */
+typedef struct ItemCreationNineResourceView
+{
+    u8 unk00[0xA8];
+    ItemCreationSelectedDisplayState* unka8;
+    u8 unkac[0x30];
+    struct FieldResourceDisplay2D5CF0* unkdc[9];
+    u8 unk100[9];
+    s8 unk109;
+    u8 unk10a[2];
+    struct FieldObject23CE80* unk10c;
+    u8 unk110[0xC];
+    ItemCreationMarkerOwner* unk11c[3];
+    ItemCreationMarkerOwner* unk128[3];
+    ItemCreationColorDisplay* unk134[3];
+    ItemCreationColorDisplay* unk140[3];
+    ItemCreationColorDisplay* unk14c[3];
+    ItemCreationColorDisplay* unk158[3];
+    ItemCreationValueDisplay* unk164[3];
+    u8 unk170[4];
+    ItemCreationFlagNode* unk174[12];
+    u8 unk1a4[0x18];
+    u8 unk1bc;
+} ItemCreationNineResourceView;
+
+/** Partial owner of two direct color displays and their guarded selector. */
+typedef struct ItemCreationDirectColorOwner
+{
+    u8 unk00[0xAC];
+    ItemCreationColorDisplay* unkac;
+    ItemCreationColorDisplay* unkb0;
+    struct FieldState23B3A0* unkb4;
+    struct FieldObject23B950* unkb8;
+} ItemCreationDirectColorOwner;
+
+/** Partial owner of a two-item color list, selector, and target display. */
+typedef struct ItemCreationTwoColorList
+{
+    u8 unk00[0x2C];
+    ItemCreationList unk2c;
+    u8 unk30[0x7C];
+    struct FieldState23B3A0* unkac;
+    struct FieldObject23B950* unkb0;
+} ItemCreationTwoColorList;
+
+/** Partial owner of a three-item color list, selector, and target display. */
+typedef struct ItemCreationThreeColorList
+{
+    u8 unk00[0x2C];
+    ItemCreationList unk2c;
+    u8 unk30[0x7C];
+    struct FieldState23B3A0* unkac;
+    struct FieldObject23B950* unkb0;
+} ItemCreationThreeColorList;
+
 /** Partial owner of eight color displays and an optional auxiliary flag. */
 typedef struct ItemCreationEightColorOwner
 {
@@ -114,6 +187,54 @@ typedef struct ItemCreationFlagResetOwner
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Refresh the nine resource displays and count their active entries.
+ * @param object Owner of the selected resource values and displays.
+ */
+void func_00356160(ItemCreationNineResourceView* object);
+
+/**
+ * @brief Refresh the three assigned-item groups and their selector grid.
+ * @param object Owner of the group displays and selected item values.
+ */
+void func_00356FD0(ItemCreationNineResourceView* object);
+
+/**
+ * @brief Advance an enabled selector and refresh its two displays and target.
+ * @param object Owner of the displays, selector, and target display.
+ */
+void func_00358240(ItemCreationDirectColorOwner* object);
+
+/**
+ * @brief Move an enabled selector backward and refresh its two displays and target.
+ * @param object Owner of the displays, selector, and target display.
+ */
+void func_00358340(ItemCreationDirectColorOwner* object);
+
+/**
+ * @brief Advance the selector and refresh the colors and target of the two-item list.
+ * @param object Owner of the item list, selector, and target display.
+ */
+void func_00355670(ItemCreationTwoColorList* object);
+
+/**
+ * @brief Move the selector backward and refresh the colors and target of the two-item list.
+ * @param object Owner of the item list, selector, and target display.
+ */
+void func_00355740(ItemCreationTwoColorList* object);
+
+/**
+ * @brief Advance the selector and refresh the colors and target of the three-item list.
+ * @param object Owner of the item list, selector, and target display.
+ */
+void func_00350E00(ItemCreationThreeColorList* object);
+
+/**
+ * @brief Move the selector backward and refresh the colors and target of the three-item list.
+ * @param object Owner of the item list, selector, and target display.
+ */
+void func_00350ED0(ItemCreationThreeColorList* object);
 
 /**
  * @brief Position the four item displays relative to a shared origin.

@@ -92,6 +92,8 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unk12b;
     u8 unk12c;
     u8 unk12d;
+    u8 unk12e[0x9A];
+    u32 unk1c8[3];
 } ItemCreationSelectedDisplayState;
 
 /** Partial selection state with twelve float pairs and a byte permutation. */

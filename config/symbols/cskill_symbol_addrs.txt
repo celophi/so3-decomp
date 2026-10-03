@@ -4,3 +4,5 @@ func_2CEAF0 = 0x002CEAF0; // type:func
 func_2BC410 = 0x002BC410; // type:func
 func_2CEBE0 = 0x002CEBE0; // type:func
 D_4ED330 = 0x004ED330; // size:0x8
+func_00112400 = 0x00112400; // type:func
+D_001B65F8 = 0x001B65F8; // size:0x4

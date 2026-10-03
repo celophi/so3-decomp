@@ -21,6 +21,15 @@ typedef struct FieldObject23B1D0 FieldObject23B1D0;
 typedef struct FieldObject23B280 FieldObject23B280;
 typedef struct FieldObject23BE00 FieldObject23BE00;
 
+/** Partial selector state containing its control byte and current index. */
+struct FieldState23B3A0
+{
+    u8 unk00[0x75];
+    u8 unk75;
+    u8 unk76[0x1A];
+    u16 unk90;
+};
+
 /** Partial storage for the field target display receiver. */
 struct FieldObject23B950
 {

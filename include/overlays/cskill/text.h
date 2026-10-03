@@ -41,6 +41,7 @@ typedef struct Record003610F0 Record003610F0;
 typedef struct Record00361060 Record00361060;
 typedef struct Record003611B0 Record003611B0;
 typedef struct Record003620F0 Record003620F0;
+typedef struct Record003619C0 Record003619C0;
 typedef struct Record00363740 Record00363740;
 typedef struct Record00364810 Record00364810;
 typedef struct Record00364720 Record00364720;
@@ -51,6 +52,20 @@ typedef struct Record0034B190 Record0034B190;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Advance the paired display lists toward scroll position 16.
+ * @param record Paired display list receiver.
+ * @return Zero.
+ */
+s32 func_003619C0(Record003619C0* record);
+
+/**
+ * @brief Move the paired display lists toward scroll position zero.
+ * @param record Paired display list receiver.
+ * @return Zero.
+ */
+s32 func_00361B90(Record003619C0* record);
 
 /**
  * @brief Write the 8-bit field at offset 0xC.

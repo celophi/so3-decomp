@@ -2,11 +2,15 @@
 #include "overlays/citemcreation/text_003483C0.h"
 #include "overlays/citemcreation/text_00358440.h"
 #include "overlays/citemcreation/text_003684D0.h"
+#include "overlays/1067-00/text_0023B1D0.h"
+#include "overlays/1067-00/text_002D5260.h"
 
 enum
 {
     ITEM_CREATION_COLOR_DIM = 0x505050,
     ITEM_CREATION_COLOR_BRIGHT = 0x808080,
+    ITEM_CREATION_COLOR_SELECTED = 0x288080,
+    ITEM_CREATION_COLOR_ASSIGNED = 0x1E8CFF,
     ITEM_CREATION_RECORD_FLAG_0 = 0x1,
     ITEM_CREATION_RECORD_FLAG_1 = 0x2,
     ITEM_CREATION_RECORD_FLAG_2 = 0x4,
@@ -34,6 +38,8 @@ typedef struct ItemCreationRuntime643C
 {
     u8 unk00[0x10];
     void* unk10;
+    u8 unk14[0xC];
+    FieldBufferSlots* unk20;
 } ItemCreationRuntime643C;
 
 // These external interfaces are scoped here because their owning code is in other overlays.
@@ -41,6 +47,8 @@ extern ItemCreationColorRecordState* D_001B64F8;
 extern ItemCreationRuntime643C* D_001B643C;
 void func_466E40(void* point, float x, float y, float scale);
 s32 func_002CFE40(void* object, s16 index);
+u16 func_23B3A0(FieldState23B3A0* object);
+u32 func_23B3B0(FieldState23B3A0* object, u16 direction);
 
 /**
  * @brief Offset one displayed coordinate from its origin.
@@ -53,6 +61,38 @@ static inline float shifted_position(float origin, float offset);
 static inline float shifted_position(float origin, float offset)
 {
     return origin + offset;
+}
+
+/**
+ * @brief Test whether the selector's control byte is clear.
+ * @param object Selector state to test.
+ * @return One when the control byte is zero, or zero otherwise.
+ */
+static inline s32 selector_inactive(FieldState23B3A0* object);
+
+static inline s32 selector_inactive(FieldState23B3A0* object)
+{
+    if (object->unk75)
+    {
+        return 0;
+    }
+    return 1;
+}
+
+/**
+ * @brief Convert a selected item value to its resource slot.
+ * @param value Selected item value, or zero for an empty entry.
+ * @return Resource slot corresponding to the selected value.
+ */
+static inline u32 item_resource_index(u8 value);
+
+static inline u32 item_resource_index(u8 value)
+{
+    if (value == 0)
+    {
+        return 0;
+    }
+    return value - 11;
 }
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003483C0);
@@ -724,9 +764,59 @@ void func_00350DF0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00350E00);
+void func_00350E00(ItemCreationThreeColorList* object)
+{
+    if (object->unkac != 0 && (u8)func_23B3B0(object->unkac, 1) != 1)
+    {
+        u16 selected = func_23B3A0(object->unkac);
+        if (object->unkac != 0)
+        {
+            s32 index;
+            for (index = 0; index < 3; index++)
+            {
+                ItemCreationColorDisplay* display = func_0036F230(&object->unk2c, index)->unk00;
+                if (index == selected)
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_SELECTED;
+                    display->unk3c = 1;
+                    func_0023B7E0(object->unkb0, (FieldTarget23B850*)display);
+                }
+                else
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
+                    display->unk3c = 1;
+                }
+            }
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00350ED0);
+void func_00350ED0(ItemCreationThreeColorList* object)
+{
+    if (object->unkac != 0 && (u8)func_23B3B0(object->unkac, 0) != 1)
+    {
+        u16 selected = func_23B3A0(object->unkac);
+        if (object->unkac != 0)
+        {
+            s32 index;
+            for (index = 0; index < 3; index++)
+            {
+                ItemCreationColorDisplay* display = func_0036F230(&object->unk2c, index)->unk00;
+                if (index == selected)
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_SELECTED;
+                    display->unk3c = 1;
+                    func_0023B7E0(object->unkb0, (FieldTarget23B850*)display);
+                }
+                else
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
+                    display->unk3c = 1;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00350FA0);
 
@@ -857,9 +947,59 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003552D0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00355670);
+void func_00355670(ItemCreationTwoColorList* object)
+{
+    if (object->unkac != 0 && (u8)func_23B3B0(object->unkac, 1) != 1)
+    {
+        u16 selected = func_23B3A0(object->unkac);
+        if (object->unkac != 0)
+        {
+            s32 index;
+            for (index = 0; index < 2; index++)
+            {
+                ItemCreationColorDisplay* display = func_0036F230(&object->unk2c, index)->unk00;
+                if (index == selected)
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_SELECTED;
+                    display->unk3c = 1;
+                    func_0023B7E0(object->unkb0, (FieldTarget23B850*)display);
+                }
+                else
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
+                    display->unk3c = 1;
+                }
+            }
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00355740);
+void func_00355740(ItemCreationTwoColorList* object)
+{
+    if (object->unkac != 0 && (u8)func_23B3B0(object->unkac, 0) != 1)
+    {
+        u16 selected = func_23B3A0(object->unkac);
+        if (object->unkac != 0)
+        {
+            s32 index;
+            for (index = 0; index < 2; index++)
+            {
+                ItemCreationColorDisplay* display = func_0036F230(&object->unk2c, index)->unk00;
+                if (index == selected)
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_SELECTED;
+                    display->unk3c = 1;
+                    func_0023B7E0(object->unkb0, (FieldTarget23B850*)display);
+                }
+                else
+                {
+                    display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
+                    display->unk3c = 1;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00355810);
 
@@ -869,7 +1009,33 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00356100);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00356160);
+void func_00356160(ItemCreationNineResourceView* object)
+{
+    void* allocation;
+    u32 resource;
+    s32 index;
+    u32 value;
+    FieldResourceRecord* record;
+
+    object->unk109 = 0;
+    for (index = 0; index < 9; index++)
+    {
+        value = object->unka8->unk68[(u16)index];
+        if (value != 0)
+        {
+            resource = (u8)item_resource_index(value);
+            allocation = func_002D3D80(D_001B643C->unk20, resource);
+            record = func_002D3CC0(D_001B643C->unk20, 0x51);
+            func_002D5CF0(object->unkdc[index], allocation, record, resource);
+            object->unkdc[index]->unk3F = 1;
+            object->unk109++;
+        }
+        else
+        {
+            object->unkdc[index]->unk3F = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00356250);
 
@@ -957,7 +1123,73 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00356A40);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00356FD0);
+void func_00356FD0(ItemCreationNineResourceView* object)
+{
+    s32 index;
+
+    object->unk1bc = object->unka8->unk57;
+    for (index = 0; index < 3; index++)
+    {
+        if (index < object->unk1bc)
+        {
+            ItemCreationValueDisplay* value;
+            ItemCreationColorDisplay* display1;
+            ItemCreationColorDisplay* display2;
+            ItemCreationColorDisplay* display3;
+            ItemCreationColorDisplay* display4;
+
+            display1 = object->unk134[index];
+            display1->unk94 = ITEM_CREATION_COLOR_ASSIGNED;
+            display1->unk3c = 1;
+            display2 = object->unk140[index];
+            display2->unk94 = ITEM_CREATION_COLOR_ASSIGNED;
+            display2->unk3c = 1;
+            display3 = object->unk14c[index];
+            display3->unk94 = ITEM_CREATION_COLOR_ASSIGNED;
+            display3->unk3c = 1;
+            display4 = object->unk158[index];
+            display4->unk94 = ITEM_CREATION_COLOR_ASSIGNED;
+            display4->unk3c = 1;
+            value = object->unk164[index];
+            value->unkfc = object->unka8->unk1c8[index];
+            value->unk3c = 1;
+        }
+        else
+        {
+            ItemCreationFlagNode* marker;
+            ItemCreationColorDisplay* display1;
+            ItemCreationColorDisplay* display2;
+            ItemCreationColorDisplay* display3;
+            ItemCreationColorDisplay* display4;
+
+            display1 = object->unk134[index];
+            display1->unk94 = ITEM_CREATION_COLOR_DIM;
+            display1->unk3c = 1;
+            display2 = object->unk140[index];
+            display2->unk94 = ITEM_CREATION_COLOR_DIM;
+            display2->unk3c = 1;
+            display3 = object->unk14c[index];
+            display3->unk94 = ITEM_CREATION_COLOR_DIM;
+            display3->unk3c = 1;
+            display4 = object->unk158[index];
+            display4->unk94 = ITEM_CREATION_COLOR_DIM;
+            display4->unk3c = 1;
+            object->unk164[index]->unk3f = 0;
+            marker = object->unk11c[index]->unk30;
+            if (marker != 0)
+            {
+                marker->unk3f = 0;
+            }
+            marker = object->unk128[index]->unk30;
+            if (marker != 0)
+            {
+                marker->unk3f = 0;
+            }
+        }
+    }
+    func_0023CE80(object->unk10c, 1, object->unk1bc);
+    func_00356780((ItemCreationFlagGroups*)object, 0);
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00357120);
 
@@ -969,6 +1201,72 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00358190);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00358240);
+void func_00358240(ItemCreationDirectColorOwner* object)
+{
+    if (object->unkb4 != 0 && !selector_inactive(object->unkb4) && (u8)func_23B3B0(object->unkb4, 1) != 1)
+    {
+        u16 selected = func_23B3A0(object->unkb4);
+        switch (selected)
+        {
+        case 0:
+        {
+            ItemCreationColorDisplay* first = object->unkac;
+            ItemCreationColorDisplay* second;
+            first->unk94 = ITEM_CREATION_COLOR_SELECTED;
+            first->unk3c = 1;
+            second = object->unkb0;
+            second->unk94 = ITEM_CREATION_COLOR_BRIGHT;
+            second->unk3c = 1;
+            func_0023B7E0(object->unkb8, (FieldTarget23B850*)object->unkac);
+            break;
+        }
+        case 1:
+        {
+            ItemCreationColorDisplay* first = object->unkac;
+            ItemCreationColorDisplay* second;
+            first->unk94 = ITEM_CREATION_COLOR_BRIGHT;
+            first->unk3c = 1;
+            second = object->unkb0;
+            second->unk94 = ITEM_CREATION_COLOR_SELECTED;
+            second->unk3c = 1;
+            func_0023B7E0(object->unkb8, (FieldTarget23B850*)object->unkb0);
+            break;
+        }
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00358340);
+void func_00358340(ItemCreationDirectColorOwner* object)
+{
+    if (object->unkb4 != 0 && !selector_inactive(object->unkb4) && (u8)func_23B3B0(object->unkb4, 0) != 1)
+    {
+        u16 selected = func_23B3A0(object->unkb4);
+        switch (selected)
+        {
+        case 0:
+        {
+            ItemCreationColorDisplay* first = object->unkac;
+            ItemCreationColorDisplay* second;
+            first->unk94 = ITEM_CREATION_COLOR_SELECTED;
+            first->unk3c = 1;
+            second = object->unkb0;
+            second->unk94 = ITEM_CREATION_COLOR_BRIGHT;
+            second->unk3c = 1;
+            func_0023B7E0(object->unkb8, (FieldTarget23B850*)object->unkac);
+            break;
+        }
+        case 1:
+        {
+            ItemCreationColorDisplay* first = object->unkac;
+            ItemCreationColorDisplay* second;
+            first->unk94 = ITEM_CREATION_COLOR_BRIGHT;
+            first->unk3c = 1;
+            second = object->unkb0;
+            second->unk94 = ITEM_CREATION_COLOR_SELECTED;
+            second->unk3c = 1;
+            func_0023B7E0(object->unkb8, (FieldTarget23B850*)object->unkb0);
+            break;
+        }
+        }
+    }
+}

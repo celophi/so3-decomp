@@ -215,6 +215,19 @@ typedef struct ListItem0035CCE0
     u32 unk94;
 } ListItem0035CCE0;
 
+/** Partial receiver holding two arrays of 30 paired display items. */
+typedef struct Record003619C0
+{
+    u8 unk00[0xB0];
+    State003620F0* selection;
+    u8 unkb4[4];
+    ListItem0035CCE0* first[30];
+    ListItem0035CCE0* second[30];
+    u8 unk1a8[8];
+    s32 position;
+    u32 unk1b4;
+} Record003619C0;
+
 typedef struct ListNode0035CCE0
 {
     ListItem0035CCE0* value;
@@ -2597,9 +2610,87 @@ u8* func_003611F0(u8* object)
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00361250);
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_003619C0);
+/**
+ * @brief Advance the paired display lists toward scroll position 16.
+ * @param record Paired display list receiver.
+ * @return Zero.
+ */
+s32 func_003619C0(Record003619C0* record)
+{
+    u8 inactive = !record->selection->flag;
+    if (inactive == 1)
+    {
+        return 0;
+    }
+    if (record->unk1b4 == 0)
+    {
+        s32 old_position = record->position;
+        if (old_position < 16)
+        {
+            s32 offset;
+            s32 i;
+            record->position += 14;
+            if (record->position > 16)
+            {
+                record->position = 16;
+            }
+            offset = ((record->position - old_position) / 2) * 33;
+            for (i = 0; i < 30; i++)
+            {
+                ListItem0035CCE0* item = record->second[i];
+                float y = (float)(s32)(item->position.y - (float)offset);
+                item->position.y = y;
+                item->unk3c = 1;
+                item = record->first[i];
+                item->position.y = y;
+                item->unk3c = 1;
+            }
+        }
+    }
+    func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00361B90);
+/**
+ * @brief Move the paired display lists toward scroll position zero.
+ * @param record Paired display list receiver.
+ * @return Zero.
+ */
+s32 func_00361B90(Record003619C0* record)
+{
+    u8 inactive = !record->selection->flag;
+    if (inactive == 1)
+    {
+        return 0;
+    }
+    if (record->unk1b4 == 0)
+    {
+        s32 old_position = record->position;
+        if (old_position > 0)
+        {
+            s32 offset;
+            s32 i;
+            record->position -= 14;
+            if (record->position < 0)
+            {
+                record->position = 0;
+            }
+            offset = ((record->position - old_position) / 2) * 33;
+            for (i = 0; i < 30; i++)
+            {
+                ListItem0035CCE0* item = record->second[i];
+                float y = (float)(s32)(item->position.y - (float)offset);
+                item->position.y = y;
+                item->unk3c = 1;
+                item = record->first[i];
+                item->position.y = y;
+                item->unk3c = 1;
+            }
+        }
+    }
+    func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00361D60);
 
