@@ -1,6 +1,12 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_00294DA0.h"
 
+extern "C" void func_115C20(s32 arg0, const char* file, s32 arg2, s32 arg3, s32 arg4, s32 arg5,
+                            s32 arg6);
+
+/** The string "progparticles.h". */
+extern "C" char D_3357D0[];
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00294DA0);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00294FE0);
@@ -190,7 +196,20 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00298A
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00298B40);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00298B70);
+void func_00298B70(FieldParallelArrays298B70* object, u8 value, const unsigned __int128* data)
+{
+    if (object->unkc4 >= object->unkc0)
+    {
+        func_115C20(0xC8, D_3357D0, 0x47, object->unkc0, 0, 0, 0);
+        return;
+    }
+    object->unkb0[object->unkc4] = value;
+    if (data)
+    {
+        object->unkb4[object->unkc4] = *data;
+    }
+    object->unkc4++;
+}
 
 void func_00298C00(void* object)
 {

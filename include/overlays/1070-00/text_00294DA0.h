@@ -155,6 +155,17 @@ typedef struct FieldBytePointerA0
     u8* unka0;
 } FieldBytePointerA0;
 
+/** Partial receiver with two parallel arrays sharing a capacity and count. */
+typedef struct FieldParallelArrays298B70
+{
+    u8 unk00[0xB0];
+    u8* unkb0;
+    unsigned __int128* unkb4;
+    u8 unkb8[8];
+    s32 unkc0;
+    s32 unkc4;
+} FieldParallelArrays298B70;
+
 #ifdef __cplusplus
 /** Partial first base of FieldEntry29B830, covering offsets 0x00-0x13F. */
 class FieldEntryHead29B830
@@ -230,6 +241,17 @@ s32 func_00296570(void* object);
  * @return 1 if the byte isn't 1, otherwise 0.
  */
 s32 func_002988D0(FieldBytePointerA0* object);
+
+/**
+ * @brief Append a byte and an optional quadword to the parallel arrays.
+ * @param object Receiver whose unkc4 count is checked against its unkc0 capacity.
+ * @param value Byte stored in the unkb0 array.
+ * @param data Quadword copied into the unkb4 array, or null to leave that entry unchanged.
+ *
+ * When the arrays are full, this reports an error through func_115C20 with the
+ * "progparticles.h" string instead and leaves the count unchanged.
+ */
+void func_00298B70(FieldParallelArrays298B70* object, u8 value, const unsigned __int128* data);
 
 /**
  * @brief Perform no work.
