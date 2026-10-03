@@ -30,8 +30,8 @@ options:
   gp_value: 0x1bdff0
   symbol_addrs_path:
     - config/symbols/cstatus_symbol_addrs.txt
-  global_vram_start: 0x1B6690
-  global_vram_end: 0x1B6694
+  global_vram_start: 0x100000
+  global_vram_end: 0x507A00
   generated_macro_inc_content: |
     .set Q, $Q
     .set ACC, $ACC
