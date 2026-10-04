@@ -34,3 +34,37 @@ rom:0x9C008 reloc:MIPS_LO16 symbol:__vt__16FieldClass155640 addend:0x2C
 // FieldClass1504C0::func_001EAC90 loads D_4ED330 through $at.
 rom:0xD958 reloc:MIPS_HI16 symbol:D_4ED330
 rom:0xD95C reloc:MIPS_LO16 symbol:D_4ED330
+// FieldClass150150's FieldClass1DD400 vtable part in the loader constructor and base destructor.
+rom:0x84C4 reloc:MIPS_HI16 symbol:__vt__16FieldClass150150 addend:0x2C
+rom:0x84F8 reloc:MIPS_LO16 symbol:__vt__16FieldClass150150 addend:0x2C
+rom:0x8B70 reloc:MIPS_HI16 symbol:__vt__16FieldClass150150 addend:0x2C
+rom:0x8B78 reloc:MIPS_LO16 symbol:__vt__16FieldClass150150 addend:0x2C
+// FieldClass1501A0's FieldClass1DD400 vtable part in its constructor and destructor.
+rom:0x8560 reloc:MIPS_HI16 symbol:__vt__16FieldClass1501A0 addend:0x2C
+rom:0x8568 reloc:MIPS_LO16 symbol:__vt__16FieldClass1501A0 addend:0x2C
+rom:0x8410 reloc:MIPS_HI16 symbol:__vt__16FieldClass1501A0 addend:0x2C
+rom:0x8418 reloc:MIPS_LO16 symbol:__vt__16FieldClass1501A0 addend:0x2C
+
+// The callback reads the first pointer in the resident destination table.
+rom:0x7BE0 reloc:MIPS_HI16 symbol:D_001B5FC0
+rom:0x7BE4 reloc:MIPS_LO16 symbol:D_001B5FC0
+
+// LibObject178660 secondary transform and callback tables in the Field constructor.
+rom:0x10614 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0x1061C reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0x10628 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0x10630 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
+
+// FieldClass151640 secondary list table in its destructor and constructor.
+rom:0x30FD0 reloc:MIPS_HI16 symbol:__vt__16FieldClass151640 addend:0x1C
+rom:0x30FD8 reloc:MIPS_LO16 symbol:__vt__16FieldClass151640 addend:0x1C
+rom:0x92CDC reloc:MIPS_HI16 symbol:__vt__16FieldClass151640 addend:0x1C
+rom:0x92CE4 reloc:MIPS_LO16 symbol:__vt__16FieldClass151640 addend:0x1C
+
+// Selected records and transform in the Lib shape predicate result.
+rom:0x2F858 reloc:MIPS_HI16 symbol:D_0050CB30 addend:0xC
+rom:0x2F85C reloc:MIPS_LO16 symbol:D_0050CB30 addend:0xC
+rom:0x2F860 reloc:MIPS_HI16 symbol:D_0050CB30 addend:0x14
+rom:0x2F864 reloc:MIPS_LO16 symbol:D_0050CB30 addend:0x14
+rom:0x2F888 reloc:MIPS_HI16 symbol:D_0050CB30 addend:0xC
+rom:0x2F890 reloc:MIPS_LO16 symbol:D_0050CB30 addend:0xC

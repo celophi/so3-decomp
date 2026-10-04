@@ -42,6 +42,22 @@ void func_0011EF90(ResidentPacket* packet, u64 data);
 void func_0011F140(ResidentPacket* packet, u64 data);
 
 /**
+ * @brief Advance the packet cursor to the next 16-byte boundary at or after a supplied cursor.
+ * @param packet Packet to update.
+ * @param cursor Requested cursor.
+ * @return Rounded cursor.
+ */
+u8* func_0011F830(ResidentPacket* packet, u8* cursor);
+
+/**
+ * @brief Get the current packet cursor when a requested range fits.
+ * @param packet Packet to inspect.
+ * @param quadwords Number of 16-byte words required.
+ * @return Current cursor, or null when there is insufficient capacity.
+ */
+u8* func_0011F860(ResidentPacket* packet, s32 quadwords);
+
+/**
  * @brief Read the byte at offset 0x25 of an object.
  * @param object Object to read; the field context passes its object at offset 0x24.
  * @return The byte at offset 0x25.

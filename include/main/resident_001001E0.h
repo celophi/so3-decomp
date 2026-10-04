@@ -38,6 +38,17 @@ void* func_00100AC0(u32 size, s32 unused);
  */
 void* func_00100C80(void* heap);
 
+struct FieldRuntimeRoot;
+
+/**
+ * @brief Dispatch the loaded resource buffer through the resident runtime.
+ * @param root Resident runtime root.
+ * @param destination Loaded resource buffer.
+ * @param type Resource type.
+ * @param size Resource payload size.
+ */
+void func_001011B0(struct FieldRuntimeRoot* root, void* destination, s32 type, u32 size);
+
 #ifdef __cplusplus
 }
 #endif

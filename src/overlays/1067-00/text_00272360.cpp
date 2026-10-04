@@ -1,14 +1,66 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_00272360.h"
+#include "overlays/1067-00/text_00207AF0.h"
 
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272360);
+/** @brief Destroy the derived shape storage and release its owned base buffer. */
+FieldClass154D20::~FieldClass154D20()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002723E0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272820);
+/**
+ * @brief Evaluate the cubic curve using its neighboring stored points.
+ * @param curve Curve owner containing the points and coefficients.
+ * @param position Input position.
+ * @return Curve value, or zero when fewer than two points are stored.
+ */
+extern "C" float func_00272820(FieldClass1514F8* curve, float position)
+{
+    s32 count = curve->unk00;
+    if (count < 2)
+    {
+        return 0.0f;
+    }
+    s32 lower = 0;
+    s32 upper = count - 1;
+    while (lower < upper)
+    {
+        s32 middle = (s32)((float)(lower + upper) / 2.0f);
+        if (curve->unk04[middle].x < position)
+        {
+            lower = middle + 1;
+        }
+        else
+        {
+            upper = middle;
+        }
+    }
+    if (lower > 0)
+    {
+        lower--;
+    }
+    FieldVec4B* point = &curve->unk04[lower];
+    float delta = position - point->x;
+    float width = point[1].x - point->x;
+    return point->y + delta * ((point[1].y - point->y) / width - width * (2.0f * point->z + point[1].z) +
+                              delta * (3.0f * point->z + delta * (point[1].z - point->z) / width));
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272950);
+/**
+ * @brief Append a component pair to the preallocated curve array.
+ * @param object Curve owner with space for another point.
+ * @param first First component.
+ * @param second Second component.
+ * @return Index of the appended point.
+ */
+extern "C" s32 func_00272950(FieldClass1514F8* object, float first, float second)
+{
+    object->unk04[object->unk00] = FieldVec4A(first, second, 0.0f, 1.0f);
+    object->unk00++;
+    return object->unk00 - 1;
+}
 
 void func_002729A0(void* object)
 {

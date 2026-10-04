@@ -3,6 +3,144 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_001DD3C0.h"
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001DED80.h"
+#endif
+
+#ifdef __cplusplus
+/** Partial vector-keyframe base with root table D_1595D0, derived directly from FieldClass14FF50. */
+class FieldClass1595D0 : public FieldClass14FF50
+{
+public:
+    /**
+     * @brief Release the track storage.
+     */
+    virtual ~FieldClass1595D0();
+    /**
+     * @brief Allocate storage for the requested keyframe count.
+     * @param count Requested keyframe count.
+     */
+    virtual void func_002B9320(s32 count);
+    /**
+     * @brief Bind an external keyframe array.
+     * @param count Keyframe count.
+     * @param entries External keyframe storage.
+     */
+    virtual void func_002B8CE0(s32 count, void* entries);
+    /**
+     * @brief Set the lower mode nibble.
+     * @param mode Mode value.
+     */
+    virtual void func_002B8D30(s32 mode);
+    /**
+     * @brief Set the upper mode nibble.
+     * @param mode Mode value.
+     */
+    virtual void func_002B8D90(s32 mode);
+    /**
+     * @brief Return the stored word at offset 0x40.
+     * @return Stored word.
+     */
+    virtual s32 func_002B8DF0() const;
+    /**
+     * @brief Append a vector keyframe.
+     * @param value Keyframe value.
+     * @param first Optional first auxiliary vector.
+     * @param second Optional second auxiliary vector.
+     * @param key Sort key.
+     * @return Append status.
+     */
+    virtual s32 func_002BB970(const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key);
+    /**
+     * @brief Run the default track hook.
+     */
+    virtual void func_001DF220();
+    /**
+     * @brief Replace an indexed vector keyframe.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param first Optional first auxiliary vector.
+     * @param second Optional second auxiliary vector.
+     * @return Replacement status.
+     */
+    virtual s32 func_002BB9A0(s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second);
+    /**
+     * @brief Insert an indexed vector keyframe.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param first Optional first auxiliary vector.
+     * @param second Optional second auxiliary vector.
+     * @return Insertion status.
+     */
+    virtual s32 func_002BB9D0(s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second);
+    /**
+     * @brief Read an indexed vector keyframe.
+     * @param index Keyframe index.
+     * @param key Receives the sort key.
+     * @param value Receives the value.
+     * @param first Receives the first auxiliary vector.
+     * @param second Receives the second auxiliary vector.
+     * @return Nonzero when the keyframe is available.
+     */
+    virtual s32 func_001DF2E0(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
+    /**
+     * @brief Add a vector keyframe through the track implementation.
+     * @param value Keyframe value.
+     * @param first Optional first auxiliary vector.
+     * @param second Optional second auxiliary vector.
+     * @param key Sort key.
+     */
+    virtual void func_002BBA00(const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key);
+    /**
+     * @brief Run the default update hook.
+     */
+    virtual void func_001DF300();
+    /**
+     * @brief Test whether the track contains the supplied key.
+     * @param key Key to find.
+     * @return Nonzero when the key exists.
+     */
+    virtual s32 func_002B8E60(float key) const;
+    /**
+     * @brief Return the difference between the endpoint vectors.
+     * @param output Receives the vector difference.
+     */
+    virtual void func_002B7CA0(FieldVec4B* output) const = 0;
+    /**
+     * @brief Wrap a key into the stored key range.
+     * @param key Key to wrap.
+     * @return Wrapped key.
+     */
+    virtual float func_002B8FE0(float key) const;
+    /**
+     * @brief Return the cached vector.
+     * @param output Receives the cached vector.
+     */
+    virtual void func_002B7C80(FieldVec4B* output) const = 0;
+    /**
+     * @brief Return the span between the first and last keys.
+     * @return Key span, or zero when fewer than two keys are stored.
+     */
+    virtual float func_002B8ED0() const;
+    /**
+     * @brief Evaluate the vector track at a key.
+     * @param key Evaluation key.
+     * @param output Receives the evaluated vector.
+     */
+    virtual void func_002B8F90(float key, FieldVec4B* output) const;
+    /**
+     * @brief Return the stored keyframe count.
+     * @return Keyframe count.
+     */
+    virtual s16 func_002B8E00() const;
+    /**
+     * @brief Return a pooled track or delete an ordinary track.
+     */
+    virtual void func_001DF230();
+};
+#endif
 
 typedef struct FieldByte60AE9E0 FieldByte60AE9E0;
 typedef struct FieldFloat4CAE9E0 FieldFloat4CAE9E0;

@@ -59,6 +59,51 @@ def symbol_addresses(path):
     return {m.group(1): int(m.group(2), 16) for m in SYMBOL_LINE.finditer(Path(path).read_text())}
 
 
+def symbol_aliases(path):
+    """Use Splat's last name for explicitly permitted same-address function aliases."""
+    groups = {}
+    for line in Path(path).read_text().splitlines():
+        match = SYMBOL_LINE.match(line)
+        if match and re.search(r'\btype:func\b', line):
+            allowed = bool(re.search(r'\ballow_duplicated:true\b', line, re.I))
+            groups.setdefault(int(match.group(2), 16), []).append((match.group(1), allowed))
+    return {name: entries[-1][0] for entries in groups.values()
+            if len(entries) > 1 and all(allowed for _, allowed in entries)
+            for name, _ in entries[:-1]}
+
+
+def normalize_symbol_aliases(data, aliases):
+    """Rename undefined imports only; preserve code, definitions and relocation indices."""
+    if not aliases:
+        return data
+    shoff = struct.unpack_from('<I', data, 32)[0]
+    stride, count = struct.unpack_from('<HH', data, 46)
+    out = bytearray(data)
+    for i in range(count):
+        table = struct.unpack_from('<10I', data, shoff + i * stride)
+        if table[1] != 2:
+            continue
+        strings_header = list(struct.unpack_from('<10I', data, shoff + table[6] * stride))
+        strings = bytearray(data[strings_header[4]:strings_header[4] + strings_header[5]])
+        changed = False
+        for offset in range(table[4], table[4] + table[5], table[9]):
+            label, _, _, info, _, index = struct.unpack_from('<IIIBBH', data, offset)
+            name = strings[label:].split(b'\0', 1)[0].decode()
+            if index == 0 and info >> 4 and name in aliases:
+                target = aliases[name].encode() + b'\0'
+                position = strings.find(target)
+                if position < 0:
+                    position = len(strings)
+                    strings.extend(target)
+                struct.pack_into('<I', out, offset, position)
+                changed = True
+        if changed:
+            strings_header[4], strings_header[5] = len(out), len(strings)
+            out.extend(strings)
+            struct.pack_into('<10I', out, shoff + table[6] * stride, *strings_header)
+    return bytes(out)
+
+
 def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, external=None):
     """Return ELF32 little-endian object bytes with .text headers sorted by function address.
 

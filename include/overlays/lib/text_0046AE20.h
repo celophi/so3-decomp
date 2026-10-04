@@ -31,6 +31,14 @@ void* func_00472EB0(void* object, void* entry);
  */
 void* func_00473940(void* object, const char* name);
 
+/**
+ * @brief Find a named table entry.
+ * @param object Object whose table is searched.
+ * @param name Name to search; null selects an unnamed entry.
+ * @return Matching entry handle, or null.
+ */
+void* func_00473390(void* object, const char* name);
+
 #ifdef __cplusplus
 }
 #endif

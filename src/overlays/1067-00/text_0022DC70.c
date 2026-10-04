@@ -220,7 +220,7 @@ s32 func_0022E170(FieldObject22E170* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022E1B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022E2D0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", __ct__16FieldClass152DF0FfUif);
 
 s32 func_0022E350(FieldObject22E170* object)
 {

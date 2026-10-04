@@ -65,7 +65,7 @@ segments:
       - [0x24EC0, cpp, text_00202240]
       - [0x2A200, cpp, text_00207580]
       - [0x2A770, cpp, text_00207AF0]
-      - [0x30620, c, text_0020D9A0]
+      - [0x30620, cpp, text_0020D9A0]
       - [0x31130, c, text_0020E4B0]
       - [0x32670, c, text_0020F9F0]
       - [0x351E0, c, text_00212560]
@@ -87,7 +87,7 @@ segments:
       - [0x86330, c, text_002636B0]
       - [0x910E0, c, text_0026E460]
       - [0x91A90, c, text_0026EE10]
-      - [0x94FE0, c, text_00272360]
+      - [0x94FE0, cpp, text_00272360]
       - [0x963A0, cpp, text_00273720]
       - [0x99150, cpp, text_002764D0]
       - [0xA0000, c, text_0027D380]
@@ -123,6 +123,7 @@ segments:
       - [0x123D80, databin, data]
       - [0x13D400, rodatabin, rodata_31A780]
       - [0x13D440, .rodata, text_001E6C50]
+      - [0x13D45E, pad, rodata_align]
       - [0x13D460, rodatabin, rodata_31A7E0]
   - name: init
     type: code

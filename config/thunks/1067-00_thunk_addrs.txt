@@ -9,3 +9,9 @@
 @20@func_001DDB30__16FieldClass150120FPv = 0x001E6C40;
 // FieldClass14FFB0 (vtable D_14FFB0); kept copy ends text_001DED80.
 @24@func_001DDB30__16FieldClass14FFB0FPv = 0x001E1530;
+// FieldClass1501A0 secondary interface at offset 0x18.
+@24@func_001DDB30__16FieldClass1501A0FPv = 0x001E6C20;
+@24@func_001DDB30__16FieldClass150150FPv = 0x001E6C30;
+
+@16@__dt__16FieldClass151640Fv = 0x0020E490;
+@16@func_001DD730__16FieldClass151640Fv = 0x0020E4A0;

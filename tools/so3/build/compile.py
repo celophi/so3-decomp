@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, verify_compiler
-from tools.so3.build.text_order import merge_rodata_sections, order_text_sections, symbol_addresses, unit_range
+from tools.so3.build.text_order import merge_rodata_sections, normalize_symbol_aliases, order_text_sections, symbol_addresses, symbol_aliases, unit_range
 
 
 def unit_flags(config, unit):
@@ -112,6 +112,9 @@ def main():
                 overlay_range(unit), reorder=deferred(selected), external=external_copies(unit)))
         # One .rodata section, as in the original, so objdiff pairs each jump table.
         temporary.write_bytes(merge_rodata_sections(temporary.read_bytes()))
+        aliases_path = Path('config/symbols') / f'{module_of(unit)}_symbol_addrs.txt'
+        if aliases_path.is_file():
+            temporary.write_bytes(normalize_symbol_aliases(temporary.read_bytes(), symbol_aliases(aliases_path)))
         temporary.replace(args.output)
     finally:
         temporary.unlink(missing_ok=True)

@@ -6,18 +6,7 @@
 #include "overlays/1067-00/text_0022DC70.h"
 
 
-typedef struct FieldObject220150
-{
-    u8 unk00[0x5FC];
-    float value;
-    u8 unk600[0xD2];
-    u8 unk6D2_0_5 : 6;
-    u8 unk6D2_6 : 1;
-    u8 unk6D2_7 : 1;
-    u8 unk6D3_0_1 : 2;
-    u8 unk6D3_2 : 1;
-    u8 unk6D3_3_7 : 5;
-} FieldObject220150;
+
 
 typedef struct FieldContextIndex228E0
 {
@@ -415,7 +404,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022B1
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022B1A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022B2F0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", __dt__16FieldClass178A90Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022B3D0);
 

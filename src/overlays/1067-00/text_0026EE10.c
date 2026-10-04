@@ -1,31 +1,13 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_0045AD10.h"
 #include "overlays/1067-00/text_001ED7E0_callbacks.h"
 #include "overlays/1067-00/text_0026EE10.h"
 
 
-typedef struct FieldContext26FF70
-{
-    u8 unk00[0x8C];
-    u32 value;
-} FieldContext26FF70;
 
-struct FieldRoot26FF70
-{
-    u8 unk00[0x7C];
-    void* unk7C;
-    u8 unk80[0x28];
-    void* unkA8;
-    u8 unkAC[4];
-    void* unkB0;
-    u8 unkB4[0x24];
-    FieldContext26FF70* unkD8;
-};
-
-extern void func_45B210(void* object, void* value);
 extern void func_45B110(void* object, void* value);
-extern void func_0020DDD0(void* object, FieldContext26FF70* context);
 
 typedef struct FieldWords270E90
 {
@@ -110,12 +92,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026FF
 
 void func_0026FF70(FieldRoot26FF70* root)
 {
-    void* object = root->unkA8;
+    struct FieldClass151640* object = root->unkA8;
     FieldContext26FF70* context;
-    func_45B210(object, root->unkB0);
+    func_0045B210(object, root->unkB0);
     func_45B110(object, root->unk7C);
     context = root->unkD8;
-    if (context->value != 0)
+    if (context->unk8c != 0)
     {
         func_0020DDD0(object, context);
     }

@@ -1,38 +1,18 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
+#include "main/resident_001001E0.h"
+#include "main/resident_0012F0F8.h"
+#include "overlays/lib/text_00429B00.h"
 #include "sdk/main/syscalls_00121940.h"
 #include "overlays/1067-00/text_001DED80.h"
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/1067-00/text_00202240.h"
+#include "overlays/1067-00/text_00207AF0.h"
 #include "overlays/1067-00/text_002DBC50.h"
+#include "overlays/1067-00/text_0021FB80.h"
+#include "overlays/lib/text_004AB8B0.h"
 
-/** Partial owner of a keyframe track at offset 0x90 (the class with vtable D_15B890). */
-struct FieldTrackOwner15B890
-{
-    u8 unk00[0x90];
-    FieldClass150090* unk90;
-};
-
-/**
- * @brief Run func_002DDA70 on the owner, then destroy and clear its keyframe track at offset 0x90.
- * @param object Owner; virtual slot 15 of D_15B890.
- */
-extern "C" void func_001DF040(FieldTrackOwner15B890* object);
-
-extern "C" void func_433AA0();
-extern "C" s32 func_433880(void*, s32);
-extern "C" s32 func_139700(s32, void*);
 extern "C" s32 func_0023AEB0(FieldClass1530D0* owner, FieldClass150070* loader);
-
-/**
- * @brief Read 0x80 bytes into buffer, retrying up to eight times while the node allows it.
- * @param owner Record loader whose word at offset 0x10 points to its FieldClass1530D0 list.
- * @param buffer Destination passed to the read.
- * @param mode Nonzero to read through func_433AA0/func_433880, zero for func_139700.
- * @return The first nonzero read result, or 0 once the node's word at 0x20 is 1, func_0023AEB0
- *         fails or eight reads fail. Same body as func_001F9A80 in text_001ED7E0.
- */
-extern "C" s32 func_001E1100(FieldClass150070* owner, void* buffer, s32 mode);
 
 bool func_001DED80(const FieldFloatGateState7C* object)
 {
@@ -102,23 +82,50 @@ void func_001DEF00(FieldFlaggedListObject* list)
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DEF70);
-
-void func_001DF040(FieldTrackOwner15B890* object)
+/**
+ * @brief Release listed objects, optionally preserving the focus object and clearing its track.
+ * @param list Circular list sentinel; traversal also stops at a null link.
+ * @param preserve_focus Nonzero to clear the focus object's track instead of releasing the object.
+ */
+void func_001DEF70(FieldClass150060* list, s32 preserve_focus)
 {
-    func_002DDA70(object);
-    if (object->unk90)
+    FieldClass150060* node = list->unk08;
+    FieldClass151510* focus = static_cast<FieldClass151510*>(D_001B6430->context->unk18);
+    for (;;)
     {
-        object->unk90->func_001DF230();
-        object->unk90 = 0;
+        FieldClass150060* current = node;
+        if (!node || list == node)
+        {
+            break;
+        }
+        node = node->unk08;
+        if (!preserve_focus || focus != current)
+        {
+            func_004D65C0(current);
+            static_cast<FieldClass150070*>(current)->func_001DD7B0();
+        }
+        else if (focus->unk144)
+        {
+            focus->unk144->func_002DDA70();
+        }
     }
 }
 
-// Deleting destructor; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF090);
+/** @brief Clear the listed nodes and release both owned tracks. */
+void FieldClass15B890::func_002DDA70()
+{
+    FieldClass15B950::func_002DDA70();
+    if (unk90)
+    {
+        unk90->func_001DF230();
+        unk90 = 0;
+    }
+}
+/** @brief Destroy the keyframe object. */
+FieldClass177C70::~FieldClass177C70()
+{
+}
 
-// 99.94%: the FieldClass1DD400 base sits at 0x90, but FieldClass150070 ends at 0x8C
-// and no vtable is stored for anything in between (working/matching/ctor-layout).
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", __ct__16FieldClass14FE30Fv);
 
 
@@ -127,7 +134,7 @@ void func_001DF220(void* object)
 }
 
 // Virtual call; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF230);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DF230__16FieldClass150090Fv);
 
 
 s32 func_001DF2B0(const void* object)
@@ -362,7 +369,21 @@ void func_001DFAE0(FieldEntryArrayObject* object)
     object->unk2b_1 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DFB70);
+/**
+ * @brief Replace the owned entry array and record its capacity, or zero capacity on failure.
+ * @param count Number of entries to allocate.
+ */
+void FieldClass150090::func_001DFB70(s32 count)
+{
+    unk2b_1 = 0;
+    delete[] unk04;
+    unk04 = new(0) FieldArrayEntry10[count];
+    unk22 = count;
+    if (!unk04)
+    {
+        unk22 = 0;
+    }
+}
 
 void func_001DFC10(FieldEntryArrayObject* object, s32 value)
 {
@@ -454,8 +475,23 @@ float func_001DFDE0(const FieldEntryArrayObject* object, float value)
     return value;
 }
 
-// Loop load placement and register allocation not matched yet.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001DFE70);
+/**
+ * @brief Find the first entry with the requested sort value.
+ * @param key Sort value to find.
+ * @return The entry's first component, or zero when no entry matches.
+ */
+float FieldClass150090::func_001DFE70(float key)
+{
+    for (s32 index = 0; index < unk20; index++)
+    {
+        if (unk04[index].unk00 == key)
+        {
+            FieldArrayEntry10* entry = unk04 + index;
+            return entry->unk04;
+        }
+    }
+    return 0.0f;
+}
 
 float func_001DFED0(const FieldEntryArrayObject* object)
 {
@@ -524,10 +560,10 @@ s32 func_001DFFC0(const FieldEntryArrayObject* object, s32 index, float* key, fl
 void FieldClass14FEB0::func_001E0080(const float* x, const float* y, const float* z, float key)
 {
     func_001DFC10(6);
-    unk0c = *x;
-    unk10 = *y;
-    unk14 = *z;
-    unk08 = key;
+    unk08.unk04 = *x;
+    unk08.unk08 = *y;
+    unk08.unk0c = *z;
+    unk08.unk00 = key;
 }
 
 s32 func_001E0100(FieldEntryArrayObject* object, s32 index, float key, const float* x, const float* y, const float* z)
@@ -603,11 +639,178 @@ s32 func_001E02C0(FieldEntryArrayObject* object, const float* x, const float* y,
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E0380);
+/**
+ * @brief Evaluate the track with cached interpolation, wrapping and endpoint extrapolation.
+ * @param key Sort value.
+ * @return Evaluated value; updates the cached value and its scaled change.
+ */
+float FieldClass14FEB0::func_001E0380(float key)
+{
+    s32 lower;
+    s32 upper;
+    float wrapped_key;
+    u8 extrapolate;
+    float result;
+    if (!unk04 || !unk20)
+    {
+        return 0.0f;
+    }
+    if (unk24 >= unk22)
+    {
+        unk24 = 0;
+    }
+    if (unk20 == 1 && (!(key < unk04[0].unk00) || unk2a_0_3 != 6))
+    {
+        return unk04[0].unk04;
+    }
+    extrapolate = 0;
+    if (key < unk04[0].unk00 && unk2a_0_3 == 6)
+    {
+        upper = 0;
+        wrapped_key = key;
+        lower = -1;
+    }
+    else
+    {
+        wrapped_key = func_001E1230(reinterpret_cast<FieldEntryArrayObject*>(this), key);
+        if (unk18)
+        {
+            if (unk2a_0_3 == 0 && unk18 < 0)
+            {
+                return unk04[0].unk04;
+            }
+            if (unk2a_4_7 == 0 && unk18 > 0)
+            {
+                return unk04[unk20 - 1].unk04;
+            }
+        }
+        extrapolate = func_001E1310(reinterpret_cast<FieldEntryArrayObject*>(this), wrapped_key, &lower, &upper);
+        if (extrapolate)
+        {
+            wrapped_key = key;
+        }
+    }
+    if (!extrapolate)
+    {
+        if (unk26 != lower || unk28 != upper)
+        {
+            unk26 = lower;
+            unk28 = upper;
+            FieldArrayEntry10* first = lower >= 0 ? unk04 + lower : &unk08;
+            s32 last = unk20 - 1;
+            if (upper == last && ((!(key < unk04[0].unk00) && unk2a_4_7 == 2) ||
+                                (key < unk04[0].unk00 && unk2a_0_3 == 2)))
+            {
+                FieldArrayEntry10* entries = unk04;
+                unk2c.func_001E11E0(&first->unk04, &first->unk0c, &entries[0].unk04, &entries[0].unk08,
+                                   first->unk00, entries[upper].unk00);
+            }
+            else if (lower < upper)
+            {
+                FieldArrayEntry10* second = unk04 + upper;
+                unk2c.func_001E11E0(&first->unk04, &first->unk0c, &second->unk04, &second->unk08, first->unk00, second->unk00);
+            }
+            else
+            {
+                FieldArrayEntry10* second = unk04 + last;
+                unk2c.func_001E11E0(&first->unk04, &first->unk0c, &second->unk04, &second->unk08, first->unk00, second->unk00);
+            }
+        }
+        result = func_4B16C0(&unk2c, wrapped_key);
+        if (unk18 && ((unk2a_0_3 == 5 && unk18 < 0) || (unk2a_4_7 == 5 && unk18 > 0)))
+        {
+            float delta = unk04[unk20 - 1].unk04 - unk04[0].unk04;
+            result += delta * unk18;
+        }
+    }
+    else if (wrapped_key < key)
+    {
+        s32 count = unk20;
+        FieldArrayEntry10* entries = unk04;
+        FieldArrayEntry10* last_entry = entries + (count - 1);
+        FieldArrayEntry10* previous_entry = entries + (count - 2);
+        float last_key = last_entry->unk00;
+        float previous_key = previous_entry->unk00;
+        float slope = entries[count - 1].unk08 / (last_key - previous_key);
+        result = entries[count - 1].unk04 + slope * (key - last_key);
+    }
+    else
+    {
+        FieldArrayEntry10* entries = unk04;
+        float first_key = entries[0].unk00;
+        result = entries[0].unk04 + (entries[0].unk0c / (entries[1].unk00 - first_key)) * (key - first_key);
+    }
+    unk50 = D_001B668C * (result - unk4c);
+    unk4c = result;
+    return result;
+}
 
-// 93.70%: control flow and loads match; only callee-saved register colouring
-// differs (working/matching/func_001E07A0/1067-00/notes.md).
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E07A0__16FieldClass14FFB0Fv);
+/**
+ * @brief Finish or cancel pending record requests and report their remaining state.
+ * @return One when cancelled storage remains, two when requests remain, or zero otherwise.
+ */
+s32 FieldClass14FFB0::func_001E07A0()
+{
+    s32 result = 0;
+    FieldClass150040* records = unk1c;
+    switch (unk15)
+    {
+    case 1:
+    {
+        for (s32 i = 0; i < unk2d; i++)
+        {
+            const FieldClass1530C0* record = records + i;
+            if (!record->unk08_0)
+            {
+                u32 word = record->unk00;
+                u32 size = record->rounded_unk04();
+                func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+            }
+        }
+        unk15 = 10;
+        break;
+    }
+    case 10:
+        break;
+    case 9:
+        if (field_records_blocked())
+        {
+            break;
+        }
+    default:
+    {
+        for (s32 i = 0; i < unk2d; i++)
+        {
+            FieldClass150040* record = records + i;
+            if (record->rounded_unk04())
+            {
+                result = 1;
+                break;
+            }
+        }
+        for (s32 i = 0; i < unk24; i++)
+        {
+            records[i].func_0023AD00();
+        }
+        unk15 = 0;
+        unk2e = 0;
+        break;
+    }
+    }
+    if (result != 1)
+    {
+        for (s32 i = 0; i < unk2d; i++)
+        {
+            FieldClass150040* record = records + i;
+            if (record->rounded_unk04())
+            {
+                result = 2;
+                break;
+            }
+        }
+    }
+    return result;
+}
 
 void FieldClass14FFB0::func_001E0A50(s32 flag)
 {
@@ -618,10 +821,10 @@ void FieldClass14FFB0::func_001E0A50(s32 flag)
         {
             func_00121FE0(0);
             FieldClass150040* record = &unk1c[unk2e];
-            s32 size = func_001E1100(this, (void*)((record->unk00 + 0x7FF) & ~0x7FF), 1);
-            if (size)
+            void* buffer = func_001E1100(this, (record->unk00 + 0x7FF) & ~0x7FF, 1);
+            if (buffer)
             {
-                record->unk04 = size;
+                record->unk04 = (u32)buffer;
                 record->unk08_0 = 0;
                 func_001DF3E0();
             }
@@ -753,26 +956,33 @@ void FieldClass14FFB0::func_001E0F60()
     unk30_1 = 0;
 }
 
-s32 func_001E1100(FieldClass150070* owner, void* buffer, s32 mode)
+/**
+ * @brief Allocate an aligned buffer with up to eight recovery attempts.
+ * @param owner Loader attached to the resource list.
+ * @param size Requested buffer size in bytes.
+ * @param mode Nonzero for the library allocator, zero for the resident allocator.
+ * @return Allocated buffer, or null when allocation or recovery fails.
+ */
+void* func_001E1100(FieldClass150070* owner, u32 size, s32 mode)
 {
-    FieldClass1530D0* node = static_cast<FieldClass1530D0*>(static_cast<LibClass178DD0*>(owner->unk10));
-    for (s32 i = 0; i < 8; i++)
+    FieldClass1530D0* manager = static_cast<FieldClass1530D0*>(static_cast<LibClass178DD0*>(owner->unk10));
+    for (s32 attempt = 0; attempt < 8; attempt++)
     {
-        s32 result;
+        void* result;
         if (mode)
         {
-            func_433AA0();
-            result = func_433880(buffer, 0x80);
+            func_00433AA0();
+            result = func_00433880(size, 128);
         }
         else
         {
-            result = func_139700(0x80, buffer);
+            result = func_00139700(128, size);
         }
         if (result)
         {
             return result;
         }
-        if (node->LibClass178DD0::unk0c == 1 || !func_0023AEB0(node, owner))
+        if (manager->LibClass178DD0::unk0c == 1 || !func_0023AEB0(manager, owner))
         {
             break;
         }
@@ -821,7 +1031,6 @@ float func_001E1230(FieldEntryArrayObject* object, float key)
     return key;
 }
 
-// Index loop strength reduction not matched yet.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1310);
 
 s32 FieldClass150090::func_001E1470(const float* x, const float* y, const float* z, float key)

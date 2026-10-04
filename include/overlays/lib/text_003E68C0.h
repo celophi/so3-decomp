@@ -4,6 +4,13 @@
 #include "types.h"
 
 #ifdef __cplusplus
+/** Four-float Lib vector with a packed representation for full-width transfers. */
+union LibVector4
+{
+    unsigned __int128 packed;
+    float components[4];
+} __attribute__((aligned(16)));
+
 /**
  * Partial 0x794-byte Lib object. Its constructor picks a 16-byte aligned
  * buffer inside the object (pointer at offset 0x790), clears 0x680 bytes of it
@@ -60,6 +67,113 @@ public:
 
     /** @brief Virtual slot 4. */
     virtual void func_003EEBE0();
+};
+
+/** Position transform, with root vtable D_171EC0. */
+class LibClass171EC0 : public LibClass171EA0
+{
+public:
+    /** @brief Destroy the transform. */
+    virtual ~LibClass171EC0();
+    /**
+     * @brief Update transform components.
+     * @param x Scalar component.
+     * @param y Scalar component.
+     * @param z Scalar component.
+     */
+    virtual void func_003EF790(float x, float y, float z);
+    /**
+     * @brief Update transform components.
+     * @param value Vector components.
+     */
+    virtual void func_003EF780(const LibVector4* value);
+    /**
+     * @brief Update transform components.
+     * @param value Vector components.
+     */
+    virtual void func_003EF770(const LibVector4* value);
+    u8 unk04[0x1C];
+    LibVector4 unk20;
+};
+/** Position, quaternion and scale transform, with root vtable D_171EF0. */
+class LibClass171EF0 : public LibClass171EC0
+{
+public:
+    /** @brief Destroy the transform. */
+    virtual ~LibClass171EF0();
+    /**
+     * @brief Update transform components.
+     * @param x Scalar component.
+     * @param y Scalar component.
+     * @param z Scalar component.
+     */
+    virtual void func_003EF790(float x, float y, float z);
+    /**
+     * @brief Update transform components.
+     * @param value Vector components.
+     */
+    virtual void func_003EF780(const LibVector4* value);
+    /**
+     * @brief Update transform components.
+     * @param value Vector components.
+     */
+    virtual void func_003EF770(const LibVector4* value);
+    /**
+     * @brief Update transform components.
+     * @param x Scalar component.
+     * @param y Scalar component.
+     * @param z Scalar component.
+     */
+    virtual void func_003EEF90(float x, float y, float z);
+    /**
+     * @brief Update transform components.
+     * @param value Vector components.
+     */
+    virtual void func_003EEF60(const LibVector4* value);
+    /**
+     * @brief Update transform components.
+     * @param value Vector components.
+     */
+    virtual void func_003EEF30(const LibVector4* value);
+    /**
+     * @brief Update transform components.
+     * @param value Vector components.
+     */
+    virtual void func_003EEF10(const LibVector4* value);
+    /**
+     * @brief Update transform components.
+     * @param value Vector components.
+     */
+    virtual void func_003EEEF0(const LibVector4* value);
+    /**
+     * @brief Update transform components.
+     * @param x Scalar component.
+     * @param y Scalar component.
+     * @param z Scalar component.
+     * @param w Scalar component.
+     */
+    virtual void func_003EEED0(float x, float y, float z, float w);
+    /**
+     * @brief Update transform components.
+     * @param x Scalar component.
+     * @param y Scalar component.
+     * @param z Scalar component.
+     */
+    virtual void func_003EF010(float x, float y, float z);
+    /**
+     * @brief Update transform components.
+     * @param value Vector components.
+     */
+    virtual void func_003EEFF0(const LibVector4* value);
+    /**
+     * @brief Update transform components.
+     * @param value Vector components.
+     */
+    virtual void func_003EEFD0(const LibVector4* value);
+    LibVector4 unk30;
+    LibVector4 unk40;
+    u8 unk50;
+    u8 unk51;
 };
 #endif
 

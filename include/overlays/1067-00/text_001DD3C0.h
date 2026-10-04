@@ -4,6 +4,7 @@
 #include "types.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_001FD860.h"
+#include "overlays/1067-00/field_list.h"
 #include "overlays/1067-00/text_0022DC70.h"
 
 /** Partial object linked into a circular list, with flag and state words. */
@@ -35,6 +36,15 @@ public:
     /** @brief Leave the components uninitialized. */
     FieldVec4A()
     {
+    }
+
+    /**
+     * @brief Copy all four components.
+     * @param other Vector to copy.
+     */
+    FieldVec4A(const FieldVec4A& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
     }
 
     /**
@@ -77,8 +87,10 @@ public:
 class FieldVec4B
 {
 public:
-    /** @brief Leave the components uninitialized; defined out of line in text_001E6C50. */
-    FieldVec4B();
+    /** @brief Leave the components uninitialized. */
+    FieldVec4B()
+    {
+    }
 
     /**
      * @brief Copy all four components.
@@ -343,31 +355,6 @@ public:
     virtual void func_001DF360();
 
     LibClass178EA0 unkA0;
-};
-
-/**
- * Lib list class with vtable D_1502A0 in main data. It adds no data to
- * LibClass178DD0; its sentinel is the list's first 12 bytes (unk00).
- */
-class FieldClass1502A0 : public LibClass178DD0
-{
-public:
-    /** @brief Destroy the object. */
-    virtual ~FieldClass1502A0()
-    {
-    }
-
-    /**
-     * @brief Store the attached object pointer at offset 0x70.
-     * @param attached Object pointer to store.
-     */
-    virtual void func_004295B0(void* attached);
-
-    /** @brief Default handler that performs no work. */
-    virtual void func_004295C0();
-
-    /** @brief Detach and delete every listed object; traversal stops on return to the sentinel or at a null link. */
-    virtual void func_001DD730();
 };
 
 /**

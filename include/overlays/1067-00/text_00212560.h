@@ -2,6 +2,25 @@
 #define SO3_OVERLAYS_1067_00_TEXT_00212560_H
 
 #include "types.h"
+#ifdef __cplusplus
+#include "overlays/1067-00/text_00200710.h"
+
+/** Script context with an inherited object list and command dispatch. */
+class FieldClass151D40 : public FieldClass150DC0, public FieldClass1502A0
+{
+public:
+    /** @brief Destroy the object list and inherited script state. */
+    virtual ~FieldClass151D40();
+    /** @brief Reset the script command state. */
+    virtual void func_00217AD0();
+    /** @brief Select a command and its event packet. @param offset Script byte offset. @param packet Packed event value. */
+    virtual void func_0021DC60(u32 offset, u32 packet);
+    u8 unk544[0x5C];
+};
+#endif
+
+
+typedef struct ResidentContextObject38 ResidentContextObject38;
 
 /** Opaque script receiver using the table at 0x151D40. */
 typedef struct FieldScriptObject151D40 FieldScriptObject151D40;
@@ -17,6 +36,14 @@ typedef struct FieldScriptRecord217590
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Test the resident state for a key.
+ * @param object Resident state receiver.
+ * @param key Key tested after conversion to a halfword.
+ * @return Nonzero when the key is set.
+ */
+s32 func_00217600(ResidentContextObject38* object, s32 key);
 
 /**
  * @brief Set a byte on each attached object in the receiver's pointer array.

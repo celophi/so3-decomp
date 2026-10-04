@@ -13,12 +13,14 @@ typedef struct FieldBufferSlots
     void* unk11c[3];
     void* unk128[3];
     s32 unk134[3];
+    u8 unk140;
 } FieldBufferSlots;
 
 /** Partial header of a resource record linked by a byte offset. */
 typedef struct FieldResourceRecord
 {
-    u8 unk00[0xC];
+    u8 unk00[8];
+    u32 unk08;
     u32 next_offset;
 } FieldResourceRecord;
 

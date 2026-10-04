@@ -13,6 +13,22 @@
     {
       "source": "src/overlays/1067-00/text_001E6C50.cpp",
       "flags": ["-inline", "level=5"]
+    },
+    {
+      "source": "src/overlays/1067-00/text_001E1590.cpp",
+      "flags": ["-inline", "level=5"]
+    },
+    {
+      "source": "src/overlays/1067-00/text_001ED7E0.cpp",
+      "flags": ["-inline", "level=6"]
+    },
+    {
+      "source": "src/overlays/1067-00/text_00207AF0.cpp",
+      "flags": ["-inline", "level=5"]
+    },
+    {
+      "source": "src/overlays/1067-00/text_0020D9A0.cpp",
+      "flags": ["-inline", "level=5"]
     }
   ],
   "source": "tools/so3/build/probes/main.c",

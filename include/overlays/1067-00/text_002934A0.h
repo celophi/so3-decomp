@@ -2,8 +2,25 @@
 #define SO3_OVERLAYS_1067_00_TEXT_002934A0_H
 
 #include "types.h"
+#include "overlays/1067-00/curve.h"
 
 typedef struct FieldObject1573D0 FieldObject1573D0;
+
+/** Partial curve owner with transition values and state bits. */
+struct FieldObject1573D0
+{
+    u8 pad[0x14];
+    FieldClass1514F8 unk14;
+    float unk20;
+    float unk24;
+    float unk28;
+    float unk2c;
+    float unk30;
+    float unk34;
+    u8 unk38_0 : 1;
+    u8 unk38_1 : 1;
+    u8 unk38_2_7 : 6;
+};
 
 #ifdef __cplusplus
 extern "C" {
