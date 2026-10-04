@@ -177,6 +177,293 @@ typedef struct ItemCreationPairOwner
 } ItemCreationPairOwner;
 
 #ifdef __cplusplus
+/** Partial interface of Field's window base, primary vtable 0x15AE70 (destructor in Field). */
+class FieldClass15AE70
+{
+public:
+    /** Construct the window base and its members (out of line in Field). */
+    FieldClass15AE70();
+    /** Destroy the window base. */
+    virtual ~FieldClass15AE70();
+    // Placeholder virtuals in their vtable order (byte offset in the name); only
+    // their positions are known.
+    virtual void func_slot0c();
+    virtual void func_slot10();
+    virtual void func_slot14();
+    virtual void func_slot18();
+    virtual void func_slot1c();
+    virtual void func_slot20();
+    virtual void func_slot24();
+    virtual void func_slot28();
+    virtual void func_slot2c();
+    virtual void func_slot30();
+    virtual void func_slot34();
+    virtual void func_slot38();
+    virtual void func_slot3c();
+    virtual void func_slot40();
+    virtual void func_slot44();
+    virtual void func_slot48();
+    virtual void func_slot4c();
+    virtual void func_slot50();
+    virtual void func_slot54();
+    virtual void func_slot58();
+    virtual void func_slot5c();
+    virtual void func_slot60();
+    virtual void func_slot64();
+    virtual void func_slot68();
+    virtual void func_slot6c();
+    virtual void func_slot70();
+    virtual void func_slot74();
+    virtual void func_slot78();
+    virtual void func_slot7c();
+    virtual void func_slot80();
+    virtual void func_slot84();
+    virtual void func_slot88();
+    virtual void func_slot8c();
+    virtual void func_slot90();
+    virtual void func_slot94();
+    virtual void func_slot98();
+    virtual void func_slot9c();
+    virtual void func_slota0();
+    virtual void func_slota4();
+    virtual void func_slota8();
+    virtual void func_slotac();
+    u8 unk04[0xA4];
+};
+
+/** Partial item creation window with primary vtable at 0x186870. */
+class ItemCreationClass186870 : public FieldClass15AE70
+{
+public:
+    /** Destroy the window through Field's window base. */
+    virtual ~ItemCreationClass186870();
+};
+
+/** Three cleared words of an item creation window record. */
+typedef struct ItemCreationRecord128
+{
+    u32 unk00;
+    u32 unk04;
+    u32 unk08;
+} ItemCreationRecord128;
+
+/** Partial item creation window with primary vtable at 0x186970. */
+class ItemCreationClass186970 : public FieldClass15AE70
+{
+public:
+    /** Construct the window with its fields and two nine-word arrays cleared. */
+    ItemCreationClass186970();
+    /** Destroy the window through Field's window base. */
+    virtual ~ItemCreationClass186970();
+    u32 unka8;
+    u32 unkac;
+    u32 unkb0;
+    u32 unkb4;
+    u32 unkb8[9];
+    u32 unkdc[9];
+    u8 unk100;
+    u8 unk101;
+    u16 unk102;
+};
+
+/** Partial item creation window with primary vtable at 0x186A70. */
+class ItemCreationClass186A70 : public FieldClass15AE70
+{
+public:
+    /** Construct the window with its sixteen words cleared. */
+    ItemCreationClass186A70();
+    /** Destroy the window through Field's window base. */
+    virtual ~ItemCreationClass186A70();
+    u32 unka8;
+    u32 unkac;
+    u32 unkb0;
+    u32 unkb4;
+    u32 unkb8;
+    u32 unkbc;
+    u32 unkc0;
+    u32 unkc4;
+    u32 unkc8;
+    u32 unkcc;
+    u32 unkd0;
+    u32 unkd4;
+    u32 unkd8;
+    u32 unkdc;
+    u32 unke0;
+    u32 unke4;
+};
+
+/** Partial item creation window with primary vtable at 0x186DB0. */
+class ItemCreationClass186DB0 : public FieldClass15AE70
+{
+public:
+    /** Construct the window, keeping the supplied object. */
+    ItemCreationClass186DB0(void* object);
+    /** Destroy the window through Field's window base. */
+    virtual ~ItemCreationClass186DB0();
+    void* unka8;
+    u32 unkac;
+    u32 unkb0;
+    u16 unkb4;
+    u8 unkb6[2];
+    u32 unkb8;
+    u32 unkbc;
+    u32 unkc0;
+    u32 unkc4;
+    u32 unkc8[6];
+    u32 unke0[6];
+    u8 unkf8[4];
+    u32 unkfc[4];
+    u8 unk10c[0x44];
+    u32 unk150;
+};
+
+/** Partial item creation window with primary vtable at 0x186EB0. */
+class ItemCreationClass186EB0 : public FieldClass15AE70
+{
+public:
+    /** Construct the window, keeping the supplied object. */
+    ItemCreationClass186EB0(void* object);
+    /** Destroy the window through Field's window base. */
+    virtual ~ItemCreationClass186EB0();
+    u32 unka8;
+    u8 unkac;
+    u8 unkad[0x3];
+    u32 unkb0;
+    u32 unkb4;
+    u32 unkb8;
+    u32 unkbc;
+    u32 unkc0;
+    u32 unkc4;
+    u32 unkc8;
+    u32 unkcc;
+    u32 unkd0;
+    u8 unkd4;
+    u8 unkd5[0x3];
+    void* unkd8;
+    u32 unkdc;
+    u32 unke0;
+};
+
+/** Partial item creation window with primary vtable at 0x186FB0. */
+class ItemCreationClass186FB0 : public FieldClass15AE70
+{
+public:
+    /** Construct the window, keeping the supplied object. */
+    ItemCreationClass186FB0(void* object);
+    /** Destroy the window through Field's window base. */
+    virtual ~ItemCreationClass186FB0();
+    void* unka8;
+    u32 unkac;
+    u32 unkb0;
+    u32 unkb4;
+    u32 unkb8;
+    u32 unkbc;
+    u32 unkc0;
+    u32 unkc4;
+    u32 unkc8;
+    u32 unkcc;
+    u32 unkd0;
+    u32 unkd4;
+    u32 unkd8;
+    u8 unkdc;
+    u8 unkdd[0xB];
+    u16 unke8;
+};
+
+/** Partial item creation window with primary vtable at 0x1874B0. */
+class ItemCreationClass1874B0 : public FieldClass15AE70
+{
+public:
+    /** Destroy the window through Field's window base. */
+    virtual ~ItemCreationClass1874B0();
+};
+
+/** Partial item creation window with primary vtable at 0x1875B0. */
+class ItemCreationClass1875B0 : public FieldClass15AE70
+{
+public:
+    /** Destroy the window through Field's window base. */
+    virtual ~ItemCreationClass1875B0();
+};
+
+/** Partial item creation window with primary vtable at 0x1870B0. */
+class ItemCreationClass1870B0 : public FieldClass15AE70
+{
+public:
+    /** Destroy the window through Field's window base. */
+    virtual ~ItemCreationClass1870B0();
+    /** Call the virtual at 0xa0. */
+    virtual void func_slot68();
+    /** Call the virtual at 0xa4. */
+    virtual void func_slot6c();
+    /** Call the virtual at 0xa8. */
+    virtual void func_slot70();
+    /** Call the virtual at 0xac. */
+    virtual void func_slot74();
+};
+
+/** Partial item creation window with primary vtable at 0x1872B0. */
+class ItemCreationClass1872B0 : public FieldClass15AE70
+{
+public:
+    /** Construct the window with its fields and arrays cleared. */
+    ItemCreationClass1872B0();
+    /** Destroy the window through Field's window base. */
+    virtual ~ItemCreationClass1872B0();
+    u32 unka8;
+    u8 unkac;
+    u8 unkad[3];
+    u32 unkb0[8];
+    u8 unkd0[8];
+    u16 unkd8;
+    u8 unkda[2];
+    u32 unkdc;
+    u32 unke0;
+    u32 unke4;
+    u32 unke8[9];
+    u8 unk10c;
+    u8 unk10d;
+    u8 unk10e[0xE];
+    u32 unk11c;
+    u32 unk120;
+};
+
+/** Partial item creation window with primary vtable at 0x1873B0. */
+class ItemCreationClass1873B0 : public FieldClass15AE70
+{
+public:
+    /** Construct the window with its arrays and records cleared. */
+    ItemCreationClass1873B0();
+    /** Destroy the window and the object it owns. */
+    virtual ~ItemCreationClass1873B0();
+    u32 unka8[9];
+    u32 unkcc[14];
+    u32 unk104[7];
+    u32 unk120;
+    u8 unk124;
+    u8 unk125;
+    u8 unk126[2];
+    ItemCreationRecord128 unk128[3];
+};
+
+/** Partial item creation window with primary vtable at 0x1871B0. */
+class ItemCreationClass1871B0 : public FieldClass15AE70
+{
+public:
+    /** Destroy the window through Field's window base. */
+    virtual ~ItemCreationClass1871B0();
+    /** Call the virtual at 0xa0. */
+    virtual void func_slot68();
+    /** Call the virtual at 0xa4. */
+    virtual void func_slot6c();
+    /** Call the virtual at 0xa8. */
+    virtual void func_slot70();
+    /** Call the virtual at 0xac. */
+    virtual void func_slot74();
+};
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
