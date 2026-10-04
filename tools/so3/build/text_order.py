@@ -17,6 +17,10 @@ copies are renamed out of `.text` so the overlay link discards them. Their
 public symbols become undefined references to the kept copies. Mapped vtables
 are supplied by resident data; their generated definitions likewise become
 references before the overlay linker discards their sections.
+
+Some kept copies are outside every image we have (1070-00 was linked against
+an older resident program). Those are listed by name as external copies and
+always discarded, without inventing an address.
 """
 
 import re
@@ -55,15 +59,21 @@ def symbol_addresses(path):
     return {m.group(1): int(m.group(2), 16) for m in SYMBOL_LINE.finditer(Path(path).read_text())}
 
 
-def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
+def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, external=None):
     """Return ELF32 little-endian object bytes with .text headers sorted by function address.
 
     thunks maps compiler thunk names to the original address of their kept copy;
     keep is the unit's (start, end) VRAM range, outside which thunk copies are
-    discarded. With reorder=False only copy selection and resident vtable
-    references are processed.
+    discarded. external names inline-function copies whose kept copy is
+    outside every available image; they are always discarded. With
+    reorder=False only copy selection and resident vtable references are
+    processed.
     """
     thunks = thunks or {}
+    external = set(external or ())
+    both = sorted(external & set(addresses))
+    if both:
+        raise ValueError(f'external copies also have a symbol map address: {", ".join(both)}')
     if data[:6] != b'\x7fELF\x01\x01':
         raise ValueError('expected a little-endian ELF32 object')
     shoff = struct.unpack_from('<I', data, 32)[0]
@@ -93,6 +103,10 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
         if symbol.startswith('@') or info >> 4 >= STB_MULTIDEF:
             # Thunks and out-of-line copies of inline functions are emitted in
             # every unit that needs them; keep the copy the original linker kept.
+            if symbol in external:
+                copies.add(index)
+                dropped.add(index)
+                continue
             address = thunks.get(symbol) if symbol.startswith('@') else (
                 int(match.group(1), 16) if match else addresses.get(symbol))
             if address is None:
@@ -111,7 +125,7 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
         if index in key and key[index] != address:
             raise ValueError(f'.text section {index} holds more than one function')
         key[index] = address
-    missing = [i for i in texts if i not in key]
+    missing = [i for i in texts if i not in key and i not in dropped]
     if reorder and missing:
         raise ValueError(f'.text sections without a function symbol: {missing}')
     kept_copies = [i for i in copies if i not in dropped]
@@ -119,7 +133,7 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
         # Where the compiler and the original linker placed kept copies
         # differs (for example the order of inline destructor copies), so any
         # unit that keeps one is placed in original address order.
-        return order_text_sections(data, addresses, thunks, keep, reorder=True)
+        return order_text_sections(data, addresses, thunks, keep, reorder=True, external=external)
     if dropped:
         data = discard_sections(data, dropped)
         headers = [list(struct.unpack_from('<10I', data, shoff + i * size)) for i in range(count)]

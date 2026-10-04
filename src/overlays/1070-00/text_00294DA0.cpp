@@ -557,7 +557,9 @@ FieldClass179470::FieldClass179470()
     unk0f |= 4;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00297ED0);
+FieldClass172190::~FieldClass172190()
+{
+}
 
 void func_00297F40(FieldDelayState230* object)
 {
@@ -567,7 +569,9 @@ void func_00297F40(FieldDelayState230* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00297FC0);
+FieldClass172220::~FieldClass172220()
+{
+}
 
 void func_00298030(FieldDelayState240* object)
 {
@@ -577,7 +581,9 @@ void func_00298030(FieldDelayState240* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_002980B0);
+FieldClass1722C0::~FieldClass1722C0()
+{
+}
 
 void func_00298120(FieldScaleOwnerD0* object, s32 count, FieldScaleEntry296670* entries)
 {

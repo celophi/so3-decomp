@@ -78,6 +78,35 @@ I haven't confirmed this while the game is running, and something could still
 compute those entry numbers. If it holds up, the two unused modules are 3.28 MB
 of the 8.59 MB of code that progress currently counts.
 
+## Field 1070's missing destructor copies
+
+I'm still getting my head around some of this, but this
+is what I think is going on rather than something I've proven.
+
+Three destructors in 1070 match now, but the build wouldn't accept them at
+first. From what I can tell, when a destructor is written inline (in a header,
+so it can be pasted into other functions), the compiler also writes a normal
+copy of it into every file that uses the class, because the class's vtable
+needs something to point at. The original linker seems to have kept just one of those copies. 
+My build tries to do the same, so it needs to know where the game's copy is.
+
+I couldn't find it for these three. As far as I can see, nothing in 1070 uses
+those base classes apart from the destructors themselves and the code that
+creates the objects, and I didn't find them in any other module on the disc
+either.
+
+My guess is that it's because 1070 looks like a leftover from an older build (?).
+Its vtables seem to belong to a version of the main program that isn't on the
+disc, and the main program I do have has something unrelated at those
+addresses. Two of the base destructors call into what looks like an older
+Lib, so maybe the copies were in there. I could be wrong about that.
+
+For now I've listed the three copies in
+[config/copies/1070-00_external_copies.txt](../config/copies/1070-00_external_copies.txt),
+and the build drops them without giving them an address. The file still links
+to the game's bytes. I'd like to come back to this once I understand it
+better.
+
 
 ## Sony libraries in Lib.bin
 

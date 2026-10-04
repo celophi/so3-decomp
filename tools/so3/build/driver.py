@@ -122,7 +122,8 @@ def configure(configs):
         deps += options.get('symbol_addrs_path', []) + options.get('reloc_addrs_path', [])
         # compile.py orders deferred units' .text by the module's symbol map.
         symbol_maps = [p for p in [f'config/symbols/{module}_symbol_addrs.txt',
-                                 f'config/thunks/{module}_thunk_addrs.txt']
+                                 f'config/thunks/{module}_thunk_addrs.txt',
+                                 f'config/copies/{module}_external_copies.txt']
                        if Path(p).is_file()] + ([] if is_main else [str(path)])
         deps += ['tools/so3/build/main.py', 'config/manifests/versions.json'] if is_main else ['tools/so3/build/overlays.py']
         split_command = 'python -m tools.so3.build.main split' if is_main else f'python -m tools.so3.build.overlays run-splat --overlay {module}'

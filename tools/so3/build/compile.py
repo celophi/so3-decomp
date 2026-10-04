@@ -42,6 +42,15 @@ def thunk_map(unit):
     return symbol_addresses(path) if path.is_file() else {}
 
 
+def external_copies(unit):
+    """Inline-function copies whose kept copy is outside every available image."""
+    path = Path('config/copies') / f'{module_of(unit)}_external_copies.txt'
+    if not path.is_file():
+        return set()
+    lines = (line.split('//', 1)[0].strip() for line in path.read_text().splitlines())
+    return {line for line in lines if line}
+
+
 def overlay_range(unit):
     """The unit's VRAM range, or None for main sources."""
     module = module_of(unit)
@@ -100,7 +109,7 @@ def main():
         if deferred(selected) or languages[args.source.suffix] == 'c++':
             temporary.write_bytes(order_text_sections(
                 temporary.read_bytes(), symbol_map(unit), thunk_map(unit),
-                overlay_range(unit), reorder=deferred(selected)))
+                overlay_range(unit), reorder=deferred(selected), external=external_copies(unit)))
         temporary.replace(args.output)
     finally:
         temporary.unlink(missing_ok=True)

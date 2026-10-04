@@ -92,6 +92,32 @@ public:
     virtual ~FieldClass173810();
 };
 
+/** Partial destruction interface with primary vtable at 0x173B50. */
+class FieldClass173B50 : public FieldClass16CF90
+{
+public:
+    /** Destroy the receiver and release its callback registrations. */
+    virtual ~FieldClass173B50();
+};
+
+/** Partial destruction interface with primary vtable at 0x1735E0. */
+class FieldClass1735E0 : public FieldClass173B50
+{
+public:
+    /** Destroy the receiver through its primary base. */
+    virtual ~FieldClass1735E0()
+    {
+    }
+};
+
+/** Partial destruction interface with primary vtable at 0x1736B0. */
+class FieldClass1736B0 : public FieldClass1735E0
+{
+public:
+    /** Destroy the receiver and release its owned storage. */
+    virtual ~FieldClass1736B0();
+};
+
 #endif
 
 #ifdef __cplusplus

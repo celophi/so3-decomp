@@ -565,6 +565,76 @@ public:
     virtual ~FieldClass1735A0();
 };
 
+/** Partial interface of the external base destructor at 0x424990. */
+class LibReceiver424990
+{
+public:
+    /** Destroy the external base receiver. */
+    virtual ~LibReceiver424990();
+};
+
+/** Partial interface of the external base destructor at 0x424A90. */
+class LibReceiver424A90
+{
+public:
+    /** Destroy the external base receiver. */
+    virtual ~LibReceiver424A90();
+};
+
+/** Partial destruction interface with primary vtable at 0x179210. */
+class FieldClass179210 : public LibReceiver424990
+{
+public:
+    /** Destroy the receiver through its external base. */
+    virtual ~FieldClass179210()
+    {
+    }
+};
+
+/** Partial particle receiver with primary vtable at 0x172190. */
+class FieldClass172190 : public FieldClass179210
+{
+public:
+    /** Destroy the receiver through its primary base. */
+    virtual ~FieldClass172190();
+};
+
+/** Partial destruction interface with primary vtable at 0x179330. */
+class FieldClass179330 : public LibReceiver424A90
+{
+public:
+    /** Destroy the receiver through its external base. */
+    virtual ~FieldClass179330()
+    {
+    }
+};
+
+/** Partial particle receiver with primary vtable at 0x172220. */
+class FieldClass172220 : public FieldClass179330
+{
+public:
+    /** Destroy the receiver through its primary base. */
+    virtual ~FieldClass172220();
+};
+
+/** Partial destruction interface with primary vtable at 0x17A810. */
+class FieldClass17A810 : public FieldClass1736B0
+{
+public:
+    /** Destroy the receiver through its primary base. */
+    virtual ~FieldClass17A810()
+    {
+    }
+};
+
+/** Partial particle receiver with primary vtable at 0x1722C0. */
+class FieldClass1722C0 : public FieldClass17A810
+{
+public:
+    /** Destroy the receiver through its primary base. */
+    virtual ~FieldClass1722C0();
+};
+
 /** Partial destruction interface with primary vtable at 0x172870. */
 class FieldClass172870 : public FieldClass173A80
 {

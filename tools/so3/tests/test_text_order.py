@@ -90,6 +90,29 @@ class TextOrderTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'multiply-defined function second is not in the symbol map'):
             order_text_sections(multidef_fixture(), {}, {}, keep=(0x100, 0x200), reorder=False)
 
+    def test_external_inline_copy_is_discarded_without_an_address(self):
+        data = order_text_sections(multidef_fixture(), {}, {}, keep=(0x100, 0x200), reorder=False,
+                                   external={'second'})
+        self.assertEqual(section_names(data), ['.text', '.discarded'])
+        self.assertEqual(symbol_record(data, 2)[1:], (0, 0, 0x12, 0, 0))
+
+    def test_external_inline_copy_is_left_out_of_the_order(self):
+        data = order_text_sections(multidef_fixture(), {'first': 0x180}, {}, keep=(0x100, 0x200),
+                                   external={'second'})
+        self.assertEqual(section_names(data), ['.text', '.discarded'])
+        self.assertEqual(text_payloads(data), [b'AAAA'])
+
+    def test_external_copy_beside_a_kept_copy_is_still_discarded(self):
+        data = order_text_sections(two_copy_fixture(), {'first': 0x180}, {}, keep=(0x100, 0x200),
+                                   reorder=False, external={'second'})
+        self.assertEqual(section_names(data), ['.text', '.discarded'])
+        self.assertEqual(text_payloads(data), [b'AAAA'])
+
+    def test_external_copy_with_an_address_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'external copies also have a symbol map address: second'):
+            order_text_sections(multidef_fixture(), {'second': 0x180}, {}, keep=(0x100, 0x200),
+                                reorder=False, external={'second'})
+
     def test_discarded_inline_copy_becomes_an_external_reference(self):
         original = multidef_fixture()
         data = order_text_sections(original, {'second': 0x300}, keep=(0x100, 0x200), reorder=False)
@@ -170,6 +193,15 @@ def multidef_fixture():
     symtab = struct.unpack_from('<10I', data, shoff + 4 * 40)
     info = symtab[4] + 2 * 16 + 12
     data[info] = (13 << 4) | 2
+    return bytes(data)
+
+
+def two_copy_fixture():
+    """Multiply-defined copies first (AAAA) and second (BBBB)."""
+    data = bytearray(multidef_fixture())
+    shoff = struct.unpack_from('<I', data, 32)[0]
+    symtab = struct.unpack_from('<10I', data, shoff + 4 * 40)
+    data[symtab[4] + 1 * 16 + 12] = (13 << 4) | 2
     return bytes(data)
 
 

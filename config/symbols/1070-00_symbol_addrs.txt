@@ -63,6 +63,20 @@ __vt__16FieldClass1735A0 = 0x001735A0; // absolute:True
 __dt__16FieldClass173580Fv = 0x00298A70; // type:func
 __dt__16FieldClass1735A0Fv = 0x00298AE0; // type:func
 
+// Particle receivers whose inline bases end in an out-of-line destructor.
+__dt__17LibReceiver424990Fv = 0x00424990; // type:func absolute:True
+__dt__17LibReceiver424A90Fv = 0x00424A90; // type:func absolute:True
+__vt__16FieldClass179210 = 0x00179210; // absolute:True
+__vt__16FieldClass172190 = 0x00172190; // absolute:True
+__dt__16FieldClass172190Fv = 0x00297ED0; // type:func
+__vt__16FieldClass179330 = 0x00179330; // absolute:True
+__vt__16FieldClass172220 = 0x00172220; // absolute:True
+__dt__16FieldClass172220Fv = 0x00297FC0; // type:func
+__dt__16FieldClass1736B0Fv = 0x002B06C0; // type:func
+__vt__16FieldClass17A810 = 0x0017A810; // absolute:True
+__vt__16FieldClass1722C0 = 0x001722C0; // absolute:True
+__dt__16FieldClass1722C0Fv = 0x002980B0; // type:func
+
 __vt__16FieldClass173568 = 0x00173568; // absolute:True
 __dt__16FieldClass173568Fv = 0x00296500; // type:func
 
