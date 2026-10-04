@@ -55,6 +55,14 @@ extern "C" {
 extern LibShapeTestResult1C D_0050CB30;
 
 /**
+ * @brief Test a shape descriptor against a position query.
+ * @param shape Descriptor supplying the transform and shape record index.
+ * @param query Query position.
+ * @return Predicate status.
+ */
+s32 func_0045BFB0(void* shape, void* query);
+
+/**
  * @brief Publish the two bound shape record arrays for subsequent predicates.
  * @param first First shape resource storage.
  * @param second Second shape resource storage.

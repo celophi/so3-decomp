@@ -28,6 +28,15 @@ void* func_00113710(void* heap, s32 size);
 void func_001134C0(void* memory);
 
 /**
+ * @brief Store a request target, float value, and squared distance value.
+ * @param request Resident request receiver.
+ * @param target Target pointer to store.
+ * @param value Float value to store.
+ * @param distance Value to square and store.
+ */
+void func_0010EA70(ResidentRequest112400* request, void* target, float value, float distance);
+
+/**
  * @brief Advance the resident random sequence and return its next word.
  * @return Next unsigned random word.
  */

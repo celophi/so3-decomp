@@ -203,7 +203,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203E
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203F30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204020);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_001DD7B0__16FieldClass150F90Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204070);
 
@@ -211,9 +211,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002040
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204210);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002042A0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002042A0__16FieldClass150F90FUc);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204370);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204370__16FieldClass150F90FUci);
 
 bool func_00204420(const FieldFloatGateState7C* object)
 {
@@ -228,17 +228,17 @@ bool func_00204420(const FieldFloatGateState7C* object)
     return !(object->unk90 > 0.0f);
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204480);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204480__16FieldClass150F90FPv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002047D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204A10);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204A10__16FieldClass150F90Fi);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204DC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204E40);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204E40__16FieldClass150F90Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204EC0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204EC0__16FieldClass150F90FPv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204F80);
 
@@ -250,11 +250,11 @@ extern "C" void func_00204FA0(FieldByteState210* obj, u8 value)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204FC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00205140);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00205140__16FieldClass150F90Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00205260);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_001DF360__16FieldClass150F90Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002053D0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", __dt__16FieldClass150F90Fv);
 
 FieldClass150F90::FieldClass150F90()
 {

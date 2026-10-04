@@ -53,6 +53,23 @@ void* func_0013A4C0(void* destination, const void* source, u32 size);
 s32 func_0013C800(const char* left, const char* right);
 
 /**
+ * @brief Format text into a null-terminated destination buffer.
+ * @param destination Buffer receiving the formatted text.
+ * @param format Printf-style format string.
+ * @return Result returned by the resident formatter.
+ */
+s32 func_0013C4F0(char* destination, const char* format, ...);
+
+/**
+ * @brief Copy up to a fixed number of string bytes, padding with zeros after the terminator.
+ * @param destination Buffer receiving the bytes.
+ * @param source String to copy.
+ * @param size Number of bytes to write.
+ * @return Original destination pointer.
+ */
+char* func_0013CD50(char* destination, const char* source, u32 size);
+
+/**
  * @brief Allocate a buffer from the current resident heap with the requested alignment.
  * @param alignment Buffer alignment in bytes.
  * @param size Requested buffer size in bytes.

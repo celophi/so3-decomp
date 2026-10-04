@@ -70,7 +70,7 @@ segments:
       - [0x32670, c, text_0020F9F0]
       - [0x351E0, c, text_00212560]
       - [0x3AD70, c, text_002180F0]
-      - [0x40800, c, text_0021DB80]
+      - [0x40800, cpp, text_0021DB80]
       - [0x42800, c, text_0021FB80]
       - [0x4E110, c, text_0022B490]
       - [0x508F0, c, text_0022DC70]
@@ -125,6 +125,9 @@ segments:
       - [0x13D440, .rodata, text_001E6C50]
       - [0x13D45E, pad, rodata_align]
       - [0x13D460, rodatabin, rodata_31A7E0]
+      - [0x13D4C0, .rodata, text_00207AF0]
+      - [0x13D4CB, pad, camera_format_align]
+      - [0x13D4D0, rodatabin, rodata_31A850]
   - name: init
     type: code
     start: 0x14d500

@@ -7,6 +7,76 @@
 #include "overlays/1067-00/text_001E6C50.h"
 #include "main/resident_0010A0E0.h"
 
+class FieldClass152210;
+
+/** Partial common loader prefix observed through byte 0x30. */
+class FieldClass150700 : public FieldClass150010, public FieldClass1DD400
+{
+public:
+    /** @brief Initialize the common resource-loader state. */
+    FieldClass150700()
+    {
+        unk2c = 0x80;
+        unk24 = 0;
+        unk28 = 0x34BC0;
+        unk1c = 0;
+        unk30_1 = 0;
+        unk30_0 = 0;
+        func_001F2DE0();
+    }
+    /** @brief Test whether the request callback is ready. @return True when ready. */
+    bool request_ready() const
+    {
+        return unk30_1;
+    }
+    /** @brief Destroy the common resource-loader state. */
+    virtual ~FieldClass150700();
+    /** @brief Handle the loader request. @param request Request value. */
+    virtual void func_001E0A50(s32 request);
+    /** @brief Query pending-record progress. @return Progress value. */
+    virtual s32 func_001E07A0();
+    /** @brief Submit record requests or detach the loader. @return One after detaching, otherwise zero. */
+    virtual s32 func_001DF640();
+    /** @brief Run the loader callback. */
+    virtual void func_001F8CB0();
+    /** @brief Run the loader callback. */
+    virtual void func_001F98E0();
+    /** @brief Reset the retained loader records and flags. */
+    virtual void func_001F2DE0();
+    /** @brief Release each counted record. */
+    virtual void func_001F9050();
+    /** @brief Mark the pending request ready. @param arg Unused callback argument. */
+    virtual void func_001DDB30(void* arg);
+
+    FieldClass152210* unk1c;
+    FieldClass1DD400* unk20;
+    s32 unk24;
+    s32 unk28;
+    u8 unk2c;
+    u8 unk2d;
+    u8 unk2e;
+    u8 unk2f;
+    u8 unk30_0 : 1;
+    u8 unk30_1 : 1;
+    u8 unk30_2_7 : 6;
+};
+
+/** Lib-heap loader wrapper; its constructor adds only the two vtable stores. */
+class FieldClass150750 : public FieldClass150700
+{
+public:
+    /** @brief Initialize the inherited loader. */
+    FieldClass150750()
+    {
+    }
+    /** @brief Destroy the inherited loader. */
+    virtual ~FieldClass150750();
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+};
+
 /** Command node retaining a copied record buffer. */
 class FieldClass152C70 : public FieldClass150440
 {
@@ -112,6 +182,11 @@ public:
 class FieldClass1507A0 : public FieldClass150070
 {
 public:
+    /** @brief Clear the queue state word. */
+    FieldClass1507A0()
+    {
+        unk18 = 0;
+    }
     /** @brief Allocate through the Lib heap. @param size Required storage. @return Allocated storage or null. */
     static void* operator new(u32 size);
     /** @brief Release through the Lib heap. @param object Storage to release. */
@@ -122,6 +197,8 @@ public:
     }
     /** @brief Add this object to the resident queue. */
     virtual void func_001DD7B0();
+    u8 unk14[4];
+    u32 unk18;
 };
 
 /** Partial queue object whose callback examines resident entries. */
@@ -134,6 +211,7 @@ public:
     virtual void func_001DD7B0();
     /** @brief Process the resident entries. */
     virtual void func_001DF360();
+    float unk1c;
 };
 
 /** Small callback object storing three byte flags and a word. */
@@ -183,6 +261,7 @@ struct FieldClass150060;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 /** @brief Test listed conditional shapes and dispatch their events. @param list Circular shape sentinel. @param actor Query receiver. @param mask Condition selection mask. @return One when an event was dispatched, otherwise zero. */
 s32 func_001EF150(struct FieldClass150060* list, struct FieldClass151510* actor, u32 mask);
 /** @brief Test listed script shapes and dispatch their events. @param list Circular shape list. @param actor Query receiver. @param kind Shape flag selector. @return Whether an event was dispatched. */
@@ -234,6 +313,15 @@ typedef struct FieldScriptCursorF32 FieldScriptCursorF32;
 typedef struct FieldScriptCursorS8 FieldScriptCursorS8;
 typedef struct FieldScriptCursorS32 FieldScriptCursorS32;
 typedef struct FieldScriptCursorU32 FieldScriptCursorU32;
+typedef struct FieldScriptCursorBytes FieldScriptCursorBytes;
+typedef struct FieldActorCommandState FieldActorCommandState;
+#ifdef __cplusplus
+class FieldClass152F00;
+class FieldClass150F90;
+#else
+typedef struct FieldClass152F00 FieldClass152F00;
+typedef struct FieldClass150F90 FieldClass150F90;
+#endif
 
 /**
  * @brief Remove shapes associated with the script's current owner word.
@@ -258,6 +346,68 @@ typedef struct FieldLateDeleting FieldLateDeleting;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Retain the operand record and its optional trailing flag.
+ * @param cursor Current packed operand record.
+ * @param count Operand count supplied by the dispatcher.
+ * @return Always one.
+ */
+s32 func_001F1E10(FieldScriptCursorBytes* cursor, u32 count);
+
+/**
+ * @brief Create and register the selected resource loader.
+ * @param cursor Script key operand; not advanced.
+ * @return Always one.
+ */
+s32 func_001F2B00(FieldScriptCursorU32* cursor);
+
+/**
+ * @brief Create a named actor once the resident focus is ready.
+ * @param cursor Script cursor supplying the key, scalar settings, mask and name.
+ * @return Zero while waiting for the focus, otherwise one.
+ */
+s32 func_001F8230(FieldScriptCursorU32* cursor);
+
+/**
+ * @brief Create a named actor when the resident timer allows it.
+ * @param cursor Script cursor supplying the actor key, name and optional flags.
+ * @param count Number of script operands.
+ * @return One when the actor was queued, zero while waiting.
+ */
+s32 func_001F83A0(FieldScriptCursorU32* cursor, u32 count);
+
+/**
+ * @brief Initialize an actor from script operands and queue it after loading its resources.
+ * @param cursor Script cursor supplying actor keys, coordinates, heading and flags.
+ * @param actor Actor to initialize.
+ * @param count Number of supplied operands.
+ * @param previous Previously selected actor; unused.
+ * @return One when queued, zero when actor resource loading fails.
+ */
+s32 func_001F84D0(FieldScriptCursorU32* cursor, FieldClass152F00* actor, u32 count, FieldClass150F90* previous);
+
+/**
+ * @brief Create an actor once a previously selected actor is ready.
+ * @param cursor Script cursor supplying the actor setup operands.
+ * @param count Number of operands supplied.
+ * @return Zero while the previous actor is waiting, otherwise one.
+ */
+s32 func_001F8AE0(FieldScriptCursorU32* cursor, u32 count);
+
+/** @brief Queue an actor command with optional byte and scalar settings. @param cursor Script operands. @param count Operand count. @return Always one. */
+s32 func_001F75C0(FieldScriptCursorU32* cursor, u32 count);
+/** @brief Reset the actor command queue and attached scalar track. @param cursor Script receiver selecting the actor. @return Always one. */
+s32 func_001F7690(FieldScriptCursorU32* cursor);
+
+/**
+ * @brief Queue a callback while resident actors have pending commands.
+ * @param cursor Script cursor supplying the callback scalar and receiving the wait value.
+ * @return Always one.
+ */
+s32 func_001F7850(FieldScriptCursorU32* cursor);
+/** @brief Clear the actor command queue and mark its state flag when required. @param actor Actor command state. */
+void func_001F76F0(FieldActorCommandState* actor);
 
 /**
  * @brief Create a rectangular script shape and append it to the script shape list.
@@ -366,8 +516,23 @@ s32 func_001F7D10(FieldScriptCursorU32* cursor);
 /** @brief Queue an unsigned script timer on the selected actor. @param cursor Actor selection and timer operand. @return One. */
 s32 func_001F7DE0(FieldScriptCursorU32* cursor);
 
+/** @brief Create an actor at script coordinates or a matching resident position. @param cursor Script operands. @return One. */
+s32 func_001F7EE0(FieldScriptCursorU32* cursor);
+
+/** @brief Create a named actor when the resident timer allows it. @param cursor Script key and name. @return One when created, otherwise zero. */
+s32 func_001F80E0(FieldScriptCursorU32* cursor);
+
 /** @brief Queue a script float on the selected object. @param cursor Script operand and object selection. @return One. */
 s32 func_001F2560(FieldScriptCursorU32* cursor);
+
+/** @brief Queue a motion vector and its command flags. @param cursor Script operands and channel selection. @return One. */
+s32 func_001F1CD0(FieldScriptCursorU32* cursor);
+
+/** @brief Fill the selected actor resource slots. @param cursor Script keys. @param count Operand count. @return One. */
+s32 func_001F2650(FieldScriptCursorU32* cursor, u32 count);
+
+/** @brief Wait for pending releases, then remove requested resource entries. @param cursor Script keys. @param count Operand count. @return Zero while waiting, otherwise one. */
+s32 func_001F2840(FieldScriptCursorU32* cursor, u32 count);
 
 /** @brief Copy script words into a command and append it to the selected receiver. @param cursor Script operands and selection. @param word_count Number of words to copy. @return One. */
 s32 func_001F7470(FieldScriptCursorU32* cursor, s32 word_count);

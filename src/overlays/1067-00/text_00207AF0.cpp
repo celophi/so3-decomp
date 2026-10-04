@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_0024C4B0.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "vu0.h"
 #include "main/resident_data.h"
@@ -10,6 +11,31 @@
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_0012F0F8.h"
 #include "overlays/lib/text_00429B00.h"
+
+struct FieldMotionVector81
+{
+    u8 unk00[0x10];
+    FieldVec4A unk10;
+    u8 unk20[0x10];
+    FieldVec4A unk30;
+    u8 unk40[0x30];
+    u32 unk70;
+    u8 unk74[0x0C];
+    u8 unk80;
+};
+struct FieldContextVector371
+{
+    u8 unk00[0x308];
+    void* unk308;
+    u8 unk30c[0x62];
+    u8 unk36e;
+    u8 unk36f;
+    u8 unk370_0_1 : 2;
+    u8 unk370_2 : 1;
+    u8 unk370_3_7 : 5;
+};
+/** Format used for camera table-entry names. */
+static const char D_31A840[] = "Camera%02d";
 
 typedef unsigned __int128 FieldLocalQword;
 extern "C" s32 func_0022A160(void*);
@@ -120,15 +146,6 @@ struct FieldContextRotation
     u8 unk36e;
 };
 
-struct FieldCallbackBase { u8 pad[0xC]; };
-class FieldCallbackObject : FieldCallbackBase
-{
-public:
-    virtual void action(s32);
-    virtual void finish();
-};
-extern "C" void func_00205260(FieldCallbackState*);
-extern "C" void func_00204E40(FieldCallbackState*);
 
 extern "C" void* func_00204A10(void*);
 extern "C" void func_45B0E0(void*, void*, bool);
@@ -267,7 +284,30 @@ s32 FieldClass151400::func_00207FE0()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0022D6C0__16FieldClass151420Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_00208230);
+/** @brief Apply the retained motion vector when resident state is ready. @return Always one. */
+s32 FieldClass151440::func_00208230()
+{
+    if (!D_001B6430->context->unk38->unk4c8_0)
+    {
+        return 1;
+    }
+    FieldContextVector371* context = (FieldContextVector371*)D_001B6430->context->unk14;
+    context->unk36e = 1;
+    FieldMotionVector81* motion = (FieldMotionVector81*)((FieldClass151490*)unk10)->unk7c;
+    motion->unk30 = unk20;
+    if (motion->unk80 == 1)
+    {
+        motion->unk70 &= ~0x10;
+    }
+    if (!(unk30 & 1))
+    {
+        motion->unk10 = unk20;
+        func_0010EA70(D_001B65F8, context->unk308, 75.0f, 1000.0f);
+        context->unk370_2 = 1;
+    }
+
+    return 1;
+}
 
 /** @brief Destroy the command node. */
 FieldClass1512E0::~FieldClass1512E0()
@@ -324,7 +364,10 @@ FieldClass151420::~FieldClass151420()
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_00208A10);
+/** @brief Destroy the vector command and its inherited node. */
+FieldClass151440::~FieldClass151440()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_00208AB0);
 
@@ -512,26 +555,59 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020B9
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020BA30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020BBA0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020BC40);
-
-void FieldClass154D20::func_0020BCF0()
+/** @brief Delete the optional channel and destroy the inherited field object. */
+FieldClass151510::~FieldClass151510()
 {
-}
-
-void FieldClass154D20::func_0020BD00()
-{
-}
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020BD10);
-
-void func_0020BD60(FieldCallbackState* object)
-{
-    func_00205260(object);
-    if (object->target)
+    if (unkA8)
     {
-        object->target->finish();
+        delete unkA8;
+        unkA8 = 0;
+    }
+}
+
+/**
+ * @brief Copy the inherited resource and optional channel, then bind its context.
+ * @param other Source actor using the same channel protocol.
+ * @return One on success; zero if either initialization fails.
+ */
+s32 FieldClass151510::func_00204480(void* other)
+{
+    if (!FieldClass150F90::func_00204480(other))
+    {
+        return 0;
+    }
+    FieldClass154D20* channel = ((FieldClass151510*)other)->unkA8;
+    if (channel)
+    {
+        if (!func_0020BF00())
+        {
+            return 0;
+        }
+        unkA8->func_0020BD00(channel);
+        unkA8->func_0020BCF0(unk80);
+    }
+    return 1;
+}
+
+/** @brief Default context handler. @param context Unused context pointer. */
+void FieldClass154D20::func_0020BCF0(void* context)
+{
+}
+
+/** @brief Default copy handler. @param other Unused source channel. */
+void FieldClass154D20::func_0020BD00(FieldClass154D20* other)
+{
+}
+
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_00204210__16FieldClass151510Fv);
+
+/** @brief Update the inherited object and optional channel. */
+void FieldClass151510::func_001DF360()
+{
+    FieldClass150F90::func_001DF360();
+    if (unkA8)
+    {
+        unkA8->func_0020BDA0();
     }
 }
 
@@ -539,9 +615,10 @@ void FieldClass154D20::func_0020BDA0()
 {
 }
 
-extern "C" bool func_0020BDB0(void* object)
+/** @brief Load the selected actor resource. @param key Resource key, or -1. @return One on success, zero otherwise. */
+s32 FieldClass151510::func_00204A10(s32 key)
 {
-    return func_00204A10(object) != 0;
+    return FieldClass150F90::func_00204A10(key) != 0;
 }
 
 extern "C" void func_0020BDD0(FieldCallbackState* object, void* context, u32 enabled)
@@ -552,33 +629,42 @@ extern "C" void func_0020BDD0(FieldCallbackState* object, void* context, u32 ena
     }
 }
 
-void func_0020BE00(FieldCallbackState* object)
+/** @brief Clear the inherited resource, aligned payload pointer, and optional channel. */
+void FieldClass151510::func_00204E40()
 {
-    func_00204E40(object);
-    object->active = 0;
-    if (object->target)
-    {
-        object->target->action(1);
-    }
-    object->target = 0;
+    FieldClass150F90::func_00204E40();
+    unkB0 = 0;
+    delete unkA8;
+    unkA8 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020BE50);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020BE50__16FieldClass151510Fv);
 
-extern "C" void func_0020BEF0(FieldAtC4* object, u32 value)
+/** @brief Store the channel context. @param context Context pointer. */
+void FieldClass153570::func_0020BCF0(void* context)
 {
-    object->value = value;
+    unkC4 = context;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020BF00);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020BF00__16FieldClass151510Fv);
 
-extern "C" void func_0020BF50(FieldAlignedSize* object, u32 size)
+/** @brief Store the resource pointer and its aligned payload address. @param resource Resource address. */
+void FieldClass151510::func_0020BF50(void* resource)
 {
-    object->size = size;
-    object->rounded = (size + 0x7F) & ~0x7F;
+    unkAC = resource;
+    unkB0 = (void*)(((u32)resource + 0x7F) & ~0x7F);
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020BF70);
+/** @brief Clear the optional channel, set defaults 50 and 180, and set type bit one. */
+FieldClass151510::FieldClass151510()
+{
+    unkAC = 0;
+    unkB0 = 0;
+    unkA8 = 0;
+    unkA0 = 50.0f;
+    unkA4 = 180.0f;
+    unk78 |= 0x1;
+}
 
 /** @brief Clear the optional owner's attachment and destroy the inherited node. */
 FieldClass151570::~FieldClass151570()
@@ -598,7 +684,38 @@ void FieldClass151570::func_001DD7B0()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_001DF360__16FieldClass151570Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020C230);
+/**
+ * @brief Test a shape descriptor while its record range is inactive.
+ * @param node Node supplying the descriptor and first record index.
+ * @param other Other descriptor passed to the shape test.
+ * @return Low byte of the shape-test result.
+ */
+extern "C" s32 func_0020C230(FieldClass1515B0* node, FieldShapeOwner18* other)
+{
+    FieldShapeRecord20* records = node->unk14->unk0c;
+    FieldShapeRecord20* record = &records[node->unk1c];
+    for (;;)
+    {
+        record->unk0c_4 = 0;
+        if (record->unk0c_5)
+        {
+            break;
+        }
+        ++record;
+    }
+    s32 result = func_0045EBD0(node->unk18, other) & 0xFF;
+    record = &records[node->unk1c];
+    for (;;)
+    {
+        record->unk0c_4 = 1;
+        if (record->unk0c_5)
+        {
+            break;
+        }
+        ++record;
+    }
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020DBC0__16FieldClass1515E0FP17FieldShapeOwner18P16FieldShapeData10i);
 
@@ -686,7 +803,78 @@ extern "C" FieldClass1515B0* func_0020CB70(FieldClass151640* object,
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020CC50);
+/**
+ * @brief Find a named camera for a shape node passing the query test.
+ * @param object Shape resource and list owner.
+ * @param query Position supplied to the shape predicate.
+ * @return Camera entry handle, or null when no matching name is found.
+ */
+extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
+{
+    FieldClass150F90* root = (FieldClass150F90*)D_001B6430->context->unk08->unkdc;
+    if (!root)
+    {
+        return 0;
+    }
+    if (!root->unk7c)
+    {
+        return 0;
+    }
+    FieldClass1515D0* first = object->func_001DDCD0();
+    FieldClass1515D0* second = object->func_001DDCD0();
+    func_0045F580(first, second);
+    LibListNode* node = (LibListNode*)&object->unk178;
+    for (;;)
+    {
+        node = node->next;
+        if (!node || (LibListNode*)&object->unk178 == node)
+        {
+            break;
+        }
+        FieldClass1515B0* shape = (FieldClass1515B0*)node;
+        FieldShapeRecord20* records = shape->unk14->unk0c;
+        s32 index = shape->unk18->unk0e;
+        for (;;)
+        {
+            FieldShapeRecord20& record = records[index];
+            record.unk0c_4 = 0;
+            if (record.unk0c_5)
+            {
+                break;
+            }
+            ++index;
+        }
+        u8 found = func_0045BFB0(shape->unk18, query);
+        FieldShapeRecord20* restore_records = shape->unk14->unk0c;
+        s32 restore_index = shape->unk18->unk0e;
+        for (;;)
+        {
+            FieldShapeRecord20& record = restore_records[restore_index];
+            record.unk0c_4 = 1;
+            if (record.unk0c_5)
+            {
+                break;
+            }
+            ++restore_index;
+        }
+        void* result;
+        if (!found)
+        {
+            result = 0;
+        }
+        else
+        {
+            char name[32];
+            func_0013C4F0(name, D_31A840, (u8)(shape->unk18->unk0b - 0x3f));
+            result = func_00473680(((FieldClass150F90*)D_001B6430->context->unk08->unkdc)->unk7c, name);
+        }
+        if (result)
+        {
+            return result;
+        }
+    }
+    return 0;
+}
 
 /** @brief Return this shape resource. @return The inherited resource receiver. */
 FieldClass1515D0* FieldClass151640::func_001DDCD0()
@@ -694,7 +882,56 @@ FieldClass1515D0* FieldClass151640::func_001DDCD0()
     return this;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020CE40);
+/**
+ * @brief Test transform attachments against another shape resource.
+ * @param object Attachment list and resource owner.
+ * @param other Resource supplying the other shape descriptor.
+ * @param point Point transformed in place when an attachment passes the test.
+ * @return One when a test passes, otherwise zero.
+ */
+extern "C" u8 func_0020CE40(FieldClass151640* object, FieldClass1515D0* other,
+    FieldVec4A* point)
+{
+    func_0045F580(object->func_001DDCD0(), other);
+    FieldShapeAttributeResource resource;
+    LibListNode* node = (LibListNode*)&object->unk88;
+    FieldClass1515D0 storage;
+    bool prepared = false;
+    for (;;)
+    {
+        node = node->next;
+        if (node == 0 || (LibListNode*)&object->unk88 == node)
+        {
+            break;
+        }
+        FieldClass151570* attachment = (FieldClass151570*)node;
+        FieldClass151620* entry = attachment->unk20;
+        if (entry)
+        {
+            if (!prepared)
+            {
+                resource.tag = 0x415452;
+                func_0045B210(&storage, &resource);
+                prepared = true;
+            }
+            resource.data.prefix.unk0c = &entry->record;
+            D_001B656C = ((FieldShapeData10*)storage.unk00)->unk0c;
+        }
+        else
+        {
+            D_001B656C = ((FieldShapeData10*)object->func_001DDCD0()->unk00)->unk0c;
+        }
+        u8 passed = func_0045EBD0(attachment->unk1c,
+            (FieldShapeOwner18*)((FieldShapeData30*)other->unk00 + 1));
+        if (!passed)
+        {
+            continue;
+        }
+        func_00433730(&attachment->unk70, point, point);
+        return 1;
+    }
+    return 0;
+}
 
 /**
  * @brief Test the shape entries using a temporary borrowed attribute resource.

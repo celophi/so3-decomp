@@ -53,13 +53,16 @@ void func_0024D440(FieldStatus331* object, u8 value);
 /**
  * Partial 0x140-byte FieldClass154D20 with vtable D_153570 in main data and a
  * FieldClass1515D0 member at offset 0x80. Its constructor is func_0024CB40.
- * Overrides other than slot 3 are not declared yet.
  */
 class FieldClass153570 : public FieldClass154D20
 {
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass153570();
+    /** @brief Copy the source channel. @param other Source channel. */
+    virtual void func_0020BD00(FieldClass154D20* other);
+    /** @brief Store the channel context. @param context Context pointer. */
+    virtual void func_0020BCF0(void* context);
 
     /**
      * @brief Return the FieldClass1515D0 member at offset 0x80.
@@ -69,7 +72,9 @@ public:
 
     u8 unk10[0x70];
     FieldClass1515D0 unk80;
-    u8 unk90[0xB0];
+    u8 unk90[0x34];
+    void* unkC4;
+    u8 unkC8[0x78];
 };
 #endif
 
