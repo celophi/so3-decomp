@@ -4,6 +4,10 @@
 #include "types.h"
 #include "overlays/citemcreation/text_003684D0.h"
 
+#ifdef __cplusplus
+#include "overlays/citemcreation/text_00358440.h"
+#endif
+
 /** Partial owner of four displayed position pairs and their update flags. */
 typedef struct ItemCreationFourPositionDisplay
 {
@@ -190,6 +194,173 @@ typedef struct ItemCreationFlagResetOwner
 } ItemCreationFlagResetOwner;
 
 #ifdef __cplusplus
+/** Partial virtual interface of the item creation window at 0x185A60. */
+class ItemCreationClass185A60 : public FieldClass15AE70
+{
+public:
+    virtual ~ItemCreationClass185A60();
+    virtual void func_slotb0();
+    virtual void func_slotb4();
+    virtual void func_slotb8();
+    virtual void func_slotbc();
+    virtual void func_slotc0();
+    virtual void func_slotc4();
+    virtual void func_slotc8();
+    virtual void func_slotcc();
+    virtual void func_slotd0();
+    virtual void func_slotd4();
+    virtual void func_slotd8();
+    virtual void func_slotdc();
+    virtual void func_slote0();
+    virtual void func_slote4();
+    virtual void func_slote8();
+    virtual void func_slotec();
+    virtual void func_slotf0();
+    virtual s32 func_slotf4(void* associated);
+    virtual void func_slotf8(u16 direction);
+};
+
+/** Partial virtual interface of the item creation window at 0x185860. */
+class ItemCreationClass185860 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass185860();
+    virtual void func_slotb0();
+    virtual void func_slotb4();
+    virtual void func_slotb8();
+    virtual void func_slotbc();
+    virtual void func_slotc0();
+    virtual void func_slotc4();
+    virtual void func_slotc8();
+    virtual void func_slotcc();
+    virtual void func_slotd0();
+    virtual void func_slotd4();
+    virtual void func_slotd8();
+    virtual void func_slotdc();
+    virtual void func_slote0();
+    virtual void func_slote4();
+    virtual void func_slote8();
+    virtual void func_slotec();
+    virtual void func_slotf0();
+    virtual s32 func_slotf4(void* associated);
+    virtual void func_slotf8(u16 direction);
+    /** @brief Forward direction 2 to the window. */
+    virtual void func_slot74();
+    /** @brief Forward direction 3 to the window. */
+    virtual void func_slot70();
+};
+
+/** Partial virtual interface of the item creation window at 0x185460. */
+class ItemCreationClass185460 : public ItemCreationClass185A60
+{
+public:
+    virtual ~ItemCreationClass185460();
+    /** @brief Forward direction 2 to the window. */
+    virtual void func_slot74();
+    /** @brief Forward direction 4 to the window. */
+    virtual void func_slot70();
+    /** @brief Forward direction 3 to the window. */
+    virtual void func_slot6c();
+    /** @brief Forward direction 1 to the window. */
+    virtual void func_slot68();
+};
+
+/** Partial virtual interface of the item creation window at 0x185960. */
+class ItemCreationClass185960 : public ItemCreationClass185A60
+{
+public:
+    virtual ~ItemCreationClass185960();
+    /** @brief Forward direction 2 to the window. */
+    virtual void func_slot74();
+    /** @brief Forward direction 4 to the window. */
+    virtual void func_slot70();
+    /** @brief Forward direction 3 to the window. */
+    virtual void func_slot6c();
+    /** @brief Forward direction 1 to the window. */
+    virtual void func_slot68();
+};
+
+/** Partial item creation window with primary vtable at 0x185060. */
+class ItemCreationClass185060 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass185060();
+};
+
+/** Partial item creation window with primary vtable at 0x185160. */
+class ItemCreationClass185160 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass185160();
+};
+
+/** Partial item creation window with primary vtable at 0x185260. */
+class ItemCreationClass185260 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass185260();
+};
+
+/** Partial item creation window with primary vtable at 0x185360. */
+class ItemCreationClass185360 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass185360();
+};
+
+/** Partial item creation window with primary vtable at 0x185560. */
+class ItemCreationClass185560 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass185560();
+};
+
+/** Partial item creation window with primary vtable at 0x185B60. */
+class ItemCreationClass185B60 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass185B60();
+};
+
+/** Partial item creation window with primary vtable at 0x185C60. */
+class ItemCreationClass185C60 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass185C60();
+};
+
+/** Partial item creation window with primary vtable at 0x185D60. */
+class ItemCreationClass185D60 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass185D60();
+};
+
+/** Partial item creation window with primary vtable at 0x185E60. */
+class ItemCreationClass185E60 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass185E60();
+};
+
+/** Partial item creation window with primary vtable at 0x186670. */
+class ItemCreationClass186670 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass186670();
+};
+
 extern "C" {
 #endif
 

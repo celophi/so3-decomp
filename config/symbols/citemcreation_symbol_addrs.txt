@@ -57,3 +57,39 @@ __vt__23ItemCreationClass1872B0 = 0x001872B0; // absolute:True
 __vt__23ItemCreationClass1873B0 = 0x001873B0; // absolute:True
 __ct__23ItemCreationClass1873B0Fv = 0x00367CA0; // type:func
 __ct__23ItemCreationClass186DB0FPv = 0x0035F100; // type:func
+
+// Directional callbacks for item creation windows.
+func_slot74__23ItemCreationClass185460Fv = 0x0034ACA0; // type:func
+func_slot70__23ItemCreationClass185460Fv = 0x0034ACD0; // type:func
+func_slot6c__23ItemCreationClass185460Fv = 0x0034AD00; // type:func
+func_slot68__23ItemCreationClass185460Fv = 0x0034AD30; // type:func
+func_slot74__23ItemCreationClass185860Fv = 0x0034D170; // type:func
+func_slot70__23ItemCreationClass185860Fv = 0x0034D1A0; // type:func
+func_slot74__23ItemCreationClass185960Fv = 0x0034E5B0; // type:func
+func_slot70__23ItemCreationClass185960Fv = 0x0034E5E0; // type:func
+func_slot6c__23ItemCreationClass185960Fv = 0x0034E610; // type:func
+func_slot68__23ItemCreationClass185960Fv = 0x0034E640; // type:func
+
+// Item creation windows with Field base destruction.
+__vt__23ItemCreationClass185060 = 0x00185060; // absolute:True
+__dt__23ItemCreationClass185060Fv = 0x00348B00; // type:func
+__vt__23ItemCreationClass185160 = 0x00185160; // absolute:True
+__dt__23ItemCreationClass185160Fv = 0x003495F0; // type:func
+__vt__23ItemCreationClass185260 = 0x00185260; // absolute:True
+__dt__23ItemCreationClass185260Fv = 0x00349D80; // type:func
+__vt__23ItemCreationClass185360 = 0x00185360; // absolute:True
+__dt__23ItemCreationClass185360Fv = 0x0034A610; // type:func
+__vt__23ItemCreationClass185560 = 0x00185560; // absolute:True
+__dt__23ItemCreationClass185560Fv = 0x0034C450; // type:func
+__vt__23ItemCreationClass185860 = 0x00185860; // absolute:True
+__dt__23ItemCreationClass185860Fv = 0x0034D920; // type:func
+__vt__23ItemCreationClass185B60 = 0x00185B60; // absolute:True
+__dt__23ItemCreationClass185B60Fv = 0x00350530; // type:func
+__vt__23ItemCreationClass185C60 = 0x00185C60; // absolute:True
+__dt__23ItemCreationClass185C60Fv = 0x00350760; // type:func
+__vt__23ItemCreationClass185D60 = 0x00185D60; // absolute:True
+__dt__23ItemCreationClass185D60Fv = 0x00351380; // type:func
+__vt__23ItemCreationClass185E60 = 0x00185E60; // absolute:True
+__dt__23ItemCreationClass185E60Fv = 0x00351AB0; // type:func
+__vt__23ItemCreationClass186670 = 0x00186670; // absolute:True
+__dt__23ItemCreationClass186670Fv = 0x00356100; // type:func
