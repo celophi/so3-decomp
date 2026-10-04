@@ -47,7 +47,8 @@ segments:
     vram: 0x3483c0
     subalign: null
     subsegments:
-      - [0x40, c, text_003483C0]
+      - [0x40, pad, text_start]
+      - [0x80, cpp, text_003483C0]
       - [0x100C0, cpp, text_00358440]
       - [0x20150, cpp, text_003684D0]
       - [0x27080, databin, data]

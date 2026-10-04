@@ -43,6 +43,24 @@ typedef struct ItemCreationRuntime643C
     FieldBufferSlots* unk20;
 } ItemCreationRuntime643C;
 
+typedef struct ItemCreationOptionResourceDisplay
+{
+    FieldResourceDisplay2D5CF0 base;
+    u8 unk40[0x90];
+    u8 unkd0;
+} ItemCreationOptionResourceDisplay;
+
+struct ItemCreationOptionDisplay
+{
+    u8 unk00[0xA8];
+    u8 unka8;
+    u8 unka9;
+    u8 unkaa[2];
+    ItemCreationOptionResourceDisplay* unkac[6];
+    ItemCreationSelectedDisplayState* unkc4;
+    FieldObject23CEA0* unkc8;
+};
+
 /** Partial owner linking an option list, index display, and transfer display. */
 struct ItemCreationOptionTransferOwner
 {
@@ -57,10 +75,10 @@ struct ItemCreationOptionTransferOwner
 // These external interfaces are scoped here because their owning code is in other overlays.
 extern ItemCreationColorRecordState* D_001B64F8;
 extern ItemCreationRuntime643C* D_001B643C;
-void func_466E40(void* point, float x, float y, float scale);
-s32 func_002CFE40(void* object, s16 index);
-u16 func_23B3A0(FieldState23B3A0* object);
-u32 func_23B3B0(FieldState23B3A0* object, u16 direction);
+extern "C" void func_466E40(void* point, float x, float y, float scale);
+extern "C" s32 func_002CFE40(void* object, s16 index);
+extern "C" u16 func_23B3A0(FieldState23B3A0* object);
+extern "C" u32 func_23B3B0(FieldState23B3A0* object, u16 direction);
 
 /**
  * @brief Read the low byte of the selected grid index.
@@ -106,7 +124,7 @@ static inline float shifted_position(float origin, float offset);
  * @param object Selector state to test.
  * @return One when the control byte is zero, or zero otherwise.
  */
-static inline s32 selector_inactive(FieldState23B3A0* object);
+static inline bool selector_inactive(FieldState23B3A0* object);
 
 /**
  * @brief Convert a selected item value to its resource slot.
@@ -120,7 +138,7 @@ static inline float shifted_position(float origin, float offset)
     return origin + offset;
 }
 
-static inline s32 selector_inactive(FieldState23B3A0* object)
+static inline bool selector_inactive(FieldState23B3A0* object)
 {
     if (object->unk75)
     {
@@ -137,8 +155,6 @@ static inline u32 item_resource_index(u8 value)
     }
     return value - 11;
 }
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003483C0);
 
 void func_00348400(void* object, u8 value)
 {
@@ -365,7 +381,12 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003487E0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00348B00);
+/**
+ * @brief Destroy the window through its Field base.
+ */
+ItemCreationClass185060::~ItemCreationClass185060()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00348B60);
 
@@ -381,11 +402,21 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00349580);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003495F0);
+/**
+ * @brief Destroy the window through its Field base.
+ */
+ItemCreationClass185160::~ItemCreationClass185160()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00349650);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00349D80);
+/**
+ * @brief Destroy the window through its Field base.
+ */
+ItemCreationClass185260::~ItemCreationClass185260()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00349DE0);
 
@@ -399,7 +430,12 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034A2C0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034A610);
+/**
+ * @brief Destroy the window through its Field base.
+ */
+ItemCreationClass185360::~ItemCreationClass185360()
+{
+}
 
 void func_0034A670(ItemCreationFlagToggleOwner* object, u8 mode)
 {
@@ -580,13 +616,37 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034AB20);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034ACA0);
+/**
+ * @brief Forward direction 2 to the window.
+ */
+void ItemCreationClass185460::func_slot74()
+{
+    func_slotf8(2);
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034ACD0);
+/**
+ * @brief Forward direction 4 to the window.
+ */
+void ItemCreationClass185460::func_slot70()
+{
+    func_slotf8(4);
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034AD00);
+/**
+ * @brief Forward direction 3 to the window.
+ */
+void ItemCreationClass185460::func_slot6c()
+{
+    func_slotf8(3);
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034AD30);
+/**
+ * @brief Forward direction 1 to the window.
+ */
+void ItemCreationClass185460::func_slot68()
+{
+    func_slotf8(1);
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034AD60);
 
@@ -600,7 +660,12 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034C080);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034C450);
+/**
+ * @brief Destroy the window through its Field base.
+ */
+ItemCreationClass185560::~ItemCreationClass185560()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034C4B0);
 
@@ -727,19 +792,91 @@ void func_0034CE00(ItemCreationOptionTransferOwner* object)
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D030);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D170);
+/**
+ * @brief Forward direction 2 to the window.
+ */
+void ItemCreationClass185860::func_slot74()
+{
+    func_slotf8(2);
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D1A0);
+/**
+ * @brief Forward direction 3 to the window.
+ */
+void ItemCreationClass185860::func_slot70()
+{
+    func_slotf8(3);
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D1D0);
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D250);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D340);
+/**
+ * @brief Refresh the six resource displays from their current option list.
+ * @param object Option display to refresh.
+ */
+void func_0034D340(ItemCreationOptionDisplay* object)
+{
+    if (object->unkc4 != 0)
+    {
+        u16 slot;
+        u8 count;
+        void* allocation;
+        s32 index;
+        u8 selected;
+        u8 status;
+        if (object->unka8 == 1)
+        {
+            count = object->unkc4->unk58;
+        }
+        else
+        {
+            count = object->unkc4->unk59;
+        }
+        object->unka9 = count;
+        slot = 0;
+        selected = object->unkc4->unk58;
+        status = object->unkc4->unk129;
+        for (index = 0; index < 6; index++)
+        {
+            u8 list = object->unka8;
+            FieldResourceRecord* record;
+            if (list == 2 && (status < 2 || selected == object->unka9))
+            {
+                allocation = func_002D3D80(D_001B643C->unk20, 0);
+                record = func_002D3CC0(D_001B643C->unk20, 16);
+            }
+            else
+            {
+                u8 value = option_list_value(object->unkc4, list, (u16)index);
+                if (value == 0)
+                {
+                    allocation = func_002D3D80(D_001B643C->unk20, 0);
+                    record = func_002D3CC0(D_001B643C->unk20, 16);
+                }
+                else
+                {
+                    u32 resource_index = item_resource_index(value);
+                    slot = resource_index;
+                    allocation = func_002D3D80(D_001B643C->unk20, resource_index);
+                    record = func_002D3CC0(D_001B643C->unk20, 81);
+                }
+            }
+            object->unkac[index]->unkd0 = slot;
+            func_002D5CF0(&object->unkac[index]->base, allocation, record, 0);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D550);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D920);
+/**
+ * @brief Destroy the window through its Field base.
+ */
+ItemCreationClass185860::~ItemCreationClass185860()
+{
+}
 
 void func_0034D980(ItemCreationFlagResetOwner* object, u8 option)
 {
@@ -826,13 +963,37 @@ void func_0034E4D0(ItemCreationFlagResetOwner* object, u16 direction)
     func_0034D980(object, selected);
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034E5B0);
+/**
+ * @brief Forward direction 2 to the window.
+ */
+void ItemCreationClass185960::func_slot74()
+{
+    func_slotf8(2);
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034E5E0);
+/**
+ * @brief Forward direction 4 to the window.
+ */
+void ItemCreationClass185960::func_slot70()
+{
+    func_slotf8(4);
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034E610);
+/**
+ * @brief Forward direction 3 to the window.
+ */
+void ItemCreationClass185960::func_slot6c()
+{
+    func_slotf8(3);
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034E640);
+/**
+ * @brief Forward direction 1 to the window.
+ */
+void ItemCreationClass185960::func_slot68()
+{
+    func_slotf8(1);
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034E670);
 
@@ -894,11 +1055,21 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003501B0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00350530);
+/**
+ * @brief Destroy the window through its Field base.
+ */
+ItemCreationClass185B60::~ItemCreationClass185B60()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00350590);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00350760);
+/**
+ * @brief Destroy the window through its Field base.
+ */
+ItemCreationClass185C60::~ItemCreationClass185C60()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003507C0);
 
@@ -922,7 +1093,7 @@ void func_00350E00(ItemCreationThreeColorList* object)
             s32 index;
             for (index = 0; index < 3; index++)
             {
-                ItemCreationColorDisplay* display = func_0036F230(&object->unk2c, index)->unk00;
+                ItemCreationColorDisplay* display = (ItemCreationColorDisplay*)func_0036F230(&object->unk2c, index)->unk00;
                 if (index == selected)
                 {
                     display->unk94 = ITEM_CREATION_COLOR_SELECTED;
@@ -949,7 +1120,7 @@ void func_00350ED0(ItemCreationThreeColorList* object)
             s32 index;
             for (index = 0; index < 3; index++)
             {
-                ItemCreationColorDisplay* display = func_0036F230(&object->unk2c, index)->unk00;
+                ItemCreationColorDisplay* display = (ItemCreationColorDisplay*)func_0036F230(&object->unk2c, index)->unk00;
                 if (index == selected)
                 {
                     display->unk94 = ITEM_CREATION_COLOR_SELECTED;
@@ -968,7 +1139,12 @@ void func_00350ED0(ItemCreationThreeColorList* object)
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00350FA0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00351380);
+/**
+ * @brief Destroy the window through its Field base.
+ */
+ItemCreationClass185D60::~ItemCreationClass185D60()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003513E0);
 
@@ -976,7 +1152,12 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00351680);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00351AB0);
+/**
+ * @brief Destroy the window through its Field base.
+ */
+ItemCreationClass185E60::~ItemCreationClass185E60()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00351B10);
 
@@ -1105,7 +1286,7 @@ void func_00355670(ItemCreationTwoColorList* object)
             s32 index;
             for (index = 0; index < 2; index++)
             {
-                ItemCreationColorDisplay* display = func_0036F230(&object->unk2c, index)->unk00;
+                ItemCreationColorDisplay* display = (ItemCreationColorDisplay*)func_0036F230(&object->unk2c, index)->unk00;
                 if (index == selected)
                 {
                     display->unk94 = ITEM_CREATION_COLOR_SELECTED;
@@ -1132,7 +1313,7 @@ void func_00355740(ItemCreationTwoColorList* object)
             s32 index;
             for (index = 0; index < 2; index++)
             {
-                ItemCreationColorDisplay* display = func_0036F230(&object->unk2c, index)->unk00;
+                ItemCreationColorDisplay* display = (ItemCreationColorDisplay*)func_0036F230(&object->unk2c, index)->unk00;
                 if (index == selected)
                 {
                     display->unk94 = ITEM_CREATION_COLOR_SELECTED;
@@ -1155,7 +1336,12 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00355BD0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00356100);
+/**
+ * @brief Destroy the window through its Field base.
+ */
+ItemCreationClass186670::~ItemCreationClass186670()
+{
+}
 
 void func_00356160(ItemCreationNineResourceView* object)
 {
