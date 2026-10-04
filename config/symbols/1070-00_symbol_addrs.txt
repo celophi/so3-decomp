@@ -138,3 +138,16 @@ __dt__16FieldClass16F080Fv = 0x0024CDB0; // type:func
 __vt__16FieldClass179180 = 0x00179180; // absolute:True
 __vt__16FieldClass16F120 = 0x0016F120; // absolute:True
 __dt__16FieldClass16F120Fv = 0x0024CEB0; // type:func
+
+// Particle factory func_00296870: runtime, allocators and base constructors.
+__throw = 0x001288F8; // type:func absolute:True
+__construct_new_array = 0x00147180; // type:func absolute:True
+__nwa__FUiiPCc = 0x00100E10; // type:func absolute:True
+__nw__16FieldClass16CF78FUiiPCc = 0x004466D0; // type:func absolute:True
+D_001B64B8 = 0x001B64B8; // size:0x4 absolute:True
+__ct__17FieldVector1FAD90Fv = 0x001FAD90; // type:func
+__ct__16FieldClass173810Fv = 0x002A87F0; // type:func
+__ct__16FieldClass1738E0Fv = 0x002A8700; // type:func
+__ct__16FieldClass1739B0Fv = 0x002A8610; // type:func
+__ct__16FieldClass173A80Fv = 0x002A8520; // type:func
+__ct__16FieldClass1736B0Fv = 0x002B0760; // type:func

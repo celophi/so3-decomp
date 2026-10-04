@@ -14,7 +14,7 @@ options:
   ld_script_path: build/overlays/1070-00/overlay.ld
   generated_asm_macros_directory: build/overlays/1070-00/include
   cache_path: build/overlays/1070-00/splat.cache
-  symbol_addrs_path: [config/symbols/1070-00_symbol_addrs.txt]
+  symbol_addrs_path: [config/symbols/1070-00_symbol_addrs.txt, config/symbols/1070-00_data_addrs.txt]
   reloc_addrs_path: [config/relocations/1070-00_reloc_addrs.txt]
   undefined_funcs_auto_path: build/overlays/1070-00/undefined_funcs.ld
   undefined_syms_auto_path: build/overlays/1070-00/undefined_syms.ld
@@ -44,7 +44,7 @@ segments:
     type: code
     start: 0x40
     vram: 0x1e2b40
-    subalign: 16
+    subalign: null
     subsegments:
       - [0x40, cpp, text_001E2B40]
       - [0x100B0, cpp, text_001F2BB0]
@@ -66,7 +66,13 @@ segments:
       - [0x112D80, cpp, text_002F5880]
       - [0x122D90, cpp, text_00305890]
       - [0x133330, cpp, text_00315E30]
-  - [0x139580, bin, data]
+      # Field's data starts here, and its rodata starts at 0x325830. These code
+      # files are 64 KB slices, not the original files, so only rodata a compiled
+      # file really owns gets a .rodata entry; the rest stays as raw pieces.
+      - [0x139580, databin, data]
+      - [0x142D30, rodatabin, rodata_325830]
+      - [0x152C50, .rodata, text_00294DA0]
+      - [0x152CC8, rodatabin, rodata_3357C8]
   - name: init
     type: code
     start: 0x161d00

@@ -9,6 +9,11 @@
 #include "overlays/1070-00/text_00244310.h"
 #include "overlays/1070-00/text_002E55F0.h"
 
+#ifdef __cplusplus
+/** Global word copied into several particle receivers. */
+extern "C" u32 D_001B64B8;
+#endif
+
 /** Aligned vector with floating-point and raw-word views. */
 typedef union FieldQuad128
 {
@@ -265,6 +270,35 @@ typedef struct FieldRetryState295AA0
     FieldReceiverTail21AB20* unk10;
 } FieldRetryState295AA0;
 
+/** One particle record: a byte value and four floats. */
+typedef struct FieldParticleRecord14
+{
+    u8 unk00;
+    u8 unk01[3];
+    float unk04;
+    float unk08;
+    float unk0c;
+    float unk10;
+} FieldParticleRecord14;
+
+/** Partial particle descriptor read by func_00296870. */
+typedef struct FieldParticleDesc296870
+{
+    u8 unk00[0x1D];
+    u8 unk1d;
+    u8 unk1e;
+    u8 unk1f[0x49];
+    u8 unk68;
+    u8 unk69[0xD];
+    u8 unk76;
+    u8 unk77[0x21];
+    float unk98;
+    u8 unk9c[0x1A4];
+    s16 unk240;
+    u8 unk242[2];
+    s32 unk244;
+} FieldParticleDesc296870;
+
 /** Embedded countdown: a delay that starts at 5 and a key that starts unset. */
 typedef struct FieldInitialWordPair
 {
@@ -405,18 +439,6 @@ typedef struct FieldBytePointerA0
     u8 unk00[0xA0];
     u8* unka0;
 } FieldBytePointerA0;
-
-/** Partial receiver with two parallel arrays sharing a capacity and count. */
-typedef struct FieldParallelArrays298B70
-{
-    u8 unk00[0xB0];
-    u8* unkb0;
-    unsigned __int128* unkb4;
-    u32 unkb8;
-    u32 unkbc;
-    s32 unkc0;
-    s32 unkc4;
-} FieldParallelArrays298B70;
 
 /** Partial receiver whose control flag occupies byte 0x34. */
 typedef struct FieldFlagState34
@@ -632,10 +654,17 @@ public:
 class FieldClass17A810 : public FieldClass1736B0
 {
 public:
+    /** Copy the shared global word. */
+    FieldClass17A810()
+    {
+        unkd0 = D_001B64B8;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass17A810()
     {
     }
+    u8 unkcc[4];
+    u32 unkd0;
 };
 
 /** Partial particle receiver with primary vtable at 0x1722C0. */
@@ -644,66 +673,203 @@ class FieldClass1722C0 : public FieldClass17A810
 public:
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass1722C0();
+    u8 unkd4[0xC];
 };
 
 /** Partial destruction interface with primary vtable at 0x172870. */
 class FieldClass172870 : public FieldClass173A80
 {
 public:
+    /** Initialize the shared particle state. */
+    FieldClass172870()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        unk48 = 0;
+        unk4c = 0;
+        unk4d = 0;
+        unk4f = 1;
+        unk50 = 0;
+        unk55 = 1;
+        unk56 = 0;
+        unk57 = 0;
+        unk04 = 1;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172870()
     {
     }
+    float unk30;
+    u8 unk34[4];
+    float unk38;
+    u8 unk3c[8];
+    u32 unk44;
+    u32 unk48;
+    u8 unk4c;
+    u8 unk4d;
+    u8 unk4e;
+    u8 unk4f;
+    u32 unk50;
+    u8 unk54;
+    u8 unk55;
+    u8 unk56;
+    u8 unk57;
 };
 
 /** Partial destruction interface with primary vtable at 0x172BB0. */
 class FieldClass172BB0 : public FieldClass1739B0
 {
 public:
+    /** Initialize the shared particle state. */
+    FieldClass172BB0()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        unk48 = 0;
+        unk4c = 0;
+        unk4d = 0;
+        unk4f = 1;
+        unk50 = 0;
+        unk55 = 1;
+        unk56 = 0;
+        unk57 = 0;
+        unk04 = 1;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172BB0()
     {
     }
+    float unk30;
+    u8 unk34[4];
+    float unk38;
+    u8 unk3c[8];
+    u32 unk44;
+    u32 unk48;
+    u8 unk4c;
+    u8 unk4d;
+    u8 unk4e;
+    u8 unk4f;
+    u32 unk50;
+    u8 unk54;
+    u8 unk55;
+    u8 unk56;
+    u8 unk57;
 };
 
 /** Partial destruction interface with primary vtable at 0x172EF0. */
 class FieldClass172EF0 : public FieldClass1738E0
 {
 public:
+    /** Initialize the shared particle state. */
+    FieldClass172EF0()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        unk48 = 0;
+        unk4c = 0;
+        unk4d = 0;
+        unk4f = 1;
+        unk50 = 0;
+        unk55 = 1;
+        unk56 = 0;
+        unk57 = 0;
+        unk04 = 1;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172EF0()
     {
     }
+    float unk30;
+    u8 unk34[4];
+    float unk38;
+    u8 unk3c[8];
+    u32 unk44;
+    u32 unk48;
+    u8 unk4c;
+    u8 unk4d;
+    u8 unk4e;
+    u8 unk4f;
+    u32 unk50;
+    u8 unk54;
+    u8 unk55;
+    u8 unk56;
+    u8 unk57;
 };
 
 /** Partial destruction interface with primary vtable at 0x1734A0. */
 class FieldClass1734A0 : public FieldClass173810
 {
 public:
+    /** Initialize the shared particle state. */
+    FieldClass1734A0()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        unk48 = 0;
+        unk4c = 0;
+        unk4d = 0;
+        unk4f = 1;
+        unk50 = 0;
+        unk55 = 1;
+        unk56 = 0;
+        unk57 = 0;
+        unk04 = 1;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass1734A0()
     {
     }
+    float unk30;
+    u8 unk34[4];
+    float unk38;
+    u8 unk3c[8];
+    u32 unk44;
+    u32 unk48;
+    u8 unk4c;
+    u8 unk4d;
+    u8 unk4e;
+    u8 unk4f;
+    u32 unk50;
+    u8 unk54;
+    u8 unk55;
+    u8 unk56;
+    u8 unk57;
 };
 
 /** Partial destruction interface with primary vtable at 0x172530. */
 class FieldClass172530 : public FieldClass172BB0
 {
 public:
+    /** Clear the two observed words. */
+    FieldClass172530()
+    {
+        unkb0 = 0;
+        unkb4 = 0;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172530()
     {
     }
+    u8 unk58[0x58];
+    u32 unkb0;
+    u32 unkb4;
 };
 
 /** Partial destruction interface with primary vtable at 0x172460. */
 class FieldClass172460 : public FieldClass172530
 {
 public:
+    /** Copy the shared global word. */
+    FieldClass172460()
+    {
+        unkc0 = D_001B64B8;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172460()
     {
     }
+    u8 unkb8[8];
+    u32 unkc0;
 };
 
 /** Partial destruction interface with primary vtable at 0x1727A0. */
@@ -720,10 +886,17 @@ public:
 class FieldClass1726D0 : public FieldClass1727A0
 {
 public:
+    /** Copy the shared global word. */
+    FieldClass1726D0()
+    {
+        unkb0 = D_001B64B8;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass1726D0()
     {
     }
+    u8 unk58[0x58];
+    u32 unkb0;
 };
 
 /** Partial destruction interface with primary vtable at 0x172AE0. */
@@ -740,10 +913,17 @@ public:
 class FieldClass172A10 : public FieldClass172AE0
 {
 public:
+    /** Copy the shared global word. */
+    FieldClass172A10()
+    {
+        unkb0 = D_001B64B8;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172A10()
     {
     }
+    u8 unk58[0x58];
+    u32 unkb0;
 };
 
 /** Partial destruction interface with primary vtable at 0x172E20. */
@@ -760,10 +940,17 @@ public:
 class FieldClass172D50 : public FieldClass172E20
 {
 public:
+    /** Copy the shared global word. */
+    FieldClass172D50()
+    {
+        unkb0 = D_001B64B8;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172D50()
     {
     }
+    u8 unk58[0x58];
+    u32 unkb0;
 };
 
 /** Partial destruction interface with primary vtable at 0x173160. */
@@ -780,10 +967,17 @@ public:
 class FieldClass173090 : public FieldClass173160
 {
 public:
+    /** Copy the shared global word. */
+    FieldClass173090()
+    {
+        unkb0 = D_001B64B8;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass173090()
     {
     }
+    u8 unk58[0x58];
+    u32 unkb0;
 };
 
 /** Partial destruction interface with primary vtable at 0x1733D0. */
@@ -800,10 +994,17 @@ public:
 class FieldClass173300 : public FieldClass1733D0
 {
 public:
+    /** Copy the shared global word. */
+    FieldClass173300()
+    {
+        unkb0 = D_001B64B8;
+    }
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass173300()
     {
     }
+    u8 unk58[0x58];
+    u32 unkb0;
 };
 
 /** Partial destruction interface with primary vtable at 0x172390. */
@@ -812,6 +1013,7 @@ class FieldClass172390 : public FieldClass172460
 public:
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172390();
+    u8 unkc4[0xC];
 };
 
 /** Partial destruction interface with primary vtable at 0x172600. */
@@ -820,6 +1022,7 @@ class FieldClass172600 : public FieldClass1726D0
 public:
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172600();
+    u8 unkb4[0xC];
 };
 
 /** Partial destruction interface with primary vtable at 0x172940. */
@@ -828,6 +1031,7 @@ class FieldClass172940 : public FieldClass172A10
 public:
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172940();
+    u8 unkb4[0xC];
 };
 
 /** Partial destruction interface with primary vtable at 0x172C80. */
@@ -836,6 +1040,7 @@ class FieldClass172C80 : public FieldClass172D50
 public:
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172C80();
+    u8 unkb4[0xC];
 };
 
 /** Partial destruction interface with primary vtable at 0x172FC0. */
@@ -844,6 +1049,7 @@ class FieldClass172FC0 : public FieldClass173090
 public:
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172FC0();
+    u8 unkb4[0xC];
 };
 
 /** Partial destruction interface with primary vtable at 0x173230. */
@@ -852,6 +1058,7 @@ class FieldClass173230 : public FieldClass173300
 public:
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass173230();
+    u8 unkb4[0xC];
 };
 
 /** Primary receiver prefix, preceding the secondary base at 0x18. */
@@ -1198,56 +1405,56 @@ s32 func_00298AD0(void* object);
  * @param object Receiver containing the field.
  * @param value Value to store.
  */
-void func_00298C20(FieldParallelArrays298B70* object, u32 value);
+void func_00298C20(FieldClass1736B0* object, u32 value);
 
 /**
  * @brief Read the unkb8 word.
  * @param object Receiver containing the field.
  * @return Stored field value.
  */
-u32 func_00298C30(FieldParallelArrays298B70* object);
+u32 func_00298C30(FieldClass1736B0* object);
 
 /**
  * @brief Set the unkbc word.
  * @param object Receiver containing the field.
  * @param value Value to store.
  */
-void func_00298C40(FieldParallelArrays298B70* object, u32 value);
+void func_00298C40(FieldClass1736B0* object, u32 value);
 
 /**
  * @brief Read the unkbc word.
  * @param object Receiver containing the field.
  * @return Stored field value.
  */
-u32 func_00298C50(FieldParallelArrays298B70* object);
+u32 func_00298C50(FieldClass1736B0* object);
 
 /**
  * @brief Set the unkb0 reference.
  * @param object Receiver containing the field.
  * @param value Value to store.
  */
-void func_00298C60(FieldParallelArrays298B70* object, u8* value);
+void func_00298C60(FieldClass1736B0* object, u8* value);
 
 /**
  * @brief Read the unkb0 reference.
  * @param object Receiver containing the field.
  * @return Stored field value.
  */
-u8* func_00298C70(FieldParallelArrays298B70* object);
+u8* func_00298C70(FieldClass1736B0* object);
 
 /**
  * @brief Set the unkb4 reference.
  * @param object Receiver containing the field.
  * @param value Value to store.
  */
-void func_00298C80(FieldParallelArrays298B70* object, unsigned __int128* value);
+void func_00298C80(FieldClass1736B0* object, FieldVector1FAD90* value);
 
 /**
  * @brief Read the unkb4 reference.
  * @param object Receiver containing the field.
  * @return Stored field value.
  */
-unsigned __int128* func_00298C90(FieldParallelArrays298B70* object);
+FieldVector1FAD90* func_00298C90(FieldClass1736B0* object);
 
 #ifdef __cplusplus
 /**
@@ -1300,6 +1507,14 @@ FieldEntryTail002A4AD0* func_002A4AD0(FieldEntryOwner002A4AD0* object, s32 index
 void* func_00297A30(void* object, u8 kind);
 
 /**
+ * @brief Create the particle receiver a descriptor selects, or defer to func_4997C0.
+ * @param object Receiver passed through to func_4997C0 when nothing is created here.
+ * @param desc Descriptor selecting the receiver class and its initial state.
+ * @return The new receiver, null if allocation failed, or func_4997C0's result.
+ */
+void* func_00296870(void* object, FieldParticleDesc296870* desc);
+
+/**
  * @brief Advance the countdown and invoke func_424F20 when it has elapsed.
  * @param object Receiver containing the countdown at offset 0x230.
  */
@@ -1350,7 +1565,7 @@ s32 func_002988D0(FieldBytePointerA0* object);
  * When the arrays are full, this reports an error through func_115C20 with the
  * "progparticles.h" string instead and leaves the count unchanged.
  */
-void func_00298B70(FieldParallelArrays298B70* object, u8 value, const unsigned __int128* data);
+void func_00298B70(FieldClass1736B0* object, u8 value, const unsigned __int128* data);
 
 /**
  * @brief Perform no work.

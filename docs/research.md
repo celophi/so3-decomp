@@ -107,6 +107,30 @@ and the build drops them without giving them an address. The file still links
 to the game's bytes. I'd like to come back to this once I understand it
 better.
 
+## Field 1070's rodata
+
+I ran into this while matching a big factory function in 1070. It uses
+switch statements, and the compiler turns those into jump tables (lists of
+addresses it jumps through). Those tables go into rodata (read-only data),
+and in 1070 all of the data was one big blob. So the compiled tables would
+have ended up after the code instead of where the game has them.
+
+I did something similar for 1067 before, giving each code file its own
+rodata. That doesn't seem to fit 1070, though. As far as I can tell, 1070's
+code files aren't the original files at all. They're all almost exactly
+64 KB, so I think they're just slices. The rodata looks mixed up between
+neighbouring slices too. For example, some `"progparticles.h"` strings this
+factory uses sit in the middle of the next slice's data.
+
+So for now I've moved 1070's data into its code section like 1067, but it's
+still mostly kept as raw bytes. Only the factory's four jump tables come
+from compiled code. The rebuilt module is still identical to the game's. I'm
+also not sure exactly where the data ends and the rodata starts. 0x325830 is
+my best guess because of the padding before it.
+
+I'd like to come back to this once I've worked out where 1070's real files
+start and end. Then it could work the same way as 1067.
+
 
 ## Sony libraries in Lib.bin
 

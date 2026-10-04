@@ -35,6 +35,13 @@ void* operator new(u32 size, s32 line, const char* file);
 /** The string "FldSsfHandler.cpp". */
 extern "C" const char D_335730[];
 extern "C" void* func_49EB30(void* object, u8 kind);
+/** Debug array allocator taking the caller's source line and file name. */
+void* operator new[](u32 size, s32 line, const char* file);
+/** The string "progparticles.h". */
+extern "C" const char D_3358F0[];
+/** The string "progparticles.h". */
+extern "C" const char D_3358E0[];
+extern "C" void* func_4997C0(void* object, FieldParticleDesc296870* desc);
 
 extern "C" void* func_100CA0(void* heap);
 extern "C" void func_452C90(void* object, s32 count, FieldScaleEntry296670* entries);
@@ -533,7 +540,317 @@ u8 func_00296620(void* object, void* context)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00296670);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00294DA0", func_00296870);
+/** Add one particle, passing its vector by reference. */
+static inline void add_particle(FieldClass1736B0* object, u8 value, const FieldVector1FAD90& data)
+{
+    func_00298B70(object, value, &data.raw);
+}
+
+void* func_00296870(void* object, FieldParticleDesc296870* desc)
+{
+    void* result = 0;
+    switch (desc->unk1e)
+    {
+        case 0:
+            switch (desc->unk1d)
+            {
+                case 3:
+                case 5:
+                case 6:
+                    result = new (53, D_335730) FieldClass173230;
+                    if (!result)
+                    {
+                        return 0;
+                    }
+                    break;
+                case 4:
+                    result = new (62, D_335730) FieldClass172FC0;
+                    if (!result)
+                    {
+                        return 0;
+                    }
+                    break;
+            }
+            break;
+        case 1:
+            switch (desc->unk1d)
+            {
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                {
+                    FieldClass172C80* particle = new (78, D_335730) FieldClass172C80;
+                    result = particle;
+                    if (!result)
+                    {
+                        return 0;
+                    }
+                    switch (desc->unk68)
+                    {
+                        case 0:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 1;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 1:
+                        {
+                            float value = desc->unk98 * desc->unk98;
+                            particle->unk4c = 2;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 3:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 4;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 4:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 5;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 5:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 6;
+                            particle->unk30 = value;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            break;
+        case 2:
+            switch (desc->unk1d)
+            {
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                {
+                    FieldClass172940* particle = new (111, D_335730) FieldClass172940;
+                    result = particle;
+                    if (!result)
+                    {
+                        return 0;
+                    }
+                    switch (desc->unk68)
+                    {
+                        case 0:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 1;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 1:
+                        {
+                            float value = desc->unk98 * desc->unk98;
+                            particle->unk4c = 2;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 2:
+                            particle->unk4c = 3;
+                            break;
+                        case 3:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 4;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 4:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 5;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 5:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 6;
+                            particle->unk30 = value;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            break;
+        case 3:
+            switch (desc->unk1d)
+            {
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                {
+                    FieldClass172600* particle = new (147, D_335730) FieldClass172600;
+                    result = particle;
+                    if (!result)
+                    {
+                        return 0;
+                    }
+                    switch (desc->unk68)
+                    {
+                        case 0:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 1;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 1:
+                        {
+                            float value = desc->unk98 * desc->unk98;
+                            particle->unk4c = 2;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 2:
+                            particle->unk4c = 3;
+                            break;
+                        case 3:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 4;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 4:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 5;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 5:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 6;
+                            particle->unk30 = value;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            break;
+        case 4:
+            switch (desc->unk1d)
+            {
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                {
+                    FieldClass172390* particle = new (183, D_335730) FieldClass172390;
+                    result = particle;
+                    if (!result)
+                    {
+                        return 0;
+                    }
+                    switch (desc->unk68)
+                    {
+                        case 0:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 1;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 1:
+                        {
+                            float value = desc->unk98 * desc->unk98;
+                            particle->unk4c = 2;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 2:
+                            particle->unk4c = 3;
+                            break;
+                        case 3:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 4;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 4:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 5;
+                            particle->unk30 = value;
+                            break;
+                        }
+                        case 5:
+                        {
+                            float value = desc->unk98;
+                            particle->unk4c = 6;
+                            particle->unk30 = value;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            break;
+        case 5:
+            switch (desc->unk1d)
+            {
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                {
+                    FieldClass1722C0* particle = new (219, D_335730) FieldClass1722C0;
+                    result = particle;
+                    if (!result)
+                    {
+                        return 0;
+                    }
+                    {
+                        float value = desc->unk98;
+                        particle->unk4c = 1;
+                        particle->unk30 = value;
+                    }
+                    if (desc->unk76)
+                    {
+                        particle->unkc8 = 1;
+                    }
+                    const FieldParticleRecord14* record = (const FieldParticleRecord14*)((const u8*)desc + desc->unk244);
+                    s32 count = desc->unk240;
+                    particle->unkc9 = 0;
+                    particle->unkb0 = new (101, D_3358F0) u8[count];
+                    particle->unkb4 = new (102, D_3358E0) FieldVector1FAD90[count];
+                    particle->unkc0 = count;
+                    particle->unkc4 = 0;
+                    for (s32 i = 0; i < count; i++)
+                    {
+                        add_particle(particle, record->unk00, FieldVector1FAD90(record->unk04, record->unk08, record->unk0c, record->unk10));
+                        record++;
+                    }
+                    break;
+                }
+            }
+            break;
+    }
+    if (result)
+    {
+        return result;
+    }
+    return func_4997C0(object, desc);
+}
 
 void* func_00297A30(void* object, u8 kind)
 {
@@ -754,7 +1071,7 @@ void func_00298B40(LibReceiver4A71F0* object)
     object->func_slot1c(17);
 }
 
-void func_00298B70(FieldParallelArrays298B70* object, u8 value, const unsigned __int128* data)
+void func_00298B70(FieldClass1736B0* object, u8 value, const unsigned __int128* data)
 {
     if (object->unkc4 >= object->unkc0)
     {
@@ -764,7 +1081,7 @@ void func_00298B70(FieldParallelArrays298B70* object, u8 value, const unsigned _
     object->unkb0[object->unkc4] = value;
     if (data)
     {
-        object->unkb4[object->unkc4] = *data;
+        object->unkb4[object->unkc4].raw = *data;
     }
     object->unkc4++;
 }
@@ -778,42 +1095,42 @@ s32 func_00298C10(void* object)
     return 1;
 }
 
-void func_00298C20(FieldParallelArrays298B70* object, u32 value)
+void func_00298C20(FieldClass1736B0* object, u32 value)
 {
     object->unkb8 = value;
 }
 
-u32 func_00298C30(FieldParallelArrays298B70* object)
+u32 func_00298C30(FieldClass1736B0* object)
 {
     return object->unkb8;
 }
 
-void func_00298C40(FieldParallelArrays298B70* object, u32 value)
+void func_00298C40(FieldClass1736B0* object, u32 value)
 {
     object->unkbc = value;
 }
 
-u32 func_00298C50(FieldParallelArrays298B70* object)
+u32 func_00298C50(FieldClass1736B0* object)
 {
     return object->unkbc;
 }
 
-void func_00298C60(FieldParallelArrays298B70* object, u8* value)
+void func_00298C60(FieldClass1736B0* object, u8* value)
 {
     object->unkb0 = value;
 }
 
-u8* func_00298C70(FieldParallelArrays298B70* object)
+u8* func_00298C70(FieldClass1736B0* object)
 {
     return object->unkb0;
 }
 
-void func_00298C80(FieldParallelArrays298B70* object, unsigned __int128* value)
+void func_00298C80(FieldClass1736B0* object, FieldVector1FAD90* value)
 {
     object->unkb4 = value;
 }
 
-unsigned __int128* func_00298C90(FieldParallelArrays298B70* object)
+FieldVector1FAD90* func_00298C90(FieldClass1736B0* object)
 {
     return object->unkb4;
 }

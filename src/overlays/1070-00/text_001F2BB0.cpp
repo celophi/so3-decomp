@@ -311,9 +311,8 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FAC
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FAC30);
 
-void* func_001FAD90(void* object)
+FieldVector1FAD90::FieldVector1FAD90()
 {
-    return object;
 }
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FADA0);

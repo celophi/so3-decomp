@@ -5,6 +5,27 @@
 #include "overlays/1070-00/text_00213F40.h"
 
 #ifdef __cplusplus
+/** Sixteen-byte vector whose out-of-line default constructor does nothing. */
+class FieldVector1FAD90
+{
+public:
+    /** Leave the components uninitialized. */
+    FieldVector1FAD90();
+    /** Set the four components. */
+    FieldVector1FAD90(float x, float y, float z, float w)
+    {
+        value[0] = x;
+        value[1] = y;
+        value[2] = z;
+        value[3] = w;
+    }
+    union
+    {
+        unsigned __int128 raw;
+        float value[4];
+    };
+};
+
 extern "C" void func_100CB0(void* storage);
 
 /** Release the allocation prefix preceding curve-entry storage. */
@@ -139,12 +160,6 @@ u32 func_001F9EE0(const void* object);
  */
 u32 func_001F9EF0(const void* object);
 
-/**
- * @brief Return the supplied object pointer.
- * @param object Object or subobject pointer.
- * @return The same pointer.
- */
-void* func_001FAD90(void* object);
 
 /**
  * @brief Find a node by advancing from the first list element.

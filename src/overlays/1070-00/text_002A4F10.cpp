@@ -347,7 +347,7 @@ s32 func_002A8510(u8* object)
     return *(u32*)(object + 0x14) != 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A8520);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", __ct__16FieldClass173A80Fv);
 
 u8* func_002A8580(u8* object, s32 index)
 {
@@ -386,7 +386,7 @@ s32 func_002A8600(u8* object)
     return *(u32*)(object + 0x14) != 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A8610);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", __ct__16FieldClass1739B0Fv);
 
 u8* func_002A8670(u8* object, s32 index)
 {
@@ -425,7 +425,7 @@ s32 func_002A86F0(u8* object)
     return *(u32*)(object + 0x14) != 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A8700);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", __ct__16FieldClass1738E0Fv);
 
 u8* func_002A8760(u8* object, s32 index)
 {
@@ -464,7 +464,7 @@ s32 func_002A87E0(u8* object)
     return *(u32*)(object + 0x14) != 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A87F0);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", __ct__16FieldClass173810Fv);
 
 u8* func_002A8850(u8* object, s32 index)
 {
@@ -589,7 +589,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B05
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", __dt__16FieldClass1736B0Fv);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B0760);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", __ct__16FieldClass1736B0Fv);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B07F0);
 
