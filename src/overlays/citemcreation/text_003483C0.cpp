@@ -400,7 +400,10 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00348FC0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00349580);
+/** @brief Release the widget storage and destroy its base. */
+ItemCreationClass175110::~ItemCreationClass175110()
+{
+}
 
 /**
  * @brief Destroy the window through its Field base.
@@ -1175,7 +1178,10 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00351DC0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00351FD0);
+/** @brief Destroy the receiver. */
+ItemCreationClass185030::~ItemCreationClass185030()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352020);
 
@@ -1187,15 +1193,27 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003524E0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352570);
+/** @brief Release the widget storage and destroy its base. */
+ItemCreationClass1746A0::~ItemCreationClass1746A0()
+{
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003525E0);
+/** @brief Release the widget storage and destroy its base. */
+ItemCreationClass1725D0::~ItemCreationClass1725D0()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352650);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003526E0);
+/** @brief Release the widget storage and destroy its base. */
+ItemCreationClass172600::~ItemCreationClass172600()
+{
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352750);
+/** @brief Release the widget storage and destroy its base. */
+ItemCreationClass172870::~ItemCreationClass172870()
+{
+}
 
 void func_003527C0(void* object, u16 value)
 {
@@ -1206,15 +1224,31 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003528B0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352920);
+/** @brief Initialize the widget storage and select kind 6. */
+ItemCreationClass172870::ItemCreationClass172870()
+{
+    unk38 = 6;
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352960);
+/** @brief Initialize the widget storage and select kind 5. */
+ItemCreationClass172600::ItemCreationClass172600()
+{
+    unk38 = 5;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003529A0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352A10);
+/** @brief Initialize the widget storage and select kind 3. */
+ItemCreationClass1725D0::ItemCreationClass1725D0()
+{
+    unk38 = 3;
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352A50);
+/** @brief Initialize the widget storage and select kind 4. */
+ItemCreationClass1746A0::ItemCreationClass1746A0()
+{
+    unk38 = 4;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352A90);
 

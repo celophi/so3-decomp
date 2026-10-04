@@ -6,6 +6,7 @@
 
 #ifdef __cplusplus
 #include "overlays/citemcreation/text_00358440.h"
+#include "overlays/lib/text_004BD360.h"
 #endif
 
 /** Partial owner of four displayed position pairs and their update flags. */
@@ -359,6 +360,67 @@ class ItemCreationClass186670 : public FieldClass15AE70
 public:
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass186670();
+};
+
+/** Partial widget with resident vtable at 0x172870. */
+class ItemCreationClass172870 : public LibClass178600
+{
+public:
+    /** @brief Initialize the widget storage and select kind 6. */
+    ItemCreationClass172870();
+    /** @brief Release the widget storage and destroy its base. */
+    virtual ~ItemCreationClass172870();
+    LibStorageBlock0C unk40;
+};
+
+/** Partial widget with resident vtable at 0x172600. */
+class ItemCreationClass172600 : public LibClass178600
+{
+public:
+    /** @brief Initialize the widget storage and select kind 5. */
+    ItemCreationClass172600();
+    /** @brief Release the widget storage and destroy its base. */
+    virtual ~ItemCreationClass172600();
+    LibStorageBlock0C unk40;
+};
+
+/** Partial widget with resident vtable at 0x1725D0. */
+class ItemCreationClass1725D0 : public LibClass178600
+{
+public:
+    /** @brief Initialize the widget storage and select kind 3. */
+    ItemCreationClass1725D0();
+    /** @brief Release the widget storage and destroy its base. */
+    virtual ~ItemCreationClass1725D0();
+    LibStorageBlock0C unk40;
+};
+
+/** Partial widget with resident vtable at 0x1746A0. */
+class ItemCreationClass1746A0 : public LibClass178600
+{
+public:
+    /** @brief Initialize the widget storage and select kind 4. */
+    ItemCreationClass1746A0();
+    /** @brief Release the widget storage and destroy its base. */
+    virtual ~ItemCreationClass1746A0();
+    LibStorageBlock0C unk40;
+};
+
+/** Partial widget with resident vtable at 0x175110. */
+class ItemCreationClass175110 : public LibClass178600
+{
+public:
+    /** @brief Release the widget storage and destroy its base. */
+    virtual ~ItemCreationClass175110();
+    LibStorageBlock0C unk40;
+};
+
+/** Partial item creation receiver with resident vtable at 0x185030. */
+class ItemCreationClass185030
+{
+public:
+    /** @brief Destroy the receiver. */
+    virtual ~ItemCreationClass185030();
 };
 
 extern "C" {
