@@ -264,16 +264,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002067
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206880);
 
-/**
- * @brief Set bit zero of the receiver's flag byte at offset 0x34.
- * @param object Receiver whose flag is set.
- */
-void func_002068F0(FieldByteFlags34* object)
+void FieldClass16C970::func_slot0c(void* arg)
 {
-    object->unk34_0 = 1;
+    unk34_0 = 1;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206910);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", __dt__16FieldClass16C940Fv);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002069A0);
 

@@ -17,6 +17,10 @@ copies are renamed out of `.text` so the overlay link discards them. Their
 public symbols become undefined references to the kept copies. Mapped vtables
 are supplied by resident data; their generated definitions likewise become
 references before the overlay linker discards their sections.
+
+Some kept copies are outside every image we have (1070-00 was linked against
+an older resident program). Those are listed by name as external copies and
+always discarded, without inventing an address.
 """
 
 import re
@@ -55,15 +59,21 @@ def symbol_addresses(path):
     return {m.group(1): int(m.group(2), 16) for m in SYMBOL_LINE.finditer(Path(path).read_text())}
 
 
-def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
+def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, external=None):
     """Return ELF32 little-endian object bytes with .text headers sorted by function address.
 
     thunks maps compiler thunk names to the original address of their kept copy;
     keep is the unit's (start, end) VRAM range, outside which thunk copies are
-    discarded. With reorder=False only copy selection and resident vtable
-    references are processed.
+    discarded. external names inline-function copies whose kept copy is
+    outside every available image; they are always discarded. With
+    reorder=False only copy selection and resident vtable references are
+    processed.
     """
     thunks = thunks or {}
+    external = set(external or ())
+    both = sorted(external & set(addresses))
+    if both:
+        raise ValueError(f'external copies also have a symbol map address: {", ".join(both)}')
     if data[:6] != b'\x7fELF\x01\x01':
         raise ValueError('expected a little-endian ELF32 object')
     shoff = struct.unpack_from('<I', data, 32)[0]
@@ -93,6 +103,10 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
         if symbol.startswith('@') or info >> 4 >= STB_MULTIDEF:
             # Thunks and out-of-line copies of inline functions are emitted in
             # every unit that needs them; keep the copy the original linker kept.
+            if symbol in external:
+                copies.add(index)
+                dropped.add(index)
+                continue
             address = thunks.get(symbol) if symbol.startswith('@') else (
                 int(match.group(1), 16) if match else addresses.get(symbol))
             if address is None:
@@ -111,7 +125,7 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
         if index in key and key[index] != address:
             raise ValueError(f'.text section {index} holds more than one function')
         key[index] = address
-    missing = [i for i in texts if i not in key]
+    missing = [i for i in texts if i not in key and i not in dropped]
     if reorder and missing:
         raise ValueError(f'.text sections without a function symbol: {missing}')
     kept_copies = [i for i in copies if i not in dropped]
@@ -119,7 +133,7 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
         # Where the compiler and the original linker placed kept copies
         # differs (for example the order of inline destructor copies), so any
         # unit that keeps one is placed in original address order.
-        return order_text_sections(data, addresses, thunks, keep, reorder=True)
+        return order_text_sections(data, addresses, thunks, keep, reorder=True, external=external)
     if dropped:
         data = discard_sections(data, dropped)
         headers = [list(struct.unpack_from('<10I', data, shoff + i * size)) for i in range(count)]
@@ -158,6 +172,96 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True):
         index = struct.unpack_from('<H', data, offset + 14)[0]
         if 0 < index < SHN_LORESERVE:
             struct.pack_into('<H', out, offset + 14, remap[index])
+    return bytes(out)
+
+
+def merge_rodata_sections(data):
+    """Merge an object's .rodata sections into its first one, in section order.
+
+    MWCC gives each jump table its own .rodata section. The linker lays them out
+    one after another (each at its own alignment), so merging them in the same
+    order and spacing doesn't change the linked bytes. It lets objdiff find each
+    table at the same offset as in the original's single .rodata section. Each
+    table's relocations move with it; the emptied sections are renamed out of the
+    way and discarded by the link.
+    """
+    if data[:6] != b'\x7fELF\x01\x01':
+        raise ValueError('expected a little-endian ELF32 object')
+    shoff = struct.unpack_from('<I', data, 32)[0]
+    size, count, names_index = struct.unpack_from('<HHH', data, 46)
+    headers = [list(struct.unpack_from('<10I', data, shoff + i * size)) for i in range(count)]
+    strings = data[headers[names_index][4]:headers[names_index][4] + headers[names_index][5]]
+
+    def name(header):
+        return strings[header[0]:].split(b'\0', 1)[0].decode()
+
+    rodata = [i for i, h in enumerate(headers) if name(h) == '.rodata' and h[1] == 1]
+    if len(rodata) < 2:
+        return data
+    first = rodata[0]
+    offsets, merged, alignment = {}, bytearray(), 1
+    for index in rodata:
+        header = headers[index]
+        align = max(header[8], 1)
+        merged.extend(bytes(-len(merged) % align))
+        offsets[index] = len(merged)
+        merged.extend(data[header[4]:header[4] + header[5]])
+        alignment = max(alignment, align)
+
+    relocations = {i: [j for j, h in enumerate(headers) if h[1] in (4, 9) and h[7] == i] for i in rodata}
+    sections = [j for i in rodata for j in relocations[i]]
+    kinds = {(headers[j][1], headers[j][6]) for j in sections}
+    if len(kinds) > 1 or any(len(relocations[i]) > 1 for i in rodata):
+        raise ValueError('.rodata relocation sections differ in kind or symbol table')
+    entries = bytearray()
+    for index in rodata:
+        for j in relocations[index]:
+            header = headers[j]
+            step = header[9] or (8 if header[1] == 9 else 12)
+            for position in range(header[4], header[4] + header[5], step):
+                offset = struct.unpack_from('<I', data, position)[0]
+                entries.extend(struct.pack('<I', offset + offsets[index]))
+                entries.extend(data[position + 4:position + step])
+
+    symtab_index = next(i for i, h in enumerate(headers) if h[1] == 2)
+    symtab = headers[symtab_index]
+    moved = set(rodata[1:])
+    section_symbols = set()
+    out = bytearray(data)
+    for position in range(symtab[4], symtab[4] + symtab[5], symtab[9]):
+        label, value, length, info, other, index = struct.unpack_from('<IIIBBH', data, position)
+        if index not in moved:
+            continue
+        if info & 15 == 3:  # STT_SECTION: left on its emptied section, must stay unused
+            section_symbols.add((position - symtab[4]) // symtab[9])
+            continue
+        struct.pack_into('<IIIBBH', out, position, label, value + offsets[index], length, info, other, first)
+    for j, header in enumerate(headers):
+        if header[1] in (4, 9):
+            step = header[9] or (8 if header[1] == 9 else 12)
+            for position in range(header[4], header[4] + header[5], step):
+                if struct.unpack_from('<I', data, position + 4)[0] >> 8 in section_symbols:
+                    raise ValueError('a relocation refers to a merged .rodata section symbol')
+
+    def append(blob, align):
+        out.extend(bytes(-len(out) % align))
+        position = len(out)
+        out.extend(blob)
+        return position
+
+    headers[first][4], headers[first][5], headers[first][8] = append(merged, 16), len(merged), alignment
+    if sections:
+        kept = sections[0]
+        headers[kept][4], headers[kept][5], headers[kept][7] = append(entries, 4), len(entries), first
+    names = headers[names_index]
+    position = strings.find(DISCARDED + b'\0')
+    if position < 0:
+        position = len(strings)
+        names[4], names[5] = append(strings + DISCARDED + b'\0', 1), len(strings) + len(DISCARDED) + 1
+    for index in rodata[1:] + sections[1:]:
+        headers[index][0], headers[index][5] = position, 0
+    for i, header in enumerate(headers):
+        struct.pack_into('<10I', out, shoff + i * size, *header)
     return bytes(out)
 
 

@@ -17,6 +17,10 @@
  * first, which gives the original register choice (source a3, result a2).
  * @param out 16-byte aligned destination; all four words are written.
  * @param v 16-byte aligned source vector.
+ * @see Code Veronica X (CodeWarrior) computes the same xyz length with
+ *      vmul/vsqrt/vwaitq/vaddq in njScalor
+ *      (https://github.com/AshfordFamily/recvx-decomp,
+ *      src/ps2/veronica/prog/ps2_NaMatrix.c).
  */
 static inline void vu0_length_xyz(void* out, const void* v)
 {
@@ -40,6 +44,9 @@ static inline void vu0_length_xyz(void* out, const void* v)
  * @param out 16-byte aligned destination; all four words are written.
  * @param left 16-byte aligned first source vector.
  * @param right 16-byte aligned second source vector.
+ * @see Fatal Frame's Vu0MulVectorXYZW uses the same vf12/vf13 loads and
+ *      vmul.xyzw (https://github.com/Mikompilation/Himuro,
+ *      src/graphics/graph3d/libsg.h).
  */
 static inline void vu0_multiply_xyzw(void* out, const void* left, const void* right)
 {
@@ -74,6 +81,38 @@ static inline void vu0_load_matrix(const void* matrix)
         :
         : "r"(matrix)
         : "memory");
+}
+
+/**
+ * @brief Load a four-component vector into vf1.
+ *
+ * Kept separate from vu0_extend_bounds_vf1 because the game loads vf1 as
+ * soon as the vector is stored and extends the bounds later. The memory
+ * clobber keeps that store before this load, since the asm only sees the
+ * pointer.
+ * @param vector Pointer to a 16-byte aligned vector.
+ * @see parappa2 likewise leaves values in fixed VU registers between separate
+ *      asm statements (https://github.com/parappadev/parappa2,
+ *      src/prlib/model.cpp).
+ */
+static inline void vu0_load_vf1(const void* vector)
+{
+    asm __volatile__("lqc2 $vf1, 0(%0)" : : "r"(vector) : "memory");
+}
+
+/**
+ * @brief Extend the vf26 (min) / vf27 (max) XYZ bounds with vf1.
+ *
+ * The caller has already set up vf26/vf27. The game also uses this pair with
+ * vf4 as the source, so the register is part of the name.
+ * @see Area 51 accumulates a bounding box the same way
+ *      (https://github.com/ProjectDreamland/area51,
+ *      Support/CollisionMgr/PolyCache.cpp).
+ */
+static inline void vu0_extend_bounds_vf1(void)
+{
+    asm __volatile__("vmini.xyz $vf26, $vf26, $vf1\n"
+                     "vmax.xyz $vf27, $vf27, $vf1");
 }
 
 #endif

@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_1070_00_TEXT_002B4F20_H
 
 #include "types.h"
+#include "overlays/1070-00/text_00284BF0.h"
 
 /** Partial receiver containing the adjacent floating-point fields at 0x30 and 0x34. */
 typedef struct FieldFloatPair30
@@ -644,6 +645,23 @@ float func_002BABF0(void* object);
  * @return The selected value.
  */
 s16 func_002BACC0(void* object);
+
+/**
+ * @brief Clear the notification entry identified by its token.
+ * @param object Receiver containing eight notification slots.
+ * @param token Token to find in the slots.
+ */
+void func_002BAF30(FieldContextE4* object, s32 token);
+
+/**
+ * @brief Register a byte-state notification in an available slot.
+ * @param object Receiver containing eight notification slots.
+ * @param name Name copied into the slot's 16-byte label.
+ * @param state Byte state passed to the notification binding.
+ * @param value Signed byte passed to the notification binding.
+ * @return Slot token, or -1 when every slot is occupied.
+ */
+s32 func_002BAFB0(FieldContextE4* object, const char* name, u8* state, s8 value);
 
 #ifdef __cplusplus
 }

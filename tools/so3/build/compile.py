@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, verify_compiler
-from tools.so3.build.text_order import order_text_sections, symbol_addresses, unit_range
+from tools.so3.build.text_order import merge_rodata_sections, order_text_sections, symbol_addresses, unit_range
 
 
 def unit_flags(config, unit):
@@ -40,6 +40,15 @@ def thunk_map(unit):
     """Original addresses of the kept copies of MWCC this-adjusting thunks."""
     path = Path('config/thunks') / f'{module_of(unit)}_thunk_addrs.txt'
     return symbol_addresses(path) if path.is_file() else {}
+
+
+def external_copies(unit):
+    """Inline-function copies whose kept copy is outside every available image."""
+    path = Path('config/copies') / f'{module_of(unit)}_external_copies.txt'
+    if not path.is_file():
+        return set()
+    lines = (line.split('//', 1)[0].strip() for line in path.read_text().splitlines())
+    return {line for line in lines if line}
 
 
 def overlay_range(unit):
@@ -100,7 +109,9 @@ def main():
         if deferred(selected) or languages[args.source.suffix] == 'c++':
             temporary.write_bytes(order_text_sections(
                 temporary.read_bytes(), symbol_map(unit), thunk_map(unit),
-                overlay_range(unit), reorder=deferred(selected)))
+                overlay_range(unit), reorder=deferred(selected), external=external_copies(unit)))
+        # One .rodata section, as in the original, so objdiff pairs each jump table.
+        temporary.write_bytes(merge_rodata_sections(temporary.read_bytes()))
         temporary.replace(args.output)
     finally:
         temporary.unlink(missing_ok=True)

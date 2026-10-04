@@ -440,7 +440,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EE5
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EE7D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002EE880);
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", __ct__16FieldClass176230Fv);
 
 void func_002EE900(void* object)
 {

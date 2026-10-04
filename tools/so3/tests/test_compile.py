@@ -2,7 +2,7 @@
 
 import unittest
 
-from tools.so3.build.compile import deferred, symbol_map, unit_flags
+from tools.so3.build.compile import deferred, external_copies, symbol_map, unit_flags
 
 
 CONFIG = {
@@ -37,6 +37,14 @@ class UnitFlagsTests(unittest.TestCase):
 
     def test_symbol_map_follows_the_overlay_directory(self):
         self.assertIn('__dl__FPv', symbol_map('src/overlays/1067-00/text_001DD3C0.cpp'))
+
+    def test_external_copies_skip_comments(self):
+        copies = external_copies('src/overlays/1070-00/text_00294DA0.cpp')
+        self.assertIn('__dt__16FieldClass17A810Fv', copies)
+        self.assertFalse(any(name.startswith('//') or ' ' in name for name in copies))
+
+    def test_modules_without_external_copies_have_none(self):
+        self.assertEqual(external_copies('src/overlays/1067-00/text_001DD3C0.cpp'), set())
 
 
 if __name__ == '__main__':

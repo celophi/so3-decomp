@@ -1,7 +1,7 @@
 #ifndef SO3_OVERLAYS_1070_00_TEXT_002A4F10_H
 #define SO3_OVERLAYS_1070_00_TEXT_002A4F10_H
 
-#include "overlays/1070-00/text_00284BF0.h"
+#include "overlays/1070-00/text_001E2B40.h"
 
 /** Partial resource list entry with its size, keys and observed flag byte. */
 typedef struct FieldResourceListEntry
@@ -29,9 +29,239 @@ typedef struct FieldResourceList14
     FieldListNode unk14;
 } FieldResourceList14;
 
+/** Opaque source whose float scale values are read by the entry update. */
+typedef struct FieldScaleSource296670 FieldScaleSource296670;
+/** Opaque aligned entry in the update buffer. */
+typedef struct FieldScaleEntry296670 FieldScaleEntry296670;
+
+/** Partial mask receiver containing its array of 64-bit group flags. */
+typedef struct FieldScaleMask296670
+{
+    u8 unk00[8];
+    const u64* unk08;
+} FieldScaleMask296670;
+
+#ifdef __cplusplus
+class FieldVector1FAD90;
+
+/** Partial destruction interface of the particle allocator ancestor. */
+class FieldClass16CF78 : public FieldClass16AB70
+{
+public:
+    /** Destroy the allocator-family receiver. */
+    virtual ~FieldClass16CF78();
+    /** Allocate from the particle allocator, recording the caller's line and file. */
+    static void* operator new(u32 size, s32 line, const char* file);
+    /** Release storage obtained from the particle allocator. */
+    static void operator delete(void* object);
+    /** Placement delete matching the debug operator new; does nothing. */
+    static void operator delete(void* object, s32 line, const char* file)
+    {
+    }
+    u8 unk04;
+    u8 unk05[0x13];
+};
+
+/** Partial destruction interface of the particle receiver base. */
+class FieldClass16CF90 : public FieldClass16CF78
+{
+public:
+    /** Destroy the receiver base. */
+    virtual ~FieldClass16CF90();
+};
+
+/** Partial destruction interface with primary vtable at 0x173A80. */
+class FieldClass173A80 : public FieldClass16CF90
+{
+public:
+    /** Construct the receiver and its bases. */
+    FieldClass173A80();
+    /** Destroy the receiver and release its owned storage. */
+    virtual ~FieldClass173A80();
+    u8 unk18[0x18];
+};
+
+/** Partial destruction interface with primary vtable at 0x1739B0. */
+class FieldClass1739B0 : public FieldClass16CF90
+{
+public:
+    /** Construct the receiver and its bases. */
+    FieldClass1739B0();
+    /** Destroy the receiver and release its owned storage. */
+    virtual ~FieldClass1739B0();
+    u8 unk18[0x18];
+};
+
+/** Partial destruction interface with primary vtable at 0x1738E0. */
+class FieldClass1738E0 : public FieldClass16CF90
+{
+public:
+    /** Construct the receiver and its bases. */
+    FieldClass1738E0();
+    /** Destroy the receiver and release its owned storage. */
+    virtual ~FieldClass1738E0();
+    u8 unk18[0x18];
+};
+
+/** Partial destruction interface with primary vtable at 0x173810. */
+class FieldClass173810 : public FieldClass16CF90
+{
+public:
+    /** Construct the receiver and its bases. */
+    FieldClass173810();
+    /** Destroy the receiver and release its owned storage. */
+    virtual ~FieldClass173810();
+    u8 unk18[0x18];
+};
+
+/** Partial destruction interface with primary vtable at 0x173B50. */
+class FieldClass173B50 : public FieldClass16CF90
+{
+public:
+    /** Construct the receiver and its bases. */
+    FieldClass173B50();
+    /** Destroy the receiver and release its callback registrations. */
+    virtual ~FieldClass173B50();
+    u8 unk18[0x18];
+};
+
+/** Partial destruction interface with primary vtable at 0x1735E0. */
+class FieldClass1735E0 : public FieldClass173B50
+{
+public:
+    /** Initialize the shared particle state. */
+    FieldClass1735E0()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        unk48 = 0;
+        unk4c = 0;
+        unk4d = 0;
+        unk4f = 1;
+        unk50 = 0;
+        unk55 = 1;
+        unk56 = 0;
+        unk57 = 0;
+        unk04 = 1;
+    }
+    /** Destroy the receiver through its primary base. */
+    virtual ~FieldClass1735E0()
+    {
+    }
+    float unk30;
+    u8 unk34[4];
+    float unk38;
+    u8 unk3c[8];
+    u32 unk44;
+    u32 unk48;
+    u8 unk4c;
+    u8 unk4d;
+    u8 unk4e;
+    u8 unk4f;
+    u32 unk50;
+    u8 unk54;
+    u8 unk55;
+    u8 unk56;
+    u8 unk57;
+};
+
+/** Partial destruction interface with primary vtable at 0x1736B0. */
+class FieldClass1736B0 : public FieldClass1735E0
+{
+public:
+    /** Construct the receiver with empty particle arrays. */
+    FieldClass1736B0();
+    /** Destroy the receiver and release its owned storage. */
+    virtual ~FieldClass1736B0();
+    u8 unk58[0x58];
+    u8* unkb0;
+    FieldVector1FAD90* unkb4;
+    u32 unkb8;
+    u32 unkbc;
+    s32 unkc0;
+    s32 unkc4;
+    u8 unkc8;
+    u8 unkc9;
+};
+
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Initialize the particle arrays and their group mask.
+ * @param object Receiver whose arrays are initialized.
+ * @param count Number of groups.
+ * @param group_size Number of entries per group.
+ */
+void func_002AA770(void* object, s32 count, s32 group_size);
+
+/**
+ * @brief Initialize the particle arrays and their group mask.
+ * @param object Receiver whose arrays are initialized.
+ * @param count Number of groups.
+ * @param group_size Number of entries per group.
+ */
+void func_002A97A0(void* object, s32 count, s32 group_size);
+
+/**
+ * @brief Initialize the particle arrays and their group mask.
+ * @param object Receiver whose arrays are initialized.
+ * @param count Number of groups.
+ * @param group_size Number of entries per group.
+ */
+void func_002A9F70(void* object, s32 count, s32 group_size);
+
+/**
+ * @brief Initialize the particle arrays and their group mask.
+ * @param object Receiver whose arrays are initialized.
+ * @param count Number of groups.
+ * @param group_size Number of entries per group.
+ */
+void func_002A8FF0(void* object, s32 count, s32 group_size);
+
+/**
+ * @brief Initialize the particle arrays and their group mask.
+ * @param object Receiver whose arrays are initialized.
+ * @param count Number of groups.
+ * @param group_size Number of entries per group.
+ */
+void func_002A88E0(void* object, s32 count, s32 group_size);
+
+/**
+ * @brief Update the particle entries belonging to the receiver.
+ * @param object Receiver containing group state and arrays.
+ * @param count Number of entries to update.
+ * @param entries Entry buffer.
+ */
+void func_002AC070(void* object, s32 count, FieldScaleEntry296670* entries);
+
+/**
+ * @brief Update the particle entries belonging to the receiver.
+ * @param object Receiver containing group state and arrays.
+ * @param count Number of entries to update.
+ * @param entries Entry buffer.
+ */
+void func_002AC920(void* object, s32 count, FieldScaleEntry296670* entries);
+
+/**
+ * @brief Update the particle entries belonging to the receiver.
+ * @param object Receiver containing group state and arrays.
+ * @param count Number of entries to update.
+ * @param entries Entry buffer.
+ */
+void func_002AB800(void* object, s32 count, FieldScaleEntry296670* entries);
+
+/**
+ * @brief Update the particle entries belonging to the receiver.
+ * @param object Receiver containing group state and arrays.
+ * @param count Number of entries to update.
+ * @param entries Entry buffer.
+ */
+void func_002AAF90(void* object, s32 count, FieldScaleEntry296670* entries);
+
 
 /**
  * @brief Find the size selected by a resource entry's flag.

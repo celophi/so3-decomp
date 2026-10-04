@@ -12,6 +12,137 @@ typedef struct FieldKeyedListElement18
 } FieldKeyedListElement18;
 
 #ifdef __cplusplus
+/** Partial Lib receiver built by the out-of-line constructor at 0x4DD1F0. */
+class LibReceiver4DD1F0
+{
+public:
+    /** Construct the Lib receiver. */
+    LibReceiver4DD1F0();
+    /** Destroy the Lib receiver. */
+    virtual ~LibReceiver4DD1F0();
+    u8 unk04[0x6A];
+    u16 kind;
+    u8 unk70[0x1A0];
+};
+
+/** Partial Lib receiver with primary vtable at 0x178E10. */
+class LibClass178E10 : public LibReceiver4DD1F0
+{
+public:
+    /** Construct the receiver and clear its two observed fields. */
+    LibClass178E10()
+    {
+        unk210 = 0;
+        unk214 = 0;
+    }
+    /** Destroy the receiver through its Lib base. */
+    virtual ~LibClass178E10();
+    u8 unk210;
+    u8 unk211[3];
+    u32 unk214;
+};
+
+/** Partial Lib receiver with primary vtable at 0x178EA0. */
+class LibClass178EA0 : public LibReceiver4DD1F0
+{
+public:
+    /** Construct the receiver and clear its observed byte. */
+    LibClass178EA0()
+    {
+        unk210 = 0;
+    }
+    /** Destroy the receiver through its Lib base. */
+    virtual ~LibClass178EA0();
+    u8 unk210;
+};
+
+/** Partial receiver with primary vtable at 0x1792A0 and a countdown at 0x240. */
+class FieldClass1792A0 : public LibClass178E10
+{
+public:
+    /** Start the countdown at 5 with no key. */
+    FieldClass1792A0()
+    {
+        delay = 5.0f;
+        key = -1;
+    }
+    /** Destroy the receiver through its Lib base. */
+    virtual ~FieldClass1792A0()
+    {
+    }
+    u8 unk218[0x28];
+    float delay;
+    s32 key;
+};
+
+/** Partial receiver of kind 0x4041 with primary vtable at 0x16F1B0. */
+class FieldClass16F1B0 : public FieldClass1792A0
+{
+public:
+    /** Mark the receiver's kind. */
+    FieldClass16F1B0()
+    {
+        kind = 0x4041;
+    }
+    /** Destroy the receiver through its primary base. */
+    virtual ~FieldClass16F1B0();
+    u8 unk248[8];
+};
+
+/** Partial receiver with primary vtable at 0x1793D0 and a countdown at 0x270. */
+class FieldClass1793D0 : public LibClass178EA0
+{
+public:
+    /** Start the countdown at 5 with no key. */
+    FieldClass1793D0()
+    {
+        delay = 5.0f;
+        key = -1;
+    }
+    /** Destroy the receiver through its Lib base. */
+    virtual ~FieldClass1793D0()
+    {
+    }
+    u8 unk214[0x5C];
+    float delay;
+    s32 key;
+};
+
+/** Partial receiver of kind 0x4040 with primary vtable at 0x16F080. */
+class FieldClass16F080 : public FieldClass1793D0
+{
+public:
+    /** Mark the receiver's kind. */
+    FieldClass16F080()
+    {
+        kind = 0x4040;
+    }
+    /** Destroy the receiver through its primary base. */
+    virtual ~FieldClass16F080();
+    u8 unk278[8];
+};
+
+/** Partial receiver with primary vtable at 0x179180. */
+class FieldClass179180 : public LibClass178E10
+{
+public:
+    /** Destroy the receiver through its Lib base. */
+    virtual ~FieldClass179180()
+    {
+    }
+    u8 unk218[0x38];
+};
+
+/** Partial receiver with primary vtable at 0x16F120. */
+class FieldClass16F120 : public FieldClass179180
+{
+public:
+    /** Destroy the receiver through its primary base. */
+    virtual ~FieldClass16F120();
+};
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 

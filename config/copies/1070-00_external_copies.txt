@@ -1,0 +1,10 @@
+// Out-of-line copies of inline destructors that the original linker kept
+// outside 1070-00, in the older resident program it was linked against. That
+// program isn't available, so these copies are dropped without an address.
+// See docs/research.md, "Field 1070's missing destructor copies".
+__dt__16FieldClass179210Fv
+__dt__16FieldClass179330Fv
+__dt__16FieldClass17A810Fv
+__dt__16FieldClass1792A0Fv
+__dt__16FieldClass1793D0Fv
+__dt__16FieldClass179180Fv

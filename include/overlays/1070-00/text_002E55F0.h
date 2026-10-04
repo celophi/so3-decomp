@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_1070_00_TEXT_002E55F0_H
 
 #include "types.h"
+#include "overlays/1070-00/text_00244310.h"
 
 /** Partial receiver whose flag byte is at offset 0x70. */
 typedef struct FieldByteFlags70
@@ -146,6 +147,19 @@ typedef struct FieldResourceRecord
     u8 unk00[0xC];
     u32 next_offset;
 } FieldResourceRecord;
+
+#ifdef __cplusplus
+/** Partial receiver of kind 0x4000 with primary vtable at 0x176230. */
+class FieldClass176230 : public LibReceiver4DD1F0
+{
+public:
+    /** Construct the receiver, its two embedded members, and its flags. */
+    FieldClass176230();
+    /** Destroy the receiver. */
+    virtual ~FieldClass176230();
+    u8 unk210[0x90];
+};
+#endif
 
 #ifdef __cplusplus
 extern "C" {

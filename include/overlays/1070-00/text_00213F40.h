@@ -3,6 +3,30 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+/** Observed primary prefix of the receiver passed to func_0021AB20. */
+class FieldReceiverHead21AB20
+{
+public:
+    u8 unk00[0x14];
+};
+
+/** Observed secondary prefix, beginning at offset 0x14. */
+class FieldReceiverTail21AB20
+{
+public:
+    u8 unk00[0xC];
+    s32 unk0c;
+};
+
+/** Partial receiver with its checked word at offset 0x20. */
+class FieldReceiver21AB20 : public FieldReceiverHead21AB20, public FieldReceiverTail21AB20
+{
+};
+#else
+typedef struct FieldReceiverTail21AB20 FieldReceiverTail21AB20;
+#endif
+
 /** A 32-byte record in the observed child and sibling traversal. */
 typedef struct FieldTraversalRecord
 {
@@ -84,6 +108,60 @@ typedef struct FieldCheckedState7C
     s32 unka8;
     s32 unkac;
 } FieldCheckedState7C;
+
+/** Partial 0x1C-byte array entry handled by func_0021A970. */
+typedef struct FieldEntry1C
+{
+    u32 unk00;
+    u32 unk04;
+    u8 unk08_0 : 1;
+    u8 unk08_1_7 : 7;
+    u8 unk09[3];
+    s32 unk0c;
+    u32 unk10;
+    u8 unk14[2];
+    u8 unk16_0 : 1;
+    u8 unk16_1 : 1;
+    u8 unk16_2 : 1;
+    u8 unk16_3_7 : 5;
+    u8 unk17[5];
+#ifdef __cplusplus
+    /** @brief Read the entry's byte count. @return Stored byte count. */
+    u32 byte_count() const
+    {
+        return unk00;
+    }
+
+    /**
+     * @brief Read the stored address, rounded to 128 bytes unless either control flag is set.
+     * @return Raw or rounded address value.
+     */
+    u32 rounded_unk04()
+    {
+        if (unk08_0 || unk16_2)
+        {
+            return unk04;
+        }
+        return (unk04 + 127) & ~127;
+    }
+#endif
+} FieldEntry1C;
+
+/** One 16-byte interpolation entry with three observed float fields. */
+typedef struct FieldCurveEntry
+{
+    float unk00;
+    float unk04;
+    float unk08;
+    u8 unk0c[4];
+} FieldCurveEntry;
+
+/** Partial interpolation table holding a signed count and its entries. */
+typedef struct FieldFloatCurve
+{
+    s32 count;
+    FieldCurveEntry* entries;
+} FieldFloatCurve;
 
 #ifdef __cplusplus
 extern "C" {
@@ -284,6 +362,14 @@ void func_00219670(void* object);
 s32 func_0021A960(void* object);
 
 /**
+ * @brief Pass the entry's word at offset 0x4 to func_100D60 and clear it, if bit 1 of its
+ *        byte at offset 0x16 is set.
+ * @param entry Entry to update.
+ * @return 1 if the word was passed on and cleared, otherwise 0.
+ */
+s32 func_0021A970(FieldEntry1C* entry);
+
+/**
  * @brief Return the fixed value 3.
  * @param object Receiver or first argument; unused.
  * @return Always 3.
@@ -350,7 +436,22 @@ void func_00223A80(void* object);
  */
 void func_00223A90(void* object);
 
+/**
+ * @brief Evaluate the interpolation curve at the supplied position.
+ * @param curve Curve records and their signed count.
+ * @param position Position to evaluate.
+ * @return Interpolated curve value, or zero for fewer than two records.
+ */
+float func_002166F0(const FieldFloatCurve* curve, float position);
+
 #ifdef __cplusplus
+/**
+ * @brief Check collected receivers, excluding the supplied object.
+ * @param object Receiver containing the collection state.
+ * @param excluded Receiver to exclude from the check.
+ * @return True when a collected receiver reports the observed condition.
+ */
+bool func_0021AB20(FieldReceiver21AB20* object, void* excluded);
 }
 #endif
 
