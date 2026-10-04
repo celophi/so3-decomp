@@ -19,7 +19,7 @@ void func_0024C540(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024C550);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0020BD00__16FieldClass153570FP16FieldClass154D20);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024C6A0);
 
@@ -56,7 +56,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024D0
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024D110);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024D1C0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024D1C0__16FieldClass1535B0FPCc);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024D2A0);
 

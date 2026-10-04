@@ -8,6 +8,14 @@ extern "C" {
 #endif
 
 /**
+ * @brief Find a camera entry matching its name and state filters.
+ * @param object Manager supplying the entry table.
+ * @param name Entry name; null or empty accepts any name.
+ * @return Matching entry handle, or null.
+ */
+void* func_00473680(void* object, const char* name);
+
+/**
  * @brief Update each active entry of the object's table with a boolean setting and an option flag.
  * @param object Object whose entry table is updated.
  * @param enable Boolean setting forwarded to each entry.

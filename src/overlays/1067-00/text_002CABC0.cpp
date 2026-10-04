@@ -1,6 +1,7 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002CABC0.h"
 #include "main/resident_data.h"
+#include "main/resident_0012F0F8.h"
 
 struct FieldNameEntry
 {
@@ -172,7 +173,6 @@ struct FieldCollection50
 };
 // This overlay uses shorter aliases for these resident functions.
 extern "C" u32 func_11C8C0(void* table, s32 index);
-extern "C" char* func_13CD50(char* dest, const char* src, u32 count);
 extern "C" s32 func_13C800(const char* left, const char* right);
 extern "C" void func_113EA0();
 extern "C" void func_4C74E0(FieldState100* state);
@@ -327,7 +327,7 @@ FieldNameEntry* func_002CB9D0(FieldNameOwner* object, FieldNameGroup** group_ptr
     for (s32 index = 0; index < group->count; index++, entry++)
     {
         const char* source = (const char*)(group->names + entry->name_index * 0x14 + 4);
-        func_13CD50(buffer, source, 16);
+        func_0013CD50(buffer, source, 16);
         buffer[16] = 0;
         if (func_13C800(buffer, object->name) == 0)
         {

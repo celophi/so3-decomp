@@ -34,6 +34,19 @@ typedef struct FieldObject220150
 class FieldClass15B890 : public FieldClass15B950
 {
 public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Clear the scalar track and record array and set the default scale. */
+    FieldClass15B890()
+    {
+        unk90 = 0;
+        unk94 = 1.0f;
+        unk9e_0 = 0;
+        unk98 = 0;
+    }
+
     u8 unk8c[4];
     FieldClass150090* unk90;
     float unk94;
@@ -163,6 +176,23 @@ void func_00224CE0(void* object);
  */
 void func_00224E50(FieldObject224E50* object);
 
+/**
+ * @brief Copy a 17-byte operand record and select the resident receiver.
+ * @param object Receiver selected by the resident state.
+ * @param source Packed operand record to retain.
+ * @param flags Flags retained with the record.
+ * @return Always one.
+ */
+s32 func_00225790(void* object, const void* source, u32 flags);
+
+/**
+ * @brief Update the actor heading, optionally interpolating it.
+ * @param actor Actor whose orientation to update.
+ * @param heading Heading in radians.
+ * @param duration Interpolation duration; zero updates immediately.
+ */
+void func_00227610(struct FieldClass151510* actor, float heading, float duration);
+
 typedef struct FieldObject152320 FieldObject152320;
 
 /**
@@ -209,12 +239,15 @@ s32 func_00229240(void* object);
 #ifdef __cplusplus
 /**
  * Partial FieldClass151510 with 13 more virtual slots, with vtable D_152430 in
- * main data. Its constructor (func_00229020) sets type bit 0x2 in unk78.
+ * main data. Its constructor sets type bit 0x2 in unk78.
  * Overrides of earlier slots other than slot 15 are not declared yet.
  */
 class FieldClass152430 : public FieldClass151510
 {
 public:
+    /** @brief Initialize the actor fields and its embedded command list. */
+    FieldClass152430();
+
     /** @brief Destroy the object. */
     virtual ~FieldClass152430();
 
@@ -266,6 +299,11 @@ public:
     /** @brief Virtual handler slot 31. */
     virtual void func_002270D0();
 
+    u8 unk210[0xD0];
+    u8 unk2e0;
+    s8 unk2e1;
+    u8 unk2e2_0 : 1;
+    u8 unk2e2_1_7 : 7;
 };
 
 class FieldClass1502E0;
@@ -293,11 +331,8 @@ public:
     /** @brief Virtual handler slot 33. */
     virtual void func_00203500();
 
-    /**
-     * @brief Virtual handler slot 34.
-     * @param value Float argument whose meaning is not yet known.
-     */
-    virtual void func_00202580(float value);
+    /** @brief Reset actor state using its selected resource key. */
+    virtual void func_00202580();
 
     /**
      * @brief Virtual handler slot 35.
@@ -305,10 +340,12 @@ public:
      */
     virtual void func_00200110(void* arg);
 
-    u8 unk210[0x180];
+    u8 unk2f0[0xA0];
     FieldVec4B unk390;
     FieldClass1502E0* unk3a0;
-    u8 unk3a4[0x10];
+    u8 unk3a4[8];
+    s32 unk3ac;
+    s32 unk3b0;
     u32 unk3b4;
     u8 unk3b8[8];
 };
@@ -321,6 +358,12 @@ public:
 class FieldClass152F00 : public FieldClass150EB0
 {
 public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Initialize the inherited actor and its resource state. */
+    FieldClass152F00();
     /** @brief Destroy the object. */
     virtual ~FieldClass152F00();
 
@@ -335,6 +378,11 @@ public:
 
     u8 unk3c0[0x170];
     FieldVec4B unk530;
+    u8 unk540[0x8D];
+    u8 unk5cd_0_1 : 2;
+    u8 unk5cd_2 : 1;
+    u8 unk5cd_3 : 1;
+    u8 unk5cd_4_7 : 4;
 };
 
 /**
@@ -381,8 +429,13 @@ public:
      */
     virtual void func_0023D3C0(void* arg);
 
-    u8 unk210[0x254];
+    u8 unk2f0[0x174];
     float unk464;
+    u8 unk468[0x4D];
+    u8 unk4b5;
+    u8 unk4b6;
+    u8 unk4b7;
+    void* unk4b8;
 };
 
 /**
@@ -396,7 +449,7 @@ public:
     /** @brief Destroy the object. */
     virtual ~FieldClass152FE0();
 
-    u8 unk540[0x110];
+    u8 unk5d0[0x80];
     FieldVec4A unk650;
     FieldVec4A unk660;
     FieldVec4A unk670;
@@ -427,7 +480,7 @@ public:
     /** @brief Destroy the object. */
     virtual ~FieldClass152350();
 
-    u8 unk540[0xF8];
+    u8 unk5d0[0x68];
     float unk638;
     u8 unk63c[0x96];
     u8 unk6d2_0_3 : 4;

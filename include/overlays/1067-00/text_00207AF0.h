@@ -22,18 +22,37 @@ typedef struct FieldShapeListOwner20 FieldShapeListOwner20;
 struct FieldClass154D20;
 struct FieldClass1515D0;
 struct FieldVec4B;
+struct FieldVec4A;
 struct FieldClass151640;
 struct FieldShapeOwner18;
 struct FieldShapeData10;
 struct FieldClass1515B0;
 struct FieldClass151570;
 struct FieldClass151620;
+
 struct LibClass178A90;
 struct LibClass178220;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Find a camera entry for a shape node passing the position query.
+ * @param object Shape list and resource owner.
+ * @param query Query position.
+ * @return Camera entry handle, or null.
+ */
+void* func_0020CC50(struct FieldClass151640* object, struct FieldVec4A* query);
+
+/**
+ * @brief Test transform attachments against another shape resource.
+ * @param object Attachment list and resource owner.
+ * @param other Resource supplying the other shape descriptor.
+ * @param point Point transformed in place when an attachment passes the test.
+ * @return One when a test passes, otherwise zero.
+ */
+u8 func_0020CE40(struct FieldClass151640* object, struct FieldClass1515D0* other, struct FieldVec4A* point);
 
 /**
  * @brief Create specialized nodes for descriptors and mark their associated records.
@@ -108,18 +127,8 @@ extern struct FieldShapeRecord20* D_001B6570;
  */
 void func_00209B30(FieldCopyState* object);
 
-/**
- * @brief Test whether the lookup helper returns an object.
- * @param object Receiver to query.
- * @return True when the helper returns a nonnull object.
- */
-bool func_0020BDB0(void* object);
 
-/**
- * @brief Run an update helper and finish the attached callback object.
- * @param object Callback receiver.
- */
-void func_0020BD60(FieldCallbackState* object);
+
 
 /**
  * @brief Forward the callback when the receiver is active.
@@ -129,25 +138,8 @@ void func_0020BD60(FieldCallbackState* object);
  */
 void func_0020BDD0(FieldCallbackState* object, void* context, u32 enabled);
 
-/**
- * @brief Clear the attached callback object after notifying it.
- * @param object Callback receiver.
- */
-void func_0020BE00(FieldCallbackState* object);
 
-/**
- * @brief Store a word at offset 0xC4.
- * @param object Receiver to update.
- * @param value Word to store.
- */
-void func_0020BEF0(FieldAtC4* object, u32 value);
 
-/**
- * @brief Store a size and its 128-byte rounded form.
- * @param object Receiver to update.
- * @param size Size to store and round.
- */
-void func_0020BF50(FieldAlignedSize* object, u32 size);
 
 /**
  * @brief Find a list entry with the requested kind.
@@ -425,6 +417,25 @@ public:
     virtual ~FieldClass151400();
     /** @brief Wait for readiness and invoke the owner motion callback. @return One when ready, otherwise zero. */
     virtual s32 func_00207FE0();
+};
+
+/** Command node retaining a motion vector and flags. */
+class FieldClass151440 : public FieldClass150440
+{
+public:
+    /** @brief Set the command kind, flags, and vector. @param flags Command flags. @param value Vector to copy. */
+    FieldClass151440(u8 flags, const FieldVec4A& value)
+    {
+        unk18 = 0x30049;
+        unk30 = flags;
+        unk20 = value;
+    }
+    /** @brief Destroy the command and its inherited node. */
+    virtual ~FieldClass151440();
+    /** @brief Apply the retained vector when resident state is ready. @return One. */
+    virtual s32 func_00208230();
+    FieldVec4A unk20;
+    u8 unk30;
 };
 
 /** Command node that waits for its owning motion receiver. */
@@ -720,8 +731,8 @@ public:
     /** @brief Virtual handler slot 1. */
     virtual void func_0020BDA0();
 
-    /** @brief Virtual handler slot 2. */
-    virtual void func_0020BD00();
+    /** @brief Copy the source channel. @param other Source channel. */
+    virtual void func_0020BD00(FieldClass154D20* other);
 
     /**
      * @brief Return the FieldClass1515D0 part to use.
@@ -729,8 +740,8 @@ public:
      */
     virtual FieldClass1515D0* func_001DDCD0();
 
-    /** @brief Virtual handler slot 4. */
-    virtual void func_0020BCF0();
+    /** @brief Bind the channel context. @param context Context pointer. */
+    virtual void func_0020BCF0(void* context);
 };
 
 /** Shape-resource and list owner identified by MAIN vtable D_151640. */
@@ -761,20 +772,26 @@ class FieldClass15B950;
 class FieldClass151510 : public FieldClass150F90
 {
 public:
-    /** @brief Destroy the object. */
+    /** @brief Clear the optional channel and set the default scalar values. */
+    FieldClass151510();
+    /** @brief Delete the optional channel and destroy the inherited actor. */
     virtual ~FieldClass151510();
-
-    /** @brief Virtual handler slot 16. */
+    /** @brief Update the actor. */
+    virtual void func_001DF360();
+    /** @brief Update the actor state. */
+    virtual void func_00204210();
+    /** @brief Load the actor resource selected by its key. @param key Resource key, or -1. @return One on success, zero otherwise. */
+    virtual s32 func_00204A10(s32 key);
+    /** @brief Reset the attached channel. */
+    virtual void func_00204E40();
+    /** @brief Test or update the actor using another object. @param other Other object. @return Status result. */
+    virtual s32 func_00204480(void* other);
+    /** @brief Run the actor handler. */
     virtual void func_0020BE50();
-
-    /** @brief Virtual handler slot 17. */
-    virtual void func_0020BF00();
-
-    /**
-     * @brief Virtual handler slot 18.
-     * @param arg Argument whose meaning is not yet known.
-     */
-    virtual void func_0020BF50(void* arg);
+    /** @brief Allocate the optional channel. @return Always one. */
+    virtual s32 func_0020BF00();
+    /** @brief Store the resource and its 128-byte aligned payload pointer. @param resource Resource address. */
+    virtual void func_0020BF50(void* resource);
 
     /**
      * @brief Test whether an object is stored at offset 0x148.
@@ -806,8 +823,8 @@ public:
     float unkA0;
     float unkA4;
     FieldClass154D20* unkA8;
-    u32 unkAC;
-    u32 unkB0;
+    void* unkAC;
+    void* unkB0;
     u8 unkB4[0x90];
     FieldClass15B950* unk144;
     void* unk148;

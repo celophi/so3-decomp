@@ -18,6 +18,10 @@
 #include "overlays/1067-00/text_00202240.h"
 #include "overlays/1067-00/text_0022B490.h"
 #include "main/resident_001001E0.h"
+#include "overlays/1067-00/field_runtime.h"
+#include "overlays/1067-00/text_00200710.h"
+#include "overlays/1067-00/text_0021DB80.h"
+#include "overlays/1067-00/text_002CABC0.h"
 #include "vu0.h"
 
 extern "C" void func_4D9F40(FieldWordAt210*, const FieldWordAt210*);
@@ -25,7 +29,202 @@ extern "C" u32 D_001B65B4;
 extern "C" u8 D_50CD30[];
 extern "C" void* D_001B6628;
 extern "C" void* D_001B6650;
+extern "C" u8 D_001B6510;
 
+
+/** Script callback view over the current packed operand bytes. */
+struct FieldScriptCursorBytes
+{
+    u8 unk00[0x548];
+    u8* current;
+};
+
+
+/** Named-actor base with table 0x15AC40 and native extent 0x4E0. */
+class FieldClass15AC40 : public FieldClass153330
+{
+public:
+    /** @brief Destroy the inherited actor. */
+    virtual ~FieldClass15AC40();
+    u32 unk4c0;
+    char unk4c4[17];
+    u8 unk4d5;
+};
+
+/** Actor created by the native 0x0024C0B0 constructor. */
+class FieldClass153400 : public FieldClass15AC40
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Initialize the actor and its named resource state. */
+    FieldClass153400();
+    /** @brief Release the named resource state and inherited actor. */
+    virtual ~FieldClass153400();
+    /** @brief Bind a named resident object and its settings. @param name Object name. @param first First scalar setting. @param mask Setting mask. @param duration Duration setting. @return One when found, zero otherwise. */
+    s32 func_0024BE00(const char* name, float first, u32 mask, float duration);
+    u8 unk4e0[0xB2];
+    u8 unk592;
+};
+
+/** Partial owner of two deferred-release queues. */
+struct FieldDeferredQueues
+{
+    u8 unk00[0x14];
+    s32 unk14;
+    s32 unk18;
+    u8 unk1c[0x204];
+    s32 unk220;
+    s32 unk224;
+
+    /** @brief Test whether either queue contains pending entries. @return Whether an entry remains. */
+    bool has_pending() const
+    {
+        s32 next = unk18 + 1;
+        if (next >= 128)
+        {
+            next = 0;
+        }
+        if (unk14 != next)
+        {
+            return true;
+        }
+        next = unk224 + 1;
+        if (next >= 128)
+        {
+            next = 0;
+        }
+        if (unk220 != next)
+        {
+            return true;
+        }
+        return false;
+    }
+};
+
+/** Partial context containing the resource and callback managers. */
+struct FieldContextResourceManagers
+{
+    u8 unk00[0x2C];
+    FieldResourceList14* resources;
+    void* unk30;
+    void* callbacks;
+};
+
+/** 0x300-byte actor whose scalar track is retained at offset 0x144. */
+class FieldClass1570D0 : public FieldClass152430
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Set the actor flags and create its scalar track. */
+    FieldClass1570D0()
+    {
+        unk78 |= 0x2000;
+        unk204 |= 0x2 | 0x4 | 0x8;
+        unk144 = new FieldClass15B890;
+        unk2f0 = 0;
+        unk2e0 = 1;
+    }
+    /** @brief Destroy the actor and its inherited state. */
+    virtual ~FieldClass1570D0();
+    u8 unk2f0;
+};
+
+/** Packed coordinates whose fourth word identifies the actor. */
+struct FieldRuntimePosition16
+{
+    float x;
+    float y;
+    float z;
+    s32 key;
+
+    /** @brief View the four raw slots as vector data. @return Reference to the packed data. */
+    const FieldVec4A& vector() const
+    {
+        return *(const FieldVec4A*)this;
+    }
+} __attribute__((aligned(16)));
+
+/** Partial resource section containing the table of packed actor positions. */
+struct FieldRuntimePositions
+{
+    u8 unk00[0x7E0];
+    FieldRuntimePosition16 positions[256];
+    u8 count;
+    u8 unk17e1[2];
+    u8 mode;
+};
+
+/** Partial base actor; the native constructor is 0x0024E420. */
+class FieldClass1535B0 : public FieldClass152430
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Initialize the inherited actor and named-object state. */
+    FieldClass1535B0();
+    /** @brief Destroy the named-object state and inherited actor. */
+    virtual ~FieldClass1535B0();
+    /** @brief Bind a named resident object and copy its transform. @param name Object name. @return One when found, zero otherwise. */
+    s32 func_0024D1C0(const char* name);
+    u8 unk2f0[0x44];
+    u8 unk334_0_1 : 2;
+    u8 unk334_2 : 1;
+    u8 unk334_3_7 : 5;
+};
+
+/** 0x3D0-byte actor derived from the native 0x340-byte base. */
+class FieldClass155580 : public FieldClass1535B0
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Set the actor category and clear its transition state. */
+    FieldClass155580()
+    {
+        unk78 |= 0x1000;
+        unk348 = 0.0f;
+        unk3a4 = 0;
+        unk3c0 = 0;
+        unk3c4 = 0;
+        unk3a0 = 0;
+        unk3b0 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+        unk350_0 = 0;
+        unk350_1 = 0;
+    }
+    /** @brief Destroy the inherited named actor. */
+    virtual ~FieldClass155580();
+    float unk340;
+    float unk344;
+    float unk348;
+    float unk34c;
+    u8 unk350_0 : 1;
+    u8 unk350_1 : 1;
+    u8 unk350_2_7 : 6;
+    u8 unk351[0x4F];
+    void* unk3a0;
+    void* unk3a4;
+    u8 unk3a8[8];
+    FieldVec4A unk3b0;
+    void* unk3c0;
+    void* unk3c4;
+};
+
+/** Partial resident receiver tested before the actor is created. */
+struct FieldResidentTimer90
+{
+    u8 unk00[0x90];
+    float unk90;
+};
 
 struct FieldScriptCursorF32 { u8 pad[0x548]; float* current; };
 struct FieldScriptCursorS8 { u8 pad[0x548]; s8* current; };
@@ -121,8 +320,16 @@ struct FieldActorCommandState
     u8 unk8d_2_7 : 6;
     u8 unk8e[0x36];
     FieldClass152FA0 commands;
-    u8 unk140[0x48D];
-    u8 unk5cd_0_1 : 2;
+    u8 unk140[0x3C0];
+    FieldFlaggedListObject* unk500[24];
+    u8 unk560[0x30];
+    u8 unk590_0_6 : 7;
+    u8 unk590_7 : 1;
+    u8 unk591[0x33];
+    u8 unk5c4;
+    u8 unk5c5[8];
+    u8 unk5cd_0 : 1;
+    u8 unk5cd_1 : 1;
     u8 unk5cd_2 : 1;
     u8 unk5cd_3 : 1;
     u8 unk5cd_4_7 : 4;
@@ -344,6 +551,49 @@ extern "C" FieldLateIndexedObject* D_507CD0[];
 extern "C" void func_4289B0(FieldLateIndexedObject*);
 extern "C" void func_428C80(FieldLateIndexedObject*);
 
+/** @brief Destroy the inherited resource-loader state. */
+inline FieldClass150750::~FieldClass150750()
+{
+}
+
+/** @brief Test whether a resident actor still has pending commands. @return True when a matching actor has pending commands. */
+static inline bool field_actor_commands_pending()
+{
+    FieldClass150060* list = (FieldClass150060*)D_001B6430->context->unk04;
+    FieldClass150060* node = list;
+    for (;;)
+    {
+        node = node->unk08;
+        if (list == node)
+        {
+            break;
+        }
+        FieldClass150F90* actor = static_cast<FieldClass150F90*>(node);
+        if (actor->unk78 & 8)
+        {
+            FieldActorCommandState* state = (FieldActorCommandState*)actor;
+            if (state->test_unk5cd() && state->commands.func_00239880())
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
+ * @brief Read the record size, rounding it to 128 bytes unless a record flag exempts it.
+ * @param record Resource record.
+ * @return Request size in bytes.
+ */
+static inline u32 field_record_size(FieldRecord20* record)
+{
+    if (record->flag8 || record->flag162)
+    {
+        return record->value4;
+    }
+    return (record->value4 + 127) & ~0x7F;
+}
 // FieldClass1504F0 constructor; needs recovered classes and global state.
 /** @brief Initialize the field interface and attach its container and widgets. */
 FieldClass1504F0::FieldClass1504F0()
@@ -1686,9 +1936,50 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F19
 
 
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F1CD0);
+/**
+ * @brief Queue a motion vector and its command flags.
+ * @param cursor Script coordinates, flags, and channel selection.
+ * @return Always one.
+ */
+extern "C" s32 func_001F1CD0(FieldScriptCursorU32* cursor)
+{
+    u8 flags = *(u8*)cursor->current++;
+    FieldVec4A value;
+    value.x = (float)*(s32*)cursor->current++;
+    value.y = (float)*(s32*)cursor->current++;
+    value.z = (float)*(s32*)cursor->current;
+    FieldClass151440* command = new FieldClass151440(flags, value);
+    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldCommandList8* channel;
+    if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
+    {
+        channel = &object->unk30;
+    }
+    else
+    {
+        channel = &object->unk250;
+    }
+    channel->list->func_004D74F0(command, (void*)-1);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F1E10);
+/**
+ * @brief Retain the operand record and its optional trailing flag.
+ * @param cursor Current packed operand record.
+ * @param count Operand count supplied by the dispatcher.
+ * @return Always one.
+ */
+extern "C" s32 func_001F1E10(FieldScriptCursorBytes* cursor, u32 count)
+{
+    u32 value = 0;
+    if (count > 4)
+    {
+        value = cursor->current[16];
+    }
+    u32 flags = (value != 0) | 0x2;
+    func_00225790(D_001B6430->context->unk14, cursor->current, flags);
+    return 1;
+}
 
 /** @brief Destroy the callback object. */
 FieldClass150630::~FieldClass150630()
@@ -1881,21 +2172,103 @@ extern "C" s32 func_001F2560(FieldScriptCursorU32* cursor)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F2650);
+/**
+ * @brief Fill the selected actor resource slots.
+ * @param cursor Script key operands.
+ * @param count Number of operands to consume.
+ * @return Always one.
+ */
+extern "C" s32 func_001F2650(FieldScriptCursorU32* cursor, u32 count)
+{
+    FieldFlaggedListObject* list;
+    FieldActorCommandState* owner;
+    owner = (FieldActorCommandState*)func_0020F520(cursor);
+    s32 enabled = (*cursor->current & 0x80000000) != 0;
+    s32 index = 0;
+    list = (FieldFlaggedListObject*)D_001B6430->context->unk04;
+    while (index < count)
+    {
+        FieldFlaggedListObject* found = func_001DEE30(list, *(u16*)cursor->current, 0x800);
+        if (found && index < 24)
+        {
+            owner->unk500[index] = found;
+            owner->unk590_7 = enabled != 0;
+        }
+        index++;
+        cursor->current++;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F2750);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F2840);
+/**
+ * @brief Wait for pending releases, then remove the requested resource entries.
+ * @param cursor Script resource operands.
+ * @param count Operand count.
+ * @return Zero while waiting, otherwise one.
+ */
+extern "C" s32 func_001F2840(FieldScriptCursorU32* cursor, u32 count)
+{
+    FieldDeferredQueues* queues = (FieldDeferredQueues*)D_001B6430->context->unk40;
+    if (queues->has_pending())
+    {
+        cursor->unk14 = 1.0f;
+        return 0;
+    }
+    u32 key = *cursor->current++;
+    FieldContextResourceManagers* context = (FieldContextResourceManagers*)D_001B6430->context;
+    FieldResourceList14* resources = context->resources;
+    if (count > 1)
+    {
+        s32 remaining = count - 1;
+        while (remaining > 0)
+        {
+            u32 first = *cursor->current++;
+            u32 second = *cursor->current++;
+            func_00201D70(resources, first, second, key);
+            remaining -= 2;
+        }
+    }
+    else if (key != 0xFFFFFFFF)
+    {
+        func_0021F900(context->callbacks, key, 0);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F29A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F2B00);
+/**
+ * @brief Create and register the selected resource loader without advancing the operand.
+ * @param cursor Script key operand.
+ * @return Always one.
+ */
+extern "C" s32 func_001F2B00(FieldScriptCursorU32* cursor)
+{
+    s32 key = *cursor->current;
+    FieldClass152220* loader = new FieldClass152220;
+    func_0021F530(loader, key);
+    FieldClass1530D0* manager = (FieldClass1530D0*)D_001B6430->context->unk30;
+    LibClass178DD0& list = *manager;
+    list.func_004D74F0(loader, (void*)-1);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F2BA0);
+/** @brief Release the scene-resource records and destroy the inherited loader. */
+FieldClass152270::~FieldClass152270()
+{
+    func_001F9050();
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F2C40);
+/** @brief Construct the common resource-loader state and clear its scene descriptor. */
+FieldClass152270::FieldClass152270()
+{
+    unk3c = 0;
+    unk14 = 4;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F2D70);
+
 
 extern "C" void func_001F2DE0(FieldRecords* state)
 {
@@ -2138,15 +2511,94 @@ extern "C" s32 func_001F7470(FieldScriptCursorU32* cursor, s32 word_count)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F75C0);
+/**
+ * @brief Queue an actor command with optional byte and scalar settings.
+ * @param cursor Script cursor supplying the optional settings.
+ * @param count Number of supplied operands.
+ * @return Always one.
+ */
+extern "C" s32 func_001F75C0(FieldScriptCursorU32* cursor, u32 count)
+{
+    FieldActorCommandState* actor = (FieldActorCommandState*)func_0020F520(cursor);
+    u8 setting = 0;
+    float value = 0.0f;
+    if (count)
+    {
+        setting = (u8)*cursor->current++;
+    }
+    if (count > 1)
+    {
+        value = *(float*)cursor->current++;
+    }
+    FieldClass152C90* command = new FieldClass152C90(setting, value);
+    actor->commands.func_004D74F0(command, (void*)-1);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F7690);
+/**
+ * @brief Clear the actor's commands and attached scalar track.
+ * @param cursor Script cursor selecting the actor.
+ * @return Always one.
+ */
+extern "C" s32 func_001F7690(FieldScriptCursorU32* cursor)
+{
+    FieldClass152430* actor = (FieldClass152430*)func_0020F520(cursor);
+    actor->func_00203A30();
+    if (actor->unk144)
+    {
+        actor->unk144->func_002DDA70();
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F76F0);
+/**
+ * @brief Clear the actor command queue and mark its state flag when required.
+ * @param actor Actor command state.
+ */
+extern "C" void func_001F76F0(FieldActorCommandState* actor)
+{
+    actor->commands.func_001DD730();
+    actor->commands.unk78 = 0;
+    if (actor->unk5c4 == 3)
+    {
+        actor->unk5cd_0 = 1;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001DF360__16FieldClass150650Fv);
+/** @brief Keep the resident script waiting until actor commands finish, then unlink and queue this object. */
+void FieldClass150650::func_001DF360()
+{
+    if (field_actor_commands_pending())
+    {
+        ((FieldScriptCursorU32*)D_001B6430->context->unk38)->unk14 = 1.0f;
+    }
+    else
+    {
+        func_004D65C0(this);
+        func_001DD7B0();
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F7850);
+/**
+ * @brief Queue a callback while resident actors have pending commands.
+ * @param cursor Script cursor supplying the callback scalar and receiving the wait value.
+ * @return Always one.
+ */
+extern "C" s32 func_001F7850(FieldScriptCursorU32* cursor)
+{
+    FieldClass150650* command = new FieldClass150650;
+    command->unk1c = (float)*cursor->current;
+    if (field_actor_commands_pending())
+    {
+        ((FieldClass151D40*)cursor)->func_004D74F0(command, (void*)-1);
+        cursor->unk14 = 1.0f;
+    }
+    else
+    {
+        command->func_001DD7B0();
+    }
+    return 1;
+}
 
 
 
@@ -2233,15 +2685,212 @@ extern "C" s32 func_001F7DE0(FieldScriptCursorU32* cursor)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F7EE0);
+/**
+ * @brief Create an actor at the script coordinates or a matching resident position.
+ * @param cursor Script cursor supplying the actor key and coordinates.
+ * @return Always one.
+ */
+extern "C" s32 func_001F7EE0(FieldScriptCursorU32* cursor)
+{
+    s32 count;
+    FieldClass1570D0* actor = new FieldClass1570D0;
+    if (!actor)
+    {
+        return 1;
+    }
+    actor->unk70 = *cursor->current++;
+    FieldVec4A position;
+    position.x = (float)(s32)*cursor->current++;
+    position.y = (float)(s32)*cursor->current++;
+    position.z = (float)(s32)*cursor->current;
+    FieldRuntimePositions* section = (FieldRuntimePositions*)func_101440(func_101290(func_10D8E0()), 6);
+    if (section->mode == 1)
+    {
+        count = section->count;
+        for (s32 index = 0; index < count; ++index)
+        {
+            const FieldRuntimePosition16& entry = section->positions[index];
+            if (entry.key == actor->unk70)
+            {
+                position = entry.vector();
+                position.w = 1.0f;
+                break;
+            }
+        }
+    }
+    actor->func_00205710(&position);
+    ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, (void*)-1);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F80E0);
+/**
+ * @brief Create a named actor once the resident timer allows the operation.
+ * @param cursor Script cursor supplying the key and name.
+ * @return One when the actor was queued, zero while waiting.
+ */
+extern "C" s32 func_001F80E0(FieldScriptCursorU32* cursor)
+{
+    FieldResidentTimer90* state = (FieldResidentTimer90*)D_001B6430->context->unk08->unkdc;
+    if (state && state->unk90 <= 0.0f)
+    {
+        u32 key = *cursor->current++;
+        char name[17];
+        func_0013CD50(name, (const char*)cursor->current, 16);
+        name[16] = 0;
+        FieldClass155580* actor = new FieldClass155580;
+        actor->unk70 = key;
+        actor->func_0024D1C0(name);
+        ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, (void*)-1);
+        return 1;
+    }
+    cursor->unk14 = 1.0f;
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F8230);
+/**
+ * @brief Create a named actor once the resident focus is ready.
+ * @param cursor Script cursor supplying the key, scalar settings, mask and name.
+ * @return Zero while waiting for the focus, otherwise one.
+ */
+extern "C" s32 func_001F8230(FieldScriptCursorU32* cursor)
+{
+    FieldClass150F90* focus = (FieldClass150F90*)D_001B6430->context->unk08->unkdc;
+    if (!focus || !focus->func_00204420())
+    {
+        cursor->unk14 = 1.0f;
+        return 0;
+    }
+    u32 key = *cursor->current++;
+    float first = *(float*)cursor->current++;
+    float duration = (float)(s32)*cursor->current++;
+    u32 mask = *cursor->current++;
+    const char* name = (const char*)cursor->current;
+    FieldClass153400* actor = new FieldClass153400;
+    actor->unk70 = key;
+    if (actor->func_0024BE00(name, first, mask, duration))
+    {
+        if (!func_002CAE30())
+        {
+            cursor->unk14 = 1.0f;
+            return 1;
+        }
+        ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, (void*)-1);
+    }
+    else
+    {
+        actor->func_001DD7B0();
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F83A0);
+/**
+ * @brief Create a named actor when the resident timer allows it.
+ * @param cursor Script cursor supplying the actor key, name and optional flags.
+ * @param count Number of script operands.
+ * @return One when the actor was queued, zero while waiting.
+ */
+extern "C" s32 func_001F83A0(FieldScriptCursorU32* cursor, u32 count)
+{
+    FieldClass150F90* focus = (FieldClass150F90*)D_001B6430->context->unk08->unkdc;
+    if (focus && focus->unk90 <= 0.0f)
+    {
+        u32 key = *cursor->current++;
+        char name[17];
+        u32 flags = 0;
+        func_0013CD50(name, (const char*)cursor->current, 16);
+        name[16] = 0;
+        if (count > 5)
+        {
+            cursor->current += 4;
+            flags = *cursor->current;
+        }
+        FieldClass1535B0* actor = new FieldClass1535B0;
+        actor->func_0024D1C0(name);
+        actor->unk70 = key;
+        if (flags & 0x1)
+        {
+            actor->unk334_2 = 1;
+        }
+        ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, (void*)-1);
+        return 1;
+    }
+    cursor->unk14 = 1.0f;
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F84D0);
+/**
+ * @brief Initialize an actor from script operands and queue it after loading its resources.
+ * @param cursor Script cursor supplying actor keys, coordinates, heading and flags.
+ * @param actor Actor to initialize.
+ * @param count Number of supplied operands.
+ * @param previous Previously selected actor; unused.
+ * @return One when queued, zero when actor resource loading fails.
+ */
+extern "C" s32 func_001F84D0(FieldScriptCursorU32* cursor, FieldClass152F00* actor, u32 count, FieldClass150F90* previous)
+{
+    actor->unk70 = *cursor->current++;
+    s32 key = *cursor->current++;
+    actor->unk74 = key;
+    FieldVec4A position;
+    position.x = (float)(s32)*cursor->current++;
+    position.y = (float)(s32)*cursor->current++;
+    position.z = (float)(s32)*cursor->current++;
+    float heading = (3.1415927f * (2.0f * (float)*cursor->current++)) / 360.0f;
+    s32 selected = count > 6 ? *cursor->current++ : key;
+    actor->unk3ac = selected;
+    actor->unk3b0 = selected;
+    u32 flags = count > 7 ? *cursor->current++ : 0;
+    if (flags & 0x1)
+    {
+        actor->unk5cd_2 = 1;
+    }
+    else
+    {
+        func_002019C0(D_001B6430->context->unk2c, key, key, 1);
+        if (flags & 0x20)
+        {
+            D_001B6510 = 1;
+        }
+        if (!actor->func_00204A10(key))
+        {
+            D_001B6510 = 0;
+            return 0;
+        }
+        D_001B6510 = 0;
+        actor->func_00202580();
+    }
+    if (flags & 0x4)
+    {
+        actor->unk204 |= 0x4;
+    }
+    if (flags & 0x8)
+    {
+        actor->unk204 |= 0x80000;
+    }
+    if (flags & 0x10)
+    {
+        actor->unk8d_0 = 1;
+    }
+    FieldRuntimePositions* section = (FieldRuntimePositions*)func_101440(func_101290(func_10D8E0()), 6);
+    if (section->mode == 1)
+    {
+        s32 size = section->count;
+        for (s32 index = 0; index < size; ++index)
+        {
+            const FieldRuntimePosition16& entry = section->positions[index];
+            if (entry.key == actor->unk70)
+            {
+                position = entry.vector();
+                position.w = 1.0f;
+                break;
+            }
+        }
+    }
+    actor->func_00205710(&position);
+    func_00227610(actor, heading, 0.0f);
+    ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, (void*)-1);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F87F0);
 
@@ -2261,7 +2910,27 @@ float* func_001F8A80(float* values, float value)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F8AA0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F8AE0);
+/**
+ * @brief Create an actor once a previously selected actor is ready.
+ * @param cursor Script cursor supplying the actor setup operands.
+ * @param count Number of operands supplied.
+ * @return Zero while the previous actor is waiting, otherwise one.
+ */
+extern "C" s32 func_001F8AE0(FieldScriptCursorU32* cursor, u32 count)
+{
+    FieldClass150F90* previous = (FieldClass150F90*)func_001DDF50((FieldFlaggedListObject*)D_001B6430->context->unk04, cursor->current[1]);
+    if (previous && !(previous->unk90 <= 0.0f))
+    {
+        cursor->unk14 = 1.0f;
+        return 0;
+    }
+    FieldClass152F00* actor = new FieldClass152F00;
+    if (!func_001F84D0(cursor, actor, count, previous))
+    {
+        actor->func_001DD7B0();
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F8BC0);
 
@@ -2292,11 +2961,69 @@ void FieldClass1507A0::func_001DD7B0()
     func_0011ED90(D_001B65F4, this);
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F8CB0);
+/** @brief Start the request for the current record when its size is nonzero. */
+void FieldClass150700::func_001F8CB0()
+{
+    FieldClass152210* record = &unk1c[unk2e];
+    if (record->rounded_unk04())
+    {
+        FieldClass1DD400* owner = this;
+        u32 first = record->unk00;
+        func_00103E70(D_001B65E8, record->unk0c, record->rounded_unk04(), 0x80000000, unk28, owner, first, 0, 1);
+        u32 word = record->unk00;
+        u32 size = record->rounded_unk04();
+        record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+        unk15 = 1;
+        unk30_1 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F8E20);
+/** @brief Release the retained record array and destroy the common loader. */
+FieldClass150700::~FieldClass150700()
+{
+    if (unk1c)
+    {
+        func_001F9050();
+        delete[] unk1c;
+        unk1c = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F8F10);
+/**
+ * @brief Submit record requests or detach a loader whose state does not permit them.
+ * @return One after detaching, otherwise zero.
+ */
+s32 FieldClass150700::func_001DF640()
+{
+    switch (unk15)
+    {
+    case 1:
+    {
+        FieldRecord20* record = (FieldRecord20*)unk1c;
+        for (s32 i = 0; i < unk2d; ++i, ++record)
+        {
+            if (!record->flag8)
+            {
+                u32 word = record->unk0;
+                u32 size = field_record_size(record);
+                func_00103B20(D_001B65E8, record->indexC, size, 0x80000000, word, 0);
+            }
+        }
+        unk15 = 7;
+        break;
+    }
+    case 9:
+    case 10:
+        unk15 = 7;
+        break;
+    case 7:
+        break;
+    default:
+        func_001DD7B0();
+        return 1;
+    }
+    return 0;
+}
 
 extern "C" void func_001F9050(FieldLateNodes* object)
 {
@@ -2316,11 +3043,218 @@ extern "C" void func_001F90D0(FieldLateFlag30* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F9120);
+/**
+ * @brief Finish or cancel pending records.
+ * @return One when record storage remains during cancellation, two when a request remains, otherwise zero.
+ */
+s32 FieldClass150700::func_001E07A0()
+{
+    s32 result = 0;
+    FieldClass152210* records = unk1c;
+    switch (unk15)
+    {
+    case 1:
+    {
+        for (s32 i = 0; i < unk2d; i++)
+        {
+            const FieldClass1530C0* record = records + i;
+            if (!record->unk08_0)
+            {
+                u32 word = record->unk00;
+                u32 size = record->rounded_unk04();
+                func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+            }
+        }
+        unk15 = 10;
+        break;
+    }
+    case 10:
+        break;
+    case 9:
+        if (field_records_blocked())
+        {
+            break;
+        }
+    default:
+    {
+        for (s32 i = 0; i < unk2d; i++)
+        {
+            FieldClass152210* record = records + i;
+            if (record->rounded_unk04())
+            {
+                result = 1;
+                break;
+            }
+        }
+        for (s32 i = 0; i < unk24; i++)
+        {
+            records[i].func_0023AD00();
+        }
+        unk15 = 0;
+        unk2e = 0;
+        break;
+    }
+    }
+    if (result != 1)
+    {
+        for (s32 i = 0; i < unk2d; i++)
+        {
+            FieldClass152210* record = records + i;
+            if (record->rounded_unk04())
+            {
+                result = 2;
+                break;
+            }
+        }
+    }
+    return result;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F93D0);
+/** @brief Advance record requests or handle a requested cancellation. @param flag Request control flag. */
+void FieldClass150700::func_001E0A50(s32 flag)
+{
+    switch (unk15)
+    {
+    case 0:
+        if (!flag && unk1c)
+        {
+            func_00121FE0(0);
+            FieldClass152210* record = &unk1c[unk2e];
+            void* buffer = func_001F9A80(this, (record->unk00 + 0x7FF) & ~0x7FF, 1);
+            if (buffer)
+            {
+                record->unk04 = (u32)buffer;
+                record->unk08_0 = 0;
+                func_001F8CB0();
+            }
+        }
+        break;
+    case 1:
+        if (flag == 1)
+        {
+            for (s32 i = 0; i < unk2d; i++)
+            {
+                FieldClass152210* record = &unk1c[i];
+                u32 word = record->unk00;
+                u32 size = record->rounded_unk04();
+                func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+            }
+            unk15 = 9;
+        }
+        else
+        {
+            FieldClass152210* record = &unk1c[unk2e];
+            u32 word = record->unk00;
+            u32 size = record->rounded_unk04();
+            if (!func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0) && !field_records_blocked())
+            {
+                func_001DDB30(0);
+            }
+        }
+        break;
+    case 9:
+        if (!flag)
+        {
+            func_001F8CB0();
+        }
+        break;
+    case 10:
+    {
+        bool done = true;
+        FieldClass152210* records = unk1c;
+        for (s32 i = 0; i < unk2d; i++)
+        {
+            FieldClass152210* record = &records[i];
+            u32 word = record->unk00;
+            u32 size = record->rounded_unk04();
+            record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+            if (record->unk10)
+            {
+                done = false;
+            }
+        }
+        if (field_records_blocked())
+        {
+            done = false;
+        }
+        if (done)
+        {
+            for (s32 i = 0; i < unk24; i++, records++)
+            {
+                records->func_0023AD00();
+            }
+            unk2e = 0;
+            unk15 = 0;
+        }
+        break;
+    }
+    case 7:
+    {
+        bool done = true;
+        FieldClass152210* record = unk1c;
+        for (s32 i = 0; i < unk2d; i++, record++)
+        {
+            u32 word = record->unk00;
+            u32 size = record->rounded_unk04();
+            record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+            if (record->unk10)
+            {
+                done = false;
+            }
+        }
+        if (field_records_blocked())
+        {
+            done = false;
+        }
+        if (done)
+        {
+            func_001DD7B0();
+        }
+        break;
+    }
+    }
+    func_001F98E0();
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F98E0);
+/** @brief Advance the current request and skip marked records after it finishes. */
+void FieldClass150700::func_001F98E0()
+{
+    if (!request_ready())
+    {
+        return;
+    }
+    if (unk15 == 1)
+    {
+        if (field_records_blocked())
+        {
+            return;
+        }
+        FieldClass152210* record = &unk1c[unk2e];
+        u32 word = record->unk00;
+        u32 size = record->rounded_unk04();
+        if (func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0))
+        {
+            return;
+        }
+        while (unk2e < unk2d)
+        {
+            unk2e++;
+            if (!unk1c[unk2e].unk16_0)
+            {
+                break;
+            }
+        }
+        if (unk2e >= unk2d)
+        {
+            unk15 = 5;
+        }
+        else
+        {
+            unk15 = 0;
+        }
+    }
+    unk30_1 = 0;
+}
 
 /**
  * @brief Allocate a 128-byte-aligned buffer, retrying after other listed loaders release storage.
@@ -2355,5 +3289,3 @@ extern "C" void* func_001F9A80(FieldClass150070* owner, u32 size, s32 mode)
     }
     return 0;
 }
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F9B60);

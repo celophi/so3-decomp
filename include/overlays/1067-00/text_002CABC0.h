@@ -49,6 +49,9 @@ struct FieldNameOwner;
 extern "C" {
 #endif
 
+/** @brief Test the resident actor-registration mode. @return Mode result; currently always one. */
+s32 func_002CAE30(void);
+
 /**
  * @brief Set flag bits in the word at offset 0x1C.
  * @param object Receiver to update.

@@ -29,6 +29,16 @@ extern "C" {
 #endif
 
 /**
+ * @brief Load the selected character and animation resources.
+ * @param object Resource list to process.
+ * @param character_key Key of character resources to process.
+ * @param animation_key Key of animation resources to process.
+ * @param mode Select synchronous loading when nonzero.
+ * @return One when loading succeeds and the resident state permits it, otherwise zero.
+ */
+s32 func_002019C0(FieldResourceList14* object, s32 character_key, s32 animation_key, s32 mode);
+
+/**
  * @brief Decrement counters for matching resource entries that pass their flag checks.
  * @param object Resource list to update.
  * @param first Low-halfword key for kinds 0x43484152 and 0x41545243.
@@ -43,6 +53,15 @@ void func_002016F0(FieldResourceList14* object, s32 first, s32 second);
  * @param second Low-halfword key for kind 0x414E494D.
  */
 void func_002017B0(FieldResourceList14* object, s32 first, s32 second);
+
+/**
+ * @brief Release the resource entry matching all three keys.
+ * @param object Resource list to search.
+ * @param first First key.
+ * @param second Second key.
+ * @param key Third key.
+ */
+void func_00201D70(FieldResourceList14* object, u32 first, u32 second, u32 key);
 
 /**
  * @brief Find the size selected by a resource entry's flag.

@@ -16,6 +16,13 @@ class FieldClass15B900;
 class FieldClass15B950 : public FieldClass1502A0
 {
 public:
+    /** @brief Clear the owned track and set the component count. */
+    FieldClass15B950()
+    {
+        unk78 = 0;
+        unk88 = 4;
+    }
+
     /** @brief Release the owned track, then destroy the list. */
     virtual ~FieldClass15B950();
 

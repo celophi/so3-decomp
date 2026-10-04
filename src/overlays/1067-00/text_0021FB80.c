@@ -332,11 +332,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00228D
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00228DD0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00228E50);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", __dt__16FieldClass152430Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00228F80);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00229020);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", __ct__16FieldClass152430Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00229150);
 

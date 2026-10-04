@@ -39,7 +39,7 @@ typedef struct FieldScriptWord18
     u8 unk59d_rest : 7;
 } FieldScriptWord18;
 
-extern void* func_13A678(void* destination, s32 value, u32 size);
+extern "C" void* func_13A678(void* destination, s32 value, u32 size);
 
 s32 func_0021DE20(FieldScriptObject151D40* object, u32 count)
 {
@@ -88,7 +88,7 @@ s32 func_0021DF30(FieldScriptObject151D40* object, u32 count)
 
 s32 func_0021DF60(FieldScriptObject151D40* object, u32 count)
 {
-    FieldRuntimeValues* values = func_101440(func_101290(func_10D8E0()), 4);
+    FieldRuntimeValues* values = (FieldRuntimeValues*)func_101440(func_101290(func_10D8E0()), 4);
     func_13A678(values->unk184, 0, sizeof(values->unk184));
     return 1;
 }
@@ -179,17 +179,31 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021EB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021ED20);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F180);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_001F9050__16FieldClass152270Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F1C0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_001F8CB0__16FieldClass152270Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F2D0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_001E0A50__16FieldClass152270Fi);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F470);
+/** @brief Consume the ready flag and enter state two after resident requests finish. */
+void FieldClass152270::func_001F98E0()
+{
+    if (request_ready())
+    {
+        unk30_1 = 0;
+        if (unk15 == 1 && !field_records_blocked())
+        {
+            unk15 = 2;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F530);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F6D0);
+/** @brief Initialize the inherited record state. */
+FieldClass152210::FieldClass152210()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F760);
 

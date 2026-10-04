@@ -6,6 +6,23 @@
 #include "overlays/1067-00/text_001E6C50.h"
 #include "main/resident_0012F0F8.h"
 
+/** Command retaining a byte setting, a float and the current context mode. */
+class FieldClass152C90 : public FieldClass150440
+{
+public:
+    /** @brief Initialize the actor setting command. @param setting Byte setting to apply. @param value Scalar passed to the actor. */
+    FieldClass152C90(u8 setting, float value);
+    /** @brief Destroy the command node. */
+    virtual ~FieldClass152C90();
+    /** @brief Apply the actor setting when ready. @return One on completion, zero while waiting. */
+    virtual s32 func_0022D800();
+    u8 unk1c;
+    u8 unk1d[3];
+    float unk20;
+    u8 unk24_0 : 1;
+    u8 unk24_1_7 : 7;
+};
+
 /** Queued command copying a 16-byte resource key and one enable bit. */
 class FieldClass1526C0 : public FieldClass150440
 {

@@ -302,19 +302,17 @@ public:
     virtual void func_00204210();
 
     /**
-     * @brief Virtual handler slot 6.
-     * @param arg Argument whose meaning is not yet known.
+     * @brief Load the actor resource selected by its key.
+     * @param key Resource key, or -1 for the sentinel path.
+     * @return One on success, zero when resource setup fails.
      */
-    virtual void func_00204A10(void* arg);
+    virtual s32 func_00204A10(s32 key);
 
     /** @brief Virtual handler slot 7. */
     virtual void func_00204E40();
 
-    /**
-     * @brief Virtual handler slot 8.
-     * @param arg Argument whose meaning is not yet known.
-     */
-    virtual void func_00204480(void* arg);
+    /** @brief Test or update the actor using another object. @param other Other object. @return Status result. */
+    virtual s32 func_00204480(void* other);
 
     /**
      * @brief Test the table pointer, bit 0 at offset 0x8C and the float at offset 0x90.

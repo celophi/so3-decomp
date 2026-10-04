@@ -68,3 +68,29 @@ rom:0x2F860 reloc:MIPS_HI16 symbol:D_0050CB30 addend:0x14
 rom:0x2F864 reloc:MIPS_LO16 symbol:D_0050CB30 addend:0x14
 rom:0x2F888 reloc:MIPS_HI16 symbol:D_0050CB30 addend:0xC
 rom:0x2F890 reloc:MIPS_LO16 symbol:D_0050CB30 addend:0xC
+
+// Byte-buffer loader secondary callback table.
+rom:0x157B4 reloc:MIPS_HI16 symbol:__vt__16FieldClass152220 addend:0x2C
+rom:0x157BC reloc:MIPS_LO16 symbol:__vt__16FieldClass152220 addend:0x2C
+
+// Common loader secondary callback tables in its scene-loader constructor.
+rom:0x158E4 reloc:MIPS_HI16 symbol:__vt__16FieldClass150700 addend:0x2C
+rom:0x15924 reloc:MIPS_LO16 symbol:__vt__16FieldClass150700 addend:0x2C
+rom:0x159A0 reloc:MIPS_HI16 symbol:__vt__16FieldClass150750 addend:0x2C
+rom:0x159A8 reloc:MIPS_LO16 symbol:__vt__16FieldClass150750 addend:0x2C
+rom:0x159BC reloc:MIPS_HI16 symbol:__vt__16FieldClass152270 addend:0x2C
+rom:0x159C4 reloc:MIPS_LO16 symbol:__vt__16FieldClass152270 addend:0x2C
+
+// Heap-wrapper loader secondary callback table in its destructor.
+rom:0x15A10 reloc:MIPS_HI16 symbol:__vt__16FieldClass150750 addend:0x2C
+rom:0x15A18 reloc:MIPS_LO16 symbol:__vt__16FieldClass150750 addend:0x2C
+
+// Scene resource loader and heap wrapper secondary tables in scene-loader destruction.
+rom:0x15840 reloc:MIPS_HI16 symbol:__vt__16FieldClass152270 addend:0x2C
+rom:0x15848 reloc:MIPS_LO16 symbol:__vt__16FieldClass152270 addend:0x2C
+rom:0x1586C reloc:MIPS_HI16 symbol:__vt__16FieldClass150750 addend:0x2C
+rom:0x15874 reloc:MIPS_LO16 symbol:__vt__16FieldClass150750 addend:0x2C
+
+// Common loader secondary callback table in its record-array destructor.
+rom:0x1BAC0 reloc:MIPS_HI16 symbol:__vt__16FieldClass150700 addend:0x2C
+rom:0x1BAC8 reloc:MIPS_LO16 symbol:__vt__16FieldClass150700 addend:0x2C
