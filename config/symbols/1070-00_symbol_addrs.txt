@@ -64,8 +64,11 @@ __dt__16FieldClass173580Fv = 0x00298A70; // type:func
 __dt__16FieldClass1735A0Fv = 0x00298AE0; // type:func
 
 // Particle receivers whose inline bases end in an out-of-line destructor.
-__dt__17LibReceiver424990Fv = 0x00424990; // type:func absolute:True
-__dt__17LibReceiver424A90Fv = 0x00424A90; // type:func absolute:True
+__ct__17LibReceiver4DD1F0Fv = 0x004DD1F0; // type:func absolute:True
+__vt__14LibClass178E10 = 0x00178E10; // absolute:True
+__dt__14LibClass178E10Fv = 0x00424990; // type:func absolute:True
+__vt__14LibClass178EA0 = 0x00178EA0; // absolute:True
+__dt__14LibClass178EA0Fv = 0x00424A90; // type:func absolute:True
 __vt__16FieldClass179210 = 0x00179210; // absolute:True
 __vt__16FieldClass172190 = 0x00172190; // absolute:True
 __dt__16FieldClass172190Fv = 0x00297ED0; // type:func
@@ -119,3 +122,19 @@ func_slot10__16FieldClass172140Fv = 0x002962D0; // type:func
 func_slot0c__16FieldClass172140Fv = 0x00296300; // type:func
 func_slot14__16FieldClass172140Fv = 0x00296370; // type:func
 func_00296310__16FieldClass172140Ffff = 0x00296310; // type:func
+
+// Classes created by the factory func_00297A30.
+__nw__FUiiPCc = 0x00100E70; // type:func absolute:True
+__ct__17LibReceiver43EA30Fv = 0x0043EAD0; // type:func absolute:True
+__ct__20FieldInitialWordPairFv = 0x00297E10; // type:func
+__vt__16FieldClass176230 = 0x00176230; // absolute:True
+__ct__16FieldClass176230Fv = 0x002EE880; // type:func
+__vt__16FieldClass1792A0 = 0x001792A0; // absolute:True
+__vt__16FieldClass16F1B0 = 0x0016F1B0; // absolute:True
+__dt__16FieldClass16F1B0Fv = 0x0024CFB0; // type:func
+__vt__16FieldClass1793D0 = 0x001793D0; // absolute:True
+__vt__16FieldClass16F080 = 0x0016F080; // absolute:True
+__dt__16FieldClass16F080Fv = 0x0024CDB0; // type:func
+__vt__16FieldClass179180 = 0x00179180; // absolute:True
+__vt__16FieldClass16F120 = 0x0016F120; // absolute:True
+__dt__16FieldClass16F120Fv = 0x0024CEB0; // type:func

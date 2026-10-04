@@ -6,6 +6,8 @@
 #include "overlays/1070-00/text_00202FB0.h"
 #include "overlays/1070-00/text_001F2BB0.h"
 #include "overlays/1070-00/text_002A4F10.h"
+#include "overlays/1070-00/text_00244310.h"
+#include "overlays/1070-00/text_002E55F0.h"
 
 /** Aligned vector with floating-point and raw-word views. */
 typedef union FieldQuad128
@@ -263,11 +265,15 @@ typedef struct FieldRetryState295AA0
     FieldReceiverTail21AB20* unk10;
 } FieldRetryState295AA0;
 
-/** Partial embedded receiver containing two words with unknown meanings. */
+/** Embedded countdown: a delay that starts at 5 and a key that starts unset. */
 typedef struct FieldInitialWordPair
 {
-    u32 unk00;
-    s32 unk04;
+    float delay;
+    s32 key;
+#ifdef __cplusplus
+    /** Start the countdown at 5 with no key. */
+    FieldInitialWordPair();
+#endif
 } FieldInitialWordPair;
 
 /** Partial receiver for the 0029B860 field-access family. */
@@ -444,9 +450,6 @@ typedef struct FieldEntryArray295A10
 } FieldEntryArray295A10;
 
 #ifdef __cplusplus
-/** Release storage through the external allocator interface. */
-extern "C" void func_100CB0(void* storage);
-
 /** Partial data-first receiver with its virtual table at offset 0x90. */
 class FieldClass173568
 {
@@ -516,17 +519,20 @@ public:
 };
 
 /** Partial destruction interface with primary vtable at 0x172170. */
-class FieldClass172170 : public FieldClass179470
+class FieldClass172170 : public FieldClass179470, public FieldInitialWordPair
 {
 public:
     /** Destroy the receiver and its owned buffers through the primary base. */
     virtual ~FieldClass172170();
+    u8 unk58[8];
 };
 
 /** Partial interface of the external base destructor at 0x43EA30. */
 class LibReceiver43EA30
 {
 public:
+    /** Construct the external base receiver. */
+    LibReceiver43EA30();
     /** Destroy the external base receiver. */
     virtual ~LibReceiver43EA30();
 };
@@ -555,6 +561,7 @@ class FieldClass173580 : public LibReceiver43EA30
 public:
     /** Destroy the callback receiver through its external base. */
     virtual ~FieldClass173580();
+    u8 unk04[0x4C];
 };
 
 /** Partial callback receiver with primary vtable at 0x1735A0. */
@@ -565,30 +572,23 @@ public:
     virtual ~FieldClass1735A0();
 };
 
-/** Partial interface of the external base destructor at 0x424990. */
-class LibReceiver424990
+/** Partial receiver with primary vtable at 0x179210 and a countdown at 0x230. */
+class FieldClass179210 : public LibClass178E10
 {
 public:
-    /** Destroy the external base receiver. */
-    virtual ~LibReceiver424990();
-};
-
-/** Partial interface of the external base destructor at 0x424A90. */
-class LibReceiver424A90
-{
-public:
-    /** Destroy the external base receiver. */
-    virtual ~LibReceiver424A90();
-};
-
-/** Partial destruction interface with primary vtable at 0x179210. */
-class FieldClass179210 : public LibReceiver424990
-{
-public:
-    /** Destroy the receiver through its external base. */
+    /** Start the countdown at 5 with no key. */
+    FieldClass179210()
+    {
+        delay = 5.0f;
+        key = -1;
+    }
+    /** Destroy the receiver through its Lib base. */
     virtual ~FieldClass179210()
     {
     }
+    u8 unk218[0x18];
+    float delay;
+    s32 key;
 };
 
 /** Partial particle receiver with primary vtable at 0x172190. */
@@ -597,16 +597,26 @@ class FieldClass172190 : public FieldClass179210
 public:
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172190();
+    u8 unk238[8];
 };
 
-/** Partial destruction interface with primary vtable at 0x179330. */
-class FieldClass179330 : public LibReceiver424A90
+/** Partial receiver with primary vtable at 0x179330 and a countdown at 0x240. */
+class FieldClass179330 : public LibClass178EA0
 {
 public:
-    /** Destroy the receiver through its external base. */
+    /** Start the countdown at 5 with no key. */
+    FieldClass179330()
+    {
+        delay = 5.0f;
+        key = -1;
+    }
+    /** Destroy the receiver through its Lib base. */
     virtual ~FieldClass179330()
     {
     }
+    u8 unk214[0x2C];
+    float delay;
+    s32 key;
 };
 
 /** Partial particle receiver with primary vtable at 0x172220. */
@@ -615,6 +625,7 @@ class FieldClass172220 : public FieldClass179330
 public:
     /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172220();
+    u8 unk248[8];
 };
 
 /** Partial destruction interface with primary vtable at 0x17A810. */
@@ -1277,13 +1288,16 @@ FieldEntryTail002A1860* func_002A1860(FieldEntryOwner002A1860* object, s32 index
  */
 FieldEntryTail002A4AD0* func_002A4AD0(FieldEntryOwner002A4AD0* object, s32 index);
 
-
 /**
- * @brief Initialize the two observed words of an embedded receiver.
- * @param object Embedded receiver to initialize.
- * @return The supplied receiver.
+ * @brief Create the receiver for a kind byte, or defer to func_49EB30.
+ *
+ * Each case allocates through the debug operator new with the original source
+ * file name and line.
+ * @param object Receiver passed through to func_49EB30 for other kinds.
+ * @param kind Kind byte selecting the receiver class.
+ * @return The new receiver, null if allocation failed, or func_49EB30's result.
  */
-FieldInitialWordPair* func_00297E10(FieldInitialWordPair* object);
+void* func_00297A30(void* object, u8 kind);
 
 /**
  * @brief Advance the countdown and invoke func_424F20 when it has elapsed.
