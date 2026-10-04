@@ -276,15 +276,33 @@ static inline u32 item_assigned_code(u8 value)
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00358440);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003587F0);
+ItemCreationClass186870::~ItemCreationClass186870()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00358850);
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00359240);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00359800);
+ItemCreationClass186970::~ItemCreationClass186970()
+{
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00359860);
+ItemCreationClass186970::ItemCreationClass186970()
+{
+    unka8 = 0;
+    unkac = 0;
+    unkb0 = 0;
+    unkb4 = 0;
+    for (s32 i = 0; i < 9; i++)
+    {
+        unkb8[i] = 0;
+        unkdc[i] = 0;
+    }
+    unk100 = 0;
+    unk101 = 0;
+    unk102 = 0;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003598E0);
 
@@ -336,9 +354,29 @@ void func_00359C80(ItemCreationTwoCheckedValueOwner* object)
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00359D70);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035A5C0);
+ItemCreationClass186A70::~ItemCreationClass186A70()
+{
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035A620);
+ItemCreationClass186A70::ItemCreationClass186A70()
+{
+    unka8 = 0;
+    unkac = 0;
+    unkb0 = 0;
+    unkb4 = 0;
+    unkb8 = 0;
+    unkbc = 0;
+    unkc0 = 0;
+    unkc4 = 0;
+    unkc8 = 0;
+    unkcc = 0;
+    unkd0 = 0;
+    unkd4 = 0;
+    unkd8 = 0;
+    unkdc = 0;
+    unke0 = 0;
+    unke4 = 0;
+}
 
 void func_0035A6A0(ItemCreationPairOwner* object, u32 value, u32 alternate)
 {
@@ -726,9 +764,34 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035E770);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035F0A0);
+ItemCreationClass186DB0::~ItemCreationClass186DB0()
+{
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035F100);
+ItemCreationClass186DB0::ItemCreationClass186DB0(void* object)
+{
+    unka8 = 0;
+    unka8 = object;
+    unkac = 0;
+    unkb0 = 0;
+    unkb4 = 0;
+    unkb8 = 0;
+    unk150 = 0;
+    for (s32 i = 0; i < 6; i++)
+    {
+        unkc8[i] = 0;
+        unke0[i] = 0;
+    }
+    for (s32 i = 0; i < 4; i++)
+    {
+        unkfc[i] = 0;
+    }
+    unkbc = 0;
+    unkc0 = 0;
+    unkc4 = 0;
+    // The original builds a window base here and destroys it straight away; nothing uses it.
+    FieldClass15AE70();
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035F1C0);
 
@@ -790,9 +853,29 @@ void func_0035F7F0(ItemCreationTwoColorOwner* object)
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035F8D0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035FBC0);
+ItemCreationClass186EB0::~ItemCreationClass186EB0()
+{
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035FC20);
+ItemCreationClass186EB0::ItemCreationClass186EB0(void* object)
+{
+    unka8 = 0;
+    unkac = 0;
+    unkb0 = 0;
+    unkb4 = 0;
+    unkb8 = 0;
+    unkbc = 0;
+    unkc0 = 0;
+    unkc4 = 0;
+    unkc8 = 0;
+    unkcc = 0;
+    unkd0 = 0;
+    unkd4 = 0;
+    unkd8 = 0;
+    unkd8 = object;
+    unkdc = 0;
+    unke0 = 0;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035FCA0);
 
@@ -822,9 +905,29 @@ void func_003604A0(u8* object)
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00360500);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003607E0);
+ItemCreationClass186FB0::~ItemCreationClass186FB0()
+{
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00360840);
+ItemCreationClass186FB0::ItemCreationClass186FB0(void* object)
+{
+    unka8 = 0;
+    unka8 = object;
+    unkac = 0;
+    unkb0 = 0;
+    unkb4 = 0;
+    unkb8 = 0;
+    unkbc = 0;
+    unkc0 = 0;
+    unkc4 = 0;
+    unkc8 = 0;
+    unkcc = 0;
+    unkd0 = 0;
+    unkd4 = 0;
+    unkd8 = 0;
+    unkdc = 0;
+    unke8 = 0;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003608C0);
 
@@ -1046,13 +1149,25 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00362990);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00362AE0);
+void ItemCreationClass1870B0::func_slot74()
+{
+    func_slotac();
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00362B10);
+void ItemCreationClass1870B0::func_slot70()
+{
+    func_slota8();
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00362B40);
+void ItemCreationClass1870B0::func_slot6c()
+{
+    func_slota4();
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00362B70);
+void ItemCreationClass1870B0::func_slot68()
+{
+    func_slota0();
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00362BA0);
 
@@ -1111,7 +1226,7 @@ void func_00363D20(ItemCreationNineSlotView* object)
     func_0023CE80((FieldObject23CE80*)object->unkb0, 5, object->unk1f1);
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00363E40);
+INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", __dt__23ItemCreationClass1870B0Fv);
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00363F10);
 
@@ -1239,13 +1354,25 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364A40);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364C60);
+void ItemCreationClass1871B0::func_slot74()
+{
+    func_slotac();
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364C90);
+void ItemCreationClass1871B0::func_slot70()
+{
+    func_slota8();
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364CC0);
+void ItemCreationClass1871B0::func_slot6c()
+{
+    func_slota4();
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364CF0);
+void ItemCreationClass1871B0::func_slot68()
+{
+    func_slota0();
+}
 
 void func_00364D20(ItemCreationFourteenSlotView* object)
 {
@@ -1277,7 +1404,7 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364F50);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00365560);
+INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", __dt__23ItemCreationClass1871B0Fv);
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00365600);
 
@@ -1396,7 +1523,28 @@ void func_00366CB0(ItemCreationCheckedValueOwner* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00366D40);
+ItemCreationClass1872B0::ItemCreationClass1872B0()
+{
+    unka8 = 0;
+    unkac = 0;
+    for (s32 i = 0; i < 8; i++)
+    {
+        unkb0[i] = 0;
+        unkd0[i] = 0;
+    }
+    for (s32 i = 0; i < 9; i++)
+    {
+        unke8[i] = 0;
+    }
+    unk11c = 0;
+    unk120 = 0;
+    unk10c = 0xFF;
+    unk10d = 0;
+    unkd8 = 0;
+    unke4 = 0;
+    unkdc = 0;
+    unke0 = 0;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00366E10);
 
@@ -1463,14 +1611,47 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00367BD0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00367CA0);
+ItemCreationClass1873B0::ItemCreationClass1873B0()
+{
+    for (s32 i = 0; i < 9; i++)
+    {
+        unka8[i] = 0;
+    }
+    for (s32 i = 0; i < 14; i++)
+    {
+        unkcc[i] = 0;
+    }
+    for (s32 i = 0; i < 7; i++)
+    {
+        unk104[i] = 0;
+    }
+    for (s32 i = 0; i < 3; i++)
+    {
+        unk128[i].unk00 = 0;
+    }
+    for (s32 i = 0; i < 3; i++)
+    {
+        unk128[i].unk04 = 0;
+    }
+    for (s32 i = 0; i < 3; i++)
+    {
+        unk128[i].unk08 = 0;
+    }
+    unk120 = 0;
+    unk124 = 0;
+    unk125 = 0;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00367D80);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003680F0);
+ItemCreationClass1874B0::~ItemCreationClass1874B0()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00368150);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00368310);
+ItemCreationClass1875B0::~ItemCreationClass1875B0()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00368370);
