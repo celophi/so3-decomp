@@ -8,6 +8,8 @@
 #include "overlays/lib/text_0046AE20.h"
 #include "main/resident_0013F3E0.h"
 #include "overlays/lib/text_004BD360.h"
+#include "main/resident_0012F0F8.h"
+#include "overlays/lib/text_00429B00.h"
 
 typedef unsigned __int128 FieldLocalQword;
 extern "C" s32 func_0022A160(void*);
