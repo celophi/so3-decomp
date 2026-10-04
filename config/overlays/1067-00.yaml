@@ -123,6 +123,7 @@ segments:
       - [0x123D80, databin, data]
       - [0x13D400, rodatabin, rodata_31A780]
       - [0x13D440, .rodata, text_001E6C50]
+      - [0x13D45E, pad, rodata_align]
       - [0x13D460, rodatabin, rodata_31A7E0]
   - name: init
     type: code
