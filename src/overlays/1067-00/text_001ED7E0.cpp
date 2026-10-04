@@ -1845,35 +1845,6 @@ s32 func_001F2420(FieldScriptCursorU32* cursor)
     return 1;
 }
 
-/** Partial actor view containing its command list and status flags. */
-struct FieldActorCommandState
-{
-    u8 unk00[0xC4];
-    FieldClass152FA0 commands;
-    u8 unk140[0x48D];
-    u8 unk5cd_0_1 : 2;
-    u8 unk5cd_2 : 1;
-    u8 unk5cd_3 : 1;
-    u8 unk5cd_4_7 : 4;
-
-    /** @brief Test the command-wait flags. @return True when bit two is clear or bit three is set. */
-    bool test_unk5cd() const
-    {
-        if (!unk5cd_2)
-        {
-            return true;
-        }
-        if (unk5cd_3)
-        {
-            return true;
-        }
-        return false;
-    }
-};
-
-
-extern "C" void* func_0020F520(void*);
-
 /**
  * @brief Queue the target word on the selected object's command list.
  * @param cursor Script operands and object selection.
