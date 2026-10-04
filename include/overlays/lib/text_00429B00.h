@@ -25,6 +25,17 @@ void func_004336E0(const void* vector, void* result);
  */
 void func_00433730(const void* matrix, const void* vector, void* result);
 
+/**
+ * @brief Allocate an aligned buffer by selecting among temporary allocations.
+ * @param size Requested buffer size in bytes.
+ * @param alignment Buffer alignment in bytes.
+ * @return Selected allocated buffer, or null when allocation fails.
+ */
+void* func_00433880(u32 size, u32 alignment);
+
+/** @brief Allocate and release temporary blocks before a buffer allocation. */
+void func_00433AA0(void);
+
 #ifdef __cplusplus
 }
 #endif

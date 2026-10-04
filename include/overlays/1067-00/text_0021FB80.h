@@ -2,14 +2,63 @@
 #define SO3_OVERLAYS_1067_00_TEXT_0021FB80_H
 
 #include "types.h"
+struct FieldClass151510;
+struct FieldVec4B;
+#ifdef __cplusplus
+#include "overlays/1067-00/text_002DBC50.h"
+#endif
 #include "overlays/1067-00/text_0021DB80.h"
 #include "overlays/1067-00/text_002607B0.h"
+
+/** Partial resident state with a scalar at offset 0x5FC and flags at offsets 0x6D2-0x6D3. */
+typedef struct FieldObject220150
+{
+    u8 unk00[0x5FC];
+    float value;
+    u8 unk600[0xD2];
+    u8 unk6D2_0_5 : 6;
+    u8 unk6D2_6 : 1;
+    u8 unk6D2_7 : 1;
+    u8 unk6D3_0 : 1;
+    u8 unk6D3_1 : 1;
+    u8 unk6D3_2 : 1;
+    u8 unk6D3_3_7 : 5;
+} FieldObject220150;
+
 #ifdef __cplusplus
 #include "overlays/1067-00/text_00207AF0.h"
 #endif
 
 #ifdef __cplusplus
+/** Partial 0xA0-byte list owner with a scalar track and table D_15B890. */
+class FieldClass15B890 : public FieldClass15B950
+{
+public:
+    u8 unk8c[4];
+    FieldClass150090* unk90;
+    float unk94;
+    void* unk98;
+    s16 unk9c;
+    u8 unk9e_0 : 1;
+    u8 unk9e_1_7 : 7;
+    u8 unk9f;
+
+    /** @brief Release the scalar track and record array, then destroy the list. */
+    virtual ~FieldClass15B890();
+
+    /** @brief Clear the listed nodes and release both owned tracks. */
+    virtual void func_002DDA70();
+};
+#endif
+
+#ifdef __cplusplus
 extern "C" {
+/** @brief Set two bounds and optionally select a named entry. @param object Context receiver. @param name Optional entry name. @param first First bound. @param second Second bound. */
+void func_00225150(void* object, const char* name, float first, float second);
+
+/** @brief Create or update the attached range object. @param object Context receiver. @param value Range selection. @param duration Transition duration. */
+void func_00225550(void* object, u32 value, float duration);
+
 #endif
 
 /**
@@ -22,6 +71,12 @@ extern "C" {
  * @return The supplied vector.
  */
 FieldVector2624* func_00221430(FieldVector2624* vector, float first, float second, float third, float fourth);
+
+/** @brief Return the receiver's heading. @param object Field receiver. @return Heading in radians. */
+float func_002273B0(struct FieldClass151510* object);
+
+/** @brief Apply a vector with the supplied scale. @param object Field receiver. @param vector Vector to apply. @param scale Application scale. */
+void func_00227740(struct FieldClass151510* object, const struct FieldVec4B* vector, float scale);
 
 /**
  * @brief Invoke the receiver's virtual handler at vtable offset 0x20, passing its word at offset 0x74.
@@ -253,7 +308,9 @@ public:
     u8 unk210[0x180];
     FieldVec4B unk390;
     FieldClass1502E0* unk3a0;
-    u8 unk3a4[0x1C];
+    u8 unk3a4[0x10];
+    u32 unk3b4;
+    u8 unk3b8[8];
 };
 
 /**

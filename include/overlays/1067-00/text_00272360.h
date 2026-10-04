@@ -2,13 +2,28 @@
 #define SO3_OVERLAYS_1067_00_TEXT_00272360_H
 
 #include "types.h"
+#include "overlays/1067-00/curve.h"
 
 typedef struct FieldObject154EF0 FieldObject154EF0;
-typedef struct FieldCurve FieldCurve;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Compute coefficients for the owner's component curve.
+ * @param object Component-curve owner.
+ */
+void func_002723E0(FieldClass1514F8* object);
+
+/**
+ * @brief Append a pair of components to the owner's vector array.
+ * @param object Component-curve owner.
+ * @param first First component.
+ * @param second Second component.
+ * @return Index of the appended pair.
+ */
+s32 func_00272950(FieldClass1514F8* object, float first, float second);
 
 /**
  * @brief Report the fixed type value for this receiver.
@@ -23,7 +38,7 @@ s32 func_002729C0(FieldObject154EF0* object);
  * @param position Input position.
  * @return Interpolated value, or zero when the curve has fewer than two points.
  */
-float func_00272820(FieldCurve* curve, float position);
+float func_00272820(FieldClass1514F8* curve, float position);
 
 /**
  * @brief Perform no work.

@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_LIB_TEXT_004CD3A0_H
 
 #include "types.h"
+#include "overlays/lib/text_003E68C0.h"
 
 /** Partial list node; the leading bytes and full object extent are unknown. */
 typedef struct LibListNode
@@ -12,6 +13,117 @@ typedef struct LibListNode
 } LibListNode;
 
 #ifdef __cplusplus
+class FieldVec4B;
+
+/** @brief Configure the attached callback and its flags. @param object Receiver. @param attached Attached object. @param enabled Whether the callback is enabled. @param first_flag First callback flag. @param second_flag Second callback flag. @param level Signed callback level. @param mask Callback mask. */
+extern "C" void func_004DAFE0(void* object, void* attached, bool enabled, bool first_flag, bool second_flag, s32 level, u32 mask);
+
+/** Aligned four-row matrix whose assignment returns a copy of the matrix. */
+class LibMatrix44Value
+{
+public:
+    /** @brief Leave the matrix uninitialized. */
+    LibMatrix44Value()
+    {
+    }
+
+    /** @brief Set the matrix to the identity transformation. */
+    void set_identity();
+
+    /** @brief Copy all sixteen components. @param other Matrix to copy. */
+    LibMatrix44Value(const LibMatrix44Value& other)
+    {
+        ((unsigned __int128*)this)[0] = ((const unsigned __int128*)&other)[0];
+        ((unsigned __int128*)this)[1] = ((const unsigned __int128*)&other)[1];
+        ((unsigned __int128*)this)[2] = ((const unsigned __int128*)&other)[2];
+        ((unsigned __int128*)this)[3] = ((const unsigned __int128*)&other)[3];
+    }
+
+    /** @brief Copy all components. @param other Source matrix. @return A copy of this matrix. */
+    LibMatrix44Value operator=(const LibMatrix44Value& other)
+    {
+        ((unsigned __int128*)this)[0] = ((const unsigned __int128*)&other)[0];
+        ((unsigned __int128*)this)[1] = ((const unsigned __int128*)&other)[1];
+        ((unsigned __int128*)this)[2] = ((const unsigned __int128*)&other)[2];
+        ((unsigned __int128*)this)[3] = ((const unsigned __int128*)&other)[3];
+        return *this;
+    }
+
+    float m[4][4];
+} __attribute__((aligned(16)));
+
+extern "C"
+{
+    /** @brief Normalize a quaternion in place. @param quaternion Quaternion to normalize. */
+    void func_004CD8A0(FieldVec4B* quaternion);
+    /** @brief Convert a quaternion to a matrix. @param quaternion Rotation to convert. @return Rotation matrix. */
+    LibMatrix44Value func_004CE930(const FieldVec4B& quaternion);
+}
+
+/** Partial 0x90-byte transform owner with vtable D_178A90 in main data. */
+class LibClass178A90 : public LibClass171EF0
+{
+public:
+    /** @brief Destroy the transform owner. */
+    virtual ~LibClass178A90();
+
+    /** @brief Clear the byte at offset 0x60. */
+    virtual void func_003F4420();
+
+    /**
+     * @brief Default output handler.
+     * @param output Opaque output object.
+     * @return Zero in the base implementation.
+     */
+    virtual s32 func_003EEE20(void* output);
+
+    /**
+     * @brief Test the supplied value in the base implementation.
+     * @param value Value to test.
+     * @param mode Additional mode used by derived implementations.
+     * @return Whether the value is negative.
+     */
+    virtual s32 func_003EEE30(float value, float mode);
+
+    /** @brief Return the transform's vector. @return Vector pointer. */
+    virtual const LibVector4* func_003EFAA0();
+
+    /**
+     * @brief Default matrix handler.
+     * @param matrix Matrix supplied by the caller.
+     * @param context Opaque caller context.
+     */
+    virtual void func_003F4440(const void* matrix, void* context);
+
+    /** @brief Mark the matrix ready. */
+    virtual void func_004D0090();
+
+    /** @brief Return the transformation matrix. @return Matrix pointer, or null in the base implementation. */
+    virtual const void* func_004D00A0();
+
+    /**
+     * @brief Copy the source transformation state.
+     * @param source Transform source.
+     */
+    virtual void func_004CFFA0(const LibClass178A90* source);
+
+    /**
+     * @brief Produce a transformation receiver, or null.
+     * @return New transform receiver, or null.
+     */
+    virtual LibClass178A90* func_003EEE50();
+
+    /** @brief Detach and queue the transform receiver. */
+    virtual void func_003EEE60();
+
+    u8 unk60;
+    u8 unk61;
+    u8 unk62[8];
+    u16 unk6a;
+    u16 unk6c;
+    u8 unk6e[0x22];
+};
+
 /**
  * Partial Lib base class with its vtable pointer at offset 0x10, with vtable D_178DD0 in main data.
  * Its twelve virtual slots are declared in vtable order; slots 5-9 keep opaque parameters
@@ -197,11 +309,11 @@ void* func_004D6DE0(void* object);
 void* func_004D99A0(void* object);
 
 /**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
+ * @brief Return the base transform's null matrix pointer.
+ * @param object Transform receiver; unused.
+ * @return Null.
  */
-s32 func_004D00A0(void* object);
+const void* func_004D00A0(void* object);
 
 /**
  * @brief Return the fixed value 16.

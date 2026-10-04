@@ -648,7 +648,7 @@ s32 func_0022D680(FieldCallback22D680* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022D6C0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022D6C0__16FieldClass152C70Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022D800);
 

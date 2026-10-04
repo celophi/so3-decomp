@@ -8,7 +8,7 @@ from pathlib import Path
 import unittest
 
 from tools.so3.build.compiler_probe import object_functions
-from tools.so3.build.text_order import merge_rodata_sections, order_text_sections, unit_range
+from tools.so3.build.text_order import merge_rodata_sections, normalize_symbol_aliases, order_text_sections, symbol_aliases, unit_range
 from tools.so3.tests.test_compiler_probe import object_fixture
 
 
@@ -29,6 +29,36 @@ def relocation_target(data):
 
 
 class TextOrderTests(unittest.TestCase):
+    def test_only_explicit_same_address_aliases_are_selected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'symbols.txt'
+            path.write_text('first = 0x100; // type:func allow_duplicated:True\n'
+                            'second = 0x100; // type:func allow_duplicated:true\n'
+                            'unmarked = 0x200; // type:func\n'
+                            'marked = 0x200; // type:func allow_duplicated:true\n')
+            self.assertEqual(symbol_aliases(path), {'first': 'second'})
+
+    def test_defined_functions_are_not_renamed_as_aliases(self):
+        original = object_fixture(relocated=True)
+        self.assertEqual(normalize_symbol_aliases(original, {'first': 'second'}), original)
+
+    def test_import_alias_preserves_payloads_and_relocation_indices(self):
+        original = bytearray(object_fixture(relocated=True))
+        shoff = struct.unpack_from('<I', original, 32)[0]
+        table = struct.unpack_from('<10I', original, shoff + 4 * 40)
+        struct.pack_into('<H', original, table[4] + 16 + 14, 0)
+        result = normalize_symbol_aliases(bytes(original), {'first': 'heap_release'})
+        self.assertEqual(text_payloads(result), text_payloads(original))
+        relocation = struct.unpack_from('<10I', original, shoff + 6 * 40)
+        self.assertEqual(result[relocation[4]:relocation[4] + relocation[5]],
+                         original[relocation[4]:relocation[4] + relocation[5]])
+        strings = struct.unpack_from('<10I', result, shoff + 3 * 40)
+        label = struct.unpack_from('<I', result, table[4] + 16)[0]
+        self.assertEqual(result[strings[4] + label:].split(b'\0', 1)[0], b'heap_release')
+        second = struct.unpack_from('<IIIBBH', result, table[4] + 32)
+        self.assertEqual(second[5], 2)
+        self.assertEqual(result[strings[4] + second[0]:].split(b'\0', 1)[0], b'second')
+
     def test_sections_follow_function_addresses(self):
         data = order_text_sections(object_fixture(), {'first': 0x200, 'second': 0x100})
         self.assertEqual(text_payloads(data), [b'BBBB', b'AAAA'])

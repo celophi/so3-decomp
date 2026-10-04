@@ -2,7 +2,195 @@
 #define SO3_OVERLAYS_1067_00_TEXT_001ED7E0_H
 
 #include "types.h"
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/1067-00/text_001E6C50.h"
+#include "main/resident_0010A0E0.h"
+
+/** Command node retaining a copied record buffer. */
+class FieldClass152C70 : public FieldClass150440
+{
+public:
+    /** @brief Clear the record buffer and count. */
+    FieldClass152C70()
+    {
+        unk18 = 0x1001A;
+        unk1c = 0;
+        unk20 = 0;
+    }
+    /** @brief Release the retained record buffer and destroy the node. */
+    virtual ~FieldClass152C70();
+    /** @brief Apply the retained records. @return One when complete. */
+    virtual s32 func_0022D6C0();
+    void* unk1c;
+    s32 unk20;
+};
+
+/** @brief Release the retained record buffer and destroy the command node. */
+inline FieldClass152C70::~FieldClass152C70()
+{
+    if (unk1c)
+    {
+        func_001134C0(unk1c);
+    }
+}
+
+/** Command node waiting for the owning actor's state bit. */
+class FieldClass152DD0 : public FieldClass150440
+{
+public:
+    /** @brief Set the command kind. */
+    FieldClass152DD0()
+    {
+        unk18 = 0x10014;
+    }
+    /** @brief Destroy the command node. */
+    virtual ~FieldClass152DD0();
+    /** @brief Wait for the owning actor's state. @return Zero while waiting, otherwise one. */
+    virtual s32 func_0022E170();
+};
+
+
+/** Command interpolating a scalar component of its owning actor. */
+class FieldClass152DF0 : public FieldClass150440
+{
+public:
+    /**
+     * @brief Initialize the scalar command.
+     * @param value Target value.
+     * @param word Word passed to the actor callback.
+     * @param duration Duration.
+     */
+    FieldClass152DF0(float value, u32 word, float duration);
+    /** @brief Destroy the command node. */
+    virtual ~FieldClass152DF0();
+    /** @brief Update the owning actor. @return One when complete, otherwise zero. */
+    virtual s32 func_0022E1B0();
+    float unk1c;
+    float unk20;
+    u32 unk24;
+    float unk28;
+    float unk2c;
+};
+
+
+/** Command node requesting removal of its owning actor. */
+class FieldClass152E10 : public FieldClass150440
+{
+public:
+    /** @brief Set the command kind. */
+    FieldClass152E10()
+    {
+        unk18 = 0x10012;
+    }
+    /** @brief Destroy the command node. */
+    virtual ~FieldClass152E10();
+    /** @brief Remove the owning actor. @return Always one. */
+    virtual s32 func_0022E350();
+};
+
+
+/** Command node that sets its owning command-list timer. */
+class FieldClass152E30 : public FieldClass150440
+{
+public:
+    /** @brief Set the command kind and timer. @param timer Timer value. */
+    FieldClass152E30(float timer)
+    {
+        unk18 = 0x10011;
+        unk1c = timer;
+    }
+    /** @brief Destroy the command node. */
+    virtual ~FieldClass152E30();
+    /** @brief Set the owning command-list timer. @return Always one. */
+    virtual s32 func_0022E380();
+    float unk1c;
+};
+
+
+/** Partial queue object with the native 1507A0 virtual interface. */
+class FieldClass1507A0 : public FieldClass150070
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Required storage. @return Allocated storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Destroy the inherited queue state. */
+    virtual ~FieldClass1507A0()
+    {
+    }
+    /** @brief Add this object to the resident queue. */
+    virtual void func_001DD7B0();
+};
+
+/** Partial queue object whose callback examines resident entries. */
+class FieldClass150650 : public FieldClass1507A0
+{
+public:
+    /** @brief Destroy the queue object. */
+    virtual ~FieldClass150650();
+    /** @brief Unlink and add this object to the resident queue. */
+    virtual void func_001DD7B0();
+    /** @brief Process the resident entries. */
+    virtual void func_001DF360();
+};
+
+/** Small callback object storing three byte flags and a word. */
+class FieldClass150630 : public FieldClass150070
+{
+public:
+    /** @brief Allocate from the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Destroy the callback object. */
+    virtual ~FieldClass150630();
+    /** @brief Return the object kind. @return Sixteen. */
+    virtual s32 func_001DF3D0();
+    /** @brief Unlink and release the object. */
+    virtual void func_001DD7B0();
+    /** @brief Invoke the packed-field callback and release this object. */
+    virtual void func_001DF360();
+    u8 unk14[4];
+    u8 unk18;
+    u8 unk19;
+    u8 unk1a;
+    s32 unk1c;
+};
+
+/** Shape list whose destructor releases the inherited entries. */
+class FieldClass1505F0 : public FieldClass1502A0
+{
+public:
+    /** @brief Release every listed shape and the inherited list state. */
+    virtual ~FieldClass1505F0();
+    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+};
+#endif
+
 #include "overlays/1067-00/text_001ED7E0_callbacks.h"
+
+typedef struct FieldCondition16 FieldCondition16;
+struct FieldVec4B;
+struct FieldClass150590;
+struct FieldClass150570;
+struct FieldClass150530;
+struct LibClass178DD0;
+struct FieldClass151510;
+struct FieldClass150060;
+#ifdef __cplusplus
+extern "C" {
+#endif
+/** @brief Test listed conditional shapes and dispatch their events. @param list Circular shape sentinel. @param actor Query receiver. @param mask Condition selection mask. @return One when an event was dispatched, otherwise zero. */
+s32 func_001EF150(struct FieldClass150060* list, struct FieldClass151510* actor, u32 mask);
+/** @brief Test listed script shapes and dispatch their events. @param list Circular shape list. @param actor Query receiver. @param kind Shape flag selector. @return Whether an event was dispatched. */
+bool func_001EF4A0(struct LibClass178DD0* list, struct FieldClass151510* actor, u8 kind);
+#ifdef __cplusplus
+}
+#endif
+
 
 /** One 16-byte value also accessed as four floats. */
 typedef unsigned __int128 FieldQword;
@@ -46,6 +234,16 @@ typedef struct FieldScriptCursorF32 FieldScriptCursorF32;
 typedef struct FieldScriptCursorS8 FieldScriptCursorS8;
 typedef struct FieldScriptCursorS32 FieldScriptCursorS32;
 typedef struct FieldScriptCursorU32 FieldScriptCursorU32;
+
+/**
+ * @brief Remove shapes associated with the script's current owner word.
+ * @param cursor Script cursor whose current word supplies the owner pointer.
+ * @return Always one.
+ */
+#ifdef __cplusplus
+extern "C"
+#endif
+s32 func_001EF6C0(FieldScriptCursorU32* cursor);
 typedef struct FieldRecords FieldRecords;
 typedef struct FieldScriptVec FieldScriptVec;
 typedef struct FieldLateNodes FieldLateNodes;
@@ -60,6 +258,164 @@ typedef struct FieldLateDeleting FieldLateDeleting;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Create a rectangular script shape and append it to the script shape list.
+ * @param cursor Operand cursor supplying the shape parameters.
+ * @return Always one.
+ */
+s32 func_001EFA20(FieldScriptCursorU32* cursor);
+
+/**
+ * @brief Create a conditional cylindrical shape and append it to the script shape list.
+ * @param cursor Operand cursor supplying the shape parameters.
+ * @return Always one.
+ */
+s32 func_001EFC80(FieldScriptCursorU32* cursor);
+
+/**
+ * @brief Create a cylindrical script shape and append it to the shape list.
+ * @param cursor Operand cursor supplying the shape parameters.
+ * @return Always one.
+ */
+s32 func_001EFEC0(FieldScriptCursorU32* cursor);
+
+/**
+ * @brief Set context bounds and optionally select a named entry.
+ * @param cursor Float operand cursor followed by the optional name.
+ * @param count Number of command operands.
+ * @return Always one.
+ */
+s32 func_001F02E0(FieldScriptCursorF32* cursor, u32 count);
+
+/** @brief Queue a command borrowing pairs from the script. @param cursor Script cursor and channel selection. @param count Operand count. @return Always one. */
+s32 func_001F0360(FieldScriptCursorU32* cursor, u32 count);
+
+/** @brief Queue a command with a float value and duration. @param cursor Script cursor and channel selection. @return Always one. */
+s32 func_001F04D0(FieldScriptCursorU32* cursor);
+
+/** @brief Queue a target and duration command. @param cursor Script operands and channel selection. @return One. */
+s32 func_001F0C00(FieldScriptCursorU32* cursor);
+
+/** @brief Wait while the selected command list is pending. @param cursor Channel selection and wait state. @return Zero while waiting, otherwise one. */
+s32 func_001F0B80(FieldScriptCursorU32* cursor);
+
+/** @brief Allocate a packed-field callback and append it to the object list. @param cursor Script packed operand. @return One. */
+s32 func_001F09C0(FieldScriptCursorU32* cursor);
+
+/** @brief Set the current bound or its transition rate. @param cursor Script operands. @param count Operand count. @return One. */
+s32 func_001F0A80(FieldScriptCursorU32* cursor, u32 count);
+
+/** @brief Queue planar movement from the script duration and magnitude. @param cursor Script operands and channel selection. @return One. */
+s32 func_001F0D20(FieldScriptCursorU32* cursor);
+
+/** @brief Queue a command that waits for the owning motion. @param cursor Script channel selection. @return One. */
+s32 func_001F10B0(FieldScriptCursorU32* cursor);
+
+/** @brief Queue a planar target and duration. @param cursor Script operands and channel selection. @return One. */
+s32 func_001F14F0(FieldScriptCursorU32* cursor);
+
+/** @brief Queue a motion target on the selected owner. @param cursor Script operands and channel selection. @return One. */
+s32 func_001F1610(FieldScriptCursorU32* cursor);
+
+/** @brief Queue an angular target converted from script degrees. @param cursor Script operands and channel selection. @return One. */
+s32 func_001F1730(FieldScriptCursorU32* cursor);
+
+/** @brief Queue rotation from the script duration and target. @param cursor Script operands and channel selection. @return One. */
+s32 func_001F1880(FieldScriptCursorU32* cursor);
+
+/** @brief Test the default camera name and save motion state for other names. @param cursor Script wait state. @return Zero for the default name, otherwise one. */
+s32 func_001F0E80(FieldScriptCursorU32* cursor);
+
+/** @brief Clear the selected command list and motion track. @param cursor Channel selection. @return One. */
+s32 func_001F0F00(FieldScriptCursorU32* cursor);
+
+/** @brief Queue a command waiting to set the selected owner timer. @param cursor Duration and channel selection. @return One. */
+s32 func_001F0FC0(FieldScriptCursorU32* cursor);
+
+/** @brief Apply a script flag to the selected resident entries. @param cursor Script flag operand. @return One. */
+s32 func_001F20B0(FieldScriptCursorU32* cursor);
+
+/** @brief Queue the selected channel with a script value and flags. @param cursor Script operands and channel selection. @return One. */
+s32 func_001F2140(FieldScriptCursorU32* cursor);
+
+/** @brief Apply a script flag to each selected resident entry. @param cursor Script flag operand. @return One. */
+s32 func_001F2230(FieldScriptCursorU32* cursor);
+
+/** @brief Queue the resource-key setting on the selected object. @param cursor Script operands and selection. @return One. */
+s32 func_001F22C0(FieldScriptCursorU32* cursor);
+
+/** @brief Wait while the selected actor has command-list activity. @param cursor Actor selection and wait state. @return Zero while waiting, otherwise one. */
+s32 func_001F7A90(FieldScriptCursorU32* cursor);
+
+/** @brief Queue a wait command on the selected actor. @param cursor Actor selection. @return One. */
+s32 func_001F7B80(FieldScriptCursorU32* cursor);
+
+/** @brief Queue scalar interpolation on the selected actor. @param cursor Script operands and actor selection. @return One. */
+s32 func_001F7C30(FieldScriptCursorU32* cursor);
+
+/** @brief Queue a motion callback after resident readiness. @param cursor Channel selection. @return One. */
+s32 func_001F1410(FieldScriptCursorU32* cursor);
+
+/** @brief Queue a script word on the selected object. @param cursor Script operand and object selection. @return One. */
+s32 func_001F2470(FieldScriptCursorU32* cursor);
+
+/** @brief Queue an actor removal request and set its state bit. @param cursor Actor selection. @return One. */
+s32 func_001F7D10(FieldScriptCursorU32* cursor);
+
+/** @brief Queue an unsigned script timer on the selected actor. @param cursor Actor selection and timer operand. @return One. */
+s32 func_001F7DE0(FieldScriptCursorU32* cursor);
+
+/** @brief Queue a script float on the selected object. @param cursor Script operand and object selection. @return One. */
+s32 func_001F2560(FieldScriptCursorU32* cursor);
+
+/** @brief Copy script words into a command and append it to the selected receiver. @param cursor Script operands and selection. @param word_count Number of words to copy. @return One. */
+s32 func_001F7470(FieldScriptCursorU32* cursor, s32 word_count);
+
+/** @brief Select a range mode and update its transition. @param cursor Script operands. @param count Operand count. @return One. */
+s32 func_001F06E0(FieldScriptCursorU32* cursor, u32 count);
+
+/**
+ * @brief Test the shape condition and its expanded rectangular bounds.
+ * @param object Conditional rectangular shape.
+ * @param input Position and radius to test.
+ * @param mask Selected condition bits.
+ * @param direction Direction used by the angle condition.
+ * @param tolerance Vertical overlap allowance.
+ * @return Whether both tests succeed.
+ */
+bool func_001EE2A0(struct FieldClass150590* object, const struct FieldVec4B* input, u32 mask, float direction, float tolerance);
+
+/**
+ * @brief Test the selected shape flag and its expanded rectangular bounds.
+ * @param object Rectangular shape.
+ * @param input Position and radius to test.
+ * @param kind Flag selector.
+ * @param tolerance Vertical overlap allowance.
+ * @return Whether the flag and geometry tests succeed.
+ */
+bool func_001EE630(struct FieldClass150570* object, const struct FieldVec4B* input, u8 kind, float tolerance);
+
+/**
+ * @brief Test the selected shape flag, vertical overlap and xyz radius bound.
+ * @param object Cylindrical shape.
+ * @param input Position and radius to test.
+ * @param kind Flag selector.
+ * @param tolerance Vertical overlap allowance.
+ * @return Whether the flag and geometry tests succeed.
+ */
+bool func_001EEAE0(struct FieldClass150530* object, const struct FieldVec4B* input, u8 kind, float tolerance);
+
+/**
+ * @brief Test a selected mask and angular interval.
+ * @param condition Mask selector and angle range.
+ * @param mask Selected condition bits.
+ * @param position Position used by relative angle conditions.
+ * @param center Center used by relative angle conditions.
+ * @param direction Direction in radians.
+ * @return One when the condition succeeds, otherwise zero.
+ */
+s32 func_001EEDB0(FieldCondition16* condition, u32 mask, const struct FieldVec4B* position, const struct FieldVec4B* center, float direction);
 
 /**
  * @brief Mark the vector state and copy a 16-byte value into its first vector.
@@ -200,12 +556,6 @@ s32 func_001EE1C0(void* object);
 void func_001EE1D0(void* object);
 
 /**
- * @brief Clean up the receiver and add it to the resident queue.
- * @param object Receiver to clean up and queue.
- */
-void func_001EE1E0(void* object);
-
-/**
  * @brief Set four floats at offset 0x20, using one as the last component.
  * @param state Receiver to update.
  * @param x First component.
@@ -241,30 +591,9 @@ s32 func_001F0620(FieldScriptCursorF32* cursor);
  */
 s32 func_001F0E40(void* unused);
 
-/**
- * @brief Run two cleanup helpers on the receiver.
- * @param object Receiver to clean up.
- */
-void func_001F0F90(void* object);
 
-/**
- * @brief Return the fixed value 16.
- * @param object Receiver of the call.
- * @return 16.
- */
-s32 func_001F1F60(void* object);
 
-/**
- * @brief Clean up the receiver and add it to the resident queue.
- * @param object Receiver to clean up and queue.
- */
-void func_001F1F70(void* object);
 
-/**
- * @brief Clean up the receiver and add it to the resident queue.
- * @param object Receiver to clean up and queue.
- */
-void func_001F2040(void* object);
 
 /**
  * @brief Copy the current float operand to two receiver objects.
@@ -280,11 +609,7 @@ s32 func_001F2070(FieldScriptCursorF32* cursor);
  */
 s32 func_001F7B40(void* cursor);
 
-/**
- * @brief Add the receiver to the resident queue.
- * @param object Receiver to queue.
- */
-void func_001F8C90(void* object);
+
 
 /**
  * @brief Store the current float operand in the receiver.
@@ -451,13 +776,13 @@ void func_001F90D0(FieldLateFlag30* object);
 
 #ifdef __cplusplus
 /**
- * @brief Retry a 0x80-byte read up to eight times while the owner list allows it.
- * @param owner Record loader whose word at offset 0x10 points to its FieldClass1530D0 list.
- * @param buffer Buffer passed to the read.
- * @param mode Selects the read (nonzero: func_433AA0/func_433880, zero: func_139700).
- * @return The read result, or zero after retries stop. Same body as func_001E1100.
+ * @brief Allocate a 128-byte-aligned buffer, retrying after other loaders release storage.
+ * @param owner Loader attached to the resource list.
+ * @param size Requested buffer size in bytes.
+ * @param mode Nonzero for the library allocator, zero for the resident allocator.
+ * @return Allocated buffer, or null when allocation or recovery fails.
  */
-s32 func_001F9A80(class FieldClass150070* owner, void* buffer, s32 mode);
+void* func_001F9A80(class FieldClass150070* owner, u32 size, s32 mode);
 #endif
 
 #ifdef __cplusplus

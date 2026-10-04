@@ -2,6 +2,26 @@
 #define SO3_OVERLAYS_1067_00_TEXT_00200710_H
 
 #include "types.h"
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001DD3C0.h"
+
+/** Script context base with its command flags after the opaque state. */
+class FieldClass150DC0 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the script state and its inherited node. */
+    virtual ~FieldClass150DC0();
+    /** @brief Return the context's fixed state value. @return Always one. */
+    virtual s32 func_00201520();
+    /** @brief Return the current context scale. @return Context scale. */
+    virtual float func_00201530();
+    u8 unk14[0x4B4];
+    u8 unk4c8_0 : 1;
+    u8 unk4c8_1 : 1;
+    u8 unk4c8_2_7 : 6;
+};
+#endif
+
 #include "overlays/1067-00/text_001FF260.h"
 
 #ifdef __cplusplus

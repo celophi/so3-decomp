@@ -2,6 +2,28 @@
 #define SO3_OVERLAYS_1067_00_TEXT_0026EE10_H
 
 #include "types.h"
+#include "overlays/1067-00/text_0020D9A0.h"
+
+struct LibClass178220;
+/** Partial context containing its animation manager. */
+typedef struct FieldContext26FF70
+{
+    u8 unk00[0x8C];
+    struct LibClass178220* unk8c;
+} FieldContext26FF70;
+
+/** Partial field receiver containing the active shape resource and context. */
+struct FieldRoot26FF70
+{
+    u8 unk00[0x7C];
+    void* unk7C;
+    u8 unk80[0x28];
+    struct FieldClass151640* unkA8;
+    u8 unkAC[4];
+    void* unkB0;
+    u8 unkB4[0x24];
+    FieldContext26FF70* unkD8;
+};
 
 typedef struct FieldWords270E90 FieldWords270E90;
 typedef struct FieldState270EE0 FieldState270EE0;

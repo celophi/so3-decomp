@@ -83,7 +83,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0020);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0090);
 
-s32 func_004D00A0(void* object)
+const void* func_004D00A0(void* object)
 {
     return 0;
 }

@@ -2,10 +2,36 @@
 #define SO3_OVERLAYS_1067_00_TEXT_0022DC70_H
 
 #include "types.h"
+struct FieldClass151510;
+struct FieldClass1505B0;
 
 #ifdef __cplusplus
+#include "overlays/1067-00/field_list.h"
+
+/** Counted command list with a timer. */
+class FieldClass152FA0 : public FieldClass1502A0
+{
+public:
+    /** @brief Destroy the command list. */
+    virtual ~FieldClass152FA0();
+    /** @brief Test the timer and remaining node count. @return One when the timer is active or nodes remain. */
+    virtual s32 func_00239880();
+    float unk78;
+};
+
+class FieldClass1530D0;
 extern "C" {
+
+/**
+ * @brief Run the release handler on listed loaders with the requested type.
+ * @param list Loader list.
+ * @param type Requested type, or -1 to include every loader.
+ */
+void func_0023AE00(FieldClass1530D0* list, s16 type);
 #endif
+
+/** @brief Record a newly overlapping shape. @param actor Field receiver. @param shape Shape to record. @return One for a new entry, otherwise zero. */
+s32 func_00237420(struct FieldClass151510* actor, struct FieldClass1505B0* shape);
 
 /**
  * @brief Update matching attached entries with a caller-supplied word.
@@ -278,7 +304,7 @@ void func_00238520(void* object);
 }
 
 /**
- * Partial base of 32-byte records, with vtable D_1530C0 in main data. Its
+ * Partial 28-byte record base, with vtable D_1530C0 in main data. Its
  * vtable pointer follows its data at offset 0x18.
  */
 class FieldClass1530C0
@@ -340,6 +366,15 @@ public:
             return (u32)unk04;
         }
         return ((u32)unk04 + 0x7F) & ~0x7F;
+    }
+
+    /**
+     * @brief Set the record's byte capacity, rounded up to a 2048-byte block.
+     * @param capacity Requested capacity in bytes.
+     */
+    void set_capacity(u32 capacity)
+    {
+        unk00 = (capacity + 0x7FF) & ~0x7FF;
     }
 
     /**

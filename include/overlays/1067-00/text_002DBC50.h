@@ -3,10 +3,44 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_002DB1D0.h"
+#include "overlays/1067-00/text_002AE9E0.h"
 
 struct FieldReset2DCA70;
 struct FieldReset2DCA90;
 struct FieldFloatState2DCCF0;
+
+#ifdef __cplusplus
+class FieldClass15B900;
+
+/** Partial list owner with vtable D_15B950 in main data and three track handlers. */
+class FieldClass15B950 : public FieldClass1502A0
+{
+public:
+    /** @brief Release the owned track, then destroy the list. */
+    virtual ~FieldClass15B950();
+
+    /**
+     * @brief Append the listed vectors to the track and release their nodes.
+     * @param key Running sort value updated for each node.
+     */
+    virtual void func_002DD7B0(float* key);
+
+    /**
+     * @brief Replace the track using the supplied initial component.
+     * @param first Initial first component.
+     * @param reuse Nonzero allows derived handlers to reuse existing track data.
+     */
+    virtual void func_002DD870(const float* first, s32 reuse);
+
+    /** @brief Clear the listed nodes and release the owned track. */
+    virtual void func_002DDA70();
+
+    FieldClass1595D0* unk78;
+    u8 unk7c[0x0C];
+    u8 unk88;
+    u8 unk89[3];
+};
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,18 +80,6 @@ void func_002DCA90(FieldReset2DCA90* object);
  * @param value_98 Numerator used to derive the value at offset 0x98.
  */
 void func_002DCCF0(FieldFloatState2DCCF0* object, void* value_a0, s32 value_a4, float value_90, float value_98);
-
-/**
- * @brief Run the receiver's virtual cleanup and release its object at offset 0x78.
- * @param object Receiver to clean up.
- */
-void func_002DDA70(void* object);
-
-/**
- * @brief Release the receiver's object at offset 0x8C and allocation at offset 0xA0.
- * @param object Receiver to clean up.
- */
-void func_002DCD20(void* object);
 
 #ifdef __cplusplus
 }

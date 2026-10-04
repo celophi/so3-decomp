@@ -12,6 +12,9 @@ typedef struct ResidentObjectQueue
     void* entries[0x400];
 } ResidentObjectQueue;
 
+/** Resident descriptor table used by the keyed resource-size lookup. */
+struct ResidentObject1B65E4;
+
 /** Opaque receiver for resident request allocation. */
 typedef struct ResidentRequest112400 ResidentRequest112400;
 
@@ -19,11 +22,24 @@ typedef struct ResidentRequest112400 ResidentRequest112400;
 extern "C" {
 #endif
 
+/** @brief Allocate a block from the resident heap. @param heap Heap receiver. @param size Requested byte count. @return Allocated block, or null. */
+void* func_00113710(void* heap, s32 size);
+/** @brief Return a block to the resident heap. @param memory Allocated block. */
+void func_001134C0(void* memory);
+
 /**
  * @brief Advance the resident random sequence and return its next word.
  * @return Next unsigned random word.
  */
 u32 func_0010CF80(void);
+
+/**
+ * @brief Read the byte size associated with a key in the resident descriptor table.
+ * @param object Resident descriptor table owner.
+ * @param key Descriptor key.
+ * @return Resource size in bytes.
+ */
+u32 func_0011C8C0(struct ResidentObject1B65E4* object, s32 key);
 
 /**
  * @brief Append an object to the ring buffer unless it is full.

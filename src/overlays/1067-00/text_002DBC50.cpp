@@ -3,6 +3,9 @@
 #include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_002DBC50.h"
+#include "overlays/1067-00/text_00207AF0.h"
+#include "overlays/1067-00/text_00272360.h"
+#include "main/resident_001001E0.h"
 
 struct FieldReset2DCA70
 {
@@ -96,9 +99,51 @@ void func_002DCCF0(FieldFloatState2DCCF0* object, void* value_a0, s32 value_a4, 
     object->value_a0 = value_a0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DCD20);
+/** @brief Release the owned vector array and component allocation. */
+void FieldClass15B900::func_002DCD20()
+{
+    delete unk8c;
+    unk8c = 0;
+    ::operator delete(unkA0);
+    unkA0 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DCD70);
+/**
+ * @brief Build interpolation storage, then append the listed vectors.
+ * @param key Running sort value updated for each node.
+ */
+void FieldClass15B900::func_002DD7B0(float* key)
+{
+    if (unk8c)
+    {
+        delete unk8c;
+        unk8c = 0;
+    }
+    if (unkA0)
+    {
+        unk8c = new(0) FieldClass1514F8;
+        s32 capacity;
+        FieldClass1514F8* array = unk8c;
+        if (!array)
+        {
+            return;
+        }
+        capacity = unkA4 + 2;
+        array->unk00 = 0;
+        delete[] array->unk04;
+        array->unk04 = 0;
+        array->unk04 = new(0) FieldVec4B[capacity];
+        func_00272950(unk8c, 0.0f, 0.0f);
+        FieldFloatPair8* pair = unkA0;
+        for (s32 i = 0; i < unkA4; i++, pair++)
+        {
+            func_00272950(unk8c, pair->unk00, pair->unk04);
+        }
+        func_00272950(unk8c, 1.0f, 1.0f);
+        func_002723E0(unk8c);
+    }
+    FieldClass15B950::func_002DD7B0(key);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DCEF0);
 
@@ -108,14 +153,27 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DD4
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DD5F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DD7B0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DD7B0__16FieldClass15B950FPf);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DD870);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DD870__16FieldClass15B950FPCfi);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DD990);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DDA70);
+/** @brief Clear the listed nodes and release the owned track. */
+void FieldClass15B950::func_002DDA70()
+{
+    func_001DD730();
+    if (unk78)
+    {
+        unk78->func_001DF230();
+        unk78 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DDAC0);
+/** @brief Release the owned track, then destroy the list. */
+FieldClass15B950::~FieldClass15B950()
+{
+    func_002DDA70();
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DDB50);

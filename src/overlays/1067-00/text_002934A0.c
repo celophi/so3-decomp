@@ -2,27 +2,7 @@
 #include "overlays/1067-00/text_002934A0.h"
 #include "overlays/1067-00/text_00272360.h"
 
-struct FieldCurve
-{
-    s32 count;
-    void* points;
-};
 
-struct FieldObject1573D0
-{
-    u8 pad[0x14];
-    FieldCurve unk14;
-    u8 pad1[4];
-    float unk20;
-    float unk24;
-    float unk28;
-    float unk2c;
-    float unk30;
-    float unk34;
-    u8 unk38_0 : 1;
-    u8 unk38_1 : 1;
-    u8 unk38_2_7 : 6;
-};
 
 extern float D_001B6688;
 

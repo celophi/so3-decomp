@@ -7,6 +7,24 @@
 #include "overlays/1067-00/text_00202240_callbacks.h"
 
 #ifdef __cplusplus
+/** Queued field object storing a channel index, float value and flags. */
+class FieldClass150F50 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the queued object. */
+    virtual ~FieldClass150F50();
+    /** @brief Return the object kind. @return Five. */
+    virtual s32 func_001DF3D0();
+    /** @brief Process the selected channel using the stored value and flags. */
+    virtual void func_001DF360();
+    s32 unk14;
+    float unk18;
+    u32 unk1c;
+};
+
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 

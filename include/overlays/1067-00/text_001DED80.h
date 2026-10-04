@@ -9,9 +9,18 @@
 typedef struct FieldArrayEntry10
 {
 #ifdef __cplusplus
-    /** @brief Leave the entry uninitialized; arrays of entries carry an allocation header. */
-    FieldArrayEntry10()
+    /**
+     * @brief Copy the key and three values.
+     * @param entry Entry to copy.
+     * @return This entry.
+     */
+    FieldArrayEntry10& operator=(const FieldArrayEntry10& entry)
     {
+        unk00 = entry.unk00;
+        unk04 = entry.unk04;
+        unk08 = entry.unk08;
+        unk0c = entry.unk0c;
+        return *this;
     }
 
 #endif
@@ -60,7 +69,64 @@ typedef struct FieldFloatSpan1C
 } FieldFloatSpan1C;
 
 #ifdef __cplusplus
+/** Seven-float interpolation state followed by vtable D_159960. */
+class FieldClass159960 : public FieldFloatSpan1C
+{
+public:
+    /**
+     * @brief Copy four coefficients and cache the segment's key range.
+     * @param a First coefficient.
+     * @param b Second coefficient.
+     * @param c Third coefficient.
+     * @param d Fourth coefficient.
+     * @param start First key.
+     * @param end Last key.
+     */
+    virtual void func_001E11E0(const float* a, const float* b, const float* c, const float* d, float start, float end);
+
+    /**
+     * @brief Evaluate the interpolation state.
+     * @param key Sort value.
+     * @return Interpolated value.
+     */
+    virtual float func_002B6DF0(float key) = 0;
+};
+
+/** Interpolation state with vtable D_1591D0, installed by the keyframe constructor. */
+class FieldClass1591D0 : public FieldClass159960
+{
+public:
+    /**
+     * @brief Evaluate the four cached coefficients through the resident interpolation routine.
+     * @param key Sort value.
+     * @return Interpolated value.
+     */
+    virtual float func_002B6DF0(float key);
+};
+#endif
+
+#ifdef __cplusplus
 extern "C" {
+
+/** Resident scale used when caching the change in an evaluated keyframe value. */
+extern float D_001B668C;
+
+/**
+ * @brief Find the segment containing a key, or select endpoint extrapolation.
+ * @param object Keyframe track.
+ * @param key Sort value.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return Nonzero when the key requires endpoint extrapolation.
+ */
+u8 func_001E1310(FieldEntryArrayObject* object, float key, s32* lower, s32* upper);
+
+/**
+ * @brief Release listed objects, optionally preserving the focus object and clearing its track.
+ * @param list Circular list sentinel; traversal also stops at a null link.
+ * @param preserve_focus Nonzero to clear the focus object's track instead of releasing the object.
+ */
+void func_001DEF70(FieldClass150060* list, s32 preserve_focus);
 #endif
 
 /**
@@ -558,9 +624,9 @@ public:
     virtual float func_001DFD40() const;
 
     /**
-     * @brief Virtual handler slot 29.
-     * @param key Sort value.
-     * @return A value whose meaning is not yet known.
+     * @brief Find the first entry with the requested sort value.
+     * @param key Sort value to find.
+     * @return The entry's first component, or zero when no entry matches.
      */
     virtual float func_001DFE70(float key);
 
@@ -607,10 +673,7 @@ public:
     void func_001DFD90();
 
     FieldArrayEntry10* unk04;
-    float unk08;
-    float unk0c;
-    float unk10;
-    float unk14;
+    FieldArrayEntry10 unk08;
     s32 unk18;
     float unk1c;
     s16 unk20;
@@ -623,8 +686,8 @@ public:
     u8 unk2b_0 : 1;
     u8 unk2b_1 : 1;
     u8 unk2b_2_7 : 6;
-    u8 unk2c[0x20];
-    u32 unk4c;
+    FieldClass1591D0 unk2c;
+    float unk4c;
     float unk50;
 };
 
@@ -632,6 +695,13 @@ public:
 class FieldClass14FEB0 : public FieldClass150090
 {
 public:
+    /**
+     * @brief Evaluate the keyframe track, applying its wrap and extrapolation modes.
+     * @param key Sort value.
+     * @return Evaluated value; also updates the cached value and scaled change.
+     */
+    virtual float func_001E0380(float key);
+
     /** @brief Destroy the object. */
     virtual ~FieldClass14FEB0()
     {
@@ -690,6 +760,28 @@ public:
      */
     virtual void func_001E0080(const float* x, const float* y, const float* z, float key);
 };
+
+/**
+ * Partial keyframe class sharing vtable D_177C70 with the resident library.
+ * The Field array constructor installs FieldClass14FEB0 before this table;
+ * its additional virtual handlers are not declared yet.
+ */
+class FieldClass177C70 : public FieldClass14FEB0
+{
+public:
+    /** @brief Destroy the keyframe object. */
+    virtual ~FieldClass177C70();
+};
+extern "C" {
+/**
+ * @brief Allocate a 128-byte-aligned buffer, retrying after other loaders release storage.
+ * @param owner Loader attached to the resource list.
+ * @param size Requested buffer size in bytes.
+ * @param mode Nonzero for the library allocator, zero for the resident allocator.
+ * @return Allocated buffer, or null after allocation or recovery fails.
+ */
+void* func_001E1100(FieldClass150070* owner, u32 size, s32 mode);
+}
 #endif
 
 #endif

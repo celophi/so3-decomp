@@ -7,6 +7,27 @@
 
 typedef struct FieldRuntime FieldRuntime;
 
+/** Partial twelve-byte HUD image record. */
+typedef struct ResidentHudImage0C
+{
+    u8 unk00[8];
+    u8 unk08;
+    u8 unk09[3];
+} ResidentHudImage0C;
+/** Partial view of the resident resource object reached through D_001B64F8. */
+typedef struct ResidentObject1B64F8
+{
+    u8 unk00[0x101B8];
+    ResidentHudImage0C unk101b8;
+    ResidentHudImage0C unk101c4;
+} ResidentObject1B64F8;
+/** Partial view of the section selected by resource key four. */
+typedef struct ResidentHudSection1B4
+{
+    u8 unk00[0x1B0];
+    u32 unk1b0;
+} ResidentHudSection1B4;
+
 /** Partial object at offset 0x8 of the field context. */
 typedef struct ResidentContext08
 {
@@ -89,7 +110,7 @@ typedef struct ResidentContext
     void* unk30;
     u8 unk34[4];
     ResidentContextObject38* unk38;
-    u8 unk3c[4];
+    void* unk3c;
     void* unk40;
     ResidentContextObject52* unk44;
     u8 unk48[0x10];
@@ -98,7 +119,8 @@ typedef struct ResidentContext
     ResidentContextObject64* unk64;
     u8 unk68[4];
     void* unk6c;
-    u8 unk70[0x38];
+    void* unk70;
+    u8 unk74[0x34];
     u16 unka8;
     s16 unkaa;
     u8 unkac[4];
@@ -118,10 +140,20 @@ typedef struct ResidentContext
     u8 unkde_6_7 : 2;
 } ResidentContext;
 
-/** Partial holder of the current field context. */
+/** Four halfword masks selected by field angle conditions. */
+typedef struct ResidentMaskSet8
+{
+    u16 unk00;
+    u16 unk02;
+    u16 unk04;
+    u16 unk06;
+} ResidentMaskSet8;
+
+/** Partial holder of the current field context and its condition masks. */
 typedef struct ResidentContextRef
 {
     ResidentContext* context;
+    ResidentMaskSet8* unk04;
 } ResidentContextRef;
 
 #ifdef __cplusplus

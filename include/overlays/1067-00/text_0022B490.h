@@ -2,6 +2,71 @@
 #define SO3_OVERLAYS_1067_00_TEXT_0022B490_H
 
 #include "types.h"
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001E6C50.h"
+#include "main/resident_0012F0F8.h"
+
+/** Queued command copying a 16-byte resource key and one enable bit. */
+class FieldClass1526C0 : public FieldClass150440
+{
+public:
+    /**
+     * @brief Copy the resource key and initialize the setting.
+     * @param enable Setting to apply.
+     * @param words Resource key bytes.
+     */
+    FieldClass1526C0(bool enable, const u32* words)
+    {
+        unk18 = 0x100EC;
+        unk2d_0 = enable;
+        func_0013A4C0(unk1c, words, sizeof(unk1c));
+        unk2c = 0;
+    }
+    /** @brief Destroy the command. */
+    virtual ~FieldClass1526C0();
+    /** @brief Apply the resource setting. @return Whether the command completed. */
+    virtual s32 func_0022B850();
+    u8 unk1c[16];
+    u8 unk2c;
+    u8 unk2d_0 : 1;
+    u8 unk2d_1_7 : 7;
+};
+
+/** Queued command storing a word for the selected target. */
+class FieldClass152770 : public FieldClass150440
+{
+public:
+    /** @brief Store the target word. @param value Word to apply. */
+    FieldClass152770(u32 value)
+    {
+        unk18 = 0x100E1;
+        unk1c = value;
+    }
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152770();
+    /** @brief Apply the stored word. @return Always one. */
+    virtual s32 func_0022B8F0();
+    u32 unk1c;
+};
+
+/** Queued command storing a float for the selected target. */
+class FieldClass152790 : public FieldClass150440
+{
+public:
+    /** @brief Store the target float. @param value Float to apply. */
+    FieldClass152790(float value)
+    {
+        unk18 = 0x100E0;
+        unk1c = value;
+    }
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152790();
+    /** @brief Apply the stored float. @return Always one. */
+    virtual s32 func_0022B920();
+    float unk1c;
+};
+
+#endif
 
 struct FieldCallback22BEC0;
 struct FieldCallback22B8F0;

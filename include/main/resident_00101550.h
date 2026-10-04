@@ -19,6 +19,17 @@ typedef struct ResidentObject1B65E8
     u8 unk30;
 } ResidentObject1B65E8;
 
+/** Opaque resident decoder used by the resource loading helpers. */
+typedef struct ResidentDecodeObject ResidentDecodeObject;
+
+/** Partial resource header containing a payload size and relative link. */
+typedef struct ResidentResourceHeader
+{
+    u8 unk00[8];
+    u32 unk08;
+    u32 next_offset;
+} ResidentResourceHeader;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -76,6 +87,38 @@ s32 func_00103E70(ResidentObject1B65E8* object, s32 key, u32 size, u32 mask, s32
  * @return The registered object.
  */
 ResidentRegisteredObject* func_00101560(ResidentRegisteredObject* object);
+
+/** Resident resource decoder. */
+extern ResidentDecodeObject* D_001B65EC;
+
+/**
+ * @brief Decode or copy the selected resource into a destination buffer.
+ * @param decoder Resident decoder.
+ * @param source Resource header.
+ * @param destination Destination buffer.
+ * @param index Resource index.
+ * @return Decode result.
+ */
+s32 func_001025A0(ResidentDecodeObject* decoder, ResidentResourceHeader* source, void* destination, s32 index);
+
+/**
+ * @brief Allocate storage for the selected resource.
+ * @param decoder Resident decoder.
+ * @param source Resource header.
+ * @param index Resource index.
+ * @param aligned Allocation alignment mode.
+ * @return Allocated byte buffer, or null when allocation fails.
+ */
+u8* func_00102920(ResidentDecodeObject* decoder, ResidentResourceHeader* source, s32 index, s32 aligned);
+
+/**
+ * @brief Find a resource header by following its relative links.
+ * @param decoder Resident decoder; unused.
+ * @param source First resource header.
+ * @param index Number of links to follow.
+ * @return Selected header, or null when the chain ends.
+ */
+ResidentResourceHeader* func_00102A40(ResidentDecodeObject* decoder, ResidentResourceHeader* source, s32 index);
 
 #ifdef __cplusplus
 }
