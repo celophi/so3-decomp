@@ -13,3 +13,21 @@ rom:0x13E98 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
 rom:0x13EA8 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
 rom:0x151E0 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
 rom:0x151F0 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+// Container and aggregate constructor dispatch tables.
+rom:0xA474 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0xA484 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0xA488 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0xA490 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0xA4EC reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass184F60 addend:0x1C
+rom:0xA4F4 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass184F60 addend:0x1C
+rom:0xA4FC reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass184F60 addend:0x90
+rom:0xA504 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass184F60 addend:0x90
+rom:0xA508 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass184F60 addend:0xB4
+rom:0xA510 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass184F60 addend:0xB4
+// Container and aggregate destructor dispatch tables.
+rom:0xA080 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass184F60 addend:0x1C
+rom:0xA088 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass184F60 addend:0x1C
+rom:0xA090 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass184F60 addend:0x90
+rom:0xA098 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass184F60 addend:0x90
+rom:0xA09C reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass184F60 addend:0xB4
+rom:0xA0A4 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass184F60 addend:0xB4

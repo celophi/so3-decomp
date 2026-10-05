@@ -1149,22 +1149,22 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036BC90);
 
-void func_0036BF30(ItemCreationSelectedDisplayState* object, s32 index, s32 enabled)
+void ItemCreationSelectedDisplayState::func_0036BF30(s32 index, s32 enabled)
 {
     ItemCreationAllocationRecord* records[100];
-    object->unk148[index] = enabled;
-    object->unk1b1[index] = 0;
-    if (object->unk1b4[index] == 0)
+    unk148[index] = enabled;
+    unk1b1[index] = 0;
+    if (unk1b4[index] == 0)
     {
-        object->unk1b1[index] = 1;
-        object->unk148[index] = 0;
+        unk1b1[index] = 1;
+        unk148[index] = 0;
     }
-    if (enabled != 0 && object->unk1b4[index] != 0)
+    if (enabled != 0 && unk1b4[index] != 0)
     {
         s32 category = 0;
-        if (object->unk1c3[index] >= 2)
+        if (unk1c3[index] >= 2)
         {
-            switch (object->unk1c0[index])
+            switch (unk1c0[index])
             {
                 case 1:
                     category = 20;
@@ -1197,12 +1197,12 @@ void func_0036BF30(ItemCreationSelectedDisplayState* object, s32 index, s32 enab
             }
         }
     }
-    object->unk188[index][0] = 0;
-    object->unk188[index][1] = 0;
-    object->unk188[index][2] = 0;
-    object->unk191[index][0] = 1;
-    object->unk191[index][1] = 1;
-    object->unk191[index][2] = 1;
+    unk188[index][0] = 0;
+    unk188[index][1] = 0;
+    unk188[index][2] = 0;
+    unk191[index][0] = 1;
+    unk191[index][1] = 1;
+    unk191[index][2] = 1;
 }
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036C080);
@@ -1489,11 +1489,26 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036E960);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036E9C0);
+/**
+ * @brief Destroy the result window through its Field base.
+ */
+ItemCreationClass186370::~ItemCreationClass186370()
+{
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036EA20);
+/**
+ * @brief Destroy the result prompt window and release its Field base.
+ */
+ItemCreationClass186470::~ItemCreationClass186470()
+{
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036EA80);
+/**
+ * @brief Destroy the selected item prompt window through its Field base.
+ */
+ItemCreationClass186570::~ItemCreationClass186570()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036EAE0);
 

@@ -55,7 +55,11 @@ struct FieldObject23B950
 /** Partial field grid storage used by the position operations. */
 struct FieldObject23CE80
 {
-    u8 unk00[0xF0];
+    u8 unk00[0xAE];
+    u8 unkAE;
+    u8 unkAF[0x31];
+    float unkE0;
+    u8 unkE4[0xC];
     u8 width;
     u8 height;
     u8 unkF2[0xA];
@@ -132,6 +136,28 @@ public:
 /** Partial field grid interface using MAIN table 0x153290. */
 struct FieldObject23CEA0 : public FieldClass175070
 {
+    /** @brief Initialize the grid and its field transform bases. */
+    FieldObject23CEA0();
+    /**
+     * @brief Store the grid dimensions.
+     * @param width Column count.
+     * @param height Row count.
+     */
+    void func_0023CE80(u8 width, u8 height);
+    /**
+     * @brief Store the grid spacing.
+     * @param x Horizontal spacing.
+     * @param y Vertical spacing.
+     */
+    void func_0023CE60(float x, float y);
+    /**
+     * @brief Position a grid entry.
+     * @param value Entry index.
+     * @param x Horizontal displacement.
+     * @param y Vertical displacement.
+     * @return Always one.
+     */
+    s32 func_0023CF50(s16 value, float x, float y);
     /**
      * @brief Dispatch a direction to the grid selection handler.
      * @param direction Signed direction code.
@@ -139,11 +165,15 @@ struct FieldObject23CEA0 : public FieldClass175070
      */
     virtual s16 func_0023CDB0(s16 direction);
     u8 width;
-    u8 unkF1[0x1F];
+    u8 unkF1;
+    u8 unkF2;
+    u8 unkF3[0x1D];
     s16 row_count;
     s16 index;
     s16 unk114;
-    u8 unk116[0x1A];
+    u8 unk116[3];
+    u8 unk119;
+    u8 unk11a[0x16];
 };
 #else
 /** Partial field grid flag and selection storage. */

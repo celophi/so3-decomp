@@ -2,6 +2,10 @@
 #define SO3_OVERLAYS_CITEMCREATION_TEXT_00358440_H
 
 #include "types.h"
+#include "overlays/citemcreation/text_003684D0.h"
+#ifdef __cplusplus
+#include "overlays/lib/text_004BD360.h"
+#endif
 
 typedef struct ItemCreationCategoryOwner ItemCreationCategoryOwner;
 typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
@@ -201,7 +205,8 @@ public:
     virtual void func_slot14();
     virtual void func_slot18();
     virtual void func_slot1c();
-    virtual void func_slot20();
+    /** @brief Set the nested display byte flag. @param flag Flag value. */
+    virtual void func_slot20(u8 flag);
     virtual void func_slot24();
     virtual void func_slot28();
     virtual void func_slot2c();
@@ -223,8 +228,10 @@ public:
     /** @brief Return the alternate associated window. @return Stored pointer. */
     virtual void* func_slot4c();
     virtual void func_slot50();
-    virtual void func_slot54();
-    virtual void func_slot58();
+    /** @brief Return the stored opaque source pointer. @return Stored pointer. */
+    virtual void* func_slot54();
+    /** @brief Return the nested display container. @return Stored container. */
+    virtual LibObject178660* func_slot58();
     virtual void func_slot5c();
     virtual void func_slot60();
     virtual void func_slot64();
@@ -248,17 +255,55 @@ public:
     virtual void func_slotac();
     u8 unk04[0xC];
     LibObject178660* unk10;
-    u8 unk14[0x84];
+    u8 unk14[0x60];
+    ItemCreationCountedList unk74;
+    u8 unk7c[0x1C];
     void* unk98;
     u8 unk9c[0xC];
 };
 
-/** Partial item creation window with primary vtable at 0x186870. */
+class FieldClass153130;
+class FieldClass153170;
+
+/** Item creation selection window with primary vtable at 0x186870. */
 class ItemCreationClass186870 : public FieldClass15AE70
 {
 public:
     /** Destroy the window through Field's window base. */
     virtual ~ItemCreationClass186870();
+    /** @brief Apply the selected values. @return Always one. */
+    virtual s32 func_slotb0();
+    /** @brief Restore the selection display. @return Always two. */
+    virtual s32 func_slotb4();
+    virtual s32 func_slotb8();
+    virtual s32 func_slotbc();
+    virtual s32 func_slotc0();
+    virtual s32 func_slotc4();
+    virtual s32 func_slotc8();
+    virtual s32 func_slotcc();
+    virtual s32 func_slotd0();
+    virtual s32 func_slotd4();
+    virtual s32 func_slotd8();
+    virtual s32 func_slotdc();
+    virtual void func_slote0();
+    virtual void func_slote4();
+    virtual u8 func_slote8();
+    virtual void func_slotec(u8 value);
+    virtual void func_slotf0();
+    /**
+     * @brief Create and attach the selection window displays.
+     * @param associated Object associated with the window.
+     * @return Always one.
+     */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    LibObject178750* unkac;
+    LibObject178750* unkb0;
+    FieldClass153130* unkb4;
+    FieldClass153170* unkb8;
+    u8 unkbc;
+    u8 unkbd;
+    u8 unkbe;
 };
 
 /** Three cleared words of an item creation window record. */
@@ -269,24 +314,56 @@ typedef struct ItemCreationRecord128
     u32 unk08;
 } ItemCreationRecord128;
 
-/** Partial item creation window with primary vtable at 0x186970. */
+struct LibObject175140;
+struct ItemCreationOptionResourceDisplay;
+
+/** Item creation detail window with primary vtable at 0x186970. */
 class ItemCreationClass186970 : public FieldClass15AE70
 {
 public:
-    /** Construct the window with its fields and two nine-word arrays cleared. */
+    /** @brief Construct the detail window with its displays cleared. */
     ItemCreationClass186970();
-    /** Destroy the window through Field's window base. */
+    /** @brief Destroy the window through Field's window base. */
     virtual ~ItemCreationClass186970();
-    u32 unka8;
-    u32 unkac;
-    u32 unkb0;
-    u32 unkb4;
-    u32 unkb8[9];
-    u32 unkdc[9];
+    virtual s32 func_slotb0();
+    virtual s32 func_slotb4();
+    virtual s32 func_slotb8();
+    virtual s32 func_slotbc();
+    virtual s32 func_slotc0();
+    virtual s32 func_slotc4();
+    virtual s32 func_slotc8();
+    virtual s32 func_slotcc();
+    virtual s32 func_slotd0();
+    virtual s32 func_slotd4();
+    virtual s32 func_slotd8();
+    virtual s32 func_slotdc();
+    virtual void func_slote0();
+    virtual void func_slote4();
+    virtual u8 func_slote8();
+    virtual void func_slotec(u8 value);
+    virtual void func_slotf0();
+    /**
+     * @brief Create and attach the detail window displays.
+     * @param associated Object associated with the window.
+     * @return One when the displays are created; zero when no state is attached.
+     */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    ItemCreationOptionResourceDisplay* unkac;
+    LibObject175140* unkb0;
+    LibObject178750* unkb4;
+    LibObject178750* unkb8[9];
+    LibObject174F20* unkdc[9];
     u8 unk100;
     u8 unk101;
     u16 unk102;
 };
+
+struct LibClass178600;
+struct LibClass178630;
+struct LibObject178750;
+struct LibObject174F20;
+struct ItemCreationOptionResourceDisplay;
 
 /** Partial item creation window with primary vtable at 0x186A70. */
 class ItemCreationClass186A70 : public FieldClass15AE70
@@ -296,22 +373,53 @@ public:
     ItemCreationClass186A70();
     /** Destroy the window through Field's window base. */
     virtual ~ItemCreationClass186A70();
-    u32 unka8;
-    u32 unkac;
-    u32 unkb0;
-    u32 unkb4;
-    u32 unkb8;
-    u32 unkbc;
-    u32 unkc0;
-    u32 unkc4;
-    u32 unkc8;
-    u32 unkcc;
-    u32 unkd0;
-    u32 unkd4;
-    u32 unkd8;
-    u32 unkdc;
-    u32 unke0;
-    u32 unke4;
+    /** @brief Run the default window action. @return Always one. */
+    virtual s32 func_slotb0();
+    /** @brief Run the default alternate action. @return Always zero. */
+    virtual s32 func_slotb4();
+    virtual s32 func_slotb8();
+    virtual s32 func_slotbc();
+    virtual s32 func_slotc0();
+    virtual s32 func_slotc4();
+    virtual s32 func_slotc8();
+    virtual s32 func_slotcc();
+    virtual s32 func_slotd0();
+    virtual s32 func_slotd4();
+    virtual s32 func_slotd8();
+    virtual s32 func_slotdc();
+    virtual void func_slote0();
+    virtual void func_slote4();
+    virtual u8 func_slote8();
+    virtual void func_slotec(u8 value);
+    virtual void func_slotf0();
+    /**
+     * @brief Create and attach the resource window displays.
+     * @param associated Object associated with the window.
+     * @return Always one.
+     */
+    virtual s32 func_slotf4(void* associated);
+    /**
+     * @brief Select the visible resource widgets and the panel position.
+     * @param mode Resource display mode.
+     * @param unused Unused caller state word.
+     */
+    void func_003598E0(u16 mode, u32 unused);
+    LibClass178630* unka8;
+    LibObject178750* unkac;
+    LibObject178750* unkb0;
+    LibObject178750* unkb4;
+    LibObject178750* unkb8;
+    LibObject178750* unkbc;
+    LibObject178750* unkc0;
+    LibObject178750* unkc4;
+    LibObject178750* unkc8;
+    ItemCreationOptionResourceDisplay* unkcc;
+    LibObject174F20* unkd0;
+    ItemCreationOptionResourceDisplay* unkd4;
+    LibObject174F20* unkd8;
+    float unkdc;
+    float unke0;
+    float unke4;
 };
 
 /** Partial item creation window with primary vtable at 0x186DB0. */

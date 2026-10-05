@@ -241,11 +241,10 @@ public:
      */
     virtual s8 func_00263CB0();
     /**
-     * @brief Handle an optional pointer.
-     * @param value Supplied pointer.
-     * @return Handler pointer.
+     * @brief Return the default handler pointer.
+     * @return Null.
      */
-    virtual void* func_00263CC0(void* value);
+    virtual void* func_00263CC0();
     /**
      * @brief Update the callback receiver.
      */
@@ -261,6 +260,7 @@ public:
      * @return Zero in the base implementation.
      */
     virtual u8 func_001E1820(void* buffer);
+    u8 unk14[0x20];
 };
 
 /** Partial class with a FieldClass1DD400 base at offset 0x14, with vtable D_150120 in main data. */
