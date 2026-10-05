@@ -17,12 +17,15 @@ struct LibClass174EF0 : public LibClass178600
     u8 unk40[0x40];
     float unk80;
     float unk84;
-    u8 unk88[0xC];
+    float unk88;
+    u8 unk8c[8];
     u32 unk94;
     u8 unk98[4];
     u32 unk9c;
     u32 unka0;
-    u8 unka4[0x58];
+    u8 unka4[0x56];
+    u8 unkfa;
+    u8 unkfb;
     /** @brief Set the display scale. @param x Horizontal scale. @param y Vertical scale. */
     void set_scale(float x, float y)
     {
@@ -62,7 +65,7 @@ struct LibObject174F20 : public LibClass174EF0
     }
     /** @brief Destroy the image widget. */
     virtual ~LibObject174F20();
-    u8 unkfc[4];
+    u32 unkfc;
 };
 #endif
 

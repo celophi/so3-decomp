@@ -8,6 +8,8 @@
 
 typedef struct ItemCreationTransformState ItemCreationTransformState;
 struct FieldClass15AE70;
+struct FieldRecordSelection;
+struct ItemCreationClass186970;
 
 /** Partial display coordinate vector and dirty flag. */
 typedef struct ItemCreationScrollPosition
@@ -56,6 +58,18 @@ typedef struct ItemCreationCountedList
     s32 unk04;
 } ItemCreationCountedList;
 
+#ifdef __cplusplus
+/** Counted display list with virtual destruction and an owned sentinel. */
+class ItemCreationClass187A60 : public ItemCreationCountedList
+{
+public:
+    /** @brief Allocate the sentinel node and initialize the list count. */
+    ItemCreationClass187A60();
+    /** @brief Release the list nodes and sentinel. */
+    virtual ~ItemCreationClass187A60();
+};
+#endif
+
 /** Partial option-code table through entry 59. */
 typedef struct ItemCreationOptionTable
 {
@@ -90,7 +104,7 @@ typedef struct ItemCreationSelectedDisplayState
     ItemCreationOptionTable* unk40;
     u8 unk44[3];
     u8 unk47;
-    void* unk48;
+    struct FieldRecordSelection* unk48;
     u8 unk4c;
     u8 unk4d;
     u8 unk4e[8];
@@ -113,10 +127,10 @@ typedef struct ItemCreationSelectedDisplayState
     struct FieldClass15AE70* unkb4;
     struct ItemCreationFourteenSlotView* unkb8;
     struct ItemCreationNineSlotView* unkbc;
-    struct ItemCreationDetailDisplay* unkc0;
+    struct ItemCreationClass186970* unkc0;
     u8 unkc4[0xC];
-    struct ItemCreationModeDisplay* unkd0;
-    u8 unkd4[4];
+    struct ItemCreationClass186DB0* unkd0;
+    struct ItemCreationClass186C90* unkd4;
     struct ItemCreationNineResourceView* unkd8;
     u8 unkdc[4];
     struct ItemCreationClass186070* unke0;
@@ -166,6 +180,9 @@ typedef struct ItemCreationSelectedDisplayState
     s16 unk1e2[3][2];
     u8 unk1ee[2];
     s32 unk1f0;
+    u8 unk1f4[4];
+    s16 unk1f8;
+    s16 unk1fa;
 } ItemCreationSelectedDisplayState;
 
 /** Two scalar coordinates, cleared when a selection pair is constructed. */
@@ -266,6 +283,9 @@ void func_003698E0(ItemCreationSelectedDisplayState* object, u8 group);
  * @param value Value to append; may be null.
  */
 void func_0036F270(ItemCreationCountedList* object, void* value);
+
+/** @brief Release every data node while retaining the list sentinel. @param object List to clear. */
+void func_0036EEF0(ItemCreationCountedList* object);
 
 /**
  * @brief Restore enabled selection flags from its saved assigned-item record.
@@ -747,7 +767,7 @@ void func_0036EE40(ItemCreationCountedList* object, ItemCreationListNode* after,
  * @param index Number of links to follow.
  * @return Reached node, or null if the chain ends early.
  */
-void* func_0036EF70(u8* object, s32 index);
+ItemCreationListNode* func_0036EF70(ItemCreationCountedList* object, s32 index);
 
 /**
  * @brief Append a value to the sentinel list and increase its node count.
