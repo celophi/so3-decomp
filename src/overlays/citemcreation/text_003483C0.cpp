@@ -5,6 +5,7 @@
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_002D5260.h"
+#include "overlays/1067-00/text_001E1590.h"
 
 enum
 {
@@ -35,10 +36,17 @@ typedef struct ItemCreationColorRecordState
     ItemCreationColorRecord unk10f50[12];
 } ItemCreationColorRecordState;
 
+/** Partial holder of the current Field callback receiver. */
+typedef struct ItemCreationWindowCallbacks
+{
+    u8 unk00[0x14];
+    FieldClass153E30* unk14;
+} ItemCreationWindowCallbacks;
+
 typedef struct ItemCreationRuntime643C
 {
     u8 unk00[0x10];
-    void* unk10;
+    ItemCreationWindowCallbacks* unk10;
     u8 unk14[0xC];
     FieldBufferSlots* unk20;
 } ItemCreationRuntime643C;
@@ -85,6 +93,11 @@ extern "C" u32 func_23B3B0(FieldState23B3A0* object, u16 direction);
  * @param display Six-slot index display.
  * @return The byte-sized selected index.
  */
+/** @brief Return the selected position pair, or null for an invalid index. */
+static inline const float* option_selection_position(ItemCreationSelection* selection, s32 index);
+/** @brief Position and enable a transfer display. */
+static inline void set_transfer_position(ItemCreationTransferDisplay* display, float x, float y);
+
 static inline u8 selected_option_index(FieldObject23CEA0* display);
 
 /**
@@ -184,16 +197,6 @@ void func_00348440(void* object, u16 value)
 u16 func_00348450(void* object)
 {
     return *(u16*)((u8*)object + 0xA);
-}
-
-void func_00348460(void* object, u32 value)
-{
-    *(u32*)((u8*)object + 0x98) = value;
-}
-
-u32 func_00348470(void* object)
-{
-    return *(u32*)((u8*)object + 0x98);
 }
 
 void func_00348480(void* object, u32 value)
@@ -653,11 +656,29 @@ void ItemCreationClass185460::func_slot68()
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034AD60);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034B790);
+/** @brief Destroy the selection window through its base. */
+ItemCreationClass185460::~ItemCreationClass185460()
+{
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034B7F0);
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034B880);
+/** @brief Initialize the selection window and its display pointers. */
+ItemCreationClass185460::ItemCreationClass185460()
+{
+    unk160 = 0;
+    unk160 = &unkdc;
+    unk164 = 0;
+    for (s32 index = 0; index < 9; index++)
+    {
+        unk168[index] = 0;
+    }
+    unk18c = 0;
+    unk190 = 0;
+    unk194 = 0;
+    unk198 = 0;
+    unk19c = 0;
+    unk1a0 = 0;
+    unk1a4 = 0;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034B970);
 
@@ -679,16 +700,6 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034C7F0);
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034C870);
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034C8E0);
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034CA20);
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034CB90);
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034CD10);
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034CD90);
 
 static inline u8 selected_option_index(FieldObject23CEA0* display)
 {
@@ -736,6 +747,171 @@ static inline void set_option_list_index(ItemCreationFlagResetOwner* object, u8 
         object->unk1b1 = value;
         break;
     }
+}
+
+/**
+ * @brief Dispatch a grid direction and refresh the selected option markers.
+ * @param direction Direction code.
+ */
+void ItemCreationClass185760::func_slotf8(s32 direction)
+{
+    if (unkc8 != 0 && unkc8->func_0023CDB0(direction) != 1)
+    {
+        ItemCreationFlagResetOwner* target = unkcc;
+        ItemCreationSelectedDisplayState* state;
+        if (target != 0 && (state = unkc4) != 0)
+        {
+            u8 list = unka8;
+            u32 value = option_list_value(state, list, selected_option_index(unkc8));
+            u8 result = value;
+            if (value != 0)
+            {
+                result = option_list_index(value);
+            }
+            set_option_list_index(target, list, result);
+            func_0034DB00(target, 0xFF);
+        }
+    }
+}
+
+/**
+ * @brief Return a selection position.
+ * @param selection Selection owner.
+ * @param index One-based position index.
+ * @return Position pair, or null for an invalid index.
+ */
+static inline const float* option_selection_position(ItemCreationSelection* selection, s32 index)
+{
+    if (index <= 0)
+    {
+        return 0;
+    }
+    if (index > 12)
+    {
+        return 0;
+    }
+    return selection->unk00[index - 1].unk00;
+}
+
+/**
+ * @brief Place and enable the transfer display.
+ * @param display Display to position.
+ * @param x Horizontal coordinate.
+ * @param y Vertical coordinate.
+ */
+static inline void set_transfer_position(ItemCreationTransferDisplay* display, float x, float y)
+{
+    display->unk50 = x;
+    display->unk54 = y;
+    display->unk75 = 1;
+    display->unk3c = 1;
+}
+
+/**
+ * @brief Reset the option and restore its associated selection display.
+ * @return Always two.
+ */
+s32 ItemCreationClass185760::func_slotb4()
+{
+    if (unkc4 != 0)
+    {
+        func_00369B80(unkc4, -1);
+    }
+    if (unkc8 != 0)
+    {
+        func_0023CEA0(unkc8, 0);
+    }
+    if (unkcc != 0)
+    {
+        D_001B643C->unk10->unk14->func_00263C70(unkcc);
+    }
+    unkc4->unk129 = 0;
+    ItemCreationFlagResetOwner* target = static_cast<ItemCreationFlagResetOwner*>(func_slot44());
+    if (target != 0)
+    {
+        u8 selected = unka9;
+        target->unk160->unk6c = selected;
+        const float* position = option_selection_position(target->unk160, selected);
+        set_transfer_position(target->unk15c, position[0], position[1]);
+        switch (target->unk164->unk129)
+        {
+        case 0:
+            target->unk16c->unk3f = 0;
+            target->unk15c->unk3f = 1;
+            break;
+        case 1:
+            break;
+        case 2:
+            target->unk15c->unk3f = 1;
+            break;
+        case 3:
+            break;
+        }
+        func_0034DB00(target, 0xFF);
+    }
+    return 2;
+}
+
+/**
+ * @brief Apply the selected option and refresh its associated window.
+ * @return Always one.
+ */
+s32 ItemCreationClass185760::func_slotb0()
+{
+    if (unkcc != 0)
+    {
+        D_001B643C->unk10->unk14->func_00263C70(unkcc);
+    }
+    if (unkc8 != 0 && unkc4 != 0)
+    {
+        u8 value = option_list_value(unkc4, unka8, selected_option_index(unkc8));
+        func_00369B80(unkc4, value);
+    }
+    ItemCreationFlagResetOwner* target = static_cast<ItemCreationFlagResetOwner*>(func_slot44());
+    if (target != 0)
+    {
+        switch (target->unk164->unk129)
+        {
+        case 0:
+            target->unk16c->unk3f = 0;
+            target->unk15c->unk3f = 1;
+            break;
+        case 1:
+            break;
+        case 2:
+            target->unk15c->unk3f = 1;
+            break;
+        case 3:
+            break;
+        }
+        func_0034DB00(target, 0xFF);
+        func_0034D980(target, 0xFF);
+    }
+    return 1;
+}
+
+/**
+ * @brief Set up the option window and recover its associated display.
+ * @param associated Object associated with the window.
+ * @return Zero when no option state is attached, or one after setup.
+ */
+s32 ItemCreationClass185760::func_slotf4(void* associated)
+{
+    if (unkc4 == 0)
+    {
+        return 0;
+    }
+    FieldClass15AE70::func_slot10(associated, 16.0f, 300.0f, 17);
+    ItemCreationClass185860::func_slotf4(associated);
+    unkcc = static_cast<ItemCreationFlagResetOwner*>(func_slot44());
+    return 1;
+}
+
+/**
+ * @brief Destroy the option window and its base.
+ */
+ItemCreationClass185760::~ItemCreationClass185760()
+{
 }
 
 /**
@@ -793,7 +969,30 @@ void func_0034CE00(ItemCreationOptionTransferOwner* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D030);
+/**
+ * @brief Dispatch a grid direction and refresh the selected option markers.
+ * @param direction Direction code.
+ */
+void ItemCreationClass185860::func_slotf8(s32 direction)
+{
+    if (unkc8 != 0 && unkc8->func_0023CDB0(direction) != 1)
+    {
+        ItemCreationFlagResetOwner* target = unkcc;
+        ItemCreationSelectedDisplayState* state;
+        if (target != 0 && (state = unkc4) != 0)
+        {
+            u8 list = unka8;
+            u32 value = option_list_value(state, list, selected_option_index(unkc8));
+            u8 result = value;
+            if (value != 0)
+            {
+                result = option_list_index(value);
+            }
+            set_option_list_index(target, list, result);
+            func_0034DB00(target, 0xFF);
+        }
+    }
+}
 
 /**
  * @brief Forward direction 2 to the window.
@@ -811,9 +1010,45 @@ void ItemCreationClass185860::func_slot70()
     func_slotf8(3);
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D1D0);
+/**
+ * @brief Clear the selected option and restore the active view.
+ * @return Always two.
+ */
+s32 ItemCreationClass185860::func_slotb4()
+{
+    if (unkc4 != 0)
+    {
+        func_00369B80(unkc4, -1);
+    }
+    if (unkc8 != 0)
+    {
+        func_0023CEA0(unkc8, 0);
+    }
+    if (unkcc != 0)
+    {
+        D_001B643C->unk10->unk14->func_00263C70(unkcc);
+    }
+    return 2;
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D250);
+/**
+ * @brief Select the active view and apply its selected option.
+ * @return Always one.
+ */
+s32 ItemCreationClass185860::func_slotb0()
+{
+    if (unkcc != 0)
+    {
+        D_001B643C->unk10->unk14->func_00263C70(unkcc);
+    }
+    if (unkc8 != 0 && unkc4 != 0)
+    {
+        u8 list = unka8;
+        u8 value = option_list_value(unkc4, list, selected_option_index(unkc8));
+        func_00369B80(unkc4, value);
+    }
+    return 1;
+}
 
 /**
  * @brief Refresh the six resource displays from their current option list.
@@ -872,14 +1107,7 @@ void func_0034D340(ItemCreationOptionDisplay* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034D550);
-
-/**
- * @brief Destroy the window through its Field base.
- */
-ItemCreationClass185860::~ItemCreationClass185860()
-{
-}
+INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_slotf4__23ItemCreationClass185860FPv);
 
 void func_0034D980(ItemCreationFlagResetOwner* object, u8 option)
 {
@@ -956,7 +1184,7 @@ void func_0034E4D0(ItemCreationFlagResetOwner* object, u16 direction)
         }
         else
         {
-            position = selection->unk00[index - 1];
+            position = selection->unk00[index - 1].unk00;
         }
         func_466E40(object->unk15c->unk40, position[0], position[1], 0.05f);
         func_002CFE40(D_001B643C->unk10, 0);
@@ -1004,9 +1232,40 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034E9C0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034F800);
+/** @brief Destroy the selection window through its base. */
+ItemCreationClass185960::~ItemCreationClass185960()
+{
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034F890);
+/** @brief Initialize the selection window and its display pointers. */
+ItemCreationClass185960::ItemCreationClass185960()
+{
+    unk160 = 0;
+    unk160 = &unkdc;
+    unk164 = 0;
+    unk170 = 0;
+    unk1b0 = 0;
+    unk16c = 0;
+    unk174 = 0;
+    unk178 = 0;
+    unk179 = 0;
+    unk17c = 0;
+    unk1a4[0] = 0;
+    unk1a4[1] = 0;
+    unk1a4[2] = 0;
+    unk1b0 = 0;
+    unk1b1 = 0;
+    unk1b4 = 0;
+    unk1dc[0] = 0;
+    unk1dc[1] = 0;
+    unk1dc[2] = 0;
+    for (s32 index = 0; index < 9; index++)
+    {
+        unk180[index] = 0;
+        unk1b8[index] = 0;
+    }
+}
+
 
 void func_0034F9B0(ItemCreationFlagResetOwner* object, u16 direction)
 {
@@ -1028,7 +1287,7 @@ void func_0034F9B0(ItemCreationFlagResetOwner* object, u16 direction)
         }
         else
         {
-            position = selection->unk00[index - 1];
+            position = selection->unk00[index - 1].unk00;
         }
         func_466E40(object->unk15c->unk40, position[0], position[1], 0.05f);
         func_002CFE40(D_001B643C->unk10, 0);
@@ -1042,8 +1301,6 @@ s32 func_0034FD50(ItemCreationFlagResetOwner* object, void* associated)
     func_002CE8D0((FieldObjectCE8D0*)object, associated, 16.0f, 72.0f, 17);
     return 1;
 }
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034FD80);
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034FE00);
 
@@ -1191,7 +1448,10 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003523E0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003524E0);
+/** @brief Destroy the resident widget base. */
+ItemCreationClass184F30::~ItemCreationClass184F30()
+{
+}
 
 /** @brief Release the widget storage and destroy its base. */
 ItemCreationClass1746A0::~ItemCreationClass1746A0()
@@ -1203,7 +1463,10 @@ ItemCreationClass1725D0::~ItemCreationClass1725D0()
 {
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352650);
+/** @brief Destroy the storage base and widget base. */
+ItemCreationClass175030::~ItemCreationClass175030()
+{
+}
 
 /** @brief Release the widget storage and destroy its base. */
 ItemCreationClass172600::~ItemCreationClass172600()
@@ -1236,7 +1499,11 @@ ItemCreationClass172600::ItemCreationClass172600()
     unk38 = 5;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003529A0);
+/** @brief Initialize the widget and select kind 9. */
+ItemCreationClass175030::ItemCreationClass175030()
+{
+    unk38 = 9;
+}
 
 /** @brief Initialize the widget storage and select kind 3. */
 ItemCreationClass1725D0::ItemCreationClass1725D0()
@@ -1250,7 +1517,11 @@ ItemCreationClass1746A0::ItemCreationClass1746A0()
     unk38 = 4;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352A90);
+/** @brief Initialize the widget and select kind 2. */
+ItemCreationClass184F30::ItemCreationClass184F30()
+{
+    unk38 = 2;
+}
 
 void func_00352B00(ItemCreationFourPositionDisplay* object, float x, float y)
 {

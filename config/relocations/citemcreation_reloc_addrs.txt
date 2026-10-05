@@ -1,0 +1,15 @@
+// Kind-9 widget secondary dispatch table.
+rom:0x2A80 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x2A90 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x6738 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x6748 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x6810 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x6820 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0xA2F0 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0xA2F8 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0xA640 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0xA650 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x13E98 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x13EA8 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x151E0 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x151F0 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24

@@ -21,6 +21,10 @@ struct LibClass178600 : public LibClass171EA0
     virtual ~LibClass178600();
     /** @brief Delete the widget through its virtual destructor. */
     virtual void func_003EF740();
+    /** @brief Virtual widget slot at 0x1C; its base implementation does no work. */
+    virtual void func_00413D20();
+    /** @brief Virtual widget slot at 0x20; its base implementation does no work. */
+    virtual void func_00462310();
     u8 unk04[0x14];
     LibUiRect16 unk18;
     float unk28;

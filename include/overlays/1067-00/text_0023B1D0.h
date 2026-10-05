@@ -3,6 +3,10 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+#include "overlays/lib/text_004BD360.h"
+#endif
+
 typedef struct FieldObject23CE80 FieldObject23CE80;
 typedef struct FieldObject23CEB0 FieldObject23CEB0;
 typedef struct FieldObject23CEA0 FieldObject23CEA0;
@@ -91,6 +95,57 @@ struct FieldObject23CEB0
     u8 unk119;
 };
 
+#ifdef __cplusplus
+/** Field storage and bounds interface with its virtual pointer at 0x38. */
+class FieldClass151C50
+{
+public:
+    LibStorageBlock0C unk00;
+    u8 unk0c[4];
+    float unk10;
+    float unk14;
+    float unk18;
+    float unk1c;
+    float unk20;
+    float unk24;
+    u8 unk28[8];
+    float unk30;
+    u8 unk34;
+    u8 unk35;
+    u8 unk36[2];
+    /** @brief Destroy the owned field storage. */
+    virtual ~FieldClass151C50();
+    /** @brief Run the default field bounds hook. */
+    virtual void func_00212450();
+};
+
+/** Field-context transform with secondary field storage, using table 0x175070. */
+class FieldClass175070 : public LibClass174610, public FieldClass151C50
+{
+public:
+    /** @brief Destroy the field storage and transform bases. */
+    virtual ~FieldClass175070();
+    /** @brief Prepare the field transform after notification. @param value Notification word. */
+    virtual void func_003F4410(u32 value);
+};
+
+/** Partial field grid interface using MAIN table 0x153290. */
+struct FieldObject23CEA0 : public FieldClass175070
+{
+    /**
+     * @brief Dispatch a direction to the grid selection handler.
+     * @param direction Signed direction code.
+     * @return Selection handler result.
+     */
+    virtual s16 func_0023CDB0(s16 direction);
+    u8 width;
+    u8 unkF1[0x1F];
+    s16 row_count;
+    s16 index;
+    s16 unk114;
+    u8 unk116[0x1A];
+};
+#else
 /** Partial field grid flag and selection storage. */
 struct FieldObject23CEA0
 {
@@ -111,6 +166,7 @@ struct FieldObject23CEA0
     s16 index;
     s16 unk114;
 };
+#endif
 
 
 /** Linked nodes used by the field coordinate selector. */

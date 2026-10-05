@@ -174,7 +174,6 @@ typedef struct ItemCreationFlagResetOwner
 {
     u8 unk00[0xDC];
     ItemCreationSelection unkdc;
-    u8 unk158[4];
     ItemCreationTransferDisplay* unk15c;
     struct ItemCreationSelection* unk160;
     struct ItemCreationSelectedDisplayState* unk164;
@@ -199,7 +198,21 @@ typedef struct ItemCreationFlagResetOwner
 class ItemCreationClass185A60 : public FieldClass15AE70
 {
 public:
-    virtual ~ItemCreationClass185A60();
+    /** @brief Initialize the selection and display pointers. */
+    ItemCreationClass185A60()
+    {
+        unka8 = 0;
+        for (s32 index = 0; index < 12; index++)
+        {
+            unkac[index] = 0;
+        }
+        unk15c = 0;
+        unkdc.func_slot0c();
+    }
+    /** @brief Destroy the selection state and window base. */
+    virtual ~ItemCreationClass185A60()
+    {
+    }
     virtual void func_slotb0();
     virtual void func_slotb4();
     virtual void func_slotb8();
@@ -219,6 +232,10 @@ public:
     virtual void func_slotf0();
     virtual s32 func_slotf4(void* associated);
     virtual void func_slotf8(u16 direction);
+    ItemCreationSelectedDisplayState* unka8;
+    void* unkac[12];
+    ItemCreationSelection unkdc;
+    ItemCreationTransferDisplay* unk15c;
 };
 
 /** Partial virtual interface of the item creation window at 0x185860. */
@@ -226,9 +243,19 @@ class ItemCreationClass185860 : public FieldClass15AE70
 {
 public:
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass185860();
-    virtual void func_slotb0();
-    virtual void func_slotb4();
+    virtual ~ItemCreationClass185860()
+    {
+    }
+    /**
+     * @brief Select the active view and apply its selected option.
+     * @return Always one.
+     */
+    virtual s32 func_slotb0();
+    /**
+     * @brief Clear the selected option and restore the active view.
+     * @return Always two.
+     */
+    virtual s32 func_slotb4();
     virtual void func_slotb8();
     virtual void func_slotbc();
     virtual void func_slotc0();
@@ -245,17 +272,54 @@ public:
     virtual void func_slotec();
     virtual void func_slotf0();
     virtual s32 func_slotf4(void* associated);
-    virtual void func_slotf8(u16 direction);
+    /**
+     * @brief Dispatch a grid direction and refresh the selected option markers.
+     * @param direction Direction code.
+     */
+    virtual void func_slotf8(s32 direction);
     /** @brief Forward direction 2 to the window. */
     virtual void func_slot74();
     /** @brief Forward direction 3 to the window. */
     virtual void func_slot70();
+    u8 unka8;
+    u8 unka9;
+    u8 unkaa[2];
+    struct ItemCreationOptionResourceDisplay* unkac[6];
+    ItemCreationSelectedDisplayState* unkc4;
+    struct FieldObject23CEA0* unkc8;
+    ItemCreationFlagResetOwner* unkcc;
+};
+
+/** Partial option window derived from the interface at 0x185860. */
+class ItemCreationClass185760 : public ItemCreationClass185860
+{
+public:
+    /** @brief Destroy the option window and its base. */
+    virtual ~ItemCreationClass185760();
+    /** @brief Apply the selected option and refresh its associated window. @return Always one. */
+    virtual s32 func_slotb0();
+    /** @brief Reset the option and restore its associated selection display. @return Always two. */
+    virtual s32 func_slotb4();
+    /**
+     * @brief Set up the option window and recover its associated display.
+     * @param associated Object associated with the window.
+     * @return Zero when no option state is attached, or one after setup.
+     */
+    virtual s32 func_slotf4(void* associated);
+    /**
+     * @brief Dispatch a grid direction and refresh the selected option markers.
+     * @param direction Direction code.
+     */
+    virtual void func_slotf8(s32 direction);
 };
 
 /** Partial virtual interface of the item creation window at 0x185460. */
 class ItemCreationClass185460 : public ItemCreationClass185A60
 {
 public:
+    /** @brief Initialize the selection window and its display pointers. */
+    ItemCreationClass185460();
+    /** @brief Destroy the selection window through its base. */
     virtual ~ItemCreationClass185460();
     /** @brief Forward direction 2 to the window. */
     virtual void func_slot74();
@@ -265,12 +329,25 @@ public:
     virtual void func_slot6c();
     /** @brief Forward direction 1 to the window. */
     virtual void func_slot68();
+    ItemCreationSelection* unk160;
+    u32 unk164;
+    u32 unk168[9];
+    u32 unk18c;
+    u32 unk190;
+    u32 unk194;
+    u32 unk198;
+    u32 unk19c;
+    u32 unk1a0;
+    u32 unk1a4;
 };
 
 /** Partial virtual interface of the item creation window at 0x185960. */
 class ItemCreationClass185960 : public ItemCreationClass185A60
 {
 public:
+    /** @brief Initialize the selection window and its display pointers. */
+    ItemCreationClass185960();
+    /** @brief Destroy the selection window through its base. */
     virtual ~ItemCreationClass185960();
     /** @brief Forward direction 2 to the window. */
     virtual void func_slot74();
@@ -280,6 +357,25 @@ public:
     virtual void func_slot6c();
     /** @brief Forward direction 1 to the window. */
     virtual void func_slot68();
+    ItemCreationSelection* unk160;
+    ItemCreationSelectedDisplayState* unk164;
+    u8 unk168[4];
+    ItemCreationTransferDisplay* unk16c;
+    u8 unk170;
+    u8 unk171[3];
+    u32 unk174;
+    u8 unk178;
+    u8 unk179;
+    u8 unk17a[2];
+    ItemCreationFlagNode* unk17c;
+    ItemCreationFlagNode* unk180[9];
+    ItemCreationFlagNode* unk1a4[3];
+    u8 unk1b0;
+    u8 unk1b1;
+    u8 unk1b2[2];
+    ItemCreationFlagNode* unk1b4;
+    ItemCreationFlagNode* unk1b8[9];
+    ItemCreationFlagNode* unk1dc[3];
 };
 
 /** Partial item creation window with primary vtable at 0x185060. */
@@ -421,6 +517,57 @@ class ItemCreationClass185030
 public:
     /** @brief Destroy the receiver. */
     virtual ~ItemCreationClass185030();
+};
+
+/** 0x3C-byte storage receiver, with its dispatch pointer after the stored state. */
+class ItemCreationClass185050
+{
+public:
+    LibStorageBlock0C unk00;
+    u8 unk0c[4];
+    float unk10;
+    float unk14;
+    float unk18;
+    float unk1c;
+    float unk20;
+    float unk24;
+    u8 unk28[0x10];
+
+    /** @brief Initialize the storage and clear its three scalar pairs. */
+    ItemCreationClass185050()
+    {
+        unk14 = 0.0f;
+        unk10 = 0.0f;
+        unk1c = 0.0f;
+        unk18 = 0.0f;
+        unk24 = 0.0f;
+        unk20 = 0.0f;
+    }
+    /** @brief Release the owned storage. */
+    virtual ~ItemCreationClass185050()
+    {
+    }
+    virtual void func_slot0c();
+};
+
+/** Partial kind-9 widget with a storage base at offset 0x40. */
+class ItemCreationClass175030 : public LibClass178600, public ItemCreationClass185050
+{
+public:
+    /** @brief Initialize the widget and select kind 9. */
+    ItemCreationClass175030();
+    /** @brief Destroy the storage base and widget base. */
+    virtual ~ItemCreationClass175030();
+};
+
+/** Kind-2 widget over the 0x90-byte resident widget base. */
+class ItemCreationClass184F30 : public LibClass178630
+{
+public:
+    /** @brief Initialize the widget and select kind 2. */
+    ItemCreationClass184F30();
+    /** @brief Destroy the resident widget base. */
+    virtual ~ItemCreationClass184F30();
 };
 
 extern "C" {
@@ -812,20 +959,6 @@ void func_00348440(void* object, u16 value);
  * @return Field value.
  */
 u16 func_00348450(void* object);
-
-/**
- * @brief Write the word at offset 0x98.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00348460(void* object, u32 value);
-
-/**
- * @brief Read the word at offset 0x98.
- * @param object Object containing the field.
- * @return Field value.
- */
-u32 func_00348470(void* object);
 
 /**
  * @brief Write the word at offset 0x9C.

@@ -130,14 +130,47 @@ typedef struct ItemCreationSelectedDisplayState
     s16 unk1e2[3][2];
 } ItemCreationSelectedDisplayState;
 
+/** Two scalar coordinates, cleared when a selection pair is constructed. */
+typedef struct ItemCreationFloatPair
+{
+    float unk00[2];
+#ifdef __cplusplus
+    /** @brief Clear the two coordinates. */
+    ItemCreationFloatPair()
+    {
+        unk00[1] = 0.0f;
+        unk00[0] = 0.0f;
+    }
+#endif
+} ItemCreationFloatPair;
+
 /** Partial selection state with twelve float pairs and a byte permutation. */
 typedef struct ItemCreationSelection
 {
-    float unk00[12][2];
+#ifdef __cplusplus
+    /** @brief Initialize the selection coordinates and enabled slots. */
+    ItemCreationSelection();
+#endif
+    ItemCreationFloatPair unk00[12];
     u8 unk60[12];
     u8 unk6c;
     u8 unk6d[12];
     u8 unk79;
+#ifdef __cplusplus
+    /** @brief Destroy the selection state. */
+    virtual ~ItemCreationSelection()
+    {
+    }
+    /**
+     * @brief Refresh the enabled selection slots.
+     * @return Always one.
+     */
+    virtual s32 func_slot0c();
+    /** @brief Initialize the float pairs and selection order. */
+    virtual void func_slot10();
+#else
+    void* unk7c;
+#endif
 } ItemCreationSelection;
 
 /** Option lists are part of the same selected display state. */
@@ -239,23 +272,10 @@ void func_00369B80(ItemCreationSelectedDisplayState* object, s32 value);
 u16 func_00369FA0(void* object, u8 value);
 
 /**
- * @brief Initialize the twelve float pairs and their selection order.
- * @param object Selection state to initialize.
- */
-void func_00369400(ItemCreationSelection* object);
-
-/**
  * @brief Enable selection slots from resident section-four flags.
  * @param object Selection state whose mode may disable slots six through twelve.
  */
 void func_00369510(ItemCreationSelection* object);
-
-/**
- * @brief Refresh selection-slot flags and report success.
- * @param object Selection state to refresh.
- * @return Always one.
- */
-s32 func_00369780(ItemCreationSelection* object);
 
 /**
  * @brief Move through the circular selection order until an enabled slot is reached.
