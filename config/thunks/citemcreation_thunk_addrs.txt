@@ -3,3 +3,7 @@
 @176@func_003F4410__15LibObject178660FUi = 0x0036F390;
 @32@func_0044B100__15LibObject178660FUiUiUi = 0x0036F3A0;
 @32@__dt__23ItemCreationClass184F60Fv = 0x0036F3B0;
+@168@refresh_rows__23ItemCreationClass186B70Fi = 0x0036F330;
+@168@set_scroll_position__23ItemCreationClass186B70Ff = 0x0036F320;
+@168@refresh_rows__23ItemCreationClass186C90Fi = 0x0036F310;
+@168@set_scroll_position__23ItemCreationClass186C90Ff = 0x0036F300;

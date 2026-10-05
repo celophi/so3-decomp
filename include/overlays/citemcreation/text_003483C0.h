@@ -226,20 +226,20 @@ public:
     virtual s32 func_slotb0();
     /** @brief Reset the current selection. @return Selection result code. */
     virtual s32 func_slotb4();
-    virtual void func_slotb8();
-    virtual void func_slotbc();
-    virtual void func_slotc0();
-    virtual void func_slotc4();
-    virtual void func_slotc8();
-    virtual void func_slotcc();
-    virtual void func_slotd0();
-    virtual void func_slotd4();
-    virtual void func_slotd8();
-    virtual void func_slotdc();
+    virtual s32 func_slotb8();
+    virtual s32 func_slotbc();
+    virtual s32 func_slotc0();
+    virtual s32 func_slotc4();
+    virtual s32 func_slotc8();
+    virtual s32 func_slotcc();
+    virtual s32 func_slotd0();
+    virtual s32 func_slotd4();
+    virtual s32 func_slotd8();
+    virtual s32 func_slotdc();
     virtual void func_slote0();
     virtual void func_slote4();
-    virtual void func_slote8();
-    virtual void func_slotec();
+    virtual u8 func_slote8();
+    virtual void func_slotec(u8 value);
     virtual void func_slotf0();
     virtual s32 func_slotf4(void* associated);
     virtual void func_slotf8(u16 direction);
@@ -274,20 +274,20 @@ public:
      * @return Always two.
      */
     virtual s32 func_slotb4();
-    virtual void func_slotb8();
-    virtual void func_slotbc();
-    virtual void func_slotc0();
-    virtual void func_slotc4();
-    virtual void func_slotc8();
-    virtual void func_slotcc();
-    virtual void func_slotd0();
-    virtual void func_slotd4();
-    virtual void func_slotd8();
-    virtual void func_slotdc();
+    virtual s32 func_slotb8();
+    virtual s32 func_slotbc();
+    virtual s32 func_slotc0();
+    virtual s32 func_slotc4();
+    virtual s32 func_slotc8();
+    virtual s32 func_slotcc();
+    virtual s32 func_slotd0();
+    virtual s32 func_slotd4();
+    virtual s32 func_slotd8();
+    virtual s32 func_slotdc();
     virtual void func_slote0();
     virtual void func_slote4();
-    virtual void func_slote8();
-    virtual void func_slotec();
+    virtual u8 func_slote8();
+    virtual void func_slotec(u8 value);
     virtual void func_slotf0();
     virtual s32 func_slotf4(void* associated);
     /**
@@ -662,7 +662,7 @@ class ItemCreationClass172870 : public LibClass178600
 {
 public:
     /** @brief Initialize the widget storage and select kind 6. */
-    ItemCreationClass172870();
+    inline ItemCreationClass172870();
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass172870();
     LibStorageBlock0C unk40;
@@ -689,7 +689,7 @@ class ItemCreationClass1725D0 : public LibClass178600
 {
 public:
     /** @brief Initialize the widget storage and select kind 3. */
-    ItemCreationClass1725D0();
+    inline ItemCreationClass1725D0();
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass1725D0();
     LibStorageBlock0C unk40;
@@ -703,7 +703,7 @@ class ItemCreationClass1746A0 : public LibClass178600
 {
 public:
     /** @brief Initialize the widget storage and select kind 4. */
-    ItemCreationClass1746A0();
+    inline ItemCreationClass1746A0();
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass1746A0();
     LibStorageBlock0C unk40;
@@ -800,7 +800,11 @@ public:
     float unk1c;
     float unk20;
     float unk24;
-    u8 unk28[0x10];
+    u8 unk28[8];
+    float unk30;
+    u8 unk34;
+    u8 unk35;
+    u8 unk36[2];
 
     /** @brief Initialize the storage and clear its three scalar pairs. */
     ItemCreationClass185050()
@@ -824,7 +828,7 @@ class ItemCreationClass175030 : public LibClass178600, public ItemCreationClass1
 {
 public:
     /** @brief Initialize the widget and select kind 9. */
-    ItemCreationClass175030();
+    inline ItemCreationClass175030();
     /** @brief Destroy the storage base and widget base. */
     virtual ~ItemCreationClass175030();
 };
@@ -877,6 +881,24 @@ public:
     ItemCreationClass184F60();
     /** @brief Destroy the widget aggregate and container. */
     virtual ~ItemCreationClass184F60();
+};
+
+/** Window with MAIN vtable 0x186170 and no storage beyond the Field base. */
+class ItemCreationClass186170 : public FieldClass15AE70
+{
+public:
+    /** @brief Initialize the Field window base. */
+    ItemCreationClass186170()
+    {
+    }
+    /** @brief Destroy the Field window base. */
+    virtual ~ItemCreationClass186170();
+    /** @brief Handle the return action. @return Action status. */
+    virtual s32 func_slotb0();
+    /** @brief Handle the alternate action. @return Action status. */
+    virtual s32 func_slotb4();
+    /** @brief Set up the window. @param associated Associated object. @return Setup status. */
+    virtual s32 func_slotf4(void* associated);
 };
 
 extern "C" {

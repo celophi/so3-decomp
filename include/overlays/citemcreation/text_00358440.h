@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_CITEMCREATION_TEXT_00358440_H
 
 #include "types.h"
+#include "overlays/1067-00/text_002CD390.h"
 #include "overlays/citemcreation/text_003684D0.h"
 #ifdef __cplusplus
 #include "overlays/lib/text_004BD360.h"
@@ -147,16 +148,6 @@ typedef struct ItemCreationTripleState
     u8 unk1f2[3][3];
 } ItemCreationTripleState;
 
-/** Partial detail display containing its selected byte and associated mask. */
-typedef struct ItemCreationDetailDisplay
-{
-    u8 unk00[0xA8];
-    struct ItemCreationSelectedDisplayState* unka8;
-    u8 unkac[0x55];
-    u8 unk101;
-    u16 unk102;
-} ItemCreationDetailDisplay;
-
 /** Partial nested item with two flag bytes and a float setting. */
 typedef struct ItemCreationNested
 {
@@ -253,13 +244,122 @@ public:
     virtual void func_slota4();
     virtual void func_slota8();
     virtual void func_slotac();
+    virtual s32 func_slotb0();
+    virtual s32 func_slotb4();
+    virtual s32 func_slotb8();
+    virtual s32 func_slotbc();
+    virtual s32 func_slotc0();
+    virtual s32 func_slotc4();
+    virtual s32 func_slotc8();
+    virtual s32 func_slotcc();
+    virtual s32 func_slotd0();
+    virtual s32 func_slotd4();
+    virtual s32 func_slotd8();
+    virtual s32 func_slotdc();
+    virtual void func_slote0();
+    virtual void func_slote4();
+    virtual u8 func_slote8();
+    virtual void func_slotec(u8 value);
+    virtual void func_slotf0();
     u8 unk04[0xC];
     LibObject178660* unk10;
-    u8 unk14[0x60];
+    u8 unk14[0x18];
+    ItemCreationCountedList unk2c;
+    u8 unk34[0x40];
     ItemCreationCountedList unk74;
     u8 unk7c[0x1C];
     void* unk98;
     u8 unk9c[0xC];
+};
+
+/** Field list callback base with a parameter prefix and two update hooks. */
+class FieldClass15AE60 : public FieldStateCE420
+{
+public:
+    /** @brief Refresh the visible record rows. @param start First record index. */
+    virtual void refresh_rows(s32 start);
+    /** @brief Position the row displays. @param start Base vertical coordinate. */
+    virtual void set_scroll_position(float start);
+    u8 unk44[4];
+    LibClass178600* unk48[12];
+    u8 unk78[0xC];
+    u8 unk84;
+    u8 unk85;
+    u8 unk86[2];
+    s32 unk88;
+    u8 unk8c;
+    u8 unk8d[3];
+};
+
+/** Field list window with its callback base at offset 0xA8. */
+class FieldClass15AD40 : public FieldClass15AE70, public FieldClass15AE60
+{
+public:
+    FieldClass15AD40();
+    virtual ~FieldClass15AD40();
+    virtual s32 func_slot104(void* associated);
+    virtual void func_slot108();
+    /**
+     * @brief Set the paired display flags and update auxiliary displays.
+     * @param value Low byte stored in each paired display flag.
+     * @param alternate Auxiliary flag value; its full value selects the height.
+     */
+    virtual void func_slot10c(u32 value, u32 alternate);
+    /** @brief Set the list flag. @param value Flag value to store. */
+    virtual void func_slot110(u8 value);
+};
+
+/** Item creation category list with primary vtable at 0x186B70. */
+class ItemCreationClass186B70 : public FieldClass15AD40
+{
+public:
+    /** @brief Release the optional panel and destroy the Field list window. */
+    virtual ~ItemCreationClass186B70();
+    /** @brief Release the category container and base window contents. */
+    virtual void func_slot0c();
+    /** @brief Update the category rows and selected item preview. */
+    virtual void func_slot5c();
+    virtual s32 func_slotb0();
+    /** @brief Restore the category display or its parent. @return Always two. */
+    virtual s32 func_slotb4();
+    /** @brief Toggle the selected item preview. @return Always zero. */
+    virtual s32 func_slotb8();
+    /**
+     * @brief Create the category list and item preview displays.
+     * @param associated Object associated with the window.
+     * @return Always one.
+     */
+    virtual s32 func_slot104(void* associated);
+    /**
+     * @brief Set the paired display flags and update auxiliary displays.
+     * @param value Low byte stored in each paired display flag.
+     * @param alternate Auxiliary flag value; its full value selects the height.
+     */
+    virtual void func_slot10c(u32 value, u32 alternate);
+    /** @brief Set the list flag. @param value Flag value to store. */
+    virtual void func_slot110(u8 value);
+    /** @brief Refresh the visible record rows. @param start First record index. */
+    virtual void refresh_rows(s32 start);
+    /** @brief Position the row displays. @param start Base vertical coordinate. */
+    virtual void set_scroll_position(float start);
+    struct LibObject172410* unk138[6];
+    struct ItemCreationOptionResourceDisplay* unk150[6];
+    struct LibObject172440* unk168[8];
+    struct ItemCreationClass172870* unk188;
+    struct LibClass178630* unk18c;
+    LibObject178750* unk190;
+    LibObject178750* unk194;
+    LibObject178750* unk198;
+    u8 unk19c[4];
+    LibObject178750* unk1a0;
+    LibObject178750* unk1a4;
+    struct LibObject172410* unk1a8;
+    LibObject178660* unk1ac;
+    u8 unk1b0;
+    u8 unk1b1[3];
+    ItemCreationSelectedDisplayState* unk1b4;
+    s32 unk1b8;
+    s32 unk1bc;
 };
 
 class FieldClass153130;
@@ -348,6 +448,8 @@ public:
      * @return One when the displays are created; zero when no state is attached.
      */
     virtual s32 func_slotf4(void* associated);
+    /** @brief Refresh the selected item, text, and detail icons. */
+    void func_00358850();
     ItemCreationSelectedDisplayState* unka8;
     ItemCreationOptionResourceDisplay* unkac;
     LibObject175140* unkb0;
@@ -422,6 +524,45 @@ public:
     float unke4;
 };
 
+class ItemCreationClass1746A0;
+
+/** Mode list with primary table 0x186C90 and its owned counted list. */
+class ItemCreationClass186C90 : public FieldClass15AD40
+{
+public:
+    /** @brief Initialize the mode list and retain its selection state. @param state Selection state. */
+    ItemCreationClass186C90(ItemCreationSelectedDisplayState* state);
+    /** @brief Destroy the mode list and its Field window bases. */
+    virtual ~ItemCreationClass186C90();
+    /** @brief Refresh the active mode list and selection cursor. */
+    virtual void func_slot5c();
+    /** @brief Restore the mode window or its parent selection. @return Always two. */
+    virtual s32 func_slotb4();
+    /** @brief Create the mode list widgets and initialize its selection. @param associated Associated source. @return Always one. */
+    virtual s32 func_slot104(void* associated);
+    /** @brief Refresh the mode list rows. @param start First record index. */
+    virtual void refresh_rows(s32 start);
+    /** @brief Position the mode list rows. @param start Base vertical coordinate. */
+    virtual void set_scroll_position(float start);
+    /** @brief Rebuild the related category list. @param reset Whether to reset the selection. @param mode Category mode. */
+    virtual void func_slot11c(u16 reset, u8 mode);
+    struct LibClass178600* unk138[12];
+    LibObject174F20* unk168[12];
+    LibClass178630* unk198;
+    ItemCreationClass1746A0* unk19c;
+    ItemCreationSelectedDisplayState* unk1a0;
+    u32 unk1a4;
+    ItemCreationClass187A60 unk1a8;
+    u16 unk1b4;
+    u8 unk1b6[2];
+    u32 unk1b8[24];
+    u16 unk218;
+    u8 unk21a[6];
+};
+
+class FieldClass153130;
+class FieldClass153170;
+
 /** Partial item creation window with primary vtable at 0x186DB0. */
 class ItemCreationClass186DB0 : public FieldClass15AE70
 {
@@ -430,24 +571,43 @@ public:
     ItemCreationClass186DB0(void* object);
     /** Destroy the window through Field's window base. */
     virtual ~ItemCreationClass186DB0();
-    void* unka8;
-    u32 unkac;
-    u32 unkb0;
+    /** @brief Refresh the previous mode selection. */
+    virtual void func_slot68();
+    /** @brief Refresh the next mode selection. */
+    virtual void func_slot6c();
+    /** @brief Open the related list. @return Zero for an inactive selector; otherwise one. */
+    virtual s32 func_slotb0();
+    /** @brief Restore the prior item pair and parent window. @return Always two. */
+    virtual s32 func_slotb4();
+    /** @brief Create the mode display widgets. @param associated Associated parent. @return Setup status. */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    FieldClass153130* unkac;
+    FieldClass153170* unkb0;
     u16 unkb4;
     u8 unkb6[2];
     u32 unkb8;
-    u32 unkbc;
-    u32 unkc0;
-    u32 unkc4;
-    u32 unkc8[6];
-    u32 unke0[6];
-    u8 unkf8[4];
-    u32 unkfc[4];
-    u8 unk10c[0x44];
-    u32 unk150;
+    LibClass178630* unkbc;
+    LibClass178630* unkc0;
+    LibClass178630* unkc4;
+    LibObject178750* unkc8[6];
+    ItemCreationOptionResourceDisplay* unke0[6];
+    LibObject178750* unkf8;
+    float unkfc[4];
+    s16 unk10c;
+    u8 unk10e[2];
+    LibObject178750* unk110[3];
+    LibObject172410* unk11c[3];
+    LibObject178750* unk128[6];
+    LibObject174F20* unk140[3];
+    u8 unk14c;
+    u8 unk14d[3];
+    ItemCreationClass186C90* unk150;
 };
 
-/** Partial item creation window with primary vtable at 0x186EB0. */
+struct ItemCreationTwoColorReturnParent;
+
+/** Two-choice item creation window with primary vtable at 0x186EB0. */
 class ItemCreationClass186EB0 : public FieldClass15AE70
 {
 public:
@@ -455,26 +615,33 @@ public:
     ItemCreationClass186EB0(void* object);
     /** Destroy the window through Field's window base. */
     virtual ~ItemCreationClass186EB0();
-    u32 unka8;
+    /** @brief Reset the choices and return to the parent when enabled. @return Always two. */
+    virtual s32 func_slotb4();
+    /**
+     * @brief Create the two choice displays and their selection widgets.
+     * @param associated Object associated with the window.
+     * @return Zero without a parent, otherwise one.
+     */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationTwoColorReturnParent* unka8;
     u8 unkac;
     u8 unkad[0x3];
-    u32 unkb0;
-    u32 unkb4;
-    u32 unkb8;
-    u32 unkbc;
-    u32 unkc0;
-    u32 unkc4;
-    u32 unkc8;
-    u32 unkcc;
-    u32 unkd0;
+    LibClass178630* unkb0;
+    LibObject178750* unkb4[2];
+    float unkbc;
+    float unkc0;
+    float unkc4;
+    float unkc8;
+    FieldClass153130* unkcc;
+    FieldClass153170* unkd0;
     u8 unkd4;
     u8 unkd5[0x3];
     void* unkd8;
-    u32 unkdc;
-    u32 unke0;
+    ItemCreationClass186DB0* unkdc;
+    FieldClass15AE70* unke0;
 };
 
-/** Partial item creation window with primary vtable at 0x186FB0. */
+/** Eight-choice item creation window with primary vtable at 0x186FB0. */
 class ItemCreationClass186FB0 : public FieldClass15AE70
 {
 public:
@@ -482,19 +649,24 @@ public:
     ItemCreationClass186FB0(void* object);
     /** Destroy the window through Field's window base. */
     virtual ~ItemCreationClass186FB0();
-    void* unka8;
-    u32 unkac;
-    u32 unkb0;
-    u32 unkb4;
-    u32 unkb8;
-    u32 unkbc;
-    u32 unkc0;
-    u32 unkc4;
-    u32 unkc8;
-    u32 unkcc;
-    u32 unkd0;
-    u32 unkd4;
-    u32 unkd8;
+    /** @brief Refresh the option display for the first selection direction. */
+    virtual void func_slot6c();
+    /** @brief Refresh the option display for the second selection direction. */
+    virtual void func_slot68();
+    /** @brief Reset the option selection and handle the return mode. @return Always two. */
+    virtual s32 func_slotb4();
+    /**
+     * @brief Create eight option displays and their selection widgets.
+     * @param associated Object associated with the window.
+     * @return Zero without a parent, otherwise one.
+     */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    ItemCreationTwoColorReturnParent* unkac;
+    LibClass178630* unkb0;
+    LibObject178750* unkb4[8];
+    FieldClass153130* unkd4;
+    FieldClass153170* unkd8;
     u8 unkdc;
     u8 unkdd[0xB];
     u16 unke8;
@@ -689,20 +861,6 @@ void func_00364090(ItemCreationFourteenSlotView* object, u16 mode);
 u8 func_003623C0(ItemCreationTripleState* object, u8 index);
 
 /**
- * @brief Refresh the detail display from its selected item and mask.
- * @param object Detail display to refresh.
- */
-void func_00358850(ItemCreationDetailDisplay* object);
-
-/**
- * @brief Set the flags of six item pairs and update optional auxiliary items.
- * @param object Owner of the nested items.
- * @param value Low byte to store in each paired item's flag.
- * @param alternate Low byte for auxiliary flags; the full value selects their float setting.
- */
-void func_0035A6A0(ItemCreationPairOwner* object, u32 value, u32 alternate);
-
-/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -728,20 +886,6 @@ u8 func_003644F0(ItemCreationFourteenSlotView* object);
 void func_003641F0(void* object);
 
 /**
- * @brief Set six pairs of nested objects to increasing float values and mark them active.
- * @param object Object holding the pairs of nested pointers.
- * @param start Base float value for the first pair.
- */
-void func_0035B480(u8* object, float start);
-
-/**
- * @brief Fill six item rows from a category's collected records and update their visibility.
- * @param object Owner of the record rows and category selection.
- * @param start First collected-record index to display.
- */
-void func_0035B4E0(ItemCreationIdentifierOwner* object, s32 start);
-
-/**
  * @brief Test whether a category is rejected by the selected mode or has no accepted records.
  * @param object Category display containing its selected state and mode.
  * @param category Category entry containing the zero-based catalog index.
@@ -749,31 +893,7 @@ void func_0035B4E0(ItemCreationIdentifierOwner* object, s32 start);
  */
 u8 func_0035CAD0(ItemCreationCategoryOwner* object, const ItemCreationCategoryRecord* category);
 
-/**
- * @brief Write the byte at offset 0x12C.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_0035C3F0(void* object, u8 value);
 
-/**
- * @brief Set twelve groups of three nested objects to increasing float values and mark them active.
- * @param object Object holding the groups of nested pointers.
- * @param start Base float value for the first group.
- */
-void func_0035C890(u8* object, float start);
-
-/**
- * @brief Update the object from its nested item when the item state differs.
- * @param object Object holding the nested item at offset 0xD4.
- */
-void func_00360440(u8* object);
-
-/**
- * @brief Update the object from its nested item using the alternate state query.
- * @param object Object holding the nested item at offset 0xD4.
- */
-void func_003604A0(u8* object);
 
 /**
  * @brief Update object state using a selected value.
@@ -802,6 +922,9 @@ void func_0035C4D0(u8* object, void* unused, u32 value);
  * @param object Object holding the nested pointer.
  */
 void func_0035E2D0(u8* object);
+
+/** @brief Resize the mode list and rebuild its category rows. @param object Mode list. @param mode Compact display mode. */
+void func_0035D0C0(ItemCreationClass186C90* object, s32 mode);
 
 #ifdef __cplusplus
 /**

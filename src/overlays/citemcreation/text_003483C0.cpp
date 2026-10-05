@@ -100,6 +100,13 @@ struct ItemCreationSelectionRestoreMarker
     u8 unkad;
 };
 
+/** Partial associated window with its restore marker. */
+struct ItemCreationPopupReturnParent
+{
+    u8 unk00[0xB4];
+    FieldObject23CEA0* unkb4;
+};
+
 /** Partial parent context returned by the selection window's associated-object hook. */
 struct ItemCreationSelectionRestoreParent
 {
@@ -1950,34 +1957,12 @@ ItemCreationClass184F60::ItemCreationClass184F60()
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", __dt__14LibClass178A70Fv);
 
-/** @brief Initialize the widget storage and select kind 6. */
-inline ItemCreationClass172870::ItemCreationClass172870()
-{
-    unk38 = 6;
-}
+#include "overlays/citemcreation/item_display_inlines.h"
 
 /** @brief Initialize the widget storage and select kind 5. */
 ItemCreationClass172600::ItemCreationClass172600()
 {
     unk38 = 5;
-}
-
-/** @brief Initialize the widget and select kind 9. */
-inline ItemCreationClass175030::ItemCreationClass175030()
-{
-    unk38 = 9;
-}
-
-/** @brief Initialize the widget storage and select kind 3. */
-ItemCreationClass1725D0::ItemCreationClass1725D0()
-{
-    unk38 = 3;
-}
-
-/** @brief Initialize the widget storage and select kind 4. */
-ItemCreationClass1746A0::ItemCreationClass1746A0()
-{
-    unk38 = 4;
 }
 
 /** @brief Initialize the widget and select kind 2. */
@@ -2257,7 +2242,22 @@ ItemCreationClass186070::~ItemCreationClass186070()
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003540D0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00354180);
+/** @brief Close the popup and restore its associated window marker. @return Always one. */
+s32 ItemCreationClass186170::func_slotb0()
+{
+    D_001B643C->unk10->unk14->func_00263F50(this);
+    ItemCreationPopupReturnParent* parent = static_cast<ItemCreationPopupReturnParent*>(func_slot44());
+    FieldObject23CEA0* marker = parent->unkb4;
+    marker->FieldClass151C50::unk30 = 128.0f;
+    marker->unkae = 1;
+    marker = parent->unkb4;
+    if (marker != 0)
+    {
+        marker->unkad = 1;
+    }
+    D_001B643C->unk10->unk14->func_00263C70(parent);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00354220);
 

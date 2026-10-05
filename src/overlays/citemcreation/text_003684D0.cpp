@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
+#include "main/resident_001001E0.h"
 #include "main/resident_0010A0E0.h"
 #include "overlays/citemcreation/text_003684D0.h"
 #include "overlays/citemcreation/text_00358440.h"
@@ -837,7 +838,7 @@ void func_0036A500(ItemCreationSelectedDisplayState* object, void* selected, s16
     if (selected != 0 && object->unkb8 != 0 && object->unkbc != 0 && object->unkc0 != 0)
     {
         u8 value = 0;
-        ItemCreationDetailDisplay* display;
+        ItemCreationClass186970* display;
         object->unk118 = selected;
         if (object->unk118 == object->unkb8)
         {
@@ -854,7 +855,7 @@ void func_0036A500(ItemCreationSelectedDisplayState* object, void* selected, s16
             display->unk102 = 0;
             display->unk102 = func_00369FA0(display->unka8, display->unk101);
         }
-        func_00358850(display);
+        display->func_00358850();
         object->unk118 = 0;
     }
 }
@@ -1485,7 +1486,10 @@ s32 func_0036E850(void* object)
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036E860);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036E900);
+/** @brief Destroy the popup Field window base. */
+ItemCreationClass186170::~ItemCreationClass186170()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036E960);
 
@@ -1510,7 +1514,10 @@ ItemCreationClass186570::~ItemCreationClass186570()
 {
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036EAE0);
+/** @brief Release the embedded list and destroy the Field window. */
+ItemCreationClass186C90::~ItemCreationClass186C90()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036EB60);
 
@@ -1585,9 +1592,28 @@ s32 func_0036ECA0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036ECB0);
+/** @brief Allocate the sentinel node and initialize the list count. */
+ItemCreationClass187A60::ItemCreationClass187A60()
+{
+    unk00 = new (0) ItemCreationListNode;
+    if (unk00 == 0)
+    {
+        throw;
+    }
+    unk00->unk04 = 0;
+    unk04 = 0;
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036ED30);
+/** @brief Release the list nodes and its sentinel. */
+ItemCreationClass187A60::~ItemCreationClass187A60()
+{
+    func_0036EEF0(this);
+    if (unk00 != 0)
+    {
+        delete unk00;
+        unk00 = 0;
+    }
+}
 
 void func_0036EDB0(ItemCreationCountedList* object, void* record)
 {
@@ -1636,18 +1662,18 @@ void func_0036EE40(ItemCreationCountedList* object, ItemCreationListNode* after,
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036EEF0);
 
-void* func_0036EF70(u8* object, s32 index)
+ItemCreationListNode* func_0036EF70(ItemCreationCountedList* object, s32 index)
 {
-    u8* node = *(u8**)object;
+    ItemCreationListNode* node = object->unk00;
     s32 current = 0;
-    node = *(u8**)(node + 4);
+    node = node->unk04;
     for (current = 0; current < index; current++)
     {
         if (node == 0)
         {
             return 0;
         }
-        node = *(u8**)(node + 4);
+        node = node->unk04;
     }
     return node;
 }
@@ -1789,10 +1815,6 @@ void func_0036F270(ItemCreationCountedList* object, void* value)
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036F300);
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036F310);
-
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036F320);
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036F330);
@@ -1812,3 +1834,5 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036F3A0);
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036F3B0);
+
+#include "overlays/citemcreation/item_display_inlines.h"
