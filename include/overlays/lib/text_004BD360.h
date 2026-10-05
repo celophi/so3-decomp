@@ -37,6 +37,12 @@ s32 func_004C7FE0(LibObject178750* object, s32 slot, s32 key, u8 flag, float x, 
  */
 void func_004C6190(LibObject178660* object, LibClass178600* child);
 /**
+ * @brief Detach the widget from its associated object.
+ * @param object Widget receiver.
+ */
+void func_004C4A90(LibClass178630* object);
+
+/**
  * @brief Configure the widget mode and rectangle.
  * @param object Widget receiver.
  * @param mode Widget mode.
@@ -125,6 +131,13 @@ public:
     virtual ~LibClass174610();
     /** @brief Queue the transform receiver for release. */
     virtual void func_003EF740();
+    /**
+     * @brief Run the default transform state hook.
+     * @param first First state value.
+     * @param second Second state value.
+     * @param third Third state value.
+     */
+    virtual void func_0044B100(u32 first, u32 second, u32 third);
     u8 unk94[0x16];
     u8 unkaa;
     u8 unkab;
@@ -201,7 +214,6 @@ struct LibClass178630 : public LibClass178600
     /** @brief Initialize widget state and select kind 1. */
     LibClass178630()
     {
-        unk40 = 0;
         unk5c = 0;
         unk58 = 0;
         unk54 = 0;
@@ -210,14 +222,17 @@ struct LibClass178630 : public LibClass178600
         unk60 = 0;
     }
     /** @brief Destroy the widget. */
-    virtual ~LibClass178630();
-    u32 unk40;
-    u8 unk44[0xC];
+    virtual ~LibClass178630()
+    {
+        func_004C4A90(this);
+    }
+    LibStorageBlock0C unk40;
+    u8 unk4c[4];
     u32 unk50;
     u32 unk54;
     u32 unk58;
     u32 unk5c;
-    u32 unk60;
+    void* unk60;
     u8 unk64[0x2C];
 };
 

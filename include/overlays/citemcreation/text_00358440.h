@@ -188,7 +188,15 @@ public:
     // Placeholder virtuals in their vtable order (byte offset in the name); only
     // their positions are known.
     virtual void func_slot0c();
-    virtual void func_slot10();
+    /**
+     * @brief Create the nested display at the supplied coordinates.
+     * @param associated Object associated with the window.
+     * @param x Horizontal coordinate.
+     * @param y Vertical coordinate.
+     * @param code Nested display initializer code.
+     * @return One when the nested display and associated object are present, or zero otherwise.
+     */
+    virtual s32 func_slot10(void* associated, float x, float y, s32 code);
     virtual void func_slot14();
     virtual void func_slot18();
     virtual void func_slot1c();
@@ -200,8 +208,16 @@ public:
     virtual void func_slot34();
     virtual void func_slot38();
     virtual void func_slot3c();
-    virtual void func_slot40();
-    virtual void func_slot44();
+    /** @brief Store the associated window pointer. @param associated Pointer to store. */
+    virtual void func_slot40(void* associated)
+    {
+        unk98 = associated;
+    }
+    /** @brief Return the associated window pointer. @return Stored pointer. */
+    virtual void* func_slot44()
+    {
+        return unk98;
+    }
     virtual void func_slot48();
     virtual void func_slot4c();
     virtual void func_slot50();
@@ -228,7 +244,9 @@ public:
     virtual void func_slota4();
     virtual void func_slota8();
     virtual void func_slotac();
-    u8 unk04[0xA4];
+    u8 unk04[0x94];
+    void* unk98;
+    u8 unk9c[0xC];
 };
 
 /** Partial item creation window with primary vtable at 0x186870. */

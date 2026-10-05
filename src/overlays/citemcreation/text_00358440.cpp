@@ -996,7 +996,7 @@ void func_00361220(ItemCreationNineSlotView* object)
             object->unkdc[index]->unk3f = 0;
             object->unk10c[index]->unk3f = 0;
         }
-        if (object->unka8->unk57 != 0 && object->unkb4->unkAD != 0)
+        if (object->unka8->unk57 != 0 && object->unkb4->unkad != 0)
         {
             switch (selected)
             {
@@ -1307,7 +1307,7 @@ u8 func_003644F0(ItemCreationFourteenSlotView* object)
     {
         return 0;
     }
-    inactive = !display->unkE5;
+    inactive = !display->unk35;
     if (inactive)
     {
         return 0;
@@ -1317,7 +1317,7 @@ u8 func_003644F0(ItemCreationFourteenSlotView* object)
         return 0;
     }
     index = display->unk114;
-    position = &display->unkC0;
+    position = &display->unk10;
     func_0036A050(state, object, (s16)index);
     if (object->unka8->unk128 == 1)
     {
@@ -1325,15 +1325,15 @@ u8 func_003644F0(ItemCreationFourteenSlotView* object)
         FieldObject23CEA0* target;
         float x;
         float y;
-        restore->unkE0 = 96.0f;
-        restore->unkAE = 1;
+        restore->FieldClass151C50::unk30 = 96.0f;
+        restore->unkae = 1;
         x = position[0];
         y = position[1];
         target = object->unkb0;
-        target->unkC0 = x;
-        target->unkC4 = y;
-        target->unkE5 = 1;
-        target->unkAE = 1;
+        target->unk10 = x;
+        target->unk14 = y;
+        target->unk35 = 1;
+        target->unkae = 1;
         func_0023CEA0(object->unkb0, 1);
         target = object->unkb0;
         target->index = (s16)index;

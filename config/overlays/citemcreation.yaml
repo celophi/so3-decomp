@@ -14,6 +14,7 @@ options:
   ld_script_path: build/overlays/citemcreation/overlay.ld
   generated_asm_macros_directory: build/overlays/citemcreation/include
   cache_path: build/overlays/citemcreation/splat.cache
+  reloc_addrs_path: [config/relocations/citemcreation_reloc_addrs.txt]
   symbol_addrs_path: [config/symbols/citemcreation_symbol_addrs.txt]
   undefined_funcs_auto_path: build/overlays/citemcreation/undefined_funcs.ld
   undefined_syms_auto_path: build/overlays/citemcreation/undefined_syms.ld

@@ -150,7 +150,7 @@ static inline void tactics_set_xy(TacticsPositionTarget* target, float x, float 
  */
 static inline u8 tactics_grid_empty(FieldObject23CEA0* grid)
 {
-    if (grid->unkE5)
+    if (grid->unk35)
     {
         return 0;
     }
