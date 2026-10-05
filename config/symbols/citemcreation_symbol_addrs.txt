@@ -1,7 +1,6 @@
 D_001B6430 = 0x001B6430; // size:0x4
 D_001B64F8 = 0x001B64F8; // size:0x4
 func_0011ED90 = 0x0011ED90; // type:func
-func_00100AC0 = 0x00100AC0; // type:func
 func_0010CF80 = 0x0010CF80; // type:func
 func_23B3A0 = 0x0023B3A0; // type:func
 func_23B3B0 = 0x0023B3B0; // type:func
@@ -152,5 +151,30 @@ func_slotf4__23ItemCreationClass185860FPv = 0x0034D550; // type:func
 func_slotf4__23ItemCreationClass185760FPv = 0x0034CD10; // type:func
 func_slotb0__23ItemCreationClass185760Fv = 0x0034CB90; // type:func
 func_slotb4__23ItemCreationClass185760Fv = 0x0034CA20; // type:func
+__vt__23ItemCreationClass184F08 = 0x00184F08; // absolute:True
+__vt__23ItemCreationClass184F18 = 0x00184F18; // absolute:True
+__dt__23ItemCreationClass184F08Fv = 0x0036E490; // type:func
+__dt__23ItemCreationClass184F18Fv = 0x0036E4E0; // type:func
 func_slot10__16FieldClass15AE70FPvffi = 0x002CE8D0; // type:func absolute:True allow_duplicated:True
 func_002CE8D0 = 0x002CE8D0; // type:func absolute:True allow_duplicated:True
+
+__vt__23ItemCreationClass185660 = 0x00185660; // absolute:True
+func_slotf8__23ItemCreationClass185660Fi = 0x0034C4B0; // type:func
+func_slotb4__23ItemCreationClass185660Fv = 0x0034C5F0; // type:func
+func_slotb0__23ItemCreationClass185660Fv = 0x0034C700; // type:func
+func_slotf4__23ItemCreationClass185660FPv = 0x0034C7F0; // type:func
+__dt__23ItemCreationClass185660Fv = 0x0034C870; // type:func
+
+func_slotb0__23ItemCreationClass185960Fv = 0x0034E840; // type:func
+func_slotb4__23ItemCreationClass185960Fv = 0x0034E670; // type:func
+
+__vt__33ItemCreationOptionResourceDisplay = 0x0015B240; // absolute:True allow_duplicated:True
+__dt__33ItemCreationOptionResourceDisplayFv = 0x002D65E0; // type:func absolute:True allow_duplicated:True
+func_00413D20__23ItemCreationClass175110Fv = 0x00467750; // type:func absolute:True allow_duplicated:True
+func_00462310__23ItemCreationClass175110Fv = 0x00467670; // type:func absolute:True allow_duplicated:True
+func_00413D20__33ItemCreationOptionResourceDisplayFv = 0x002D63F0; // type:func absolute:True allow_duplicated:True
+func_00462310__33ItemCreationOptionResourceDisplayFv = 0x002D5DA0; // type:func absolute:True allow_duplicated:True
+__nw__FUii = 0x00100AC0; // type:func absolute:True allow_duplicated:True
+func_00100AC0 = 0x00100AC0; // type:func absolute:True allow_duplicated:True
+func_004C6190 = 0x004C6190; // type:func absolute:True allow_duplicated:True
+func_4C6190 = 0x004C6190; // type:func absolute:True allow_duplicated:True

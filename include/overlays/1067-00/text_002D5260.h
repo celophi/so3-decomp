@@ -201,6 +201,16 @@ void func_002D63F0(FieldState2D63F0* object);
 void func_002D6410(FieldState2D6410* object);
 
 /**
+ * @brief Set the resource record and its displayed position.
+ * @param object Resource display to update.
+ * @param record Resource record to display.
+ * @param x Horizontal coordinate.
+ * @param y Vertical coordinate.
+ * @return One on success, or zero when allocation fails.
+ */
+s32 func_002D6440(FieldState2D6410* object, FieldResourceRecord* record, float x, float y);
+
+/**
  * @brief Set the receiver's byte at offset 0x3C.
  * @param object Receiver to update.
  */

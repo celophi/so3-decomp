@@ -6,6 +6,7 @@
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_002D5260.h"
 #include "overlays/1067-00/text_001E1590.h"
+#include "overlays/1067-00/text_002764D0.h"
 
 enum
 {
@@ -30,9 +31,20 @@ typedef struct ItemCreationColorRecord
     u8 unk32[2];
 } ItemCreationColorRecord;
 
+/** Partial twelve-byte runtime option record. */
+typedef struct ItemCreationRuntimeOptionRecord
+{
+    u8 unk00[6];
+    u8 unk06;
+    u8 unk07;
+    u8 unk08;
+    u8 unk09[3];
+} ItemCreationRuntimeOptionRecord;
+
 typedef struct ItemCreationColorRecordState
 {
-    u8 unk00[0x10F50];
+    u8 unk00[0x10D88];
+    ItemCreationRuntimeOptionRecord unk10d88[38];
     ItemCreationColorRecord unk10f50[12];
 } ItemCreationColorRecordState;
 
@@ -51,12 +63,41 @@ typedef struct ItemCreationRuntime643C
     FieldBufferSlots* unk20;
 } ItemCreationRuntime643C;
 
-typedef struct ItemCreationOptionResourceDisplay
+/** Field resource widget using resident table 0x15B240. */
+struct ItemCreationOptionResourceDisplay : public ItemCreationClass175110
 {
-    FieldResourceDisplay2D5CF0 base;
-    u8 unk40[0x90];
+    /** @brief Initialize the resource widget and clear its trailing state. */
+    ItemCreationOptionResourceDisplay()
+    {
+        unk124 = 0;
+        unk120 = 0;
+        unk11c = 0;
+        unk118 = 0;
+        ::func_002D6410(static_cast<FieldState2D6410*>(static_cast<void*>(this)));
+    }
+    /** @brief Destroy the resource widget. */
+    virtual ~ItemCreationOptionResourceDisplay();
+    /** @brief Refresh the resource widget. */
+    virtual void func_00413D20();
+    /** @brief Draw the resource widget. */
+    virtual void func_00462310();
+    void* unkcc;
     u8 unkd0;
-} ItemCreationOptionResourceDisplay;
+    u8 unkd1[0x37];
+    FieldResourceRecord* unk108;
+    u16 unk10c;
+    u16 unk10e;
+    u8 unk110;
+    u8 unk111;
+    u8 unk112;
+    u8 unk113;
+    u8 unk114;
+    u8 unk115[3];
+    u32 unk118;
+    u32 unk11c;
+    u32 unk120;
+    u32 unk124;
+};
 
 struct ItemCreationOptionDisplay
 {
@@ -88,16 +129,23 @@ extern "C" s32 func_002CFE40(void* object, s16 index);
 extern "C" u16 func_23B3A0(FieldState23B3A0* object);
 extern "C" u32 func_23B3B0(FieldState23B3A0* object, u16 direction);
 
+/** @brief Return the selected position pair, or null for an invalid index. */
+static inline const float* option_selection_position(ItemCreationSelection* selection, s32 index);
+/**
+ * @brief Read the selection flag for a one-based option code.
+ * @param selection Selection containing twelve option flags.
+ * @param code Option code from one through twelve.
+ * @return Stored option flag.
+ */
+static inline u8 selection_enabled(ItemCreationSelection* selection, u8 code);
+/** @brief Position and enable a transfer display. */
+static inline void set_transfer_position(ItemCreationTransferDisplay* display, float x, float y);
+
 /**
  * @brief Read the low byte of the selected grid index.
  * @param display Six-slot index display.
  * @return The byte-sized selected index.
  */
-/** @brief Return the selected position pair, or null for an invalid index. */
-static inline const float* option_selection_position(ItemCreationSelection* selection, s32 index);
-/** @brief Position and enable a transfer display. */
-static inline void set_transfer_position(ItemCreationTransferDisplay* display, float x, float y);
-
 static inline u8 selected_option_index(FieldObject23CEA0* display);
 
 /**
@@ -691,16 +739,6 @@ ItemCreationClass185560::~ItemCreationClass185560()
 {
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034C4B0);
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034C5F0);
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034C700);
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034C7F0);
-
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034C870);
-
 static inline u8 selected_option_index(FieldObject23CEA0* display)
 {
     return display->unk114;
@@ -753,6 +791,115 @@ static inline void set_option_list_index(ItemCreationFlagResetOwner* object, u8 
  * @brief Dispatch a grid direction and refresh the selected option markers.
  * @param direction Direction code.
  */
+void ItemCreationClass185660::func_slotf8(s32 direction)
+{
+    if (unkc8 != 0 && unkc8->func_0023CDB0(direction) != 1)
+    {
+        ItemCreationFlagResetOwner* target = unkcc;
+        ItemCreationSelectedDisplayState* state;
+        if (target != 0 && (state = unkc4) != 0)
+        {
+            u8 list = unka8;
+            u32 value = option_list_value(state, list, selected_option_index(unkc8));
+            u8 result = value;
+            if (value != 0)
+            {
+                result = option_list_index(value);
+            }
+            set_option_list_index(target, list, result);
+            func_0034DB00(target, 0xFF);
+        }
+    }
+}
+
+/**
+ * @brief Reset the option and restore its associated selection display.
+ * @return Always two.
+ */
+s32 ItemCreationClass185660::func_slotb4()
+{
+    if (unkc4 != 0)
+    {
+        func_00369B80(unkc4, -1);
+    }
+    if (unkc8 != 0)
+    {
+        func_0023CEA0(unkc8, 0);
+    }
+    if (unkcc != 0)
+    {
+        D_001B643C->unk10->unk14->func_00263C70(unkcc);
+    }
+    unkc4->unk129 = 2;
+    ItemCreationFlagResetOwner* target = static_cast<ItemCreationFlagResetOwner*>(func_slot44());
+    if (target != 0)
+    {
+        switch (target->unk164->unk129)
+        {
+        case 0:
+            target->unk16c->unk3f = 0;
+            target->unk15c->unk3f = 1;
+            break;
+        case 1:
+            break;
+        case 2:
+            target->unk15c->unk3f = 1;
+            break;
+        case 3:
+            break;
+        }
+        func_0034DB00(target, 0xFF);
+    }
+    return 2;
+}
+
+/**
+ * @brief Select the active view and apply its selected option.
+ * @return Always one.
+ */
+s32 ItemCreationClass185660::func_slotb0()
+{
+    if (unkcc != 0)
+    {
+        D_001B643C->unk10->unk14->func_00263C70(unkcc);
+    }
+    if (unkc8 != 0 && unkc4 != 0)
+    {
+        u8 list = unka8;
+        u8 value = option_list_value(unkc4, list, selected_option_index(unkc8));
+        func_00369B80(unkc4, value);
+    }
+    return 1;
+}
+
+/**
+ * @brief Set up the option window and recover its associated display.
+ * @param associated Object associated with the window.
+ * @return Zero when no option state is attached, or one after setup.
+ */
+s32 ItemCreationClass185660::func_slotf4(void* associated)
+{
+    if (unkc4 == 0)
+    {
+        return 0;
+    }
+    FieldClass15AE70::func_slot10(associated, 16.0f, 384.0f, 17);
+    ItemCreationClass185860::func_slotf4(associated);
+    unkcc = static_cast<ItemCreationFlagResetOwner*>(func_slot44());
+    return 1;
+}
+
+/**
+ * @brief Destroy the option window and its base.
+ */
+ItemCreationClass185660::~ItemCreationClass185660()
+{
+}
+
+/**
+ * @brief Dispatch a grid direction and refresh the selected option markers.
+ * @param direction Direction code.
+ */
 void ItemCreationClass185760::func_slotf8(s32 direction)
 {
     if (unkc8 != 0 && unkc8->func_0023CDB0(direction) != 1)
@@ -772,6 +919,17 @@ void ItemCreationClass185760::func_slotf8(s32 direction)
             func_0034DB00(target, 0xFF);
         }
     }
+}
+
+/**
+ * @brief Read the selection flag for a one-based option code.
+ * @param selection Selection containing twelve option flags.
+ * @param code Option code from one through twelve.
+ * @return Stored option flag.
+ */
+static inline u8 selection_enabled(ItemCreationSelection* selection, u8 code)
+{
+    return selection->unk60[code - 1];
 }
 
 /**
@@ -1102,7 +1260,7 @@ void func_0034D340(ItemCreationOptionDisplay* object)
                 }
             }
             object->unkac[index]->unkd0 = slot;
-            func_002D5CF0(&object->unkac[index]->base, allocation, record, 0);
+            func_002D5CF0(static_cast<FieldResourceDisplay2D5CF0*>(static_cast<void*>(object->unkac[index])), allocation, record, 0);
         }
     }
 }
@@ -1226,9 +1384,133 @@ void ItemCreationClass185960::func_slot68()
     func_slotf8(1);
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034E670);
+/**
+ * @brief Test whether a runtime option code selects one of the 38 records.
+ * @param option One-based option code.
+ * @return True for a valid option record.
+ */
+static inline bool runtime_option_valid(u8 option)
+{
+    return option >= 1 && option < 39;
+}
+/**
+ * @brief Return the runtime record selected by an option code.
+ * @param state State containing the runtime option records.
+ * @param option One-based option code.
+ * @return Selected record, or null for an invalid code.
+ */
+static inline ItemCreationRuntimeOptionRecord* runtime_option_record(ItemCreationColorRecordState* state, u8 option)
+{
+    if (runtime_option_valid(option))
+    {
+        return &state->unk10d88[option - 1];
+    }
+    return 0;
+}
+/**
+ * @brief Reset the option transfer or return to the primary option window.
+ * @return Zero without a selection state, or two otherwise.
+ */
+s32 ItemCreationClass185960::func_slotb4()
+{
+    ItemCreationSelectedDisplayState* state = unk164;
+    if (state == 0)
+    {
+        return 0;
+    }
+    switch (state->unk129)
+    {
+    case 0:
+    {
+        func_0036AAA0(state);
+        ItemCreationSelectedDisplayState* count_state = unk164;
+        for (s32 index = 1; index < 28; index++)
+        {
+            ItemCreationRuntimeOptionRecord* record = runtime_option_record(D_001B64F8, index);
+            if (record != 0 && record->unk08 == 2)
+            {
+                count_state->unk19b++;
+            }
+        }
+        func_00369B80(unk164, -1);
+        state = unk164;
+        state->unk47 = 0;
+        func_0027CB50(D_001B6430->context->unk58, state->unk1f0, 0, 0);
+        state = unk164;
+        static_cast<FieldClass153E30*>(static_cast<void*>(state))->func_00263C70(state->unka0);
+        break;
+    }
+    case 1:
+        break;
+    case 2:
+    {
+        state->unk129 = 1;
+        ItemCreationClass185860* window = static_cast<ItemCreationClass185860*>(func_slot44());
+        if (window->unkc8 != 0)
+        {
+            func_0023CEA0(window->unkc8, 1);
+        }
+        D_001B643C->unk10->unk14->func_00263C70(window);
+        func_0036A5D0(unk164, 7);
+        unk15c->unk3f = 0;
+        break;
+    }
+    case 3:
+        break;
+    }
+    return 2;
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034E840);
+/**
+ * @brief Apply the selected option and enable the corresponding option window.
+ * @return Zero without a state, three for an unchanged alternate selection, or one otherwise.
+ */
+s32 ItemCreationClass185960::func_slotb0()
+{
+    if (unk164 == 0)
+    {
+        return 0;
+    }
+    switch (unk164->unk129)
+    {
+    case 0:
+    {
+        ItemCreationSelection* selection = unk160;
+        const float* position = selection->unk00[selection->unk6c - 1].unk00;
+        set_transfer_position(unk16c, position[0], position[1]);
+        unk16c->unk3f = 1;
+        unk15c->unk3f = 0;
+        ItemCreationClass185860* window = static_cast<ItemCreationClass185860*>(func_slot44());
+        if (window->unkc8 != 0)
+        {
+            func_0023CEA0(window->unkc8, 1);
+        }
+        D_001B643C->unk10->unk14->func_00263C70(window);
+        func_00369B80(unk164, unk178);
+        break;
+    }
+    case 1:
+        break;
+    case 2:
+    {
+        if (unk1b0 == unk164->unk12a)
+        {
+            return 3;
+        }
+        ItemCreationClass185860* window = static_cast<ItemCreationClass185860*>(func_slot4c());
+        if (window->unkc8 != 0)
+        {
+            func_0023CEA0(window->unkc8, 1);
+        }
+        D_001B643C->unk10->unk14->func_00263C70(window);
+        func_00369B80(unk164, unk1b0);
+        break;
+    }
+    case 3:
+        break;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034E9C0);
 
@@ -1294,7 +1576,68 @@ void func_0034F9B0(ItemCreationFlagResetOwner* object, u16 direction)
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034FA70);
+/**
+ * @brief Create the resource displays for the twelve-option selection grid.
+ * @param object Window owning the selection and resource displays.
+ * @return Always one.
+ */
+extern "C" s32 func_0034FA70(ItemCreationClass185A60* object)
+{
+    func_00369510(&object->unkdc);
+    void* allocation = func_002D3D80(D_001B643C->unk20, 13);
+    FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 2);
+    if (allocation != 0 && record != 0)
+    {
+        ItemCreationOptionResourceDisplay* const display = new (0) ItemCreationOptionResourceDisplay;
+        display->unkcc = allocation;
+        display->unkd0 = 13;
+        func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(display)), record, 0.0f, 0.0f);
+        display->unk50.unk34 = 0.85f;
+        display->unk50.unk30 = 0.85f;
+        display->unk3c = 1;
+        display->unk34 = 3;
+        func_004C6190(object->unk10, display);
+    }
+    allocation = func_002D3D80(D_001B643C->unk20, 0);
+    for (s32 index = 0; index < 12; index++)
+    {
+        ItemCreationOptionResourceDisplay* const display = new (0) ItemCreationOptionResourceDisplay;
+        u8 code = index + 1;
+        u8 enabled = selection_enabled(&object->unkdc, code);
+        const float* position = option_selection_position(&object->unkdc, code);
+        switch (code)
+        {
+        case 1:
+        case 2:
+        case 5:
+            record = func_002D3CC0(D_001B643C->unk20, 42);
+            break;
+        case 3:
+        case 4:
+            record = func_002D3CC0(D_001B643C->unk20, 43);
+            break;
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+        case 12:
+            record = func_002D3CC0(D_001B643C->unk20, 44);
+            break;
+        }
+        display->unkcc = allocation;
+        display->unkd0 = 0;
+        func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(display)), record, position[0], position[1] - 6.0f);
+        display->unk34 = 3;
+        func_004C6190(object->unk10, display);
+        if (enabled == 0)
+        {
+            display->unk3f = 0;
+        }
+    }
+    return 1;
+}
 
 s32 func_0034FD50(ItemCreationFlagResetOwner* object, void* associated)
 {

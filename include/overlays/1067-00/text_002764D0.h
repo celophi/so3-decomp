@@ -355,6 +355,16 @@ s32 func_00277CA0(void* object);
  */
 void func_00278950(void* object);
 
+/**
+ * @brief Change the receiver's identifier and update its transition state.
+ * @param object Receiver containing the current identifier.
+ * @param identifier New signed identifier; -2 selects the special transition.
+ * @param first First transition value.
+ * @param second Second transition value.
+ * @return Zero when the identifier is unchanged, or one after a change.
+ */
+s32 func_0027CB50(void* object, s32 identifier, s32 first, s32 second);
+
 #ifdef __cplusplus
 }
 #endif
