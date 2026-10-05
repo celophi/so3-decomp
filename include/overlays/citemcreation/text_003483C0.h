@@ -7,6 +7,7 @@
 #ifdef __cplusplus
 #include "overlays/citemcreation/text_00358440.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_0044ABE0.h"
 #endif
 
 /** Partial owner of four displayed position pairs and their update flags. */
@@ -213,8 +214,10 @@ public:
     virtual ~ItemCreationClass185A60()
     {
     }
-    virtual void func_slotb0();
-    virtual void func_slotb4();
+    /** @brief Apply the current selection. @return Selection result code. */
+    virtual s32 func_slotb0();
+    /** @brief Reset the current selection. @return Selection result code. */
+    virtual s32 func_slotb4();
     virtual void func_slotb8();
     virtual void func_slotbc();
     virtual void func_slotc0();
@@ -291,6 +294,29 @@ public:
 };
 
 /** Partial option window derived from the interface at 0x185860. */
+class ItemCreationClass185660 : public ItemCreationClass185860
+{
+public:
+    /** @brief Destroy the option window and its base. */
+    virtual ~ItemCreationClass185660();
+    /** @brief Apply the selected option and refresh its associated window. @return Always one. */
+    virtual s32 func_slotb0();
+    /** @brief Reset the option and restore its associated selection display. @return Always two. */
+    virtual s32 func_slotb4();
+    /**
+     * @brief Set up the option window and recover its associated display.
+     * @param associated Object associated with the window.
+     * @return Zero when no option state is attached, or one after setup.
+     */
+    virtual s32 func_slotf4(void* associated);
+    /**
+     * @brief Dispatch a grid direction and refresh the selected option markers.
+     * @param direction Direction code.
+     */
+    virtual void func_slotf8(s32 direction);
+};
+
+/** Partial option window derived from the interface at 0x185860. */
 class ItemCreationClass185760 : public ItemCreationClass185860
 {
 public:
@@ -345,6 +371,16 @@ public:
 class ItemCreationClass185960 : public ItemCreationClass185A60
 {
 public:
+    /**
+     * @brief Apply the selected option and enable the corresponding option window.
+     * @return Zero without a state, three for an unchanged alternate selection, or one otherwise.
+     */
+    virtual s32 func_slotb0();
+    /**
+     * @brief Reset the option transfer or return to the primary option window.
+     * @return Zero without a selection state, or two otherwise.
+     */
+    virtual s32 func_slotb4();
     /** @brief Initialize the selection window and its display pointers. */
     ItemCreationClass185960();
     /** @brief Destroy the selection window through its base. */
@@ -506,9 +542,32 @@ public:
 class ItemCreationClass175110 : public LibClass178600
 {
 public:
+    /** @brief Initialize the owned storage and drawing state for kind 7. */
+    ItemCreationClass175110()
+    {
+        unk38 = 7;
+    }
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass175110();
+    /** @brief Refresh the resource drawing state. */
+    virtual void func_00413D20();
+    /** @brief Draw the resource widget. */
+    virtual void func_00462310();
     LibStorageBlock0C unk40;
+    u8 unk4c[4];
+    LibDrawState64 unk50;
+    void* unkb4;
+    u16 unkb8;
+    u16 unkba;
+    u8 unkbc;
+    u8 unkbd;
+    u8 unkbe;
+    u8 unkbf;
+    s32 unkc0;
+    u32 unkc4;
+    u8 unkc8;
+    u8 unkc9;
+    u8 unkca[2];
 };
 
 /** Partial item creation receiver with resident vtable at 0x185030. */
@@ -572,6 +631,13 @@ public:
 
 extern "C" {
 #endif
+
+/**
+ * @brief Create the resource displays for the twelve-option selection grid.
+ * @param object Window owning the selection and resource displays.
+ * @return Always one.
+ */
+s32 func_0034FA70(struct ItemCreationClass185A60* object);
 
 /**
  * @brief Transfer the selected option into its list display and refresh the option markers.

@@ -7,6 +7,7 @@ typedef struct ItemCreationCategoryOwner ItemCreationCategoryOwner;
 typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
 typedef struct ItemCreationIdentifierOwner ItemCreationIdentifierOwner;
 struct ItemCreationAllocationRecord;
+struct LibObject178660;
 
 /** Partial item display with its decoded halfword and adjacent byte. */
 typedef struct ItemCreationAllocationDisplay
@@ -219,7 +220,8 @@ public:
         return unk98;
     }
     virtual void func_slot48();
-    virtual void func_slot4c();
+    /** @brief Return the alternate associated window. @return Stored pointer. */
+    virtual void* func_slot4c();
     virtual void func_slot50();
     virtual void func_slot54();
     virtual void func_slot58();
@@ -244,7 +246,9 @@ public:
     virtual void func_slota4();
     virtual void func_slota8();
     virtual void func_slotac();
-    u8 unk04[0x94];
+    u8 unk04[0xC];
+    LibObject178660* unk10;
+    u8 unk14[0x84];
     void* unk98;
     u8 unk9c[0xC];
 };

@@ -78,7 +78,9 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unk68[9];
     u8 unk71[6];
     u8 unk77[6];
-    u8 unk7d[0x2B];
+    u8 unk7d[0x23];
+    void* unka0;
+    u8 unka4[4];
     struct ItemCreationListDisplay* unka8;
     u8 unkac[4];
     struct ItemCreationThreeSlotDisplay* unkb0;
@@ -113,7 +115,8 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unk14b[0x3D];
     u8 unk188[3][3];
     s8 unk191[3][3];
-    u8 unk19a[2];
+    u8 unk19a;
+    u8 unk19b;
     struct FieldStatus14* unk19c;
     s32 unk1a0;
     s32 unk1a4;
@@ -128,6 +131,8 @@ typedef struct ItemCreationSelectedDisplayState
     s8 unk1e0;
     u8 unk1e1;
     s16 unk1e2[3][2];
+    u8 unk1ee[2];
+    s32 unk1f0;
 } ItemCreationSelectedDisplayState;
 
 /** Two scalar coordinates, cleared when a selection pair is constructed. */
@@ -176,6 +181,26 @@ typedef struct ItemCreationSelection
 /** Option lists are part of the same selected display state. */
 typedef ItemCreationSelectedDisplayState ItemCreationOptionState;
 
+#ifdef __cplusplus
+/** Partial virtual root with no recovered data members. */
+class ItemCreationClass184F08
+{
+public:
+    /** @brief Destroy the virtual root. */
+    virtual ~ItemCreationClass184F08()
+    {
+    }
+};
+
+/** Partial derived interface whose destructor also destroys the virtual root. */
+class ItemCreationClass184F18 : public ItemCreationClass184F08
+{
+public:
+    /** @brief Destroy the derived interface and its base. */
+    virtual ~ItemCreationClass184F18();
+};
+#endif
+
 /** Partial destination for five resident record halfwords. */
 typedef struct ItemCreationRuntimeRecordSelection
 {
@@ -222,6 +247,12 @@ void func_0036F270(ItemCreationCountedList* object, void* value);
  * @param object Selection state with an optional assigned-item record.
  */
 void func_0036AE20(ItemCreationSelectedDisplayState* object);
+
+/**
+ * @brief Rebuild the available-item lists from the saved selection.
+ * @param object Selection state containing the saved items and their flags.
+ */
+void func_0036AAA0(ItemCreationSelectedDisplayState* object);
 
 /**
  * @brief Save the assigned-item state to resident records.

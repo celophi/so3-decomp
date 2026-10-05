@@ -28,7 +28,8 @@ struct LibClass178600 : public LibClass171EA0
     u8 unk04[0x14];
     LibUiRect16 unk18;
     float unk28;
-    u8 unk2c[0xC];
+    u8 unk2c[8];
+    u32 unk34;
     u8 unk38;
     u8 unk39;
     u8 unk3a;
