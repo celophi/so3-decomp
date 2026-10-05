@@ -31,6 +31,14 @@ extern "C" {
  */
 s32 func_004C7FE0(LibObject178750* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
 /**
+ * @brief Set the text widget's source and resource key.
+ * @param object Text widget.
+ * @param source Opaque resource source.
+ * @param key Resource key.
+ * @param flag Resource state flag.
+ */
+void func_4C6DF0(LibObject178750* object, void* source, u32 key, u8 flag);
+/**
  * @brief Attach a widget to the container.
  * @param object Container receiver.
  * @param child Widget to attach.
@@ -132,12 +140,27 @@ public:
     /** @brief Queue the transform receiver for release. */
     virtual void func_003EF740();
     /**
+     * @brief Dispatch the transform state flags.
+     * @param matrix Unused matrix argument.
+     * @param context Unused context argument.
+     */
+    virtual void func_003F4440(const void* matrix, void* context);
+    /**
      * @brief Run the default transform state hook.
      * @param first First state value.
      * @param second Second state value.
      * @param third Third state value.
      */
     virtual void func_0044B100(u32 first, u32 second, u32 third);
+    /**
+     * @brief Set the transform codes and its third coordinate.
+     * @param code Transform code.
+     * @param first First byte value.
+     * @param second Word value.
+     * @param third Second byte value.
+     * @param z Third coordinate.
+     */
+    void func_0044B110(s32 code, u8 first, u32 second, u8 third, float z);
     u8 unk94[0x16];
     u8 unkaa;
     u8 unkab;
@@ -181,14 +204,42 @@ extern "C" s32 func_004C6510(LibObject178660* object, s32 first, s32 second, s32
 class LibObject178660 : public LibClass178A70, public LibClass174610
 {
 public:
-    /** @brief Initialize the container transform and mode. */
+    /** @brief Initialize the container transform state. */
     LibObject178660()
     {
         unk6c = 0x6FF1;
-        func_004C6510(this, 5, 0, 0, 24.0f, 368.0f, 0.0f);
+    }
+    /**
+     * @brief Initialize the container with its default mode and supplied transform.
+     * @param x First transform component.
+     * @param y Second transform component.
+     * @param z Third transform component.
+     */
+    LibObject178660(float x, float y, float z)
+    {
+        unk6c = 0x6FF1;
+        func_004C6510(this, 5, 0, 0, x, y, z);
     }
     /** @brief Destroy the container. */
     virtual ~LibObject178660();
+    /**
+     * @brief Update the container and its widgets.
+     * @param first First update flag.
+     * @param second Second update flag.
+     * @param third Third update flag.
+     */
+    virtual void func_0044B100(u32 first, u32 second, u32 third);
+    /** @brief Prepare the container storage. */
+    virtual void func_003EEBE0();
+    /** @brief Prepare the container transform. @param value Notification value. */
+    virtual void func_003F4410(u32 value);
+    /**
+     * @brief Run the default container state hook.
+     * @param first First update flag.
+     * @param second Second update flag.
+     * @param third Third update flag.
+     */
+    virtual void func_00412C40(u32 first, u32 second, u32 third);
     LibStorageBlock0C unkD0;
     u8 unkDC[0x14];
 };
@@ -204,6 +255,18 @@ struct LibObject178750 : public LibClass174EF0
     }
     /** @brief Destroy the text widget. */
     virtual ~LibObject178750();
+    /**
+     * @brief Configure a text slot and its rectangle.
+     * @param x Origin x.
+     * @param y Origin y.
+     * @param width Rectangle width.
+     * @param height Rectangle height.
+     * @param slot Slot index.
+     * @param key Resource key.
+     * @param flag Slot state flag.
+     * @return Configuration status.
+     */
+    s32 func_004C7FE0(float x, float y, float width, float height, s32 slot, s32 key, u8 flag);
     u8 unkfc[0x18];
 };
 

@@ -8,6 +8,7 @@
 #include "overlays/citemcreation/text_00358440.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_0044ABE0.h"
+#include "overlays/1067-00/text_002D5260.h"
 #endif
 
 /** Partial owner of four displayed position pairs and their update flags. */
@@ -88,8 +89,13 @@ typedef struct ItemCreationMarkerOwner
 
 /** Partial owner of nine resource displays and three assigned-item groups. */
 typedef struct ItemCreationNineResourceView
+#ifdef __cplusplus
+    : public FieldClass15AE70
+#endif
 {
+#ifndef __cplusplus
     u8 unk00[0xA8];
+#endif
     ItemCreationSelectedDisplayState* unka8;
     u8 unkac[0x30];
     struct FieldResourceDisplay2D5CF0* unkdc[9];
@@ -166,7 +172,9 @@ typedef struct ItemCreationTransferDisplay
     u8 unk40[0x10];
     float unk50;
     float unk54;
-    u8 unk58[0x1D];
+    u8 unk58[0x18];
+    float unk70;
+    u8 unk74;
     u8 unk75;
 } ItemCreationTransferDisplay;
 
@@ -239,6 +247,13 @@ public:
     void* unkac[12];
     ItemCreationSelection unkdc;
     ItemCreationTransferDisplay* unk15c;
+    /**
+     * @brief Create and attach the selection transfer display.
+     * @param x Horizontal coordinate.
+     * @param y Vertical coordinate.
+     * @return Whether the display was created.
+     */
+    s32 create_selection_display_status(float x, float y);
 };
 
 /** Partial virtual interface of the item creation window at 0x185860. */
@@ -393,25 +408,26 @@ public:
     virtual void func_slot6c();
     /** @brief Forward direction 1 to the window. */
     virtual void func_slot68();
+    virtual s32 func_slotf4(void* associated);
     ItemCreationSelection* unk160;
     ItemCreationSelectedDisplayState* unk164;
     u8 unk168[4];
     ItemCreationTransferDisplay* unk16c;
     u8 unk170;
     u8 unk171[3];
-    u32 unk174;
+    LibObject178750* unk174;
     u8 unk178;
     u8 unk179;
     u8 unk17a[2];
-    ItemCreationFlagNode* unk17c;
-    ItemCreationFlagNode* unk180[9];
-    ItemCreationFlagNode* unk1a4[3];
+    LibClass174EF0* unk17c;
+    LibClass174EF0* unk180[9];
+    LibClass174EF0* unk1a4[3];
     u8 unk1b0;
     u8 unk1b1;
     u8 unk1b2[2];
-    ItemCreationFlagNode* unk1b4;
-    ItemCreationFlagNode* unk1b8[9];
-    ItemCreationFlagNode* unk1dc[3];
+    LibClass174EF0* unk1b4;
+    LibClass174EF0* unk1b8[9];
+    LibClass174EF0* unk1dc[3];
 };
 
 /** Partial item creation window with primary vtable at 0x185060. */
@@ -460,6 +476,153 @@ class ItemCreationClass185B60 : public FieldClass15AE70
 public:
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185B60();
+    ItemCreationSelectedDisplayState* unka8;
+    u8 unkac;
+    u8 unkad[3];
+    LibObject178750* unkb0;
+};
+
+/** Partial 0xA8-byte window with resident vtable at 0x186370. */
+class ItemCreationClass186370 : public FieldClass15AE70
+{
+public:
+    /** @brief Initialize the Field window base. */
+    ItemCreationClass186370()
+    {
+    }
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass186370();
+    /** @brief Handle the window action. @return Handler status. */
+    virtual s32 func_slotb0();
+    /** @brief Run the default alternate action. @return Always zero. */
+    virtual s32 func_slotb4();
+    virtual s32 func_slotb8();
+    virtual s32 func_slotbc();
+    virtual s32 func_slotc0();
+    virtual s32 func_slotc4();
+    virtual s32 func_slotc8();
+    virtual s32 func_slotcc();
+    virtual s32 func_slotd0();
+    virtual s32 func_slotd4();
+    virtual s32 func_slotd8();
+    virtual s32 func_slotdc();
+    virtual void func_slote0();
+    virtual void func_slote4();
+    virtual u8 func_slote8();
+    virtual void func_slotec(u8 value);
+    virtual void func_slotf0();
+    /**
+     * @brief Create and attach the window display.
+     * @param associated Object associated with the window.
+     * @return Setup status.
+     */
+    virtual s32 func_slotf4(void* associated);
+};
+
+/** Partial Field window with resident vtable at 0x186070. */
+class ItemCreationClass186070 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass186070();
+    /** @brief Handle the window action. @return Handler status. */
+    virtual s32 func_slotb0();
+    /** @brief Run the default alternate action. @return Always zero. */
+    virtual s32 func_slotb4();
+    virtual s32 func_slotb8();
+    virtual s32 func_slotbc();
+    virtual s32 func_slotc0();
+    virtual s32 func_slotc4();
+    virtual s32 func_slotc8();
+    virtual s32 func_slotcc();
+    virtual s32 func_slotd0();
+    virtual s32 func_slotd4();
+    virtual s32 func_slotd8();
+    virtual s32 func_slotdc();
+    virtual void func_slote0();
+    virtual void func_slote4();
+    virtual u8 func_slote8();
+    virtual void func_slotec(u8 value);
+    virtual void func_slotf0();
+    /**
+     * @brief Create and attach the window display.
+     * @param associated Object associated with the window.
+     * @return Setup status.
+     */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    u8 unkac[0x3C];
+    LibObject178660* unke8;
+    u8 unkec[0xC];
+    LibClass178630* unkf8;
+};
+
+/** Partial Field window interface with resident vtable at 0x186470. */
+class ItemCreationClass186470 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass186470();
+    /** @brief Handle the window action. @return Handler status. */
+    virtual s32 func_slotb0();
+    /** @brief Run the default alternate action. @return Always zero. */
+    virtual s32 func_slotb4();
+    virtual s32 func_slotb8();
+    virtual s32 func_slotbc();
+    virtual s32 func_slotc0();
+    virtual s32 func_slotc4();
+    virtual s32 func_slotc8();
+    virtual s32 func_slotcc();
+    virtual s32 func_slotd0();
+    virtual s32 func_slotd4();
+    virtual s32 func_slotd8();
+    virtual s32 func_slotdc();
+    virtual void func_slote0();
+    virtual void func_slote4();
+    virtual u8 func_slote8();
+    virtual void func_slotec(u8 value);
+    virtual void func_slotf0();
+    /**
+     * @brief Create and attach the window display.
+     * @param associated Object associated with the window.
+     * @return Setup status.
+     */
+    virtual s32 func_slotf4(void* associated);
+    LibObject178750* unka8;
+};
+
+/** Partial Field window interface with resident vtable at 0x186570. */
+class ItemCreationClass186570 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window through its Field base. */
+    virtual ~ItemCreationClass186570();
+    /** @brief Handle the window action. @return Handler status. */
+    virtual s32 func_slotb0();
+    /** @brief Run the default alternate action. @return Always zero. */
+    virtual s32 func_slotb4();
+    virtual s32 func_slotb8();
+    virtual s32 func_slotbc();
+    virtual s32 func_slotc0();
+    virtual s32 func_slotc4();
+    virtual s32 func_slotc8();
+    virtual s32 func_slotcc();
+    virtual s32 func_slotd0();
+    virtual s32 func_slotd4();
+    virtual s32 func_slotd8();
+    virtual s32 func_slotdc();
+    virtual void func_slote0();
+    virtual void func_slote4();
+    virtual u8 func_slote8();
+    virtual void func_slotec(u8 value);
+    virtual void func_slotf0();
+    /**
+     * @brief Create and attach the window display.
+     * @param associated Object associated with the window.
+     * @return Setup status.
+     */
+    virtual s32 func_slotf4(void* associated);
+    LibObject178750* unka8;
 };
 
 /** Partial item creation window with primary vtable at 0x185C60. */
@@ -503,6 +666,9 @@ public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass172870();
     LibStorageBlock0C unk40;
+    u8 unk4c[4];
+    u32 unk50;
+    u32 unk54;
 };
 
 /** Partial widget with resident vtable at 0x172600. */
@@ -514,6 +680,8 @@ public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass172600();
     LibStorageBlock0C unk40;
+    u8 unk4c[4];
+    float unk50;
 };
 
 /** Partial widget with resident vtable at 0x1725D0. */
@@ -525,6 +693,9 @@ public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass1725D0();
     LibStorageBlock0C unk40;
+    u8 unk4c[4];
+    float unk50;
+    float unk54;
 };
 
 /** Partial widget with resident vtable at 0x1746A0. */
@@ -536,6 +707,8 @@ public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass1746A0();
     LibStorageBlock0C unk40;
+    u8 unk4c[4];
+    u8 unk50;
 };
 
 /** Partial widget with resident vtable at 0x175110. */
@@ -569,6 +742,43 @@ public:
     u8 unkc9;
     u8 unkca[2];
 };
+
+/** Field resource widget using resident table 0x15B240. */
+struct ItemCreationOptionResourceDisplay : public ItemCreationClass175110
+{
+    /** @brief Initialize the resource widget and clear its trailing state. */
+    ItemCreationOptionResourceDisplay()
+    {
+        unk124 = 0;
+        unk120 = 0;
+        unk11c = 0;
+        unk118 = 0;
+        ::func_002D6410(static_cast<FieldState2D6410*>(static_cast<void*>(this)));
+    }
+    /** @brief Destroy the resource widget. */
+    virtual ~ItemCreationOptionResourceDisplay();
+    /** @brief Refresh the resource widget. */
+    virtual void func_00413D20();
+    /** @brief Draw the resource widget. */
+    virtual void func_00462310();
+    void* unkcc;
+    u8 unkd0;
+    u8 unkd1[0x37];
+    FieldResourceRecord* unk108;
+    u16 unk10c;
+    u16 unk10e;
+    u8 unk110;
+    u8 unk111;
+    u8 unk112;
+    u8 unk113;
+    u8 unk114;
+    u8 unk115[3];
+    u32 unk118;
+    u32 unk11c;
+    u32 unk120;
+    u32 unk124;
+};
+
 
 /** Partial item creation receiver with resident vtable at 0x185030. */
 class ItemCreationClass185030
@@ -629,8 +839,54 @@ public:
     virtual ~ItemCreationClass184F30();
 };
 
+/** Seven-widget aggregate with its dispatch pointer after the stored state. */
+class ItemCreationClass1723F0
+{
+public:
+    ItemCreationClass184F30 unk00;
+    ItemCreationClass1746A0 unk90;
+    ItemCreationClass1746A0 unke4;
+    ItemCreationClass1725D0 unk138;
+    ItemCreationClass175030 unk190;
+    ItemCreationClass172600 unk20c;
+    ItemCreationClass172870 unk260;
+    u8 unk2b8[0x64];
+    /** @brief Initialize the seven embedded widgets. */
+    ItemCreationClass1723F0()
+    {
+    }
+    /** @brief Destroy the seven embedded widgets. */
+    ~ItemCreationClass1723F0()
+    {
+    }
+    /** @brief Handle the aggregate selection. @param index Selected index. */
+    virtual void func_00412C10(s32 index);
+    /** @brief Run the second aggregate state hook. */
+    virtual void func_00412C20();
+    /** @brief Read the aggregate value. @return Aggregate value. */
+    virtual float func_00412C30();
+    /** @brief Update the aggregate widgets and selection state. */
+    virtual void func_00413020();
+};
+
+/** Container with its seven-widget aggregate as a second base. */
+class ItemCreationClass184F60 : public LibObject178660, public ItemCreationClass1723F0
+{
+public:
+    /** @brief Initialize the container and its widget aggregate. */
+    ItemCreationClass184F60();
+    /** @brief Destroy the widget aggregate and container. */
+    virtual ~ItemCreationClass184F60();
+};
+
 extern "C" {
 #endif
+
+/**
+ * @brief Refresh the selected item's child window displays.
+ * @param object Child window receiver.
+ */
+void func_00352DE0(struct ItemCreationClass186070* object);
 
 /**
  * @brief Create the resource displays for the twelve-option selection grid.
@@ -638,6 +894,35 @@ extern "C" {
  * @return Always one.
  */
 s32 func_0034FA70(struct ItemCreationClass185A60* object);
+
+/**
+ * @brief Select the result window's text resource for its mode.
+ * @param object Result window.
+ * @param mode Mode to store; zero through two select a resource.
+ */
+void func_003500D0(struct ItemCreationClass185B60* object, u8 mode);
+
+/**
+ * @brief Restore the associated window and dispatch the result state.
+ * @param object Result window.
+ * @return Always one.
+ */
+s32 func_0034FE00(struct ItemCreationClass185B60* object);
+
+/**
+ * @brief Restore the associated window and dispatch the result state.
+ * @param object Result window.
+ * @return Always one.
+ */
+s32 func_0034FF70(struct ItemCreationClass185B60* object);
+
+/**
+ * @brief Create and attach the result window's display widgets.
+ * @param object Result window.
+ * @param associated Object associated with the window.
+ * @return Always one.
+ */
+s32 func_003501B0(struct ItemCreationClass185B60* object, void* associated);
 
 /**
  * @brief Transfer the selected option into its list display and refresh the option markers.
@@ -1090,11 +1375,11 @@ u32 func_003486E0(void* object);
 void func_003486F0(void* object, u32 value);
 
 /**
- * @brief Read the word at offset 0x34.
- * @param object Object containing the field.
- * @return Field value.
+ * @brief Return the selection state's associated pointer.
+ * @param object Selection state.
+ * @return Stored pointer.
  */
-u32 func_0034FF60(void* object);
+void* func_0034FF60(ItemCreationSelectedDisplayState* object);
 
 /**
  * @brief Write the halfword at offset 0x6C.

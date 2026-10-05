@@ -619,7 +619,7 @@ FieldClass1504F0::FieldClass1504F0()
     }
     D_001B6430->context->unk64->unk48 = this;
     D_001B6430->context->unkde_3 = 1;
-    unk18 = new(0) LibObject178660;
+    unk18 = new (0) LibObject178660(24.0f, 368.0f, 0.0f);
     if (!unk18)
     {
         return;

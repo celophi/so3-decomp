@@ -2,8 +2,12 @@
 #define SO3_OVERLAYS_CITEMCREATION_TEXT_003684D0_H
 
 #include "types.h"
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001E1590.h"
+#endif
 
 typedef struct ItemCreationTransformState ItemCreationTransformState;
+struct FieldClass15AE70;
 
 /** Partial display coordinate vector and dirty flag. */
 typedef struct ItemCreationScrollPosition
@@ -61,8 +65,28 @@ typedef struct ItemCreationOptionTable
 
 /** Partial selection state with available and assigned items and three views. */
 typedef struct ItemCreationSelectedDisplayState
+#ifdef __cplusplus
+    : public FieldClass153E30
+#endif
 {
-    u8 unk00[0x40];
+#ifdef __cplusplus
+    /** @brief Destroy the selection state and its Field base. */
+    virtual ~ItemCreationSelectedDisplayState();
+    /** @brief Store the associated state pointer. @param value Pointer to store. */
+    virtual void func_00263C70(void* value);
+    /** @brief Return the associated state pointer. @return Stored pointer. */
+    virtual void* func_00263CC0();
+    /**
+     * @brief Set a slot, consume an available category record, and reset its status bytes.
+     * @param index Slot index from zero through two.
+     * @param enabled Full-word state copied into the slot byte and tested for zero.
+     */
+    void func_0036BF30(s32 index, s32 enabled);
+#else
+    u8 unk00[0x34];
+#endif
+    void* unk34;
+    u8 unk38[8];
     ItemCreationOptionTable* unk40;
     u8 unk44[3];
     u8 unk47;
@@ -78,19 +102,26 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unk68[9];
     u8 unk71[6];
     u8 unk77[6];
-    u8 unk7d[0x23];
+    u8 unk7d[0x1B];
+    struct FieldClass15AE70* unk98;
+    struct FieldClass15AE70* unk9c;
     void* unka0;
     u8 unka4[4];
     struct ItemCreationListDisplay* unka8;
     u8 unkac[4];
     struct ItemCreationThreeSlotDisplay* unkb0;
-    u8 unkb4[4];
+    struct FieldClass15AE70* unkb4;
     struct ItemCreationFourteenSlotView* unkb8;
     struct ItemCreationNineSlotView* unkbc;
     struct ItemCreationDetailDisplay* unkc0;
     u8 unkc4[0xC];
     struct ItemCreationModeDisplay* unkd0;
-    u8 unkd4[0x20];
+    u8 unkd4[4];
+    struct ItemCreationNineResourceView* unkd8;
+    u8 unkdc[4];
+    struct ItemCreationClass186070* unke0;
+    struct FieldClass15AE70* unke4;
+    u8 unke8[0xC];
     struct ItemCreationFlagResetOwner* unkf4;
     struct ItemCreationOptionDisplay* unkf8;
     struct ItemCreationOptionDisplay* unkfc;
@@ -121,7 +152,9 @@ typedef struct ItemCreationSelectedDisplayState
     s32 unk1a0;
     s32 unk1a4;
     u8 unk1a8;
-    u8 unk1a9[8];
+    u8 unk1a9[3];
+    u32 unk1ac;
+    u8 unk1b0;
     u8 unk1b1[3];
     struct FieldStateTargets* unk1b4[3];
     u8 unk1c0[3];
@@ -211,14 +244,6 @@ typedef struct ItemCreationRuntimeRecordSelection
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * @brief Set one selected slot's enabled state, consume an available category record, and reset its three status bytes.
- * @param object Selection state containing the three assigned slots.
- * @param index Slot index from zero through two.
- * @param enabled Full-word state copied into the slot byte and tested for zero.
- */
-void func_0036BF30(ItemCreationSelectedDisplayState* object, s32 index, s32 enabled);
 
 /**
  * @brief Update the selected item or complete an exchange between the two views.

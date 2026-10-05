@@ -16,15 +16,50 @@ struct LibClass174EF0 : public LibClass178600
     virtual ~LibClass174EF0();
     u8 unk40[0x40];
     float unk80;
-    u8 unk84[0x18];
+    float unk84;
+    u8 unk88[0xC];
+    u32 unk94;
+    u8 unk98[4];
     u32 unk9c;
-    u8 unka0[0x5C];
+    u32 unka0;
+    u8 unka4[0x58];
+    /** @brief Set the display scale. @param x Horizontal scale. @param y Vertical scale. */
+    void set_scale(float x, float y)
+    {
+        unk84 = y;
+        unk80 = x;
+        unk3c = 1;
+    }
+    /** @brief Set the packed display color. @param color Packed color. */
+    void set_color(u32 color)
+    {
+        unk94 = color;
+        unk3c = 1;
+    }
+    /**
+     * @brief Select vertical alignment within the display rectangle.
+     * @param alignment Zero uses the origin; one centers; other values align to the end.
+     */
+    void set_vertical_alignment(u32 alignment)
+    {
+        unka0 = alignment;
+        unk3c = 1;
+    }
+    /** @brief Set the display mode. @param mode Mode value. */
+    void set_mode(u32 mode)
+    {
+        unk9c = mode;
+        unk3c = 1;
+    }
 };
 /** Partial 0x100-byte image widget, with MAIN vtable D_174F20. */
 struct LibObject174F20 : public LibClass174EF0
 {
     /** @brief Initialize the image widget and select widget kind 13. */
-    LibObject174F20() { unk38 = 13; }
+    LibObject174F20()
+    {
+        unk38 = 13;
+    }
     /** @brief Destroy the image widget. */
     virtual ~LibObject174F20();
     u8 unkfc[4];
