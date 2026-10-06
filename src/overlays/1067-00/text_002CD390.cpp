@@ -325,7 +325,18 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE4
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE4C0);
 
-extern "C" void func_002CE510(FieldBytePtr10* object, u8 value) { if (object->target) object->target->value = value; }
+/**
+ * @brief Store the low byte of the activation value in the nested display.
+ * @param object Receiver containing the display.
+ * @param value Activation value.
+ */
+extern "C" void func_002CE510(FieldBytePtr10* object, u32 value)
+{
+    if (object->target)
+    {
+        object->target->value = value;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE530);
 

@@ -6,6 +6,7 @@
 #include "overlays/citemcreation/text_003684D0.h"
 #ifdef __cplusplus
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/1067-00/text_002D5260.h"
 #endif
 
 typedef struct ItemCreationCategoryOwner ItemCreationCategoryOwner;
@@ -102,32 +103,8 @@ typedef struct ItemCreationTwoColorOwner
     struct FieldObject23B950* unkd0;
 } ItemCreationTwoColorOwner;
 
-/** Partial view with nine markers and two twelve-marker groups. */
-typedef struct ItemCreationNineSlotView
-{
-    u8 unk00[0xA8];
-    struct ItemCreationSelectedDisplayState* unka8;
-    struct FieldObject23CEA0* unkac;
-    struct FieldObject23CEA0* unkb0;
-    struct FieldObject23CEA0* unkb4;
-    struct ItemCreationFlagNode* unkb8[9];
-    struct ItemCreationFlagNode* unkdc[12];
-    struct ItemCreationFlagNode* unk10c[12];
-    struct FieldResourceDisplay2D5CF0* unk13c[9];
-    u8 unk160[0x30];
-    u8 unk190;
-    u8 unk191[3];
-    struct ItemCreationFlagNode* unk194[3];
-    struct ItemCreationFlagNode* unk1a0[3];
-    struct ItemCreationFlagNode* unk1ac[3];
-    struct ItemCreationColorDisplay* unk1b8[3];
-    struct ItemCreationColorDisplay* unk1c4[3];
-    struct ItemCreationColorDisplay* unk1d0[3];
-    struct ItemCreationColorDisplay* unk1dc[3];
-    u8 unk1e8[9];
-    u8 unk1f1;
-    u8 unk1f2[9];
-} ItemCreationNineSlotView;
+/** Nine-slot item-selection window. */
+typedef struct ItemCreationClass1870B0 ItemCreationClass1870B0;
 
 /** Partial view with three activatable displays and fourteen selection markers. */
 typedef struct ItemCreationFourteenSlotView
@@ -140,13 +117,6 @@ typedef struct ItemCreationFourteenSlotView
     struct ItemCreationFlagNode* unkb8[14];
     struct FieldResourceDisplay2D5CF0* unkf0[14];
 } ItemCreationFourteenSlotView;
-
-/** Partial state containing three triples of item bytes. */
-typedef struct ItemCreationTripleState
-{
-    u8 unk00[0x1F2];
-    u8 unk1f2[3][3];
-} ItemCreationTripleState;
 
 /** Partial nested item with two flag bytes and a float setting. */
 typedef struct ItemCreationNested
@@ -197,7 +167,7 @@ public:
     virtual void func_slot18();
     virtual void func_slot1c();
     /** @brief Set the nested display byte flag. @param flag Flag value. */
-    virtual void func_slot20(u8 flag);
+    virtual void func_slot20(u32 flag);
     virtual void func_slot24();
     virtual void func_slot28();
     virtual void func_slot2c();
@@ -401,9 +371,7 @@ public:
     LibObject178750* unkb0;
     FieldClass153130* unkb4;
     FieldClass153170* unkb8;
-    u8 unkbc;
-    u8 unkbd;
-    u8 unkbe;
+    u8 unkbc[3];
 };
 
 /** Three cleared words of an item creation window record. */
@@ -692,7 +660,9 @@ public:
 class ItemCreationClass1870B0 : public FieldClass15AE70
 {
 public:
-    /** Destroy the window through Field's window base. */
+    /** @brief Initialize the nine-slot selection window. */
+    ItemCreationClass1870B0();
+    /** @brief Release the resources and destroy the Field window base. */
     virtual ~ItemCreationClass1870B0();
     /** Call the virtual at 0xa0. */
     virtual void func_slot68();
@@ -702,6 +672,54 @@ public:
     virtual void func_slot70();
     /** Call the virtual at 0xac. */
     virtual void func_slot74();
+    /** @brief Toggle the detail window for a selected item row. @return One when allowed; zero for a compound row. */
+    virtual s32 func_slotb8();
+    /** @brief Restore the active selection or leave item selection. @return Two when handled; zero when inactive. */
+    virtual s32 func_slotb4();
+    /** @brief Move the marker left or wrap within its row. */
+    virtual void func_slota8();
+    /** @brief Move the marker right or wrap within its row. */
+    virtual void func_slotac();
+    /** @brief Move the marker up or enter the related window. */
+    virtual void func_slota0();
+    /** @brief Move the marker down or enter the related window. */
+    virtual void func_slota4();
+    /** @brief Apply the active item selection. @return Action status. */
+    virtual s32 func_slotb0();
+    /** @brief Apply the three selected components. @return Action status. */
+    virtual s32 func_slotbc();
+    /** @brief Create the selection displays. @param associated Associated window. @return Initialization status. */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    FieldObject23CEA0* unkac;
+    FieldObject23CEA0* unkb0;
+    FieldObject23CEA0* unkb4;
+    struct ItemCreationOptionResourceDisplay* unkb8[9];
+    ItemCreationOptionResourceDisplay* unkdc[12];
+    ItemCreationOptionResourceDisplay* unk10c[12];
+    ItemCreationOptionResourceDisplay* unk13c[9];
+    FieldClass15B200* unk160[12];
+    u8 unk190;
+    u8 unk191[3];
+    LibObject178750* unk194[3];
+    LibObject178750* unk1a0[3];
+    LibObject174F20* unk1ac[3];
+    LibObject178750* unk1b8[3];
+    LibObject178750* unk1c4[3];
+    LibObject178750* unk1d0[3];
+    LibObject178750* unk1dc[3];
+    ItemCreationClass186FB0* unk1e8;
+    ItemCreationClass186EB0* unk1ec;
+    u8 unk1f0;
+    u8 unk1f1;
+    u8 unk1f2[9];
+    u8 unk1fb;
+    u32 unk1fc[3];
+    u32 unk208[3];
+    ItemCreationClass186870* unk214;
+    u8 unk218[3];
+    u8 unk21b[3];
+    u8 unk21e[2];
 };
 
 /** Partial item creation window with primary vtable at 0x1872B0. */
@@ -710,7 +728,7 @@ class ItemCreationClass1872B0 : public FieldClass15AE70
 public:
     /** Construct the window with its fields and arrays cleared. */
     ItemCreationClass1872B0();
-    /** Destroy the window through Field's window base. */
+    /** @brief Destroy the selection window through its Field window base. */
     virtual ~ItemCreationClass1872B0();
     u32 unka8;
     u8 unkac;
@@ -748,12 +766,16 @@ public:
     ItemCreationRecord128 unk128[3];
 };
 
-/** Partial item creation window with primary vtable at 0x1871B0. */
+/** Fourteen-slot selection window with MAIN vtable at 0x1871B0. */
 class ItemCreationClass1871B0 : public FieldClass15AE70
 {
 public:
-    /** Destroy the window through Field's window base. */
+    /** @brief Toggle the selected item detail display. @return One when a state is attached, zero otherwise. */
+    virtual s32 func_slotb8();
+    /** @brief Release the resource and destroy the window through its Field base. */
     virtual ~ItemCreationClass1871B0();
+    /** Empty callback at native slot 0x5c. */
+    virtual void func_slot5c();
     /** Call the virtual at 0xa0. */
     virtual void func_slot68();
     /** Call the virtual at 0xa4. */
@@ -762,6 +784,20 @@ public:
     virtual void func_slot70();
     /** Call the virtual at 0xac. */
     virtual void func_slot74();
+    virtual void func_slota0();
+    virtual void func_slota4();
+    virtual void func_slota8();
+    virtual void func_slotac();
+    virtual s32 func_slotb0();
+    virtual s32 func_slotb4();
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    FieldObject23CEA0* unkac;
+    FieldObject23CEA0* unkb0;
+    FieldObject23CEA0* unkb4;
+    ItemCreationOptionResourceDisplay* unkb8[14];
+    ItemCreationOptionResourceDisplay* unkf0[14];
+    FieldClass15B200* unk128;
 };
 #endif
 
@@ -818,13 +854,13 @@ void func_0035F7F0(ItemCreationTwoColorOwner* object);
  * @brief Refresh the assigned-group markers, colors, and the two group grids.
  * @param object Nine-slot view containing three assigned-group displays.
  */
-void func_00363D20(ItemCreationNineSlotView* object);
+void func_00363D20(ItemCreationClass1870B0* object);
 
 /**
  * @brief Refresh the nine item-resource displays and their assigned-item codes.
  * @param object View containing the item-resource displays and selection state.
  */
-void func_003614B0(ItemCreationNineSlotView* object);
+void func_003614B0(ItemCreationClass1870B0* object);
 
 /**
  * @brief Refresh the fourteen item-resource displays and their marker bytes.
@@ -837,13 +873,13 @@ void func_00364D20(ItemCreationFourteenSlotView* object);
  * @param object View containing nine markers and two twelve-marker groups.
  * @param mode One activates the selected display; zero deactivates displays; other values do nothing.
  */
-void func_00360E60(ItemCreationNineSlotView* object, u16 mode);
+void func_00360E60(ItemCreationClass1870B0* object, u16 mode);
 
 /**
  * @brief Clear the view markers and mark the group selected by the current display index.
  * @param object View containing the markers and selected display.
  */
-void func_00361220(ItemCreationNineSlotView* object);
+void func_00361220(ItemCreationClass1870B0* object);
 
 /**
  * @brief Activate a selected display and its marker, or deactivate the current displays and markers.
@@ -858,7 +894,7 @@ void func_00364090(ItemCreationFourteenSlotView* object, u16 mode);
  * @param index Triple index, zero through two; other values report zero.
  * @return One when a byte in the selected triple is nonzero, or zero otherwise.
  */
-u8 func_003623C0(ItemCreationTripleState* object, u8 index);
+u8 func_003623C0(ItemCreationClass1870B0* object, u8 index);
 
 /**
  * @brief Perform no work.
@@ -900,7 +936,7 @@ u8 func_0035CAD0(ItemCreationCategoryOwner* object, const ItemCreationCategoryRe
  * @param object Object to update.
  * @param value Selected value.
  */
-void func_0035FCA0(u8* object, u16 value);
+void func_0035FCA0(ItemCreationClass186FB0* object, u16 value);
 
 /**
  * @brief Read the word at offset 0x24.
@@ -922,6 +958,12 @@ void func_0035C4D0(u8* object, void* unused, u32 value);
  * @param object Object holding the nested pointer.
  */
 void func_0035E2D0(u8* object);
+
+/** @brief Update the selection markers and window activation. @param object Nine-slot window. @param active Activation value. */
+void func_003610D0(ItemCreationClass1870B0* object, u32 active);
+
+/** @brief Hide or update the detail window for the selected row. @param selected Nine- or fourteen-slot window. */
+void func_00360FD0(void* selected);
 
 /** @brief Resize the mode list and rebuild its category rows. @param object Mode list. @param mode Compact display mode. */
 void func_0035D0C0(ItemCreationClass186C90* object, s32 mode);

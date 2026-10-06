@@ -6,6 +6,36 @@
 
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
+
+class LibObject178660;
+
+/** Resource owner with MAIN vtable at 0x15B200. */
+class FieldClass15B200
+{
+public:
+    LibObject178660* unk00;
+    float unk04;
+    float unk08;
+    float unk0c;
+    float unk10;
+    u8 unk14;
+    u8 unk15;
+    u8 unk16[2];
+    float unk18;
+    float unk1c;
+    float unk20;
+    float unk24;
+    u8 unk28;
+    u8 unk29[3];
+    float unk2c;
+    void* unk30;
+    /** @brief Initialize the resource owner. @param parent Associated owner. @param flag Initial resource flag. */
+    FieldClass15B200(LibObject178660* parent, u8 flag);
+    /** @brief Destroy the resource owner. */
+    virtual ~FieldClass15B200();
+};
+
+
 #endif
 
 /** Partial resource display with its caller-controlled marker byte. */

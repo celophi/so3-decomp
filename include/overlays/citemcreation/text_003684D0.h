@@ -2,8 +2,28 @@
 #define SO3_OVERLAYS_CITEMCREATION_TEXT_003684D0_H
 
 #include "types.h"
+#include "overlays/1067-00/text_002F1B20.h"
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001E1590.h"
+#endif
+
+#ifdef __cplusplus
+/** Common data prefix preceding the target callback table at offset 0x8C. */
+struct ItemCreationTargetPrefix : public FieldStateTargets
+{
+    u8 unk88[4];
+};
+/** Target callback interface selected by MAIN vtable 0x184EF0. */
+class ItemCreationClass184EF0 : public ItemCreationTargetPrefix
+{
+public:
+    /** @brief Run the target status callback. @return Callback status. */
+    virtual s32 func_slot08();
+    /** @brief Run the target update callback. */
+    virtual void func_slot0c();
+    /** @brief Run the additional target callback. */
+    virtual void func_slot10();
+};
 #endif
 
 typedef struct ItemCreationTransformState ItemCreationTransformState;
@@ -126,16 +146,17 @@ typedef struct ItemCreationSelectedDisplayState
     struct ItemCreationThreeSlotDisplay* unkb0;
     struct FieldClass15AE70* unkb4;
     struct ItemCreationFourteenSlotView* unkb8;
-    struct ItemCreationNineSlotView* unkbc;
+    struct ItemCreationClass1870B0* unkbc;
     struct ItemCreationClass186970* unkc0;
     u8 unkc4[0xC];
     struct ItemCreationClass186DB0* unkd0;
     struct ItemCreationClass186C90* unkd4;
-    struct ItemCreationNineResourceView* unkd8;
+    struct ItemCreationClass186770* unkd8;
     u8 unkdc[4];
     struct ItemCreationClass186070* unke0;
     struct FieldClass15AE70* unke4;
-    u8 unke8[0xC];
+    struct ItemCreationClass185E60* unke8;
+    u8 unkec[8];
     struct ItemCreationFlagResetOwner* unkf4;
     struct ItemCreationOptionDisplay* unkf8;
     struct ItemCreationOptionDisplay* unkfc;
@@ -170,7 +191,11 @@ typedef struct ItemCreationSelectedDisplayState
     u32 unk1ac;
     u8 unk1b0;
     u8 unk1b1[3];
+#ifdef __cplusplus
+    ItemCreationClass184EF0* unk1b4[3];
+#else
     struct FieldStateTargets* unk1b4[3];
+#endif
     u8 unk1c0[3];
     u8 unk1c3[5];
     u32 unk1c8[3];

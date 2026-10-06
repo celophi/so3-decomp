@@ -89,11 +89,32 @@ extern "C"
 void func_004C7FB0(LibObject178750* object, float x, float y, float width, float height);
 
 #ifdef __cplusplus
+/** Virtual intrusive-link root. */
+class LibClass171E80
+{
+public:
+    /** @brief Destroy the intrusive-link root. */
+    virtual ~LibClass171E80()
+    {
+    }
+};
+/** Intrusive list sentinel initialized by the resident list constructor. */
+class LibClass171E90 : public LibClass171E80
+{
+public:
+    /** @brief Destroy the list sentinel and its virtual root. */
+    virtual ~LibClass171E90()
+    {
+    }
+    LibClass171E90* unk04;
+    LibClass171E90* unk08;
+};
 /** Partial 0x20-byte list receiver with the actual virtual pointer at 0x10. */
 class LibClass178A70
 {
 public:
-    u8 unk00[0x10];
+    LibClass171E90 unk00;
+    u32 unk0c;
     /** @brief Initialize the list receiver. */
     LibClass178A70();
     /** @brief Destroy the list receiver. */

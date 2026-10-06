@@ -42,7 +42,9 @@ typedef struct FieldStateTargetEntry
 typedef struct FieldStateTargets
 {
     FieldStateTargetEntry entries[3];
-    u8 unk60[0x27];
+    u8 unk60[0x23];
+    u8 unk83;
+    u8 unk84[3];
     u8 unk87;
 } FieldStateTargets;
 

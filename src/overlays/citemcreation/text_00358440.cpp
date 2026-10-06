@@ -13,6 +13,20 @@
 #include "overlays/1067-00/text_002F9C90.h"
 
 
+/**
+ * @brief Delete an owned resource and clear its pointer.
+ * @param resource Nullable owned resource pointer.
+ */
+static inline void release_resource(FieldClass15B200*& resource)
+{
+    if (resource)
+    {
+        delete resource;
+        resource = 0;
+    }
+}
+
+
 /** Item code widget with MAIN vtable at 0x172410. */
 struct LibObject172410 : public LibClass174EF0
 {
@@ -68,61 +82,6 @@ struct LibObject175140 : public LibClass174EF0
      */
     s32 func_00467AD0(float x, float y, float width, float height, const char* value, u8 flag);
     const char* unkfc;
-};
-
-/** Field selection widget with primary vtable at 0x153130. */
-class FieldClass153130 : public ItemCreationClass175030
-{
-public:
-    /** @brief Initialize the Field selection widget. */
-    FieldClass153130();
-    /** @brief Destroy the Field selection widget. */
-    virtual ~FieldClass153130();
-    /**
-     * @brief Configure the selection widget and its drawing dimensions.
-     * @param first First selection code.
-     * @param second Second selection code.
-     * @param third Third selection code.
-     * @param value Selection value.
-     * @param flag Selection flag.
-     * @param x Horizontal position.
-     * @param y Vertical position.
-     * @param z Third drawing coordinate.
-     * @param extent Drawing extent.
-     * @return Configuration status.
-     */
-    s32 func_0023B530(u8 first, u8 second, u8 third, u16 value, u8 flag,
-                     float x, float y, float z, float extent);
-    u8 unk7c;
-    u8 unk7d;
-    float unk80;
-    float unk84;
-    float unk88;
-    float unk8c;
-    u16 unk90;
-    u8 unk92;
-    u8 unk93;
-    u16 unk94;
-};
-
-/** Field text marker with primary vtable at 0x153170. */
-class FieldClass153170 : public ItemCreationClass172870
-{
-public:
-    /** @brief Initialize the Field target marker. */
-    FieldClass153170();
-    /** @brief Destroy the Field target marker. */
-    virtual ~FieldClass153170();
-    /**
-     * @brief Configure the marker for a text display.
-     * @param target Text display used for the marker bounds.
-     * @param color Packed marker color.
-     */
-    void func_0023B850(LibObject178750* target, u32 color);
-    /** @brief Update the marker bounds. @param target Text display to follow. */
-    void func_0023B7E0(LibObject178750* target);
-    void* unk58;
-    u8 unk5c;
 };
 
 /** Partial parent containing the Field selection marker. */
@@ -268,6 +227,15 @@ struct ItemCreationIndexedResourceDisplay
     u8 unkd0;
 };
 
+/** Shared partial prefix of the nine- and fourteen-slot selection windows. */
+struct ItemCreationSelectionMarkerView
+{
+    u8 unk00[0xA8];
+    ItemCreationSelectedDisplayState* unka8;
+    u8 unkac[8];
+    FieldObject23CEA0* unkb4;
+};
+
 /** Partial Field context containing the selected display state. */
 struct ItemCreationFieldContext
 {
@@ -310,10 +278,17 @@ typedef struct ItemCreationCheckedRecord
     u16 unka6;
 } ItemCreationCheckedRecord;
 
+/** Partial resident services containing the item-selection context. */
+struct ItemCreationRecordServices
+{
+    u8 unk00[0x58];
+    void* unk58;
+};
+
 /** Partial resident directory containing the current checked record. */
 typedef struct ItemCreationRecordDirectory6430
 {
-    u8 unk00[4];
+    ItemCreationRecordServices* unk00;
     ItemCreationCheckedRecord* unk04;
 } ItemCreationRecordDirectory6430;
 
@@ -492,6 +467,9 @@ extern "C" s32 func_002CE760(FieldClass15AE70* object, void* associated, s32 fir
 
 /** @brief Set the transform position. @param object Drawing transform. @param x Horizontal coordinate. @param y Vertical coordinate. */
 extern "C" void func_44B190(LibClass174610* object, float x, float y);
+
+/** Field selection API imported by this overlay without its resident global declarations. */
+extern "C" s32 func_0027CB50(void* object, s32 identifier, s32 first, s32 second);
 
 /** @brief Set the widget height and refresh its rectangle. @param widget Drawing widget. @param height Rectangle height. */
 static inline void set_height(LibClass178600* widget, float height)
@@ -2384,7 +2362,92 @@ ItemCreationClass186EB0::ItemCreationClass186EB0(void* object)
     unke0 = 0;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_0035FCA0);
+/**
+ * @brief Apply the enabled option color and selected row marker.
+ * @param object Option window.
+ * @param text Row text display.
+ * @param index Row index.
+ * @param selected Selected row index.
+ * @param mask Availability bit for this row.
+ */
+static inline void highlight_row(ItemCreationClass186FB0* object, LibObject178750* text, s32 index, u16 selected, u16 mask)
+{
+    if (object->unke8 & mask)
+    {
+        text->unk94 = 0x808080;
+        text->unk3c = 1;
+        if (index == selected)
+        {
+            text->unk94 = 0x288080;
+            text->unk3c = 1;
+            object->unkd8->func_0023B7E0(text);
+            object->unkd8->unk3f = 1;
+        }
+    }
+}
+
+/**
+ * @brief Update the available option colors and the selected row marker.
+ * @param object Option window.
+ * @param selected Selected row index.
+ */
+extern "C" void func_0035FCA0(ItemCreationClass186FB0* object, u16 selected)
+{
+    for (s32 index = 0; index < 8; index++)
+    {
+        LibObject178750* text = object->unkb4[index];
+        if (text != 0)
+        {
+            text->unk94 = 0x505050;
+            text->unk3c = 1;
+        }
+    }
+    if (object->unkd8 != 0)
+    {
+        object->unkd8->unk3f = 0;
+    }
+    for (s32 index = 0; index < 8; index++)
+    {
+        ItemCreationSelectedDisplayState* state = object->unka8;
+        LibObject178750* text = object->unkb4[index];
+        if (state->unk4e[(u8)(index + 1) - 1] != 0)
+        {
+            if (text != 0)
+            {
+                text->unk94 = 0x505080;
+                text->unk3c = 1;
+            }
+            switch (index + 1)
+            {
+            case 1:
+                highlight_row(object, text, index, selected, 1);
+                break;
+            case 2:
+                highlight_row(object, text, index, selected, 2);
+                break;
+            case 3:
+                highlight_row(object, text, index, selected, 4);
+                break;
+            case 4:
+                highlight_row(object, text, index, selected, 8);
+                break;
+            case 5:
+                highlight_row(object, text, index, selected, 16);
+                break;
+            case 6:
+                highlight_row(object, text, index, selected, 32);
+                break;
+            case 7:
+                highlight_row(object, text, index, selected, 64);
+                break;
+            case 8:
+                highlight_row(object, text, index, selected, 128);
+                break;
+            }
+        }
+    }
+}
+
 
 /**
  * @brief Reset the option selection and handle the current return mode.
@@ -2394,7 +2457,7 @@ s32 ItemCreationClass186FB0::func_slotb4()
 {
     func_slot20(0);
     func_0023B310(reinterpret_cast<FieldObject23B280*>(unkd4));
-    func_0035FCA0(reinterpret_cast<u8*>(this), 0);
+    func_0035FCA0(this, 0);
     switch (unkdc)
     {
     case 0:
@@ -2423,7 +2486,7 @@ void ItemCreationClass186FB0::func_slot6c()
     if (unkd4 != 0 && (u8)func_23B3B0(reinterpret_cast<FieldState23B3A0*>(unkd4), 1) != 1)
     {
         u16 selected = func_23B3A0(reinterpret_cast<FieldState23B3A0*>(unkd4));
-        func_0035FCA0(reinterpret_cast<u8*>(this), selected);
+        func_0035FCA0(this, selected);
     }
 }
 /**
@@ -2434,7 +2497,7 @@ void ItemCreationClass186FB0::func_slot68()
     if (unkd4 != 0 && (u8)func_23B3B0(reinterpret_cast<FieldState23B3A0*>(unkd4), 0) != 1)
     {
         u16 selected = func_23B3A0(reinterpret_cast<FieldState23B3A0*>(unkd4));
-        func_0035FCA0(reinterpret_cast<u8*>(this), selected);
+        func_0035FCA0(this, selected);
     }
 }
 /**
@@ -2473,7 +2536,7 @@ s32 ItemCreationClass186FB0::func_slotf4(void* associated)
     unkd8 = new (0) FieldClass153170;
     unkd8->func_0023B850(unkb4[0], 0x288080);
     func_004C6190(unk10, unkd8);
-    func_0035FCA0(reinterpret_cast<u8*>(this), 0);
+    func_0035FCA0(this, 0);
     return 1;
 }
 
@@ -2503,7 +2566,7 @@ ItemCreationClass186FB0::ItemCreationClass186FB0(void* object)
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003608C0);
 
-void func_00360E60(ItemCreationNineSlotView* object, u16 mode)
+void func_00360E60(ItemCreationClass1870B0* object, u16 mode)
 {
     s32 index;
 
@@ -2548,11 +2611,92 @@ void func_00360E60(ItemCreationNineSlotView* object, u16 mode)
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00360FD0);
+/** @brief Hide the detail window or update its selected item slot. @param selected Nine- or fourteen-slot selection window. */
+extern "C" void func_00360FD0(void* selected)
+{
+    ItemCreationSelectionMarkerView* object = static_cast<ItemCreationSelectionMarkerView*>(selected);
+    if (object->unka8 != 0 && object->unkb4 != 0)
+    {
+        s16 index = object->unkb4->unk114;
+        if ((u32)(index - 3) <= 1U || (u32)(index - 8) <= 1U || index == 13 || index == 14)
+        {
+            ItemCreationClass186970* details = object->unka8->unkc0;
+            if (details != 0)
+            {
+                details->func_slot20(0);
+                details->unk100 = 0;
+            }
+            return;
+        }
+        if ((u32)(index - 5) <= 1U || index == 7)
+        {
+            index -= 2;
+        }
+        if ((u32)(index - 10) <= 1U || index == 12)
+        {
+            index -= 4;
+        }
+        func_0036A500(object->unka8, selected, index);
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003610D0);
+/** @brief Update the two selection markers, then set the window activation. @param object Nine-slot window. @param active Activation value. */
+extern "C" void func_003610D0(ItemCreationClass1870B0* object, u32 active)
+{
+    if (object->unkac != 0)
+    {
+        if (active != 0)
+        {
+            if (object == D_001B643C->unk10->unk14->func_00261150())
+            {
+                if (object->unkb4 == object->unkac)
+                {
+                    func_0023CEA0(object->unkac, 1);
+                }
+                else
+                {
+                    func_0023CEA0(object->unkac, 0);
+                }
+            }
+            else
+            {
+                func_0023CEA0(object->unkac, 0);
+            }
+        }
+        else
+        {
+            func_0023CEA0(object->unkac, 0);
+        }
+    }
+    if (object->unkb0 != 0)
+    {
+        if (active != 0)
+        {
+            if (object == D_001B643C->unk10->unk14->func_00261150())
+            {
+                if (object->unkb4 == object->unkb0)
+                {
+                    func_0023CEA0(object->unkb0, 1);
+                }
+                else
+                {
+                    func_0023CEA0(object->unkb0, 0);
+                }
+            }
+            else
+            {
+                func_0023CEA0(object->unkb0, 0);
+            }
+        }
+        else
+        {
+            func_0023CEA0(object->unkb0, 0);
+        }
+    }
+    object->func_slot20(active);
+}
 
-void func_00361220(ItemCreationNineSlotView* object)
+void func_00361220(ItemCreationClass1870B0* object)
 {
     s16 selected;
 
@@ -2640,7 +2784,7 @@ void func_00361220(ItemCreationNineSlotView* object)
     }
 }
 
-void func_003614B0(ItemCreationNineSlotView* object)
+void func_003614B0(ItemCreationClass1870B0* object)
 {
     void* allocation;
     u32 resource;
@@ -2657,28 +2801,274 @@ void func_003614B0(ItemCreationNineSlotView* object)
             resource = (u8)item_resource_index(value);
             allocation = func_002D3D80(D_001B643C->unk20, resource);
             record = func_002D3CC0(D_001B643C->unk20, 0x51);
-            func_002D5CF0(object->unk13c[index], allocation, record, resource);
-            object->unk13c[index]->unk3F = 1;
+            func_002D5CF0(static_cast<FieldResourceDisplay2D5CF0*>(static_cast<void*>(object->unk13c[index])), allocation, record, resource);
+            object->unk13c[index]->unk3f = 1;
             object->unk190++;
             object->unk1f2[index] = item_assigned_code(value);
         }
         else
         {
-            object->unk13c[index]->unk3F = 0;
+            object->unk13c[index]->unk3f = 0;
             object->unk1f2[index] = 0;
         }
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003615C0);
+/** @brief Apply the selected three-component item. @return Action status. */
+s32 ItemCreationClass1870B0::func_slotbc()
+{
+    if (unk214 == 0)
+    {
+        return 0;
+    }
+    if (unka8->unk47 != 1)
+    {
+        return 0;
+    }
+    if (unka8->unk128 == 1)
+    {
+        return 3;
+    }
+    for (s32 index = 0; index < 3; index++)
+    {
+        unk218[index] = 0;
+        unk21b[index] = 0;
+    }
+    u8 active_count = 0;
+    for (s32 index = 0; index < unk1f1; index++)
+    {
+        unk218[index] = func_003623C0(this, index);
+        if (unk218[index] != 0)
+        {
+            if (unk1fc[index] != 0 && unk208[index] != 0)
+            {
+                unk21b[index] = 1;
+            }
+            else
+            {
+                unk21b[index] = 0;
+            }
+            active_count++;
+        }
+        else if (unk1fc[index] == 0 && unk208[index] == 0)
+        {
+            unk21b[index] = 1;
+        }
+        else
+        {
+            unk21b[index] = 0;
+        }
+    }
+    if (active_count == 0)
+    {
+        return 3;
+    }
+    s32 index;
+    for (index = 0; index < 3; index++)
+    {
+        if ((s32)unka8->unk1c8[index] > 0)
+        {
+            break;
+        }
+    }
+    if (index == 3)
+    {
+        return 3;
+    }
+    ItemCreationCheckedRecord* record = D_001B643C->unk00;
+    u16 checksum = record->unka4;
+    const u8* end = (const u8*)&record->unka4;
+    u32 value;
+    if (checksum != (u16)func_457470(record->unka6, ((u8*)record + 0x26), end - ((const u8*)record + 0x26)))
+    {
+        value = 0;
+    }
+    else
+    {
+        value = record->unk34 ^ 0x7CE3C7F7;
+    }
+    ItemCreationSelectedDisplayState* state = unka8;
+    if (value < state->unk1c8[2] + (state->unk1c8[0] + state->unk1c8[1]))
+    {
+        ItemCreationClass186270* popup = new (0) ItemCreationClass186270;
+        popup->func_slotf4(unka8->func_00263CC0());
+        popup->func_slot40(this);
+        unka8->func_00263FD0(popup);
+        unka8->func_00263C70(popup);
+        if (unkb4 != 0)
+        {
+            unkb4->unkad = 0;
+        }
+        return 3;
+    }
+    ItemCreationClass186870* child = unk214;
+    for (index = 0; index < 3; index++)
+    {
+        child->unkbc[index] = 0;
+    }
+    for (s32 part = 0; part < unk1f1; part++)
+    {
+        if (unk218[part] != 0 || unk21b[part] != 0)
+        {
+            if (unk218[part] == 1 && unk21b[part] == 0)
+            {
+                ItemCreationClass186870* reset = unk214;
+                for (s32 flag = 0; flag < 3; flag++)
+                {
+                    reset->unkbc[flag] = 0;
+                }
+                return 3;
+            }
+            if (unk218[part] == 1 && unk21b[part] == 1)
+            {
+                unk214->unkbc[part] = 1;
+            }
+        }
+    }
+    if (unkb4 != 0)
+    {
+        unkb4->unkad = 0;
+    }
+    child = unk214;
+    child->func_slot20(1);
+    LibObject178750* first = child->unkac;
+    first->unk94 = ITEM_CREATION_COLOR_BRIGHT;
+    first->unk3c = 1;
+    LibObject178750* second = child->unkb0;
+    second->unk94 = ITEM_CREATION_COLOR_SELECTED;
+    second->unk3c = 1;
+    child->unkb8->func_0023B7E0(child->unkb0);
+    func_0023B280(static_cast<FieldObject23B280*>(static_cast<void*>(child->unkb4)), 1);
+    D_001B643C->unk10->unk14->func_00263C70(unk214);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003619D0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00361AB0);
+/** @brief Toggle the detail window for a selected item row. @return One when allowed; zero for a compound row. */
+s32 ItemCreationClass1870B0::func_slotb8()
+{
+    u8 active;
+    if (unka8 == 0)
+    {
+        return 0;
+    }
+    if (unkb4 == 0)
+    {
+        return 0;
+    }
+    s16 index = unkb4->unk114;
+    if ((u32)(index - 3) <= 1U || (u32)(index - 8) <= 1U || index == 13 || index == 14)
+    {
+        return 0;
+    }
+    func_00360FD0(this);
+    ItemCreationClass186970* details = unka8->unkc0;
+    if (details != 0)
+    {
+        active = !details->unk100;
+        details->func_slot20(active);
+        details->unk100 = active;
+    }
+    return 1;
+}
+
+/** @brief Restore the active selection window or leave item selection. @return Two when handled; zero when inactive. */
+s32 ItemCreationClass1870B0::func_slotb4()
+{
+    ItemCreationSelectedDisplayState* state = unka8;
+    if (state == 0)
+    {
+        return 0;
+    }
+    if (unkb4 == 0)
+    {
+        return 0;
+    }
+    if (state->unk47 != 1)
+    {
+        return 0;
+    }
+    if (state->unk128 == 1 && state->unk11c != this)
+    {
+        ItemCreationFourteenSlotView* other = state->unkb8;
+        FieldObject23CEA0* primary = unkac;
+        primary->FieldClass151C50::unk30 = 128.0f;
+        primary->unkae = 1;
+        func_0023CEA0(unkb0, 0);
+        FieldObject23CEA0* alternate = unkb0;
+        alternate->index = unkac->unk114;
+        func_0023CB30(alternate);
+        func_0023C7B0(unkb0);
+        unkb4 = unkac;
+        func_00361220(this);
+        primary = other->unkac;
+        primary->FieldClass151C50::unk30 = 128.0f;
+        primary->unkae = 1;
+        func_0023CEA0(other->unkb0, 0);
+        alternate = other->unkb0;
+        alternate->index = other->unkac->unk114;
+        func_0023CB30(alternate);
+        func_0023C7B0(other->unkb0);
+        other->unkb4 = other->unkac;
+        if (other->unkb4 != 0)
+        {
+            s16 selected = other->unkb4->unk114;
+            for (s32 index = 0; index < 14; index++)
+            {
+                if (selected == index)
+                {
+                    other->unkb8[index]->unk3f = 1;
+                }
+                else
+                {
+                    other->unkb8[index]->unk3f = 0;
+                }
+            }
+        }
+        unka8->func_00263C70(other);
+        unkac->unkad = 0;
+        unkb0->unkad = 0;
+        for (s32 index = 0; index < 9; index++)
+        {
+            unkb8[index]->unk3f = 0;
+        }
+        func_0036A050(unka8, this, -1);
+    }
+    else
+    {
+        func_0036A050(state, this, -1);
+        if (unkb4 == unkb0)
+        {
+            FieldObject23CEA0* primary = unkac;
+            primary->FieldClass151C50::unk30 = 128.0f;
+            primary->unkae = 1;
+            func_0023CEA0(unkb0, 0);
+            FieldObject23CEA0* alternate = unkb0;
+            alternate->index = unkac->unk114;
+            func_0023CB30(alternate);
+            func_0023C7B0(unkb0);
+            unkb4 = unkac;
+            func_00361220(this);
+        }
+        else
+        {
+            ItemCreationSelectedDisplayState* state = unka8;
+            state->unk47 = 0;
+            func_0027CB50(D_001B6430->unk00->unk58, state->unk1f0, 0, 0);
+            state = unka8;
+            state->unk120 = 0;
+            state->unk11c = 0;
+            state->unk126 = -1;
+            state->unk124 = -1;
+            state->unk128 = 0;
+        }
+    }
+    return 2;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00361D40);
 
-u8 func_003623C0(ItemCreationTripleState* object, u8 index)
+u8 func_003623C0(ItemCreationClass1870B0* object, u8 index)
 {
     u8 present;
     u8 first = 0;
@@ -2687,19 +3077,19 @@ u8 func_003623C0(ItemCreationTripleState* object, u8 index)
     switch (index)
     {
     case 0:
-        first = object->unk1f2[0][0];
-        second = object->unk1f2[0][1];
-        third = object->unk1f2[0][2];
+        first = object->unk1f2[0];
+        second = object->unk1f2[1];
+        third = object->unk1f2[2];
         break;
     case 1:
-        first = object->unk1f2[1][0];
-        second = object->unk1f2[1][1];
-        third = object->unk1f2[1][2];
+        first = object->unk1f2[3];
+        second = object->unk1f2[4];
+        third = object->unk1f2[5];
         break;
     case 2:
-        first = object->unk1f2[2][0];
-        second = object->unk1f2[2][1];
-        third = object->unk1f2[2][2];
+        first = object->unk1f2[6];
+        second = object->unk1f2[7];
+        third = object->unk1f2[8];
         break;
     }
     if (first == 0 && second == 0 && third == 0)
@@ -2713,13 +3103,189 @@ u8 func_003623C0(ItemCreationTripleState* object, u8 index)
     return present;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00362460);
+/** @brief Move the active nine-slot marker right and refresh its selected detail. */
+void ItemCreationClass1870B0::func_slotac()
+{
+    if (unkb4 == unkb0 || unka8->unk128 == 1)
+    {
+        s16 index = unkb4->unk114;
+        if (index == 2)
+        {
+            if (unkb4 != 0)
+            {
+                func_0023C550(unkb4, 0);
+            }
+            func_00361220(this);
+            func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            return;
+        }
+        else if (index == 7)
+        {
+            if (unkb4 != 0)
+            {
+                func_0023C550(unkb4, 5);
+            }
+            func_00361220(this);
+            func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            return;
+        }
+        else if (index == 12)
+        {
+            if (unkb4 != 0)
+            {
+                func_0023C550(unkb4, 10);
+            }
+            func_00361220(this);
+            func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            return;
+        }
+    }
+    if (unkb4 != 0 && unkb4->func_0023CDB0(2) != 1)
+    {
+        func_00361220(this);
+        func_00360FD0(this);
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003625E0);
+/** @brief Move the active nine-slot marker left and refresh its selected detail. */
+void ItemCreationClass1870B0::func_slota8()
+{
+    if (unkb4 == unkb0 || unka8->unk128 == 1)
+    {
+        s16 index = unkb4->unk114;
+        if (index == 0)
+        {
+            if (unkb4 != 0)
+            {
+                func_0023C550(unkb4, 2);
+            }
+            func_00361220(this);
+            func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            return;
+        }
+        else if (index == 5)
+        {
+            if (unkb4 != 0)
+            {
+                func_0023C550(unkb4, 7);
+            }
+            func_00361220(this);
+            func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            return;
+        }
+        else if (index == 10)
+        {
+            if (unkb4 != 0)
+            {
+                func_0023C550(unkb4, 12);
+            }
+            func_00361220(this);
+            func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            return;
+        }
+    }
+    if (unkb4 != 0 && unkb4->func_0023CDB0(3) != 1)
+    {
+        func_00361220(this);
+        func_00360FD0(this);
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00362760);
+/** @brief Move to the related window from the last row or move the grid marker down. */
+void ItemCreationClass1870B0::func_slota4()
+{
+    bool inactive = !unkb4->FieldClass151C50::unk35;
+    if (inactive)
+    {
+        return;
+    }
+    u8 base = (u8)((unk1f1 - 1) * 5);
+    s16 index = unkb4->unk114;
+    if (base == index || base + 1 == index || base + 2 == index || base + 3 == index || base + 4 == index)
+    {
+        ItemCreationFourteenSlotView* other = static_cast<ItemCreationFourteenSlotView*>(func_slot44());
+        if (base == index)
+        {
+            if (other->unkb4 != 0)
+            {
+                func_0023C550(other->unkb4, 0);
+            }
+        }
+        else if (base + 1 == index)
+        {
+            if (other->unkb4 != 0)
+            {
+                func_0023C550(other->unkb4, 1);
+            }
+        }
+        else if (base + 2 == index)
+        {
+            if (other->unkb4 != 0)
+            {
+                func_0023C550(other->unkb4, 2);
+            }
+        }
+        else if (base + 3 == index)
+        {
+            if (other->unkb4 != 0)
+            {
+                func_0023C550(other->unkb4, 3);
+            }
+        }
+        else if (base + 4 == index)
+        {
+            if (other->unkb4 != 0)
+            {
+                func_0023C550(other->unkb4, 4);
+            }
+        }
+        func_00364090(other, 1);
+        if (other->unka8 != 0 && other->unkb4 != 0)
+        {
+            func_0036A500(other->unka8, other, other->unkb4->unk114);
+        }
+        func_00360E60(this, 0);
+        D_001B643C->unk10->unk14->func_00263C70(other);
+        func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    }
+    else if (unkb4 != 0 && unkb4->func_0023CDB0(1) != 1)
+    {
+        func_00361220(this);
+        func_00360FD0(this);
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00362990);
+/** @brief Move to the related window from the first row or move the grid marker up. */
+void ItemCreationClass1870B0::func_slota0()
+{
+    bool inactive = !unkb4->FieldClass151C50::unk35;
+    if (inactive)
+    {
+        return;
+    }
+    s16 index = unkb4->unk114;
+    if (index >= 0 && index < 5)
+    {
+        ItemCreationFourteenSlotView* other = static_cast<ItemCreationFourteenSlotView*>(func_slot44());
+        if (other->unkb4 != 0)
+        {
+            func_0023C550(other->unkb4, (u8)(index + 7));
+        }
+        func_00364090(other, 1);
+        if (other->unka8 != 0 && other->unkb4 != 0)
+        {
+            func_0036A500(other->unka8, other, other->unkb4->unk114);
+        }
+        func_00360E60(this, 0);
+        D_001B643C->unk10->unk14->func_00263C70(other);
+        func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    }
+    else if (unkb4 != 0 && unkb4->func_0023CDB0(0) != 1)
+    {
+        func_00361220(this);
+        func_00360FD0(this);
+    }
+}
 
 void ItemCreationClass1870B0::func_slot74()
 {
@@ -2743,7 +3309,7 @@ void ItemCreationClass1870B0::func_slot68()
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00362BA0);
 
-void func_00363D20(ItemCreationNineSlotView* object)
+void func_00363D20(ItemCreationClass1870B0* object)
 {
     s32 index;
     object->unk1f1 = object->unka8->unk57;
@@ -2751,10 +3317,10 @@ void func_00363D20(ItemCreationNineSlotView* object)
     {
         if (index < object->unk1f1)
         {
-            ItemCreationColorDisplay* display1;
-            ItemCreationColorDisplay* display2;
-            ItemCreationColorDisplay* display3;
-            ItemCreationColorDisplay* display4;
+            LibObject178750* display1;
+            LibObject178750* display2;
+            LibObject178750* display3;
+            LibObject178750* display4;
             object->unk194[index]->unk3f = 1;
             object->unk1a0[index]->unk3f = 1;
             object->unk1ac[index]->unk3f = 1;
@@ -2773,10 +3339,10 @@ void func_00363D20(ItemCreationNineSlotView* object)
         }
         else
         {
-            ItemCreationColorDisplay* display1;
-            ItemCreationColorDisplay* display2;
-            ItemCreationColorDisplay* display3;
-            ItemCreationColorDisplay* display4;
+            LibObject178750* display1;
+            LibObject178750* display2;
+            LibObject178750* display3;
+            LibObject178750* display4;
             object->unk194[index]->unk3f = 0;
             object->unk1a0[index]->unk3f = 0;
             object->unk1ac[index]->unk3f = 0;
@@ -2798,9 +3364,67 @@ void func_00363D20(ItemCreationNineSlotView* object)
     func_0023CE80((FieldObject23CE80*)object->unkb0, 5, object->unk1f1);
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", __dt__23ItemCreationClass1870B0Fv);
+/** @brief Release the twelve owned resources before destroying the window base. */
+ItemCreationClass1870B0::~ItemCreationClass1870B0()
+{
+    for (s32 index = 0; index < 12; index++)
+    {
+        if (unk160[index])
+        {
+            release_resource(unk160[index]);
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00363F10);
+
+/** @brief Initialize the nine-slot selection window and clear its owned arrays. */
+ItemCreationClass1870B0::ItemCreationClass1870B0()
+{
+    func_slotec(1);
+    unka8 = 0;
+    unkac = 0;
+    unkb0 = 0;
+    unkb4 = 0;
+    for (s32 index = 0; index < 9; index++)
+    {
+        unk13c[index] = 0;
+        unkb8[index] = 0;
+        unk1f2[index] = 0;
+    }
+    for (s32 index = 0; index < 12; index++)
+    {
+        unkdc[index] = 0;
+        unk10c[index] = 0;
+    }
+    for (s32 index = 0; index < 12; index++)
+    {
+        unk160[index] = 0;
+    }
+    for (s32 index = 0; index < 3; index++)
+    {
+        unk160[index] = 0;
+        unk194[index] = 0;
+        unk1a0[index] = 0;
+        unk1ac[index] = 0;
+        unk1b8[index] = 0;
+        unk1c4[index] = 0;
+        unk1d0[index] = 0;
+        unk1dc[index] = 0;
+        unk1fc[index] = 0;
+        unk208[index] = 0;
+    }
+    unk190 = 0;
+    unk1e8 = 0;
+    unk1ec = 0;
+    unk1f1 = 0;
+    unk214 = 0;
+    for (s32 index = 0; index < 3; index++)
+    {
+        unk218[index] = 0;
+        unk21b[index] = 0;
+    }
+}
+
 
 void func_00364090(ItemCreationFourteenSlotView* object, u16 mode)
 {
@@ -2916,7 +3540,48 @@ u8 func_003644F0(ItemCreationFourteenSlotView* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364610);
+
+/**
+ * @brief Apply the selected marker index when its state and marker are present.
+ * @param state Current selection state.
+ * @param object Selection window containing the marker.
+ */
+static inline void apply_selected_index(ItemCreationSelectedDisplayState* state, ItemCreationClass1871B0* object)
+{
+    if (state)
+    {
+        FieldObject23CEA0* marker = object->unkb4;
+        if (marker)
+        {
+            func_0036A500(state, object, marker->unk114);
+        }
+    }
+}
+
+/** @brief Toggle the detail window for the selected item. @return One when state is attached, zero otherwise. */
+s32 ItemCreationClass1871B0::func_slotb8()
+{
+    u8 flag;
+    if (unkac == 0)
+    {
+        return 0;
+    }
+    ItemCreationSelectedDisplayState* state = unka8;
+    if (state == 0)
+    {
+        return 0;
+    }
+    apply_selected_index(state, this);
+    ItemCreationClass186970* display = unka8->unkc0;
+    if (display)
+    {
+        flag = !display->unk100;
+        display->func_slot20(flag);
+        display->unk100 = flag;
+    }
+    return 1;
+}
+
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003646D0);
 
@@ -2976,7 +3641,15 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364F50);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", __dt__23ItemCreationClass1871B0Fv);
+/** @brief Release the owned resource before destroying the selection window. */
+ItemCreationClass1871B0::~ItemCreationClass1871B0()
+{
+    if (unk128)
+    {
+        release_resource(unk128);
+    }
+}
+
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00365600);
 

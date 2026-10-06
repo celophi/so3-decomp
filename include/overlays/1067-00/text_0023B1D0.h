@@ -349,6 +349,13 @@ void func_0023CB30(FieldObject23CB30* object);
 void func_0023C7B0(FieldObject23CEA0* object);
 
 /**
+ * @brief Set the grid selection index and update its coordinates.
+ * @param object Grid marker.
+ * @param index Selection index.
+ */
+void func_0023C550(FieldObject23CEA0* object, u8 index);
+
+/**
  * @brief Store two floats at receiver offsets 0xFC and 0x100.
  * @param object Receiver to update.
  * @param first Value stored at 0xFC.
