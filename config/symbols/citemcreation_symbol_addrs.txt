@@ -793,3 +793,4 @@ func_004D65C0 = 0x004D65C0; // type:func absolute:True
 func_00352340 = 0x00352340; // type:func allow_duplicated:True
 __ct__23ItemCreationClass185F60Fv = 0x00352340; // type:func allow_duplicated:True
 __vt__14LibClass1721F0 = 0x001721F0; // absolute:True allow_duplicated:True
+item_creation_update_category_labels = 0x0035FCA0; // type:func
