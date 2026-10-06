@@ -3,7 +3,26 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+struct FieldRecord;
+/** Record selection links, eight signed slots, and a late virtual destructor. */
+struct FieldRecordSelection
+{
+    FieldRecord* records;
+    void* unk04;
+    s8 slots[8];
+    s8 count;
+    s8 current;
+    u8 active;
+
+    /** @brief Clear the selection links, slots, and active state. */
+    FieldRecordSelection();
+    /** @brief Destroy the record selection. */
+    virtual ~FieldRecordSelection();
+};
+#else
 typedef struct FieldRecordSelection FieldRecordSelection;
+#endif
 
 #ifdef __cplusplus
 extern "C" {

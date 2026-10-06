@@ -14,6 +14,7 @@ from tools.so3.build.compiler_probe import CONFIG, setup
 from tools.so3.build.overlays import CONFIGS, load_config
 from tools.so3.formats import require
 from tools.so3.build.sdk import MANIFEST as SDK_MANIFEST, code_units, validate_sdk_units
+from tools.so3.build.subsegments import subsegment_parts
 from tools.so3.build.text_order import symbol_addresses
 
 BUILD_FILE = Path('build/build.ninja')
@@ -38,19 +39,20 @@ def pieces(config):
         else:
             require(segment['type'] == 'code', 'expected a code segment')
             for sub in segment['subsegments']:
-                if sub[1] == 'pad':
+                _, kind, name = subsegment_parts(sub)
+                if kind == 'pad':
                     continue  # zero fill emitted by the linker script; no object
-                if len(sub) == 3 and sub[1].startswith('.'):
+                if kind.startswith('.'):
                     continue  # a section of that unit's own object; no new object
-                if len(sub) == 3 and sub[1] in ('databin', 'rodatabin'):
+                if kind in ('databin', 'rodatabin'):
                     # Splat writes asm/data/<name>.s, which .incbin's the extracted bytes.
-                    result.append((Path(options['asm_path']) / 'data' / (sub[2] + '.s'), 'assemble'))
+                    result.append((Path(options['asm_path']) / 'data' / (name + '.s'), 'assemble'))
                     continue
-                require(len(sub) == 3 and sub[1] in ('asm', 'c', 'cpp'),
-                        'expected an asm/c/cpp subsegment')
-                key, suffix, rule = (('asm_path', '.s', 'assemble') if sub[1] == 'asm'
-                                     else ('src_path', '.' + sub[1], 'compile'))
-                result.append((Path(options[key]) / (sub[2] + suffix), rule))
+                require(kind in ('asm', 'c', 'cpp') and isinstance(name, str),
+                        'expected a named asm/c/cpp subsegment')
+                key, suffix, rule = (('asm_path', '.s', 'assemble') if kind == 'asm'
+                                     else ('src_path', '.' + kind, 'compile'))
+                result.append((Path(options[key]) / (name + suffix), rule))
     return result
 
 
@@ -131,7 +133,7 @@ def configure(configs):
                     for p, rule in units if rule == 'compile']
         outputs = list(dict.fromkeys(outputs))
         deps = [str(path), 'tools/so3/build/driver.py', 'tools/so3/__init__.py', 'tools/so3/formats.py',
-                'tools/so3/build/sdk.py', str(SDK_MANIFEST)]
+                'tools/so3/build/sdk.py', 'tools/so3/build/subsegments.py', str(SDK_MANIFEST)]
         deps += options.get('symbol_addrs_path', []) + options.get('reloc_addrs_path', [])
         # compile.py orders deferred units' .text by the module's symbol map.
         symbol_maps = [p for p in [f'config/symbols/{module}_symbol_addrs.txt',
@@ -152,7 +154,8 @@ def configure(configs):
             if rule == 'compile':
                 implicit += [str(p) for p in asm_inputs(piece)] + headers + compiler_files
                 implicit += ['tools/so3/build/compile.py', 'tools/so3/build/compiler_probe.py',
-                             'tools/so3/build/text_order.py', *symbol_maps,
+                             'tools/so3/build/text_order.py', 'tools/so3/build/rodata_ownership.py',
+                             'tools/so3/build/subsegments.py', *symbol_maps,
                              'tools/so3/__init__.py', 'config/manifests/compilers.json',
                              '/opt/mwccgap/mwccgap/mwccgap.py']
             lines += [f'build {obj}: {rule} {piece}' + (f' | {" ".join(implicit)}' if implicit else '')]

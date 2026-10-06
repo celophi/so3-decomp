@@ -9,6 +9,8 @@ import subprocess
 import sys
 
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, verify_compiler
+from tools.so3.build.rodata_ownership import owned_rodata_sections
+from tools.so3.build.subsegments import configured_rodata_groups
 from tools.so3.build.text_order import merge_rodata_sections, normalize_symbol_aliases, order_text_sections, symbol_addresses, symbol_aliases, unit_range
 
 
@@ -51,13 +53,19 @@ def external_copies(unit):
     return {line for line in lines if line}
 
 
-def overlay_range(unit):
-    """The unit's VRAM range, or None for main sources."""
+def overlay_config(unit):
+    """The owning overlay's Splat configuration, or None for main sources."""
     module = module_of(unit)
     if module == 'main':
         return None
     import yaml
-    return unit_range(yaml.safe_load((Path('config/overlays') / f'{module}.yaml').read_text()), unit)
+    return yaml.safe_load((Path('config/overlays') / f'{module}.yaml').read_text())
+
+
+def overlay_range(unit):
+    """The unit's VRAM range, or None for main sources."""
+    config = overlay_config(unit)
+    return unit_range(config, unit) if config else None
 
 
 def main():
@@ -110,8 +118,15 @@ def main():
             temporary.write_bytes(order_text_sections(
                 temporary.read_bytes(), symbol_map(unit), thunk_map(unit),
                 overlay_range(unit), reorder=deferred(selected), external=external_copies(unit)))
-        # One .rodata section, as in the original, so objdiff pairs each jump table.
-        temporary.write_bytes(merge_rodata_sections(temporary.read_bytes()))
+        # Preserve separate native islands when a unit owns noncontiguous tables.
+        # Other units retain the original single-section jump-table comparison.
+        config = overlay_config(unit)
+        groups = configured_rodata_groups(config, unit) if config else []
+        if groups:
+            data, _ = owned_rodata_sections(temporary.read_bytes(), groups)
+        else:
+            data = merge_rodata_sections(temporary.read_bytes())
+        temporary.write_bytes(data)
         aliases_path = Path('config/symbols') / f'{module_of(unit)}_symbol_addrs.txt'
         if aliases_path.is_file():
             temporary.write_bytes(normalize_symbol_aliases(temporary.read_bytes(), symbol_aliases(aliases_path)))

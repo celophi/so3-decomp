@@ -121,10 +121,10 @@ u8 func_002D3D40(FieldBufferSlots* object, void* allocation, s32 size);
 /**
  * @brief Read an allocation pointer aligned upward to 128 bytes.
  * @param object Receiver containing the allocation table.
- * @param index Allocation slot index.
- * @return The aligned pointer, or null for an out-of-range index.
+ * @param raw_index Allocation slot index; only its low eight bits are used.
+ * @return The aligned pointer, or null when the normalized index is 64 or greater.
  */
-void* func_002D3D80(const FieldBufferSlots* object, u8 index);
+void* func_002D3D80(const FieldBufferSlots* object, u32 raw_index);
 
 /**
  * @brief Queue an attached allocation and clear its slot.

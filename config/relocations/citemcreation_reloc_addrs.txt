@@ -71,3 +71,19 @@ rom:0xA554 reloc:MIPS_HI16 symbol:__vt__14LibClass171E90
 rom:0xA558 reloc:MIPS_LO16 symbol:__vt__14LibClass171E90
 rom:0xA564 reloc:MIPS_HI16 symbol:__vt__14LibClass171E80
 rom:0xA568 reloc:MIPS_LO16 symbol:__vt__14LibClass171E80
+
+rom:0x25E04 reloc:MIPS_HI16 symbol:__vt__32ItemCreationSelectedDisplayState
+rom:0x25E0C reloc:MIPS_LO16 symbol:__vt__32ItemCreationSelectedDisplayState
+
+rom:0x9FD8 reloc:MIPS_HI16 symbol:__vt__14LibClass1721F0 addend:0x1C
+rom:0x9FE0 reloc:MIPS_LO16 symbol:__vt__14LibClass1721F0 addend:0x1C
+rom:0x9FEC reloc:MIPS_HI16 symbol:__vt__14LibClass1721F0 addend:0x90
+rom:0x9FF4 reloc:MIPS_LO16 symbol:__vt__14LibClass1721F0 addend:0x90
+rom:0x9FF8 reloc:MIPS_HI16 symbol:__vt__14LibClass1721F0 addend:0xB4
+rom:0x9FFC reloc:MIPS_LO16 symbol:__vt__14LibClass1721F0 addend:0xB4
+rom:0xA014 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass185F60 addend:0x1C
+rom:0xA01C reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass185F60 addend:0x1C
+rom:0xA024 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass185F60 addend:0x90
+rom:0xA02C reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass185F60 addend:0x90
+rom:0xA030 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass185F60 addend:0xB4
+rom:0xA038 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass185F60 addend:0xB4

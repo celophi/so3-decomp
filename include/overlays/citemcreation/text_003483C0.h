@@ -288,6 +288,18 @@ public:
 class ItemCreationClass185860 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass185860()
+    {
+        unkc4 = 0;
+        unka8 = 0;
+        unka9 = 0;
+        for (s32 i = 0; i < 6; i++)
+        {
+            unkac[i] = 0;
+        }
+        unkcc = 0;
+    }
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185860()
     {
@@ -470,6 +482,10 @@ public:
 class ItemCreationClass185060 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass185060()
+    {
+    }
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185060();
     /** @brief Restore the parent after confirming. @return One. */
@@ -484,6 +500,10 @@ public:
 class ItemCreationClass185160 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass185160() : unka8(0), unkac(0), unkb0(0), unkb4(0), unkb8(0), unkbc(0), unkc0(0), unkc4(0), unkc5(0)
+    {
+    }
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185160();
     /** @brief Restore the associated window. @return Always two. */
@@ -512,14 +532,43 @@ public:
 class ItemCreationClass185260 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass185260() : unka8(0), unkac(0), unkb0(0), unkb4(0), unkb8(0), unkbc(0), unkc0(0)
+    {
+    }
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185260();
+    /** @brief Build the selected detail displays. @param associated Text source. @return One. */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    u32 unkac;
+    LibObject178750* unkb0;
+    LibObject178750* unkb4;
+    u8 unkb8;
+    u8 unkb9[3];
+    LibObject178750* unkbc;
+    LibObject174F20* unkc0;
 };
 
 /** Partial item creation window with primary vtable at 0x185360. */
 class ItemCreationClass185360 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass185360()
+    {
+        for (s32 i = 0; i < 6; i++)
+        {
+            unkac[i] = 0;
+            unkcc[i] = 0;
+            unkd2[i] = 0;
+        }
+        unka8 = 0;
+        unkc4 = 0;
+        unkc8 = 0;
+        unkc9 = 0;
+        unkca = -1;
+    }
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185360();
     /** @brief Move the grid in direction two and refresh the alternate display. */
@@ -546,16 +595,24 @@ public:
 class ItemCreationClass185560 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass185560() : unka8(0), unkac(0)
+    {
+        for (s32 i = 0; i < 9; i++)
+        {
+            unkb0[i] = 0;
+            unkd4[i] = 0;
+        }
+        unkf8 = 0;
+    }
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185560();
     /** @brief Create the selected option title and channel labels and images. @param associated Text source. @return Always one. */
     virtual s32 func_slotf4(void* associated);
     ItemCreationSelectedDisplayState* unka8;
     LibObject178750* unkac;
-    LibObject178750* unkb0[8];
-    LibClass178600* unkd0;
-    LibObject174F20* unkd4[8];
-    LibClass178600* unkf4;
+    void* unkb0[9];
+    void* unkd4[9];
     u8 unkf8;
     u8 unkf9[3];
 };
@@ -564,8 +621,18 @@ public:
 class ItemCreationClass185B60 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window and attach its State. @param state Owning selection State. */
+    ItemCreationClass185B60(ItemCreationSelectedDisplayState* state) : unka8(0)
+    {
+        unka8 = state;
+        unkac = 0;
+
+        unkb0 = 0;
+    }
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185B60();
+    /** @brief Create the window controls. @param associated Associated source. @return Setup status. */
+    virtual s32 func_slotf4(void* associated);
     ItemCreationSelectedDisplayState* unka8;
     u8 unkac;
     u8 unkad[3];
@@ -762,6 +829,10 @@ public:
 class ItemCreationClass185C60 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass185C60() : unka8(0)
+    {
+    }
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185C60();
     /** @brief Create the action panel and frames. @param associated Associated object. @return Always one. */
@@ -773,6 +844,10 @@ public:
 class ItemCreationClass185D60 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass185D60() : unka8(0), unkac(0), unkb0(0)
+    {
+    }
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185D60();
     /** @brief Apply the selected result action. @return Action status. */
@@ -792,13 +867,26 @@ class ItemCreationClass185F60;
 class ItemCreationClass185E60 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass185E60()
+    {
+        unka8 = 0;
+        unkac = 0;
+        unkb0 = 0;
+        unkb4 = 0;
+        unkb8 = 0;
+        unkbc = 0;
+    }
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185E60();
     /** @brief Update the option window and its active container. */
     virtual void func_slot5c();
     /** @brief Create the option window widgets. @param associated Associated source. @return Always one. */
     virtual s32 func_slotf4(void* associated);
-    u8 unka8[0x10];
+    ItemCreationSelectedDisplayState* unka8;
+    u32 unkac;
+    u32 unkb0;
+    u32 unkb4;
     ItemCreationClass185F60* unkb8;
     u8 unkbc;
     u8 unkbd[0x1F];
@@ -808,6 +896,10 @@ public:
 class ItemCreationClass186670 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass186670() : unka8(0), unkac(0)
+    {
+    }
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass186670();
     /** @brief Apply the selected action. @return Action status. */
@@ -1174,6 +1266,15 @@ void func_00356160(ItemCreationNineResourceView* object);
 void func_00356FD0(ItemCreationNineResourceView* object);
 
 /**
+ * @brief Hide a resource slot or refresh it from the selected item and mode.
+ * @param object Resource window receiving the update.
+ * @param index Selected resource slot.
+ * @param mode Resource record selector.
+ * @param active Zero hides the slot; a nonzero byte refreshes it.
+ */
+void func_003568F0(ItemCreationClass186770* object, u8 index, u8 mode, u8 active);
+
+/**
  * @brief Advance an enabled selector and refresh its two displays and target.
  * @param object Owner of the displays, selector, and target display.
  */
@@ -1528,18 +1629,18 @@ void func_00351C30(void* object);
 void func_00351C40(void* object);
 
 /**
- * @brief Write the byte at offset 0xC.
- * @param object Object containing the field.
+ * @brief Store the window control byte.
+ * @param object Window base.
  * @param value Value to store.
  */
-void func_00348400(void* object, u8 value);
+void func_00348400(FieldClass15AE70* object, u8 value);
 
 /**
- * @brief Read the byte at offset 0xC.
- * @param object Object containing the field.
- * @return Field value.
+ * @brief Read the window control byte.
+ * @param object Window base.
+ * @return Control value.
  */
-u8 func_00348410(void* object);
+u8 func_00348410(const FieldClass15AE70* object);
 
 /**
  * @brief Store the byte state code.

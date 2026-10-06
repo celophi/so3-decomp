@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 import re
 
+from tools.so3.build.subsegments import segment_start, subsegment_parts
+
 MANIFEST = Path('config/manifests/sdk-functions.json')
 INCLUDE = re.compile(r'INCLUDE_ASM\("([^"\n]+)",\s*([\w.$]+)\);')
 
@@ -15,13 +17,14 @@ def code_units(config):
         if not isinstance(segment, dict) or segment['type'] != 'code':
             continue
         following = segments[index+1]
-        end = following[0] if isinstance(following, list) else following['start']
+        end = segment_start(following)
         subs = segment['subsegments']
-        for i, (start, kind, name) in enumerate(subs):
+        for i, sub in enumerate(subs):
+            start, kind, name = subsegment_parts(sub)
             if kind not in ('c', 'cpp'):
                 continue
             yield {'source': str(Path(options['src_path']) / (name + '.' + kind)),
-                   'start': start, 'end': subs[i+1][0] if i+1 < len(subs) else end,
+                   'start': start, 'end': segment_start(subs[i+1]) if i+1 < len(subs) else end,
                    'base': segment['vram'] - segment['start'],
                    'asm': str(Path(options['asm_path']) / 'nonmatchings' / name)}
 
