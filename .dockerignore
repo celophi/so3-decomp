@@ -5,6 +5,7 @@
 
 # Original game files and generated output
 /disc/
+/assets/
 /build/
 **/*.[iI][sS][oO]
 

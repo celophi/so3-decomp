@@ -8,7 +8,7 @@ HOST_GID := $(shell id -g)
 RUN = $(DOCKER) run --rm --user "$(HOST_UID):$(HOST_GID)" \
 	--mount "type=bind,source=$(PROJECT_DIR),target=/so3" --workdir /so3
 
-.PHONY: help image shell test extract inventory split build verify objdiff-objects report ci-inputs compilers compiler-probe compiler-matrix analysis-tools sdk-scan sdk-symbols m2c decompile
+.PHONY: help image shell test extract extract-assets inventory split build verify objdiff-objects report ci-inputs compilers compiler-probe compiler-matrix analysis-tools sdk-scan sdk-symbols m2c decompile
 help:
 	@printf '%s\n' \
 		'make image                         Build dockerfiles/dev.dockerfile' \
@@ -29,6 +29,8 @@ help:
 		'make compiler-probe                Compile and compare five main functions' \
 		'make compiler-matrix               Fetch and compare all 15 candidates' \
 		'make extract ISO="/path/disc.iso"   Extract a verified disc (mounted read-only)' \
+		'make extract-assets ISO="/path/disc.iso"  Extract assets and message banks to assets/<version>' \
+		'  Optional: RESOURCES="75 95"      Extract selected disc resource indices' \
 		'make inventory ISO="/path/disc.iso" Audit nested containers and IOPRP code' \
 		'  Optional: OUTPUT=/new/path       Choose a new extraction or audit directory'
 
@@ -39,13 +41,19 @@ shell:
 	$(RUN) -it "$(IMAGE)" bash
 
 test:
-	$(RUN) "$(IMAGE)" python -m unittest discover -s tools/so3/tests -v
+	$(RUN) "$(IMAGE)" python -m unittest discover -s tools/so3 -t . -v
 
 extract:
 	@test -n "$(ISO)" || { echo 'Usage: make extract ISO="/path/disc.iso" [OUTPUT=disc/recheck]' >&2; exit 1; }
 	@test -f "$(ISO)" || { echo 'ISO must name an existing file.' >&2; exit 1; }
 	$(RUN) --mount "type=bind,source=$$(realpath -- "$(ISO)"),target=/input/game.iso,readonly" \
 		"$(IMAGE)" python -m tools.so3.disc.extract /input/game.iso $(if $(OUTPUT),--output "$(OUTPUT)")
+
+extract-assets:
+	@test -n "$(ISO)" || { echo 'Usage: make extract-assets ISO="/path/disc.iso" [OUTPUT=assets/recheck] [RESOURCES="75 95"]' >&2; exit 1; }
+	@test -f "$(ISO)" || { echo 'ISO must name an existing file.' >&2; exit 1; }
+	$(RUN) --mount "type=bind,source=$$(realpath -- "$(ISO)"),target=/input/game.iso,readonly" \
+		"$(IMAGE)" python -m tools.so3.assets.src.extract /input/game.iso $(if $(OUTPUT),--output "$(OUTPUT)") $(foreach resource,$(RESOURCES),--resource "$(resource)")
 
 inventory:
 	@test -n "$(ISO)" || { echo 'Usage: make inventory ISO="/path/disc.iso" [OUTPUT=build/inventory/recheck]' >&2; exit 1; }
