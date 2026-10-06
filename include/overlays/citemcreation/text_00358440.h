@@ -754,7 +754,8 @@ public:
     u8 unkdd[3];
     ItemCreationClass186DB0* unke0;
     ItemCreationClass186C90* unke4;
-    u16 unke8;
+    /** Category bits permitted by the current option selection. */
+    u16 selectable_category_mask;
 };
 
 /** Partial item creation window with primary vtable at 0x1874B0. */

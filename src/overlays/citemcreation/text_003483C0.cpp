@@ -19,6 +19,19 @@ enum ItemCreationMessageKey
     ITEM_CREATION_CATEGORY_LABEL_BASE = 0x3458
 };
 
+/** Category bits in saved records, ordered by the category label messages. */
+enum ItemCreationCategoryFlag
+{
+    ITEM_CREATION_CATEGORY_FLAG_COOK = 0x1,
+    ITEM_CREATION_CATEGORY_FLAG_ALCH = 0x2,
+    ITEM_CREATION_CATEGORY_FLAG_CRFT = 0x4,
+    ITEM_CREATION_CATEGORY_FLAG_CMPD = 0x8,
+    ITEM_CREATION_CATEGORY_FLAG_SMTH = 0x10,
+    ITEM_CREATION_CATEGORY_FLAG_WRIT = 0x20,
+    ITEM_CREATION_CATEGORY_FLAG_ENG = 0x40,
+    ITEM_CREATION_CATEGORY_FLAG_SYTH = 0x80
+};
+
 /** Partial view of an optional display whose concrete type is unknown. */
 struct ItemCreationVisibility3F
 {
@@ -273,15 +286,7 @@ enum
     ITEM_CREATION_COLOR_DIM = 0x505050,
     ITEM_CREATION_COLOR_BRIGHT = 0x808080,
     ITEM_CREATION_COLOR_SELECTED = 0x288080,
-    ITEM_CREATION_COLOR_ASSIGNED = 0x1E8CFF,
-    ITEM_CREATION_RECORD_FLAG_0 = 0x1,
-    ITEM_CREATION_RECORD_FLAG_1 = 0x2,
-    ITEM_CREATION_RECORD_FLAG_2 = 0x4,
-    ITEM_CREATION_RECORD_FLAG_3 = 0x8,
-    ITEM_CREATION_RECORD_FLAG_4 = 0x10,
-    ITEM_CREATION_RECORD_FLAG_5 = 0x20,
-    ITEM_CREATION_RECORD_FLAG_6 = 0x40,
-    ITEM_CREATION_RECORD_FLAG_7 = 0x80
+    ITEM_CREATION_COLOR_ASSIGNED = 0x1E8CFF
 };
 
 typedef struct ItemCreationColorRecord
@@ -1345,49 +1350,49 @@ void func_0034A7A0(ItemCreationEightColorOwner* object, u8 selected)
     if (record != 0)
     {
         flags = record->unk30;
-        if (flags & ITEM_CREATION_RECORD_FLAG_0)
+        if (flags & ITEM_CREATION_CATEGORY_FLAG_COOK)
         {
             ItemCreationColorDisplay* display = object->unk168[0];
             display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
             display->unk3c = 1;
         }
-        if (flags & ITEM_CREATION_RECORD_FLAG_1)
+        if (flags & ITEM_CREATION_CATEGORY_FLAG_ALCH)
         {
             ItemCreationColorDisplay* display = object->unk168[1];
             display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
             display->unk3c = 1;
         }
-        if (flags & ITEM_CREATION_RECORD_FLAG_2)
+        if (flags & ITEM_CREATION_CATEGORY_FLAG_CRFT)
         {
             ItemCreationColorDisplay* display = object->unk168[2];
             display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
             display->unk3c = 1;
         }
-        if (flags & ITEM_CREATION_RECORD_FLAG_3)
+        if (flags & ITEM_CREATION_CATEGORY_FLAG_CMPD)
         {
             ItemCreationColorDisplay* display = object->unk168[3];
             display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
             display->unk3c = 1;
         }
-        if (flags & ITEM_CREATION_RECORD_FLAG_4)
+        if (flags & ITEM_CREATION_CATEGORY_FLAG_SMTH)
         {
             ItemCreationColorDisplay* display = object->unk168[4];
             display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
             display->unk3c = 1;
         }
-        if (flags & ITEM_CREATION_RECORD_FLAG_5)
+        if (flags & ITEM_CREATION_CATEGORY_FLAG_WRIT)
         {
             ItemCreationColorDisplay* display = object->unk168[5];
             display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
             display->unk3c = 1;
         }
-        if (flags & ITEM_CREATION_RECORD_FLAG_6)
+        if (flags & ITEM_CREATION_CATEGORY_FLAG_ENG)
         {
             ItemCreationColorDisplay* display = object->unk168[6];
             display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
             display->unk3c = 1;
         }
-        if (flags & ITEM_CREATION_RECORD_FLAG_7)
+        if (flags & ITEM_CREATION_CATEGORY_FLAG_SYTH)
         {
             ItemCreationColorDisplay* display = object->unk168[7];
             display->unk94 = ITEM_CREATION_COLOR_BRIGHT;
@@ -7640,11 +7645,11 @@ ItemCreationClass186EB0::ItemCreationClass186EB0(void* object)
  * @param text Row text display.
  * @param index Row index.
  * @param selected Selected row index.
- * @param mask Availability bit for this row.
+ * @param mask Selection bit for this category.
  */
 static inline void highlight_category_label(ItemCreationClass186FB0* object, LibObject178750* text, s32 index, u16 selected, u16 mask)
 {
-    if (object->unke8 & mask)
+    if (object->selectable_category_mask & mask)
     {
         text->unk94 = 0x808080;
         text->unk3c = 1;
@@ -7682,7 +7687,7 @@ extern "C" void item_creation_update_category_labels(ItemCreationClass186FB0* ob
     {
         ItemCreationSelectedDisplayState* state = object->unka8;
         LibObject178750* text = object->category_labels[index];
-        if (state->unk4e[(u8)(index + 1) - 1] != 0)
+        if (state->category_enabled[(u8)(index + 1) - 1] != 0)
         {
             if (text != 0)
             {
@@ -7692,28 +7697,28 @@ extern "C" void item_creation_update_category_labels(ItemCreationClass186FB0* ob
             switch (index + 1)
             {
             case 1:
-                highlight_category_label(object, text, index, selected, 1);
+                highlight_category_label(object, text, index, selected, ITEM_CREATION_CATEGORY_FLAG_COOK);
                 break;
             case 2:
-                highlight_category_label(object, text, index, selected, 2);
+                highlight_category_label(object, text, index, selected, ITEM_CREATION_CATEGORY_FLAG_ALCH);
                 break;
             case 3:
-                highlight_category_label(object, text, index, selected, 4);
+                highlight_category_label(object, text, index, selected, ITEM_CREATION_CATEGORY_FLAG_CRFT);
                 break;
             case 4:
-                highlight_category_label(object, text, index, selected, 8);
+                highlight_category_label(object, text, index, selected, ITEM_CREATION_CATEGORY_FLAG_CMPD);
                 break;
             case 5:
-                highlight_category_label(object, text, index, selected, 16);
+                highlight_category_label(object, text, index, selected, ITEM_CREATION_CATEGORY_FLAG_SMTH);
                 break;
             case 6:
-                highlight_category_label(object, text, index, selected, 32);
+                highlight_category_label(object, text, index, selected, ITEM_CREATION_CATEGORY_FLAG_WRIT);
                 break;
             case 7:
-                highlight_category_label(object, text, index, selected, 64);
+                highlight_category_label(object, text, index, selected, ITEM_CREATION_CATEGORY_FLAG_ENG);
                 break;
             case 8:
-                highlight_category_label(object, text, index, selected, 128);
+                highlight_category_label(object, text, index, selected, ITEM_CREATION_CATEGORY_FLAG_SYTH);
                 break;
             }
         }
@@ -7793,7 +7798,7 @@ s32 ItemCreationClass186FB0::func_slotf4(void* associated)
         category_labels[index] = new (0) LibObject178750;
         category_labels[index]->func_004C7FE0(20.0f, 12.0f + 28.0f * index, 0.0f, 0.0f, (s32)associated, index + ITEM_CREATION_CATEGORY_LABEL_BASE, 0);
         func_004C6190(unk10, category_labels[index]);
-        if (unka8->unk4e[(u8)(index + 1) - 1] != 0)
+        if (unka8->category_enabled[(u8)(index + 1) - 1] != 0)
         {
             category_labels[index]->set_color(0x808080);
         }
@@ -7833,7 +7838,7 @@ ItemCreationClass186FB0::ItemCreationClass186FB0(void* object)
     category_selector = 0;
     category_marker = 0;
     unkdc = 0;
-    unke8 = 0;
+    selectable_category_mask = 0;
 }
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003608C0);
@@ -9511,7 +9516,7 @@ void func_00366050(ItemCreationPanelView* object)
                         ItemCreationPanelMarker* other = (ItemCreationPanelMarker*)node->unk00;
                         if (other != 0)
                         {
-                            if (object->unka8->unk4e[object->unkd0[index] - 1] == 0)
+                            if (object->unka8->category_enabled[object->unkd0[index] - 1] == 0)
                             {
                                 display->unk3f = 0;
                                 other->unk3f = 1;
@@ -9779,7 +9784,7 @@ s32 ItemCreationClass1874B0::func_slotf4(void* associated)
             LibObject178750* text = static_cast<LibObject178750*>(node->unk00);
             if (text)
             {
-                if (unka8->unk4e[(u8)(index + 1) - 1])
+                if (unka8->category_enabled[(u8)(index + 1) - 1])
                 {
                     text->set_color(0x808080);
                 }
@@ -11022,7 +11027,7 @@ void func_0036A5D0(ItemCreationSelectedDisplayState* object, u8 mode)
                     if (view != 0)
                     {
                         u8 slot = index + 1;
-                        if (display->unka8->unk4e[slot - 1] != 0)
+                        if (display->unka8->category_enabled[slot - 1] != 0)
                         {
                             view->unk94 = 0x808080;
                             view->unk3c = 1;
@@ -11153,53 +11158,57 @@ void func_0036A8F0(ItemCreationSelectedDisplayState* object)
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0036AAA0);
 
-void func_0036AE20(ItemCreationSelectedDisplayState* object)
+/**
+ * @brief Restore category flags from the saved record and enable the ninth entry.
+ * @param object Selection state with an optional assigned-item record.
+ */
+void item_creation_restore_category_flags(ItemCreationSelectedDisplayState* object)
 {
     if (object->unk134 != 0)
     {
         object->unk130 = object->unk134->unk30;
-        if (object->unk130 & ITEM_CREATION_FLAG_0)
+        if (object->unk130 & ITEM_CREATION_CATEGORY_FLAG_COOK)
         {
-            enable_record_flag(object, ITEM_CREATION_FLAG_0);
-            object->unk4e[0] = 1;
+            enable_record_flag(object, ITEM_CREATION_CATEGORY_FLAG_COOK);
+            object->category_enabled[0] = 1;
         }
-        if (object->unk130 & ITEM_CREATION_FLAG_1)
+        if (object->unk130 & ITEM_CREATION_CATEGORY_FLAG_ALCH)
         {
-            enable_record_flag(object, ITEM_CREATION_FLAG_1);
-            object->unk4e[1] = 1;
+            enable_record_flag(object, ITEM_CREATION_CATEGORY_FLAG_ALCH);
+            object->category_enabled[1] = 1;
         }
-        if (object->unk130 & ITEM_CREATION_FLAG_2)
+        if (object->unk130 & ITEM_CREATION_CATEGORY_FLAG_CRFT)
         {
-            enable_record_flag(object, ITEM_CREATION_FLAG_2);
-            object->unk4e[2] = 1;
+            enable_record_flag(object, ITEM_CREATION_CATEGORY_FLAG_CRFT);
+            object->category_enabled[2] = 1;
         }
-        if (object->unk130 & ITEM_CREATION_FLAG_3)
+        if (object->unk130 & ITEM_CREATION_CATEGORY_FLAG_CMPD)
         {
-            enable_record_flag(object, ITEM_CREATION_FLAG_3);
-            object->unk4e[3] = 1;
+            enable_record_flag(object, ITEM_CREATION_CATEGORY_FLAG_CMPD);
+            object->category_enabled[3] = 1;
         }
-        if (object->unk130 & ITEM_CREATION_FLAG_4)
+        if (object->unk130 & ITEM_CREATION_CATEGORY_FLAG_SMTH)
         {
-            enable_record_flag(object, ITEM_CREATION_FLAG_4);
-            object->unk4e[4] = 1;
+            enable_record_flag(object, ITEM_CREATION_CATEGORY_FLAG_SMTH);
+            object->category_enabled[4] = 1;
         }
-        if (object->unk130 & ITEM_CREATION_FLAG_5)
+        if (object->unk130 & ITEM_CREATION_CATEGORY_FLAG_WRIT)
         {
-            enable_record_flag(object, ITEM_CREATION_FLAG_5);
-            object->unk4e[5] = 1;
+            enable_record_flag(object, ITEM_CREATION_CATEGORY_FLAG_WRIT);
+            object->category_enabled[5] = 1;
         }
-        if (object->unk130 & ITEM_CREATION_FLAG_6)
+        if (object->unk130 & ITEM_CREATION_CATEGORY_FLAG_ENG)
         {
-            enable_record_flag(object, ITEM_CREATION_FLAG_6);
-            object->unk4e[6] = 1;
+            enable_record_flag(object, ITEM_CREATION_CATEGORY_FLAG_ENG);
+            object->category_enabled[6] = 1;
         }
-        if (object->unk130 & ITEM_CREATION_FLAG_7)
+        if (object->unk130 & ITEM_CREATION_CATEGORY_FLAG_SYTH)
         {
-            enable_record_flag(object, ITEM_CREATION_FLAG_7);
-            object->unk4e[7] = 1;
+            enable_record_flag(object, ITEM_CREATION_CATEGORY_FLAG_SYTH);
+            object->category_enabled[7] = 1;
         }
         enable_record_flag(object, ITEM_CREATION_FLAG_8);
-        object->unk4e[8] = 1;
+        object->category_enabled[8] = 1;
     }
 }
 
@@ -12127,7 +12136,7 @@ u8 ItemCreationSelectedDisplayState::func_00264110()
     }
     unk1f0 = reinterpret_cast<RuntimeStateSection58*>(D_001B6430->context->unk58)->unk1b4;
     func_0036AAA0(this);
-    func_0036AE20(this);
+    item_creation_restore_category_flags(this);
     func_00369EB0(reinterpret_cast<ItemCreationRuntimeRecordSelection*>(this));
     for (s32 index = 1; index < 28; index++)
     {
@@ -12173,7 +12182,7 @@ ItemCreationSelectedDisplayState::ItemCreationSelectedDisplayState()
     unk140 = 130.0f;
     for (s32 index = 0; index < 9; index++)
     {
-        unk4e[index] = 0;
+        category_enabled[index] = 0;
     }
     for (s32 index = 0; index < 14; index++)
     {

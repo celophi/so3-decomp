@@ -137,7 +137,8 @@ typedef struct ItemCreationSelectedDisplayState
     struct FieldRecordSelection* unk48;
     u8 unk4c;
     u8 unk4d;
-    u8 unk4e[9];
+    /** Category flags used by the labels and selection handlers. */
+    u8 category_enabled[9];
     u8 unk57;
     u8 unk58;
     u8 unk59;
@@ -325,10 +326,10 @@ void func_0036F270(ItemCreationCountedList* object, void* value);
 void func_0036EEF0(ItemCreationCountedList* object);
 
 /**
- * @brief Restore enabled selection flags from its saved assigned-item record.
+ * @brief Restore category flags from the saved record and enable the ninth entry.
  * @param object Selection state with an optional assigned-item record.
  */
-void func_0036AE20(ItemCreationSelectedDisplayState* object);
+void item_creation_restore_category_flags(ItemCreationSelectedDisplayState* object);
 
 /**
  * @brief Rebuild the available-item lists from the saved selection.
