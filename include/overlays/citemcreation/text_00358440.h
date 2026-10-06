@@ -14,6 +14,7 @@ typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
 typedef struct ItemCreationIdentifierOwner ItemCreationIdentifierOwner;
 struct ItemCreationAllocationRecord;
 struct LibObject178660;
+struct FieldObject23BE00;
 
 /** Partial item display with its decoded halfword and adjacent byte. */
 typedef struct ItemCreationAllocationDisplay
@@ -165,15 +166,20 @@ public:
     virtual s32 func_slot10(void* associated, float x, float y, s32 code);
     virtual void func_slot14();
     virtual void func_slot18();
-    virtual void func_slot1c();
+    /** @brief Store the byte state and halfword flags. @param code Byte state code. @param flags Halfword state flags. */
+    virtual void func_slot1c(u8 code, u16 flags);
     /** @brief Set the nested display byte flag. @param flag Flag value. */
     virtual void func_slot20(u32 flag);
     virtual void func_slot24();
     virtual void func_slot28();
-    virtual void func_slot2c();
-    virtual void func_slot30();
-    virtual void func_slot34();
-    virtual void func_slot38();
+    /** @brief Store the byte state code. @param value State code. */
+    virtual void func_slot2c(u8 value);
+    /** @brief Read the byte state code. @return State code. */
+    virtual u8 func_slot30();
+    /** @brief Store the halfword state flags. @param value State flags. */
+    virtual void func_slot34(u16 value);
+    /** @brief Read the halfword state flags. @return State flags. */
+    virtual u16 func_slot38();
     virtual void func_slot3c();
     /** @brief Store the associated window pointer. @param associated Pointer to store. */
     virtual void func_slot40(void* associated)
@@ -185,7 +191,8 @@ public:
     {
         return unk98;
     }
-    virtual void func_slot48();
+    /** @brief Store the alternate window pointer. @param associated Pointer to store. */
+    virtual void func_slot48(void* associated);
     /** @brief Return the alternate associated window. @return Stored pointer. */
     virtual void* func_slot4c();
     virtual void func_slot50();
@@ -194,7 +201,8 @@ public:
     /** @brief Return the nested display container. @return Stored container. */
     virtual LibObject178660* func_slot58();
     virtual void func_slot5c();
-    virtual void func_slot60();
+    /** @brief Set the window message by signed text key. @param text_key Message key or relative index. */
+    virtual void func_slot60(s32 text_key);
     virtual void func_slot64();
     virtual void func_slot68();
     virtual void func_slot6c();
@@ -231,7 +239,11 @@ public:
     virtual u8 func_slote8();
     virtual void func_slotec(u8 value);
     virtual void func_slotf0();
-    u8 unk04[0xC];
+    u8 unk04[4];
+    u8 unk08;
+    u8 unk09;
+    u16 unk0a;
+    u8 unk0c[4];
     LibObject178660* unk10;
     u8 unk14[0x18];
     ItemCreationCountedList unk2c;
@@ -239,7 +251,8 @@ public:
     ItemCreationCountedList unk74;
     u8 unk7c[0x1C];
     void* unk98;
-    u8 unk9c[0xC];
+    void* unk9c;
+    u8 unka0[8];
 };
 
 /** Field list callback base with a parameter prefix and two update hooks. */
@@ -494,6 +507,33 @@ public:
 
 class ItemCreationClass1746A0;
 
+/** Status message window with primary table 0x1877B0 and native allocation size 0xD4. */
+class ItemCreationClass1877B0 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the status message window and its Field base. */
+    virtual ~ItemCreationClass1877B0();
+    /** @brief Advance the timed vertical text scroll. */
+    virtual void func_slot5c();
+    /** @brief Set a status message and reset its scroll. @param text_key Absolute text key or signed relative index. */
+    virtual void func_slot60(s32 text_key);
+    /** @brief Create the message window widgets. @param associated Associated source. @return One on success, or zero for missing widgets. */
+    virtual s32 func_slotf4(void* associated);
+    LibObject178750* unka8;
+    LibObject178750* unkac;
+    s32 unkb0;
+    u32 unkb4;
+    s16 unkb8;
+    u8 unkba;
+    u8 unkbb;
+    float unkbc;
+    float unkc0;
+    float unkc4;
+    float unkc8;
+    ItemCreationClass1746A0* unkcc;
+    ItemCreationClass1746A0* unkd0;
+};
+
 /** Mode list with primary table 0x186C90 and its owned counted list. */
 class ItemCreationClass186C90 : public FieldClass15AD40
 {
@@ -730,6 +770,22 @@ public:
     ItemCreationClass1872B0();
     /** @brief Destroy the selection window through its Field window base. */
     virtual ~ItemCreationClass1872B0();
+    /** @brief Refresh the decoded value display. */
+    virtual void func_slot5c();
+    /** @brief Move the grid in direction zero and refresh its selected entry. */
+    virtual void func_slot68();
+    /** @brief Move the grid in direction one and refresh its selected entry. */
+    virtual void func_slot6c();
+    /** @brief Empty callback. */
+    virtual void func_slot70();
+    /** @brief Empty callback. */
+    virtual void func_slot74();
+    /** @brief Handle the callback at native slot 0xb0. @return Callback result. */
+    virtual s32 func_slotb0();
+    /** @brief Handle the callback at native slot 0xb4. @return Callback result. */
+    virtual s32 func_slotb4();
+    /** @brief Construct the panel widgets. @param associated Associated window. @return One on success, zero without an active state. */
+    virtual s32 func_slotf4(void* associated);
     u32 unka8;
     u8 unkac;
     u8 unkad[3];
@@ -737,8 +793,8 @@ public:
     u8 unkd0[8];
     u16 unkd8;
     u8 unkda[2];
-    u32 unkdc;
-    u32 unke0;
+    FieldObject23CEA0* unkdc;
+    FieldObject23BE00* unke0;
     u32 unke4;
     u32 unke8[9];
     u8 unk10c;

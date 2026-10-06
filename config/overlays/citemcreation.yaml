@@ -53,7 +53,7 @@ segments:
       - [0x100C0, cpp, text_00358440]
       - [0x20150, cpp, text_003684D0]
       - [0x27080, databin, data]
-      - [0x27380, .rodata, text_003483C0]
+      - [0x27340, .rodata, text_003483C0]
       - [0x273B4, rodatabin, rodata_0036F734]
       - [0x27440, .rodata, text_00358440]
       - [0x274AC, rodatabin, rodata_0036F82C]

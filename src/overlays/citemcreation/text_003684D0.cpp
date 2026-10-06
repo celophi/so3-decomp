@@ -10,6 +10,9 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_004095C0.h"
 
+/** @brief Return the text display bounds. @param object Text display. @return Stored bounds. */
+extern "C" LibBounds4C69B0* func_4C69B0(LibObject178750* object);
+
 enum
 {
     ITEM_CREATION_FLAG_0 = 0x1,
@@ -248,7 +251,27 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_00368AD0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_00368B30);
+/**
+ * @brief Set a status message and reset its timed scroll.
+ * @param text_key Absolute text key from 0x32CB through 0x32D2, or a signed relative index.
+ */
+void ItemCreationClass1877B0::func_slot60(s32 text_key)
+{
+    s32 key = text_key;
+    if (text_key < 0x32CB)
+    {
+        key += 0x32CB;
+    }
+    if (key >= 0x32CB && key < 0x32D3)
+    {
+        unkba = 0;
+        unkb8 = 0;
+        void* associated = func_slot54();
+        func_4C6DF0(unkac, associated, key, 1);
+        LibBounds4C69B0* bounds = func_4C69B0(unkac);
+        unkb0 = (s32)bounds->unk08 + 6;
+    }
+}
 
 void func_00368BD0(ItemCreationScrollState* object)
 {
@@ -288,7 +311,10 @@ void func_00368BD0(ItemCreationScrollState* object)
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_00368CC0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_00369060);
+/** @brief Destroy the status message window through its Field base. */
+ItemCreationClass1877B0::~ItemCreationClass1877B0()
+{
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_003690C0);
 
@@ -1140,7 +1166,81 @@ u16 func_0036B0E0(void* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036B1E0);
+/**
+ * @brief Find the position for a one-based option in the selection grid.
+ * @param selection Grid containing twelve positions.
+ * @param index One-based option index.
+ * @return Position, or null for an invalid index.
+ */
+static inline const float* selection_position(ItemCreationSelection* selection, s32 index)
+{
+    if (index <= 0)
+    {
+        return 0;
+    }
+    if (index > 12)
+    {
+        return 0;
+    }
+    return selection->unk00[index - 1].unk00;
+}
+/**
+ * @brief Move the transfer display and mark its position for refresh.
+ * @param display Transfer display to move.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ */
+static inline void transfer_position(ItemCreationTransferDisplay* display, float x, float y)
+{
+    display->unk50 = x;
+    display->unk54 = y;
+    display->unk75 = 1;
+    display->unk3c = 1;
+}
+/**
+ * @brief Refresh the option windows and enable or disable their selection controls.
+ * @param object State owning the selection and detail windows.
+ * @param enabled Full-word control flag; nonzero also restores the selected item and status message.
+ */
+extern "C" void func_0036B1E0(ItemCreationSelectedDisplayState* object, u32 enabled)
+{
+    if (object->unkf4 != 0)
+    {
+        if (enabled != 0)
+        {
+            func_0034DA30(object->unkf4);
+            func_0034DB00(object->unkf4, object->unk4d);
+            func_0034D980(object->unkf4, object->unk4d);
+            ItemCreationFlagResetOwner* owner = object->unkf4;
+            s32 selected = object->unk4d;
+            owner->unk160->unk6c = selected;
+            const float* position = selection_position(owner->unk160, selected);
+            transfer_position(owner->unk15c, position[0], position[1]);
+            object->func_00263C70(object->unkf4);
+        }
+        static_cast<FieldClass15AE70*>(static_cast<void*>(object->unkf4))->func_slot20(enabled);
+    }
+    if (object->unkf8 != 0)
+    {
+        static_cast<FieldClass15AE70*>(static_cast<void*>(object->unkf8))->func_slot20(enabled);
+        if (enabled != 0)
+        {
+            func_0034D340(object->unkf8);
+        }
+    }
+    if (object->unkfc != 0)
+    {
+        static_cast<FieldClass15AE70*>(static_cast<void*>(object->unkfc))->func_slot20(enabled);
+        if (enabled != 0)
+        {
+            func_0034D340(object->unkfc);
+        }
+    }
+    if (object->unk9c != 0 && enabled != 0)
+    {
+        object->unk9c->func_slot60(0x32CD);
+    }
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036B360);
 

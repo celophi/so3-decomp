@@ -11,6 +11,12 @@ typedef struct LibObject178750 LibObject178750;
 
 /** Partial widget receiver using the main table D_178630. */
 typedef struct LibClass178630 LibClass178630;
+
+/** Four packed panel colors used by the resident panel API. */
+typedef struct LibWidgetColors4C5590
+{
+    u32 values[4];
+} LibWidgetColors4C5590;
 /** Container receiver with list and transform interfaces. */
 typedef struct LibObject178660 LibObject178660;
 
@@ -62,6 +68,8 @@ void func_004C4A90(LibClass178630* object);
  * @return Configuration status.
  */
 s32 func_004C5A80(LibClass178630* object, s32 mode, float x, float y, float width, float height, float extra);
+/** @brief Set the four packed panel colors. @param object Panel widget. @param colors Four packed colors. */
+void func_4C5590(LibClass178630* object, const LibWidgetColors4C5590* colors);
 #ifdef __cplusplus
 }
 #endif
@@ -304,6 +312,24 @@ struct LibClass178630 : public LibClass178600
         unk50 = 0;
         unk38 = 1;
         unk60 = 0;
+    }
+    /**
+     * @brief Initialize widget state and drawing dimensions.
+     * @param mode Drawing mode.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     * @param width Drawing width.
+     * @param height Drawing height.
+     * @param extra Extra drawing coordinate.
+     */
+    LibClass178630(s32 mode, float x, float y, float width, float height, float extra)
+    {
+        unk5c = 0;
+        unk58 = 0;
+        unk54 = 0;
+        unk50 = 0;
+        unk38 = 1;
+        func_004C5A80(this, mode, x, y, width, height, extra);
     }
     /** @brief Destroy the widget. */
     virtual ~LibClass178630()

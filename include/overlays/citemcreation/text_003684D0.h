@@ -365,6 +365,13 @@ void func_0036A5D0(ItemCreationSelectedDisplayState* object, u8 mode);
 void func_00369B80(ItemCreationSelectedDisplayState* object, s32 value);
 
 /**
+ * @brief Refresh the option windows and enable or disable their selection controls.
+ * @param object State owning the selection and detail windows.
+ * @param enabled Full-word control flag; nonzero refreshes their selected item and status message.
+ */
+void func_0036B1E0(ItemCreationSelectedDisplayState* object, u32 enabled);
+
+/**
  * @brief Map an item byte to its associated halfword mask.
  * @param object Receiver; unused.
  * @param value Item byte to map.
