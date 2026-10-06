@@ -398,16 +398,24 @@ public:
     virtual void func_slot6c();
     /** @brief Forward direction 1 to the window. */
     virtual void func_slot68();
+    /** @brief Open the selected detail window or restore the associated window. @return Action status. */
+    virtual s32 func_slotb0();
+    /** @brief Restore the alternate window and its mode displays. @return Always one. */
+    virtual s32 func_slotbc();
+    /** @brief Move the selection and refresh the associated detail windows. @param direction Direction code. */
+    virtual void func_slotf8(u16 direction);
+    /** @brief Build the option grid and its resource displays. @param associated Associated resource slot. @return Creation status. */
+    virtual s32 func_slotf4(void* associated);
     ItemCreationSelection* unk160;
-    u32 unk164;
-    u32 unk168[9];
-    u32 unk18c;
-    u32 unk190;
-    u32 unk194;
-    u32 unk198;
-    u32 unk19c;
-    u32 unk1a0;
-    u32 unk1a4;
+    LibObject178750* unk164;
+    LibClass178600* unk168[9];
+    class ItemCreationClass174C40* unk18c;
+    class ItemCreationClass174C40* unk190;
+    class ItemCreationClass174C40* unk194;
+    LibObject178750* unk198;
+    LibObject178750* unk19c;
+    LibObject178750* unk1a0;
+    class ItemCreationClass185060* unk1a4;
 };
 
 /** Partial virtual interface of the item creation window at 0x185960. */
@@ -464,6 +472,12 @@ class ItemCreationClass185060 : public FieldClass15AE70
 public:
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185060();
+    /** @brief Restore the parent after confirming. @return One. */
+    virtual s32 func_slotb0();
+    /** @brief Restore the parent after returning. @return Two. */
+    virtual s32 func_slotb4();
+    /** @brief Build the window displays. @param associated Associated source. @return One. */
+    virtual s32 func_slotf4(void* associated);
 };
 
 /** Partial item creation window with primary vtable at 0x185160. */
@@ -472,6 +486,26 @@ class ItemCreationClass185160 : public FieldClass15AE70
 public:
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185160();
+    /** @brief Restore the associated window. @return Always two. */
+    virtual s32 func_slotb4();
+    /** @brief Apply the current option. @return Action status. */
+    virtual s32 func_slotb0();
+    /** @brief Create the option displays. @param associated Text source. @return Setup status. */
+    virtual s32 func_slotf4(void* associated);
+    /** @brief Move the selection in direction three. */
+    virtual void func_slot70();
+    /** @brief Move the selection in direction two. */
+    virtual void func_slot74();
+    FieldObject23CEA0* unka8;
+    ItemCreationOptionResourceDisplay* unkac;
+    LibObject178750* unkb0;
+    LibObject178750* unkb4;
+    LibObject178750* unkb8;
+    LibObject178750* unkbc;
+    LibObject178750* unkc0;
+    u8 unkc4;
+    u8 unkc5;
+    u8 unkc6[2];
 };
 
 /** Partial item creation window with primary vtable at 0x185260. */
@@ -488,6 +522,24 @@ class ItemCreationClass185360 : public FieldClass15AE70
 public:
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185360();
+    /** @brief Move the grid in direction two and refresh the alternate display. */
+    virtual void func_slot74();
+    /** @brief Move the grid in direction three and refresh the alternate display. */
+    virtual void func_slot70();
+    /** @brief Perform the default action. @return Always zero. */
+    virtual s32 func_slotb0();
+    /** @brief Return to the associated window. @return Zero without an associated window, or one after restoring it. */
+    virtual s32 func_slotb4();
+    /** @brief Create the row displays and selection grid. @param associated Text source. @return Setup status. */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    ItemCreationOptionResourceDisplay* unkac[6];
+    FieldObject23CEA0* unkc4;
+    u8 unkc8;
+    u8 unkc9;
+    s16 unkca;
+    u8 unkcc[6];
+    u8 unkd2[6];
 };
 
 /** Partial item creation window with primary vtable at 0x185560. */
@@ -496,6 +548,16 @@ class ItemCreationClass185560 : public FieldClass15AE70
 public:
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185560();
+    /** @brief Create the selected option title and channel labels and images. @param associated Text source. @return Always one. */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    LibObject178750* unkac;
+    LibObject178750* unkb0[8];
+    LibClass178600* unkd0;
+    LibObject174F20* unkd4[8];
+    LibClass178600* unkf4;
+    u8 unkf8;
+    u8 unkf9[3];
 };
 
 /** Partial item creation window with primary vtable at 0x185B60. */
@@ -702,6 +764,9 @@ class ItemCreationClass185C60 : public FieldClass15AE70
 public:
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemCreationClass185C60();
+    /** @brief Create the action panel and frames. @param associated Associated object. @return Always one. */
+    virtual s32 func_slotf4(void* associated);
+    void* unka8;
 };
 
 /** Partial item creation window with primary vtable at 0x185D60. */
@@ -804,6 +869,16 @@ class ItemCreationClass1746A0 : public LibClass178600
 public:
     /** @brief Initialize the widget storage and select kind 4. */
     inline ItemCreationClass1746A0();
+    /**
+     * @brief Initialize frame geometry and storage.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     * @param width Drawing width.
+     * @param height Drawing height.
+     */
+    inline ItemCreationClass1746A0(float x, float y, float width, float height);
+    /** @brief Initialize enabled frame storage. @param code Initialization code passed to the resident routine. */
+    inline ItemCreationClass1746A0(s32 code);
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass1746A0();
     LibStorageBlock0C unk40;
@@ -1143,6 +1218,33 @@ void func_00350ED0(ItemCreationThreeColorList* object);
 void func_00352B00(ItemCreationFourPositionDisplay* object, float x, float y);
 
 /**
+ * @brief Set the option window mode and refresh its selection colors.
+ * @param object Option window.
+ * @param mode Zero resets the selection; one activates it.
+ */
+void func_00348B60(ItemCreationClass185160* object, u16 mode);
+
+/**
+ * @brief Collect category options and refresh the six resource displays.
+ * @param object Selection window associated with the option state.
+ * @param category Category value stored as a byte.
+ */
+void func_00349DE0(ItemCreationClass185360* object, u32 category);
+
+/**
+ * @brief Activate or reset the option grid and refresh its alternate display.
+ * @param object Option grid window.
+ * @param mode Zero resets the grid; one activates it.
+ */
+void func_0034A1E0(ItemCreationClass185360* object, u16 mode);
+
+/**
+ * @brief Refresh the option detail displays for the current code.
+ * @param object Option detail window.
+ */
+void func_0034B970(ItemCreationClass185560* object);
+
+/**
  * @brief Set alternate marker flags and update their associated display setting.
  * @param object Owner of the optional marker and display objects.
  * @param mode Zero or one selects the marker group; other values leave the state unchanged.
@@ -1440,46 +1542,46 @@ void func_00348400(void* object, u8 value);
 u8 func_00348410(void* object);
 
 /**
- * @brief Write the byte at offset 0x8.
+ * @brief Store the byte state code.
  * @param object Object containing the field.
  * @param value Value to store.
  */
-void func_00348420(void* object, u8 value);
+void func_00348420(struct FieldClass15AE70* object, u8 value);
 
 /**
- * @brief Read the byte at offset 0x8.
+ * @brief Read the byte state code.
  * @param object Object containing the field.
  * @return Field value.
  */
-u8 func_00348430(void* object);
+u8 func_00348430(struct FieldClass15AE70* object);
 
 /**
- * @brief Write the halfword at offset 0xA.
+ * @brief Store the halfword state flags.
  * @param object Object containing the field.
  * @param value Value to store.
  */
-void func_00348440(void* object, u16 value);
+void func_00348440(struct FieldClass15AE70* object, u16 value);
 
 /**
- * @brief Read the halfword at offset 0xA.
+ * @brief Read the halfword state flags.
  * @param object Object containing the field.
  * @return Field value.
  */
-u16 func_00348450(void* object);
+u16 func_00348450(struct FieldClass15AE70* object);
 
 /**
- * @brief Write the word at offset 0x9C.
- * @param object Object containing the field.
- * @param value Value to store.
+ * @brief Store the alternate associated window pointer.
+ * @param object Window base containing the pointer.
+ * @param value Pointer to store.
  */
-void func_00348480(void* object, u32 value);
+void func_00348480(struct FieldClass15AE70* object, void* value);
 
 /**
- * @brief Read the word at offset 0x9C.
- * @param object Object containing the field.
- * @return Field value.
+ * @brief Read the alternate associated window pointer.
+ * @param object Window base containing the pointer.
+ * @return Associated window pointer.
  */
-u32 func_00348490(void* object);
+void* func_00348490(struct FieldClass15AE70* object);
 
 /**
  * @brief Write the word at offset 0x4.

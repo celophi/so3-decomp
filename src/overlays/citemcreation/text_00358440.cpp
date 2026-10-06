@@ -249,6 +249,22 @@ struct ItemCreationControlState
     u8 unk00[0x9A];
     u8 unk9a;
 };
+/** Partial display marker containing its update byte and scalar field. */
+struct ItemCreationPanelReturnMarker
+{
+    u8 unk00[0xAE];
+    u8 unkae;
+    u8 unkaf[0x31];
+    float unke0;
+};
+
+/** Partial associated parent containing its selection marker. */
+struct ItemCreationPanelReturnParent
+{
+    u8 unk00[0xAC];
+    ItemCreationPanelReturnMarker* unkac;
+};
+
 /** Partial associated parent containing its selection marker and group. */
 struct ItemCreationModeReturnParent
 {
@@ -448,6 +464,14 @@ void func_002CDFB0(FieldStateCE420* object);
  * @param color Packed marker color.
  */
 void func_002CD8B0(FieldClass15AD40* object, LibClass174EF0* display, u32 color);
+
+/** @brief Return the text widget bounds. @param object Text widget. @return Stored bounds. */
+LibBounds4C69B0* func_4C69B0(LibObject178750* object);
+
+/** @brief Refresh the panel grid selection and selected entry. @param object Panel selection window. */
+void func_00365F20(ItemCreationClass1872B0* object);
+/** @brief Reset the grid indices and update its position. @param object Grid receiver. */
+void func_0023C710(FieldObject23CEA0* object);
 
 }
 
@@ -2640,12 +2664,18 @@ extern "C" void func_00360FD0(void* selected)
     }
 }
 
-/** @brief Update the two selection markers, then set the window activation. @param object Nine-slot window. @param active Activation value. */
-extern "C" void func_003610D0(ItemCreationClass1870B0* object, u32 active)
+/**
+ * @brief Update the selection grids and the window's display activation.
+ * @tparam Window Window type with primary, alternate and selected grids.
+ * @param object Selection window.
+ * @param enabled Full-word display flag; zero disables the grids.
+ */
+template <class Window>
+static inline void update_selection_markers(Window* object, u32 enabled)
 {
-    if (object->unkac != 0)
+    if (object->unkac)
     {
-        if (active != 0)
+        if (enabled)
         {
             if (object == D_001B643C->unk10->unk14->func_00261150())
             {
@@ -2668,9 +2698,9 @@ extern "C" void func_003610D0(ItemCreationClass1870B0* object, u32 active)
             func_0023CEA0(object->unkac, 0);
         }
     }
-    if (object->unkb0 != 0)
+    if (object->unkb0)
     {
-        if (active != 0)
+        if (enabled)
         {
             if (object == D_001B643C->unk10->unk14->func_00261150())
             {
@@ -2693,7 +2723,13 @@ extern "C" void func_003610D0(ItemCreationClass1870B0* object, u32 active)
             func_0023CEA0(object->unkb0, 0);
         }
     }
-    object->func_slot20(active);
+    object->func_slot20(enabled);
+}
+
+/** @brief Update the two selection markers, then set the window activation. @param object Nine-slot window. @param active Activation value. */
+extern "C" void func_003610D0(ItemCreationClass1870B0* object, u32 active)
+{
+    update_selection_markers(object, active);
 }
 
 void func_00361220(ItemCreationClass1870B0* object)
@@ -3485,7 +3521,110 @@ void func_003641F0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364200);
+/**
+ * @brief Highlight the attached marker's current fourteen-slot row.
+ * @param object Fourteen-slot selection window.
+ */
+static inline void highlight_current_row(ItemCreationClass1871B0* object)
+{
+    if (object->unkb4 != 0)
+    {
+        s16 selected = object->unkb4->unk114;
+        for (s32 index = 0; index < 14; index++)
+        {
+            if (selected == index)
+            {
+                object->unkb8[index]->unk3f = 1;
+            }
+            else
+            {
+                object->unkb8[index]->unk3f = 0;
+            }
+        }
+    }
+}
+
+/** @brief Restore the fourteen-slot selection window or leave item selection. @return Two when handled, zero when inactive. */
+s32 ItemCreationClass1871B0::func_slotb4()
+{
+    ItemCreationSelectedDisplayState* state = unka8;
+    if (state == 0)
+    {
+        return 0;
+    }
+    bool inactive = !unkb4->FieldClass151C50::unk35;
+    if (inactive)
+    {
+        return 0;
+    }
+    if (state->unk47 != 1)
+    {
+        return 0;
+    }
+    if (state->unk128 == 1 && state->unk11c != this)
+    {
+        ItemCreationClass1870B0* other = state->unkbc;
+        FieldObject23CEA0* primary = unkac;
+        primary->FieldClass151C50::unk30 = 128.0f;
+        primary->unkae = 1;
+        func_0023CEA0(unkb0, 0);
+        FieldObject23CEA0* alternate = unkb0;
+        alternate->index = unkac->unk114;
+        func_0023CB30(alternate);
+        func_0023C7B0(unkb0);
+        unkb4 = unkac;
+        highlight_current_row(this);
+        primary = other->unkac;
+        primary->FieldClass151C50::unk30 = 128.0f;
+        primary->unkae = 1;
+        func_0023CEA0(other->unkb0, 0);
+        alternate = other->unkb0;
+        alternate->index = other->unkac->unk114;
+        func_0023CB30(alternate);
+        func_0023C7B0(other->unkb0);
+        other->unkb4 = other->unkac;
+        func_00361220(other);
+        unka8->func_00263C70(other);
+        unkac->unkad = 0;
+        unkb0->unkad = 0;
+        for (s32 index = 0; index < 14; index++)
+        {
+            unkb8[index]->unk3f = 0;
+        }
+        func_0036A050(unka8, this, -1);
+    }
+    else
+    {
+        func_0036A050(state, this, -1);
+        if (unkb4 == unkb0)
+        {
+            FieldObject23CEA0* primary = unkac;
+            primary->FieldClass151C50::unk30 = 128.0f;
+            primary->unkae = 1;
+            func_0023CEA0(unkb0, 0);
+            FieldObject23CEA0* alternate = unkb0;
+            alternate->index = unkac->unk114;
+            func_0023CB30(alternate);
+            func_0023C7B0(unkb0);
+            unkb4 = unkac;
+            highlight_current_row(this);
+        }
+        else
+        {
+            ItemCreationSelectedDisplayState* state = unka8;
+            state->unk47 = 0;
+            func_0027CB50(D_001B6430->unk00->unk58, state->unk1f0, 0, 0);
+            state = unka8;
+            state->unk120 = 0;
+            state->unk11c = 0;
+            state->unk126 = -1;
+            state->unk124 = -1;
+            state->unk128 = 0;
+        }
+    }
+    return 2;
+}
+
 
 u8 func_003644F0(ItemCreationFourteenSlotView* object)
 {
@@ -3583,13 +3722,189 @@ s32 ItemCreationClass1871B0::func_slotb8()
 }
 
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003646D0);
+/**
+ * @brief Update row visibility while a selection marker is attached.
+ * @param object Fourteen-slot selection window.
+ * @param index Selected row index.
+ */
+static inline void highlight_selected_row(ItemCreationClass1871B0* object, s16 index)
+{
+    if (object->unkb4 != 0)
+    {
+        for (s32 slot = 0; slot < 14; slot++)
+        {
+            if (index == slot)
+            {
+                object->unkb8[slot]->unk3f = 1;
+            }
+            else
+            {
+                object->unkb8[slot]->unk3f = 0;
+            }
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_003647A0);
+/** @brief Move the fourteen-slot marker right and refresh its selected detail. */
+void ItemCreationClass1871B0::func_slotac()
+{
+    if (unkb4 != 0 && unkb4->func_0023CDB0(2) != 1)
+    {
+        highlight_selected_row(this, unkb4->unk114);
+        if (unka8 != 0 && unkb4 != 0)
+        {
+            func_0036A500(unka8, this, unkb4->unk114);
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364870);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364A40);
+/** @brief Move the fourteen-slot marker left and refresh its selected detail. */
+void ItemCreationClass1871B0::func_slota8()
+{
+    if (unkb4 != 0 && unkb4->func_0023CDB0(3) != 1)
+    {
+        highlight_selected_row(this, unkb4->unk114);
+        if (unka8 != 0 && unkb4 != 0)
+        {
+            func_0036A500(unka8, this, unkb4->unk114);
+        }
+    }
+}
+
+
+/**
+ * @brief Return the current signed marker row.
+ * @param marker Selection marker.
+ * @return Selected row index.
+ */
+static inline s16 selected_row(FieldObject23CEA0* marker)
+{
+    return marker->unk114;
+}
+
+/**
+ * @brief Map a lower fourteen-slot row to its related grid row.
+ * @param index Fourteen-slot row index.
+ * @return Related grid row index.
+ */
+static inline u8 related_row(s16 index)
+{
+    s16 row = index - 7;
+    if (index >= 11)
+    {
+        row = 4;
+    }
+    return row;
+}
+
+/** @brief Transfer a supported row to the related window or move the marker down. */
+void ItemCreationClass1871B0::func_slota4()
+{
+    FieldObject23CEA0* marker = unkb4;
+    ItemCreationSelectedDisplayState* state = unka8;
+    s16 index = selected_row(marker);
+    if (state->unk57 && index >= 7 && index < 14)
+    {
+        u16 selected = related_row(index);
+        if (state->unk128 == 1 && index >= 10)
+        {
+            selected = 2;
+        }
+        ItemCreationClass1870B0* other = static_cast<ItemCreationClass1870B0*>(func_slot44());
+        if (other->unkb4 != 0)
+        {
+            func_0023C550(other->unkb4, selected);
+        }
+        func_00360FD0(other);
+        func_00360E60(other, 1);
+        func_00364090(reinterpret_cast<ItemCreationFourteenSlotView*>(this), 0);
+        D_001B643C->unk10->unk14->func_00263C70(other);
+        func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        return;
+    }
+    if (marker != 0 && marker->func_0023CDB0(1) != 1)
+    {
+        highlight_selected_row(this, unkb4->unk114);
+        if (unka8 != 0 && unkb4 != 0)
+        {
+            func_0036A500(unka8, this, unkb4->unk114);
+        }
+    }
+}
+
+
+/**
+ * @brief Clamp the source column to the related grid's last column.
+ * @param index Source column index.
+ * @return Related column index.
+ */
+static inline s16 related_column(s16 index)
+{
+    if (index >= 4)
+    {
+        index = 4;
+    }
+    return index;
+}
+
+/**
+ * @brief Map an upper fourteen-slot row to the related grid's final row.
+ * @param row_count Number of related grid rows.
+ * @param index Fourteen-slot row index.
+ * @return Related grid row index.
+ */
+static inline u8 upper_related_row(u8 row_count, s16 index)
+{
+    s16 column = related_column(index);
+    return column + (row_count - 1) * 5;
+}
+
+/**
+ * @brief Keep a related grid row on its center column.
+ * @param index Related grid row index.
+ * @return Index at the grid row's center column.
+ */
+static inline u8 centered_related_row(u8 index)
+{
+    return (index / 5) * 5 + 2;
+}
+
+/** @brief Transfer a supported row to the related window or move the marker up. */
+void ItemCreationClass1871B0::func_slota0()
+{
+    FieldObject23CEA0* marker = unkb4;
+    s16 index = selected_row(marker);
+    u8 row_count = unka8->unk57;
+    if (row_count && index >= 0 && index < 7)
+    {
+        u16 selected = upper_related_row(row_count, index);
+        if (unka8->unk128 == 1 && index >= 3 && index < 7)
+        {
+            selected = centered_related_row(selected);
+        }
+        ItemCreationClass1870B0* other = static_cast<ItemCreationClass1870B0*>(func_slot44());
+        if (other->unkb4 != 0)
+        {
+            func_0023C550(other->unkb4, selected);
+        }
+        func_00360FD0(other);
+        func_00360E60(other, 1);
+        func_00364090(reinterpret_cast<ItemCreationFourteenSlotView*>(this), 0);
+        D_001B643C->unk10->unk14->func_00263C70(other);
+        func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        return;
+    }
+    if (marker != 0 && marker->func_0023CDB0(0) != 1)
+    {
+        highlight_selected_row(this, unkb4->unk114);
+        if (unka8 != 0 && unkb4 != 0)
+        {
+            func_0036A500(unka8, this, unkb4->unk114);
+        }
+    }
+}
+
 
 void ItemCreationClass1871B0::func_slot74()
 {
@@ -3637,7 +3952,15 @@ void func_00364D20(ItemCreationFourteenSlotView* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364E00);
+/**
+ * @brief Update the fourteen-slot selection markers and display activation.
+ * @param object Selection window.
+ * @param enabled Full-word activation flag.
+ */
+extern "C" void func_00364E00(ItemCreationClass1871B0* object, u32 enabled)
+{
+    update_selection_markers(object, enabled);
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00364F50);
 
@@ -3653,15 +3976,103 @@ ItemCreationClass1871B0::~ItemCreationClass1871B0()
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00365600);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00365A50);
+/**
+ * @brief Move the panel grid in direction one and refresh its selected entry.
+ */
+void ItemCreationClass1872B0::func_slot6c()
+{
+    if (unkd8 > 1)
+    {
+        FieldObject23CEA0* grid = unkdc;
+        if (grid != 0 && grid->func_0023CDB0(1) != 1)
+        {
+            func_00365F20(this);
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00365AC0);
+/**
+ * @brief Move the panel grid in direction zero and refresh its selected entry.
+ */
+void ItemCreationClass1872B0::func_slot68()
+{
+    if (unkd8 > 1)
+    {
+        FieldObject23CEA0* grid = unkdc;
+        if (grid != 0 && grid->func_0023CDB0(0) != 1)
+        {
+            func_00365F20(this);
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00365B30);
+/**
+ * @brief Disable and reset the panel selection, then return to its associated parent.
+ * @return Always two.
+ */
+s32 ItemCreationClass1872B0::func_slotb4()
+{
+    if (unkdc != 0)
+    {
+        func_0023CEA0(unkdc, 0);
+    }
+    func_slot20(0);
+    if (unkdc != 0)
+    {
+        func_0023C710(unkdc);
+    }
+    func_00365F20(this);
+    ItemCreationPanelReturnParent* parent = static_cast<ItemCreationPanelReturnParent*>(func_slot44());
+    if (parent != 0)
+    {
+        ItemCreationPanelReturnMarker* marker = parent->unkac;
+        if (marker != 0)
+        {
+            marker->unke0 = 128.0f;
+            marker->unkae = 1;
+        }
+        D_001B643C->unk10->unk14->func_00263C70(parent);
+    }
+    return 2;
+}
 
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00365BF0);
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_00358440", func_00365F20);
+/**
+ * @brief Refresh the panel grid selection and selected entry.
+ * @param object Panel selection window.
+ */
+extern "C" void func_00365F20(ItemCreationClass1872B0* object)
+{
+    if (object->unkdc && object->unke0)
+    {
+        s16 selected = object->unkdc->unk114;
+        s32 index = 0;
+        ItemCreationListNode* node = object->unk2c.unk00->unk04;
+        while (node)
+        {
+            LibObject178750* widget = static_cast<LibObject178750*>(node->unk00);
+            if (index == selected)
+            {
+                func_0023B9B0(object->unke0, (s16)index, func_4C69B0(widget)->unk08);
+                widget->unk94 = 0x288080;
+                widget->unk3c = 1;
+                FieldClass15AE70* text = static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90());
+                if (text)
+                {
+                    text->func_slot60(0x352F);
+                }
+            }
+            else
+            {
+                widget->unk94 = 0x808080;
+                widget->unk3c = 1;
+            }
+            node = node->unk04;
+            ++index;
+        }
+    }
+}
 
 u32 func_00366040(void* object)
 {
