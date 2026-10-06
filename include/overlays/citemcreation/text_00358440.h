@@ -724,7 +724,7 @@ public:
     FieldClass15AE70* unke0;
 };
 
-/** Eight-choice item creation window with primary vtable at 0x186FB0. */
+/** Eight-category selection window with primary vtable at 0x186FB0. */
 class ItemCreationClass186FB0 : public FieldClass15AE70
 {
 public:
@@ -739,17 +739,17 @@ public:
     /** @brief Reset the option selection and handle the return mode. @return Always two. */
     virtual s32 func_slotb4();
     /**
-     * @brief Create eight option displays and their selection widgets.
+     * @brief Create the eight category labels and their selection widgets.
      * @param associated Object associated with the window.
      * @return Zero without a parent, otherwise one.
      */
     virtual s32 func_slotf4(void* associated);
     ItemCreationSelectedDisplayState* unka8;
     ItemCreationTwoColorReturnParent* unkac;
-    LibClass178630* unkb0;
-    LibObject178750* unkb4[8];
-    FieldClass153130* unkd4;
-    FieldClass153170* unkd8;
+    LibClass178630* panel;
+    LibObject178750* category_labels[8];
+    FieldClass153130* category_selector;
+    FieldClass153170* category_marker;
     u8 unkdc;
     u8 unkdd[3];
     ItemCreationClass186DB0* unke0;
@@ -1113,11 +1113,11 @@ u8 func_0035CAD0(ItemCreationCategoryOwner* object, const ItemCreationCategoryRe
 
 
 /**
- * @brief Update object state using a selected value.
- * @param object Object to update.
- * @param value Selected value.
+ * @brief Update the category label colors and the selected row marker.
+ * @param object Category selection window.
+ * @param selected Selected row index.
  */
-void func_0035FCA0(ItemCreationClass186FB0* object, u16 value);
+void item_creation_update_category_labels(ItemCreationClass186FB0* object, u16 selected);
 
 /**
  * @brief Read the word at offset 0x24.

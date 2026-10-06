@@ -13,6 +13,12 @@
 #include "overlays/1067-00/text_002764D0.h"
 #include "overlays/1067-00/text_002F9C90.h"
 
+/** Consecutive label keys: COOK, ALCH, CRFT, CMPD, SMTH, WRIT, ENG, SYTH. */
+enum ItemCreationMessageKey
+{
+    ITEM_CREATION_CATEGORY_LABEL_BASE = 0x3458
+};
+
 /** Partial view of an optional display whose concrete type is unknown. */
 struct ItemCreationVisibility3F
 {
@@ -1587,7 +1593,7 @@ s32 ItemCreationClass185560::func_slotf4(void* associated)
         unkd4[index] = new (0) LibObject174F20;
         float y = row_y + 42.0f * (index / 3);
         float x = 10.0f + 50.0f * (index % 3);
-        static_cast<LibObject178750*>(unkb0[index])->func_004C7FE0(x, y, 0.0f, 0.0f, (s32)associated, index + 0x3458, 1);
+        static_cast<LibObject178750*>(unkb0[index])->func_004C7FE0(x, y, 0.0f, 0.0f, (s32)associated, index + ITEM_CREATION_CATEGORY_LABEL_BASE, 1);
         func_00464D90(static_cast<LibObject174F20*>(unkd4[index]), 99, (s32)associated, 1, x, y + 21.0f, 38.4f, 19.2f);
         static_cast<LibObject174F20*>(unkd4[index])->set_mode(1);
         set_text_unk80(static_cast<LibObject178750*>(unkb0[index]), 0.6f);
@@ -3496,7 +3502,7 @@ s32 ItemCreationClass185460::func_slotf4(void* associated)
         }
         this->unk168[index] = new (0) LibObject178750;
         static_cast<LibObject178750*>(this->unk168[index])->func_004C7FE0(458.0f + 50.0f * (index % 3), y + 30.0f * (index / 3),
-                                                                     0.0f, 0.0f, (s32)associated, index + 0x3458, 1);
+                                                                     0.0f, 0.0f, (s32)associated, index + ITEM_CREATION_CATEGORY_LABEL_BASE, 1);
         set_text_unk80(static_cast<LibObject178750*>(this->unk168[index]), 0.6f);
         func_004C6190(this->unk10, this->unk168[index]);
     }
@@ -3595,7 +3601,7 @@ s32 ItemCreationClass185960::func_slotf4(void* associated)
     for (s32 index = 0; index < 8; index++)
     {
         unk180[index] = new (0) LibObject178750;
-        (static_cast<LibObject178750*>(unk180[index]))->func_004C7FE0(458.0f + 50.0f * (index % 3), y + 22.0f * (index / 3), 0.0f, 0.0f, (s32)associated, index + 0x3458, 1);
+        (static_cast<LibObject178750*>(unk180[index]))->func_004C7FE0(458.0f + 50.0f * (index % 3), y + 22.0f * (index / 3), 0.0f, 0.0f, (s32)associated, index + ITEM_CREATION_CATEGORY_LABEL_BASE, 1);
         unk180[index]->set_scale(0.7f, 0.7f);
         func_004C6190(unk10, unk180[index]);
         unk180[index]->unk3f = 0;
@@ -3610,7 +3616,7 @@ s32 ItemCreationClass185960::func_slotf4(void* associated)
     unk1a4[0]->unk3f = 0;
     y += 23.0f;
     unk1a4[1] = new (0) LibObject178750;
-    (static_cast<LibObject178750*>(unk1a4[1]))->func_004C7FE0(490.0f, y, 0.0f, 0.0f, (s32)associated, 0x3458, 1);
+    (static_cast<LibObject178750*>(unk1a4[1]))->func_004C7FE0(490.0f, y, 0.0f, 0.0f, (s32)associated, ITEM_CREATION_CATEGORY_LABEL_BASE, 1);
     unk1a4[1]->set_scale(0.8f, 0.8f);
     func_004C6190(unk10, unk1a4[1]);
     unk1a4[1]->unk3f = 0;
@@ -3637,7 +3643,7 @@ s32 ItemCreationClass185960::func_slotf4(void* associated)
     for (s32 index = 0; index < 8; index++)
     {
         unk1b8[index] = new (0) LibObject178750;
-        (static_cast<LibObject178750*>(unk1b8[index]))->func_004C7FE0(458.0f + 50.0f * (index % 3), y + 22.0f * (index / 3), 0.0f, 0.0f, (s32)associated, index + 0x3458, 1);
+        (static_cast<LibObject178750*>(unk1b8[index]))->func_004C7FE0(458.0f + 50.0f * (index % 3), y + 22.0f * (index / 3), 0.0f, 0.0f, (s32)associated, index + ITEM_CREATION_CATEGORY_LABEL_BASE, 1);
         unk1b8[index]->set_scale(0.7f, 0.7f);
         func_004C6190(unk10, unk1b8[index]);
         unk1b8[index]->unk3f = 0;
@@ -3652,7 +3658,7 @@ s32 ItemCreationClass185960::func_slotf4(void* associated)
     unk1dc[0]->unk3f = 0;
     y += 23.0f;
     unk1dc[1] = new (0) LibObject178750;
-    (static_cast<LibObject178750*>(unk1dc[1]))->func_004C7FE0(490.0f, y, 0.0f, 0.0f, (s32)associated, 0x3458, 1);
+    (static_cast<LibObject178750*>(unk1dc[1]))->func_004C7FE0(490.0f, y, 0.0f, 0.0f, (s32)associated, ITEM_CREATION_CATEGORY_LABEL_BASE, 1);
     unk1dc[1]->set_scale(0.8f, 0.8f);
     func_004C6190(unk10, unk1dc[1]);
     unk1dc[1]->unk3f = 0;
@@ -5968,7 +5974,7 @@ s32 ItemCreationClass186970::func_slotf4(void* associated)
         unkdc[index] = new (0) LibObject174F20;
         float y = 88.0f + 36.0f * (index / 3);
         float x = 22.0f + 122.0f * (index % 3);
-        unkb8[index]->func_004C7FE0(x, y, 0.0f, 0.0f, (s32)associated, 0x3458 + index, 1);
+        unkb8[index]->func_004C7FE0(x, y, 0.0f, 0.0f, (s32)associated, ITEM_CREATION_CATEGORY_LABEL_BASE + index, 1);
         func_00464D90(unkdc[index], 99, 0, 0, x + 62.0f, y, 28.0f, 24.0f);
         func_004C6190(unk10, unkb8[index]);
         func_004C6190(unk10, unkdc[index]);
@@ -7636,7 +7642,7 @@ ItemCreationClass186EB0::ItemCreationClass186EB0(void* object)
  * @param selected Selected row index.
  * @param mask Availability bit for this row.
  */
-static inline void highlight_row(ItemCreationClass186FB0* object, LibObject178750* text, s32 index, u16 selected, u16 mask)
+static inline void highlight_category_label(ItemCreationClass186FB0* object, LibObject178750* text, s32 index, u16 selected, u16 mask)
 {
     if (object->unke8 & mask)
     {
@@ -7646,36 +7652,36 @@ static inline void highlight_row(ItemCreationClass186FB0* object, LibObject17875
         {
             text->unk94 = 0x288080;
             text->unk3c = 1;
-            object->unkd8->func_0023B7E0(text);
-            object->unkd8->unk3f = 1;
+            object->category_marker->func_0023B7E0(text);
+            object->category_marker->unk3f = 1;
         }
     }
 }
 
 /**
- * @brief Update the available option colors and the selected row marker.
- * @param object Option window.
+ * @brief Update the category label colors and the selected row marker.
+ * @param object Category selection window.
  * @param selected Selected row index.
  */
-extern "C" void func_0035FCA0(ItemCreationClass186FB0* object, u16 selected)
+extern "C" void item_creation_update_category_labels(ItemCreationClass186FB0* object, u16 selected)
 {
     for (s32 index = 0; index < 8; index++)
     {
-        LibObject178750* text = object->unkb4[index];
+        LibObject178750* text = object->category_labels[index];
         if (text != 0)
         {
             text->unk94 = 0x505050;
             text->unk3c = 1;
         }
     }
-    if (object->unkd8 != 0)
+    if (object->category_marker != 0)
     {
-        object->unkd8->unk3f = 0;
+        object->category_marker->unk3f = 0;
     }
     for (s32 index = 0; index < 8; index++)
     {
         ItemCreationSelectedDisplayState* state = object->unka8;
-        LibObject178750* text = object->unkb4[index];
+        LibObject178750* text = object->category_labels[index];
         if (state->unk4e[(u8)(index + 1) - 1] != 0)
         {
             if (text != 0)
@@ -7686,28 +7692,28 @@ extern "C" void func_0035FCA0(ItemCreationClass186FB0* object, u16 selected)
             switch (index + 1)
             {
             case 1:
-                highlight_row(object, text, index, selected, 1);
+                highlight_category_label(object, text, index, selected, 1);
                 break;
             case 2:
-                highlight_row(object, text, index, selected, 2);
+                highlight_category_label(object, text, index, selected, 2);
                 break;
             case 3:
-                highlight_row(object, text, index, selected, 4);
+                highlight_category_label(object, text, index, selected, 4);
                 break;
             case 4:
-                highlight_row(object, text, index, selected, 8);
+                highlight_category_label(object, text, index, selected, 8);
                 break;
             case 5:
-                highlight_row(object, text, index, selected, 16);
+                highlight_category_label(object, text, index, selected, 16);
                 break;
             case 6:
-                highlight_row(object, text, index, selected, 32);
+                highlight_category_label(object, text, index, selected, 32);
                 break;
             case 7:
-                highlight_row(object, text, index, selected, 64);
+                highlight_category_label(object, text, index, selected, 64);
                 break;
             case 8:
-                highlight_row(object, text, index, selected, 128);
+                highlight_category_label(object, text, index, selected, 128);
                 break;
             }
         }
@@ -7722,8 +7728,8 @@ extern "C" void func_0035FCA0(ItemCreationClass186FB0* object, u16 selected)
 s32 ItemCreationClass186FB0::func_slotb4()
 {
     func_slot20(0);
-    func_0023B310(reinterpret_cast<FieldObject23B280*>(unkd4));
-    func_0035FCA0(this, 0);
+    func_0023B310(reinterpret_cast<FieldObject23B280*>(category_selector));
+    item_creation_update_category_labels(this, 0);
     switch (unkdc)
     {
     case 0:
@@ -7749,10 +7755,10 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
  */
 void ItemCreationClass186FB0::func_slot6c()
 {
-    if (unkd4 != 0 && (u8)func_23B3B0(reinterpret_cast<FieldState23B3A0*>(unkd4), 1) != 1)
+    if (category_selector != 0 && (u8)func_23B3B0(reinterpret_cast<FieldState23B3A0*>(category_selector), 1) != 1)
     {
-        u16 selected = func_23B3A0(reinterpret_cast<FieldState23B3A0*>(unkd4));
-        func_0035FCA0(this, selected);
+        u16 selected = func_23B3A0(reinterpret_cast<FieldState23B3A0*>(category_selector));
+        item_creation_update_category_labels(this, selected);
     }
 }
 /**
@@ -7760,14 +7766,14 @@ void ItemCreationClass186FB0::func_slot6c()
  */
 void ItemCreationClass186FB0::func_slot68()
 {
-    if (unkd4 != 0 && (u8)func_23B3B0(reinterpret_cast<FieldState23B3A0*>(unkd4), 0) != 1)
+    if (category_selector != 0 && (u8)func_23B3B0(reinterpret_cast<FieldState23B3A0*>(category_selector), 0) != 1)
     {
-        u16 selected = func_23B3A0(reinterpret_cast<FieldState23B3A0*>(unkd4));
-        func_0035FCA0(this, selected);
+        u16 selected = func_23B3A0(reinterpret_cast<FieldState23B3A0*>(category_selector));
+        item_creation_update_category_labels(this, selected);
     }
 }
 /**
- * @brief Create eight option displays and their selection widgets.
+ * @brief Create the eight category labels and their selection widgets.
  * @param associated Object associated with the window.
  * @return Zero without a parent, otherwise one.
  */
@@ -7779,30 +7785,30 @@ s32 ItemCreationClass186FB0::func_slotf4(void* associated)
         return 0;
     }
     FieldClass15AE70::func_slot10(associated, 312.0f, 224.0f, 14);
-    unkb0 = new (0) LibClass178630;
-    func_004C5A80(unkb0, 0, 0.0f, 0.0f, 96.0f, 248.0f, 88.0f);
-    func_004C6190(unk10, unkb0);
+    panel = new (0) LibClass178630;
+    func_004C5A80(panel, 0, 0.0f, 0.0f, 96.0f, 248.0f, 88.0f);
+    func_004C6190(unk10, panel);
     for (s32 index = 0; index < 8; index++)
     {
-        unkb4[index] = new (0) LibObject178750;
-        unkb4[index]->func_004C7FE0(20.0f, 12.0f + 28.0f * index, 0.0f, 0.0f, (s32)associated, index + 0x3458, 0);
-        func_004C6190(unk10, unkb4[index]);
+        category_labels[index] = new (0) LibObject178750;
+        category_labels[index]->func_004C7FE0(20.0f, 12.0f + 28.0f * index, 0.0f, 0.0f, (s32)associated, index + ITEM_CREATION_CATEGORY_LABEL_BASE, 0);
+        func_004C6190(unk10, category_labels[index]);
         if (unka8->unk4e[(u8)(index + 1) - 1] != 0)
         {
-            unkb4[index]->set_color(0x808080);
+            category_labels[index]->set_color(0x808080);
         }
         else
         {
-            unkb4[index]->set_color(0x505050);
+            category_labels[index]->set_color(0x505050);
         }
     }
-    unkd4 = new (0) FieldClass153130;
-    unkd4->func_0023B530(1, 8, 1, 0, 1, 16.0f, 24.0f, 0.0f, 28.0f);
-    func_004C6190(unk10, unkd4);
-    unkd8 = new (0) FieldClass153170;
-    unkd8->func_0023B850(unkb4[0], 0x288080);
-    func_004C6190(unk10, unkd8);
-    func_0035FCA0(this, 0);
+    category_selector = new (0) FieldClass153130;
+    category_selector->func_0023B530(1, 8, 1, 0, 1, 16.0f, 24.0f, 0.0f, 28.0f);
+    func_004C6190(unk10, category_selector);
+    category_marker = new (0) FieldClass153170;
+    category_marker->func_0023B850(category_labels[0], 0x288080);
+    func_004C6190(unk10, category_marker);
+    item_creation_update_category_labels(this, 0);
     return 1;
 }
 
@@ -7815,17 +7821,17 @@ ItemCreationClass186FB0::ItemCreationClass186FB0(void* object)
     unka8 = 0;
     unka8 = static_cast<ItemCreationSelectedDisplayState*>(object);
     unkac = 0;
-    unkb0 = 0;
-    unkb4[0] = 0;
-    unkb4[1] = 0;
-    unkb4[2] = 0;
-    unkb4[3] = 0;
-    unkb4[4] = 0;
-    unkb4[5] = 0;
-    unkb4[6] = 0;
-    unkb4[7] = 0;
-    unkd4 = 0;
-    unkd8 = 0;
+    panel = 0;
+    category_labels[0] = 0;
+    category_labels[1] = 0;
+    category_labels[2] = 0;
+    category_labels[3] = 0;
+    category_labels[4] = 0;
+    category_labels[5] = 0;
+    category_labels[6] = 0;
+    category_labels[7] = 0;
+    category_selector = 0;
+    category_marker = 0;
     unkdc = 0;
     unke8 = 0;
 }
@@ -9761,7 +9767,7 @@ s32 ItemCreationClass1874B0::func_slotf4(void* associated)
         LibObject178750* text = new (0) LibObject178750;
         float x = 26.0f + 80.0f * (index % 3);
         float y = 64.0f + 36.0f * (index / 3);
-        text->func_004C7FE0(x, y, 0.0f, 0.0f, (s32)associated, 0x3458 + index, 0);
+        text->func_004C7FE0(x, y, 0.0f, 0.0f, (s32)associated, ITEM_CREATION_CATEGORY_LABEL_BASE + index, 0);
         func_004C6190(unk10, text);
         func_0036F1A0(&unk2c, text);
     }
