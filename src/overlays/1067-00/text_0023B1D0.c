@@ -326,7 +326,7 @@ void func_0023CE80(FieldObject23CE80* object, u8 width, u8 height)
     object->count = object->width * object->height - 1;
 }
 
-void func_0023CEA0(FieldObject23CEA0* object, u8 value)
+void func_0023CEA0(FieldObject23CEA0* object, u32 value)
 {
     object->unkAD = value;
 }

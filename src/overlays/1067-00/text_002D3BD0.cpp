@@ -120,8 +120,9 @@ u8 func_002D3D40(FieldBufferSlots* object, void* allocation, s32 size)
     return 1;
 }
 
-void* func_002D3D80(const FieldBufferSlots* object, u8 index)
+void* func_002D3D80(const FieldBufferSlots* object, u32 raw_index)
 {
+    u8 index = (u8)raw_index;
     if (index >= 64)
     {
         return 0;

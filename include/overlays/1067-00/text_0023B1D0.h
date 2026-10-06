@@ -389,11 +389,11 @@ s32 func_0023CEE0(FieldObject23CEB0* object);
 s32 func_0023CF50(FieldObject23CEB0* object, s16 value, float first_delta, float second_delta);
 
 /**
- * @brief Store a byte at receiver offset 0xAD.
+ * @brief Store the low byte at receiver offset 0xAD.
  * @param object Receiver to update.
- * @param value Byte to store.
+ * @param value Incoming word whose low byte is stored.
  */
-void func_0023CEA0(FieldObject23CEA0* object, u8 value);
+void func_0023CEA0(FieldObject23CEA0* object, u32 value);
 
 /**
  * @brief Store two byte dimensions and their product minus one.

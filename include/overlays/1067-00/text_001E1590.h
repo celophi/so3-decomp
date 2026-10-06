@@ -180,6 +180,8 @@ struct FieldBufferSlots;
 class FieldClass153E30 : public FieldClass150070
 {
 public:
+    /** @brief Initialize the callback receiver and its Field base storage. */
+    FieldClass153E30();
     /**
      * @brief Destroy the callback receiver.
      */
@@ -260,7 +262,13 @@ public:
      * @return Zero in the base implementation.
      */
     virtual u8 func_001E1820(void* buffer);
-    u8 unk14[0x20];
+    /** @brief Complete receiver setup. @return Zero in the base implementation. */
+    virtual s32 func_00263CD0();
+    u8 unk14[0xC];
+    void* unk20;
+    void* unk24;
+    s8 unk28;
+    u8 unk29[0xB];
 };
 
 /** Partial class with a FieldClass1DD400 base at offset 0x14, with vtable D_150120 in main data. */

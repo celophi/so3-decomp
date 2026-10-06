@@ -170,8 +170,10 @@ public:
     virtual void func_slot1c(u8 code, u16 flags);
     /** @brief Set the nested display byte flag. @param flag Flag value. */
     virtual void func_slot20(u32 flag);
-    virtual void func_slot24();
-    virtual void func_slot28();
+    /** @brief Store the window control byte. @param value Control value. */
+    virtual void func_slot24(u8 value);
+    /** @brief Read the window control byte. @return Control value. */
+    virtual u8 func_slot28();
     /** @brief Store the byte state code. @param value State code. */
     virtual void func_slot2c(u8 value);
     /** @brief Read the byte state code. @return State code. */
@@ -243,13 +245,16 @@ public:
     u8 unk08;
     u8 unk09;
     u16 unk0a;
-    u8 unk0c[4];
+    u8 unk0c;
+    u8 unk0d[3];
     LibObject178660* unk10;
     u8 unk14[0x18];
     ItemCreationCountedList unk2c;
     u8 unk34[0x40];
     ItemCreationCountedList unk74;
-    u8 unk7c[0x1C];
+    u8 unk7c[0x10];
+    ItemCreationCountedList unk8c;
+    u8 unk94[4];
     void* unk98;
     void* unk9c;
     u8 unka0[8];
@@ -352,6 +357,17 @@ class FieldClass153170;
 class ItemCreationClass186870 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window and attach its State. @param state Owning selection State. */
+    ItemCreationClass186870(ItemCreationSelectedDisplayState* state) : unka8(0)
+    {
+        unka8 = state;
+        unkb4 = 0;
+        unkac = 0;
+        unkb0 = 0;
+        unkbc[0] = 0;
+        unkbc[1] = 0;
+        unkbc[2] = 0;
+    }
     /** Destroy the window through Field's window base. */
     virtual ~ItemCreationClass186870();
     /** @brief Apply the selected values. @return Always one. */
@@ -511,6 +527,11 @@ class ItemCreationClass1746A0;
 class ItemCreationClass1877B0 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass1877B0()
+        : unka8(0), unkac(0), unkb0(0), unkb4(0x42600000), unkb8(0), unkba(0), unkbc(0.0f), unkc0(0.0f), unkc4(0.0f), unkc8(0.0f), unkcc(0), unkd0(0)
+    {
+    }
     /** @brief Destroy the status message window and its Field base. */
     virtual ~ItemCreationClass1877B0();
     /** @brief Advance the timed vertical text scroll. */
@@ -532,6 +553,59 @@ public:
     float unkc8;
     ItemCreationClass1746A0* unkcc;
     ItemCreationClass1746A0* unkd0;
+};
+
+struct ItemCreationOptionResourceDisplay;
+
+/** Three resource displays in a Field window, with primary table 0x1878B0 and native size 0xB4. */
+class ItemCreationClass1878B0 : public FieldClass15AE70
+{
+public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass1878B0() : unka8(0), unkac(0), unkb0(0)
+    {
+    }
+    /** @brief Destroy the resource window and its Field base. */
+    virtual ~ItemCreationClass1878B0();
+    /** @brief Create and position the three resource displays. @param associated Associated source. @return Always one. */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationOptionResourceDisplay* unka8;
+    ItemCreationOptionResourceDisplay* unkac;
+    ItemCreationOptionResourceDisplay* unkb0;
+};
+
+struct FieldObject23CEA0;
+struct FieldObject23BE00;
+
+/** Three-choice window with primary table 0x1876B0 and native allocation size 0xB8. */
+class ItemCreationClass1876B0 : public FieldClass15AE70
+{
+public:
+    /** @brief Initialize the window and attach its State. @param state Owning selection State. */
+    ItemCreationClass1876B0(ItemCreationSelectedDisplayState* state) : unka8(0)
+    {
+        unka8 = state;
+        unkac = 0;
+        unkb0 = 0;
+        unkb4 = 0;
+    }
+    /** @brief Destroy the choice window and its Field base. */
+    virtual ~ItemCreationClass1876B0();
+    /** @brief Move the selector in the first direction and refresh its labels. */
+    virtual void func_slot68();
+    /** @brief Move the selector in the second direction and refresh its labels. */
+    virtual void func_slot6c();
+    /** @brief Confirm the current choice. @return Action status. */
+    virtual s32 func_slotb0();
+    /** @brief Restore the prior display. @return Action status. */
+    virtual s32 func_slotb4();
+    /** @brief Create the choice labels and field selection widgets. @param associated Associated source. @return Always one. */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    FieldObject23CEA0* unkac;
+    FieldObject23BE00* unkb0;
+    u8 unkb4;
+    u8 unkb5[3];
 };
 
 /** Mode list with primary table 0x186C90 and its owned counted list. */
@@ -565,7 +639,8 @@ public:
     u8 unk1b6[2];
     u32 unk1b8[24];
     u16 unk218;
-    u8 unk21a[6];
+    u8 unk21a[2];
+    ItemCreationClass186DB0* unk21c;
 };
 
 class FieldClass153130;
@@ -676,7 +751,9 @@ public:
     FieldClass153130* unkd4;
     FieldClass153170* unkd8;
     u8 unkdc;
-    u8 unkdd[0xB];
+    u8 unkdd[3];
+    ItemCreationClass186DB0* unke0;
+    ItemCreationClass186C90* unke4;
     u16 unke8;
 };
 
@@ -684,16 +761,33 @@ public:
 class ItemCreationClass1874B0 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass1874B0() : unka8(0), unkac(0)
+    {
+    }
     /** Destroy the window through Field's window base. */
     virtual ~ItemCreationClass1874B0();
+    /** @brief Create the option labels and panel. @param associated Associated source. @return Always one. */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
+    u8 unkac;
+    u8 unkad[3];
 };
 
 /** Partial item creation window with primary vtable at 0x1875B0. */
 class ItemCreationClass1875B0 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window and attach its State. @param state Owning selection State. */
+    ItemCreationClass1875B0(ItemCreationSelectedDisplayState* state) : unka8(0)
+    {
+        unka8 = state;
+    }
     /** Destroy the window through Field's window base. */
     virtual ~ItemCreationClass1875B0();
+    /** @brief Create the status panel and its label. @param associated Associated source. @return Zero without selection state, otherwise one. */
+    virtual s32 func_slotf4(void* associated);
+    ItemCreationSelectedDisplayState* unka8;
 };
 
 /** Partial item creation window with primary vtable at 0x1870B0. */
@@ -786,7 +880,7 @@ public:
     virtual s32 func_slotb4();
     /** @brief Construct the panel widgets. @param associated Associated window. @return One on success, zero without an active state. */
     virtual s32 func_slotf4(void* associated);
-    u32 unka8;
+    ItemCreationSelectedDisplayState* unka8;
     u8 unkac;
     u8 unkad[3];
     u32 unkb0[8];
@@ -799,7 +893,8 @@ public:
     u32 unke8[9];
     u8 unk10c;
     u8 unk10d;
-    u8 unk10e[0xE];
+    u8 unk10e[2];
+    u32 unk110[3];
     u32 unk11c;
     u32 unk120;
 };
@@ -810,22 +905,43 @@ class ItemCreationClass1873B0 : public FieldClass15AE70
 public:
     /** Construct the window with its arrays and records cleared. */
     ItemCreationClass1873B0();
-    /** Destroy the window and the object it owns. */
+    /** @brief Release the seven resource owners and destroy the option window. */
     virtual ~ItemCreationClass1873B0();
+    /** @brief Refresh the three option labels. */
+    virtual void func_slot5c();
+    /** @brief Construct the option widgets. @param associated Associated object. @return One on success, zero without the selection state. */
+    virtual s32 func_slotf4(void* associated);
     u32 unka8[9];
     u32 unkcc[14];
-    u32 unk104[7];
-    u32 unk120;
+    FieldClass15B200* unk104[7];
+    ItemCreationSelectedDisplayState* unk120;
     u8 unk124;
     u8 unk125;
     u8 unk126[2];
-    ItemCreationRecord128 unk128[3];
+    LibObject178750* unk128[3];
+    LibObject178750* unk134[3];
+    LibObject178750* unk140[3];
 };
 
 /** Fourteen-slot selection window with MAIN vtable at 0x1871B0. */
 class ItemCreationClass1871B0 : public FieldClass15AE70
 {
 public:
+    /** @brief Initialize the window storage through its Field base. */
+    ItemCreationClass1871B0()
+    {
+        func_slotec(1);
+        unka8 = 0;
+        unkac = 0;
+        unkb0 = 0;
+        unkb4 = 0;
+        for (s32 i = 0; i < 14; i++)
+        {
+            unkb8[i] = 0;
+            unkf0[i] = 0;
+        }
+        unk128 = 0;
+    }
     /** @brief Toggle the selected item detail display. @return One when a state is attached, zero otherwise. */
     virtual s32 func_slotb8();
     /** @brief Release the resource and destroy the window through its Field base. */
@@ -923,6 +1039,15 @@ void func_003614B0(ItemCreationClass1870B0* object);
  * @param object View containing the item-resource displays and selection state.
  */
 void func_00364D20(ItemCreationFourteenSlotView* object);
+/** @brief Update selection markers and display activation. @param object Selection window. @param enabled Full-word activation flag. */
+void func_00364E00(ItemCreationClass1871B0* object, u32 enabled);
+
+/**
+ * @brief Fill the item and auxiliary cost arrays for the category.
+ * @param object Panel selection window.
+ * @param category Category code.
+ */
+void func_00365600(ItemCreationClass1872B0* object, u8 category);
 
 /**
  * @brief Activate the selected display and refresh its markers, or deactivate the displays and clear their markers.
@@ -1020,6 +1145,12 @@ void func_003610D0(ItemCreationClass1870B0* object, u32 active);
 
 /** @brief Hide or update the detail window for the selected row. @param selected Nine- or fourteen-slot window. */
 void func_00360FD0(void* selected);
+
+/**
+ * @brief Refresh the choice labels, selection marker, and current status text.
+ * @param object Three-choice window.
+ */
+void func_00368370(ItemCreationClass1876B0* object);
 
 /** @brief Resize the mode list and rebuild its category rows. @param object Mode list. @param mode Compact display mode. */
 void func_0035D0C0(ItemCreationClass186C90* object, s32 mode);

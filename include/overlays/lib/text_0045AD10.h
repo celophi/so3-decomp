@@ -23,7 +23,12 @@ struct LibClass174EF0 : public LibClass178600
     u8 unk98[4];
     u32 unk9c;
     u32 unka0;
-    u8 unka4[0x56];
+    u8 unka4[0x44];
+    float unke8;
+    float unkec;
+    float unkf0;
+    float unkf4;
+    u8 unkf8[2];
     u8 unkfa;
     u8 unkfb;
     /** @brief Set the display scale. @param x Horizontal scale. @param y Vertical scale. */

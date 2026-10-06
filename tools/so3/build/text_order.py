@@ -27,6 +27,8 @@ import re
 import struct
 from pathlib import Path
 
+from tools.so3.build.subsegments import segment_start, subsegment_parts
+
 ADDRESS_NAME = re.compile(r'func_([0-9A-F]{8})')
 SYMBOL_LINE = re.compile(r'^(\S+) = (0x[0-9A-Fa-f]+);', re.M)
 SHN_LORESERVE = 0xFF00
@@ -43,15 +45,12 @@ def unit_range(config, unit):
             continue
         subs = segment['subsegments']
         for j, sub in enumerate(subs):
-            if sub[2] != stem:
+            start, kind, name = subsegment_parts(sub)
+            if kind not in ('c', 'cpp') or name != stem:
                 continue
-            following = subs[j + 1][0] if j + 1 < len(subs) else segment_start(segments[i + 1])
-            return (segment['vram'] + sub[0] - segment['start'], segment['vram'] + following - segment['start'])
+            following = segment_start(subs[j + 1]) if j + 1 < len(subs) else segment_start(segments[i + 1])
+            return (segment['vram'] + start - segment['start'], segment['vram'] + following - segment['start'])
     raise ValueError(f'{unit} is not a code subsegment')
-
-
-def segment_start(segment):
-    return segment['start'] if isinstance(segment, dict) else segment[0]
 
 
 def symbol_addresses(path):

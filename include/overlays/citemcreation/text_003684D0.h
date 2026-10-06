@@ -104,8 +104,12 @@ typedef struct ItemCreationSelectedDisplayState
 #endif
 {
 #ifdef __cplusplus
+    /** @brief Initialize the selected-display windows and resource state. */
+    ItemCreationSelectedDisplayState();
     /** @brief Destroy the selection state and its Field base. */
     virtual ~ItemCreationSelectedDisplayState();
+    /** @brief Prepare record selection and count available option records. @return One on success, zero when required runtime data is missing. */
+    virtual u8 func_00264110();
     /** @brief Store the associated state pointer. @param value Pointer to store. */
     virtual void func_00263C70(void* value);
     /** @brief Return the associated state pointer. @return Stored pointer. */
@@ -116,19 +120,24 @@ typedef struct ItemCreationSelectedDisplayState
      * @param enabled Full-word state copied into the slot byte and tested for zero.
      */
     void func_0036BF30(s32 index, s32 enabled);
+    /** @brief Allocate and attach the selected-display windows. @return One. */
+    virtual s32 func_00263CD0();
 #else
     u8 unk00[0x34];
 #endif
     void* unk34;
-    u8 unk38[8];
+    u8 unk38;
+    u8 unk39[3];
+    struct FieldBufferSlots* unk3c;
     ItemCreationOptionTable* unk40;
-    u8 unk44[3];
+    u8 unk44;
+    u8 unk45;
+    u8 unk46;
     u8 unk47;
     struct FieldRecordSelection* unk48;
     u8 unk4c;
     u8 unk4d;
-    u8 unk4e[8];
-    u8 unk56;
+    u8 unk4e[9];
     u8 unk57;
     u8 unk58;
     u8 unk59;
@@ -136,31 +145,41 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unk68[9];
     u8 unk71[6];
     u8 unk77[6];
-    u8 unk7d[0x1B];
-    struct FieldClass15AE70* unk98;
-    struct FieldClass15AE70* unk9c;
-    void* unka0;
-    u8 unka4[4];
-    struct ItemCreationListDisplay* unka8;
-    u8 unkac[4];
-    struct ItemCreationThreeSlotDisplay* unkb0;
-    struct FieldClass15AE70* unkb4;
-    struct ItemCreationFourteenSlotView* unkb8;
+    u8 unk7d;
+    u16 unk7e[12];
+    u8 unk96[2];
+    struct ItemCreationClass1878B0* unk98;
+    struct ItemCreationClass1877B0* unk9c;
+    struct ItemCreationClass1876B0* unka0;
+    struct ItemCreationClass1875B0* unka4;
+    struct ItemCreationClass1874B0* unka8;
+    struct ItemCreationClass1872B0* unkac;
+    struct ItemCreationClass1873B0* unkb0;
+    struct ItemCreationClass186A70* unkb4;
+    struct ItemCreationClass1871B0* unkb8;
     struct ItemCreationClass1870B0* unkbc;
     struct ItemCreationClass186970* unkc0;
-    u8 unkc4[0xC];
+    struct ItemCreationClass186FB0* unkc4;
+    struct ItemCreationClass186EB0* unkc8;
+    struct ItemCreationClass186870* unkcc;
     struct ItemCreationClass186DB0* unkd0;
     struct ItemCreationClass186C90* unkd4;
     struct ItemCreationClass186770* unkd8;
-    u8 unkdc[4];
+    struct ItemCreationClass186670* unkdc;
     struct ItemCreationClass186070* unke0;
-    struct FieldClass15AE70* unke4;
+    struct ItemCreationClass185C60* unke4;
     struct ItemCreationClass185E60* unke8;
-    u8 unkec[8];
-    struct ItemCreationFlagResetOwner* unkf4;
-    struct ItemCreationOptionDisplay* unkf8;
-    struct ItemCreationOptionDisplay* unkfc;
-    u8 unk100[0x18];
+    struct ItemCreationClass185D60* unkec;
+    struct ItemCreationClass185B60* unkf0;
+    struct ItemCreationClass185960* unkf4;
+    struct ItemCreationClass185760* unkf8;
+    struct ItemCreationClass185660* unkfc;
+    struct ItemCreationClass185460* unk100;
+    struct ItemCreationClass185360* unk104;
+    struct ItemCreationClass185260* unk108;
+    struct ItemCreationClass185160* unk10c;
+    struct ItemCreationClass185060* unk110;
+    struct ItemCreationClass185560* unk114;
     void* unk118;
     void* unk11c;
     void* unk120;
@@ -176,9 +195,17 @@ typedef struct ItemCreationSelectedDisplayState
     u16 unk130;
     u8 unk132[2];
     struct ItemCreationAssignedRecord* unk134;
-    u8 unk138[0x10];
+    u32 unk138;
+    u8 unk13c[4];
+    float unk140;
+    u8 unk144[4];
     u8 unk148[3];
-    u8 unk14b[0x3D];
+    u8 unk14b;
+    float unk14c[3];
+    float unk158[3];
+    float unk164[3];
+    float unk170[3];
+    float unk17c[3];
     u8 unk188[3][3];
     s8 unk191[3][3];
     u8 unk19a;
@@ -197,15 +224,16 @@ typedef struct ItemCreationSelectedDisplayState
     struct FieldStateTargets* unk1b4[3];
 #endif
     u8 unk1c0[3];
-    u8 unk1c3[5];
+    u8 unk1c3[3];
+    u8 unk1c6[2];
     u32 unk1c8[3];
-    u8 unk1d4[0xC];
+    s32 unk1d4[3];
     s8 unk1e0;
     u8 unk1e1;
     s16 unk1e2[3][2];
     u8 unk1ee[2];
     s32 unk1f0;
-    u8 unk1f4[4];
+    s32 unk1f4;
     s16 unk1f8;
     s16 unk1fa;
 } ItemCreationSelectedDisplayState;
@@ -257,23 +285,7 @@ typedef struct ItemCreationSelection
 typedef ItemCreationSelectedDisplayState ItemCreationOptionState;
 
 #ifdef __cplusplus
-/** Partial virtual root with no recovered data members. */
-class ItemCreationClass184F08
-{
-public:
-    /** @brief Destroy the virtual root. */
-    virtual ~ItemCreationClass184F08()
-    {
-    }
-};
 
-/** Partial derived interface whose destructor also destroys the virtual root. */
-class ItemCreationClass184F18 : public ItemCreationClass184F08
-{
-public:
-    /** @brief Destroy the derived interface and its base. */
-    virtual ~ItemCreationClass184F18();
-};
 #endif
 
 /** Partial destination for five resident record halfwords. */
@@ -371,6 +383,15 @@ void func_00369B80(ItemCreationSelectedDisplayState* object, s32 value);
  */
 void func_0036B1E0(ItemCreationSelectedDisplayState* object, u32 enabled);
 
+/** @brief Select the active window group and reset transfer state. @param object Selection state. @param mode Window group byte. */
+void func_0036BC90(ItemCreationSelectedDisplayState* object, u8 mode);
+/** @brief Enable or disable one option window group. @param object Selection state. @param enabled Full-word control flag. */
+void func_0036B360(ItemCreationSelectedDisplayState* object, u32 enabled);
+/** @brief Enable or disable one option window group. @param object Selection state. @param enabled Full-word control flag. */
+void func_0036B6E0(ItemCreationSelectedDisplayState* object, u32 enabled);
+/** @brief Enable or disable one option window group. @param object Selection state. @param enabled Full-word control flag. */
+void func_0036BA10(ItemCreationSelectedDisplayState* object, u32 enabled);
+
 /**
  * @brief Map an item byte to its associated halfword mask.
  * @param object Receiver; unused.
@@ -419,7 +440,7 @@ u8 func_0036AFE0(ItemCreationSelectedDisplayState* object);
  * @param object Receiver; unused.
  * @return Identifier 0x3521 through 0x352C for mapped codes, or 0x3520 otherwise.
  */
-u16 func_0036B0E0(void* object);
+u32 func_0036B0E0(void* object);
 
 /**
  * @brief Return the fixed value -1.
@@ -823,6 +844,14 @@ void* func_0036F160(u8* object, s32 index);
  * @return Reached node, or null if the chain ends early.
  */
 ItemCreationListNode* func_0036F230(ItemCreationList* object, s32 index);
+
+/**
+ * @brief Store and refresh one selected resource state.
+ * @param object Owning selection state.
+ * @param index Resource index.
+ * @param value Full-word activation value, stored as a byte.
+ */
+void func_0036C080(ItemCreationSelectedDisplayState* object, s32 index, u32 value);
 
 /**
  * @brief Choose an eligible assigned item and schedule its display resource.

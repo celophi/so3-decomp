@@ -50,13 +50,40 @@ segments:
     subsegments:
       - [0x40, pad, text_start]
       - [0x80, cpp, text_003483C0]
-      - [0x100C0, cpp, text_00358440]
-      - [0x20150, cpp, text_003684D0]
+      - [0x27040, pad, text_end]
       - [0x27080, databin, data]
-      - [0x27340, .rodata, text_003483C0]
+      - start: 0x27340
+        type: .rodata
+        name: text_003483C0
+        linker_section: .rodata.0036F6C0
+        rodata_anchors:
+          - {function: func_00349DE0, offset: 0x0, size: 0x38}
+          - {function: func_0034FA70, offset: 0x40, size: 0x34}
+        linker_section_order: .rodata
       - [0x273B4, rodatabin, rodata_0036F734]
-      - [0x27440, .rodata, text_00358440]
+      - start: 0x27440
+        type: .rodata
+        name: text_003483C0
+        linker_section: .rodata.0036F7C0
+        rodata_anchors:
+          - {function: func_0035FCA0, offset: 0x0, size: 0x24}
+          - {function: func_00361220, offset: 0x30, size: 0x3c}
+        linker_section_order: .rodata
       - [0x274AC, rodatabin, rodata_0036F82C]
-      - [0x27670, .rodata, text_003684D0]
+      - start: 0x274F0
+        type: .rodata
+        name: text_003483C0
+        linker_section: .rodata.0036F870
+        rodata_anchors:
+          - {function: func_00365600, offset: 0x0, size: 0x34}
+        linker_section_order: .rodata
+      - [0x27524, rodatabin, rodata_0036F8A4]
+      - start: 0x27670
+        type: .rodata
+        name: text_003483C0
+        linker_section: .rodata.0036F9F0
+        rodata_anchors:
+          - {function: func_0036BF30__32ItemCreationSelectedDisplayStateFii, offset: 0x0, size: 0x24}
+        linker_section_order: .rodata
       - [0x27694, rodatabin, rodata_0036FA14]
   - [0x27700]
