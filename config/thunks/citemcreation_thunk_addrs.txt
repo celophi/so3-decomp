@@ -7,3 +7,7 @@
 @168@set_scroll_position__23ItemCreationClass186B70Ff = 0x0036F320;
 @168@refresh_rows__23ItemCreationClass186C90Fi = 0x0036F310;
 @168@set_scroll_position__23ItemCreationClass186C90Ff = 0x0036F300;
+@32@__dt__23ItemCreationClass185F60Fv = 0x0036F340;
+@240@func_00412C30__14LibClass1721F0Fv = 0x0036F350;
+@240@func_00412C20__23ItemCreationClass185F60Ff = 0x0036F360;
+@240@func_00412C10__23ItemCreationClass185F60Fi = 0x0036F370;

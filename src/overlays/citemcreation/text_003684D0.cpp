@@ -688,7 +688,7 @@ void func_0036A050(ItemCreationSelectedDisplayState* object, void* selected, s16
         u8 first_value = 0;
         u8 second_value = 0;
         ItemCreationFourteenSlotView* fourteen;
-        ItemCreationNineSlotView* nine;
+        ItemCreationClass1870B0* nine;
 
         if (first == object->unkb8)
         {
@@ -1484,14 +1484,22 @@ s32 func_0036E850(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036E860);
+/** @brief Destroy the four embedded text widgets and their row interface. */
+ItemCreationClass186050::~ItemCreationClass186050()
+{
+}
 
 /** @brief Destroy the popup Field window base. */
 ItemCreationClass186170::~ItemCreationClass186170()
 {
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036E960);
+/**
+ * @brief Destroy the popup through its Field window base.
+ */
+ItemCreationClass186270::~ItemCreationClass186270()
+{
+}
 
 /**
  * @brief Destroy the result window through its Field base.
@@ -1519,7 +1527,10 @@ ItemCreationClass186C90::~ItemCreationClass186C90()
 {
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003684D0", func_0036EB60);
+/** @brief Destroy the selection window through its Field window base. */
+ItemCreationClass1872B0::~ItemCreationClass1872B0()
+{
+}
 
 u8 func_0036EBC0(void* object)
 {

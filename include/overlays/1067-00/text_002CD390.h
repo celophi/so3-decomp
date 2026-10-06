@@ -88,9 +88,9 @@ int func_002CD9E0(void* object);
 /**
  * @brief Store a byte in the selected object when present.
  * @param object Receiver containing the selected object.
- * @param value Byte to store.
+ * @param value Value whose low byte is stored.
  */
-void func_002CE510(FieldBytePtr10* object, u8 value);
+void func_002CE510(FieldBytePtr10* object, u32 value);
 
 /**
  * @brief Create a nested display and initialize it with the associated object and coordinates.
