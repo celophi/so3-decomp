@@ -1,7 +1,7 @@
 """Read so3mclib message banks; see ../README.md for the layout.
 
 Message bytes contain glyph indices and commands, not ASCII or Shift-JIS.
-Keep those values intact until the associated font mapping is understood.
+Keep those values intact even when a partial character mapping is available.
 The bank initialization and key lookup are visible in 00465610 and 00465340;
 command parameter lengths below follow the byte traversal in 00465100.
 """
@@ -9,6 +9,7 @@ command parameter lengths below follow the byte traversal in 00465100.
 from dataclasses import asdict, dataclass
 import struct
 
+from tools.so3.assets.src.text import GlyphMapping, text_preview
 from tools.so3.formats import FormatError, require
 
 
@@ -97,6 +98,13 @@ class MessageBankHeader:
                 auxiliary_start <= offset <= self.file_size,
                 "message bank auxiliary offset exceeds message region",
             )
+
+    @property
+    def uses_shared_font(self) -> bool:
+        # 00465610 sets the runtime flag from the word at 0x38. When set,
+        # 004645F0 selects the shared font for codes 1 through 300 and the
+        # bank's own font for codes 301 and above.
+        return self.unknown_words_20_to_38[6] != 1
 
     @property
     def message_end(self) -> int:
@@ -203,7 +211,7 @@ def read_message(
     raise ValueError("unterminated message")
 
 
-def parse_message_bank(data: bytes) -> dict:
+def parse_message_bank(data: bytes, glyph_mapping: GlyphMapping | None = None) -> dict:
     """Export header fields, indexed messages, original bytes, and numeric tokens."""
     header = MessageBankHeader.read(data)
     entries, message_end = read_message_index(data, header)
@@ -217,7 +225,7 @@ def parse_message_bank(data: bytes) -> dict:
 
         # Entries have no lengths. A key can point to another message's suffix,
         # so we read through its terminator instead of stopping at the next key.
-        messages.append({
+        message = {
             "key": entry.key,
             "key_hex": f"0x{entry.key:X}",
             "relative_offset": entry.relative_offset,
@@ -225,10 +233,20 @@ def parse_message_bank(data: bytes) -> dict:
             "size": size,
             "raw_hex": data[start:start + size].hex(),
             "tokens": tokens,
-        })
+        }
+        if glyph_mapping is not None:
+            message.update(text_preview(tokens, glyph_mapping, header.uses_shared_font))
+        messages.append(message)
 
-    return {
+    bank = {
         "header": asdict(header),
         "messages": messages,
         "text_encoding": "glyph indices; Unicode/font mapping unresolved",
     }
+    if glyph_mapping is not None:
+        bank["text_mapping"] = {
+            "name": glyph_mapping.name,
+            "source": glyph_mapping.source,
+            "status": "partial",
+        }
+    return bank

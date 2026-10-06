@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import BinaryIO
 
 from tools.so3.assets.src.messages import UnsupportedMessageBank, parse_message_bank
+from tools.so3.assets.src.text import GlyphMapping
 from tools.so3.disc.archives import pack_entries, zls_entries
 from tools.so3.disc.extract import hash_file, read_at, save
 from tools.so3.formats import (
@@ -36,9 +37,15 @@ def write_json(path: Path, value: dict | list) -> None:
 class AssetExtractor:
     """Keep original bytes and record how each extracted child relates to its parent."""
 
-    def __init__(self, destination: Path, key: bytes):
+    def __init__(
+        self,
+        destination: Path,
+        key: bytes,
+        glyph_mapping: GlyphMapping | None = None,
+    ):
         self.destination = destination
         self.sle_key = key
+        self.glyph_mapping = glyph_mapping
         self.nodes: list[dict] = []
         self.expanded_bytes = 0
 
@@ -97,7 +104,7 @@ class AssetExtractor:
     def _extract_messages(self, data: bytes, node: dict) -> None:
         location = node["location"]
         try:
-            bank = parse_message_bank(data)
+            bank = parse_message_bank(data, self.glyph_mapping)
         except UnsupportedMessageBank as error:
             node.update(status="unresolved", reason=str(error))
             return

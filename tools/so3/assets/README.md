@@ -9,8 +9,10 @@ the extractor and document the formats along the way.
 On US disc 1, resource 75 contains the `citemcreation` code overlay, and
 resource 95 contains message banks with keys it uses, including `0x3458` and
 `0x3584`. That gives us a starting point for connecting the data to the code.
-We can extract those resources and parse the message structure, but we still
-need the font mappings to turn glyph indices into readable labels.
+We can extract those resources, parse the message structure, and show some
+readable labels using the shared font in resource 8. For example, the glyph
+codes for `0x3458` decode to `COOK`. The character mapping is still partial,
+so messages can also contain markers for glyphs we haven't identified yet.
 
 The resource and container readers already handle data across the disc. As we
 work through more of the game, we'll add parsers for the formats we identify.
@@ -220,14 +222,30 @@ the parameter lengths handled by `00465100`; the command codes below are hex:
 | Other command codes | No parameters in this traversal |
 
 `messages.json` includes each key, its offsets, the bytes through the message
-terminator, and the glyph runs and control tokens found in those bytes. We can
-parse the structure, but we still need to work out which characters the glyph
-indices represent and what the commands do. Until then, the extractor keeps
-the numeric values. It doesn't try to interpret them as ASCII, Shift-JIS, or
-Unicode text.
+terminator, and the glyph runs and control tokens found in those bytes.
 
-For the current `citemcreation` work, the next step is to map those glyph
-indices to characters and follow the message keys back to their callers.
+For verified US disc 1 banks that use the shared font, `messages.json` also
+includes `text_preview`, `text_complete`, and `unmapped_glyphs`. Known characters
+are decoded; unmapped glyphs and commands remain visible markers. Raw bytes
+and tokens are retained. `text_mapping` identifies the partial mapping and its
+source font bank. We haven't checked the shared font on US disc 2 yet, so that
+disc still exports the numeric tokens without a text preview.
+
+For example, a known label can appear as `COOK`. An unknown glyph appears as
+`<glyph:0x12d>`, and a command appears as `<command:0x4002:00>`. The preview
+is complete only when every glyph is mapped and there are no commands whose
+effect on the displayed text still needs to be understood. We keep these
+markers so an incomplete decode doesn't quietly turn into a plausible string.
+
+The initial mapping covers digits, Latin letters, a few punctuation marks, and
+the two space codes. These characters were identified from the extracted font
+bitmaps. The renderer in `004645F0` uses one-based message codes, selects the
+shared font for codes 1 through 300 when the bank's shared-font flag is set,
+and selects the bank's own glyphs for codes 301 and above. The latter still
+need separate mappings, as do banks that use their own font for every code.
+
+For the current `citemcreation` work, the next step is to expand the character
+mapping, identify the commands, and follow the message keys back to their callers.
 We also need to identify which banks get loaded into which runtime slots.
 That should give us better evidence for naming the functions and types than
 the numeric keys alone.

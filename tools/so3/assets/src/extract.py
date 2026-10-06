@@ -10,6 +10,7 @@ from typing import BinaryIO
 
 from tools.so3 import ROOT
 from tools.so3.assets.src.containers import AssetExtractor, write_json
+from tools.so3.assets.src.text import mapping_for_disc
 from tools.so3.disc.extract import CONFIG, digest, hash_file, read_at
 from tools.so3.formats import FormatError, TABLE_OFFSET, TABLE_SIZE, read_table, require
 
@@ -34,7 +35,11 @@ def extract_assets(
     with TemporaryDirectory(prefix=".so3-assets-", dir=destination.parent) as temporary:
         staging = Path(temporary) / "output"
         staging.mkdir()
-        extractor = AssetExtractor(staging, bytes.fromhex(profile["sle_key"]))
+        extractor = AssetExtractor(
+            staging,
+            bytes.fromhex(profile["sle_key"]),
+            glyph_mapping=mapping_for_disc(profile),
+        )
         with iso.open("rb") as stream:
             entries = _read_resource_table(stream, staging, profile, selection)
             _extract_selected_resources(stream, extractor, entries, selection)
