@@ -343,3 +343,8 @@ __dt__22StatusBackgroundWindowFv = 0x00350100; // type:func
 func_slotf4__22StatusBackgroundWindowFPv = 0x0034FEA0; // type:func
 __ct__20FieldRecordSelectionFv = 0x0028E4D0; // type:func absolute:True
 func_00263FD0__16FieldClass153E30FPv = 0x00263FD0; // type:func absolute:True
+
+func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
+func_002D5CF0 = 0x002D5CF0; // type:func absolute:True allow_duplicated:True
+func_002D6410 = 0x002D6410; // type:func absolute:True allow_duplicated:True
+func_002D6440 = 0x002D6440; // type:func absolute:True allow_duplicated:True

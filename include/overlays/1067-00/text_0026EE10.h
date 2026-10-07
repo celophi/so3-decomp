@@ -30,6 +30,10 @@ typedef struct FieldState270EE0 FieldState270EE0;
 typedef struct FieldFlag272290 FieldFlag272290;
 typedef struct FieldState271750 FieldState271750;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief Return the type value for the D_154BB0 callback table. */
 s32 func_0026EED0(const void* object);
 /** @brief Return the type value for the D_154BF0 callback table. */
@@ -47,9 +51,6 @@ void func_00272220(void* object);
 /** @brief Destroy the owner after adjusting from the embedded base at offset 0x14. */
 void* func_00272350(void* object, s32 flags);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * @brief Detach and queue the receiver.
@@ -106,6 +107,14 @@ typedef struct FieldRoot26FF70 FieldRoot26FF70;
  * @return One when the selected entry has its active bit set, otherwise zero.
  */
 s32 func_0026F690(void* context, u32 key);
+
+/**
+ * @brief Find a context entry by key and return its value pointer.
+ * @param context Context containing entries.
+ * @param key Entry key.
+ * @return Value of the selected entry, or null when no entry has the key.
+ */
+void* func_0026F6E0(void* context, u32 key);
 
 /**
  * @brief Find a context entry by key and apply the supplied word.

@@ -15,7 +15,7 @@ struct ItemCreationTargetPrefix : public FieldStateTargets
 {
     u8 unk88[4];
 };
-/** Target callback interface selected by MAIN vtable 0x184EF0. */
+/** @brief Partial callback interface for a development-line target. */
 class ItemCreationClass184EF0 : public ItemCreationTargetPrefix
 {
 public:
@@ -28,10 +28,11 @@ public:
 };
 #endif
 
-typedef struct ItemCreationTransformState ItemCreationTransformState;
+struct LibClass171EF0;
+union LibVector4;
 struct FieldClass15AE70;
 struct FieldRecordSelection;
-struct ItemCreationClass186970;
+struct InventorInformationWindow;
 
 /** Partial display coordinate vector and dirty flag. */
 typedef struct ItemCreationScrollPosition
@@ -62,16 +63,10 @@ typedef struct ItemCreationScrollState
 
 typedef FieldListNode ItemCreationListNode;
 
-/** Display-list prefix containing its sentinel node. */
-typedef struct ItemCreationList
-{
-    ItemCreationListNode* unk00;
-} ItemCreationList;
-
 typedef FieldCountedList ItemCreationCountedList;
 
 #ifdef __cplusplus
-/** Counted display list with virtual destruction and an owned sentinel. */
+/** @brief Counted display list owning its sentinel and nodes. */
 class ItemCreationClass187A60 : public ItemCreationCountedList
 {
 public:
@@ -105,6 +100,8 @@ typedef struct ItemCreationSelectedDisplayState
     /** @brief Store the associated state pointer. @param value Pointer to store. */
     virtual void func_00263C70(void* value);
     /** @brief Return the associated state pointer. @return Stored pointer. */
+    virtual void* func_00261150();
+    /** @brief Return the associated state pointer. @return Stored pointer. */
     virtual void* func_00263CC0();
     /**
      * @brief Set a slot, consume an available category record, and reset its status bytes.
@@ -134,9 +131,9 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unk47;
     struct FieldRecordSelection* unk48;
     u8 unk4c;
-    u8 unk4d;
-    /** Category flags used by the labels and selection handlers. */
-    u8 category_enabled[9];
+    u8 workshop_id;
+    /** Enabled workshop skills; the ninth appraisal entry is always enabled. */
+    u8 workshop_skill_enabled[9];
     u8 unk57;
     u8 unk58;
     u8 unk59;
@@ -145,40 +142,40 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unk71[6];
     u8 unk77[6];
     u8 unk7d;
-    u16 unk7e[12];
+    u16 workshop_facility_masks[12];
     u8 unk96[2];
-    struct ItemCreationClass1878B0* unk98;
-    struct ItemCreationClass1877B0* unk9c;
-    struct ItemCreationClass1876B0* unka0;
-    struct ItemCreationClass1875B0* unka4;
-    struct ItemCreationClass1874B0* unka8;
-    struct ItemCreationClass1872B0* unkac;
-    struct ItemCreationClass1873B0* unkb0;
-    struct ItemCreationClass186A70* unkb4;
-    struct ItemCreationClass1871B0* unkb8;
-    struct ItemCreationClass1870B0* unkbc;
-    struct ItemCreationClass186970* unkc0;
-    struct ItemCreationClass186FB0* unkc4;
-    struct ItemCreationClass186EB0* unkc8;
-    struct ItemCreationClass186870* unkcc;
-    struct ItemCreationClass186DB0* unkd0;
-    struct ItemCreationClass186C90* unkd4;
+    struct ItemCreationBackground* unk98;
+    struct ItemCreationStatusBanner* unk9c;
+    struct ItemCreationMainMenu* unka0;
+    struct WorkshopNameWindow* unka4;
+    struct WorkshopFacilitiesWindow* unka8;
+    struct WorkshopExpansionWindow* unkac;
+    struct DevelopmentTeamsWindow* unkb0;
+    struct ItemCreationControlHelp* unkb4;
+    struct AvailableInventorGrid* unkb8;
+    struct AssignedInventorGrid* unkbc;
+    struct InventorInformationWindow* unkc0;
+    struct CreationSkillWindow* unkc4;
+    struct InventionPolicyWindow* unkc8;
+    struct StartInventingDialog* unkcc;
+    struct PlanItemGroupWindow* unkd0;
+    struct InventoryItemTypeList* unkd4;
     struct ItemCreationClass186770* unkd8;
-    struct ItemCreationClass186670* unkdc;
-    struct ItemCreationClass186070* unke0;
-    struct ItemCreationClass185C60* unke4;
-    struct ItemCreationClass185E60* unke8;
-    struct ItemCreationClass185D60* unkec;
-    struct ItemCreationClass185B60* unkf0;
-    struct ItemCreationClass185960* unkf4;
-    struct ItemCreationClass185760* unkf8;
-    struct ItemCreationClass185660* unkfc;
-    struct ItemCreationClass185460* unk100;
-    struct ItemCreationClass185360* unk104;
-    struct ItemCreationClass185260* unk108;
-    struct ItemCreationClass185160* unk10c;
-    struct ItemCreationClass185060* unk110;
-    struct ItemCreationClass185560* unk114;
+    struct ItemSubmissionDialog* unkdc;
+    struct ItemDetailsWindow* unke0;
+    struct DevelopmentControlPanel* unke4;
+    struct InventorStatusWindow* unke8;
+    struct AbortDevelopmentDialog* unkec;
+    struct InadequateLineDialog* unkf0;
+    struct InventorTransferWindow* unkf4;
+    struct SourceInventorStrip* unkf8;
+    struct DestinationInventorStrip* unkfc;
+    struct WorkshopSelectionWindow* unk100;
+    struct WorkshopInventorStrip* unk104;
+    struct PendingInventorSummary* unk108;
+    struct AssignInventorDialog* unk10c;
+    struct WorkshopFullDialog* unk110;
+    struct InventorTalentsWindow* unk114;
     void* unk118;
     void* unk11c;
     void* unk120;
@@ -191,9 +188,9 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unk12c;
     u8 unk12d;
     u8 unk12e[2];
-    u16 unk130;
+    u16 facility_mask;
     u8 unk132[2];
-    struct ItemCreationAssignedRecord* unk134;
+    struct ItemCreationWorkshopRecord* workshop;
     u32 unk138;
     u8 unk13c[4];
     float unk140;
@@ -295,7 +292,7 @@ typedef ItemCreationSelectedDisplayState ItemCreationOptionState;
 typedef struct ItemCreationRuntimeRecordSelection
 {
     u8 unk00[0x7E];
-    u16 unk7e[5];
+    u16 workshop_facility_masks[5];
 } ItemCreationRuntimeRecordSelection;
 
 #ifdef __cplusplus
@@ -303,19 +300,19 @@ extern "C" {
 #endif
 
 /**
- * @brief Update the selected item or complete an exchange between the two views.
+ * @brief Select or cancel an inventor slot, swapping inventor codes after the second selection.
  * @param object Selection state.
- * @param selected Selected view, or null when clearing the selection.
- * @param index Signed item index; -1 clears the pending selection.
+ * @param grid Assigned or available inventor grid.
+ * @param slot_index Grid slot; -1 cancels the pending selection.
  */
-void func_0036A050(ItemCreationSelectedDisplayState* object, void* selected, s16 index);
+void item_creation_select_inventor_for_swap(ItemCreationSelectedDisplayState* object, void* grid, s16 slot_index);
 
 /**
- * @brief Refresh the display allocated for a group of three assigned items.
+ * @brief Rebuild the creation target for one three-inventor development line.
  * @param object Selection state.
- * @param group Byte-sized assigned-item group index.
+ * @param line_index Development-line index from zero through two.
  */
-void func_003698E0(ItemCreationSelectedDisplayState* object, u8 group);
+void item_creation_rebuild_line_target(ItemCreationSelectedDisplayState* object, u8 line_index);
 
 /**
  * @brief Allocate a node and append its value to the sentinel-based list.
@@ -358,26 +355,26 @@ void func_0036DEA0(ItemCreationSelectedDisplayState* object);
 void func_00368BD0(ItemCreationScrollState* object);
 
 /**
- * @brief Update the detail display with an item selected from either slot view.
- * @param object State owning the item arrays and views.
- * @param selected Slot view supplying the item, or another nonnull view to clear the item.
- * @param index Index into the array belonging to the selected slot view.
+ * @brief Refresh inventor information from a slot in the assigned or available grid.
+ * @param object Selection state.
+ * @param grid Grid supplying the inventor code; another nonnull grid clears the inventor.
+ * @param slot_index Slot in the supplied grid.
  */
-void func_0036A500(ItemCreationSelectedDisplayState* object, void* selected, s16 index);
+void item_creation_show_inventor_information(ItemCreationSelectedDisplayState* object, void* grid, s16 slot_index);
 
 /**
- * @brief Refresh selection colors or one option display.
- * @param object State owning the lists and displays.
- * @param mode One updates item and slot colors; six and seven refresh the option displays.
+ * @brief Refresh workshop skill and line colors, or one transfer inventor strip.
+ * @param object Selection state.
+ * @param refresh_mode One refreshes workshop/team labels; six refreshes source inventors; seven refreshes destination inventors.
  */
-void func_0036A5D0(ItemCreationSelectedDisplayState* object, u8 mode);
+void item_creation_refresh_team_and_transfer_windows(ItemCreationSelectedDisplayState* object, u8 refresh_mode);
 
 /**
- * @brief Advance or cancel a four-step option transfer and refresh its displays.
- * @param object State containing the transfer fields and displays.
- * @param value Incoming byte value, or signed -1 to cancel the current step.
+ * @brief Advance or cancel the workshop/inventor selection steps of an inventor transfer.
+ * @param object Selection state.
+ * @param selection_value Workshop ID or inventor option code for the current step; -1 cancels it.
  */
-void func_00369B80(ItemCreationSelectedDisplayState* object, s32 value);
+void item_creation_advance_inventor_transfer(ItemCreationSelectedDisplayState* object, s32 selection_value);
 
 /**
  * @brief Refresh the option windows and enable or disable their selection controls.
@@ -396,20 +393,20 @@ void func_0036B6E0(ItemCreationSelectedDisplayState* object, u32 enabled);
 void func_0036BA10(ItemCreationSelectedDisplayState* object, u32 enabled);
 
 /**
- * @brief Map an item byte to an identifier for its group.
- * @param object Receiver; unused.
- * @param value Item byte to map.
- * @return 0x3457 plus the byte's group number (1 to 7), or 0x3457 for an unmapped byte.
+ * @brief Read the specialty message key for an inventor option code.
+ * @param object Unused receiver.
+ * @param inventor_option_code Inventor ID plus 31, or an unmapped byte.
+ * @return The NPC specialty key from 0x3458 through 0x345E, or 0x3457 for party or unmapped codes.
  */
-u16 func_00369F20(void* object, u8 value);
+u16 item_creation_inventor_skill_message(void* object, u8 inventor_option_code);
 
 /**
- * @brief Map an item byte to its associated halfword mask.
- * @param object Receiver; unused.
- * @param value Item byte to map.
- * @return Associated mask, or zero for an unmapped byte.
+ * @brief Read the creation-skill capability mask for an inventor option code.
+ * @param object Unused receiver.
+ * @param inventor_option_code Inventor ID plus 31, or an unmapped byte.
+ * @return One specialty bit for NPC codes, 0x1FF for party codes, or zero when unmapped.
  */
-u16 func_00369FA0(void* object, u8 value);
+u16 item_creation_inventor_skill_mask(void* object, u8 inventor_option_code);
 
 /**
  * @brief Enable selection slots from resident section-four flags.
@@ -432,12 +429,12 @@ u8 func_003696B0(ItemCreationSelection* object, u16 direction);
 void func_00369EB0(ItemCreationRuntimeRecordSelection* object);
 
 /**
- * @brief Rebuild one option list from matching table entries 32 through 59.
- * @param object State whose table supplies at most six matching entries per option.
- * @param option Selected option, from one through eleven; other values leave the state unchanged.
- * @param list List to rebuild, one or two.
+ * @brief Rebuild a transfer strip from the NPC inventors placed in the selected workshop.
+ * @param object Selection state.
+ * @param workshop_id Workshop ID from one through eleven; other values leave state unchanged.
+ * @param transfer_list One selects the source strip and two the destination strip.
  */
-void func_0036A780(ItemCreationOptionState* object, u16 option, u8 list);
+void item_creation_build_transfer_inventor_list(ItemCreationOptionState* object, u16 workshop_id, u8 transfer_list);
 
 /**
  * @brief Map the resident context code to a one-based selection slot.
@@ -691,74 +688,74 @@ float func_0036E7F0(void* object);
 s32 func_0036E740(void* object, float value);
 
 /**
- * @brief Mark the object active and copy a 128-bit value.
- * @param object Object to update.
+ * @brief Mark the transform dirty and copy a 128-bit value.
+ * @param object Transform to update.
  * @param value Value to store or test.
  */
-void func_0036E570(u8* object, const unsigned __int128* value);
+void func_0036E570(struct LibClass171EF0* object, const union LibVector4* value);
 
 /**
- * @brief Mark the object active and copy a 128-bit value.
- * @param object Object to update.
+ * @brief Mark the transform dirty and copy a 128-bit value.
+ * @param object Transform to update.
  * @param value Value to store or test.
  */
-void func_0036E590(u8* object, const unsigned __int128* value);
+void func_0036E590(struct LibClass171EF0* object, const union LibVector4* value);
 
 /**
- * @brief Mark the object active and copy a 128-bit value.
- * @param object Object to update.
+ * @brief Mark the transform dirty and copy a 128-bit value.
+ * @param object Transform to update.
  * @param value Value to store or test.
  */
-void func_0036E5F0(u8* object, const unsigned __int128* value);
+void func_0036E5F0(struct LibClass171EF0* object, const union LibVector4* value);
 
 /**
- * @brief Mark the object active and copy a 128-bit value.
- * @param object Object to update.
+ * @brief Mark the transform dirty and copy a 128-bit value.
+ * @param object Transform to update.
  * @param value Value to store or test.
  */
-void func_0036E610(u8* object, const unsigned __int128* value);
+void func_0036E610(struct LibClass171EF0* object, const union LibVector4* value);
 
 /**
- * @brief Mark the object active and copy a 128-bit value.
- * @param object Object to update.
+ * @brief Mark the transform dirty and copy a 128-bit value.
+ * @param object Transform to update.
  * @param value Value to store or test.
  */
-void func_0036E6D0(u8* object, const unsigned __int128* value);
+void func_0036E6D0(struct LibClass171EF0* object, const union LibVector4* value);
 
 /**
- * @brief Mark the object active and copy a 128-bit value.
- * @param object Object to update.
+ * @brief Mark the transform dirty and copy a 128-bit value.
+ * @param object Transform to update.
  * @param value Value to store or test.
  */
-void func_0036E6F0(u8* object, const unsigned __int128* value);
+void func_0036E6F0(struct LibClass171EF0* object, const union LibVector4* value);
 
 /**
- * @brief Mark the object active and set its float components.
- * @param object Object to update.
+ * @brief Mark the transform dirty and set its float components.
+ * @param object Transform to update.
  * @param x First component.
  * @param y Second component.
  * @param z Third component.
  * @param w Fourth component.
  */
-void func_0036E5D0(u8* object, float x, float y, float z, float w);
+void func_0036E5D0(struct LibClass171EF0* object, float x, float y, float z, float w);
 
 /**
- * @brief Mark the object active and set its float components.
- * @param object Object to update.
+ * @brief Mark the transform dirty and set its float components.
+ * @param object Transform to update.
  * @param x First component.
  * @param y Second component.
  * @param z Third component.
  */
-void func_0036E710(u8* object, float x, float y, float z);
+void func_0036E710(struct LibClass171EF0* object, float x, float y, float z);
 
 /**
- * @brief Mark the object active and set its float components.
- * @param object Object to update.
+ * @brief Mark the transform dirty and set its float components.
+ * @param object Transform to update.
  * @param x First component.
  * @param y Second component.
  * @param z Third component.
  */
-void func_0036E5B0(u8* object, float x, float y, float z);
+void func_0036E5B0(struct LibClass171EF0* object, float x, float y, float z);
 
 /**
  * @brief Return the address of D_50CD30.
@@ -767,27 +764,27 @@ void func_0036E5B0(u8* object, float x, float y, float z);
 u8* func_0036E760(void);
 
 /**
- * @brief Mark the object active and copy a four-component float value.
- * @param object Object to update.
+ * @brief Mark the transform dirty and copy a four-component float value.
+ * @param object Transform to update.
  * @param x First component.
  * @param y Second component.
  * @param z Third component.
  */
-void func_0036E690(u8* object, float x, float y, float z);
+void func_0036E690(struct LibClass171EF0* object, float x, float y, float z);
 
 /**
  * @brief Update the four-float transform and set its marker.
  * @param object Transform state to update.
  * @param input Source float vector.
  */
-void func_0036E630(ItemCreationTransformState* object, const float* input);
+void func_0036E630(struct LibClass171EF0* object, const float* input);
 
 /**
  * @brief Update the four-float transform and set its marker.
  * @param object Transform state to update.
  * @param input Source float vector.
  */
-void func_0036E660(ItemCreationTransformState* object, const float* input);
+void func_0036E660(struct LibClass171EF0* object, const float* input);
 
 /**
  * @brief Append a value to the sentinel list and increase its node count.
@@ -846,15 +843,15 @@ void func_0036F0D0(ItemCreationCountedList* object, void* value);
  * @param index Number of links to follow.
  * @return Reached node, or null if the chain ends early.
  */
-void* func_0036F160(u8* object, s32 index);
+ItemCreationListNode* func_0036F160(ItemCreationCountedList* object, s32 index);
 
 /**
- * @brief Follow the linked nodes at offset 4 up to the requested index.
- * @param object Object holding the first node pointer.
- * @param index Number of links to follow.
+ * @brief Find a display node after the list sentinel.
+ * @param object Counted display list with an initialized sentinel.
+ * @param index Zero-based node index; negative values also select the first node.
  * @return Reached node, or null if the chain ends early.
  */
-ItemCreationListNode* func_0036F230(ItemCreationList* object, s32 index);
+ItemCreationListNode* func_0036F230(FieldCountedList* object, s32 index);
 
 /**
  * @brief Store and refresh one selected resource state.

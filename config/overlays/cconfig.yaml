@@ -60,4 +60,12 @@ segments:
           - {function: func_0034B430, offset: 0x0, size: 0x38}
         linker_section_order: .rodata
       - [0xaab8, rodatabin, data_00352E38]
+      - start: 0xaac0
+        type: .rodata
+        name: text
+        linker_section: .rodata.00352E40
+        rodata_anchors:
+          - {function: func_0034D180, offset: 0x0, size: 0x38}
+        linker_section_order: .rodata
+      - [0xaaf8, rodatabin, data_00352E78]
   - [0xab80]

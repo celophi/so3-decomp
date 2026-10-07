@@ -108,6 +108,15 @@ public:
     FieldClass153130();
     /** @brief Destroy the Field selection widget. */
     virtual ~FieldClass153130();
+    /** @brief Read the current selection index. @return Current zero-based index. */
+    u16 func_0023B3A0();
+    /**
+     * @brief Move the selector in the requested direction.
+     * @param direction Zero or three moves backward; one or two moves forward.
+     * @return Zero after moving, one while movement is incomplete, two at the lower limit, or three at the upper limit.
+     */
+    u32 func_0023B3B0(u16 direction);
+
     /**
      * @brief Configure the selection widget and its drawing dimensions.
      * @param first First selection code.
@@ -377,6 +386,12 @@ s32 func_0023BAB0(FieldObject23BAB0* object, float x, float y, float z);
  * @param object Receiver to update.
  */
 void func_0023CB30(FieldObject23CB30* object);
+/**
+ * @brief Reset the grid selection and update its displayed position.
+ * @param object Grid to reset.
+ */
+void func_0023C710(FieldObject23CEA0* object);
+
 /**
  * @brief Refresh field grid coordinates from the current index.
  * @param object Grid receiver to update.

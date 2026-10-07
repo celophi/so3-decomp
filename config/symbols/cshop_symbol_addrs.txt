@@ -395,3 +395,8 @@ func_00462310__15LibObject174D90Fv = 0x0045F6B0; // type:func absolute:True allo
 
 __dla__FPv = 0x00100BE0; // type:func absolute:True allow_duplicated:True
 func_00461720__15LibObject174D90FffffiiUiUi = 0x00461720; // type:func
+
+func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
+func_002D5CF0 = 0x002D5CF0; // type:func absolute:True allow_duplicated:True
+func_002D6410 = 0x002D6410; // type:func absolute:True allow_duplicated:True
+func_002D6440 = 0x002D6440; // type:func absolute:True allow_duplicated:True

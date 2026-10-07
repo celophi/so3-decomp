@@ -42,6 +42,18 @@ __dt__16FieldClass150060Fv = 0x001DECD0; // type:func
 __dt__16FieldClass150050Fv = 0x001DED30; // type:func
 func_001DF360__16FieldClass150070Fv = 0x001DF360; // type:func
 func_001DF3D0__16FieldClass150070Fv = 0x001DF3D0; // type:func
+
+// FieldClass150070 <- FieldClass155780 <- FieldClass155750 <- FieldClass152740
+// <- FieldClass155810; vtables are in main data.
+__vt__16FieldClass155780 = 0x00155780; // size:0x28
+__vt__16FieldClass155750 = 0x00155750; // size:0x28
+__vt__16FieldClass152740 = 0x00152740; // size:0x28
+__vt__16FieldClass155810 = 0x00155810; // size:0x28
+// FieldClass155750::func_slot20 is still assembly called by C as func_0027ABF0.
+func_slot20__16FieldClass155750Fv = 0x0027ABF0; // type:func absolute:True allow_duplicated:True
+func_0027ABF0 = 0x0027ABF0; // type:func allow_duplicated:True
+func_slot20__16FieldClass155810Fv = 0x0027D4A0; // type:func
+func_001DD7B0__16FieldClass155810Fv = 0x0027D4F0; // type:func
 __vt__16FieldClass150010 = 0x00150010; // size:0x2C
 __dt__16FieldClass150010Fv = 0x001DEC40; // type:func
 
@@ -703,3 +715,8 @@ func_0020BD00__16FieldClass153570FP16FieldClass154D20 = 0x0024C550; // type:func
 func_0020BCF0__16FieldClass153570FPv = 0x0020BEF0; // type:func
 __ct__16FieldClass152210Fv = 0x0021F6D0; // type:func
 __vt__16FieldClass152210 = 0x00152210; // size:0xC
+
+func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
+func_002D5CF0 = 0x002D5CF0; // type:func allow_duplicated:True
+func_002D6410 = 0x002D6410; // type:func allow_duplicated:True
+func_002D6440 = 0x002D6440; // type:func allow_duplicated:True

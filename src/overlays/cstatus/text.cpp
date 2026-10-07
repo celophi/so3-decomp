@@ -17,6 +17,8 @@
 #include "overlays/1067-00/text_002D5260.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/resource_widget_inlines.h"
+#include "overlays/lib/text_003F90C0.h"
+#include "overlays/lib/text_004095C0.h"
 
 /** Partial 0x114-byte record with display data at offset 0x20. */
 struct StatusDisplayRecord
@@ -24,6 +26,44 @@ struct StatusDisplayRecord
     u8 unk00[0x20];
     char data[0xF4];
 };
+/** Partial 0x114-byte detail with six encoded entries and their checksum. */
+struct StatusProtectedEntries
+{
+    u8 unk00[0x41];
+    u8 values[6];
+    u8 unk47[0xBD];
+    u32 checksum;
+    u8 unk108[0xC];
+};
+/**
+ * @brief Read one encoded entry when its six-byte checksum is valid.
+ * @param record Detail record containing the protected entries.
+ * @param index Signed entry index, from zero through five.
+ * @return Decoded entry, or zero for an invalid checksum or index.
+ */
+static inline s32 status_protected_entry(StatusProtectedEntries* record, s32 index)
+{
+    u32 checksum = 0x8D3C43F9;
+    for (s32 entry = 0; entry < 6; entry++)
+    {
+        checksum ^= record->values[entry];
+        checksum = checksum * 2 + 0x31;
+    }
+    if (record->checksum != checksum)
+    {
+        return 0;
+    }
+    if (index < 0)
+    {
+        return 0;
+    }
+    if (static_cast<u32>(index) >= 6)
+    {
+        return 0;
+    }
+    return record->values[index] ^ 0x77;
+}
+
 /** Saved section containing the ten fixed-width character names. */
 struct StatusNameSection
 {
@@ -1429,7 +1469,40 @@ void func_0034C500(StatusScrollState* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_0034C640);
+void func_0034C640(StatusScrollState* object)
+{
+    s32 kind, value, result_index, remainder;
+    s32 first, second, third, fourth, fifth;
+    if (object->selection != 0)
+    {
+        object->option_total = 0;
+        FieldRecordSelection* selection = object->selection;
+        StatusProtectedEntries* record = &static_cast<StatusProtectedEntries*>(selection->unk04)[selection->current];
+        if (record != 0)
+        {
+            for (s32 index = 0; index < 6; index++)
+            {
+                object->keys[index] = 0x822;
+                s32 entry = status_protected_entry(record, index);
+                if (entry > 0)
+                {
+                    selection = object->selection;
+                    func_00408850(&static_cast<StatusProtectedEntries*>(selection->unk04)[selection->current], selection->slots[selection->current], entry - 1,
+                                  &kind, &value, &result_index, &remainder);
+                    selection = object->selection;
+                    func_004095C0(kind, &selection->records[selection->current], &static_cast<StatusProtectedEntries*>(selection->unk04)[selection->current],
+                                  &first, &second, &third, &fourth, &fifth, 0, 0, 0);
+                    object->option_total += third;
+                    object->keys[index] = kind + 0x18FF;
+                }
+                else
+                {
+                    object->keys[index] = 0x822;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_slotf4__17StatusScrollStateFPv);
 
@@ -1496,7 +1569,7 @@ StatusScrollState::StatusScrollState()
     keys[3] = 0x822;
     keys[4] = 0x822;
     keys[5] = 0x822;
-    unk1b0 = 0;
+    option_total = 0;
     caption = 0;
     other_marker = 0;
     selected_slot = 0;

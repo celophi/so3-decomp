@@ -93,13 +93,21 @@ typedef struct ResidentContextObject64
     void* unk48;
 } ResidentContextObject64;
 
+/** Partial input state exposing its unsigned control mask. */
+typedef struct ResidentContextInput10
+{
+    u8 unk00[0x24];
+    u16 mask;
+} ResidentContextInput10;
+
 /** Partial field context reached through D_001B6430. */
 typedef struct ResidentContext
 {
     u8 unk00[4];
     void* unk04;
     ResidentContext08* unk08;
-    u8 unk0c[8];
+    u8 unk0c[4];
+    ResidentContextInput10* input;
     void* unk14;
     void* unk18;
     void* unk1c;

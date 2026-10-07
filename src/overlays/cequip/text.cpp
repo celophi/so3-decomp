@@ -2068,7 +2068,7 @@ s32 EquipClass182C90::func_slotf4(void* associated)
     const char* text = reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(unkac->unk04)[unkac->current].unk20);
     unkb0->func_00467AD0(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
     func_004C6190(unk10, unkb0);
-    func_00351C00(reinterpret_cast<FieldCountedList*>(unk34 + 0x10), unkb0);
+    func_00351C00(reinterpret_cast<FieldCountedList*>(unk40 + 4), unkb0);
     unkb0->set_scale(0.8f, 0.8f);
     unkb4 = new (0) LibObject178750;
     unkb8 = new (0) LibObject174F20;
@@ -2078,7 +2078,7 @@ s32 EquipClass182C90::func_slotf4(void* associated)
     func_00351D20(&unk2c, unkb4);
     unkb4->set_color(0x806080);
     func_004C6190(unk10, unkb8);
-    func_00351C90(reinterpret_cast<FieldCountedList*>(unk34 + 4), unkb8);
+    func_00351C90(&unk38, unkb8);
     unkb8->set_scale(0.9f, 0.9f);
     unkec = new (0) LibObject178750;
     unkec->func_004C7FE0(105.0f, 80.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFB6, 0);
