@@ -303,7 +303,9 @@ typedef struct ItemCreationRuntimeOptionRecord
     u8 unk06;
     u8 unk07;
     u8 unk08;
-    u8 unk09[3];
+    u8 unk09;
+    u8 unk0a;
+    u8 unk0b;
 } ItemCreationRuntimeOptionRecord;
 
 typedef struct ItemCreationColorRecordState
@@ -390,12 +392,14 @@ class FieldClass15BB50 : public ItemCreationClass184EF0
 public:
     u8 unk90[4];
     s16 unk94;
+    u8 unk96[0x22];
 };
 class FieldClass15BB70 : public ItemCreationClass184EF0
 {
 public:
     u8 unk90[0x50];
     s16 unke0;
+    u8 unke2[0x26];
 };
 /**
  * @brief Configure the packed allocation record and its detail values.
@@ -1568,7 +1572,173 @@ ItemCreationClass185460::ItemCreationClass185460()
     unk1a4 = 0;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034B970);
+/** Six-byte category record containing an icon and its channel. */
+struct ItemCreationSingleIconRecord
+{
+    u8 unk00[2];
+    u8 unk02;
+    u8 unk03;
+    u8 unk04[2];
+};
+
+/** Single-channel category records, indexed by category minus one. */
+extern "C" const ItemCreationSingleIconRecord D_501DA0[];
+
+/**
+ * @brief Test whether a category uses the eight-channel icon table.
+ * @param category Detail category.
+ * @return One for categories from twenty-nine onward, otherwise zero.
+ */
+static inline u8 has_extended_icons(u8 category)
+{
+    return category >= 29;
+}
+
+/** Thirteen-byte category record containing eight channel icons. */
+struct ItemCreationIconRecord
+{
+    u8 icons[8];
+    u8 unk08[5];
+};
+/** Eight-channel category records, indexed by category minus twenty-nine. */
+extern "C" const ItemCreationIconRecord D_501E50[];
+
+/**
+ * @brief Find an entry in the eight-channel icon table.
+ * @param index Category index within the table.
+ * @return Icon record at that index.
+ */
+static inline const ItemCreationIconRecord* extended_icon_record(s32 index)
+{
+    return &D_501E50[index];
+}
+/**
+ * @brief Read the icon assigned to a category and channel.
+ * @param category Detail category.
+ * @param channel Channel index from zero through seven.
+ * @return Assigned icon, or zero for an unassigned channel.
+ */
+static inline u8 detail_icon(u8 category, s32 channel)
+{
+    u8 icon = 0;
+    if (has_extended_icons(category))
+    {
+        icon = extended_icon_record(category - 29)->icons[channel];
+    }
+    else
+    {
+        const ItemCreationSingleIconRecord* record = &D_501DA0[category - 1];
+        if (record->unk03 == channel + 1)
+        {
+            icon = record->unk02;
+        }
+    }
+    return icon;
+}
+
+/**
+ * @brief Convert a stored option code to its option-table index.
+ * @param index Stored one-based option code, or zero.
+ * @return Zero for no option, otherwise the code plus thirty-one.
+ */
+static inline u32 stored_option_index(u8 index)
+{
+    if (index == 0)
+    {
+        return 0;
+    }
+    return index + 31;
+}
+
+/**
+ * @brief Return the runtime record for a one-based option code.
+ * @param state State containing the runtime option records.
+ * @param option One-based option code.
+ * @return Selected record, or null for an invalid code.
+ */
+static inline ItemCreationRuntimeOptionRecord* option_record(ItemCreationColorRecordState* state, u8 option)
+{
+    u8 valid = option >= 1 && option < 39;
+    if (valid)
+    {
+        return &state->unk10d88[option - 1];
+    }
+    return 0;
+}
+
+/**
+ * @brief Enable one channel's label and icon.
+ * @param object Option detail window.
+ * @param record Selected runtime option record.
+ * @param index Channel index from zero through seven.
+ */
+static inline void show_channel(ItemCreationClass185560* object, ItemCreationRuntimeOptionRecord* record, u8 index)
+{
+    static_cast<LibObject178750*>(object->unkb0[index])->set_color(0x808080);
+    u8 icon = detail_icon(record->unk06, index);
+    LibObject174F20* image = static_cast<LibObject174F20*>(object->unkd4[index]);
+    image->unkfc = icon;
+    image->unk3c = 1;
+    static_cast<LibObject174F20*>(object->unkd4[index])->unk3d = 1;
+}
+
+void func_0034B970(ItemCreationClass185560* object)
+{
+    object->unkac->unk3f = 0;
+    for (s32 index = 0; index < 8; index++)
+    {
+        static_cast<LibObject178750*>(object->unkb0[index])->set_color(0x505050);
+        static_cast<LibObject174F20*>(object->unkd4[index])->unk3d = 0;
+    }
+    u8 code = object->unkf8;
+    if (code != 0)
+    {
+        ItemCreationRuntimeOptionRecord* record = option_record(D_001B64F8, code);
+       
+        // TODO: figure out if we can just do code > 0 instead of code != 0 too.
+        if (code > 0)
+        {
+            func_4C6DF0(object->unkac, object->func_slot54(), code + 0x3584, 0);
+            object->unkac->unk3f = 1;
+            if (object->unka8 != 0)
+            {
+                u16 flags = func_00369FA0(object->unka8, stored_option_index(object->unkf8));
+                if (flags & 0x1)
+                {
+                    show_channel(object, record, 0);
+                }
+                if (flags & 0x2)
+                {
+                    show_channel(object, record, 1);
+                }
+                if (flags & 0x4)
+                {
+                    show_channel(object, record, 2);
+                }
+                if (flags & 0x8)
+                {
+                    show_channel(object, record, 3);
+                }
+                if (flags & 0x10)
+                {
+                    show_channel(object, record, 4);
+                }
+                if (flags & 0x20)
+                {
+                    show_channel(object, record, 5);
+                }
+                if (flags & 0x40)
+                {
+                    show_channel(object, record, 6);
+                }
+                if (flags & 0x80)
+                {
+                    show_channel(object, record, 7);
+                }
+            }
+        }
+    }
+}
 
 /**
  * @brief Create the selected option title and its eight channel labels and images.
@@ -2204,7 +2374,240 @@ void func_0034DA30(ItemCreationFlagResetOwner* object)
     object->unk1dc[2]->unk3f = 0;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034DB00);
+/**
+ * @brief Test whether a runtime option code selects one of the 38 records.
+ * @param option One-based option code.
+ * @return True for a valid option record.
+ */
+static inline bool runtime_option_valid(u8 option)
+{
+    return option >= 1 && option < 39;
+}
+/**
+ * @brief Return the runtime record selected by an option code.
+ * @param state State containing the runtime option records.
+ * @param option One-based option code.
+ * @return Selected record, or null for an invalid code.
+ */
+static inline ItemCreationRuntimeOptionRecord* runtime_option_record(ItemCreationColorRecordState* state, u8 option)
+{
+    if (runtime_option_valid(option))
+    {
+        return &state->unk10d88[option - 1];
+    }
+    return 0;
+}
+
+/**
+ * @brief Show an icon on an image widget.
+ * @param image Image widget.
+ * @param icon Icon index.
+ */
+static inline void set_image_icon(LibObject174F20* image, u32 icon)
+{
+    image->unkfc = icon;
+    image->unk3c = 1;
+}
+
+/**
+ * @brief Read the enabled-label mask for a category.
+ * @param state Selection state.
+ * @param code One-based category code.
+ * @return Bit mask of enabled labels.
+ */
+static inline u16 category_flags(ItemCreationSelectedDisplayState* state, u8 code)
+{
+    // The one-based lookup begins two bytes before its twelve mask entries.
+    const u16* words = reinterpret_cast<const u16*>(&state->unk77[5]);
+    return words[code];
+}
+/** @brief Read a group's category code. @param object Option window. @param group Group index. @return Category code. */
+static inline u8 category_value(ItemCreationClass185960* object, s32 group)
+{
+    return group == 0 ? object->unk178 : object->unk1b0;
+}
+/** @brief Store a group's category code. @param object Option window. @param group Group index. @param value Category code. */
+static inline void set_category_value(ItemCreationClass185960* object, s32 group, u8 value)
+{
+    if (group == 0)
+    {
+        object->unk178 = value;
+    }
+    else
+    {
+        object->unk1b0 = value;
+    }
+}
+/** @brief Return a group's category title. @param object Option window. @param group Group index. @return Title widget. */
+static inline LibObject178750* category_title(ItemCreationClass185960* object, s32 group)
+{
+    return static_cast<LibObject178750*>(group == 0 ? object->unk17c : object->unk1b4);
+}
+/** @brief Return one of a group's category labels. @param object Option window. @param group Group index. @param index Label index. @return Label widget. */
+static inline LibClass174EF0* category_label(ItemCreationClass185960* object, s32 group, s32 index)
+{
+    return group == 0 ? object->unk180[index] : object->unk1b8[index];
+}
+/**
+ * @brief Show a category label, bright when its bit is set in the mask.
+ * @param object Option window.
+ * @param group Group index.
+ * @param index Label index.
+ * @param flags Enabled-label mask.
+ */
+static inline void update_category_label(ItemCreationClass185960* object, s32 group, s32 index, u16 flags)
+{
+    category_label(object, group, index)->unk3f = 1;
+    if (flags & (1 << index))
+    {
+        category_label(object, group, index)->set_color(ITEM_CREATION_COLOR_BRIGHT);
+    }
+    else
+    {
+        category_label(object, group, index)->set_color(ITEM_CREATION_COLOR_DIM);
+    }
+}
+/**
+ * @brief Refresh a group's category title and labels once the stage reaches it.
+ * @param object Option window.
+ * @param stage Current selection stage.
+ * @param group Group index.
+ * @param selected Category code to store at the group's own stage, or zero.
+ */
+static inline void update_category_group(ItemCreationClass185960* object, s32 stage, s32 group, u8 selected)
+{
+    if (stage >= 2 * group)
+    {
+        if (selected && stage == 2 * group)
+        {
+            set_category_value(object, group, selected);
+        }
+        void* associated = object->func_slot54();
+        func_4C6DF0(category_title(object, group), associated, category_value(object, group) + 0x3520, 0);
+        category_title(object, group)->unk3f = 1;
+        u16 flags = category_flags(object->unk164, category_value(object, group));
+        update_category_label(object, group, 0, flags);
+        update_category_label(object, group, 1, flags);
+        update_category_label(object, group, 2, flags);
+        update_category_label(object, group, 3, flags);
+        update_category_label(object, group, 4, flags);
+        update_category_label(object, group, 5, flags);
+        update_category_label(object, group, 6, flags);
+        update_category_label(object, group, 7, flags);
+    }
+}
+/** @brief Test a one-based detail channel. @param channel Channel. @return Whether it is one through nine. */
+static inline u8 detail_channel_valid(u8 channel)
+{
+    return channel > 0 && channel < 10;
+}
+/** @brief Read a group's detail code. @param object Option window. @param group Group index. @return Detail code. */
+static inline u8 detail_value(ItemCreationClass185960* object, s32 group)
+{
+    return group == 0 ? object->unk179 : object->unk1b1;
+}
+/** @brief Return one of a group's detail displays. @param object Option window. @param group Group index. @param index Display index. @return Display widget. */
+static inline LibClass174EF0* detail_display(ItemCreationClass185960* object, s32 group, s32 index)
+{
+    return group == 0 ? object->unk1a4[index] : object->unk1dc[index];
+}
+/**
+ * @brief Look up the icon for a stored detail code.
+ * @param state Selection state.
+ * @param code Stored detail code.
+ * @return Icon index, or zero when the record or its channel has none.
+ */
+static inline u8 selected_detail_icon(ItemCreationSelectedDisplayState* state, u8 code)
+{
+    u8 result = 0;
+    if (D_001B64F8 != 0)
+    {
+        ItemCreationRuntimeOptionRecord* record = runtime_option_record(D_001B64F8, code);
+        if (record != 0)
+        {
+            u8 channel = func_00369F20(state, stored_option_index(code)) - 0x3457;
+            u8 icon = 0;
+            if (detail_channel_valid(channel))
+            {
+                u8 category = record->unk06;
+                if (has_extended_icons(category))
+                {
+                    icon = extended_icon_record(category - 29)->icons[channel - 1];
+                }
+                else
+                {
+                    const ItemCreationSingleIconRecord* single = &D_501DA0[category - 1];
+                    if (channel == single->unk03)
+                    {
+                        icon = single->unk02;
+                    }
+                }
+            }
+            result = icon;
+        }
+    }
+    return result;
+}
+/**
+ * @brief Refresh a group's detail name, text and icon once the stage passes it.
+ * @param object Option window.
+ * @param stage Current selection stage.
+ * @param group Group index.
+ */
+static inline void update_detail_group(ItemCreationClass185960* object, s32 stage, s32 group)
+{
+    if (stage >= 2 * group + 1)
+    {
+        s32 raw_code = detail_value(object, group);
+        if (raw_code != 0)
+        {
+            u8 code = raw_code;
+            void* associated = object->func_slot54();
+            func_4C6DF0(static_cast<LibObject178750*>(detail_display(object, group, 0)), associated, code + 0x3584, 0);
+            detail_display(object, group, 0)->unk3f = 1;
+        }
+        else
+        {
+            detail_display(object, group, 0)->unk3f = 0;
+        }
+        s32 raw_detail = detail_value(object, group);
+        if (raw_detail != 0)
+        {
+            u8 code = raw_detail;
+            u16 text = func_00369F20(object->unk164, stored_option_index(code));
+            void* associated = object->func_slot54();
+            func_4C6DF0(static_cast<LibObject178750*>(detail_display(object, group, 1)), associated, text, 0);
+            detail_display(object, group, 1)->unk3f = 1;
+            s32 raw_icon_detail = detail_value(object, group);
+            u8 icon = selected_detail_icon(object->unk164, raw_icon_detail);
+            set_image_icon(static_cast<LibObject174F20*>(detail_display(object, group, 2)), icon);
+            detail_display(object, group, 2)->unk3f = 1;
+        }
+    }
+}
+/**
+ * @brief Refresh both category and detail groups, then reapply the default option.
+ * @param prefix Option window.
+ * @param option Category code to store, or 0xFF for the window's current option.
+ */
+extern "C" void func_0034DB00(ItemCreationFlagResetOwner* prefix, u8 option)
+{
+    ItemCreationClass185960* object = static_cast<ItemCreationClass185960*>(static_cast<void*>(prefix));
+    func_0034DA30(prefix);
+    if (option == 0xFF)
+    {
+        option = object->unk160->unk6c;
+    }
+    u32 stage = object->unk164->unk129;
+    update_category_group(object, stage, 0, option);
+    update_detail_group(object, stage, 0);
+    update_category_group(object, stage, 1, option);
+    update_detail_group(object, stage, 1);
+    if (option == 0xFF)
+    {
+        func_0034D980(prefix, option);
+    }
+}
 
 void func_0034E4D0(ItemCreationFlagResetOwner* object, u16 direction)
 {
@@ -2269,29 +2672,6 @@ void ItemCreationClass185960::func_slot68()
     func_slotf8(1);
 }
 
-/**
- * @brief Test whether a runtime option code selects one of the 38 records.
- * @param option One-based option code.
- * @return True for a valid option record.
- */
-static inline bool runtime_option_valid(u8 option)
-{
-    return option >= 1 && option < 39;
-}
-/**
- * @brief Return the runtime record selected by an option code.
- * @param state State containing the runtime option records.
- * @param option One-based option code.
- * @return Selected record, or null for an invalid code.
- */
-static inline ItemCreationRuntimeOptionRecord* runtime_option_record(ItemCreationColorRecordState* state, u8 option)
-{
-    if (runtime_option_valid(option))
-    {
-        return &state->unk10d88[option - 1];
-    }
-    return 0;
-}
 /**
  * @brief Reset the option transfer or return to the primary option window.
  * @return Zero without a selection state, or two otherwise.
@@ -2958,7 +3338,64 @@ ItemCreationClass185D60::~ItemCreationClass185D60()
 {
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003513E0);
+/**
+ * @brief Report whether an option container has no pending mode.
+ * @param container Option container.
+ * @return One when the container mode is zero.
+ */
+static inline u8 option_container_idle(ItemCreationClass185F60* container)
+{
+    return container->unk4a4 == 0;
+}
+
+/** @brief Finish or cancel the option container's pending action while this window is current. */
+void ItemCreationClass185E60::func_slot5c()
+{
+    if (D_001B643C->unk10->unk14->func_00261150() != this)
+    {
+        return;
+    }
+    ItemCreationClass185F60* child = unkb8;
+    if (child == 0)
+    {
+        return;
+    }
+    switch (unkbc)
+    {
+    case 0:
+        break;
+    case 1:
+        if (option_container_idle(child))
+        {
+            if (child->unk30c > 0)
+            {
+                child->unk4a4 = 3;
+                child->unk30c = -1;
+                child->unk308 = -1;
+                child->unk316 = -1;
+            }
+            else
+            {
+                child->func_003EF740();
+                unkb8 = 0;
+                func_slot20(0);
+                ItemCreationClass186770* window = static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14)->unkd8;
+                FieldObject23CEA0* grid = window->unk10c;
+                if (grid != 0)
+                {
+                    grid->FieldClass151C50::unk30 = 128.0f;
+                    grid->unkae = 1;
+                    window->unka8->unk19a = 1;
+                }
+                D_001B643C->unk10->unk14->func_00263C70(window);
+                unkbc = 0;
+            }
+        }
+        break;
+    case 2:
+        break;
+    }
+}
 
 /**
  * @brief Create and queue the option container, or reset its active flag.
@@ -3691,7 +4128,84 @@ void func_00352B00(ItemCreationFourPositionDisplay* object, float x, float y)
     object->unk37c = 1;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352B90);
+/**
+ * @brief Find a single-channel category record.
+ * @param index Category minus one.
+ * @return Record at that index.
+ */
+static inline const ItemCreationSingleIconRecord* single_icon_record(s32 index)
+{
+    return &D_501DA0[index];
+}
+
+/**
+ * @brief Build the mask of channels a category can use.
+ * @param category Detail category.
+ * @return All nine channel bits for extended categories, otherwise the record's channel bit.
+ */
+static inline u16 category_channel_flags(u8 category)
+{
+    if (has_extended_icons(category))
+    {
+        return 0x1FF;
+    }
+    return 1 << (single_icon_record(category - 1)->unk03 - 1);
+}
+
+/**
+ * @brief Test whether a channel is absent from a channel mask.
+ * @param flags Channel mask.
+ * @param index Channel index.
+ * @return True when the channel's bit is clear.
+ */
+static inline bool channel_missing(u16 flags, s32 index)
+{
+    return !(flags & (1 << index));
+}
+
+/**
+ * @brief Show the texts for one available option row.
+ * @param source Option container supplying the text resource.
+ * @param index Position among the available option records.
+ */
+void ItemCreationClass186050::func_slot10(LibClass1721F0* source, s32 index)
+{
+    void* text_source = static_cast<ItemCreationClass185F60*>(source)->unk4b4;
+    ItemCreationRuntimeOptionRecord* records[28];
+    s32 count = 0;
+    for (s32 position = 0; position < 28; position++)
+    {
+        ItemCreationRuntimeOptionRecord* record = runtime_option_record(D_001B64F8, static_cast<u8>(position + 1));
+        if (record->unk08 != 0)
+        {
+            records[count++] = record;
+        }
+    }
+    ItemCreationRuntimeOptionRecord** selected = &records[index];
+    func_4C6DF0(&unk04, text_source, (*selected)->unk06 + 0x3584, 0);
+    func_4C6DF0(&unk118, text_source, (*selected)->unk08 + 0x15FB7, 0);
+    if ((*selected)->unk08 == 2)
+    {
+        unk118.set_color(0x505080);
+    }
+    else
+    {
+        unk118.set_color(0x805050);
+    }
+    u8 category = (*selected)->unk06;
+    s32 channel_index = 0;
+    u16 flags = category_channel_flags(category);
+    for (s32 channel = 0; channel < 8; channel++)
+    {
+        if (!channel_missing(flags, channel))
+        {
+            channel_index = channel;
+            break;
+        }
+    }
+    func_4C6DF0(&unk22c, text_source, channel_index + 0x3458, 0);
+    func_4C6DF0(&unk340, text_source, ((*selected)->unk0a != 0) + 0x15FB6, 0);
+}
 
 void func_00352DC0(u8* object, u32 unused, u8 value)
 {
@@ -3950,7 +4464,158 @@ s32 ItemCreationClass186070::func_slotb0()
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003537A0);
+/**
+ * @brief Allocate the panel transform and set its third coordinate.
+ * @param object Panel widget.
+ * @param z Third transform component.
+ * @return One on success, or zero if the transform could not be allocated.
+ */
+extern "C" s32 func_4C4AB0(LibClass178630* object, float z);
+/**
+ * @brief Initialize an item widget's rectangle and item codes.
+ * @param object Item widget.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @param value Halfword item code.
+ * @param variant Byte item variant.
+ * @param flag Drawing state flag.
+ * @return One on success, or zero if its drawing storage could not be initialized.
+ */
+extern "C" s32 func_413F70(LibObject172410* object, float x, float y, float width, float height, u16 value, u8 variant, u8 flag);
+/**
+ * @brief Initialize a detail widget's rectangle and value codes.
+ * @param object Detail widget.
+ * @param value Halfword value code.
+ * @param variant Byte value variant.
+ * @param flag Drawing state flag.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @return One on success, or zero if its drawing storage could not be initialized.
+ */
+extern "C" s32 func_4143F0(LibObject172440* object, u16 value, u8 variant, u8 flag, float x, float y, float width, float height);
+/**
+ * @brief Create and configure the Field window's nested display container.
+ * @param object Field window receiver.
+ * @param associated Object associated with the window.
+ * @param first First container configuration value.
+ * @param second Second container configuration value.
+ * @param third Third container configuration value.
+ * @param x Horizontal coordinate.
+ * @param y Vertical coordinate.
+ * @param z Third coordinate.
+ * @return One when the container and associated object are present, otherwise zero.
+ */
+extern "C" s32 func_002CE760(FieldClass15AE70* object, void* associated, s32 first, s32 second, s32 third, float x, float y, float z);
+/** @brief Attach a widget to its container. @param object Container. @param child Widget to attach. */
+extern "C" void func_4C6190(LibObject178660* object, LibClass178600* child);
+/**
+ * @brief Set the display depth and mark it for drawing.
+ * @param display Drawing display.
+ * @param value Depth value.
+ */
+static inline void set_depth(LibClass174EF0* display, float value)
+{
+    display->unk88 = value;
+    display->unk3c = 1;
+}
+/** Partial Field runtime reached through D_001B657C. */
+struct FieldRuntime
+{
+    u8 unk00[0x514];
+    void* unk514;
+    u32 unk518;
+    void* unk51c;
+    u32 unk520;
+};
+
+/** Five row heights copied from the overlay's initialized data. */
+struct ItemCreationRowHeights5
+{
+    float values[5];
+};
+extern "C" ItemCreationRowHeights5 D_0036F5E0;
+
+/**
+ * @brief Create the window's panels, text and value displays and register its runtime callback.
+ * @param associated Text source associated with the window.
+ * @return Always one.
+ */
+s32 ItemCreationClass186070::func_slotf4(void* associated)
+{
+    func_002CE760(this, associated, 0, 9, 0xA28, 28.0f, 82.0f, 0.0f);
+    unke8 = new (0) LibObject178660;
+    func_004C6510(unke8, 5, 0, 0, 28.0f, 82.0f, 0.0f);
+    func_00465B20(D_001B657C, static_cast<LibClass174610*>(unke8));
+    unkf8 = new (0) LibClass178630;
+    func_004C5A80(unkf8, 1, 0.0f, 0.0f, 584.0f, 374.0f, 88.0f);
+    func_4C6190(unk10, unkf8);
+    func_4C4AB0(unkf8, 1500.0f);
+    unkac = new (0) LibObject178750;
+    unkb0 = new (0) LibObject172410;
+    unkb4 = new (0) LibObject174F20;
+    unkb8 = new (0) ItemCreationClass172870;
+    unkbc = new (0) LibObject178750;
+    unkc0 = new (0) LibObject178750;
+    for (s32 index = 0; index < 8; index++)
+    {
+        unkc4[index] = new (0) LibObject172440;
+    }
+    unkac->func_004C7FE0(16.0f, 12.0f, 0.0f, 0.0f, (s32)associated, unkec + 0x1B62, 0);
+    set_depth(unkac, -1.0f);
+    unkac->set_scale(0.8f, 0.8f);
+    unkac->set_color(0x805050);
+    func_4C6190(unk10, unkac);
+    func_413F70(unkb0, 24.0f, 34.0f, 0.0f, 0.0f, (u16)(s32)associated, unkee + 0xC350, 0);
+    set_depth(unkb0, -1.0f);
+    unkb0->set_scale(1.2f, 1.2f);
+    func_4C6190(unk10, unkb0);
+    func_00464D90(unkb4, 99, 0, 0, 430.0f, 16.0f, 100.0f, 30.0f);
+    unkb4->set_scale(2.0f, 2.0f);
+    unkb4->set_color(0x508050);
+    func_4C6190(unk10, unkb4);
+    unke4 = new (0) LibObject178750;
+    unke4->func_004C7FE0(550.0f, 40.0f, 0.0f, 0.0f, (s32)associated, 0x15FC4, 0);
+    unke4->set_scale(0.9f, 0.9f);
+    func_4C6190(unk10, unke4);
+    func_421170(unkb8, 8.0f, 69.0f, 568.0f, 3.0f);
+    ItemCreationClass172870* frame = unkb8;
+    frame->unk50 = 0x606060;
+    frame->unk3c = 1;
+    func_4C6190(unk10, unkb8);
+    unkbc->func_004C7FE0(24.0f, 80.0f, 534.0f, 66.0f, (s32)associated, unkee + 0xD6D8, 0);
+    unkbc->set_mode(0);
+    unkbc->set_vertical_alignment(1);
+    set_depth(unkbc, -1.0f);
+    unkbc->set_scale(0.9f, 0.9f);
+    func_4C6190(unke8, unkbc);
+    unkc0->func_004C7FE0(16.0f, 155.0f, 0.0f, 0.0f, (s32)associated, 0x15FE0, 0);
+    unkc0->set_scale(0.8f, 0.8f);
+    unkc0->set_color(0x805050);
+    set_depth(unkc0, -1.0f);
+    func_4C6190(unk10, unkc0);
+    FieldRuntime* runtime = D_001B657C;
+    runtime->unk51c = associated;
+    runtime->unk520 = 0x11171;
+    for (s32 index = 0; index < 8; index++)
+    {
+        func_4143F0(unkc4[index], 0, 1, 0, 26.0f, 178.0f + 24.0f * index, 0.0f, 0.0f);
+        set_depth(unkc4[index], -1.0f);
+        unkc4[index]->set_scale(0.8f, 0.8f);
+        func_4C6190(unke8, unkc4[index]);
+    }
+    // The compiler's initializer for {52, 104, 208, 312, 342} lives in the overlay's data at D_0036F5E0.
+    ItemCreationRowHeights5 heights = D_0036F5E0;
+    LibObject178750* footer = new (0) LibObject178750;
+    footer->func_004C7FE0(12.0f, heights.values[4] - 8.0f, 555.0f, 24.0f, (s32)associated, 0x1B74, 0);
+    footer->set_scale(0.9f, 0.9f);
+    footer->set_mode(2);
+    func_4C6190(unke8, footer);
+    return 1;
+}
 
 /** @brief Release the container and base window contents. */
 void ItemCreationClass186070::func_slot0c()
@@ -4797,11 +5462,11 @@ void func_00356FD0(ItemCreationNineResourceView* object)
     {
         if (index < object->unk1bc)
         {
-            ItemCreationValueDisplay* value;
-            ItemCreationColorDisplay* display1;
-            ItemCreationColorDisplay* display2;
-            ItemCreationColorDisplay* display3;
-            ItemCreationColorDisplay* display4;
+            LibObject174F20* value;
+            LibObject178750* display1;
+            LibObject178750* display2;
+            LibObject178750* display3;
+            LibObject178750* display4;
 
             display1 = object->unk134[index];
             display1->unk94 = ITEM_CREATION_COLOR_ASSIGNED;
@@ -4822,10 +5487,10 @@ void func_00356FD0(ItemCreationNineResourceView* object)
         else
         {
             ItemCreationFlagNode* marker;
-            ItemCreationColorDisplay* display1;
-            ItemCreationColorDisplay* display2;
-            ItemCreationColorDisplay* display3;
-            ItemCreationColorDisplay* display4;
+            LibObject178750* display1;
+            LibObject178750* display2;
+            LibObject178750* display3;
+            LibObject178750* display4;
 
             display1 = object->unk134[index];
             display1->unk94 = ITEM_CREATION_COLOR_DIM;
@@ -4958,14 +5623,10 @@ s32 ItemCreationClass186870::func_slotb0()
     FieldState23B3A0* selector = static_cast<FieldState23B3A0*>(static_cast<void*>(unkb4));
     if (func_23B3A0(selector) == 0)
     {
-        ItemCreationSelectedDisplayState* state = unka8;
-        state->func_0036BF30(0, unkbc[0]);
-        state = unka8;
-        state->func_0036BF30(1, unkbc[1]);
-        state = unka8;
-        state->func_0036BF30(2, unkbc[2]);
-        state = unka8;
-        state->unk47 = 2;
+        unka8->func_0036BF30(0, unkbc[0]);
+        unka8->func_0036BF30(1, unkbc[1]);
+        unka8->func_0036BF30(2, unkbc[2]);
+        unka8->unk47 = 2;
         func_0027CB50(D_001B6430->context->unk58, 0x42, 0, 0);
     }
     else
@@ -5476,20 +6137,6 @@ struct ItemCreationDetailRecords
     u8 unk00[0x10D88];
     ItemCreationDetailRecord records[38];
 };
-/** Six-byte category record containing an icon and its channel. */
-struct ItemCreationSingleIconRecord
-{
-    u8 unk00[2];
-    u8 unk02;
-    u8 unk03;
-    u8 unk04[2];
-};
-/** Thirteen-byte category record containing eight channel icons. */
-struct ItemCreationIconRecord
-{
-    u8 icons[8];
-    u8 unk08[5];
-};
 
 // These external interfaces are scoped here because their owning code is in other overlays.
 extern "C"
@@ -5497,8 +6144,6 @@ extern "C"
     extern ResidentRequest112400* D_001B65F8;
     extern ItemCreationCategoryDefinition* D_001B64F0;
     extern const char D_0036F738[];
-    extern const ItemCreationSingleIconRecord D_501DA0[];
-    extern const ItemCreationIconRecord D_501E50[];
     u16 func_457470(u16 seed, const u8* buffer, s32 length);
     u32 func_23B3B0(FieldState23B3A0* item, u16 flag);
     u16 func_23B3A0(FieldState23B3A0* item);
@@ -5513,13 +6158,6 @@ extern "C"
  * @param row Visible row index.
  */
 void func_002CE220(FieldStateCE420* object, s32 count, s32 index, u8 row);
-/**
- * @brief Allocate the panel transform and set its third coordinate.
- * @param object Panel widget.
- * @param z Third transform component.
- * @return One on success, or zero if the transform could not be allocated.
- */
-s32 func_4C4AB0(LibClass178630* object, float z);
 /**
  * @brief Configure the frame widget's rectangle.
  * @param object Frame widget.
@@ -5555,32 +6193,6 @@ void func_420D20(ItemCreationClass172870* object, u32 color);
  */
 s32 func_41A930(ItemCreationClass1725D0* object, float x, float y, float height, float first, float second);
 
-/**
- * @brief Initialize an item widget's rectangle and item codes.
- * @param object Item widget.
- * @param value Halfword item code.
- * @param variant Byte item variant.
- * @param flag Drawing state flag.
- * @param x Horizontal position.
- * @param y Vertical position.
- * @param width Rectangle width.
- * @param height Rectangle height.
- * @return One on success, or zero if its drawing storage could not be initialized.
- */
-s32 func_413F70(LibObject172410* object, u16 value, u8 variant, u8 flag, float x, float y, float width, float height);
-/**
- * @brief Initialize a detail widget's rectangle and value codes.
- * @param object Detail widget.
- * @param value Halfword value code.
- * @param variant Byte value variant.
- * @param flag Drawing state flag.
- * @param x Horizontal position.
- * @param y Vertical position.
- * @param width Rectangle width.
- * @param height Rectangle height.
- * @return One on success, or zero if its drawing storage could not be initialized.
- */
-s32 func_4143F0(LibObject172440* object, u16 value, u8 variant, u8 flag, float x, float y, float width, float height);
 /** @brief Update the active Field list. @param object List window receiver. */
 void func_002CD7C0(FieldClass15AD40* object);
 /** @brief Update the Field list parameters. @param object List parameter receiver. */
@@ -5603,20 +6215,6 @@ void func_0023C710(FieldObject23CEA0* object);
 
 }
 
-/**
- * @brief Create and configure the Field window's nested display container.
- * @param object Field window receiver.
- * @param associated Object associated with the window.
- * @param first First container configuration value.
- * @param second Second container configuration value.
- * @param third Third container configuration value.
- * @param x Horizontal coordinate.
- * @param y Vertical coordinate.
- * @param z Third coordinate.
- * @return One when the container and associated object are present, otherwise zero.
- */
-extern "C" s32 func_002CE760(FieldClass15AE70* object, void* associated, s32 first, s32 second, s32 third, float x, float y, float z);
-
 /** @brief Set the transform position. @param object Drawing transform. @param x Horizontal coordinate. @param y Vertical coordinate. */
 extern "C" void func_44B190(LibClass174610* object, float x, float y);
 
@@ -5629,18 +6227,6 @@ static inline void set_height(LibClass178600* widget, float height)
     widget->unk18.unk0c = height;
     widget->unk3c = 1;
 }
-
-/**
- * @brief Set the display depth and mark it for drawing.
- * @param display Drawing display.
- * @param value Depth value.
- */
-static inline void set_depth(LibClass174EF0* display, float value)
-{
-    display->unk88 = value;
-    display->unk3c = 1;
-}
-
 
 static inline bool valid_record_index_middle(s16 index);
 static inline ItemCreationAllocationRecord* allocation_record_middle(s32 value);
@@ -5775,47 +6361,6 @@ static inline ItemCreationDetailRecord* detail_record(s32 value)
         return &table->records[index - 1];
     }
     return 0;
-}
-/**
- * @brief Test whether a category uses the eight-channel icon table.
- * @param category Detail category.
- * @return One for categories from twenty-nine onward, otherwise zero.
- */
-static inline u8 has_extended_icons(u8 category)
-{
-    return category >= 29;
-}
-/**
- * @brief Find an entry in the eight-channel icon table.
- * @param index Category index within the table.
- * @return Icon record at that index.
- */
-static inline const ItemCreationIconRecord* extended_icon_record(s32 index)
-{
-    return &D_501E50[index];
-}
-/**
- * @brief Read the icon assigned to a category and channel.
- * @param category Detail category.
- * @param channel Channel index from zero through seven.
- * @return Assigned icon, or zero for an unassigned channel.
- */
-static inline u8 detail_icon(u8 category, s32 channel)
-{
-    u8 icon = 0;
-    if (has_extended_icons(category))
-    {
-        icon = extended_icon_record(category - 29)->icons[channel];
-    }
-    else
-    {
-        const ItemCreationSingleIconRecord* record = &D_501DA0[category - 1];
-        if (record->unk03 == channel + 1)
-        {
-            icon = record->unk02;
-        }
-    }
-    return icon;
 }
 
 /**
@@ -6755,7 +7300,7 @@ s32 ItemCreationClass186B70::func_slot104(void* associated)
         unk150[index]->unk3f = 0;
         func_004C6190(unk10, unk150[index]);
         unk138[index] = new (0) LibObject172410;
-        func_413F70(unk138[index], 100, 0, 0, 60.0f, y, 323.99997f, 21.599998f);
+        func_413F70(unk138[index], 60.0f, y, 323.99997f, 21.599998f, 100, 0, 0);
         unk138[index]->set_scale(0.9f, 0.9f);
         LibObject172410* display = unk138[index];
         display->unkfa = 1;
@@ -6792,7 +7337,7 @@ s32 ItemCreationClass186B70::func_slot104(void* associated)
     unk198->unk3f = 0;
     func_004C6190(unk10, unk198);
     unk1a8 = new (0) LibObject172410;
-    func_413F70(unk1a8, 0, 0, 0, 24.0f, 34.0f, 561.6f, 31.199999f);
+    func_413F70(unk1a8, 24.0f, 34.0f, 561.6f, 31.199999f, 0, 0, 0);
     LibObject172410* category_display = unk1a8;
     category_display->unkfc = unk1bc;
     category_display->unkfe = 0;
@@ -6955,7 +7500,63 @@ s32 ItemCreationClass186C90::func_slotb4()
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0035C6A0);
+/**
+ * @brief Return the category record at the mode list's selected index.
+ * @param self Mode list.
+ * @return Selected category record, or null.
+ */
+static inline ItemCreationCategoryRecord* selected_record(ItemCreationClass186C90* self)
+{
+    return static_cast<ItemCreationCategoryRecord*>(func_0036EF70(&self->unk1a8, self->unk24)->unk00);
+}
+/** @brief Open the selected category. @return One on activation, three on rejection, or zero when unavailable. */
+s32 ItemCreationClass186C90::func_slotb0()
+{
+    if (unk88 == 0)
+    {
+        return 3;
+    }
+    if (unk1a0 == 0)
+    {
+        return 0;
+    }
+    if (FieldClass15AE60::unk8c == 7)
+    {
+        return 0;
+    }
+    ItemCreationCategoryRecord* record = selected_record(this);
+    if (record != 0)
+    {
+        LibClass174EF0* display = static_cast<LibClass174EF0*>(unk48[unk28]);
+        if (display->unk94 == 0x505050UL)
+        {
+            return 3;
+        }
+        if (func_0035CAD0(static_cast<ItemCreationCategoryOwner*>(static_cast<void*>(this)), record))
+        {
+            return 3;
+        }
+    }
+    else
+    {
+        return 3;
+    }
+    ItemCreationClass186B70* category = new (0) ItemCreationClass186B70;
+    u16 category_id = record->unk02 + 1;
+    category->unk1b8 = unk1a4;
+    category->unk1bc = category_id;
+    category->func_slot104(unk1a0->func_00263CC0());
+    category->func_slot40(this);
+    unk1a0->func_00263FD0(category);
+    unk1a0->func_00263C70(category);
+    ItemCreationClass175030* marker = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+    if (marker != 0)
+    {
+        marker->ItemCreationClass185050::unk30 = 64.0f;
+        marker->unk3c = 1;
+    }
+    return 1;
+}
 
 /** @brief Position the mode list rows. @param start Base vertical coordinate. */
 void ItemCreationClass186C90::set_scroll_position(float start)
@@ -9215,7 +9816,100 @@ extern "C" void func_00364E00(ItemCreationClass1871B0* object, u32 enabled)
     update_selection_markers(object, enabled);
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00364F50);
+/**
+ * @brief Create the fourteen-slot item displays and their two selection grids.
+ * @param associated Associated display passed to the Field setup.
+ * @return Zero without a selected state, one after setup.
+ */
+s32 ItemCreationClass1871B0::func_slotf4(void* associated)
+{
+    if (this->unka8 == 0)
+    {
+        return 0;
+    }
+    func_002CE760(this, associated, 0, 9, 2000, 16.0f, 72.0f, 0.0f);
+    LibWidgetColors4C5590 colors = {0};
+    colors.values[0] = 0xBCA4B4;
+    colors.values[1] = 0xBCA4B4;
+    colors.values[2] = 0x574C52;
+    colors.values[3] = 0x574C52;
+    this->unk128 = new (0) FieldClass15B200(this->unk10, 1);
+    func_002D5290(this->unk128, 0xBC, 0x18, &colors, 0.0f, 0.0f, 444.0f, 154.0f);
+    LibClass178600* child = static_cast<LibClass178600*>(this->unk128->unk30);
+    if (child)
+    {
+        child->unk28 = 40.0f;
+        child->unk3c = 1;
+    }
+    float x = 6.0f;
+    float y = 6.0f;
+    void* allocation = func_002D3D80(D_001B643C->unk20, 0);
+    FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 0x2D);
+    for (s32 index = 0; index < 14; index++)
+    {
+        ItemCreationOptionResourceDisplay* widget = new (0) ItemCreationOptionResourceDisplay;
+        widget->unkcc = allocation;
+        widget->unkd0 = 0;
+        func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(widget)), record,
+                     6.0f + 61.7142868f * (index % 7), 6.0f + 72.0f * (index / 7));
+        widget->unk50.unk30 = 1.71428573f;
+        widget->unk50.unk34 = 2.0f;
+        widget->unk3c = 1;
+        widget->unk3f = 0;
+        func_004C6190(this->unk10, widget);
+        this->unkb8[index] = widget;
+    }
+    u8 resource;
+    x += 4.0f;
+    y += 4.0f;
+    for (s32 index = 0; index < 14; index++)
+    {
+        u8 value = this->unka8->unk5a[(u16)index];
+        if (value == 0)
+        {
+            allocation = func_002D3D80(D_001B643C->unk20, 0);
+            record = func_002D3CC0(D_001B643C->unk20, 0x20);
+            resource = 0;
+        }
+        else
+        {
+            resource = item_resource_index(value);
+            allocation = func_002D3D80(D_001B643C->unk20, resource);
+            record = func_002D3CC0(D_001B643C->unk20, 0x51);
+        }
+        ItemCreationOptionResourceDisplay* widget = new (0) ItemCreationOptionResourceDisplay;
+        widget->unkcc = allocation;
+        widget->unkd0 = resource;
+        func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(widget)), record,
+                     x + 61.7142868f * (index % 7), y + 72.0f * (index / 7));
+        widget->unk50.unk30 = 0.856999993f;
+        widget->unk50.unk34 = 1.0f;
+        widget->unk3c = 1;
+        func_004C6190(this->unk10, widget);
+        this->unkf0[index] = widget;
+    }
+    this->unkac = new (0) FieldObject23CEA0;
+    this->unkac->func_0023CE80(7, 2);
+    this->unkac->func_0023CE60(61.7142868f, 72.0f);
+    this->unkac->unkF2 = 1;
+    this->unkac->unk119 = 1;
+    float bottom = 36.0f + (72.0f + y);
+    float left = 8.0f + (16.0f + x);
+    this->unkac->func_0023CF50(0, left, bottom - 24.0f);
+    func_0036F040(&this->unk74, this->unkac);
+    func_0023CEA0(this->unkac, 0);
+    this->unkb0 = new (0) FieldObject23CEA0;
+    this->unkb0->func_0023CE80(7, 2);
+    this->unkb0->func_0023CE60(61.7142868f, 72.0f);
+    this->unkb0->unkF2 = 1;
+    this->unkb0->unk119 = 1;
+    this->unkb0->func_0023CF50(0, left, bottom - 8.0f);
+    func_0036F040(&this->unk74, this->unkb0);
+    func_0023CEA0(this->unkb0, 0);
+    this->unkb4 = this->unkac;
+    func_00364D20(reinterpret_cast<ItemCreationFourteenSlotView*>(this));
+    return 1;
+}
 
 /** @brief Release the owned resource before destroying the selection window. */
 ItemCreationClass1871B0::~ItemCreationClass1871B0()
@@ -10013,10 +10707,6 @@ typedef struct ItemCreationThreeSlotDisplay
  * @return One when the container and associated object are present, otherwise zero.
  */
 extern "C" s32 func_002CE760(FieldClass15AE70* object, void* associated, s32 first, s32 second, s32 third, float x, float y, float z);
-/** @brief Attach a widget to its container. @param object Container. @param child Widget to attach. */
-extern "C" void func_4C6190(LibObject178660* object, LibClass178600* child);
-
-
 // Resident interfaces are scoped here because the shared declarations belong to another overlay.
 extern "C"
 {
@@ -10377,7 +11067,50 @@ void func_00368BD0(ItemCreationScrollState* object)
     position->unk3c = 1;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00368CC0);
+/**
+ * @brief Create the heading, list, value and footer displays and lay out the two columns.
+ * @param associated Text source associated with the window.
+ * @return Zero when an allocation failed, otherwise one.
+ */
+s32 ItemCreationClass1877B0::func_slotf4(void* associated)
+{
+    func_002CE760(this, associated, 0, 9, 1400, 16.0f, 16.0f, 0.0f);
+    unkac = new (0) LibObject178750;
+    LibObject178750* footer = new (0) LibObject178750;
+    unkcc = new (0) ItemCreationClass1746A0;
+    unkd0 = new (0) ItemCreationClass1746A0;
+    if (unkac == 0 || unkcc == 0 || unkd0 == 0)
+    {
+        return 0;
+    }
+    unka8 = new (0) LibObject178750;
+    func_004C7FE0(unka8, (s32)associated, 0x32C8, 0, 16.0f, 6.0f, 0.0f, 0.0f);
+    LibObject178750* heading = unka8;
+    heading->unk88 = -1.0f;
+    heading->unk3c = 1;
+    func_4C6190(unk10, unka8);
+    LibBounds4C69B0* bounds = func_4C69B0(unka8);
+    unkbc = bounds->unk08;
+    unkc4 = 18.0f + unkbc;
+    unkc8 = 640.0f - (16.0f + shifted_position(unkc4, 32.0f));
+    unkc0 = 24.0f + unkbc;
+    func_44B570(unkcc, unkc4, 0.0f, unkc8, 56.0f);
+    func_4C6190(unk10, unkcc);
+    func_0036F270(&unk20, unkcc);
+    func_004C7FE0(unkac, (s32)associated, 0x32CB, 0, unkc0, 6.0f, 0.0f, 0.0f);
+    func_4C6190(unk10, unkac);
+    func_0036F1A0(&unk2c, unkac);
+    func_44B510(unkd0, 1);
+    func_4C6190(unk10, unkd0);
+    func_0036F270(&unk20, unkd0);
+    func_004C7FE0(footer, (s32)associated, 0x32CA, 0, 36.0f, 39.0f, 0.0f, 0.0f);
+    footer->unk84 = 0.65f;
+    footer->unk80 = 0.65f;
+    footer->unk3c = 1;
+    func_4C6190(unk10, footer);
+    func_slot60(0);
+    return 1;
+}
 
 /** @brief Destroy the status message window through its Field base. */
 ItemCreationClass1877B0::~ItemCreationClass1877B0()
@@ -10628,7 +11361,60 @@ ItemCreationSelection::ItemCreationSelection()
     func_slot10();
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003698E0);
+// Field target setup interfaces; their shared declarations belong to Field.
+extern "C"
+{
+    u8 func_002FAF50(FieldClass15BB30* target, u8 code, u8 group, u8 first, u8 second, u8 third, u8 count);
+    u8 func_002FC310(FieldClass15BB50* target, u8 code, u8 group, u8 first, u8 second, u8 third, u8 count, s16 value);
+    u8 func_002FCC50(FieldClass15BB70* target, u8 code, u8 group, u8 first, u8 second, u8 third, s16 first_value,
+                     s16 second_value);
+}
+
+void func_003698E0(ItemCreationSelectedDisplayState* object, u8 group)
+{
+    u8 index = group;
+    if (object->unk1c0[index] != 0 && object->unk1c3[index] != 0)
+    {
+        u8 first = runtime_option_index(object->unk68[index * 3]);
+        u8 second = runtime_option_index(object->unk68[index * 3 + 1]);
+        u8 third = runtime_option_index(object->unk68[index * 3 + 2]);
+        ::operator delete(object->unk1b4[index]);
+        object->unk1b4[index] = 0;
+        u8 result = 0;
+        switch (object->unk1c3[index])
+        {
+        case 1:
+            object->unk1b4[index] = new (0) FieldClass15BB30;
+            result = func_002FAF50(static_cast<FieldClass15BB30*>(object->unk1b4[index]), object->unk4d, group,
+                                  first, second, third, object->unk1c0[index]);
+            break;
+        case 2:
+            object->unk1b4[index] = new (0) FieldClass15BB50;
+            result = func_002FC310(static_cast<FieldClass15BB50*>(object->unk1b4[index]), object->unk4d, group,
+                                  first, second, third, object->unk1c0[index], object->unk1e2[index][0]);
+            break;
+        case 3:
+            object->unk1b4[index] = new (0) FieldClass15BB70;
+            result = func_002FCC50(static_cast<FieldClass15BB70*>(object->unk1b4[index]), object->unk4d, group,
+                                  first, second, third, object->unk1e2[index][0], object->unk1e2[index][1]);
+            break;
+        }
+        if (result == 1)
+        {
+            object->unk1c8[index] = object->unk1b4[index]->unk78;
+        }
+        else
+        {
+            object->unk1c8[index] = 0;
+        }
+    }
+    else
+    {
+        object->unk1c8[index] = 0;
+        ::operator delete(object->unk1b4[index]);
+        object->unk1b4[index] = 0;
+    }
+}
 
 void func_00369B80(ItemCreationSelectedDisplayState* object, s32 value)
 {
@@ -11861,7 +12647,7 @@ extern "C" void func_0036BC90(ItemCreationSelectedDisplayState* object, u8 mode)
     object->unk46 = object->unk47;
 }
 
-void ItemCreationSelectedDisplayState::func_0036BF30(s32 index, s32 enabled)
+void ItemCreationSelectedDisplayState::func_0036BF30(s32 index, bool enabled)
 {
     ItemCreationAllocationRecord* records[100];
     unk148[index] = enabled;
@@ -11871,7 +12657,7 @@ void ItemCreationSelectedDisplayState::func_0036BF30(s32 index, s32 enabled)
         unk1b1[index] = 1;
         unk148[index] = 0;
     }
-    if (enabled != 0 && unk1b4[index] != 0)
+    if (enabled && unk1b4[index] != 0)
     {
         s32 category = 0;
         if (unk1c3[index] >= 2)
@@ -11917,7 +12703,41 @@ void ItemCreationSelectedDisplayState::func_0036BF30(s32 index, s32 enabled)
     unk191[index][2] = 1;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0036C080);
+/** @brief Return a random integer in a range. @param lower Lower bound. @param upper Upper bound. @return Random value. */
+extern "C" s32 func_10CC40(s32 lower, s32 upper);
+
+void func_0036C080(ItemCreationSelectedDisplayState* object, s32 index, u32 value)
+{
+    object->unk148[index] = value;
+    if (value != 0)
+    {
+        if (object->unk1b4[index] != 0)
+        {
+            object->unk164[index] = 360.0f * (1.0f + object->unk1b4[index]->unk7c / 100.0f);
+        }
+        else
+        {
+            object->unk164[index] = 360.0f;
+        }
+        object->unk170[index] = func_10CC40(1, 5);
+        object->unk14c[index] = object->unk164[index];
+        object->unk158[index] = 100.0f;
+        object->unk1d4[index] = 0;
+        object->unk17c[index] = 0.0f;
+        if (object->unk1b4[index] == 0)
+        {
+            object->unk1b1[index] = 1;
+        }
+    }
+    else
+    {
+        object->unk158[index] = 0.0f;
+    }
+    if (value != 0)
+    {
+        object->unk19a = 1;
+    }
+}
 
 void func_0036C1C0(ItemCreationSelectedDisplayState* object)
 {
@@ -12199,7 +13019,60 @@ s32 ItemCreationSelectedDisplayState::func_00263CD0()
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0036DDC0);
+/** Loaded resource buffer; its 128-byte aligned header records the payload size. */
+struct ItemCreationBufferHeader
+{
+    u8 unk00[0x40];
+    s32 unk40;
+};
+
+// Resident and Lib interfaces linked under this overlay's short names.
+extern "C"
+{
+    void* func_100C90(void);
+    void* func_113710(void* heap, s32 size);
+    void func_1134C0(void* memory);
+    void* func_100C80(void* heap);
+    void* func_4656B0(FieldRuntime* runtime, void* data);
+}
+
+/**
+ * @brief Align a loaded buffer to its header.
+ * @param buffer Loaded buffer.
+ * @return Header at the next 128-byte boundary.
+ */
+static inline ItemCreationBufferHeader* buffer_header(void* buffer)
+{
+    return reinterpret_cast<ItemCreationBufferHeader*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7FU);
+}
+
+/**
+ * @brief Load the completed buffer into the Field runtime and finish setup.
+ * @param buffer Completed buffer, or null.
+ * @return Zero without a buffer, otherwise the setup result.
+ */
+s32 ItemCreationSelectedDisplayState::func_001E1820(void* buffer)
+{
+    if (!buffer)
+    {
+        return 0;
+    }
+    s32 size = buffer_header(buffer)->unk40 + 0x80;
+    void* previous_heap = func_100C90();
+    void* heap = D_001B6430->context->unk70;
+    void* memory = func_113710(heap, size);
+    if (memory)
+    {
+        func_1134C0(memory);
+        func_100C80(heap);
+    }
+    unk34 = func_4656B0(D_001B657C, buffer_header(buffer));
+    func_100C80(previous_heap);
+    FieldRuntime* runtime = D_001B657C;
+    runtime->unk514 = unk34;
+    runtime->unk518 = 0xC351;
+    return func_00263CD0();
+}
 
 void func_0036DEA0(ItemCreationSelectedDisplayState* object)
 {

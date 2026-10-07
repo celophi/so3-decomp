@@ -261,7 +261,7 @@ public:
      * @param buffer Completed buffer.
      * @return Zero in the base implementation.
      */
-    virtual u8 func_001E1820(void* buffer);
+    virtual s32 func_001E1820(void* buffer);
     /** @brief Complete receiver setup. @return Zero in the base implementation. */
     virtual s32 func_00263CD0();
     u8 unk14[0xC];

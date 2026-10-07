@@ -35,6 +35,22 @@ public:
     virtual ~FieldClass15B200();
 };
 
+struct LibWidgetColors4C5590;
+
+/**
+ * @brief Store the owner's bounds and flags, then create its colored child panel.
+ * @param object Resource owner; nothing is created when it has no parent.
+ * @param first Byte stored at offset 0x14.
+ * @param second Byte stored at offset 0x15.
+ * @param colors Four packed panel colors.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Panel width.
+ * @param height Panel height.
+ * @return Zero without a parent.
+ */
+extern "C" s32 func_002D5290(FieldClass15B200* object, u8 first, u8 second, const LibWidgetColors4C5590* colors,
+                             float x, float y, float width, float height);
 
 #endif
 

@@ -248,7 +248,9 @@ public:
     u8 unk0c;
     u8 unk0d[3];
     LibObject178660* unk10;
-    u8 unk14[0x18];
+    u8 unk14[0xC];
+    ItemCreationCountedList unk20;
+    u8 pad28[4];
     ItemCreationCountedList unk2c;
     u8 unk34[0x40];
     ItemCreationCountedList unk74;
@@ -301,6 +303,16 @@ public:
 class ItemCreationClass186B70 : public FieldClass15AD40
 {
 public:
+    /** @brief Clear the row displays and the list flag. */
+    ItemCreationClass186B70()
+    {
+        for (s32 index = 0; index < 6; index++)
+        {
+            unk138[index] = 0;
+        }
+        unk1b0 = 0;
+        FieldClass15AD40();
+    }
     /** @brief Release the optional panel and destroy the Field list window. */
     virtual ~ItemCreationClass186B70();
     /** @brief Release the category container and base window contents. */
@@ -400,7 +412,7 @@ public:
     LibObject178750* unkb0;
     FieldClass153130* unkb4;
     FieldClass153170* unkb8;
-    u8 unkbc[3];
+    bool unkbc[3];
 };
 
 /** Three cleared words of an item creation window record. */
@@ -618,6 +630,8 @@ public:
     virtual ~ItemCreationClass186C90();
     /** @brief Refresh the active mode list and selection cursor. */
     virtual void func_slot5c();
+    /** @brief Open the selected category. @return One on activation, three on rejection, or zero when unavailable. */
+    virtual s32 func_slotb0();
     /** @brief Restore the mode window or its parent selection. @return Always two. */
     virtual s32 func_slotb4();
     /** @brief Create the mode list widgets and initialize its selection. @param associated Associated source. @return Always one. */

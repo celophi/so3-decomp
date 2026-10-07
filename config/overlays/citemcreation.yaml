@@ -78,7 +78,7 @@ segments:
           - {function: func_00365600, offset: 0x0, size: 0x34}
           - {function: func_00369F20, offset: 0x40, size: 0x98}
           - {function: func_00369FA0, offset: 0xe0, size: 0x98}
-          - {function: func_0036BF30__32ItemCreationSelectedDisplayStateFii, offset: 0x180, size: 0x24}
+          - {function: func_0036BF30__32ItemCreationSelectedDisplayStateFib, offset: 0x180, size: 0x24}
         linker_section_order: .rodata
       - [0x27694, rodatabin, rodata_0036FA14]
   - [0x27700]

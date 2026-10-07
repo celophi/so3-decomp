@@ -94,7 +94,10 @@ def main():
     flags = ['-DSO3_ASM_PROCESSOR', f'-I{args.source.parent}', '-Iinclude',
              *selected, '-lang', languages[args.source.suffix]]
     config = overlay_config(unit)
-    groups = configured_rodata_groups(config, unit) if config else []
+    # A probe compiled with --unit holds only some of the unit's functions, so it
+    # can't own the unit's native table islands and keeps the single-section form.
+    whole_unit = Path(unit).resolve() == args.source.resolve()
+    groups = configured_rodata_groups(config, unit) if config and whole_unit else []
     # Pure C scaffolds have no compiler-generated code or metadata. Deferred
     # units and C++ still use the compiler's section ordering and copy handling.
     assembly = (assembly_inputs(args.source)
