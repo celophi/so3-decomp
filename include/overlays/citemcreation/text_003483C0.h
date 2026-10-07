@@ -133,11 +133,11 @@ typedef struct ItemCreationClass186770
     struct ItemCreationClass185B60* unk118;
     struct FieldClass15B200* unk11c[3];
     struct FieldClass15B200* unk128[3];
-    ItemCreationColorDisplay* unk134[3];
-    ItemCreationColorDisplay* unk140[3];
-    ItemCreationColorDisplay* unk14c[3];
-    ItemCreationColorDisplay* unk158[3];
-    ItemCreationValueDisplay* unk164[3];
+    struct LibObject178750* unk134[3];
+    struct LibObject178750* unk140[3];
+    struct LibObject178750* unk14c[3];
+    struct LibObject178750* unk158[3];
+    struct LibObject174F20* unk164[3];
     u8 unk170[4];
     struct ItemCreationOptionResourceDisplay* unk174[12];
     u8 unk1a4[0x18];

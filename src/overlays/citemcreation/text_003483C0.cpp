@@ -5311,11 +5311,11 @@ void func_00356FD0(ItemCreationNineResourceView* object)
     {
         if (index < object->unk1bc)
         {
-            ItemCreationValueDisplay* value;
-            ItemCreationColorDisplay* display1;
-            ItemCreationColorDisplay* display2;
-            ItemCreationColorDisplay* display3;
-            ItemCreationColorDisplay* display4;
+            LibObject174F20* value;
+            LibObject178750* display1;
+            LibObject178750* display2;
+            LibObject178750* display3;
+            LibObject178750* display4;
 
             display1 = object->unk134[index];
             display1->unk94 = ITEM_CREATION_COLOR_ASSIGNED;
@@ -5336,10 +5336,10 @@ void func_00356FD0(ItemCreationNineResourceView* object)
         else
         {
             ItemCreationFlagNode* marker;
-            ItemCreationColorDisplay* display1;
-            ItemCreationColorDisplay* display2;
-            ItemCreationColorDisplay* display3;
-            ItemCreationColorDisplay* display4;
+            LibObject178750* display1;
+            LibObject178750* display2;
+            LibObject178750* display3;
+            LibObject178750* display4;
 
             display1 = object->unk134[index];
             display1->unk94 = ITEM_CREATION_COLOR_DIM;
@@ -10979,7 +10979,50 @@ void func_00368BD0(ItemCreationScrollState* object)
     position->unk3c = 1;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00368CC0);
+/**
+ * @brief Create the heading, list, value and footer displays and lay out the two columns.
+ * @param associated Text source associated with the window.
+ * @return Zero when an allocation failed, otherwise one.
+ */
+s32 ItemCreationClass1877B0::func_slotf4(void* associated)
+{
+    func_002CE760(this, associated, 0, 9, 1400, 16.0f, 16.0f, 0.0f);
+    unkac = new (0) LibObject178750;
+    LibObject178750* footer = new (0) LibObject178750;
+    unkcc = new (0) ItemCreationClass1746A0;
+    unkd0 = new (0) ItemCreationClass1746A0;
+    if (unkac == 0 || unkcc == 0 || unkd0 == 0)
+    {
+        return 0;
+    }
+    unka8 = new (0) LibObject178750;
+    func_004C7FE0(unka8, (s32)associated, 0x32C8, 0, 16.0f, 6.0f, 0.0f, 0.0f);
+    LibObject178750* heading = unka8;
+    heading->unk88 = -1.0f;
+    heading->unk3c = 1;
+    func_4C6190(unk10, unka8);
+    LibBounds4C69B0* bounds = func_4C69B0(unka8);
+    unkbc = bounds->unk08;
+    unkc4 = 18.0f + unkbc;
+    unkc8 = 640.0f - (16.0f + shifted_position(unkc4, 32.0f));
+    unkc0 = 24.0f + unkbc;
+    func_44B570(unkcc, unkc4, 0.0f, unkc8, 56.0f);
+    func_4C6190(unk10, unkcc);
+    func_0036F270(&unk20, unkcc);
+    func_004C7FE0(unkac, (s32)associated, 0x32CB, 0, unkc0, 6.0f, 0.0f, 0.0f);
+    func_4C6190(unk10, unkac);
+    func_0036F1A0(&unk2c, unkac);
+    func_44B510(unkd0, 1);
+    func_4C6190(unk10, unkd0);
+    func_0036F270(&unk20, unkd0);
+    func_004C7FE0(footer, (s32)associated, 0x32CA, 0, 36.0f, 39.0f, 0.0f, 0.0f);
+    footer->unk84 = 0.65f;
+    footer->unk80 = 0.65f;
+    footer->unk3c = 1;
+    func_4C6190(unk10, footer);
+    func_slot60(0);
+    return 1;
+}
 
 /** @brief Destroy the status message window through its Field base. */
 ItemCreationClass1877B0::~ItemCreationClass1877B0()
