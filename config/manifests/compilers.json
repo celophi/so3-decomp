@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "provisional; exact original compiler and flags remain unresolved",
-  "working_candidate": "mwcps2-3.0b52-030722",
+  "working_candidate": "mwcps2-3.0b38-030307",
   "working_flags": [
     "-O3,p",
     "-RTTI",

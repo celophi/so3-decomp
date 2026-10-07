@@ -154,6 +154,7 @@ def configure(configs):
             if rule == 'compile':
                 implicit += [str(p) for p in asm_inputs(piece)] + headers + compiler_files
                 implicit += ['tools/so3/build/compile.py', 'tools/so3/build/compiler_probe.py',
+                             'tools/so3/build/assembly.py',
                              'tools/so3/build/text_order.py', 'tools/so3/build/rodata_ownership.py',
                              'tools/so3/build/subsegments.py', *symbol_maps,
                              'tools/so3/__init__.py', 'config/manifests/compilers.json',
