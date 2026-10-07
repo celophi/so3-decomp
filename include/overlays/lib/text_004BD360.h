@@ -159,13 +159,15 @@ public:
 };
 
 /** Partial transform and secondary interface, constructed by func_0044B2D0. */
-class LibClass174610 : public LibClass178A90, public LibClass171FF0
+class LibClass174610 : public LibClass172000, public LibClass171FF0
 {
 public:
     /** @brief Initialize the transform and callback interface. */
     LibClass174610();
     /** @brief Destroy the transform receiver. */
     virtual ~LibClass174610();
+    /** @brief Copy the stored transform state byte into the active state. */
+    virtual void func_003F4420();
     /** @brief Queue the transform receiver for release. */
     virtual void func_003EF740();
     /**
@@ -197,22 +199,6 @@ public:
     u8 unkad;
     u8 unkae;
     u8 unkaf;
-};
-
-/** Managed three-word DMA storage, initialized by clearing its allocation. */
-class LibStorageBlock0C
-{
-public:
-    /** @brief Clear the owned allocation. */
-    LibStorageBlock0C()
-    {
-        allocation = 0;
-    }
-    /** @brief Release the owned allocation. */
-    ~LibStorageBlock0C();
-    void* allocation;
-    void* aligned;
-    u32 dma_address;
 };
 
 class LibObject178660;
@@ -284,6 +270,10 @@ struct LibObject178750 : public LibClass174EF0
     }
     /** @brief Destroy the text widget. */
     virtual ~LibObject178750();
+    /** @brief Refresh the text widget drawing state. */
+    virtual void func_00413D20();
+    /** @brief Draw the text widget. */
+    virtual void func_00462310();
     /**
      * @brief Configure a text slot and its rectangle.
      * @param x Origin x.
@@ -296,9 +286,45 @@ struct LibObject178750 : public LibClass174EF0
      * @return Configuration status.
      */
     s32 func_004C7FE0(float x, float y, float width, float height, s32 slot, s32 key, u8 flag);
-    u8 unkfc[0x18];
+    LibClass171EA0* unkfc;
+    u8 unk100[0x14];
 };
 
+
+/** 0x57C-byte multiline text widget with trailing scroll state. */
+struct LibObject174D90 : public LibObject178750
+{
+    /** @brief Initialize the multiline text widget with an empty rectangle. */
+    LibObject174D90()
+    {
+        unk38 = 12;
+        func_004616D0(this, 0.0f, 0.0f, 0.0f, 0.0f);
+    }
+    /** @brief Release the multiline allocation and destroy the text widget. */
+    virtual ~LibObject174D90();
+    /** @brief Advance and refresh the multiline text state. */
+    virtual void func_00413D20();
+    /** @brief Draw the multiline text widget. */
+    virtual void func_00462310();
+    /**
+     * @brief Configure the multiline text resource, rectangle, and drawing mode.
+     * @param x Rectangle origin x.
+     * @param y Rectangle origin y.
+     * @param width Rectangle width.
+     * @param height Rectangle height.
+     * @param slot Resource slot index.
+     * @param key Resource key.
+     * @param mode Drawing mode mask.
+     * @param flag Flag whose low byte is stored by the widget.
+     * @return One on successful setup, otherwise zero.
+     */
+    s32 func_00461720(float x, float y, float width, float height, s32 slot, s32 key, u32 mode, u32 flag);
+    u8 unk114[0x410];
+    float unk524;
+    float unk528;
+    float unk52c;
+    u8 unk530[0x4C];
+};
 
 /** 0x90-byte widget, constructed inline over LibClass178600. */
 struct LibClass178630 : public LibClass178600
@@ -336,6 +362,10 @@ struct LibClass178630 : public LibClass178600
     {
         func_004C4A90(this);
     }
+    /** @brief Refresh the panel drawing state. */
+    virtual void func_00413D20();
+    /** @brief Draw the panel. */
+    virtual void func_00462310();
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     u32 unk50;

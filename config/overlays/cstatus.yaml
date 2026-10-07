@@ -48,7 +48,8 @@ segments:
     vram: 0x3483c0
     subalign: 16
     subsegments:
-      - [0x40, c, text]
+      - [0x40, pad, text_start]
+      - [0x80, cpp, text]
   - [0x8f80, bin, text_padding]
   - [0x9000, bin, data]
   - [0x9280]

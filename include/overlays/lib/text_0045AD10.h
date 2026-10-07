@@ -5,8 +5,32 @@
 #include "overlays/lib/ui_object.h"
 
 typedef struct LibClass174EF0 LibClass174EF0;
+typedef struct LibObject174D90 LibObject174D90;
 typedef struct LibObject174F20 LibObject174F20;
+typedef struct LibObject172410 LibObject172410;
+typedef struct LibObject172440 LibObject172440;
+typedef struct LibObject175140 LibObject175140;
+typedef struct LibBounds4C69B0 LibBounds4C69B0;
+#ifndef __cplusplus
+typedef struct ItemCreationClass175030 LibClass175030;
+#endif
 #ifdef __cplusplus
+/** Managed three-word DMA storage, initialized by clearing its allocation. */
+class LibStorageBlock0C
+{
+public:
+    /** @brief Clear the owned allocation. */
+    LibStorageBlock0C()
+    {
+        allocation = 0;
+    }
+    /** @brief Release the owned allocation. */
+    ~LibStorageBlock0C();
+    void* allocation;
+    void* aligned;
+    u32 dma_address;
+};
+
 /** Partial 0xFC-byte drawing widget, with MAIN vtable D_174EF0. */
 struct LibClass174EF0 : public LibClass178600
 {
@@ -14,7 +38,9 @@ struct LibClass174EF0 : public LibClass178600
     LibClass174EF0();
     /** @brief Destroy the drawing widget. */
     virtual ~LibClass174EF0();
-    u8 unk40[0x40];
+    u8 unk40[0x30];
+    void* unk70;
+    u8 unk74[0xC];
     float unk80;
     float unk84;
     float unk88;
@@ -60,6 +86,84 @@ struct LibClass174EF0 : public LibClass178600
         unk3c = 1;
     }
 };
+/** 0x3C-byte storage receiver, with its dispatch pointer after the stored state. */
+class ItemCreationClass185050
+{
+public:
+    LibStorageBlock0C unk00;
+    u8 unk0c[4];
+    float unk10;
+    float unk14;
+    float unk18;
+    float unk1c;
+    float unk20;
+    float unk24;
+    u8 unk28[8];
+    float unk30;
+    u8 unk34;
+    u8 unk35;
+    u8 unk36[2];
+
+    /** @brief Initialize the storage and clear its three scalar pairs. */
+    ItemCreationClass185050()
+    {
+        unk14 = 0.0f;
+        unk10 = 0.0f;
+        unk1c = 0.0f;
+        unk18 = 0.0f;
+        unk24 = 0.0f;
+        unk20 = 0.0f;
+    }
+    /** @brief Release the owned storage. */
+    virtual ~ItemCreationClass185050()
+    {
+    }
+    virtual void func_slot0c();
+};
+
+/** Partial kind-9 widget with a storage base at offset 0x40. */
+class ItemCreationClass175030 : public LibClass178600, public ItemCreationClass185050
+{
+public:
+    /** @brief Initialize the widget and select kind 9. */
+    inline ItemCreationClass175030();
+    /** @brief Destroy the storage base and widget base. */
+    virtual ~ItemCreationClass175030();
+    /** @brief Update the movement state and its refresh flag. */
+    virtual void func_00413D20();
+    /** @brief Draw the moving widget. */
+    virtual void func_00462310();
+};
+
+typedef ItemCreationClass185050 LibMovementState;
+typedef ItemCreationClass175030 LibClass175030;
+
+/** String-backed drawing widget with MAIN vtable at 0x175140. */
+struct LibObject175140 : public LibClass174EF0
+{
+    /** @brief Initialize the string-backed drawing widget. */
+    LibObject175140()
+    {
+        unk38 = 14;
+    }
+    /** @brief Destroy the string-backed drawing widget. */
+    virtual ~LibObject175140();
+    /** @brief Draw the string-backed widget. */
+    virtual void func_00462310();
+    /**
+     * @brief Configure the drawing rectangle and string.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     * @param width Drawing width.
+     * @param height Drawing height.
+     * @param value String to draw.
+     * @param flag Drawing flag.
+     * @return Configuration status.
+     */
+    s32 func_00467AD0(float x, float y, float width, float height, const char* value, u8 flag);
+    const char* unkfc;
+};
+
 /** Partial 0x100-byte image widget, with MAIN vtable D_174F20. */
 struct LibObject174F20 : public LibClass174EF0
 {
@@ -70,8 +174,55 @@ struct LibObject174F20 : public LibClass174EF0
     }
     /** @brief Destroy the image widget. */
     virtual ~LibObject174F20();
+    /** @brief Draw the image widget. */
+    virtual void func_00462310();
+    /**
+     * @brief Configure an image slot and its rectangle.
+     * @param x Rectangle origin x.
+     * @param y Rectangle origin y.
+     * @param width Rectangle width.
+     * @param height Rectangle height.
+     * @param value Resource value.
+     * @param slot Image slot index.
+     * @param flag Slot state flag.
+     * @return Configuration status.
+     */
+    s32 func_00464D90(float x, float y, float width, float height, u32 value, s32 slot, u8 flag);
     u32 unkfc;
 };
+/** Item code widget with MAIN vtable at 0x172410. */
+struct LibObject172410 : public LibClass174EF0
+{
+    /** @brief Initialize the item code widget and select kind 15. */
+    LibObject172410()
+    {
+        unk38 = 15;
+    }
+    /** @brief Destroy the item code widget. */
+    virtual ~LibObject172410();
+    /** @brief Draw the code widget. */
+    virtual void func_00462310();
+    u16 unkfc;
+    u8 unkfe;
+    u8 unkff;
+};
+/** Detail code widget with MAIN vtable at 0x172440. */
+struct LibObject172440 : public LibClass174EF0
+{
+    /** @brief Initialize the detail code widget and select kind 16. */
+    LibObject172440()
+    {
+        unk38 = 16;
+    }
+    /** @brief Destroy the detail code widget. */
+    virtual ~LibObject172440();
+    /** @brief Draw the code widget. */
+    virtual void func_00462310();
+    u16 unkfc;
+    u8 unkfe;
+    u8 unkff;
+};
+
 #endif
 
 typedef struct FieldRuntime FieldRuntime;
@@ -93,6 +244,43 @@ typedef struct LibShapeTestResult1C
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Reset the multiline widget rectangle, allocation, and scrolling state.
+ * @param object Multiline text widget.
+ * @param x Rectangle origin x.
+ * @param y Rectangle origin y.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ */
+void func_004616D0(LibObject174D90* object, float x, float y, float width, float height);
+
+/**
+ * @brief Set the widget movement target and reset its completion flags.
+ * @param object Widget movement storage.
+ * @param x Target horizontal coordinate.
+ * @param y Target vertical coordinate.
+ * @param duration Duration in seconds, converted to sixty frames per second.
+ */
+void func_00466E40(void* object, float x, float y, float duration);
+
+/**
+ * @brief Initialize the moving widget's storage and position.
+ * @param object Moving widget with its storage base at offset 0x40.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @return One on successful setup, otherwise zero.
+ */
+s32 func_00467360(LibClass175030* object, float x, float y);
+
+/**
+ * @brief Refresh the record widget and return its measured bounds.
+ * @param object Record widget holding the display data.
+ * @return Four bounds components stored at offset 0xE8.
+ */
+LibBounds4C69B0* func_00467950(LibObject175140* object);
+/** @brief Count glyphs in the widget's current text. @param object String-backed widget. @return Converted glyph count. */
+s32 func_004679B0(LibObject175140* object);
 
 /** Last result selected by the Lib shape predicates. */
 extern LibShapeTestResult1C D_0050CB30;

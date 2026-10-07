@@ -2,9 +2,11 @@
 #define SO3_OVERLAYS_CITEMCREATION_TEXT_003684D0_H
 
 #include "types.h"
+#include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_002F1B20.h"
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001E1590.h"
+class FieldClass15BB90;
 #endif
 
 #ifdef __cplusplus
@@ -58,12 +60,7 @@ typedef struct ItemCreationScrollState
     float unkc8;
 } ItemCreationScrollState;
 
-/** Partial node of a sentinel-based display list. */
-typedef struct ItemCreationListNode
-{
-    void* unk00;
-    struct ItemCreationListNode* unk04;
-} ItemCreationListNode;
+typedef FieldListNode ItemCreationListNode;
 
 /** Display-list prefix containing its sentinel node. */
 typedef struct ItemCreationList
@@ -71,12 +68,7 @@ typedef struct ItemCreationList
     ItemCreationListNode* unk00;
 } ItemCreationList;
 
-/** Partial sentinel-based list with its stored node count. */
-typedef struct ItemCreationCountedList
-{
-    ItemCreationListNode* unk00;
-    s32 unk04;
-} ItemCreationCountedList;
+typedef FieldCountedList ItemCreationCountedList;
 
 #ifdef __cplusplus
 /** Counted display list with virtual destruction and an owned sentinel. */
@@ -217,7 +209,11 @@ typedef struct ItemCreationSelectedDisplayState
     s8 unk191[3][3];
     u8 unk19a;
     u8 unk19b;
+#ifdef __cplusplus
+    FieldClass15BB90* unk19c;
+#else
     struct FieldStatus14* unk19c;
+#endif
     s32 unk1a0;
     s32 unk1a4;
     u8 unk1a8;

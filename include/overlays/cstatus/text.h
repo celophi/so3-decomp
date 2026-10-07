@@ -5,12 +5,361 @@
 
 typedef struct OverlayList OverlayList;
 typedef struct StatusObject StatusObject;
+typedef struct StatusResourceState StatusResourceState;
 typedef struct StateC000 StateC000;
 typedef struct StatusPositionOwner StatusPositionOwner;
+typedef struct StatusTextWindow StatusTextWindow;
+typedef struct StatusContainerWindow StatusContainerWindow;
+typedef struct StatusSelectionWindow StatusSelectionWindow;
+typedef struct StatusScrollState StatusScrollState;
+typedef StatusScrollState StatusRecordWindow;
+
+#ifdef __cplusplus
+#include "overlays/1067-00/text_002CD390.h"
+#include "overlays/1067-00/text_0028E240.h"
+#include "overlays/1067-00/text_002F9C90.h"
+#include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_0045AD10.h"
+#include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/text_0044ABE0.h"
+
+struct OverlayNode;
+
+/** Status display list with an owned sentinel and a virtual destructor. */
+struct StatusList188D70
+{
+    OverlayNode* head;
+    s32 count;
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    StatusList188D70();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~StatusList188D70();
+};
+
+/** Status display list with an owned sentinel and a virtual destructor. */
+struct StatusList188D60
+{
+    OverlayNode* head;
+    s32 count;
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    StatusList188D60();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~StatusList188D60();
+};
+
+/** Status display list with an owned sentinel and a virtual destructor. */
+struct StatusList188D50
+{
+    OverlayNode* head;
+    s32 count;
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    StatusList188D50();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~StatusList188D50();
+};
+
+/** Status record window with three owned lists and two groups of caption displays. */
+struct StatusScrollState : public FieldClass15AE70
+{
+    /** @brief Initialize the record window and its three owned display lists. */
+    StatusScrollState();
+    /** @brief Release the three display lists and window base. */
+    virtual ~StatusScrollState();
+    /** @brief Detach the nested container and release the window state. */
+    virtual void func_slot0c();
+    /** @brief Update nested-display cancellation and window transitions. */
+    virtual void func_slot5c();
+    /** @brief Refresh the selected record, caption, and markers. */
+    virtual void func_slot64();
+    /** @brief Select the preceding status display mode. */
+    virtual void func_slot68();
+    /** @brief Select the following status display mode. */
+    virtual void func_slot6c();
+    /** @brief Queue the record window exit. @return Handler result. */
+    virtual s32 func_slotb0();
+    /** @brief Request the alternate status transition. @return Handler result. */
+    virtual s32 func_slotb4();
+    /** @brief Cycle the selected record variant. @return Handler result. */
+    virtual s32 func_slotb8();
+    /** @brief Move to the preceding record. @return Handler result. */
+    virtual s32 func_slotd8();
+    /** @brief Move to the following record. @return Handler result. */
+    virtual s32 func_slotdc();
+    /** @brief Create the status record displays. @param associated Associated object. @return Creation result. */
+    virtual s32 func_slotf4(void* associated);
+    FieldRecordSelection* selection;
+    u8 record_active;
+    u8 unkad[3];
+    LibObject175140* record;
+    LibObject178750* caption;
+    LibClass178600* marker;
+    u16 selected_slot;
+    u8 unkbe[2];
+    float x;
+    float y;
+    u8 resource_slots[8];
+    float resource_x;
+    float resource_y;
+    LibClass175110* display;
+    LibClass178600* other_marker;
+    LibObject178660* container;
+    StatusList188D50 first;
+    StatusList188D60 second;
+    StatusList188D70 third;
+    void* unk108;
+    void* unk10c;
+    void* unk110;
+    void* unk114;
+    void* unk118;
+    void* unk11c;
+    void* unk120;
+    void* unk124;
+    void* unk128;
+    void* unk12c;
+    void* unk130;
+    void* unk134;
+    u8 unk138[4];
+    void* unk13c;
+    void* unk140;
+    void* unk144;
+    void* unk148;
+    void* unk14c;
+    void* unk150;
+    void* unk154;
+    void* unk158;
+    void* unk15c;
+    void* unk160;
+    void* unk164;
+    void* unk168;
+    void* unk16c;
+    void* unk170;
+    void* unk174;
+    void* unk178;
+    void* unk17c;
+    void* unk180;
+    void* unk184;
+    void* unk188;
+    void* unk18c;
+    void* unk190;
+    void* unk194;
+    s32 keys[6];
+    u32 unk1b0;
+    u8 mode;
+    u8 active;
+    u8 unk1b6[2];
+    LibClass1725D0* scroll_marker;
+    float extent;
+    float position;
+    float step;
+    float delta;
+    float timer;
+    u8 alternate;
+    u8 unk1d1[3];
+    FieldStatus14* unk1d4;
+    u8 unk1d8;
+    u8 unk1d9;
+    u8 unk1da;
+    u8 unk1db;
+    LibObject178750* variant_text;
+    LibObject178750* first_tail[4];
+    LibObject178750* second_tail[4];
+};
+
+#endif
+
+/** Byte templates copied into the status selection glyph maps. */
+typedef struct StatusGlyphMap90
+{
+    u8 values[90];
+} StatusGlyphMap90;
+
+typedef struct StatusGlyphMap80
+{
+    u8 values[80];
+} StatusGlyphMap80;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern StatusGlyphMap90 D_00351380;
+extern StatusGlyphMap90 D_003513E0;
+extern StatusGlyphMap80 D_00351440;
+
+/**
+ * @brief Initialize the selection window's glyph lookup maps.
+ * @param object Status selection receiver.
+ */
+void func_00348700(StatusSelectionWindow* object);
+
+/**
+ * @brief Select the record resource and update its scaled display.
+ * @param object Status record and resource window.
+ */
+void func_0034C500(StatusScrollState* object);
+
+/**
+ * @brief Scroll the three status display lists and advance their indicator.
+ * @param object Status scroll window.
+ */
+void func_0034AF00(StatusScrollState* object);
+
+/**
+ * @brief Update the selected record, caption rectangle, and status markers.
+ * @param object Status record window.
+ */
+void func_0034BDA0(StatusRecordWindow* object);
+
+/**
+ * @brief Load the completed status resource and finish receiver setup.
+ * @param object Status resource state.
+ * @param buffer Completed resource buffer, or null.
+ * @return Zero without a buffer, otherwise the receiver setup result.
+ */
+s32 func_00350700(StatusResourceState* object, void* buffer);
+
+/**
+ * @brief Release the status resource, queue the receiver, and clear its allocation slots.
+ * @param object Status resource state to release.
+ */
+void func_00350160(StatusResourceState* object);
+
+/**
+ * @brief Clamp the focused status selection and move its cursor.
+ * @param object Status selection window.
+ */
+void func_00349390(StatusSelectionWindow* object);
+
+/**
+ * @brief Move the status selection to the requested entry.
+ * @param object Status selection receiver.
+ * @param value Requested entry index.
+ */
+void func_00349440(StatusSelectionWindow* object, s32 value);
+
+/**
+ * @brief Append the diacritic associated with the selected grid code.
+ * @param object Status selection receiver.
+ * @param code Selected grid code.
+ */
+void func_00348960(StatusSelectionWindow* object, s16 code);
+
+/**
+ * @brief Append the selected grid entry and refresh its display.
+ * @param object Status selection receiver.
+ */
+void func_00349070(StatusSelectionWindow* object);
+
+/** @brief Refresh the selected entry and its cursor. @param object Status selection receiver. */
+void func_00348C10(StatusSelectionWindow* object);
+/** @brief Refresh the current entry display. @param object Status selection receiver. */
+void func_00348D00(StatusSelectionWindow* object);
+/** @brief Decode the current entry bytes into glyph keys. @param object Status selection receiver. */
+void func_00348E50(StatusSelectionWindow* object);
+/** @brief Load the selected slot's entries and refresh its display. @param object Status selection receiver. */
+void func_003497A0(StatusSelectionWindow* object);
+
+/**
+ * @brief Select status entry 88.
+ * @param object Status selection receiver.
+ */
+void func_003498A0(StatusSelectionWindow* object);
+
+/**
+ * @brief Begin a status scroll when the requested mode differs from the current mode.
+ * @param object Status scroll state.
+ * @param mode Requested scroll mode; zero and one choose opposing directions.
+ */
+void func_0034B0A0(StatusScrollState* object, u16 mode);
+
+/**
+ * @brief Request status scroll mode one.
+ * @param object Status scroll state.
+ */
+void func_0034B170(StatusScrollState* object);
+
+/**
+ * @brief Request status scroll mode zero.
+ * @param object Status scroll state.
+ */
+void func_0034B190(StatusScrollState* object);
+
+/**
+ * @brief Refresh the selected record's status displays.
+ * @param object Status record window.
+ */
+void func_0034B1B0(StatusScrollState* object);
+
+/**
+ * @brief Update nested-display cancellation and status-window transitions.
+ * @param object Status record window.
+ */
+void func_0034BEA0(StatusScrollState* object);
+
+/**
+ * @brief Create and attach the nested status display when needed.
+ * @param object Status state containing the optional nested display.
+ */
+void func_0034C130(StatusScrollState* object);
+
+/**
+ * @brief Cycle the selected record variant or open its nested status display.
+ * @param object Status record window.
+ * @return Zero without a variant caption, or one after handling the request.
+ */
+s32 func_0034C2B0(StatusScrollState* object);
+
+/**
+ * @brief Request the nested status display when the resident context is available.
+ * @param object Status state containing the optional nested display.
+ * @return Zero without the resident context, or two after updating the request flags.
+ */
+s32 func_0034C410(StatusScrollState* object);
+
+/**
+ * @brief Clear the parent marker, reset resident selection flags, and request the nested display.
+ * @param object Status state containing the parent and optional nested display.
+ * @return Always one.
+ */
+s32 func_0034C480(StatusScrollState* object);
+
+/**
+ * @brief Submit the status receiver to the resident object queue.
+ * @param object Receiver to submit.
+ */
+void func_00350200(void* object);
+
+/**
+ * @brief Release the nodes after the sentinel without destroying their payloads.
+ * @param list List whose linked nodes are released.
+ */
+void func_00350D00(OverlayList* list);
+
+/**
+ * @brief Release the nodes after the sentinel without destroying their payloads.
+ * @param list List whose linked nodes are released.
+ */
+void func_00350FA0(OverlayList* list);
+
+/**
+ * @brief Release the nodes after the sentinel without destroying their payloads.
+ * @param list List whose linked nodes are released.
+ */
+void func_003511B0(OverlayList* list);
+
+/**
+ * @brief Queue the nested container for release, then release the Field window's displays.
+ * @param object Status window containing the nested Lib container.
+ */
+void func_0034F6B0(StatusContainerWindow* object);
+
+/**
+ * @brief Set the status text for keys 5002 and 5003 and reset its scrolling state.
+ * @param object Status text window.
+ * @param key Requested text key.
+ */
+void func_0034FA10(StatusTextWindow* object, s32 key);
 
 /**
  * @brief Hold the display position until its timer expires, then scroll and wrap it.
@@ -642,14 +991,6 @@ s32 func_0034C000(StateC000* object);
 s32 func_0034C090(StateC000* object);
 
 /**
- * @brief Replace the method table and optionally release the object.
- * @param object Object to clean up.
- * @param flags Positive low halfword requests releasing the object.
- * @return Original object address.
- */
-void* func_003508F0(void* object, s32 flags);
-
-/**
  * @brief Clean up three embedded lists and base state, then optionally release the object.
  * @param object Object containing the lists.
  * @param flags Positive low halfword requests releasing the object.
@@ -661,25 +1002,25 @@ void* func_0034F6F0(void* object, s32 flags);
  * @brief Advance the index within its eleven-item group.
  * @param object Object containing the index at offset 0x110.
  */
-void func_003495C0(void* object);
+void func_003495C0(StatusSelectionWindow* object);
 
 /**
  * @brief Move the index back within its eleven-item group.
  * @param object Object containing the index at offset 0x110.
  */
-void func_00349640(void* object);
+void func_00349640(StatusSelectionWindow* object);
 
 /**
  * @brief Advance the index, wrapping at the end of its eleven-item range.
  * @param object Object containing the index at offset 0x110.
  */
-void func_003496C0(void* object);
+void func_003496C0(StatusSelectionWindow* object);
 
 /**
  * @brief Move the index back, wrapping at the start of its eleven-item range.
  * @param object Object containing the index at offset 0x110.
  */
-void func_00349730(void* object);
+void func_00349730(StatusSelectionWindow* object);
 
 /**
  * @brief Initialize the base state, embedded lists, and remaining fields.
@@ -689,11 +1030,27 @@ void func_00349730(void* object);
 void* func_0034F780(void* object);
 
 /**
+ * @brief Create the status captions, scrolling text, and frame geometry.
+ * @param object Status text window.
+ * @param associated Resource source associated with the window.
+ * @return One when the text and both frames are present, otherwise zero.
+ */
+s32 func_0034FAA0(StatusTextWindow* object, void* associated);
+
+/**
  * @brief Initialize a status object and clear its state fields.
  * @param object Status object to initialize.
  * @return Initialized object.
  */
 StatusObject* func_00350890(StatusObject* object);
+
+/**
+ * @brief Create and attach the three status background resource displays.
+ * @param object Status background window.
+ * @param associated Associated window object.
+ * @return 1 after the displays are initialized.
+ */
+s32 func_0034FEA0(FieldClass15AE70* object, void* associated);
 
 #ifdef __cplusplus
 }

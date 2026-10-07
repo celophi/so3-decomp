@@ -1,21 +1,298 @@
 D_001B6690 = 0x001B6690; // size:0x4
 func_2642D0 = 0x002642D0; // type:func
-func_4618F0 = 0x004618F0; // type:func
-func_2CEAF0 = 0x002CEAF0; // type:func
-func_100B40 = 0x00100B40; // type:func
-func_100AC0 = 0x00100AC0; // type:func
-func_4C48B0 = 0x004C48B0; // type:func
-func_28E2B0 = 0x0028E2B0; // type:func
-func_2FD940 = 0x002FD940; // type:func
-func_2CEBE0 = 0x002CEBE0; // type:func
-D_188890 = 0x00188890;
-D_1889C0 = 0x001889C0;
+func_4618F0 = 0x004618F0; // type:func allow_duplicated:True
+__dl__FPv = 0x00100B40; // type:func
+func_100AC0 = 0x00100AC0; // type:func allow_duplicated:True
+func_4C48B0 = 0x004C48B0; // type:func allow_duplicated:True
+func_002FD940 = 0x002FD940; // type:func
+D_1889C0 = 0x001889C0; // allow_duplicated:True
 D_188CC0 = 0x00188CC0;
 D_1888B0 = 0x001888B0;
 D_188BC0 = 0x00188BC0;
 D_188AC0 = 0x00188AC0;
 D_1888C0 = 0x001888C0;
-D_188D70 = 0x00188D70;
-D_188D60 = 0x00188D60;
-D_188D50 = 0x00188D50;
-D_175110 = 0x00175110;
+D_188D70 = 0x00188D70; // allow_duplicated:True
+D_188D60 = 0x00188D60; // allow_duplicated:True
+D_188D50 = 0x00188D50; // allow_duplicated:True
+D_175110 = 0x00175110; // allow_duplicated:True
+func_4C6DF0 = 0x004C6DF0; // type:func absolute:True
+func_slot0c__16FieldClass15AE70Fv = 0x002CEA20; // type:func absolute:True
+
+__dt__14LibClass171E80Fv = 0x003508F0; // type:func
+__dt__14LibClass171E90Fv = 0x00350940; // type:func
+__dt__14LibClass178A70Fv = 0x0034F640; // type:func
+__vt__14LibClass171E80 = 0x00188890; // size:0xC
+__vt__14LibClass171E90 = 0x001888A0; // size:0xC
+__vt__14LibClass178A70 = 0x00178A70; // size:0x1C absolute:True
+func_004CA020__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True
+func_004C9FF0__14LibClass178A70FPv = 0x004C9FF0; // type:func absolute:True
+func_004C9FC0__14LibClass178A70FPvPv = 0x004C9FC0; // type:func absolute:True
+func_004C9F60__14LibClass178A70FPv = 0x004C9F60; // type:func absolute:True
+D_00351380 = 0x00351380; // size:0x5A
+D_003513E0 = 0x003513E0; // size:0x5A
+D_00351440 = 0x00351440; // size:0x50
+func_10D8E0 = 0x0010D8E0; // type:func absolute:True
+func_101290 = 0x00101290; // type:func absolute:True
+func_101440 = 0x00101440; // type:func absolute:True
+
+__nw__FUii = 0x00100AC0; // type:func absolute:True allow_duplicated:True
+__ct__16FieldClass15BB90Fv = 0x002FE790; // type:func absolute:True
+
+func_00350B70 = 0x00350B70; // type:func allow_duplicated:True
+__ct__16StatusList188D70Fv = 0x00350B70; // type:func allow_duplicated:True
+
+func_00350BF0 = 0x00350BF0; // type:func allow_duplicated:True
+__dt__16StatusList188D70Fv = 0x00350BF0; // type:func allow_duplicated:True
+__vt__16StatusList188D70 = 0x00188D70; // size:0xC absolute:True allow_duplicated:True
+
+func_00350E10 = 0x00350E10; // type:func allow_duplicated:True
+__ct__16StatusList188D60Fv = 0x00350E10; // type:func allow_duplicated:True
+
+func_00350E90 = 0x00350E90; // type:func allow_duplicated:True
+__dt__16StatusList188D60Fv = 0x00350E90; // type:func allow_duplicated:True
+__vt__16StatusList188D60 = 0x00188D60; // size:0xC absolute:True allow_duplicated:True
+
+func_00351020 = 0x00351020; // type:func allow_duplicated:True
+__ct__16StatusList188D50Fv = 0x00351020; // type:func allow_duplicated:True
+
+func_003510A0 = 0x003510A0; // type:func allow_duplicated:True
+__dt__16StatusList188D50Fv = 0x003510A0; // type:func allow_duplicated:True
+__vt__16StatusList188D50 = 0x00188D50; // size:0xC absolute:True allow_duplicated:True
+
+func_001330D8 = 0x001330D8; // type:func absolute:True allow_duplicated:True
+__throw = 0x001330D8; // type:func absolute:True allow_duplicated:True
+
+func_slot18__16FieldClass15AE70FUiUi = 0x002CE530; // type:func absolute:True allow_duplicated:True
+func_002CE530 = 0x002CE530; // type:func allow_duplicated:True
+
+func_00348470 = 0x00348470; // type:func allow_duplicated:True
+func_slot44__16FieldClass15AE70Fv = 0x00348470; // type:func allow_duplicated:True
+
+func_00348460 = 0x00348460; // type:func allow_duplicated:True
+func_slot40__16FieldClass15AE70FPv = 0x00348460; // type:func allow_duplicated:True
+
+func_slotf0__16FieldClass15AE70Fv = 0x003486D0; // type:func absolute:True allow_duplicated:True
+func_003486D0 = 0x003486D0; // type:func allow_duplicated:True
+
+func_slotec__16FieldClass15AE70FUc = 0x003486C0; // type:func absolute:True allow_duplicated:True
+func_003486C0 = 0x003486C0; // type:func allow_duplicated:True
+
+func_slote8__16FieldClass15AE70Fv = 0x003486B0; // type:func absolute:True allow_duplicated:True
+func_003486B0 = 0x003486B0; // type:func allow_duplicated:True
+
+func_slote4__16FieldClass15AE70Fv = 0x003486A0; // type:func absolute:True allow_duplicated:True
+func_003486A0 = 0x003486A0; // type:func allow_duplicated:True
+
+func_slote0__16FieldClass15AE70Fv = 0x00348690; // type:func absolute:True allow_duplicated:True
+func_00348690 = 0x00348690; // type:func allow_duplicated:True
+
+func_slotdc__16FieldClass15AE70Fv = 0x00348680; // type:func absolute:True allow_duplicated:True
+func_00348680 = 0x00348680; // type:func allow_duplicated:True
+
+func_slotd8__16FieldClass15AE70Fv = 0x00348670; // type:func absolute:True allow_duplicated:True
+func_00348670 = 0x00348670; // type:func allow_duplicated:True
+
+func_slotd4__16FieldClass15AE70Fv = 0x00348660; // type:func absolute:True allow_duplicated:True
+func_00348660 = 0x00348660; // type:func allow_duplicated:True
+
+func_slotd0__16FieldClass15AE70Fv = 0x00348650; // type:func absolute:True allow_duplicated:True
+func_00348650 = 0x00348650; // type:func allow_duplicated:True
+
+func_slotcc__16FieldClass15AE70Fv = 0x00348640; // type:func absolute:True allow_duplicated:True
+func_00348640 = 0x00348640; // type:func allow_duplicated:True
+
+func_slotc8__16FieldClass15AE70Fv = 0x00348630; // type:func absolute:True allow_duplicated:True
+func_00348630 = 0x00348630; // type:func allow_duplicated:True
+
+func_slotc4__16FieldClass15AE70Fv = 0x00348620; // type:func absolute:True allow_duplicated:True
+func_00348620 = 0x00348620; // type:func allow_duplicated:True
+
+func_slotc0__16FieldClass15AE70Fv = 0x00348610; // type:func absolute:True allow_duplicated:True
+func_00348610 = 0x00348610; // type:func allow_duplicated:True
+
+func_slotbc__16FieldClass15AE70Fv = 0x00348600; // type:func absolute:True allow_duplicated:True
+func_00348600 = 0x00348600; // type:func allow_duplicated:True
+
+func_slotb8__16FieldClass15AE70Fv = 0x003485F0; // type:func absolute:True allow_duplicated:True
+func_003485F0 = 0x003485F0; // type:func allow_duplicated:True
+
+func_slot9c__16FieldClass15AE70Fv = 0x003485A0; // type:func absolute:True allow_duplicated:True
+func_003485A0 = 0x003485A0; // type:func allow_duplicated:True
+
+func_slot98__16FieldClass15AE70Fv = 0x00348590; // type:func absolute:True allow_duplicated:True
+func_00348590 = 0x00348590; // type:func allow_duplicated:True
+
+func_slot94__16FieldClass15AE70Fv = 0x00348580; // type:func absolute:True allow_duplicated:True
+func_00348580 = 0x00348580; // type:func allow_duplicated:True
+
+func_slot90__16FieldClass15AE70Fv = 0x00348570; // type:func absolute:True allow_duplicated:True
+func_00348570 = 0x00348570; // type:func allow_duplicated:True
+
+func_slot8c__16FieldClass15AE70Fv = 0x00348560; // type:func absolute:True allow_duplicated:True
+func_00348560 = 0x00348560; // type:func allow_duplicated:True
+
+func_slot88__16FieldClass15AE70Fv = 0x00348550; // type:func absolute:True allow_duplicated:True
+func_00348550 = 0x00348550; // type:func allow_duplicated:True
+
+func_slot84__16FieldClass15AE70Fv = 0x00348540; // type:func absolute:True allow_duplicated:True
+func_00348540 = 0x00348540; // type:func allow_duplicated:True
+
+func_slot80__16FieldClass15AE70Fv = 0x00348530; // type:func absolute:True allow_duplicated:True
+func_00348530 = 0x00348530; // type:func allow_duplicated:True
+
+func_slot7c__16FieldClass15AE70Fv = 0x00348520; // type:func absolute:True allow_duplicated:True
+func_00348520 = 0x00348520; // type:func allow_duplicated:True
+
+func_slot78__16FieldClass15AE70Fv = 0x00348510; // type:func absolute:True allow_duplicated:True
+func_00348510 = 0x00348510; // type:func allow_duplicated:True
+
+func_slot74__16FieldClass15AE70Fv = 0x00348500; // type:func absolute:True allow_duplicated:True
+func_00348500 = 0x00348500; // type:func allow_duplicated:True
+
+func_slot70__16FieldClass15AE70Fv = 0x003484F0; // type:func absolute:True allow_duplicated:True
+func_003484F0 = 0x003484F0; // type:func allow_duplicated:True
+
+func_slot60__16FieldClass15AE70Fi = 0x003484D0; // type:func absolute:True allow_duplicated:True
+func_003484D0 = 0x003484D0; // type:func allow_duplicated:True
+
+func_slot58__16FieldClass15AE70Fv = 0x003484C0; // type:func absolute:True allow_duplicated:True
+func_003484C0 = 0x003484C0; // type:func allow_duplicated:True
+
+func_slot54__16FieldClass15AE70Fv = 0x003484B0; // type:func absolute:True allow_duplicated:True
+func_003484B0 = 0x003484B0; // type:func allow_duplicated:True
+
+func_slot50__16FieldClass15AE70FUi = 0x003484A0; // type:func absolute:True allow_duplicated:True
+func_003484A0 = 0x003484A0; // type:func allow_duplicated:True
+
+func_slot4c__16FieldClass15AE70Fv = 0x00348490; // type:func absolute:True allow_duplicated:True
+func_00348490 = 0x00348490; // type:func allow_duplicated:True
+
+func_slot48__16FieldClass15AE70FPv = 0x00348480; // type:func absolute:True allow_duplicated:True
+func_00348480 = 0x00348480; // type:func allow_duplicated:True
+
+func_slot38__16FieldClass15AE70Fv = 0x00348450; // type:func absolute:True allow_duplicated:True
+func_00348450 = 0x00348450; // type:func allow_duplicated:True
+
+func_slot34__16FieldClass15AE70FUs = 0x00348440; // type:func absolute:True allow_duplicated:True
+func_00348440 = 0x00348440; // type:func allow_duplicated:True
+
+func_slot30__16FieldClass15AE70Fv = 0x00348430; // type:func absolute:True allow_duplicated:True
+func_00348430 = 0x00348430; // type:func allow_duplicated:True
+
+func_slot2c__16FieldClass15AE70FUc = 0x00348420; // type:func absolute:True allow_duplicated:True
+func_00348420 = 0x00348420; // type:func allow_duplicated:True
+
+func_slot28__16FieldClass15AE70Fv = 0x00348410; // type:func absolute:True allow_duplicated:True
+func_00348410 = 0x00348410; // type:func allow_duplicated:True
+
+func_slot24__16FieldClass15AE70FUc = 0x00348400; // type:func absolute:True allow_duplicated:True
+func_00348400 = 0x00348400; // type:func allow_duplicated:True
+
+func_2CEBE0 = 0x002CEBE0; // type:func allow_duplicated:True
+
+func_2CEAF0 = 0x002CEAF0; // type:func allow_duplicated:True
+
+func_slot3c__16FieldClass15AE70Fv = 0x002CE450; // type:func absolute:True allow_duplicated:True
+func_002CE450 = 0x002CE450; // type:func allow_duplicated:True
+
+func_slot20__16FieldClass15AE70FUi = 0x002CE510; // type:func absolute:True allow_duplicated:True
+func_002CE510 = 0x002CE510; // type:func allow_duplicated:True
+
+func_slot1c__16FieldClass15AE70FUcUs = 0x002CE4C0; // type:func absolute:True allow_duplicated:True
+func_002CE4C0 = 0x002CE4C0; // type:func allow_duplicated:True
+
+func_002CE760 = 0x002CE760; // type:func allow_duplicated:True
+
+func_slot10__16FieldClass15AE70FPvffi = 0x002CE8D0; // type:func absolute:True allow_duplicated:True
+func_002CE8D0 = 0x002CE8D0; // type:func allow_duplicated:True
+
+func_0034F6F0 = 0x0034F6F0; // type:func allow_duplicated:True
+__dt__17StatusScrollStateFv = 0x0034F6F0; // type:func allow_duplicated:True
+
+func_0034F6B0 = 0x0034F6B0; // type:func allow_duplicated:True
+func_slot0c__17StatusScrollStateFv = 0x0034F6B0; // type:func allow_duplicated:True
+
+func_0034BEA0 = 0x0034BEA0; // type:func allow_duplicated:True
+func_slot5c__17StatusScrollStateFv = 0x0034BEA0; // type:func allow_duplicated:True
+
+func_0034BDA0 = 0x0034BDA0; // type:func allow_duplicated:True
+func_slot64__17StatusScrollStateFv = 0x0034BDA0; // type:func allow_duplicated:True
+
+func_0034B190 = 0x0034B190; // type:func allow_duplicated:True
+func_slot68__17StatusScrollStateFv = 0x0034B190; // type:func allow_duplicated:True
+
+func_0034B170 = 0x0034B170; // type:func allow_duplicated:True
+func_slot6c__17StatusScrollStateFv = 0x0034B170; // type:func allow_duplicated:True
+
+func_0034C480 = 0x0034C480; // type:func allow_duplicated:True
+func_slotb0__17StatusScrollStateFv = 0x0034C480; // type:func allow_duplicated:True
+
+func_0034C410 = 0x0034C410; // type:func allow_duplicated:True
+func_slotb4__17StatusScrollStateFv = 0x0034C410; // type:func allow_duplicated:True
+
+func_0034C2B0 = 0x0034C2B0; // type:func allow_duplicated:True
+func_slotb8__17StatusScrollStateFv = 0x0034C2B0; // type:func allow_duplicated:True
+
+func_0034C090 = 0x0034C090; // type:func allow_duplicated:True
+func_slotd8__17StatusScrollStateFv = 0x0034C090; // type:func allow_duplicated:True
+
+func_0034C000 = 0x0034C000; // type:func allow_duplicated:True
+func_slotdc__17StatusScrollStateFv = 0x0034C000; // type:func allow_duplicated:True
+
+func_0034C870 = 0x0034C870; // type:func allow_duplicated:True
+func_slotf4__17StatusScrollStateFPv = 0x0034C870; // type:func allow_duplicated:True
+
+func_0034F780 = 0x0034F780; // type:func allow_duplicated:True
+__ct__17StatusScrollStateFv = 0x0034F780; // type:func allow_duplicated:True
+
+__vt__17StatusScrollState = 0x001889C0; // size:0xF8 absolute:True allow_duplicated:True
+
+func_slota0__16FieldClass15AE70Fv = 0x003485B0; // type:func absolute:True allow_duplicated:True
+func_003485B0 = 0x003485B0; // type:func allow_duplicated:True
+
+func_slota4__16FieldClass15AE70Fv = 0x003485C0; // type:func absolute:True allow_duplicated:True
+func_003485C0 = 0x003485C0; // type:func allow_duplicated:True
+
+func_slota8__16FieldClass15AE70Fv = 0x003485D0; // type:func absolute:True allow_duplicated:True
+func_003485D0 = 0x003485D0; // type:func allow_duplicated:True
+
+func_slotac__16FieldClass15AE70Fv = 0x003485E0; // type:func absolute:True allow_duplicated:True
+func_003485E0 = 0x003485E0; // type:func allow_duplicated:True
+
+func_28E2B0 = 0x0028E2B0; // type:func allow_duplicated:True
+
+func_0028E2B0 = 0x0028E2B0; // type:func absolute:True allow_duplicated:True
+
+__ct__16FieldClass15AE70Fv = 0x002CEBE0; // type:func absolute:True allow_duplicated:True
+__dt__16FieldClass15AE70Fv = 0x002CEAF0; // type:func absolute:True allow_duplicated:True
+
+func_slot14__16FieldClass15AE70FPviiifff = 0x002CE760; // type:func absolute:True allow_duplicated:True
+
+__ct__14LibClass174EF0Fv = 0x00464B10; // type:func absolute:True
+
+__ct__14LibClass178600Fv = 0x004C4960; // type:func absolute:True
+
+__vt__15LibObject178750 = 0x00178750; // size:0x24 absolute:True
+
+__vt__23ItemCreationClass1746A0 = 0x001746A0; // size:0x24 absolute:True
+
+func_44B570 = 0x0044B570; // type:func absolute:True
+
+func_44B510 = 0x0044B510; // type:func absolute:True
+
+__dt__14LibClass174EF0Fv = 0x00464A80; // type:func absolute:True
+
+__vt__23ItemCreationClass175110 = 0x00175110; // size:0x24 absolute:True allow_duplicated:True
+__vt__33ItemCreationOptionResourceDisplay = 0x0015B240; // size:0x24 absolute:True
+func_453FF0 = 0x00453FF0; // type:func absolute:True
+
+__dt__17LibStorageBlock0CFv = 0x004618F0; // type:func absolute:True allow_duplicated:True
+__dt__14LibClass178600Fv = 0x004C48B0; // type:func absolute:True allow_duplicated:True
+func_0034ACF0 = 0x0034ACF0; // type:func allow_duplicated:True
+__dt__23ItemCreationClass175110Fv = 0x0034ACF0; // type:func allow_duplicated:True
+func_003EEBC0__14LibClass171EA0Fv = 0x003EEBC0; // type:func absolute:True allow_duplicated:True
+func_003EEBD0__14LibClass171EA0Fv = 0x003EEBD0; // type:func absolute:True allow_duplicated:True
+func_003EEBE0__14LibClass171EA0Fv = 0x003EEBE0; // type:func absolute:True allow_duplicated:True
+func_003EF740__14LibClass178600Fv = 0x004C4860; // type:func absolute:True allow_duplicated:True
+func_00413D20__23ItemCreationClass175110Fv = 0x00467750; // type:func absolute:True allow_duplicated:True
+func_00462310__23ItemCreationClass175110Fv = 0x00467670; // type:func absolute:True allow_duplicated:True

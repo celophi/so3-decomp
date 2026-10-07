@@ -28,6 +28,10 @@ options:
   find_file_boundaries: false
   disasm_unknown: true
   gp_value: 0x1bdff0
+  symbol_addrs_path:
+    - config/symbols/cshop_symbol_addrs.txt
+  global_vram_start: 0x100000
+  global_vram_end: 0x507A00
   generated_macro_inc_content: |
     .set Q, $Q
     .set ACC, $ACC
@@ -44,6 +48,8 @@ segments:
     vram: 0x3483c0
     subalign: 16
     subsegments:
-      - [0x40, c, text]
+      - [0x40, pad, text_start]
+      - [0x80, cpp, text]
+      - [0x9BE8, pad, text_end]
   - [0x9c00, bin, data]
   - [0x9c80]

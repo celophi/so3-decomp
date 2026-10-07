@@ -38,6 +38,12 @@ void* func_00100AC0(u32 size, s32 unused);
  */
 void* func_00100C80(void* heap);
 
+/**
+ * @brief Read the heap used by operator new and operator new[].
+ * @return The current heap, or null for the default allocator.
+ */
+void* func_00100C90(void);
+
 struct FieldRuntimeRoot;
 
 /**

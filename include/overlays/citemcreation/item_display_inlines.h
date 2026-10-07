@@ -5,64 +5,15 @@
 
 #ifdef __cplusplus
 
-/** @brief Initialize the widget storage and select kind 6. */
-inline ItemCreationClass172870::ItemCreationClass172870()
-{
-    unk38 = 6;
-}
+#include "overlays/lib/marker_widget_inlines.h"
 
-/** @brief Initialize the widget storage and select kind 4. */
-inline ItemCreationClass1746A0::ItemCreationClass1746A0()
-{
-    unk38 = 4;
-}
+#include "overlays/lib/resource_widget_inlines.h"
 
-/** @brief Initialize the widget storage and select kind 9. */
-inline ItemCreationClass175030::ItemCreationClass175030()
-{
-    unk38 = 9;
-}
+#include "overlays/lib/movement_widget_inlines.h"
 
-/** @brief Initialize the widget storage and select kind 3. */
-inline ItemCreationClass1725D0::ItemCreationClass1725D0()
-{
-    unk38 = 3;
-}
+#include "overlays/lib/list_indicator_inlines.h"
 
-/** Field selection widget with primary vtable at 0x153130. */
-class FieldClass153130 : public ItemCreationClass175030
-{
-public:
-    /** @brief Initialize the Field selection widget. */
-    FieldClass153130();
-    /** @brief Destroy the Field selection widget. */
-    virtual ~FieldClass153130();
-    /**
-     * @brief Configure the selection widget and its drawing dimensions.
-     * @param first First selection code.
-     * @param second Second selection code.
-     * @param third Third selection code.
-     * @param value Selection value.
-     * @param flag Selection flag.
-     * @param x Horizontal position.
-     * @param y Vertical position.
-     * @param z Third drawing coordinate.
-     * @param extent Drawing extent.
-     * @return Configuration status.
-     */
-    s32 func_0023B530(u8 first, u8 second, u8 third, u16 value, u8 flag,
-                     float x, float y, float z, float extent);
-    u8 unk7c;
-    u8 unk7d;
-    float unk80;
-    float unk84;
-    float unk88;
-    float unk8c;
-    u16 unk90;
-    u8 unk92;
-    u8 unk93;
-    u16 unk94;
-};
+#include "overlays/1067-00/text_0023B1D0.h"
 
 /** Field text marker with primary vtable at 0x153170. */
 class FieldClass153170 : public ItemCreationClass172870

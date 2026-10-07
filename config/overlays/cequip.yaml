@@ -15,6 +15,7 @@ options:
   generated_asm_macros_directory: build/overlays/cequip/include
   cache_path: build/overlays/cequip/splat.cache
   symbol_addrs_path: [config/symbols/cequip_symbol_addrs.txt]
+  reloc_addrs_path: [config/relocations/cequip_reloc_addrs.txt]
   undefined_funcs_auto_path: build/overlays/cequip/undefined_funcs.ld
   undefined_syms_auto_path: build/overlays/cequip/undefined_syms.ld
   create_c_files: true
@@ -47,5 +48,6 @@ segments:
     vram: 0x3483c0
     subalign: 16
     subsegments:
-      - [0x40, c, text]
+      - [0x40, pad, text_start]
+      - [0x80, cpp, text]
   - [0x9c00]

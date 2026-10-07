@@ -264,6 +264,11 @@ public:
     virtual s32 func_001E1820(void* buffer);
     /** @brief Complete receiver setup. @return Zero in the base implementation. */
     virtual s32 func_00263CD0();
+    /**
+     * @brief Forward the flag to each child with all seven list bits selected.
+     * @param flag Flag forwarded without narrowing.
+     */
+    virtual void func_00263E20(u32 flag);
     u8 unk14[0xC];
     void* unk20;
     void* unk24;

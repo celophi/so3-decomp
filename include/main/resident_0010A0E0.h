@@ -22,6 +22,12 @@ typedef struct ResidentRequest112400 ResidentRequest112400;
 extern "C" {
 #endif
 
+/**
+ * @brief Return the resident runtime table owner.
+ * @return Opaque table owner.
+ */
+void* func_0010D8E0(void);
+
 /** @brief Allocate a block from the resident heap. @param heap Heap receiver. @param size Requested byte count. @return Allocated block, or null. */
 void* func_00113710(void* heap, s32 size);
 /** @brief Return a block to the resident heap. @param memory Allocated block. */

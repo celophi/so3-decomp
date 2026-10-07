@@ -1,13 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_0028E240.h"
 
-typedef struct FieldRecord
-{
-    s16 unk00;
-    s16 unk02;
-    u8 pad[0xC0];
-} FieldRecord;
-
 typedef struct FieldSourceContext
 {
     u8 pad[0x62];

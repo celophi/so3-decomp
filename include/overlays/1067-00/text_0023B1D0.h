@@ -100,6 +100,41 @@ struct FieldObject23CEB0
 };
 
 #ifdef __cplusplus
+/** Field selection widget with primary vtable at 0x153130. */
+class FieldClass153130 : public ItemCreationClass175030
+{
+public:
+    /** @brief Initialize the Field selection widget. */
+    FieldClass153130();
+    /** @brief Destroy the Field selection widget. */
+    virtual ~FieldClass153130();
+    /**
+     * @brief Configure the selection widget and its drawing dimensions.
+     * @param first First selection code.
+     * @param second Second selection code.
+     * @param third Third selection code.
+     * @param value Selection value.
+     * @param flag Selection flag.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     * @param z Third drawing coordinate.
+     * @param extent Drawing extent.
+     * @return Configuration status.
+     */
+    s32 func_0023B530(u8 first, u8 second, u8 third, u16 value, u8 flag,
+                     float x, float y, float z, float extent);
+    u8 unk7c;
+    u8 unk7d;
+    float unk80;
+    float unk84;
+    float unk88;
+    float unk8c;
+    u16 unk90;
+    u8 unk92;
+    u8 unk93;
+    u16 unk94;
+};
+
 /** Field storage and bounds interface with its virtual pointer at 0x38. */
 class FieldClass151C50
 {
