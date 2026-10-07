@@ -412,7 +412,7 @@ public:
     LibObject178750* unkb0;
     FieldClass153130* unkb4;
     FieldClass153170* unkb8;
-    u8 unkbc[3];
+    bool unkbc[3];
 };
 
 /** Three cleared words of an item creation window record. */

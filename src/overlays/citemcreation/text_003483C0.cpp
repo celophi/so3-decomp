@@ -2374,7 +2374,240 @@ void func_0034DA30(ItemCreationFlagResetOwner* object)
     object->unk1dc[2]->unk3f = 0;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034DB00);
+/**
+ * @brief Test whether a runtime option code selects one of the 38 records.
+ * @param option One-based option code.
+ * @return True for a valid option record.
+ */
+static inline bool runtime_option_valid(u8 option)
+{
+    return option >= 1 && option < 39;
+}
+/**
+ * @brief Return the runtime record selected by an option code.
+ * @param state State containing the runtime option records.
+ * @param option One-based option code.
+ * @return Selected record, or null for an invalid code.
+ */
+static inline ItemCreationRuntimeOptionRecord* runtime_option_record(ItemCreationColorRecordState* state, u8 option)
+{
+    if (runtime_option_valid(option))
+    {
+        return &state->unk10d88[option - 1];
+    }
+    return 0;
+}
+
+/**
+ * @brief Show an icon on an image widget.
+ * @param image Image widget.
+ * @param icon Icon index.
+ */
+static inline void set_image_icon(LibObject174F20* image, u32 icon)
+{
+    image->unkfc = icon;
+    image->unk3c = 1;
+}
+
+/**
+ * @brief Read the enabled-label mask for a category.
+ * @param state Selection state.
+ * @param code One-based category code.
+ * @return Bit mask of enabled labels.
+ */
+static inline u16 category_flags(ItemCreationSelectedDisplayState* state, u8 code)
+{
+    // The one-based lookup begins two bytes before its twelve mask entries.
+    const u16* words = reinterpret_cast<const u16*>(&state->unk77[5]);
+    return words[code];
+}
+/** @brief Read a group's category code. @param object Option window. @param group Group index. @return Category code. */
+static inline u8 category_value(ItemCreationClass185960* object, s32 group)
+{
+    return group == 0 ? object->unk178 : object->unk1b0;
+}
+/** @brief Store a group's category code. @param object Option window. @param group Group index. @param value Category code. */
+static inline void set_category_value(ItemCreationClass185960* object, s32 group, u8 value)
+{
+    if (group == 0)
+    {
+        object->unk178 = value;
+    }
+    else
+    {
+        object->unk1b0 = value;
+    }
+}
+/** @brief Return a group's category title. @param object Option window. @param group Group index. @return Title widget. */
+static inline LibObject178750* category_title(ItemCreationClass185960* object, s32 group)
+{
+    return static_cast<LibObject178750*>(group == 0 ? object->unk17c : object->unk1b4);
+}
+/** @brief Return one of a group's category labels. @param object Option window. @param group Group index. @param index Label index. @return Label widget. */
+static inline LibClass174EF0* category_label(ItemCreationClass185960* object, s32 group, s32 index)
+{
+    return group == 0 ? object->unk180[index] : object->unk1b8[index];
+}
+/**
+ * @brief Show a category label, bright when its bit is set in the mask.
+ * @param object Option window.
+ * @param group Group index.
+ * @param index Label index.
+ * @param flags Enabled-label mask.
+ */
+static inline void update_category_label(ItemCreationClass185960* object, s32 group, s32 index, u16 flags)
+{
+    category_label(object, group, index)->unk3f = 1;
+    if (flags & (1 << index))
+    {
+        category_label(object, group, index)->set_color(ITEM_CREATION_COLOR_BRIGHT);
+    }
+    else
+    {
+        category_label(object, group, index)->set_color(ITEM_CREATION_COLOR_DIM);
+    }
+}
+/**
+ * @brief Refresh a group's category title and labels once the stage reaches it.
+ * @param object Option window.
+ * @param stage Current selection stage.
+ * @param group Group index.
+ * @param selected Category code to store at the group's own stage, or zero.
+ */
+static inline void update_category_group(ItemCreationClass185960* object, s32 stage, s32 group, u8 selected)
+{
+    if (stage >= 2 * group)
+    {
+        if (selected && stage == 2 * group)
+        {
+            set_category_value(object, group, selected);
+        }
+        void* associated = object->func_slot54();
+        func_4C6DF0(category_title(object, group), associated, category_value(object, group) + 0x3520, 0);
+        category_title(object, group)->unk3f = 1;
+        u16 flags = category_flags(object->unk164, category_value(object, group));
+        update_category_label(object, group, 0, flags);
+        update_category_label(object, group, 1, flags);
+        update_category_label(object, group, 2, flags);
+        update_category_label(object, group, 3, flags);
+        update_category_label(object, group, 4, flags);
+        update_category_label(object, group, 5, flags);
+        update_category_label(object, group, 6, flags);
+        update_category_label(object, group, 7, flags);
+    }
+}
+/** @brief Test a one-based detail channel. @param channel Channel. @return Whether it is one through nine. */
+static inline u8 detail_channel_valid(u8 channel)
+{
+    return channel > 0 && channel < 10;
+}
+/** @brief Read a group's detail code. @param object Option window. @param group Group index. @return Detail code. */
+static inline u8 detail_value(ItemCreationClass185960* object, s32 group)
+{
+    return group == 0 ? object->unk179 : object->unk1b1;
+}
+/** @brief Return one of a group's detail displays. @param object Option window. @param group Group index. @param index Display index. @return Display widget. */
+static inline LibClass174EF0* detail_display(ItemCreationClass185960* object, s32 group, s32 index)
+{
+    return group == 0 ? object->unk1a4[index] : object->unk1dc[index];
+}
+/**
+ * @brief Look up the icon for a stored detail code.
+ * @param state Selection state.
+ * @param code Stored detail code.
+ * @return Icon index, or zero when the record or its channel has none.
+ */
+static inline u8 selected_detail_icon(ItemCreationSelectedDisplayState* state, u8 code)
+{
+    u8 result = 0;
+    if (D_001B64F8 != 0)
+    {
+        ItemCreationRuntimeOptionRecord* record = runtime_option_record(D_001B64F8, code);
+        if (record != 0)
+        {
+            u8 channel = func_00369F20(state, stored_option_index(code)) - 0x3457;
+            u8 icon = 0;
+            if (detail_channel_valid(channel))
+            {
+                u8 category = record->unk06;
+                if (has_extended_icons(category))
+                {
+                    icon = extended_icon_record(category - 29)->icons[channel - 1];
+                }
+                else
+                {
+                    const ItemCreationSingleIconRecord* single = &D_501DA0[category - 1];
+                    if (channel == single->unk03)
+                    {
+                        icon = single->unk02;
+                    }
+                }
+            }
+            result = icon;
+        }
+    }
+    return result;
+}
+/**
+ * @brief Refresh a group's detail name, text and icon once the stage passes it.
+ * @param object Option window.
+ * @param stage Current selection stage.
+ * @param group Group index.
+ */
+static inline void update_detail_group(ItemCreationClass185960* object, s32 stage, s32 group)
+{
+    if (stage >= 2 * group + 1)
+    {
+        s32 raw_code = detail_value(object, group);
+        if (raw_code != 0)
+        {
+            u8 code = raw_code;
+            void* associated = object->func_slot54();
+            func_4C6DF0(static_cast<LibObject178750*>(detail_display(object, group, 0)), associated, code + 0x3584, 0);
+            detail_display(object, group, 0)->unk3f = 1;
+        }
+        else
+        {
+            detail_display(object, group, 0)->unk3f = 0;
+        }
+        s32 raw_detail = detail_value(object, group);
+        if (raw_detail != 0)
+        {
+            u8 code = raw_detail;
+            u16 text = func_00369F20(object->unk164, stored_option_index(code));
+            void* associated = object->func_slot54();
+            func_4C6DF0(static_cast<LibObject178750*>(detail_display(object, group, 1)), associated, text, 0);
+            detail_display(object, group, 1)->unk3f = 1;
+            s32 raw_icon_detail = detail_value(object, group);
+            u8 icon = selected_detail_icon(object->unk164, raw_icon_detail);
+            set_image_icon(static_cast<LibObject174F20*>(detail_display(object, group, 2)), icon);
+            detail_display(object, group, 2)->unk3f = 1;
+        }
+    }
+}
+/**
+ * @brief Refresh both category and detail groups, then reapply the default option.
+ * @param prefix Option window.
+ * @param option Category code to store, or 0xFF for the window's current option.
+ */
+extern "C" void func_0034DB00(ItemCreationFlagResetOwner* prefix, u8 option)
+{
+    ItemCreationClass185960* object = static_cast<ItemCreationClass185960*>(static_cast<void*>(prefix));
+    func_0034DA30(prefix);
+    if (option == 0xFF)
+    {
+        option = object->unk160->unk6c;
+    }
+    u32 stage = object->unk164->unk129;
+    update_category_group(object, stage, 0, option);
+    update_detail_group(object, stage, 0);
+    update_category_group(object, stage, 1, option);
+    update_detail_group(object, stage, 1);
+    if (option == 0xFF)
+    {
+        func_0034D980(prefix, option);
+    }
+}
 
 void func_0034E4D0(ItemCreationFlagResetOwner* object, u16 direction)
 {
@@ -2439,29 +2672,6 @@ void ItemCreationClass185960::func_slot68()
     func_slotf8(1);
 }
 
-/**
- * @brief Test whether a runtime option code selects one of the 38 records.
- * @param option One-based option code.
- * @return True for a valid option record.
- */
-static inline bool runtime_option_valid(u8 option)
-{
-    return option >= 1 && option < 39;
-}
-/**
- * @brief Return the runtime record selected by an option code.
- * @param state State containing the runtime option records.
- * @param option One-based option code.
- * @return Selected record, or null for an invalid code.
- */
-static inline ItemCreationRuntimeOptionRecord* runtime_option_record(ItemCreationColorRecordState* state, u8 option)
-{
-    if (runtime_option_valid(option))
-    {
-        return &state->unk10d88[option - 1];
-    }
-    return 0;
-}
 /**
  * @brief Reset the option transfer or return to the primary option window.
  * @return Zero without a selection state, or two otherwise.
@@ -5257,22 +5467,15 @@ s32 ItemCreationClass186870::func_slotb4()
     return 2;
 }
 
-// TODO: The way this is written now matches with -O3, but not with -O4. Needs further investigation.
-#pragma push
-#pragma optimization_level 3
 s32 ItemCreationClass186870::func_slotb0()
 {
     FieldState23B3A0* selector = static_cast<FieldState23B3A0*>(static_cast<void*>(unkb4));
     if (func_23B3A0(selector) == 0)
     {
-        ItemCreationSelectedDisplayState* state = unka8;
-        state->func_0036BF30(0, unkbc[0]);
-        state = unka8;
-        state->func_0036BF30(1, unkbc[1]);
-        state = unka8;
-        state->func_0036BF30(2, unkbc[2]);
-        state = unka8;
-        state->unk47 = 2;
+        unka8->func_0036BF30(0, unkbc[0]);
+        unka8->func_0036BF30(1, unkbc[1]);
+        unka8->func_0036BF30(2, unkbc[2]);
+        unka8->unk47 = 2;
         func_0027CB50(D_001B6430->context->unk58, 0x42, 0, 0);
     }
     else
@@ -5281,7 +5484,6 @@ s32 ItemCreationClass186870::func_slotb0()
     }
     return 1;
 }
-#pragma pop
 
 void func_00358240(ItemCreationDirectColorOwner* object)
 {
@@ -12314,7 +12516,7 @@ extern "C" void func_0036BC90(ItemCreationSelectedDisplayState* object, u8 mode)
     object->unk46 = object->unk47;
 }
 
-void ItemCreationSelectedDisplayState::func_0036BF30(s32 index, s32 enabled)
+void ItemCreationSelectedDisplayState::func_0036BF30(s32 index, bool enabled)
 {
     ItemCreationAllocationRecord* records[100];
     unk148[index] = enabled;
@@ -12324,7 +12526,7 @@ void ItemCreationSelectedDisplayState::func_0036BF30(s32 index, s32 enabled)
         unk1b1[index] = 1;
         unk148[index] = 0;
     }
-    if (enabled != 0 && unk1b4[index] != 0)
+    if (enabled && unk1b4[index] != 0)
     {
         s32 category = 0;
         if (unk1c3[index] >= 2)

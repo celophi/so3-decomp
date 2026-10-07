@@ -119,7 +119,7 @@ typedef struct ItemCreationSelectedDisplayState
      * @param index Slot index from zero through two.
      * @param enabled Full-word state copied into the slot byte and tested for zero.
      */
-    void func_0036BF30(s32 index, s32 enabled);
+    void func_0036BF30(s32 index, bool enabled);
     /**
      * @brief Load the completed buffer into the Field runtime and finish setup.
      * @param buffer Completed buffer, or null.

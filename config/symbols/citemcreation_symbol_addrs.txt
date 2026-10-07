@@ -441,7 +441,7 @@ func_00358440 = 0x00358440; // type:func allow_duplicated:True
 func_slotf4__23ItemCreationClass186870FPv = 0x00358440; // type:func allow_duplicated:True
 
 func_0036BF30 = 0x0036BF30; // type:func allow_duplicated:True
-func_0036BF30__32ItemCreationSelectedDisplayStateFii = 0x0036BF30; // type:func allow_duplicated:True
+func_0036BF30__32ItemCreationSelectedDisplayStateFib = 0x0036BF30; // type:func allow_duplicated:True
 
 __vt__15LibObject175140 = 0x00175140; // absolute:True
 __dt__15LibObject175140Fv = 0x004678F0; // type:func absolute:True
