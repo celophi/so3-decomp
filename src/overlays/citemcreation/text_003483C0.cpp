@@ -7206,7 +7206,63 @@ s32 ItemCreationClass186C90::func_slotb4()
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0035C6A0);
+/**
+ * @brief Return the category record at the mode list's selected index.
+ * @param self Mode list.
+ * @return Selected category record, or null.
+ */
+static inline ItemCreationCategoryRecord* selected_record(ItemCreationClass186C90* self)
+{
+    return static_cast<ItemCreationCategoryRecord*>(func_0036EF70(&self->unk1a8, self->unk24)->unk00);
+}
+/** @brief Open the selected category. @return One on activation, three on rejection, or zero when unavailable. */
+s32 ItemCreationClass186C90::func_slotb0()
+{
+    if (unk88 == 0)
+    {
+        return 3;
+    }
+    if (unk1a0 == 0)
+    {
+        return 0;
+    }
+    if (FieldClass15AE60::unk8c == 7)
+    {
+        return 0;
+    }
+    ItemCreationCategoryRecord* record = selected_record(this);
+    if (record != 0)
+    {
+        LibClass174EF0* display = static_cast<LibClass174EF0*>(unk48[unk28]);
+        if (display->unk94 == 0x505050UL)
+        {
+            return 3;
+        }
+        if (func_0035CAD0(static_cast<ItemCreationCategoryOwner*>(static_cast<void*>(this)), record))
+        {
+            return 3;
+        }
+    }
+    else
+    {
+        return 3;
+    }
+    ItemCreationClass186B70* category = new (0) ItemCreationClass186B70;
+    u16 category_id = record->unk02 + 1;
+    category->unk1b8 = unk1a4;
+    category->unk1bc = category_id;
+    category->func_slot104(unk1a0->func_00263CC0());
+    category->func_slot40(this);
+    unk1a0->func_00263FD0(category);
+    unk1a0->func_00263C70(category);
+    ItemCreationClass175030* marker = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+    if (marker != 0)
+    {
+        marker->ItemCreationClass185050::unk30 = 64.0f;
+        marker->unk3c = 1;
+    }
+    return 1;
+}
 
 /** @brief Position the mode list rows. @param start Base vertical coordinate. */
 void ItemCreationClass186C90::set_scroll_position(float start)
