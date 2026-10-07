@@ -303,7 +303,9 @@ typedef struct ItemCreationRuntimeOptionRecord
     u8 unk06;
     u8 unk07;
     u8 unk08;
-    u8 unk09[3];
+    u8 unk09;
+    u8 unk0a;
+    u8 unk0b;
 } ItemCreationRuntimeOptionRecord;
 
 typedef struct ItemCreationColorRecordState
@@ -2958,7 +2960,64 @@ ItemCreationClass185D60::~ItemCreationClass185D60()
 {
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003513E0);
+/**
+ * @brief Report whether an option container has no pending mode.
+ * @param container Option container.
+ * @return One when the container mode is zero.
+ */
+static inline u8 option_container_idle(ItemCreationClass185F60* container)
+{
+    return container->unk4a4 == 0;
+}
+
+/** @brief Finish or cancel the option container's pending action while this window is current. */
+void ItemCreationClass185E60::func_slot5c()
+{
+    if (D_001B643C->unk10->unk14->func_00261150() != this)
+    {
+        return;
+    }
+    ItemCreationClass185F60* child = unkb8;
+    if (child == 0)
+    {
+        return;
+    }
+    switch (unkbc)
+    {
+    case 0:
+        break;
+    case 1:
+        if (option_container_idle(child))
+        {
+            if (child->unk30c > 0)
+            {
+                child->unk4a4 = 3;
+                child->unk30c = -1;
+                child->unk308 = -1;
+                child->unk316 = -1;
+            }
+            else
+            {
+                child->func_003EF740();
+                unkb8 = 0;
+                func_slot20(0);
+                ItemCreationClass186770* window = static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14)->unkd8;
+                FieldObject23CEA0* grid = window->unk10c;
+                if (grid != 0)
+                {
+                    grid->FieldClass151C50::unk30 = 128.0f;
+                    grid->unkae = 1;
+                    window->unka8->unk19a = 1;
+                }
+                D_001B643C->unk10->unk14->func_00263C70(window);
+                unkbc = 0;
+            }
+        }
+        break;
+    case 2:
+        break;
+    }
+}
 
 /**
  * @brief Create and queue the option container, or reset its active flag.
@@ -3691,7 +3750,106 @@ void func_00352B00(ItemCreationFourPositionDisplay* object, float x, float y)
     object->unk37c = 1;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352B90);
+/** Six-byte category record containing an icon and its channel. */
+struct ItemCreationSingleIconRecord
+{
+    u8 unk00[2];
+    u8 unk02;
+    u8 unk03;
+    u8 unk04[2];
+};
+
+/** Single-channel category records, indexed by category minus one. */
+extern "C" const ItemCreationSingleIconRecord D_501DA0[];
+
+/**
+ * @brief Test whether a category uses the eight-channel icon table.
+ * @param category Detail category.
+ * @return One for categories from twenty-nine onward, otherwise zero.
+ */
+static inline u8 has_extended_icons(u8 category)
+{
+    return category >= 29;
+}
+
+/**
+ * @brief Find a single-channel category record.
+ * @param index Category minus one.
+ * @return Record at that index.
+ */
+static inline const ItemCreationSingleIconRecord* single_icon_record(s32 index)
+{
+    return &D_501DA0[index];
+}
+
+/**
+ * @brief Build the mask of channels a category can use.
+ * @param category Detail category.
+ * @return All nine channel bits for extended categories, otherwise the record's channel bit.
+ */
+static inline u16 category_channel_flags(u8 category)
+{
+    if (has_extended_icons(category))
+    {
+        return 0x1FF;
+    }
+    return 1 << (single_icon_record(category - 1)->unk03 - 1);
+}
+
+/**
+ * @brief Test whether a channel is absent from a channel mask.
+ * @param flags Channel mask.
+ * @param index Channel index.
+ * @return True when the channel's bit is clear.
+ */
+static inline bool channel_missing(u16 flags, s32 index)
+{
+    return !(flags & (1 << index));
+}
+
+/**
+ * @brief Show the texts for one available option row.
+ * @param source Option container supplying the text resource.
+ * @param index Position among the available option records.
+ */
+void ItemCreationClass186050::func_slot10(LibClass1721F0* source, s32 index)
+{
+    void* text_source = static_cast<ItemCreationClass185F60*>(source)->unk4b4;
+    ItemCreationRuntimeOptionRecord* records[28];
+    s32 count = 0;
+    for (s32 position = 0; position < 28; position++)
+    {
+        ItemCreationRuntimeOptionRecord* record = runtime_option_record(D_001B64F8, static_cast<u8>(position + 1));
+        if (record->unk08 != 0)
+        {
+            records[count++] = record;
+        }
+    }
+    ItemCreationRuntimeOptionRecord** selected = &records[index];
+    func_4C6DF0(&unk04, text_source, (*selected)->unk06 + 0x3584, 0);
+    func_4C6DF0(&unk118, text_source, (*selected)->unk08 + 0x15FB7, 0);
+    if ((*selected)->unk08 == 2)
+    {
+        unk118.set_color(0x505080);
+    }
+    else
+    {
+        unk118.set_color(0x805050);
+    }
+    u8 category = (*selected)->unk06;
+    s32 channel_index = 0;
+    u16 flags = category_channel_flags(category);
+    for (s32 channel = 0; channel < 8; channel++)
+    {
+        if (!channel_missing(flags, channel))
+        {
+            channel_index = channel;
+            break;
+        }
+    }
+    func_4C6DF0(&unk22c, text_source, channel_index + 0x3458, 0);
+    func_4C6DF0(&unk340, text_source, ((*selected)->unk0a != 0) + 0x15FB6, 0);
+}
 
 void func_00352DC0(u8* object, u32 unused, u8 value)
 {
@@ -5476,14 +5634,6 @@ struct ItemCreationDetailRecords
     u8 unk00[0x10D88];
     ItemCreationDetailRecord records[38];
 };
-/** Six-byte category record containing an icon and its channel. */
-struct ItemCreationSingleIconRecord
-{
-    u8 unk00[2];
-    u8 unk02;
-    u8 unk03;
-    u8 unk04[2];
-};
 /** Thirteen-byte category record containing eight channel icons. */
 struct ItemCreationIconRecord
 {
@@ -5497,7 +5647,6 @@ extern "C"
     extern ResidentRequest112400* D_001B65F8;
     extern ItemCreationCategoryDefinition* D_001B64F0;
     extern const char D_0036F738[];
-    extern const ItemCreationSingleIconRecord D_501DA0[];
     extern const ItemCreationIconRecord D_501E50[];
     u16 func_457470(u16 seed, const u8* buffer, s32 length);
     u32 func_23B3B0(FieldState23B3A0* item, u16 flag);
@@ -5775,15 +5924,6 @@ static inline ItemCreationDetailRecord* detail_record(s32 value)
         return &table->records[index - 1];
     }
     return 0;
-}
-/**
- * @brief Test whether a category uses the eight-channel icon table.
- * @param category Detail category.
- * @return One for categories from twenty-nine onward, otherwise zero.
- */
-static inline u8 has_extended_icons(u8 category)
-{
-    return category >= 29;
 }
 /**
  * @brief Find an entry in the eight-channel icon table.
