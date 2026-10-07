@@ -44,12 +44,14 @@ s32 func_002541A0(FieldObject153730* object);
  */
 void func_002507B0(FieldObject11CValues* object);
 
+typedef struct FieldOwner24E860 FieldOwner24E860;
+
 /**
- * @brief Process a value on a field target.
- * @param target Target receiver.
- * @param value Value to process.
+ * @brief Delete the target's owned child, then store a word at offset 0x1210.
+ * @param owner Target receiver.
+ * @param value Word to store.
  */
-void func_0024E860(void* target, u32 value);
+void func_0024E860(FieldOwner24E860* owner, u32 value);
 
 /**
  * @brief Perform no work.

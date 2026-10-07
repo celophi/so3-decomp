@@ -10,6 +10,14 @@
 #include "overlays/1067-00/text_002764D0.h"
 #include "overlays/1067-00/text_002607B0.h"
 
+// C ABI names of methods that this unit's C-style callers still use; the shared
+// header limits them to C because their C++ declarations are class members.
+extern "C" {
+void func_00202580(void* object);
+s32 func_00202620(void* object);
+void func_00204370(void* object, u8 enable, s32 update);
+}
+
 typedef struct FieldTarget336B0
 {
     u8 unk00[0x48];
@@ -62,7 +70,7 @@ struct FieldObject232640
 
 extern u8 D_3013A0[];
 extern u8 D_3014A0[];
-void func_4C96E0(void* object, float value);
+extern "C" void func_4C96E0(void* object, float value);
 
 
 typedef struct FieldObject22E3A0
@@ -132,9 +140,9 @@ struct FieldObject32710
 struct FieldObject239B60
 {
     u8 unk00[0x20];
-    FieldVector2624 unk20;
+    FieldVec4A unk20;
     u8 unk30[0x620];
-    FieldVector2624 unk650;
+    FieldVec4A unk650;
     u8 unk660[0x20];
     float unk680;
     u8 unk684[4];
@@ -204,7 +212,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022DE
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022DF10);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022E160);
+bool FieldClass1570D0::func_002039C0() const
+{
+    return unk2f0;
+}
 
 s32 func_0022E170(FieldObject22E170* object)
 {
@@ -417,20 +428,20 @@ void func_00232090(FieldObject232090* object, s8 value)
     object->active = 1;
 }
 
-void func_002320D0(FieldObject2320D0* object, u8 value)
+void func_002320D0(FieldObject2320D0* object, bool value)
 {
     if (object->target != 0)
     {
-        func_00206200(object->target, value);
+        func_00206200(static_cast<FieldListAC*>(object->target), value);
     }
 }
 
-void func_00232100(FieldObject2320D0* object, u8 enable, s32 update)
+void func_00232100(FieldObject2320D0* object, bool enable, s32 update)
 {
     func_00204370(object, enable, update);
     if (object->target != 0)
     {
-        func_00206200(object->target, enable);
+        func_00206200(static_cast<FieldListAC*>(object->target), enable);
     }
 }
 
@@ -522,7 +533,16 @@ void func_002334B0(FieldObject234B0* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00233520);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00233620);
+void func_00233620(void* object)
+{
+    FieldObject2320D0* owner = static_cast<FieldObject2320D0*>(object);
+    FieldClass150070* attached = static_cast<FieldClass150070*>(owner->target);
+    if (attached != 0)
+    {
+        attached->func_001DD7B0();
+        owner->target = 0;
+    }
+}
 
 void func_00233660(FieldObject232640* object)
 {

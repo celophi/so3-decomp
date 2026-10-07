@@ -50,7 +50,7 @@ struct FieldObject22CC0
 typedef struct FieldContext10Object22CC0
 {
     u8 unk00[0x24];
-    void* value;
+    u32 value;
 } FieldContext10Object22CC0;
 
 typedef struct FieldContext22CC0
@@ -58,10 +58,9 @@ typedef struct FieldContext22CC0
     u8 unk00[0x10];
     FieldContext10Object22CC0* unk10;
     u8 unk14[0x28];
-    void* unk3C;
+    struct FieldClass150060* unk3C;
 } FieldContext22CC0;
 
-extern s32 func_001EF150(void* context_object, FieldObject22CC0* object, void* value);
 
 typedef struct FieldOwner29310
 {
@@ -75,8 +74,8 @@ typedef struct FieldContext29310
     FieldOwner29310* owner;
 } FieldContext29310;
 
-extern s32 func_00202310(void* object);
-extern void func_4CEE30(float* vector);
+extern "C" s32 func_00202310(void* object);
+extern "C" void func_4CEE30(float* vector);
 
 struct FieldObject2B440
 {
@@ -109,7 +108,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0021FF
 
 void func_00220150(void* object, s32 flag)
 {
-    FieldObject220150* state = object;
+    FieldObject220150* state = static_cast<FieldObject220150*>(object);
     if (state->unk6D3_2 == 0)
     {
         state->unk6D2_6 = 1;
@@ -176,7 +175,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002229
 s32 func_00222CC0(FieldObject22CC0* object)
 {
     FieldContext22CC0* context;
-    void* value;
+    u32 value;
     if (object->flags & 0x200)
     {
         return 0;
@@ -185,7 +184,7 @@ s32 func_00222CC0(FieldObject22CC0* object)
     value = context->unk10->value;
     if (value != 0)
     {
-        return func_001EF150(context->unk3C, object, value);
+        return func_001EF150(context->unk3C, reinterpret_cast<FieldClass151510*>(object), value);
     }
     return 0;
 }
@@ -245,7 +244,17 @@ s32 func_00224FC0(FieldObject152410* object)
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224FD0);
+void FieldClass152410::func_001DD7B0()
+{
+    if (unk300 != 0)
+    {
+        func_004D65C0(unk300);
+        unk300->func_001DD7B0();
+        unk300 = 0;
+    }
+    func_004D65C0(this);
+    func_0011ED90(D_001B65F4, this);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00225040);
 
@@ -293,7 +302,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002270
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002270D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00227130);
+void func_00227130(void* object)
+{
+    FieldClass150F90* actor = static_cast<FieldClass150F90*>(object);
+    actor->func_00204A10(actor->unk74);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00227160);
 
@@ -388,7 +401,40 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022A2
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022A310);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022AA90);
+/** Partial object holding its slot in the owner's link table. */
+typedef struct FieldObject2AA90
+{
+    u8 unk00[0xF1];
+    u8 index;
+} FieldObject2AA90;
+
+/** Partial owner holding the table of linked objects. */
+typedef struct FieldOwner2AA90
+{
+    u8 unk00[0x5A4];
+    void* linked[256];
+} FieldOwner2AA90;
+
+/** Partial field context holding the link-table owner. */
+typedef struct FieldContext2AA90
+{
+    u8 unk00[0x38];
+    FieldOwner2AA90* owner;
+} FieldContext2AA90;
+
+/**
+ * @brief Clear the object's slot in the owner's link table when it still holds the object.
+ * @param object Linked object.
+ */
+extern "C" void func_0022AA90(FieldObject2AA90* object)
+{
+    void** links = ((FieldContext2AA90*)D_001B6430->context)->owner->linked;
+    void** link = &links[object->index];
+    if (object == *link)
+    {
+        *link = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022AAD0);
 

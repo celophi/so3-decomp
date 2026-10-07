@@ -55,7 +55,15 @@ void func_002BC5B0(FieldClass150070* object)
     func_0011ED90(D_001B65F4, object);
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BC510", func_002BC5D0);
+/**
+ * @brief Reset the attached object's mode, then delete this object.
+ * @param object Object to release.
+ */
+extern "C" void func_002BC5D0(FieldClass159A80* object)
+{
+    func_002BC650(object->unk14, object->unk18);
+    object->func_001DD7B0();
+}
 
 bool func_002BC610(void* object, bool enabled)
 {

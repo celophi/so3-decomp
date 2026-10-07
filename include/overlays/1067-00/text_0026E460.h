@@ -3,6 +3,30 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Step a list iterator and return its next object.
+ * @param list List and iterator state.
+ * @param item Receives the next object.
+ * @return Nonzero while an object was returned.
+ */
+s32 func_0026E5F0(void* list, struct FieldClass150070** item);
+/**
+ * @brief Reset a list.
+ * @param list List to reset.
+ */
+void func_0026E570(void* list);
+/**
+ * @brief Step a list iterator and return its next object.
+ * @param list List and iterator state.
+ * @param item Receives the next object.
+ * @return Nonzero while an object was returned.
+ */
+s32 func_0026E7E0(void* list, struct FieldClass150070** item);
+
 /** @brief Forward the callback after adjusting from the secondary object at offset 0x04. */
 void func_0026ED50(void* object);
 /** @brief Forward the callback after adjusting from the secondary object at offset 0x04. */
@@ -27,5 +51,9 @@ void func_0026EDE0(void* object, s32 value);
 void func_0026EDF0(void* object);
 /** @brief Destroy the owner after adjusting from the secondary object at offset 0x20. */
 void* func_0026EE00(void* object, s32 flags);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

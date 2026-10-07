@@ -1,6 +1,8 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002607B0.h"
+#include "overlays/1067-00/text_001E1590.h"
 
+extern "C" {
 extern void* D_175290[];
 extern void* D_153D40[];
 extern void* D_153D50[];
@@ -8,6 +10,7 @@ extern void* D_153DD8[];
 FieldObject262910* func_4DAD90(FieldObject262910* object);
 void __dl__FPv(void* object);
 FieldObject262E20* func_4E2940(FieldObject262E20* object, s16 flags);
+}
 
 struct FieldObject262E20
 {
@@ -72,11 +75,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_00260F
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_00261020);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_002610B0);
+void FieldClass153E00::func_slot1c()
+{
+    unk4c->func_001DD7B0();
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_002610E0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_00261150);
+void* FieldClass153E30::func_00261150()
+{
+    return unk20;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_00261160);
 
@@ -112,7 +121,10 @@ void func_00262490(FieldObject262490* object, const FieldVector2624* vector)
     object->unk20 = *vector;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_002624B0);
+void func_002624B0(FieldVector262900* vector)
+{
+    vector->packed = 0;
+}
 
 void func_002624C0(FieldVector2624* first, FieldVector2624* second,
                    const FieldVector2624* source)

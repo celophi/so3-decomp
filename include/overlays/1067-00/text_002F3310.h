@@ -9,6 +9,31 @@
 typedef struct FieldByte60F3310 FieldByte60F3310;
 
 #ifdef __cplusplus
+/** Partial Field object with vtable D_15BA10 in main data and an owned child at offset 0x14. */
+class FieldClass15BA10 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15BA10();
+    /** @brief Detach and delete the child, then delete this object. */
+    virtual void func_001DD7B0();
+    FieldClass150070* unk14;
+};
+
+/** Partial Field object with vtable D_15BA50 in main data and an owned child at offset 0x18. */
+class FieldClass15BA50 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15BA50();
+    /** @brief Detach this object, delete the child when present, then delete this object. */
+    virtual void func_001DD7B0();
+    u8 unk14[4];
+    FieldClass150070* unk18;
+};
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 

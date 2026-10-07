@@ -1,10 +1,12 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_001DD3C0.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/1067-00/text_001ED7E0_callbacks.h"
 #include "overlays/1067-00/text_0026EE10.h"
 #include "overlays/1067-00/text_00207580.h"
+#include "overlays/1067-00/text_0021FB80.h"
 
 
 
@@ -233,7 +235,17 @@ void func_00270EE0(FieldState270EE0* object, u32 value, u32 flags)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00270F30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002710C0);
+void FieldClass154C10::func_001DD7B0()
+{
+    if (unkd8 != 0)
+    {
+        func_004D65C0(unkd8);
+        unkd8->func_001DD7B0();
+        unkd8 = 0;
+    }
+    FieldClass150F90::func_001DD7B0();
+    func_00226340(D_001B6430->context->unk14);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00271130);
 
@@ -241,7 +253,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002713
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002714B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00271560);
+/**
+ * @brief Detach the object, then delete it through its virtual handler.
+ * @param object Object to release.
+ */
+extern "C" void func_00271560(FieldClass150070* object)
+{
+    func_004D65C0(object);
+    object->func_001DD7B0();
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002715A0);
 

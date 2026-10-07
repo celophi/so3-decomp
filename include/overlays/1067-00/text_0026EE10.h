@@ -3,6 +3,9 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_0020D9A0.h"
+#ifdef __cplusplus
+#include "overlays/1067-00/text_00202240.h"
+#endif
 
 struct LibClass178220;
 /** Partial context containing its animation manager. */
@@ -165,6 +168,20 @@ s32 func_0026FA40(void* context, s32 selector, u32 value);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+/** Partial FieldClass150F90 with vtable D_154C10 in main data and an owned child at offset 0xD8. */
+class FieldClass154C10 : public FieldClass150F90
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass154C10();
+    /** @brief Detach and delete the child, release the base object and notify the field context. */
+    virtual void func_001DD7B0();
+    u8 unka0[0x38];
+    FieldClass150070* unkd8;
+};
 #endif
 
 #endif

@@ -130,6 +130,7 @@ public:
     virtual void func_slotec(u8 value);
     virtual void func_slotf0();
     virtual s32 func_slotf4(void* associated);
+    /** @brief Move the optional workshop selection display. @param direction Direction code. */
     virtual void func_slotf8(u16 direction);
     ItemCreationSelectedDisplayState* unka8;
     void* unkac[12];
@@ -318,6 +319,8 @@ public:
     virtual void func_slot6c();
     /** @brief Forward direction 1 to the window. */
     virtual void func_slot68();
+    /** @brief Move the transfer selector and refresh both workshop details. @param direction Direction code. */
+    virtual void func_slotf8(u16 direction);
     virtual s32 func_slotf4(void* associated);
     ItemCreationSelection* workshop_selection;
     ItemCreationSelectedDisplayState* selection_state;
@@ -329,14 +332,14 @@ public:
     u8 source_workshop_id;
     u8 source_inventor_id;
     u8 unk17a[2];
-    LibClass174EF0* source_workshop_name;
-    LibClass174EF0* source_facility_labels[9];
+    LibObject178750* source_workshop_name;
+    LibObject178750* source_facility_labels[9];
     LibClass174EF0* source_inventor_widgets[3];
     u8 destination_workshop_id;
     u8 destination_inventor_id;
     u8 unk1b2[2];
-    LibClass174EF0* destination_workshop_name;
-    LibClass174EF0* destination_facility_labels[9];
+    LibObject178750* destination_workshop_name;
+    LibObject178750* destination_facility_labels[9];
     LibClass174EF0* destination_inventor_widgets[3];
 };
 
@@ -495,6 +498,10 @@ public:
     virtual ~InadequateLineDialog();
     /** @brief Create the window controls. @param associated Associated source. @return Setup status. */
     virtual s32 func_slotf4(void* associated);
+    /** @brief Restore the associated window and dispatch the result state. @return One. */
+    virtual s32 func_slotb0();
+    /** @brief Restore the associated window and dispatch the alternate result action. @return One. */
+    virtual s32 func_slotb4();
     ItemCreationSelectedDisplayState* unka8;
     u8 unkac;
     u8 unkad[3];
@@ -729,6 +736,15 @@ public:
 
 class InventorStatusList;
 
+/**
+ * @brief Configure the option container and create its visible rows.
+ * @param object Option container to configure.
+ * @param associated Source retained for row text.
+ * @param count Number of selectable options.
+ * @return One on success, or zero when configuration or allocation fails.
+ */
+extern "C" s32 func_00352020(InventorStatusList* object, void* associated, s32 count);
+
 /** @brief Inventor status window showing contract, skill and work state. */
 class InventorStatusWindow : public FieldClass15AE70
 {
@@ -800,8 +816,8 @@ public:
     virtual void func_slot10(LibClass1721F0* source, s32 index) = 0;
     /** @brief Update the row position. @param source Row owner. @param x Horizontal setting. @param y Vertical setting. */
     virtual void func_slot14(LibClass1721F0* source, float x, float y) = 0;
-    /** @brief Read the row float setting. @return Current setting. */
-    virtual float func_slot18();
+    /** @brief Read the row float setting. @param source Owning row collection. @return Current setting. */
+    virtual float func_slot18(LibClass1721F0* source);
 };
 
 /** @brief Inventor status row showing name, contract, skill and work state. */
@@ -918,20 +934,6 @@ s32 func_0034FA70(struct ItemCreationClass185A60* object);
 void func_003500D0(struct InadequateLineDialog* object, u8 mode);
 
 /**
- * @brief Restore the associated window and dispatch the result state.
- * @param object Result window.
- * @return Always one.
- */
-s32 func_0034FE00(struct InadequateLineDialog* object);
-
-/**
- * @brief Restore the associated window and dispatch the result state.
- * @param object Result window.
- * @return Always one.
- */
-s32 func_0034FF70(struct InadequateLineDialog* object);
-
-/**
  * @brief Create and attach the result window's display widgets.
  * @param object Result window.
  * @param associated Object associated with the window.
@@ -1007,20 +1009,6 @@ void func_0034A7A0(WorkshopSelectionWindow* object, u8 selected);
  * @param option Option to display, or 0xFF to use the current selection.
  */
 void func_0034D980(InventorTransferWindow* object, u8 option);
-
-/**
- * @brief Move the transfer display and refresh its selected option markers and list.
- * @param object Owner of the selection and optional transfer display.
- * @param direction Direction used to advance the embedded selection.
- */
-void func_0034E4D0(InventorTransferWindow* object, u16 direction);
-
-/**
- * @brief Move the optional transfer display using the embedded selection.
- * @param object Owner of the selection and optional transfer display.
- * @param direction Direction used to advance the embedded selection.
- */
-void func_0034F9B0(InventorTransferWindow* object, u16 direction);
 
 /**
  * @brief Initialize the view display at its fixed coordinates and report success.

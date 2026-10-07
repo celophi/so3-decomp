@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002636B0.h"
+#include "overlays/1067-00/text_0026E460.h"
 
 /** Partial receiver and guarded nested state for the constant reset. */
 typedef struct FieldInnerC000
@@ -19,7 +20,10 @@ typedef struct FieldOuterC000
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002636B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002636F0);
+void func_002636F0(u32* word, u32 value)
+{
+    *word = value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00263700);
 
@@ -510,7 +514,16 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026A6
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026BD60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026BE30);
+void FieldClass1547D0::func_slot0c()
+{
+    FieldClass150070* item = 0;
+    while (func_0026E5F0(unkfc, &item))
+    {
+        item->func_001DD7B0();
+    }
+    func_0026E570(unkfc);
+    FieldClass15AE70::func_slot0c();
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026BEA0);
 
@@ -546,7 +559,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026CC
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026D140);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026D4F0);
+void FieldClass1548D0::func_slot0c()
+{
+    FieldClass15AE70::func_slot0c();
+    FieldClass150070* item = 0;
+    while (func_0026E7E0(unkb8, &item))
+    {
+        item->func_001DD7B0();
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026D560);
 

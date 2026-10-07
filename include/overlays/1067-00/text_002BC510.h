@@ -28,8 +28,23 @@ typedef struct FieldState2BD1F0
 struct FieldState2BDF70;
 
 #ifdef __cplusplus
+/** Partial Field object with vtable D_159A80 in main data. */
+class FieldClass159A80 : public FieldClass150070
+{
+public:
+    void* unk14;
+    u16 unk18;
+};
+
 extern "C" {
 #endif
+
+/**
+ * @brief Apply a mode to the object.
+ * @param object Object to update.
+ * @param mode Mode value; zero and one select different updates.
+ */
+void func_002BC650(void* object, u16 mode);
 
 /**
  * @brief Append this receiver to the resident object queue.

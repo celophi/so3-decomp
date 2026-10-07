@@ -129,7 +129,12 @@ typedef struct FieldObject233470 FieldObject233470;
  * @param object Receiver holding the optional list pointer.
  * @param value Boolean value to forward.
  */
+#ifdef __cplusplus
+void func_002320D0(FieldObject2320D0* object, bool value);
+#else
+/* Boolean value passed through the C ABI. */
 void func_002320D0(FieldObject2320D0* object, u8 value);
+#endif
 
 /**
  * @brief Update the receiver and forward the setting to its attached list.
@@ -137,7 +142,12 @@ void func_002320D0(FieldObject2320D0* object, u8 value);
  * @param enable Boolean setting to apply.
  * @param update Nonzero to store the setting on the receiver.
  */
+#ifdef __cplusplus
+void func_00232100(FieldObject2320D0* object, bool enable, s32 update);
+#else
+/* Boolean setting passed through the C ABI. */
 void func_00232100(FieldObject2320D0* object, u8 enable, s32 update);
+#endif
 
 /**
  * @brief Initialize the field state when its check succeeds.

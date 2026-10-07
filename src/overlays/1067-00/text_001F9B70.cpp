@@ -29,7 +29,7 @@ struct FieldScriptCursorU16 { u8 pad[0x548]; u16* current; };
 struct FieldScriptCursorF14 { u8 pad[0x14]; float value; u8 pad18[0x530]; u32* current; };
 struct FieldScriptCursorU32 { u8 pad[0x548]; u32* current; };
 struct FieldContext68 { u8 pad[0x68]; void* target; };
-struct FieldContext08E0 { u8 pad[0xE0]; void* target; };
+struct FieldContext08E0 { u8 pad[0xE0]; FieldOwner24E860* target; };
 struct FieldContext08Flags { u8 pad[0xF3]; u8 valueF3; u8 valueF4; };
 extern "C" void func_002D4AA0(void* target, u32 value);
 struct FieldFloatA4 { u8 pad[0xA4]; float value; };
@@ -448,7 +448,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FCA
 
 extern "C" s32 func_001FCBD0(FieldScriptCursorU32* cursor)
 {
-    void* target = ((FieldContext08E0*)D_001B6430->context->unk08)->target;
+    FieldOwner24E860* target = ((FieldContext08E0*)D_001B6430->context->unk08)->target;
     if (target == 0)
     {
         return 1;

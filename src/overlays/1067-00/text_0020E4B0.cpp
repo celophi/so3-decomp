@@ -10,7 +10,10 @@ typedef struct FieldContextE4C0
 } FieldContextE4C0;
 
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020E4B0);
+float func_0020E4B0(void* object)
+{
+    return D_001B6688;
+}
 
 s32 func_0020E4C0(void* object)
 {

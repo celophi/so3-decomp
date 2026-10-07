@@ -105,7 +105,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00211C
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00212360);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002123F0);
+extern "C" void* D_001B6650;
+extern "C" void func_4DB9E0(void* manager, u32 first, u32 second, u32 third, u32 fourth);
+
+void FieldClass151C00::func_001DF360()
+{
+    func_4DB9E0(D_001B6650, unk14, unk18, unk1c, unk20);
+    func_004D65C0(this);
+    func_001DD7B0();
+}
 
 s32 func_00212440(void* object)
 {

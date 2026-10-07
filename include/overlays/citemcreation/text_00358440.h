@@ -142,14 +142,6 @@ public:
     bool unkbc[3];
 };
 
-/** Three cleared words of an item creation window record. */
-typedef struct ItemCreationRecord128
-{
-    u32 unk00;
-    u32 unk04;
-    u32 unk08;
-} ItemCreationRecord128;
-
 struct LibObject175140;
 struct ItemCreationOptionResourceDisplay;
 
@@ -275,7 +267,7 @@ public:
     }
     /** @brief Destroy the status message window and its Field base. */
     virtual ~ItemCreationStatusBanner();
-    /** @brief Advance the timed vertical text scroll. */
+    /** @brief Hold, then advance and wrap the horizontal status message. */
     virtual void func_slot5c();
     /** @brief Set a status message and reset its scroll. @param text_key Absolute text key or signed relative index. */
     virtual void func_slot60(s32 text_key);
@@ -357,6 +349,8 @@ public:
     InventoryItemTypeList(ItemCreationSelectedDisplayState* state);
     /** @brief Destroy the mode list and its Field window bases. */
     virtual ~InventoryItemTypeList();
+    /** @brief Set the category marker visibility and depth. @param value Unused first argument. @param alternate Marker visibility and depth mode. */
+    virtual void func_slot10c(u32 value, u32 alternate);
     /** @brief Refresh the active mode list and selection cursor. */
     virtual void func_slot5c();
     /** @brief Open the selected category. @return One on activation, three on rejection, or zero when unavailable. */
@@ -371,7 +365,7 @@ public:
     virtual void set_scroll_position(float start);
     /** @brief Rebuild the related category list. @param reset Whether to reset the selection. @param mode Category mode. */
     virtual void func_slot11c(u16 reset, u8 mode);
-    struct LibClass178600* unk138[12];
+    LibObject178750* unk138[12];
     LibObject174F20* unk168[12];
     LibClass178630* unk198;
     ItemCreationClass1746A0* unk19c;
@@ -393,8 +387,8 @@ class FieldClass153170;
 class PlanItemGroupWindow : public FieldClass15AE70
 {
 public:
-    /** Construct the window, keeping the supplied object. */
-    PlanItemGroupWindow(void* object);
+    /** @brief Initialize the plan window for its selection state. @param state Owning selection state. */
+    PlanItemGroupWindow(ItemCreationSelectedDisplayState* state);
     /** @brief Restore the group selector depth and request its redraw. */
     virtual void func_slot64();
     /** Destroy the window through Field's window base. */
@@ -461,9 +455,7 @@ public:
     LibClass178630* unkb0;
     LibObject178750* unkb4[2];
     float unkbc;
-    float unkc0;
-    float unkc4;
-    float unkc8;
+    float unkc0[3];
     FieldClass153130* unkcc;
     FieldClass153170* unkd0;
     u8 unkd4;
@@ -485,10 +477,12 @@ public:
     virtual void func_slot6c();
     /** @brief Refresh the option display for the second selection direction. */
     virtual void func_slot68();
-    /** @brief Reset the option selection and handle the return mode. @return Always two. */
+    /** @brief Confirm the selected creation skill. @return Action status. */
+    virtual s32 func_slotb0();
+    /** @brief Reset the skill selection and handle the return mode. @return Always two. */
     virtual s32 func_slotb4();
     /**
-     * @brief Create the eight category labels and their selection widgets.
+     * @brief Create the eight creation-skill labels and their selection widgets.
      * @param associated Object associated with the window.
      * @return Zero without a parent, otherwise one.
      */
@@ -503,7 +497,7 @@ public:
     u8 unkdd[3];
     PlanItemGroupWindow* unke0;
     InventoryItemTypeList* unke4;
-    /** Category bits permitted by the current option selection. */
+    /** Creation-skill facility bits permitted by the current selection. */
     u16 selectable_skill_mask;
 };
 
@@ -517,7 +511,7 @@ public:
     }
     /** Destroy the window through Field's window base. */
     virtual ~WorkshopFacilitiesWindow();
-    /** @brief Create the option labels and panel. @param associated Associated source. @return Always one. */
+    /** @brief Create the workshop-facility panel and eight skill labels. @param associated Object associated with the window. @return Always one. */
     virtual s32 func_slotf4(void* associated);
     ItemCreationSelectedDisplayState* unka8;
     u8 unkac;
@@ -535,7 +529,7 @@ public:
     }
     /** Destroy the window through Field's window base. */
     virtual ~WorkshopNameWindow();
-    /** @brief Create the status panel and its label. @param associated Associated source. @return Zero without selection state, otherwise one. */
+    /** @brief Create the panel and name label for the current workshop. @param associated Object associated with the window. @return Zero without selection state, otherwise one. */
     virtual s32 func_slotf4(void* associated);
     ItemCreationSelectedDisplayState* unka8;
 };
@@ -548,6 +542,8 @@ public:
     AssignedInventorGrid();
     /** @brief Release the resources and destroy the Field window base. */
     virtual ~AssignedInventorGrid();
+    /** @brief Refresh the assigned-inventor displays. */
+    virtual void func_slot5c();
     /** Call the virtual at 0xa0. */
     virtual void func_slot68();
     /** Call the virtual at 0xa4. */
@@ -556,7 +552,7 @@ public:
     virtual void func_slot70();
     /** Call the virtual at 0xac. */
     virtual void func_slot74();
-    /** @brief Toggle the detail window for a selected item row. @return One when allowed; zero for a compound row. */
+    /** @brief Toggle information for the selected inventor. @return One when available, or zero for a non-inventor cell or missing state. */
     virtual s32 func_slotb8();
     /** @brief Restore the active selection or leave item selection. @return Two when handled; zero when inactive. */
     virtual s32 func_slotb4();
@@ -568,7 +564,7 @@ public:
     virtual void func_slota0();
     /** @brief Move the marker down or enter the related window. */
     virtual void func_slota4();
-    /** @brief Apply the active item selection. @return Action status. */
+    /** @brief Open the selected line's skill or policy window, or begin an inventor swap. @return Action status. */
     virtual s32 func_slotb0();
     /** @brief Apply the three selected components. @return Action status. */
     virtual s32 func_slotbc();
@@ -631,9 +627,11 @@ public:
     /** @brief Construct the panel widgets. @param associated Associated window. @return One on success, zero without an active state. */
     virtual s32 func_slotf4(void* associated);
     ItemCreationSelectedDisplayState* unka8;
-    u8 unkac;
+    /** One-based workshop ID selecting the expansion-price table. */
+    u8 workshop_id;
     u8 unkad[3];
-    u32 unkb0[8];
+    /** Installation costs indexed by creation-skill ID minus one. */
+    u32 facility_costs[8];
     u8 unkd0[8];
     u16 unkd8;
     u8 unkda[2];
@@ -644,7 +642,8 @@ public:
     u8 unk10c;
     u8 unk10d;
     u8 unk10e[2];
-    u32 unk110[3];
+    /** Cost of adding a development line, indexed by the current line count. */
+    u32 additional_line_costs[3];
     LibObject178750* unk11c;
     LibObject174F20* unk120;
 };
@@ -696,7 +695,7 @@ public:
         }
         unk128 = 0;
     }
-    /** @brief Toggle the selected item detail display. @return One when a state is attached, zero otherwise. */
+    /** @brief Toggle information for the selected available inventor. @return One when a state is attached, zero otherwise. */
     virtual s32 func_slotb8();
     /** @brief Release the resource and destroy the window through its Field base. */
     virtual ~AvailableInventorGrid();
@@ -759,25 +758,25 @@ void func_00366F10(struct DevelopmentTeamsWindow* object);
 void func_00363D20(AssignedInventorGrid* object);
 
 /**
- * @brief Refresh the nine item-resource displays and their assigned-item codes.
- * @param object Nine-slot selection window.
+ * @brief Refresh the nine assigned-inventor portraits and their inventor IDs.
+ * @param object Inventor grid for the three development lines.
  */
 void func_003614B0(AssignedInventorGrid* object);
 
 /**
- * @brief Refresh the fourteen item-resource displays and their marker bytes.
- * @param object Fourteen-slot selection window.
+ * @brief Refresh the fourteen available-inventor portraits.
+ * @param object Available-inventor grid.
  */
 void func_00364D20(AvailableInventorGrid* object);
 /** @brief Update selection markers and display activation. @param object Selection window. @param enabled Full-word activation flag. */
 void func_00364E00(AvailableInventorGrid* object, u32 enabled);
 
 /**
- * @brief Fill the item and auxiliary cost arrays for the category.
- * @param object Panel selection window.
- * @param category Category code.
+ * @brief Initialize facility and development-line expansion costs for a workshop.
+ * @param object Workshop-expansion window.
+ * @param workshop_id Workshop ID from one through twelve.
  */
-void func_00365600(WorkshopExpansionWindow* object, u8 category);
+void item_creation_initialize_expansion_costs(WorkshopExpansionWindow* object, u8 workshop_id);
 
 /**
  * @brief Activate the selected display and refresh its markers, or deactivate the displays and clear their markers.
@@ -800,12 +799,12 @@ void func_00361220(AssignedInventorGrid* object);
 void func_00364090(AvailableInventorGrid* object, u16 mode);
 
 /**
- * @brief Report whether any byte in a selected item triple is nonzero.
- * @param object State containing the three item triples.
- * @param index Triple index, zero through two; other values report zero.
- * @return One when a byte in the selected triple is nonzero, or zero otherwise.
+ * @brief Test whether a development line contains any assigned inventor.
+ * @param object Assigned-inventor grid containing three lines of inventor IDs.
+ * @param line_index Development-line index from zero through two.
+ * @return One when the line contains an inventor, or zero for an empty or invalid line.
  */
-u8 func_003623C0(AssignedInventorGrid* object, u8 index);
+u8 func_003623C0(AssignedInventorGrid* object, u8 line_index);
 
 /**
  * @brief Perform no work.
@@ -841,26 +840,11 @@ void func_003641F0(void* object);
 u8 func_0035CAD0(struct InventoryItemTypeList* object, const ItemCreationCategoryRecord* category);
 
 /**
- * @brief Update the category label colors and the selected row marker.
- * @param object Category selection window.
- * @param selected Selected row index.
+ * @brief Update creation-skill colors and the selected skill marker.
+ * @param object Creation-skill selection window.
+ * @param selected Selected skill row.
  */
-void item_creation_update_category_labels(CreationSkillWindow* object, u16 selected);
-
-/**
- * @brief Read the word at offset 0x24.
- * @param object Object containing the field.
- * @return Field value.
- */
-u32 func_00366040(void* object);
-
-/**
- * @brief Set a nested object's value and select its float setting.
- * @param object Object holding the nested pointer.
- * @param unused Unused second argument.
- * @param value Value to write at offset 0x3F; selects the float setting.
- */
-void func_0035C4D0(u8* object, void* unused, u32 value);
+void item_creation_update_skill_labels(CreationSkillWindow* object, u16 selected);
 
 /** @brief Update the selection markers and window activation. @param object Nine-slot window. @param active Activation value. */
 void func_003610D0(AssignedInventorGrid* object, u32 active);

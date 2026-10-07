@@ -192,7 +192,9 @@ public:
      * @param z Third coordinate.
      */
     void func_0044B110(s32 code, u8 first, u32 second, u8 third, float z);
-    u8 unk94[0x16];
+    u8 unk94[0x14];
+    u8 unka8;
+    u8 unka9;
     u8 unkaa;
     u8 unkab;
     u8 unkac;
@@ -289,7 +291,6 @@ struct LibObject178750 : public LibClass174EF0
     LibClass171EA0* unkfc;
     u8 unk100[0x14];
 };
-
 
 /** 0x57C-byte multiline text widget with trailing scroll state. */
 struct LibObject174D90 : public LibObject178750

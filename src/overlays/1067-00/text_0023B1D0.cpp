@@ -1,7 +1,10 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
+#include "main/resident_0010A0E0.h"
+#include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/1067-00/text_0023B1D0.h"
 
+extern "C" {
 void func_44B210(void* object);
 extern void* D_172870[];
 extern void* D_153170[];
@@ -18,6 +21,7 @@ void func_465B20(FieldRuntime* runtime, FieldObject23D020* object);
 void func_421170(FieldObject23B850* object, FieldTarget23B850* target,
                  float x, float y, float z, float scale);
 void func_420D20(FieldObject23B850* object, u32 color);
+}
 
 struct FieldObject23C180
 {
@@ -328,7 +332,7 @@ void func_0023CE80(FieldObject23CE80* object, u8 width, u8 height)
 
 void func_0023CEA0(FieldObject23CEA0* object, u32 value)
 {
-    object->unkAD = value;
+    object->unkad = value;
 }
 
 s32 func_0023CEB0(FieldObject23CEB0* object, float first, float second)
@@ -423,7 +427,23 @@ s32 func_0023D2B0(FieldObject153270* object)
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D2C0);
+/** Partial object with an attached Field object at offset 0x14. */
+struct FieldObject23D2C0
+{
+    u8 unk00[0x14];
+    FieldClass150070* attachment;
+};
+
+/**
+ * @brief Delete the attached object, detach this object and release it.
+ * @param object Object to release.
+ */
+extern "C" void func_0023D2C0(FieldObject23D2C0* object)
+{
+    object->attachment->func_001DD7B0();
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 FieldNode23D310* func_0023D310(FieldObject23D310* object, s32 count)
 {

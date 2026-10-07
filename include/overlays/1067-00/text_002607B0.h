@@ -11,6 +11,23 @@ typedef struct FieldObject262490 FieldObject262490;
 typedef struct FieldObject153D20 FieldObject153D20;
 typedef struct FieldObject153E00 FieldObject153E00;
 
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001DD3C0.h"
+/** Four aligned floating-point components; C++ copies them as one 128-bit word. */
+typedef FieldVec4A FieldVector2624;
+
+/** Partial Field object with vtable D_153E00 in main data; it adds vtable slot 0x1C. */
+class FieldClass153E00 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass153E00();
+    /** @brief Delete the attached object at offset 0x4C. */
+    virtual void func_slot1c();
+    u8 unk14[0x38];
+    FieldClass150070* unk4c;
+};
+#else
 /** Four aligned floating-point components used by the field vector helpers. */
 typedef struct FieldVector2624
 {
@@ -19,6 +36,7 @@ typedef struct FieldVector2624
     float z;
     float w;
 } __attribute__((aligned(16))) FieldVector2624;
+#endif
 
 /** Aligned four-float value that can be cleared as one packed word. */
 typedef union FieldVector262900
@@ -58,6 +76,12 @@ FieldObject262E20* func_00262E20(FieldObject262E20* object, s16 flags);
  * @brief Clear an aligned vector and set its fourth component to 1.0.
  * @param vector Vector to initialize.
  */
+/**
+ * @brief Clear an aligned vector.
+ * @param vector Vector to clear.
+ */
+void func_002624B0(FieldVector262900* vector);
+
 void func_00262900(FieldVector262900* vector);
 
 /**

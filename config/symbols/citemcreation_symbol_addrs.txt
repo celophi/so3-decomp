@@ -12,7 +12,7 @@ __dt__23ItemCreationClass1723F0Fv = 0x00412930; // absolute:True
 func_0044B100__15LibObject178660FUiUiUi = 0x004C6230; // absolute:True
 func_003EEBE0__15LibObject178660Fv = 0x004C61F0; // absolute:True
 func_003F4410__15LibObject178660FUi = 0x004C61D0; // absolute:True
-func_00412C40__15LibObject178660FUiUiUi = 0x00412C40; // absolute:True
+func_00412C40__15LibObject178660FUiUiUi = 0x0036E7C0; // type:func allow_duplicated:True
 __ct__14LibClass172320Fv = 0x003527D0; // type:func absolute:True allow_duplicated:True
 __ct__23ItemCreationClass184F60Fv = 0x003527D0; // type:func allow_duplicated:True
 __dt__14LibClass172320Fv = 0x003523E0; // type:func absolute:True allow_duplicated:True
@@ -81,7 +81,7 @@ __ct__23WorkshopExpansionWindowFv = 0x00366D40; // type:func
 __vt__23WorkshopExpansionWindow = 0x001872B0; // absolute:True
 __vt__22DevelopmentTeamsWindow = 0x001873B0; // absolute:True
 __ct__22DevelopmentTeamsWindowFv = 0x00367CA0; // type:func
-__ct__19PlanItemGroupWindowFPv = 0x0035F100; // type:func
+__ct__19PlanItemGroupWindowFP32ItemCreationSelectedDisplayState = 0x0035F100; // type:func
 
 // Directional callbacks for item creation windows.
 func_slot74__23WorkshopSelectionWindowFv = 0x0034ACA0; // type:func
@@ -464,8 +464,8 @@ func_slotf4__25InventorInformationWindowFPv = 0x00359240; // type:func allow_dup
 func_00358850 = 0x00358850; // type:func allow_duplicated:True
 func_00358850__25InventorInformationWindowFv = 0x00358850; // type:func allow_duplicated:True
 
-func_slotb0__16FieldClass15AE70Fv = 0x0026E3A0; // type:func allow_duplicated:True
-func_slotb4__16FieldClass15AE70Fv = 0x0026E3B0; // type:func allow_duplicated:True
+func_slotb0__16FieldClass15AE70Fv = 0x0036E840; // type:func allow_duplicated:True
+func_slotb4__16FieldClass15AE70Fv = 0x0036E850; // type:func allow_duplicated:True
 func_slotb8__16FieldClass15AE70Fv = 0x002648B0; // type:func allow_duplicated:True
 func_slotbc__16FieldClass15AE70Fv = 0x002648C0; // type:func allow_duplicated:True
 func_slotc0__16FieldClass15AE70Fv = 0x002648D0; // type:func allow_duplicated:True
@@ -624,7 +624,7 @@ func_slotf4__20InventorStatusWindowFPv = 0x00351680; // type:func allow_duplicat
 func_003513E0 = 0x003513E0; // type:func allow_duplicated:True
 func_slot5c__20InventorStatusWindowFv = 0x003513E0; // type:func allow_duplicated:True
 
-func_slotb0__20AssignedInventorGridFv = 0x00361D40; // type:func absolute:True allow_duplicated:True
+func_slotb0__20AssignedInventorGridFv = 0x00361D40; // type:func size:0x678 allow_duplicated:True
 func_slotf4__20AssignedInventorGridFPv = 0x00362BA0; // type:func absolute:True allow_duplicated:True
 __vt__16FieldClass15B200 = 0x0015B200; // absolute:True allow_duplicated:True
 __ct__16FieldClass15B200FP15LibObject178660Uc = 0x002D5A40; // type:func absolute:True allow_duplicated:True
@@ -637,7 +637,7 @@ func_00357E40 = 0x00357E40; // type:func allow_duplicated:True
 __dt__23ItemCreationClass186770Fv = 0x00357E40; // type:func allow_duplicated:True
 
 func_0036E7F0 = 0x0036E7F0; // type:func allow_duplicated:True
-func_slot18__23ItemCreationClass185030Fv = 0x0036E7F0; // type:func absolute:True allow_duplicated:True
+func_slot18__23ItemCreationClass185030FP14LibClass1721F0 = 0x0036E7F0; // type:func allow_duplicated:True
 func_003615C0 = 0x003615C0; // type:func allow_duplicated:True
 func_slotbc__20AssignedInventorGridFv = 0x003615C0; // type:func allow_duplicated:True
 func_00351DC0 = 0x00351DC0; // type:func allow_duplicated:True
@@ -730,7 +730,7 @@ func_slot68__23WorkshopExpansionWindowFv = 0x00365AC0; // type:func allow_duplic
 func_slot70__23WorkshopExpansionWindowFv = 0x0036E820; // type:func absolute:True allow_duplicated:True
 func_slot74__23WorkshopExpansionWindowFv = 0x0036E830; // type:func absolute:True allow_duplicated:True
 func_slotb0__23WorkshopExpansionWindowFv = 0x00365BF0; // type:func absolute:True allow_duplicated:True
-func_slotf4__23WorkshopExpansionWindowFPv = 0x003661F0; // type:func absolute:True allow_duplicated:True
+func_slotf4__23WorkshopExpansionWindowFPv = 0x003661F0; // type:func allow_duplicated:True
 func_0034AB20 = 0x0034AB20; // type:func allow_duplicated:True
 func_slotf8__23WorkshopSelectionWindowFUs = 0x0034AB20; // type:func allow_duplicated:True
 func_0034C080 = 0x0034C080; // type:func allow_duplicated:True
@@ -746,7 +746,7 @@ func_4C69B0 = 0x004C69B0; // type:func absolute:True allow_duplicated:True
 func_00368B30 = 0x00368B30; // type:func allow_duplicated:True
 func_slot60__24ItemCreationStatusBannerFi = 0x00368B30; // type:func allow_duplicated:True
 __vt__24ItemCreationStatusBanner = 0x001877B0; // absolute:True allow_duplicated:True
-func_slot5c__24ItemCreationStatusBannerFv = 0x00368BD0; // type:func absolute:True allow_duplicated:True
+func_slot5c__24ItemCreationStatusBannerFv = 0x00368BD0; // type:func allow_duplicated:True
 func_slotf4__24ItemCreationStatusBannerFPv = 0x00368CC0; // type:func allow_duplicated:True
 func_00369060 = 0x00369060; // type:func allow_duplicated:True
 __dt__24ItemCreationStatusBannerFv = 0x00369060; // type:func allow_duplicated:True
@@ -810,8 +810,9 @@ func_004D65C0 = 0x004D65C0; // type:func absolute:True
 func_00352340 = 0x00352340; // type:func allow_duplicated:True
 __ct__18InventorStatusListFv = 0x00352340; // type:func allow_duplicated:True
 __vt__14LibClass1721F0 = 0x001721F0; // absolute:True allow_duplicated:True
-item_creation_update_category_labels = 0x0035FCA0; // type:func
-item_creation_restore_category_flags = 0x0036AE20; // type:func
+item_creation_update_skill_labels = 0x0035FCA0; // type:func
+item_creation_initialize_expansion_costs = 0x00365600; // type:func
+item_creation_restore_workshop_skill_flags = 0x0036AE20; // type:func
 
 func_slot50__16FieldClass15AE70FUi = 0x003484A0; // type:func absolute:True allow_duplicated:True
 
@@ -837,7 +838,7 @@ func_0036E590 = 0x0036E590; // type:func allow_duplicated:True
 func_003EF770__14LibClass178A90FPC10LibVector4 = 0x0036E570; // type:func absolute:True allow_duplicated:True
 func_0036E570 = 0x0036E570; // type:func allow_duplicated:True
 
-func_003F4420__14LibClass174610Fv = 0x0036E7D0; // type:func absolute:True allow_duplicated:True
+func_003F4420__14LibClass174610Fv = 0x0036E7D0; // type:func allow_duplicated:True
 func_0036E7D0 = 0x0036E7D0; // type:func allow_duplicated:True
 
 func_00466E40 = 0x00466E40; // type:func absolute:True allow_duplicated:True
@@ -888,8 +889,81 @@ func_0035F2D0 = 0x0035F2D0; // type:func allow_duplicated:True
 
 func_slot5c__23ItemCreationControlHelpFv = 0x00359C80; // type:func allow_duplicated:True
 
-func_00467360 = 0x00467360; // type:func
+func_00467360 = 0x00467360; // type:func absolute:True
 
 func_002D5CF0 = 0x002D5CF0; // type:func absolute:True allow_duplicated:True
 func_002D6410 = 0x002D6410; // type:func absolute:True allow_duplicated:True
 func_002D6440 = 0x002D6440; // type:func absolute:True allow_duplicated:True
+
+item_creation_current_workshop_id = 0x0036AFE0; // type:func
+item_creation_current_workshop_name_key = 0x0036B0E0; // type:func
+func_00261D20__32ItemCreationSelectedDisplayStateFv = 0x0036EBC0; // type:func allow_duplicated:True
+func_00263C80__32ItemCreationSelectedDisplayStateFPv = 0x0036EBE0; // type:func allow_duplicated:True
+func_00263CA0__32ItemCreationSelectedDisplayStateFSc = 0x0036EBF0; // type:func allow_duplicated:True
+func_00263CB0__32ItemCreationSelectedDisplayStateFv = 0x0036EC00; // type:func allow_duplicated:True
+func_00263C90__32ItemCreationSelectedDisplayStateFv = 0x00366040; // type:func allow_duplicated:True
+func_001DF3D0__32ItemCreationSelectedDisplayStateFv = 0x0036EBD0; // type:func allow_duplicated:True
+
+func_00457470 = 0x00457470; // type:func absolute:True allow_duplicated:True
+func_457470 = 0x00457470; // type:func absolute:True allow_duplicated:True
+item_creation_save_workshop_lines = 0x0036A8F0; // type:func
+item_creation_save_and_enqueue_selection = 0x0036DEA0; // type:func
+
+item_creation_schedule_inventor_resource = 0x0036C1C0; // type:func
+
+func_413C00 = 0x00413C00; // type:func absolute:True allow_duplicated:True
+func_4138E0 = 0x004138E0; // type:func absolute:True allow_duplicated:True
+
+func_003EEE20__14LibClass178A90FPv = 0x0036E730; // type:func allow_duplicated:True
+func_003EEE30__14LibClass178A90Fff = 0x0036E740; // type:func allow_duplicated:True
+func_003EEE50__14LibClass178A90Fv = 0x0036E770; // type:func allow_duplicated:True
+func_003EEE60__14LibClass178A90Fv = 0x0036E780; // type:func allow_duplicated:True
+
+func_003EF770__14LibClass171EF0FPC10LibVector4 = 0x0036E570; // type:func allow_duplicated:True
+func_003EF780__14LibClass171EF0FPC10LibVector4 = 0x0036E590; // type:func allow_duplicated:True
+func_003EF790__14LibClass171EF0Ffff = 0x0036E5B0; // type:func allow_duplicated:True
+func_003EEED0__14LibClass171EF0Fffff = 0x0036E5D0; // type:func allow_duplicated:True
+func_003EEEF0__14LibClass171EF0FPC10LibVector4 = 0x0036E5F0; // type:func allow_duplicated:True
+func_003EEF10__14LibClass171EF0FPC10LibVector4 = 0x0036E610; // type:func allow_duplicated:True
+func_003EEF30__14LibClass171EF0FPC10LibVector4 = 0x0036E630; // type:func allow_duplicated:True
+func_003EEF60__14LibClass171EF0FPC10LibVector4 = 0x0036E660; // type:func allow_duplicated:True
+func_003EEF90__14LibClass171EF0Ffff = 0x0036E690; // type:func allow_duplicated:True
+func_003EEFD0__14LibClass171EF0FPC10LibVector4 = 0x0036E6D0; // type:func allow_duplicated:True
+func_003EEFF0__14LibClass171EF0FPC10LibVector4 = 0x0036E6F0; // type:func allow_duplicated:True
+func_003EF010__14LibClass171EF0Ffff = 0x0036E710; // type:func allow_duplicated:True
+
+item_creation_activate_window_group = 0x0036BC90; // type:func
+
+func_003EFAA0__14LibClass178A90Fv = 0x0036E760; // type:func allow_duplicated:True
+
+func_003EFA90__14LibClass171FF0FUi = 0x0036E7E0; // type:func allow_duplicated:True
+__vt__14LibClass171FF0 = 0x00171FF0; // absolute:True
+func_003F4410__14LibClass171FF0FUi = 0x003F4410; // type:func absolute:True
+
+func_00464D90__15LibObject174F20FffffUiiUc = 0x00464D90; // type:func absolute:True allow_duplicated:True
+
+func_slot5c__16FieldClass15AE70Fv = 0x0036E810; // type:func allow_duplicated:True
+func_slot70__16FieldClass15AE70Fv = 0x0036E820; // type:func allow_duplicated:True
+func_slot74__16FieldClass15AE70Fv = 0x0036E830; // type:func allow_duplicated:True
+func_slot0c__23ItemCreationClass185050Fv = 0x0036E800; // type:func allow_duplicated:True
+
+func_slotb0__20InadequateLineDialogFv = 0x0034FF70; // type:func allow_duplicated:True
+func_slotb4__20InadequateLineDialogFv = 0x0034FE00; // type:func allow_duplicated:True
+func_slotb0__19CreationSkillWindowFv = 0x003600E0; // type:func absolute:True allow_duplicated:True
+func_003600E0 = 0x003600E0; // type:func allow_duplicated:True
+func_slot5c__20AssignedInventorGridFv = 0x003608C0; // type:func absolute:True allow_duplicated:True
+func_003608C0 = 0x003608C0; // type:func allow_duplicated:True
+
+__ct__17FieldObject23BE00Fv = 0x0023BE00; // type:func absolute:True allow_duplicated:True
+func_0023BB20__17FieldObject23BE00FffffP17FieldObject23CEA0Ui = 0x0023BB20; // type:func absolute:True allow_duplicated:True
+func_0023B9B0__17FieldObject23BE00Ffs = 0x0023B9B0; // type:func absolute:True allow_duplicated:True
+
+func_slot10c__21InventoryItemTypeListFUiUi = 0x0035C4D0; // type:func allow_duplicated:True
+func_slotf8__22InventorTransferWindowFUs = 0x0034E4D0; // type:func allow_duplicated:True
+
+func_slotf8__23ItemCreationClass185A60FUs = 0x0034F9B0; // type:func allow_duplicated:True
+
+item_creation_restore_workshop_assignments = 0x0036AAA0; // type:func absolute:True allow_duplicated:True
+func_0036AAA0 = 0x0036AAA0; // type:func allow_duplicated:True
+
+func_0023B310__16FieldClass153130Fv = 0x0023B310; // type:func absolute:True allow_duplicated:True

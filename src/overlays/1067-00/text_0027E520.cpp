@@ -1,13 +1,36 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_0027E520.h"
+#include "main/resident_0010A0E0.h"
+#include "main/resident_data.h"
+#include "overlays/1067-00/text_001DD3C0.h"
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027E520);
+void func_0027E520(FieldHeldObject20* object)
+{
+    object->unk250--;
+    if (object->unk250 == 0)
+    {
+        if (object->unk20 != 0)
+        {
+            func_004D65C0(object->unk20);
+            object->unk20->func_001DD7B0();
+            object->unk20 = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027E580);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027E6D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027E7D0);
+void func_0027E7D0(FieldHeldObject20* object)
+{
+    if (object->unk20 != 0)
+    {
+        func_004D65C0(object->unk20);
+        object->unk20->func_001DD7B0();
+        object->unk20 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027E820);
 
@@ -118,7 +141,16 @@ s32 func_00280AE0(void* object)
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00280AF0);
+void func_00280AF0(FieldHeldObject20* object)
+{
+    if (object->unk20 != 0)
+    {
+        func_004D65C0(object->unk20);
+        object->unk20->func_001DD7B0();
+        object->unk20 = 0;
+    }
+    object->unk250 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00280B50);
 
@@ -1524,7 +1556,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00288D
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00288D70);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00289040);
+void FieldClass156E60::func_001DD7B0()
+{
+    if (unk40 != 0)
+    {
+        func_004D65C0(unk40);
+        unk40->func_001DD7B0();
+        unk40 = 0;
+    }
+    func_004D65C0(this);
+    func_0011ED90(D_001B65F4, this);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_002890B0);
 
