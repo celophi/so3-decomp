@@ -17,6 +17,10 @@ __ct__14LibClass172320Fv = 0x003527D0; // type:func absolute:True allow_duplicat
 __ct__23ItemCreationClass184F60Fv = 0x003527D0; // type:func allow_duplicated:True
 __dt__14LibClass172320Fv = 0x003523E0; // type:func absolute:True allow_duplicated:True
 __dt__23ItemCreationClass184F60Fv = 0x003523E0; // type:func allow_duplicated:True
+__vt__23ItemCreationClass184EF0 = 0x00184EF0; // absolute:True
+__vt__16FieldClass15BB30 = 0x0015BB30; // absolute:True
+__vt__16FieldClass15BB50 = 0x0015BB50; // absolute:True
+__vt__16FieldClass15BB70 = 0x0015BB70; // absolute:True
 __vt__23ItemCreationClass184F60 = 0x00184F60; // absolute:True
 __vt__23ItemCreationClass1723F0 = 0x001723F0; // absolute:True
 D_001B6430 = 0x001B6430; // size:0x4
@@ -428,7 +432,7 @@ func_0023B7E0__16FieldClass153170FP15LibObject178750 = 0x0023B7E0; // type:func 
 func_0023B7E0 = 0x0023B7E0; // type:func absolute:True allow_duplicated:True
 
 func_00358190 = 0x00358190; // type:func allow_duplicated:True
-func_slotb0__23ItemCreationClass186870Fv = 0x00358190; // type:func allow_duplicated:True
+func_slotb0__23ItemCreationClass186870Fv = 0x00358190; // type:func absolute:True allow_duplicated:True
 
 func_003580B0 = 0x003580B0; // type:func allow_duplicated:True
 func_slotb4__23ItemCreationClass186870Fv = 0x003580B0; // type:func allow_duplicated:True

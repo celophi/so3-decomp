@@ -248,7 +248,9 @@ public:
     u8 unk0c;
     u8 unk0d[3];
     LibObject178660* unk10;
-    u8 unk14[0x18];
+    u8 unk14[0xC];
+    ItemCreationCountedList unk20;
+    u8 pad28[4];
     ItemCreationCountedList unk2c;
     u8 unk34[0x40];
     ItemCreationCountedList unk74;

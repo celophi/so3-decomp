@@ -392,12 +392,14 @@ class FieldClass15BB50 : public ItemCreationClass184EF0
 public:
     u8 unk90[4];
     s16 unk94;
+    u8 unk96[0x22];
 };
 class FieldClass15BB70 : public ItemCreationClass184EF0
 {
 public:
     u8 unk90[0x50];
     s16 unke0;
+    u8 unke2[0x26];
 };
 /**
  * @brief Configure the packed allocation record and its detail values.
@@ -1570,7 +1572,173 @@ ItemCreationClass185460::ItemCreationClass185460()
     unk1a4 = 0;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0034B970);
+/** Six-byte category record containing an icon and its channel. */
+struct ItemCreationSingleIconRecord
+{
+    u8 unk00[2];
+    u8 unk02;
+    u8 unk03;
+    u8 unk04[2];
+};
+
+/** Single-channel category records, indexed by category minus one. */
+extern "C" const ItemCreationSingleIconRecord D_501DA0[];
+
+/**
+ * @brief Test whether a category uses the eight-channel icon table.
+ * @param category Detail category.
+ * @return One for categories from twenty-nine onward, otherwise zero.
+ */
+static inline u8 has_extended_icons(u8 category)
+{
+    return category >= 29;
+}
+
+/** Thirteen-byte category record containing eight channel icons. */
+struct ItemCreationIconRecord
+{
+    u8 icons[8];
+    u8 unk08[5];
+};
+/** Eight-channel category records, indexed by category minus twenty-nine. */
+extern "C" const ItemCreationIconRecord D_501E50[];
+
+/**
+ * @brief Find an entry in the eight-channel icon table.
+ * @param index Category index within the table.
+ * @return Icon record at that index.
+ */
+static inline const ItemCreationIconRecord* extended_icon_record(s32 index)
+{
+    return &D_501E50[index];
+}
+/**
+ * @brief Read the icon assigned to a category and channel.
+ * @param category Detail category.
+ * @param channel Channel index from zero through seven.
+ * @return Assigned icon, or zero for an unassigned channel.
+ */
+static inline u8 detail_icon(u8 category, s32 channel)
+{
+    u8 icon = 0;
+    if (has_extended_icons(category))
+    {
+        icon = extended_icon_record(category - 29)->icons[channel];
+    }
+    else
+    {
+        const ItemCreationSingleIconRecord* record = &D_501DA0[category - 1];
+        if (record->unk03 == channel + 1)
+        {
+            icon = record->unk02;
+        }
+    }
+    return icon;
+}
+
+/**
+ * @brief Convert a stored option code to its option-table index.
+ * @param index Stored one-based option code, or zero.
+ * @return Zero for no option, otherwise the code plus thirty-one.
+ */
+static inline u32 stored_option_index(u8 index)
+{
+    if (index == 0)
+    {
+        return 0;
+    }
+    return index + 31;
+}
+
+/**
+ * @brief Return the runtime record for a one-based option code.
+ * @param state State containing the runtime option records.
+ * @param option One-based option code.
+ * @return Selected record, or null for an invalid code.
+ */
+static inline ItemCreationRuntimeOptionRecord* option_record(ItemCreationColorRecordState* state, u8 option)
+{
+    u8 valid = option >= 1 && option < 39;
+    if (valid)
+    {
+        return &state->unk10d88[option - 1];
+    }
+    return 0;
+}
+
+/**
+ * @brief Enable one channel's label and icon.
+ * @param object Option detail window.
+ * @param record Selected runtime option record.
+ * @param index Channel index from zero through seven.
+ */
+static inline void show_channel(ItemCreationClass185560* object, ItemCreationRuntimeOptionRecord* record, u8 index)
+{
+    static_cast<LibObject178750*>(object->unkb0[index])->set_color(0x808080);
+    u8 icon = detail_icon(record->unk06, index);
+    LibObject174F20* image = static_cast<LibObject174F20*>(object->unkd4[index]);
+    image->unkfc = icon;
+    image->unk3c = 1;
+    static_cast<LibObject174F20*>(object->unkd4[index])->unk3d = 1;
+}
+
+void func_0034B970(ItemCreationClass185560* object)
+{
+    object->unkac->unk3f = 0;
+    for (s32 index = 0; index < 8; index++)
+    {
+        static_cast<LibObject178750*>(object->unkb0[index])->set_color(0x505050);
+        static_cast<LibObject174F20*>(object->unkd4[index])->unk3d = 0;
+    }
+    u8 code = object->unkf8;
+    if (code != 0)
+    {
+        ItemCreationRuntimeOptionRecord* record = option_record(D_001B64F8, code);
+       
+        // TODO: figure out if we can just do code > 0 instead of code != 0 too.
+        if (code > 0)
+        {
+            func_4C6DF0(object->unkac, object->func_slot54(), code + 0x3584, 0);
+            object->unkac->unk3f = 1;
+            if (object->unka8 != 0)
+            {
+                u16 flags = func_00369FA0(object->unka8, stored_option_index(object->unkf8));
+                if (flags & 0x1)
+                {
+                    show_channel(object, record, 0);
+                }
+                if (flags & 0x2)
+                {
+                    show_channel(object, record, 1);
+                }
+                if (flags & 0x4)
+                {
+                    show_channel(object, record, 2);
+                }
+                if (flags & 0x8)
+                {
+                    show_channel(object, record, 3);
+                }
+                if (flags & 0x10)
+                {
+                    show_channel(object, record, 4);
+                }
+                if (flags & 0x20)
+                {
+                    show_channel(object, record, 5);
+                }
+                if (flags & 0x40)
+                {
+                    show_channel(object, record, 6);
+                }
+                if (flags & 0x80)
+                {
+                    show_channel(object, record, 7);
+                }
+            }
+        }
+    }
+}
 
 /**
  * @brief Create the selected option title and its eight channel labels and images.
@@ -3750,28 +3918,6 @@ void func_00352B00(ItemCreationFourPositionDisplay* object, float x, float y)
     object->unk37c = 1;
 }
 
-/** Six-byte category record containing an icon and its channel. */
-struct ItemCreationSingleIconRecord
-{
-    u8 unk00[2];
-    u8 unk02;
-    u8 unk03;
-    u8 unk04[2];
-};
-
-/** Single-channel category records, indexed by category minus one. */
-extern "C" const ItemCreationSingleIconRecord D_501DA0[];
-
-/**
- * @brief Test whether a category uses the eight-channel icon table.
- * @param category Detail category.
- * @return One for categories from twenty-nine onward, otherwise zero.
- */
-static inline u8 has_extended_icons(u8 category)
-{
-    return category >= 29;
-}
-
 /**
  * @brief Find a single-channel category record.
  * @param index Category minus one.
@@ -5111,27 +5257,7 @@ s32 ItemCreationClass186870::func_slotb4()
     return 2;
 }
 
-s32 ItemCreationClass186870::func_slotb0()
-{
-    FieldState23B3A0* selector = static_cast<FieldState23B3A0*>(static_cast<void*>(unkb4));
-    if (func_23B3A0(selector) == 0)
-    {
-        ItemCreationSelectedDisplayState* state = unka8;
-        state->func_0036BF30(0, unkbc[0]);
-        state = unka8;
-        state->func_0036BF30(1, unkbc[1]);
-        state = unka8;
-        state->func_0036BF30(2, unkbc[2]);
-        state = unka8;
-        state->unk47 = 2;
-        func_0027CB50(D_001B6430->context->unk58, 0x42, 0, 0);
-    }
-    else
-    {
-        func_slotb4();
-    }
-    return 1;
-}
+INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00358190);
 
 void func_00358240(ItemCreationDirectColorOwner* object)
 {
@@ -5634,12 +5760,6 @@ struct ItemCreationDetailRecords
     u8 unk00[0x10D88];
     ItemCreationDetailRecord records[38];
 };
-/** Thirteen-byte category record containing eight channel icons. */
-struct ItemCreationIconRecord
-{
-    u8 icons[8];
-    u8 unk08[5];
-};
 
 // These external interfaces are scoped here because their owning code is in other overlays.
 extern "C"
@@ -5647,7 +5767,6 @@ extern "C"
     extern ResidentRequest112400* D_001B65F8;
     extern ItemCreationCategoryDefinition* D_001B64F0;
     extern const char D_0036F738[];
-    extern const ItemCreationIconRecord D_501E50[];
     u16 func_457470(u16 seed, const u8* buffer, s32 length);
     u32 func_23B3B0(FieldState23B3A0* item, u16 flag);
     u16 func_23B3A0(FieldState23B3A0* item);
@@ -5924,38 +6043,6 @@ static inline ItemCreationDetailRecord* detail_record(s32 value)
         return &table->records[index - 1];
     }
     return 0;
-}
-/**
- * @brief Find an entry in the eight-channel icon table.
- * @param index Category index within the table.
- * @return Icon record at that index.
- */
-static inline const ItemCreationIconRecord* extended_icon_record(s32 index)
-{
-    return &D_501E50[index];
-}
-/**
- * @brief Read the icon assigned to a category and channel.
- * @param category Detail category.
- * @param channel Channel index from zero through seven.
- * @return Assigned icon, or zero for an unassigned channel.
- */
-static inline u8 detail_icon(u8 category, s32 channel)
-{
-    u8 icon = 0;
-    if (has_extended_icons(category))
-    {
-        icon = extended_icon_record(category - 29)->icons[channel];
-    }
-    else
-    {
-        const ItemCreationSingleIconRecord* record = &D_501DA0[category - 1];
-        if (record->unk03 == channel + 1)
-        {
-            icon = record->unk02;
-        }
-    }
-    return icon;
 }
 
 /**
@@ -10861,7 +10948,60 @@ ItemCreationSelection::ItemCreationSelection()
     func_slot10();
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003698E0);
+// Field target setup interfaces; their shared declarations belong to Field.
+extern "C"
+{
+    u8 func_002FAF50(FieldClass15BB30* target, u8 code, u8 group, u8 first, u8 second, u8 third, u8 count);
+    u8 func_002FC310(FieldClass15BB50* target, u8 code, u8 group, u8 first, u8 second, u8 third, u8 count, s16 value);
+    u8 func_002FCC50(FieldClass15BB70* target, u8 code, u8 group, u8 first, u8 second, u8 third, s16 first_value,
+                     s16 second_value);
+}
+
+void func_003698E0(ItemCreationSelectedDisplayState* object, u8 group)
+{
+    u8 index = group;
+    if (object->unk1c0[index] != 0 && object->unk1c3[index] != 0)
+    {
+        u8 first = runtime_option_index(object->unk68[index * 3]);
+        u8 second = runtime_option_index(object->unk68[index * 3 + 1]);
+        u8 third = runtime_option_index(object->unk68[index * 3 + 2]);
+        ::operator delete(object->unk1b4[index]);
+        object->unk1b4[index] = 0;
+        u8 result = 0;
+        switch (object->unk1c3[index])
+        {
+        case 1:
+            object->unk1b4[index] = new (0) FieldClass15BB30;
+            result = func_002FAF50(static_cast<FieldClass15BB30*>(object->unk1b4[index]), object->unk4d, group,
+                                  first, second, third, object->unk1c0[index]);
+            break;
+        case 2:
+            object->unk1b4[index] = new (0) FieldClass15BB50;
+            result = func_002FC310(static_cast<FieldClass15BB50*>(object->unk1b4[index]), object->unk4d, group,
+                                  first, second, third, object->unk1c0[index], object->unk1e2[index][0]);
+            break;
+        case 3:
+            object->unk1b4[index] = new (0) FieldClass15BB70;
+            result = func_002FCC50(static_cast<FieldClass15BB70*>(object->unk1b4[index]), object->unk4d, group,
+                                  first, second, third, object->unk1e2[index][0], object->unk1e2[index][1]);
+            break;
+        }
+        if (result == 1)
+        {
+            object->unk1c8[index] = object->unk1b4[index]->unk78;
+        }
+        else
+        {
+            object->unk1c8[index] = 0;
+        }
+    }
+    else
+    {
+        object->unk1c8[index] = 0;
+        ::operator delete(object->unk1b4[index]);
+        object->unk1b4[index] = 0;
+    }
+}
 
 void func_00369B80(ItemCreationSelectedDisplayState* object, s32 value)
 {
@@ -12150,7 +12290,41 @@ void ItemCreationSelectedDisplayState::func_0036BF30(s32 index, s32 enabled)
     unk191[index][2] = 1;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0036C080);
+/** @brief Return a random integer in a range. @param lower Lower bound. @param upper Upper bound. @return Random value. */
+extern "C" s32 func_10CC40(s32 lower, s32 upper);
+
+void func_0036C080(ItemCreationSelectedDisplayState* object, s32 index, u32 value)
+{
+    object->unk148[index] = value;
+    if (value != 0)
+    {
+        if (object->unk1b4[index] != 0)
+        {
+            object->unk164[index] = 360.0f * (1.0f + object->unk1b4[index]->unk7c / 100.0f);
+        }
+        else
+        {
+            object->unk164[index] = 360.0f;
+        }
+        object->unk170[index] = func_10CC40(1, 5);
+        object->unk14c[index] = object->unk164[index];
+        object->unk158[index] = 100.0f;
+        object->unk1d4[index] = 0;
+        object->unk17c[index] = 0.0f;
+        if (object->unk1b4[index] == 0)
+        {
+            object->unk1b1[index] = 1;
+        }
+    }
+    else
+    {
+        object->unk158[index] = 0.0f;
+    }
+    if (value != 0)
+    {
+        object->unk19a = 1;
+    }
+}
 
 void func_0036C1C0(ItemCreationSelectedDisplayState* object)
 {
