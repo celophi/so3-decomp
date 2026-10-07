@@ -2,6 +2,14 @@
 #define SO3_OVERLAYS_CTACTICS_TEXT_H
 
 #include "types.h"
+#ifdef __cplusplus
+#include "overlays/1067-00/text_002CD390.h"
+#include "overlays/1067-00/text_001E1590.h"
+struct FieldRecordSelection;
+struct LibObject178750;
+#endif
+
+typedef struct FieldCountedList FieldCountedList;
 
 typedef struct TacticsPositionOwner TacticsPositionOwner;
 typedef struct TacticsGridOwner TacticsGridOwner;
@@ -16,9 +24,194 @@ typedef struct TacticsPresetPosition
     float y;
 } TacticsPresetPosition;
 
+typedef struct TacticsList18B8E0 TacticsList18B8E0;
+typedef struct TacticsList18B8D0 TacticsList18B8D0;
+typedef struct TacticsList18B8C0 TacticsList18B8C0;
+typedef struct TacticsList18B8B0 TacticsList18B8B0;
+
+#ifdef __cplusplus
+/** Known native State prefix through its owned selection pointer at offset 3C. */
+struct TacticsState18B820 : public FieldClass153E30
+{
+    /** @brief Destroy the State; its complete virtual tail remains unresolved. */
+    virtual ~TacticsState18B820();
+    /**
+     * @brief Allocate and initialize the State's record selection.
+     * @return One when a selection exists and initialization succeeds; otherwise zero.
+     */
+    virtual u8 func_00264110();
+    /**
+     * @brief Load the completed aligned resource using the State's heap context.
+     * @param buffer Completed resource buffer, or null to report failure.
+     * @return Zero for a null buffer; otherwise the virtual completion result.
+     */
+    virtual s32 func_001E1820(void* buffer);
+
+    /** @brief Release the loaded resource, detach the State, and dispatch its release handler. */
+    virtual void func_00263D80();
+
+    s32 unk34;
+    u8 unk38_0 : 1;
+    u8 unk38_1_7 : 7;
+    u8 unk39[3];
+    FieldRecordSelection* selection;
+};
+
+/** Known native window interface used to initialize its resource displays. */
+struct TacticsWindow18B720 : public FieldClass15AE70
+{
+    /** @brief Destroy the resource window. */
+    virtual ~TacticsWindow18B720();
+    /**
+     * @brief Initialize the window and attach three resource displays.
+     * @param associated Associated window context forwarded to the base initializer.
+     * @return One after the displays are attached.
+     */
+    virtual s32 func_slotf4(void* associated);
+};
+
+/** Known scrolling-window prefix through the text state at offset B2. */
+struct TacticsWindow18B620 : public FieldClass15AE70
+{
+    /** @brief Destroy the scrolling window. */
+    virtual ~TacticsWindow18B620();
+    /**
+     * @brief Replace the text for supported keys and reset its scrolling state.
+     * @param text_key Text key in the supported 2714..271B range.
+     */
+    virtual void func_slot60(s32 text_key);
+
+    LibObject178750* text;
+    s32 distance;
+    s16 timer;
+    u8 state;
+};
+
+/** Sentinel list owning its nodes and recording their count. */
+struct TacticsList18B8E0
+{
+    struct TacticsListNode* head;
+    u32 count;
+    /** @brief Initialize an empty list and allocate its sentinel. */
+    TacticsList18B8E0();
+    /** @brief Release list nodes and the sentinel. */
+    virtual ~TacticsList18B8E0();
+};
+/** Sentinel list owning its nodes and recording their count. */
+struct TacticsList18B8D0
+{
+    struct TacticsListNode* head;
+    u32 count;
+    /** @brief Initialize an empty list and allocate its sentinel. */
+    TacticsList18B8D0();
+    /** @brief Release list nodes and the sentinel. */
+    virtual ~TacticsList18B8D0();
+};
+/** Sentinel list owning its nodes and recording their count. */
+struct TacticsList18B8C0
+{
+    struct TacticsListNode* head;
+    u32 count;
+    /** @brief Initialize an empty list and allocate its sentinel. */
+    TacticsList18B8C0();
+    /** @brief Release list nodes and the sentinel. */
+    virtual ~TacticsList18B8C0();
+};
+/** Sentinel list owning its nodes and recording their count. */
+struct TacticsList18B8B0
+{
+    struct TacticsCoordinateNode* head;
+    u32 count;
+    /** @brief Initialize an empty list and allocate its sentinel. */
+    TacticsList18B8B0();
+    /** @brief Release list nodes and the sentinel. */
+    virtual ~TacticsList18B8B0();
+};
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Append an unowned value pointer to the counted list.
+ * @param list Sentinel list receiving the new node.
+ * @param value Value pointer stored without transferring ownership.
+ */
+void func_003515A0(FieldCountedList* list, void* value);
+
+/**
+ * @brief Append an unowned value pointer to the counted list.
+ * @param list Sentinel list receiving the new node.
+ * @param value Value pointer stored without transferring ownership.
+ */
+void func_00351630(FieldCountedList* list, void* value);
+
+/**
+ * @brief Append an unowned value pointer to the counted list.
+ * @param list Sentinel list receiving the new node.
+ * @param value Value pointer stored without transferring ownership.
+ */
+void func_003516C0(FieldCountedList* list, void* value);
+
+/**
+ * @brief Append an unowned value pointer to the counted list.
+ * @param list Sentinel list receiving the new node.
+ * @param value Value pointer stored without transferring ownership.
+ */
+void func_00351890(FieldCountedList* list, void* value);
+
+/**
+ * @brief Append an unowned value pointer to the counted list.
+ * @param list Sentinel list receiving the new node.
+ * @param value Value pointer stored without transferring ownership.
+ */
+void func_00351AE0(FieldCountedList* list, void* value);
+
+/**
+ * @brief Append an unowned value pointer to the counted list.
+ * @param list Sentinel list receiving the new node.
+ * @param value Value pointer stored without transferring ownership.
+ */
+void func_00351C30(FieldCountedList* list, void* value);
+
+/**
+ * @brief Append an unowned value pointer to the counted list.
+ * @param list Sentinel list receiving the new node.
+ * @param value Value pointer stored without transferring ownership.
+ */
+void func_00351CC0(FieldCountedList* list, void* value);
+
+/**
+ * @brief Append a coordinate pair to the owned list.
+ * @param list Sentinel list receiving the new node.
+ * @param value Coordinate pair copied into the new node.
+ */
+void func_00351E50(TacticsList18B8B0* list, TacticsPresetPosition value);
+
+/**
+ * @brief Release all value nodes, preserving the sentinel.
+ * @param list List whose nodes and element count are cleared.
+ */
+void func_00351520(TacticsList18B8E0* list);
+
+/**
+ * @brief Release all value nodes, preserving the sentinel.
+ * @param list List whose nodes and element count are cleared.
+ */
+void func_00351920(TacticsList18B8D0* list);
+
+/**
+ * @brief Release all value nodes, preserving the sentinel.
+ * @param list List whose nodes and element count are cleared.
+ */
+void func_00351B70(TacticsList18B8C0* list);
+
+/**
+ * @brief Release all value nodes, preserving the sentinel.
+ * @param list List whose nodes and element count are cleared.
+ */
+void func_00351DD0(TacticsList18B8B0* list);
 
 /**
  * @brief Save the enabled grid selection and copy its node position to the display.
@@ -32,6 +225,18 @@ u8 func_00349B40(TacticsGridOwner* object);
  * @param object Tactics receiver holding the display list, grid, and cursor.
  */
 void func_0034DD10(TacticsHighlightOwner* object);
+
+/**
+ * @brief Move the grid selection forward and refresh the highlight when accepted.
+ * @param object Tactics receiver holding the grid and highlighted displays.
+ */
+void func_0034DDE0(TacticsHighlightOwner* object);
+
+/**
+ * @brief Move the grid selection backward and refresh the highlight when accepted.
+ * @param object Tactics receiver holding the grid and highlighted displays.
+ */
+void func_0034DE30(TacticsHighlightOwner* object);
 
 /**
  * @brief Place the present indicators using the selected grid row's coordinate pairs.
@@ -111,6 +316,10 @@ typedef struct TacticsListNode
 {
     void* value;
     struct TacticsListNode* next;
+#ifdef __cplusplus
+    /** @brief Finish the node lifetime; the stored value is not owned. */
+    ~TacticsListNode() {}
+#endif
 } TacticsListNode;
 
 typedef struct TacticsList

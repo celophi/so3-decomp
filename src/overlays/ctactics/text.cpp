@@ -1,9 +1,41 @@
 #include "include_asm.h"
 #include "overlays/ctactics/text.h"
 #include "main/resident_data.h"
+#include "main/resident_001001E0.h"
+#include "main/resident_0010A0E0.h"
+#include "overlays/1067-00/text_0028E240.h"
+#include "overlays/1067-00/text_002CD390.h"
+#include "overlays/1067-00/text_002D5260.h"
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_003F90C0.h"
+
+/** Partial aligned resource header with its payload size at offset 40. */
+struct TacticsAlignedResource
+{
+    u8 unk00[0x40];
+    s32 unk40;
+};
+/**
+ * @brief Round the resource buffer to its next 128-byte boundary.
+ * @param buffer Completed buffer containing the aligned header.
+ * @return Header at the next aligned address, including an already aligned input.
+ */
+static inline TacticsAlignedResource* aligned_resource(void* buffer)
+{
+    return reinterpret_cast<TacticsAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
+}
+/** Coordinate value and next link in an owned list. */
+struct TacticsCoordinateNode
+{
+    float x;
+    float y;
+    TacticsCoordinateNode* next;
+    /** @brief Initialize both coordinate components to zero. */
+    TacticsCoordinateNode() { y = 0.0f; x = 0.0f; }
+    /** @brief Finish the coordinate node lifetime. */
+    ~TacticsCoordinateNode() {}
+};
 
 typedef struct
 {
@@ -102,20 +134,13 @@ struct TacticsGridOwner
     float base_y;
 };
 
-/** Partial selection storage of the native Field grid receiver. */
-typedef struct TacticsGrid23D170
-{
-    u8 pad_00[0x114];
-    s16 selected;
-} TacticsGrid23D170;
-
 /** Partial tactics receiver holding the bounded display list and its grid cursor. */
 struct TacticsHighlightOwner
 {
     u8 pad_00[0x2C];
     TacticsList nodes;
     u8 pad_30[0x80];
-    TacticsGrid23D170* grid;
+    FieldObject23CEA0* grid;
     u8 pad_b4[0x24];
     FieldObject23BE00* cursor;
 };
@@ -131,6 +156,8 @@ typedef struct TacticsSavedGridSelection
 typedef struct TacticsGridSelectionRef
 {
     TacticsSavedGridSelection* state;
+    u8 pad_04[0x1C];
+    FieldBufferSlots* resources;
 } TacticsGridSelectionRef;
 
 extern "C" TacticsGridSelectionRef* D_001B643C;
@@ -200,8 +227,6 @@ static inline void tactics_set_xy(TacticsPositionTarget* target, float x, float 
     target->position.y = y;
     target->active = 1;
 }
-
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003483C0);
 
 void func_00348400(void* object)
 {
@@ -384,7 +409,9 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034A200);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034A350);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034AE50);
+ItemCreationClass175110::~ItemCreationClass175110()
+{
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034AEC0);
 
@@ -557,7 +584,7 @@ u32 func_0034DD00(void* object)
  */
 void func_0034DD10(TacticsHighlightOwner* object)
 {
-    s16 selected = object->grid->selected;
+    s16 selected = object->grid->unk114;
     s32 index = 0;
     TacticsListNode* node = object->nodes.head->next;
     while (node != 0)
@@ -584,9 +611,23 @@ void func_0034DD10(TacticsHighlightOwner* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034DDE0);
+void func_0034DDE0(TacticsHighlightOwner* object)
+{
+    if (static_cast<s16>(object->grid->func_0023CDB0(1)) == 1)
+    {
+        return;
+    }
+    func_0034DD10(object);
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034DE30);
+void func_0034DE30(TacticsHighlightOwner* object)
+{
+    if (static_cast<s16>(object->grid->func_0023CDB0(0)) == 1)
+    {
+        return;
+    }
+    func_0034DD10(object);
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034DE80);
 
@@ -780,7 +821,16 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034F290);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034FC70);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034FCD0);
+void TacticsWindow18B620::func_slot60(s32 text_key)
+{
+    if (text_key >= 0x2714 && text_key < 0x271C)
+    {
+        state = 0;
+        timer = 0;
+        func_4C6DF0(text, func_slot54(), text_key, 1);
+        distance = static_cast<s32>(func_004C69B0(text)->unk08) + 6;
+    }
+}
 
 /**
  * @brief Hold the display position until its timer expires, then scroll and wrap it.
@@ -816,11 +866,39 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034FE50);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00350430);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00350490);
+s32 TacticsWindow18B720::func_slotf4(void* associated)
+{
+    FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 20);
+    ItemCreationOptionResourceDisplay* first = new (0) ItemCreationOptionResourceDisplay;
+    ItemCreationOptionResourceDisplay* second = new (0) ItemCreationOptionResourceDisplay;
+    ItemCreationOptionResourceDisplay* third = new (0) ItemCreationOptionResourceDisplay;
+    void* allocation = func_002D3D80(D_001B643C->resources, 11);
+    first->unkcc = allocation;
+    second->unkcc = allocation;
+    third->unkcc = allocation;
+    first->unkd0 = 11;
+    second->unkd0 = 11;
+    third->unkd0 = 11;
+    func_002D6440(reinterpret_cast<FieldState2D6410*>(first), func_002D3CC0(D_001B643C->resources, 5), 0.0f, 0.0f);
+    func_002D6440(reinterpret_cast<FieldState2D6410*>(second), func_002D3CC0(D_001B643C->resources, 6), 256.0f, 0.0f);
+    func_002D6440(reinterpret_cast<FieldState2D6410*>(third), func_002D3CC0(D_001B643C->resources, 7), 512.0f, 0.0f);
+    func_004C6190(unk10, first);
+    func_004C6190(unk10, second);
+    func_004C6190(unk10, third);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003506E0);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00350740);
+void TacticsState18B820::func_00263D80()
+{
+    if (unk34 != 0)
+    {
+        func_00465430(D_001B657C, unk34);
+    }
+    func_004D65C0(this);
+    func_001DD7B0();
+}
 
 /**
  * @brief Enqueue the receiver for deferred processing.
@@ -842,9 +920,37 @@ void func_00350D10(void* object, u32 value)
     *(u32*)((u8*)object + 0x9C) = value;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00350D20);
+s32 TacticsState18B820::func_001E1820(void* buffer)
+{
+    if (buffer == 0)
+    {
+        return 0;
+    }
+    TacticsAlignedResource* aligned = aligned_resource(buffer);
+    s32 size = aligned->unk40 + 0x80;
+    void* saved_heap = func_00100C90();
+    void* heap = D_001B6430->context->unk70;
+    void* memory = func_00113710(heap, size);
+    if (memory != 0)
+    {
+        func_001134C0(memory);
+        func_00100C80(heap);
+    }
+    unk34 = func_004656B0(D_001B657C, aligned);
+    func_00100C80(saved_heap);
+    return func_00263CD0();
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00350DE0);
+u8 TacticsState18B820::func_00264110()
+{
+    selection = new (0) FieldRecordSelection;
+    u8 result = func_0028E3D0(selection);
+    if (selection == 0 || result == 0)
+    {
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00350E60);
 
@@ -1143,17 +1249,94 @@ s32 func_00351410(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351420);
+TacticsList18B8E0::TacticsList18B8E0()
+{
+    head = new (0) TacticsListNode;
+    if (head == 0)
+    {
+        throw;
+    }
+    head->next = 0;
+    count = 0;
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003514A0);
+TacticsList18B8E0::~TacticsList18B8E0()
+{
+    func_00351520(this);
+    if (head != 0)
+    {
+        ::operator delete(head);
+        head = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351520);
+void func_00351520(TacticsList18B8E0* list)
+{
+    TacticsListNode* node = list->head->next;
+    if (node == 0)
+    {
+        return;
+    }
+    while (node != 0)
+    {
+        TacticsListNode* next = node->next;
+        delete node;
+        node = next;
+    }
+    list->head->next = 0;
+    list->count = 0;
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003515A0);
+void func_003515A0(FieldCountedList* list, void* value)
+{
+    FieldListNode* node = new (0) FieldListNode;
+    if (node != 0)
+    {
+        node->unk00 = value;
+        node->unk04 = 0;
+        FieldListNode* cursor = list->unk00;
+        while (cursor->unk04 != 0)
+        {
+            cursor = cursor->unk04;
+        }
+        cursor->unk04 = node;
+        list->unk04++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351630);
+void func_00351630(FieldCountedList* list, void* value)
+{
+    FieldListNode* node = new (0) FieldListNode;
+    if (node != 0)
+    {
+        node->unk00 = value;
+        node->unk04 = 0;
+        FieldListNode* cursor = list->unk00;
+        while (cursor->unk04 != 0)
+        {
+            cursor = cursor->unk04;
+        }
+        cursor->unk04 = node;
+        list->unk04++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003516C0);
+void func_003516C0(FieldCountedList* list, void* value)
+{
+    FieldListNode* node = new (0) FieldListNode;
+    if (node != 0)
+    {
+        node->unk00 = value;
+        node->unk04 = 0;
+        FieldListNode* cursor = list->unk00;
+        while (cursor->unk04 != 0)
+        {
+            cursor = cursor->unk04;
+        }
+        cursor->unk04 = node;
+        list->unk04++;
+    }
+}
 
 TacticsListNode* func_00351750(TacticsList* list, s32 index)
 {
@@ -1171,13 +1354,60 @@ TacticsListNode* func_00351750(TacticsList* list, s32 index)
 }
 
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351790);
+TacticsList18B8D0::TacticsList18B8D0()
+{
+    head = new (0) TacticsListNode;
+    if (head == 0)
+    {
+        throw;
+    }
+    head->next = 0;
+    count = 0;
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351810);
+TacticsList18B8D0::~TacticsList18B8D0()
+{
+    func_00351920(this);
+    if (head != 0)
+    {
+        ::operator delete(head);
+        head = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351890);
+void func_00351890(FieldCountedList* list, void* value)
+{
+    FieldListNode* node = new (0) FieldListNode;
+    if (node != 0)
+    {
+        node->unk00 = value;
+        node->unk04 = 0;
+        FieldListNode* cursor = list->unk00;
+        while (cursor->unk04 != 0)
+        {
+            cursor = cursor->unk04;
+        }
+        cursor->unk04 = node;
+        list->unk04++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351920);
+void func_00351920(TacticsList18B8D0* list)
+{
+    TacticsListNode* node = list->head->next;
+    if (node == 0)
+    {
+        return;
+    }
+    while (node != 0)
+    {
+        TacticsListNode* next = node->next;
+        delete node;
+        node = next;
+    }
+    list->head->next = 0;
+    list->count = 0;
+}
 
 TacticsListNode* func_003519A0(TacticsList* list, s32 index)
 {
@@ -1195,13 +1425,60 @@ TacticsListNode* func_003519A0(TacticsList* list, s32 index)
 }
 
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003519E0);
+TacticsList18B8C0::TacticsList18B8C0()
+{
+    head = new (0) TacticsListNode;
+    if (head == 0)
+    {
+        throw;
+    }
+    head->next = 0;
+    count = 0;
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351A60);
+TacticsList18B8C0::~TacticsList18B8C0()
+{
+    func_00351B70(this);
+    if (head != 0)
+    {
+        ::operator delete(head);
+        head = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351AE0);
+void func_00351AE0(FieldCountedList* list, void* value)
+{
+    FieldListNode* node = new (0) FieldListNode;
+    if (node != 0)
+    {
+        node->unk00 = value;
+        node->unk04 = 0;
+        FieldListNode* cursor = list->unk00;
+        while (cursor->unk04 != 0)
+        {
+            cursor = cursor->unk04;
+        }
+        cursor->unk04 = node;
+        list->unk04++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351B70);
+void func_00351B70(TacticsList18B8C0* list)
+{
+    TacticsListNode* node = list->head->next;
+    if (node == 0)
+    {
+        return;
+    }
+    while (node != 0)
+    {
+        TacticsListNode* next = node->next;
+        delete node;
+        node = next;
+    }
+    list->head->next = 0;
+    list->count = 0;
+}
 
 TacticsListNode* func_00351BF0(TacticsList* list, s32 index)
 {
@@ -1219,16 +1496,94 @@ TacticsListNode* func_00351BF0(TacticsList* list, s32 index)
 }
 
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351C30);
+void func_00351C30(FieldCountedList* list, void* value)
+{
+    FieldListNode* node = new (0) FieldListNode;
+    if (node != 0)
+    {
+        node->unk00 = value;
+        node->unk04 = 0;
+        FieldListNode* cursor = list->unk00;
+        while (cursor->unk04 != 0)
+        {
+            cursor = cursor->unk04;
+        }
+        cursor->unk04 = node;
+        list->unk04++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351CC0);
+void func_00351CC0(FieldCountedList* list, void* value)
+{
+    FieldListNode* node = new (0) FieldListNode;
+    if (node != 0)
+    {
+        node->unk00 = value;
+        node->unk04 = 0;
+        FieldListNode* cursor = list->unk00;
+        while (cursor->unk04 != 0)
+        {
+            cursor = cursor->unk04;
+        }
+        cursor->unk04 = node;
+        list->unk04++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351D50);
+TacticsList18B8B0::~TacticsList18B8B0()
+{
+    func_00351DD0(this);
+    if (head != 0)
+    {
+        ::operator delete(head);
+        head = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351DD0);
+void func_00351DD0(TacticsList18B8B0* list)
+{
+    TacticsCoordinateNode* node = list->head->next;
+    if (node == 0)
+    {
+        return;
+    }
+    while (node != 0)
+    {
+        TacticsCoordinateNode* next = node->next;
+        delete node;
+        node = next;
+    }
+    list->head->next = 0;
+    list->count = 0;
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351E50);
+void func_00351E50(TacticsList18B8B0* list, TacticsPresetPosition value)
+{
+    TacticsCoordinateNode* node = new (0) TacticsCoordinateNode;
+    if (node != 0)
+    {
+        node->x = value.x;
+        node->y = value.y;
+        node->next = 0;
+        TacticsCoordinateNode* cursor = list->head;
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+        list->count++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351F00);
+TacticsList18B8B0::TacticsList18B8B0()
+{
+    head = new (0) TacticsCoordinateNode;
+    if (head == 0)
+    {
+        throw;
+    }
+    head->next = 0;
+    count = 0;
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351F90);

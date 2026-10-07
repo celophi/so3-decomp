@@ -8,6 +8,7 @@
 #include "overlays/citemcreation/text_00358440.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_0044ABE0.h"
+#include "overlays/lib/text_00419A70.h"
 #include "overlays/1067-00/text_002D5260.h"
 #endif
 
@@ -914,137 +915,7 @@ public:
     LibObject178750* unkb4;
 };
 
-/** Partial widget with resident vtable at 0x172870. */
-class ItemCreationClass172870 : public LibClass178600
-{
-public:
-    /** @brief Initialize the widget storage and select kind 6. */
-    inline ItemCreationClass172870();
-    /** @brief Release the widget storage and destroy its base. */
-    virtual ~ItemCreationClass172870();
-    LibStorageBlock0C unk40;
-    u8 unk4c[4];
-    u32 unk50;
-    u32 unk54;
-};
 
-/** Partial widget with resident vtable at 0x172600. */
-class ItemCreationClass172600 : public LibClass178600
-{
-public:
-    /** @brief Initialize the widget storage and select kind 5. */
-    ItemCreationClass172600();
-    /** @brief Release the widget storage and destroy its base. */
-    virtual ~ItemCreationClass172600();
-    LibStorageBlock0C unk40;
-    u8 unk4c[4];
-    float unk50;
-};
-
-/** Partial widget with resident vtable at 0x1725D0. */
-class ItemCreationClass1725D0 : public LibClass178600
-{
-public:
-    /** @brief Initialize the widget storage and select kind 3. */
-    inline ItemCreationClass1725D0();
-    /** @brief Release the widget storage and destroy its base. */
-    virtual ~ItemCreationClass1725D0();
-    LibStorageBlock0C unk40;
-    u8 unk4c[4];
-    float unk50;
-    float unk54;
-};
-
-/** Partial widget with resident vtable at 0x1746A0. */
-class ItemCreationClass1746A0 : public LibClass178600
-{
-public:
-    /** @brief Initialize the widget storage and select kind 4. */
-    inline ItemCreationClass1746A0();
-    /**
-     * @brief Initialize frame geometry and storage.
-     * @param x Horizontal position.
-     * @param y Vertical position.
-     * @param width Drawing width.
-     * @param height Drawing height.
-     */
-    inline ItemCreationClass1746A0(float x, float y, float width, float height);
-    /** @brief Initialize enabled frame storage. @param code Initialization code passed to the resident routine. */
-    inline ItemCreationClass1746A0(s32 code);
-    /** @brief Release the widget storage and destroy its base. */
-    virtual ~ItemCreationClass1746A0();
-    LibStorageBlock0C unk40;
-    u8 unk4c[4];
-    u8 unk50;
-};
-
-/** Partial widget with resident vtable at 0x175110. */
-class ItemCreationClass175110 : public LibClass178600
-{
-public:
-    /** @brief Initialize the owned storage and drawing state for kind 7. */
-    ItemCreationClass175110()
-    {
-        unk38 = 7;
-    }
-    /** @brief Release the widget storage and destroy its base. */
-    virtual ~ItemCreationClass175110();
-    /** @brief Refresh the resource drawing state. */
-    virtual void func_00413D20();
-    /** @brief Draw the resource widget. */
-    virtual void func_00462310();
-    LibStorageBlock0C unk40;
-    u8 unk4c[4];
-    LibDrawState64 unk50;
-    void* unkb4;
-    u16 unkb8;
-    u16 unkba;
-    u8 unkbc;
-    u8 unkbd;
-    u8 unkbe;
-    u8 unkbf;
-    s32 unkc0;
-    u32 unkc4;
-    u8 unkc8;
-    u8 unkc9;
-    u8 unkca[2];
-};
-
-/** Field resource widget using resident table 0x15B240. */
-struct ItemCreationOptionResourceDisplay : public ItemCreationClass175110
-{
-    /** @brief Initialize the resource widget and clear its trailing state. */
-    ItemCreationOptionResourceDisplay()
-    {
-        unk124 = 0;
-        unk120 = 0;
-        unk11c = 0;
-        unk118 = 0;
-        ::func_002D6410(static_cast<FieldState2D6410*>(static_cast<void*>(this)));
-    }
-    /** @brief Destroy the resource widget. */
-    virtual ~ItemCreationOptionResourceDisplay();
-    /** @brief Refresh the resource widget. */
-    virtual void func_00413D20();
-    /** @brief Draw the resource widget. */
-    virtual void func_00462310();
-    void* unkcc;
-    u8 unkd0;
-    u8 unkd1[0x37];
-    FieldResourceRecord* unk108;
-    u16 unk10c;
-    u16 unk10e;
-    u8 unk110;
-    u8 unk111;
-    u8 unk112;
-    u8 unk113;
-    u8 unk114;
-    u8 unk115[3];
-    u32 unk118;
-    u32 unk11c;
-    u32 unk120;
-    u32 unk124;
-};
 
 
 class LibClass1721F0;
@@ -1087,51 +958,6 @@ public:
     LibObject178750 unk118;
     LibObject178750 unk22c;
     LibObject178750 unk340;
-};
-
-/** 0x3C-byte storage receiver, with its dispatch pointer after the stored state. */
-class ItemCreationClass185050
-{
-public:
-    LibStorageBlock0C unk00;
-    u8 unk0c[4];
-    float unk10;
-    float unk14;
-    float unk18;
-    float unk1c;
-    float unk20;
-    float unk24;
-    u8 unk28[8];
-    float unk30;
-    u8 unk34;
-    u8 unk35;
-    u8 unk36[2];
-
-    /** @brief Initialize the storage and clear its three scalar pairs. */
-    ItemCreationClass185050()
-    {
-        unk14 = 0.0f;
-        unk10 = 0.0f;
-        unk1c = 0.0f;
-        unk18 = 0.0f;
-        unk24 = 0.0f;
-        unk20 = 0.0f;
-    }
-    /** @brief Release the owned storage. */
-    virtual ~ItemCreationClass185050()
-    {
-    }
-    virtual void func_slot0c();
-};
-
-/** Partial kind-9 widget with a storage base at offset 0x40. */
-class ItemCreationClass175030 : public LibClass178600, public ItemCreationClass185050
-{
-public:
-    /** @brief Initialize the widget and select kind 9. */
-    inline ItemCreationClass175030();
-    /** @brief Destroy the storage base and widget base. */
-    virtual ~ItemCreationClass175030();
 };
 
 /** Kind-2 widget over the 0x90-byte resident widget base. */

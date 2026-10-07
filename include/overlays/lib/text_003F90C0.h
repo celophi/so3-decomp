@@ -16,6 +16,20 @@ extern "C" {
  */
 void func_00408600(s32 index, s32 component, float* first, float* second);
 
+/**
+ * @brief Resolve a detail entry and return its selected values.
+ * @param detail Opaque detail record.
+ * @param code Signed record code, from one through ten.
+ * @param index Signed entry index, from zero through thirty-one.
+ * @param kind Optional destination for the entry kind.
+ * @param value Optional destination for the entry value.
+ * @param result_index Optional destination for the result index.
+ * @param remainder Optional destination for the remaining value.
+ * @param mode Full-word lookup mode.
+ * @return Lookup result, or zero for invalid code or index.
+ */
+s32 func_408EA0(void* detail, s32 code, s32 index, s32* kind, s32* value, s32* result_index, s32* remainder, s32 mode);
+
 #ifdef __cplusplus
 }
 #endif

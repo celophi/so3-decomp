@@ -67,6 +67,32 @@ public:
     /** @brief Destroy the transform owner. */
     virtual ~LibClass178A90();
 
+    /** @brief Detach and queue the transform owner, then clear its tracking mask. */
+    virtual void func_003EF740();
+
+    /** @brief Run the default transform update hook. */
+    virtual void func_003EEBE0();
+
+    /**
+     * @brief Set the translation coordinates and mark the transform dirty.
+     * @param x Horizontal translation.
+     * @param y Vertical translation.
+     * @param z Third translation component.
+     */
+    virtual void func_003EF790(float x, float y, float z);
+
+    /**
+     * @brief Copy the translation vector and mark the transform dirty.
+     * @param value Translation vector to copy.
+     */
+    virtual void func_003EF780(const LibVector4* value);
+
+    /**
+     * @brief Copy the translation vector and mark the transform dirty.
+     * @param value Translation vector to copy.
+     */
+    virtual void func_003EF770(const LibVector4* value);
+
     /** @brief Clear the byte at offset 0x60. */
     virtual void func_003F4420();
 
@@ -122,6 +148,17 @@ public:
     u16 unk6a;
     u16 unk6c;
     u8 unk6e[0x22];
+};
+
+/** Transform subclass with resident vtable D_172000. */
+class LibClass172000 : public LibClass178A90
+{
+public:
+    /** @brief Initialize the transform subclass. */
+    LibClass172000();
+
+    /** @brief Destroy the transform subclass. */
+    virtual ~LibClass172000();
 };
 
 /**
@@ -216,11 +253,16 @@ public:
 };
 
 /** Partial Lib class used as a member object, with vtable D_178EA0 in main data. */
-class LibClass178EA0
+class LibClass178EA0 : public LibClass178A90
 {
 public:
+    /** @brief Initialize the object and its transform state. */
+    LibClass178EA0();
+
     /** @brief Destroy the object. */
     virtual ~LibClass178EA0();
+
+    u8 unk90[0x180];
 };
 #endif
 

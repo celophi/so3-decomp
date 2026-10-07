@@ -10,6 +10,16 @@ extern "C" {
 struct ResidentContextObject38;
 
 /**
+ * @brief Configure the Field effect's byte parameters and scalar values.
+ * @param state Field context owning the effect.
+ * @param flag First parameter, stored as a byte.
+ * @param amount Second parameter, stored as a byte.
+ * @param value First scalar value.
+ * @param duration Second scalar value.
+ */
+void func_0020F110(struct ResidentContextObject38* state, u32 flag, u32 amount, float value, float duration);
+
+/**
  * @brief Find the script's coordinate record and copy its position and condition words.
  * @param state Script owner.
  * @param offset Byte offset into the script, rounded down to a word boundary.

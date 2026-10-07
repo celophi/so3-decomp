@@ -39,24 +39,6 @@ struct ItemCreationVisibility3F
     u8 unk3f;
 };
 
-/** Resident resource widget with its two resource indices at CC and D0. */
-class ItemCreationClass174C40 : public ItemCreationClass175110
-{
-public:
-    ItemCreationClass174C40() {}
-    virtual ~ItemCreationClass174C40();
-    virtual void func_00413D20();
-    s32 unkcc;
-    s32 unkd0;
-    void set_scale(float x, float y)
-    {
-        unk50.unk34 = y;
-        unk50.unk30 = x;
-        unk3c = 1;
-    }
-};
-extern "C" s32 func_4530E0(ItemCreationClass174C40*, s32, float, float);
-
 extern "C" LibWidgetColors4C5590 D_0036F600;
 
 /** Resident seven-widget aggregate with its true callback pointer at 0x31C. */
@@ -190,39 +172,6 @@ extern "C" s32 func_44B510(ItemCreationClass1746A0* object, s32 code);
 extern "C" s32 func_44B570(ItemCreationClass1746A0* object, float x, float y, float width, float height);
 
 
-/** Item code widget with MAIN vtable at 0x172410. */
-struct LibObject172410 : public LibClass174EF0
-{
-    /** @brief Initialize the item code widget and select kind 15. */
-    LibObject172410()
-    {
-        unk38 = 15;
-    }
-    /** @brief Destroy the item code widget. */
-    virtual ~LibObject172410();
-    /** @brief Draw the code widget. */
-    virtual void func_00462310();
-    u16 unkfc;
-    u8 unkfe;
-    u8 unkff;
-};
-/** Detail code widget with MAIN vtable at 0x172440. */
-struct LibObject172440 : public LibClass174EF0
-{
-    /** @brief Initialize the detail code widget and select kind 16. */
-    LibObject172440()
-    {
-        unk38 = 16;
-    }
-    /** @brief Destroy the detail code widget. */
-    virtual ~LibObject172440();
-    /** @brief Draw the code widget. */
-    virtual void func_00462310();
-    u16 unkfc;
-    u8 unkfe;
-    u8 unkff;
-};
-
 /** Packed sixteen-byte allocation record checked before displaying its value. */
 typedef struct ItemCreationAllocationRecord
 {
@@ -248,37 +197,6 @@ typedef struct ItemCreationAllocationRecord
     u16 unk0e;
 } ItemCreationAllocationRecord;
 
-/** Twelve-byte category entry containing its list head and catalog index. */
-struct ItemCreationCategoryRecord
-{
-    s16 unk00;
-    u16 unk02;
-    u8 unk04[4];
-    u8 unk08;
-    u8 unk09[3];
-};
-
-/** Thirty-two-byte catalog entry containing the three mode-selection fields. */
-struct ItemCreationCategoryDefinition
-{
-    u8 unk00[0xB];
-    u8 unk0b_low : 4;
-    u8 unk0b_mode : 3;
-    u8 unk0b_high : 1;
-    u8 unk0c[4];
-    u32 unk10_low : 10;
-    u32 unk10_code : 10;
-    u32 unk10_high : 12;
-    u8 unk14[7];
-    u8 unk1b_low : 6;
-    u8 unk1b_flag : 1;
-    u8 unk1b_high : 1;
-    u8 unk1c[2];
-    u8 unk1e_low : 1;
-    u8 unk1e_value : 3;
-    u8 unk1e_high : 4;
-    u8 unk1f;
-};
 
 
 enum
@@ -412,7 +330,6 @@ public:
  */
 extern "C" void func_40D2E0(ItemCreationAllocationRecord* record, u16 value, u8 channel,
                           const u16* values, bool flag, bool enabled);
-extern "C" ItemCreationCategoryDefinition* D_001B64F0;
 
 /** @brief Initialize the option container. @param object Allocated container. @return Initialized container. */
 extern "C" ItemCreationClass185F60* func_00352340(ItemCreationClass185F60* object);
@@ -446,7 +363,6 @@ extern "C" void func_003565A0(ItemCreationClass186770* object, u16 direction);
 // These external interfaces are scoped here because their owning code is in other overlays.
 extern ItemCreationColorRecordState* D_001B64F8;
 extern ItemCreationRuntime643C* D_001B643C;
-extern "C" void func_466E40(void* point, float x, float y, float scale);
 extern "C" s32 func_002CFE40(void* object, s16 index);
 extern "C" u16 func_23B3A0(FieldState23B3A0* object);
 extern "C" u32 func_23B3B0(FieldState23B3A0* object, u16 direction);
@@ -1490,7 +1406,7 @@ void ItemCreationClass185460::func_slotf8(u16 direction)
         {
             position = selection->unk00[index - 1].unk00;
         }
-        func_466E40(this->unk15c->unk40, position[0], position[1], 0.05f);
+        func_00466E40(this->unk15c->unk40, position[0], position[1], 0.05f);
         func_002CFE40(D_001B643C->unk10, 0);
     }
     selected = this->unk160->unk6c;
@@ -2632,7 +2548,7 @@ void func_0034E4D0(ItemCreationFlagResetOwner* object, u16 direction)
         {
             position = selection->unk00[index - 1].unk00;
         }
-        func_466E40(object->unk15c->unk40, position[0], position[1], 0.05f);
+        func_00466E40(object->unk15c->unk40, position[0], position[1], 0.05f);
         func_002CFE40(D_001B643C->unk10, 0);
     }
     selected = object->unk160->unk6c;
@@ -2833,7 +2749,7 @@ void func_0034F9B0(ItemCreationFlagResetOwner* object, u16 direction)
         {
             position = selection->unk00[index - 1].unk00;
         }
-        func_466E40(object->unk15c->unk40, position[0], position[1], 0.05f);
+        func_00466E40(object->unk15c->unk40, position[0], position[1], 0.05f);
         func_002CFE40(D_001B643C->unk10, 0);
     }
 }
@@ -3496,25 +3412,6 @@ s32 ItemCreationClass185360::func_slotf4(void* associated)
 }
 
 /**
- * @brief Initialize frame geometry and storage.
- * @param x Horizontal position.
- * @param y Vertical position.
- * @param width Drawing width.
- * @param height Drawing height.
- */
-inline ItemCreationClass1746A0::ItemCreationClass1746A0(float x, float y, float width, float height)
-{
-    unk38 = 4;
-    func_44B570(this, x, y, width, height);
-}
-/** @brief Initialize enabled frame storage. @param code Initialization code passed to the resident routine. */
-inline ItemCreationClass1746A0::ItemCreationClass1746A0(s32 code)
-{
-    unk38 = 4;
-    func_44B510(this, code);
-}
-
-/**
  * @brief Create the action panel and its frame widgets.
  * @param associated Object associated with the window.
  * @return Always one.
@@ -3808,11 +3705,7 @@ LibClass178A70::~LibClass178A70()
 }
 
 
-/** @brief Initialize the widget storage and select kind 5. */
-ItemCreationClass172600::ItemCreationClass172600()
-{
-    unk38 = 5;
-}
+#include "overlays/lib/scalar_indicator_inlines.h"
 
 /** @brief Initialize the widget and select kind 2. */
 ItemCreationClass184F30::ItemCreationClass184F30()
@@ -5925,30 +5818,6 @@ s32 ItemCreationClass186570::func_slotf4(void* associated)
 #include "overlays/1067-00/text_002F9C90.h"
 
 
-/** String-backed drawing widget with MAIN vtable at 0x175140. */
-struct LibObject175140 : public LibClass174EF0
-{
-    /** @brief Initialize the string-backed drawing widget. */
-    LibObject175140()
-    {
-        unk38 = 14;
-    }
-    /** @brief Destroy the string-backed drawing widget. */
-    virtual ~LibObject175140();
-    /**
-     * @brief Configure the drawing rectangle and string.
-     * @param x Horizontal position.
-     * @param y Vertical position.
-     * @param width Drawing width.
-     * @param height Drawing height.
-     * @param value String to draw.
-     * @param flag Drawing flag.
-     * @return Configuration status.
-     */
-    s32 func_00467AD0(float x, float y, float width, float height, const char* value, u8 flag);
-    const char* unkfc;
-};
-
 /** Partial parent containing the Field selection marker. */
 struct ItemCreationTwoColorReturnParent
 {
@@ -6181,18 +6050,6 @@ s32 func_44B570(ItemCreationClass1746A0* object, float x, float y, float width, 
 s32 func_421170(ItemCreationClass172870* object, float x, float y, float width, float height);
 /** @brief Set the divider color. @param object Divider widget. @param color Packed color. */
 void func_420D20(ItemCreationClass172870* object, u32 color);
-/**
- * @brief Configure the list indicator's rectangle and scalar pair.
- * @param object List indicator widget.
- * @param x Horizontal position.
- * @param y Vertical position.
- * @param height Rectangle height.
- * @param first First scalar value.
- * @param second Second scalar value.
- * @return One on success, or zero if its storage could not be initialized.
- */
-s32 func_41A930(ItemCreationClass1725D0* object, float x, float y, float height, float first, float second);
-
 /** @brief Update the active Field list. @param object List window receiver. */
 void func_002CD7C0(FieldClass15AD40* object);
 /** @brief Update the Field list parameters. @param object List parameter receiver. */

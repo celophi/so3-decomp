@@ -8,7 +8,20 @@ typedef struct SkillListNode
 {
     void* value;
     struct SkillListNode* next;
+#ifdef __cplusplus
+    /** @brief Destroy a node without releasing its stored value. */
+    ~SkillListNode()
+    {
+    }
+#endif
 } SkillListNode;
+
+/** Float components stored by the paired-value lists. */
+typedef struct SkillPairValue
+{
+    float first;
+    float second;
+} SkillPairValue;
 
 /** List storage begins with an anchor node. */
 typedef struct SkillList
@@ -17,22 +30,46 @@ typedef struct SkillList
     u32 count;
 } SkillList;
 
+typedef struct SkillList183C48 SkillList183C48;
+typedef struct SkillList183C38 SkillList183C38;
+typedef struct SkillList184268 SkillList184268;
+typedef struct SkillPairList184258 SkillPairList184258;
+typedef struct SkillQueueOwner SkillQueueOwner;
+typedef struct SkillProtectedDisplay SkillProtectedDisplay;
+typedef struct SkillOptionsWindow SkillOptionsWindow;
+typedef struct Record003619C0 Record003619C0;
+typedef struct SkillDualSelection SkillDualSelection;
+typedef struct SkillGridChoice SkillGridChoice;
+typedef struct FieldClass15AE70 FieldClass15AE70;
+typedef struct SkillProtectedFlags SkillProtectedFlags;
+typedef struct SkillTransform SkillTransform;
+typedef struct SkillTextReceiver SkillTextReceiver;
+typedef struct SkillComparisonDisplay SkillComparisonDisplay;
+typedef struct SkillVector4 SkillVector4;
+typedef struct SkillSelection SkillSelection;
+typedef struct SkillSecondarySelection SkillSecondarySelection;
+typedef struct SkillFourRowSelection SkillFourRowSelection;
+typedef struct SkillModeSelection SkillModeSelection;
 typedef struct RecordWithMethods RecordWithMethods;
-typedef struct ListOwnerWithMethods ListOwnerWithMethods;
-typedef struct StatusOwner003534C0 StatusOwner003534C0;
+typedef struct Record003538F0 StatusOwner003534C0;
 typedef struct Record003538F0 Record003538F0;
 typedef struct Record00352B30 Record00352B30;
 typedef struct Record0035A560 Record0035A560;
 typedef struct StatusOwner003580D0 StatusOwner003580D0;
 typedef struct Record003581B0 Record003581B0;
-typedef struct Record0035E2A0 Record0035E2A0;
+typedef SkillOptionsWindow Record0035E2A0;
 typedef struct Record0035BE50 Record0035BE50;
 typedef struct Record0035DDE0 Record0035DDE0;
 typedef struct Record0035DE40 Record0035DE40;
 typedef struct Record0035D4A0 Record0035D4A0;
 typedef struct Record0035D3E0 Record0035D3E0;
-typedef struct Record00349DB0 Record00349DB0;
-typedef struct Record0034BC40 Record0034BC40;
+#ifdef __cplusplus
+class ItemCreationClass175110;
+typedef ItemCreationClass175110 Record00349DB0;
+#else
+typedef struct ItemCreationClass175110 Record00349DB0;
+#endif
+typedef SkillDualSelection Record0034BC40;
 typedef struct Record00351790 Record00351790;
 typedef struct Record00355420 Record00355420;
 typedef struct Record00355490 Record00355490;
@@ -41,17 +78,289 @@ typedef struct Record003610F0 Record003610F0;
 typedef struct Record00361060 Record00361060;
 typedef struct Record003611B0 Record003611B0;
 typedef struct Record003620F0 Record003620F0;
-typedef struct Record003619C0 Record003619C0;
-typedef struct Record00363740 Record00363740;
-typedef struct Record00364810 Record00364810;
+typedef struct SkillProtectedDisplay Record00363740;
+typedef SkillOptionsWindow Record00364810;
 typedef struct Record00364720 Record00364720;
 typedef struct Record0034C110 Record0034C110;
-typedef struct Record0034C1F0 Record0034C1F0;
+typedef struct SkillModeSelection Record0034C1F0;
 typedef struct Record0034B190 Record0034B190;
+
+#ifdef __cplusplus
+struct SkillPairListNode;
+/** List with an allocated anchor, element count, and virtual destructor. */
+struct SkillList183C48
+{
+    SkillListNode* head;
+    u32 count;
+    /** @brief Allocate the anchor and initialize an empty list. */
+    SkillList183C48();
+    /** @brief Release the linked nodes and the anchor. */
+    virtual ~SkillList183C48();
+};
+
+/** List with an allocated anchor, element count, and virtual destructor. */
+struct SkillList183C38
+{
+    SkillListNode* head;
+    u32 count;
+    /** @brief Allocate the anchor and initialize an empty list. */
+    SkillList183C38();
+    /** @brief Release the linked nodes and the anchor. */
+    virtual ~SkillList183C38();
+};
+
+/** List with an allocated anchor, element count, and virtual destructor. */
+struct SkillList184268
+{
+    SkillListNode* head;
+    u32 count;
+    /** @brief Allocate the anchor and initialize an empty list. */
+    SkillList184268();
+    /** @brief Release the linked nodes and the anchor. */
+    virtual ~SkillList184268();
+};
+
+/** List with an allocated anchor, element count, and virtual destructor. */
+struct SkillPairList184258
+{
+    SkillPairListNode* head;
+    u32 count;
+    /** @brief Allocate the anchor and initialize an empty list. */
+    SkillPairList184258();
+    /** @brief Release the linked nodes and the anchor. */
+    virtual ~SkillPairList184258();
+};
+
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/** @brief Create and connect the owner windows. @param owner Window controller. @return One after setup. */
+s32 func_0035B4E0(SkillQueueOwner* owner);
+/** @brief Initialize the status window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
+u8* func_00359200(u8* object, SkillQueueOwner* owner);
+/** @brief Initialize the six-row window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
+u8* func_00355580(u8* object, SkillQueueOwner* owner);
+/** @brief Initialize the mode window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
+u8* func_00351800(u8* object, SkillQueueOwner* owner);
+/** @brief Initialize the comparison window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
+u8* func_003498A0(u8* object, SkillQueueOwner* owner);
+/** @brief Initialize the mode-query window. @param object Allocated window storage. @return Initialized storage. */
+u8* func_003533E0(u8* object);
+
+/**
+ * @brief Append a pair of float values when node allocation succeeds.
+ * @param list List receiver.
+ * @param value Values copied into the new node.
+ */
+void func_00364BF0(SkillPairList184258* list, SkillPairValue value);
+
+/**
+ * @brief Initialize the nested window at its fixed coordinates and attach its panel widget.
+ * @param object Window base receiver.
+ * @param associated Object passed to the nested window initializer.
+ * @return One when the panel allocation succeeds, or zero otherwise.
+ */
+s32 func_00351980(FieldClass15AE70* object, void* associated);
+
+/**
+ * @brief Refresh the selection rows and clear the associated active window's grid-list flags.
+ * @param object Window with the selection rows.
+ */
+void func_00351AC0(Record00352B30* object);
+
+/**
+ * @brief Enable the selection display and show the current row's mode description.
+ * @param object Window with the selected row and attached display.
+ */
+void func_00351B30(Record00352B30* object);
+
+/**
+ * @brief Switch to the associated selection window for row modes four and five.
+ * @param object Window containing the mode table and attached display.
+ */
+void func_003522C0(Record00352B30* object);
+
+/**
+ * @brief Rebuild the mode query's displayed selection state.
+ * @param record Mode-query receiver.
+ */
+void func_00351BE0(Record00352B30* record);
+
+/**
+ * @brief Update owner and window messages for the selected six-row entry.
+ * @param object Six-row window receiver.
+ */
+void func_00353720(void* object);
+
+/**
+ * @brief Update the controller's selected code and associated display state.
+ * @param owner Controller receiver.
+ * @param code Selected code.
+ * @param enabled State flag.
+ */
+void func_0035AF00(SkillQueueOwner* owner, s32 code, u8 enabled);
+
+/**
+ * @brief Dispatch direction one and refresh when the grid reports a change.
+ * @param record Selection receiver.
+ */
+void func_003521C0(Record00352B30* record);
+
+/**
+ * @brief Dispatch direction zero and refresh when the grid reports a change.
+ * @param record Selection receiver.
+ */
+void func_00352240(Record00352B30* record);
+
+/**
+ * @brief Refresh the description when this receiver is the active selection.
+ * @param object Selection receiver.
+ */
+void func_003538A0(void* object);
+
+/**
+ * @brief Move the secondary grid in direction one and notify the owner when its index changes.
+ * @param object Secondary grid window.
+ */
+void func_00359D80(SkillSecondarySelection* object);
+
+/**
+ * @brief Move the secondary grid in direction zero and notify the owner when its index changes.
+ * @param object Secondary grid window.
+ */
+void func_00359E30(SkillSecondarySelection* object);
+/**
+ * @brief Initialize the three-row secondary selection window and its resource badges.
+ * @param object Secondary selection window.
+ * @param associated Associated source word.
+ * @return One on success; zero if the owner or an initial display allocation is absent.
+ */
+s32 func_00359EE0(SkillSecondarySelection* object, void* associated);
+
+/**
+ * @brief Activate the secondary grid and update its controller's selected code.
+ * @param object Secondary selection receiver.
+ */
+void func_003592E0(SkillSecondarySelection* object);
+
+/**
+ * @brief Release the listed display objects and run the base window release hook.
+ * @param object Display-list receiver.
+ */
+void func_00361150(Record00364810* object);
+
+/**
+ * @brief Set the nested text receiver's resource key when present.
+ * @param record Window receiver.
+ * @param key Text resource key.
+ */
+void func_00348CB0(SkillComparisonDisplay* record, u32 key);
+
+/**
+ * @brief Load text keys 6001 through 6005 and refresh the width limit.
+ * @param record Text display receiver.
+ * @param key Text resource key.
+ */
+void func_0035A650(Record0035A560* record, s32 key);
+
+/**
+ * @brief Create the scrolling text display and its enclosing frames.
+ * @param object Scrolling text window.
+ * @param associated Associated text resource source.
+ * @return One when setup succeeds, or zero when a required display allocation fails.
+ */
+s32 func_0035A6E0(Record0035A560* object, void* associated);
+
+/**
+ * @brief Apply the selected record's mode to its protected byte table.
+ * @param record Selection receiver.
+ * @return Mode application result.
+ */
+u8 func_003523A0(Record00352B30* record);
+
+/**
+ * @brief Store the cursor for the selected slot and apply its mode.
+ * @param record Selection receiver.
+ * @return Zero when inactive or empty, three when the mode reports three, or one otherwise.
+ */
+s32 func_00352A90(Record00352B30* record);
+
+/**
+ * @brief Update the selected record's value display and mark both change flags.
+ * @param object Selected-record display receiver.
+ */
+void func_00363660(SkillProtectedDisplay* object);
+
+/**
+ * @brief Decode the second protected value and mark a valid flag record on corruption.
+ * @param record Protected values receiver.
+ * @return Decoded value, or zero when its checksum is invalid.
+ */
+u32 func_00356EE0(SkillProtectedFlags* record);
+
+/**
+ * @brief Decode the first protected value and mark a valid flag record on corruption.
+ * @param record Protected values receiver.
+ * @return Decoded value, or zero when its checksum is invalid.
+ */
+u32 func_00357230(SkillProtectedFlags* record);
+
+/**
+ * @brief Enqueue the receiver's secondary interface for processing.
+ * @param record Receiver to enqueue, or null.
+ */
+void func_0035B4B0(SkillQueueOwner* record);
+
+/**
+ * @brief Add flag bits when the protected record's checksum is valid.
+ * @param record Encoded flags receiver.
+ * @param flags Flag bits to add.
+ * @return Updated decoded flags, or five when the checksum is invalid.
+ */
+u32 func_00357350(SkillProtectedFlags* record, u32 flags);
+
+/**
+ * @brief Retain selected flag bits when the protected record's checksum is valid.
+ * @param record Encoded flags receiver.
+ * @param flags Mask of flag bits to retain.
+ * @return Updated decoded flags, or five when the checksum is invalid.
+ */
+u32 func_0035FA20(SkillProtectedFlags* record, u32 flags);
+
+/**
+ * @brief Release all paired-value nodes after the anchor and reset the count.
+ * @param record List receiver.
+ */
+void func_00364B70(SkillPairList184258* record);
+
+/**
+ * @brief Copy the vector at offset 0x30 and mark the receiver changed.
+ * @param object Vector receiver.
+ * @param value Vector to copy.
+ */
+void func_0035C1F0(SkillTransform* object, const SkillVector4* value);
+
+/**
+ * @brief Copy the vector at offset 0x30 and mark the receiver changed.
+ * @param object Vector receiver.
+ * @param value Vector to copy.
+ */
+void func_0035C220(SkillTransform* object, const SkillVector4* value);
+
+/**
+ * @brief Forward the receiver to its state update helper.
+ * @param object Receiver to update.
+ */
+void func_0035D440(void* object);
+
+/**
+ * @brief Set the selected display object's status to one.
+ * @param object Selection display receiver.
+ */
+void func_003621F0(SkillSelection* object);
 
 /**
  * @brief Advance the paired display lists toward scroll position 16.
@@ -66,6 +375,15 @@ s32 func_003619C0(Record003619C0* record);
  * @return Zero.
  */
 s32 func_00361B90(Record003619C0* record);
+
+/** @brief Advance one grid entry, scrolling the paired rows at the bottom edge. @param object Paired-row window. */
+void func_00361D60(Record003619C0* object);
+/** @brief Move back one grid entry, scrolling the paired rows at the top edge. @param object Paired-row window. */
+void func_00361E50(Record003619C0* object);
+/** @brief Advance two grid entries, scrolling the paired rows at the bottom edge. @param object Paired-row window. */
+void func_00361F30(Record003619C0* object);
+/** @brief Move back two grid entries, scrolling the paired rows at the top edge. @param object Paired-row window. */
+void func_00362010(Record003619C0* object);
 
 /**
  * @brief Write the 8-bit field at offset 0xC.
@@ -115,13 +433,6 @@ u16 func_00348450(u8* object);
  * @param value Value to store.
  */
 void func_00348460(u8* object, u32 value);
-
-/**
- * @brief Read the 32-bit field at offset 0x98.
- * @param object Receiver storage.
- * @return Field value.
- */
-u32 func_00348470(u8* object);
 
 /**
  * @brief Write the 32-bit field at offset 0x9C.
@@ -394,6 +705,31 @@ void func_00348700(u8* object, u8 value);
  */
 void func_00348710(void* object);
 
+/** @brief Update the message for the current selection mode. @param object Window with paired selection grids. */
+void func_00349E80(SkillDualSelection* object);
+/** @brief Set the paired grid mode and update its display flags. @param object Window with paired grids. @param mode Signed mode code. */
+void func_00349F30(SkillDualSelection* object, s16 mode);
+/**
+ * @brief Hide the paired status displays and return to the associated window.
+ * @param object Paired selection window.
+ * @return Two after switching windows, or three when no associated window exists.
+ */
+s32 func_0034A580(SkillDualSelection* object);
+/** @brief Refresh the first selection rows. @param object Window receiver. @param reset Nonzero to reset the grid position. */
+void func_0034A2B0(SkillDualSelection* object, s32 reset);
+/** @brief Refresh the second selection rows. @param object Window receiver. @param reset Nonzero to reset the grid position. */
+void func_0034A130(SkillDualSelection* object, s32 reset);
+/** @brief Move the active grid in direction one and refresh its rows. @param object Window receiver. */
+void func_0034AF90(SkillDualSelection* object);
+/** @brief Move the active grid in direction zero and refresh its rows. @param object Window receiver. */
+void func_0034B090(SkillDualSelection* object);
+
+/**
+ * @brief Run the window callback when its current selection is active.
+ * @param object Window with two selection grids and a signed mode.
+ */
+void func_0034AF00(SkillDualSelection* object);
+
 /**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
@@ -468,6 +804,26 @@ void func_003581B0(void* object);
  * @param record Selection and status display storage.
  */
 void func_00358200(Record003581B0* record);
+
+/**
+ * @brief Forward the current grid index to the active window's choice callback.
+ * @param object Window with a grid selection.
+ */
+void func_0035CD50(SkillGridChoice* object);
+
+/**
+ * @brief Apply the current grid choice and report the callback status.
+ * @param object Window with a grid selection.
+ * @return One when the callback returns zero, or two otherwise.
+ */
+s32 func_0035CEB0(SkillGridChoice* object);
+
+/**
+ * @brief Hide the window lists, restore its associated selection, and queue its callback.
+ * @param object Window base receiver.
+ * @return Always two.
+ */
+s32 func_0035CE30(FieldClass15AE70* object);
 
 /**
  * @brief Update list item display values for the selected index.
@@ -624,7 +980,7 @@ s32 func_0035C2F0(void* object);
  * @param value Value to test.
  * @return 1 when the value is less than zero; otherwise 0.
  */
-s32 func_0035C300(float value);
+bool func_0035C300(float value);
 
 /**
  * @brief Return the address of D_50CD30.
@@ -781,6 +1137,12 @@ void func_0034BEE0(Record0034C1F0* record);
  */
 void func_0034C1F0(Record0034C1F0* record);
 
+/** @brief Advance the mode window animation. @param object Mode window. */
+void func_0034C060(SkillModeSelection* object);
+
+/** @brief Update the active mode window and its list indicator. @param object Mode window. */
+void func_0034C320(SkillModeSelection* object);
+
 /**
  * @brief Configure the second grid and register its newly allocated display object.
  * @param record Receiver containing the second grid and display owner.
@@ -795,6 +1157,19 @@ s32 func_0034B190(Record0034B190* record);
  */
 s32 func_0034B2C0(Record0034B190* record);
 
+/** @brief Advance the mode selection by one row and refresh its owner message. @param object Mode selection window. */
+void func_0034DF00(SkillModeSelection* object);
+
+/** @brief Move the mode selection back one row and refresh its owner message. @param object Mode selection window. */
+void func_0034E0B0(SkillModeSelection* object);
+
+/**
+ * @brief Advance the mode selection by one page and refresh its owner message.
+ * @param object Mode selection window.
+ * @return Zero.
+ */
+s32 func_0034DA70(SkillModeSelection* object);
+
 /**
  * @brief Configure the selection grid position and register its display state.
  * @param record Receiver with the display owner and selection grid.
@@ -803,12 +1178,16 @@ s32 func_0034B2C0(Record0034B190* record);
  */
 s32 func_0034E260(Record0034C1F0* record, s16 row_count);
 
-/**
- * @brief Initialize the receiver metadata and return its address.
- * @param object Receiver storage.
- * @return Address of the receiver.
- */
-u8* func_0035D300(u8* object);
+/** @brief Create the mode window's text and image rows. @param object Mode window. @return Nonzero after creating the rows. */
+s32 func_00351090(SkillModeSelection* object);
+/** @brief Initialize the mode window and attach its displays. @param object Mode window. @param associated Associated window source. @return One on success; zero on allocation or row initialization failure. */
+s32 func_00351490(SkillModeSelection* object, void* associated);
+
+/** @brief Attach three resource displays to the window. @param object Window to initialize. @param associated Associated window source. @return One after attaching the displays. */
+s32 func_0035AC50(FieldClass15AE70* object, void* associated);
+
+/** @brief Create and attach the text receiver's seven displays. @param object Text receiver. @param associated Associated source word. @return One after attaching all displays. */
+s32 func_003499B0(SkillTextReceiver* object, void* associated);
 
 /**
  * @brief Initialize the receiver metadata and its embedded object, then return its address.
@@ -838,6 +1217,9 @@ s32 func_00362170(Record003620F0* record);
  * @return Zero without a selection, otherwise 4.
  */
 s32 func_00363740(Record00363740* record, s32 mode);
+
+/** @brief Refresh displays from the currently selected protected record. @param object Selected-record window. */
+void func_00363890(Record00363740* object);
 
 /**
  * @brief Initialize the receiver metadata and return its address.
@@ -956,13 +1338,25 @@ void func_0035C780(SkillList* list, void* value);
  * @param flag Positive values release the owner's storage.
  * @return Original owner pointer.
  */
-ListOwnerWithMethods* func_00364960(ListOwnerWithMethods* record, s16 flag);
+SkillList184268* func_00364960(SkillList184268* record, s16 flag);
 
 /**
  * @brief Release linked nodes after the anchor and clear the list when nonempty.
  * @param record List owner whose nodes are released.
  */
-void func_00364A70(ListOwnerWithMethods* record);
+void func_00364A70(SkillList184268* record);
+
+/**
+ * @brief Release all linked nodes after the anchor and reset the list count.
+ * @param record List receiver.
+ */
+void func_0035C810(SkillList183C48* record);
+
+/**
+ * @brief Release all linked nodes after the anchor and reset the list count.
+ * @param record List receiver.
+ */
+void func_0035CA60(SkillList183C38* record);
 
 /**
  * @brief Append a value to the list.
@@ -1002,6 +1396,14 @@ RecordWithMethods* func_00353380(RecordWithMethods* record, s16 flag);
  * @return The original record pointer.
  */
 RecordWithMethods* func_00357E80(RecordWithMethods* record, s16 flag);
+
+/**
+ * @brief Initialize the nested window and attach its rectangular panel widget.
+ * @param object Window base receiver.
+ * @param associated Object passed to the nested window initializer.
+ * @return One when the panel allocation succeeds, or zero otherwise.
+ */
+s32 func_00357F80(FieldClass15AE70* object, void* associated);
 
 /**
  * @brief Release the record and optionally free its storage.
@@ -1048,14 +1450,6 @@ RecordWithMethods* func_0035AB60(RecordWithMethods* record, s16 flag);
  * @return The original record pointer.
  */
 RecordWithMethods* func_0035AEA0(RecordWithMethods* record, s16 flag);
-
-/**
- * @brief Release the record and optionally free its storage.
- * @param record Record to release.
- * @param flag Free the storage when positive.
- * @return The original record pointer.
- */
-RecordWithMethods* func_0035D2A0(RecordWithMethods* record, s16 flag);
 
 /**
  * @brief Release the record and optionally free its storage.
@@ -1172,7 +1566,7 @@ s32 func_0035D3E0(Record0035D3E0* record, s32 arg1, s32 arg2, void* arg3, float 
  * @param flag Free the owner when positive.
  * @return The original owner pointer.
  */
-ListOwnerWithMethods* func_0035C700(ListOwnerWithMethods* record, s16 flag);
+SkillList183C48* func_0035C700(SkillList183C48* record, s16 flag);
 
 /**
  * @brief Clear the list, release its storage, and optionally free the owner.
@@ -1180,7 +1574,7 @@ ListOwnerWithMethods* func_0035C700(ListOwnerWithMethods* record, s16 flag);
  * @param flag Free the owner when positive.
  * @return The original owner pointer.
  */
-ListOwnerWithMethods* func_0035C950(ListOwnerWithMethods* record, s16 flag);
+SkillList183C38* func_0035C950(SkillList183C38* record, s16 flag);
 
 /**
  * @brief Clear the list, release its storage, and optionally free the owner.
@@ -1188,7 +1582,7 @@ ListOwnerWithMethods* func_0035C950(ListOwnerWithMethods* record, s16 flag);
  * @param flag Free the owner when positive.
  * @return The original owner pointer.
  */
-ListOwnerWithMethods* func_00364AF0(ListOwnerWithMethods* record, s16 flag);
+SkillPairList184258* func_00364AF0(SkillPairList184258* record, s16 flag);
 
 /**
  * @brief Update six item fields and sum values other than -1.
@@ -1199,10 +1593,153 @@ ListOwnerWithMethods* func_00364AF0(ListOwnerWithMethods* record, s16 flag);
 s32 func_003534C0(StatusOwner003534C0* owner, s32 mode);
 
 /**
+ * @brief Advance the selected record through the six-row window.
+ * @param object Six-row selection window.
+ * @return Byte event code zero or four.
+ */
+s32 func_003539F0(Record003538F0* object);
+/**
+ * @brief Retreat the selected record through the six-row window.
+ * @param object Six-row selection window.
+ * @return Byte event code zero or four.
+ */
+s32 func_00353B40(Record003538F0* object);
+
+/**
+ * @brief Set the six-row window's list flags and selection activity.
+ * @param object Six-row selection window.
+ * @param flag Full window flag, whose low byte controls each display.
+ * @param active Nonzero to activate the selection grid.
+ */
+void func_00353570(Record003538F0* object, u32 flag, s32 active);
+
+/** @brief Refresh the comparison labels and values for the owner's selected entry. @param object Comparison window. */
+void func_00348720(FieldClass15AE70* object);
+
+/** @brief Set mode-window display and selection activity. @param object Mode window. @param flag Display flag word. @param active Grid activity value. */
+void func_00351360(SkillModeSelection* object, u32 flag, s32 active);
+
+/** @brief Cancel six-row selection and restore its associated window. @param object Six-row window. @return Zero while inactive, or two after cancellation. */
+s32 func_00353EE0(Record003538F0* object);
+
+/** @brief Save the mode-query choice, clear its pending state, and restore the associated window. @param object Mode-query window. @return Zero while inactive, or two after completing the transition. */
+s32 func_00352920(Record00352B30* object);
+
+/** @brief Save the mode-query choice and advance the selected record. @param object Mode-query window. @return Event code zero or four. */
+s32 func_00352630(Record00352B30* object);
+
+/** @brief Save the mode-query choice and retreat to the preceding record. @param object Mode-query window. @return Event code zero or four. */
+s32 func_003527A0(Record00352B30* object);
+
+
+
+/**
  * @brief Color the paired six-row lists and position the selected-row display.
  * @param record Record containing the lists, selection, and display receiver.
  */
 void func_003538F0(Record003538F0* record);
+
+/**
+ * @brief Enable the selection grid, refresh its rows, and update the selected status values.
+ * @param object Receiver with the row keys and three value tables.
+ */
+void func_00353670(Record003538F0* object);
+
+/** @brief Move the six-row grid in direction one and refresh its selected status values. @param object Six-row selection window. */
+void func_00353CA0(Record003538F0* object);
+
+/** @brief Move the six-row grid in direction zero and refresh its selected status values. @param object Six-row selection window. */
+void func_00353DC0(Record003538F0* object);
+
+/**
+ * @brief Show the selected slot's icon and copy its record links to the owning controller.
+ * @param object Window with the slot icons and record selection.
+ */
+void func_00358310(StatusOwner003580D0* object);
+
+/**
+ * @brief Refresh the active secondary selection's description, row colors, and cursor.
+ * @param object Secondary selection window.
+ */
+void func_00359340(SkillSecondarySelection* object);
+
+/**
+ * @brief Apply the selected mode and activate its associated selection window.
+ * @param object Secondary selection window.
+ * @return Zero while inactive, or one after applying the selection.
+ */
+s32 func_00359870(SkillSecondarySelection* object);
+
+/** @brief Refresh the four-row window's record values. @param object Four-row selection window. */
+void func_003559F0(SkillFourRowSelection* object);
+/** @brief Rebuild the six-row status values. @param object Status-row window. @return One on success, or zero on failure. */
+s32 func_00354190(Record003538F0* object);
+/** @brief Rebuild the mode-query rows and description. @param object Mode-query window. */
+void func_00352C00(Record00352B30* object);
+/** @brief Rebuild the mode rows for a signed mode code. @param object Mode-selection window. @param mode Signed mode. @return One on success, or zero on failure. */
+s32 func_00350890(SkillModeSelection* object, s16 mode);
+/** @brief Create the second dual-grid display and row markers. @param object Dual-grid window. @return One after setup, or zero on failure. */
+u8 func_0034B720(SkillDualSelection* object);
+
+/** @brief Create both dual-grid panels and initialize their selections. @param object Dual-grid window. @param associated Opaque object passed to the window base. @return One after setup, or zero on allocation or setup failure. */
+s32 func_0034BA30(SkillDualSelection* object, void* associated);
+
+/** @brief Rebuild both paired selection grids. @param object Paired selection window. */
+void func_0034B3F0(SkillDualSelection* object);
+/** @brief Advance the selected record and refresh the linked windows. @param object Secondary selection window. @return Byte event code zero or four. */
+s32 func_003594A0(SkillSecondarySelection* object);
+/** @brief Retreat the selected record and refresh the linked windows. @param object Secondary selection window. @return Byte event code zero or four. */
+s32 func_003595E0(SkillSecondarySelection* object);
+
+/**
+ * @brief Set the ready-state flag or open and attach a grid-choice window.
+ * @param object Window supplying the display source and associated receiver.
+ * @return Two after dispatch, or zero when the loader or window allocation is unavailable.
+ */
+s32 func_00359730(FieldClass15AE70* object);
+
+/**
+ * @brief Open a grid-choice window or mark the receiver when its source is busy.
+ * @param object Source window for the choice.
+ * @return Two after opening or marking the source, otherwise zero without a loader or allocation.
+ */
+s32 func_00362500(FieldClass15AE70* object);
+
+/**
+ * @brief Validate the selected entry and open its options window.
+ * @param object Record window with the current selection and scroll position.
+ * @return Zero while inactive, three for a rejected entry, or one after opening its options.
+ */
+s32 func_00362650(Record003619C0* object);
+/** @brief Advance the selected record through the active controller. @param object Four-row selection window. @return Byte event code zero or four. */
+s32 func_00355E80(SkillFourRowSelection* object);
+/** @brief Retreat the selected record through the active controller. @param object Four-row selection window. @return Byte event code zero or four. */
+s32 func_00355FD0(SkillFourRowSelection* object);
+
+/**
+ * @brief Set the four-row window's display flags and grid activity.
+ * @param object Four-row selection window.
+ * @param flag Display flag value.
+ * @param active Nonzero to activate the grid.
+ */
+void func_003558B0(SkillFourRowSelection* object, u32 flag, s32 active);
+/**
+ * @brief Reset the four row colors and return to the associated window.
+ * @param object Four-row selection window.
+ * @return Two after switching windows, or zero while the grid is inactive.
+ */
+s32 func_00356130(SkillFourRowSelection* object);
+/**
+ * @brief Move the four-row grid in direction one and update its row colors and cursor.
+ * @param object Four-row selection window.
+ */
+void func_00355CA0(SkillFourRowSelection* object);
+
+/**
+ * @brief Move the four-row grid in direction zero and update its row colors and cursor.
+ * @param object Four-row selection window.
+ */
+void func_00355D90(SkillFourRowSelection* object);
 
 /**
  * @brief Update four item values and status bytes.
@@ -1282,6 +1819,9 @@ void func_0035E340(Record0035E2A0* record);
  * @param record Owner of the child selection; inactive children are unchanged.
  */
 void func_0035E3C0(Record0035E2A0* record);
+
+/** @brief Cancel the options window and restore its associated window. @param object Options window. @return Two after restoring the prior window. */
+s32 func_0035E470(SkillOptionsWindow* object);
 
 /**
  * @brief Allocate and initialize the record's selection state.

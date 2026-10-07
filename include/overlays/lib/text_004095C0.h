@@ -5,9 +5,50 @@
 
 typedef struct ItemCreationAllocationRecord ItemCreationAllocationRecord;
 
+typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
+typedef struct ItemCreationCategoryDefinition ItemCreationCategoryDefinition;
+
+/** Twelve-byte category entry containing its list head and catalog index. */
+struct ItemCreationCategoryRecord
+{
+    s16 unk00;
+    u16 unk02;
+    u8 unk04[4];
+    u8 unk08;
+    u8 unk09[3];
+};
+
+/** Thirty-two-byte catalog entry containing the three mode-selection fields. */
+struct ItemCreationCategoryDefinition
+{
+    u8 unk00[0xB];
+    u8 unk0b_low : 4;
+    u8 unk0b_mode : 3;
+    u8 unk0b_high : 1;
+    u8 unk0c[4];
+    u32 unk10_low : 10;
+    u32 unk10_code : 10;
+    u32 unk10_high : 12;
+    u8 unk14[7];
+    u8 unk1b_low : 6;
+    u8 unk1b_flag : 1;
+    u8 unk1b_high : 1;
+    u8 unk1c[2];
+    u8 unk1e_low : 1;
+    u8 unk1e_value : 3;
+    u8 unk1e_high : 4;
+    u8 unk1f;
+};
+
+typedef ItemCreationCategoryRecord LibCategoryRecord;
+typedef ItemCreationCategoryDefinition LibCategoryDefinition;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/** Resident category catalog. */
+extern ItemCreationCategoryDefinition* D_001B64F0;
 
 /**
  * @brief Remove a flagged record from its category list and update the resident counts.

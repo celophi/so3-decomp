@@ -1,0 +1,30 @@
+rom:0x203C reloc:MIPS_HI16 symbol:__vt__16EquipClass182550
+rom:0x2044 reloc:MIPS_LO16 symbol:__vt__16EquipClass182550
+rom:0x2040 reloc:MIPS_HI16 symbol:__vt__16EquipClass182550 addend:0xF4
+rom:0x2048 reloc:MIPS_LO16 symbol:__vt__16EquipClass182550 addend:0xF4
+rom:0x905C reloc:MIPS_HI16 symbol:__vt__16EquipClass182550
+rom:0x9064 reloc:MIPS_LO16 symbol:__vt__16EquipClass182550
+rom:0x9060 reloc:MIPS_HI16 symbol:__vt__16EquipClass182550 addend:0xF4
+rom:0x9068 reloc:MIPS_LO16 symbol:__vt__16EquipClass182550 addend:0xF4
+rom:0x2E6C reloc:MIPS_HI16 symbol:__vt__16EquipClass182670
+rom:0x2E74 reloc:MIPS_LO16 symbol:__vt__16EquipClass182670
+rom:0x2E70 reloc:MIPS_HI16 symbol:__vt__16EquipClass182670 addend:0xF4
+rom:0x2E78 reloc:MIPS_LO16 symbol:__vt__16EquipClass182670 addend:0xF4
+rom:0x90CC reloc:MIPS_HI16 symbol:__vt__16EquipClass182670
+rom:0x90D4 reloc:MIPS_LO16 symbol:__vt__16EquipClass182670
+rom:0x90D0 reloc:MIPS_HI16 symbol:__vt__16EquipClass182670 addend:0xF4
+rom:0x90D8 reloc:MIPS_LO16 symbol:__vt__16EquipClass182670 addend:0xF4
+rom:0x1E44 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x1E54 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x8690 reloc:MIPS_HI16 symbol:__vt__15LibObject178660
+rom:0x8698 reloc:MIPS_LO16 symbol:__vt__15LibObject178660
+rom:0x8694 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0x86A4 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0x86A8 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0x86B0 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0x869C reloc:MIPS_HI16 symbol:__vt__16EquipClass1796F0
+rom:0x86BC reloc:MIPS_LO16 symbol:__vt__16EquipClass1796F0
+rom:0x86C4 reloc:MIPS_HI16 symbol:__vt__16EquipClass1796F0 addend:0x1C
+rom:0x86CC reloc:MIPS_LO16 symbol:__vt__16EquipClass1796F0 addend:0x1C
+rom:0x86D0 reloc:MIPS_HI16 symbol:__vt__16EquipClass1796F0 addend:0x90
+rom:0x86DC reloc:MIPS_LO16 symbol:__vt__16EquipClass1796F0 addend:0x90

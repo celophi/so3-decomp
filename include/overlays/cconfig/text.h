@@ -13,12 +13,30 @@ typedef struct
     u32 field_40;
 } ConfigControl;
 
-typedef struct ConfigOwnedItem ConfigOwnedItem;
+typedef struct ConfigList182210 ConfigList182210;
+typedef struct ConfigList182200 ConfigList182200;
+typedef struct ConfigColorOwner ConfigColorOwner;
+typedef struct ConfigOptions ConfigOptions;
+typedef struct ConfigGridWindow ConfigGridWindow;
+typedef struct ConfigControlReceiver ConfigControlReceiver;
+typedef struct ConfigMessageWindow ConfigMessageWindow;
+typedef struct ConfigFrameWindow ConfigFrameWindow;
+typedef struct ConfigPreviewState ConfigPreviewState;
+typedef struct ItemCreationClass1725D0 ItemCreationClass1725D0;
+typedef struct ItemCreationOptionResourceDisplay ItemCreationOptionResourceDisplay;
+typedef struct ConfigPreviewWindow ConfigPreviewWindow;
+typedef struct FieldClass15AE70 FieldClass15AE70;
 
 typedef struct ConfigNode
 {
     void* value;
     struct ConfigNode* next;
+#ifdef __cplusplus
+    /** @brief Release the link without destroying its payload. */
+    ~ConfigNode()
+    {
+    }
+#endif
 } ConfigNode;
 
 typedef struct
@@ -28,8 +46,422 @@ typedef struct
 } ConfigListOwner;
 
 #ifdef __cplusplus
+#include "overlays/1067-00/text_002CD390.h"
+#include "overlays/lib/text_0045AD10.h"
+
+/** Configuration display list with an owned sentinel and a virtual destructor. */
+struct ConfigList182210
+{
+    ConfigNode* head;
+    s32 count;
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    ConfigList182210();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~ConfigList182210();
+};
+
+/** Configuration list with a distinct virtual destructor and an owned sentinel. */
+struct ConfigList182200
+{
+    ConfigNode* head;
+    s32 count;
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    ConfigList182200();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~ConfigList182200();
+};
+
+/** Configuration options window and its thirty-one owned display lists. */
+struct ConfigOptions : public FieldClass15AE70
+{
+    /** @brief Initialize the options window and its owned lists. */
+    ConfigOptions();
+    /** @brief Release the owned display lists and the window base. */
+    virtual ~ConfigOptions();
+    /** @brief Refresh the bindings while this window is active. */
+    virtual void func_slot5c();
+    /** @brief Refresh the moving selection marker and update the window message. */
+    virtual void func_slot64();
+    /** @brief Forward to the previous-option hook. */
+    virtual void func_slot68();
+    /** @brief Forward to the next-option hook. */
+    virtual void func_slot6c();
+    /** @brief Move the selection to the previous available option. */
+    virtual void func_slota0();
+    /** @brief Move the selection to the next available option. */
+    virtual void func_slota4();
+    /** @brief Apply option control mask 0x80. */
+    virtual void func_slota8();
+    /** @brief Apply option control mask 0x20. */
+    virtual void func_slotac();
+    /** @brief Handle virtual slot 0xB0. @return Handler result. */
+    virtual s32 func_slotb0();
+    /** @brief Handle virtual slot 0xB4. @return Handler result. */
+    virtual s32 func_slotb4();
+    /** @brief Create the option displays. @param associated Associated object. @return Creation result. */
+    virtual s32 func_slotf4(void* associated);
+    void* unka8;
+    LibClass175030* scroll;
+    u8 unkb0;
+    u8 selected;
+    u8 unkb2;
+    u8 unkb3;
+    u16 last_index;
+    u16 unkb6;
+    s32 unkb8;
+    float positions[14];
+    ItemCreationOptionResourceDisplay* unkf4;
+    s32 unkf8;
+    s32 unkfc;
+    u8 unk100;
+    u8 unk101;
+    u8 unk102[2];
+    float unk104;
+    float unk108;
+    float unk10c;
+    float unk110;
+    ConfigList182200 list;
+    ConfigList182200 list0_first;
+    ConfigList182210 list0_second;
+    ConfigList182200 list1_first;
+    ConfigList182210 list1_second;
+    ConfigList182200 list2_first;
+    ConfigList182210 list2_second;
+    ConfigList182200 list3_first;
+    ConfigList182210 list3_second;
+    ConfigList182200 list4_first;
+    ConfigList182210 list4_second;
+    ConfigList182200 list5_first;
+    ConfigList182210 list5_second;
+    ConfigList182200 list6_first;
+    ConfigList182210 list6_second;
+    ConfigList182200 list7_first;
+    ConfigList182210 list7_second;
+    ConfigList182200 list8_first;
+    ConfigList182210 list8_second;
+    ConfigList182200 list9_first;
+    ConfigList182210 list9_second;
+    ConfigList182200 list10_first;
+    ConfigList182210 list10_second;
+    ConfigList182200 list11_first;
+    ConfigList182210 list11_second;
+    ConfigList182200 list12_first;
+    ConfigList182210 list12_second;
+    ConfigList182200 list13_first;
+    ConfigList182210 list13_second;
+    ConfigList182200 list14_first;
+    ConfigList182210 list14_second;
+    u8 unk288;
+    u8 unk289[3];
+    ItemCreationClass1725D0* unk28c;
+    float unk290;
+    float unk294;
+    float unk298;
+    float unk29c;
+    float unk2a0;
+};
+
 extern "C" {
 #endif
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034FC70(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034F880(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034F5E0(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034F340(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034FF10(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034F0A0(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034EDE0(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034EB40(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034E5D0(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034E330(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034E090(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034DDF0(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034DB50(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Create the option row displays.
+ * @param object Configuration options window.
+ * @param associated Associated resource handle.
+ * @return One after creation, or zero without an associated resource.
+ */
+s32 func_0034D8B0(ConfigOptions* object, void* associated);
+
+/**
+ * @brief Color the option rows, distinguishing the selected row and disabled row twelve.
+ * @param object Configuration options window.
+ * @param selected Selected row index.
+ */
+void func_0034B180(ConfigOptions* object, u16 selected);
+
+/**
+ * @brief Refresh the selected row's option markers and resource display level.
+ * @param object Configuration options window.
+ * @param row Option row to refresh.
+ */
+void func_0034B430(ConfigOptions* object, u16 row);
+
+/**
+ * @brief Update option row four's setting and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034BA10(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Toggle the protected mode and update option row thirteen's choice colors.
+ * @param object Configuration options window.
+ */
+void func_0034BB60(ConfigOptions* object);
+
+/**
+ * @brief Update option row twelve's setting and choice colors when the feature is enabled.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034BD70(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row ten's message key and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C140(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row nine's message key and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C260(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row 6's stored flag and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C7C0(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row 5's stored flag and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C900(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row 2's stored flag and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034CBB0(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row 0's stored flag and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034D040(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row three's two-bit mode and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034CA40(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row seven's input flag, effect, and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C600(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Cycle option row eight's input mode and refresh its choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C380(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Cycle option row one's two-bit mode and refresh its choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034CD00(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Refresh the bindings window's selection.
+ * @param object Bindings window receiver.
+ */
+void func_0034AD30(void* object);
+
+/**
+ * @brief Update row highlights while the selector window is active.
+ * @param object Configuration selector window.
+ */
+void func_00348750(ConfigGridWindow* object);
+
+/**
+ * @brief Move the selected option by an unsigned byte amount.
+ * @param object Configuration options window to update.
+ * @param direction Zero to decrease the selection, or one to increase it.
+ * @param amount Amount added or subtracted from the selection.
+ */
+void func_0034AEC0(ConfigOptions* object, u16 direction, u8 amount);
+
+/**
+ * @brief Dispatch the option control mask to the selected row.
+ * @param object Configuration options window to update.
+ * @param index Option row index.
+ * @param bits Control bits passed to the row handler.
+ */
+void func_0034D180(ConfigOptions* object, u8 index, u32 bits);
+
+/** @brief Resolve the selected option message. @param object Options window. @param selected Selected row. @return Message key. */
+s32 func_00350270(ConfigOptions* object, u16 selected);
+
+/**
+ * @brief Release the nodes after the sentinel without destroying their payloads.
+ * @param object List receiver containing the sentinel and node count.
+ */
+void func_00352860(ConfigList182210* object);
+
+/**
+ * @brief Release the nodes after the sentinel without destroying their payloads.
+ * @param object List receiver containing the sentinel and node count.
+ */
+void func_00352B80(ConfigList182200* object);
+
+/**
+ * @brief Submit the configuration receiver to the resident object queue.
+ * @param object Receiver to submit.
+ */
+void func_00352110(void* object);
+
+/**
+ * @brief Adjust a selected color component and refresh its packed display values.
+ * @param object Color controls to update.
+ * @param index Color component index.
+ * @param delta Component adjustment.
+ */
+void func_00348E60(ConfigColorOwner* object, s16 index, s32 delta);
+
+/**
+ * @brief Increase the selected color component by five when the selector is active.
+ * @param object Color controls to update.
+ */
+void func_00348FE0(ConfigColorOwner* object);
+
+/**
+ * @brief Increase the selected color component by one when the selector is active.
+ * @param object Color controls to update.
+ */
+void func_00349030(ConfigColorOwner* object);
+
+/**
+ * @brief Decrease the selected color component by five when the selector is active.
+ * @param object Color controls to update.
+ */
+void func_00349070(ConfigColorOwner* object);
+
+/**
+ * @brief Decrease the selected color component by one when the selector is active.
+ * @param object Color controls to update.
+ */
+void func_003490C0(ConfigColorOwner* object);
+
+
 
 /**
  * @brief Perform no work.
@@ -240,11 +672,6 @@ void func_003520B0(void* object);
  */
 s32 func_003523F0(void* object);
 
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003524A0(void* object);
 
 /**
  * @brief Return the fixed value 0.
@@ -398,20 +825,6 @@ void func_00348440(void* object, u16 value);
  * @return Value stored at offset 0xA.
  */
 u16 func_00348450(void* object);
-
-/**
- * @brief Set the value at object offset 0x98.
- * @param object Object to update.
- * @param value Value to store.
- */
-void func_00348460(void* object, u32 value);
-
-/**
- * @brief Read the value at object offset 0x98.
- * @param object Object to read.
- * @return Value stored at offset 0x98.
- */
-u32 func_00348470(void* object);
 
 /**
  * @brief Set the value at object offset 0x9C.
@@ -626,13 +1039,6 @@ void* func_00351BD0(void* object, s32 flags);
  */
 void* func_00351F70(void* object, s32 flags);
 
-/**
- * @brief Release an object when requested.
- * @param object Object to release.
- * @param flags Controls whether the object is freed.
- * @return The original object pointer.
- */
-void* func_003510A0(void* object, s32 flags);
 
 /**
  * @brief Append a value to the linked list.
@@ -684,29 +1090,77 @@ void func_00352CD0(ConfigListOwner* list, void* value);
  */
 void* func_00352400(void* object, s32 flags);
 
-/**
- * @brief Release an embedded member and the object when requested.
- * @param object Object containing the embedded member.
- * @param flags Controls whether the object is freed.
- * @return The original object pointer.
- */
-void* func_0034EAD0(void* object, s32 flags);
 
 /**
- * @brief Release the attached item and optionally free the owner.
- * @param object Owner of the attached item.
- * @param flags A positive signed 16-bit value requests freeing the owner.
- * @return The original object pointer.
+ * @brief Cancel the active configuration selector.
+ * @param object Configuration selector window.
+ * @return Callback result indicating that input was handled.
  */
-ConfigOwnedItem* func_00352750(ConfigOwnedItem* object, s32 flags);
+s32 func_00348840(FieldClass15AE70* object);
 
 /**
- * @brief Release the attached item and optionally free the owner.
- * @param object Owner of the attached item.
- * @param flags A positive signed 16-bit value requests freeing the owner.
- * @return The original object pointer.
+ * @brief Cancel the selector and refresh its parent window.
+ * @param object Configuration selector window.
+ * @return Callback result indicating that input was handled.
  */
-ConfigOwnedItem* func_00352A70(ConfigOwnedItem* object, s32 flags);
+s32 func_00349190(FieldClass15AE70* object);
+
+/**
+ * @brief Cancel the selector and refresh its parent window.
+ * @param object Configuration selector window.
+ * @return Callback result indicating that input was handled.
+ */
+s32 func_00349950(FieldClass15AE70* object);
+
+/**
+ * @brief Apply the selected configuration row or dismiss its window.
+ * @param object Configuration grid window.
+ * @return One when dismissed, or two when the selected row was handled.
+ */
+s32 func_003488D0(ConfigGridWindow* object);
+
+/**
+ * @brief Release the resource slot, detach the receiver, and invoke its release handler.
+ * @param object Configuration callback receiver.
+ */
+void func_003520C0(ConfigControlReceiver* object);
+
+/**
+ * @brief Create and attach the configuration window's panel.
+ * @param object Configuration panel window.
+ * @param associated Object associated with the window.
+ * @return Always one.
+ */
+s32 func_003514E0(ConfigFrameWindow* object, void* associated);
+
+/**
+ * @brief Load a completed resource and finish configuration receiver setup.
+ * @param object Configuration callback receiver.
+ * @param buffer Completed resource buffer, or null.
+ * @return Zero without a buffer, otherwise the receiver setup result.
+ */
+s32 func_00352330(ConfigControlReceiver* object, void* buffer);
+
+/**
+ * @brief Create and attach the configuration preview's resource widgets.
+ * @param object Configuration preview window.
+ * @param associated Associated Field window object.
+ * @return Always one after initialization.
+ */
+s32 func_00351C30(ConfigPreviewWindow* object, void* associated);
+
+/**
+ * @brief Update the configuration preview origin, position, and scale from the saved display flag.
+ * @param object Configuration state containing its preview window.
+ */
+void func_00351FD0(ConfigPreviewState* object);
+
+/**
+ * @brief Update an in-range message key and the window's special message state.
+ * @param object Configuration text window.
+ * @param key Message key in the range 0x1FA4 through 0x1FC7.
+ */
+void func_00351610(ConfigMessageWindow* object, s32 key);
 
 #ifdef __cplusplus
 }

@@ -12,6 +12,8 @@ typedef struct ResidentObjectQueue
     void* entries[0x400];
 } ResidentObjectQueue;
 
+struct BootInputRoot9670;
+
 /** Resident descriptor table used by the keyed resource-size lookup. */
 struct ResidentObject1B65E4;
 
@@ -21,6 +23,12 @@ typedef struct ResidentRequest112400 ResidentRequest112400;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Return the resident runtime table owner.
+ * @return Opaque table owner.
+ */
+void* func_0010D8E0(void);
 
 /** @brief Allocate a block from the resident heap. @param heap Heap receiver. @param size Requested byte count. @return Allocated block, or null. */
 void* func_00113710(void* heap, s32 size);
@@ -49,6 +57,14 @@ u32 func_0010CF80(void);
  * @return Resource size in bytes.
  */
 u32 func_0011C8C0(struct ResidentObject1B65E4* object, s32 key);
+
+/**
+ * @brief Store a slot input flag and reset its retained state when disabled.
+ * @param root Resident input root.
+ * @param slot Input slot index.
+ * @param flag Flag whose low byte is stored; zero resets the retained state.
+ */
+void func_0011E030(struct BootInputRoot9670* root, s32 slot, u32 flag);
 
 /**
  * @brief Append an object to the ring buffer unless it is full.

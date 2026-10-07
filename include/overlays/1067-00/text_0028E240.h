@@ -3,8 +3,15 @@
 
 #include "types.h"
 
+/** Partial 0xC4-byte Field record with two signed identifying values. */
+typedef struct FieldRecord
+{
+    s16 unk00;
+    s16 unk02;
+    u8 pad[0xC0];
+} FieldRecord;
+
 #ifdef __cplusplus
-struct FieldRecord;
 /** Record selection links, eight signed slots, and a late virtual destructor. */
 struct FieldRecordSelection
 {
@@ -27,6 +34,13 @@ typedef struct FieldRecordSelection FieldRecordSelection;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Advance an inactive selection to the next positive slot, wrapping at either end.
+ * @param selection Selection whose current slot and active flag are updated.
+ * @param forward Nonzero to search forward, or zero to search backward.
+ */
+void func_0028E2B0(FieldRecordSelection* selection, s32 forward);
 
 /**
  * @brief Select entries with a nonzero value and clear state from the current field table.

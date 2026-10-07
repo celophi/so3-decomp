@@ -21,12 +21,65 @@ typedef struct FieldFloatState5C
     float values[5];
 } FieldFloatState5C;
 
+#ifdef __cplusplus
+/** Status window with an owned transform/display object. */
+class FieldClass15BB90 : public FieldClass150070
+{
+public:
+    /** @brief Initialize the window and its owned display object. */
+    FieldClass15BB90();
+
+    /** @brief Destroy the window and its owned display object. */
+    virtual ~FieldClass15BB90();
+
+    /** @brief Release the window resources. */
+    virtual void func_001DD7B0();
+
+    /** @brief Update the window state. */
+    virtual void func_001DF360();
+
+    s16 status;
+    u8 unk16[6];
+    u32 unk1c;
+    u32 unk20;
+    u32 unk24;
+    u32 unk28;
+    u32 unk2c;
+    u32 unk30;
+    u32 unk34;
+    u32 unk38;
+    u32 unk3c;
+    u32 unk40;
+    u32 unk44;
+    u32 unk48;
+    u32 unk4c;
+    u32 unk50;
+    u32 unk54;
+    u8 unk58;
+    u8 unk59[2];
+    u8 unk5b;
+    u8 unk5c;
+    u8 unk5d;
+    u8 unk5e[0x1A];
+    u32 unk78;
+    u8 unk7c[4];
+    LibVector4 unk80;
+    LibVector4 unk90;
+    u32 unka0;
+    u32 unka4;
+    u8 unka8[8];
+    LibClass178EA0 member;
+    u8 unk2c0[0x10];
+};
+typedef FieldClass15BB90 FieldStatus14;
+#else
 /** Partial receiver with a signed halfword at offset 0x14. */
 typedef struct FieldStatus14
 {
     u8 unk00[0x14];
     s16 status;
 } FieldStatus14;
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,6 +107,27 @@ void func_00301090(FieldByte4F9C90* object);
  * @param fifth Fifth value to store.
  */
 void func_002FD1B0(FieldFloatState5C* object, float first, float second, float third, float fourth, float fifth);
+
+/**
+ * @brief Attach the current auxiliary display to its manager.
+ * @param object Status window containing the display.
+ */
+void func_002FD1D0(FieldStatus14* object);
+
+/**
+ * @brief Replace the auxiliary display and attach its associated object.
+ * @param object Status window containing the display.
+ * @param attached Associated object passed to the display.
+ */
+void func_002FD220(FieldStatus14* object, void* attached);
+
+/**
+ * @brief Request the keyed status resource while the window is idle.
+ * @param object Status window receiving the request.
+ * @param key Resource key.
+ * @return One after a successful request, or zero otherwise.
+ */
+s32 func_002FDC00(FieldStatus14* object, s32 key);
 
 /**
  * @brief Advance cancellation state or clear the receiver's associated object.

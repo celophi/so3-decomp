@@ -6,6 +6,7 @@
 
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/lib/text_0044ABE0.h"
 
 class LibObject178660;
 
@@ -350,6 +351,42 @@ void func_002D8010(void* object);
 
 #ifdef __cplusplus
 }
+
+/** Field resource widget using resident table 0x15B240. */
+struct ItemCreationOptionResourceDisplay : public ItemCreationClass175110
+{
+    /** @brief Initialize the resource widget and clear its trailing state. */
+    ItemCreationOptionResourceDisplay()
+    {
+        unk124 = 0;
+        unk120 = 0;
+        unk11c = 0;
+        unk118 = 0;
+        ::func_002D6410(static_cast<FieldState2D6410*>(static_cast<void*>(this)));
+    }
+    /** @brief Destroy the resource widget. */
+    virtual ~ItemCreationOptionResourceDisplay();
+    /** @brief Refresh the resource widget. */
+    virtual void func_00413D20();
+    /** @brief Draw the resource widget. */
+    virtual void func_00462310();
+    void* unkcc;
+    u8 unkd0;
+    u8 unkd1[0x37];
+    FieldResourceRecord* unk108;
+    u16 unk10c;
+    u16 unk10e;
+    u8 unk110;
+    u8 unk111;
+    u8 unk112;
+    u8 unk113;
+    u8 unk114;
+    u8 unk115[3];
+    u32 unk118;
+    u32 unk11c;
+    u32 unk120;
+    u32 unk124;
+};
 #endif
 
 #endif
