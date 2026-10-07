@@ -401,8 +401,8 @@ func_00354050 = 0x00354050; // type:func allow_duplicated:True
 __dt__23ItemCreationClass186070Fv = 0x00354050; // type:func allow_duplicated:True
 func_003534D0 = 0x003534D0; // type:func allow_duplicated:True
 func_slotb0__23ItemCreationClass186070Fv = 0x003534D0; // type:func allow_duplicated:True
-func_slotf4__23ItemCreationClass186070FPv = 0x003537A0; // type:func allow_duplicated:True
 func_003537A0 = 0x003537A0; // type:func allow_duplicated:True
+func_slotf4__23ItemCreationClass186070FPv = 0x003537A0; // type:func allow_duplicated:True
 
 func_0044B110__14LibClass174610FiUcUiUcf = 0x0044B110; // type:func absolute:True
 func_003484C0 = 0x003484C0; // type:func allow_duplicated:True

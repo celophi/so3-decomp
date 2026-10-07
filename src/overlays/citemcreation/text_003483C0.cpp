@@ -4464,7 +4464,150 @@ s32 ItemCreationClass186070::func_slotb0()
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003537A0);
+/**
+ * @brief Allocate the panel transform and set its third coordinate.
+ * @param object Panel widget.
+ * @param z Third transform component.
+ * @return One on success, or zero if the transform could not be allocated.
+ */
+s32 func_4C4AB0(LibClass178630* object, float z);
+/**
+ * @brief Initialize an item widget's rectangle and item codes.
+ * @param object Item widget.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @param value Halfword item code.
+ * @param variant Byte item variant.
+ * @param flag Drawing state flag.
+ * @return One on success, or zero if its drawing storage could not be initialized.
+ */
+s32 func_413F70(LibObject172410* object, float x, float y, float width, float height, u16 value, u8 variant, u8 flag);
+/**
+ * @brief Initialize a detail widget's rectangle and value codes.
+ * @param object Detail widget.
+ * @param value Halfword value code.
+ * @param variant Byte value variant.
+ * @param flag Drawing state flag.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @return One on success, or zero if its drawing storage could not be initialized.
+ */
+s32 func_4143F0(LibObject172440* object, u16 value, u8 variant, u8 flag, float x, float y, float width, float height);
+/**
+ * @brief Create and configure the Field window's nested display container.
+ * @param object Field window receiver.
+ * @param associated Object associated with the window.
+ * @param first First container configuration value.
+ * @param second Second container configuration value.
+ * @param third Third container configuration value.
+ * @param x Horizontal coordinate.
+ * @param y Vertical coordinate.
+ * @param z Third coordinate.
+ * @return One when the container and associated object are present, otherwise zero.
+ */
+extern "C" s32 func_002CE760(FieldClass15AE70* object, void* associated, s32 first, s32 second, s32 third, float x, float y, float z);
+/** @brief Attach a widget to its container. @param object Container. @param child Widget to attach. */
+extern "C" void func_4C6190(LibObject178660* object, LibClass178600* child);
+/**
+ * @brief Set the display depth and mark it for drawing.
+ * @param display Drawing display.
+ * @param value Depth value.
+ */
+static inline void set_depth(LibClass174EF0* display, float value)
+{
+    display->unk88 = value;
+    display->unk3c = 1;
+}
+/** Partial Field runtime reached through D_001B657C. */
+struct FieldRuntime
+{
+    u8 unk00[0x514];
+    void* unk514;
+    u32 unk518;
+    void* unk51c;
+    u32 unk520;
+};
+
+/**
+ * @brief Create the window's panels, text and value displays and register its runtime callback.
+ * @param associated Text source associated with the window.
+ * @return Always one.
+ */
+s32 ItemCreationClass186070::func_slotf4(void* associated)
+{
+    func_002CE760(this, associated, 0, 9, 0xA28, 28.0f, 82.0f, 0.0f);
+    unke8 = new (0) LibObject178660;
+    func_004C6510(unke8, 5, 0, 0, 28.0f, 82.0f, 0.0f);
+    func_00465B20(D_001B657C, static_cast<LibClass174610*>(unke8));
+    unkf8 = new (0) LibClass178630;
+    func_004C5A80(unkf8, 1, 0.0f, 0.0f, 584.0f, 374.0f, 88.0f);
+    func_4C6190(unk10, unkf8);
+    func_4C4AB0(unkf8, 1500.0f);
+    unkac = new (0) LibObject178750;
+    unkb0 = new (0) LibObject172410;
+    unkb4 = new (0) LibObject174F20;
+    unkb8 = new (0) ItemCreationClass172870;
+    unkbc = new (0) LibObject178750;
+    unkc0 = new (0) LibObject178750;
+    for (s32 index = 0; index < 8; index++)
+    {
+        unkc4[index] = new (0) LibObject172440;
+    }
+    unkac->func_004C7FE0(16.0f, 12.0f, 0.0f, 0.0f, (s32)associated, unkec + 0x1B62, 0);
+    set_depth(unkac, -1.0f);
+    unkac->set_scale(0.8f, 0.8f);
+    unkac->set_color(0x805050);
+    func_4C6190(unk10, unkac);
+    func_413F70(unkb0, 24.0f, 34.0f, 0.0f, 0.0f, (u16)(s32)associated, unkee + 0xC350, 0);
+    set_depth(unkb0, -1.0f);
+    unkb0->set_scale(1.2f, 1.2f);
+    func_4C6190(unk10, unkb0);
+    func_00464D90(unkb4, 99, 0, 0, 430.0f, 16.0f, 100.0f, 30.0f);
+    unkb4->set_scale(2.0f, 2.0f);
+    unkb4->set_color(0x508050);
+    func_4C6190(unk10, unkb4);
+    unke4 = new (0) LibObject178750;
+    unke4->func_004C7FE0(550.0f, 40.0f, 0.0f, 0.0f, (s32)associated, 0x15FC4, 0);
+    unke4->set_scale(0.9f, 0.9f);
+    func_4C6190(unk10, unke4);
+    func_421170(unkb8, 8.0f, 69.0f, 568.0f, 3.0f);
+    ItemCreationClass172870* frame = unkb8;
+    frame->unk50 = 0x606060;
+    frame->unk3c = 1;
+    func_4C6190(unk10, unkb8);
+    unkbc->func_004C7FE0(24.0f, 80.0f, 534.0f, 66.0f, (s32)associated, unkee + 0xD6D8, 0);
+    unkbc->set_mode(0);
+    unkbc->set_vertical_alignment(1);
+    set_depth(unkbc, -1.0f);
+    unkbc->set_scale(0.9f, 0.9f);
+    func_4C6190(unke8, unkbc);
+    unkc0->func_004C7FE0(16.0f, 155.0f, 0.0f, 0.0f, (s32)associated, 0x15FE0, 0);
+    unkc0->set_scale(0.8f, 0.8f);
+    unkc0->set_color(0x805050);
+    set_depth(unkc0, -1.0f);
+    func_4C6190(unk10, unkc0);
+    FieldRuntime* runtime = D_001B657C;
+    runtime->unk51c = associated;
+    runtime->unk520 = 0x11171;
+    for (s32 index = 0; index < 8; index++)
+    {
+        func_4143F0(unkc4[index], 0, 1, 0, 26.0f, 178.0f + 24.0f * index, 0.0f, 0.0f);
+        set_depth(unkc4[index], -1.0f);
+        unkc4[index]->set_scale(0.8f, 0.8f);
+        func_4C6190(unke8, unkc4[index]);
+    }
+    float heights[5] = {52.0f, 104.0f, 208.0f, 312.0f, 342.0f};
+    LibObject178750* footer = new (0) LibObject178750;
+    footer->func_004C7FE0(12.0f, heights[4] - 8.0f, 555.0f, 24.0f, (s32)associated, 0x1B74, 0);
+    footer->set_scale(0.9f, 0.9f);
+    footer->set_mode(2);
+    func_4C6190(unke8, footer);
+    return 1;
+}
 
 /** @brief Release the container and base window contents. */
 void ItemCreationClass186070::func_slot0c()
@@ -6008,13 +6151,6 @@ extern "C"
  */
 void func_002CE220(FieldStateCE420* object, s32 count, s32 index, u8 row);
 /**
- * @brief Allocate the panel transform and set its third coordinate.
- * @param object Panel widget.
- * @param z Third transform component.
- * @return One on success, or zero if the transform could not be allocated.
- */
-s32 func_4C4AB0(LibClass178630* object, float z);
-/**
  * @brief Configure the frame widget's rectangle.
  * @param object Frame widget.
  * @param x Horizontal position.
@@ -6049,32 +6185,6 @@ void func_420D20(ItemCreationClass172870* object, u32 color);
  */
 s32 func_41A930(ItemCreationClass1725D0* object, float x, float y, float height, float first, float second);
 
-/**
- * @brief Initialize an item widget's rectangle and item codes.
- * @param object Item widget.
- * @param value Halfword item code.
- * @param variant Byte item variant.
- * @param flag Drawing state flag.
- * @param x Horizontal position.
- * @param y Vertical position.
- * @param width Rectangle width.
- * @param height Rectangle height.
- * @return One on success, or zero if its drawing storage could not be initialized.
- */
-s32 func_413F70(LibObject172410* object, u16 value, u8 variant, u8 flag, float x, float y, float width, float height);
-/**
- * @brief Initialize a detail widget's rectangle and value codes.
- * @param object Detail widget.
- * @param value Halfword value code.
- * @param variant Byte value variant.
- * @param flag Drawing state flag.
- * @param x Horizontal position.
- * @param y Vertical position.
- * @param width Rectangle width.
- * @param height Rectangle height.
- * @return One on success, or zero if its drawing storage could not be initialized.
- */
-s32 func_4143F0(LibObject172440* object, u16 value, u8 variant, u8 flag, float x, float y, float width, float height);
 /** @brief Update the active Field list. @param object List window receiver. */
 void func_002CD7C0(FieldClass15AD40* object);
 /** @brief Update the Field list parameters. @param object List parameter receiver. */
@@ -6097,20 +6207,6 @@ void func_0023C710(FieldObject23CEA0* object);
 
 }
 
-/**
- * @brief Create and configure the Field window's nested display container.
- * @param object Field window receiver.
- * @param associated Object associated with the window.
- * @param first First container configuration value.
- * @param second Second container configuration value.
- * @param third Third container configuration value.
- * @param x Horizontal coordinate.
- * @param y Vertical coordinate.
- * @param z Third coordinate.
- * @return One when the container and associated object are present, otherwise zero.
- */
-extern "C" s32 func_002CE760(FieldClass15AE70* object, void* associated, s32 first, s32 second, s32 third, float x, float y, float z);
-
 /** @brief Set the transform position. @param object Drawing transform. @param x Horizontal coordinate. @param y Vertical coordinate. */
 extern "C" void func_44B190(LibClass174610* object, float x, float y);
 
@@ -6123,18 +6219,6 @@ static inline void set_height(LibClass178600* widget, float height)
     widget->unk18.unk0c = height;
     widget->unk3c = 1;
 }
-
-/**
- * @brief Set the display depth and mark it for drawing.
- * @param display Drawing display.
- * @param value Depth value.
- */
-static inline void set_depth(LibClass174EF0* display, float value)
-{
-    display->unk88 = value;
-    display->unk3c = 1;
-}
-
 
 static inline bool valid_record_index_middle(s16 index);
 static inline ItemCreationAllocationRecord* allocation_record_middle(s32 value);
@@ -7208,7 +7292,7 @@ s32 ItemCreationClass186B70::func_slot104(void* associated)
         unk150[index]->unk3f = 0;
         func_004C6190(unk10, unk150[index]);
         unk138[index] = new (0) LibObject172410;
-        func_413F70(unk138[index], 100, 0, 0, 60.0f, y, 323.99997f, 21.599998f);
+        func_413F70(unk138[index], 60.0f, y, 323.99997f, 21.599998f, 100, 0, 0);
         unk138[index]->set_scale(0.9f, 0.9f);
         LibObject172410* display = unk138[index];
         display->unkfa = 1;
@@ -7245,7 +7329,7 @@ s32 ItemCreationClass186B70::func_slot104(void* associated)
     unk198->unk3f = 0;
     func_004C6190(unk10, unk198);
     unk1a8 = new (0) LibObject172410;
-    func_413F70(unk1a8, 0, 0, 0, 24.0f, 34.0f, 561.6f, 31.199999f);
+    func_413F70(unk1a8, 24.0f, 34.0f, 561.6f, 31.199999f, 0, 0, 0);
     LibObject172410* category_display = unk1a8;
     category_display->unkfc = unk1bc;
     category_display->unkfe = 0;
@@ -10615,10 +10699,6 @@ typedef struct ItemCreationThreeSlotDisplay
  * @return One when the container and associated object are present, otherwise zero.
  */
 extern "C" s32 func_002CE760(FieldClass15AE70* object, void* associated, s32 first, s32 second, s32 third, float x, float y, float z);
-/** @brief Attach a widget to its container. @param object Container. @param child Widget to attach. */
-extern "C" void func_4C6190(LibObject178660* object, LibClass178600* child);
-
-
 // Resident interfaces are scoped here because the shared declarations belong to another overlay.
 extern "C"
 {
@@ -12936,14 +13016,6 @@ struct ItemCreationBufferHeader
 {
     u8 unk00[0x40];
     s32 unk40;
-};
-
-/** Partial Field runtime reached through D_001B657C. */
-struct FieldRuntime
-{
-    u8 unk00[0x514];
-    void* unk514;
-    u32 unk518;
 };
 
 // Resident and Lib interfaces linked under this overlay's short names.
