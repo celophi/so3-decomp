@@ -4470,7 +4470,7 @@ s32 ItemCreationClass186070::func_slotb0()
  * @param z Third transform component.
  * @return One on success, or zero if the transform could not be allocated.
  */
-s32 func_4C4AB0(LibClass178630* object, float z);
+extern "C" s32 func_4C4AB0(LibClass178630* object, float z);
 /**
  * @brief Initialize an item widget's rectangle and item codes.
  * @param object Item widget.
@@ -4483,7 +4483,7 @@ s32 func_4C4AB0(LibClass178630* object, float z);
  * @param flag Drawing state flag.
  * @return One on success, or zero if its drawing storage could not be initialized.
  */
-s32 func_413F70(LibObject172410* object, float x, float y, float width, float height, u16 value, u8 variant, u8 flag);
+extern "C" s32 func_413F70(LibObject172410* object, float x, float y, float width, float height, u16 value, u8 variant, u8 flag);
 /**
  * @brief Initialize a detail widget's rectangle and value codes.
  * @param object Detail widget.
@@ -4496,7 +4496,7 @@ s32 func_413F70(LibObject172410* object, float x, float y, float width, float he
  * @param height Rectangle height.
  * @return One on success, or zero if its drawing storage could not be initialized.
  */
-s32 func_4143F0(LibObject172440* object, u16 value, u8 variant, u8 flag, float x, float y, float width, float height);
+extern "C" s32 func_4143F0(LibObject172440* object, u16 value, u8 variant, u8 flag, float x, float y, float width, float height);
 /**
  * @brief Create and configure the Field window's nested display container.
  * @param object Field window receiver.
@@ -4531,6 +4531,13 @@ struct FieldRuntime
     void* unk51c;
     u32 unk520;
 };
+
+/** Five row heights copied from the overlay's initialized data. */
+struct ItemCreationRowHeights5
+{
+    float values[5];
+};
+extern "C" ItemCreationRowHeights5 D_0036F5E0;
 
 /**
  * @brief Create the window's panels, text and value displays and register its runtime callback.
@@ -4600,9 +4607,10 @@ s32 ItemCreationClass186070::func_slotf4(void* associated)
         unkc4[index]->set_scale(0.8f, 0.8f);
         func_4C6190(unke8, unkc4[index]);
     }
-    float heights[5] = {52.0f, 104.0f, 208.0f, 312.0f, 342.0f};
+    // The compiler's initializer for {52, 104, 208, 312, 342} lives in the overlay's data at D_0036F5E0.
+    ItemCreationRowHeights5 heights = D_0036F5E0;
     LibObject178750* footer = new (0) LibObject178750;
-    footer->func_004C7FE0(12.0f, heights[4] - 8.0f, 555.0f, 24.0f, (s32)associated, 0x1B74, 0);
+    footer->func_004C7FE0(12.0f, heights.values[4] - 8.0f, 555.0f, 24.0f, (s32)associated, 0x1B74, 0);
     footer->set_scale(0.9f, 0.9f);
     footer->set_mode(2);
     func_4C6190(unke8, footer);
