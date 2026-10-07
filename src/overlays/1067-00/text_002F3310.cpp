@@ -12,7 +12,16 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F33
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F33A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F36F0);
+void FieldClass15BA10::func_001DD7B0()
+{
+    if (unk14 != 0)
+    {
+        func_004D65C0(unk14);
+        unk14->func_001DD7B0();
+        unk14 = 0;
+    }
+    delete this;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3760);
 
@@ -32,7 +41,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F38
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3B00);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3B90);
+void FieldClass15BA50::func_001DD7B0()
+{
+    func_004D65C0(this);
+    if (unk18 != 0)
+    {
+        func_004D65C0(this);
+        unk18->func_001DD7B0();
+    }
+    unk18 = 0;
+    delete this;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3C00);
 

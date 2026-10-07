@@ -38,7 +38,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027D380", func_0027D5
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027D380", func_0027D760);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027D380", func_0027DAB0);
+void FieldClass155B40::func_001DF360()
+{
+    FieldClass154EF0::func_001DF360();
+    if (unk20_2)
+    {
+        FieldVec4A position = unk30;
+        position.w = 10000.0f;
+        unk18->unkA50 = position;
+        func_slot20();
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027D380", func_0027DB20);
 

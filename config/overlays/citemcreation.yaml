@@ -52,6 +52,9 @@ segments:
       - [0x80, cpp, text_003483C0]
       - [0x27040, pad, text_end]
       - [0x27080, databin, data]
+      - [0x27260, .data, text_003483C0]
+      - [0x27274, pad, data_pad_0036F5F4]
+      - [0x27280, databin, data_0036F600]
       - start: 0x27300
         type: .rodata
         name: text_003483C0
@@ -74,16 +77,17 @@ segments:
         name: text_003483C0
         linker_section: .rodata.0036F7C0
         rodata_anchors:
-          - {function: item_creation_update_category_labels, offset: 0x0, size: 0x24}
+          - {function: item_creation_update_skill_labels, offset: 0x0, size: 0x24}
           - {function: func_00361220, offset: 0x30, size: 0x3c}
+          - {function: func_slotb0__20AssignedInventorGridFv, offset: 0x70, size: 0x34}
         linker_section_order: .rodata
-      - [0x274AC, rodatabin, rodata_0036F82C]
+      - [0x274E4, rodatabin, rodata_0036F864]
       - start: 0x274F0
         type: .rodata
         name: text_003483C0
         linker_section: .rodata.0036F870
         rodata_anchors:
-          - {function: func_00365600, offset: 0x0, size: 0x34}
+          - {function: item_creation_initialize_expansion_costs, offset: 0x0, size: 0x34}
           - {function: item_creation_inventor_skill_message, offset: 0x40, size: 0x98}
           - {function: item_creation_inventor_skill_mask, offset: 0xe0, size: 0x98}
           - {function: func_0036BF30__32ItemCreationSelectedDisplayStateFib, offset: 0x180, size: 0x24}

@@ -7,7 +7,7 @@
 typedef struct FieldHeldObject20
 {
     u8 unk00[0x20];
-    void* unk20;
+    struct FieldClass150070* unk20;
     u8 unk24[0x22C];
     s32 unk250;
 } FieldHeldObject20;
@@ -202,6 +202,18 @@ void func_0027EB80(void* data, void* value, s32 count, float strength);
  * @param object Holder of the attached object; nothing happens when the pointer is null.
  */
 void func_0027E7D0(FieldHeldObject20* object);
+
+/**
+ * @brief Drop one reference and release the attached object when none remain.
+ * @param object Holder of the attached object and its reference count.
+ */
+void func_0027E520(FieldHeldObject20* object);
+
+/**
+ * @brief Release the attached object and clear the reference count.
+ * @param object Holder of the attached object.
+ */
+void func_00280AF0(FieldHeldObject20* object);
 
 /**
  * @brief Report the supported operation flags.
@@ -2353,6 +2365,22 @@ s32 func_0028E090(void* object);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001DD3C0.h"
+
+/** Partial Field object with vtable D_156E60 in main data and an owned child at offset 0x40. */
+class FieldClass156E60 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156E60();
+    /** @brief Detach and delete the child, then detach this object and queue it for release. */
+    virtual void func_001DD7B0();
+    u8 unk14[0x2C];
+    FieldClass150070* unk40;
+};
 #endif
 
 #endif

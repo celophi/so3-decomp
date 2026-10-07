@@ -407,7 +407,32 @@ s32 func_0022B920(FieldCallback22B920* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022B950);
+/** Partial owner whose actor is stored at offset 0x7C. */
+struct FieldActorOwner22B950
+{
+    u8 unk00[0x7C];
+    FieldClass152430* actor;
+};
+
+/** Partial script callback with its owner at offset 0x10 and flags at offset 0x1C. */
+struct FieldActorCallback22B950
+{
+    u8 unk00[0x10];
+    FieldActorOwner22B950* owner;
+    u8 unk14[8];
+    u32 flags;
+};
+
+/**
+ * @brief Pass the callback's flag word to the owner's actor.
+ * @param object Script callback.
+ * @return One.
+ */
+extern "C" s32 func_0022B950(FieldActorCallback22B950* object)
+{
+    object->owner->actor->func_00226C10(object->flags);
+    return 1;
+}
 
 s32 func_0022B990(FieldCallback22B8F0* object)
 {
@@ -532,7 +557,29 @@ s32 func_0022C860(FieldCallback22C860* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022C890);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022C920);
+extern "C" void func_00249FE0(void* object);
+
+/** Partial object with its active bit in the byte at offset 0x4B5. */
+struct FieldObject22C920
+{
+    u8 unk00[0x4B5];
+    u8 active : 1;
+    u8 unk4b5_1_7 : 7;
+};
+
+/**
+ * @brief Set the active bit, calling func_00249FE0 first when it is being cleared.
+ * @param object Receiver holding the active bit.
+ * @param value New active bit in bit 0.
+ */
+extern "C" void func_0022C920(FieldObject22C920* object, u32 value)
+{
+    if (object->active && value == 0)
+    {
+        func_00249FE0(object);
+    }
+    object->active = value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022C990);
 

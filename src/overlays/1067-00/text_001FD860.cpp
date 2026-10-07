@@ -1,6 +1,7 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_001FD860.h"
 #include "main/resident_data.h"
+#include "overlays/lib/text_004BD360.h"
 
 struct FieldScriptCursorU32
 {
@@ -148,9 +149,29 @@ s32 func_001FDC90(FieldScriptCursorU32* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDCD0);
+s32 func_001FDCD0(FieldScriptCursorU32* object)
+{
+    u32 second;
+    u32* words = object->current;
+    second = words[1];
+    u32 first = words[0];
+    ResidentContextObject52* target = D_001B6430->context->unk44;
+    target->unk40 = first;
+    target->unk3c = second;
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDD00);
+s32 func_001FDD00(FieldScriptCursorU32* object)
+{
+    u32 second;
+    u32* words = object->current;
+    second = words[1];
+    ResidentContextObject52* target = D_001B6430->context->unk44;
+    u32 first = words[0];
+    target->unk38 = first;
+    target->unk34 = second;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDD30);
 
@@ -229,7 +250,25 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FED
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FEDA0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FEDF0);
+/** Partial owner of a Lib container at offset 0x5C8. */
+struct FieldOwner1FEDF0
+{
+    u8 unk00[0x5C8];
+    LibObject178660* unk5c8;
+};
+
+/**
+ * @brief Release the owned Lib container.
+ * @param owner Owner of the container.
+ */
+extern "C" void func_001FEDF0(FieldOwner1FEDF0* owner)
+{
+    if (owner->unk5c8 != 0)
+    {
+        owner->unk5c8->func_003EF740();
+        owner->unk5c8 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FEE30);
 

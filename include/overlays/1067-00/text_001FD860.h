@@ -227,6 +227,20 @@ s32 func_001FE230(FieldScriptCursorU32* object);
 s32 func_001FDC90(FieldScriptCursorU32* object);
 
 /**
+ * @brief Store the current two script words at offsets 0x40 and 0x3C of the context object.
+ * @param object Receiver containing the current script word pointer.
+ * @return Always 1.
+ */
+s32 func_001FDCD0(FieldScriptCursorU32* object);
+
+/**
+ * @brief Store the current two script words at offsets 0x38 and 0x34 of the context object.
+ * @param object Receiver containing the current script word pointer.
+ * @return Always 1.
+ */
+s32 func_001FDD00(FieldScriptCursorU32* object);
+
+/**
  * @brief Clear bit 0x40 in the word at offset 0x204.
  * @param object Receiver to update.
  */

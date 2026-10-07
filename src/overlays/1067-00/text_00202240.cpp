@@ -197,7 +197,81 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203C
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203DF0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203E20);
+/** Partial item flags with the enable bit word at offset 0x6A. */
+struct FieldItemFlags
+{
+    u8 unk00[0x6A];
+    u16 unk6a;
+};
+
+/** Partial item kind with its mode byte at offset 0xF. */
+struct FieldItemKind
+{
+    u8 unk00[0xF];
+    u8 unk0f;
+};
+
+/** Sixteen-byte item record. */
+struct FieldItemRecord
+{
+    u8 unk00;
+    u8 unk01[7];
+    FieldItemFlags* unk08;
+    FieldItemKind* unk0c;
+};
+
+/** Partial item count holder. */
+struct FieldItemCount
+{
+    u32 unk00;
+    s32 unk04;
+};
+
+/** Partial item table: records at offset 0x18 and their count holder at offset 0x20. */
+struct FieldItemState
+{
+    u8 unk00[0x18];
+    FieldItemRecord* unk18;
+    u32 unk1c;
+    FieldItemCount* unk20;
+};
+
+/** Partial owner of the item table at offset 0x7C (FieldClass150F90 layout). */
+struct FieldItemOwner
+{
+    u8 unk00[0x7C];
+    FieldItemState* unk7c;
+};
+
+/**
+ * @brief Set or clear bit 12 of the flags of every unused mode-one item.
+ * @param object Owner of the item table.
+ * @param enabled True to set the bit, false to clear it.
+ */
+extern "C" void func_00203E20(FieldItemOwner* object, bool enabled)
+{
+    if (!object->unk7c)
+    {
+        return;
+    }
+    s32 count = object->unk7c->unk20->unk04;
+    for (s32 index = 0; index < count; ++index)
+    {
+        FieldItemRecord* records = object->unk7c->unk18;
+        FieldItemFlags* flags = records[index].unk08;
+        if (records[index].unk00 == 0 && records[index].unk0c->unk0f == 1)
+        {
+            if (enabled)
+            {
+                flags->unk6a |= 0x1000;
+            }
+            else
+            {
+                flags->unk6a &= 0xEFFF;
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203EB0);
 

@@ -46,7 +46,12 @@ typedef struct ResidentContext08
 /** Partial attached receiver reached through the field context at offset 0x44. */
 typedef struct ResidentContextObject52
 {
-    u8 unk00[0x52];
+    u8 unk00[0x34];
+    u32 unk34;
+    u32 unk38;
+    u32 unk3c;
+    u32 unk40;
+    u8 unk44[0xE];
     u8 unk52_0 : 1;
     u8 unk52_1_7 : 7;
 } ResidentContextObject52;

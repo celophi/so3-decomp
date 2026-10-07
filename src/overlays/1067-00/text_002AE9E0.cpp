@@ -1,5 +1,8 @@
 #include "include_asm.h"
+#include "main/resident_001001E0.h"
 #include "overlays/1067-00/text_002AE9E0.h"
+#include "overlays/lib/text_004AB8B0.h"
+#include "overlays/1067-00/text_001DED80.h"
 
 /** Partial receiver with a byte at offset 0x60. */
 struct FieldByte60AE9E0
@@ -258,7 +261,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B6D
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B6DC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B6DF0);
+float FieldClass1591D0::func_002B6DF0(float key)
+{
+    return func_4B16C0(this, key);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B6E10);
 
@@ -328,7 +334,172 @@ void func_002B7C80(FieldSequenceVectorC0* object, FieldVec4B* output)
     *output = object->unkC0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7CA0);
+/** 48-byte vector keyframe of FieldClass1595D0; the value's fourth component is its key. */
+struct FieldTrackKey1595D0
+{
+    /** @brief Leave the vectors uninitialized. */
+    FieldTrackKey1595D0();
+
+    FieldVec4A value;
+    FieldVec4A first;
+    FieldVec4A second;
+};
+
+/** 16-byte keyframe of FieldClass159780; the value's fourth component is its key. */
+struct FieldTrackKey159780
+{
+    /** @brief Leave the value uninitialized. */
+    FieldTrackKey159780();
+
+    FieldVec4A value;
+};
+
+/** Partial 32-byte keyframe of FieldClass159810 with its key first. */
+struct FieldTrackKey159810
+{
+    /** @brief Leave the keyframe uninitialized. */
+    FieldTrackKey159810();
+
+    float key;
+    u8 unk04[0x1C];
+};
+
+/** Partial 48-byte keyframe of FieldClass1598A0 with its key first. */
+struct FieldTrackKey1598A0
+{
+    /** @brief Leave the keyframe uninitialized. */
+    FieldTrackKey1598A0();
+
+    float key;
+    u8 unk04[0x2C];
+};
+
+/** Partial 32-byte keyframe of FieldClass159660 with its key first. */
+struct FieldTrackKey159660
+{
+    /** @brief Leave the keyframe uninitialized. */
+    FieldTrackKey159660();
+
+    float key;
+    u8 unk04[0x1C];
+};
+
+/** 8-byte packed keyframe of FieldClass159540: three halfword values and a halfword key. */
+struct FieldTrackKey159540
+{
+    /**
+     * @brief Copy the values and key.
+     * @param entry Entry to copy.
+     * @return This entry.
+     */
+    FieldTrackKey159540& operator=(const FieldTrackKey159540& entry)
+    {
+        unk00[0] = entry.unk00[0];
+        unk00[1] = entry.unk00[1];
+        unk00[2] = entry.unk00[2];
+        key = entry.key;
+        return *this;
+    }
+
+    s16 unk00[3];
+    s16 key;
+};
+
+/** 8-byte scalar keyframe of FieldClass1596F0: a key followed by its value. */
+struct FieldTrackKey1596F0
+{
+    /**
+     * @brief Copy the key and value.
+     * @param entry Entry to copy.
+     * @return This entry.
+     */
+    FieldTrackKey1596F0& operator=(const FieldTrackKey1596F0& entry)
+    {
+        key = entry.key;
+        value = entry.value;
+        return *this;
+    }
+
+    float key;
+    float value;
+};
+
+/** @brief Return a FieldClass1595D0 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+static inline const FieldTrackKey1595D0* entry_1595D0(const FieldSequenceState40* object, s32 index)
+{
+    return &static_cast<const FieldTrackKey1595D0*>(object->unk04)[index];
+}
+
+/** @brief Return a FieldClass159780 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+static inline const FieldTrackKey159780* entry_159780(const FieldSequenceState20* object, s32 index)
+{
+    return &static_cast<const FieldTrackKey159780*>(object->unk04)[index];
+}
+
+/** @brief Return a FieldClass159810 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+static inline const FieldTrackKey159810* entry_159810(const FieldSequenceState30* object, s32 index)
+{
+    return &static_cast<const FieldTrackKey159810*>(object->unk04)[index];
+}
+
+/** @brief Return a FieldClass1598A0 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+static inline const FieldTrackKey1598A0* entry_1598A0(const FieldSequenceState40* object, s32 index)
+{
+    return &static_cast<const FieldTrackKey1598A0*>(object->unk04)[index];
+}
+
+/** @brief Return a FieldClass159660 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+static inline const FieldTrackKey159660* entry_159660(const FieldSequenceState30* object, s32 index)
+{
+    return &static_cast<const FieldTrackKey159660*>(object->unk04)[index];
+}
+
+/** @brief Return a FieldClass159540 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+static inline const FieldTrackKey159540* entry_159540(const FieldSequenceState10* object, s32 index)
+{
+    return &static_cast<const FieldTrackKey159540*>(object->unk04)[index];
+}
+
+/** @brief Return a FieldClass159540 keyframe's key. @param object Sequence receiver. @param index Entry index. @return Key as a float. */
+static inline float key_159540(const FieldSequenceState10* object, s32 index)
+{
+    return entry_159540(object, index)->key;
+}
+
+/** @brief Return a FieldClass1596F0 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+static inline const FieldTrackKey1596F0* entry_1596F0(const FieldSequenceState10* object, s32 index)
+{
+    return &static_cast<const FieldTrackKey1596F0*>(object->unk04)[index];
+}
+
+/**
+ * @brief Subtract the first three components.
+ * @param left Vector to subtract from.
+ * @param right Vector to subtract.
+ * @return Difference, keeping the left vector's fourth component.
+ */
+static inline FieldVec4A sequence_difference(const FieldVec4A& left, const FieldVec4A& right)
+{
+    FieldVec4A value;
+    value = left;
+    value.x -= right.x;
+    value.y -= right.y;
+    value.z -= right.z;
+    return value;
+}
+
+/**
+ * @brief Return the difference between the endpoint vectors.
+ * @param object Sequence receiver.
+ * @param output Receives the difference; unchanged when there are no entries.
+ */
+extern "C" void func_002B7CA0(const FieldSequenceState40* object, FieldVec4B* output)
+{
+    if (object->unk04 != 0)
+    {
+        *output = sequence_difference(entry_1595D0(object, object->state.unk08 - 1)->value, entry_1595D0(object, 0)->value);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7D20);
 
@@ -364,9 +535,25 @@ void func_002B7E60(FieldResetState04* object)
     object->unk0c = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7E80);
+extern "C" void func_002B7EF0(FieldClass1598A0* track);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7EF0);
+FieldClass1598A0::~FieldClass1598A0()
+{
+    func_002B7EF0(this);
+}
+
+/**
+ * @brief Release owned keyframe storage and clear the keyframe pointer.
+ * @param track Track whose storage is released; external storage is left alone.
+ */
+extern "C" void func_002B7EF0(FieldClass1598A0* track)
+{
+    if (!track->state.unk13_1)
+    {
+        delete[] static_cast<FieldTrackKey1598A0*>(track->unk04);
+    }
+    track->unk04 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B7F40);
 
@@ -392,7 +579,15 @@ void func_002B8090(FieldResetWords00* object)
     object->words[3] = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B80B0);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the evaluated vector.
+ */
+void FieldClass159810::func_002B80B0(float key, FieldVec4B* output) const
+{
+    *output = func_slot80(key);
+}
 
 void* func_002B8100(FieldSequenceState30* object)
 {
@@ -403,7 +598,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B81
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B81F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8350);
+extern "C" void func_002B87A0(FieldClass159780* track);
+
+FieldClass159780::~FieldClass159780()
+{
+    func_002B87A0(this);
+}
 
 void func_002B83C0(FieldSequenceState20* object)
 {
@@ -420,7 +620,20 @@ void func_002B83C0(FieldSequenceState20* object)
     object->state.unk13_1 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8450);
+/**
+ * @brief Bind an external keyframe array.
+ * @param object Sequence receiver.
+ * @param count Keyframe count.
+ * @param entries External keyframe storage.
+ */
+extern "C" void func_002B8450(FieldSequenceState20* object, s32 count, void* entries)
+{
+    object->state.unk13_1 = 1;
+    object->unk04 = entries;
+    object->state.unk0a = count;
+    object->state.unk08 = count;
+    object->state.span = entry_159780(object, count - 1)->value.w - entry_159780(object, 0)->value.w;
+}
 
 void func_002B84A0(FieldSequenceState20* object, u8 mode)
 {
@@ -449,7 +662,25 @@ s16 func_002B8580(FieldSequenceState20* object)
     return object->state.unk0a;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8590);
+/**
+ * @brief Test whether the track contains the supplied key.
+ * @param object Sequence receiver.
+ * @param key Key to find.
+ * @return One when the key exists, otherwise zero.
+ */
+extern "C" s32 func_002B8590(const FieldSequenceState20* object, float key)
+{
+    s16 count = object->state.unk08;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == entry_159780(object, index)->value.w)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void func_002B85E0(FieldResetWords00* object)
 {
@@ -459,22 +690,80 @@ void func_002B85E0(FieldResetWords00* object)
     object->words[3] = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8600);
+/**
+ * @brief Return the span between the first and last keys.
+ * @param object Sequence receiver.
+ * @return Last key minus first key, or zero with fewer than two entries.
+ */
+extern "C" float func_002B8600(const FieldSequenceState20* object)
+{
+    if (object->state.unk08 < 2)
+    {
+        return 0.0f;
+    }
+    return entry_159780(object, object->state.unk08 - 1)->value.w - entry_159780(object, 0)->value.w;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8650);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B86B0);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the evaluated vector.
+ */
+void FieldClass159780::func_002B86B0(float key, FieldVec4B* output) const
+{
+    *output = func_slot80(key);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8700);
+/**
+ * @brief Wrap a key into the stored key range.
+ * @param object Sequence receiver.
+ * @param key Key to wrap.
+ * @return The key less a whole number of key spans.
+ */
+extern "C" float func_002B8700(const FieldSequenceState20* object, float key)
+{
+    float first = entry_159780(object, 0)->value.w;
+    float range = entry_159780(object, object->state.unk08 - 1)->value.w - first;
+    float position = (key - first) / range;
+    s32 spans;
+    if (position < 0.0f)
+    {
+        position -= 1.0f;
+    }
+    spans = (s32)position;
+    if (spans != 0)
+    {
+        return key - spans * range;
+    }
+    return key;
+}
 
 void* func_002B8790(FieldSequenceState20* object)
 {
     return object->unk04;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B87A0);
+/**
+ * @brief Release owned keyframe storage and clear the keyframe pointer.
+ * @param track Track whose storage is released; external storage is left alone.
+ */
+extern "C" void func_002B87A0(FieldClass159780* track)
+{
+    if (!track->state.unk13_1)
+    {
+        delete[] static_cast<FieldTrackKey159780*>(track->unk04);
+    }
+    track->unk04 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B87F0);
+extern "C" void func_002B8AD0(FieldClass1596F0* track);
+
+FieldClass1596F0::~FieldClass1596F0()
+{
+    func_002B8AD0(this);
+}
 
 void func_002B8860(FieldSequenceState10* object)
 {
@@ -491,7 +780,22 @@ void func_002B8860(FieldSequenceState10* object)
     object->state.unk13_1 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B88F0);
+/**
+ * @brief Allocate storage for the requested keyframe count.
+ * @param object Sequence receiver.
+ * @param count Requested keyframe count.
+ */
+extern "C" void func_002B88F0(FieldSequenceState10* object, s32 count)
+{
+    object->state.unk13_1 = 0;
+    delete[] static_cast<FieldTrackKey1596F0*>(object->unk04);
+    object->unk04 = new (0) FieldTrackKey1596F0[count];
+    object->state.unk0a = count;
+    if (!object->unk04)
+    {
+        object->state.unk0a = 0;
+    }
+}
 
 void func_002B8990(FieldSequenceState10* object, u8 mode)
 {
@@ -525,20 +829,60 @@ extern "C" float func_002B8A80(FieldSequenceState10* object)
     return 0.0f;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8A90);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the evaluated value.
+ */
+void FieldClass1596F0::func_002B8A90(float key, float* output) const
+{
+    *output = func_slot80(key);
+}
 
 void* func_002B8AC0(FieldSequenceState10* object)
 {
     return object->unk04;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8AD0);
+/**
+ * @brief Release owned keyframe storage and clear the keyframe pointer.
+ * @param track Track whose storage is released; external storage is left alone.
+ */
+extern "C" void func_002B8AD0(FieldClass1596F0* track)
+{
+    if (!track->state.unk13_1)
+    {
+        delete[] static_cast<FieldTrackKey1596F0*>(track->unk04);
+    }
+    track->unk04 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8B20);
+extern "C" void func_002B8B90(FieldClass159660* track);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8B90);
+FieldClass159660::~FieldClass159660()
+{
+    func_002B8B90(this);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8BE0);
+/**
+ * @brief Release owned keyframe storage and clear the keyframe pointer.
+ * @param track Track whose storage is released; external storage is left alone.
+ */
+extern "C" void func_002B8B90(FieldClass159660* track)
+{
+    if (!track->state.unk13_1)
+    {
+        delete[] static_cast<FieldTrackKey159660*>(track->unk04);
+    }
+    track->unk04 = 0;
+}
+
+extern "C" void func_002B9090(FieldClass1595D0* track);
+
+FieldClass1595D0::~FieldClass1595D0()
+{
+    func_002B9090(this);
+}
 
 void func_002B8C50(FieldSequenceState40* object)
 {
@@ -555,7 +899,20 @@ void func_002B8C50(FieldSequenceState40* object)
     object->state.unk13_1 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8CE0);
+/**
+ * @brief Bind an external keyframe array.
+ * @param object Sequence receiver.
+ * @param count Keyframe count.
+ * @param entries External keyframe storage.
+ */
+extern "C" void func_002B8CE0(FieldSequenceState40* object, s32 count, void* entries)
+{
+    object->state.unk13_1 = 1;
+    object->unk04 = entries;
+    object->state.unk0a = count;
+    object->state.unk08 = count;
+    object->state.span = entry_1595D0(object, count - 1)->value.w - entry_1595D0(object, 0)->value.w;
+}
 
 void func_002B8D30(FieldSequenceState40* object, u8 mode)
 {
@@ -603,7 +960,25 @@ void func_002B8E50(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8E60);
+/**
+ * @brief Test whether the track contains the supplied key.
+ * @param object Sequence receiver.
+ * @param key Key to find.
+ * @return One when the key exists, otherwise zero.
+ */
+extern "C" s32 func_002B8E60(const FieldSequenceState40* object, float key)
+{
+    s16 count = object->state.unk08;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == entry_1595D0(object, index)->value.w)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void func_002B8EB0(FieldResetWords00* object)
 {
@@ -613,24 +988,93 @@ void func_002B8EB0(FieldResetWords00* object)
     object->words[3] = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8ED0);
+/**
+ * @brief Return the span between the first and last keys.
+ * @param object Sequence receiver.
+ * @return Last key minus first key, or zero with fewer than two entries.
+ */
+extern "C" float func_002B8ED0(const FieldSequenceState40* object)
+{
+    if (object->state.unk08 < 2)
+    {
+        return 0.0f;
+    }
+    return entry_1595D0(object, object->state.unk08 - 1)->value.w - entry_1595D0(object, 0)->value.w;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8F20);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8F90);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the evaluated vector.
+ */
+void FieldClass1595D0::func_002B8F90(float key, FieldVec4B* output) const
+{
+    *output = func_slot80(key);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B8FE0);
+/**
+ * @brief Wrap a key into the stored key range.
+ * @param object Sequence receiver.
+ * @param key Key to wrap.
+ * @return The key less a whole number of key spans.
+ */
+extern "C" float func_002B8FE0(const FieldSequenceState40* object, float key)
+{
+    float first = entry_1595D0(object, 0)->value.w;
+    float range = entry_1595D0(object, object->state.unk08 - 1)->value.w - first;
+    float position = (key - first) / range;
+    s32 spans;
+    if (position < 0.0f)
+    {
+        position -= 1.0f;
+    }
+    spans = (s32)position;
+    if (spans != 0)
+    {
+        return key - spans * range;
+    }
+    return key;
+}
 
 void* func_002B9080(FieldSequenceState40* object)
 {
     return object->unk04;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9090);
+/**
+ * @brief Release owned keyframe storage and clear the keyframe pointer.
+ * @param track Track whose storage is released; external storage is left alone.
+ */
+extern "C" void func_002B9090(FieldClass1595D0* track)
+{
+    if (!track->state.unk13_1)
+    {
+        delete[] static_cast<FieldTrackKey1595D0*>(track->unk04);
+    }
+    track->unk04 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B90E0);
+extern "C" void func_002B9150(FieldClass159540* track);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9150);
+FieldClass159540::~FieldClass159540()
+{
+    func_002B9150(this);
+}
+
+/**
+ * @brief Release owned keyframe storage and clear the keyframe pointer.
+ * @param track Track whose storage is released; external storage is left alone.
+ */
+extern "C" void func_002B9150(FieldClass159540* track)
+{
+    if (!track->state.unk13_1)
+    {
+        delete[] static_cast<FieldTrackKey159540*>(track->unk04);
+    }
+    track->unk04 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B91A0);
 
@@ -640,126 +1084,355 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B92
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B92B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9320);
+/**
+ * @brief Allocate storage for the requested keyframe count.
+ * @param object Sequence receiver.
+ * @param count Requested keyframe count.
+ */
+extern "C" void func_002B9320(FieldSequenceState40* object, s32 count)
+{
+    object->state.unk13_1 = 0;
+    delete[] static_cast<FieldTrackKey1595D0*>(object->unk04);
+    object->unk04 = new (0) FieldTrackKey1595D0[count];
+    object->state.unk0a = count;
+    if (!object->unk04)
+    {
+        object->state.unk0a = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B93D0);
+FieldTrackKey1595D0::FieldTrackKey1595D0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B93E0);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9450);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B94C0);
+/**
+ * @brief Wrap a key into the stored key range.
+ * @param object Sequence receiver.
+ * @param key Key to wrap.
+ * @return The key less a whole number of key spans.
+ */
+extern "C" float func_002B94C0(const FieldSequenceState10* object, float key)
+{
+    float first = entry_1596F0(object, 0)->key;
+    float range = entry_1596F0(object, object->state.unk08 - 1)->key - first;
+    float position = (key - first) / range;
+    s32 spans;
+    if (position < 0.0f)
+    {
+        position -= 1.0f;
+    }
+    spans = (s32)position;
+    if (spans != 0)
+    {
+        return key - spans * range;
+    }
+    return key;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9550);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B95B0);
+/**
+ * @brief Return the span between the first and last keys.
+ * @param object Sequence receiver.
+ * @return Last key minus first key, or zero with fewer than two entries.
+ */
+extern "C" float func_002B95B0(const FieldSequenceState10* object)
+{
+    if (object->state.unk08 < 2)
+    {
+        return 0.0f;
+    }
+    return entry_1596F0(object, object->state.unk08 - 1)->key - entry_1596F0(object, 0)->key;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9600);
+/**
+ * @brief Test whether the track contains the supplied key.
+ * @param object Sequence receiver.
+ * @param key Key to find.
+ * @return One when the key exists, otherwise zero.
+ */
+extern "C" s32 func_002B9600(const FieldSequenceState10* object, float key)
+{
+    s16 count = object->state.unk08;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == entry_1596F0(object, index)->key)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9650);
+/** @brief Forward a keyframe with a key to slot 0x74. */
+extern "C" void func_002B9650(FieldClass1596F0* object, const float* value, const float* first, const float* second, float key)
+{
+    object->func_002B9680(value, first, second, key);
+}
 
 void func_002B9680(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9690);
+/** @brief Forward an indexed keyframe insertion to slot 0x70. */
+extern "C" s32 func_002B9690(FieldClass1596F0* object, s32 index, float key, const float* value, const float* first, const float* second)
+{
+    return object->func_002B96C0(index, key, value, first, second);
+}
 
 s32 func_002B96C0(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B96D0);
+/** @brief Forward an indexed keyframe replacement to slot 0x6C. */
+extern "C" s32 func_002B96D0(FieldClass1596F0* object, s32 index, float key, const float* value, const float* first, const float* second)
+{
+    return object->func_002B9700(index, key, value, first, second);
+}
 
 s32 func_002B9700(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9710);
+/** @brief Forward a keyframe with a key to slot 0x68. */
+extern "C" s32 func_002B9710(FieldClass1596F0* object, const float* value, const float* first, const float* second, float key)
+{
+    return object->func_002B9740(value, first, second, key);
+}
 
 s32 func_002B9740(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9750);
+/**
+ * @brief Bind an external keyframe array.
+ * @param object Sequence receiver.
+ * @param count Keyframe count.
+ * @param entries External keyframe storage.
+ */
+extern "C" void func_002B9750(FieldSequenceState10* object, s32 count, void* entries)
+{
+    object->state.unk13_1 = 1;
+    object->unk04 = entries;
+    object->state.unk0a = count;
+    object->state.unk08 = count;
+    object->state.span = entry_1596F0(object, count - 1)->key - entry_1596F0(object, 0)->key;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B97A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9810);
+/** @brief Forward a vector set with a key to slot 0x74. */
+extern "C" void func_002B9810(FieldClass159780* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    object->func_002B9840(value, first, second, key);
+}
 
 void func_002B9840(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9850);
+/** @brief Forward an indexed vector insertion to slot 0x70. */
+extern "C" s32 func_002B9850(FieldClass159780* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002B9880(index, key, value, first, second);
+}
 
 s32 func_002B9880(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9890);
+/** @brief Forward an indexed vector replacement to slot 0x6C. */
+extern "C" s32 func_002B9890(FieldClass159780* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002B98C0(index, key, value, first, second);
+}
 
 s32 func_002B98C0(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B98D0);
+/** @brief Forward a vector set with a key to slot 0x68. */
+extern "C" s32 func_002B98D0(FieldClass159780* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    return object->func_002B9900(value, first, second, key);
+}
 
 s32 func_002B9900(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9910);
+/**
+ * @brief Allocate storage for the requested keyframe count.
+ * @param object Sequence receiver.
+ * @param count Requested keyframe count.
+ */
+extern "C" void func_002B9910(FieldSequenceState20* object, s32 count)
+{
+    object->state.unk13_1 = 0;
+    delete[] static_cast<FieldTrackKey159780*>(object->unk04);
+    object->unk04 = new (0) FieldTrackKey159780[count];
+    object->state.unk0a = count;
+    if (!object->unk04)
+    {
+        object->state.unk0a = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B99C0);
+FieldTrackKey159780::FieldTrackKey159780()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B99D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9A40);
+/**
+ * @brief Wrap a key into the stored key range.
+ * @param object Sequence receiver.
+ * @param key Key to wrap.
+ * @return The key less a whole number of key spans.
+ */
+extern "C" float func_002B9A40(const FieldSequenceState30* object, float key)
+{
+    float first = entry_159810(object, 0)->key;
+    float range = entry_159810(object, object->state.unk08 - 1)->key - first;
+    float position = (key - first) / range;
+    s32 spans;
+    if (position < 0.0f)
+    {
+        position -= 1.0f;
+    }
+    spans = (s32)position;
+    if (spans != 0)
+    {
+        return key - spans * range;
+    }
+    return key;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9AD0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9B30);
+/**
+ * @brief Return the span between the first and last keys.
+ * @param object Sequence receiver.
+ * @return Last key minus first key, or zero with fewer than two entries.
+ */
+extern "C" float func_002B9B30(const FieldSequenceState30* object)
+{
+    if (object->state.unk08 < 2)
+    {
+        return 0.0f;
+    }
+    return entry_159810(object, object->state.unk08 - 1)->key - entry_159810(object, 0)->key;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9B80);
+/**
+ * @brief Test whether the track contains the supplied key.
+ * @param object Sequence receiver.
+ * @param key Key to find.
+ * @return One when the key exists, otherwise zero.
+ */
+extern "C" s32 func_002B9B80(const FieldSequenceState30* object, float key)
+{
+    s16 count = object->state.unk08;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == entry_159810(object, index)->key)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9BD0);
+/** @brief Forward a vector set with a key to slot 0x74. */
+extern "C" void func_002B9BD0(FieldClass159810* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    object->func_002B9C00(value, first, second, key);
+}
 
 void func_002B9C00(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9C10);
+/** @brief Forward an indexed vector insertion to slot 0x70. */
+extern "C" s32 func_002B9C10(FieldClass159810* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002B9C40(index, key, value, first, second);
+}
 
 s32 func_002B9C40(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9C50);
+/** @brief Forward an indexed vector replacement to slot 0x6C. */
+extern "C" s32 func_002B9C50(FieldClass159810* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002B9C80(index, key, value, first, second);
+}
 
 s32 func_002B9C80(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9C90);
+/** @brief Forward a vector set with a key to slot 0x68. */
+extern "C" s32 func_002B9C90(FieldClass159810* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    return object->func_002B9CC0(value, first, second, key);
+}
 
 s32 func_002B9CC0(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9CD0);
+/**
+ * @brief Bind an external keyframe array.
+ * @param object Sequence receiver.
+ * @param count Keyframe count.
+ * @param entries External keyframe storage.
+ */
+extern "C" void func_002B9CD0(FieldSequenceState30* object, s32 count, void* entries)
+{
+    object->state.unk13_1 = 1;
+    object->unk04 = entries;
+    object->state.unk0a = count;
+    object->state.unk08 = count;
+    object->state.span = entry_159810(object, count - 1)->key - entry_159810(object, 0)->key;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9D20);
+/**
+ * @brief Allocate storage for the requested keyframe count.
+ * @param object Sequence receiver.
+ * @param count Requested keyframe count.
+ */
+extern "C" void func_002B9D20(FieldSequenceState30* object, s32 count)
+{
+    object->state.unk13_1 = 0;
+    delete[] static_cast<FieldTrackKey159810*>(object->unk04);
+    object->unk04 = new (0) FieldTrackKey159810[count];
+    object->state.unk0a = count;
+    if (!object->unk04)
+    {
+        object->state.unk0a = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9DD0);
+FieldTrackKey159810::FieldTrackKey159810()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B9DE0);
 
@@ -844,9 +1517,37 @@ void func_002BAE90(FieldSequenceState40* object)
     object->state.unk13_1 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BAF20);
+/**
+ * @brief Allocate storage for the requested keyframe count.
+ * @param object Sequence receiver.
+ * @param count Requested keyframe count.
+ */
+extern "C" void func_002BAF20(FieldSequenceState40* object, s32 count)
+{
+    object->state.unk13_1 = 0;
+    delete[] static_cast<FieldTrackKey1598A0*>(object->unk04);
+    object->unk04 = new (0) FieldTrackKey1598A0[count];
+    object->state.unk0a = count;
+    if (!object->unk04)
+    {
+        object->state.unk0a = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BAFD0);
+/**
+ * @brief Bind an external keyframe array.
+ * @param object Sequence receiver.
+ * @param count Keyframe count.
+ * @param entries External keyframe storage.
+ */
+extern "C" void func_002BAFD0(FieldSequenceState40* object, s32 count, void* entries)
+{
+    object->state.unk13_1 = 1;
+    object->unk04 = entries;
+    object->state.unk0a = count;
+    object->state.unk08 = count;
+    object->state.span = entry_1598A0(object, count - 1)->key - entry_1598A0(object, 0)->key;
+}
 
 void func_002BB020(FieldSequenceState40* object, u8 mode)
 {
@@ -874,29 +1575,63 @@ s32 func_002BB0B0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB0C0);
+/** @brief Forward a vector set with a key to slot 0x68. */
+extern "C" s32 func_002BB0C0(FieldClass1598A0* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    return object->func_002BB0B0(value, first, second, key);
+}
 
 s32 func_002BB0F0(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB100);
+/** @brief Forward an indexed vector replacement to slot 0x6C. */
+extern "C" s32 func_002BB100(FieldClass1598A0* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002BB0F0(index, key, value, first, second);
+}
 
 s32 func_002BB130(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB140);
+/** @brief Forward an indexed vector insertion to slot 0x70. */
+extern "C" s32 func_002BB140(FieldClass1598A0* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002BB130(index, key, value, first, second);
+}
 
 void func_002BB170(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB180);
+/** @brief Forward a vector set with a key to slot 0x74. */
+extern "C" void func_002BB180(FieldClass1598A0* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    object->func_002BB170(value, first, second, key);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB1B0);
+/**
+ * @brief Test whether the track contains the supplied key.
+ * @param object Sequence receiver.
+ * @param key Key to find.
+ * @return One when the key exists, otherwise zero.
+ */
+extern "C" s32 func_002BB1B0(const FieldSequenceState40* object, float key)
+{
+    s16 count = object->state.unk08;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == entry_1598A0(object, index)->key)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void func_002BB200(FieldResetWords00* object)
 {
@@ -906,13 +1641,55 @@ void func_002BB200(FieldResetWords00* object)
     object->words[3] = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB220);
+/**
+ * @brief Return the span between the first and last keys.
+ * @param object Sequence receiver.
+ * @return Last key minus first key, or zero with fewer than two entries.
+ */
+extern "C" float func_002BB220(const FieldSequenceState40* object)
+{
+    if (object->state.unk08 < 2)
+    {
+        return 0.0f;
+    }
+    return entry_1598A0(object, object->state.unk08 - 1)->key - entry_1598A0(object, 0)->key;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB270);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB2E0);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the evaluated vector.
+ */
+void FieldClass1598A0::func_002BB2E0(float key, FieldVec4B* output) const
+{
+    *output = func_slot80(key);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB330);
+/**
+ * @brief Wrap a key into the stored key range.
+ * @param object Sequence receiver.
+ * @param key Key to wrap.
+ * @return The key less a whole number of key spans.
+ */
+extern "C" float func_002BB330(const FieldSequenceState40* object, float key)
+{
+    float first = entry_1598A0(object, 0)->key;
+    float range = entry_1598A0(object, object->state.unk08 - 1)->key - first;
+    float position = (key - first) / range;
+    s32 spans;
+    if (position < 0.0f)
+    {
+        position -= 1.0f;
+    }
+    spans = (s32)position;
+    if (spans != 0)
+    {
+        return key - spans * range;
+    }
+    return key;
+}
 
 void* func_002BB3D0(FieldSequenceState40* object)
 {
@@ -925,7 +1702,22 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB4
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB620);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB6B0);
+/**
+ * @brief Allocate storage for the requested keyframe count.
+ * @param object Sequence receiver.
+ * @param count Requested keyframe count.
+ */
+extern "C" void func_002BB6B0(FieldSequenceState30* object, s32 count)
+{
+    object->state.unk13_1 = 0;
+    delete[] static_cast<FieldTrackKey159660*>(object->unk04);
+    object->unk04 = new (0) FieldTrackKey159660[count];
+    object->state.unk0a = count;
+    if (!object->unk04)
+    {
+        object->state.unk0a = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB760);
 
@@ -949,27 +1741,43 @@ s32 func_002BB7F0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB800);
+/** @brief Forward a vector set with a key to slot 0x68. */
+extern "C" s32 func_002BB800(FieldClass159660* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    return object->func_002BB7F0(value, first, second, key);
+}
 
 s32 func_002BB830(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB840);
+/** @brief Forward an indexed vector replacement to slot 0x6C. */
+extern "C" s32 func_002BB840(FieldClass159660* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002BB830(index, key, value, first, second);
+}
 
 s32 func_002BB870(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB880);
+/** @brief Forward an indexed vector insertion to slot 0x70. */
+extern "C" s32 func_002BB880(FieldClass159660* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002BB870(index, key, value, first, second);
+}
 
 void func_002BB8B0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB8C0);
+/** @brief Forward a vector set with a key to slot 0x74. */
+extern "C" void func_002BB8C0(FieldClass159660* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    object->func_002BB8B0(value, first, second, key);
+}
 
 void func_002BB8F0(FieldResetWords00* object)
 {
@@ -979,20 +1787,44 @@ void func_002BB8F0(FieldResetWords00* object)
     object->words[3] = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB910);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the evaluated vector.
+ */
+void FieldClass159660::func_002BB910(float key, FieldVec4B* output) const
+{
+    *output = func_slot80(key);
+}
 
 void* func_002BB960(FieldSequenceState30* object)
 {
     return object->unk04;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB970);
+/** @brief Forward a vector set with a key to slot 0x68. */
+extern "C" s32 func_002BB970(FieldClass1595D0* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    return object->func_002B8E20(value, first, second, key);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB9A0);
+/** @brief Forward an indexed vector set with a key to slot 0x6C. */
+extern "C" s32 func_002BB9A0(FieldClass1595D0* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002B8E30(index, key, value, first, second);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BB9D0);
+/** @brief Forward an indexed vector set with a key to slot 0x70. */
+extern "C" s32 func_002BB9D0(FieldClass1595D0* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002B8E40(index, key, value, first, second);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBA00);
+/** @brief Forward a vector set with a key to slot 0x74. */
+extern "C" void func_002BBA00(FieldClass1595D0* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    object->func_002B8E50(value, first, second, key);
+}
 
 void func_002BBA30(FieldSequenceState10* object)
 {
@@ -1009,9 +1841,37 @@ void func_002BBA30(FieldSequenceState10* object)
     object->state.unk13_1 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBAC0);
+/**
+ * @brief Allocate storage for the requested keyframe count.
+ * @param object Sequence receiver.
+ * @param count Requested keyframe count.
+ */
+extern "C" void func_002BBAC0(FieldSequenceState10* object, s32 count)
+{
+    object->state.unk13_1 = 0;
+    delete[] static_cast<FieldTrackKey159540*>(object->unk04);
+    object->unk04 = new (0) FieldTrackKey159540[count];
+    object->state.unk0a = count;
+    if (!object->unk04)
+    {
+        object->state.unk0a = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBB60);
+/**
+ * @brief Bind an external keyframe array.
+ * @param object Sequence receiver.
+ * @param count Keyframe count.
+ * @param entries External keyframe storage.
+ */
+extern "C" void func_002BBB60(FieldSequenceState10* object, s32 count, void* entries)
+{
+    object->state.unk13_1 = 1;
+    object->unk04 = entries;
+    object->state.unk0a = count;
+    object->state.unk08 = count;
+    object->state.span = key_159540(object, count - 1) - key_159540(object, 0);
+}
 
 void func_002BBBC0(FieldSequenceState10* object, u8 mode)
 {
@@ -1039,29 +1899,63 @@ s32 func_002BBC50(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBC60);
+/** @brief Forward a vector set with a key to slot 0x68. */
+extern "C" s32 func_002BBC60(FieldClass159540* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    return object->func_002BBC50(value, first, second, key);
+}
 
 s32 func_002BBC90(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBCA0);
+/** @brief Forward an indexed vector replacement to slot 0x6C. */
+extern "C" s32 func_002BBCA0(FieldClass159540* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002BBC90(index, key, value, first, second);
+}
 
 s32 func_002BBCD0(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBCE0);
+/** @brief Forward an indexed vector insertion to slot 0x70. */
+extern "C" s32 func_002BBCE0(FieldClass159540* object, s32 index, float key, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second)
+{
+    return object->func_002BBCD0(index, key, value, first, second);
+}
 
 void func_002BBD10(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBD20);
+/** @brief Forward a vector set with a key to slot 0x74. */
+extern "C" void func_002BBD20(FieldClass159540* object, const FieldVec4B* value, const FieldVec4B* first, const FieldVec4B* second, float key)
+{
+    object->func_002BBD10(value, first, second, key);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBD50);
+/**
+ * @brief Test whether the track contains the supplied key.
+ * @param object Sequence receiver.
+ * @param key Key to find.
+ * @return One when the key exists, otherwise zero.
+ */
+extern "C" s32 func_002BBD50(const FieldSequenceState10* object, float key)
+{
+    s16 count = object->state.unk08;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == key_159540(object, index))
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void func_002BBDB0(FieldResetWords00* object)
 {
@@ -1071,32 +1965,143 @@ void func_002BBDB0(FieldResetWords00* object)
     object->words[3] = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBDD0);
+/**
+ * @brief Return the span between the first and last keys.
+ * @param object Sequence receiver.
+ * @return Last key minus first key, or zero with fewer than two entries.
+ */
+extern "C" float func_002BBDD0(const FieldSequenceState10* object)
+{
+    if (object->state.unk08 < 2)
+    {
+        return 0.0f;
+    }
+    return key_159540(object, object->state.unk08 - 1) - key_159540(object, 0);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBE30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBF20);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the evaluated vector.
+ */
+void FieldClass159540::func_002BBF20(float key, FieldVec4B* output) const
+{
+    *output = func_slot80(key);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BBF70);
+/**
+ * @brief Wrap a key into the stored key range.
+ * @param object Sequence receiver.
+ * @param key Key to wrap.
+ * @return The key less a whole number of key spans.
+ */
+extern "C" float func_002BBF70(const FieldSequenceState10* object, float key)
+{
+    float first = key_159540(object, 0);
+    float range = key_159540(object, object->state.unk08 - 1) - first;
+    float position = (key - first) / range;
+    s32 spans;
+    if (position < 0.0f)
+    {
+        position -= 1.0f;
+    }
+    spans = (s32)position;
+    if (spans != 0)
+    {
+        return key - spans * range;
+    }
+    return key;
+}
 
 void* func_002BC010(FieldSequenceState10* object)
 {
     return object->unk04;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BC020);
+/**
+ * @brief Wrap a key into the stored key range.
+ * @param object Sequence receiver.
+ * @param key Key to wrap.
+ * @return The key less a whole number of key spans.
+ */
+extern "C" float func_002BC020(const FieldSequenceState30* object, float key)
+{
+    float first = entry_159660(object, 0)->key;
+    float range = entry_159660(object, object->state.unk08 - 1)->key - first;
+    float position = (key - first) / range;
+    s32 spans;
+    if (position < 0.0f)
+    {
+        position -= 1.0f;
+    }
+    spans = (s32)position;
+    if (spans != 0)
+    {
+        return key - spans * range;
+    }
+    return key;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BC0B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BC110);
+/**
+ * @brief Return the span between the first and last keys.
+ * @param object Sequence receiver.
+ * @return Last key minus first key, or zero with fewer than two entries.
+ */
+extern "C" float func_002BC110(const FieldSequenceState30* object)
+{
+    if (object->state.unk08 < 2)
+    {
+        return 0.0f;
+    }
+    return entry_159660(object, object->state.unk08 - 1)->key - entry_159660(object, 0)->key;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BC160);
+/**
+ * @brief Test whether the track contains the supplied key.
+ * @param object Sequence receiver.
+ * @param key Key to find.
+ * @return One when the key exists, otherwise zero.
+ */
+extern "C" s32 func_002BC160(const FieldSequenceState30* object, float key)
+{
+    s16 count = object->state.unk08;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == entry_159660(object, index)->key)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BC1B0);
+/**
+ * @brief Bind an external keyframe array.
+ * @param object Sequence receiver.
+ * @param count Keyframe count.
+ * @param entries External keyframe storage.
+ */
+extern "C" void func_002BC1B0(FieldSequenceState30* object, s32 count, void* entries)
+{
+    object->state.unk13_1 = 1;
+    object->unk04 = entries;
+    object->state.unk0a = count;
+    object->state.unk08 = count;
+    object->state.span = entry_159660(object, count - 1)->key - entry_159660(object, 0)->key;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BC200);
+FieldTrackKey159660::FieldTrackKey159660()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002BC210);
+FieldTrackKey1598A0::FieldTrackKey1598A0()
+{
+}
 
 /**
  * @brief Report this object's type value.

@@ -1,5 +1,7 @@
 #include "include_asm.h"
+#include "overlays/1067-00/text_00202240.h"
 #include "overlays/1067-00/text_002CEAF0.h"
+#include "overlays/lib/text_004BD360.h"
 
 /** Partial object with byte values at 0x18 and 0x88, and flags at 0x1A. */
 typedef struct FieldD1440Object
@@ -142,7 +144,16 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D18
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1980);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D19E0);
+/**
+ * @brief Run the base release handler, detach the object, then delete it.
+ * @param object Object to release.
+ */
+extern "C" void func_002D19E0(FieldClass150F90* object)
+{
+    object->FieldClass150F90::func_00204E40();
+    func_004D65C0(object);
+    object->func_001DD7B0();
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1A20);
 
@@ -150,7 +161,32 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1A
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1C10);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1D70);
+/** Partial owner of a Lib container with a state bit at offset 0x55. */
+struct FieldOwner2D1D70
+{
+    u8 unk00[0x4C];
+    LibObject178660* unk4c;
+    u32 unk50;
+    u8 unk54;
+    u8 unk55_0_2 : 3;
+    u8 unk55_3 : 1;
+    u8 unk55_4_7 : 4;
+};
+
+/**
+ * @brief Release the owned Lib container and clear the state bit.
+ * @param owner Owner of the container.
+ */
+extern "C" void func_002D1D70(FieldOwner2D1D70* owner)
+{
+    owner->unk50 = 0;
+    if (owner->unk4c != 0)
+    {
+        owner->unk4c->func_003EF740();
+        owner->unk4c = 0;
+    }
+    owner->unk55_3 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1DD0);
 

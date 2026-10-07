@@ -1,7 +1,10 @@
+#include "overlays/1067-00/grid_marker.h"
+#include "overlays/1067-00/text_marker.h"
 #include "main/resident_0010A0E0.h"
 #include "main/resident_data.h"
 #include "include_asm.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/citemcreation/text_003483C0.h"
 #include "overlays/citemcreation/text_00358440.h"
@@ -32,20 +35,18 @@ enum ItemCreationFacilityFlag
     ITEM_CREATION_FACILITY_SYTH = 0x80
 };
 
-/** Partial view of an optional display whose concrete type is unknown. */
-struct ItemCreationVisibility3F
-{
-    u8 unk00[0x3F];
-    u8 unk3f;
-};
-
 extern "C" LibWidgetColors4C5590 D_0036F600;
 
-/** Resident seven-widget aggregate with its true callback pointer at 0x31C. */
+/** Partial widget aggregate with grid settings and selection callbacks. */
 class LibClass1723F0
 {
 public:
-    u8 unk00[0x2F8];
+    u8 unk00[0x90];
+    ItemCreationClass1746A0 unk90;
+    ItemCreationClass1746A0 unke4;
+    ItemCreationClass1725D0 unk138;
+    ItemCreationClass175030 unk190;
+    u8 unk20c[0xEC];
     s32 unk2f8;
     u8 unk2fc[8];
     s32 unk304;
@@ -65,7 +66,7 @@ public:
     /** @brief Refresh the aggregate. */
     virtual void func_00413020();
 };
-/** Resident 0x410-byte container whose aggregate is its genuine second base. */
+/** Widget container with an object base and a selection aggregate. */
 class LibClass172320 : public LibObject178660, public LibClass1723F0
 {
 public:
@@ -111,7 +112,7 @@ public:
     u8 unk4aa;
     u8 unk4ab[5];
 };
-/** 0x4C0-byte option container with the recovered resident ancestry. */
+/** Inventor status list with up to 32 row widgets. */
 class InventorStatusList : public LibClass1721F0
 {
 public:
@@ -142,6 +143,26 @@ extern "C" u8 func_4135D0(LibClass1723F0* aggregate);
 extern "C" s32 func_413460(LibClass1723F0* aggregate);
 /** @brief Refresh the aggregate. @param aggregate Aggregate owner. */
 extern "C" void func_413750(LibClass1723F0* aggregate);
+
+/**
+ * @brief Configure the aggregate grid and its visible row dimensions.
+ * @param object Widget aggregate.
+ * @param count Number of selectable entries.
+ * @param columns Entries per row.
+ * @param rows Number of visible rows.
+ * @param width Horizontal grid extent.
+ * @param row_height Height of each row.
+ * @param timing Movement timing value.
+ */
+extern "C" void func_413C00(LibClass1723F0* object, s32 count, s32 columns, s32 rows, float width, float row_height, float timing);
+/**
+ * @brief Set the aggregate selection and refresh its widgets.
+ * @param object Widget aggregate.
+ * @param first First displayed row.
+ * @param second Selected entry within the visible grid.
+ * @param count Number of selectable entries.
+ */
+extern "C" void func_4138E0(LibClass1723F0* object, s32 first, s32 second, s32 count);
 
 
 /**
@@ -257,51 +278,6 @@ typedef struct ItemCreationRuntime643C
     FieldBufferSlots* unk20;
 } ItemCreationRuntime643C;
 
-/** Partial nested object containing the byte set when restoring its parent. */
-struct ItemCreationSelectionRestoreMarker
-{
-    u8 unk00[0xAD];
-    u8 unkad;
-};
-
-/** Partial associated window with its restore marker. */
-struct ItemCreationPopupReturnParent
-{
-    u8 unk00[0xB4];
-    FieldObject23CEA0* unkb4;
-};
-
-/** Partial parent context returned by the selection window's associated-object hook. */
-struct ItemCreationSelectionRestoreParent
-{
-    u8 unk00[0xB4];
-    ItemCreationSelectionRestoreMarker* unkb4;
-};
-
-/** Partial category-one target selected by native MAIN15BB30. */
-class FieldClass15BB30 : public ItemCreationClass184EF0
-{
-public:
-    u8 unk90[0x320];
-    s32 unk3b0;
-    u8 unk3b4[0x14];
-    u16 unk3c8;
-};
-
-class FieldClass15BB50 : public ItemCreationClass184EF0
-{
-public:
-    u8 unk90[4];
-    s16 unk94;
-    u8 unk96[0x22];
-};
-class FieldClass15BB70 : public ItemCreationClass184EF0
-{
-public:
-    u8 unk90[0x50];
-    s16 unke0;
-    u8 unke2[0x26];
-};
 /**
  * @brief Configure the packed allocation record and its detail values.
  * @param record Allocation record to configure.
@@ -313,10 +289,6 @@ public:
  */
 extern "C" void func_40D2E0(ItemCreationAllocationRecord* record, u16 value, u8 channel,
                           const u16* values, bool flag, bool enabled);
-
-/** @brief Initialize the option container. @param object Allocated container. @return Initialized container. */
-/** @brief Set up the option rows. @param object Option container. @param associated Associated source. @param count Option count. @return Setup status. */
-extern "C" s32 func_00352020(InventorStatusList* object, void* associated, s32 count);
 
 /**
  * @brief Store text field 88 and mark the widget for redraw.
@@ -2339,7 +2311,7 @@ static inline void set_transfer_workshop_id(InventorTransferWindow* object, s32 
  */
 static inline LibObject178750* transfer_workshop_title(InventorTransferWindow* object, s32 group)
 {
-    return static_cast<LibObject178750*>(group == 0 ? object->source_workshop_name : object->destination_workshop_name);
+    return group == 0 ? object->source_workshop_name : object->destination_workshop_name;
 }
 /**
  * @brief Return one of a workshop's facility labels.
@@ -2348,7 +2320,7 @@ static inline LibObject178750* transfer_workshop_title(InventorTransferWindow* o
  * @param index Label index.
  * @return Label widget.
  */
-static inline LibClass174EF0* transfer_facility_label(InventorTransferWindow* object, s32 group, s32 index)
+static inline LibObject178750* transfer_facility_label(InventorTransferWindow* object, s32 group, s32 index)
 {
     return group == 0 ? object->source_facility_labels[index] : object->destination_facility_labels[index];
 }
@@ -2523,16 +2495,17 @@ extern "C" void func_0034DB00(InventorTransferWindow* object, u8 option)
     }
 }
 
-void func_0034E4D0(InventorTransferWindow* object, u16 direction)
+/** @brief Move the transfer selector and refresh both workshop details. @param direction Direction code. */
+void InventorTransferWindow::func_slotf8(u16 direction)
 {
     ItemCreationSelection* selection;
     const float* position;
     s32 index;
     u8 selected;
 
-    if (object->unk15c != 0 && object->unk15c->unk35 != 0)
+    if (unk15c != 0 && unk15c->unk35 != 0)
     {
-        selection = &object->unkdc;
+        selection = &unkdc;
         index = func_003696B0(selection, direction);
         if (index <= 0)
         {
@@ -2546,12 +2519,12 @@ void func_0034E4D0(InventorTransferWindow* object, u16 direction)
         {
             position = selection->unk00[index - 1].unk00;
         }
-        object->unk15c->func_00466E40(position[0], position[1], 0.05f);
+        unk15c->func_00466E40(position[0], position[1], 0.05f);
         func_002CFE40(D_001B643C->unk10, 0);
     }
-    selected = object->workshop_selection->unk6c;
-    func_0034DB00(object, selected);
-    func_0034D980(object, selected);
+    selected = workshop_selection->unk6c;
+    func_0034DB00(this, selected);
+    func_0034D980(this, selected);
 }
 
 /**
@@ -2601,7 +2574,7 @@ s32 InventorTransferWindow::func_slotb4()
     {
     case 0:
     {
-        func_0036AAA0(state);
+        item_creation_restore_workshop_assignments(state);
         ItemCreationSelectedDisplayState* count_state = selection_state;
         for (s32 index = 1; index < 28; index++)
         {
@@ -2616,7 +2589,7 @@ s32 InventorTransferWindow::func_slotb4()
         state->unk47 = 0;
         func_0027CB50(D_001B6430->context->unk58, state->unk1f0, 0, 0);
         state = selection_state;
-        static_cast<FieldClass153E30*>(static_cast<void*>(state))->func_00263C70(state->unka0);
+        state->func_00263C70(state->unka0);
         break;
     }
     case 1:
@@ -2725,15 +2698,16 @@ InventorTransferWindow::InventorTransferWindow()
     }
 }
 
-void func_0034F9B0(InventorTransferWindow* object, u16 direction)
+/** @brief Move the optional workshop selection display. @param direction Direction code. */
+void ItemCreationClass185A60::func_slotf8(u16 direction)
 {
     ItemCreationSelection* selection;
     const float* position;
     s32 index;
 
-    if (object->unk15c != 0 && object->unk15c->unk35 != 0)
+    if (unk15c != 0 && unk15c->unk35 != 0)
     {
-        selection = &object->unkdc;
+        selection = &unkdc;
         index = func_003696B0(selection, direction);
         if (index <= 0)
         {
@@ -2747,7 +2721,7 @@ void func_0034F9B0(InventorTransferWindow* object, u16 direction)
         {
             position = selection->unk00[index - 1].unk00;
         }
-        object->unk15c->func_00466E40(position[0], position[1], 0.05f);
+        unk15c->func_00466E40(position[0], position[1], 0.05f);
         func_002CFE40(D_001B643C->unk10, 0);
     }
 }
@@ -2837,28 +2811,27 @@ static inline bool result_flag_missing(const ItemCreationSelectedDisplayState* s
 
 /**
  * @brief Restore the associated window and dispatch the result state.
- * @param object Result window.
  * @return Always one.
  */
-extern "C" s32 func_0034FE00(InadequateLineDialog* object)
+s32 InadequateLineDialog::func_slotb4()
 {
-    object->func_slot20(0);
-    void* associated = object->func_slot44();
+    func_slot20(0);
+    void* associated = func_slot44();
     if (associated != 0)
     {
         D_001B643C->unk10->unk14->func_00263C70(associated);
     }
-    ItemCreationSelectedDisplayState* state = object->unka8;
+    ItemCreationSelectedDisplayState* state = unka8;
     if (state != 0)
     {
         if (result_flag_missing(state) == false)
         {
             DevelopmentCompleteDialog* window = new (0) DevelopmentCompleteDialog;
-            state = object->unka8;
+            state = unka8;
             window->func_slotf4(state->func_00263CC0());
-            state = object->unka8;
+            state = unka8;
             state->func_00263FD0(window);
-            state = object->unka8;
+            state = unka8;
             state->func_00263C70(window);
             func_00112400(D_001B65F8, 8, 0, 0, 127, 64, 0);
         }
@@ -2882,28 +2855,27 @@ void* func_0034FF60(ItemCreationSelectedDisplayState* object)
 
 /**
  * @brief Restore the associated window and dispatch the result state.
- * @param object Result window.
  * @return Always one.
  */
-extern "C" s32 func_0034FF70(InadequateLineDialog* object)
+s32 InadequateLineDialog::func_slotb0()
 {
-    object->func_slot20(0);
-    void* associated = object->func_slot44();
+    func_slot20(0);
+    void* associated = func_slot44();
     if (associated != 0)
     {
         D_001B643C->unk10->unk14->func_00263C70(associated);
     }
-    ItemCreationSelectedDisplayState* state = object->unka8;
+    ItemCreationSelectedDisplayState* state = unka8;
     if (state != 0)
     {
         if (result_flag_missing(state) == false)
         {
             DevelopmentCompleteDialog* window = new (0) DevelopmentCompleteDialog;
-            state = object->unka8;
+            state = unka8;
             window->func_slotf4(state->func_00263CC0());
-            state = object->unka8;
+            state = unka8;
             state->func_00263FD0(window);
-            state = object->unka8;
+            state = unka8;
             state->func_00263C70(window);
             func_00112400(D_001B65F8, 8, 0, 0, 127, 64, 0);
         }
@@ -2971,8 +2943,7 @@ s32 AbortDevelopmentDialog::func_slotb4()
                 if (index == 2)
                 {
                     display->set_color(ITEM_CREATION_COLOR_SELECTED);
-                    func_0023B7E0(static_cast<FieldObject23B950*>(static_cast<void*>(unkb0)),
-                        static_cast<FieldTarget23B850*>(static_cast<void*>(display)));
+                    unkb0->func_0023B7E0(display);
                 }
                 else
                 {
@@ -3061,8 +3032,7 @@ s32 AbortDevelopmentDialog::func_slotb0()
                     if (index == 2)
                     {
                         display->set_color(ITEM_CREATION_COLOR_SELECTED);
-                        func_0023B7E0(static_cast<FieldObject23B950*>(static_cast<void*>(unkb0)),
-                            static_cast<FieldTarget23B850*>(static_cast<void*>(display)));
+                        unkb0->func_0023B7E0(display);
                     }
                     else
                     {
@@ -3141,8 +3111,7 @@ s32 AbortDevelopmentDialog::func_slotb0()
                         if (index == 2)
                         {
                             display->set_color(ITEM_CREATION_COLOR_SELECTED);
-                            func_0023B7E0(static_cast<FieldObject23B950*>(static_cast<void*>(unkb0)),
-                                static_cast<FieldTarget23B850*>(static_cast<void*>(display)));
+                            unkb0->func_0023B7E0(display);
                         }
                         else
                         {
@@ -3206,8 +3175,7 @@ void AbortDevelopmentDialog::func_slot6c()
                 if (index == selected)
                 {
                     display->set_color(ITEM_CREATION_COLOR_SELECTED);
-                    func_0023B7E0(static_cast<FieldObject23B950*>(static_cast<void*>(unkb0)),
-                        static_cast<FieldTarget23B850*>(static_cast<void*>(display)));
+                    unkb0->func_0023B7E0(display);
                 }
                 else
                 {
@@ -3233,8 +3201,7 @@ void AbortDevelopmentDialog::func_slot68()
                 if (index == selected)
                 {
                     display->set_color(ITEM_CREATION_COLOR_SELECTED);
-                    func_0023B7E0(static_cast<FieldObject23B950*>(static_cast<void*>(unkb0)),
-                        static_cast<FieldTarget23B850*>(static_cast<void*>(display)));
+                    unkb0->func_0023B7E0(display);
                 }
                 else
                 {
@@ -3638,7 +3605,64 @@ ItemCreationClass185030* InventorStatusList::create_row(s32 index)
 }
 
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00352020);
+/**
+ * @brief Configure the option container and create its visible rows.
+ * @param object Option container to configure.
+ * @param associated Source retained for row text.
+ * @param count Number of selectable options.
+ * @return One on success, or zero when configuration or allocation fails.
+ */
+extern "C" s32 func_00352020(InventorStatusList* object, void* associated, s32 count)
+{
+    object->unk4b4 = associated;
+    func_004C6510(object, 5, 0, 0, 64.0f, 128.0f, 0.0f);
+    object->unk6c = 0x6FF6;
+    float height = 322.0f;
+    s32 visible_rows = static_cast<s32>(height) / 27.0f;
+    object->unk4a0 = visible_rows + 2;
+    if (object->unk4a0 <= 0 || object->unk4a0 > 32)
+    {
+        return 0;
+    }
+    if (!func_44B570(&object->unk90, 0.0f, 2.0f, 506.0f, height))
+    {
+        return 0;
+    }
+    func_004C6190(object, &object->unk90);
+    for (s32 index = 0; index < 32; index++)
+    {
+        object->unk410[index] = 0;
+    }
+    for (s32 index = 0; index < object->unk4a0; index++)
+    {
+        ItemCreationClass185030* row = object->create_row(index);
+        if (!row)
+        {
+            return 0;
+        }
+        object->unk410[index] = row;
+    }
+    if (!func_44B510(&object->unke4, 1))
+    {
+        return 0;
+    }
+    func_004C6190(object, &object->unke4);
+    if (!func_41A930(&object->unk138, 494.0f, 4.0f, 314.0f, 100.0f, 0.0f))
+    {
+        return 0;
+    }
+    func_004C6190(object, &object->unk138);
+    if (!func_00467360(&object->unk190, 12.0f, 14.0f))
+    {
+        return 0;
+    }
+    func_004C6190(object, &object->unk190);
+    func_413C00(&static_cast<LibClass1723F0&>(*object), count, 1, visible_rows, 506.0f, 27.0f, 3.0f);
+    func_4138E0(&static_cast<LibClass1723F0&>(*object), 0, 0, object->unk2f8);
+    object->unk4a4 = 3;
+    return 1;
+}
+
 
 /** @brief Destroy the option container and its collection base. */
 InventorStatusList::~InventorStatusList()
@@ -3912,7 +3936,7 @@ s32 InventorTransferWindow::func_slotf4(void* associated)
     func_004C6190(unk10, primary_heading);
     y += 22.0f;
     source_workshop_name = new (0) LibObject178750;
-    (static_cast<LibObject178750*>(source_workshop_name))->func_004C7FE0(444.0f, y, 168.0f, 396.0f, (s32)associated, 0x15F95, 1);
+    source_workshop_name->func_004C7FE0(444.0f, y, 168.0f, 396.0f, (s32)associated, 0x15F95, 1);
     source_workshop_name->set_mode(1);
     source_workshop_name->set_scale(0.8f, 0.8f);
     func_004C6190(unk10, source_workshop_name);
@@ -3921,7 +3945,7 @@ s32 InventorTransferWindow::func_slotf4(void* associated)
     for (s32 index = 0; index < 8; index++)
     {
         source_facility_labels[index] = new (0) LibObject178750;
-        (static_cast<LibObject178750*>(source_facility_labels[index]))->func_004C7FE0(458.0f + 50.0f * (index % 3), y + 22.0f * (index / 3), 0.0f, 0.0f, (s32)associated, index + ITEM_CREATION_SKILL_LABEL_BASE, 1);
+        source_facility_labels[index]->func_004C7FE0(458.0f + 50.0f * (index % 3), y + 22.0f * (index / 3), 0.0f, 0.0f, (s32)associated, index + ITEM_CREATION_SKILL_LABEL_BASE, 1);
         source_facility_labels[index]->set_scale(0.7f, 0.7f);
         func_004C6190(unk10, source_facility_labels[index]);
         source_facility_labels[index]->unk3f = 0;
@@ -3954,7 +3978,7 @@ s32 InventorTransferWindow::func_slotf4(void* associated)
     func_004C6190(unk10, alternate_heading);
     y += 22.0f;
     destination_workshop_name = new (0) LibObject178750;
-    (static_cast<LibObject178750*>(destination_workshop_name))->func_004C7FE0(444.0f, y, 168.0f, 396.0f, (s32)associated, 0x15F95, 1);
+    destination_workshop_name->func_004C7FE0(444.0f, y, 168.0f, 396.0f, (s32)associated, 0x15F95, 1);
     destination_workshop_name->set_mode(1);
     destination_workshop_name->set_scale(0.8f, 0.8f);
     func_004C6190(unk10, destination_workshop_name);
@@ -3963,7 +3987,7 @@ s32 InventorTransferWindow::func_slotf4(void* associated)
     for (s32 index = 0; index < 8; index++)
     {
         destination_facility_labels[index] = new (0) LibObject178750;
-        (static_cast<LibObject178750*>(destination_facility_labels[index]))->func_004C7FE0(458.0f + 50.0f * (index % 3), y + 22.0f * (index / 3), 0.0f, 0.0f, (s32)associated, index + ITEM_CREATION_SKILL_LABEL_BASE, 1);
+        destination_facility_labels[index]->func_004C7FE0(458.0f + 50.0f * (index % 3), y + 22.0f * (index / 3), 0.0f, 0.0f, (s32)associated, index + ITEM_CREATION_SKILL_LABEL_BASE, 1);
         destination_facility_labels[index]->set_scale(0.7f, 0.7f);
         func_004C6190(unk10, destination_facility_labels[index]);
         destination_facility_labels[index]->unk3f = 0;
@@ -4421,12 +4445,6 @@ struct FieldRuntime
     u32 unk520;
 };
 
-/** Five row heights copied from the overlay's initialized data. */
-struct ItemCreationRowHeights5
-{
-    float values[5];
-};
-extern "C" ItemCreationRowHeights5 D_0036F5E0;
 
 /**
  * @brief Create the window's panels, text and value displays and register its runtime callback.
@@ -4435,7 +4453,7 @@ extern "C" ItemCreationRowHeights5 D_0036F5E0;
  */
 s32 ItemDetailsWindow::func_slotf4(void* associated)
 {
-    func_002CE760(this, associated, 0, 9, 0xA28, 28.0f, 82.0f, 0.0f);
+    FieldClass15AE70::func_slot14(associated, 0, 9, 0xA28, 28.0f, 82.0f, 0.0f);
     unke8 = new (0) LibObject178660;
     func_004C6510(unke8, 5, 0, 0, 28.0f, 82.0f, 0.0f);
     func_00465B20(D_001B657C, static_cast<LibClass174610*>(unke8));
@@ -4496,10 +4514,9 @@ s32 ItemDetailsWindow::func_slotf4(void* associated)
         unkc4[index]->set_scale(0.8f, 0.8f);
         func_4C6190(unke8, unkc4[index]);
     }
-    // The compiler's initializer for {52, 104, 208, 312, 342} lives in the overlay's data at D_0036F5E0.
-    ItemCreationRowHeights5 heights = D_0036F5E0;
+    float heights[5] = {52.0f, 104.0f, 208.0f, 312.0f, 342.0f};
     LibObject178750* footer = new (0) LibObject178750;
-    footer->func_004C7FE0(12.0f, heights.values[4] - 8.0f, 555.0f, 24.0f, (s32)associated, 0x1B74, 0);
+    footer->func_004C7FE0(12.0f, heights[4] - 8.0f, 555.0f, 24.0f, (s32)associated, 0x1B74, 0);
     footer->set_scale(0.9f, 0.9f);
     footer->set_mode(2);
     func_4C6190(unke8, footer);
@@ -4557,7 +4574,7 @@ ItemDetailsWindow::ItemDetailsWindow(ItemCreationSelectedDisplayState* object)
 s32 MissingMaterialsDialog::func_slotb0()
 {
     D_001B643C->unk10->unk14->func_00263F50(this);
-    ItemCreationPopupReturnParent* parent = static_cast<ItemCreationPopupReturnParent*>(func_slot44());
+    AssignedInventorGrid* parent = static_cast<AssignedInventorGrid*>(func_slot44());
     FieldObject23CEA0* marker = parent->unkb4;
     marker->FieldClass151C50::unk30 = 128.0f;
     marker->unkae = 1;
@@ -4602,7 +4619,7 @@ s32 MissingMaterialsDialog::func_slotf4(void* associated)
 s32 InsufficientFolDialog::func_slotb0()
 {
     D_001B643C->unk10->unk14->func_00263F50(this);
-    ItemCreationPopupReturnParent* parent = static_cast<ItemCreationPopupReturnParent*>(func_slot44());
+    AssignedInventorGrid* parent = static_cast<AssignedInventorGrid*>(func_slot44());
     if (parent->unkb4 != 0)
     {
         parent->unkb4->unkad = 1;
@@ -4863,8 +4880,7 @@ s32 ItemSubmissionDialog::func_slotb0()
                     if (index == 1)
                     {
                         display->set_color(0x288080);
-                        func_0023B7E0(static_cast<FieldObject23B950*>(static_cast<void*>(unkb0)),
-                        static_cast<FieldTarget23B850*>(static_cast<void*>(display)));
+                        unkb0->func_0023B7E0(display);
                     }
                     else
                     {
@@ -5668,14 +5684,13 @@ ItemCreationClass186770::ItemCreationClass186770()
 
 s32 StartInventingDialog::func_slotb4()
 {
-    ItemCreationSelectionRestoreParent* parent = static_cast<ItemCreationSelectionRestoreParent*>(func_slot44());
+    AssignedInventorGrid* parent = static_cast<AssignedInventorGrid*>(func_slot44());
     if (parent != 0)
     {
         func_0023B280(static_cast<FieldObject23B280*>(static_cast<void*>(unkb4)), 1);
         unkac->set_color(ITEM_CREATION_COLOR_BRIGHT);
         unkb0->set_color(ITEM_CREATION_COLOR_SELECTED);
-        func_0023B7E0(static_cast<FieldObject23B950*>(static_cast<void*>(unkb8)),
-                     static_cast<FieldTarget23B850*>(static_cast<void*>(unkb0)));
+        unkb8->func_0023B7E0(unkb0);
         func_slot20(0);
         if (parent->unkb4 != 0)
         {
@@ -5990,21 +6005,7 @@ struct ItemCreationControlState
     u8 unk00[0x9A];
     u8 unk9a;
 };
-/** Partial display marker containing its update byte and scalar field. */
-struct ItemCreationPanelReturnMarker
-{
-    u8 unk00[0xAE];
-    u8 unkae;
-    u8 unkaf[0x31];
-    float unke0;
-};
 
-/** Partial associated parent containing its selection marker. */
-struct ItemCreationPanelReturnParent
-{
-    u8 unk00[0xAC];
-    ItemCreationPanelReturnMarker* unkac;
-};
 
 
 
@@ -6032,7 +6033,6 @@ extern "C"
     extern ResidentRequest112400* D_001B65F8;
     extern ItemCreationCategoryDefinition* D_001B64F0;
     extern const char D_0036F738[];
-    u16 func_457470(u16 seed, const u8* buffer, s32 length);
     /** @brief Select the mode display state. @param object Mode window. @param mode Display mode. */
     void func_0035D7C0(PlanItemGroupWindow* object, u8 mode);
     extern FieldRuntime* D_001B657C;
@@ -6106,9 +6106,9 @@ static inline bool valid_record_index_middle(s16 index);
 static inline ItemCreationAllocationRecord* allocation_record_middle(s32 value);
 static inline bool allocation_invalid_middle(ItemCreationAllocationRecord* record);
 static inline u16 allocation_value_middle(ItemCreationAllocationRecord* record);
-static inline u32 item_resource_index_middle(u8 value);
-static inline u32 item_available_resource_index(u16 value);
-static inline u32 item_assigned_code(u8 value);
+static inline u32 item_resource_index_middle(u8 inventor_option_code);
+static inline u32 item_available_resource_index(u16 inventor_option_code);
+static inline u32 item_assigned_code(u8 inventor_option_code);
 /**
  * @brief Set the panel position and mark its rectangle for refresh.
  * @param panel Panel widget.
@@ -6171,45 +6171,45 @@ static inline u16 allocation_value_middle(ItemCreationAllocationRecord* record)
 }
 
 /**
- * @brief Convert an item byte to its allocation-table index.
- * @param value Item byte; zero denotes no item.
- * @return Zero for no item, or the item byte minus eleven.
+ * @brief Convert an inventor option code to its portrait resource index.
+ * @param inventor_option_code Inventor option code; zero denotes an empty slot.
+ * @return Zero for an empty slot, or the option code minus eleven.
  */
-static inline u32 item_resource_index_middle(u8 value)
+static inline u32 item_resource_index_middle(u8 inventor_option_code)
 {
-    if (value == 0)
+    if (inventor_option_code == 0)
     {
         return 0;
     }
-    return value - 11;
+    return inventor_option_code - 11;
 }
 
 /**
- * @brief Convert a halfword resource code to its allocation-table index.
- * @param value Resource code; zero denotes no resource.
- * @return Zero for no resource, or the resource code minus eleven.
+ * @brief Convert a workshop inventor option code to its portrait resource index.
+ * @param inventor_option_code Inventor option code; zero denotes an empty slot.
+ * @return Zero for an empty slot, or the option code minus eleven.
  */
-static inline u32 item_available_resource_index(u16 value)
+static inline u32 item_available_resource_index(u16 inventor_option_code)
 {
-    if (value == 0)
+    if (inventor_option_code == 0)
     {
         return 0;
     }
-    return value - 11;
+    return inventor_option_code - 11;
 }
 
 /**
- * @brief Convert an item byte to its assigned-item code.
- * @param value Item byte; zero denotes no item.
- * @return Zero for no item, or the item byte minus thirty-one.
+ * @brief Convert an inventor option code to its saved inventor ID.
+ * @param inventor_option_code Inventor option code; zero denotes an empty slot.
+ * @return Zero for an empty slot, or the option code minus thirty-one.
  */
-static inline u32 item_assigned_code(u8 value)
+static inline u32 item_assigned_code(u8 inventor_option_code)
 {
-    if (value == 0)
+    if (inventor_option_code == 0)
     {
         return 0;
     }
-    return value - 31;
+    return inventor_option_code - 31;
 }
 
 /**
@@ -6672,7 +6672,7 @@ void ItemCreationControlHelp::func_slot5c()
         LibObject174F20* display;
         u32 value;
 
-        if (checksum != (u16)func_457470(record->unka6, ((u8*)record + 0x26),
+        if (checksum != func_00457470(record->unka6, ((u8*)record + 0x26),
             end - ((const u8*)record + 0x26)))
         {
             value = 0;
@@ -6693,7 +6693,7 @@ void ItemCreationControlHelp::func_slot5c()
         LibObject174F20* display;
         u32 value;
 
-        if (checksum != (u16)func_457470(record->unka6, ((u8*)record + 0x26),
+        if (checksum != func_00457470(record->unka6, ((u8*)record + 0x26),
             end - ((const u8*)record + 0x26)))
         {
             value = 0;
@@ -6713,7 +6713,7 @@ s32 ItemCreationControlHelp::func_slotf4(void* associated)
     unkdc = 168.0f;
     unke0 = 160.0f;
     unke4 = 176.0f;
-    func_002CE760(this, associated, 0, 9, 1800, 460.0f, 72.0f, 0.0f);
+    FieldClass15AE70::func_slot14(associated, 0, 9, 1800, 460.0f, 72.0f, 0.0f);
     unka8 = new (0) LibClass178630;
     func_004C5A80(unka8, 0, 0.0f, 0.0f, unkdc, unke0, 88.0f);
     func_004C6190(unk10, unka8);
@@ -6746,7 +6746,7 @@ s32 ItemCreationControlHelp::func_slotf4(void* associated)
         const u8* end = (const u8*)&record->unka4;
         u16 checksum = record->unka4;
         u32 value;
-        if (checksum != (u16)func_457470(record->unka6, ((u8*)record + 0x26), end - ((const u8*)record + 0x26)))
+        if (checksum != func_00457470(record->unka6, ((u8*)record + 0x26), end - ((const u8*)record + 0x26)))
         {
             value = 0;
         }
@@ -6765,7 +6765,7 @@ s32 ItemCreationControlHelp::func_slotf4(void* associated)
         const u8* end = (const u8*)&record->unka4;
         u16 checksum = record->unka4;
         u32 value;
-        if (checksum != (u16)func_457470(record->unka6, ((u8*)record + 0x26), end - ((const u8*)record + 0x26)))
+        if (checksum != func_00457470(record->unka6, ((u8*)record + 0x26), end - ((const u8*)record + 0x26)))
         {
             value = 0;
         }
@@ -7307,7 +7307,7 @@ void InventoryItemInstanceList::refresh_rows(s32 start)
 s32 InventoryItemInstanceList::func_slot104(void* associated)
 {
     ItemCreationAllocationRecord* records[99];
-    func_002CE760(this, associated, 0, 9, 2600, 25.0f, 83.0f, 0.0f);
+    FieldClass15AE70::func_slot14(associated, 0, 9, 2600, 25.0f, 83.0f, 0.0f);
     FieldStateCE420::unk3c = 1;
     unk1ac = new (0) LibObject178660;
     func_004C6510(unk1ac, 5, 0, 0, 25.0f, 83.0f, 0.0f);
@@ -7464,23 +7464,28 @@ InventoryItemInstanceList::~InventoryItemInstanceList()
     }
 }
 
-void func_0035C4D0(u8* object, void* unused, u32 value)
+/**
+ * @brief Set the category marker visibility and depth.
+ * @param value Unused first argument.
+ * @param alternate Marker visibility and depth mode.
+ */
+void InventoryItemTypeList::func_slot10c(u32 value, u32 alternate)
 {
-    u8* nested = *(u8**)(object + 0xAC);
+    LibClass178600* nested = FieldStateCE420::unk04;
     if (nested != 0)
     {
-        nested[0x3F] = value;
-        if (value != 0)
+        nested->unk3f = alternate;
+        if (alternate != 0)
         {
-            nested = *(u8**)(object + 0xAC);
-            *(float*)(nested + 0x70) = 128.0f;
-            nested[0x3C] = 1;
+            ItemCreationClass175030* marker = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            marker->ItemCreationClass185050::unk30 = 128.0f;
+            marker->unk3c = 1;
         }
         else
         {
-            nested = *(u8**)(object + 0xAC);
-            *(float*)(nested + 0x70) = 64.0f;
-            nested[0x3C] = 1;
+            ItemCreationClass175030* marker = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            marker->ItemCreationClass185050::unk30 = 64.0f;
+            marker->unk3c = 1;
         }
     }
 }
@@ -7803,7 +7808,7 @@ extern "C" void func_0035D0C0(InventoryItemTypeList* object, s32 mode)
 /** @brief Create the mode list widgets and initialize its selection. @param associated Associated source. @return Always one. */
 s32 InventoryItemTypeList::func_slot104(void* associated)
 {
-    func_002CE760(this, associated, 0, 9, 2400, 220.0f, 128.0f, 0.0f);
+    FieldClass15AE70::func_slot14(associated, 0, 9, 2400, 220.0f, 128.0f, 0.0f);
     unk3c = 1;
     unk198 = new (0) LibClass178630;
     func_004C5A80(unk198, 1, 0.0f, 0.0f, 400.0f, 336.0f, 88.0f);
@@ -7818,8 +7823,8 @@ s32 InventoryItemTypeList::func_slot104(void* associated)
         unk168[index] = new (0) LibObject174F20;
         float y = 16.0f + 28.0f * index;
         static_cast<LibObject178750*>(unk48[index])->func_004C7FE0(22.0f, y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 50000, 0);
-        static_cast<LibObject178750*>(unk138[index])->func_004C7FE0(326.0f, y - 4.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 2020, 1);
-        func_00464D90(static_cast<LibObject174F20*>(unk168[index]), index, reinterpret_cast<s32>(associated), 1, 334.0f, y, 28.0f, 24.0f);
+        unk138[index]->func_004C7FE0(326.0f, y - 4.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 2020, 1);
+        func_00464D90(unk168[index], index, reinterpret_cast<s32>(associated), 1, 334.0f, y, 28.0f, 24.0f);
         LibClass174EF0* display = static_cast<LibClass174EF0*>(unk48[index]);
         display->unk88 = -1.0f;
         display->unk3c = 1;
@@ -8084,10 +8089,11 @@ PlanItemGroupWindow::~PlanItemGroupWindow()
 {
 }
 
-PlanItemGroupWindow::PlanItemGroupWindow(void* object)
+/** @brief Initialize the plan window for its selection state. @param state Owning selection state. */
+PlanItemGroupWindow::PlanItemGroupWindow(ItemCreationSelectedDisplayState* state)
 {
     unka8 = 0;
-    unka8 = static_cast<ItemCreationSelectedDisplayState*>(object);
+    unka8 = state;
     unkac = 0;
     unkb0 = 0;
     unkb4 = 0;
@@ -8105,7 +8111,6 @@ PlanItemGroupWindow::PlanItemGroupWindow(void* object)
     unkbc = 0;
     unkc0 = 0;
     unkc4 = 0;
-    // The original builds a window base here and destroys it straight away; nothing uses it.
     FieldClass15AE70();
 }
 
@@ -8116,7 +8121,7 @@ PlanItemGroupWindow::PlanItemGroupWindow(void* object)
 s32 InventionPolicyWindow::func_slotb4()
 {
     func_slot20(0);
-    func_0023B310(reinterpret_cast<FieldObject23B280*>(unkcc));
+    unkcc->func_0023B310();
     if (unkcc != 0)
     {
         for (s32 index = 0; index < 2; index++)
@@ -8219,10 +8224,10 @@ s32 InventionPolicyWindow::func_slotf4(void* associated)
         return 0;
     }
     unkbc = 382.0f;
-    unkc0 = 224.0f;
-    unkc4 = 302.0f;
-    unkc8 = 380.0f;
-    FieldClass15AE70::func_slot10(associated, unkbc, unkc0, 14);
+    unkc0[0] = 224.0f;
+    unkc0[1] = 302.0f;
+    unkc0[2] = 380.0f;
+    FieldClass15AE70::func_slot10(associated, unkbc, unkc0[0], 14);
     unkb0 = new (0) LibClass178630;
     func_004C5A80(unkb0, 0, 0.0f, 0.0f, 204.0f, 100.0f, 88.0f);
     func_004C6190(unk10, unkb0);
@@ -8269,9 +8274,9 @@ InventionPolicyWindow::InventionPolicyWindow(void* object)
     unkb4[0] = 0;
     unkb4[1] = 0;
     unkbc = 0;
-    unkc0 = 0;
-    unkc4 = 0;
-    unkc8 = 0;
+    unkc0[0] = 0;
+    unkc0[1] = 0;
+    unkc0[2] = 0;
     unkcc = 0;
     unkd0 = 0;
     unkd4 = 0;
@@ -8282,14 +8287,14 @@ InventionPolicyWindow::InventionPolicyWindow(void* object)
 }
 
 /**
- * @brief Apply the enabled option color and selected row marker.
- * @param object Option window.
- * @param text Row text display.
- * @param index Row index.
- * @param selected Selected row index.
- * @param mask Selection bit for this category.
+ * @brief Apply the selectable creation-skill color and selected row marker.
+ * @param object Creation-skill selection window.
+ * @param text Skill-label display.
+ * @param index Zero-based skill row.
+ * @param selected Selected skill row.
+ * @param mask Facility bit enabling this creation skill.
  */
-static inline void highlight_category_label(CreationSkillWindow* object, LibObject178750* text, s32 index, u16 selected, u16 mask)
+static inline void highlight_skill_label(CreationSkillWindow* object, LibObject178750* text, s32 index, u16 selected, u16 mask)
 {
     if (object->selectable_skill_mask & mask)
     {
@@ -8307,10 +8312,10 @@ static inline void highlight_category_label(CreationSkillWindow* object, LibObje
 
 /**
  * @brief Update creation-skill colors and the selected skill marker.
- * @param object Category selection window.
- * @param selected Selected row index.
+ * @param object Creation-skill selection window.
+ * @param selected Selected skill row.
  */
-extern "C" void item_creation_update_category_labels(CreationSkillWindow* object, u16 selected)
+extern "C" void item_creation_update_skill_labels(CreationSkillWindow* object, u16 selected)
 {
     for (s32 index = 0; index < 8; index++)
     {
@@ -8339,28 +8344,28 @@ extern "C" void item_creation_update_category_labels(CreationSkillWindow* object
             switch (index + 1)
             {
             case 1:
-                highlight_category_label(object, text, index, selected, ITEM_CREATION_FACILITY_COOK);
+                highlight_skill_label(object, text, index, selected, ITEM_CREATION_FACILITY_COOK);
                 break;
             case 2:
-                highlight_category_label(object, text, index, selected, ITEM_CREATION_FACILITY_ALCH);
+                highlight_skill_label(object, text, index, selected, ITEM_CREATION_FACILITY_ALCH);
                 break;
             case 3:
-                highlight_category_label(object, text, index, selected, ITEM_CREATION_FACILITY_CRFT);
+                highlight_skill_label(object, text, index, selected, ITEM_CREATION_FACILITY_CRFT);
                 break;
             case 4:
-                highlight_category_label(object, text, index, selected, ITEM_CREATION_FACILITY_CMPD);
+                highlight_skill_label(object, text, index, selected, ITEM_CREATION_FACILITY_CMPD);
                 break;
             case 5:
-                highlight_category_label(object, text, index, selected, ITEM_CREATION_FACILITY_SMTH);
+                highlight_skill_label(object, text, index, selected, ITEM_CREATION_FACILITY_SMTH);
                 break;
             case 6:
-                highlight_category_label(object, text, index, selected, ITEM_CREATION_FACILITY_WRIT);
+                highlight_skill_label(object, text, index, selected, ITEM_CREATION_FACILITY_WRIT);
                 break;
             case 7:
-                highlight_category_label(object, text, index, selected, ITEM_CREATION_FACILITY_ENG);
+                highlight_skill_label(object, text, index, selected, ITEM_CREATION_FACILITY_ENG);
                 break;
             case 8:
-                highlight_category_label(object, text, index, selected, ITEM_CREATION_FACILITY_SYTH);
+                highlight_skill_label(object, text, index, selected, ITEM_CREATION_FACILITY_SYTH);
                 break;
             }
         }
@@ -8369,14 +8374,14 @@ extern "C" void item_creation_update_category_labels(CreationSkillWindow* object
 
 
 /**
- * @brief Reset the option selection and handle the current return mode.
+ * @brief Reset the skill selection and handle the current return mode.
  * @return Always two.
  */
 s32 CreationSkillWindow::func_slotb4()
 {
     func_slot20(0);
-    func_0023B310(reinterpret_cast<FieldObject23B280*>(skill_selector));
-    item_creation_update_category_labels(this, 0);
+    skill_selector->func_0023B310();
+    item_creation_update_skill_labels(this, 0);
     switch (unkdc)
     {
     case 0:
@@ -8398,25 +8403,25 @@ s32 CreationSkillWindow::func_slotb4()
 INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003600E0);
 
 /**
- * @brief Refresh the option display after selection movement.
+ * @brief Refresh the creation-skill display after selection movement.
  */
 void CreationSkillWindow::func_slot6c()
 {
     if (skill_selector != 0 && (u8)skill_selector->func_0023B3B0(1) != 1)
     {
         u16 selected = skill_selector->func_0023B3A0();
-        item_creation_update_category_labels(this, selected);
+        item_creation_update_skill_labels(this, selected);
     }
 }
 /**
- * @brief Refresh the option display after selection movement.
+ * @brief Refresh the creation-skill display after selection movement.
  */
 void CreationSkillWindow::func_slot68()
 {
     if (skill_selector != 0 && (u8)skill_selector->func_0023B3B0(0) != 1)
     {
         u16 selected = skill_selector->func_0023B3A0();
-        item_creation_update_category_labels(this, selected);
+        item_creation_update_skill_labels(this, selected);
     }
 }
 /**
@@ -8455,7 +8460,7 @@ s32 CreationSkillWindow::func_slotf4(void* associated)
     skill_marker = new (0) FieldClass153170;
     skill_marker->func_0023B850(skill_labels[0], 0x288080);
     func_004C6190(unk10, skill_marker);
-    item_creation_update_category_labels(this, 0);
+    item_creation_update_skill_labels(this, 0);
     return 1;
 }
 
@@ -8714,32 +8719,36 @@ void func_00361220(AssignedInventorGrid* object)
     }
 }
 
+/**
+ * @brief Refresh the nine assigned-inventor portraits and their inventor IDs.
+ * @param object Inventor grid for the three development lines.
+ */
 void func_003614B0(AssignedInventorGrid* object)
 {
     void* allocation;
-    u32 resource;
-    s32 index;
-    u32 value;
+    u32 portrait_index;
+    s32 slot_index;
+    u32 inventor_option_code;
     FieldResourceRecord* record;
 
     object->unk190 = 0;
-    for (index = 0; index < 9; index++)
+    for (slot_index = 0; slot_index < 9; slot_index++)
     {
-        value = object->unka8->unk68[(u16)index];
-        if (value != 0)
+        inventor_option_code = object->unka8->unk68[(u16)slot_index];
+        if (inventor_option_code != 0)
         {
-            resource = (u8)item_resource_index_middle(value);
-            allocation = func_002D3D80(D_001B643C->unk20, resource);
+            portrait_index = (u8)item_resource_index_middle(inventor_option_code);
+            allocation = func_002D3D80(D_001B643C->unk20, portrait_index);
             record = func_002D3CC0(D_001B643C->unk20, 0x51);
-            object->unk13c[index]->func_002D5CF0(allocation, record, resource);
-            object->unk13c[index]->unk3f = 1;
+            object->unk13c[slot_index]->func_002D5CF0(allocation, record, portrait_index);
+            object->unk13c[slot_index]->unk3f = 1;
             object->unk190++;
-            object->unk1f2[index] = item_assigned_code(value);
+            object->unk1f2[slot_index] = item_assigned_code(inventor_option_code);
         }
         else
         {
-            object->unk13c[index]->unk3f = 0;
-            object->unk1f2[index] = 0;
+            object->unk13c[slot_index]->unk3f = 0;
+            object->unk1f2[slot_index] = 0;
         }
     }
 }
@@ -8809,7 +8818,7 @@ s32 AssignedInventorGrid::func_slotbc()
     u16 checksum = record->unka4;
     const u8* end = (const u8*)&record->unka4;
     u32 value;
-    if (checksum != (u16)func_457470(record->unka6, ((u8*)record + 0x26), end - ((const u8*)record + 0x26)))
+    if (checksum != func_00457470(record->unka6, ((u8*)record + 0x26), end - ((const u8*)record + 0x26)))
     {
         value = 0;
     }
@@ -8874,7 +8883,7 @@ s32 AssignedInventorGrid::func_slotbc()
 }
 
 
-/** @brief Toggle the detail window for a selected item row. @return One when allowed; zero for a compound row. */
+/** @brief Toggle information for the selected inventor. @return One when available, or zero for a non-inventor cell or missing state. */
 s32 AssignedInventorGrid::func_slotb8()
 {
     u8 active;
@@ -8996,15 +9005,22 @@ s32 AssignedInventorGrid::func_slotb4()
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00361D40);
-
-u8 func_003623C0(AssignedInventorGrid* object, u8 index)
+/** @brief Read the creation-skill bits for an assigned inventor. @param inventor_id One-based runtime inventor record ID. @return Skill bits. */
+static inline u32 assigned_inventor_skill_mask(s32 inventor_id)
 {
-    u8 present;
-    u8 first = 0;
-    u8 second = 0;
-    u8 third = 0;
-    switch (index)
+    return inventor_skill_mask(runtime_option_record(D_001B64F8, static_cast<u8>(inventor_id))->inventor_id);
+}
+
+/** @brief Intersect the selected line's inventor skill bits. @param object Assigned-inventor grid. @return Shared skill bits, or zero for an empty line. */
+static inline u16 assigned_selection_skill_mask(AssignedInventorGrid* object)
+{
+    u16 first_mask = 0x1FF;
+    u16 second_mask = 0x1FF;
+    u16 third_mask = 0x1FF;
+    u32 first = 0;
+    u32 second = 0;
+    u32 third = 0;
+    switch (object->unk1f0)
     {
     case 0:
         first = object->unk1f2[0];
@@ -9022,7 +9038,200 @@ u8 func_003623C0(AssignedInventorGrid* object, u8 index)
         third = object->unk1f2[8];
         break;
     }
-    if (first == 0 && second == 0 && third == 0)
+    u16 count = 0;
+    if (first != 0)
+    {
+        first_mask = assigned_inventor_skill_mask(first);
+        count++;
+    }
+    if (second != 0)
+    {
+        second_mask = assigned_inventor_skill_mask(second);
+        count++;
+    }
+    if (third != 0)
+    {
+        third_mask = assigned_inventor_skill_mask(third);
+        count++;
+    }
+    if (count)
+    {
+        return first_mask & second_mask & third_mask;
+    }
+    return 0;
+}
+
+/** @brief Open the selected line's skill or policy window, or start swapping an inventor. @return Zero when inactive, one when handled, or three when unavailable. */
+s32 AssignedInventorGrid::func_slotb0()
+{
+    ItemCreationSelectedDisplayState* state = this->unka8;
+    if (state == 0)
+    {
+        return 0;
+    }
+    FieldObject23CEA0* marker = this->unkb4;
+    if (marker == 0)
+    {
+        return 0;
+    }
+    bool inactive = !marker->FieldClass151C50::unk35;
+    if (inactive)
+    {
+        return 0;
+    }
+    if (state->unk47 != 1)
+    {
+        return 0;
+    }
+    FieldGridPosition* position;
+    s16 selected = marker->unk114;
+    position = &marker->FieldClass151C50::unk10;
+    if (selected == 3 || selected == 8 || selected == 13)
+    {
+        if (this->unk1e8 != 0)
+        {
+            this->unk1f0 = (u8)((selected + 1) % 4);
+            u16 mask = assigned_selection_skill_mask(this);
+            CreationSkillWindow* choices = this->unk1e8;
+            choices->selectable_skill_mask = mask;
+            item_creation_update_skill_labels(choices, 0);
+            FieldObject23CEA0* marker = this->unkb4;
+            marker->FieldClass151C50::unk30 = 64.0f;
+            marker->unkae = 1;
+            this->unk1e8->func_slot20(1);
+            static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14)->unk1e0 = this->unk1f0;
+            D_001B643C->unk10->unk14->func_00263C70(this->unk1e8);
+        }
+        return 1;
+    }
+    if (selected == 4 || selected == 9 || selected == 14)
+    {
+        if (this->unk1ec != 0)
+        {
+            this->unk1f0 = (u8)((selected + 1) / 5 - 1);
+            u8 first = 0;
+            u8 second = 0;
+            u8 third = 0;
+            switch (this->unk1f0)
+            {
+            case 0:
+                first = this->unk1f2[0];
+                second = this->unk1f2[1];
+                third = this->unk1f2[2];
+                break;
+            case 1:
+                first = this->unk1f2[3];
+                second = this->unk1f2[4];
+                third = this->unk1f2[5];
+                break;
+            case 2:
+                first = this->unk1f2[6];
+                second = this->unk1f2[7];
+                third = this->unk1f2[8];
+                break;
+            }
+            if (first == 0 && second == 0 && third == 0)
+            {
+                return 3;
+            }
+            if (this->unk208[this->unk1f0] == 0x15FD6)
+            {
+                return 3;
+            }
+            FieldObject23CEA0* marker = this->unkb4;
+            marker->FieldClass151C50::unk30 = 64.0f;
+            marker->unkae = 1;
+            s32 index = this->unk1f0;
+            InventionPolicyWindow* choice = this->unk1ec;
+            if (index >= 0 && index < 4)
+            {
+                choice->unkac = index;
+                LibObject178660* container = choice->func_slot58();
+                if (container != 0)
+                {
+                    LibClass174610& transform = static_cast<LibClass174610&>(*container);
+                    func_44B190(&transform, choice->unkbc, choice->unkc0[choice->unkac]);
+                }
+            }
+            this->unk1ec->func_slot20(1);
+            static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14)->unk1e0 = this->unk1f0;
+            D_001B643C->unk10->unk14->func_00263C70(this->unk1ec);
+        }
+        return 1;
+    }
+    s32 index = 0;
+    switch (selected)
+    {
+    case 0:
+    case 1:
+    case 2:
+        index = selected;
+        break;
+    case 5:
+    case 6:
+    case 7:
+        index = selected - 2;
+        break;
+    case 10:
+    case 11:
+    case 12:
+        index = selected - 4;
+        break;
+    }
+    item_creation_select_inventor_for_swap(state, this, (s16)index);
+    if (this->unka8->unk128 == 1)
+    {
+        FieldObject23CEA0* primary = this->unkac;
+        primary->FieldClass151C50::unk30 = 96.0f;
+        primary->unkae = 1;
+        float x = position->x;
+        float y = position->y;
+        FieldObject23CEA0* alternate = this->unkb0;
+        alternate->FieldClass151C50::unk10.x = x;
+        alternate->FieldClass151C50::unk10.y = y;
+        alternate->FieldClass151C50::unk35 = 1;
+        alternate->unkae = 1;
+        func_0023CEA0(this->unkb0, 1);
+        alternate = this->unkb0;
+        alternate->index = selected;
+        func_0023CB30(alternate);
+        func_0023C7B0(this->unkb0);
+        this->unkb4 = this->unkb0;
+    }
+    return 1;
+}
+
+/**
+ * @brief Test whether a development line contains any assigned inventor.
+ * @param object Assigned-inventor grid containing three lines of inventor IDs.
+ * @param line_index Development-line index from zero through two.
+ * @return One when the line contains an inventor, or zero for an empty or invalid line.
+ */
+u8 func_003623C0(AssignedInventorGrid* object, u8 line_index)
+{
+    u8 present;
+    u8 first_inventor_id = 0;
+    u8 second_inventor_id = 0;
+    u8 third_inventor_id = 0;
+    switch (line_index)
+    {
+    case 0:
+        first_inventor_id = object->unk1f2[0];
+        second_inventor_id = object->unk1f2[1];
+        third_inventor_id = object->unk1f2[2];
+        break;
+    case 1:
+        first_inventor_id = object->unk1f2[3];
+        second_inventor_id = object->unk1f2[4];
+        third_inventor_id = object->unk1f2[5];
+        break;
+    case 2:
+        first_inventor_id = object->unk1f2[6];
+        second_inventor_id = object->unk1f2[7];
+        third_inventor_id = object->unk1f2[8];
+        break;
+    }
+    if (first_inventor_id == 0 && second_inventor_id == 0 && third_inventor_id == 0)
     {
         present = 0;
     }
@@ -9290,8 +9499,8 @@ void func_00363D20(AssignedInventorGrid* object)
             display4->unk3c = 1;
         }
     }
-    func_0023CE80((FieldObject23CE80*)object->unkac, 5, object->unk1f1);
-    func_0023CE80((FieldObject23CE80*)object->unkb0, 5, object->unk1f1);
+    object->unkac->func_0023CE80(5, object->unk1f1);
+    object->unkb0->func_0023CE80(5, object->unk1f1);
 }
 
 /** @brief Release the twelve owned resources before destroying the window base. */
@@ -9526,7 +9735,7 @@ u8 func_003644F0(AvailableInventorGrid* object)
     FieldObject23CEA0* display;
     u16 index;
     bool inactive;
-    const float* position;
+    const FieldGridPosition* position;
     if (state == 0)
     {
         return 0;
@@ -9556,11 +9765,11 @@ u8 func_003644F0(AvailableInventorGrid* object)
         float y;
         restore->FieldClass151C50::unk30 = 96.0f;
         restore->unkae = 1;
-        x = position[0];
-        y = position[1];
+        x = position->x;
+        y = position->y;
         target = object->unkb0;
-        target->unk10 = x;
-        target->unk14 = y;
+        target->unk10.x = x;
+        target->unk10.y = y;
         target->unk35 = 1;
         target->unkae = 1;
         func_0023CEA0(object->unkb0, 1);
@@ -9591,7 +9800,7 @@ static inline void apply_selected_index(ItemCreationSelectedDisplayState* state,
     }
 }
 
-/** @brief Toggle the detail window for the selected item. @return One when state is attached, zero otherwise. */
+/** @brief Toggle information for the selected available inventor. @return One when state is attached, zero otherwise. */
 s32 AvailableInventorGrid::func_slotb8()
 {
     u8 flag;
@@ -9820,28 +10029,32 @@ void AvailableInventorGrid::func_slot68()
     func_slota0();
 }
 
+/**
+ * @brief Refresh the fourteen available-inventor portraits.
+ * @param object Available-inventor grid.
+ */
 void func_00364D20(AvailableInventorGrid* object)
 {
     void* allocation;
-    s32 index;
-    u32 value;
-    u32 resource;
+    s32 slot_index;
+    u32 inventor_option_code;
+    u32 portrait_index;
     FieldResourceRecord* record;
 
-    for (index = 0; index < 14; index++)
+    for (slot_index = 0; slot_index < 14; slot_index++)
     {
-        value = object->unka8->unk5a[(u16)index];
-        if (value != 0)
+        inventor_option_code = object->unka8->unk5a[(u16)slot_index];
+        if (inventor_option_code != 0)
         {
-            resource = (u8)item_resource_index_middle(value);
-            allocation = func_002D3D80(D_001B643C->unk20, resource);
+            portrait_index = (u8)item_resource_index_middle(inventor_option_code);
+            allocation = func_002D3D80(D_001B643C->unk20, portrait_index);
             record = func_002D3CC0(D_001B643C->unk20, 0x51);
-            func_002D5CF0(reinterpret_cast<FieldResourceDisplay2D5CF0*>(object->unkf0[index]), allocation, record, resource);
-            object->unkf0[index]->unk3f = 1;
+            object->unkf0[slot_index]->func_002D5CF0(allocation, record, portrait_index);
+            object->unkf0[slot_index]->unk3f = 1;
         }
         else
         {
-            object->unkf0[index]->unk3f = 0;
+            object->unkf0[slot_index]->unk3f = 0;
         }
     }
 }
@@ -9857,7 +10070,7 @@ extern "C" void func_00364E00(AvailableInventorGrid* object, u32 enabled)
 }
 
 /**
- * @brief Create the fourteen-slot item displays and their two selection grids.
+ * @brief Create the fourteen available-inventor portraits and their two selection grids.
  * @param associated Associated display passed to the Field setup.
  * @return Zero without a selected state, one after setup.
  */
@@ -9867,7 +10080,7 @@ s32 AvailableInventorGrid::func_slotf4(void* associated)
     {
         return 0;
     }
-    func_002CE760(this, associated, 0, 9, 2000, 16.0f, 72.0f, 0.0f);
+    FieldClass15AE70::func_slot14(associated, 0, 9, 2000, 16.0f, 72.0f, 0.0f);
     LibWidgetColors4C5590 colors = {0};
     colors.values[0] = 0xBCA4B4;
     colors.values[1] = 0xBCA4B4;
@@ -9962,169 +10175,169 @@ AvailableInventorGrid::~AvailableInventorGrid()
 
 
 /**
- * @brief Fill the item and auxiliary cost arrays for the category.
- * @param object Panel selection window.
- * @param category Category code.
+ * @brief Initialize facility and development-line expansion costs for a workshop.
+ * @param object Workshop-expansion window.
+ * @param workshop_id Workshop ID from one through twelve.
  */
-extern "C" void func_00365600(WorkshopExpansionWindow* object, u8 category)
+extern "C" void item_creation_initialize_expansion_costs(WorkshopExpansionWindow* object, u8 workshop_id)
 {
-    switch (category)
+    switch (workshop_id)
     {
     case 1:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     case 2:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     case 3:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     case 4:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     case 5:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     case 6:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     case 7:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     case 8:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     case 9:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     case 10:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     case 11:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     case 12:
-        object->unkb0[0] = 800;
-        object->unkb0[1] = 2000;
-        object->unkb0[2] = 8000;
-        object->unkb0[3] = 4000;
-        object->unkb0[4] = 3000;
-        object->unkb0[5] = 5000;
-        object->unkb0[6] = 6000;
-        object->unkb0[7] = 9500;
-        object->unk110[0] = 1000;
-        object->unk110[1] = 2000;
-        object->unk110[2] = 3000;
+        object->facility_costs[0] = 800;
+        object->facility_costs[1] = 2000;
+        object->facility_costs[2] = 8000;
+        object->facility_costs[3] = 4000;
+        object->facility_costs[4] = 3000;
+        object->facility_costs[5] = 5000;
+        object->facility_costs[6] = 6000;
+        object->facility_costs[7] = 9500;
+        object->additional_line_costs[0] = 1000;
+        object->additional_line_costs[1] = 2000;
+        object->additional_line_costs[2] = 3000;
         break;
     }
 }
@@ -10175,13 +10388,13 @@ s32 WorkshopExpansionWindow::func_slotb4()
         func_0023C710(unkdc);
     }
     func_00365F20(this);
-    ItemCreationPanelReturnParent* parent = static_cast<ItemCreationPanelReturnParent*>(func_slot44());
+    ItemCreationMainMenu* parent = static_cast<ItemCreationMainMenu*>(func_slot44());
     if (parent != 0)
     {
-        ItemCreationPanelReturnMarker* marker = parent->unkac;
+        FieldObject23CEA0* marker = parent->unkac;
         if (marker != 0)
         {
-            marker->unke0 = 128.0f;
+            marker->FieldClass151C50::unk30 = 128.0f;
             marker->unkae = 1;
         }
         D_001B643C->unk10->unk14->func_00263C70(parent);
@@ -10207,7 +10420,7 @@ extern "C" void func_00365F20(WorkshopExpansionWindow* object)
             LibObject178750* widget = static_cast<LibObject178750*>(node->unk00);
             if (index == selected)
             {
-                func_0023B9B0(object->unke0, (s16)index, func_4C69B0(widget)->unk08);
+                object->unke0->func_0023B9B0(func_4C69B0(widget)->unk08, (s16)index);
                 widget->unk94 = 0x288080;
                 widget->unk3c = 1;
                 FieldClass15AE70* text =
@@ -10228,9 +10441,10 @@ extern "C" void func_00365F20(WorkshopExpansionWindow* object)
     }
 }
 
-u32 func_00366040(void* object)
+/** @brief Read the alternate associated object. @return Stored object. */
+void* ItemCreationSelectedDisplayState::func_00263C90()
 {
-    return *(u32*)((u8*)object + 0x24);
+    return unk24;
 }
 
 void func_00366050(WorkshopExpansionWindow* object)
@@ -10268,7 +10482,7 @@ void func_00366050(WorkshopExpansionWindow* object)
                         if (object->unk10d < 3)
                         {
                             LibObject174F20* valueDisplay = object->unk120;
-                            valueDisplay->unkfc = object->unk110[object->unk10d];
+                            valueDisplay->unkfc = object->additional_line_costs[object->unk10d];
                             valueDisplay->unk3c = 1;
                         }
                         else
@@ -10289,7 +10503,7 @@ void func_00366050(WorkshopExpansionWindow* object)
                 u16 checksum = record->unka4;
                 LibObject174F20* display;
                 u32 value;
-                if (checksum != (u16)func_457470(record->unka6, ((u8*)record + 0x26),
+                if (checksum != func_00457470(record->unka6, ((u8*)record + 0x26),
                     end - ((const u8*)record + 0x26)))
                 {
                     value = 0;
@@ -10306,7 +10520,160 @@ void func_00366050(WorkshopExpansionWindow* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003661F0);
+/**
+ * @brief Position an expansion entry below the heading.
+ * @param row Zero-based visible row.
+ * @param spacing Distance between row origins.
+ * @return Vertical position.
+ */
+static inline float expansion_row_y(u32 row, float spacing)
+{
+    return 68.0f + (float)row * spacing;
+}
+
+/**
+ * @brief Scale a row coordinate by its spacing.
+ * @param row Row coordinate.
+ * @param spacing Distance between rows.
+ * @return Offset from the first row.
+ */
+static inline float expansion_row_offset(float row, float spacing)
+{
+    return row * spacing;
+}
+
+/**
+ * @brief Build the available workshop facilities and additional-line entries.
+ * @param associated Source passed to the window and its labels.
+ * @return One after setup, or zero without a selected workshop state or workshop id.
+ */
+s32 WorkshopExpansionWindow::func_slotf4(void* associated)
+{
+    if (unka8 == 0)
+    {
+        return 0;
+    }
+    if (workshop_id == 0)
+    {
+        return 0;
+    }
+    unk10d = unka8->unk57;
+    item_creation_initialize_expansion_costs(this, workshop_id);
+    FieldClass15AE70::func_slot10(associated, 280.0f, 78.0f, 16);
+    LibClass178630* panel = new (0) LibClass178630;
+    func_004C5A80(panel, 0, 0.0f, 0.0f, 344.0f, 388.0f, 88.0f);
+    func_004C6190(unk10, panel);
+    LibObject178750* left = new (0) LibObject178750;
+    LibObject178750* right = new (0) LibObject178750;
+    LibObject178750* footer_left = new (0) LibObject178750;
+    LibObject178750* footer_right = new (0) LibObject178750;
+    left->func_004C7FE0(28.0f, 24.0f, 0.0f, 0.0f, (s32)associated, 0x32F3, 1);
+    right->func_004C7FE0(240.0f, 24.0f, 0.0f, 0.0f, (s32)associated, 0x32F4, 1);
+    footer_left->func_004C7FE0(62.0f, 350.0f, 0.0f, 0.0f, (s32)associated, 0x32F5, 0);
+    footer_right->func_004C7FE0(242.0f, 350.0f, 0.0f, 0.0f, (s32)associated, 0x32F6, 0);
+    func_004C6190(unk10, left);
+    func_004C6190(unk10, right);
+    func_004C6190(unk10, footer_left);
+    func_004C6190(unk10, footer_right);
+    unke4 = new (0) LibObject174F20;
+    ItemCreationCheckedRecord* record = D_001B643C->unk00;
+    u16 checksum = record->unka4;
+    const u8* end = (const u8*)&record->unka4;
+    u32 value;
+    if (checksum !=
+        (u16)func_00457470(record->unka6, ((u8*)record + 0x26), end - ((const u8*)record + 0x26)))
+    {
+        value = 0;
+    }
+    else
+    {
+        value = record->unk34 ^ 0x7CE3C7F7;
+    }
+    unke4->func_00464D90(112.0f, 350.0f, 126.0f, 24.0f, value, (s32)associated, 0);
+    LibObject174F20* value_display = unke4;
+    value_display->unk94 = 0x288080;
+    value_display->unk3c = 1;
+    func_004C6190(unk10, unke4);
+    ItemCreationClass172870* first = new (0) ItemCreationClass172870;
+    func_421170(first, 24.0f, 52.0f, 288.0f, 5.0f);
+    first->unk50 = 0x606060;
+    first->unk3c = 1;
+    func_004C6190(unk10, first);
+    ItemCreationClass172870* second = new (0) ItemCreationClass172870;
+    func_421170(second, 24.0f, 338.0f, 288.0f, 5.0f);
+    second->unk50 = 0x606060;
+    second->unk3c = 1;
+    func_004C6190(unk10, second);
+    for (s32 index = 0; index < 9; index++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        text->func_004C7FE0(203.0f, 68.0f + expansion_row_offset((float)index, 30.0f), 0.0f, 0.0f,
+                            (s32)associated, 0x352E, 0);
+        func_004C6190(unk10, text);
+        text->unk3f = 0;
+        unke8[index] = text;
+    }
+    for (s32 index = 0; index < 8; index++)
+    {
+        u8 option = index + 1;
+        if (unka8->workshop_skill_enabled[option - 1] != 1)
+        {
+            unkd0[unkd8] = option;
+            u32 cost = facility_costs[index];
+            LibObject178750* text = new (0) LibObject178750;
+            LibObject174F20* quantity = new (0) LibObject174F20;
+            text->func_004C7FE0(62.0f, expansion_row_y((u32)unkd8, 30.0f), 0.0f, 0.0f,
+                                (s32)associated, 0x3672 + index, 0);
+            quantity->func_00464D90(160.0f, expansion_row_y((u32)unkd8, 30.0f), 126.0f, 24.0f, cost,
+                                    (s32)associated, 0);
+            func_004C6190(unk10, text);
+            func_004C6190(unk10, quantity);
+            func_0036F1A0(&unk2c, text);
+            func_0036F0D0(&unk38, quantity);
+            unkd8++;
+        }
+    }
+    if (unk10d < 3)
+    {
+        unk10c = unkd8;
+        unk11c = new (0) LibObject178750;
+        unk120 = new (0) LibObject174F20;
+        unk11c->func_004C7FE0(62.0f, expansion_row_y((u32)unkd8, 30.0f), 0.0f, 0.0f,
+                              (s32)associated, 0x1B71, 0);
+        unk120->func_00464D90(160.0f, expansion_row_y((u32)unkd8, 30.0f), 126.0f, 24.0f,
+                              additional_line_costs[unk10d], (s32)associated, 0);
+        func_004C6190(unk10, unk11c);
+        func_004C6190(unk10, unk120);
+        func_0036F1A0(&unk2c, unk11c);
+        func_0036F0D0(&unk38, unk120);
+        unkd8++;
+    }
+    unkdc = new (0) FieldObject23CEA0;
+    u16 count = unkd8;
+    unkdc->func_0023CE80(1, count ? count : 1);
+    unkdc->func_0023CE60(0.0f, 30.0f);
+    unkdc->unkF2 = 0;
+    unkdc->func_0023CF50(0, 334.0f, 146.0f);
+    func_0036F040(&unk74, unkdc);
+    if (unkd8 != 0)
+    {
+        FieldObject23BE00* marker = new (0) FieldObject23BE00;
+        unke0 = marker;
+        unke0->func_0023BB20(62.0f, 67.0f, 48.0f, 1.0f, unkdc, 0x288080);
+        func_004C6190(unk10, unke0);
+        func_0036EFB0(&unk8c, unke0);
+    }
+    func_00365F20(this);
+    FieldObject23CEA0* grid = unkdc;
+    if (grid)
+    {
+        func_0023CEA0(grid, 0);
+    }
+    func_slot20(0);
+    func_00366050(this);
+    return 1;
+}
+
 
 void WorkshopExpansionWindow::func_slot5c()
 {
@@ -10318,7 +10685,7 @@ void WorkshopExpansionWindow::func_slot5c()
         LibObject174F20* display;
         u32 value;
 
-        if (checksum != (u16)func_457470(record->unka6, ((u8*)record + 0x26),
+        if (checksum != func_00457470(record->unka6, ((u8*)record + 0x26),
             end - ((const u8*)record + 0x26)))
         {
             value = 0;
@@ -10336,10 +10703,10 @@ void WorkshopExpansionWindow::func_slot5c()
 WorkshopExpansionWindow::WorkshopExpansionWindow()
 {
     unka8 = 0;
-    unkac = 0;
+    workshop_id = 0;
     for (s32 i = 0; i < 8; i++)
     {
-        unkb0[i] = 0;
+        facility_costs[i] = 0;
         unkd0[i] = 0;
     }
     for (s32 i = 0; i < 9; i++)
@@ -10626,8 +10993,8 @@ DevelopmentTeamsWindow::DevelopmentTeamsWindow()
 }
 
 /**
- * @brief Create the option grid and mark its available entries.
- * @param associated Associated source.
+ * @brief Create the workshop-facility panel and color its eight creation-skill labels.
+ * @param associated Object associated with the window.
  * @return Always one.
  */
 s32 WorkshopFacilitiesWindow::func_slotf4(void* associated)
@@ -10645,30 +11012,30 @@ s32 WorkshopFacilitiesWindow::func_slotf4(void* associated)
     func_421170(divider, heading->unke8, 44.0f, func_4C69B0(heading)->unk08, 4.0f);
     func_420D20(divider, 0x505050);
     func_004C6190(unk10, divider);
-    for (s32 index = 0; index < 8; index++)
+    for (s32 skill_index = 0; skill_index < 8; skill_index++)
     {
-        LibObject178750* text = new (0) LibObject178750;
-        float x = 26.0f + 80.0f * (index % 3);
-        float y = 64.0f + 36.0f * (index / 3);
-        text->func_004C7FE0(x, y, 0.0f, 0.0f, (s32)associated, ITEM_CREATION_SKILL_LABEL_BASE + index, 0);
-        func_004C6190(unk10, text);
-        func_0036F1A0(&unk2c, text);
+        LibObject178750* skill_label = new (0) LibObject178750;
+        float x = 26.0f + 80.0f * (skill_index % 3);
+        float y = 64.0f + 36.0f * (skill_index / 3);
+        skill_label->func_004C7FE0(x, y, 0.0f, 0.0f, (s32)associated, ITEM_CREATION_SKILL_LABEL_BASE + skill_index, 0);
+        func_004C6190(unk10, skill_label);
+        func_0036F1A0(&unk2c, skill_label);
     }
     if (unka8)
     {
-        for (s32 index = 0; index < 8; index++)
+        for (s32 skill_index = 0; skill_index < 8; skill_index++)
         {
-            ItemCreationListNode* node = func_0036F230(&unk2c, index);
-            LibObject178750* text = static_cast<LibObject178750*>(node->unk00);
-            if (text)
+            ItemCreationListNode* node = func_0036F230(&unk2c, skill_index);
+            LibObject178750* skill_label = static_cast<LibObject178750*>(node->unk00);
+            if (skill_label)
             {
-                if (unka8->workshop_skill_enabled[(u8)(index + 1) - 1])
+                if (unka8->workshop_skill_enabled[(u8)(skill_index + 1) - 1])
                 {
-                    text->set_color(0x808080);
+                    skill_label->set_color(0x808080);
                 }
                 else
                 {
-                    text->set_color(0x505050);
+                    skill_label->set_color(0x505050);
                 }
             }
         }
@@ -10682,8 +11049,8 @@ WorkshopFacilitiesWindow::~WorkshopFacilitiesWindow()
 }
 
 /**
- * @brief Create the panel and label for the active selection mode.
- * @param associated Associated source.
+ * @brief Create the panel and name label for the current workshop.
+ * @param associated Object associated with the window.
  * @return Zero without the selection state, otherwise one.
  */
 s32 WorkshopNameWindow::func_slotf4(void* associated)
@@ -10696,13 +11063,13 @@ s32 WorkshopNameWindow::func_slotf4(void* associated)
     LibClass178630* panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 266.0f, 64.0f, 88.0f);
     func_004C6190(unk10, panel);
-    u32 code = 0x3520;
+    u32 workshop_name_key = 0x3520;
     if (unka8)
     {
-        code = func_0036B0E0(unka8);
+        workshop_name_key = item_creation_current_workshop_name_key(unka8);
     }
     LibObject178750* heading = new (0) LibObject178750;
-    heading->func_004C7FE0(0.0f, 16.0f, 266.0f, 32.0f, (s32)associated, code, 1);
+    heading->func_004C7FE0(0.0f, 16.0f, 266.0f, 32.0f, (s32)associated, workshop_name_key, 1);
     heading->set_mode(1);
     heading->set_vertical_alignment(1);
     heading->set_color(0x806080);
@@ -10732,15 +11099,15 @@ extern "C" void func_00368370(ItemCreationMainMenu* object)
             LibObject178750* widget = static_cast<LibObject178750*>(node->unk00);
             if (index == selected)
             {
-                func_0023B9B0(object->unkb0, (s16)index, func_4C69B0(widget)->unk08);
-                static_cast<LibClass178600*>(static_cast<void*>(object->unkb0))->unk3f = 1;
+                object->unkb0->func_0023B9B0(func_4C69B0(widget)->unk08, (s16)index);
+                object->unkb0->unk3f = 1;
                 widget->unk94 = ITEM_CREATION_COLOR_SELECTED;
                 widget->unk3c = 1;
                 if (!object->unkb4 && index == 2)
                 {
                     widget->unk94 = ITEM_CREATION_COLOR_DIM;
                     widget->unk3c = 1;
-                    static_cast<LibClass178600*>(static_cast<void*>(object->unkb0))->unk3f = 0;
+                    object->unkb0->unk3f = 0;
                 }
                 FieldClass15AE70* text =
                     static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90());
@@ -10835,15 +11202,15 @@ extern "C"
     ItemCreationRuntimeFlags* func_101440(ItemCreationRuntimeDirectory* directory, s32 key);
 
 
-    extern u8 D_50CD30[];
+    extern LibVector4 D_50CD30[];
 }
 
 /**
- * @brief Convert an option code to its runtime index.
- * @param value Option code.
+ * @brief Convert an inventor option code to its saved inventor ID.
+ * @param value Inventor option code; zero denotes an empty position.
  * @return Zero for an empty code, or the code minus 31.
  */
-static inline u32 runtime_option_index(u8 value);
+static inline u32 inventor_id_from_option_code(u8 value);
 
 /**
  * @brief Test a one-based workshop ID.
@@ -10887,11 +11254,11 @@ static inline void enable_record_flag(ItemCreationSelectedDisplayState* object, 
 }
 
 /**
- * @brief Convert an option code to its runtime index.
- * @param value Option code.
+ * @brief Convert an inventor option code to its saved inventor ID.
+ * @param value Inventor option code; zero denotes an empty position.
  * @return Zero for an empty code, or the code minus 31.
  */
-static inline u32 runtime_option_index(u8 value)
+static inline u32 inventor_id_from_option_code(u8 value)
 {
     if (value == 0)
     {
@@ -11111,14 +11478,10 @@ s32 ItemCreationMainMenu::func_slotf4(void* associated)
     unkac->unkF2 = 0;
     unkac->func_0023CF50(0, 38.0f, 98.0f);
     func_0036F040(&unk74, unkac);
-    FieldObject23BE00* marker = static_cast<FieldObject23BE00*>(func_00100AC0(0x6C, 0));
-    if (marker != 0)
-    {
-        marker = func_0023BE00(marker);
-    }
+    FieldObject23BE00* marker = new (0) FieldObject23BE00;
     unkb0 = marker;
-    func_0023BB20(unkb0, reinterpret_cast<FieldObject23CEB0*>(unkac), 0x288080, 22.0f, 18.0f, 215.99998f, 1.0f);
-    func_4C6190(unk10, static_cast<LibClass178600*>(static_cast<void*>(unkb0)));
+    unkb0->func_0023BB20(22.0f, 18.0f, 215.99998f, 1.0f, unkac, 0x288080);
+    func_4C6190(unk10, unkb0);
     func_0036EFB0(&unk8c, unkb0);
     func_00368370(this);
     return 1;
@@ -11151,39 +11514,40 @@ void ItemCreationStatusBanner::func_slot60(s32 text_key)
     }
 }
 
-void func_00368BD0(ItemCreationScrollState* object)
+/** @brief Hold, then advance and wrap the horizontal status message. */
+void ItemCreationStatusBanner::func_slot5c()
 {
-    ItemCreationScrollPosition* position = object->unkac;
-    float x = position->unk18;
-    float y = position->unk1c;
-    float z = position->unk20;
-    float w = position->unk24;
+    LibObject178750* position = unkac;
+    float x = position->unk18.unk00;
+    float y = position->unk18.unk04;
+    float z = position->unk18.unk08;
+    float w = position->unk18.unk0c;
     float start;
-    if (object->unkba == 0)
+    if (this->unkba == 0)
     {
-        position->unk18 = object->unkc0;
-        position->unk1c = y;
-        position->unk20 = z;
-        position->unk24 = w;
+        position->unk18.unk00 = this->unkc0;
+        position->unk18.unk04 = y;
+        position->unk18.unk08 = z;
+        position->unk18.unk0c = w;
         position->unk3c = 1;
-        object->unkb8++;
-        if (!((float)object->unkb8 <= 120.0f))
+        this->unkb8++;
+        if (!((float)this->unkb8 <= 120.0f))
         {
-            object->unkb8 = 0;
-            object->unkba = 1;
+            this->unkb8 = 0;
+            this->unkba = 1;
         }
         return;
     }
-    start = object->unkc4;
+    start = this->unkc4;
     x -= 108.0f * D_001B6690;
-    if (x < start - (float)object->unkb0)
+    if (x < start - (float)this->unkb0)
     {
-        x = start + object->unkc8 + 2.0f;
+        x = start + this->unkc8 + 2.0f;
     }
-    position->unk18 = x;
-    position->unk1c = y;
-    position->unk20 = z;
-    position->unk24 = w;
+    position->unk18.unk00 = x;
+    position->unk18.unk04 = y;
+    position->unk18.unk08 = z;
+    position->unk18.unk0c = w;
     position->unk3c = 1;
 }
 
@@ -11194,7 +11558,7 @@ void func_00368BD0(ItemCreationScrollState* object)
  */
 s32 ItemCreationStatusBanner::func_slotf4(void* associated)
 {
-    func_002CE760(this, associated, 0, 9, 1400, 16.0f, 16.0f, 0.0f);
+    FieldClass15AE70::func_slot14(associated, 0, 9, 1400, 16.0f, 16.0f, 0.0f);
     unkac = new (0) LibObject178750;
     LibObject178750* footer = new (0) LibObject178750;
     unkcc = new (0) ItemCreationClass1746A0;
@@ -11244,7 +11608,7 @@ ItemCreationStatusBanner::~ItemCreationStatusBanner()
  */
 s32 ItemCreationBackground::func_slotf4(void* associated)
 {
-    func_002CE760(this, associated, 0, 9, 1200, 16.0f, 16.0f, 0.0f);
+    FieldClass15AE70::func_slot14(associated, 0, 9, 1200, 16.0f, 16.0f, 0.0f);
     unka8 = new (0) ItemCreationOptionResourceDisplay;
     unkac = new (0) ItemCreationOptionResourceDisplay;
     unkb0 = new (0) ItemCreationOptionResourceDisplay;
@@ -11405,13 +11769,10 @@ void func_00369510(ItemCreationSelection* object)
         }
         if (object->unk79 == 1 || object->unk79 == 2)
         {
-            object->unk60[5] = 0;
-            object->unk60[6] = 0;
-            object->unk60[7] = 0;
-            object->unk60[8] = 0;
-            object->unk60[9] = 0;
-            object->unk60[10] = 0;
-            object->unk60[11] = 0;
+            for (s32 index = 5; index < 12; index++)
+            {
+                object->unk60[index] = 0;
+            }
         }
     }
 }
@@ -11500,9 +11861,9 @@ void item_creation_rebuild_line_target(ItemCreationSelectedDisplayState* object,
     u8 index = line_index;
     if (object->unk1c0[index] != 0 && object->unk1c3[index] != 0)
     {
-        u8 first_inventor_id = runtime_option_index(object->unk68[index * 3]);
-        u8 second_inventor_id = runtime_option_index(object->unk68[index * 3 + 1]);
-        u8 third_inventor_id = runtime_option_index(object->unk68[index * 3 + 2]);
+        u8 first_inventor_id = inventor_id_from_option_code(object->unk68[index * 3]);
+        u8 second_inventor_id = inventor_id_from_option_code(object->unk68[index * 3 + 1]);
+        u8 third_inventor_id = inventor_id_from_option_code(object->unk68[index * 3 + 2]);
         ::operator delete(object->unk1b4[index]);
         object->unk1b4[index] = 0;
         u8 result = 0;
@@ -11695,7 +12056,11 @@ void item_creation_advance_inventor_transfer(ItemCreationSelectedDisplayState* o
     }
 }
 
-void func_00369EB0(ItemCreationRuntimeRecordSelection* object)
+/**
+ * @brief Copy the first five workshops' saved facility masks into the selection state.
+ * @param object Selection state; its other seven workshop masks are left unchanged.
+ */
+void func_00369EB0(ItemCreationSelectedDisplayState* object)
 {
     object->workshop_facility_masks[0] = D_001B64F8->workshops[0].facility_mask;
     object->workshop_facility_masks[1] = D_001B64F8->workshops[1].facility_mask;
@@ -11963,11 +12328,11 @@ void item_creation_select_inventor_for_swap(ItemCreationSelectedDisplayState* ob
                 restore = available_grid->unkac;
                 restore->FieldClass151C50::unk30 = 128.0f;
                 restore->unkae = 1;
-                x = display->unk10;
-                y = display->unk14;
+                x = display->unk10.x;
+                y = display->unk10.y;
                 restore = available_grid->unkac;
-                restore->unk10 = x;
-                restore->unk14 = y;
+                restore->unk10.x = x;
+                restore->unk10.y = y;
                 restore->unk35 = 1;
                 restore->unkae = 1;
                 restore = available_grid->unkac;
@@ -12000,14 +12365,14 @@ void item_creation_select_inventor_for_swap(ItemCreationSelectedDisplayState* ob
                     s16 selected_index = display->unk114;
                     float x;
                     float y;
-                        restore = assigned_grid->unkac;
+                    restore = assigned_grid->unkac;
                     restore->FieldClass151C50::unk30 = 128.0f;
                     restore->unkae = 1;
-                    x = display->unk10;
-                    y = display->unk14;
+                    x = display->unk10.x;
+                    y = display->unk10.y;
                     restore = assigned_grid->unkac;
-                    restore->unk10 = x;
-                    restore->unk14 = y;
+                    restore->unk10.x = x;
+                    restore->unk10.y = y;
                     restore->unk35 = 1;
                     restore->unkae = 1;
                     restore = assigned_grid->unkac;
@@ -12153,7 +12518,7 @@ void item_creation_refresh_team_and_transfer_windows(ItemCreationSelectedDisplay
  * @param workshop_id Workshop ID from one through eleven; other values leave state unchanged.
  * @param transfer_list One selects the source strip and two the destination strip.
  */
-void item_creation_build_transfer_inventor_list(ItemCreationOptionState* object, u16 workshop_id, u8 transfer_list)
+void item_creation_build_transfer_inventor_list(ItemCreationSelectedDisplayState* object, u16 workshop_id, u8 transfer_list)
 {
     s32 clear_index;
     u16 inventor_count;
@@ -12211,17 +12576,17 @@ void item_creation_build_transfer_inventor_list(ItemCreationOptionState* object,
 }
 
 /**
- * @brief Store the displayed option groups in the selected runtime record.
+ * @brief Save the three-inventor teams and creation skills for the current workshop.
  * @param object Selected display state.
  */
-void func_0036A8F0(ItemCreationSelectedDisplayState* object)
+void item_creation_save_workshop_lines(ItemCreationSelectedDisplayState* object)
 {
     for (s32 index = 0; index < object->unk57; index++)
     {
         store_workshop_line(D_001B64F8, object->workshop->workshop_id, index,
-            runtime_option_index(object->unk68[index * 3]),
-            runtime_option_index(object->unk68[index * 3 + 1]),
-            runtime_option_index(object->unk68[index * 3 + 2]), object->unk1c0[index]);
+            inventor_id_from_option_code(object->unk68[index * 3]),
+            inventor_id_from_option_code(object->unk68[index * 3 + 1]),
+            inventor_id_from_option_code(object->unk68[index * 3 + 2]), object->unk1c0[index]);
     }
 }
 
@@ -12231,7 +12596,7 @@ INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_
  * @brief Restore installed workshop skills and enable appraisal.
  * @param object Selection state with its optional workshop record.
  */
-void item_creation_restore_category_flags(ItemCreationSelectedDisplayState* object)
+void item_creation_restore_workshop_skill_flags(ItemCreationSelectedDisplayState* object)
 {
     if (object->workshop != 0)
     {
@@ -12281,55 +12646,65 @@ void item_creation_restore_category_flags(ItemCreationSelectedDisplayState* obje
     }
 }
 
-u8 func_0036AFE0(ItemCreationSelectedDisplayState* object)
+/**
+ * @brief Read the workshop ID corresponding to the current area.
+ * @param object Unused receiver.
+ * @return Workshop ID from one through twelve, or zero outside a workshop area.
+ */
+u8 item_creation_current_workshop_id(ItemCreationSelectedDisplayState* object)
 {
-    u8 code;
+    u8 workshop_id;
     switch (D_001B6430->context->unk08->unkb8)
     {
     case 31:
-        code = 1;
+        workshop_id = 1;
         break;
     case 32:
-        code = 2;
+        workshop_id = 2;
         break;
     case 94:
-        code = 3;
+        workshop_id = 3;
         break;
     case 113:
-        code = 4;
+        workshop_id = 4;
         break;
     case 142:
-        code = 5;
+        workshop_id = 5;
         break;
     case 499:
-        code = 6;
+        workshop_id = 6;
         break;
     case 575:
-        code = 7;
+        workshop_id = 7;
         break;
     case 602:
-        code = 8;
+        workshop_id = 8;
         break;
     case 652:
-        code = 9;
+        workshop_id = 9;
         break;
     case 664:
-        code = 10;
+        workshop_id = 10;
         break;
     case 805:
-        code = 11;
+        workshop_id = 11;
         break;
     case 1135:
-        code = 12;
+        workshop_id = 12;
         break;
     default:
-        code = 0;
+        workshop_id = 0;
         break;
     }
-    return code;
+    return workshop_id;
 }
 
-u32 func_0036B0E0(void* object)
+/**
+ * @brief Read the workshop name message corresponding to the current area.
+ * @param object Unused receiver.
+ * @return Message key from 0x3521 through 0x352C, or the 0x3520 error label.
+ */
+u32 item_creation_current_workshop_name_key(void* object)
 {
     switch (D_001B6430->context->unk08->unkb8)
     {
@@ -12363,27 +12738,27 @@ u32 func_0036B0E0(void* object)
 }
 
 /**
- * @brief Find the position for a one-based option in the selection grid.
- * @param selection Grid containing twelve positions.
- * @param index One-based option index.
- * @return Position, or null for an invalid index.
+ * @brief Find the map position for a one-based workshop ID.
+ * @param selection Workshop selection containing twelve map positions.
+ * @param workshop_id Workshop ID from one through twelve.
+ * @return Position, or null for an invalid workshop ID.
  */
-static inline const float* selection_position(ItemCreationSelection* selection, s32 index)
+static inline const float* workshop_map_position(ItemCreationSelection* selection, s32 workshop_id)
 {
-    if (index <= 0)
+    if (workshop_id <= 0)
     {
         return 0;
     }
-    if (index > 12)
+    if (workshop_id > 12)
     {
         return 0;
     }
-    return selection->unk00[index - 1].unk00;
+    return selection->unk00[workshop_id - 1].unk00;
 }
 /**
- * @brief Refresh the option windows and enable or disable their selection controls.
- * @param object State owning the selection and detail windows.
- * @param enabled Full-word control flag; nonzero also restores the selected item and status message.
+ * @brief Enable or disable the inventor transfer windows and restore the selected workshop.
+ * @param object State owning the transfer window and source/destination inventor strips.
+ * @param enabled Full-word control flag; nonzero refreshes the workshop selections and inventor strips.
  */
 extern "C" void func_0036B1E0(ItemCreationSelectedDisplayState* object, u32 enabled)
 {
@@ -12394,18 +12769,18 @@ extern "C" void func_0036B1E0(ItemCreationSelectedDisplayState* object, u32 enab
             func_0034DA30(object->unkf4);
             func_0034DB00(object->unkf4, object->workshop_id);
             func_0034D980(object->unkf4, object->workshop_id);
-            InventorTransferWindow* owner = object->unkf4;
-            s32 selected = object->workshop_id;
-            owner->workshop_selection->unk6c = selected;
-            const float* position = selection_position(owner->workshop_selection, selected);
-            set_transfer_position(owner->unk15c, position[0], position[1]);
+            InventorTransferWindow* transfer_window = object->unkf4;
+            s32 selected_workshop_id = object->workshop_id;
+            transfer_window->workshop_selection->unk6c = selected_workshop_id;
+            const float* workshop_position = workshop_map_position(transfer_window->workshop_selection, selected_workshop_id);
+            set_transfer_position(transfer_window->unk15c, workshop_position[0], workshop_position[1]);
             object->func_00263C70(object->unkf4);
         }
         object->unkf4->func_slot20(enabled);
     }
     if (object->unkf8 != 0)
     {
-        static_cast<FieldClass15AE70*>(static_cast<void*>(object->unkf8))->func_slot20(enabled);
+        object->unkf8->func_slot20(enabled);
         if (enabled != 0)
         {
             func_0034D340(object->unkf8);
@@ -12413,7 +12788,7 @@ extern "C" void func_0036B1E0(ItemCreationSelectedDisplayState* object, u32 enab
     }
     if (object->unkfc != 0)
     {
-        static_cast<FieldClass15AE70*>(static_cast<void*>(object->unkfc))->func_slot20(enabled);
+        object->unkfc->func_slot20(enabled);
         if (enabled != 0)
         {
             func_0034D340(object->unkfc);
@@ -12454,8 +12829,8 @@ extern "C" void func_0036B360(ItemCreationSelectedDisplayState* object, u32 enab
         resource->func_slot20(enabled);
         if (enabled != 0)
         {
-            func_00356FD0(static_cast<ItemCreationNineResourceView*>(static_cast<void*>(object->unkd8)));
-            func_00356160(static_cast<ItemCreationNineResourceView*>(static_cast<void*>(object->unkd8)));
+            func_00356FD0(object->unkd8);
+            func_00356160(object->unkd8);
             object->func_00263C70(object->unkd8);
             for (s32 index = 0; index < 3; index++)
             {
@@ -12466,7 +12841,7 @@ extern "C" void func_0036B360(ItemCreationSelectedDisplayState* object, u32 enab
                     object->unk1b1[index] = 1;
                 }
             }
-            func_0036C1C0(object);
+            item_creation_schedule_inventor_resource(object);
         }
     }
     if (object->unke4 != 0)
@@ -12548,9 +12923,9 @@ extern "C" void func_0036B360(ItemCreationSelectedDisplayState* object, u32 enab
 }
 
 /**
- * @brief Activate the available-item windows and update their selected display flags.
- * @param object State owning the selection, detail, and message windows.
- * @param enabled Full-word activation flag; zero disables the group.
+ * @brief Enable or disable inventor team selection and reset its subsidiary windows.
+ * @param object State owning the assigned/available inventor grids and their detail windows.
+ * @param enabled Full-word control flag; nonzero refreshes the inventor grids and team-selection prompt.
  */
 extern "C" void func_0036B6E0(ItemCreationSelectedDisplayState* object, u32 enabled)
 {
@@ -12587,31 +12962,31 @@ extern "C" void func_0036B6E0(ItemCreationSelectedDisplayState* object, u32 enab
                 func_0023C550(object->unkb8->unkb4, 0);
             }
             func_00364D20(object->unkb8);
-            AvailableInventorGrid* window = object->unkb8;
-            if (window->unkb4 != 0)
+            AvailableInventorGrid* available_grid = object->unkb8;
+            if (available_grid->unkb4 != 0)
             {
-                s32 index;
-                s32 selected = window->unkb4->unk114;
-                for (index = 0; index < 14; index++)
+                s32 slot_index;
+                s32 selected_slot = available_grid->unkb4->unk114;
+                for (slot_index = 0; slot_index < 14; slot_index++)
                 {
-                    if (selected == index)
+                    if (selected_slot == slot_index)
                     {
-                        window->unkb8[index]->unk3f = 1;
+                        available_grid->unkb8[slot_index]->unk3f = 1;
                     }
                     else
                     {
-                        window->unkb8[index]->unk3f = 0;
+                        available_grid->unkb8[slot_index]->unk3f = 0;
                     }
                 }
             }
             object->func_00263C70(object->unkb8);
         }
     }
-    InventorInformationWindow* detail = object->unkc0;
-    if (detail != 0)
+    InventorInformationWindow* inventor_information = object->unkc0;
+    if (inventor_information != 0)
     {
-        detail->func_slot20(0);
-        detail->unk100 = 0;
+        inventor_information->func_slot20(0);
+        inventor_information->unk100 = 0;
     }
     if (object->unkc4 != 0)
     {
@@ -12633,45 +13008,45 @@ extern "C" void func_0036B6E0(ItemCreationSelectedDisplayState* object, u32 enab
     {
         object->unkd4->func_slot20(0);
     }
-    ItemCreationStatusBanner* message = object->unk9c;
-    if (message != 0 && enabled != 0)
+    ItemCreationStatusBanner* status_banner = object->unk9c;
+    if (status_banner != 0 && enabled != 0)
     {
-        if (message->unka8 != 0)
+        if (status_banner->unka8 != 0)
         {
-            func_4C6DF0(message->unka8, message->func_slot54(), 0x32C9, 0);
-            float height = func_4C69B0(message->unka8)->unk08;
-            message->unkbc = height;
-            message->unkc4 = 18.0f + height;
-            message->unkc8 = 640.0f - (16.0f + (32.0f + message->unkc4));
-            message->unkc0 = 24.0f + message->unkbc;
-            float width = message->unkc8;
-            ItemCreationClass1746A0* frame = message->unkcc;
-            frame->unk18.unk00 = message->unkc4;
-            frame->unk18.unk04 = 0.0f;
-            frame->unk18.unk08 = width;
-            frame->unk18.unk0c = 56.0f;
-            frame->unk50 = 0;
-            frame->unk3c = 1;
+            func_4C6DF0(status_banner->unka8, status_banner->func_slot54(), 0x32C9, 0);
+            float title_width = func_4C69B0(status_banner->unka8)->unk08;
+            status_banner->unkbc = title_width;
+            status_banner->unkc4 = 18.0f + title_width;
+            status_banner->unkc8 = 640.0f - (16.0f + (32.0f + status_banner->unkc4));
+            status_banner->unkc0 = 24.0f + status_banner->unkbc;
+            float message_frame_width = status_banner->unkc8;
+            ItemCreationClass1746A0* message_frame = status_banner->unkcc;
+            message_frame->unk18.unk00 = status_banner->unkc4;
+            message_frame->unk18.unk04 = 0.0f;
+            message_frame->unk18.unk08 = message_frame_width;
+            message_frame->unk18.unk0c = 56.0f;
+            message_frame->unk50 = 0;
+            message_frame->unk3c = 1;
         }
         object->unk9c->func_slot60(0x32D2);
     }
 }
 
 /**
- * @brief Activate the assigned-item windows and configure their status message.
- * @param object State owning the windows and assigned-item flags.
- * @param enabled Full-word activation flag; zero disables the group.
+ * @brief Enable or disable the main menu and workshop summary windows.
+ * @param object State owning the main menu, facilities, workshop name and development-team summary.
+ * @param enabled Full-word control flag; nonzero restores main-menu focus and its status prompt.
  */
 extern "C" void func_0036BA10(ItemCreationSelectedDisplayState* object, u32 enabled)
 {
-    ItemCreationMainMenu* choice = object->unka0;
-    if (choice != 0)
+    ItemCreationMainMenu* main_menu = object->unka0;
+    if (main_menu != 0)
     {
-        if (choice->unkac != 0)
+        if (main_menu->unkac != 0)
         {
-            func_0023CEA0(choice->unkac, enabled);
+            func_0023CEA0(main_menu->unkac, enabled);
         }
-        choice->func_slot20(enabled);
+        main_menu->func_slot20(enabled);
         if (enabled != 0)
         {
             object->func_00263C70(object->unka0);
@@ -12682,16 +13057,16 @@ extern "C" void func_0036BA10(ItemCreationSelectedDisplayState* object, u32 enab
     }
     if (object->unka8 != 0)
     {
-        static_cast<FieldClass15AE70*>(static_cast<void*>(object->unka8))->func_slot20(enabled);
+        object->unka8->func_slot20(enabled);
     }
-    WorkshopExpansionWindow* panel = object->unkac;
-    if (panel != 0)
+    WorkshopExpansionWindow* expansion_window = object->unkac;
+    if (expansion_window != 0)
     {
-        if (panel->unkdc != 0)
+        if (expansion_window->unkdc != 0)
         {
-            func_0023CEA0(panel->unkdc, 0);
+            func_0023CEA0(expansion_window->unkdc, 0);
         }
-        panel->func_slot20(0);
+        expansion_window->func_slot20(0);
     }
     if (object->unkb0 != 0)
     {
@@ -12705,31 +13080,31 @@ extern "C" void func_0036BA10(ItemCreationSelectedDisplayState* object, u32 enab
     {
         object->unka4->func_slot20(enabled);
     }
-    ItemCreationStatusBanner* message = object->unk9c;
-    if (message != 0 && enabled != 0)
+    ItemCreationStatusBanner* status_banner = object->unk9c;
+    if (status_banner != 0 && enabled != 0)
     {
-        if (message->unka8 != 0)
+        if (status_banner->unka8 != 0)
         {
-            func_4C6DF0(message->unka8, message->func_slot54(), 0x32C8, 0);
-            float height = func_4C69B0(message->unka8)->unk08;
-            message->unkbc = height;
-            message->unkc4 = 18.0f + height;
-            message->unkc8 = 640.0f - (16.0f + (32.0f + message->unkc4));
-            message->unkc0 = 24.0f + message->unkbc;
-            float width = message->unkc8;
-            ItemCreationClass1746A0* frame = message->unkcc;
-            frame->unk18.unk00 = message->unkc4;
-            frame->unk18.unk04 = 0.0f;
-            frame->unk18.unk08 = width;
-            frame->unk18.unk0c = 56.0f;
-            frame->unk50 = 0;
-            frame->unk3c = 1;
+            func_4C6DF0(status_banner->unka8, status_banner->func_slot54(), 0x32C8, 0);
+            float title_width = func_4C69B0(status_banner->unka8)->unk08;
+            status_banner->unkbc = title_width;
+            status_banner->unkc4 = 18.0f + title_width;
+            status_banner->unkc8 = 640.0f - (16.0f + (32.0f + status_banner->unkc4));
+            status_banner->unkc0 = 24.0f + status_banner->unkbc;
+            float message_frame_width = status_banner->unkc8;
+            ItemCreationClass1746A0* message_frame = status_banner->unkcc;
+            message_frame->unk18.unk00 = status_banner->unkc4;
+            message_frame->unk18.unk04 = 0.0f;
+            message_frame->unk18.unk08 = message_frame_width;
+            message_frame->unk18.unk0c = 56.0f;
+            message_frame->unk50 = 0;
+            message_frame->unk3c = 1;
         }
         object->unk9c->func_slot60(0x32CB);
         if (object->unk45 == 0 && object->unka0 != 0)
         {
-            s16 index = object->unka0->unkac != 0 ? object->unka0->unkac->unk114 : -1;
-            if (index == 2)
+            s16 menu_index = object->unka0->unkac != 0 ? object->unka0->unkac->unk114 : -1;
+            if (menu_index == 2)
             {
                 object->unk9c->func_slot60(0x32CD);
             }
@@ -12738,11 +13113,17 @@ extern "C" void func_0036BA10(ItemCreationSelectedDisplayState* object, u32 enab
 }
 
 /**
- * @brief Select the active option window group and reset transfer state.
- * @param object State owning the option windows and transfer fields.
- * @param mode Window group byte; four leaves the groups unchanged.
+ * @brief Activate an item-creation window group after clearing pending inventor resources.
+ *
+ * Group zero shows the main menu, one selects team members, two shows inventing,
+ * and three transfers inventors. Group four and other values leave visibility unchanged.
+ * All groups clear pending inventor resources.
+ * Activated groups restore their active receiver when one is available.
+ *
+ * @param object State owning the window groups and pending inventor resources.
+ * @param group Window group to activate.
  */
-extern "C" void func_0036BC90(ItemCreationSelectedDisplayState* object, u8 mode)
+extern "C" void item_creation_activate_window_group(ItemCreationSelectedDisplayState* object, u8 group)
 {
     if (object->unk19c != 0)
     {
@@ -12752,7 +13133,7 @@ extern "C" void func_0036BC90(ItemCreationSelectedDisplayState* object, u8 mode)
     object->unk1a4 = 0;
     object->unk1a0 = 0;
     object->unk1ac = 0;
-    switch (mode)
+    switch (group)
     {
     case 0:
         func_0036B6E0(object, 0);
@@ -12784,7 +13165,7 @@ extern "C" void func_0036BC90(ItemCreationSelectedDisplayState* object, u8 mode)
         func_0036B6E0(object, 0);
         func_0036B360(object, 0);
         func_0036B1E0(object, 1);
-        func_0036A8F0(object);
+        item_creation_save_workshop_lines(object);
         break;
     case 4:
     default:
@@ -12885,59 +13266,63 @@ void func_0036C080(ItemCreationSelectedDisplayState* object, s32 index, u32 valu
     }
 }
 
-void func_0036C1C0(ItemCreationSelectedDisplayState* object)
+/**
+ * @brief Choose an eligible assigned inventor and schedule the corresponding display resources.
+ * @param object Selection state containing development lines and assigned inventor codes.
+ */
+void item_creation_schedule_inventor_resource(ItemCreationSelectedDisplayState* object)
 {
     if (object->unk1b1[0] == 0 || object->unk1b1[1] == 0 || object->unk1b1[2] == 0)
     {
-        s32 index;
-        s32 group;
-        s32 value;
+        s32 slot_index;
+        s32 line_index;
+        s32 inventor_option_code;
         for (;;)
         {
-            index = func_0010CF80() % 9;
-            group = index / 3;
-            if (object->unk1b4[group] == 0)
+            slot_index = func_0010CF80() % 9;
+            line_index = slot_index / 3;
+            if (object->unk1b4[line_index] == 0)
             {
                 continue;
             }
-            if (object->unk1b1[group] != 0)
+            if (object->unk1b1[line_index] != 0)
             {
                 continue;
             }
-            if (func_002FB510(object->unk1b4[group], index % 3) == 3)
+            if (func_002FB510(object->unk1b4[line_index], slot_index % 3) == 3)
             {
                 continue;
             }
-            value = object->unk68[index];
-            if (value > 0)
+            inventor_option_code = object->unk68[slot_index];
+            if (inventor_option_code > 0)
             {
                 break;
             }
         }
-        if (value >= 32 && value < 60)
+        if (inventor_option_code >= 32 && inventor_option_code < 60)
         {
-            s32 resource = value + 596;
+            s32 resource_key = inventor_option_code + 596;
             if (object->unk19c != 0)
             {
                 func_002FD940(object->unk19c);
                 object->unk1a8 = 1;
             }
-            object->unk1a0 = resource;
+            object->unk1a0 = resource_key;
             object->unk1a4 = 0;
         }
         else
         {
-            s32 resource = (value - 60) * 9 + 538;
-            s32 code = object->unk1c0[group];
+            s32 resource_key = (inventor_option_code - 60) * 9 + 538;
+            s32 skill_id = object->unk1c0[line_index];
             if (object->unk19c != 0)
             {
                 func_002FD940(object->unk19c);
                 object->unk1a8 = 1;
             }
-            object->unk1a0 = resource;
-            if (code != 0)
+            object->unk1a0 = resource_key;
+            if (skill_id != 0)
             {
-                object->unk1a4 = resource + code;
+                object->unk1a4 = resource_key + skill_id;
             }
             else
             {
@@ -13024,7 +13409,7 @@ s32 ItemCreationSelectedDisplayState::func_00263CD0()
         unka8->func_slotf4(unk34);
         FieldClass153E30::func_00263FD0(unka8);
         unkac->unka8 = this;
-        unkac->unkac = workshop_id;
+        unkac->workshop_id = workshop_id;
         unkac->func_slot40(unka0);
         unkac->func_slotf4(unk34);
         FieldClass153E30::func_00263FD0(unkac);
@@ -13121,7 +13506,7 @@ s32 ItemCreationSelectedDisplayState::func_00263CD0()
         unkfc->func_slot40(unkf4);
         unkfc->func_slotf4(unk34);
         FieldClass153E30::func_00263FD0(unkfc);
-        func_0036BC90(this, 0);
+        item_creation_activate_window_group(this, 0);
         unk20 = unka0;
     }
     else if (unk45 == 1)
@@ -13158,7 +13543,7 @@ s32 ItemCreationSelectedDisplayState::func_00263CD0()
         unk10c->func_slot40(unk100);
         unk110->func_slot40(unk100);
         unk9c->func_slot60(0x32CF);
-        func_0036BC90(this, 4);
+        item_creation_activate_window_group(this, 4);
         unk20 = unk100;
     }
     unk38 = 1;
@@ -13220,14 +13605,18 @@ s32 ItemCreationSelectedDisplayState::func_001E1820(void* buffer)
     return func_00263CD0();
 }
 
-void func_0036DEA0(ItemCreationSelectedDisplayState* object)
+/**
+ * @brief Save workshop lines and append the selection state to the resident queue.
+ * @param object Selection state to save and enqueue.
+ */
+void item_creation_save_and_enqueue_selection(ItemCreationSelectedDisplayState* object)
 {
-    func_0036A8F0(object);
+    item_creation_save_workshop_lines(object);
     func_0011ED90(D_001B65F4, object);
 }
 
-/** @brief Find a one-based assigned record. @param index Workshop ID. @return Record, or null outside the table. */
-static inline ItemCreationWorkshopRecord* assigned_record(u8 index)
+/** @brief Find a saved workshop. @param index Workshop ID. @return Record, or null outside IDs one through twelve. */
+static inline ItemCreationWorkshopRecord* saved_workshop_record(u8 index)
 {
     ItemCreationRuntimeData* records = D_001B64F8;
     if (workshop_id_valid(index))
@@ -13236,8 +13625,8 @@ static inline ItemCreationWorkshopRecord* assigned_record(u8 index)
     }
     return 0;
 }
-/** @brief Find a one-based option record. @param index Workshop ID. @return Record, or null outside the table. */
-static inline ItemCreationInventorRecord* option_record(u8 index)
+/** @brief Find a saved inventor. @param index Inventor ID. @return Record, or null outside IDs one through thirty-eight. */
+static inline ItemCreationInventorRecord* saved_inventor_record(u8 index)
 {
     ItemCreationRuntimeData* records = D_001B64F8;
     if (saved_inventor_id_valid(index))
@@ -13269,21 +13658,21 @@ u8 ItemCreationSelectedDisplayState::func_00264110()
     }
     if (unk45 == 0)
     {
-        workshop_id = func_0036AFE0(this);
+        workshop_id = item_creation_current_workshop_id(this);
     }
     if (unk45 == 0)
     {
         unk12e[0] = workshop_id;
-        workshop = assigned_record(unk12e[0]);
+        workshop = saved_workshop_record(unk12e[0]);
         unk57 = workshop->line_count;
     }
     unk1f0 = reinterpret_cast<RuntimeStateSection58*>(D_001B6430->context->unk58)->unk1b4;
-    func_0036AAA0(this);
-    item_creation_restore_category_flags(this);
-    func_00369EB0(reinterpret_cast<ItemCreationRuntimeRecordSelection*>(this));
+    item_creation_restore_workshop_assignments(this);
+    item_creation_restore_workshop_skill_flags(this);
+    func_00369EB0(this);
     for (s32 index = 1; index < 28; index++)
     {
-        ItemCreationInventorRecord* record = option_record(index);
+        ItemCreationInventorRecord* record = saved_inventor_record(index);
         if (record && record->contract_status == 2)
         {
             unk19b++;
@@ -13451,97 +13840,156 @@ void func_0036E560(void* object)
 {
 }
 
-void func_0036E570(LibClass171EF0* object, const LibVector4* value)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param value Source vector.
+ */
+void LibClass171EF0::func_003EF770(const LibVector4* value)
 {
-    object->unk50 = 1;
-    object->unk20.packed = value->packed;
+    unk50 = 1;
+    unk20.packed = value->packed;
 }
 
-void func_0036E590(LibClass171EF0* object, const LibVector4* value)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param value Source vector.
+ */
+void LibClass171EF0::func_003EF780(const LibVector4* value)
 {
-    object->unk50 = 1;
-    object->unk20.packed = value->packed;
+    unk50 = 1;
+    unk20.packed = value->packed;
 }
 
-void func_0036E5B0(LibClass171EF0* object, float x, float y, float z)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param x Component value.
+ * @param y Component value.
+ * @param z Component value.
+ */
+void LibClass171EF0::func_003EF790(float x, float y, float z)
 {
-    object->unk50 = 1;
-    object->unk20.components[0] = x;
-    object->unk20.components[1] = y;
-    object->unk20.components[2] = z;
-    object->unk20.components[3] = 1.0f;
+    unk50 = 1;
+    unk20.components[0] = x;
+    unk20.components[1] = y;
+    unk20.components[2] = z;
+    unk20.components[3] = 1.0f;
 }
 
-void func_0036E5D0(LibClass171EF0* object, float x, float y, float z, float w)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param x Component value.
+ * @param y Component value.
+ * @param z Component value.
+ * @param w Component value.
+ */
+void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
 {
-    object->unk50 = 1;
-    object->unk30.components[0] = x;
-    object->unk30.components[1] = y;
-    object->unk30.components[2] = z;
-    object->unk30.components[3] = w;
+    unk50 = 1;
+    unk30.components[0] = x;
+    unk30.components[1] = y;
+    unk30.components[2] = z;
+    unk30.components[3] = w;
 }
 
-void func_0036E5F0(LibClass171EF0* object, const LibVector4* value)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param value Source vector.
+ */
+void LibClass171EF0::func_003EEEF0(const LibVector4* value)
 {
-    object->unk50 = 1;
-    object->unk30.packed = value->packed;
+    unk50 = 1;
+    unk30.packed = value->packed;
 }
 
-void func_0036E610(LibClass171EF0* object, const LibVector4* value)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param value Source vector.
+ */
+void LibClass171EF0::func_003EEF10(const LibVector4* value)
 {
-    object->unk50 = 1;
-    object->unk30.packed = value->packed;
+    unk50 = 1;
+    unk30.packed = value->packed;
 }
 
-void func_0036E630(LibClass171EF0* object, const float* input)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param value Source vector.
+ */
+void LibClass171EF0::func_003EEF30(const LibVector4* value)
 {
-    object->unk50 = 1;
-    func_004CE4C0(object->unk30.components, input);
+    unk50 = 1;
+    func_004CE4C0(unk30.components, value->components);
 }
 
-void func_0036E660(LibClass171EF0* object, const float* input)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param value Source vector.
+ */
+void LibClass171EF0::func_003EEF60(const LibVector4* value)
 {
-    object->unk50 = 1;
-    func_004CE4C0(object->unk30.components, input);
+    unk50 = 1;
+    func_004CE4C0(unk30.components, value->components);
 }
 
-void func_0036E690(LibClass171EF0* object, float x, float y, float z)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param x Component value.
+ * @param y Component value.
+ * @param z Component value.
+ */
+void LibClass171EF0::func_003EEF90(float x, float y, float z)
 {
     float value[4];
-    object->unk50 = 1;
+    unk50 = 1;
     value[0] = x;
     value[1] = y;
     value[2] = z;
     value[3] = 1.0f;
-    func_004CE4C0(object->unk30.components, value);
+    func_004CE4C0(unk30.components, value);
 }
 
-void func_0036E6D0(LibClass171EF0* object, const LibVector4* value)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param value Source vector.
+ */
+void LibClass171EF0::func_003EEFD0(const LibVector4* value)
 {
-    object->unk50 = 1;
-    object->unk40.packed = value->packed;
+    unk50 = 1;
+    unk40.packed = value->packed;
 }
 
-void func_0036E6F0(LibClass171EF0* object, const LibVector4* value)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param value Source vector.
+ */
+void LibClass171EF0::func_003EEFF0(const LibVector4* value)
 {
-    object->unk50 = 1;
-    object->unk40.packed = value->packed;
+    unk50 = 1;
+    unk40.packed = value->packed;
 }
 
-void func_0036E710(LibClass171EF0* object, float x, float y, float z)
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param x Component value.
+ * @param y Component value.
+ * @param z Component value.
+ */
+void LibClass171EF0::func_003EF010(float x, float y, float z)
 {
-    object->unk50 = 1;
-    object->unk40.components[0] = x;
-    object->unk40.components[1] = y;
-    object->unk40.components[2] = z;
+    unk50 = 1;
+    unk40.components[0] = x;
+    unk40.components[1] = y;
+    unk40.components[2] = z;
 }
 
-s32 func_0036E730(void* object)
+/** @brief Return the default output status. @param output Unused output object. @return Zero. */
+s32 LibClass178A90::func_003EEE20(void* output)
 {
     return 0;
 }
 
-s32 func_0036E740(void* object, float value)
+/** @brief Test whether a value is negative. @param value Value to test. @param mode Unused mode. @return One if negative, otherwise zero. */
+s32 LibClass178A90::func_003EEE30(float value, float mode)
 {
     s32 result = 1;
     if (!(value < 0.0f))
@@ -13551,17 +13999,20 @@ s32 func_0036E740(void* object, float value)
     return result;
 }
 
-u8* func_0036E760(void)
+/** @brief Return the default transform vector. @return Resident vector pointer. */
+const LibVector4* LibClass178A90::func_003EFAA0()
 {
     return D_50CD30;
 }
 
-s32 func_0036E770(void* object)
+/** @brief Return the default transform receiver. @return Null. */
+LibClass178A90* LibClass178A90::func_003EEE50()
 {
     return 0;
 }
 
-void func_0036E780(void* object)
+/** @brief Run the default transform detach hook. */
+void LibClass178A90::func_003EEE60()
 {
 }
 
@@ -13578,46 +14029,65 @@ float func_0036E7B0(void* object)
     return 0.0f;
 }
 
-void func_0036E7C0(void* object)
+/**
+ * @brief Run the default container state hook.
+ * @param first Unused first argument.
+ * @param second Unused second argument.
+ * @param third Unused third argument.
+ */
+void LibObject178660::func_00412C40(u32 first, u32 second, u32 third)
 {
 }
 
-void func_0036E7D0(u8* object)
+/** @brief Restore the stored transform state byte. */
+void LibClass174610::func_003F4420()
 {
-    object[0x60] = object[0xA8];
+    unk60 = unka8;
 }
 
-void func_0036E7E0(void* object)
+/** @brief Run the default notification hook. @param value Unused argument. */
+void LibClass171FF0::func_003EFA90(u32 value)
 {
 }
 
-float func_0036E7F0(void* object)
+/**
+ * @brief Return the default row float setting.
+ * @param source Owning row collection, unused by the base implementation.
+ * @return Zero.
+ */
+float ItemCreationClass185030::func_slot18(LibClass1721F0* source)
 {
     return 0.0f;
 }
 
-void func_0036E800(void* object)
+/** @brief Perform the default movement-completion callback. */
+void ItemCreationClass185050::func_slot0c()
 {
 }
 
-void func_0036E810(void* object)
+/** @brief Perform the default window callback at slot 0x5C. */
+void FieldClass15AE70::func_slot5c()
 {
 }
 
-void func_0036E820(void* object)
+/** @brief Perform the default window callback at slot 0x70. */
+void FieldClass15AE70::func_slot70()
 {
 }
 
-void func_0036E830(void* object)
+/** @brief Perform the default window callback at slot 0x74. */
+void FieldClass15AE70::func_slot74()
 {
 }
 
-s32 func_0036E840(void* object)
+/** @brief Perform the default window action. @return Zero. */
+s32 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
-s32 func_0036E850(void* object)
+/** @brief Perform the default alternate window action. @return Zero. */
+s32 FieldClass15AE70::func_slotb4()
 {
     return 0;
 }
@@ -13670,29 +14140,34 @@ WorkshopExpansionWindow::~WorkshopExpansionWindow()
 {
 }
 
-u8 func_0036EBC0(void* object)
+/** @brief Read the selected-display state flag. @return Stored state flag. */
+u8 ItemCreationSelectedDisplayState::func_00261D20()
 {
-    return *(u8*)((u8*)object + 0x38);
+    return unk38;
 }
 
-s32 func_0036EBD0(void* object)
+/** @brief Report the selected-display object kind. @return Object kind 4. */
+s32 ItemCreationSelectedDisplayState::func_001DF3D0()
 {
     return 4;
 }
 
-void func_0036EBE0(void* object, u32 value)
+/** @brief Store the alternate associated object. @param value Object to store. */
+void ItemCreationSelectedDisplayState::func_00263C80(void* value)
 {
-    *(u32*)((u8*)object + 0x24) = value;
+    unk24 = value;
 }
 
-void func_0036EBF0(void* object, u8 value)
+/** @brief Store the signed state byte. @param value State byte to store. */
+void ItemCreationSelectedDisplayState::func_00263CA0(s8 value)
 {
-    *(u8*)((u8*)object + 0x28) = value;
+    unk28 = value;
 }
 
-s8 func_0036EC00(void* object)
+/** @brief Read the signed state byte. @return Stored state byte. */
+s8 ItemCreationSelectedDisplayState::func_00263CB0()
 {
-    return *(s8*)((u8*)object + 0x28);
+    return unk28;
 }
 
 s32 func_0036EC10(void* object)
@@ -13764,21 +14239,23 @@ ItemCreationClass187A60::~ItemCreationClass187A60()
     }
 }
 
+/**
+ * @brief Append a record to the sentinel-based list.
+ * @param object List containing a valid sentinel.
+ * @param record Record stored by the new node.
+ */
 void func_0036EDB0(ItemCreationCountedList* object, void* record)
 {
     ItemCreationListNode* node = new (0) ItemCreationListNode;
     if (node != 0)
     {
         ItemCreationListNode* tail;
-        ItemCreationListNode* next;
         node->unk00 = record;
         node->unk04 = 0;
         tail = object->unk00;
-        next = tail->unk04;
-        while (next != 0)
+        while (tail->unk04)
         {
-            tail = next;
-            next = next->unk04;
+            tail = tail->unk04;
         }
         tail->unk04 = node;
         object->unk04++;
@@ -13830,12 +14307,16 @@ extern "C" void func_0036EEF0(ItemCreationCountedList* object)
     object->unk04 = 0;
 }
 
+/**
+ * @brief Find the data node at a list index.
+ * @param object List containing a valid sentinel.
+ * @param index Data-node index; nonpositive values select the first node.
+ * @return Selected node, or null when the list ends first.
+ */
 ItemCreationListNode* func_0036EF70(ItemCreationCountedList* object, s32 index)
 {
-    ItemCreationListNode* node = object->unk00;
-    s32 current = 0;
-    node = node->unk04;
-    for (current = 0; current < index; current++)
+    ItemCreationListNode* node = object->unk00->unk04;
+    for (s32 current = 0; current < index; current++)
     {
         if (node == 0)
         {
@@ -13909,12 +14390,16 @@ void func_0036F0D0(ItemCreationCountedList* object, void* value)
     }
 }
 
+/**
+ * @brief Find the data node at a list index.
+ * @param object List containing a valid sentinel.
+ * @param index Data-node index; nonpositive values select the first node.
+ * @return Selected node, or null when the list ends first.
+ */
 ItemCreationListNode* func_0036F160(ItemCreationCountedList* object, s32 index)
 {
-    ItemCreationListNode* node = object->unk00;
-    s32 current = 0;
-    node = node->unk04;
-    for (current = 0; current < index; current++)
+    ItemCreationListNode* node = object->unk00->unk04;
+    for (s32 current = 0; current < index; current++)
     {
         if (node == 0)
         {

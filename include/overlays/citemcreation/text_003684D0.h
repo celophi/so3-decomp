@@ -3,63 +3,15 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_002CD390.h"
-#include "overlays/1067-00/text_002F1B20.h"
+#include "overlays/1067-00/development_line_target.h"
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001E1590.h"
 class FieldClass15BB90;
 #endif
 
-#ifdef __cplusplus
-/** Common data prefix preceding the target callback table at offset 0x8C. */
-struct ItemCreationTargetPrefix : public FieldStateTargets
-{
-    u8 unk88[4];
-};
-/** @brief Partial callback interface for a development-line target. */
-class ItemCreationClass184EF0 : public ItemCreationTargetPrefix
-{
-public:
-    /** @brief Run the target status callback. @return Callback status. */
-    virtual s32 func_slot08();
-    /** @brief Run the target update callback. */
-    virtual void func_slot0c();
-    /** @brief Run the additional target callback. */
-    virtual void func_slot10();
-};
-#endif
-
-struct LibClass171EF0;
-union LibVector4;
 struct FieldClass15AE70;
 struct FieldRecordSelection;
 struct InventorInformationWindow;
-
-/** Partial display coordinate vector and dirty flag. */
-typedef struct ItemCreationScrollPosition
-{
-    u8 unk00[0x18];
-    float unk18;
-    float unk1c;
-    float unk20;
-    float unk24;
-    u8 unk28[0x14];
-    u8 unk3c;
-} ItemCreationScrollPosition;
-
-/** Partial timed horizontal scroll state. */
-typedef struct ItemCreationScrollState
-{
-    u8 unk00[0xAC];
-    ItemCreationScrollPosition* unkac;
-    s32 unkb0;
-    u8 unkb4[4];
-    s16 unkb8;
-    u8 unkba;
-    u8 unkbb[5];
-    float unkc0;
-    float unkc4;
-    float unkc8;
-} ItemCreationScrollState;
 
 typedef FieldListNode ItemCreationListNode;
 
@@ -84,7 +36,7 @@ typedef struct ItemCreationOptionTable
     s32 unk188[60];
 } ItemCreationOptionTable;
 
-/** Partial selection state with available and assigned items and three views. */
+/** Partial item creation state with inventor assignments, workshop selections and development lines. */
 typedef struct ItemCreationSelectedDisplayState
 #ifdef __cplusplus
     : public FieldClass153E30
@@ -95,12 +47,24 @@ typedef struct ItemCreationSelectedDisplayState
     ItemCreationSelectedDisplayState();
     /** @brief Destroy the selection state and its Field base. */
     virtual ~ItemCreationSelectedDisplayState();
+    /** @brief Report the selected-display object kind. @return Object kind 4. */
+    virtual s32 func_001DF3D0();
     /** @brief Prepare record selection and count available option records. @return One on success, zero when required runtime data is missing. */
     virtual u8 func_00264110();
     /** @brief Store the associated state pointer. @param value Pointer to store. */
     virtual void func_00263C70(void* value);
     /** @brief Return the associated state pointer. @return Stored pointer. */
     virtual void* func_00261150();
+    /** @brief Store the alternate associated object. @param value Object to store. */
+    virtual void func_00263C80(void* value);
+    /** @brief Read the alternate associated object. @return Stored object. */
+    virtual void* func_00263C90();
+    /** @brief Store the signed state byte. @param value State byte to store. */
+    virtual void func_00263CA0(s8 value);
+    /** @brief Read the signed state byte. @return Stored state byte. */
+    virtual s8 func_00263CB0();
+    /** @brief Read the selected-display state flag. @return Stored state flag. */
+    virtual u8 func_00261D20();
     /** @brief Return the associated state pointer. @return Stored pointer. */
     virtual void* func_00263CC0();
     /**
@@ -281,20 +245,6 @@ typedef struct ItemCreationSelection
 #endif
 } ItemCreationSelection;
 
-/** Option lists are part of the same selected display state. */
-typedef ItemCreationSelectedDisplayState ItemCreationOptionState;
-
-#ifdef __cplusplus
-
-#endif
-
-/** Partial destination for five resident record halfwords. */
-typedef struct ItemCreationRuntimeRecordSelection
-{
-    u8 unk00[0x7E];
-    u16 workshop_facility_masks[5];
-} ItemCreationRuntimeRecordSelection;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -325,34 +275,28 @@ void func_0036F270(ItemCreationCountedList* object, void* value);
 void func_0036EEF0(ItemCreationCountedList* object);
 
 /**
- * @brief Restore category flags from the saved record and enable the ninth entry.
- * @param object Selection state with an optional assigned-item record.
+ * @brief Restore installed workshop skills and enable appraisal.
+ * @param object Selection state with an optional saved workshop.
  */
-void item_creation_restore_category_flags(ItemCreationSelectedDisplayState* object);
+void item_creation_restore_workshop_skill_flags(ItemCreationSelectedDisplayState* object);
 
 /**
- * @brief Rebuild the available-item lists from the saved selection.
- * @param object Selection state containing the saved items and their flags.
+ * @brief Restore saved workshop teams and rebuild the available-inventor list.
+ * @param object Selection state containing the current workshop and inventor assignments.
  */
-void func_0036AAA0(ItemCreationSelectedDisplayState* object);
+void item_creation_restore_workshop_assignments(ItemCreationSelectedDisplayState* object);
 
 /**
- * @brief Save the assigned-item state to resident records.
- * @param object Selection state containing the assigned items.
+ * @brief Save the three-inventor teams and creation skills for the current workshop.
+ * @param object Selection state containing the current workshop and its teams.
  */
-void func_0036A8F0(ItemCreationSelectedDisplayState* object);
+void item_creation_save_workshop_lines(ItemCreationSelectedDisplayState* object);
 
 /**
- * @brief Save assigned items and append the selection state to the resident queue.
+ * @brief Save workshop lines and append the selection state to the resident queue.
  * @param object Selection state to save and enqueue.
  */
-void func_0036DEA0(ItemCreationSelectedDisplayState* object);
-
-/**
- * @brief Hold the starting position, then advance and wrap the horizontal scroll.
- * @param object State containing the display coordinates and scroll limits.
- */
-void func_00368BD0(ItemCreationScrollState* object);
+void item_creation_save_and_enqueue_selection(ItemCreationSelectedDisplayState* object);
 
 /**
  * @brief Refresh inventor information from a slot in the assigned or available grid.
@@ -377,19 +321,37 @@ void item_creation_refresh_team_and_transfer_windows(ItemCreationSelectedDisplay
 void item_creation_advance_inventor_transfer(ItemCreationSelectedDisplayState* object, s32 selection_value);
 
 /**
- * @brief Refresh the option windows and enable or disable their selection controls.
- * @param object State owning the selection and detail windows.
- * @param enabled Full-word control flag; nonzero refreshes their selected item and status message.
+ * @brief Enable or disable the inventor transfer windows and restore the selected workshop.
+ * @param object State owning the transfer window and source/destination inventor strips.
+ * @param enabled Full-word control flag; nonzero refreshes the workshop selections and inventor strips.
  */
 void func_0036B1E0(ItemCreationSelectedDisplayState* object, u32 enabled);
 
-/** @brief Select the active window group and reset transfer state. @param object Selection state. @param mode Window group byte. */
-void func_0036BC90(ItemCreationSelectedDisplayState* object, u8 mode);
+/**
+ * @brief Activate an item-creation window group after clearing pending inventor resources.
+ *
+ * Group zero shows the main menu, one selects team members, two shows inventing,
+ * and three transfers inventors. Group four and other values leave visibility unchanged.
+ * All groups clear pending inventor resources.
+ * Activated groups restore their active receiver when one is available.
+ *
+ * @param object State owning the window groups and pending inventor resources.
+ * @param group Window group to activate.
+ */
+void item_creation_activate_window_group(ItemCreationSelectedDisplayState* object, u8 group);
 /** @brief Enable or disable one option window group. @param object Selection state. @param enabled Full-word control flag. */
 void func_0036B360(ItemCreationSelectedDisplayState* object, u32 enabled);
-/** @brief Enable or disable one option window group. @param object Selection state. @param enabled Full-word control flag. */
+/**
+ * @brief Enable or disable inventor team selection and reset its subsidiary windows.
+ * @param object State owning the assigned/available inventor grids and their detail windows.
+ * @param enabled Full-word control flag; nonzero refreshes the inventor grids and team-selection prompt.
+ */
 void func_0036B6E0(ItemCreationSelectedDisplayState* object, u32 enabled);
-/** @brief Enable or disable one option window group. @param object Selection state. @param enabled Full-word control flag. */
+/**
+ * @brief Enable or disable the main menu and workshop summary windows.
+ * @param object State owning the main menu, facilities, workshop name and development-team summary.
+ * @param enabled Full-word control flag; nonzero restores main-menu focus and its status prompt.
+ */
 void func_0036BA10(ItemCreationSelectedDisplayState* object, u32 enabled);
 
 /**
@@ -423,10 +385,10 @@ void func_00369510(ItemCreationSelection* object);
 u8 func_003696B0(ItemCreationSelection* object, u16 direction);
 
 /**
- * @brief Copy the first halfword from each of five resident records.
- * @param object Destination state for the five copied values.
+ * @brief Copy the first five workshops' saved facility masks into the selection state.
+ * @param object Selection state; its other seven workshop masks are left unchanged.
  */
-void func_00369EB0(ItemCreationRuntimeRecordSelection* object);
+void func_00369EB0(ItemCreationSelectedDisplayState* object);
 
 /**
  * @brief Rebuild a transfer strip from the NPC inventors placed in the selected workshop.
@@ -434,21 +396,21 @@ void func_00369EB0(ItemCreationRuntimeRecordSelection* object);
  * @param workshop_id Workshop ID from one through eleven; other values leave state unchanged.
  * @param transfer_list One selects the source strip and two the destination strip.
  */
-void item_creation_build_transfer_inventor_list(ItemCreationOptionState* object, u16 workshop_id, u8 transfer_list);
+void item_creation_build_transfer_inventor_list(ItemCreationSelectedDisplayState* object, u16 workshop_id, u8 transfer_list);
 
 /**
- * @brief Map the resident context code to a one-based selection slot.
- * @param object Selected display state; unused.
- * @return One through twelve for mapped codes, or zero otherwise.
+ * @brief Read the workshop ID corresponding to the current area.
+ * @param object Unused receiver.
+ * @return Workshop ID from one through twelve, or zero outside a workshop area.
  */
-u8 func_0036AFE0(ItemCreationSelectedDisplayState* object);
+u8 item_creation_current_workshop_id(ItemCreationSelectedDisplayState* object);
 
 /**
- * @brief Map the resident context code to its associated identifier.
- * @param object Receiver; unused.
- * @return Identifier 0x3521 through 0x352C for mapped codes, or 0x3520 otherwise.
+ * @brief Read the workshop name message corresponding to the current area.
+ * @param object Unused receiver.
+ * @return Message key from 0x3521 through 0x352C, or the 0x3520 error label.
  */
-u32 func_0036B0E0(void* object);
+u32 item_creation_current_workshop_name_key(void* object);
 
 /**
  * @brief Return the fixed value -1.
@@ -477,26 +439,6 @@ void func_0036E550(void* object);
 void func_0036E560(void* object);
 
 /**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_0036E730(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_0036E770(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0036E780(void* object);
-
-/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -507,63 +449,6 @@ void func_0036E790(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_0036E7A0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0036E7C0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0036E7E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0036E800(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0036E810(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0036E820(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0036E830(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_0036E840(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_0036E850(void* object);
-
-/**
- * @brief Return the fixed value 4.
- * @param object Receiver or first argument; unused.
- * @return Always 4.
- */
-s32 func_0036EBD0(void* object);
 
 /**
  * @brief Return the fixed value 0.
@@ -632,159 +517,11 @@ s32 func_0036EC90(void* object);
 s32 func_0036ECA0(void* object);
 
 /**
- * @brief Read the byte at offset 0x38.
- * @param object Object containing the field.
- * @return Field value.
- */
-u8 func_0036EBC0(void* object);
-
-/**
- * @brief Write the word at offset 0x24.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_0036EBE0(void* object, u32 value);
-
-/**
- * @brief Write the byte at offset 0x28.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_0036EBF0(void* object, u8 value);
-
-/**
- * @brief Read the signed byte at offset 0x28.
- * @param object Object containing the field.
- * @return Field value.
- */
-s8 func_0036EC00(void* object);
-
-/**
- * @brief Copy one byte between object fields.
- * @param object Object to update.
- */
-void func_0036E7D0(u8* object);
-
-/**
  * @brief Return zero.
  * @param object Object argument; unused.
  * @return Returned value.
  */
 float func_0036E7B0(void* object);
-
-/**
- * @brief Return zero.
- * @param object Object argument; unused.
- * @return Returned value.
- */
-float func_0036E7F0(void* object);
-
-/**
- * @brief Test whether the value is negative.
- * @param object Object argument; unused.
- * @param value Value to store or test.
- * @return Returned value.
- */
-s32 func_0036E740(void* object, float value);
-
-/**
- * @brief Mark the transform dirty and copy a 128-bit value.
- * @param object Transform to update.
- * @param value Value to store or test.
- */
-void func_0036E570(struct LibClass171EF0* object, const union LibVector4* value);
-
-/**
- * @brief Mark the transform dirty and copy a 128-bit value.
- * @param object Transform to update.
- * @param value Value to store or test.
- */
-void func_0036E590(struct LibClass171EF0* object, const union LibVector4* value);
-
-/**
- * @brief Mark the transform dirty and copy a 128-bit value.
- * @param object Transform to update.
- * @param value Value to store or test.
- */
-void func_0036E5F0(struct LibClass171EF0* object, const union LibVector4* value);
-
-/**
- * @brief Mark the transform dirty and copy a 128-bit value.
- * @param object Transform to update.
- * @param value Value to store or test.
- */
-void func_0036E610(struct LibClass171EF0* object, const union LibVector4* value);
-
-/**
- * @brief Mark the transform dirty and copy a 128-bit value.
- * @param object Transform to update.
- * @param value Value to store or test.
- */
-void func_0036E6D0(struct LibClass171EF0* object, const union LibVector4* value);
-
-/**
- * @brief Mark the transform dirty and copy a 128-bit value.
- * @param object Transform to update.
- * @param value Value to store or test.
- */
-void func_0036E6F0(struct LibClass171EF0* object, const union LibVector4* value);
-
-/**
- * @brief Mark the transform dirty and set its float components.
- * @param object Transform to update.
- * @param x First component.
- * @param y Second component.
- * @param z Third component.
- * @param w Fourth component.
- */
-void func_0036E5D0(struct LibClass171EF0* object, float x, float y, float z, float w);
-
-/**
- * @brief Mark the transform dirty and set its float components.
- * @param object Transform to update.
- * @param x First component.
- * @param y Second component.
- * @param z Third component.
- */
-void func_0036E710(struct LibClass171EF0* object, float x, float y, float z);
-
-/**
- * @brief Mark the transform dirty and set its float components.
- * @param object Transform to update.
- * @param x First component.
- * @param y Second component.
- * @param z Third component.
- */
-void func_0036E5B0(struct LibClass171EF0* object, float x, float y, float z);
-
-/**
- * @brief Return the address of D_50CD30.
- * @return Address of D_50CD30.
- */
-u8* func_0036E760(void);
-
-/**
- * @brief Mark the transform dirty and copy a four-component float value.
- * @param object Transform to update.
- * @param x First component.
- * @param y Second component.
- * @param z Third component.
- */
-void func_0036E690(struct LibClass171EF0* object, float x, float y, float z);
-
-/**
- * @brief Update the four-float transform and set its marker.
- * @param object Transform state to update.
- * @param input Source float vector.
- */
-void func_0036E630(struct LibClass171EF0* object, const float* input);
-
-/**
- * @brief Update the four-float transform and set its marker.
- * @param object Transform state to update.
- * @param input Source float vector.
- */
-void func_0036E660(struct LibClass171EF0* object, const float* input);
 
 /**
  * @brief Append a value to the sentinel list and increase its node count.
@@ -862,10 +599,10 @@ ItemCreationListNode* func_0036F230(FieldCountedList* object, s32 index);
 void func_0036C080(ItemCreationSelectedDisplayState* object, s32 index, u32 value);
 
 /**
- * @brief Choose an eligible assigned item and schedule its display resource.
- * @param object Selection state with assigned items, target states, and display resources.
+ * @brief Choose an eligible assigned inventor and schedule the corresponding display resources.
+ * @param object Selection state containing development lines and assigned inventor codes.
  */
-void func_0036C1C0(ItemCreationSelectedDisplayState* object);
+void item_creation_schedule_inventor_resource(ItemCreationSelectedDisplayState* object);
 
 #ifdef __cplusplus
 }

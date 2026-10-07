@@ -113,28 +113,6 @@ struct FieldContextResourceManagers
     void* callbacks;
 };
 
-/** 0x300-byte actor whose scalar track is retained at offset 0x144. */
-class FieldClass1570D0 : public FieldClass152430
-{
-public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
-    static void* operator new(u32 size);
-    /** @brief Release through the Lib heap. @param object Storage to release. */
-    static void operator delete(void* object);
-    /** @brief Set the actor flags and create its scalar track. */
-    FieldClass1570D0()
-    {
-        unk78 |= 0x2000;
-        unk204 |= 0x2 | 0x4 | 0x8;
-        unk144 = new FieldClass15B890;
-        unk2f0 = 0;
-        unk2e0 = 1;
-    }
-    /** @brief Destroy the actor and its inherited state. */
-    virtual ~FieldClass1570D0();
-    u8 unk2f0;
-};
-
 /** Packed coordinates whose fourth word identifies the actor. */
 struct FieldRuntimePosition16
 {

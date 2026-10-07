@@ -1,5 +1,9 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_0024DE80.h"
+#include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/lib/text_0045AD10.h"
+#include "overlays/lib/text_004BD360.h"
+#include "main/resident_data.h"
 
 /** Partial value pair attached at receiver offset 0x11C. */
 typedef struct FieldValues24
@@ -16,8 +20,8 @@ struct FieldObject11CValues
 };
 
 extern void* D_001B663C;
-extern void func_4D9250(void* target, u32 first, u32 second);
-extern void func_4D00B0(void* object);
+extern "C" void func_4D9250(void* target, u32 first, u32 second);
+extern "C" void func_4D00B0(void* object);
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024DE80);
@@ -60,11 +64,52 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E7
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E740);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E7C0);
+/** Partial field target with its owned container, child and effect handle. */
+struct FieldOwner24E860
+{
+    u8 unk00[0x12C];
+    LibObject178660* unk12c;
+    FieldClass150070* child;
+    u32 unk134;
+    u8 unk138[0x10D4];
+    s32 unk120c;
+    u32 unk1210;
+    u8 unk1214[4];
+    s32 unk1218;
+};
+
+/**
+ * @brief Release the target's container and effect handle and set its state to five.
+ * @param owner Target receiver.
+ */
+extern "C" void func_0024E7C0(FieldOwner24E860* owner)
+{
+    owner->child = 0;
+    owner->unk134 = 0;
+    if (owner->unk12c != 0)
+    {
+        owner->unk12c->func_003EF740();
+        owner->unk12c = 0;
+    }
+    if (owner->unk120c >= 0)
+    {
+        func_00465430(D_001B657C, owner->unk120c);
+    }
+    owner->unk120c = -1;
+    owner->unk1218 = 5;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E830);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E860);
+void func_0024E860(FieldOwner24E860* owner, u32 value)
+{
+    if (owner->child != 0)
+    {
+        owner->child->func_001DD7B0();
+        owner->child = 0;
+    }
+    owner->unk1210 = value;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E8B0);
 

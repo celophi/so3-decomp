@@ -66,6 +66,12 @@ public:
 
 #ifdef __cplusplus
 extern "C" {
+
+/**
+ * @brief Update the field context object after a release.
+ * @param object Field context object.
+ */
+void func_00226340(void* object);
 /** @brief Set two bounds and optionally select a named entry. @param object Context receiver. @param name Optional entry name. @param first First bound. @param second Second bound. */
 void func_00225150(void* object, const char* name, float first, float second);
 
@@ -286,12 +292,15 @@ public:
 
     /**
      * @brief Virtual handler slot 28.
-     * @param arg Argument whose meaning is not yet known.
+     * @param flags Flag word; bit 0 and the remaining bits select different updates.
      */
-    virtual void func_00226C10(void* arg);
+    virtual void func_00226C10(u32 flags);
 
-    /** @brief Virtual handler slot 29. */
-    virtual void func_002039C0();
+    /**
+     * @brief Test whether the actor is moving.
+     * @return True when the vector at offset 0x180 is nonzero.
+     */
+    virtual bool func_002039C0() const;
 
     /** @brief Virtual handler slot 30. */
     virtual void func_00203A30();
@@ -304,6 +313,45 @@ public:
     s8 unk2e1;
     u8 unk2e2_0 : 1;
     u8 unk2e2_1_7 : 7;
+};
+
+/** Partial Field object with vtable D_152410 in main data and an owned child at offset 0x300. */
+class FieldClass152410 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass152410();
+    /** @brief Detach and delete the child, then detach this object and queue it for release. */
+    virtual void func_001DD7B0();
+    u8 unk14[0x2EC];
+    FieldClass150070* unk300;
+};
+
+/** 0x300-byte actor whose scalar track is retained at offset 0x144. */
+class FieldClass1570D0 : public FieldClass152430
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Set the actor flags and create its scalar track. */
+    FieldClass1570D0()
+    {
+        unk78 |= 0x2000;
+        unk204 |= 0x2 | 0x4 | 0x8;
+        unk144 = new FieldClass15B890;
+        unk2f0 = 0;
+        unk2e0 = 1;
+    }
+    /** @brief Destroy the actor and its inherited state. */
+    virtual ~FieldClass1570D0();
+    /**
+     * @brief Report the stored moving flag.
+     * @return Flag at offset 0x2F0.
+     */
+    virtual bool func_002039C0() const;
+    bool unk2f0;
 };
 
 class FieldClass1502E0;

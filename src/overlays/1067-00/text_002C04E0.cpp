@@ -1,5 +1,7 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002C04E0.h"
+#include "main/resident_data.h"
+#include "main/resident_0010A0E0.h"
 
 /** Partial receiver with a float at offset 0x48. */
 struct FieldFloat48
@@ -823,7 +825,16 @@ extern "C" void func_002C5A10(FieldMotion* object, s32 value, s32 mode, float ra
     object->unk30 = rate;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C5A80);
+void FieldClass15AAB0::func_001DD7B0()
+{
+    if (unk2C != 0)
+    {
+        unk2C->func_001DD7B0();
+        unk2C = 0;
+    }
+    func_004D65C0(this);
+    func_0011ED90(D_001B65F4, this);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C5AE0);
 

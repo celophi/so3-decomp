@@ -54,6 +54,16 @@ func_slot20__16FieldClass155750Fv = 0x0027ABF0; // type:func absolute:True allow
 func_0027ABF0 = 0x0027ABF0; // type:func allow_duplicated:True
 func_slot20__16FieldClass155810Fv = 0x0027D4A0; // type:func
 func_001DD7B0__16FieldClass155810Fv = 0x0027D4F0; // type:func
+
+// FieldClass150070 <- FieldClass154EF0 <- FieldClass155B40 / FieldClass155D20;
+// vtables are in main data.
+__vt__16FieldClass154EF0 = 0x00154EF0; // size:0x40
+__vt__16FieldClass155B40 = 0x00155B40; // size:0x40
+__vt__16FieldClass155D20 = 0x00155D20; // size:0x40
+// FieldClass154EF0::func_001DF360 is still assembly named func_002733A0.
+func_001DF360__16FieldClass154EF0Fv = 0x002733A0; // type:func absolute:True allow_duplicated:True
+func_002733A0 = 0x002733A0; // type:func allow_duplicated:True
+func_001DF360__16FieldClass155B40Fv = 0x0027DAB0; // type:func
 __vt__16FieldClass150010 = 0x00150010; // size:0x2C
 __dt__16FieldClass150010Fv = 0x001DEC40; // type:func
 
@@ -608,6 +618,12 @@ func_0010EA70 = 0x0010EA70; // type:func
 __ct__16FieldClass152430Fv = 0x00229020; // type:func
 __dt__16FieldClass152430Fv = 0x00228E50; // type:func
 __vt__16FieldClass1570D0 = 0x001570D0; // size:0x88
+__vt__16FieldClass1595D0 = 0x001595D0; // size:0x90
+__vt__16FieldClass159780 = 0x00159780; // size:0x90
+__vt__16FieldClass1598A0 = 0x001598A0; // size:0x90
+__vt__16FieldClass159540 = 0x00159540; // size:0x90
+__vt__16FieldClass159660 = 0x00159660; // size:0x90
+__vt__16FieldClass1596F0 = 0x001596F0; // size:0x90
 __vt__16FieldClass15B890 = 0x0015B890; // size:0x4C
 __nw__16FieldClass1570D0FUi = 0x004DB5B0; // type:func allow_duplicated:True
 __dl__16FieldClass1570D0FPv = 0x004DB570; // type:func allow_duplicated:True
@@ -720,3 +736,49 @@ func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func 
 func_002D5CF0 = 0x002D5CF0; // type:func allow_duplicated:True
 func_002D6410 = 0x002D6410; // type:func allow_duplicated:True
 func_002D6440 = 0x002D6440; // type:func allow_duplicated:True
+
+// Small FieldClass150070 subclasses that own one child; vtables are in main data.
+__vt__16FieldClass15BA10 = 0x0015BA10; // size:0x1C
+__vt__16FieldClass15BA50 = 0x0015BA50; // size:0x1C
+func_001DD7B0__16FieldClass15BA10Fv = 0x002F36F0; // type:func
+func_001DD7B0__16FieldClass15BA50Fv = 0x002F3B90; // type:func
+__vt__16FieldClass15AAB0 = 0x0015AAB0; // size:0x1C
+func_001DD7B0__16FieldClass15AAB0Fv = 0x002C5A80; // type:func
+__vt__16FieldClass154C10 = 0x00154C10; // size:0x40
+func_001DD7B0__16FieldClass154C10Fv = 0x002710C0; // type:func
+__vt__16FieldClass151C00 = 0x00151C00; // size:0x1C
+func_001DF360__16FieldClass151C00Fv = 0x002123F0; // type:func
+__vt__16FieldClass153E00 = 0x00153E00; // size:0x20
+func_slot1c__16FieldClass153E00Fv = 0x002610B0; // type:func
+__vt__16FieldClass152410 = 0x00152410; // size:0x1C
+func_001DD7B0__16FieldClass152410Fv = 0x00224FD0; // type:func
+__vt__16FieldClass156E60 = 0x00156E60; // size:0x1C
+func_001DD7B0__16FieldClass156E60Fv = 0x00289040; // type:func
+// FieldClass15AE70::func_slot0c is still assembly named func_002CEA20.
+func_slot0c__16FieldClass15AE70Fv = 0x002CEA20; // type:func absolute:True allow_duplicated:True
+func_002CEA20 = 0x002CEA20; // type:func allow_duplicated:True
+__vt__16FieldClass1547D0 = 0x001547D0; // size:0xF8
+__vt__16FieldClass1548D0 = 0x001548D0; // size:0xFC
+func_slot0c__16FieldClass1547D0Fv = 0x0026BE30; // type:func
+func_slot0c__16FieldClass1548D0Fv = 0x0026D4F0; // type:func
+func_00261150__16FieldClass153E30Fv = 0x00261150; // type:func
+func_002039C0__16FieldClass1570D0CFv = 0x0022E160; // type:func
+func_002B6DF0__16FieldClass1591D0Ff = 0x002B6DF0; // type:func
+func_002B8A90__16FieldClass1596F0CFfPf = 0x002B8A90; // type:func
+__dt__16FieldClass1595D0Fv = 0x002B8BE0; // type:func
+__dt__16FieldClass159780Fv = 0x002B8350; // type:func
+__dt__16FieldClass1598A0Fv = 0x002B7E80; // type:func
+__dt__16FieldClass159540Fv = 0x002B90E0; // type:func
+__dt__16FieldClass159660Fv = 0x002B8B20; // type:func
+__dt__16FieldClass1596F0Fv = 0x002B87F0; // type:func
+func_002B8F90__16FieldClass1595D0CFfP10FieldVec4B = 0x002B8F90; // type:func
+__ct__19FieldTrackKey1595D0Fv = 0x002B93D0; // type:func
+__ct__19FieldTrackKey159780Fv = 0x002B99C0; // type:func
+__ct__19FieldTrackKey159810Fv = 0x002B9DD0; // type:func
+__ct__19FieldTrackKey1598A0Fv = 0x002BC210; // type:func
+__ct__19FieldTrackKey159660Fv = 0x002BC200; // type:func
+func_002B86B0__16FieldClass159780CFfP10FieldVec4B = 0x002B86B0; // type:func
+func_002B80B0__16FieldClass159810CFfP10FieldVec4B = 0x002B80B0; // type:func
+func_002BB2E0__16FieldClass1598A0CFfP10FieldVec4B = 0x002BB2E0; // type:func
+func_002BBF20__16FieldClass159540CFfP10FieldVec4B = 0x002BBF20; // type:func
+func_002BB910__16FieldClass159660CFfP10FieldVec4B = 0x002BB910; // type:func

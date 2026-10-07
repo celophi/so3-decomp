@@ -108,6 +108,8 @@ public:
     FieldClass153130();
     /** @brief Destroy the Field selection widget. */
     virtual ~FieldClass153130();
+    /** @brief Reset the selection index and refresh its displayed position. */
+    void func_0023B310();
     /** @brief Read the current selection index. @return Current zero-based index. */
     u16 func_0023B3A0();
     /**
@@ -144,14 +146,20 @@ public:
     u16 unk94;
 };
 
+/** Two-dimensional position of a Field selection display. */
+struct FieldGridPosition
+{
+    float x;
+    float y;
+};
+
 /** Field storage and bounds interface with its virtual pointer at 0x38. */
 class FieldClass151C50
 {
 public:
     LibStorageBlock0C unk00;
     u8 unk0c[4];
-    float unk10;
-    float unk14;
+    FieldGridPosition unk10;
     float unk18;
     float unk1c;
     float unk20;
@@ -241,7 +249,6 @@ struct FieldObject23CEA0
     s16 unk114;
 };
 #endif
-
 
 /** Linked nodes used by the field coordinate selector. */
 struct FieldObject23D310

@@ -3,6 +3,17 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief Store an encoded word.
+ * @param word Destination word.
+ * @param value Encoded value to store.
+ */
+void func_002636F0(u32* word, u32 value);
+
 typedef struct FieldOuterC000 FieldOuterC000;
 
 /** Partial field object with two object pointers and a signed state byte. */
@@ -111,9 +122,6 @@ void func_0026E0F0(void* object);
 void func_0026E170(void* object);
 void* func_0026E1A0(void* object, s32 flags);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * @brief Return the fixed value 0.
@@ -429,6 +437,34 @@ void func_0026C000(FieldOuterC000* object);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+#include "overlays/1067-00/text_002CD390.h"
+
+/** Partial Field window with vtable D_1547D0 in main data and an object list at offset 0xFC. */
+class FieldClass1547D0 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window. */
+    virtual ~FieldClass1547D0();
+    /** @brief Delete the listed objects, reset the list, then run the base handler. */
+    virtual void func_slot0c();
+    u8 unka8[0x54];
+    u8 unkfc[4];
+};
+
+/** Partial Field window with vtable D_1548D0 in main data and an object list at offset 0xB8. */
+class FieldClass1548D0 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window. */
+    virtual ~FieldClass1548D0();
+    /** @brief Run the base handler, then delete the listed objects. */
+    virtual void func_slot0c();
+    u8 unka8[0x10];
+    u8 unkb8[4];
+};
 #endif
 
 #endif

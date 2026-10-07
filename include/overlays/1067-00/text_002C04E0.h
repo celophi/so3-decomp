@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_002BEA90.h"
+#include "overlays/1067-00/text_001DD3C0.h"
 
 typedef struct FieldFloat48 FieldFloat48;
 
@@ -956,6 +957,20 @@ float func_002CABA0(void* object);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+/** Partial Field object with vtable D_15AAB0 in main data and an owned child at offset 0x2C. */
+class FieldClass15AAB0 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15AAB0();
+    /** @brief Delete the child, then detach this object and queue it for release. */
+    virtual void func_001DD7B0();
+    u8 unk14[0x18];
+    FieldClass150070* unk2C;
+};
 #endif
 
 #endif

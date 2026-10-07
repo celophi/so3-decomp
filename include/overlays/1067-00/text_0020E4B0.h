@@ -31,6 +31,13 @@ void func_0020F110(struct ResidentContextObject38* state, u32 flag, u32 amount, 
 s32 func_0020EF90(struct ResidentContextObject38* state, u32 offset, float* position, u32* word, u32* packed);
 
 /**
+ * @brief Return the current frame time step.
+ * @param object Unused receiver.
+ * @return Frame time step.
+ */
+float func_0020E4B0(void* object);
+
+/**
  * @brief Return whether the current field context has a nonzero word at offset 0x50.
  * @param object Receiver or first argument; unused.
  * @return Nonzero if the context word is nonzero.
