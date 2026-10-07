@@ -35,13 +35,16 @@ typedef struct SkillList183C38 SkillList183C38;
 typedef struct SkillList184268 SkillList184268;
 typedef struct SkillPairList184258 SkillPairList184258;
 typedef struct SkillQueueOwner SkillQueueOwner;
+typedef struct SkillProtectedDisplay SkillProtectedDisplay;
+typedef struct SkillOptionsWindow SkillOptionsWindow;
+typedef struct Record003619C0 Record003619C0;
 typedef struct SkillDualSelection SkillDualSelection;
 typedef struct SkillGridChoice SkillGridChoice;
 typedef struct FieldClass15AE70 FieldClass15AE70;
 typedef struct SkillProtectedFlags SkillProtectedFlags;
-typedef struct SkillProtectedDisplay SkillProtectedDisplay;
 typedef struct SkillTransform SkillTransform;
 typedef struct SkillTextReceiver SkillTextReceiver;
+typedef struct SkillComparisonDisplay SkillComparisonDisplay;
 typedef struct SkillVector4 SkillVector4;
 typedef struct SkillSelection SkillSelection;
 typedef struct SkillSecondarySelection SkillSecondarySelection;
@@ -54,7 +57,6 @@ typedef struct Record00352B30 Record00352B30;
 typedef struct Record0035A560 Record0035A560;
 typedef struct StatusOwner003580D0 StatusOwner003580D0;
 typedef struct Record003581B0 Record003581B0;
-typedef struct SkillOptionsWindow SkillOptionsWindow;
 typedef SkillOptionsWindow Record0035E2A0;
 typedef struct Record0035BE50 Record0035BE50;
 typedef struct Record0035DDE0 Record0035DDE0;
@@ -76,7 +78,6 @@ typedef struct Record003610F0 Record003610F0;
 typedef struct Record00361060 Record00361060;
 typedef struct Record003611B0 Record003611B0;
 typedef struct Record003620F0 Record003620F0;
-typedef struct Record003619C0 Record003619C0;
 typedef struct SkillProtectedDisplay Record00363740;
 typedef SkillOptionsWindow Record00364810;
 typedef struct Record00364720 Record00364720;
@@ -135,6 +136,19 @@ struct SkillPairList184258
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/** @brief Create and connect the owner windows. @param owner Window controller. @return One after setup. */
+s32 func_0035B4E0(SkillQueueOwner* owner);
+/** @brief Initialize the status window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
+u8* func_00359200(u8* object, SkillQueueOwner* owner);
+/** @brief Initialize the six-row window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
+u8* func_00355580(u8* object, SkillQueueOwner* owner);
+/** @brief Initialize the mode window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
+u8* func_00351800(u8* object, SkillQueueOwner* owner);
+/** @brief Initialize the comparison window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
+u8* func_003498A0(u8* object, SkillQueueOwner* owner);
+/** @brief Initialize the mode-query window. @param object Allocated window storage. @return Initialized storage. */
+u8* func_003533E0(u8* object);
 
 /**
  * @brief Append a pair of float values when node allocation succeeds.
@@ -243,7 +257,7 @@ void func_00361150(Record00364810* object);
  * @param record Window receiver.
  * @param key Text resource key.
  */
-void func_00348CB0(SkillTextReceiver* record, u32 key);
+void func_00348CB0(SkillComparisonDisplay* record, u32 key);
 
 /**
  * @brief Load text keys 6001 through 6005 and refresh the width limit.

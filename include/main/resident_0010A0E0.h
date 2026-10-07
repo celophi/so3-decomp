@@ -12,6 +12,8 @@ typedef struct ResidentObjectQueue
     void* entries[0x400];
 } ResidentObjectQueue;
 
+struct BootInputRoot9670;
+
 /** Resident descriptor table used by the keyed resource-size lookup. */
 struct ResidentObject1B65E4;
 
@@ -55,6 +57,14 @@ u32 func_0010CF80(void);
  * @return Resource size in bytes.
  */
 u32 func_0011C8C0(struct ResidentObject1B65E4* object, s32 key);
+
+/**
+ * @brief Store a slot input flag and reset its retained state when disabled.
+ * @param root Resident input root.
+ * @param slot Input slot index.
+ * @param flag Flag whose low byte is stored; zero resets the retained state.
+ */
+void func_0011E030(struct BootInputRoot9670* root, s32 slot, u32 flag);
 
 /**
  * @brief Append an object to the ring buffer unless it is full.

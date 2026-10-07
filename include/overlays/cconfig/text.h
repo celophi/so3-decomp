@@ -325,6 +325,62 @@ void func_0034C140(ConfigOptions* object, u16 input);
 void func_0034C260(ConfigOptions* object, u16 input);
 
 /**
+ * @brief Update option row 6's stored flag and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C7C0(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row 5's stored flag and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C900(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row 2's stored flag and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034CBB0(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row 0's stored flag and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034D040(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row three's two-bit mode and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034CA40(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row seven's input flag, effect, and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C600(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Cycle option row eight's input mode and refresh its choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C380(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Cycle option row one's two-bit mode and refresh its choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034CD00(ConfigOptions* object, u16 input);
+
+/**
  * @brief Refresh the bindings window's selection.
  * @param object Bindings window receiver.
  */

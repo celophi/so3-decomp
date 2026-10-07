@@ -7,6 +7,7 @@
 #include "overlays/1067-00/text_001E1590.h"
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "overlays/1067-00/text_002D5260.h"
+#include "overlays/1067-00/text_0020E4B0.h"
 #include "overlays/1067-00/field_runtime.h"
 
 #include "overlays/lib/text_004BD360.h"
@@ -51,8 +52,14 @@ struct ConfigSettings
     u8 unk00[0x24];
     u8 unk24_low : 2;
     u8 unk24 : 2;
-    u8 unk24_high : 4;
-    u8 low : 6;
+    u8 unk24_bit4 : 1;
+    u8 unk24_bit5 : 1;
+    u8 unk24_bit6 : 1;
+    u8 unk24_bit7 : 1;
+    u8 unk25_low : 1;
+    u8 unk25_bit1 : 1;
+    u8 unk25_mode : 2;
+    u8 unk25_mid : 2;
     u8 flag : 1;
     u8 high : 1;
     u8 unk26;
@@ -63,83 +70,13 @@ struct ConfigSettings
     u16 key;
     u8 unka8[0xE5];
     u8 unk18d;
-    u8 unk18e[0x12];
+    u8 unk18e;
+    u8 unk18f[0x11];
     u8 extra;
     u8 unk1a1[3];
     u16 extra_checksum;
     u16 extra_key;
 };
-
-/**
- * @brief Read the extra-row flag when its protected bytes pass the checksum.
- * @param settings Configuration settings.
- * @return Extra-row flag, or zero when the checksum fails.
- */
-static inline u8 config_extra(ConfigSettings* settings)
-{
-    u8* data = &settings->extra;
-    if (settings->extra_checksum != func_00457470(settings->extra_key, data,
-        reinterpret_cast<u8*>(&settings->extra_checksum) - data))
-    {
-        return 0;
-    }
-    return settings->extra;
-}
-/**
- * @brief Read the mode when its protected bytes pass the checksum.
- * @param settings Configuration settings.
- * @return Mode byte, or zero when the checksum fails.
- */
-static inline u8 config_mode(ConfigSettings* settings)
-{
-    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
-        reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
-    {
-        return 0;
-    }
-    return settings->mode;
-}
-/**
- * @brief Read the enabled flag when its protected bytes pass the checksum.
- * @param settings Configuration settings.
- * @return Enabled flag, or zero when the checksum fails.
- */
-static inline u8 config_enabled(ConfigSettings* settings)
-{
-    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
-        reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
-    {
-        return 0;
-    }
-    return settings->enabled;
-}
-
-/**
- * @brief Read the feature bit as an unsigned byte flag.
- * @param settings Configuration settings.
- * @return Feature bit as zero or one.
- */
-static inline u8 config_flag(ConfigSettings* settings)
-{
-    u32 flag = settings->flag;
-    return flag;
-}
-
-/**
- * @brief Set the protected mode and regenerate its key and checksum when the stored checksum is valid.
- * @param settings Configuration settings.
- * @param mode New mode byte.
- */
-static inline void config_set_mode(ConfigSettings* settings, u8 mode)
-{
-    s32 length = reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26;
-    if (settings->checksum == func_00457470(settings->key, &settings->unk26, length))
-    {
-        settings->mode = mode;
-        settings->key = func_0010CF80();
-        settings->checksum = func_00457470(settings->key, &settings->unk26, length);
-    }
-}
 
 struct ConfigRuntime
 {
@@ -306,6 +243,99 @@ extern u8 D_181C70[];
 extern u8 D_181E70[];
 extern u8 D_181F70[];
 extern u8 D_182070[];
+
+/**
+ * @brief Read the extra-row flag when its protected bytes pass the checksum.
+ * @param settings Configuration settings.
+ * @return Extra-row flag, or zero when the checksum fails.
+ */
+static inline u8 config_extra(ConfigSettings* settings)
+{
+    u8* data = &settings->extra;
+    if (settings->extra_checksum != func_00457470(settings->extra_key, data,
+        reinterpret_cast<u8*>(&settings->extra_checksum) - data))
+    {
+        return 0;
+    }
+    return settings->extra;
+}
+/**
+ * @brief Read the mode when its protected bytes pass the checksum.
+ * @param settings Configuration settings.
+ * @return Mode byte, or zero when the checksum fails.
+ */
+static inline u8 config_mode(ConfigSettings* settings)
+{
+    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
+        reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
+    {
+        return 0;
+    }
+    return settings->mode;
+}
+/**
+ * @brief Read the enabled flag when its protected bytes pass the checksum.
+ * @param settings Configuration settings.
+ * @return Enabled flag, or zero when the checksum fails.
+ */
+static inline u8 config_enabled(ConfigSettings* settings)
+{
+    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
+        reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
+    {
+        return 0;
+    }
+    return settings->enabled;
+}
+
+/**
+ * @brief Read the feature bit as an unsigned byte flag.
+ * @param settings Configuration settings.
+ * @return Feature bit as zero or one.
+ */
+static inline u8 config_flag(ConfigSettings* settings)
+{
+    u32 flag = settings->flag;
+    return flag;
+}
+
+/**
+ * @brief Set the protected mode and regenerate its key and checksum when the stored checksum is valid.
+ * @param settings Configuration settings.
+ * @param mode New mode byte.
+ */
+static inline void config_set_mode(ConfigSettings* settings, u8 mode)
+{
+    s32 length = reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26;
+    if (settings->checksum == func_00457470(settings->key, &settings->unk26, length))
+    {
+        settings->mode = mode;
+        settings->key = func_0010CF80();
+        settings->checksum = func_00457470(settings->key, &settings->unk26, length);
+    }
+}
+
+/**
+ * @brief Read bit six of settings byte 0x24 as an unsigned byte flag.
+ * @param settings Configuration settings.
+ * @return Stored bit as zero or one.
+ */
+static inline u8 config_bit6(ConfigSettings* settings)
+{
+    u32 flag = settings->unk24_bit6;
+    return flag;
+}
+
+/**
+ * @brief Read the two-bit setting used by option row one.
+ * @param settings Configuration settings.
+ * @return Stored mode.
+ */
+static inline u8 config_four_mode(ConfigSettings* settings)
+{
+    u32 value = settings->unk25_mode;
+    return value;
+}
 
 /** @brief Initialize a resource widget through its Field resource view. */
 static inline void initialize_preview_resource(ItemCreationOptionResourceDisplay* display, FieldResourceRecord* record, float x, float y)
@@ -1450,21 +1480,464 @@ void func_0034C260(ConfigOptions* object, u16 input)
     }
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034C380);
+void func_0034C380(ConfigOptions* object, u16 input)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 0)->value);
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 1)->value);
+    LibObject178750* third = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 2)->value);
+    LibObject178750* fourth = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 3)->value);
+    ConfigSettings* settings = D_001B643C->settings;
+    s32 key = 0;
+    switch (settings->unk18e)
+    {
+    case 0:
+        key = 0x1fb6;
+        break;
+    case 1:
+        key = 0x1fb7;
+        break;
+    case 2:
+        key = 0x1fb8;
+        break;
+    case 3:
+        key = 0x1fb9;
+        break;
+    }
+    s32 selected = -1;
+    if (input == 0x80)
+    {
+        switch (key)
+        {
+        case 0x1fb6:
+            settings->unk18e = 2;
+            selected = 3;
+            break;
+        case 0x1fb7:
+            settings->unk18e = 0;
+            selected = 0;
+            break;
+        case 0x1fb9:
+            settings->unk18e = 1;
+            selected = 1;
+            break;
+        case 0x1fb8:
+            settings->unk18e = 3;
+            selected = 2;
+            break;
+        }
+    }
+    else
+    {
+        switch (key)
+        {
+        case 0x1fb6:
+            settings->unk18e = 1;
+            selected = 1;
+            break;
+        case 0x1fb7:
+            settings->unk18e = 3;
+            selected = 2;
+            break;
+        case 0x1fb9:
+            settings->unk18e = 2;
+            selected = 3;
+            break;
+        case 0x1fb8:
+            settings->unk18e = 0;
+            selected = 0;
+            break;
+        }
+    }
+    first->set_color(0x505050);
+    second->set_color(0x505050);
+    third->set_color(0x505050);
+    fourth->set_color(0x505050);
+    switch (selected)
+    {
+    case 0:
+        first->set_color(0x808080);
+        break;
+    case 1:
+        second->set_color(0x808080);
+        break;
+    case 2:
+        third->set_color(0x808080);
+        break;
+    case 3:
+        fourth->set_color(0x808080);
+        break;
+    }
+    func_004587C0(settings);
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034C600);
+void func_0034C600(ConfigOptions* object, u16 input)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list8_first), 0)->value);
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list8_first), 1)->value);
+    ConfigSettings* settings = D_001B643C->settings;
+    s32 key = settings->unk24_bit5 ? 0x1fb4 : 0x1fb5;
+    bool selected = false;
+    if (input == 0x80)
+    {
+        if (key == 0x1fb4)
+        {
+            selected = true;
+        }
+        else
+        {
+            selected = false;
+        }
+    }
+    if (input == 0x20)
+    {
+        if (key == 0x1fb5)
+        {
+            selected = false;
+        }
+        else
+        {
+            selected = true;
+        }
+    }
+    if (selected)
+    {
+        settings->unk24_bit5 = 0;
+        func_0011E030(D_001B65F0, 0, 0);
+        func_0011E030(D_001B65F0, 1, 0);
+        first->set_color(0x505050);
+        second->set_color(0x808080);
+    }
+    else
+    {
+        settings->unk24_bit5 = 1;
+        func_0011E030(D_001B65F0, 0, 1);
+        func_0011E030(D_001B65F0, 1, 1);
+        func_0020F110(D_001B6430->context->unk38, 1, 128, 10.0f, 5.0f);
+        first->set_color(0x808080);
+        second->set_color(0x505050);
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034C7C0);
+void func_0034C7C0(ConfigOptions* object, u16 input)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list7_first), 0)->value);
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list7_first), 1)->value);
+    ConfigSettings* settings = D_001B643C->settings;
+    s32 key = settings->unk25_bit1 ? 0x1fb3 : 0x1fb2;
+    bool selected = false;
+    if (input == 0x80)
+    {
+        if (key == 0x1fb2)
+        {
+            selected = true;
+        }
+        else
+        {
+            selected = false;
+        }
+    }
+    if (input == 0x20)
+    {
+        if (key == 0x1fb3)
+        {
+            selected = false;
+        }
+        else
+        {
+            selected = true;
+        }
+    }
+    if (selected)
+    {
+        settings->unk25_bit1 = 1;
+        first->set_color(0x505050);
+        second->set_color(0x808080);
+    }
+    else
+    {
+        settings->unk25_bit1 = 0;
+        first->set_color(0x808080);
+        second->set_color(0x505050);
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034C900);
+void func_0034C900(ConfigOptions* object, u16 input)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list6_first), 0)->value);
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list6_first), 1)->value);
+    ConfigSettings* settings = D_001B643C->settings;
+    s32 key = settings->unk24_bit4 ? 0x1fb0 : 0x1fb1;
+    bool selected = false;
+    if (input == 0x80)
+    {
+        if (key == 0x1fb1)
+        {
+            selected = true;
+        }
+        else
+        {
+            selected = false;
+        }
+    }
+    if (input == 0x20)
+    {
+        if (key == 0x1fb0)
+        {
+            selected = false;
+        }
+        else
+        {
+            selected = true;
+        }
+    }
+    if (selected)
+    {
+        settings->unk24_bit4 = 1;
+        first->set_color(0x808080);
+        second->set_color(0x505050);
+    }
+    else
+    {
+        settings->unk24_bit4 = 0;
+        first->set_color(0x505050);
+        second->set_color(0x808080);
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034CA40);
+void func_0034CA40(ConfigOptions* object, u16 input)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list4_first), 0)->value);
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list4_first), 1)->value);
+    ConfigSettings* settings = D_001B643C->settings;
+    bool selected;
+    s32 key = -1;
+    switch (settings->unk24_low)
+    {
+    case 0:
+        key = 0x1fac;
+        break;
+    case 1:
+        key = 0x1fad;
+        break;
+    }
+    selected = false;
+    if (input == 0x80)
+    {
+        if (key == 0x1fad)
+        {
+            selected = true;
+        }
+        else
+        {
+            selected = false;
+        }
+    }
+    if (input == 0x20)
+    {
+        if (key == 0x1fac)
+        {
+            selected = false;
+        }
+        else
+        {
+            selected = true;
+        }
+    }
+    if (selected)
+    {
+        settings->unk24_low = 0;
+        first->set_color(0x808080);
+        second->set_color(0x505050);
+    }
+    else
+    {
+        settings->unk24_low = 1;
+        first->set_color(0x505050);
+        second->set_color(0x808080);
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034CBB0);
+void func_0034CBB0(ConfigOptions* object, u16 input)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list3_first), 0)->value);
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list3_first), 1)->value);
+    ConfigSettings* settings = D_001B643C->settings;
+    s32 key = config_bit6(settings) == 0 ? 0x1faa : 0x1fab;
+    bool selected = false;
+    if (input == 0x80)
+    {
+        if (key == 0x1fab)
+        {
+            selected = true;
+        }
+        else
+        {
+            selected = false;
+        }
+    }
+    if (input == 0x20)
+    {
+        if (key == 0x1faa)
+        {
+            selected = false;
+        }
+        else
+        {
+            selected = true;
+        }
+    }
+    if (selected)
+    {
+        settings->unk24_bit6 = 0;
+        first->set_color(0x808080);
+        second->set_color(0x505050);
+    }
+    else
+    {
+        settings->unk24_bit6 = 1;
+        first->set_color(0x505050);
+        second->set_color(0x808080);
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034CD00);
+void func_0034CD00(ConfigOptions* object, u16 input)
+{
+    ConfigNode* first_node = func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list2_first), 0);
+    ConfigNode* second_node = func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list2_first), 1);
+    ConfigNode* third_node = func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list2_first), 2);
+    ConfigNode* fourth_node = func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list2_first), 3);
+    s32 selected;
+    s32 key;
+    LibObject178750* first = static_cast<LibObject178750*>(first_node->value);
+    LibObject178750* second = static_cast<LibObject178750*>(second_node->value);
+    LibObject178750* third = static_cast<LibObject178750*>(third_node->value);
+    LibObject178750* fourth = static_cast<LibObject178750*>(fourth_node->value);
+    ConfigSettings* settings = D_001B643C->settings;
+    key = -1;
+    switch (config_four_mode(settings))
+    {
+    case 0:
+        key = 0x1fa6;
+        break;
+    case 2:
+        key = 0x1fa7;
+        break;
+    case 1:
+        key = 0x1fa8;
+        break;
+    case 3:
+        key = 0x1fa9;
+        break;
+    }
+    selected = -1;
+    switch (input)
+    {
+    case 0x80:
+        switch (key)
+        {
+        case 0x1fa6:
+            settings->unk25_mode = 3;
+            selected = 3;
+            break;
+        case 0x1fa7:
+            settings->unk25_mode = 0;
+            selected = 0;
+            break;
+        case 0x1fa8:
+            settings->unk25_mode = 2;
+            selected = 1;
+            break;
+        case 0x1fa9:
+            settings->unk25_mode = 1;
+            selected = 2;
+            break;
+        }
+        break;
+    case 0x20:
+        switch (key)
+        {
+        case 0x1fa6:
+            settings->unk25_mode = 2;
+            selected = 1;
+            break;
+        case 0x1fa7:
+            settings->unk25_mode = 1;
+            selected = 2;
+            break;
+        case 0x1fa8:
+            settings->unk25_mode = 3;
+            selected = 3;
+            break;
+        case 0x1fa9:
+            settings->unk25_mode = 0;
+            selected = 0;
+            break;
+        }
+        break;
+    }
+    first->set_color(0x505050);
+    second->set_color(0x505050);
+    third->set_color(0x505050);
+    fourth->set_color(0x505050);
+    switch (selected)
+    {
+    case 0:
+        first->set_color(0x808080);
+        break;
+    case 1:
+        second->set_color(0x808080);
+        break;
+    case 2:
+        third->set_color(0x808080);
+        break;
+    case 3:
+        fourth->set_color(0x808080);
+        break;
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034D040);
+void func_0034D040(ConfigOptions* object, u16 input)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list1_first), 0)->value);
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list1_first), 1)->value);
+    ConfigSettings* settings = D_001B643C->settings;
+    s32 key = settings->unk24_bit7 ? 0x1fa4 : 0x1fa5;
+    bool selected = false;
+    if (input == 0x80)
+    {
+        if (key == 0x1fa5)
+        {
+            selected = true;
+        }
+        else
+        {
+            selected = false;
+        }
+    }
+    if (input == 0x20)
+    {
+        if (key == 0x1fa4)
+        {
+            selected = false;
+        }
+        else
+        {
+            selected = true;
+        }
+    }
+    if (selected)
+    {
+        settings->unk24_bit7 = 1;
+        first->set_color(0x808080);
+        second->set_color(0x505050);
+    }
+    else
+    {
+        settings->unk24_bit7 = 0;
+        first->set_color(0x505050);
+        second->set_color(0x808080);
+    }
+}
 
 INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034D180);
 

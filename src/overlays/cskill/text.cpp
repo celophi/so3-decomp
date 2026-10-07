@@ -66,38 +66,112 @@ typedef struct RecordWithMethods
 
 struct StatusDetail;
 
+/** Partial selected-record window with text and protected-value displays. */
+struct SkillProtectedDisplay : public FieldClass15AE70
+{
+    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
+    FieldRecordSelection* selection;
+    LibObject175140* text;
+    u8 unkb0[4];
+    LibObject174F20* display;
+};
+
 /** Partial controller list window, created by func_00364670. */
 struct SkillOwnerListWindow : public FieldClass15AE70
 {
+    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
     u8 unka8[0x18];
     LibClass178600* first;
     LibClass178600* second;
+};
+
+/** Resource window owning the paired resource displays. */
+struct SkillResourceWindow : FieldClass15AE70
+{
+    /** @brief Initialize the window and clear its initial state. */
+    SkillResourceWindow()
+    {
+        unka8 = 0;
+    }
+    /** @brief Destroy the window base and its display lists. */
+    virtual ~SkillResourceWindow();
+    /** @brief Leave the resource-window drawing state unchanged. */
+    virtual void func_slot5c();
+    /** @brief Ignore the window message key. @param key Unused signed message key. */
+    virtual void func_slot60(s32 key);
+    /** @brief Initialize the display widgets. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
+    u32 unka8;
+};
+
+/** Message window associated with the status display. */
+struct SkillStatusMessageWindow : FieldClass15AE70
+{
+    /** @brief Initialize the window and clear its initial state. */
+    SkillStatusMessageWindow()
+    {
+    }
+    /** @brief Destroy the window base and its display lists. */
+    virtual ~SkillStatusMessageWindow();
+    /** @brief Handle a window message key. @param key Signed message key. */
+    virtual void func_slot60(s32 key);
+    /** @brief Initialize the display widgets. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
+};
+
+/** Message window associated with the mode display. */
+struct SkillModeMessageWindow : FieldClass15AE70
+{
+    /** @brief Initialize the window and clear its initial state. */
+    SkillModeMessageWindow()
+    {
+    }
+    /** @brief Destroy the window base and its display lists. */
+    virtual ~SkillModeMessageWindow();
+    /** @brief Handle a window message key. @param key Signed message key. */
+    virtual void func_slot60(s32 key);
+    /** @brief Initialize the display widgets. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
 };
 
 /** Partial receiver with primary and Field callback interfaces. */
 struct SkillQueueOwner : public RecordWithMethods, public FieldClass153E30
 {
     u8 kind;
-    u8 unk39[0xF];
+    u8 unk39[3];
+    void* associated;
+    u8 active;
+    u8 unk41[3];
+    FieldRecordSelection* mode_records;
     u16 selected;
     u8 unk4a[2];
     FieldClass15AE70* window;
     StatusOwner003580D0* status;
-    u8 unk54[4];
+    SkillStatusMessageWindow* status_message;
     SkillFourRowSelection* four_rows;
     Record003538F0* status_rows;
     Record00352B30* mode_query;
-    u8 unk64[8];
+    SkillModeMessageWindow* mode_message;
+    SkillModeSelection* mode_window;
     SkillDualSelection* paired;
-    u8 unk70[4];
+    SkillTextReceiver* text_window;
     SkillOwnerListWindow* list_window;
-    u8 unk78[0x14];
+    SkillProtectedDisplay* primary;
+    Record003619C0* primary_rows;
+    SkillOptionsWindow* options;
+    u8 unk84[8];
     FieldRecord* entry;
     StatusDetail* detail;
     u8 code;
     u8 unk95[3];
     s32 message;
     u8 row_mode;
+    u8 unk9d[3];
+    SkillSecondarySelection* secondary;
+    u8 unka4[4];
+    u16 state;
 };
 
 struct SkillDualSelection : public FieldClass15AE70
@@ -149,6 +223,8 @@ struct SkillDualSelection : public FieldClass15AE70
 /** Partial mode window with its selection, display lists, and row values. */
 struct SkillModeSelection : public FieldClass15AE70
 {
+    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
     u8 state;
     u8 animation_mode;
     u8 unkaa[2];
@@ -157,7 +233,8 @@ struct SkillModeSelection : public FieldClass15AE70
     FieldObject23CEA0* selection;
     u8 unkb8[0x20];
     FieldObject23B950* recipient;
-    u8 unkdc[8];
+    FieldRecordSelection* mode_records;
+    u8 unke0[4];
     s16 mode;
     u8 unke6[2];
     s32 values[42];
@@ -211,8 +288,44 @@ struct SkillGridChoice : public FieldClass15AE70
     s16 selected;
 };
 
-struct SkillSecondarySelection : public FieldClass15AE70
+struct SkillSecondarySelection : FieldClass15AE70
 {
+    /** @brief Initialize the window and clear its initial state. */
+    SkillSecondarySelection()
+    {
+        owner = 0;
+        selection = 0;
+        previous = 0;
+        code = 0;
+        state = 0;
+        status = 0;
+        four_rows = 0;
+        status_rows = 0;
+        mode_query = 0;
+        cursor = 0;
+    }
+    /** @brief Destroy the window base and its display lists. */
+    virtual ~SkillSecondarySelection();
+    /** @brief Refresh the visible window state. */
+    virtual void func_slot5c();
+    /** @brief Handle a window message key. @param key Signed message key. */
+    virtual void func_slot60(s32 key);
+    /** @brief Refresh the associated owner and reset the selection state. */
+    virtual void func_slot64();
+    /** @brief Move the selection in direction zero. */
+    virtual void func_slot68();
+    /** @brief Move the selection in direction one. */
+    virtual void func_slot6c();
+    /** @brief Process the selected window. @return Selection event code. */
+    virtual s32 func_slotb0();
+    /** @brief Open the grid choice. @return Selection event code. */
+    virtual s32 func_slotb4();
+    /** @brief Cycle the status record in direction zero. @return Selection event code. */
+    virtual s32 func_slotd8();
+    /** @brief Cycle the status record in direction one. @return Selection event code. */
+    virtual s32 func_slotdc();
+    /** @brief Initialize the display widgets. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
     SkillQueueOwner* owner;
     FieldObject23CEA0* selection;
     s16 code;
@@ -230,10 +343,13 @@ struct SkillSecondarySelection : public FieldClass15AE70
 /** Partial four-row window with its record selection, grid, and cursor display. */
 struct SkillFourRowSelection : public FieldClass15AE70
 {
+    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
     FieldRecordSelection* records;
     FieldObject23CEA0* selection;
     FieldClass15AE70* message;
-    u8 unkb4[0xC];
+    StatusOwner003580D0* status;
+    u8 unkb8[8];
     LibClass178600* first_display;
     LibClass178600* second_display;
     LibClass178600* third_display;
@@ -401,6 +517,8 @@ typedef struct StatusItem : public LibClass178600
 
 typedef struct StatusOwner003580D0 : public FieldClass15AE70
 {
+    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
     FieldRecordSelection* selection;
     LibObject175140* portrait;
     LibObject178750* first_label;
@@ -620,6 +738,8 @@ typedef struct QueryParent
 /** Partial mode-query receiver with a six-element signed mode table. */
 typedef struct Record00352B30 : public FieldClass15AE70
 {
+    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
     QuerySelection* selection;
     s16 unkac[5];
     u8 unkb6[0xE];
@@ -658,6 +778,8 @@ typedef struct ListItem0035CCE0
 /** Partial receiver holding two arrays of 30 paired display items. */
 typedef struct Record003619C0 : public FieldClass15AE70
 {
+    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
     u8 unka8[4];
     FieldRecordSelection* records;
     FieldObject23CEA0* selection;
@@ -683,7 +805,6 @@ typedef struct DisplayMetrics
     float unk08;
 } DisplayMetrics;
 
-/** Partial six-row Field window with native display lists and value tables. */
 /** Partial status attachment exposing its activity byte. */
 struct SkillStatusAttachment
 {
@@ -691,8 +812,11 @@ struct SkillStatusAttachment
     u8 active;
 };
 
+/** Partial six-row Field window with native display lists and value tables. */
 typedef struct Record003538F0 : public FieldClass15AE70
 {
+    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
     SkillStatusAttachment* attachment;
     FieldObject23CEA0* selection;
     FieldObject23BAB0* display;
@@ -700,7 +824,8 @@ typedef struct Record003538F0 : public FieldClass15AE70
     float x;
     float y;
     float spacing;
-    u8 unkcc[0xC];
+    u8 unkcc[8];
+    FieldRecordSelection* mode_records;
     SkillList183C38 second;
     SkillList183C38 third;
     s32 keys[6];
@@ -719,6 +844,8 @@ typedef struct Record003538F0 : public FieldClass15AE70
 /** Partial display receiver with counter and horizontal position controls. */
 typedef struct Record0035A560 : public FieldClass15AE70
 {
+    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
     LibObject178750* display;
     s32 limit;
     u8 unkb0[2];
@@ -1242,6 +1369,8 @@ void func_00348710(void* object)
 /** Partial comparison window with its labels, numeric images, and controller. */
 struct SkillComparisonDisplay : FieldClass15AE70
 {
+    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
     LibObject178750* title;
     u8 unkac[4];
     LibObject178750* item_label;
@@ -1434,9 +1563,26 @@ void func_00348720(FieldClass15AE70* receiver)
     }
 }
 
-/** Partial window with its nested text receiver at offset 0xA8. */
-struct SkillTextReceiver : public FieldClass15AE70
+/** Window containing paired text choices, icons, and values. */
+struct SkillTextReceiver : FieldClass15AE70
 {
+    /** @brief Initialize the window and clear its initial state. */
+    SkillTextReceiver()
+    {
+        display = 0;
+        first_choice = 0;
+        second_choice = 0;
+        first_icon = 0;
+        first_value = 0;
+        second_icon = 0;
+        second_value = 0;
+    }
+    /** @brief Destroy the window base and its display lists. */
+    virtual ~SkillTextReceiver();
+    /** @brief Handle a window message key. @param key Signed message key. */
+    virtual void func_slot60(s32 key);
+    /** @brief Initialize the display widgets. @param associated Associated source word. @return Initialization result. */
+    virtual s32 func_slotf4(void* associated);
     LibObject178750* display;
     LibObject178750* first_choice;
     LibObject178750* second_choice;
@@ -1446,12 +1592,12 @@ struct SkillTextReceiver : public FieldClass15AE70
     LibObject178750* second_value;
 };
 
-void func_00348CB0(SkillTextReceiver* record, u32 key)
+void func_00348CB0(SkillComparisonDisplay* record, u32 key)
 {
-    if (record->display != 0)
+    if (record->title != 0)
     {
         void* source = record->func_slot54();
-        func_4C6DF0(record->display, source, key, 0);
+        func_4C6DF0(record->title, source, key, 0);
     }
 }
 
@@ -1531,18 +1677,8 @@ ItemCreationClass175110::~ItemCreationClass175110()
 {
 }
 
-RecordWithMethods* func_00349E20(RecordWithMethods* record, s16 flag)
+SkillTextReceiver::~SkillTextReceiver()
 {
-    if (record != 0)
-    {
-        record->methods = D_182F70;
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            ::operator delete(record);
-        }
-    }
-    return record;
 }
 
 void func_00349E80(SkillDualSelection* object)
@@ -2437,18 +2573,8 @@ s32 func_00351980(FieldClass15AE70* object, void* associated)
     return 1;
 }
 
-RecordWithMethods* func_00351A60(RecordWithMethods* record, s16 flag)
+SkillModeMessageWindow::~SkillModeMessageWindow()
 {
-    if (record != 0)
-    {
-        record->methods = D_183270;
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            ::operator delete(record);
-        }
-    }
-    return record;
 }
 
 void func_00351AC0(Record00352B30* object)
@@ -3371,18 +3497,8 @@ s32 func_00357F80(FieldClass15AE70* object, void* associated)
     return 1;
 }
 
-RecordWithMethods* func_00358070(RecordWithMethods* record, s16 flag)
+SkillStatusMessageWindow::~SkillStatusMessageWindow()
 {
-    if (record != 0)
-    {
-        record->methods = D_183670;
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            ::operator delete(record);
-        }
-    }
-    return record;
 }
 
 void func_003580D0(StatusOwner003580D0* owner, s32 first, s32 second, s32 third)
@@ -3581,7 +3697,7 @@ void func_00359340(SkillSecondarySelection* object)
     object->state = 0;
 }
 
-void func_00359480(void* object)
+void SkillResourceWindow::func_slot60(s32 key)
 {
 }
 
@@ -3904,18 +4020,8 @@ s32 func_00359EE0(SkillSecondarySelection* object, void* associated)
     return 1;
 }
 
-RecordWithMethods* func_0035A500(RecordWithMethods* record, s16 flag)
+SkillSecondarySelection::~SkillSecondarySelection()
 {
-    if (record != 0)
-    {
-        record->methods = D_183870;
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            ::operator delete(record);
-        }
-    }
-    return record;
 }
 
 void func_0035A560(Record0035A560* record)
@@ -4063,7 +4169,7 @@ u8* func_0035ABC0(u8* object)
     return object;
 }
 
-void func_0035AC40(void* object)
+void SkillResourceWindow::func_slot5c()
 {
 }
 
@@ -4089,18 +4195,8 @@ s32 func_0035AC50(FieldClass15AE70* object, void* associated)
     return 1;
 }
 
-RecordWithMethods* func_0035AEA0(RecordWithMethods* record, s16 flag)
+SkillResourceWindow::~SkillResourceWindow()
 {
-    if (record != 0)
-    {
-        record->methods = D_183A70;
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            ::operator delete(record);
-        }
-    }
-    return record;
 }
 
 /**
@@ -4240,7 +4336,176 @@ void func_0035B4B0(SkillQueueOwner* record)
     func_0011ED90(D_001B65F4, entry);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0035B4E0);
+s32 func_0035B4E0(SkillQueueOwner* owner)
+{
+    SkillResourceWindow* resource = new (0) SkillResourceWindow;
+    Record0035A560* message = static_cast<Record0035A560*>(::operator new(0xD8, 0));
+    if (message != 0)
+    {
+        message = reinterpret_cast<Record0035A560*>(func_0035ABC0(reinterpret_cast<u8*>(message)));
+    }
+    resource->func_slotf4(owner->associated);
+    owner->FieldClass153E30::func_00263FD0(resource);
+    resource->func_slot40(0);
+    message->mode = owner->kind;
+    message->func_slotf4(owner->associated);
+    owner->FieldClass153E30::func_00263FD0(message);
+    owner->unk24 = message;
+    message->func_slot40(resource);
+    if (owner->kind == 1)
+    {
+        SkillOwnerListWindow* list = static_cast<SkillOwnerListWindow*>(::operator new(0x120, 0));
+        if (list != 0)
+        {
+            list = reinterpret_cast<SkillOwnerListWindow*>(func_00364670(reinterpret_cast<u8*>(list)));
+        }
+        owner->list_window = list;
+        SkillProtectedDisplay* primary = static_cast<SkillProtectedDisplay*>(::operator new(0xC0, 0));
+        if (primary != 0)
+        {
+            primary = reinterpret_cast<SkillProtectedDisplay*>(func_00363610(reinterpret_cast<u8*>(primary)));
+        }
+        owner->primary = primary;
+        Record003619C0* rows = static_cast<Record003619C0*>(::operator new(0x1B8, 0));
+        if (rows != 0)
+        {
+            rows = reinterpret_cast<Record003619C0*>(func_00362F70(reinterpret_cast<u8*>(rows)));
+        }
+        owner->primary_rows = rows;
+        owner->options = new (0) SkillOptionsWindow;
+        owner->list_window->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->list_window);
+        owner->list_window->func_slot40(owner->primary);
+        owner->primary->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->primary);
+        owner->primary->func_slot40(owner->primary_rows);
+        owner->primary_rows->func_slot40(owner->list_window);
+        owner->primary_rows->func_slot48(owner->options);
+        owner->primary_rows->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->primary_rows);
+        owner->options->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->options);
+        owner->options->func_slot40(owner->primary_rows);
+        message->func_slot60(0x1775);
+        owner->unk20 = owner->primary_rows;
+    }
+    else if (owner->kind == 2)
+    {
+        owner->secondary = new (0) SkillSecondarySelection;
+        StatusOwner003580D0* status = static_cast<StatusOwner003580D0*>(::operator new(0x144, 0));
+        if (status != 0)
+        {
+            status = reinterpret_cast<StatusOwner003580D0*>(func_00359200(reinterpret_cast<u8*>(status), owner));
+        }
+        owner->status = status;
+        owner->status_message = new (0) SkillStatusMessageWindow;
+        SkillFourRowSelection* four = static_cast<SkillFourRowSelection*>(::operator new(0x104, 0));
+        if (four != 0)
+        {
+            four = reinterpret_cast<SkillFourRowSelection*>(func_00357EE0(reinterpret_cast<u8*>(four)));
+        }
+        owner->four_rows = four;
+        Record003538F0* rows = static_cast<Record003538F0*>(::operator new(0x190, 0));
+        if (rows != 0)
+        {
+            rows = reinterpret_cast<Record003538F0*>(func_00355580(reinterpret_cast<u8*>(rows), owner));
+        }
+        owner->status_rows = rows;
+        Record00352B30* query = static_cast<Record00352B30*>(::operator new(0x118, 0));
+        if (query != 0)
+        {
+            query = reinterpret_cast<Record00352B30*>(func_003533E0(reinterpret_cast<u8*>(query)));
+        }
+        owner->mode_query = query;
+        owner->mode_message = new (0) SkillModeMessageWindow;
+        SkillModeSelection* mode = static_cast<SkillModeSelection*>(::operator new(0x2EC, 0));
+        if (mode != 0)
+        {
+            mode = reinterpret_cast<SkillModeSelection*>(func_00351800(reinterpret_cast<u8*>(mode), owner));
+        }
+        owner->mode_window = mode;
+        owner->paired = new (0) SkillDualSelection;
+        owner->text_window = new (0) SkillTextReceiver;
+        FieldClass15AE70* comparison = static_cast<FieldClass15AE70*>(::operator new(0xE4, 0));
+        if (comparison != 0)
+        {
+            comparison = reinterpret_cast<FieldClass15AE70*>(func_003498A0(reinterpret_cast<u8*>(comparison), owner));
+        }
+        owner->window = comparison;
+        owner->mode_query->parent = reinterpret_cast<QueryParent*>(owner);
+        owner->paired->owner = owner;
+        owner->secondary->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->secondary);
+        owner->secondary->func_slot40(message);
+        owner->secondary->status = owner->status;
+        owner->secondary->four_rows = owner->four_rows;
+        owner->secondary->status_rows = owner->status_rows;
+        owner->secondary->mode_query = owner->mode_query;
+        owner->status->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->status);
+        owner->status->func_slot40(owner->secondary);
+        owner->status->four_rows = owner->four_rows;
+        owner->status->status_rows = owner->status_rows;
+        owner->status->mode_query = owner->mode_query;
+        owner->status->mode_window = owner->mode_window;
+        owner->status->paired = owner->paired;
+        owner->four_rows->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->four_rows);
+        owner->four_rows->func_slot40(owner->secondary);
+        owner->four_rows->message = owner->window;
+        owner->four_rows->status = owner->status;
+        owner->status_rows->mode_records = owner->mode_records;
+        owner->status_rows->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->status_rows);
+        owner->status_rows->func_slot40(owner->secondary);
+        owner->status_rows->func_slot48(owner->mode_window);
+        reinterpret_cast<SkillComparisonDisplay*>(owner->window)->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->window);
+        owner->window->func_slot40(owner->status_message);
+        owner->text_window->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->text_window);
+        owner->text_window->func_slot40(owner->mode_query);
+        LibObject178660* attachment = owner->text_window->unk10;
+        if (attachment != 0)
+        {
+            attachment->LibClass174610::unkab = 0;
+        }
+        owner->mode_query->func_slot40(owner->secondary);
+        owner->mode_query->func_slot48(owner->paired);
+        owner->mode_query->attachment = owner->text_window;
+        owner->mode_query->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->mode_query);
+        owner->status_message->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->status_message);
+        owner->status_message->func_slot40(owner->status);
+        owner->mode_message->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->mode_message);
+        owner->mode_message->func_slot40(owner->mode_window);
+        owner->mode_window->mode_records = owner->mode_records;
+        owner->mode_window->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->mode_window);
+        owner->mode_window->func_slot40(owner->status_rows);
+        owner->mode_window->func_slot48(owner->status);
+        owner->paired->func_slotf4(owner->associated);
+        owner->FieldClass153E30::func_00263FD0(owner->paired);
+        owner->paired->func_slot40(owner->mode_query);
+        func_00353570(owner->status_rows, 1, 0);
+        func_00354190(owner->status_rows);
+        Record00352B30* mode_query = owner->mode_query;
+        mode_query->active = 0;
+        mode_query->func_slot18(0, 2);
+        func_00349920(reinterpret_cast<u8*>(mode_query->attachment), 0);
+        refresh_query_cursor(mode_query);
+        func_0023CEA0(mode_query->selection, 0);
+        func_003558B0(owner->four_rows, 0, 0);
+        func_00351360(owner->mode_window, 0, 0);
+        func_00349F30(owner->paired, 2);
+        owner->unk20 = owner->secondary;
+    }
+    owner->state = 6;
+    owner->active = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0035BD90);
 
@@ -5623,14 +5888,6 @@ u8* func_00363610(u8* object)
     return object;
 }
 
-/** Partial selected-record window with text and protected-value displays. */
-struct SkillProtectedDisplay : public FieldClass15AE70
-{
-    FieldRecordSelection* selection;
-    LibObject175140* text;
-    u8 unkb0[4];
-    LibObject174F20* display;
-};
 
 void func_00363660(SkillProtectedDisplay* object)
 {

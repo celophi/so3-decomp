@@ -73,20 +73,6 @@ struct StatusRuntimeResource
     s32 resource;
     u32 code;
 };
-/** Partial position window using the Field window base. */
-struct StatusTextWindow : public FieldClass15AE70
-{
-    LibObject178750* target;
-    s32 distance;
-    u8 unkb0[2];
-    s16 timer;
-    u8 state;
-    float label_width;
-    float initial_x;
-    float base_x;
-    float width;
-};
-
 /** Partial status window holding a Lib container at offset 0xE0. */
 struct StatusContainerWindow : public FieldClass15AE70
 {
@@ -106,7 +92,6 @@ struct StatusResourceState : public FieldClass153E30
     u16 field_42;
     StatusScrollState* scroll;
 };
-
 
 struct StatusRuntimeCallbacks;
 
@@ -161,46 +146,12 @@ struct OverlayList
     void* methods;
 };
 
-typedef struct StatusPosition
-{
-    float x;
-    float y;
-    float z;
-    float w;
-} StatusPosition;
-
-/** Partial Lib display receiver holding its position and refresh flag. */
-typedef struct StatusPositionTarget
-{
-    u8 pad_00[0x18];
-    StatusPosition position;
-    u8 pad_28[0x14];
-    u8 active;
-} StatusPositionTarget;
-
-/** Partial status position state; the complete receiver extent is unknown. */
-struct StatusPositionOwner
-{
-    u8 pad_00[0xA8];
-    StatusPositionTarget* target;
-    s32 distance;
-    u8 pad_b0[2];
-    s16 timer;
-    u8 state;
-    u8 pad_b5[7];
-    float initial_x;
-    float base_x;
-    float width;
-};
-
 extern StatusRuntime* D_001B643C;
 extern "C" s32 func_002CFE40(void* object, s16 index);
 
 extern u8 D_1889C0[];
 extern u8 D_188CC0[];
 extern u8 D_1888B0[];
-extern u8 D_188BC0[];
-extern u8 D_188AC0[];
 extern u8 D_1888C0[];
 extern u8 D_175110[];
 
@@ -222,7 +173,7 @@ template <class List>
 static inline void move_status_display_list(List* list, StatusScrollState* object);
 static inline void set_status_resource_scale(LibClass175110* display, float x, float y);
 static inline StatusAlignedResource* aligned_status_resource(void* buffer);
-static inline void status_set_position(StatusPositionTarget* target, float x, float y, float z, float w);
+static inline void status_set_position(LibObject178750* target, float x, float y, float z, float w);
 
 /**
  * @brief Set the record caption rectangle and mark it for refresh.
@@ -291,8 +242,6 @@ static inline StatusAlignedResource* aligned_status_resource(void* buffer)
     return reinterpret_cast<StatusAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
 }
 
-
-
 /**
  * @brief Store the display position and mark it for refresh.
  * @param target Display receiver to update.
@@ -301,15 +250,14 @@ static inline StatusAlignedResource* aligned_status_resource(void* buffer)
  * @param z Third position component.
  * @param w Fourth position component.
  */
-static inline void status_set_position(StatusPositionTarget* target, float x, float y, float z, float w)
+static inline void status_set_position(LibObject178750* target, float x, float y, float z, float w)
 {
-    target->position.x = x;
-    target->position.y = y;
-    target->position.z = z;
-    target->position.w = w;
-    target->active = 1;
+    target->unk18.unk00 = x;
+    target->unk18.unk04 = y;
+    target->unk18.unk08 = z;
+    target->unk18.unk0c = w;
+    target->unk3c = 1;
 }
-
 
 void func_00348400(void* object, u8 value)
 {
@@ -340,10 +288,6 @@ u16 func_00348450(void* object)
 {
     return *(u16*)((u8*)object + 0xA);
 }
-
-
-
-
 
 void func_00348480(void* object, u32 value)
 {
@@ -1101,7 +1045,6 @@ s32 StatusSelectionWindow::func_slotb0()
     return result == 0 ? 1 : 2;
 }
 
-
 INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_slotf4__21StatusSelectionWindowFPv);
 
 void* func_0034AC90(void* object, s32 flags)
@@ -1591,17 +1534,15 @@ StatusScrollState::StatusScrollState()
     second_tail[3] = 0;
 }
 
-/**
- * @brief Hold the display position until its timer expires, then scroll and wrap it.
- * @param object Status state containing the display receiver and movement bounds.
- */
-void func_0034F920(StatusPositionOwner* object)
+/** @brief Hold the caption until its timer expires, then scroll and wrap it. */
+void StatusTextWindow::func_slot5c()
 {
-    StatusPositionTarget* target = object->target;
-    float x = target->position.x;
-    float y = target->position.y;
-    float z = target->position.z;
-    float w = target->position.w;
+    StatusTextWindow* object = this;
+    LibObject178750* target = object->target;
+    float x = target->unk18.unk00;
+    float y = target->unk18.unk04;
+    float z = target->unk18.unk08;
+    float w = target->unk18.unk0c;
     if (object->state == 0)
     {
         status_set_position(target, object->initial_x, y, z, w);
@@ -1621,8 +1562,13 @@ void func_0034F920(StatusPositionOwner* object)
     status_set_position(target, x, y, z, w);
 }
 
-void func_0034FA10(StatusTextWindow* object, s32 key)
+/**
+ * @brief Select caption keys 5002 and 5003 and reset the scroll timer.
+ * @param key Requested caption key.
+ */
+void StatusTextWindow::func_slot60(s32 key)
 {
+    StatusTextWindow* object = this;
     if (key >= 5002 && key < 5004)
     {
         object->timer = 0;
@@ -1633,13 +1579,13 @@ void func_0034FA10(StatusTextWindow* object, s32 key)
 }
 
 /**
- * @brief Create the status captions, scrolling text, and frame geometry.
- * @param object Status text window.
+ * @brief Create the captions, scrolling text, and frame geometry.
  * @param associated Resource source associated with the window.
  * @return One when the text and both frames are present, otherwise zero.
  */
-s32 func_0034FAA0(StatusTextWindow* object, void* associated)
+s32 StatusTextWindow::func_slotf4(void* associated)
 {
+    StatusTextWindow* object = this;
     object->FieldClass15AE70::func_slot14(associated, 0, 9, 1400, 16.0f, 16.0f, 0.0f);
     LibObject178750* label = new (0) LibObject178750;
     func_004C7FE0(label, reinterpret_cast<s32>(associated), 0x1388, 0, 16.0f, 6.0f, 0.0f, 0.0f);
@@ -1675,22 +1621,19 @@ s32 func_0034FAA0(StatusTextWindow* object, void* associated)
     return 1;
 }
 
-void* func_0034FE40(void* object, s32 flags)
+/** @brief Destroy the caption window base. */
+StatusTextWindow::~StatusTextWindow()
 {
-    if (object != 0)
-    {
-        *(void**)object = D_188AC0;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
-s32 func_0034FEA0(FieldClass15AE70* object, void* associated)
+/**
+ * @brief Create and attach the three status resource displays.
+ * @param associated Associated window object.
+ * @return One after the displays are initialized.
+ */
+s32 StatusBackgroundWindow::func_slotf4(void* associated)
 {
+    StatusBackgroundWindow* object = this;
     object->FieldClass15AE70::func_slot14(associated, 0, 9, 1200, 16.0f, 16.0f, 0.0f);
     ItemCreationOptionResourceDisplay* first = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* second = new (0) ItemCreationOptionResourceDisplay;
@@ -1711,18 +1654,9 @@ s32 func_0034FEA0(FieldClass15AE70* object, void* associated)
     return 1;
 }
 
-void* func_00350100(void* object, s32 flags)
+/** @brief Destroy the background window base. */
+StatusBackgroundWindow::~StatusBackgroundWindow()
 {
-    if (object != 0)
-    {
-        *(void**)object = D_188BC0;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
 void func_00350160(StatusResourceState* object)
@@ -1754,7 +1688,34 @@ u32 func_00350530(void* object)
     return *(u32*)((u8*)object + 0x24);
 }
 
-INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_00350540);
+/**
+ * @brief Create and attach the status windows and record selection.
+ * @param object Status resource state.
+ * @return One after record selection and window setup succeed, or zero otherwise.
+ */
+s32 func_00350540(StatusResourceState* object)
+{
+    StatusBackgroundWindow* background = new (0) StatusBackgroundWindow;
+    StatusTextWindow* text = new (0) StatusTextWindow;
+    object->scroll = new (0) StatusScrollState;
+    object->selection = new (0) FieldRecordSelection;
+    if ((u8)func_0028E3D0(object->selection) == 0)
+    {
+        return 0;
+    }
+    object->unk20 = object->scroll;
+    background->func_slotf4(reinterpret_cast<void*>(object->resource));
+    object->FieldClass153E30::func_00263FD0(background);
+    background->func_slot40(0);
+    text->func_slotf4(reinterpret_cast<void*>(object->resource));
+    object->FieldClass153E30::func_00263FD0(text);
+    object->unk24 = text;
+    text->func_slot40(background);
+    object->scroll->func_slotf4(reinterpret_cast<void*>(object->resource));
+    object->FieldClass153E30::func_00263FD0(object->scroll);
+    object->flag_38 = 1;
+    return 1;
+}
 
 s32 func_00350700(StatusResourceState* object, void* buffer)
 {
@@ -1812,25 +1773,30 @@ StatusSelectionWindow::~StatusSelectionWindow()
 {
 }
 
-void func_00350A20(void* object)
+/** @brief Leave the base window unchanged. */
+void FieldClass15AE70::func_slot68()
 {
 }
 
-void func_00350A30(void* object)
+/** @brief Leave the base window unchanged. */
+void FieldClass15AE70::func_slot6c()
 {
 }
 
-s32 func_00350A40(void* object)
-{
-    return 0;
-}
-
-s32 func_00350A50(void* object)
+/** @brief Report the default window callback result. @return Zero. */
+s32 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
-void func_00350A60(void* object)
+/** @brief Report the default window callback result. @return Zero. */
+s32 FieldClass15AE70::func_slotb4()
+{
+    return 0;
+}
+
+/** @brief Leave the base window unchanged. */
+void FieldClass15AE70::func_slot5c()
 {
 }
 

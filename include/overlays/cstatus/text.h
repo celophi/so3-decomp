@@ -7,7 +7,6 @@ typedef struct OverlayList OverlayList;
 typedef struct StatusObject StatusObject;
 typedef struct StatusResourceState StatusResourceState;
 typedef struct StateC000 StateC000;
-typedef struct StatusPositionOwner StatusPositionOwner;
 typedef struct StatusTextWindow StatusTextWindow;
 typedef struct StatusContainerWindow StatusContainerWindow;
 typedef struct StatusSelectionWindow StatusSelectionWindow;
@@ -23,6 +22,53 @@ typedef StatusScrollState StatusRecordWindow;
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_0044ABE0.h"
+
+/** Status background window displaying the three resource panels. */
+struct StatusBackgroundWindow : public FieldClass15AE70
+{
+    /** @brief Initialize the background window base. */
+    StatusBackgroundWindow()
+    {
+    }
+    /** @brief Destroy the background window base. */
+    virtual ~StatusBackgroundWindow();
+    /** @brief Create the status resource panels. @param associated Resource source. @return Creation result. */
+    virtual s32 func_slotf4(void* associated);
+};
+/** Status caption window with a timed scrolling text display. */
+struct StatusTextWindow : public FieldClass15AE70
+{
+    /** @brief Initialize the text links and scroll state. */
+    StatusTextWindow()
+    {
+        target = 0;
+        distance = 0;
+        unkb0[0] = 0;
+        timer = 0;
+        state = 0;
+        label_width = 0;
+        initial_x = 0;
+        base_x = 0;
+        width = 0;
+    }
+    /** @brief Destroy the caption window base. */
+    virtual ~StatusTextWindow();
+    /** @brief Update the scrolling text position. */
+    virtual void func_slot5c();
+    /** @brief Set the selected caption. @param key Signed caption key. */
+    virtual void func_slot60(s32 key);
+    /** @brief Create the captions and frame geometry. @param associated Resource source. @return Creation result. */
+    virtual s32 func_slotf4(void* associated);
+    LibObject178750* target;
+    s32 distance;
+    u8 unkb0[2];
+    s16 timer;
+    u8 state;
+    float label_width;
+    float initial_x;
+    float base_x;
+    float width;
+};
 
 struct OverlayNode;
 
@@ -231,7 +277,6 @@ struct StatusSelectionWindow : public FieldClass15AE70
     u8 map344[80];
 };
 
-
 #endif
 
 extern const char D_00351500[];
@@ -296,6 +341,13 @@ void func_0034AF00(StatusScrollState* object);
  * @param object Status record window.
  */
 void func_0034BDA0(StatusRecordWindow* object);
+
+/**
+ * @brief Create and attach the status windows and record selection.
+ * @param object Status resource state.
+ * @return One after record selection and window setup succeed, or zero otherwise.
+ */
+s32 func_00350540(StatusResourceState* object);
 
 /**
  * @brief Load the completed status resource and finish receiver setup.
@@ -453,19 +505,6 @@ void func_003511B0(OverlayList* list);
  * @param object Status window containing the nested Lib container.
  */
 void func_0034F6B0(StatusContainerWindow* object);
-
-/**
- * @brief Set the status text for keys 5002 and 5003 and reset its scrolling state.
- * @param object Status text window.
- * @param key Requested text key.
- */
-void func_0034FA10(StatusTextWindow* object, s32 key);
-
-/**
- * @brief Hold the display position until its timer expires, then scroll and wrap it.
- * @param object Status state containing the display receiver and movement bounds.
- */
-void func_0034F920(StatusPositionOwner* object);
 
 /**
  * @brief Perform no work.
@@ -695,38 +734,6 @@ void func_003509A0(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_003509B0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00350A20(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00350A30(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00350A40(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00350A50(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00350A60(void* object);
 
 /**
  * @brief Return the fixed value 4.
@@ -1042,22 +1049,6 @@ OverlayList* func_003510A0(OverlayList* list, s32 flags);
  * @param flags Positive low halfword requests releasing the object.
  * @return Original object address.
  */
-void* func_00350100(void* object, s32 flags);
-
-/**
- * @brief Clean up base state and optionally release the object.
- * @param object Object to clean up.
- * @param flags Positive low halfword requests releasing the object.
- * @return Original object address.
- */
-void* func_0034FE40(void* object, s32 flags);
-
-/**
- * @brief Clean up base state and optionally release the object.
- * @param object Object to clean up.
- * @param flags Positive low halfword requests releasing the object.
- * @return Original object address.
- */
 void* func_003509C0(void* object, s32 flags);
 
 /**
@@ -1130,27 +1121,11 @@ void func_00349730(StatusSelectionWindow* object);
 void* func_0034F780(void* object);
 
 /**
- * @brief Create the status captions, scrolling text, and frame geometry.
- * @param object Status text window.
- * @param associated Resource source associated with the window.
- * @return One when the text and both frames are present, otherwise zero.
- */
-s32 func_0034FAA0(StatusTextWindow* object, void* associated);
-
-/**
  * @brief Initialize a status object and clear its state fields.
  * @param object Status object to initialize.
  * @return Initialized object.
  */
 StatusObject* func_00350890(StatusObject* object);
-
-/**
- * @brief Create and attach the three status background resource displays.
- * @param object Status background window.
- * @param associated Associated window object.
- * @return 1 after the displays are initialized.
- */
-s32 func_0034FEA0(FieldClass15AE70* object, void* associated);
 
 #ifdef __cplusplus
 }

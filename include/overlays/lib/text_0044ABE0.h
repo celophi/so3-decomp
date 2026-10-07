@@ -8,6 +8,12 @@ typedef struct LibDrawState64 LibDrawState64;
 extern "C" {
 #endif
 /**
+ * @brief Apply the saved input mode, slot configuration, and input flag.
+ * @param settings Saved settings receiver.
+ */
+void func_004587C0(void* settings);
+
+/**
  * @brief Compute the seeded checksum over a byte range.
  * @param seed Initial checksum seed.
  * @param data Bytes to checksum.

@@ -170,3 +170,9 @@ dpadd = 0x00134D38; // type:func absolute:True allow_duplicated:True
 dptofp = 0x001355C8; // type:func absolute:True allow_duplicated:True
 __dt__14LibClass174EF0Fv = 0x00464A80; // type:func absolute:True allow_duplicated:True
 __vt__23ItemCreationClass172600 = 0x00172600; // size:0x24 absolute:True allow_duplicated:True
+
+// Resident and Field interfaces used by option input callbacks.
+func_0011E030 = 0x0011E030;
+func_0020F110 = 0x0020F110;
+func_004587C0 = 0x004587C0;
+D_001B65F0 = 0x001B65F0;
