@@ -9,6 +9,7 @@ import subprocess
 import sys
 
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, verify_compiler
+from tools.so3.build.assembly import assembly_inputs, assemble
 from tools.so3.build.rodata_ownership import owned_rodata_sections
 from tools.so3.build.subsegments import configured_rodata_groups
 from tools.so3.build.text_order import merge_rodata_sections, normalize_symbol_aliases, order_text_sections, symbol_addresses, symbol_aliases, unit_range
@@ -85,9 +86,6 @@ def main():
     record = next(r for r in config['candidates'] if r['id'] == config['working_candidate'])
     compiler = COMPILERS / record['id']
     verify_compiler(record, compiler)
-    # Installed at a hash-pinned revision, with dockerfiles/patches/mwccgap.patch applied.
-    sys.path.insert(0, '/opt/mwccgap')
-    from mwccgap.mwccgap import process_c_file
     os.environ['MWCIncludes'] = ''
     args.output.parent.mkdir(parents=True, exist_ok=True)
     temporary = args.output.with_suffix(args.output.suffix + '.tmp')
@@ -95,13 +93,25 @@ def main():
     selected = unit_flags(config, unit)
     flags = ['-DSO3_ASM_PROCESSOR', f'-I{args.source.parent}', '-Iinclude',
              *selected, '-lang', languages[args.source.suffix]]
+    config = overlay_config(unit)
+    groups = configured_rodata_groups(config, unit) if config else []
+    # Pure C scaffolds have no compiler-generated code or metadata. Deferred
+    # units and C++ still use the compiler's section ordering and copy handling.
+    assembly = (assembly_inputs(args.source)
+                if not args.skip_asm and languages[args.source.suffix] == 'c'
+                and not deferred(selected) and not groups else None)
     try:
-        if args.skip_asm:
+        if assembly:
+            assemble(assembly, args.macros, temporary)
+        elif args.skip_asm:
             # include_asm.h expands the placeholders to nothing. Keep these
             # objects separate so copied assembly cannot inflate progress.
             subprocess.run(['wibo', str(compiler / 'mwccps2.exe'), '-c', *flags,
                             '-o', str(temporary), str(args.source)], check=True)
         else:
+            # Installed at a hash-pinned revision, with dockerfiles/patches/mwccgap.patch applied.
+            sys.path.insert(0, '/opt/mwccgap')
+            from mwccgap.mwccgap import process_c_file
             process_c_file(
                 args.source, temporary,
                 # mwccgap's second pass uses a temporary .c file, even for C++.
@@ -120,8 +130,6 @@ def main():
                 overlay_range(unit), reorder=deferred(selected), external=external_copies(unit)))
         # Preserve separate native islands when a unit owns noncontiguous tables.
         # Other units retain the original single-section jump-table comparison.
-        config = overlay_config(unit)
-        groups = configured_rodata_groups(config, unit) if config else []
         if groups:
             data, _ = owned_rodata_sections(temporary.read_bytes(), groups)
         else:

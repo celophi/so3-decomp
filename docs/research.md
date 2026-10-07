@@ -2,20 +2,43 @@
 
 ## Compiler
 
-I think SO3 was built with CodeWarrior for PS2. I'm using **3.0 build 52
-(July 22, 2003)** with these flags for now:
+I think SO3 was built with CodeWarrior for PS2. I'm using **3.0 build 38
+(March 7, 2003)** with these flags for now:
 
 ```text
 -O3,p -RTTI off -inline level=4
 ```
 
-That gets matching code from the functions I've worked on, but I haven't
-pinned down the exact original version yet.
+That gets matching code from the functions I've worked on, but I'm not
+completely sure it's the exact original version yet.
 
 I compared 15 compiler versions using five small functions from the main
 executable. Builds 38, 50, and 52 all matched with both `-O3,p` and `-O4,p`.
-Those tests only cover 272 bytes, so they don't give me enough to choose
-between them. `-O3,p` is the current choice for optimizing for speed.
+Those tests only cover 272 bytes, so they couldn't tell those three apart.
+`-O3,p` is the current choice for optimizing for speed.
+
+I was using build 52 until I got stuck on two small functions in the item
+creation menu. Both are switch statements, and the compiler turns those into
+jump tables (lists of addresses it jumps through). When the first case isn't
+0, the code subtracts the lowest case before it looks in the table. The game
+does that subtraction with an `addi` instruction, but build 52 always writes
+`addiu`. They do the same thing here, so it came down to that one instruction.
+The disassembler even marks the game's `addi` as handwritten, because it
+doesn't expect a compiler to write it.
+
+I couldn't find any way to write the source that got build 52 to use `addi`,
+so I tried the same switch on every version I have. The builds from before
+May 2003 write `addi`, and the later ones write `addiu`. Then I looked through
+the whole game. Every jump table like this uses `addi` (64 of them), and none
+use `addiu`. The ones I'd already matched all start at case 0, so they never
+needed the subtraction, which I think is why this didn't show up sooner.
+
+I also compiled all of the project's source files with builds 38 and 52, and
+apart from this they came out the same. So switching doesn't change anything
+that already matched, and it gets those functions unstuck. The other older
+builds that write `addi` produce quite different code elsewhere, so build 38
+is the only one I have that fits both. There could still be a build I don't
+have that fits too.
 
 The C++ code in Field gives me a better idea of the other settings:
 
@@ -46,8 +69,8 @@ identified the original linker. Field's class and exception tables live in
 the main executable even though they refer to overlay code, which suggests
 the original build linked the code together before separating the overlays.
 
-The next useful step is to compare more complex functions across the three
-remaining candidates, especially C++ and floating-point code. The SDK
+I'd still like to compare more complex functions, especially C++ and
+floating-point code, in case something else separates the builds. The SDK
 libraries and IOP code may have used different tools too.
 
 The compiler versions and current flags are in

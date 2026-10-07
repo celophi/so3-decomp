@@ -48,6 +48,54 @@ class ScaffoldIntegrationTests(unittest.TestCase):
     def test_cpp_classes_and_c_assembly_linkage(self):
         self.check_mixed_unit(cpp=True)
 
+    def test_assembly_only_unit_keeps_calls_and_local_relocations(self):
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory)
+            macros = work / 'macro.inc'
+            macros.write_text('.macro glabel name\n.globl \\name\n.type \\name, @function\n\\name:\n.endm\n')
+            first = ('.set noat\n.set noreorder\nglabel first\n'
+                     'lui $t0, %hi(.Lfirst)\naddiu $t0, $t0, %lo(.Lfirst)\n'
+                     'jal second\nnop\n.Lfirst:\njr $ra\nnop\n')
+            second = '.set noreorder\nglabel second\njr $ra\naddiu $v0, $zero, 9\n'
+            (work / 'first.s').write_text(first)
+            (work / 'second.s').write_text(second)
+            source = work / 'unit.c'
+            source.write_text('#include "include_asm.h"\n'
+                              f'INCLUDE_ASM("{work}", first);\n'
+                              f'INCLUDE_ASM("{work}", second);\n')
+            fast = work / 'fast.o'
+            self.run_tool(sys.executable, '-m', 'tools.so3.build.compile', str(source), str(fast),
+                          '--macros', str(macros))
+            # A declaration keeps the same bodies on the original compiler path.
+            source.write_text(source.read_text() + 'extern int first(void);\n')
+            compiled = work / 'compiled.o'
+            self.run_tool(sys.executable, '-m', 'tools.so3.build.compile', str(source), str(compiled),
+                          '--macros', str(macros))
+
+            def link(obj):
+                layout = work / 'layout.ld'
+                layout.write_text(f'SECTIONS {{ .text 0x100000 : SUBALIGN(4) {{ {obj}(.text) }} '
+                                  '/DISCARD/ : { *(*) } }')
+                elf, binary = work / 'linked.elf', work / 'linked.bin'
+                self.run_tool('mips-ps2-decompals-ld', '-EL', '-T', str(layout), '-o', str(elf))
+                self.run_tool('mips-ps2-decompals-objcopy', '-O', 'binary', str(elf), str(binary))
+                return binary.read_bytes()
+
+            self.assertEqual(link(fast), link(compiled))
+            source.write_text(source.read_text().replace('extern int first(void);\n', ''))
+            expected = link(fast)
+            (work / 'second.s').write_text(second.replace('zero, 9', 'zero, 10'))
+            self.run_tool(sys.executable, '-m', 'tools.so3.build.compile', str(source), str(fast),
+                          '--macros', str(macros))
+            self.assertNotEqual(link(fast), expected)
+            previous = fast.read_bytes()
+            (work / 'second.s').unlink()
+            failure = subprocess.run([sys.executable, '-m', 'tools.so3.build.compile',
+                                      str(source), str(fast), '--macros', str(macros)],
+                                     cwd=ROOT, capture_output=True)
+            self.assertNotEqual(failure.returncode, 0)
+            self.assertEqual(fast.read_bytes(), previous)
+
     def test_progress_report_counts_only_compiled_functions(self):
         with tempfile.TemporaryDirectory() as directory:
             work = Path(directory)

@@ -394,6 +394,14 @@ void func_0036B6E0(ItemCreationSelectedDisplayState* object, u32 enabled);
 void func_0036BA10(ItemCreationSelectedDisplayState* object, u32 enabled);
 
 /**
+ * @brief Map an item byte to an identifier for its group.
+ * @param object Receiver; unused.
+ * @param value Item byte to map.
+ * @return 0x3457 plus the byte's group number (1 to 7), or 0x3457 for an unmapped byte.
+ */
+u16 func_00369F20(void* object, u8 value);
+
+/**
  * @brief Map an item byte to its associated halfword mask.
  * @param object Receiver; unused.
  * @param value Item byte to map.

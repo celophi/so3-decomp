@@ -124,7 +124,7 @@ def check(config, records, matrix):
         version = subprocess.run(['wibo', str(compiler / 'mwccps2.exe'), '-version'],
                                  capture_output=True, text=True, check=True)
         for flags in flags_to_check:
-            name = record['id'] + '-' + '-'.join(flags).replace(',', '-')
+            name = record['id'] + '-' + '-'.join(flags).replace(',', '-').replace('=', '-')
             output = RESULTS / (name + '.o')
             command = ['wibo', str(compiler / 'mwccps2.exe'), '-c', *flags,
                        '-o', str(output), config['source']]

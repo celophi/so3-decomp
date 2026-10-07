@@ -10788,9 +10788,133 @@ void func_00369EB0(ItemCreationRuntimeRecordSelection* object)
     object->unk7e[4] = static_cast<ItemCreationRuntimeRecordState*>(static_cast<void*>(D_001B64F8))->unk10f50[4].unk30;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00369F20);
+u16 func_00369F20(void* object, u8 value)
+{
+    u16 group = 0;
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00369FA0);
+    switch (value)
+    {
+    case 35:
+    case 45:
+    case 54:
+    case 58:
+        group = 1;
+        break;
+    case 33:
+    case 39:
+    case 49:
+    case 50:
+        group = 2;
+        break;
+    case 34:
+    case 41:
+    case 48:
+    case 52:
+        group = 5;
+        break;
+    case 43:
+    case 51:
+    case 53:
+    case 56:
+        group = 4;
+        break;
+    case 36:
+    case 46:
+    case 55:
+    case 57:
+        group = 7;
+        break;
+    case 38:
+    case 44:
+    case 47:
+    case 59:
+        group = 3;
+        break;
+    case 32:
+    case 37:
+    case 40:
+    case 42:
+        group = 6;
+        break;
+    case 60:
+    case 61:
+    case 62:
+    case 63:
+    case 64:
+    case 65:
+    case 66:
+    case 67:
+    case 68:
+    case 69:
+        group = 0;
+        break;
+    }
+    return group + 0x3457;
+}
+
+u16 func_00369FA0(void* object, u8 value)
+{
+    u16 mask = 0;
+
+    switch (value)
+    {
+    case 35:
+    case 45:
+    case 54:
+    case 58:
+        mask |= 0x1;
+        break;
+    case 33:
+    case 39:
+    case 49:
+    case 50:
+        mask |= 0x2;
+        break;
+    case 34:
+    case 41:
+    case 48:
+    case 52:
+        mask |= 0x10;
+        break;
+    case 43:
+    case 51:
+    case 53:
+    case 56:
+        mask |= 0x8;
+        break;
+    case 36:
+    case 46:
+    case 55:
+    case 57:
+        mask |= 0x40;
+        break;
+    case 38:
+    case 44:
+    case 47:
+    case 59:
+        mask |= 0x4;
+        break;
+    case 32:
+    case 37:
+    case 40:
+    case 42:
+        mask |= 0x20;
+        break;
+    case 60:
+    case 61:
+    case 62:
+    case 63:
+    case 64:
+    case 65:
+    case 66:
+    case 67:
+    case 68:
+    case 69:
+        mask |= 0x1ff;
+        break;
+    }
+    return mask;
+}
 
 void func_0036A050(ItemCreationSelectedDisplayState* object, void* selected, s16 index)
 {
