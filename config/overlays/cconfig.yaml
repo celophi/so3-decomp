@@ -46,10 +46,18 @@ segments:
     type: code
     start: 0x40
     vram: 0x3483c0
-    subalign: 16
+    subalign: null
     subsegments:
       - [0x40, pad, text_start]
       - [0x80, cpp, text]
-  - [0xa9e0, bin, text_padding]
-  - [0xaa00, bin, data]
+      - [0xa9e0, pad, text_end]
+      - [0xaa00, databin, data]
+      - start: 0xaa80
+        type: .rodata
+        name: text
+        linker_section: .rodata.00352E00
+        rodata_anchors:
+          - {function: func_0034B430, offset: 0x0, size: 0x38}
+        linker_section_order: .rodata
+      - [0xaab8, rodatabin, data_00352E38]
   - [0xab80]

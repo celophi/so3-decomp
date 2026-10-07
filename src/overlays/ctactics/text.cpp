@@ -5,6 +5,16 @@
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_003F90C0.h"
 
+/** Coordinate value and next link in an owned list. */
+struct TacticsCoordinateNode
+{
+    float x;
+    float y;
+    TacticsCoordinateNode* next;
+    /** @brief Finish the coordinate node lifetime. */
+    ~TacticsCoordinateNode() {}
+};
+
 typedef struct
 {
     u8 pad_00[0x3C];
@@ -1143,11 +1153,26 @@ s32 func_00351410(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351420);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", __ct__17TacticsList18B8E0Fv);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003514A0);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", __dt__17TacticsList18B8E0Fv);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351520);
+void func_00351520(TacticsList18B8E0* list)
+{
+    TacticsListNode* node = list->head->next;
+    if (node == 0)
+    {
+        return;
+    }
+    while (node != 0)
+    {
+        TacticsListNode* next = node->next;
+        delete node;
+        node = next;
+    }
+    list->head->next = 0;
+    list->count = 0;
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003515A0);
 
@@ -1171,13 +1196,28 @@ TacticsListNode* func_00351750(TacticsList* list, s32 index)
 }
 
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351790);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", __ct__17TacticsList18B8D0Fv);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351810);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", __dt__17TacticsList18B8D0Fv);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351890);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351920);
+void func_00351920(TacticsList18B8D0* list)
+{
+    TacticsListNode* node = list->head->next;
+    if (node == 0)
+    {
+        return;
+    }
+    while (node != 0)
+    {
+        TacticsListNode* next = node->next;
+        delete node;
+        node = next;
+    }
+    list->head->next = 0;
+    list->count = 0;
+}
 
 TacticsListNode* func_003519A0(TacticsList* list, s32 index)
 {
@@ -1195,13 +1235,28 @@ TacticsListNode* func_003519A0(TacticsList* list, s32 index)
 }
 
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003519E0);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", __ct__17TacticsList18B8C0Fv);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351A60);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", __dt__17TacticsList18B8C0Fv);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351AE0);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351B70);
+void func_00351B70(TacticsList18B8C0* list)
+{
+    TacticsListNode* node = list->head->next;
+    if (node == 0)
+    {
+        return;
+    }
+    while (node != 0)
+    {
+        TacticsListNode* next = node->next;
+        delete node;
+        node = next;
+    }
+    list->head->next = 0;
+    list->count = 0;
+}
 
 TacticsListNode* func_00351BF0(TacticsList* list, s32 index)
 {
@@ -1223,12 +1278,27 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351C30);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351CC0);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351D50);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", __dt__17TacticsList18B8B0Fv);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351DD0);
+void func_00351DD0(TacticsList18B8B0* list)
+{
+    TacticsCoordinateNode* node = list->head->next;
+    if (node == 0)
+    {
+        return;
+    }
+    while (node != 0)
+    {
+        TacticsCoordinateNode* next = node->next;
+        delete node;
+        node = next;
+    }
+    list->head->next = 0;
+    list->count = 0;
+}
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351E50);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351F00);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", __ct__17TacticsList18B8B0Fv);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351F90);

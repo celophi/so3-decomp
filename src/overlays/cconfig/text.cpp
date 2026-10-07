@@ -15,6 +15,7 @@
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/list_indicator_inlines.h"
+#include "overlays/lib/scalar_indicator_inlines.h"
 #include "overlays/lib/resource_widget_inlines.h"
 #include "overlays/lib/movement_widget_inlines.h"
 
@@ -47,7 +48,10 @@ extern "C" void func_002CFE10(ConfigRuntimeCallbacks* callbacks, FieldClass15AE7
 /** Partial settings storage containing the protected option flags and checksums. */
 struct ConfigSettings
 {
-    u8 unk00[0x25];
+    u8 unk00[0x24];
+    u8 unk24_low : 2;
+    u8 unk24 : 2;
+    u8 unk24_high : 4;
     u8 low : 6;
     u8 flag : 1;
     u8 high : 1;
@@ -65,6 +69,77 @@ struct ConfigSettings
     u16 extra_checksum;
     u16 extra_key;
 };
+
+/**
+ * @brief Read the extra-row flag when its protected bytes pass the checksum.
+ * @param settings Configuration settings.
+ * @return Extra-row flag, or zero when the checksum fails.
+ */
+static inline u8 config_extra(ConfigSettings* settings)
+{
+    u8* data = &settings->extra;
+    if (settings->extra_checksum != func_00457470(settings->extra_key, data,
+        reinterpret_cast<u8*>(&settings->extra_checksum) - data))
+    {
+        return 0;
+    }
+    return settings->extra;
+}
+/**
+ * @brief Read the mode when its protected bytes pass the checksum.
+ * @param settings Configuration settings.
+ * @return Mode byte, or zero when the checksum fails.
+ */
+static inline u8 config_mode(ConfigSettings* settings)
+{
+    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
+        reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
+    {
+        return 0;
+    }
+    return settings->mode;
+}
+/**
+ * @brief Read the enabled flag when its protected bytes pass the checksum.
+ * @param settings Configuration settings.
+ * @return Enabled flag, or zero when the checksum fails.
+ */
+static inline u8 config_enabled(ConfigSettings* settings)
+{
+    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
+        reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
+    {
+        return 0;
+    }
+    return settings->enabled;
+}
+
+/**
+ * @brief Read the feature bit as an unsigned byte flag.
+ * @param settings Configuration settings.
+ * @return Feature bit as zero or one.
+ */
+static inline u8 config_flag(ConfigSettings* settings)
+{
+    u32 flag = settings->flag;
+    return flag;
+}
+
+/**
+ * @brief Set the protected mode and regenerate its key and checksum when the stored checksum is valid.
+ * @param settings Configuration settings.
+ * @param mode New mode byte.
+ */
+static inline void config_set_mode(ConfigSettings* settings, u8 mode)
+{
+    s32 length = reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26;
+    if (settings->checksum == func_00457470(settings->key, &settings->unk26, length))
+    {
+        settings->mode = mode;
+        settings->key = func_0010CF80();
+        settings->checksum = func_00457470(settings->key, &settings->unk26, length);
+    }
+}
 
 struct ConfigRuntime
 {
@@ -286,6 +361,42 @@ static inline u8 config_selection_inactive(const ConfigColorSelection* selection
     return !selection->unke5;
 }
 
+
+/**
+ * @brief Set the resource display level and mark its drawing state dirty.
+ * @param display Resource display widget.
+ * @param level Drawing level.
+ */
+static inline void set_resource_level(ItemCreationOptionResourceDisplay* display, float level)
+{
+    display->unk28 = level;
+    display->unk3c = 1;
+}
+
+
+/**
+ * @brief Read the two-bit setting used by option row four.
+ * @param settings Configuration settings.
+ * @return Stored mode.
+ */
+static inline u8 config_pair_mode(ConfigSettings* settings)
+{
+    u32 value = settings->unk24;
+    return value;
+}
+/**
+ * @brief Resolve the message key for option row four.
+ * @param settings Configuration settings.
+ * @return Message key for the active choice.
+ */
+static inline s32 config_pair_key(ConfigSettings* settings)
+{
+    if (config_pair_mode(settings) == 0)
+    {
+        return 0x1fae;
+    }
+    return 0x1faf;
+}
 
 void func_00348400(void* object, u8 value)
 {
@@ -829,19 +940,515 @@ void ConfigOptions::func_slot68()
     func_slota0();
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034B430);
+void func_0034B430(ConfigOptions* object, u16 row)
+{
+    s32 key = func_00350270(object, row);
+    switch (row)
+    {
+    case 0:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list1_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list1_second), 1)->value);
+        if (key == 0x1fa4)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    case 1:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list2_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list2_second), 1)->value);
+        LibClass172600* third = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list2_second), 2)->value);
+        LibClass172600* fourth = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list2_second), 3)->value);
+        if (key == 0x1fa6)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+            third->unk3f = 0;
+            fourth->unk3f = 0;
+        }
+        else if (key == 0x1fa7)
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+            third->unk3f = 0;
+            fourth->unk3f = 0;
+        }
+        else if (key == 0x1fa8)
+        {
+            first->unk3f = 0;
+            second->unk3f = 0;
+            third->unk3f = 1;
+            fourth->unk3f = 0;
+        }
+        else if (key == 0x1fa9)
+        {
+            first->unk3f = 0;
+            second->unk3f = 0;
+            third->unk3f = 0;
+            fourth->unk3f = 1;
+        }
+        break;
+    }
+    case 2:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list3_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list3_second), 1)->value);
+        if (key == 0x1faa)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    case 3:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list4_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list4_second), 1)->value);
+        if (key == 0x1fac)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    case 5:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list6_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list6_second), 1)->value);
+        if (key == 0x1fb0)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    case 6:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list7_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list7_second), 1)->value);
+        if (key == 0x1fb2)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    case 7:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list8_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list8_second), 1)->value);
+        if (key == 0x1fb4)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    case 8:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list9_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list9_second), 1)->value);
+        LibClass172600* third = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list9_second), 2)->value);
+        LibClass172600* fourth = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list9_second), 3)->value);
+        if (key == 0x1fb6)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+            third->unk3f = 0;
+            fourth->unk3f = 0;
+            if (object->unkf4 != 0)
+            {
+                set_resource_level(object->unkf4, 48.0f);
+            }
+        }
+        else if (key == 0x1fb7)
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+            third->unk3f = 0;
+            fourth->unk3f = 0;
+            if (object->unkf4 != 0)
+            {
+                set_resource_level(object->unkf4, 48.0f);
+            }
+        }
+        else if (key == 0x1fb9)
+        {
+            first->unk3f = 0;
+            second->unk3f = 0;
+            third->unk3f = 1;
+            fourth->unk3f = 0;
+            if (object->unkf4 != 0)
+            {
+                set_resource_level(object->unkf4, 48.0f);
+            }
+        }
+        else if (key == 0x1fb8)
+        {
+            first->unk3f = 0;
+            second->unk3f = 0;
+            third->unk3f = 0;
+            fourth->unk3f = 1;
+            if (object->unkf4 != 0)
+            {
+                set_resource_level(object->unkf4, 128.0f);
+            }
+        }
+        break;
+    }
+    case 9:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list10_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list10_second), 1)->value);
+        if (key == 0x1fbb)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    case 10:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list11_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list11_second), 1)->value);
+        if (key == 0x1fbd)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    case 11:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list12_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list12_second), 1)->value);
+        if (key == 0x1fbf)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    case 12:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list13_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list13_second), 1)->value);
+        if (key == 0)
+        {
+            first->unk3f = 0;
+            second->unk3f = 0;
+        }
+        else if (key == 0x1fc1)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    case 13:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list14_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list14_second), 1)->value);
+        if (key == 0x1fc5)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    case 4:
+    {
+        LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list5_second), 0)->value);
+        LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list5_second), 1)->value);
+        if (key == 0x1fae)
+        {
+            first->unk3f = 1;
+            second->unk3f = 0;
+        }
+        else
+        {
+            first->unk3f = 0;
+            second->unk3f = 1;
+        }
+        break;
+    }
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034BA10);
+void func_0034BA10(ConfigOptions* object, u16 input)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list5_first), 0)->value);
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list5_first), 1)->value);
+    ConfigSettings* settings = D_001B643C->settings;
+    s32 key = config_pair_key(settings);
+    bool selected = false;
+    if (input == 0x80)
+    {
+        if (key == 0x1fae)
+        {
+            selected = true;
+        }
+        else
+        {
+            selected = false;
+        }
+    }
+    if (input == 0x20)
+    {
+        if (key == 0x1faf)
+        {
+            selected = false;
+        }
+        else
+        {
+            selected = true;
+        }
+    }
+    if (selected)
+    {
+        settings->unk24 = 1;
+        first->set_color(0x505050);
+        second->set_color(0x808080);
+    }
+    else
+    {
+        settings->unk24 = 0;
+        first->set_color(0x808080);
+        second->set_color(0x505050);
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034BB60);
+void func_0034BB60(ConfigOptions* object)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list14_first), 0)->value);
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list14_first), 1)->value);
+    s32 key;
+    if (config_extra(D_001B643C->settings) == 0)
+    {
+        key = 0;
+    }
+    else
+    {
+        key = config_mode(D_001B643C->settings) == 1 ? 0x1fc5 : 0x1fc6;
+    }
+    if (key == 0x1fc5)
+    {
+        config_set_mode(D_001B643C->settings, 0);
+        first->set_color(0x505050);
+        second->set_color(0x808080);
+    }
+    else
+    {
+        config_set_mode(D_001B643C->settings, 1);
+        first->set_color(0x808080);
+        second->set_color(0x505050);
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034BD70);
+void func_0034BD70(ConfigOptions* object, u16 input)
+{
+    s32 key;
+    ConfigSettings* settings = D_001B643C->settings;
+    if (config_flag(settings) == 0 || config_enabled(settings) == 0)
+    {
+        object->unk101 = 0;
+        key = 0;
+    }
+    else
+    {
+        object->unk101 = 1;
+        key = D_001B643C->settings->unk18d ? 0x1fc1 : 0x1fc2;
+    }
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list13_first), 0)->value);
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list13_first), 1)->value);
+    if (key == 0)
+    {
+        first->set_color(0x505050);
+        second->set_color(0x505050);
+    }
+    else
+    {
+        bool selected = false;
+        if (input == 0x80)
+        {
+            if (key == 0x1fc1)
+            {
+                selected = true;
+            }
+            else
+            {
+                selected = false;
+            }
+        }
+        if (input == 0x20)
+        {
+            if (key == 0x1fc2)
+            {
+                selected = false;
+            }
+            else
+            {
+                selected = true;
+            }
+        }
+        if (selected)
+        {
+            D_001B643C->settings->unk18d = 0;
+            first->set_color(0x505050);
+            second->set_color(0x808080);
+        }
+        else
+        {
+            D_001B643C->settings->unk18d = 1;
+            first->set_color(0x808080);
+            second->set_color(0x505050);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034BF40);
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034C140);
+void func_0034C140(ConfigOptions* object, u16 input)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list11_first), 0)->value);
+    bool selected;
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list11_first), 1)->value);
+    selected = false;
+    if (input == 0x80)
+    {
+        if (object->unkf8 == 0x1fbd)
+        {
+            selected = true;
+        }
+        else
+        {
+            selected = false;
+        }
+    }
+    if (input == 0x20)
+    {
+        if (object->unkf8 == 0x1fbe)
+        {
+            selected = false;
+        }
+        else
+        {
+            selected = true;
+        }
+    }
+    if (selected)
+    {
+        object->unkf8 = 0x1fbe;
+        first->set_color(0x505050);
+        second->set_color(0x808080);
+    }
+    else
+    {
+        object->unkf8 = 0x1fbd;
+        first->set_color(0x808080);
+        second->set_color(0x505050);
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034C260);
+void func_0034C260(ConfigOptions* object, u16 input)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list10_first), 0)->value);
+    bool selected;
+    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list10_first), 1)->value);
+    selected = false;
+    if (input == 0x80)
+    {
+        if (object->unkfc == 0x1fbb)
+        {
+            selected = true;
+        }
+        else
+        {
+            selected = false;
+        }
+    }
+    if (input == 0x20)
+    {
+        if (object->unkfc == 0x1fbc)
+        {
+            selected = false;
+        }
+        else
+        {
+            selected = true;
+        }
+    }
+    if (selected)
+    {
+        object->unkfc = 0x1fbc;
+        first->set_color(0x505050);
+        second->set_color(0x808080);
+    }
+    else
+    {
+        object->unkfc = 0x1fbb;
+        first->set_color(0x808080);
+        second->set_color(0x505050);
+    }
+}
 
 INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034C380);
 
@@ -915,37 +1522,935 @@ u32 func_0034D8A0(void* object)
     return ((ConfigValue34*)object)->field_34;
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034D8B0);
+s32 func_0034D8B0(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[13];
+    s32 key = func_00350270(object, 13);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2037, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fc5)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2038, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fc6)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list14_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list14_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034DB50);
+s32 func_0034DB50(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[12];
+    s32 key = func_00350270(object, 12);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2033, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fc1)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2034, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fc2)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list13_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list13_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034DDF0);
+s32 func_0034DDF0(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[11];
+    s32 key = func_00350270(object, 11);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2031, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fbf)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2032, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fc0)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list12_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list12_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034E090);
+s32 func_0034E090(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[10];
+    s32 key = func_00350270(object, 10);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202f, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fbd)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2030, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fbe)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list11_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list11_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034E330);
+s32 func_0034E330(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[9];
+    s32 key = func_00350270(object, 9);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202d, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fbb)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202e, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fbc)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list10_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list10_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034E5D0);
+
+s32 func_0034E5D0(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[8];
+    s32 key = func_00350270(object, 8);
+    for (s32 i = 0; i < 4; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        text->unk88 = -1.0f;
+        text->unk3c = 1;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2029, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1FB6)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202A, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1FB7)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 2:
+        {
+            float x = object->unk104;
+            object->unka4 += object->unk10c;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202C, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1FB9)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 3:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202B, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            object->unkf4 = new (0) ItemCreationOptionResourceDisplay;
+            void* allocation = func_002D3D80(D_001B643C->resources, 0);
+            FieldResourceRecord* record = func_002D3CC0(D_001B643C->resources, 13);
+            object->unkf4->unkcc = allocation;
+            object->unkf4->unkd0 = 0;
+            initialize_preview_resource(object->unkf4, record, x, object->unka4);
+            func_004C6190(object->unk10, object->unkf4);
+            if (key == 0x1FB8)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+                set_resource_level(object->unkf4, 128.0f);
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+                set_resource_level(object->unkf4, 48.0f);
+            }
+            object->unkf4->unk3d = 0;
+            text->unk3f = 1;
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list9_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list9_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
 ItemCreationClass175110::~ItemCreationClass175110()
 {
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034EB40);
+s32 func_0034EB40(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[7];
+    s32 key = func_00350270(object, 7);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2027, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fb4)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2028, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fb5)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list8_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list8_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034EDE0);
+s32 func_0034EDE0(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[6];
+    s32 key = func_00350270(object, 6);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2025, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 32.0f);
+            if (key == 0x1FB2)
+            {
+                text->set_color(0x808080);
+                text->unk88 = -1.0f;
+                text->unk3c = 1;
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = 264.0f + object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2026, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 32.0f);
+            if (key == 0x1FB3)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list7_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list7_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034F0A0);
+s32 func_0034F0A0(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[5];
+    s32 key = func_00350270(object, 5);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2023, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fb0)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2024, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fb1)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list6_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list6_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034F340);
+s32 func_0034F340(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[3];
+    s32 key = func_00350270(object, 3);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201f, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fac)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2020, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fad)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list4_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list4_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034F5E0);
+s32 func_0034F5E0(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[2];
+    s32 key = func_00350270(object, 2);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201d, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1faa)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201e, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fab)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list3_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list3_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034F880);
+s32 func_0034F880(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[1];
+    s32 key = func_00350270(object, 1);
+    for (s32 i = 0; i < 4; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2019, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1FA6)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201A, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1FA7)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 2:
+        {
+            float x = object->unk104;
+            object->unka4 += object->unk10c;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201B, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1FA8)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 3:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201C, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1FA9)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list2_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list2_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034FC70);
+s32 func_0034FC70(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[0];
+    s32 key = func_00350270(object, 0);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2017, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fa4)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2018, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fa5)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list1_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list1_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034FF10);
+s32 func_0034FF10(ConfigOptions* object, void* associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    object->unka4 = 0.0f;
+    object->unka4 = object->positions[4];
+    s32 key = func_00350270(object, 4);
+    for (s32 i = 0; i < 2; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        LibClass172600* marker = new (0) LibClass172600;
+        switch (i)
+        {
+        case 0:
+        {
+            float x = object->unk104;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2021, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1fae)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        case 1:
+        {
+            float x = object->unk104 + object->unk108;
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2022, 0);
+            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            if (key == 0x1faf)
+            {
+                text->set_color(0x808080);
+                marker->unk3f = 1;
+            }
+            else
+            {
+                text->set_color(0x505050);
+                marker->unk3f = 0;
+            }
+            break;
+        }
+        }
+        func_004C6190(object->unk10, text);
+        func_004C6190(object->unk10, marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list5_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list5_second), marker);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
+        func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_003501B0);
 
@@ -968,61 +2473,6 @@ extern "C" void func_0044B570(LibClass1746A0* object, float x, float y, float wi
  * @param flag Display flag.
  */
 extern "C" void func_0044B510(LibClass1746A0* object, u32 flag);
-
-/**
- * @brief Read the extra-row flag when its protected bytes pass the checksum.
- * @param settings Configuration settings.
- * @return Extra-row flag, or zero when the checksum fails.
- */
-static inline u8 config_extra(ConfigSettings* settings)
-{
-    u8* data = &settings->extra;
-    if (settings->extra_checksum != func_00457470(settings->extra_key, data,
-        reinterpret_cast<u8*>(&settings->extra_checksum) - data))
-    {
-        return 0;
-    }
-    return settings->extra;
-}
-/**
- * @brief Read the mode when its protected bytes pass the checksum.
- * @param settings Configuration settings.
- * @return Mode byte, or zero when the checksum fails.
- */
-static inline u8 config_mode(ConfigSettings* settings)
-{
-    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
-        reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
-    {
-        return 0;
-    }
-    return settings->mode;
-}
-/**
- * @brief Read the enabled flag when its protected bytes pass the checksum.
- * @param settings Configuration settings.
- * @return Enabled flag, or zero when the checksum fails.
- */
-static inline u8 config_enabled(ConfigSettings* settings)
-{
-    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
-        reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
-    {
-        return 0;
-    }
-    return settings->enabled;
-}
-
-/**
- * @brief Read the feature bit as an unsigned byte flag.
- * @param settings Configuration settings.
- * @return Feature bit as zero or one.
- */
-static inline u8 config_flag(ConfigSettings* settings)
-{
-    u32 flag = settings->flag;
-    return flag;
-}
 
 s32 ConfigOptions::func_slotf4(void* associated)
 {

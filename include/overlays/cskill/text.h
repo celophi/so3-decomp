@@ -218,6 +218,13 @@ void func_00359D80(SkillSecondarySelection* object);
  * @param object Secondary grid window.
  */
 void func_00359E30(SkillSecondarySelection* object);
+/**
+ * @brief Initialize the three-row secondary selection window and its resource badges.
+ * @param object Secondary selection window.
+ * @param associated Associated source word.
+ * @return One on success; zero if the owner or an initial display allocation is absent.
+ */
+s32 func_00359EE0(SkillSecondarySelection* object, void* associated);
 
 /**
  * @brief Activate the secondary grid and update its controller's selected code.
@@ -1136,6 +1143,19 @@ s32 func_0034B190(Record0034B190* record);
  */
 s32 func_0034B2C0(Record0034B190* record);
 
+/** @brief Advance the mode selection by one row and refresh its owner message. @param object Mode selection window. */
+void func_0034DF00(SkillModeSelection* object);
+
+/** @brief Move the mode selection back one row and refresh its owner message. @param object Mode selection window. */
+void func_0034E0B0(SkillModeSelection* object);
+
+/**
+ * @brief Advance the mode selection by one page and refresh its owner message.
+ * @param object Mode selection window.
+ * @return Zero.
+ */
+s32 func_0034DA70(SkillModeSelection* object);
+
 /**
  * @brief Configure the selection grid position and register its display state.
  * @param record Receiver with the display owner and selection grid.
@@ -1670,6 +1690,13 @@ s32 func_00359730(FieldClass15AE70* object);
  * @return Two after opening or marking the source, otherwise zero without a loader or allocation.
  */
 s32 func_00362500(FieldClass15AE70* object);
+
+/**
+ * @brief Validate the selected entry and open its options window.
+ * @param object Record window with the current selection and scroll position.
+ * @return Zero while inactive, three for a rejected entry, or one after opening its options.
+ */
+s32 func_00362650(Record003619C0* object);
 /** @brief Advance the selected record through the active controller. @param object Four-row selection window. @return Byte event code zero or four. */
 s32 func_00355E80(SkillFourRowSelection* object);
 /** @brief Retreat the selected record through the active controller. @param object Four-row selection window. @return Byte event code zero or four. */

@@ -16,9 +16,81 @@ typedef struct TacticsPresetPosition
     float y;
 } TacticsPresetPosition;
 
+typedef struct TacticsList18B8E0 TacticsList18B8E0;
+typedef struct TacticsList18B8D0 TacticsList18B8D0;
+typedef struct TacticsList18B8C0 TacticsList18B8C0;
+typedef struct TacticsList18B8B0 TacticsList18B8B0;
+
+#ifdef __cplusplus
+/** Sentinel list owning its nodes and recording their count. */
+struct TacticsList18B8E0
+{
+    struct TacticsListNode* head;
+    u32 count;
+    /** @brief Initialize an empty list and allocate its sentinel. */
+    TacticsList18B8E0();
+    /** @brief Release list nodes and the sentinel. */
+    virtual ~TacticsList18B8E0();
+};
+/** Sentinel list owning its nodes and recording their count. */
+struct TacticsList18B8D0
+{
+    struct TacticsListNode* head;
+    u32 count;
+    /** @brief Initialize an empty list and allocate its sentinel. */
+    TacticsList18B8D0();
+    /** @brief Release list nodes and the sentinel. */
+    virtual ~TacticsList18B8D0();
+};
+/** Sentinel list owning its nodes and recording their count. */
+struct TacticsList18B8C0
+{
+    struct TacticsListNode* head;
+    u32 count;
+    /** @brief Initialize an empty list and allocate its sentinel. */
+    TacticsList18B8C0();
+    /** @brief Release list nodes and the sentinel. */
+    virtual ~TacticsList18B8C0();
+};
+/** Sentinel list owning its nodes and recording their count. */
+struct TacticsList18B8B0
+{
+    struct TacticsCoordinateNode* head;
+    u32 count;
+    /** @brief Initialize an empty list and allocate its sentinel. */
+    TacticsList18B8B0();
+    /** @brief Release list nodes and the sentinel. */
+    virtual ~TacticsList18B8B0();
+};
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Release all value nodes, preserving the sentinel.
+ * @param list List whose nodes and element count are cleared.
+ */
+void func_00351520(TacticsList18B8E0* list);
+
+/**
+ * @brief Release all value nodes, preserving the sentinel.
+ * @param list List whose nodes and element count are cleared.
+ */
+void func_00351920(TacticsList18B8D0* list);
+
+/**
+ * @brief Release all value nodes, preserving the sentinel.
+ * @param list List whose nodes and element count are cleared.
+ */
+void func_00351B70(TacticsList18B8C0* list);
+
+/**
+ * @brief Release all value nodes, preserving the sentinel.
+ * @param list List whose nodes and element count are cleared.
+ */
+void func_00351DD0(TacticsList18B8B0* list);
 
 /**
  * @brief Save the enabled grid selection and copy its node position to the display.
@@ -111,6 +183,10 @@ typedef struct TacticsListNode
 {
     void* value;
     struct TacticsListNode* next;
+#ifdef __cplusplus
+    /** @brief Finish the node lifetime; the stored value is not owned. */
+    ~TacticsListNode() {}
+#endif
 } TacticsListNode;
 
 typedef struct TacticsList

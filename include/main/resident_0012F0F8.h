@@ -90,6 +90,14 @@ void* func_00139900(u32 size);
  */
 void func_00139928(void* ptr);
 
+/**
+ * @brief Copy a null-terminated byte string.
+ * @param destination Storage receiving the string and terminator.
+ * @param source Null-terminated source string.
+ * @return Original destination pointer.
+ */
+char* func_0013C948(char* destination, const char* source);
+
 #ifdef __cplusplus
 }
 #endif

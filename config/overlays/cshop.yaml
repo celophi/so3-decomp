@@ -50,6 +50,6 @@ segments:
     subsegments:
       - [0x40, pad, text_start]
       - [0x80, cpp, text]
-      - [0x9BE8, pad, text_end]
+      - [0x9BF0, pad, text_end]
   - [0x9c00, bin, data]
   - [0x9c80]

@@ -284,6 +284,47 @@ s32 func_0034D8B0(ConfigOptions* object, void* associated);
 void func_0034B180(ConfigOptions* object, u16 selected);
 
 /**
+ * @brief Refresh the selected row's option markers and resource display level.
+ * @param object Configuration options window.
+ * @param row Option row to refresh.
+ */
+void func_0034B430(ConfigOptions* object, u16 row);
+
+/**
+ * @brief Update option row four's setting and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034BA10(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Toggle the protected mode and update option row thirteen's choice colors.
+ * @param object Configuration options window.
+ */
+void func_0034BB60(ConfigOptions* object);
+
+/**
+ * @brief Update option row twelve's setting and choice colors when the feature is enabled.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034BD70(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row ten's message key and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C140(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update option row nine's message key and choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034C260(ConfigOptions* object, u16 input);
+
+/**
  * @brief Refresh the bindings window's selection.
  * @param object Bindings window receiver.
  */

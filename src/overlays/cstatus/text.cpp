@@ -24,6 +24,12 @@ struct StatusDisplayRecord
     u8 unk00[0x20];
     char data[0xF4];
 };
+/** Saved section containing the ten fixed-width character names. */
+struct StatusNameSection
+{
+    u8 unk00[0xC6B0];
+    s8 names[10][24];
+};
 /** Typed display payload and forward link in a status list. */
 struct StatusDisplayNode
 {
@@ -92,36 +98,15 @@ struct StatusContainerWindow : public FieldClass15AE70
 struct StatusResourceState : public FieldClass153E30
 {
     s32 resource;
+    u8 flag_38 : 1;
+    u8 unknown_38 : 7;
+    u8 unknown_39[3];
+    FieldRecordSelection* selection;
+    u16 field_40;
+    u16 field_42;
+    StatusScrollState* scroll;
 };
 
-/** Partial status selection window with the Field base constructed at 0x34AD60. */
-struct StatusSelectionWindow : public FieldClass15AE70
-{
-    FieldRecordSelection* selection;
-    LibObject178750* caption;
-    LibObject178750* displays[7];
-    LibObject175140* text;
-    LibClass178600* cursor;
-    u16 glyphs[8];
-    s32 first_marker;
-    s8 selected;
-    s8 last_entry;
-    u8 entries[24];
-    u8 unk102[2];
-    float x;
-    float y;
-    LibClass175030* grid_marker;
-    s32 grid_selected;
-    u8 grid_mode;
-    u8 unk115[3];
-    float left;
-    u8 unk11c[0xC];
-    s8 rows[10][32];
-    u8 unk268[0x28];
-    u8 map290[90];
-    u8 map2ea[90];
-    u8 map344[80];
-};
 
 struct StatusRuntimeCallbacks;
 
@@ -154,7 +139,7 @@ struct StatusObject
 struct StatusRuntimeCallbacks
 {
     u8 unk00[0x14];
-    StatusObject* unk14;
+    StatusResourceState* unk14;
     u8 unk18[0x48];
     u8 unk60;
 };
@@ -223,7 +208,6 @@ extern "C" void func_2642D0(void* object);
 extern "C" void func_4618F0(void* object, s32 flags);
 extern "C" void func_2CEAF0(void* object, s32 flags);
 extern "C" void* func_100AC0(s32 size, s32 flags);
-extern "C" void func_00348AE0(void* object);
 extern "C" void func_4C48B0(void* object, s32 flags);
 extern "C" void func_28E2B0(void* object, s32 flags);
 extern "C" void func_2CEBE0(void* object);
@@ -231,6 +215,7 @@ extern "C" void func_00351020(void* list);
 extern "C" void func_00350E10(void* list);
 extern "C" void func_00350B70(void* list);
 
+static inline void close_status_selection(StatusSelectionWindow* object);
 static inline void set_status_record_rectangle(LibObject178750* target, float x, float y, float width, float height);
 static inline void set_status_widget_position(LibClass178600* widget, float x, float y);
 template <class List>
@@ -735,7 +720,7 @@ void func_00348E50(StatusSelectionWindow* object)
     }
 }
 
-void func_00349070(StatusSelectionWindow* object)
+void func_00349070(StatusSelectionWindow* object, u8 mode)
 {
     if (object->last_entry < 24)
     {
@@ -784,24 +769,75 @@ void func_00349070(StatusSelectionWindow* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_00349260);
+extern "C" void func_00349260(StatusSelectionWindow* object)
+{
+    object->grid_mode = 2;
+    for (s32 i = 0; i < 12; ++i)
+    {
+        StatusDisplayNode* node = static_cast<StatusDisplayNode*>(func_00351230(&object->unk2c, i));
+        LibClass178600* display = node->value;
+        display->unk3f = 0;
+        switch (object->grid_mode)
+        {
+        case 0:
+            switch (i)
+            {
+            case 0:
+            case 1:
+            case 2:
+                display->unk3f = 1;
+                break;
+            }
+            break;
+        case 1:
+            switch (i)
+            {
+            case 3:
+                display->unk3f = 1;
+                break;
+            case 4:
+            case 5:
+                display->unk3f = 0;
+                break;
+            }
+            break;
+        case 2:
+            switch (i)
+            {
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+                display->unk3f = 1;
+                if (object->unk28c != 0)
+                {
+                    object->unk28c->unk3f = 1;
+                }
+                break;
+            }
+            break;
+        }
+    }
+}
 
-void func_00349390(StatusSelectionWindow* object)
+void StatusSelectionWindow::func_slot5c()
 {
     FieldClass153E30* receiver = reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14);
-    if (receiver->func_00261150() == object)
+    if (receiver->func_00261150() == this)
     {
-        if (object->selected < 0)
+        if (this->selected < 0)
         {
-            object->selected = 0;
+            this->selected = 0;
         }
-        if (object->selected >= 6)
+        if (this->selected >= 6)
         {
-            object->selected = 6;
+            this->selected = 6;
         }
-        LibClass178600* cursor = object->cursor;
-        float x = object->x + 36.0f * object->selected;
-        float y = object->y;
+        LibClass178600* cursor = this->cursor;
+        float x = this->x + 36.0f * this->selected;
+        float y = this->y;
         cursor->unk18.unk00 = x;
         cursor->unk18.unk04 = y;
         cursor->unk3c = 1;
@@ -843,68 +879,68 @@ void func_00349440(StatusSelectionWindow* object, s32 value)
     }
 }
 
-void func_003495C0(StatusSelectionWindow* object)
+void StatusSelectionWindow::func_slot74()
 {
-    s32 value = object->grid_selected;
+    s32 value = this->grid_selected;
     s32 quotient = value / 11;
     s32 remainder = value % 11;
     if (remainder == 10)
     {
-        func_00349440(object, quotient * 11);
+        func_00349440(this, quotient * 11);
     }
     else
     {
-        func_00349440(object, value + 1);
+        func_00349440(this, value + 1);
     }
 }
 
-void func_00349640(StatusSelectionWindow* object)
+void StatusSelectionWindow::func_slot70()
 {
-    s32 value = object->grid_selected;
+    s32 value = this->grid_selected;
     s32 quotient = value / 11;
     s32 remainder = value % 11;
     if (remainder == 0)
     {
-        func_00349440(object, quotient * 11 + 10);
+        func_00349440(this, quotient * 11 + 10);
     }
     else
     {
-        func_00349440(object, value - 1);
+        func_00349440(this, value - 1);
     }
 }
 
-void func_003496C0(StatusSelectionWindow* object)
+void StatusSelectionWindow::func_slot6c()
 {
-    s32 value = object->grid_selected;
+    s32 value = this->grid_selected;
     if (value / 11 == 8)
     {
-        func_00349440(object, value % 11);
+        func_00349440(this, value % 11);
     }
     else
     {
-        func_00349440(object, value + 11);
+        func_00349440(this, value + 11);
     }
 }
 
-void func_00349730(StatusSelectionWindow* object)
+void StatusSelectionWindow::func_slot68()
 {
-    s32 value = object->grid_selected;
+    s32 value = this->grid_selected;
     if (value / 11 == 0)
     {
-        func_00349440(object, value % 11 + 88);
+        func_00349440(this, value % 11 + 88);
     }
     else
     {
-        func_00349440(object, value - 11);
+        func_00349440(this, value - 11);
     }
 }
 
-void func_003497A0(StatusSelectionWindow* object)
+void StatusSelectionWindow::func_slote4()
 {
-    s8* row = object->rows[object->selection->slots[object->selection->current] - 1];
+    s8* row = this->rows[this->selection->slots[this->selection->current] - 1];
     for (s32 i = 0; i < 24; ++i)
     {
-        object->entries[i] = 0;
+        this->entries[i] = 0;
     }
     for (s32 i = 0; i < 24; ++i)
     {
@@ -913,52 +949,160 @@ void func_003497A0(StatusSelectionWindow* object)
         {
             break;
         }
-        object->entries[i] = value;
+        this->entries[i] = value;
     }
-    object->last_entry = 0;
+    this->last_entry = 0;
     s8 last;
     for (;;)
     {
-        last = object->last_entry;
-        if (object->entries[last] == 0)
+        last = this->last_entry;
+        if (this->entries[last] == 0)
         {
             break;
         }
-        object->last_entry = last + 1;
+        this->last_entry = last + 1;
     }
     if (last > 0)
     {
-        object->last_entry = last - 1;
+        this->last_entry = last - 1;
     }
-    func_00348C10(object);
-    func_00348D00(object);
+    func_00348C10(this);
+    func_00348D00(this);
     func_002CFE40(D_001B643C->unk10, 1);
 }
 
-void func_003498A0(StatusSelectionWindow* object)
+void StatusSelectionWindow::func_slote0()
 {
-    func_00349440(object, 88);
+    func_00349440(this, 88);
 }
 
-s32 func_003498C0(void* object)
+s32 StatusSelectionWindow::func_slotc4()
 {
     return 0;
 }
 
-s32 func_003498D0(void* object)
+s32 StatusSelectionWindow::func_slotc0()
 {
     return 0;
 }
 
-s32 func_003498E0(void* object)
+s32 StatusSelectionWindow::func_slotb4()
 {
-    func_00348AE0(object);
+    func_00348AE0(this);
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_00349900);
+/** @brief Restore the scroll window after a selection command. @param object Selection window to detach. */
+static inline void close_status_selection(StatusSelectionWindow* object)
+{
+    StatusResourceState* target = D_001B643C->unk10->unk14;
+    target->func_00263F50(object);
+    target->field_40 = 0;
+    target->scroll->func_slot20(0);
+    target->func_00263C70(target->scroll);
+    target->field_42 = 1;
+    D_001B643C->unk10->unk60 = 0;
+}
+s32 StatusSelectionWindow::func_slotb0()
+{
+    u8 result = 0;
+    switch (grid_selected)
+    {
+    case 0:
+    case 11:
+    case 22:
+        return 0;
+    case 33:
+        result = func_00348AE0(this);
+        break;
+    case 44:
+    {
+        s8* row = rows[selection->slots[selection->current] - 1];
+        for (s32 i = 0; i < 24; ++i)
+        {
+            entries[i] = 0;
+        }
+        for (s32 i = 0; i < 24; ++i)
+        {
+            s8 value = row[i];
+            if (value == 0)
+            {
+                break;
+            }
+            entries[i] = value;
+        }
+        last_entry = 0;
+        s8 last;
+        for (;;)
+        {
+            last = last_entry;
+            if (entries[last] == 0)
+            {
+                break;
+            }
+            last_entry = last + 1;
+        }
+        if (last > 0)
+        {
+            last_entry = last - 1;
+        }
+        func_00348C10(this);
+        func_00348D00(this);
+        break;
+    }
+    case 55:
+        close_status_selection(this);
+        return 2;
+    case 66:
+    case 77:
+        return 0;
+    case 88:
+    {
+        u8 empty = entries[0] == 0;
+        if (empty == 1)
+        {
+            return 3;
+        }
+        u8 blank = 1;
+        for (s32 i = 0; i < 24; ++i)
+        {
+            u8 value = entries[i];
+            if (value != 32 && value != 0 && value != 126)
+            {
+                blank = 0;
+            }
+        }
+        if (blank == 0)
+        {
+            s8* destination = reinterpret_cast<s8*>(static_cast<StatusDisplayRecord*>(selection->unk04)[selection->current].data);
+            const s8* source = reinterpret_cast<const s8*>(entries);
+            do
+            {
+            } while ((*destination++ = *source++) != 0);
+            StatusNameSection* section = static_cast<StatusNameSection*>(func_101440(func_101290(func_10D8E0()), 4));
+            func_0013A4C0(section->names[selection->slots[selection->current] - 1], entries, 24);
+            close_status_selection(this);
+        }
+        else
+        {
+            return 3;
+        }
+        break;
+    }
+    default:
+        u8 full = func_004679B0(text) >= 7;
+        if (full)
+        {
+            return 3;
+        }
+        func_00349070(this, grid_mode);
+        break;
+    }
+    return result == 0 ? 1 : 2;
+}
 
-INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_00349CC0);
+
+INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_slotf4__21StatusSelectionWindowFPv);
 
 void* func_0034AC90(void* object, s32 flags)
 {
@@ -978,7 +1122,57 @@ ItemCreationClass175110::~ItemCreationClass175110()
 {
 }
 
-INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_0034AD60);
+StatusSelectionWindow::StatusSelectionWindow()
+{
+    selection = 0;
+    caption = 0;
+    text = 0;
+    displays[0] = 0;
+    displays[1] = 0;
+    displays[2] = 0;
+    displays[3] = 0;
+    displays[4] = 0;
+    displays[5] = 0;
+    displays[6] = 0;
+    first_marker = 0;
+    selected = 0;
+    last_entry = 0;
+    for (s32 i = 0; i < 24; ++i)
+    {
+        entries[i] = 0;
+    }
+    glyphs[0] = 0;
+    glyphs[1] = 0;
+    glyphs[2] = 0;
+    glyphs[3] = 0;
+    glyphs[4] = 0;
+    glyphs[5] = 0;
+    glyphs[6] = 0;
+    func_00348700(this);
+    cursor = 0;
+    x = 0;
+    y = 0;
+    unk116 = 0;
+    left = 0;
+    unk11c = 0;
+    unk120 = 0;
+    unk124 = 0;
+    func_0013C948(reinterpret_cast<char*>(rows[0]), D_00351500);
+    func_0013C948(reinterpret_cast<char*>(rows[1]), D_00351508);
+    func_0013C948(reinterpret_cast<char*>(rows[2]), D_00351510);
+    func_0013C948(reinterpret_cast<char*>(rows[3]), D_00351518);
+    func_0013C948(reinterpret_cast<char*>(rows[4]), D_00351520);
+    func_0013C948(reinterpret_cast<char*>(rows[5]), D_00351528);
+    func_0013C948(reinterpret_cast<char*>(rows[6]), D_00351530);
+    func_0013C948(reinterpret_cast<char*>(rows[7]), D_00351538);
+    func_0013C948(reinterpret_cast<char*>(rows[8]), D_00351540);
+    func_0013C948(reinterpret_cast<char*>(rows[9]), D_00351548);
+    unk284 = 0;
+    unk288 = 0;
+    grid_selected = 33;
+    grid_mode = 2;
+    unk28c = 0;
+}
 
 void func_0034AF00(StatusScrollState* object)
 {
@@ -1240,7 +1434,7 @@ s32 StatusScrollState::func_slotb4()
 s32 StatusScrollState::func_slotb0()
 {
     this->unk10->unkab = 0;
-    StatusObject* target = D_001B643C->unk10->unk14;
+    StatusResourceState* target = D_001B643C->unk10->unk14;
     if (target != 0)
     {
         target->field_40 = 1;
@@ -1614,18 +1808,8 @@ void func_003509B0(void* object)
 {
 }
 
-void* func_003509C0(void* object, s32 flags)
+StatusSelectionWindow::~StatusSelectionWindow()
 {
-    if (object != 0)
-    {
-        *(void**)object = D_1888C0;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
 void func_00350A20(void* object)

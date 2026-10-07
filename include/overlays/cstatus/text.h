@@ -166,7 +166,93 @@ struct StatusScrollState : public FieldClass15AE70
     LibObject178750* second_tail[4];
 };
 
+/** Status selection window containing the glyph grid and ten saved text rows. */
+struct StatusSelectionWindow : public FieldClass15AE70
+{
+    /** @brief Initialize the glyph grid and saved text rows. */
+    StatusSelectionWindow();
+    /** @brief Destroy the selection window base. */
+    virtual ~StatusSelectionWindow();
+    /** @brief Update the visible selection window. */
+    virtual void func_slot5c();
+    /** @brief Move the selection to the preceding row. */
+    virtual void func_slot68();
+    /** @brief Move the selection to the following row. */
+    virtual void func_slot6c();
+    /** @brief Move the selection to the preceding column. */
+    virtual void func_slot70();
+    /** @brief Move the selection to the following column. */
+    virtual void func_slot74();
+    /** @brief Handle the current selection command. @return Handler result. */
+    virtual s32 func_slotb0();
+    /** @brief Run the alternate selection command. @return Handler result. */
+    virtual s32 func_slotb4();
+    /** @brief Return the default command result. @return Zero. */
+    virtual s32 func_slotc0();
+    /** @brief Return the default command result. @return Zero. */
+    virtual s32 func_slotc4();
+    /** @brief Select the final glyph row. */
+    virtual void func_slote0();
+    /** @brief Restore the selected saved text and markers. */
+    virtual void func_slote4();
+    /** @brief Create the selection displays. @param associated Associated object. @return Creation result. */
+    virtual s32 func_slotf4(void* associated);
+    FieldRecordSelection* selection;
+    LibObject178750* caption;
+    LibObject178750* displays[7];
+    LibObject175140* text;
+    LibClass178600* cursor;
+    u16 glyphs[7];
+    u8 unke2[2];
+    s32 first_marker;
+    s8 selected;
+    s8 last_entry;
+    u8 entries[24];
+    u8 unk102[2];
+    float x;
+    float y;
+    LibClass175030* grid_marker;
+    s32 grid_selected;
+    u8 grid_mode;
+    u8 unk115;
+    u16 unk116;
+    float left;
+    u32 unk11c;
+    u32 unk120;
+    u32 unk124;
+    s8 rows[10][32];
+    u8 unk268[0x1C];
+    u32 unk284;
+    u8 unk288;
+    u8 unk289[3];
+    LibObject178750* unk28c;
+    u8 map290[90];
+    u8 map2ea[90];
+    u8 map344[80];
+};
+
+
 #endif
+
+extern const char D_00351500[];
+
+extern const char D_00351508[];
+
+extern const char D_00351510[];
+
+extern const char D_00351518[];
+
+extern const char D_00351520[];
+
+extern const char D_00351528[];
+
+extern const char D_00351530[];
+
+extern const char D_00351538[];
+
+extern const char D_00351540[];
+
+extern const char D_00351548[];
 
 /** Byte templates copied into the status selection glyph maps. */
 typedef struct StatusGlyphMap90
@@ -248,8 +334,22 @@ void func_00348960(StatusSelectionWindow* object, s16 code);
 /**
  * @brief Append the selected grid entry and refresh its display.
  * @param object Status selection receiver.
+ * @param mode Supplied grid mode.
  */
-void func_00349070(StatusSelectionWindow* object);
+void func_00349070(StatusSelectionWindow* object, u8 mode);
+
+/**
+ * @brief Update the selection command state.
+ * @param object Status selection receiver.
+ * @return Selection handler result.
+ */
+s32 func_00348AE0(StatusSelectionWindow* object);
+
+/**
+ * @brief Select grid mode two and refresh its display flags.
+ * @param object Status selection receiver.
+ */
+void func_00349260(StatusSelectionWindow* object);
 
 /** @brief Refresh the selected entry and its cursor. @param object Status selection receiver. */
 void func_00348C10(StatusSelectionWindow* object);

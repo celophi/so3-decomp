@@ -75,9 +75,16 @@ struct EquipRuntimeMenuContext
     u8 unk00[0x14];
     EquipRuntimeMenuState* unk14;
 };
+/** Partial menu flags read by alternate-window activation. */
+struct EquipRuntimeMenuFlags
+{
+    u8 unk00[0x2D];
+    u8 unk2d;
+};
 struct EquipRuntimeMenuRoot
 {
-    u8 unk00[0x10];
+    u8 unk00[0xC];
+    EquipRuntimeMenuFlags* unk0c;
     EquipRuntimeMenuContext* unk10;
     u8 unk14[0xC];
     FieldBufferSlots* unk20;
@@ -385,7 +392,6 @@ typedef struct
     void* methods;
 } EquipDestructorObject;
 
-extern u8 D_182220[];
 extern u8 D_182350[];
 extern u8 D_182450[];
 extern u8 D_182790[];
@@ -786,18 +792,8 @@ s32 EquipClass182220::func_slot10(void* associated, float x, float y, s32 code)
     return 1;
 }
 
-void* func_00348CB0(void* object, s32 flags)
+EquipClass182220::~EquipClass182220()
 {
-    if (object != 0)
-    {
-        ((EquipDestructorObject*)object)->methods = D_182220;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
 void EquipClass182350::func_slot5c()
@@ -928,7 +924,51 @@ void* func_00349560(void* object, s32 flags)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_003495C0);
+/** Partial nested display containing the float at offset 0x70. */
+struct EquipNested70
+{
+    u8 unk00[0x70];
+    float unk70;
+};
+/** @brief Write a stored display flag. @param display Display to update. @param flag Low-byte flag to store. */
+static inline void set_visibility(LibClass178600* display, const u8& flag)
+{
+    display->unk3f = flag;
+}
+void EquipClass182550::func_slot10c(u32 value, u32 enabled)
+{
+    s32 index;
+    u8 flag = value;
+    for (index = 0; index < 9; index++)
+    {
+        set_visibility(unk15c[index], flag);
+        set_visibility(unk138[index], flag);
+    }
+    if (unk180 != 0)
+    {
+        set_visibility(unk180, flag);
+    }
+    if (FieldStateCE420::unk04 != 0)
+    {
+        FieldStateCE420::unk04->unk3f = enabled;
+        if (enabled != 0)
+        {
+            LibClass178600* nested = FieldStateCE420::unk04;
+            reinterpret_cast<EquipNested70*>(nested)->unk70 = 128.0f;
+            nested->unk3c = 1;
+        }
+        else
+        {
+            LibClass178600* nested = FieldStateCE420::unk04;
+            reinterpret_cast<EquipNested70*>(nested)->unk70 = 64.0f;
+            nested->unk3c = 1;
+        }
+    }
+    if (FieldStateCE420::unk00 != 0)
+    {
+        FieldStateCE420::unk00->unk3f = enabled;
+    }
+}
 
 s32 func_00349680(void* object)
 {
@@ -1692,7 +1732,32 @@ s32 EquipClass182990::func_slotb0()
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_0034CC00);
+s32 EquipClass182990::func_slotb4()
+{
+    if (D_001B643C->unk0c == 0)
+    {
+        return 0;
+    }
+    bool active = D_001B643C->unk0c->unk2d != 0;
+    if (active == 1)
+    {
+        func_slot1c(1, 0x80);
+    }
+    else
+    {
+        EquipClass182220* window = new (0) EquipClass182220;
+        if (window == 0)
+        {
+            return 0;
+        }
+        window->func_slot10(func_slot54(), 200.0f, 160.0f, 13);
+        window->func_slot40(this);
+        reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263FD0(window);
+        reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(window);
+    }
+    func_004E97A0(unka8->unk68);
+    return 2;
+}
 
 void EquipClass182990::func_slot64()
 {

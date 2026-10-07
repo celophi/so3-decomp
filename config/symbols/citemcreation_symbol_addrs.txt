@@ -838,3 +838,5 @@ func_0036E570 = 0x0036E570; // type:func allow_duplicated:True
 
 func_003F4420__14LibClass174610Fv = 0x0036E7D0; // type:func absolute:True allow_duplicated:True
 func_0036E7D0 = 0x0036E7D0; // type:func allow_duplicated:True
+
+func_00466E40 = 0x00466E40; // type:func absolute:True

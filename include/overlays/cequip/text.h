@@ -117,6 +117,13 @@ struct EquipClass182350 : public FieldClass15AE70
 /** Partial initial equipment window with its selected icon index. */
 struct EquipClass182220 : public FieldClass15AE70
 {
+    /** @brief Initialize the selection grid pointer and signed selection index. */
+    EquipClass182220()
+    {
+        unka8 = 0;
+        unkac = -1;
+    }
+
     /** @brief Destroy the initial equipment window. */
     virtual ~EquipClass182220();
     /** @brief Create the panel, text labels and selection grid. @param associated Associated text resource. @param x Window horizontal position. @param y Window vertical position. @param code Nested display initializer code. @return One when all displays exist, otherwise zero. */

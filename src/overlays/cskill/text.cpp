@@ -10,6 +10,7 @@
 #include "overlays/lib/resource_widget_inlines.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/1067-00/text_002D5260.h"
+#include "overlays/lib/text_003F90C0.h"
 
 #define SKILL_FLAG_ENCODING_MASK 0x7DE3F7E3
 
@@ -169,7 +170,8 @@ struct SkillModeSelection : public FieldClass15AE70
     float row_height;
     LibClass1725D0* marker;
     float track_size;
-    u8 unk230[0xAC];
+    u8 unk230[0xA8];
+    s32 item_count;
     s32 count;
     LibObject178750* display;
     u8 flag;
@@ -557,15 +559,21 @@ struct SkillOptionsWindow : public FieldClass15AE70
     virtual s32 func_slotb4();
     /** @brief Create the option displays. @param associated Associated source object. @return Setup status. */
     virtual s32 func_slotf4(void* associated);
-    void* unka8;
+    FieldRecordSelection* records;
     SkillCoordinateSelector* child;
     float x;
     float y;
     void* unkb8;
     SkillList184268 nested;
-    u8 unkc8[0x140];
-    void* unk208;
-    u8 unk20c[4];
+    LibObject174F20* first_values[8];
+    LibObject174F20* second_values[8];
+    LibObject174F20* first_previews[8];
+    LibObject174F20* second_previews[8];
+    LibObject175140* labels[8];
+    ItemCreationOptionResourceDisplay* indicators[8];
+    ItemCreationOptionResourceDisplay* badges[8][4];
+    s32 selected_kind;
+    s32 selected_index;
 };
 
 typedef struct Record0035BE50
@@ -650,7 +658,8 @@ typedef struct ListItem0035CCE0
 /** Partial receiver holding two arrays of 30 paired display items. */
 typedef struct Record003619C0 : public FieldClass15AE70
 {
-    u8 unka8[8];
+    u8 unka8[4];
+    FieldRecordSelection* records;
     FieldObject23CEA0* selection;
     u8 unkb4[4];
     ListItem0035CCE0* first[30];
@@ -2105,13 +2114,158 @@ u32 func_0034C7C0(u8* object)
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0034C7D0);
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0034DA70);
+/**
+ * @brief Refresh the optional controller owner's message for the selected mode entry.
+ * @param object Mode selection window.
+ */
+static inline void refresh_mode_message(SkillModeSelection* object)
+{
+    s16 selected = object->selection->unk114;
+    SkillQueueOwner* owner = static_cast<SkillQueueOwner*>(D_001B643C->callbacks->controller);
+    if (owner != 0)
+    {
+        s32 message = object->values[selected] - 0x18FF;
+        if (message < 0)
+        {
+            message = 0;
+        }
+        owner->message = message;
+        refresh_owner_message(owner);
+    }
+}
+s32 func_0034DA70(SkillModeSelection* object)
+{
+    FieldObject23CEA0* selection = object->selection;
+    u8 inactive = !selection->FieldClass151C50::unk35;
+    if (inactive == 1)
+    {
+        return 0;
+    }
+    if ((s32)object->state > 0)
+    {
+        return 0;
+    }
+    s16 first = selection->row_count;
+    s16 selected = selection->unk114;
+    s32 count = object->item_count;
+    s32 first_index;
+    s32 last_index = count - 1;
+    if (selected >= last_index)
+    {
+        return 0;
+    }
+    if (count < 2)
+    {
+        return 0;
+    }
+    s32 visible_index;
+    if (count < 6)
+    {
+        visible_index = last_index;
+        first_index = 0;
+    }
+    else
+    {
+        visible_index = selected - first;
+        first_index = first + 6;
+        s32 end = first_index + 6;
+        if (end >= count)
+        {
+            visible_index += end - count;
+            first_index = count - 6;
+            if (visible_index >= 6)
+            {
+                visible_index = 5;
+            }
+        }
+    }
+    object->step = -object->spacing * (float)(first_index - first);
+    object->animation_mode = 2;
+    func_0034C060(object);
+    object->selection->row_count = first_index;
+    selection = object->selection;
+    selection->index = visible_index;
+    func_0023CB30(selection);
+    func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(object->selection));
+    func_0034BEE0(object);
+    func_0034C1F0(object);
+    refresh_mode_message(object);
+    refresh_mode_message(object);
+    func_0034C1F0(object);
+    func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0034DCE0);
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0034DF00);
+void func_0034DF00(SkillModeSelection* object)
+{
+    FieldObject23CEA0* selection = object->selection;
+    u8 inactive = !selection->FieldClass151C50::unk35;
+    if (inactive == 1)
+    {
+        return;
+    }
+    if (object->state > 0)
+    {
+        return;
+    }
+    if (selection->unk114 + 1 >= object->item_count)
+    {
+        return;
+    }
+    u8 result = selection->func_0023CDB0(1);
+    if (result == 1)
+    {
+        return;
+    }
+    if (result == 3)
+    {
+        object->state = 1;
+        object->step = object->spacing / 4.0f;
+        object->remaining = 4.0f;
+        object->animation_mode = 2;
+    }
+    func_0034BEE0(object);
+    func_0034C1F0(object);
+    refresh_mode_message(object);
+    refresh_mode_message(object);
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0034E0B0);
+void func_0034E0B0(SkillModeSelection* object)
+{
+    FieldObject23CEA0* selection = object->selection;
+    u8 inactive = !selection->FieldClass151C50::unk35;
+    if (inactive == 1)
+    {
+        return;
+    }
+    if (object->state > 0)
+    {
+        return;
+    }
+    s16 selected = selection->unk114;
+    if (selection->row_count == 0 && selected == 0)
+    {
+        return;
+    }
+    u8 result = selection->func_0023CDB0(0);
+    if (result == 1)
+    {
+        return;
+    }
+    if (result == 2)
+    {
+        object->state = 1;
+        object->step = object->spacing / 4.0f;
+        object->remaining = 4.0f;
+        object->animation_mode = 1;
+    }
+    func_0034BEE0(object);
+    func_0034C1F0(object);
+    refresh_mode_message(object);
+    refresh_mode_message(object);
+}
 
 s32 func_0034E260(Record0034C1F0* record, s16 row_count)
 {
@@ -3107,7 +3261,8 @@ INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00356F80);
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00357000);
 
-u32 func_00357230(SkillProtectedFlags* record)
+/** @brief Decode the first value, marking valid protected flags on corruption. @param record Protected entry record. @return Decoded first value, or zero after corruption. */
+static inline u32 protected_first(SkillProtectedFlags* record)
 {
     u32 first = record->value_first;
     u32 salt = record->salt_first;
@@ -3127,6 +3282,11 @@ u32 func_00357230(SkillProtectedFlags* record)
         return 0;
     }
     return encoded ^ SKILL_FLAG_ENCODING_MASK;
+}
+
+u32 func_00357230(SkillProtectedFlags* record)
+{
+    return protected_first(record);
 }
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_003572D0);
@@ -3682,7 +3842,67 @@ void func_00359E30(SkillSecondarySelection* object)
     func_0035AF00(owner, object->code, 1);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00359EE0);
+s32 func_00359EE0(SkillSecondarySelection* object, void* associated)
+{
+    object->FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 8);
+    object->owner = static_cast<SkillQueueOwner*>(D_001B643C->callbacks->controller);
+    LibClass178630* panel = new (0) LibClass178630;
+    LibObject178750* first = new (0) LibObject178750;
+    LibObject178750* second = new (0) LibObject178750;
+    LibObject178750* third = new (0) LibObject178750;
+    object->selection = new (0) FieldObject23CEA0;
+    if (object->owner == 0 || panel == 0 || first == 0 || second == 0 || third == 0 || object->selection == 0)
+    {
+        return 0;
+    }
+    func_004C5A80(panel, 0, 0.0f, 0.0f, 200.0f, 104.0f, 88.0f);
+    func_0035CBB0(reinterpret_cast<SkillList*>(&object->unk14), panel);
+    func_004C6190(object->unk10, panel);
+    second->func_004C7FE0(70.0f, 13.0f, 0.0f, 0.0f, (s32)associated, 0x1777, 0);
+    first->func_004C7FE0(70.0f, 40.0f, 0.0f, 0.0f, (s32)associated, 0x1776, 0);
+    third->func_004C7FE0(70.0f, 67.0f, 0.0f, 0.0f, (s32)associated, 0x1778, 0);
+    func_004C6190(object->unk10, second);
+    func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), second);
+    func_004C6190(object->unk10, first);
+    func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), first);
+    func_004C6190(object->unk10, third);
+    func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), third);
+    second->unk94 = 0x288080;
+    second->unk3c = 1;
+    ItemCreationOptionResourceDisplay* icon_first = new (0) ItemCreationOptionResourceDisplay;
+    ItemCreationOptionResourceDisplay* icon_second = new (0) ItemCreationOptionResourceDisplay;
+    ItemCreationOptionResourceDisplay* icon_third = new (0) ItemCreationOptionResourceDisplay;
+    void* resource = func_002D3D80(D_001B643C->resources, 0);
+    icon_first->unkcc = resource;
+    icon_second->unkcc = resource;
+    icon_third->unkcc = resource;
+    icon_first->unkd0 = 0;
+    icon_second->unkd0 = 0;
+    icon_third->unkd0 = 0;
+    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(icon_second)), func_002D3CC0(D_001B643C->resources, 0x12), 32.0f, 11.0f);
+    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(icon_first)), func_002D3CC0(D_001B643C->resources, 0x14), 32.0f, 38.0f);
+    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(icon_third)), func_002D3CC0(D_001B643C->resources, 0x15), 32.0f, 65.0f);
+    func_004C6190(object->unk10, icon_first);
+    func_004C6190(object->unk10, icon_second);
+    func_004C6190(object->unk10, icon_third);
+    DisplayMetrics* metrics = static_cast<DisplayMetrics*>(func_4C69B0(first));
+    FieldObject23BE00* cursor = static_cast<FieldObject23BE00*>(::operator new(0x6C, 0));
+    if (cursor != 0)
+    {
+        cursor = func_0023BE00(cursor);
+    }
+    object->cursor = cursor;
+    func_0023BB20(object->cursor, reinterpret_cast<FieldObject23CEB0*>(object->selection), 0x288080, 70.0f, 13.0f, metrics->unk08, 1.0f);
+    func_004C6190(object->unk10, reinterpret_cast<LibClass178600*>(object->cursor));
+    func_0035C440(reinterpret_cast<SkillList*>(&object->unk8c), object->cursor);
+    object->selection->func_0023CE80(1, 3);
+    object->selection->func_0023CE60(0.0f, 27.0f);
+    object->selection->unkF2 = 0;
+    object->selection->unk119 = 1;
+    object->selection->func_0023CF50(0, 56.0f, 85.0f);
+    func_0035C4D0(reinterpret_cast<SkillList*>(&object->unk74), object->selection);
+    return 1;
+}
 
 RecordWithMethods* func_0035A500(RecordWithMethods* record, s16 flag)
 {
@@ -4716,7 +4936,125 @@ Record0035DE40* func_0035DE40(Record0035DE40* record, s16 flag)
     return release_record183e50(record, flag);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0035DEA0);
+/** @brief Decode the first preview value after validating its protected check. @param record Protected entry record. @return Decoded preview value, or zero
+ * after corruption. */
+static inline u32 protected_first_salt(SkillProtectedFlags* record)
+{
+    u32 first = record->value_first;
+    u32 salt = record->salt_first;
+    u32 key = protected_key(record);
+    u32 encoded = record->encoded_first;
+    u32 checksum = record->checksum_first;
+    if (checksum != ((first + salt) ^ encoded ^ key))
+    {
+        u32 flags = record->encoded;
+        s32 flag_salt = record->salt;
+        if (record->checksum == ((flags + key) ^ flag_salt ^ key))
+        {
+            record->encoded = ((flags ^ SKILL_FLAG_ENCODING_MASK) | 1) ^ SKILL_FLAG_ENCODING_MASK;
+            s32 current_salt = record->salt;
+            record->checksum = ((record->encoded + record->key) ^ current_salt) ^ record->key;
+        }
+        return 0;
+    }
+    return salt ^ SKILL_FLAG_ENCODING_MASK;
+}
+
+/** @brief Decode the second preview value after validating its protected check. @param record Protected entry record. @return Decoded preview value, or zero
+ * after corruption. */
+static inline u32 protected_second_salt(SkillProtectedFlags* record)
+{
+    u32 first = record->value_second;
+    u32 salt = record->salt_second;
+    u32 key = protected_key(record);
+    u32 encoded = record->encoded_second;
+    u32 checksum = record->checksum_second;
+    if (checksum != ((first + salt) ^ encoded ^ key))
+    {
+        u32 flags = record->encoded;
+        s32 flag_salt = record->salt;
+        if (record->checksum == ((flags + key) ^ flag_salt ^ key))
+        {
+            record->encoded = ((flags ^ SKILL_FLAG_ENCODING_MASK) | 1) ^ SKILL_FLAG_ENCODING_MASK;
+            s32 current_salt = record->salt;
+            record->checksum = ((record->encoded + record->key) ^ current_salt) ^ record->key;
+        }
+        return 0;
+    }
+    return salt ^ SKILL_FLAG_ENCODING_MASK;
+}
+
+/**
+ * @brief Decode the record flag word after validating its check word.
+ * @param record Protected entry record.
+ * @return Decoded flags, or five when the check word is invalid.
+ */
+static inline u32 protected_flags(SkillProtectedFlags* record)
+{
+    u32 key = record->key;
+    u32 value = record->encoded;
+    s32 salt = record->salt;
+    if (record->checksum != ((value + key) ^ salt ^ key))
+    {
+        return 5;
+    }
+    return value ^ SKILL_FLAG_ENCODING_MASK;
+}
+void SkillOptionsWindow::func_slot5c()
+{
+    for (s32 row = 0; row < 8; ++row)
+    {
+        s16 index = row;
+        if (records->slots[index] > 0)
+        {
+            SkillProtectedFlags* entry = &reinterpret_cast<SkillProtectedFlags*>(records->records)[index];
+            u32 first_value = protected_first(entry);
+            LibObject174F20* first_display = first_values[row];
+            first_display->unkfc = first_value;
+            first_display->unk3c = 1;
+            u32 second_value = protected_second(entry);
+            LibObject174F20* second_display = second_values[row];
+            second_display->unkfc = second_value;
+            second_display->unk3c = 1;
+            if (row < 3)
+            {
+                u32 first_preview = protected_first_salt(entry);
+                LibObject174F20* first_preview_display = first_previews[row];
+                first_preview_display->unkfc = first_preview;
+                first_preview_display->unk3c = 1;
+                u32 second_preview = protected_second_salt(entry);
+                LibObject174F20* second_preview_display = second_previews[row];
+                second_preview_display->unkfc = second_preview;
+                second_preview_display->unk3c = 1;
+            }
+            badges[row][0]->unk3f = protected_flags(entry) & 2;
+            badges[row][1]->unk3f = protected_flags(entry) & 8;
+            badges[row][2]->unk3f = protected_flags(entry) & 4;
+            if (protected_flags(entry) & 5)
+            {
+                indicators[row]->unk3f = 0;
+                badges[row][3]->unk3f = 1;
+                if (row < 3)
+                {
+                    LibObject175140* label = labels[row];
+                    label->unk94 = 0x505080;
+                    label->unk3c = 1;
+                }
+            }
+            else
+            {
+                indicators[row]->unk3f = 1;
+                badges[row][3]->unk3f = 0;
+                if (row < 3)
+                {
+                    LibObject175140* label = labels[row];
+                    label->unk94 = 0x808080;
+                    label->unk3c = 1;
+                }
+            }
+        }
+    }
+}
 
 void func_0035E2A0(Record0035E2A0* record)
 {
@@ -4894,12 +5232,12 @@ void func_003611B0(Record003611B0* record)
 
 SkillOptionsWindow::SkillOptionsWindow()
 {
-    unka8 = 0;
+    records = 0;
     child = 0;
     x = 0.0f;
     y = 0.0f;
     unkb8 = 0;
-    unk208 = 0;
+    selected_kind = 0;
 }
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00361250);
@@ -5176,7 +5514,70 @@ s32 func_00362500(FieldClass15AE70* object)
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00362650);
+s32 func_00362650(Record003619C0* object)
+{
+    u8 inactive = !object->selection->FieldClass151C50::unk35;
+    if (inactive == 1)
+    {
+        return 0;
+    }
+    s32 kind, value, result_index, unused;
+    FieldRecordSelection* records = object->records;
+    s32 current = records->current;
+    s32 selected = object->position + object->selected;
+    SkillProtectedFlags* entry = &reinterpret_cast<SkillProtectedFlags*>(records->records)[current];
+    StatusDetail* detail = &static_cast<StatusDetail*>(records->unk04)[current];
+    if (func_408EA0(detail, records->slots[records->current], selected, &kind, &value, &result_index, &unused, 1) == 0 || selected == 29)
+    {
+        return 3;
+    }
+    if (kind != 3 && kind != 18 && kind != 19 && kind != 20 && kind != 27)
+    {
+        return 3;
+    }
+    if (protected_flags(entry) & 7)
+    {
+        return 3;
+    }
+    s32 required = 0;
+    func_4095C0(kind, reinterpret_cast<FieldRecord*>(entry), detail, &required, 0, 0, 0, 0, 0, 0, 0);
+    s32 available = (s32)protected_second(entry);
+    if (available <= required)
+    {
+        return 3;
+    }
+    func_0023CEA0(object->selection, 0);
+    SkillOwnerListWindow* list_window = static_cast<SkillQueueOwner*>(D_001B643C->callbacks->controller)->list_window;
+    if (list_window->first != 0)
+    {
+        list_window->first->unk3f = 0;
+    }
+    if (list_window->second != 0)
+    {
+        list_window->second->unk3f = 0;
+    }
+    SkillOptionsWindow* options = static_cast<SkillOptionsWindow*>(object->func_slot4c());
+    options->child->unk3f = 1;
+    options->unk10->LibClass174610::unkab = 1;
+    SkillListNode* node = options->nested.head->next;
+    while (node != 0)
+    {
+        static_cast<LibClass174610*>(node->value)->unkab = 1;
+        node = node->next;
+    }
+    node = options->nested.head->next;
+    while (node != 0)
+    {
+        static_cast<LibClass174610*>(node->value)->func_0044B100(1, 1, 1);
+        node = node->next;
+    }
+    s32 option_index = result_index;
+    options->selected_kind = kind;
+    options->selected_index = option_index;
+    D_001B643C->callbacks->controller->func_00263C70(options);
+    static_cast<FieldClass15AE70*>(D_001B643C->callbacks->controller->func_00263C90())->func_slot60(0x1774);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_003629E0);
 

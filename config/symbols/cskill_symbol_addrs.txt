@@ -271,3 +271,5 @@ func_003484D0 = 0x003484D0; // type:func allow_duplicated:True
 __vt__23ItemCreationClass174C40 = 0x00174C40; // absolute:True allow_duplicated:True
 __dt__23ItemCreationClass174C40Fv = 0x00453000; // type:func absolute:True allow_duplicated:True
 func_00413D20__23ItemCreationClass174C40Fv = 0x00453080; // type:func absolute:True allow_duplicated:True
+
+D_15B240 = 0x0015B240; // absolute:True allow_duplicated:True
