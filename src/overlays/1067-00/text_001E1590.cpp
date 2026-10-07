@@ -132,7 +132,7 @@ void FieldClass150120::func_001DF360()
  * @param buffer Completed buffer; unused.
  * @return Always zero.
  */
-u8 FieldClass153E30::func_001E1820(void* buffer)
+s32 FieldClass153E30::func_001E1820(void* buffer)
 {
     return 0;
 }

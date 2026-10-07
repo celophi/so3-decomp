@@ -9215,7 +9215,100 @@ extern "C" void func_00364E00(ItemCreationClass1871B0* object, u32 enabled)
     update_selection_markers(object, enabled);
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00364F50);
+/**
+ * @brief Create the fourteen-slot item displays and their two selection grids.
+ * @param associated Associated display passed to the Field setup.
+ * @return Zero without a selected state, one after setup.
+ */
+s32 ItemCreationClass1871B0::func_slotf4(void* associated)
+{
+    if (this->unka8 == 0)
+    {
+        return 0;
+    }
+    func_002CE760(this, associated, 0, 9, 2000, 16.0f, 72.0f, 0.0f);
+    LibWidgetColors4C5590 colors = {0};
+    colors.values[0] = 0xBCA4B4;
+    colors.values[1] = 0xBCA4B4;
+    colors.values[2] = 0x574C52;
+    colors.values[3] = 0x574C52;
+    this->unk128 = new (0) FieldClass15B200(this->unk10, 1);
+    func_002D5290(this->unk128, 0xBC, 0x18, &colors, 0.0f, 0.0f, 444.0f, 154.0f);
+    LibClass178600* child = static_cast<LibClass178600*>(this->unk128->unk30);
+    if (child)
+    {
+        child->unk28 = 40.0f;
+        child->unk3c = 1;
+    }
+    float x = 6.0f;
+    float y = 6.0f;
+    void* allocation = func_002D3D80(D_001B643C->unk20, 0);
+    FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 0x2D);
+    for (s32 index = 0; index < 14; index++)
+    {
+        ItemCreationOptionResourceDisplay* widget = new (0) ItemCreationOptionResourceDisplay;
+        widget->unkcc = allocation;
+        widget->unkd0 = 0;
+        func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(widget)), record,
+                     6.0f + 61.7142868f * (index % 7), 6.0f + 72.0f * (index / 7));
+        widget->unk50.unk30 = 1.71428573f;
+        widget->unk50.unk34 = 2.0f;
+        widget->unk3c = 1;
+        widget->unk3f = 0;
+        func_004C6190(this->unk10, widget);
+        this->unkb8[index] = widget;
+    }
+    u8 resource;
+    x += 4.0f;
+    y += 4.0f;
+    for (s32 index = 0; index < 14; index++)
+    {
+        u8 value = this->unka8->unk5a[(u16)index];
+        if (value == 0)
+        {
+            allocation = func_002D3D80(D_001B643C->unk20, 0);
+            record = func_002D3CC0(D_001B643C->unk20, 0x20);
+            resource = 0;
+        }
+        else
+        {
+            resource = item_resource_index(value);
+            allocation = func_002D3D80(D_001B643C->unk20, resource);
+            record = func_002D3CC0(D_001B643C->unk20, 0x51);
+        }
+        ItemCreationOptionResourceDisplay* widget = new (0) ItemCreationOptionResourceDisplay;
+        widget->unkcc = allocation;
+        widget->unkd0 = resource;
+        func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(widget)), record,
+                     x + 61.7142868f * (index % 7), y + 72.0f * (index / 7));
+        widget->unk50.unk30 = 0.856999993f;
+        widget->unk50.unk34 = 1.0f;
+        widget->unk3c = 1;
+        func_004C6190(this->unk10, widget);
+        this->unkf0[index] = widget;
+    }
+    this->unkac = new (0) FieldObject23CEA0;
+    this->unkac->func_0023CE80(7, 2);
+    this->unkac->func_0023CE60(61.7142868f, 72.0f);
+    this->unkac->unkF2 = 1;
+    this->unkac->unk119 = 1;
+    float bottom = 36.0f + (72.0f + y);
+    float left = 8.0f + (16.0f + x);
+    this->unkac->func_0023CF50(0, left, bottom - 24.0f);
+    func_0036F040(&this->unk74, this->unkac);
+    func_0023CEA0(this->unkac, 0);
+    this->unkb0 = new (0) FieldObject23CEA0;
+    this->unkb0->func_0023CE80(7, 2);
+    this->unkb0->func_0023CE60(61.7142868f, 72.0f);
+    this->unkb0->unkF2 = 1;
+    this->unkb0->unk119 = 1;
+    this->unkb0->func_0023CF50(0, left, bottom - 8.0f);
+    func_0036F040(&this->unk74, this->unkb0);
+    func_0023CEA0(this->unkb0, 0);
+    this->unkb4 = this->unkac;
+    func_00364D20(reinterpret_cast<ItemCreationFourteenSlotView*>(this));
+    return 1;
+}
 
 /** @brief Release the owned resource before destroying the selection window. */
 ItemCreationClass1871B0::~ItemCreationClass1871B0()
@@ -12199,7 +12292,68 @@ s32 ItemCreationSelectedDisplayState::func_00263CD0()
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0036DDC0);
+/** Loaded resource buffer; its 128-byte aligned header records the payload size. */
+struct ItemCreationBufferHeader
+{
+    u8 unk00[0x40];
+    s32 unk40;
+};
+
+/** Partial Field runtime reached through D_001B657C. */
+struct FieldRuntime
+{
+    u8 unk00[0x514];
+    void* unk514;
+    u32 unk518;
+};
+
+// Resident and Lib interfaces linked under this overlay's short names.
+extern "C"
+{
+    void* func_100C90(void);
+    void* func_113710(void* heap, s32 size);
+    void func_1134C0(void* memory);
+    void* func_100C80(void* heap);
+    void* func_4656B0(FieldRuntime* runtime, void* data);
+}
+
+/**
+ * @brief Align a loaded buffer to its header.
+ * @param buffer Loaded buffer.
+ * @return Header at the next 128-byte boundary.
+ */
+static inline ItemCreationBufferHeader* buffer_header(void* buffer)
+{
+    return reinterpret_cast<ItemCreationBufferHeader*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7FU);
+}
+
+/**
+ * @brief Load the completed buffer into the Field runtime and finish setup.
+ * @param buffer Completed buffer, or null.
+ * @return Zero without a buffer, otherwise the setup result.
+ */
+s32 ItemCreationSelectedDisplayState::func_001E1820(void* buffer)
+{
+    if (!buffer)
+    {
+        return 0;
+    }
+    s32 size = buffer_header(buffer)->unk40 + 0x80;
+    void* previous_heap = func_100C90();
+    void* heap = D_001B6430->context->unk70;
+    void* memory = func_113710(heap, size);
+    if (memory)
+    {
+        func_1134C0(memory);
+        func_100C80(heap);
+    }
+    unk34 = func_4656B0(D_001B657C, buffer_header(buffer));
+    func_100C80(previous_heap);
+    FieldRuntime* runtime = D_001B657C;
+    runtime->unk514 = unk34;
+    runtime->unk518 = 0xC351;
+    return func_00263CD0();
+}
 
 void func_0036DEA0(ItemCreationSelectedDisplayState* object)
 {
