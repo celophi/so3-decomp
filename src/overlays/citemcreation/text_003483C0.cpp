@@ -5257,7 +5257,31 @@ s32 ItemCreationClass186870::func_slotb4()
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00358190);
+// TODO: The way this is written now matches with -O3, but not with -O4. Needs further investigation.
+#pragma push
+#pragma optimization_level 3
+s32 ItemCreationClass186870::func_slotb0()
+{
+    FieldState23B3A0* selector = static_cast<FieldState23B3A0*>(static_cast<void*>(unkb4));
+    if (func_23B3A0(selector) == 0)
+    {
+        ItemCreationSelectedDisplayState* state = unka8;
+        state->func_0036BF30(0, unkbc[0]);
+        state = unka8;
+        state->func_0036BF30(1, unkbc[1]);
+        state = unka8;
+        state->func_0036BF30(2, unkbc[2]);
+        state = unka8;
+        state->unk47 = 2;
+        func_0027CB50(D_001B6430->context->unk58, 0x42, 0, 0);
+    }
+    else
+    {
+        func_slotb4();
+    }
+    return 1;
+}
+#pragma pop
 
 void func_00358240(ItemCreationDirectColorOwner* object)
 {

@@ -432,7 +432,7 @@ func_0023B7E0__16FieldClass153170FP15LibObject178750 = 0x0023B7E0; // type:func 
 func_0023B7E0 = 0x0023B7E0; // type:func absolute:True allow_duplicated:True
 
 func_00358190 = 0x00358190; // type:func allow_duplicated:True
-func_slotb0__23ItemCreationClass186870Fv = 0x00358190; // type:func absolute:True allow_duplicated:True
+func_slotb0__23ItemCreationClass186870Fv = 0x00358190; // type:func allow_duplicated:True
 
 func_003580B0 = 0x003580B0; // type:func allow_duplicated:True
 func_slotb4__23ItemCreationClass186870Fv = 0x003580B0; // type:func allow_duplicated:True
