@@ -70,10 +70,9 @@ typedef ItemCreationClass175110 Record00349DB0;
 typedef struct ItemCreationClass175110 Record00349DB0;
 #endif
 typedef SkillDualSelection Record0034BC40;
-typedef struct Record00351790 Record00351790;
 typedef struct Record00355420 Record00355420;
 typedef struct Record00355490 Record00355490;
-typedef struct Record00355500 Record00355500;
+typedef Record003538F0 Record00355500;
 typedef struct Record003610F0 Record003610F0;
 typedef struct Record00361060 Record00361060;
 typedef struct Record003611B0 Record003611B0;
@@ -81,7 +80,7 @@ typedef struct Record003620F0 Record003620F0;
 typedef struct SkillProtectedDisplay Record00363740;
 typedef SkillOptionsWindow Record00364810;
 typedef struct Record00364720 Record00364720;
-typedef struct Record0034C110 Record0034C110;
+typedef struct SkillModeSelection Record0034C110;
 typedef struct SkillModeSelection Record0034C1F0;
 typedef struct Record0034B190 Record0034B190;
 
@@ -139,14 +138,6 @@ extern "C" {
 
 /** @brief Create and connect the owner windows. @param owner Window controller. @return One after setup. */
 s32 func_0035B4E0(SkillQueueOwner* owner);
-/** @brief Initialize the status window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
-u8* func_00359200(u8* object, SkillQueueOwner* owner);
-/** @brief Initialize the six-row window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
-u8* func_00355580(u8* object, SkillQueueOwner* owner);
-/** @brief Initialize the mode window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
-u8* func_00351800(u8* object, SkillQueueOwner* owner);
-/** @brief Initialize the comparison window. @param object Allocated window storage. @param owner Window controller. @return Initialized storage. */
-u8* func_003498A0(u8* object, SkillQueueOwner* owner);
 /** @brief Initialize the mode-query window. @param object Allocated window storage. @return Initialized storage. */
 u8* func_003533E0(u8* object);
 
@@ -1365,13 +1356,6 @@ void func_0035CA60(SkillList183C38* record);
  */
 void func_003649E0(SkillList* list, void* value);
 
-/**
- * @brief Release the record and optionally free its storage.
- * @param record Record to release.
- * @param flag Free the storage when positive.
- * @return The original record pointer.
- */
-RecordWithMethods* func_00349840(RecordWithMethods* record, s16 flag);
 
 /**
  * @brief Release the record and optionally free its storage.
@@ -1413,13 +1397,6 @@ s32 func_00357F80(FieldClass15AE70* object, void* associated);
  */
 RecordWithMethods* func_00358070(RecordWithMethods* record, s16 flag);
 
-/**
- * @brief Release the record and optionally free its storage.
- * @param record Record to release.
- * @param flag Free the storage when positive.
- * @return The original record pointer.
- */
-RecordWithMethods* func_003591A0(RecordWithMethods* record, s16 flag);
 
 /**
  * @brief Release the record and optionally free its storage.
@@ -1499,13 +1476,6 @@ Record00349DB0* func_00349DB0(Record00349DB0* record, s16 flag);
  */
 Record0034BC40* func_0034BC40(Record0034BC40* record, s16 flag);
 
-/**
- * @brief Release nested state and optionally free the record.
- * @param record Record to release.
- * @param flag Free the storage when positive.
- * @return The original record pointer.
- */
-Record00351790* func_00351790(Record00351790* record, s16 flag);
 
 /**
  * @brief Release nested state and optionally free the record.
@@ -1523,13 +1493,6 @@ RecordWithMethods* func_00351A60(RecordWithMethods* record, s16 flag);
  */
 Record00355420* func_00355420(Record00355420* record, s16 flag);
 
-/**
- * @brief Release nested state and optionally free the record.
- * @param record Record to release.
- * @param flag Free the storage when positive.
- * @return The original record pointer.
- */
-Record00355500* func_00355500(Record00355500* record, s16 flag);
 
 /**
  * @brief Release nested state and optionally free the record.

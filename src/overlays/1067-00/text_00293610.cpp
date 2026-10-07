@@ -385,7 +385,19 @@ void func_00298B40(FieldObject158860* object, u8* header, FieldResourceRecord273
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00298B80);
+void func_00298B80(FieldObject158860* object, s32 enabled)
+{
+    object->unkA0 = 0;
+    object->unkA4 = 0;
+    if (enabled)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
 void func_00298BB0(FieldObject158860* object, float value)
 {
@@ -547,7 +559,19 @@ void func_0029BD70(FieldObject157AF0* object, u8* header, FieldResourceRecord273
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029BDB0);
+void func_0029BDB0(FieldObject157AF0* object, s32 enabled)
+{
+    object->unkA0 = 0;
+    object->unkA4 = 0;
+    if (enabled)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
 void func_0029BDE0(FieldObject157AF0* object, float value)
 {

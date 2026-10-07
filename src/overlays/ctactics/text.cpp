@@ -80,32 +80,11 @@ typedef struct TacticsPositionTarget
     u8 active;
 } TacticsPositionTarget;
 
-/** Partial tactics position state; the complete receiver extent is unknown. */
-struct TacticsPositionOwner
-{
-    u8 pad_00[0xA8];
-    TacticsPositionTarget* target;
-    s32 distance;
-    s16 timer;
-    u8 state;
-    u8 pad_b3[5];
-    float initial_x;
-    float base_x;
-    float width;
-};
-
 /** Partial preset receiver; the complete object extent is unknown. */
 struct TacticsPresetOwner
 {
     u8 pad_00[0xC0];
     TacticsPresetPosition position;
-};
-
-/** Partial next-selection callback receiver; its complete extent is unknown. */
-struct TacticsSelectionOwner
-{
-    u8 pad_00[0xB0];
-    FieldObject23B1D0* selection;
 };
 
 /** Partial dual-selector callback receiver; its complete extent is unknown. */
@@ -134,17 +113,6 @@ struct TacticsGridOwner
     float base_y;
 };
 
-/** Partial tactics receiver holding the bounded display list and its grid cursor. */
-struct TacticsHighlightOwner
-{
-    u8 pad_00[0x2C];
-    TacticsList nodes;
-    u8 pad_30[0x80];
-    FieldObject23CEA0* grid;
-    u8 pad_b4[0x24];
-    FieldObject23BE00* cursor;
-};
-
 /** Partial saved selection reached through the resident reference's first pointer. */
 typedef struct TacticsSavedGridSelection
 {
@@ -166,6 +134,7 @@ static inline bool tactics_selection_inactive(FieldObject23B1D0* selection);
 
 static inline u8 tactics_grid_empty(FieldObject23CEA0* grid);
 
+static inline void set_text_position(LibObject178750* target, float x, float y, float z, float w);
 static inline void tactics_set_position(TacticsPositionTarget* target, float x, float y, float z, float w);
 
 static inline void tactics_set_xy(TacticsPositionTarget* target, float x, float y);
@@ -196,6 +165,23 @@ static inline bool tactics_selection_inactive(FieldObject23B1D0* selection)
         return false;
     }
     return true;
+}
+
+/**
+ * @brief Store the text position and mark it for refresh.
+ * @param target Text widget receiving the position.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Third position component.
+ * @param w Fourth position component.
+ */
+static inline void set_text_position(LibObject178750* target, float x, float y, float z, float w)
+{
+    target->unk18.unk00 = x;
+    target->unk18.unk04 = y;
+    target->unk18.unk08 = z;
+    target->unk18.unk0c = w;
+    target->unk3c = 1;
 }
 
 /**
@@ -275,11 +261,6 @@ void func_00348630(void* object, u32 value)
     *(u32*)((u8*)object + 0x20) = value;
 }
 
-u32 func_00348640(void* object)
-{
-    return *(u32*)((u8*)object + 0x98);
-}
-
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00348650);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00348720);
@@ -306,11 +287,6 @@ u32 func_003499A0(void* object)
 }
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003499B0);
-
-void func_00349B20(void* object, u32 value)
-{
-    *(u32*)((u8*)object + 0x98) = value;
-}
 
 u32 func_00349B30(void* object)
 {
@@ -563,9 +539,9 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034D900);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034D990);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034D9F0);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", __dt__19TacticsWindow18B320Fv);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034DB20);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", __ct__19TacticsWindow18B320Fv);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034DC00);
 
@@ -582,51 +558,51 @@ u32 func_0034DD00(void* object)
  * @brief Color up to six list displays and place the cursor for the selected grid entry.
  * @param object Tactics receiver holding the display list, grid, and cursor.
  */
-void func_0034DD10(TacticsHighlightOwner* object)
+void func_0034DD10(TacticsWindow18B420* object)
 {
     s16 selected = object->grid->unk114;
     s32 index = 0;
-    TacticsListNode* node = object->nodes.head->next;
+    FieldListNode* node = object->unk2c.unk00->unk04;
     while (node != 0)
     {
         if (index >= 6)
         {
             break;
         }
-        TacticsIcon* display = (TacticsIcon*)node->value;
+        LibObject178750* display = static_cast<LibObject178750*>(node->unk00);
         if (index == selected)
         {
-            display->color = 0x288080;
-            display->active = 1;
+            display->unk94 = 0x288080;
+            display->unk3c = 1;
             func_0023B9B0(object->cursor, index,
-                func_004C69B0((LibObject178750*)display)->unk08);
+                func_004C69B0(display)->unk08);
         }
         else
         {
-            display->color = 0x808080;
-            display->active = 1;
+            display->unk94 = 0x808080;
+            display->unk3c = 1;
         }
-        node = node->next;
+        node = node->unk04;
         index++;
     }
 }
 
-void func_0034DDE0(TacticsHighlightOwner* object)
+void TacticsWindow18B420::func_slot6c()
 {
-    if (static_cast<s16>(object->grid->func_0023CDB0(1)) == 1)
+    if (static_cast<s16>(grid->func_0023CDB0(1)) == 1)
     {
         return;
     }
-    func_0034DD10(object);
+    func_0034DD10(this);
 }
 
-void func_0034DE30(TacticsHighlightOwner* object)
+void TacticsWindow18B420::func_slot68()
 {
-    if (static_cast<s16>(object->grid->func_0023CDB0(0)) == 1)
+    if (static_cast<s16>(grid->func_0023CDB0(0)) == 1)
     {
         return;
     }
-    func_0034DD10(object);
+    func_0034DD10(this);
 }
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034DE80);
@@ -637,35 +613,48 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034E0E0);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034E350);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034EB60);
-
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034EBC0);
-
-void func_0034EC30(void* object)
+TacticsWindow18B420::~TacticsWindow18B420()
 {
-    s16 state = *(s16*)((u8*)object + 0xB4);
-    void* target;
+}
 
+TacticsWindow18B420::TacticsWindow18B420()
+{
+    unka8 = 0;
+    unkac = 0;
+    grid = 0;
+    selected = -1;
+    text[0] = 0;
+    text[1] = 0;
+    text[2] = 0;
+    text[3] = 0;
+    text[4] = 0;
+    text[5] = 0;
+    unkd4 = 0;
+    cursor = 0;
+    unkf4 = 0;
+    unkf6 = 0;
+}
+
+void TacticsWindow18B520::func_slot64()
+{
+    s16 state = selected;
+    LibClass175030* target;
     if (state == 3 || state == 4)
     {
-        u8* state_target = *(u8**)((u8*)object + 0xB0);
-        state_target[0x3F] = 1;
+        LibClass175030* state_target = reinterpret_cast<LibClass175030*>(selection);
+        state_target->unk3f = 1;
     }
     else
     {
-        target = *(void**)((u8*)object + 0xB0);
-        *(float*)((u8*)target + 0x70) = 128.0f;
-        *(u8*)((u8*)target + 0x3C) = 1;
+        target = reinterpret_cast<LibClass175030*>(selection);
+        target->unk30 = 128.0f;
+        target->unk3c = 1;
     }
 }
 
-/**
- * @brief Advance the enabled coordinate selector, wrapping after its eighth entry.
- * @param object Tactics receiver holding the coordinate selector.
- */
-void func_0034EC80(TacticsSelectionOwner* object)
+void TacticsWindow18B520::func_slot6c()
 {
-    FieldObject23B1D0* selection = object->selection;
+    FieldObject23B1D0* selection = this->selection;
     if (tactics_selection_inactive(selection))
     {
         return;
@@ -678,13 +667,9 @@ void func_0034EC80(TacticsSelectionOwner* object)
     func_0023B1D0(selection, index, 0);
 }
 
-/**
- * @brief Move the enabled coordinate selector back, wrapping to its eighth entry.
- * @param object Tactics receiver holding the coordinate selector.
- */
-void func_0034ECD0(TacticsSelectionOwner* object)
+void TacticsWindow18B520::func_slot68()
 {
-    FieldObject23B1D0* selection = object->selection;
+    FieldObject23B1D0* selection = this->selection;
     if (tactics_selection_inactive(selection))
     {
         return;
@@ -697,13 +682,9 @@ void func_0034ECD0(TacticsSelectionOwner* object)
     func_0023B1D0(selection, index, 0);
 }
 
-/**
- * @brief Map the first three selector entries to entries three, five, and six.
- * @param object Tactics receiver holding the enabled coordinate selector.
- */
-void func_0034ED20(TacticsSelectionOwner* object)
+void TacticsWindow18B520::func_slot74()
 {
-    FieldObject23B1D0* selection = object->selection;
+    FieldObject23B1D0* selection = this->selection;
     if (tactics_selection_inactive(selection))
     {
         return;
@@ -726,13 +707,9 @@ void func_0034ED20(TacticsSelectionOwner* object)
     func_0023B1D0(selection, index, 0);
 }
 
-/**
- * @brief Map the last five selector entries back to the first three.
- * @param object Tactics receiver holding the enabled coordinate selector.
- */
-void func_0034EDA0(TacticsSelectionOwner* object)
+void TacticsWindow18B520::func_slot70()
 {
-    FieldObject23B1D0* selection = object->selection;
+    FieldObject23B1D0* selection = this->selection;
     if (tactics_selection_inactive(selection))
     {
         return;
@@ -819,7 +796,9 @@ TacticsPresetPosition* func_0034F190(TacticsPresetOwner* object, s32 index)
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034F290);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034FC70);
+TacticsWindow18B520::~TacticsWindow18B520()
+{
+}
 
 void TacticsWindow18B620::func_slot60(s32 text_key)
 {
@@ -832,39 +811,37 @@ void TacticsWindow18B620::func_slot60(s32 text_key)
     }
 }
 
-/**
- * @brief Hold the display position until its timer expires, then scroll and wrap it.
- * @param object Tactics state containing the display receiver and movement bounds.
- */
-void func_0034FD60(TacticsPositionOwner* object)
+void TacticsWindow18B620::func_slot5c()
 {
-    TacticsPositionTarget* target = object->target;
-    float x = target->position.x;
-    float y = target->position.y;
-    float z = target->position.z;
-    float w = target->position.w;
-    if (object->state == 0)
+    LibObject178750* target = text;
+    float x = target->unk18.unk00;
+    float y = target->unk18.unk04;
+    float z = target->unk18.unk08;
+    float w = target->unk18.unk0c;
+    if (state == 0)
     {
-        tactics_set_position(target, object->initial_x, y, z, w);
-        object->timer++;
-        if (!((float)object->timer <= 120.0f))
+        set_text_position(target, initial_x, y, z, w);
+        timer++;
+        if (!((float)timer <= 120.0f))
         {
-            object->timer = 0;
-            object->state = 1;
+            timer = 0;
+            state = 1;
         }
         return;
     }
     x -= 108.0f * D_001B6690;
-    if (x < object->base_x - (float)object->distance)
+    if (x < base_x - (float)distance)
     {
-        x = 2.0f + (object->base_x + object->width);
+        x = 2.0f + (base_x + width);
     }
-    tactics_set_position(target, x, y, z, w);
+    set_text_position(target, x, y, z, w);
 }
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034FE50);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00350430);
+TacticsWindow18B620::~TacticsWindow18B620()
+{
+}
 
 s32 TacticsWindow18B720::func_slotf4(void* associated)
 {
@@ -888,7 +865,9 @@ s32 TacticsWindow18B720::func_slotf4(void* associated)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003506E0);
+TacticsWindow18B720::~TacticsWindow18B720()
+{
+}
 
 void TacticsState18B820::func_00263D80()
 {

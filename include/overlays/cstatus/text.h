@@ -190,7 +190,7 @@ struct StatusScrollState : public FieldClass15AE70
     void* unk190;
     void* unk194;
     s32 keys[6];
-    u32 unk1b0;
+    s32 option_total;
     u8 mode;
     u8 active;
     u8 unk1b6[2];
@@ -329,6 +329,12 @@ void func_00348700(StatusSelectionWindow* object);
  * @param object Status record and resource window.
  */
 void func_0034C500(StatusScrollState* object);
+
+/**
+ * @brief Refresh six protected option captions and total their comparison values.
+ * @param object Status record window with the current record selection.
+ */
+void func_0034C640(StatusScrollState* object);
 
 /**
  * @brief Scroll the three status display lists and advance their indicator.

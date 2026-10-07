@@ -35,8 +35,22 @@ typedef struct SkillProtectedFlags
     u8 unkac[0x18];
 } SkillProtectedFlags;
 
+/** Four-float position with a zero-initializing default constructor. */
 typedef struct SkillVector4
 {
+    /** @brief Initialize every position component to zero. */
+    SkillVector4()
+    {
+        x = y = z = w = 0.0f;
+    }
+    /** @brief Initialize a position from its components. @param x_value Horizontal component. @param y_value Vertical component. @param z_value Depth component. @param w_value Fourth component. */
+    SkillVector4(float x_value, float y_value, float z_value, float w_value)
+    {
+        x = x_value;
+        y = y_value;
+        z = z_value;
+        w = w_value;
+    }
     float x;
     float y;
     float z;
@@ -220,9 +234,33 @@ struct SkillDualSelection : public FieldClass15AE70
     SkillQueueOwner* owner;
 };
 
-/** Partial mode window with its selection, display lists, and row values. */
+/** Mode window with its selection, positions, display lists, and row values. */
 struct SkillModeSelection : public FieldClass15AE70
 {
+    /** @brief Initialize the mode rows, owned list, and controller link. @param owner Window controller. */
+    SkillModeSelection(SkillQueueOwner* owner);
+    /** @brief Destroy the mode list and base display lists. */
+    virtual ~SkillModeSelection();
+    /** @brief Update the active mode window and its list indicator. */
+    virtual void func_slot5c();
+    /** @brief Ignore the supplied message key. @param key Unused signed message key. */
+    virtual void func_slot60(s32 key);
+    /** @brief Move the mode selection in direction zero. */
+    virtual void func_slot68();
+    /** @brief Move the mode selection in direction one. */
+    virtual void func_slot6c();
+    /** @brief Process the selected mode entry. @return Mode selection event code. */
+    virtual s32 func_slotb0();
+    /** @brief Restore the associated mode window. @return Mode selection event code. */
+    virtual s32 func_slotb4();
+    /** @brief Move to the preceding page of mode entries. @return Zero after processing. */
+    virtual s32 func_slotd0();
+    /** @brief Move to the following page of mode entries. @return Zero after processing. */
+    virtual s32 func_slotd4();
+    /** @brief Leave the mode window unchanged. @return Zero. */
+    virtual s32 func_slotd8();
+    /** @brief Leave the mode window unchanged. @return Zero. */
+    virtual s32 func_slotdc();
     /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
     virtual s32 func_slotf4(void* associated);
     u8 state;
@@ -231,14 +269,16 @@ struct SkillModeSelection : public FieldClass15AE70
     float step;
     float remaining;
     FieldObject23CEA0* selection;
-    u8 unkb8[0x20];
+    SkillVector4 first_position;
+    SkillVector4 second_position;
     FieldObject23B950* recipient;
     FieldRecordSelection* mode_records;
-    u8 unke0[4];
+    u32 unke0;
     s16 mode;
     u8 unke6[2];
     s32 values[42];
-    u8 unk190[0x54];
+    u8 unk190[42];
+    u8 unk1ba[42];
     u8 colors[42];
     u8 unk20e[2];
     SkillList183C48 second;
@@ -247,13 +287,14 @@ struct SkillModeSelection : public FieldClass15AE70
     float row_height;
     LibClass1725D0* marker;
     float track_size;
-    u8 unk230[0xA8];
+    u32 unk230[42];
     s32 item_count;
     s32 count;
     LibObject178750* display;
     u8 flag;
+    u8 unk2e5[3];
+    SkillQueueOwner* owner;
 };
-
 /** Partial window with a grid-choice callback after its Field virtual interface. */
 struct SkillGridChoice : public FieldClass15AE70
 {
@@ -517,6 +558,14 @@ typedef struct StatusItem : public LibClass178600
 
 typedef struct StatusOwner003580D0 : public FieldClass15AE70
 {
+    /** @brief Initialize the status display and controller link. @param owner Window controller. */
+    StatusOwner003580D0(SkillQueueOwner* owner);
+    /** @brief Destroy the status window and its base display lists. */
+    virtual ~StatusOwner003580D0();
+    /** @brief Refresh the active status message. */
+    virtual void func_slot5c();
+    /** @brief Ignore the supplied message key. @param key Unused signed message key. */
+    virtual void func_slot60(s32 key);
     /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
     virtual s32 func_slotf4(void* associated);
     FieldRecordSelection* selection;
@@ -532,7 +581,8 @@ typedef struct StatusOwner003580D0 : public FieldClass15AE70
     LibObject174F20* third_value;
     LibObject174F20* items[3];
     LibObject178750* fallback_label;
-    u8 unke4[0x10];
+    u32 unke4[3];
+    u8 unkf0[4];
     u8 changed;
     u8 unkf5[3];
     SkillFourRowSelection* four_rows;
@@ -815,12 +865,36 @@ struct SkillStatusAttachment
 /** Partial six-row Field window with native display lists and value tables. */
 typedef struct Record003538F0 : public FieldClass15AE70
 {
+    /** @brief Initialize both display lists, the value tables and controller link. @param owner Window controller. */
+    Record003538F0(SkillQueueOwner* owner);
+    /** @brief Release both owned display lists and the window base. */
+    virtual ~Record003538F0();
+    /** @brief Refresh the active row message. */
+    virtual void func_slot5c();
+    /** @brief Ignore the supplied message key. @param key Unused signed message key. */
+    virtual void func_slot60(s32 key);
+    /** @brief Refresh the row positions and selected cursor. */
+    virtual void func_slot64();
+    /** @brief Move the row selection in direction zero. */
+    virtual void func_slot68();
+    /** @brief Move the row selection in direction one. */
+    virtual void func_slot6c();
+    /** @brief Process the selected row. @return Selection event code. */
+    virtual s32 func_slotb0();
+    /** @brief Restore the associated window. @return Two after restoring the window. */
+    virtual s32 func_slotb4();
+    /** @brief Cycle the status record in direction zero. @return Record-change event code. */
+    virtual s32 func_slotd8();
+    /** @brief Cycle the status record in direction one. @return Record-change event code. */
+    virtual s32 func_slotdc();
     /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
     virtual s32 func_slotf4(void* associated);
     SkillStatusAttachment* attachment;
     FieldObject23CEA0* selection;
     FieldObject23BAB0* display;
-    u8 unkb4[0xC];
+    float row_x;
+    float row_y;
+    float row_spacing;
     float x;
     float y;
     float spacing;
@@ -830,7 +904,7 @@ typedef struct Record003538F0 : public FieldClass15AE70
     SkillList183C38 third;
     s32 keys[6];
     StatusItem* unk108[7];
-    u8 unk124[4];
+    float unk124;
     s32 unk128[6];
     s32 first_values[6];
     s32 second_values[6];
@@ -893,18 +967,7 @@ typedef struct Record0034B190
 
 
 
-typedef struct Record0034C110
-{
-    u8 unk00[0x2C];
-    ListNode0035CCE0* first;
-    u8 unk30[0x88];
-    SkillVector4 first_position;
-    SkillVector4 second_position;
-    u8 unkd8[0x138];
-    ListNode0035CCE0* second;
-    u8 unk214[8];
-    float spacing;
-} Record0034C110;
+
 
 typedef struct ListOwner0035CCE0
 {
@@ -912,12 +975,7 @@ typedef struct ListOwner0035CCE0
     ListNode0035CCE0* head;
 } ListOwner0035CCE0;
 
-typedef struct Record00351790
-{
-    void* methods;
-    u8 unk04[0x20C];
-    SkillList183C48 nested;
-} Record00351790;
+
 
 typedef struct Record00355420
 {
@@ -932,14 +990,6 @@ typedef struct Record00355490
     u8 unk04[0xC];
     void* methods;
 } Record00355490;
-
-typedef struct Record00355500
-{
-    void* methods;
-    u8 unk04[0xD4];
-    SkillList183C38 first;
-    SkillList183C38 second;
-} Record00355500;
 
 typedef struct Record003610F0
 {
@@ -1366,13 +1416,19 @@ void func_00348710(void* object)
 {
 }
 
-/** Partial comparison window with its labels, numeric images, and controller. */
+/** Comparison window with its labels, numeric images, and controller. */
 struct SkillComparisonDisplay : FieldClass15AE70
 {
+    /** @brief Initialize the comparison displays and controller link. @param owner Window controller. */
+    SkillComparisonDisplay(SkillQueueOwner* owner);
+    /** @brief Destroy the comparison window and its base display lists. */
+    virtual ~SkillComparisonDisplay();
+    /** @brief Set the comparison title key. @param key Signed message key. */
+    virtual void func_slot60(s32 key);
     /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
     virtual s32 func_slotf4(void* associated);
     LibObject178750* title;
-    u8 unkac[4];
+    u32 unkac;
     LibObject178750* item_label;
     LibObject178750* rate_label;
     LibObject178750* separator;
@@ -1603,21 +1659,28 @@ void func_00348CB0(SkillComparisonDisplay* record, u32 key)
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00348D10);
 
-RecordWithMethods* func_00349840(RecordWithMethods* record, s16 flag)
+SkillComparisonDisplay::~SkillComparisonDisplay()
 {
-    if (record != 0)
-    {
-        record->methods = D_182E40;
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            ::operator delete(record);
-        }
-    }
-    return record;
 }
-
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_003498A0);
+SkillComparisonDisplay::SkillComparisonDisplay(SkillQueueOwner* controller)
+{
+    title = 0;
+    unkac = 0;
+    first_label = 0;
+    first_value = 0;
+    item_label = 0;
+    rate_label = 0;
+    hundreds = 0;
+    separator = 0;
+    tens = 0;
+    ones = 0;
+    second_label = 0;
+    second_value = 0;
+    third_label = 0;
+    third_value = 0;
+    owner = 0;
+    owner = controller;
+}
 
 void func_00349920(u8* object, s32 mode)
 {
@@ -2061,8 +2124,8 @@ INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0034C060);
 void func_0034C110(Record0034C110* record, float offset)
 {
     s32 index = 0;
-    ListNode0035CCE0* first = record->first->next;
-    ListNode0035CCE0* second = record->second->next;
+    ListNode0035CCE0* first = reinterpret_cast<ListNode0035CCE0*>(record->unk2c.unk00)->next;
+    ListNode0035CCE0* second = reinterpret_cast<ListNode0035CCE0*>(record->second.head)->next;
     while (first != 0)
     {
         ListItem0035CCE0* item = first->value;
@@ -2543,22 +2606,42 @@ s32 func_00351490(SkillModeSelection* object, void* associated)
     return 1;
 }
 
-Record00351790* func_00351790(Record00351790* record, s16 flag)
+SkillModeSelection::~SkillModeSelection()
 {
-    if (record != 0)
-    {
-        record->methods = D_183170;
-        func_0035C700(&record->nested, -1);
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            ::operator delete(record);
-        }
-    }
-    return record;
 }
-
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00351800);
+SkillModeSelection::SkillModeSelection(SkillQueueOwner* controller)
+{
+    selection = 0;
+    spacing = 29.0f;
+    offset = 20.0f;
+    row_height = 24.0f;
+    mode_records = 0;
+    state = 0;
+    step = 0;
+    remaining = 0;
+    unke0 = 0;
+    recipient = 0;
+    mode = -1;
+    for (s32 i = 0; i < 42; i++)
+    {
+        values[i] = 0;
+        unk190[i] = 0;
+        unk1ba[i] = 0;
+        unk230[i] = 0;
+        item_count = 0;
+    }
+    state = 0;
+    if (selection != 0)
+    {
+        func_0023C710(selection);
+    }
+    marker = 0;
+    track_size = 0;
+    owner = 0;
+    owner = controller;
+    flag = 0;
+    display = 0;
+}
 
 s32 func_00351980(FieldClass15AE70* object, void* associated)
 {
@@ -3180,23 +3263,37 @@ Record00355490* func_00355490(Record00355490* record, s16 flag)
     return record;
 }
 
-Record00355500* func_00355500(Record00355500* record, s16 flag)
+Record003538F0::~Record003538F0()
 {
-    if (record != 0)
-    {
-        record->methods = D_183470;
-        func_0035C950(&record->second, -1);
-        func_0035C950(&record->first, -1);
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            ::operator delete(record);
-        }
-    }
-    return record;
 }
-
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00355580);
+Record003538F0::Record003538F0(SkillQueueOwner* controller)
+{
+    attachment = 0;
+    selection = 0;
+    row_x = 0.0f;
+    row_y = 0.0f;
+    row_spacing = 0.0f;
+    x = 0.0f;
+    y = 0.0f;
+    spacing = 0.0f;
+    mode_records = 0;
+    display = 0;
+    unk108[0] = 0;
+    unk124 = 258.0f;
+    for (s32 index = 0; index < 6; index++)
+    {
+        keys[index] = 0;
+        unk128[index] = -1;
+        unk108[index + 1] = 0;
+        first_values[index] = -1;
+        second_values[index] = -1;
+        third_values[index] = -1;
+    }
+    flag = 0;
+    active = 0;
+    owner = 0;
+    owner = controller;
+}
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_003556B0);
 
@@ -3632,21 +3729,41 @@ void func_00358310(StatusOwner003580D0* object)
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00358410);
 
-RecordWithMethods* func_003591A0(RecordWithMethods* record, s16 flag)
+StatusOwner003580D0::~StatusOwner003580D0()
 {
-    if (record != 0)
-    {
-        record->methods = D_183770;
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            ::operator delete(record);
-        }
-    }
-    return record;
 }
-
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00359200);
+StatusOwner003580D0::StatusOwner003580D0(SkillQueueOwner* controller)
+{
+    selection = 0;
+    portrait = 0;
+    third_value = 0;
+    items[0] = 0;
+    items[1] = 0;
+    items[2] = 0;
+    unke4[0] = 0;
+    unke4[1] = 0;
+    unke4[2] = 0;
+    four_rows = 0;
+    status_rows = 0;
+    mode_query = 0;
+    mode_window = 0;
+    paired = 0;
+    changed = 0;
+    fifth_label = 0;
+    first_value = 0;
+    sixth_label = 0;
+    second_value = 0;
+    for (s32 index = 0; index < 8; index++)
+    {
+        icons[index] = 0;
+        codes[index] = 0;
+    }
+    active = 0;
+    first_display = 0;
+    second_display = 0;
+    owner = 0;
+    owner = controller;
+}
 
 /** Partial secondary selection control and its state byte. */
 void func_003592E0(SkillSecondarySelection* object)
@@ -4392,12 +4509,7 @@ s32 func_0035B4E0(SkillQueueOwner* owner)
     else if (owner->kind == 2)
     {
         owner->secondary = new (0) SkillSecondarySelection;
-        StatusOwner003580D0* status = static_cast<StatusOwner003580D0*>(::operator new(0x144, 0));
-        if (status != 0)
-        {
-            status = reinterpret_cast<StatusOwner003580D0*>(func_00359200(reinterpret_cast<u8*>(status), owner));
-        }
-        owner->status = status;
+        owner->status = new (0) StatusOwner003580D0(owner);
         owner->status_message = new (0) SkillStatusMessageWindow;
         SkillFourRowSelection* four = static_cast<SkillFourRowSelection*>(::operator new(0x104, 0));
         if (four != 0)
@@ -4405,12 +4517,7 @@ s32 func_0035B4E0(SkillQueueOwner* owner)
             four = reinterpret_cast<SkillFourRowSelection*>(func_00357EE0(reinterpret_cast<u8*>(four)));
         }
         owner->four_rows = four;
-        Record003538F0* rows = static_cast<Record003538F0*>(::operator new(0x190, 0));
-        if (rows != 0)
-        {
-            rows = reinterpret_cast<Record003538F0*>(func_00355580(reinterpret_cast<u8*>(rows), owner));
-        }
-        owner->status_rows = rows;
+        owner->status_rows = new (0) Record003538F0(owner);
         Record00352B30* query = static_cast<Record00352B30*>(::operator new(0x118, 0));
         if (query != 0)
         {
@@ -4418,20 +4525,10 @@ s32 func_0035B4E0(SkillQueueOwner* owner)
         }
         owner->mode_query = query;
         owner->mode_message = new (0) SkillModeMessageWindow;
-        SkillModeSelection* mode = static_cast<SkillModeSelection*>(::operator new(0x2EC, 0));
-        if (mode != 0)
-        {
-            mode = reinterpret_cast<SkillModeSelection*>(func_00351800(reinterpret_cast<u8*>(mode), owner));
-        }
-        owner->mode_window = mode;
+        owner->mode_window = new (0) SkillModeSelection(owner);
         owner->paired = new (0) SkillDualSelection;
         owner->text_window = new (0) SkillTextReceiver;
-        FieldClass15AE70* comparison = static_cast<FieldClass15AE70*>(::operator new(0xE4, 0));
-        if (comparison != 0)
-        {
-            comparison = reinterpret_cast<FieldClass15AE70*>(func_003498A0(reinterpret_cast<u8*>(comparison), owner));
-        }
-        owner->window = comparison;
+        owner->window = new (0) SkillComparisonDisplay(owner);
         owner->mode_query->parent = reinterpret_cast<QueryParent*>(owner);
         owner->paired->owner = owner;
         owner->secondary->func_slotf4(owner->associated);
@@ -4615,12 +4712,8 @@ void func_0035C220(SkillTransform* object, const SkillVector4* value)
 
 void func_0035C250(u8* object, float x, float y, float z)
 {
-    SkillVector4 value;
     object[0x50] = 1;
-    value.x = x;
-    value.y = y;
-    value.z = z;
-    value.w = 1.0f;
+    SkillVector4 value(x, y, z, 1.0f);
     func_4CE4C0(object + 0x30, &value);
 }
 

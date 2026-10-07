@@ -353,3 +353,8 @@ func_slot6c__16EquipClass182220Fv = 0x003487C0; // type:func
 func_slot68__16EquipClass182220Fv = 0x00348800; // type:func
 
 __dt__16EquipClass182220Fv = 0x00348CB0; // type:func
+
+func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
+func_002D5CF0 = 0x002D5CF0; // type:func absolute:True allow_duplicated:True
+func_002D6410 = 0x002D6410; // type:func absolute:True allow_duplicated:True
+func_002D6440 = 0x002D6440; // type:func absolute:True allow_duplicated:True

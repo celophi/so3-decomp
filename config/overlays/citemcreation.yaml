@@ -52,6 +52,14 @@ segments:
       - [0x80, cpp, text_003483C0]
       - [0x27040, pad, text_end]
       - [0x27080, databin, data]
+      - start: 0x27300
+        type: .rodata
+        name: text_003483C0
+        linker_section: .rodata.0036F680
+        rodata_anchors:
+          - {function: func_slotf4__22PendingInventorSummaryFPv, offset: 0x0, size: 0x38}
+        linker_section_order: .rodata
+      - [0x27338, pad, rodata_pad_0036F6B8]
       - start: 0x27340
         type: .rodata
         name: text_003483C0
@@ -76,8 +84,8 @@ segments:
         linker_section: .rodata.0036F870
         rodata_anchors:
           - {function: func_00365600, offset: 0x0, size: 0x34}
-          - {function: func_00369F20, offset: 0x40, size: 0x98}
-          - {function: func_00369FA0, offset: 0xe0, size: 0x98}
+          - {function: item_creation_inventor_skill_message, offset: 0x40, size: 0x98}
+          - {function: item_creation_inventor_skill_mask, offset: 0xe0, size: 0x98}
           - {function: func_0036BF30__32ItemCreationSelectedDisplayStateFib, offset: 0x180, size: 0x24}
         linker_section_order: .rodata
       - [0x27694, rodatabin, rodata_0036FA14]

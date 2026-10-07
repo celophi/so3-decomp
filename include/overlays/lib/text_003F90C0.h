@@ -30,6 +30,19 @@ void func_00408600(s32 index, s32 component, float* first, float* second);
  */
 s32 func_408EA0(void* detail, s32 code, s32 index, s32* kind, s32* value, s32* result_index, s32* remainder, s32 mode);
 
+/**
+ * @brief Resolve a protected detail entry and return its selected values.
+ * @param detail Detail record containing the encoded entry arrays.
+ * @param code Signed record code, from one through ten.
+ * @param index Signed entry index, from zero through forty-one.
+ * @param kind Optional destination for the entry kind.
+ * @param value Optional destination for the entry value.
+ * @param result_index Optional destination for the result index.
+ * @param remainder Optional destination for the remaining value.
+ * @return Signed lookup result, or zero when the entry is unavailable.
+ */
+s32 func_00408850(void* detail, s32 code, s32 index, s32* kind, s32* value, s32* result_index, s32* remainder);
+
 #ifdef __cplusplus
 }
 #endif

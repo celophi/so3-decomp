@@ -675,6 +675,13 @@ void func_00295D90(FieldVectorBuffer293610* object);
 void func_00298B40(FieldObject158860* object, u8* header, FieldResourceRecord273720* records);
 
 /**
+ * @brief Clear the resource bindings and set the mode from a flag.
+ * @param object Callback receiver.
+ * @param enabled Nonzero to set the mode.
+ */
+void func_00298B80(FieldObject158860* object, s32 enabled);
+
+/**
  * @brief Perform no work.
  * @param object Callback receiver.
  */
@@ -687,6 +694,13 @@ void func_00298BF0(FieldObject157AF0* object);
  * @param records Resource records to bind.
  */
 void func_0029BD70(FieldObject157AF0* object, u8* header, FieldResourceRecord273720* records);
+
+/**
+ * @brief Clear the resource bindings and set the mode from a flag.
+ * @param object Callback receiver.
+ * @param enabled Nonzero to set the mode.
+ */
+void func_0029BDB0(FieldObject157AF0* object, s32 enabled);
 
 /**
  * @brief Ignore the supplied linked object.

@@ -49,7 +49,8 @@ extern "C" void func_002CFE10(ConfigRuntimeCallbacks* callbacks, FieldClass15AE7
 /** Partial settings storage containing the protected option flags and checksums. */
 struct ConfigSettings
 {
-    u8 unk00[0x24];
+    u16 bindings[4];
+    u8 unk08[0x1C];
     u8 unk24_low : 2;
     u8 unk24 : 2;
     u8 unk24_bit4 : 1;
@@ -132,6 +133,21 @@ struct ConfigGridWindow : public FieldClass15AE70
     s16 selected;
     u8 unkaa[2];
     FieldObject23CEA0* grid;
+};
+
+/** Partial binding selector with its grid, four codes, and associated entries. */
+struct ConfigBindingWindow : public FieldClass15AE70
+{
+    u8 unka8[4];
+    FieldObject23CEA0* grid;
+    u8 unkb0[2];
+    u16 values[4];
+    u8 unkba[2];
+    LibObject178750* entries[4];
+    u8 dirty;
+    u8 unkcd[3];
+    float spacing;
+    float x;
 };
 
 /** Partial color selector and its selected component. */
@@ -366,8 +382,13 @@ static inline void set_preview_origin(ItemCreationOptionResourceDisplay* display
     display->unk50.unk24 = y;
     display->unk3c = 1;
 }
-/** @brief Set the preview rectangle position and mark its state dirty. */
-static inline void set_preview_position(ItemCreationOptionResourceDisplay* display, float x, float y)
+/**
+ * @brief Set the widget rectangle position and mark its state dirty.
+ * @param display Widget to update.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ */
+static inline void set_widget_position(LibClass178600* display, float x, float y)
 {
     display->unk18.unk00 = x;
     display->unk18.unk04 = y;
@@ -825,11 +846,57 @@ void* func_0034A080(void* object, s32 flags)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034A0E0);
+void func_0034A0E0(ConfigBindingWindow* object)
+{
+    if (D_001B643C->unk10->unk14->func_00261150() == object)
+    {
+        u16 mask = D_001B6430->context->input->mask;
+        if (mask & 0x2000)
+        {
+            func_0034A270(object, 0x2000);
+        }
+        else if (mask & 0x4000)
+        {
+            func_0034A270(object, 0x4000);
+        }
+        else if (mask & 0x1000)
+        {
+            func_0034A270(object, 0x1000);
+        }
+        else if (mask & 0x8000)
+        {
+            func_0034A270(object, 0x8000);
+        }
+        if (object->dirty == 1)
+        {
+            for (s32 i = 0; i < 4; i++)
+            {
+                LibObject178750* entry = object->entries[i];
+                float y = 16.0f + object->spacing * i;
+                entry->unk18.unk00 = object->x;
+                entry->unk18.unk04 = y;
+                entry->unk3c = 1;
+            }
+            object->dirty = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034A270);
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034A300);
+void func_0034A300(ConfigBindingWindow* object)
+{
+    D_001B643C->unk10->unk14->func_00263F50(object);
+    FieldClass153E30* state = D_001B643C->unk10->unk14;
+    state->func_00263C70(object->func_slot44());
+    static_cast<FieldClass15AE70*>(object->func_slot44())->func_slot64();
+    D_001B643C->settings->bindings[0] = object->values[0];
+    D_001B643C->settings->bindings[1] = object->values[1];
+    D_001B643C->settings->bindings[2] = object->values[2];
+    D_001B643C->settings->bindings[3] = object->values[3];
+    static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(0x1FBC);
+    func_002CFE40(D_001B643C->unk10, 2);
+}
 
 u32 func_0034A420(void* object)
 {
@@ -864,7 +931,53 @@ void ConfigOptions::func_slot5c()
     }
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034AD30);
+void func_0034AD30(ConfigOptions* object)
+{
+    if (object->unk288 == 0)
+    {
+        return;
+    }
+    if (object->unk288 == 1)
+    {
+        for (ConfigNode* node = object->list0_first.head->next; node != 0; node = node->next)
+        {
+            LibClass178600* widget = static_cast<LibClass178600*>(node->value);
+            if (widget != 0)
+            {
+                set_widget_position(widget,widget->unk18.unk00,widget->unk18.unk04 + object->unk29c);
+            }
+        }
+        for (ConfigNode* node = object->list0_second.head->next; node != 0; node = node->next)
+        {
+            LibClass178600* widget = static_cast<LibClass178600*>(node->value);
+            if (widget != 0)
+            {
+                set_widget_position(widget,widget->unk18.unk00,widget->unk18.unk04 + object->unk29c);
+            }
+        }
+        ItemCreationOptionResourceDisplay* display = object->unkf4;
+        if (display != 0)
+        {
+            set_widget_position(display,display->unk18.unk00,display->unk18.unk04 + object->unk29c);
+        }
+        object->unk298 += 1.0f;
+        if (!(object->unk298 < 4.0f))
+        {
+            object->unk288 = 0;
+        }
+        if (!(object->unk29c < 0.0f))
+        {
+            object->unk294 -= object->unk290 / 4.0f;
+        }
+        else
+        {
+            object->unk294 += object->unk290 / 4.0f;
+        }
+        ItemCreationClass1725D0* indicator = object->unk28c;
+        indicator->unk54 = object->unk294;
+        indicator->unk3c = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034AEC0);
 
@@ -1306,7 +1419,7 @@ void func_0034BA10(ConfigOptions* object, u16 input)
     }
 }
 
-void func_0034BB60(ConfigOptions* object)
+void func_0034BB60(ConfigOptions* object, u16 input)
 {
     LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list14_first), 0)->value);
     LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list14_first), 1)->value);
@@ -1939,7 +2052,65 @@ void func_0034D040(ConfigOptions* object, u16 input)
     }
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034D180);
+void func_0034D180(ConfigOptions* object, u32 index, u16 bits)
+{
+    switch (index)
+    {
+    case 0:
+        func_0034D040(object, bits);
+        break;
+    case 1:
+        func_0034CD00(object, bits);
+        break;
+    case 2:
+        func_0034CBB0(object, bits);
+        break;
+    case 3:
+        func_0034CA40(object, bits);
+        break;
+    case 5:
+        func_0034C900(object, bits);
+        break;
+    case 6:
+        func_0034C7C0(object, bits);
+        break;
+    case 7:
+        func_0034C600(object, bits);
+        break;
+    case 8:
+        func_0034C380(object, bits);
+        break;
+    case 9:
+        func_0034C260(object, bits);
+        break;
+    case 10:
+        func_0034C140(object, bits);
+        break;
+    case 11:
+        func_0034BF40(object, bits);
+        break;
+    case 12:
+        func_0034BD70(object, bits);
+        break;
+    case 13:
+        func_0034BB60(object, bits);
+        break;
+    case 4:
+        func_0034BA10(object, bits);
+        break;
+    }
+    func_0034B430(object, index);
+    if (object->unkb2 != index)
+    {
+        object->unkb2 = index;
+    }
+    s32 key = func_00350270(object, object->selected);
+    if (key != object->unkb8)
+    {
+        static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(key);
+        object->unkb8 = key;
+    }
+}
 
 void ConfigOptions::func_slotac()
 {
@@ -1952,7 +2123,7 @@ void ConfigOptions::func_slotac()
         }
         else
         {
-            func_0034D180(this, selected, 0x20);
+            func_0034D180(this, static_cast<u8>(selected), 0x20);
             func_002CFE40(D_001B643C->unk10, 0);
         }
     }
@@ -1969,7 +2140,7 @@ void ConfigOptions::func_slota8()
         }
         else
         {
-            func_0034D180(this, selected, 0x80);
+            func_0034D180(this, static_cast<u8>(selected), 0x80);
             func_002CFE40(D_001B643C->unk10, 0);
         }
     }
@@ -3263,7 +3434,7 @@ void func_00351FD0(ConfigPreviewState* object)
         if (window->display != 0)
         {
             set_preview_origin(window->display, 128.0f, 128.0f);
-            set_preview_position(window->display, 320.0f, 240.0f);
+            set_widget_position(window->display, 320.0f, 240.0f);
             if (flag != 0)
             {
                 set_preview_scale(window->display, 1.05f, 1.4f);

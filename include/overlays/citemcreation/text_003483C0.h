@@ -12,48 +12,6 @@
 #include "overlays/1067-00/text_002D5260.h"
 #endif
 
-/** Partial owner of four displayed position pairs and their update flags. */
-typedef struct ItemCreationFourPositionDisplay
-{
-    u8 unk00[0x1C];
-    float unk1c;
-    float unk20;
-    u8 unk24[0x1C];
-    u8 unk40;
-    u8 unk41[0xEF];
-    float unk130;
-    float unk134;
-    u8 unk138[0x1C];
-    u8 unk154;
-    u8 unk155[0xEF];
-    float unk244;
-    float unk248;
-    u8 unk24c[0x1C];
-    u8 unk268;
-    u8 unk269[0xEF];
-    float unk358;
-    float unk35c;
-    u8 unk360[0x1C];
-    u8 unk37c;
-} ItemCreationFourPositionDisplay;
-
-/** Partial owner of the six alternate marker flags and their display. */
-typedef struct ItemCreationFlagToggleOwner
-{
-    u8 unk00[0x15C];
-    struct ItemCreationNested* unk15c;
-    u8 unk160[0x2C];
-    struct ItemCreationNested* unk18c;
-    struct ItemCreationNested* unk190;
-    struct ItemCreationNested* unk194;
-    struct ItemCreationNested* unk198;
-    struct ItemCreationNested* unk19c;
-    struct ItemCreationNested* unk1a0;
-} ItemCreationFlagToggleOwner;
-
-typedef struct ItemCreationOptionDisplay ItemCreationOptionDisplay;
-typedef struct ItemCreationOptionTransferOwner ItemCreationOptionTransferOwner;
-
 /** Partial nested object with a flag byte. */
 typedef struct ItemCreationFlagNode
 {
@@ -61,38 +19,11 @@ typedef struct ItemCreationFlagNode
     u8 unk3f;
 } ItemCreationFlagNode;
 
-/** Partial color display with its update byte and packed color. */
-typedef struct ItemCreationColorDisplay
-{
-    u8 unk00[0x3C];
-    u8 unk3c;
-    u8 unk3d[0x57];
-    u32 unk94;
-} ItemCreationColorDisplay;
-
-/** Partial value display with its update, visibility, and value fields. */
-typedef struct ItemCreationValueDisplay
-{
-    u8 unk00[0x3C];
-    u8 unk3c;
-    u8 unk3d[2];
-    u8 unk3f;
-    u8 unk40[0xBC];
-    u32 unkfc;
-} ItemCreationValueDisplay;
-
-/** Partial wrapper containing an optional display marker. */
-typedef struct ItemCreationMarkerOwner
-{
-    u8 unk00[0x30];
-    ItemCreationFlagNode* unk30;
-} ItemCreationMarkerOwner;
-
 #ifdef __cplusplus
-class ItemCreationClass185D60;
-class ItemCreationClass186670;
+class AbortDevelopmentDialog;
+class ItemSubmissionDialog;
 #else
-struct ItemCreationClass185D60;
+struct AbortDevelopmentDialog;
 #endif
 /** Resource window with native primary vtable at 0x186770 and extent 0x1C4. */
 typedef struct ItemCreationClass186770
@@ -129,9 +60,9 @@ typedef struct ItemCreationClass186770
     s8 unk109;
     u8 unk10a[2];
     struct FieldObject23CEA0* unk10c;
-    struct ItemCreationClass186670* unk110;
-    struct ItemCreationClass186070* unk114;
-    struct ItemCreationClass185B60* unk118;
+    struct ItemSubmissionDialog* unk110;
+    struct ItemDetailsWindow* unk114;
+    struct InadequateLineDialog* unk118;
     struct FieldClass15B200* unk11c[3];
     struct FieldClass15B200* unk128[3];
     struct LibObject178750* unk134[3];
@@ -143,46 +74,8 @@ typedef struct ItemCreationClass186770
     struct ItemCreationOptionResourceDisplay* unk174[12];
     u8 unk1a4[0x18];
     u8 unk1bc;
-    struct ItemCreationClass185D60* unk1c0;
+    struct AbortDevelopmentDialog* unk1c0;
 } ItemCreationNineResourceView;
-
-/** Partial owner of two direct color displays and their guarded selector. */
-typedef struct ItemCreationDirectColorOwner
-{
-    u8 unk00[0xAC];
-    ItemCreationColorDisplay* unkac;
-    ItemCreationColorDisplay* unkb0;
-    struct FieldState23B3A0* unkb4;
-    struct FieldObject23B950* unkb8;
-} ItemCreationDirectColorOwner;
-
-/** Partial owner of a two-item color list, selector, and target display. */
-typedef struct ItemCreationTwoColorList
-{
-    u8 unk00[0x2C];
-    ItemCreationList unk2c;
-    u8 unk30[0x7C];
-    struct FieldState23B3A0* unkac;
-    struct FieldObject23B950* unkb0;
-} ItemCreationTwoColorList;
-
-/** Partial owner of a three-item color list, selector, and target display. */
-typedef struct ItemCreationThreeColorList
-{
-    u8 unk00[0x2C];
-    ItemCreationList unk2c;
-    u8 unk30[0x7C];
-    struct FieldState23B3A0* unkac;
-    struct FieldObject23B950* unkb0;
-} ItemCreationThreeColorList;
-
-/** Partial owner of eight color displays and an optional auxiliary flag. */
-typedef struct ItemCreationEightColorOwner
-{
-    u8 unk00[0x168];
-    ItemCreationColorDisplay* unk168[8];
-    ItemCreationFlagNode* unk188;
-} ItemCreationEightColorOwner;
 
 /** Partial owner of twelve nested flag objects. */
 typedef struct ItemCreationFlagGroups
@@ -191,48 +84,14 @@ typedef struct ItemCreationFlagGroups
     ItemCreationFlagNode* unk174[12];
 } ItemCreationFlagGroups;
 
-/** Partial display containing the position state and its update flags. */
-typedef struct ItemCreationTransferDisplay
-{
-    u8 unk00[0x3C];
-    u8 unk3c;
-    u8 unk3d[2];
-    u8 unk3f;
-    u8 unk40[0x10];
-    float unk50;
-    float unk54;
-    u8 unk58[0x18];
-    float unk70;
-    u8 unk74;
-    u8 unk75;
-} ItemCreationTransferDisplay;
-
-/** Partial owner of the nested flag objects cleared by its reset routine. */
-typedef struct ItemCreationFlagResetOwner
-{
-    u8 unk00[0xDC];
-    ItemCreationSelection unkdc;
-    ItemCreationTransferDisplay* unk15c;
-    struct ItemCreationSelection* unk160;
-    struct ItemCreationSelectedDisplayState* unk164;
-    u8 unk168[4];
-    struct ItemCreationTransferDisplay* unk16c;
-    u8 unk170[9];
-    u8 unk179;
-    u8 unk17a[2];
-    ItemCreationFlagNode* unk17c[9];
-    u8 unk1a0[4];
-    ItemCreationFlagNode* unk1a4[3];
-    u8 unk1b0;
-    u8 unk1b1;
-    u8 unk1b2[2];
-    ItemCreationFlagNode* unk1b4[9];
-    u8 unk1d8[4];
-    ItemCreationFlagNode* unk1dc[3];
-} ItemCreationFlagResetOwner;
+#ifdef __cplusplus
+class InventorTransferWindow;
+#else
+typedef struct InventorTransferWindow InventorTransferWindow;
+#endif
 
 #ifdef __cplusplus
-/** Partial virtual interface of the item creation window at 0x185A60. */
+/** @brief Workshop-map window base with twelve selectable workshop positions. */
 class ItemCreationClass185A60 : public FieldClass15AE70
 {
 public:
@@ -275,7 +134,7 @@ public:
     ItemCreationSelectedDisplayState* unka8;
     void* unkac[12];
     ItemCreationSelection unkdc;
-    ItemCreationTransferDisplay* unk15c;
+    LibClass175030* unk15c;
     /**
      * @brief Create and attach the selection transfer display.
      * @param x Horizontal coordinate.
@@ -285,12 +144,12 @@ public:
     s32 create_selection_display_status(float x, float y);
 };
 
-/** Partial virtual interface of the item creation window at 0x185860. */
-class ItemCreationClass185860 : public FieldClass15AE70
+/** @brief Base window for a six-inventor transfer strip. */
+class TransferInventorStrip : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window storage through its Field base. */
-    ItemCreationClass185860()
+    TransferInventorStrip()
     {
         unkc4 = 0;
         unka8 = 0;
@@ -302,7 +161,7 @@ public:
         unkcc = 0;
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass185860()
+    virtual ~TransferInventorStrip()
     {
     }
     /**
@@ -310,6 +169,8 @@ public:
      * @return Always one.
      */
     virtual s32 func_slotb0();
+    /** @brief Transfer the selected inventor into its workshop strip and refresh the markers. */
+    virtual void func_slot5c();
     /**
      * @brief Clear the selected option and restore the active view.
      * @return Always two.
@@ -346,15 +207,15 @@ public:
     struct ItemCreationOptionResourceDisplay* unkac[6];
     ItemCreationSelectedDisplayState* unkc4;
     struct FieldObject23CEA0* unkc8;
-    ItemCreationFlagResetOwner* unkcc;
+    InventorTransferWindow* unkcc;
 };
 
-/** Partial option window derived from the interface at 0x185860. */
-class ItemCreationClass185660 : public ItemCreationClass185860
+/** @brief Destination inventor strip used during inventor transfer. */
+class DestinationInventorStrip : public TransferInventorStrip
 {
 public:
     /** @brief Destroy the option window and its base. */
-    virtual ~ItemCreationClass185660();
+    virtual ~DestinationInventorStrip();
     /** @brief Apply the selected option and refresh its associated window. @return Always one. */
     virtual s32 func_slotb0();
     /** @brief Reset the option and restore its associated selection display. @return Always two. */
@@ -372,12 +233,12 @@ public:
     virtual void func_slotf8(s32 direction);
 };
 
-/** Partial option window derived from the interface at 0x185860. */
-class ItemCreationClass185760 : public ItemCreationClass185860
+/** @brief Source inventor strip used during inventor transfer. */
+class SourceInventorStrip : public TransferInventorStrip
 {
 public:
     /** @brief Destroy the option window and its base. */
-    virtual ~ItemCreationClass185760();
+    virtual ~SourceInventorStrip();
     /** @brief Apply the selected option and refresh its associated window. @return Always one. */
     virtual s32 func_slotb0();
     /** @brief Reset the option and restore its associated selection display. @return Always two. */
@@ -395,14 +256,14 @@ public:
     virtual void func_slotf8(s32 direction);
 };
 
-/** Partial virtual interface of the item creation window at 0x185460. */
-class ItemCreationClass185460 : public ItemCreationClass185A60
+/** @brief Workshop selector showing installed facilities and assignment controls. */
+class WorkshopSelectionWindow : public ItemCreationClass185A60
 {
 public:
     /** @brief Initialize the selection window and its display pointers. */
-    ItemCreationClass185460();
+    WorkshopSelectionWindow();
     /** @brief Destroy the selection window through its base. */
-    virtual ~ItemCreationClass185460();
+    virtual ~WorkshopSelectionWindow();
     /** @brief Forward direction 2 to the window. */
     virtual void func_slot74();
     /** @brief Forward direction 4 to the window. */
@@ -411,28 +272,28 @@ public:
     virtual void func_slot6c();
     /** @brief Forward direction 1 to the window. */
     virtual void func_slot68();
-    /** @brief Open the selected detail window or restore the associated window. @return Action status. */
+    /** @brief Confirm inventor assignment or show the workshop-full warning. @return Action status. */
     virtual s32 func_slotb0();
-    /** @brief Restore the alternate window and its mode displays. @return Always one. */
+    /** @brief Activate the workshop inventor strip and its talent display. @return Always one. */
     virtual s32 func_slotbc();
     /** @brief Move the selection and refresh the associated detail windows. @param direction Direction code. */
     virtual void func_slotf8(u16 direction);
-    /** @brief Build the option grid and its resource displays. @param associated Associated resource slot. @return Creation status. */
+    /** @brief Create the workshop selector, facility labels and assignment controls. @param associated Associated resource slot. @return Creation status. */
     virtual s32 func_slotf4(void* associated);
-    ItemCreationSelection* unk160;
-    LibObject178750* unk164;
-    LibClass178600* unk168[9];
-    class ItemCreationClass174C40* unk18c;
-    class ItemCreationClass174C40* unk190;
-    class ItemCreationClass174C40* unk194;
-    LibObject178750* unk198;
-    LibObject178750* unk19c;
-    LibObject178750* unk1a0;
-    class ItemCreationClass185060* unk1a4;
+    ItemCreationSelection* workshop_selection;
+    LibObject178750* workshop_name;
+    LibObject178750* facility_labels[9];
+    class ItemCreationClass174C40* register_button;
+    class ItemCreationClass174C40* back_button;
+    class ItemCreationClass174C40* view_button;
+    LibObject178750* register_label;
+    LibObject178750* back_label;
+    LibObject178750* view_label;
+    class WorkshopFullDialog* workshop_full_dialog;
 };
 
-/** Partial virtual interface of the item creation window at 0x185960. */
-class ItemCreationClass185960 : public ItemCreationClass185A60
+/** @brief Inventor transfer window showing source and destination workshops. */
+class InventorTransferWindow : public ItemCreationClass185A60
 {
 public:
     /**
@@ -446,9 +307,9 @@ public:
      */
     virtual s32 func_slotb4();
     /** @brief Initialize the selection window and its display pointers. */
-    ItemCreationClass185960();
+    InventorTransferWindow();
     /** @brief Destroy the selection window through its base. */
-    virtual ~ItemCreationClass185960();
+    virtual ~InventorTransferWindow();
     /** @brief Forward direction 2 to the window. */
     virtual void func_slot74();
     /** @brief Forward direction 4 to the window. */
@@ -458,37 +319,37 @@ public:
     /** @brief Forward direction 1 to the window. */
     virtual void func_slot68();
     virtual s32 func_slotf4(void* associated);
-    ItemCreationSelection* unk160;
-    ItemCreationSelectedDisplayState* unk164;
+    ItemCreationSelection* workshop_selection;
+    ItemCreationSelectedDisplayState* selection_state;
     u8 unk168[4];
-    ItemCreationTransferDisplay* unk16c;
-    u8 unk170;
+    LibClass175030* unk16c;
+    u8 current_workshop_id;
     u8 unk171[3];
-    LibObject178750* unk174;
-    u8 unk178;
-    u8 unk179;
+    LibObject178750* current_workshop_name;
+    u8 source_workshop_id;
+    u8 source_inventor_id;
     u8 unk17a[2];
-    LibClass174EF0* unk17c;
-    LibClass174EF0* unk180[9];
-    LibClass174EF0* unk1a4[3];
-    u8 unk1b0;
-    u8 unk1b1;
+    LibClass174EF0* source_workshop_name;
+    LibClass174EF0* source_facility_labels[9];
+    LibClass174EF0* source_inventor_widgets[3];
+    u8 destination_workshop_id;
+    u8 destination_inventor_id;
     u8 unk1b2[2];
-    LibClass174EF0* unk1b4;
-    LibClass174EF0* unk1b8[9];
-    LibClass174EF0* unk1dc[3];
+    LibClass174EF0* destination_workshop_name;
+    LibClass174EF0* destination_facility_labels[9];
+    LibClass174EF0* destination_inventor_widgets[3];
 };
 
-/** Partial item creation window with primary vtable at 0x185060. */
-class ItemCreationClass185060 : public FieldClass15AE70
+/** @brief Warning dialog shown when a workshop has no room for another inventor. */
+class WorkshopFullDialog : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window storage through its Field base. */
-    ItemCreationClass185060()
+    WorkshopFullDialog()
     {
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass185060();
+    virtual ~WorkshopFullDialog();
     /** @brief Restore the parent after confirming. @return One. */
     virtual s32 func_slotb0();
     /** @brief Restore the parent after returning. @return Two. */
@@ -497,16 +358,16 @@ public:
     virtual s32 func_slotf4(void* associated);
 };
 
-/** Partial item creation window with primary vtable at 0x185160. */
-class ItemCreationClass185160 : public FieldClass15AE70
+/** @brief Confirmation dialog for assigning an inventor to a workshop. */
+class AssignInventorDialog : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window storage through its Field base. */
-    ItemCreationClass185160() : unka8(0), unkac(0), unkb0(0), unkb4(0), unkb8(0), unkbc(0), unkc0(0), unkc4(0), unkc5(0)
+    AssignInventorDialog() : unka8(0), unkac(0), unkb0(0), unkb4(0), unkb8(0), unkbc(0), unkc0(0), unkc4(0), unkc5(0)
     {
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass185160();
+    virtual ~AssignInventorDialog();
     /** @brief Restore the associated window. @return Always two. */
     virtual s32 func_slotb4();
     /** @brief Apply the current option. @return Action status. */
@@ -529,16 +390,16 @@ public:
     u8 unkc6[2];
 };
 
-/** Partial item creation window with primary vtable at 0x185260. */
-class ItemCreationClass185260 : public FieldClass15AE70
+/** @brief Summary of the unassigned inventor pending workshop assignment. */
+class PendingInventorSummary : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window storage through its Field base. */
-    ItemCreationClass185260() : unka8(0), unkac(0), unkb0(0), unkb4(0), unkb8(0), unkbc(0), unkc0(0)
+    PendingInventorSummary() : unka8(0), unkac(0), unkb0(0), unkb4(0), unkb8(0), unkbc(0), unkc0(0)
     {
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass185260();
+    virtual ~PendingInventorSummary();
     /** @brief Build the selected detail displays. @param associated Text source. @return One. */
     virtual s32 func_slotf4(void* associated);
     ItemCreationSelectedDisplayState* unka8;
@@ -551,27 +412,27 @@ public:
     LibObject174F20* unkc0;
 };
 
-/** Partial item creation window with primary vtable at 0x185360. */
-class ItemCreationClass185360 : public FieldClass15AE70
+/** @brief Selectable portrait strip for a workshop's assigned NPC inventors. */
+class WorkshopInventorStrip : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window storage through its Field base. */
-    ItemCreationClass185360()
+    WorkshopInventorStrip()
     {
         for (s32 i = 0; i < 6; i++)
         {
-            unkac[i] = 0;
-            unkcc[i] = 0;
-            unkd2[i] = 0;
+            inventor_portraits[i] = 0;
+            portrait_indices[i] = 0;
+            inventor_ids[i] = 0;
         }
-        unka8 = 0;
-        unkc4 = 0;
-        unkc8 = 0;
-        unkc9 = 0;
-        unkca = -1;
+        selection_state = 0;
+        inventor_grid = 0;
+        inventor_count = 0;
+        workshop_id = 0;
+        selected_inventor_index = -1;
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass185360();
+    virtual ~WorkshopInventorStrip();
     /** @brief Move the grid in direction two and refresh the alternate display. */
     virtual void func_slot74();
     /** @brief Move the grid in direction three and refresh the alternate display. */
@@ -582,48 +443,48 @@ public:
     virtual s32 func_slotb4();
     /** @brief Create the row displays and selection grid. @param associated Text source. @return Setup status. */
     virtual s32 func_slotf4(void* associated);
-    ItemCreationSelectedDisplayState* unka8;
-    ItemCreationOptionResourceDisplay* unkac[6];
-    FieldObject23CEA0* unkc4;
-    u8 unkc8;
-    u8 unkc9;
-    s16 unkca;
-    u8 unkcc[6];
-    u8 unkd2[6];
+    ItemCreationSelectedDisplayState* selection_state;
+    ItemCreationOptionResourceDisplay* inventor_portraits[6];
+    FieldObject23CEA0* inventor_grid;
+    u8 inventor_count;
+    u8 workshop_id;
+    s16 selected_inventor_index;
+    u8 portrait_indices[6];
+    u8 inventor_ids[6];
 };
 
-/** Partial item creation window with primary vtable at 0x185560. */
-class ItemCreationClass185560 : public FieldClass15AE70
+/** @brief Inventor name and eight creation-skill talent displays. */
+class InventorTalentsWindow : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window storage through its Field base. */
-    ItemCreationClass185560() : unka8(0), unkac(0)
+    InventorTalentsWindow() : selection_state(0), inventor_name(0)
     {
         for (s32 i = 0; i < 9; i++)
         {
-            unkb0[i] = 0;
-            unkd4[i] = 0;
+            skill_labels[i] = 0;
+            skill_values[i] = 0;
         }
-        unkf8 = 0;
+        selected_inventor_id = 0;
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass185560();
-    /** @brief Create the selected option title and channel labels and images. @param associated Text source. @return Always one. */
+    virtual ~InventorTalentsWindow();
+    /** @brief Create the inventor title, skill labels and numeric talent displays. @param associated Text source. @return Always one. */
     virtual s32 func_slotf4(void* associated);
-    ItemCreationSelectedDisplayState* unka8;
-    LibObject178750* unkac;
-    void* unkb0[9];
-    void* unkd4[9];
-    u8 unkf8;
+    ItemCreationSelectedDisplayState* selection_state;
+    LibObject178750* inventor_name;
+    LibObject178750* skill_labels[9];
+    LibObject174F20* skill_values[9];
+    u8 selected_inventor_id;
     u8 unkf9[3];
 };
 
-/** Partial item creation window with primary vtable at 0x185B60. */
-class ItemCreationClass185B60 : public FieldClass15AE70
+/** @brief Warning dialog for an inadequate development line. */
+class InadequateLineDialog : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window and attach its State. @param state Owning selection State. */
-    ItemCreationClass185B60(ItemCreationSelectedDisplayState* state) : unka8(0)
+    InadequateLineDialog(ItemCreationSelectedDisplayState* state) : unka8(0)
     {
         unka8 = state;
         unkac = 0;
@@ -631,7 +492,7 @@ public:
         unkb0 = 0;
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass185B60();
+    virtual ~InadequateLineDialog();
     /** @brief Create the window controls. @param associated Associated source. @return Setup status. */
     virtual s32 func_slotf4(void* associated);
     ItemCreationSelectedDisplayState* unka8;
@@ -640,16 +501,16 @@ public:
     LibObject178750* unkb0;
 };
 
-/** Window with resident vtable 0x186270 and no storage beyond the Field base. */
-class ItemCreationClass186270 : public FieldClass15AE70
+/** @brief Warning dialog for insufficient Fol to begin development. */
+class InsufficientFolDialog : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the Field window base. */
-    ItemCreationClass186270()
+    InsufficientFolDialog()
     {
     }
     /** @brief Destroy the Field window base. */
-    virtual ~ItemCreationClass186270();
+    virtual ~InsufficientFolDialog();
     /** @brief Return to the associated window. @return Always one. */
     virtual s32 func_slotb0();
     /** @brief Handle the alternate action. @return Action status. */
@@ -658,16 +519,16 @@ public:
     virtual s32 func_slotf4(void* associated);
 };
 
-/** Partial 0xA8-byte window with resident vtable at 0x186370. */
-class ItemCreationClass186370 : public FieldClass15AE70
+/** @brief Completion dialog shown after all development lines have finished. */
+class DevelopmentCompleteDialog : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the Field window base. */
-    ItemCreationClass186370()
+    DevelopmentCompleteDialog()
     {
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass186370();
+    virtual ~DevelopmentCompleteDialog();
     /** @brief Handle the window action. @return Handler status. */
     virtual s32 func_slotb0();
     /** @brief Run the default alternate action. @return Always zero. */
@@ -700,16 +561,16 @@ struct LibObject174F20;
 struct LibObject172440;
 class ItemCreationClass172870;
 
-/** Field window with resident vtable at 0x186070. */
-class ItemCreationClass186070 : public FieldClass15AE70
+/** @brief Item detail window showing its name, description, quantity and factors. */
+class ItemDetailsWindow : public FieldClass15AE70
 {
 public:
     /** @brief Release the container and base window contents. */
     virtual void func_slot0c();
     /** @brief Initialize the window and keep its selection state. @param object Selection state. */
-    ItemCreationClass186070(ItemCreationSelectedDisplayState* object);
+    ItemDetailsWindow(ItemCreationSelectedDisplayState* object);
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass186070();
+    virtual ~ItemDetailsWindow();
     /** @brief Handle the window action. @return Handler status. */
     virtual s32 func_slotb0();
     /** @brief Run the default alternate action. @return Always zero. */
@@ -754,16 +615,16 @@ public:
     LibClass178630* unkf8;
 };
 
-/** Partial Field window interface with resident vtable at 0x186470. */
-class ItemCreationClass186470 : public FieldClass15AE70
+/** @brief Failure dialog for a line that created no items. */
+class LineFailureDialog : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window through its Field base. */
-    ItemCreationClass186470()
+    LineFailureDialog()
     {
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass186470();
+    virtual ~LineFailureDialog();
     /** @brief Handle the window action. @return Handler status. */
     virtual s32 func_slotb0();
     /** @brief Run the default alternate action. @return Always zero. */
@@ -792,12 +653,12 @@ public:
     LibObject178750* unka8;
 };
 
-/** Partial Field window interface with resident vtable at 0x186570. */
-class ItemCreationClass186570 : public FieldClass15AE70
+/** @brief Success dialog for an invented item. */
+class InventionSuccessDialog : public FieldClass15AE70
 {
 public:
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass186570();
+    virtual ~InventionSuccessDialog();
     /** @brief Handle the window action. @return Handler status. */
     virtual s32 func_slotb0();
     /** @brief Run the default alternate action. @return Always zero. */
@@ -826,31 +687,35 @@ public:
     LibObject178750* unka8;
 };
 
-/** Partial item creation window with primary vtable at 0x185C60. */
-class ItemCreationClass185C60 : public FieldClass15AE70
+/** @brief Framed background panel for the development controls. */
+class DevelopmentControlPanel : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window storage through its Field base. */
-    ItemCreationClass185C60() : unka8(0)
+    DevelopmentControlPanel() : unka8(0)
     {
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass185C60();
+    virtual ~DevelopmentControlPanel();
     /** @brief Create the action panel and frames. @param associated Associated object. @return Always one. */
     virtual s32 func_slotf4(void* associated);
     void* unka8;
 };
 
-/** Partial item creation window with primary vtable at 0x185D60. */
-class ItemCreationClass185D60 : public FieldClass15AE70
+/** @brief Development-abort confirmation with all-line and current-line choices. */
+class AbortDevelopmentDialog : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window storage through its Field base. */
-    ItemCreationClass185D60() : unka8(0), unkac(0), unkb0(0)
+    AbortDevelopmentDialog() : unka8(0), unkac(0), unkb0(0)
     {
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass185D60();
+    virtual ~AbortDevelopmentDialog();
+    /** @brief Move backward through the dialog choices and refresh their colors and target. */
+    virtual void func_slot68();
+    /** @brief Advance the dialog choices and refresh their colors and target. */
+    virtual void func_slot6c();
     /** @brief Apply the selected result action. @return Action status. */
     virtual s32 func_slotb0();
     /** @brief Restore the third row and associated resource window. @return Always two. */
@@ -862,14 +727,14 @@ public:
     FieldClass153170* unkb0;
 };
 
-class ItemCreationClass185F60;
+class InventorStatusList;
 
-/** Option window with primary vtable at 0x185E60. */
-class ItemCreationClass185E60 : public FieldClass15AE70
+/** @brief Inventor status window showing contract, skill and work state. */
+class InventorStatusWindow : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window storage through its Field base. */
-    ItemCreationClass185E60()
+    InventorStatusWindow()
     {
         unka8 = 0;
         unkac = 0;
@@ -879,7 +744,7 @@ public:
         unkbc = 0;
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass185E60();
+    virtual ~InventorStatusWindow();
     /** @brief Update the option window and its active container. */
     virtual void func_slot5c();
     /** @brief Create the option window widgets. @param associated Associated source. @return Always one. */
@@ -888,21 +753,25 @@ public:
     u32 unkac;
     u32 unkb0;
     u32 unkb4;
-    ItemCreationClass185F60* unkb8;
+    InventorStatusList* unkb8;
     u8 unkbc;
     u8 unkbd[0x1F];
 };
 
-/** 0xB8-byte item creation window with primary vtable at 0x186670. */
-class ItemCreationClass186670 : public FieldClass15AE70
+/** @brief Confirmation dialog for requesting item submission. */
+class ItemSubmissionDialog : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window storage through its Field base. */
-    ItemCreationClass186670() : unka8(0), unkac(0)
+    ItemSubmissionDialog() : unka8(0), unkac(0)
     {
     }
     /** @brief Destroy the window through its Field base. */
-    virtual ~ItemCreationClass186670();
+    virtual ~ItemSubmissionDialog();
+    /** @brief Move backward through the dialog choices and refresh their colors and target. */
+    virtual void func_slot68();
+    /** @brief Advance the dialog choices and refresh their colors and target. */
+    virtual void func_slot6c();
     /** @brief Apply the selected action. @return Action status. */
     virtual s32 func_slotb0();
     /** @brief Restore the associated resource window. @return Always two. */
@@ -915,12 +784,9 @@ public:
     LibObject178750* unkb4;
 };
 
-
-
-
 class LibClass1721F0;
 
-/** Option row callback interface with resident vtable at 0x185030. */
+/** @brief Base storage for an inventor status row. */
 class ItemCreationClass185030
 {
 public:
@@ -938,16 +804,16 @@ public:
     virtual float func_slot18();
 };
 
-/** Four embedded text widgets behind the common row callback interface. */
-class ItemCreationClass186050 : public ItemCreationClass185030
+/** @brief Inventor status row showing name, contract, skill and work state. */
+class InventorStatusRow : public ItemCreationClass185030
 {
 public:
     /** @brief Initialize the four text widgets. */
-    ItemCreationClass186050()
+    InventorStatusRow()
     {
     }
     /** @brief Destroy the four text widgets and row interface. */
-    virtual ~ItemCreationClass186050();
+    virtual ~InventorStatusRow();
     /** @brief Update the row flag. @param source Row owner. @param value Current flag. */
     virtual void func_slot0c(LibClass1721F0* source, u8 value);
     /** @brief Update the row index. @param source Row owner. @param index Current index. */
@@ -960,7 +826,7 @@ public:
     LibObject178750 unk340;
 };
 
-/** Kind-2 widget over the 0x90-byte resident widget base. */
+/** @brief Panel widget used by the item-creation windows. */
 class ItemCreationClass184F30 : public LibClass178630
 {
 public:
@@ -970,7 +836,7 @@ public:
     virtual ~ItemCreationClass184F30();
 };
 
-/** Seven-widget aggregate with its dispatch pointer after the stored state. */
+/** @brief Child-widget aggregate embedded in the item-creation display container. */
 class ItemCreationClass1723F0
 {
 public:
@@ -1000,7 +866,7 @@ public:
     virtual void func_00413020();
 };
 
-/** Container with its seven-widget aggregate as a second base. */
+/** @brief Display container for item-creation child widgets. */
 class ItemCreationClass184F60 : public LibObject178660, public ItemCreationClass1723F0
 {
 public:
@@ -1010,16 +876,16 @@ public:
     virtual ~ItemCreationClass184F60();
 };
 
-/** Window with MAIN vtable 0x186170 and no storage beyond the Field base. */
-class ItemCreationClass186170 : public FieldClass15AE70
+/** @brief Warning dialog for missing modification materials. */
+class MissingMaterialsDialog : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the Field window base. */
-    ItemCreationClass186170()
+    MissingMaterialsDialog()
     {
     }
     /** @brief Destroy the Field window base. */
-    virtual ~ItemCreationClass186170();
+    virtual ~MissingMaterialsDialog();
     /** @brief Handle the return action. @return Action status. */
     virtual s32 func_slotb0();
     /** @brief Handle the alternate action. @return Action status. */
@@ -1035,7 +901,7 @@ extern "C" {
  * @brief Refresh the selected item's child window displays.
  * @param object Child window receiver.
  */
-void func_00352DE0(struct ItemCreationClass186070* object);
+void func_00352DE0(struct ItemDetailsWindow* object);
 
 /**
  * @brief Create the resource displays for the twelve-option selection grid.
@@ -1049,21 +915,21 @@ s32 func_0034FA70(struct ItemCreationClass185A60* object);
  * @param object Result window.
  * @param mode Mode to store; zero through two select a resource.
  */
-void func_003500D0(struct ItemCreationClass185B60* object, u8 mode);
+void func_003500D0(struct InadequateLineDialog* object, u8 mode);
 
 /**
  * @brief Restore the associated window and dispatch the result state.
  * @param object Result window.
  * @return Always one.
  */
-s32 func_0034FE00(struct ItemCreationClass185B60* object);
+s32 func_0034FE00(struct InadequateLineDialog* object);
 
 /**
  * @brief Restore the associated window and dispatch the result state.
  * @param object Result window.
  * @return Always one.
  */
-s32 func_0034FF70(struct ItemCreationClass185B60* object);
+s32 func_0034FF70(struct InadequateLineDialog* object);
 
 /**
  * @brief Create and attach the result window's display widgets.
@@ -1071,13 +937,7 @@ s32 func_0034FF70(struct ItemCreationClass185B60* object);
  * @param associated Object associated with the window.
  * @return Always one.
  */
-s32 func_003501B0(struct ItemCreationClass185B60* object, void* associated);
-
-/**
- * @brief Transfer the selected option into its list display and refresh the option markers.
- * @param object Owner of the six-slot option list, valid selected index, and marker display.
- */
-void func_0034CE00(ItemCreationOptionTransferOwner* object);
+s32 func_003501B0(struct InadequateLineDialog* object, void* associated);
 
 /**
  * @brief Refresh the nine resource displays and count their active entries.
@@ -1101,110 +961,66 @@ void func_00356FD0(ItemCreationNineResourceView* object);
 void func_003568F0(ItemCreationClass186770* object, u8 index, u8 mode, u8 active);
 
 /**
- * @brief Advance an enabled selector and refresh its two displays and target.
- * @param object Owner of the displays, selector, and target display.
- */
-void func_00358240(ItemCreationDirectColorOwner* object);
-
-/**
- * @brief Move an enabled selector backward and refresh its two displays and target.
- * @param object Owner of the displays, selector, and target display.
- */
-void func_00358340(ItemCreationDirectColorOwner* object);
-
-/**
- * @brief Advance the selector and refresh the colors and target of the two-item list.
- * @param object Owner of the item list, selector, and target display.
- */
-void func_00355670(ItemCreationTwoColorList* object);
-
-/**
- * @brief Move the selector backward and refresh the colors and target of the two-item list.
- * @param object Owner of the item list, selector, and target display.
- */
-void func_00355740(ItemCreationTwoColorList* object);
-
-/**
- * @brief Advance the selector and refresh the colors and target of the three-item list.
- * @param object Owner of the item list, selector, and target display.
- */
-void func_00350E00(ItemCreationThreeColorList* object);
-
-/**
- * @brief Move the selector backward and refresh the colors and target of the three-item list.
- * @param object Owner of the item list, selector, and target display.
- */
-void func_00350ED0(ItemCreationThreeColorList* object);
-
-/**
- * @brief Position the four item displays relative to a shared origin.
- * @param object Owner of the four position pairs and update flags.
- * @param x Horizontal origin.
- * @param y Vertical position for all four displays.
- */
-void func_00352B00(ItemCreationFourPositionDisplay* object, float x, float y);
-
-/**
  * @brief Set the option window mode and refresh its selection colors.
  * @param object Option window.
  * @param mode Zero resets the selection; one activates it.
  */
-void func_00348B60(ItemCreationClass185160* object, u16 mode);
+void func_00348B60(AssignInventorDialog* object, u16 mode);
 
 /**
- * @brief Collect category options and refresh the six resource displays.
- * @param object Selection window associated with the option state.
- * @param category Category value stored as a byte.
+ * @brief Refresh the NPC inventors assigned to a workshop.
+ * @param object Workshop inventor strip.
+ * @param workshop_id Workshop ID stored as a byte; zero selects unassigned inventors.
  */
-void func_00349DE0(ItemCreationClass185360* object, u32 category);
+void func_00349DE0(WorkshopInventorStrip* object, u32 workshop_id);
 
 /**
- * @brief Activate or reset the option grid and refresh its alternate display.
- * @param object Option grid window.
+ * @brief Enable or disable inventor selection and refresh the talent display.
+ * @param object Workshop inventor strip.
  * @param mode Zero resets the grid; one activates it.
  */
-void func_0034A1E0(ItemCreationClass185360* object, u16 mode);
+void func_0034A1E0(WorkshopInventorStrip* object, u16 mode);
 
 /**
  * @brief Refresh the option detail displays for the current code.
  * @param object Option detail window.
  */
-void func_0034B970(ItemCreationClass185560* object);
+void func_0034B970(InventorTalentsWindow* object);
 
 /**
- * @brief Set alternate marker flags and update their associated display setting.
- * @param object Owner of the optional marker and display objects.
+ * @brief Switch the workshop control flags and move their workshop marker.
+ * @param object Workshop selection window.
  * @param mode Zero or one selects the marker group; other values leave the state unchanged.
  */
-void func_0034A670(ItemCreationFlagToggleOwner* object, u8 mode);
+void func_0034A670(WorkshopSelectionWindow* object, u8 mode);
 
 /**
- * @brief Dim eight displays, then brighten those selected by an item's resident flags.
- * @param object Owner of the eight optional displays and auxiliary flag.
- * @param selected Item from one through twelve; other values leave the displays dim.
+ * @brief Dim the facility labels, then brighten those available in the selected workshop.
+ * @param object Workshop selection window.
+ * @param selected Workshop from one through twelve; other values leave the displays dim.
  */
-void func_0034A7A0(ItemCreationEightColorOwner* object, u8 selected);
+void func_0034A7A0(WorkshopSelectionWindow* object, u8 selected);
 
 /**
  * @brief Rebuild and refresh the option list selected by the transfer state.
- * @param object Owner of the selection and transfer state.
+ * @param object Inventor transfer window.
  * @param option Option to display, or 0xFF to use the current selection.
  */
-void func_0034D980(ItemCreationFlagResetOwner* object, u8 option);
+void func_0034D980(InventorTransferWindow* object, u8 option);
 
 /**
  * @brief Move the transfer display and refresh its selected option markers and list.
  * @param object Owner of the selection and optional transfer display.
  * @param direction Direction used to advance the embedded selection.
  */
-void func_0034E4D0(ItemCreationFlagResetOwner* object, u16 direction);
+void func_0034E4D0(InventorTransferWindow* object, u16 direction);
 
 /**
  * @brief Move the optional transfer display using the embedded selection.
  * @param object Owner of the selection and optional transfer display.
  * @param direction Direction used to advance the embedded selection.
  */
-void func_0034F9B0(ItemCreationFlagResetOwner* object, u16 direction);
+void func_0034F9B0(InventorTransferWindow* object, u16 direction);
 
 /**
  * @brief Initialize the view display at its fixed coordinates and report success.
@@ -1212,20 +1028,20 @@ void func_0034F9B0(ItemCreationFlagResetOwner* object, u16 direction);
  * @param associated Associated object forwarded to the field initializer.
  * @return Always one.
  */
-s32 func_0034FD50(ItemCreationFlagResetOwner* object, void* associated);
+s32 func_0034FD50(InventorTransferWindow* object, void* associated);
 
 /**
  * @brief Refresh an option display from its current option list.
  * @param object Option display to refresh.
  */
-void func_0034D340(ItemCreationOptionDisplay* object);
+void func_0034D340(TransferInventorStrip* object);
 
 /**
  * @brief Refresh the option markers for the selected option.
- * @param object Owner of the option markers.
+ * @param object Inventor transfer window.
  * @param option Selected option byte.
  */
-void func_0034DB00(ItemCreationFlagResetOwner* object, u8 option);
+void func_0034DB00(InventorTransferWindow* object, u8 option);
 
 /**
  * @brief Clear all twelve nested flags and enable the selected group of four.
@@ -1536,28 +1352,14 @@ u32 func_003484C0(void* object);
  * @param object Object containing the field.
  * @return Field value.
  */
-u8 func_003486B0(void* object);
+u8 func_003486B0(struct FieldClass15AE70* object);
 
 /**
  * @brief Write the byte at offset 0xD.
  * @param object Object containing the field.
  * @param value Value to store.
  */
-void func_003486C0(void* object, u8 value);
-
-/**
- * @brief Read the word at offset 0x20.
- * @param object Object containing the field.
- * @return Field value.
- */
-u32 func_003486E0(void* object);
-
-/**
- * @brief Write the word at offset 0x20.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_003486F0(void* object, u32 value);
+void func_003486C0(struct FieldClass15AE70* object, u8 value);
 
 /**
  * @brief Return the selection state's associated pointer.
@@ -1571,21 +1373,13 @@ void* func_0034FF60(ItemCreationSelectedDisplayState* object);
  * @param object Object containing the field.
  * @param value Value to store.
  */
-void func_003527C0(void* object, u16 value);
-
-/**
- * @brief Write the same byte to four object slots.
- * @param object Object to update.
- * @param unused Unused argument.
- * @param value Value to store or test.
- */
-void func_00352DC0(u8* object, u32 unused, u8 value);
+void func_003527C0(struct LibClass174610* object, u16 value);
 
 /**
  * @brief Clear the flag byte in 24 nested objects.
  * @param object Object holding the nested pointers.
  */
-void func_0034DA30(ItemCreationFlagResetOwner* object);
+void func_0034DA30(InventorTransferWindow* object);
 
 #ifdef __cplusplus
 }

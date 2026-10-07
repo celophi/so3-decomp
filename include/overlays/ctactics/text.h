@@ -11,11 +11,8 @@ struct LibObject178750;
 
 typedef struct FieldCountedList FieldCountedList;
 
-typedef struct TacticsPositionOwner TacticsPositionOwner;
 typedef struct TacticsGridOwner TacticsGridOwner;
-typedef struct TacticsHighlightOwner TacticsHighlightOwner;
 typedef struct TacticsPresetOwner TacticsPresetOwner;
-typedef struct TacticsSelectionOwner TacticsSelectionOwner;
 typedef struct TacticsDualSelectionOwner TacticsDualSelectionOwner;
 
 typedef struct TacticsPresetPosition
@@ -70,21 +67,106 @@ struct TacticsWindow18B720 : public FieldClass15AE70
     virtual s32 func_slotf4(void* associated);
 };
 
-/** Known scrolling-window prefix through the text state at offset B2. */
+/** Native 0xC4-byte scrolling window with its text widget and movement bounds. */
 struct TacticsWindow18B620 : public FieldClass15AE70
 {
     /** @brief Destroy the scrolling window. */
     virtual ~TacticsWindow18B620();
+    /** @brief Hold the text position, then scroll and wrap it after the timer expires. */
+    virtual void func_slot5c();
     /**
      * @brief Replace the text for supported keys and reset its scrolling state.
      * @param text_key Text key in the supported 2714..271B range.
      */
     virtual void func_slot60(s32 text_key);
 
+    /**
+     * @brief Initialize the scrolling window and its text displays.
+     * @param associated Associated context forwarded to the base initializer.
+     * @return One after initialization succeeds; otherwise zero.
+     */
+    virtual s32 func_slotf4(void* associated);
+
     LibObject178750* text;
     s32 distance;
     s16 timer;
     u8 state;
+    float unkb4;
+    float initial_x;
+    float base_x;
+    float width;
+};
+
+/** Native 0xC8-byte tactics window containing the coordinate selector. */
+struct TacticsWindow18B520 : public FieldClass15AE70
+{
+    /** @brief Destroy the coordinate-selection window. */
+    virtual ~TacticsWindow18B520();
+    /** @brief Restore the selection movement or visibility state. */
+    virtual void func_slot64();
+    /** @brief Move to the preceding coordinate, wrapping after the first. */
+    virtual void func_slot68();
+    /** @brief Move to the following coordinate, wrapping after the eighth. */
+    virtual void func_slot6c();
+    /** @brief Map the last five coordinate entries to the first three. */
+    virtual void func_slot70();
+    /** @brief Map the first three coordinate entries to entries three, five, and six. */
+    virtual void func_slot74();
+    /** @brief Apply the selected coordinate. @return Selection action status. */
+    virtual s32 func_slotb0();
+    /** @brief Open the coordinate-selection child window. @return Window action status. */
+    virtual s32 func_slotb4();
+    /**
+     * @brief Initialize the coordinate window and its resource displays.
+     * @param associated Associated context forwarded to the base initializer.
+     * @return One on success; otherwise zero.
+     */
+    virtual s32 func_slotf4(void* associated);
+
+    void* unka8;
+    void* unkac;
+    struct FieldObject23B1D0* selection;
+    s16 selected;
+    u8 enabled[8];
+    u8 unkbe[0xA];
+};
+
+/** Native 0xF8-byte tactics grid window with its text displays and cursor. */
+struct TacticsWindow18B420 : public FieldClass15AE70
+{
+    /** @brief Initialize the grid window's pointers and control fields. */
+    TacticsWindow18B420();
+    /** @brief Destroy the grid window. */
+    virtual ~TacticsWindow18B420();
+    /** @brief Refresh the associated text when the grid selection changes. */
+    virtual void func_slot5c();
+    /** @brief Move to the preceding grid entry and refresh its highlight. */
+    virtual void func_slot68();
+    /** @brief Move to the following grid entry and refresh its highlight. */
+    virtual void func_slot6c();
+    /** @brief Apply the grid selection. @return Grid action status. */
+    virtual s32 func_slotb0();
+    /** @brief Close the grid window. @return Window action status. */
+    virtual s32 func_slotb4();
+    /**
+     * @brief Initialize the grid and its resource displays.
+     * @param associated Associated context forwarded to the base initializer.
+     * @return One on success; otherwise zero.
+     */
+    virtual s32 func_slotf4(void* associated);
+
+    void* unka8;
+    void* unkac;
+    struct FieldObject23CEA0* grid;
+    s16 selected;
+    u8 unkb6[2];
+    LibObject178750* text[6];
+    u8 unkd0[4];
+    struct ItemCreationClass172600* unkd4;
+    struct FieldObject23BE00* cursor;
+    s32 keys[6];
+    s16 unkf4;
+    u8 unkf6;
 };
 
 /** Sentinel list owning its nodes and recording their count. */
@@ -126,6 +208,59 @@ struct TacticsList18B8B0
     TacticsList18B8B0();
     /** @brief Release list nodes and the sentinel. */
     virtual ~TacticsList18B8B0();
+};
+/** Native 0x17C-byte tactics window owning two binary buffers and eleven lists. */
+struct TacticsWindow18B320 : public FieldClass15AE70
+{
+    /** @brief Construct the owned lists and clear the window control fields. */
+    TacticsWindow18B320();
+    /** @brief Release both binary buffers, then destroy the lists and base window. */
+    virtual ~TacticsWindow18B320();
+    /** @brief Refresh the active selector and associated text. */
+    virtual void func_slot5c();
+    /** @brief Move the chosen selector to its preceding entry. */
+    virtual void func_slot68();
+    /** @brief Move the chosen selector to its following entry. */
+    virtual void func_slot6c();
+    /** @brief Map the chosen selector's last five entries to its first three. */
+    virtual void func_slot70();
+    /** @brief Map the chosen selector's first three entries to entries three, five, and six. */
+    virtual void func_slot74();
+    /** @brief Apply the chosen selector's entry. @return Selection action status. */
+    virtual s32 func_slotb0();
+    /** @brief Open the chosen selector's child window. @return Window action status. */
+    virtual s32 func_slotb4();
+    /**
+     * @brief Initialize the selectors, their buffers, and the resource displays.
+     * @param associated Associated context forwarded to the base initializer.
+     * @return One on success; otherwise zero.
+     */
+    virtual s32 func_slotf4(void* associated);
+
+    void* unka8;
+    void* unkac;
+    u8* bufferc4;
+    u8* buffer114;
+    struct FieldObject23B1D0* first;
+    struct FieldObject23B1D0* second;
+    u8 use_second;
+    u8 unkc1;
+    s16 unkc2;
+    s16 unkc4;
+    u8 unkc6[2];
+    TacticsList18B8C0 unkc8;
+    TacticsList18B8D0 unkd4;
+    TacticsList18B8C0 unke0;
+    TacticsList18B8C0 unkec;
+    TacticsList18B8D0 unkf8;
+    TacticsList18B8C0 unk104;
+    TacticsList18B8D0 unk110;
+    TacticsList18B8D0 unk11c;
+    TacticsList18B8C0 unk128;
+    TacticsList18B8D0 unk134;
+    TacticsList18B8E0 unk140;
+    s16 unk14c[8];
+    u8 unk15c[0x20];
 };
 #endif
 
@@ -224,49 +359,13 @@ u8 func_00349B40(TacticsGridOwner* object);
  * @brief Color up to six list displays and place the cursor for the selected grid entry.
  * @param object Tactics receiver holding the display list, grid, and cursor.
  */
-void func_0034DD10(TacticsHighlightOwner* object);
-
-/**
- * @brief Move the grid selection forward and refresh the highlight when accepted.
- * @param object Tactics receiver holding the grid and highlighted displays.
- */
-void func_0034DDE0(TacticsHighlightOwner* object);
-
-/**
- * @brief Move the grid selection backward and refresh the highlight when accepted.
- * @param object Tactics receiver holding the grid and highlighted displays.
- */
-void func_0034DE30(TacticsHighlightOwner* object);
+void func_0034DD10(TacticsWindow18B420* object);
 
 /**
  * @brief Place the present indicators using the selected grid row's coordinate pairs.
  * @param object Tactics receiver holding the grid, indicators, and base coordinates.
  */
 void func_00349EB0(TacticsGridOwner* object);
-
-/**
- * @brief Advance the enabled coordinate selector, wrapping after its eighth entry.
- * @param object Tactics receiver holding the coordinate selector.
- */
-void func_0034EC80(TacticsSelectionOwner* object);
-
-/**
- * @brief Move the enabled coordinate selector back, wrapping to its eighth entry.
- * @param object Tactics receiver holding the coordinate selector.
- */
-void func_0034ECD0(TacticsSelectionOwner* object);
-
-/**
- * @brief Map the first three selector entries to entries three, five, and six.
- * @param object Tactics receiver holding the enabled coordinate selector.
- */
-void func_0034ED20(TacticsSelectionOwner* object);
-
-/**
- * @brief Map the last five selector entries back to the first three.
- * @param object Tactics receiver holding the enabled coordinate selector.
- */
-void func_0034EDA0(TacticsSelectionOwner* object);
 
 /**
  * @brief Advance the chosen selector one entry, wrapping after its eighth entry.
@@ -297,12 +396,6 @@ void func_0034B120(TacticsDualSelectionOwner* object);
  * @param object Receiver to append to the resident object queue.
  */
 void func_00350790(void* object);
-
-/**
- * @brief Hold the display position until its timer expires, then scroll and wrap it.
- * @param object Tactics state containing the display receiver and movement bounds.
- */
-void func_0034FD60(TacticsPositionOwner* object);
 
 /**
  * @brief Select a preset display position, clearing it for an invalid index.
@@ -355,25 +448,11 @@ u32 func_003484C0(void* object);
 void func_00348630(void* object, u32 value);
 
 /**
- * @brief Return the field at byte offset 0x98.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 func_00348640(void* object);
-
-/**
  * @brief Return the field at byte offset 0x9C.
  * @param object Object containing the field.
  * @return The field value.
  */
 u32 func_003499A0(void* object);
-
-/**
- * @brief Store the field at byte offset 0x98.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00349B20(void* object, u32 value);
 
 /**
  * @brief Return the field at byte offset 0x4.
@@ -400,12 +479,6 @@ void func_0034DCF0(void* object);
  * @return The field value.
  */
 u32 func_0034DD00(void* object);
-
-/**
- * @brief Update a linked object according to the signed state field.
- * @param object Object containing the linked fields.
- */
-void func_0034EC30(void* object);
 
 /**
  * @brief Perform no work.

@@ -176,3 +176,8 @@ func_0011E030 = 0x0011E030;
 func_0020F110 = 0x0020F110;
 func_004587C0 = 0x004587C0;
 D_001B65F0 = 0x001B65F0;
+
+func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
+func_002D5CF0 = 0x002D5CF0; // type:func absolute:True allow_duplicated:True
+func_002D6410 = 0x002D6410; // type:func absolute:True allow_duplicated:True
+func_002D6440 = 0x002D6440; // type:func absolute:True allow_duplicated:True

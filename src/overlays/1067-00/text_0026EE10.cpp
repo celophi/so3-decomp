@@ -4,10 +4,11 @@
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/1067-00/text_001ED7E0_callbacks.h"
 #include "overlays/1067-00/text_0026EE10.h"
+#include "overlays/1067-00/text_00207580.h"
 
 
 
-extern void func_45B110(void* object, void* value);
+extern "C" void func_45B110(void* object, void* value);
 
 typedef struct FieldWords270E90
 {
@@ -68,11 +69,103 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026F4
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026F670);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026F690);
+/** Keyed context entry linked from the context's entry list. */
+struct FieldContextEntry26F690
+{
+    u8 unk00[8];
+    FieldContextEntry26F690* next;
+    u8 unk0c[8];
+    void* value;
+    u8 unk18[0x10];
+    u32 key;
+    u8 flags;
+};
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026F6E0);
+/** Context entry list whose sentinel entry starts at offset 0x14. */
+struct FieldContextList26F690
+{
+    u8 unk00[0x14];
+    FieldContextEntry26F690 head;
+};
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026F730);
+/** Partial context holding its entry list. */
+struct FieldContext26F690
+{
+    u8 unk00[0xD8];
+    FieldContextList26F690* list;
+};
+
+s32 func_0026F690(void* context, u32 key)
+{
+    FieldContextEntry26F690* entry;
+    FieldContextEntry26F690* head = &static_cast<FieldContext26F690*>(context)->list->head;
+    entry = head;
+    while (1)
+    {
+        entry = entry->next;
+        if (entry == 0)
+        {
+            break;
+        }
+        if (head == entry)
+        {
+            break;
+        }
+        if (key == entry->key)
+        {
+            return entry->flags & 1;
+        }
+    }
+    return 0;
+}
+
+void* func_0026F6E0(void* context, u32 key)
+{
+    FieldContextEntry26F690* entry;
+    FieldContextEntry26F690* head = &static_cast<FieldContext26F690*>(context)->list->head;
+    entry = head;
+    while (1)
+    {
+        entry = entry->next;
+        if (entry == 0)
+        {
+            break;
+        }
+        if (head == entry)
+        {
+            break;
+        }
+        if (key == entry->key)
+        {
+            return entry->value;
+        }
+    }
+    return 0;
+}
+
+void func_0026F730(void* context, u32 key, u32 value)
+{
+    FieldContextEntry26F690* entry;
+    FieldContextEntry26F690* head = &static_cast<FieldContext26F690*>(context)->list->head;
+    entry = head;
+    while (1)
+    {
+        entry = entry->next;
+        if (entry == 0)
+        {
+            break;
+        }
+        if (head == entry)
+        {
+            break;
+        }
+        if (key == entry->key)
+        {
+            func_002077B0(reinterpret_cast<FieldState2C*>(entry), value);
+            break;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026F780);
 
@@ -169,7 +262,41 @@ void func_00271750(FieldState271750* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00271790);
+struct FieldObject271790;
+
+/** Partial interface of the child notified by func_00271790. */
+class FieldChild271790
+{
+public:
+    // Placeholder virtuals in their vtable order (byte offset in the name); only
+    // their positions are known.
+    virtual void func_slot08();
+    /** @brief Notify the child that its owner changed state. @param owner Owning field object. */
+    virtual void func_slot0c(FieldObject271790* owner);
+};
+
+/** Partial field object with a state byte and an optional notified child. */
+struct FieldObject271790
+{
+    u8 unk00[0x15];
+    u8 state;
+    u8 unk16[0xA];
+    FieldChild271790* child;
+};
+
+/**
+ * @brief Notify the child, if any, and set the object's state to five.
+ * @param object Field object.
+ */
+extern "C" void func_00271790(FieldObject271790* object)
+{
+    FieldChild271790* child = object->child;
+    if (child != 0)
+    {
+        child->func_slot0c(object);
+    }
+    object->state = 5;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002717E0);
 
@@ -219,7 +346,5 @@ void func_00272290(FieldFlag272290* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002722B0);
 
-void* func_00272350(void* object, s32 flags)
-{
-    return func_00271FC0((u8*)object - 0x14, flags);
-}
+// Compiler-generated this-adjustment thunk; needs recovered classes.
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00272350);

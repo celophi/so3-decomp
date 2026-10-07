@@ -178,7 +178,9 @@ public:
     FieldCountedList unk20;
     u8 pad28[4];
     FieldCountedList unk2c;
-    u8 unk34[0x40];
+    u8 unk34[4];
+    FieldCountedList unk38;
+    u8 unk40[0x34];
     FieldCountedList unk74;
     u8 unk7c[0x10];
     FieldCountedList unk8c;

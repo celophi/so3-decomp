@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+typedef struct FieldRecord FieldRecord;
+
 typedef struct ItemCreationAllocationRecord ItemCreationAllocationRecord;
 
 typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
@@ -81,6 +83,24 @@ s16 func_0040D890(const ItemCreationAllocationRecord* record);
  * @return The packed value, or zero for an invalid checksum or index.
  */
 u16 func_0040D930(const ItemCreationAllocationRecord* record, u32 index);
+
+/**
+ * @brief Calculate eight comparison values for a protected entry and detail.
+ * @param code Selected entry code.
+ * @param entry Protected entry record, updated when its encoded values are repaired.
+ * @param detail Protected detail record.
+ * @param first First output value.
+ * @param second Second output value.
+ * @param third Third output value.
+ * @param fourth Fourth output value.
+ * @param fifth Fifth output value.
+ * @param sixth Sixth output value.
+ * @param seventh Seventh output value.
+ * @param eighth Eighth output value.
+ * @return Nonzero when the comparison values are available.
+ */
+u8 func_004095C0(s32 code, FieldRecord* entry, void* detail, s32* first, s32* second, s32* third, s32* fourth, s32* fifth, s32* sixth, s32* seventh,
+                 s32* eighth);
 
 #ifdef __cplusplus
 }

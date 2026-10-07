@@ -18,6 +18,7 @@ typedef struct ConfigList182200 ConfigList182200;
 typedef struct ConfigColorOwner ConfigColorOwner;
 typedef struct ConfigOptions ConfigOptions;
 typedef struct ConfigGridWindow ConfigGridWindow;
+typedef struct ConfigBindingWindow ConfigBindingWindow;
 typedef struct ConfigControlReceiver ConfigControlReceiver;
 typedef struct ConfigMessageWindow ConfigMessageWindow;
 typedef struct ConfigFrameWindow ConfigFrameWindow;
@@ -300,8 +301,9 @@ void func_0034BA10(ConfigOptions* object, u16 input);
 /**
  * @brief Toggle the protected mode and update option row thirteen's choice colors.
  * @param object Configuration options window.
+ * @param input Control mask supplied by the row dispatcher.
  */
-void func_0034BB60(ConfigOptions* object);
+void func_0034BB60(ConfigOptions* object, u16 input);
 
 /**
  * @brief Update option row twelve's setting and choice colors when the feature is enabled.
@@ -309,6 +311,13 @@ void func_0034BB60(ConfigOptions* object);
  * @param input Control mask for the row.
  */
 void func_0034BD70(ConfigOptions* object, u16 input);
+
+/**
+ * @brief Update the display ratio option and its choice colors.
+ * @param object Configuration options window.
+ * @param input Control mask for the row.
+ */
+void func_0034BF40(ConfigOptions* object, u16 input);
 
 /**
  * @brief Update option row ten's message key and choice colors.
@@ -381,10 +390,10 @@ void func_0034C380(ConfigOptions* object, u16 input);
 void func_0034CD00(ConfigOptions* object, u16 input);
 
 /**
- * @brief Refresh the bindings window's selection.
- * @param object Bindings window receiver.
+ * @brief Advance the active options-list movement and update its indicator.
+ * @param object Configuration options window.
  */
-void func_0034AD30(void* object);
+void func_0034AD30(ConfigOptions* object);
 
 /**
  * @brief Update row highlights while the selector window is active.
@@ -406,7 +415,7 @@ void func_0034AEC0(ConfigOptions* object, u16 direction, u8 amount);
  * @param index Option row index.
  * @param bits Control bits passed to the row handler.
  */
-void func_0034D180(ConfigOptions* object, u8 index, u32 bits);
+void func_0034D180(ConfigOptions* object, u32 index, u16 bits);
 
 /** @brief Resolve the selected option message. @param object Options window. @param selected Selected row. @return Message key. */
 s32 func_00350270(ConfigOptions* object, u16 selected);
@@ -1111,6 +1120,25 @@ s32 func_00349190(FieldClass15AE70* object);
  * @return Callback result indicating that input was handled.
  */
 s32 func_00349950(FieldClass15AE70* object);
+
+/**
+ * @brief Apply input to the active binding selector and refresh moved entries.
+ * @param object Binding selector window.
+ */
+void func_0034A0E0(ConfigBindingWindow* object);
+
+/**
+ * @brief Swap the selected binding with the entry containing the supplied code.
+ * @param object Binding selector window.
+ * @param code Existing binding code to select.
+ */
+void func_0034A270(ConfigBindingWindow* object, u16 code);
+
+/**
+ * @brief Save the four binding codes and refresh the associated window.
+ * @param object Binding selector window.
+ */
+void func_0034A300(ConfigBindingWindow* object);
 
 /**
  * @brief Apply the selected configuration row or dismiss its window.

@@ -362,8 +362,25 @@ struct ItemCreationOptionResourceDisplay : public ItemCreationClass175110
         unk120 = 0;
         unk11c = 0;
         unk118 = 0;
-        ::func_002D6410(static_cast<FieldState2D6410*>(static_cast<void*>(this)));
+        func_002D6410();
     }
+    /**
+     * @brief Replace non-null resource pointers and a nonzero resource index, then request an update.
+     * @param allocation Allocation pointer, or null to keep the current pointer.
+     * @param record Resource record, or null to keep the current record.
+     * @param index Nonzero full word whose low byte replaces the resource index.
+     */
+    void func_002D5CF0(void* allocation, FieldResourceRecord* record, u32 index);
+    /** @brief Clear the resource pointers, indices and trailing update flags. */
+    void func_002D6410();
+    /**
+     * @brief Allocate the resource drawing storage and set its record and position.
+     * @param record Resource record to display.
+     * @param x Horizontal coordinate.
+     * @param y Vertical coordinate.
+     * @return One on success, or zero if drawing-storage allocation fails.
+     */
+    s32 func_002D6440(FieldResourceRecord* record, float x, float y);
     /** @brief Destroy the resource widget. */
     virtual ~ItemCreationOptionResourceDisplay();
     /** @brief Refresh the resource widget. */

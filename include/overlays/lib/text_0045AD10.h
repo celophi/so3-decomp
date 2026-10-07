@@ -119,6 +119,14 @@ public:
     {
     }
     virtual void func_slot0c();
+    /**
+     * @brief Set the movement target and reset its completion flags.
+     * @param x Target horizontal coordinate.
+     * @param y Target vertical coordinate.
+     * @param duration Duration in seconds, converted to sixty frames per second.
+     */
+    void func_00466E40(float x, float y, float duration);
+
 };
 
 /** Partial kind-9 widget with a storage base at offset 0x40. */

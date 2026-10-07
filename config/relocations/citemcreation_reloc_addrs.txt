@@ -14,6 +14,10 @@ rom:0x13EA8 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
 rom:0x151E0 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
 rom:0x151F0 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
 // Container and aggregate constructor dispatch tables.
+rom:0xB490 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0xB498 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0xB4A0 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0xB4A8 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
 rom:0xA474 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
 rom:0xA484 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
 rom:0xA488 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
@@ -33,38 +37,38 @@ rom:0xA09C reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass184F60 addend:0xB4
 rom:0xA0A4 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass184F60 addend:0xB4
 
 // Category list callback table within the primary dispatch block.
-rom:0x140E0 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass186B70 addend:0xF4
-rom:0x140E8 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass186B70 addend:0xF4
+rom:0x140E0 reloc:MIPS_HI16 symbol:__vt__25InventoryItemInstanceList addend:0xF4
+rom:0x140E8 reloc:MIPS_LO16 symbol:__vt__25InventoryItemInstanceList addend:0xF4
 rom:0x133E8 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
 rom:0x133F0 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
 rom:0x133F8 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
 rom:0x13400 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
-rom:0x15370 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass186C90 addend:0xF4
-rom:0x15378 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass186C90 addend:0xF4
-rom:0x26780 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass186C90 addend:0xF4
-rom:0x26788 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass186C90 addend:0xF4
-rom:0x1536C reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass186C90
-rom:0x15374 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass186C90
-rom:0x2677C reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass186C90
-rom:0x26784 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass186C90
+rom:0x15370 reloc:MIPS_HI16 symbol:__vt__21InventoryItemTypeList addend:0xF4
+rom:0x15378 reloc:MIPS_LO16 symbol:__vt__21InventoryItemTypeList addend:0xF4
+rom:0x26780 reloc:MIPS_HI16 symbol:__vt__21InventoryItemTypeList addend:0xF4
+rom:0x26788 reloc:MIPS_LO16 symbol:__vt__21InventoryItemTypeList addend:0xF4
+rom:0x1536C reloc:MIPS_HI16 symbol:__vt__21InventoryItemTypeList
+rom:0x15374 reloc:MIPS_LO16 symbol:__vt__21InventoryItemTypeList
+rom:0x2677C reloc:MIPS_HI16 symbol:__vt__21InventoryItemTypeList
+rom:0x26784 reloc:MIPS_LO16 symbol:__vt__21InventoryItemTypeList
 rom:0x26934 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass187A60
 rom:0x2693C reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass187A60
 rom:0x269CC reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass187A60
 rom:0x269D0 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass187A60
-rom:0x14408 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass186B70 addend:0xF4
-rom:0x14410 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass186B70 addend:0xF4
-rom:0x2659C reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass186170
-rom:0x265A4 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass186170
+rom:0x14408 reloc:MIPS_HI16 symbol:__vt__25InventoryItemInstanceList addend:0xF4
+rom:0x14410 reloc:MIPS_LO16 symbol:__vt__25InventoryItemInstanceList addend:0xF4
+rom:0x2659C reloc:MIPS_HI16 symbol:__vt__22MissingMaterialsDialog
+rom:0x265A4 reloc:MIPS_LO16 symbol:__vt__22MissingMaterialsDialog
 rom:0xFC24 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass186770
 rom:0xFC2C reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass186770
 rom:0xFAE4 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass186770
 rom:0xFAEC reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass186770
-rom:0x9F50 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass185F60 addend:0x1C
-rom:0x9F58 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass185F60 addend:0x1C
-rom:0x9F64 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass185F60 addend:0x90
-rom:0x9F6C reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass185F60 addend:0x90
-rom:0x9F70 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass185F60 addend:0xB4
-rom:0x9F74 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass185F60 addend:0xB4
+rom:0x9F50 reloc:MIPS_HI16 symbol:__vt__18InventorStatusList addend:0x1C
+rom:0x9F58 reloc:MIPS_LO16 symbol:__vt__18InventorStatusList addend:0x1C
+rom:0x9F64 reloc:MIPS_HI16 symbol:__vt__18InventorStatusList addend:0x90
+rom:0x9F6C reloc:MIPS_LO16 symbol:__vt__18InventorStatusList addend:0x90
+rom:0x9F70 reloc:MIPS_HI16 symbol:__vt__18InventorStatusList addend:0xB4
+rom:0x9F74 reloc:MIPS_LO16 symbol:__vt__18InventorStatusList addend:0xB4
 rom:0xA544 reloc:MIPS_HI16 symbol:__vt__14LibClass178A70
 rom:0xA548 reloc:MIPS_LO16 symbol:__vt__14LibClass178A70
 rom:0xA554 reloc:MIPS_HI16 symbol:__vt__14LibClass171E90
@@ -81,9 +85,9 @@ rom:0x9FEC reloc:MIPS_HI16 symbol:__vt__14LibClass1721F0 addend:0x90
 rom:0x9FF4 reloc:MIPS_LO16 symbol:__vt__14LibClass1721F0 addend:0x90
 rom:0x9FF8 reloc:MIPS_HI16 symbol:__vt__14LibClass1721F0 addend:0xB4
 rom:0x9FFC reloc:MIPS_LO16 symbol:__vt__14LibClass1721F0 addend:0xB4
-rom:0xA014 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass185F60 addend:0x1C
-rom:0xA01C reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass185F60 addend:0x1C
-rom:0xA024 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass185F60 addend:0x90
-rom:0xA02C reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass185F60 addend:0x90
-rom:0xA030 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass185F60 addend:0xB4
-rom:0xA038 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass185F60 addend:0xB4
+rom:0xA014 reloc:MIPS_HI16 symbol:__vt__18InventorStatusList addend:0x1C
+rom:0xA01C reloc:MIPS_LO16 symbol:__vt__18InventorStatusList addend:0x1C
+rom:0xA024 reloc:MIPS_HI16 symbol:__vt__18InventorStatusList addend:0x90
+rom:0xA02C reloc:MIPS_LO16 symbol:__vt__18InventorStatusList addend:0x90
+rom:0xA030 reloc:MIPS_HI16 symbol:__vt__18InventorStatusList addend:0xB4
+rom:0xA038 reloc:MIPS_LO16 symbol:__vt__18InventorStatusList addend:0xB4
