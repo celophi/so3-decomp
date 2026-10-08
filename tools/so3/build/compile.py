@@ -23,7 +23,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from tools.so3.build.compiler_probe import COMPILERS, CONFIG, verify_compiler
+from tools.so3.build.compiler_probe import COMPILER_EXE, COMPILERS, CONFIG, verify_compiler
 from tools.so3.build.assembly import ASSEMBLER, ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, assembly_inputs, assemble
 from tools.so3.build.rodata_ownership import owned_rodata_sections
 from tools.so3.build.subsegments import configured_rodata_groups
@@ -40,8 +40,6 @@ OVERLAY_CONFIGS = Path('config/overlays')
 # include/include_asm.h refuses to compile unless this is defined, so game
 # sources can only be built through this script.
 ASM_PROCESSOR_DEFINE = '-DSO3_ASM_PROCESSOR'
-
-COMPILER_EXE = 'mwccps2.exe'
 
 # The dev image installs mwccgap here with dockerfiles/patches/mwccgap.patch applied.
 MWCCGAP_DIR = '/opt/mwccgap'
