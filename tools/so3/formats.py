@@ -15,6 +15,10 @@ TABLE_SIGNATURE = 0x27D51556
 TABLE_SEED = 0x13578642
 # A resource larger than the EE address space needs explicit investigation.
 MAX_DECODED_SIZE = 32 * 1024 * 1024
+# Every overlay file starts with a 64-byte MWo3 header. Its last 32 bytes hold
+# the overlay's name, and the code and data come right after it.
+OVERLAY_HEADER_SIZE = 0x40
+OVERLAY_NAME_OFFSET = 0x20
 
 
 class FormatError(ValueError):
@@ -180,14 +184,14 @@ def decode_chain(data: bytes, key: bytes):
 
 
 def overlay_info(data: bytes) -> dict:
-    require(len(data) >= 0x40 and data[:4] == b"MWo3", "invalid MWo3 header")
+    require(len(data) >= OVERLAY_HEADER_SIZE and data[:4] == b"MWo3", "invalid MWo3 header")
     ident, address, text, initialized, bss, init_start, init_end = struct.unpack_from("<7I", data, 4)
-    require(0x40 + text + initialized <= len(data), "overlay sections exceed file")
+    require(OVERLAY_HEADER_SIZE + text + initialized <= len(data), "overlay sections exceed file")
     require(address + len(data) + bss <= 0x100000000, "overlay address range overflows")
     require((init_start == init_end == 0)
             or address <= init_start <= init_end <= address + len(data),
             "invalid overlay initializer range")
-    name = data[0x20:0x40].split(b"\0", 1)[0].decode("ascii", errors="backslashreplace")
+    name = data[OVERLAY_NAME_OFFSET:OVERLAY_HEADER_SIZE].split(b"\0", 1)[0].decode("ascii", errors="backslashreplace")
     return {
         "format": "MWo3", "overlay_id": ident, "name": name,
         "load_address": address, "text_size": text, "data_size": initialized,
