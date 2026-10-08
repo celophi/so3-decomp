@@ -33,7 +33,7 @@ import sys
 from tools.so3.build.assembly import ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, LITTLE_ENDIAN
 from tools.so3.build.compile import MWCCGAP_DIR, module_lists, thunk_map_path
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, setup, working_candidate
-from tools.so3.build.main import ROOT, original_main
+from tools.so3.build.main import MAIN_CONFIG, ROOT, VERSIONS, original_main
 from tools.so3.build.overlays import CONFIGS, load_config
 from tools.so3.build.sdk import MANIFEST as SDK_MANIFEST, code_units, validate_sdk_units
 from tools.so3.build.subsegments import subsegment_parts
@@ -44,7 +44,6 @@ BUILD_FILE = Path('build/build.ninja')
 OBJDIFF_CONFIG = Path('objdiff.json')
 PROGRESS_OBJECTS = Path('build/progress')
 PROGRESS_REPORT = PROGRESS_OBJECTS / 'report.json'
-MAIN_CONFIG = Path('config/main.us.yaml')
 MAIN_EXECUTABLE = 'SLUS_204.88'  # The main executable's file name on the disc.
 OVERLAY_IMAGE = 'rebuilt.bin'
 
@@ -70,7 +69,7 @@ OBJDIFF_VERSION = '3.8.2'
 # The scripts and inputs each step reads. If one changes, ninja reruns the step.
 SPLIT_INPUTS = ['tools/so3/build/driver.py', 'tools/so3/__init__.py', 'tools/so3/formats.py',
                 'tools/so3/build/sdk.py', 'tools/so3/build/subsegments.py', str(SDK_MANIFEST)]
-MAIN_SPLIT_INPUTS = ['tools/so3/build/main.py', 'config/manifests/versions.json']
+MAIN_SPLIT_INPUTS = ['tools/so3/build/main.py', str(VERSIONS)]
 OVERLAY_SPLIT_INPUTS = ['tools/so3/build/overlays.py']
 COMPILE_INPUTS = ['tools/so3/build/compile.py', 'tools/so3/build/compiler_probe.py',
                   'tools/so3/build/assembly.py', 'tools/so3/build/text_order.py',
