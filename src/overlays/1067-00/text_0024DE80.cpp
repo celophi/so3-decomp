@@ -4,6 +4,7 @@
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
+#include "overlays/1067-00/text_0021FB80.h"
 
 /** Partial value pair attached at receiver offset 0x11C. */
 typedef struct FieldValues24
@@ -32,7 +33,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E2
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E310);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", __dt__16FieldClass1535B0Fv);
+FieldClass1535B0::~FieldClass1535B0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", __ct__16FieldClass1535B0Fv);
 

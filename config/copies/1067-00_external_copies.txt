@@ -1,0 +1,4 @@
+// Out-of-line copies of inline destructors whose kept copy is outside 1067-00.
+// FieldClass173F80 is a Lib-region class; its vtable's destructor slot points to
+// the Lib copy at 0x441600, so the Field copy is dropped without an address.
+__dt__16FieldClass173F80Fv

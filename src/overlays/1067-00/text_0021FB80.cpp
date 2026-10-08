@@ -4,6 +4,7 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_0021FB80.h"
 #include "overlays/1067-00/text_0022DC70.h"
+#include "overlays/1067-00/field_packet.h"
 
 
 
@@ -85,7 +86,17 @@ struct FieldObject2B440
     u8 unk94;
 };
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0021FB80);
+/** Partial FieldClass150070 object with vtable D_152320 in main data. */
+class FieldClass152320 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass152320();
+};
+
+FieldClass152320::~FieldClass152320()
+{
+}
 
 s32 func_0021FC10(FieldObject152320* object)
 {
@@ -119,9 +130,9 @@ void func_00220150(void* object, s32 flag)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002201B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00220420);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", __dt__16FieldClass155750Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00220510);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", __dt__16FieldClass155780Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002205E0);
 
@@ -199,7 +210,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00223A
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00223FF0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002249A0);
+FieldClass152350::~FieldClass152350()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224A00);
 
@@ -210,7 +223,17 @@ s32 func_00224C30(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224C40);
+/** Partial FieldClass150070 object with vtable D_1523F0 in main data. */
+class FieldClass1523F0 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1523F0();
+};
+
+FieldClass1523F0::~FieldClass1523F0()
+{
+}
 
 s32 func_00224CD0(void* object)
 {
@@ -351,7 +374,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00228F
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", __ct__16FieldClass152430Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00229150);
+/** Partial FieldClass152FA0 with vtable D_152E50 in main data. */
+class FieldClass152E50 : public FieldClass152FA0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass152E50();
+};
+
+FieldClass152E50::~FieldClass152E50()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002291B0);
 
@@ -367,7 +400,13 @@ void func_00229250(FieldObject29250* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00229260);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002292F0);
+extern "C" void func_4D00B0(void* object);
+
+/** @brief Forward the object to func_4D00B0. @param object Object to forward. */
+extern "C" void func_002292F0(void* object)
+{
+    func_4D00B0(object);
+}
 
 void func_00229310(void* object)
 {
@@ -393,7 +432,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022A0
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022A160);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022A1C0);
+/** @brief Forward the object to func_4D00B0. @param object Object to forward. */
+extern "C" void func_0022A1C0(void* object)
+{
+    func_4D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022A1E0);
 
@@ -442,7 +485,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022AD
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022AEF0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022B010);
+FieldClass1525F0::~FieldClass1525F0()
+{
+    if (!unk14)
+    {
+        delete unk04;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022B080);
 

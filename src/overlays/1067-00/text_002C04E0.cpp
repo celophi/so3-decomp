@@ -1,4 +1,6 @@
 #include "include_asm.h"
+#include "overlays/1067-00/field_class_154D40.h"
+#include "overlays/1067-00/field_class_154EF0.h"
 #include "overlays/1067-00/text_002C04E0.h"
 #include "main/resident_data.h"
 #include "main/resident_0010A0E0.h"
@@ -266,7 +268,9 @@ struct FieldSelector
 };
 extern "C" s8 D_30EAFC[];
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C04E0);
+FieldClass15A040::~FieldClass15A040()
+{
+}
 
 extern "C" int func_002C0550(void* object)
 {
@@ -308,9 +312,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C11
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C1230);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C12A0);
+/** Partial FieldClass154E20 object with vtable D_15A1E0 in main data. */
+class FieldClass15A1E0 : public FieldClass154E20
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A1E0();
+};
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C1300);
+FieldClass15A1E0::~FieldClass15A1E0()
+{
+}
 
 extern "C" void func_002C1370(void* object)
 {
@@ -456,7 +468,15 @@ extern "C" void func_002C1770(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C1780);
+FieldClass15A230::FieldClass15A230()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1C = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 extern "C" u32 func_002C17E0(const FieldWord1C* object)
 {
@@ -483,22 +503,129 @@ extern "C" bool func_002C1820(const FieldWord14* object)
     return object->value != 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C1830);
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+extern "C" void func_002C1830(FieldClass15A230* object, const FieldClass15A230* other)
+{
+    object->unk0C = other->unk0C;
+    object->unk10 = other->unk10;
+    object->resize(object->unk0C, object->unk10);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C1870);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+extern "C" void func_002C1870(FieldClass15A230* object, s32 rows, s32 columns)
+{
+    object->unk14 = 0;
+    object->unk20 = 0;
+    delete[] object->unk18;
+    object->unk18 = new (0) FieldClass15A220[rows + 2];
+    if (object->unk18 == 0)
+    {
+        return;
+    }
+    delete object->unk1C;
+    if (D_001B6684 != 0)
+    {
+        void* heap = func_00100C80(D_001B6684);
+        object->unk1C = new (0) FieldBitset154E80(rows);
+        if (object->unk1C == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            func_00100C80(heap);
+            return;
+        }
+        if (object->unk1C->unk08 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            func_00100C80(heap);
+            return;
+        }
+        func_00100C80(heap);
+    }
+    else
+    {
+        object->unk1C = new (0) FieldBitset154E80(rows);
+        if (object->unk1C == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            return;
+        }
+        if (object->unk1C->unk08 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] object->unk24;
+        object->unk24 = new (0) FieldClass154E60[rows * (columns - 1) + 2];
+        if (object->unk24 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] object->unk24;
+        object->unk24 = 0;
+    }
+    if (object->unk18 != 0)
+    {
+        object->unk14 = (u8*)(object->unk18 + 1);
+    }
+    if (object->unk24 != 0)
+    {
+        object->unk20 = (u8*)(object->unk24 + 1);
+    }
+    object->unk0C = rows;
+    object->unk10 = columns;
+    object->unk1C->clear();
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C1DD0);
+FieldClass15A220::FieldClass15A220()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C1E10);
+FieldClass15A220::~FieldClass15A220()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C1E90);
+FieldClass15A230::~FieldClass15A230()
+{
+    delete[] unk18;
+    delete unk1C;
+    delete[] unk24;
+}
 
 extern "C" float func_002C1F70(void* object)
 {
     return 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C1F80);
+FieldClass15A300::~FieldClass15A300()
+{
+}
 
 extern "C" int func_002C2000(void* object)
 {
@@ -530,11 +657,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C22
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C2690);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C2780);
+/** Partial FieldClass154E20 object with vtable D_15A570 in main data. */
+class FieldClass15A570 : public FieldClass154E20
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A570();
+};
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C27E0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C2850);
+FieldClass15A570::~FieldClass15A570()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C28C0);
 
@@ -690,7 +823,15 @@ extern "C" void func_002C2C00(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C2C10);
+FieldClass15A5C0::FieldClass15A5C0()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1C = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 extern "C" char* func_002C2C70(FieldCollection* object, s32 index)
 {
@@ -727,15 +868,120 @@ extern "C" bool func_002C2CF0(FieldCollection* object)
     return object->unk14 != 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C2D00);
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+extern "C" void func_002C2D00(FieldClass15A5C0* object, const FieldClass15A5C0* other)
+{
+    object->unk0C = other->unk0C;
+    object->unk10 = other->unk10;
+    object->resize(object->unk0C, object->unk10);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C2D40);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+extern "C" void func_002C2D40(FieldClass15A5C0* object, s32 rows, s32 columns)
+{
+    object->unk14 = 0;
+    object->unk20 = 0;
+    delete[] object->unk18;
+    object->unk18 = new (0) FieldClass15A5B0[rows + 2];
+    if (object->unk18 == 0)
+    {
+        return;
+    }
+    delete object->unk1C;
+    if (D_001B6684 != 0)
+    {
+        void* heap = func_00100C80(D_001B6684);
+        object->unk1C = new (0) FieldBitset154E80(rows);
+        if (object->unk1C == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            func_00100C80(heap);
+            return;
+        }
+        if (object->unk1C->unk08 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            func_00100C80(heap);
+            return;
+        }
+        func_00100C80(heap);
+    }
+    else
+    {
+        object->unk1C = new (0) FieldBitset154E80(rows);
+        if (object->unk1C == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            return;
+        }
+        if (object->unk1C->unk08 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] object->unk24;
+        object->unk24 = new (0) FieldClass154E60[rows * (columns - 1) + 2];
+        if (object->unk24 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] object->unk24;
+        object->unk24 = 0;
+    }
+    if (object->unk18 != 0)
+    {
+        object->unk14 = (u8*)(object->unk18 + 1);
+    }
+    if (object->unk24 != 0)
+    {
+        object->unk20 = (u8*)(object->unk24 + 1);
+    }
+    object->unk0C = rows;
+    object->unk10 = columns;
+    object->unk1C->clear();
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C32A0);
+FieldClass15A5B0::FieldClass15A5B0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C32E0);
+FieldClass15A5B0::~FieldClass15A5B0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C3360);
+FieldClass15A5C0::~FieldClass15A5C0()
+{
+    delete[] unk18;
+    delete unk1C;
+    delete[] unk24;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C3440);
 
@@ -744,9 +990,16 @@ extern "C" float func_002C3AC0(void* object)
     return 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C3AD0);
+FieldClass15A690::~FieldClass15A690()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C3B70);
+/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
+extern "C" void func_002C3B70(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C3BA0);
 
@@ -756,9 +1009,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C42
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C44C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C4660);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C4700);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C4790);
 
@@ -886,11 +1137,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C83
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C8510);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C93A0);
+FieldClass15A780::~FieldClass15A780()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C9450);
+FieldClass15A7A0::~FieldClass15A7A0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C9500);
+FieldClass15A7C0::~FieldClass15A7C0()
+{
+}
 
 extern "C" void func_002C95B0(FieldFloat48* object)
 {
@@ -900,7 +1157,9 @@ extern "C" void func_002C95B0(FieldFloat48* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C95E0);
+FieldClass15A800::~FieldClass15A800()
+{
+}
 
 extern "C" int func_002C9660(void* object)
 {
@@ -926,17 +1185,27 @@ extern "C" int func_002C96B0(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C96C0);
+/** Partial FieldClass154E20 object with vtable D_15AA70 in main data. */
+class FieldClass15AA70 : public FieldClass154E20
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15AA70();
+};
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C9720);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C9790);
+FieldClass15AA70::~FieldClass15AA70()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C9800);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C98E0);
+FieldClass15AAB0::~FieldClass15AAB0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C9980);
+FieldClass15AAD0::~FieldClass15AAD0()
+{
+}
 
 extern "C" int func_002C9A20(void* object)
 {
@@ -1099,7 +1368,15 @@ extern "C" void func_002CA380(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002CA390);
+FieldClass15AB70::FieldClass15AB70()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1C = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 extern "C" void* func_002CA3F0(FieldTable14* object, u32 index) { return object->entries + index * 0x40; }
 
@@ -1115,15 +1392,121 @@ extern "C" int func_002CA450(void* object) { return 1; }
 
 extern "C" bool func_002CA460(const FieldWord14* object) { return object->value != 0; }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002CA470);
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+extern "C" void func_002CA470(FieldClass15AB70* object, const FieldClass15AB70* other)
+{
+    object->unk0C = other->unk0C;
+    object->unk10 = other->unk10;
+    object->resize(object->unk0C, object->unk10);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002CA4B0);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+extern "C" void func_002CA4B0(FieldClass15AB70* object, s32 rows, s32 columns)
+{
+    object->unk14 = 0;
+    object->unk20 = 0;
+    delete[] object->unk18;
+    object->unk18 = new (0) FieldClass15AB58[rows + 2];
+    if (object->unk18 == 0)
+    {
+        return;
+    }
+    delete object->unk1C;
+    if (D_001B6684 != 0)
+    {
+        void* heap = func_00100C80(D_001B6684);
+        object->unk1C = new (0) FieldBitset154E80(rows);
+        if (object->unk1C == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            func_00100C80(heap);
+            return;
+        }
+        if (object->unk1C->unk08 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            func_00100C80(heap);
+            return;
+        }
+        func_00100C80(heap);
+    }
+    else
+    {
+        object->unk1C = new (0) FieldBitset154E80(rows);
+        if (object->unk1C == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            return;
+        }
+        if (object->unk1C->unk08 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] object->unk24;
+        object->unk24 = new (0) FieldClass154E60[rows * (columns - 1) + 2];
+        if (object->unk24 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] object->unk24;
+        object->unk24 = 0;
+    }
+    if (object->unk18 != 0)
+    {
+        object->unk14 = (u8*)(object->unk18 + 1);
+    }
+    if (object->unk24 != 0)
+    {
+        object->unk20 = (u8*)(object->unk24 + 1);
+    }
+    object->unk0C = rows;
+    object->unk10 = columns;
+    object->unk1C->clear();
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002CAA00);
+FieldClass15AB58::FieldClass15AB58()
+{
+    unk30 = 60.0f;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002CAA40);
+FieldClass15AB58::~FieldClass15AB58()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002CAAC0);
+FieldClass15AB70::~FieldClass15AB70()
+{
+    delete[] unk18;
+    delete unk1C;
+    delete[] unk24;
+}
 
 extern "C" float func_002CABA0(void* object) { return 1.0f; }
 

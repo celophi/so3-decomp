@@ -3589,7 +3589,7 @@ s32 func_00357F80(FieldClass15AE70* object, void* associated)
         return 0;
     }
     func_004C5A80(widget, 0, 0.0f, 0.0f, 304.0f, 208.0f, 88.0f);
-    func_0035CBB0(reinterpret_cast<SkillList*>(object->unk14), widget);
+    func_0035CBB0(reinterpret_cast<SkillList*>(&object->unk14), widget);
     func_004C6190(object->unk10, widget);
     return 1;
 }
@@ -5195,7 +5195,7 @@ s32 SkillGridChoice::func_slot10(void* associated, float x, float y, s32 code)
     }
     func_004C5A80(panel, 1, 0.0f, 0.0f, 256.0f, 160.0f, 88.0f);
     func_004C6190(unk10, panel);
-    func_0035CBB0(reinterpret_cast<SkillList*>(unk14), panel);
+    func_0035CBB0(reinterpret_cast<SkillList*>(&unk14), panel);
     LibObject178750* first = new (0) LibObject178750;
     LibObject178750* second = new (0) LibObject178750;
     LibObject178750* title = new (0) LibObject178750;

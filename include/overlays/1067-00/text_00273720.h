@@ -3,15 +3,9 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_001ED7E0.h"
-
-/** Partial receiver containing an integer count and copied float state. */
-typedef struct FieldObject154F30
-{
-    u8 unk00[0x28];
-    s32 unk28;
-    u8 unk2C[0xB8];
-    float unkE4;
-} FieldObject154F30;
+#ifdef __cplusplus
+#include "overlays/1067-00/field_class_154D40.h"
+#endif
 
 /** Partial source for the receiver's copied float state. */
 typedef struct FieldFloatSourceAF0
@@ -53,14 +47,6 @@ typedef struct FieldResourceOwner273720
     u8 unk34;
 } FieldResourceOwner273720;
 
-/** Complete extent of an aligned 128-byte array element with table D_1550E8. */
-typedef struct FieldObject1550E8
-{
-    u8 unk00[0x60];
-    FieldVector4 unk60;
-    float unk70;
-    u8 unk74[0xC];
-} FieldObject1550E8;
 /** Complete 64-byte polymorphic secondary-array element. */
 typedef struct FieldObject154E60
 {
@@ -69,18 +55,107 @@ typedef struct FieldObject154E60
 } FieldObject154E60;
 typedef struct FieldBitset154E80 FieldBitset154E80;
 
-/** Partial array owner initialized by func_00275D10 with table D_1552E0. */
-typedef struct FieldObject1552E0
+#ifdef __cplusplus
+/** Complete 128-byte grid element with vtable D_1550E8 in main data. */
+class FieldClass1550E8 : public FieldClass154E70
 {
-    u8 unk00[0xC];
-    s32 unk0C;
-    s32 unk10;
-    FieldObject1550E8* unk14;
-    FieldObject1550E8* unk18;
+public:
+    /** @brief Start with a zero vector and a zero scalar. */
+    FieldClass1550E8();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1550E8();
+
+    u8 unk04[0x5C];
+    FieldVec4A unk60;
+    float unk70;
+    u8 unk74[0xC];
+};
+
+/** Partial grid of FieldClass1550E8 cells with vtable D_1552E0 in main data. */
+class FieldClass1552E0 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass1552E0();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass1552E0();
+
+    FieldClass1550E8* unk14;
+    FieldClass1550E8* unk18;
     FieldBitset154E80* unk1C;
     FieldObject154E60* unk20;
-    FieldObject154E60* unk24;
-} FieldObject1552E0;
+    FieldClass154E60* unk24;
+};
+/** Partial FieldClass1552E0 with vtable D_155100 in main data. */
+class FieldClass155100 : public FieldClass1552E0
+{
+public:
+    /** @brief Clear the count. */
+    FieldClass155100()
+    {
+        unk28 = 0;
+    }
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass155100()
+    {
+    }
+
+    s32 unk28;
+};
+
+/** Partial FieldClass155100 with vtable D_1551D0 in main data. */
+class FieldClass1551D0 : public FieldClass155100
+{
+public:
+    /** @brief Clear the state words. */
+    FieldClass1551D0()
+    {
+        unk2C = 0;
+        unk30 = 0;
+        unk34 = 0;
+    }
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1551D0()
+    {
+    }
+
+    s32 unk2C;
+    s32 unk30;
+    u8 unk34;
+};
+
+/** Complete 0xF0-byte FieldClass1551D0 with vtable D_154F30 in main data. */
+class FieldClass154F30 : public FieldClass1551D0
+{
+public:
+    /** @brief Start enabled with a 128.0 extent. */
+    FieldClass154F30()
+    {
+        unk04 = 1;
+        unk38 = 0.0f;
+        unkE0 = 0;
+        unkE4 = 128.0f;
+    }
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass154F30();
+
+    float unk38;
+    u8 unk3C[4];
+    FieldVec4A unk40[8];
+    u8 unkC0[0x20];
+    u8 unkE0;
+    float unkE4;
+};
+#else
+typedef struct FieldClass154F30 FieldClass154F30;
+typedef struct FieldClass1550E8 FieldClass1550E8;
+typedef struct FieldClass1552E0 FieldClass1552E0;
+#endif
 
 /** Partial receiver with an embedded buffer after the word at offset 0x618. */
 typedef struct FieldEmbeddedBuffer75210
@@ -107,7 +182,7 @@ u32 func_002737A0(void* object);
  * @param object Receiver to update.
  * @param source Source containing the float state.
  */
-void func_002737B0(FieldObject154F30* object, const FieldFloatSourceAF0* source);
+void func_002737B0(FieldClass154F30* object, const FieldFloatSourceAF0* source);
 
 /**
  * @brief Report the fixed float value for this receiver.
@@ -160,14 +235,14 @@ void func_00275AD0(FieldResourceOwner273720* object, FieldResourceHeader273720* 
  * @brief Leave the receiver unchanged after processing.
  * @param object Callback receiver.
  */
-void func_00275B20(FieldObject1552E0* object);
+void func_00275B20(FieldClass1552E0* object);
 
 /**
  * @brief Return the default floating-point limit.
  * @param object Callback receiver.
  * @return Always 100.0f.
  */
-float func_00275B30(FieldObject1552E0* object);
+float func_00275B30(FieldClass1552E0* object);
 
 /**
  * @brief Leave resource binding unchanged for the default callback.
@@ -182,14 +257,14 @@ void func_00275B50(void* object, FieldResourceHeader273720* header, FieldResourc
  * @param object Callback receiver.
  * @return Zero entries.
  */
-s32 func_00275BA0(FieldObject1552E0* object);
+s32 func_00275BA0(FieldClass1552E0* object);
 
 /**
  * @brief Report the default count for callback slot 0x90.
  * @param object Callback receiver.
  * @return Zero entries.
  */
-s32 func_00275BE0(FieldObject1552E0* object);
+s32 func_00275BE0(FieldClass1552E0* object);
 
 /**
  * @brief Leave the receiver unchanged for the scalar callback.
@@ -203,7 +278,7 @@ void func_00275C70(void* object, float value);
  * @param object Callback receiver.
  * @return Always zero.
  */
-u8 func_00275CB0(FieldObject1552E0* object);
+u8 func_00275CB0(FieldClass1552E0* object);
 
 /**
  * @brief Get an indexed element from the primary array.
@@ -211,7 +286,7 @@ u8 func_00275CB0(FieldObject1552E0* object);
  * @param index Index of the element.
  * @return Address of the indexed element.
  */
-FieldObject1550E8* func_00275D70(FieldObject1552E0* object, s32 index);
+FieldClass1550E8* func_00275D70(FieldClass1552E0* object, s32 index);
 
 /**
  * @brief Get an indexed element from the secondary array.
@@ -220,154 +295,154 @@ FieldObject1550E8* func_00275D70(FieldObject1552E0* object, s32 index);
  * @param column Signed column index.
  * @return Address of the indexed secondary element.
  */
-FieldObject154E60* func_00275D80(FieldObject1552E0* object, s32 row, s32 column);
+FieldObject154E60* func_00275D80(FieldClass1552E0* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
  * @param object Object to query.
  * @return Stored bitset object pointer.
  */
-FieldBitset154E80* func_00275DA0(FieldObject1552E0* object);
+FieldBitset154E80* func_00275DA0(FieldClass1552E0* object);
 
 /**
  * @brief Get the first configured dimension.
  * @param object Object to query.
  * @return Signed dimension stored at offset 0xC.
  */
-s32 func_00275DB0(FieldObject1552E0* object);
+s32 func_00275DB0(FieldClass1552E0* object);
 
 /**
  * @brief Get the second configured dimension.
  * @param object Object to query.
  * @return Signed dimension stored at offset 0x10.
  */
-s32 func_00275DC0(FieldObject1552E0* object);
+s32 func_00275DC0(FieldClass1552E0* object);
 
 /**
  * @brief Report the supported operation flags for this object kind.
  * @param object Object to query.
  * @return Always 0x20.
  */
-u32 func_00275DD0(FieldObject1552E0* object);
+u32 func_00275DD0(FieldClass1552E0* object);
 
 /**
  * @brief Test whether the primary element array is present.
  * @param object Object to query.
  * @return True when the array exists, otherwise false.
  */
-bool func_00275DE0(FieldObject1552E0* object);
+bool func_00275DE0(FieldClass1552E0* object);
 
 /**
  * @brief Report the default floating-point value for this object kind.
  * @param object Object to query.
  * @return Always 1.0.
  */
-float func_00276460(FieldObject1552E0* object);
+float func_00276460(FieldClass1552E0* object);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275B40(FieldObject1552E0* object, float value);
+void func_00275B40(FieldClass1552E0* object, float value);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275B60(FieldObject1552E0* object, u8 value);
+void func_00275B60(FieldClass1552E0* object, u8 value);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275B70(FieldObject1552E0* object, float value);
+void func_00275B70(FieldClass1552E0* object, float value);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275B80(FieldObject1552E0* object, float value);
+void func_00275B80(FieldClass1552E0* object, float value);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275BB0(FieldObject1552E0* object, u8 value);
+void func_00275BB0(FieldClass1552E0* object, u8 value);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275BC0(FieldObject1552E0* object, u8 value);
+void func_00275BC0(FieldClass1552E0* object, u8 value);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275BF0(FieldObject1552E0* object, u8 value);
+void func_00275BF0(FieldClass1552E0* object, u8 value);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275C00(FieldObject1552E0* object, float value);
+void func_00275C00(FieldClass1552E0* object, float value);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275C10(FieldObject1552E0* object, float value);
+void func_00275C10(FieldClass1552E0* object, float value);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275C20(FieldObject1552E0* object, u8 value);
+void func_00275C20(FieldClass1552E0* object, u8 value);
 
 /**
  * @brief Report the default floating-point value.
  * @param object Callback receiver.
  * @return Always zero.
  */
-float func_00275C80(FieldObject1552E0* object);
+float func_00275C80(FieldClass1552E0* object);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275CC0(FieldObject1552E0* object, u8 value);
+void func_00275CC0(FieldClass1552E0* object, u8 value);
 
 /**
  * @brief Report the default byte value.
  * @param object Callback receiver.
  * @return Always zero.
  */
-u8 func_00275CD0(FieldObject1552E0* object);
+u8 func_00275CD0(FieldClass1552E0* object);
 
 /**
  * @brief Leave the receiver unchanged for the default scalar callback.
  * @param object Callback receiver.
  * @param value Scalar value supplied by the caller.
  */
-void func_00275CE0(FieldObject1552E0* object, float value);
+void func_00275CE0(FieldClass1552E0* object, float value);
 
 /**
  * @brief Report the default floating-point value.
  * @param object Callback receiver.
  * @return Always zero.
  */
-float func_00275CF0(FieldObject1552E0* object);
+float func_00275CF0(FieldClass1552E0* object);
 
 /**
  * @brief Return the fixed value 7.
@@ -459,6 +534,21 @@ void func_00275CA0(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00275D00(void* object);
+
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void func_00275E30(FieldClass1552E0* object, s32 rows, s32 columns);
+
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+void func_00275DF0(FieldClass1552E0* object, const FieldClass1552E0* other);
 
 #ifdef __cplusplus
 }

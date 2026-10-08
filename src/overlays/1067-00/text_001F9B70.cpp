@@ -222,7 +222,17 @@ extern "C" void func_428C80(FieldLateIndexedObject*);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001F9B70);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FA1E0);
+/** Partial FieldClass150070 object with vtable D_1507C0 in main data. */
+class FieldClass1507C0 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1507C0();
+};
+
+FieldClass1507C0::~FieldClass1507C0()
+{
+}
 
 extern "C" void func_001FA270(void* object)
 {
@@ -308,7 +318,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FAB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FACE0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FB030);
+/** Partial LibClass178EA0 with vtable D_150990 in main data. */
+class FieldClass150990 : public LibClass178EA0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150990();
+};
+
+FieldClass150990::~FieldClass150990()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FB090);
 
@@ -554,4 +574,20 @@ extern "C" void func_001FD780(FieldLateDeleting* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FD7D0);
+/** Partial FieldClass150070 object with vtable D_150A20 in main data. */
+class FieldClass150A20 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150A20();
+
+    /**
+     * @brief Release the object's storage through the Lib heap.
+     * @param object Storage to release.
+     */
+    static void operator delete(void* object);
+};
+
+FieldClass150A20::~FieldClass150A20()
+{
+}

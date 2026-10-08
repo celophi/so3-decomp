@@ -3,11 +3,14 @@
 
 #include "types.h"
 
-/** Partial GS packet buffer: base, write cursor, capacity in 64-bit words, and a flag byte at offset 0x15. */
+/**
+ * Partial GS packet buffer: base, allocated storage, write cursor, capacity in 64-bit words, a
+ * borrowed-storage flag at offset 0x14 and a flag byte at offset 0x15.
+ */
 typedef struct ResidentPacket
 {
     u8* unk00;
-    u8 unk04[4];
+    u8* unk04;
     u8* unk08;
     u8 unk0c[4];
     s32 unk10;

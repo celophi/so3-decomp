@@ -6,9 +6,12 @@
 #include "overlays/1067-00/text_00202240_callbacks.h"
 #include "overlays/1067-00/text_0021FB80.h"
 #include "overlays/1067-00/text_0022DC70.h"
+#include "overlays/1067-00/text_0022B490.h"
+#include "overlays/1067-00/text_001ED7E0.h"
 
 #include "overlays/1067-00/text_002764D0.h"
 #include "overlays/1067-00/text_002607B0.h"
+#include "overlays/1067-00/text_00200710.h"
 
 // C ABI names of methods that this unit's C-style callers still use; the shared
 // header limits them to C because their C++ declarations are class members.
@@ -264,111 +267,217 @@ void func_0022E680(FieldObject22E680* object)
     object->unk24 = -3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022E6B0);
+FieldClass152770::~FieldClass152770()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022E750);
+FieldClass152790::~FieldClass152790()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022E7F0);
+FieldClass1527B0::~FieldClass1527B0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022E890);
+FieldClass1527D0::~FieldClass1527D0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022E930);
+FieldClass152810::~FieldClass152810()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022E9D0);
+FieldClass152830::~FieldClass152830()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022EA70);
+FieldClass152850::~FieldClass152850()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022EB10);
+FieldClass152870::~FieldClass152870()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022EBB0);
+FieldClass152890::~FieldClass152890()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022EC50);
+FieldClass1528B0::~FieldClass1528B0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022ECF0);
+FieldClass1528D0::~FieldClass1528D0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022ED90);
+FieldClass1528F0::~FieldClass1528F0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022EE30);
+FieldClass152910::~FieldClass152910()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022EED0);
+FieldClass152930::~FieldClass152930()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022EF70);
+FieldClass152950::~FieldClass152950()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F010);
+FieldClass152970::~FieldClass152970()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F0B0);
+FieldClass152990::~FieldClass152990()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F150);
+FieldClass1529B0::~FieldClass1529B0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F1F0);
+FieldClass1529D0::~FieldClass1529D0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F290);
+FieldClass1529F0::~FieldClass1529F0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F330);
+FieldClass152A10::~FieldClass152A10()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F3D0);
+FieldClass152A30::~FieldClass152A30()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F470);
+FieldClass152A50::~FieldClass152A50()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F510);
+FieldClass152A70::~FieldClass152A70()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F5B0);
+FieldClass152A90::~FieldClass152A90()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F650);
+FieldClass152AB0::~FieldClass152AB0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F6F0);
+FieldClass152AD0::~FieldClass152AD0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F790);
+FieldClass152AF0::~FieldClass152AF0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F830);
+FieldClass152B10::~FieldClass152B10()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F8D0);
+FieldClass152B30::~FieldClass152B30()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022F970);
+FieldClass152B50::~FieldClass152B50()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022FA10);
+FieldClass152B70::~FieldClass152B70()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022FAB0);
+FieldClass152B90::~FieldClass152B90()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022FB50);
+FieldClass152BB0::~FieldClass152BB0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022FBF0);
+FieldClass152BD0::~FieldClass152BD0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022FC90);
+FieldClass152BF0::~FieldClass152BF0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022FD30);
+FieldClass152C10::~FieldClass152C10()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022FDD0);
+FieldClass152C30::~FieldClass152C30()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022FE70);
+FieldClass152C50::~FieldClass152C50()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022FF10);
+FieldClass152C90::~FieldClass152C90()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022FFB0);
+FieldClass152CB0::~FieldClass152CB0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230050);
+FieldClass152CD0::~FieldClass152CD0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_002300F0);
+FieldClass152CF0::~FieldClass152CF0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230190);
+FieldClass152D10::~FieldClass152D10()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230230);
+FieldClass152D30::~FieldClass152D30()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_002302D0);
+FieldClass152D50::~FieldClass152D50()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230370);
+FieldClass152D70::~FieldClass152D70()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230410);
+FieldClass152D90::~FieldClass152D90()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_002304B0);
+FieldClass152DB0::~FieldClass152DB0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230550);
+FieldClass152DD0::~FieldClass152DD0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_002305F0);
+FieldClass152DF0::~FieldClass152DF0()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230690);
+FieldClass152E10::~FieldClass152E10()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230730);
+FieldClass152E30::~FieldClass152E30()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_002307D0);
 
@@ -378,11 +487,31 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230E
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230EB0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230F20);
+/** Partial FieldClass1507A0 object with vtable D_152E90 in main data. */
+class FieldClass152E90 : public FieldClass1507A0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass152E90();
+};
+
+FieldClass152E90::~FieldClass152E90()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230FC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00231080);
+/** Partial FieldClass150070 object with vtable D_152EB0 in main data. */
+class FieldClass152EB0 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass152EB0();
+};
+
+FieldClass152EB0::~FieldClass152EB0()
+{
+}
 
 s32 func_00231110(FieldObject152EB0* object)
 {
@@ -615,7 +744,16 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_002387
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_002387D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00238880);
+FieldClass152F00::~FieldClass152F00()
+{
+    FieldResourceList14* resources = D_001B6430->context->unk2c;
+    if (unk5cd_4)
+    {
+        func_00201870(resources, unk74, unk3ac);
+    }
+    operator delete(unk588);
+    unk588 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", __ct__16FieldClass152F00Fv);
 
@@ -642,7 +780,10 @@ s32 func_00239880(FieldObject239880* object)
     return object->unk0c != 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_002398B0);
+FieldClass152FA0::~FieldClass152FA0()
+{
+    func_001DD730();
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00239940);
 
@@ -672,9 +813,41 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00239B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023A4C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023A5C0);
+/** Partial FieldClass150070 object with vtable D_153080 in main data. */
+class FieldClass153080 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass153080();
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023A650);
+    /**
+     * @brief Release the object's storage through the Lib heap.
+     * @param object Storage to release.
+     */
+    static void operator delete(void* object);
+};
+
+FieldClass153080::~FieldClass153080()
+{
+}
+
+/** Partial FieldClass150070 object with vtable D_1530A0 in main data. */
+class FieldClass1530A0 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1530A0();
+
+    /**
+     * @brief Release the object's storage through the Lib heap.
+     * @param object Storage to release.
+     */
+    static void operator delete(void* object);
+};
+
+FieldClass1530A0::~FieldClass1530A0()
+{
+}
 
 void func_0023A6E0(FieldObject1530A0* object)
 {

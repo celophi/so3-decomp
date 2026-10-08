@@ -13,8 +13,8 @@ typedef struct ItemCreationCategoryDefinition ItemCreationCategoryDefinition;
 /** Twelve-byte category entry containing its list head and catalog index. */
 struct ItemCreationCategoryRecord
 {
-    s16 unk00;
-    u16 unk02;
+    s16 allocation_list_head;
+    u16 catalog_index;
     u8 unk04[4];
     u8 unk08;
     u8 unk09[3];

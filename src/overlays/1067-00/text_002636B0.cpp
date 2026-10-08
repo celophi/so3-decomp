@@ -1,6 +1,11 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002636B0.h"
 #include "overlays/1067-00/text_0026E460.h"
+#include "overlays/1067-00/text_002CD390.h"
+#include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/text_0044ABE0.h"
+
+extern "C" void func_00264580(FieldCountedList* list);
 
 /** Partial receiver and guarded nested state for the constant reset. */
 typedef struct FieldInnerC000
@@ -154,19 +159,90 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002642
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002642D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264360);
+FieldClass153EC0::FieldClass153EC0()
+{
+    unk00 = new (0) FieldListNode;
+    if (unk00 == 0)
+    {
+        throw;
+    }
+    unk00->unk04 = 0;
+    unk04 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002643E0);
+FieldClass153EC0::~FieldClass153EC0()
+{
+    func_00264580(this);
+    if (unk00 != 0)
+    {
+        ::operator delete(unk00);
+        unk00 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264460);
+/** @brief Append a value at the tail of the list. @param list List to extend. @param value Value to append. */
+extern "C" void func_00264460(FieldCountedList* list, void* value)
+{
+    FieldListNode* node = new (0) FieldListNode;
+    if (node != 0)
+    {
+        FieldListNode* tail;
+        node->unk00 = value;
+        node->unk04 = 0;
+        tail = list->unk00;
+        while (tail->unk04 != 0)
+        {
+            tail = tail->unk04;
+        }
+        tail->unk04 = node;
+        list->unk04++;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002644F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264580);
+/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+extern "C" void func_00264580(FieldCountedList* list)
+{
+    FieldListNode* node = list->unk00->unk04;
+    if (node == 0)
+    {
+        return;
+    }
+    while (node != 0)
+    {
+        FieldListNode* next = node->unk04;
+        delete node;
+        node = next;
+    }
+    list->unk00->unk04 = 0;
+    list->unk04 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264600);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264650);
+/**
+ * @brief Remove the first value from the list.
+ * @param list List to take from.
+ * @param value Receives the removed value.
+ * @return One when a value was removed, otherwise zero.
+ */
+extern "C" s32 func_00264650(FieldCountedList* list, void** value)
+{
+    FieldListNode* node = list->unk00->unk04;
+    if (node != 0)
+    {
+        *value = node->unk00;
+    }
+    else
+    {
+        return 0;
+    }
+    list->unk00->unk04 = node->unk04;
+    delete node;
+    list->unk04--;
+    return 1;
+}
 
 void func_002646C0(FieldObject15AE70* object, u8 value)
 {
@@ -186,16 +262,6 @@ void func_002646E0(FieldObject15AE70* object, u8 value)
 void func_002646F0(FieldObject15AE70* object, u16 value)
 {
     object->unk0A = value;
-}
-
-void func_00264700(FieldObject15AE70* object, void* value)
-{
-    object->unk98 = value;
-}
-
-void* func_00264710(const FieldObject15AE70* object)
-{
-    return object->unk98;
 }
 
 void func_00264720(FieldObject15AE70* object, void* value)
@@ -381,7 +447,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264A
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264AC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264C50);
+/** Partial FieldClass15AE70 window with vtable D_153ED0 in main data. */
+class FieldClass153ED0 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window. */
+    virtual ~FieldClass153ED0();
+};
+
+FieldClass153ED0::~FieldClass153ED0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264CB0);
 
@@ -406,7 +482,17 @@ void func_00265490(FieldObject15AD40* object, u8 value)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002654A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00265810);
+/** Partial FieldClass15AE70 window with vtable D_1540B0 in main data. */
+class FieldClass1540B0 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window. */
+    virtual ~FieldClass1540B0();
+};
+
+FieldClass1540B0::~FieldClass1540B0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00265870);
 
@@ -442,9 +528,21 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00266B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00266EB0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002672C0);
+ItemCreationClass175110::~ItemCreationClass175110()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00267330);
+/** Partial FieldClass15AE70 window with vtable D_1542D0 in main data. */
+class FieldClass1542D0 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window. */
+    virtual ~FieldClass1542D0();
+};
+
+FieldClass1542D0::~FieldClass1542D0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00267390);
 
@@ -460,7 +558,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002677
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002678F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00267DD0);
+/** Partial FieldClass15AE70 window with vtable D_1543D0 in main data. */
+class FieldClass1543D0 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window. */
+    virtual ~FieldClass1543D0();
+};
+
+FieldClass1543D0::~FieldClass1543D0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00267E30);
 
@@ -478,7 +586,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002681
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00268370);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002687B0);
+/** Partial FieldClass15AE70 window with vtable D_1544D0 in main data. */
+class FieldClass1544D0 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window. */
+    virtual ~FieldClass1544D0();
+};
+
+FieldClass1544D0::~FieldClass1544D0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00268810);
 
@@ -488,7 +606,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00268A
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00268B10);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002690C0);
+/** Partial FieldClass15AE70 window with vtable D_1545D0 in main data. */
+class FieldClass1545D0 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window. */
+    virtual ~FieldClass1545D0();
+};
+
+FieldClass1545D0::~FieldClass1545D0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00269120);
 
@@ -575,7 +703,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026D5
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026D6A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026DA90);
+/** Partial FieldClass15AE70 window with vtable D_1549D0 in main data. */
+class FieldClass1549D0 : public FieldClass15AE70
+{
+public:
+    /** @brief Destroy the window. */
+    virtual ~FieldClass1549D0();
+};
+
+FieldClass1549D0::~FieldClass1549D0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026DAF0);
 
@@ -617,4 +755,13 @@ void* func_0026E3D0(const FieldObject1549D0* object)
     return object->unk38;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026E3E0);
+FieldClass154BA0::FieldClass154BA0()
+{
+    unk00 = new (0) FieldListNode;
+    if (unk00 == 0)
+    {
+        throw;
+    }
+    unk00->unk04 = 0;
+    unk04 = 0;
+}

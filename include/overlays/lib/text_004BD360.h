@@ -333,10 +333,10 @@ struct LibClass178630 : public LibClass178600
     /** @brief Initialize widget state and select kind 1. */
     LibClass178630()
     {
-        unk5c = 0;
-        unk58 = 0;
-        unk54 = 0;
-        unk50 = 0;
+        unk50.unk0c = 0.0f;
+        unk50.unk08 = 0.0f;
+        unk50.unk04 = 0.0f;
+        unk50.unk00 = 0.0f;
         unk38 = 1;
         unk60 = 0;
     }
@@ -351,10 +351,10 @@ struct LibClass178630 : public LibClass178600
      */
     LibClass178630(s32 mode, float x, float y, float width, float height, float extra)
     {
-        unk5c = 0;
-        unk58 = 0;
-        unk54 = 0;
-        unk50 = 0;
+        unk50.unk0c = 0.0f;
+        unk50.unk08 = 0.0f;
+        unk50.unk04 = 0.0f;
+        unk50.unk00 = 0.0f;
         unk38 = 1;
         func_004C5A80(this, mode, x, y, width, height, extra);
     }
@@ -369,10 +369,7 @@ struct LibClass178630 : public LibClass178600
     virtual void func_00462310();
     LibStorageBlock0C unk40;
     u8 unk4c[4];
-    u32 unk50;
-    u32 unk54;
-    u32 unk58;
-    u32 unk5c;
+    LibUiRect16 unk50;
     void* unk60;
     u8 unk64[0x2C];
 };

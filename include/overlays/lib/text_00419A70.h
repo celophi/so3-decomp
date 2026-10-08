@@ -55,6 +55,23 @@ public:
 };
 
 
+/** Partial Lib widget with vtable D_174790 in main data. */
+class LibClass174790 : public LibClass178600
+{
+public:
+    /** @brief Release the widget storage and destroy its base. */
+    virtual ~LibClass174790();
+    LibStorageBlock0C unk40;
+};
+
+/** Partial Lib widget with vtable D_175170 in main data. */
+class LibClass175170 : public LibClass178600
+{
+public:
+    /** @brief Release the widget storage and destroy its base. */
+    virtual ~LibClass175170();
+    LibStorageBlock0C unk40;
+};
 
 typedef ItemCreationClass172600 LibClass172600;
 typedef ItemCreationClass1725D0 LibClass1725D0;

@@ -50,7 +50,8 @@ typedef struct FieldEntryArrayObject
     u8 unk2a_4_7 : 4;
     u8 unk2b_0 : 1;
     u8 unk2b_1 : 1;
-    u8 unk2b_2_7 : 6;
+    u8 unk2b_2 : 1;
+    u8 unk2b_3_7 : 5;
     u8 unk2c[0x20];
     u32 unk4c;
     float unk50;
@@ -73,6 +74,9 @@ typedef struct FieldFloatSpan1C
 class FieldClass159960 : public FieldFloatSpan1C
 {
 public:
+    /** @brief Construct the interpolation state. */
+    FieldClass159960();
+
     /**
      * @brief Copy four coefficients and cache the segment's key range.
      * @param a First coefficient.
@@ -685,7 +689,8 @@ public:
     u8 unk2a_4_7 : 4;
     u8 unk2b_0 : 1;
     u8 unk2b_1 : 1;
-    u8 unk2b_2_7 : 6;
+    u8 unk2b_2 : 1;
+    u8 unk2b_3_7 : 5;
     FieldClass1591D0 unk2c;
     float unk4c;
     float unk50;
@@ -759,6 +764,12 @@ public:
      * @param key Sort value.
      */
     virtual void func_001E0080(const float* x, const float* y, const float* z, float key);
+    // Overrides of FieldClass150090's pure slots 14, 16 and 31-33; only their positions are known.
+    virtual void func_001DFA40(float* out) const;
+    virtual void func_001DFA30(float* out) const;
+    virtual s32 func_001E02C0(const float* x, const float* y, const float* z, float key);
+    virtual s32 func_001E0220(s32 index, float key, const float* x, const float* y, const float* z);
+    virtual s32 func_001E0100(s32 index, float key, const float* x, const float* y, const float* z);
 };
 
 /**
@@ -769,6 +780,8 @@ public:
 class FieldClass177C70 : public FieldClass14FEB0
 {
 public:
+    /** @brief Construct the keyframe object. */
+    FieldClass177C70();
     /** @brief Destroy the keyframe object. */
     virtual ~FieldClass177C70();
 };

@@ -30,6 +30,9 @@ public:
     // their positions are known.
     virtual void func_slot1c(LibObject1751A0* target);
     virtual void func_slot20();
+    virtual void func_slot24();
+    virtual void func_slot28();
+    virtual void func_slot2c();
     u8 unk14[4];
     LibObject1751A0* unk18;
     u8 unk1c[4];
@@ -38,6 +41,22 @@ public:
     u8 unk20_3_7 : 5;
     u8 unk21[0xF];
     FieldVec4A unk30;
+};
+
+/** Partial FieldClass154EF0 with vtable D_154E20 in main data, allocated from the Lib heap. */
+class FieldClass154E20 : public FieldClass154EF0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass154E20()
+    {
+    }
+
+    /**
+     * @brief Release the object's storage through the Lib heap.
+     * @param object Storage to release.
+     */
+    static void operator delete(void* object);
 };
 #endif
 

@@ -11,6 +11,7 @@
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_0012F0F8.h"
 #include "overlays/lib/text_00429B00.h"
+#include "overlays/1067-00/text_0022DC70.h"
 
 struct FieldMotionVector81
 {
@@ -386,9 +387,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_00208E
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_00209160);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_002091E0);
+FieldClass151460::~FieldClass151460()
+{
+    delete unk08;
+    unk08 = 0;
+    delete unk04;
+    unk04 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_00209280);
+FieldClass151490::~FieldClass151490()
+{
+}
 
 /** @brief Release interpolation storage, then destroy the inherited list. */
 FieldClass15B900::~FieldClass15B900()

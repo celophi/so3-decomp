@@ -106,7 +106,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00200B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00200CC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201480);
+FieldClass150DC0::~FieldClass150DC0()
+{
+}
 
 extern "C" s32 func_00201510(void* object)
 {
@@ -216,7 +218,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201F
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00202080);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_002020F0);
+/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
+extern "C" void func_002020F0(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 extern "C" s32 func_00202120(void* object)
 {

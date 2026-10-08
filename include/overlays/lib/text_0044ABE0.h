@@ -75,6 +75,14 @@ struct LibDrawState64
 #ifdef __cplusplus
 #include "overlays/lib/text_004BD360.h"
 
+/** Partial Lib class with vtable D_174C20 in main data; its destructor is func_00452F00. */
+class LibClass174C20
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~LibClass174C20();
+};
+
 /** Partial widget with resident vtable at 0x1746A0. */
 class ItemCreationClass1746A0 : public LibClass178600
 {

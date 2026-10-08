@@ -108,6 +108,11 @@ public:
     FieldClass153130();
     /** @brief Destroy the Field selection widget. */
     virtual ~FieldClass153130();
+    /**
+     * @brief Set the selection index and refresh its displayed position.
+     * @param count Unsigned selection index.
+     */
+    void func_0023B280(u16 count);
     /** @brief Reset the selection index and refresh its displayed position. */
     void func_0023B310();
     /** @brief Read the current selection index. @return Current zero-based index. */

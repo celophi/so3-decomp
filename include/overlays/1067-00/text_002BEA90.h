@@ -38,6 +38,68 @@ typedef struct FieldSelector FieldSelector;
 typedef struct FieldProgressState FieldProgressState;
 
 #ifdef __cplusplus
+#include "overlays/1067-00/field_class_154D40.h"
+
+/** Partial FieldClass154E70 with vtable D_159E40 in main data; its only virtual is the destructor. */
+class FieldClass159E40 : public FieldClass154E70
+{
+public:
+    /** @brief Construct the object. */
+    FieldClass159E40();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass159E40();
+
+    u8 unk04[0x8C];
+};
+
+/** Partial grid of FieldClass159E40 cells with vtable D_159E50 in main data. */
+class FieldClass159E50 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass159E50();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass159E50();
+
+    u8* unk14;
+    FieldClass159E40* unk18;
+    FieldBitset154E80* unk1C;
+    u8* unk20;
+    FieldClass154E60* unk24;
+};
+
+/** Partial FieldClass159E50 with vtable D_159C30 in main data. */
+class FieldClass159C30 : public FieldClass159E50
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass159C30()
+    {
+    }
+};
+
+/** Partial FieldClass159C30 with vtable D_159D00 in main data. */
+class FieldClass159D00 : public FieldClass159C30
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass159D00()
+    {
+    }
+};
+
+/** Partial FieldClass159D00 with vtable D_159B60 in main data. */
+class FieldClass159B60 : public FieldClass159D00
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass159B60();
+};
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 

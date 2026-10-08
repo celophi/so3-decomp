@@ -23,6 +23,7 @@
 #include "overlays/1067-00/text_0021DB80.h"
 #include "overlays/1067-00/text_002CABC0.h"
 #include "vu0.h"
+#include "overlays/1067-00/text_002607B0.h"
 
 extern "C" void func_4D9F40(FieldWordAt210*, const FieldWordAt210*);
 extern "C" u32 D_001B65B4;
@@ -136,65 +137,6 @@ struct FieldRuntimePositions
     u8 count;
     u8 unk17e1[2];
     u8 mode;
-};
-
-/** Partial base actor; the native constructor is 0x0024E420. */
-class FieldClass1535B0 : public FieldClass152430
-{
-public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
-    static void* operator new(u32 size);
-    /** @brief Release through the Lib heap. @param object Storage to release. */
-    static void operator delete(void* object);
-    /** @brief Initialize the inherited actor and named-object state. */
-    FieldClass1535B0();
-    /** @brief Destroy the named-object state and inherited actor. */
-    virtual ~FieldClass1535B0();
-    /** @brief Bind a named resident object and copy its transform. @param name Object name. @return One when found, zero otherwise. */
-    s32 func_0024D1C0(const char* name);
-    u8 unk2f0[0x44];
-    u8 unk334_0_1 : 2;
-    u8 unk334_2 : 1;
-    u8 unk334_3_7 : 5;
-};
-
-/** 0x3D0-byte actor derived from the native 0x340-byte base. */
-class FieldClass155580 : public FieldClass1535B0
-{
-public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
-    static void* operator new(u32 size);
-    /** @brief Release through the Lib heap. @param object Storage to release. */
-    static void operator delete(void* object);
-    /** @brief Set the actor category and clear its transition state. */
-    FieldClass155580()
-    {
-        unk78 |= 0x1000;
-        unk348 = 0.0f;
-        unk3a4 = 0;
-        unk3c0 = 0;
-        unk3c4 = 0;
-        unk3a0 = 0;
-        unk3b0 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
-        unk350_0 = 0;
-        unk350_1 = 0;
-    }
-    /** @brief Destroy the inherited named actor. */
-    virtual ~FieldClass155580();
-    float unk340;
-    float unk344;
-    float unk348;
-    float unk34c;
-    u8 unk350_0 : 1;
-    u8 unk350_1 : 1;
-    u8 unk350_2_7 : 6;
-    u8 unk351[0x4F];
-    void* unk3a0;
-    void* unk3a4;
-    u8 unk3a8[8];
-    FieldVec4A unk3b0;
-    void* unk3c0;
-    void* unk3c4;
 };
 
 /** Partial resident receiver tested before the actor is created. */
@@ -2313,7 +2255,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F33
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F39A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F3A70);
+FieldClass175290::~FieldClass175290()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F3AD0);
 

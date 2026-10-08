@@ -41,30 +41,11 @@ s32 func_002729C0(FieldObject154EF0* object);
 float func_00272820(FieldClass1514F8* curve, float position);
 
 /**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_002729A0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_002729B0(void* object);
-
-/**
  * @brief Return the fixed value 300.
  * @param object Receiver or first argument; unused.
  * @return Always 300.
  */
 s32 func_00272A40(void* object);
-
-/**
- * @brief Return the fixed value -1.
- * @param object Receiver or first argument; unused.
- * @return Always -1.
- */
-s32 func_00272D60(void* object);
 
 /**
  * @brief Perform no work.

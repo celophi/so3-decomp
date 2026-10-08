@@ -1,5 +1,7 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
+#include "main/resident_0010A0E0.h"
+#include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_0020E4B0.h"
 
 /** Partial field context with a word at offset 0x50. */
@@ -70,7 +72,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020F5
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020F5D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020F6C0);
+/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
+extern "C" void func_0020F6C0(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020F6F0);
 

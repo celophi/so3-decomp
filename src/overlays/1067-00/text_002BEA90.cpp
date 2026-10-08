@@ -1,5 +1,12 @@
 #include "include_asm.h"
+#include "overlays/1067-00/field_class_154D40.h"
+#include "overlays/1067-00/field_class_154EF0.h"
 #include "overlays/1067-00/text_002BEA90.h"
+#include "overlays/1067-00/text_002764D0.h"
+#include "main/resident_data.h"
+#include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/text_0044ABE0.h"
 
 struct FieldTable14
 {
@@ -272,15 +279,35 @@ struct FieldProgressState
 extern "C" FieldRuntime* D_001B657C;
 extern "C" s8 D_30EAFC[];
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BEA90);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", __dt__16FieldClass159C30Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BEAF0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", __dt__16FieldClass159D00Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BEB60);
+/** Partial FieldClass154E20 object with vtable D_159DD0 in main data. */
+class FieldClass159DD0 : public FieldClass154E20
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass159DD0();
+};
+
+FieldClass159DD0::~FieldClass159DD0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BEBD0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BECB0);
+/** Partial FieldClass1553B0 object with vtable D_159E10 in main data. */
+class FieldClass159E10 : public FieldClass1553B0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass159E10();
+};
+
+FieldClass159E10::~FieldClass159E10()
+{
+}
 
 extern "C" void func_002BED50(FieldBitFlags1C* self)
 {
@@ -441,7 +468,15 @@ extern "C" void func_002BF620(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BF630);
+FieldClass159E50::FieldClass159E50()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1C = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 extern "C" FieldEntry90* func_002BF690(FieldCollection90* self, s32 index)
 {
@@ -478,15 +513,120 @@ extern "C" bool func_002BF710(const FieldPointer14* self)
     return self->value != 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BF720);
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+extern "C" void func_002BF720(FieldClass159E50* object, const FieldClass159E50* other)
+{
+    object->unk0C = other->unk0C;
+    object->unk10 = other->unk10;
+    object->resize(object->unk0C, object->unk10);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BF760);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+extern "C" void func_002BF760(FieldClass159E50* object, s32 rows, s32 columns)
+{
+    object->unk14 = 0;
+    object->unk20 = 0;
+    delete[] object->unk18;
+    object->unk18 = new (0) FieldClass159E40[rows + 2];
+    if (object->unk18 == 0)
+    {
+        return;
+    }
+    delete object->unk1C;
+    if (D_001B6684 != 0)
+    {
+        void* heap = func_00100C80(D_001B6684);
+        object->unk1C = new (0) FieldBitset154E80(rows);
+        if (object->unk1C == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            func_00100C80(heap);
+            return;
+        }
+        if (object->unk1C->unk08 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            func_00100C80(heap);
+            return;
+        }
+        func_00100C80(heap);
+    }
+    else
+    {
+        object->unk1C = new (0) FieldBitset154E80(rows);
+        if (object->unk1C == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            return;
+        }
+        if (object->unk1C->unk08 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] object->unk24;
+        object->unk24 = new (0) FieldClass154E60[rows * (columns - 1) + 2];
+        if (object->unk24 == 0)
+        {
+            delete[] object->unk18;
+            object->unk18 = 0;
+            delete object->unk1C;
+            object->unk1C = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] object->unk24;
+        object->unk24 = 0;
+    }
+    if (object->unk18 != 0)
+    {
+        object->unk14 = (u8*)(object->unk18 + 1);
+    }
+    if (object->unk24 != 0)
+    {
+        object->unk20 = (u8*)(object->unk24 + 1);
+    }
+    object->unk0C = rows;
+    object->unk10 = columns;
+    object->unk1C->clear();
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BFCC0);
+FieldClass159E40::FieldClass159E40()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BFD00);
+FieldClass159E40::~FieldClass159E40()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BFD80);
+FieldClass159E50::~FieldClass159E50()
+{
+    delete[] unk18;
+    delete unk1C;
+    delete[] unk24;
+}
 
 extern "C" float func_002BFE60(void* object)
 {
@@ -529,8 +669,29 @@ extern "C" void func_002C0390(FieldState100* state)
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002C0400);
+/** Partial LibClass178600 widget with vtable D_159FE0 in main data. */
+class FieldClass159FE0 : public LibClass178600
+{
+public:
+    /** @brief Release the widget storage and destroy its base. */
+    virtual ~FieldClass159FE0();
+    LibStorageBlock0C unk40;
+};
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002C0470);
+FieldClass159FE0::~FieldClass159FE0()
+{
+}
+
+/** Partial LibObject178750 text widget with vtable D_15A010 in main data. */
+class FieldClass15A010 : public LibObject178750
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A010();
+};
+
+FieldClass15A010::~FieldClass15A010()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002C04D0);

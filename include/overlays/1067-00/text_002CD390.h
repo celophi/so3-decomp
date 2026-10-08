@@ -2,8 +2,10 @@
 #define SO3_OVERLAYS_1067_00_TEXT_002CD390_H
 
 #include "types.h"
+#include "main/resident_001001E0.h"
 #ifdef __cplusplus
 #include "overlays/1067-00/text_002CABC0.h"
+#include "overlays/1067-00/text_001DD3C0.h"
 #else
 typedef struct FieldBytePtr10 FieldBytePtr10;
 #endif
@@ -41,6 +43,13 @@ typedef struct FieldListNode
 {
     void* unk00;
     struct FieldListNode* unk04;
+#ifdef __cplusplus
+
+    /** @brief Release the link without destroying its payload. */
+    ~FieldListNode()
+    {
+    }
+#endif
 } FieldListNode;
 
 /** Sentinel-based display list with its stored node count. */
@@ -51,10 +60,150 @@ typedef struct FieldCountedList
 } FieldCountedList;
 
 #ifdef __cplusplus
+/** Pointer list with vtable D_153EC0 in main data. */
+class FieldClass153EC0 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass153EC0();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass153EC0();
+};
+
+/** Pointer list with vtable D_154BA0 in main data. */
+class FieldClass154BA0 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass154BA0();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass154BA0();
+};
+
+/** Pointer list with vtable D_15AF68 in main data. */
+class FieldClass15AF68 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15AF68();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15AF68();
+};
+
+/** Pointer list with vtable D_15AF78 in main data. */
+class FieldClass15AF78 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15AF78();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15AF78();
+};
+
+/** Pointer list with vtable D_15AF88 in main data. */
+class FieldClass15AF88 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15AF88();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15AF88();
+};
+
+/** Pointer list with vtable D_15AF98 in main data. */
+class FieldClass15AF98 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15AF98();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15AF98();
+};
+
+/** Pointer list with vtable D_15AFA8 in main data. */
+class FieldClass15AFA8 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15AFA8();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15AFA8();
+};
+
+/** Pointer list with vtable D_15AFB8 in main data. */
+class FieldClass15AFB8 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15AFB8();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15AFB8();
+};
+
+/** Pointer list with vtable D_15AFC8 in main data. */
+class FieldClass15AFC8 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15AFC8();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15AFC8();
+};
+
+/** Pointer list with vtable D_15AFD8 in main data. */
+class FieldClass15AFD8 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15AFD8();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15AFD8();
+};
+
+/** Pointer list with vtable D_15AFE8 in main data. */
+class FieldClass15AFE8 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15AFE8();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15AFE8();
+};
+
+/** Pointer list with vtable D_15AFF8 in main data. */
+class FieldClass15AFF8 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15AFF8();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15AFF8();
+};
+
+/** Pointer list with vtable D_15B008 in main data. */
+class FieldClass15B008 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15B008();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15B008();
+};
+
+/** Pointer list with vtable D_15B9F8 in main data. */
+class FieldClass15B9F8 : public FieldCountedList
+{
+public:
+    /** @brief Allocate the sentinel and initialize the empty list. */
+    FieldClass15B9F8();
+    /** @brief Release the list nodes and sentinel storage. */
+    virtual ~FieldClass15B9F8();
+};
+
 struct LibObject178660;
 
 /** Partial interface of Field's window base, primary vtable 0x15AE70 (destructor in Field). */
-class FieldClass15AE70
+class FieldClass15AE70 : public FieldClass150050
 {
 public:
     /** Construct the window base and its members (out of line in Field). */
@@ -167,24 +316,25 @@ public:
     virtual u8 func_slote8();
     virtual void func_slotec(u8 value);
     virtual void func_slotf0();
-    u8 unk04[4];
+    u32 unk04;
     u8 unk08;
     u8 unk09;
     u16 unk0a;
     u8 unk0c;
-    u8 unk0d[3];
+    u8 unk0d;
+    u8 unk0e[2];
     LibObject178660* unk10;
-    u8 unk14[0xC];
-    FieldCountedList unk20;
-    u8 pad28[4];
-    FieldCountedList unk2c;
-    u8 unk34[4];
-    FieldCountedList unk38;
-    u8 unk40[0x34];
-    FieldCountedList unk74;
-    u8 unk7c[0x10];
-    FieldCountedList unk8c;
-    u8 unk94[4];
+    FieldClass15AF68 unk14;
+    FieldClass15AF78 unk20;
+    FieldClass15AF88 unk2c;
+    FieldClass15AF98 unk38;
+    FieldClass15AFA8 unk44;
+    FieldClass15AFB8 unk50;
+    FieldClass15AFC8 unk5c;
+    FieldClass15AFD8 unk68;
+    FieldClass15AFE8 unk74;
+    FieldClass15AFF8 unk80;
+    FieldClass15B008 unk8c;
     void* unk98;
     void* unk9c;
     u8 unka0[4];

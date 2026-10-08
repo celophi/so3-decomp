@@ -4,6 +4,7 @@
 #include "main/resident_data.h"
 #include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/1067-00/text_0021FB80.h"
 
 struct FieldReset2D4160
 {
@@ -181,7 +182,19 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D3E
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D4030);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D4100);
+/** Partial FieldClass150EB0 with vtable D_15B130 in main data. */
+class FieldClass15B130 : public FieldClass150EB0
+{
+public:
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15B130();
+};
+
+FieldClass15B130::~FieldClass15B130()
+{
+}
 
 void func_002D4160(FieldReset2D4160* object)
 {
