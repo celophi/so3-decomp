@@ -233,7 +233,7 @@ static inline void set_status_record_rectangle(LibObject178750* target, float x,
 }
 
 /**
- * @brief Initialize a resource display through its Field resource view.
+ * @brief Initialize a resource display.
  * @param display Resource display to initialize.
  * @param record Resource record to display.
  * @param x Horizontal position.
@@ -241,7 +241,7 @@ static inline void set_status_record_rectangle(LibObject178750* target, float x,
  */
 static inline void initialize_status_resource(ItemCreationOptionResourceDisplay* display, FieldResourceRecord* record, float x, float y)
 {
-    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(display)), record, x, y);
+    func_002D6440(display, record, x, y);
 }
 
 /** @brief Set widget coordinates and request refresh. @param widget Display widget. @param x Horizontal coordinate. @param y Vertical coordinate. */
@@ -610,13 +610,13 @@ void func_00348D00(StatusSelectionWindow* object)
         u16 key = object->glyphs[i];
         if (key != 0)
         {
-            void* source = object->func_slot54();
+            u32 source = object->func_slot54();
             func_4C6DF0(object->displays[i], source, key, 0);
             object->displays[i]->unk3f = 1;
         }
         else
         {
-            void* source = object->func_slot54();
+            u32 source = object->func_slot54();
             func_4C6DF0(object->displays[i], source, 0x13C8, 0);
             object->displays[i]->unk3f = 1;
         }
@@ -1232,7 +1232,7 @@ void StatusScrollState::func_slot64()
     record->unk3c = 1;
     this->selected_slot = this->selection->slots[this->selection->current];
     LibBounds4C69B0* record_bounds = func_00467950(this->record);
-    void* source = this->func_slot54();
+    u32 source = this->func_slot54();
     func_4C6DF0(this->caption, source, this->selected_slot + 0x13BB, 0);
     LibBounds4C69B0* caption_bounds = func_004C69B0(this->caption);
     set_status_record_rectangle(this->caption, this->x + record_bounds->unk08,
@@ -1465,7 +1465,7 @@ void func_0034C500(StatusScrollState* object)
     if (display != 0 && record != 0)
     {
         set_status_widget_position(display, object->resource_x, object->resource_y);
-        func_002D5CF0(reinterpret_cast<FieldResourceDisplay2D5CF0*>(object->display), allocation, record, static_cast<u8>(key));
+        func_002D5CF0(object->display, allocation, record, static_cast<u8>(key));
     }
 }
 
@@ -1504,7 +1504,7 @@ void func_0034C640(StatusScrollState* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_slotf4__17StatusScrollStateFPv);
+INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_slotf4__17StatusScrollStateFUi);
 
 LibClass178A70::~LibClass178A70()
 {
@@ -1653,19 +1653,19 @@ void StatusTextWindow::func_slot60(s32 key)
 
 /**
  * @brief Create the captions, scrolling text, and frame geometry.
- * @param associated Resource source associated with the window.
+ * @param associated Full resource source word.
  * @return One when the text and both frames are present, otherwise zero.
  */
-s32 StatusTextWindow::func_slotf4(void* associated)
+s32 StatusTextWindow::func_slotf4(u32 associated)
 {
     StatusTextWindow* object = this;
     object->FieldClass15AE70::func_slot14(associated, 0, 9, 1400, 16.0f, 16.0f, 0.0f);
     LibObject178750* label = new (0) LibObject178750;
-    func_004C7FE0(label, reinterpret_cast<s32>(associated), 0x1388, 0, 16.0f, 6.0f, 0.0f, 0.0f);
+    func_004C7FE0(label, static_cast<s32>(associated), 0x1388, 0, 16.0f, 6.0f, 0.0f, 0.0f);
     func_004C6190(object->unk10, label);
     func_00351120(reinterpret_cast<OverlayList*>(&object->unk2c), label);
     LibObject178750* caption = new (0) LibObject178750;
-    func_004C7FE0(caption, reinterpret_cast<s32>(associated), 0x13C9, 0, 36.0f, 40.0f, 0.0f, 0.0f);
+    func_004C7FE0(caption, static_cast<s32>(associated), 0x13C9, 0, 36.0f, 40.0f, 0.0f, 0.0f);
     caption->set_scale(0.65f, 0.65f);
     func_004C6190(object->unk10, caption);
     func_00351120(reinterpret_cast<OverlayList*>(&object->unk2c), caption);
@@ -1684,7 +1684,7 @@ s32 StatusTextWindow::func_slotf4(void* associated)
     func_44B570(frame, object->base_x, 0.0f, object->width, 56.0f);
     func_004C6190(object->unk10, frame);
     func_00351270(reinterpret_cast<OverlayList*>(&object->unk20), frame);
-    func_004C7FE0(object->target, reinterpret_cast<s32>(associated), 0x138A, 0, object->initial_x, 6.0f, 0.0f, 0.0f);
+    func_004C7FE0(object->target, static_cast<s32>(associated), 0x138A, 0, object->initial_x, 6.0f, 0.0f, 0.0f);
     func_004C6190(object->unk10, object->target);
     func_00351120(reinterpret_cast<OverlayList*>(&object->unk2c), object->target);
     func_44B510(background, 1);
@@ -1701,10 +1701,10 @@ StatusTextWindow::~StatusTextWindow()
 
 /**
  * @brief Create and attach the three status resource displays.
- * @param associated Associated window object.
+ * @param associated Full resource source word.
  * @return One after the displays are initialized.
  */
-s32 StatusBackgroundWindow::func_slotf4(void* associated)
+s32 StatusBackgroundWindow::func_slotf4(u32 associated)
 {
     StatusBackgroundWindow* object = this;
     object->FieldClass15AE70::func_slot14(associated, 0, 9, 1200, 16.0f, 16.0f, 0.0f);
@@ -1777,14 +1777,14 @@ s32 func_00350540(StatusResourceState* object)
         return 0;
     }
     object->unk20 = object->scroll;
-    background->func_slotf4(reinterpret_cast<void*>(object->resource));
+    background->func_slotf4(object->resource);
     object->FieldClass153E30::func_00263FD0(background);
     background->func_slot40(0);
-    text->func_slotf4(reinterpret_cast<void*>(object->resource));
+    text->func_slotf4(object->resource);
     object->FieldClass153E30::func_00263FD0(text);
     object->unk24 = text;
     text->func_slot40(background);
-    object->scroll->func_slotf4(reinterpret_cast<void*>(object->resource));
+    object->scroll->func_slotf4(object->resource);
     object->FieldClass153E30::func_00263FD0(object->scroll);
     object->flag_38 = 1;
     return 1;

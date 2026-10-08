@@ -45,8 +45,8 @@ __dt__17TacticsList18B8B0Fv = 0x00351D50; // type:func
 func_slot60__19TacticsWindow18B620Fi = 0x0034FCD0; // type:func
 func_4C6DF0 = 0x004C6DF0; // type:func
 
-func_slotf4__19TacticsWindow18B720FPv = 0x00350490; // type:func
-func_slot10__16FieldClass15AE70FPvffi = 0x002CE8D0; // type:func absolute:True allow_duplicated:True
+func_slotf4__19TacticsWindow18B720FUi = 0x00350490; // type:func
+func_slot10__16FieldClass15AE70FUiffi = 0x002CE8D0; // type:func absolute:True allow_duplicated:True
 __ct__14LibClass178600Fv = 0x004C4960; // type:func absolute:True
 __dt__14LibClass178600Fv = 0x004C48B0; // type:func absolute:True
 __dt__17LibStorageBlock0CFv = 0x004618F0; // type:func absolute:True
@@ -169,7 +169,7 @@ func_00351050 = 0x00351050; // type:func allow_duplicated:True
 func_slot20__16FieldClass15AE70FUi = 0x002CE510; // type:func absolute:True
 func_slot1c__16FieldClass15AE70FUcUs = 0x002CE4C0; // type:func absolute:True
 func_slot18__16FieldClass15AE70FUiUi = 0x002CE530; // type:func absolute:True allow_duplicated:True
-func_slot14__16FieldClass15AE70FPviiifff = 0x002CE760; // type:func absolute:True
+func_slot14__16FieldClass15AE70FUiiiifff = 0x002CE760; // type:func absolute:True
 func_slot0c__16FieldClass15AE70Fv = 0x002CEA20; // type:func absolute:True
 __dt__16FieldClass15AE70Fv = 0x002CEAF0; // type:func absolute:True allow_duplicated:True
 

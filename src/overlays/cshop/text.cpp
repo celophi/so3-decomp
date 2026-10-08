@@ -16,7 +16,6 @@
 #include "overlays/1067-00/text_001E1590.h"
 
 extern "C" u8 func_28E3D0(void* object);
-extern "C" void func_2FD940(void* pointer);
 
 
 /** Partial aligned resource header with the payload size. */
@@ -24,22 +23,6 @@ struct ShopAlignedResource
 {
     u8 unk00[0x40];
     s32 unk40;
-};
-
-struct ObjectFields
-{
-    u8 unknown_0[0x4];
-    u32 field_4;
-    u8 field_8;
-    u8 unknown_9;
-    u16 field_a;
-    u8 field_c;
-    u8 field_d;
-    u8 unknown_e[0x2];
-    u32 field_10;
-    u8 unknown_14[0x84];
-    u32 field_98;
-    u32 field_9c;
 };
 
 struct ObjectField20
@@ -54,12 +37,6 @@ struct ObjectField34
     u32 field_34;
 };
 
-struct ObjectField12C
-{
-    u8 unknown_0[0x12C];
-    u8 field_12c;
-};
-
 struct ObjectStatusFields
 {
     u8 unknown_0[0x24];
@@ -69,36 +46,6 @@ struct ObjectStatusFields
     u8 field_38;
 };
 
-typedef struct ObjectElement
-{
-    u8 unknown_0[0x1C];
-    float position;
-    u8 unknown_20[0x1C];
-    u8 active;
-    u8 visible;
-    u8 unknown_3e;
-    u8 field_3f;
-    u8 unknown_40[0x30];
-    float field_70;
-} ObjectElement;
-
-/** Partial icon display extending the common element fields. */
-struct ShopIconElement : ObjectElement
-{
-    u8 unk74[0x20];
-    u32 color;
-    u8 unk98[0x64];
-    u16 identifier;
-    u8 variant;
-};
-
-/** Partial numeric display extending the common element fields. */
-struct ShopNumberElement : ObjectElement
-{
-    u8 unk74[0x88];
-    s32 number;
-};
-
 /** Partial allocation record containing the packed variant byte. */
 struct ItemCreationAllocationRecord
 {
@@ -106,88 +53,6 @@ struct ItemCreationAllocationRecord
     u8 unk0c;
 };
 
-struct ObjectCleanup
-{
-    u8 unknown_0[0xE4];
-    void* field_e4;
-    u8 field_e8;
-};
-
-struct ObjectElements5
-{
-    u8 unknown_0[0xA8];
-    FieldStateCE420 list;
-    u8 unke8[0x48];
-    s32 count;
-    u8 unk134[4];
-    ShopIconElement* first[5];
-    ShopNumberElement* second[5];
-};
-
-struct ObjectElements6
-{
-    u8 unk00[0xA8];
-    ObjectElement* control_a8;
-    ObjectElement* control_ac;
-    u8 unkb0[0x1C];
-    s16 selection;
-    u8 unkce[2];
-    u8 row;
-    u8 unkd1[0x5F];
-    s32 count;
-    u8 unk134[4];
-    ShopIconElement* first[6];
-    ShopNumberElement* second[6];
-    u8 unk168[4];
-    u16 codes[750];
-};
-
-struct ObjectElementsGrid6
-{
-    u8 unk00[0xA8];
-    ObjectElement* control_a8;
-    ObjectElement* control_ac;
-    u8 unkb0[0x1C];
-    s16 selection;
-    u8 unkce[2];
-    u8 row;
-    u8 unkd1[0x67];
-    ShopIconElement* first[6];
-    ShopNumberElement* second[6];
-    ShopNumberElement* third[6];
-    ShopNumberElement* fourth[6];
-    ShopNumberElement* fifth[6];
-    ShopNumberElement* sixth[6];
-    u8 unk1c8[4];
-    s32 countdown;
-};
-
-struct ObjectToggleFields4
-{
-    u8 unknown_0[0xA8];
-    ObjectElement* field_a8;
-    ObjectElement* field_ac;
-    u8 unknown_b0[0x88];
-    ObjectElement* first[5];
-    ObjectElement* second[5];
-    u8 unknown_160[0x24];
-    ObjectElement* extra;
-};
-
-struct ObjectToggleFields
-{
-    u8 unknown_0[0xA8];
-    ObjectElement* field_a8;
-    ObjectElement* field_ac;
-    u8 unknown_b0[0x88];
-    ObjectElement* first[6];
-    ObjectElement* second[6];
-    ObjectElement* third[6];
-    ObjectElement* fourth[6];
-    ObjectElement* fifth[6];
-    ObjectElement* sixth[6];
-    ObjectElement* seventh[6];
-};
 
 /** Twelve-byte category record used by the runtime catalog. */
 struct ShopRuntimeRecord
@@ -217,16 +82,6 @@ extern "C" const ShopPanelColors D_00351FA0;
 extern "C" const ShopPanelColors D_00351FB0;
 extern "C" const ShopPanelColors D_00351FC0;
 
-struct ShopListNode
-{
-    void* value;
-    ShopListNode* next;
-};
-struct ShopList
-{
-    ShopListNode* head;
-    s32 count;
-};
 /** Partial current shop state. */
 struct ShopState : FieldClass153E30
 {
@@ -272,19 +127,9 @@ typedef struct ShopCallbacks
     u8 unk00[0x14];
     ShopState* unk14;
 } ShopCallbacks;
-/** Partial resident record with an encoded value and checksum. */
-struct ShopCheckedRecord
-{
-    u8 unk00[0x34];
-    u32 unk34;
-    u8 unk38[0x6C];
-    u16 unka4;
-    u16 unka6;
-};
-
 typedef struct ShopRuntime
 {
-    ShopCheckedRecord* unk00;
+    ResidentCheckedRecord* unk00;
     u8 unk04[0xC];
     ShopCallbacks* unk10;
     u8 unk14[0xC];
@@ -338,28 +183,6 @@ static inline void clear_shop_runtime_flag(u32 mask)
     flags->unk81 = flags->unk81 & ~mask;
 }
 
-/**
- * @brief Set an icon's category and variant and mark it for redraw.
- * @param object Icon display.
- * @param identifier Category identifier.
- * @param variant Packed icon variant.
- */
-static inline void set_shop_icon(ShopIconElement* object, u16 identifier, u8 variant)
-{
-    object->identifier = identifier;
-    object->variant = variant;
-    object->active = 1;
-}
-/**
- * @brief Set a numeric display's value and mark it for redraw.
- * @param object Numeric display.
- * @param number Number to display.
- */
-static inline void set_shop_number(ShopNumberElement* object, s32 number)
-{
-    object->number = number;
-    object->active = 1;
-}
 
 /**
  * @brief Find the runtime catalog record for a one-based code.
@@ -376,16 +199,6 @@ static inline ShopRuntimeRecord* shop_record(ShopRecordState* state, u16 code)
     }
     return 0;
 }
-/**
- * @brief Set an icon's color and mark it for redraw.
- * @param object Icon display.
- * @param color Packed color value.
- */
-static inline void set_shop_color(ShopIconElement* object, u32 color)
-{
-    object->color = color;
-    object->active = 1;
-}
 
 /**
  * @brief Set the numeric widget value and mark it for redraw.
@@ -394,7 +207,7 @@ static inline void set_shop_color(ShopIconElement* object, u32 color)
  */
 static inline void set_shop_number(LibObject174F20* object, s32 number)
 {
-    object->unkfc = number;
+    object->numeric_value = number;
     object->unk3c = 1;
 }
 
@@ -407,74 +220,80 @@ extern "C" s32 func_002FA2A0(FieldHalfwordBuckets* object, u32 code);
 // These Field list interfaces have no declarations in their owning header.
 extern "C" void func_002CD7C0(void* object);
 extern "C" void func_002CD8B0(void* object, void* element, u32 color);
-/**
- * @brief Set the list control height and mark it for redraw.
- * @param object List control display.
- * @param height Height to store.
- */
-static inline void set_shop_height(ObjectElement* object, float height)
-{
-    object->field_70 = height;
-    object->active = 1;
-}
-
 ShopClass187A70::~ShopClass187A70()
 {
 }
 
-void func_00348460(ObjectFields* object, u8 value)
+/** @brief Store the window byte at offset 0xC. @param value Unsigned byte to store. */
+void FieldClass15AE70::func_slot24(u8 value)
 {
-    object->field_c = value;
+    unk0c = value;
 }
 
-u8 func_00348470(ObjectFields* object)
+/** @brief Read the window byte at offset 0xC. @return Stored unsigned byte. */
+u8 FieldClass15AE70::func_slot28()
 {
-    return object->field_c;
+    return unk0c;
 }
 
-void func_00348480(ObjectFields* object, u8 value)
+/** @brief Store the window byte at offset 0x8. @param value Unsigned byte to store. */
+void FieldClass15AE70::func_slot2c(u8 value)
 {
-    object->field_8 = value;
+    unk08 = value;
 }
 
-u8 func_00348490(ObjectFields* object)
+/** @brief Read the window byte at offset 0x8. @return Stored unsigned byte. */
+u8 FieldClass15AE70::func_slot30()
 {
-    return object->field_8;
+    return unk08;
 }
 
-void func_003484A0(ObjectFields* object, u16 value)
+/** @brief Store the window halfword at offset 0xA. @param value Unsigned halfword to store. */
+void FieldClass15AE70::func_slot34(u16 value)
 {
-    object->field_a = value;
+    unk0a = value;
 }
 
-u16 func_003484B0(ObjectFields* object)
+/** @brief Read the window halfword at offset 0xA. @return Stored unsigned halfword. */
+u16 FieldClass15AE70::func_slot38()
 {
-    return object->field_a;
+    return unk0a;
 }
 
-void func_003484E0(ObjectFields* object, u32 value)
+/** @brief Store the alternate associated pointer. @param associated Pointer to store. */
+void FieldClass15AE70::func_slot48(void* associated)
 {
-    object->field_9c = value;
+    unk9c = associated;
 }
 
-u32 func_003484F0(ObjectFields* object)
+/** @brief Read the alternate associated pointer. @return Stored pointer. */
+void* FieldClass15AE70::func_slot4c()
 {
-    return object->field_9c;
+    return unk9c;
 }
 
-void func_00348500(ObjectFields* object, u32 value)
+/**
+ * @brief Store the opaque source word.
+ * @param value Word to store.
+ */
+void FieldClass15AE70::func_slot50(u32 value)
 {
-    object->field_4 = value;
+    unk04 = value;
 }
 
-u32 func_00348510(ObjectFields* object)
+/**
+ * @brief Return the stored resource source word.
+ * @return Stored word.
+ */
+u32 FieldClass15AE70::func_slot54()
 {
-    return object->field_4;
+    return unk04;
 }
 
-u32 func_00348520(ObjectFields* object)
+/** @brief Return the nested display container. @return Stored container. */
+LibObject178660* FieldClass15AE70::func_slot58()
 {
-    return object->field_10;
+    return unk10;
 }
 
 void func_00348530(void* object)
@@ -611,14 +430,16 @@ void func_00348710(void* object)
 {
 }
 
-u8 func_00348720(ObjectFields* object)
+/** @brief Read the window byte at offset 0x0D. @return Stored unsigned byte. */
+u8 FieldClass15AE70::func_slote8()
 {
-    return object->field_d;
+    return unk0d;
 }
 
-void func_00348730(ObjectFields* object, u8 value)
+/** @brief Store the window byte at offset 0x0D. @param value Unsigned byte to store. */
+void FieldClass15AE70::func_slotec(u8 value)
 {
-    object->field_d = value;
+    unk0d = value;
 }
 
 void func_00348740(void* object)
@@ -637,13 +458,13 @@ void ShopClass187A70::func_slot74()
     }
     if (unka8->unk114 != 0)
     {
-        unkac->set_color(0x808080);
-        unkb0->set_color(0x288080);
+        yes_label->set_color(0x808080);
+        no_label->set_color(0x288080);
     }
     else
     {
-        unkac->set_color(0x288080);
-        unkb0->set_color(0x808080);
+        yes_label->set_color(0x288080);
+        no_label->set_color(0x808080);
     }
 }
 
@@ -659,13 +480,13 @@ void ShopClass187A70::func_slot70()
     }
     if (unka8->unk114 != 0)
     {
-        unkac->set_color(0x808080);
-        unkb0->set_color(0x288080);
+        yes_label->set_color(0x808080);
+        no_label->set_color(0x288080);
     }
     else
     {
-        unkac->set_color(0x288080);
-        unkb0->set_color(0x808080);
+        yes_label->set_color(0x288080);
+        no_label->set_color(0x808080);
     }
 }
 
@@ -720,51 +541,51 @@ s32 ShopClass187A70::func_slotb0()
 
 /**
  * @brief Create the paired-choice window and its displays.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creating the displays.
  */
-s32 ShopClass187A70::func_slotf4(void* associated)
+s32 ShopClass187A70::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 120.0f, 170.0f, 14);
     LibClass178630* panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 370.0f, 176.0f, 88.0f);
     func_004C6190(unk10, panel);
-    func_00351E80(reinterpret_cast<ShopList*>(&unk14), panel);
+    func_00351E80(&unk14, panel);
     panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 370.0f, 48.0f, 88.0f);
     func_004C6190(unk10, panel);
     ShopPanelColors colors = D_00351FC0;
     func_4C5590(panel, &colors.colors);
-    func_00351E80(reinterpret_cast<ShopList*>(&unk14), panel);
+    func_00351E80(&unk14, panel);
     LibObject178750* text = new (0) LibObject178750;
-    func_004C7FE0(text, reinterpret_cast<s32>(associated), 0x2EEE, 0, 0.0f, 12.0f, 370.0f, 24.0f);
+    text->func_004C7FE0(0.0f, 12.0f, 370.0f, 24.0f, static_cast<s32>(associated), 0x2EEE, 0);
     text->set_mode(1);
     func_004C6190(unk10, text);
     text = new (0) LibObject178750;
-    func_004C7FE0(text, reinterpret_cast<s32>(associated), 0x2EF0, 0, 0.0f, 64.0f, 370.0f, 48.0f);
+    text->func_004C7FE0(0.0f, 64.0f, 370.0f, 48.0f, static_cast<s32>(associated), 0x2EF0, 0);
     text->set_mode(1);
     func_004C6190(unk10, text);
-    unkac = new (0) LibObject178750;
-    unkb0 = new (0) LibObject178750;
-    func_004C7FE0(unkac, reinterpret_cast<s32>(associated), 0x2EF1, 0, 115.0f, 132.0f, 0.0f, 0.0f);
-    func_004C6190(unk10, unkac);
-    func_004C7FE0(unkb0, reinterpret_cast<s32>(associated), 0x2EF2, 0, 210.0f, 132.0f, 0.0f, 0.0f);
-    func_004C6190(unk10, unkb0);
+    yes_label = new (0) LibObject178750;
+    no_label = new (0) LibObject178750;
+    yes_label->func_004C7FE0(115.0f, 132.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x2EF1, 0);
+    func_004C6190(unk10, yes_label);
+    no_label->func_004C7FE0(210.0f, 132.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x2EF2, 0);
+    func_004C6190(unk10, no_label);
     unka8 = new (0) FieldObject23CEA0;
     unka8->func_0023CE80(2, 1);
     unka8->func_0023CE60(93.0f, 0.0f);
     unka8->unkF2 = 0;
     unka8->func_0023CF50(1, 222.0f, 302.0f);
-    func_00351CD0(reinterpret_cast<ShopList*>(&unk74), unka8);
+    func_00351CD0(&unk74, unka8);
     if (unka8->unk114 != 0)
     {
-        unkac->set_color(0x808080);
-        unkb0->set_color(0x288080);
+        yes_label->set_color(0x808080);
+        no_label->set_color(0x288080);
     }
     else
     {
-        unkac->set_color(0x288080);
-        unkb0->set_color(0x808080);
+        yes_label->set_color(0x288080);
+        no_label->set_color(0x808080);
     }
     return 1;
 }
@@ -861,42 +682,42 @@ s32 ShopClass187BA0::func_slotb0()
 
 /**
  * @brief Create the two-option choice window and its displays.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creating the displays.
  */
-s32 ShopClass187BA0::func_slotf4(void* associated)
+s32 ShopClass187BA0::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 140.0f, 170.0f, 14);
     LibClass178630* panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 320.0f, 176.0f, 88.0f);
     func_004C6190(unk10, panel);
-    func_00351E80(reinterpret_cast<ShopList*>(&unk14), panel);
+    func_00351E80(&unk14, panel);
     panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 320.0f, 48.0f, 88.0f);
     func_004C6190(unk10, panel);
     ShopPanelColors colors = D_00351FB0;
     func_4C5590(panel, &colors.colors);
-    func_00351E80(reinterpret_cast<ShopList*>(&unk14), panel);
+    func_00351E80(&unk14, panel);
     LibObject178750* text = new (0) LibObject178750;
-    func_004C7FE0(text, reinterpret_cast<s32>(associated), 0x2EEE, 0, 0.0f, 12.0f, 320.0f, 24.0f);
+    func_004C7FE0(text, static_cast<s32>(associated), 0x2EEE, 0, 0.0f, 12.0f, 320.0f, 24.0f);
     text->set_mode(1);
     func_004C6190(unk10, text);
     text = new (0) LibObject178750;
-    func_004C7FE0(text, reinterpret_cast<s32>(associated), 0x2EEF, 0, 0.0f, 64.0f, 320.0f, 48.0f);
+    func_004C7FE0(text, static_cast<s32>(associated), 0x2EEF, 0, 0.0f, 64.0f, 320.0f, 48.0f);
     text->set_mode(1);
     func_004C6190(unk10, text);
     unkac = new (0) LibObject178750;
     unkb0 = new (0) LibObject178750;
-    func_004C7FE0(unkac, reinterpret_cast<s32>(associated), 0x2EF1, 0, 82.0f, 132.0f, 0.0f, 0.0f);
+    func_004C7FE0(unkac, static_cast<s32>(associated), 0x2EF1, 0, 82.0f, 132.0f, 0.0f, 0.0f);
     func_004C6190(unk10, unkac);
-    func_004C7FE0(unkb0, reinterpret_cast<s32>(associated), 0x2EF2, 0, 172.0f, 132.0f, 0.0f, 0.0f);
+    func_004C7FE0(unkb0, static_cast<s32>(associated), 0x2EF2, 0, 172.0f, 132.0f, 0.0f, 0.0f);
     func_004C6190(unk10, unkb0);
     unka8 = new (0) FieldObject23CEA0;
     unka8->func_0023CE80(2, 1);
     unka8->func_0023CE60(90.0f, 0.0f);
     unka8->unkF2 = 0;
     unka8->func_0023CF50(1, 212.0f, 302.0f);
-    func_00351CD0(reinterpret_cast<ShopList*>(&unk74), unka8);
+    func_00351CD0(&unk74, unka8);
     if (unka8->unk114 != 0)
     {
         unkac->set_color(0x808080);
@@ -1005,35 +826,35 @@ s32 ShopClass187CA0::func_slotb0()
 
 /**
  * @brief Create the focus-sensitive choice window and its displays.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creating the displays.
  */
-s32 ShopClass187CA0::func_slotf4(void* associated)
+s32 ShopClass187CA0::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 160.0f, 170.0f, 14);
     LibClass178630* panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 320.0f, 176.0f, 88.0f);
     func_004C6190(unk10, panel);
-    func_00351E80(reinterpret_cast<ShopList*>(&unk14), panel);
+    func_00351E80(&unk14, panel);
     panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 320.0f, 48.0f, 88.0f);
     func_004C6190(unk10, panel);
     ShopPanelColors colors = D_00351FA0;
     func_4C5590(panel, &colors.colors);
-    func_00351E80(reinterpret_cast<ShopList*>(&unk14), panel);
+    func_00351E80(&unk14, panel);
     LibObject178750* text = new (0) LibObject178750;
-    func_004C7FE0(text, reinterpret_cast<s32>(associated), 0x2EEC, 0, 0.0f, 12.0f, 320.0f, 24.0f);
+    func_004C7FE0(text, static_cast<s32>(associated), 0x2EEC, 0, 0.0f, 12.0f, 320.0f, 24.0f);
     text->set_mode(1);
     func_004C6190(unk10, text);
     text = new (0) LibObject178750;
-    func_004C7FE0(text, reinterpret_cast<s32>(associated), 0x2EED, 0, 0.0f, 64.0f, 320.0f, 48.0f);
+    func_004C7FE0(text, static_cast<s32>(associated), 0x2EED, 0, 0.0f, 64.0f, 320.0f, 48.0f);
     text->set_mode(1);
     func_004C6190(unk10, text);
     unkac = new (0) LibObject178750;
     unkb0 = new (0) LibObject178750;
-    func_004C7FE0(unkac, reinterpret_cast<s32>(associated), 0x2EF1, 0, 82.0f, 132.0f, 0.0f, 0.0f);
+    func_004C7FE0(unkac, static_cast<s32>(associated), 0x2EF1, 0, 82.0f, 132.0f, 0.0f, 0.0f);
     func_004C6190(unk10, unkac);
-    func_004C7FE0(unkb0, reinterpret_cast<s32>(associated), 0x2EF2, 0, 172.0f, 132.0f, 0.0f, 0.0f);
+    func_004C7FE0(unkb0, static_cast<s32>(associated), 0x2EF2, 0, 172.0f, 132.0f, 0.0f, 0.0f);
     func_004C6190(unk10, unkb0);
     unka8 = new (0) FieldObject23CEA0;
     unka8->func_0023CE80(2, 1);
@@ -1041,7 +862,7 @@ s32 ShopClass187CA0::func_slotf4(void* associated)
     unka8->unkF2 = 0;
     unka8->func_0023CF50(0, 232.0f, 302.0f);
     unka8->unkad = 0;
-    func_00351CD0(reinterpret_cast<ShopList*>(&unk74), unka8);
+    func_00351CD0(&unk74, unka8);
     if (unka8->unk114 != 0)
     {
         unkac->set_color(0x808080);
@@ -1055,39 +876,44 @@ s32 ShopClass187CA0::func_slotf4(void* associated)
     return 1;
 }
 
-void func_00349FF0(ObjectToggleFields4* object, u8 value, s32 selected)
+/**
+ * @brief Update the first four display pairs and the optional list controls.
+ * @param value Value stored in the display flags using its low byte.
+ * @param selected Value tested for zero and stored in the optional control flags.
+ */
+void ShopClass187DA0::func_slot10c(u32 value, u32 selected)
 {
-    object->first[0]->field_3f = value;
-    object->second[0]->field_3f = value;
-    object->first[1]->field_3f = value;
-    object->second[1]->field_3f = value;
-    object->first[2]->field_3f = value;
-    object->second[2]->field_3f = value;
-    object->first[3]->field_3f = value;
-    object->second[3]->field_3f = value;
-    if (object->extra != 0)
+    first[0]->unk3f = value;
+    second[0]->unk3f = value;
+    first[1]->unk3f = value;
+    second[1]->unk3f = value;
+    first[2]->unk3f = value;
+    second[2]->unk3f = value;
+    first[3]->unk3f = value;
+    second[3]->unk3f = value;
+    if (extra != 0)
     {
-        object->extra->field_3f = 1;
+        extra->unk3f = 1;
     }
-    if (object->field_ac != 0)
+    if (FieldClass15AE60::unk04 != 0)
     {
-        object->field_ac->field_3f = selected;
+        FieldClass15AE60::unk04->unk3f = selected;
         if (selected != 0)
         {
-            ObjectElement* control = object->field_ac;
-            control->field_70 = 128.0f;
-            control->active = 1;
+            LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+            control->LibMovementState::unk30 = 128.0f;
+            control->unk3c = 1;
         }
         else
         {
-            ObjectElement* control = object->field_ac;
-            control->field_70 = 64.0f;
-            control->active = 1;
+            LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+            control->LibMovementState::unk30 = 64.0f;
+            control->unk3c = 1;
         }
     }
-    if (object->field_a8 != 0)
+    if (FieldClass15AE60::unk00 != 0)
     {
-        object->field_a8->field_3f = selected;
+        FieldClass15AE60::unk00->unk3f = selected;
     }
 }
 
@@ -1134,26 +960,34 @@ s32 func_0034A1E0(void* receiver)
 
 INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034A2C0);
 
-void func_0034A480(ObjectElements5* object, float position)
+/**
+ * @brief Set the positions and active flags of five display pairs.
+ * @param position Base position before the first offset.
+ */
+void ShopClass187DA0::set_scroll_position(float position)
 {
     s32 i = 0;
     float current = position + 16.0f;
     do
     {
-        ObjectElement* first;
-        ObjectElement* second;
-        first = object->first[i];
-        first->position = current;
-        first->active = 1;
-        second = object->second[i];
-        second->position = current;
-        second->active = 1;
+        LibClass178600* first;
+        LibClass178600* second;
+        first = this->first[i];
+        first->unk18.unk04 = current;
+        first->unk3c = 1;
+        second = this->second[i];
+        second->unk18.unk04 = current;
+        second->unk3c = 1;
         current += 28.0f;
         i++;
     } while (i < 5);
 }
 
-void func_0034A4E0(ObjectElements5* object, s32 offset)
+/**
+ * @brief Populate five icon and number rows from the current category records.
+ * @param offset First record to display.
+ */
+void ShopClass187DA0::refresh_rows(s32 offset)
 {
     ItemCreationAllocationRecord* records[100];
     ShopState* state = D_001B643C->unk10->unk14;
@@ -1163,20 +997,25 @@ void func_0034A4E0(ObjectElements5* object, s32 offset)
     {
         records[i] = 0;
     }
-    object->count = func_0040CF90(D_001B64F8, records, category);
+    this->FieldClass15AE60::unk88 = func_0040CF90(D_001B64F8, records, category);
     for (s32 i = 0; i < 5; i++)
     {
         if (records[offset + i] == 0)
         {
-            object->first[i]->visible = 0;
-            object->second[i]->visible = 0;
+            this->first[i]->unk3d = 0;
+            this->second[i]->unk3d = 0;
         }
         else
         {
-            set_shop_icon(object->first[i], category, records[offset + i]->unk0c & 0x7F);
-            set_shop_number(object->second[i], func_002FA620(buckets, func_0040D890(records[offset + i])));
-            object->first[i]->visible = 1;
-            object->second[i]->visible = 1;
+            u16 identifier = category;
+            u8 variant = records[offset + i]->unk0c & 0x7F;
+            LibObject172410* icon = this->first[i];
+            icon->unkfc = identifier;
+            icon->unkfe = variant;
+            icon->unk3c = 1;
+            set_shop_number(this->second[i], func_002FA620(buckets, func_0040D890(records[offset + i])));
+            this->first[i]->unk3d = 1;
+            this->second[i]->unk3d = 1;
         }
     }
 }
@@ -1271,7 +1110,7 @@ extern "C" s32 func_421170(ItemCreationClass172870* object, float x, float y, fl
  * @return One on success, or zero if initialization fails.
  */
 extern "C" s32 func_4143F0(LibObject172440* object, u16 code, u8 variation, u8 flag, float x, float y, float width, float height);
-s32 ShopClass187DA0::func_slot104(void* associated)
+s32 ShopClass187DA0::func_slot104(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 36.0f, 88.0f, 15);
     FieldClass15AE60::unk3c = 1;
@@ -1292,7 +1131,7 @@ s32 ShopClass187DA0::func_slot104(void* associated)
         first[i]->unk3f = 1;
         func_004C6190(unk10, first[i]);
         second[i] = new (0) LibObject174F20;
-        func_00464D90(second[i], 0, 0, 1, 490.0f, 12.0f + 30.0f * i, 28.0f, 24.0f);
+        second[i]->func_00464D90(490.0f, 12.0f + 30.0f * i, 28.0f, 24.0f, 0, 0, 1);
         func_004C6190(unk10, second[i]);
     }
     func_44B510(second_frame, 1);
@@ -1304,7 +1143,7 @@ s32 ShopClass187DA0::func_slot104(void* associated)
     separator->unk3c = 1;
     func_004C6190(unk10, unk180);
     FieldRuntime* runtime = D_001B657C;
-    runtime->unk51c = reinterpret_cast<s32>(associated);
+    runtime->unk51c = static_cast<s32>(associated);
     runtime->unk520 = 0x11171;
     for (s32 i = 0; i < 8; i++)
     {
@@ -1318,10 +1157,10 @@ s32 ShopClass187DA0::func_slot104(void* associated)
         func_004C6190(unk10, third[i]);
     }
     LibObject178750* first_label = new (0) LibObject178750;
-    first_label->func_004C7FE0(435.0f, 270.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2F0A, 0);
+    first_label->func_004C7FE0(435.0f, 270.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x2F0A, 0);
     func_004C6190(unk10, first_label);
     LibObject178750* second_label = new (0) LibObject178750;
-    second_label->func_004C7FE0(415.0f, 300.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2F0B, 0);
+    second_label->func_004C7FE0(415.0f, 300.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x2F0B, 0);
     func_004C6190(unk10, second_label);
     FieldClass15AE60::unk34 = 28.0f;
     FieldClass15AE60::unk38 = 28.0f;
@@ -1345,46 +1184,52 @@ s32 ShopClass187DA0::func_slot104(void* associated)
     return 1;
 }
 
-void func_0034AE80(ObjectField12C* object, u8 value)
+/** @brief Store the list byte at offset 0x12C. @param value Unsigned byte to store. */
+void FieldClass15AD40::func_slot110(u8 value)
 {
-    object->field_12c = value;
+    FieldClass15AE60::unk84 = value;
 }
 
-void func_0034AE90(ObjectToggleFields* object, u8 value, s32 selected)
+/**
+ * @brief Update the first five display pairs and the optional list controls.
+ * @param value Value stored in the display flags using its low byte.
+ * @param selected Value tested for zero and stored in the optional control flags.
+ */
+void ShopClass187EC0::func_slot10c(u32 value, u32 selected)
 {
-    object->first[0]->field_3f = value;
-    object->second[0]->field_3f = value;
-    object->first[1]->field_3f = value;
-    object->second[1]->field_3f = value;
-    object->first[2]->field_3f = value;
-    object->second[2]->field_3f = value;
-    object->first[3]->field_3f = value;
-    object->second[3]->field_3f = value;
-    object->first[4]->field_3f = value;
-    object->second[4]->field_3f = value;
-    if (object->third[0] != 0)
+    first[0]->unk3f = value;
+    second[0]->unk3f = value;
+    first[1]->unk3f = value;
+    second[1]->unk3f = value;
+    first[2]->unk3f = value;
+    second[2]->unk3f = value;
+    first[3]->unk3f = value;
+    second[3]->unk3f = value;
+    first[4]->unk3f = value;
+    second[4]->unk3f = value;
+    if (extra != 0)
     {
-        object->third[0]->field_3f = 1;
+        extra->unk3f = 1;
     }
-    if (object->field_ac != 0)
+    if (FieldClass15AE60::unk04 != 0)
     {
-        object->field_ac->field_3f = selected;
+        FieldClass15AE60::unk04->unk3f = selected;
         if (selected != 0)
         {
-            ObjectElement* control = object->field_ac;
-            control->field_70 = 128.0f;
-            control->active = 1;
+            LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+            control->LibMovementState::unk30 = 128.0f;
+            control->unk3c = 1;
         }
         else
         {
-            ObjectElement* control = object->field_ac;
-            control->field_70 = 64.0f;
-            control->active = 1;
+            LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+            control->LibMovementState::unk30 = 64.0f;
+            control->unk3c = 1;
         }
     }
-    if (object->field_a8 != 0)
+    if (FieldClass15AE60::unk00 != 0)
     {
-        object->field_a8->field_3f = selected;
+        FieldClass15AE60::unk00->unk3f = selected;
     }
 }
 
@@ -1432,58 +1277,71 @@ s32 ShopClass187EC0::func_slotb0()
     return 1;
 }
 
-void func_0034B170(ObjectElements6* object)
+/** @brief Update the current catalog selection and its highlight. */
+void ShopClass187EC0::func_slot5c()
 {
-    if (D_001B643C->unk10->unk14->func_00261150() == object)
+    if (D_001B643C->unk10->unk14->func_00261150() == this)
     {
-        set_shop_height(object->control_ac, 128.0f);
+        LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+        control->LibMovementState::unk30 = 128.0f;
+        control->unk3c = 1;
     }
     else
     {
-        set_shop_height(object->control_ac, 64.0f);
+        LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+        control->LibMovementState::unk30 = 64.0f;
+        control->unk3c = 1;
         return;
     }
-    func_002CD7C0(object);
+    func_002CD7C0(this);
     ShopState* state = D_001B643C->unk10->unk14;
-    if (object->count != 0)
+    if (FieldClass15AE60::unk88 != 0)
     {
-        state->unk326c = object->codes[object->selection];
-        ShopIconElement* icon = object->first[object->row];
-        func_002CD8B0(object, icon, icon->color);
+        state->unk326c = codes[FieldClass15AE60::unk24];
+        LibObject172410* icon = first[FieldClass15AE60::unk28];
+        func_002CD8B0(this, icon, icon->unk94);
     }
     else
     {
         state->unk326c = -1;
-        func_002CD8B0(object, 0, 0x808080);
+        func_002CD8B0(this, 0, 0x808080);
     }
 }
 
-void func_0034B260(ObjectElements6* object, float position)
+/**
+ * @brief Set the positions and active flags of six display pairs.
+ * @param position Base position before the first offset.
+ */
+void ShopClass187EC0::set_scroll_position(float position)
 {
     s32 i = 0;
     float current = position + 16.0f;
     do
     {
-        ObjectElement* first;
-        ObjectElement* second;
-        first = object->first[i];
-        first->position = current;
-        first->active = 1;
-        second = object->second[i];
-        second->position = current;
-        second->active = 1;
+        LibClass178600* first;
+        LibClass178600* second;
+        first = this->first[i];
+        first->unk18.unk04 = current;
+        first->unk3c = 1;
+        second = this->second[i];
+        second->unk18.unk04 = current;
+        second->unk3c = 1;
         current += 28.0f;
         i++;
     } while (i < 6);
 }
 
-void func_0034B2C0(ObjectElements6* object, s32 offset)
+/**
+ * @brief Populate six catalog icon and number rows from the stored codes.
+ * @param offset First stored code to display.
+ */
+void ShopClass187EC0::refresh_rows(s32 offset)
 {
     for (s32 i = 0; i < 6; i++)
     {
-        object->first[i]->visible = 0;
-        object->second[i]->visible = 0;
-        s32 code = object->codes[offset + i];
+        this->first[i]->unk3d = 0;
+        this->second[i]->unk3d = 0;
+        s32 code = this->codes[offset + i];
         if (code != 0)
         {
             u16 identifier = code;
@@ -1496,11 +1354,14 @@ void func_0034B2C0(ObjectElements6* object, s32 offset)
                 {
                     color = 0x805050;
                 }
-                set_shop_icon(object->first[i], identifier, 0);
-                set_shop_color(object->first[i], color);
-                object->first[i]->visible = 1;
-                set_shop_number(object->second[i], record->unk08);
-                object->second[i]->visible = 1;
+                LibObject172410* icon = this->first[i];
+                icon->unkfc = identifier;
+                icon->unkfe = 0;
+                icon->unk3c = 1;
+                this->first[i]->set_color(color);
+                this->first[i]->unk3d = 1;
+                set_shop_number(this->second[i], record->unk08);
+                this->second[i]->unk3d = 1;
             }
         }
     }
@@ -1508,7 +1369,7 @@ void func_0034B2C0(ObjectElements6* object, s32 offset)
 
 INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034B3C0);
 
-s32 ShopClass187EC0::func_slot104(void* associated)
+s32 ShopClass187EC0::func_slot104(u32 associated)
 {
     FieldClass15AE70::func_slot14(associated, 0, 9, 1800, 16.0f, 260.0f, 0.0f);
     FieldClass15AE60::unk3c = 1;
@@ -1529,7 +1390,7 @@ s32 ShopClass187EC0::func_slot104(void* associated)
         first[i]->unk3f = 1;
         func_004C6190(unk10, first[i]);
         second[i] = new (0) LibObject174F20;
-        func_00464D90(second[i], 0, 0, 1, 544.0f, 12.0f + 30.0f * i, 28.0f, 24.0f);
+        second[i]->func_00464D90(544.0f, 12.0f + 30.0f * i, 28.0f, 24.0f, 0, 0, 1);
         func_004C6190(unk10, second[i]);
     }
     func_44B510(second_frame, 1);
@@ -1556,7 +1417,7 @@ s32 ShopClass187EC0::func_slot104(void* associated)
 
 void ShopClass187FE0::func_slot5c()
 {
-    if (unke8 != 0 && func_002FD480(reinterpret_cast<const FieldStatus14*>(unke4)))
+    if (unke8 != 0 && func_002FD480(unke4))
     {
         if (unke4 != 0)
         {
@@ -1569,12 +1430,16 @@ void ShopClass187FE0::func_slot5c()
     }
 }
 
-s32 func_0034BAB0(ObjectCleanup* object)
+/**
+ * @brief Request cancellation of the attached status window when present.
+ * @return Always two.
+ */
+s32 ShopClass187FE0::func_slotb4()
 {
-    if (object->field_e4 != 0)
+    if (unke4 != 0)
     {
-        func_2FD940(object->field_e4);
-        object->field_e8 = 1;
+        func_002FD940(unke4);
+        unke8 = 1;
     }
     return 2;
 }
@@ -1619,42 +1484,47 @@ ShopClass187FE0::ShopClass187FE0()
     FieldClass15AE70();
 }
 
-void func_0034C7D0(ObjectToggleFields* object, s32 value, s32 selected)
+/**
+ * @brief Update the first five rows of six display columns and the optional controls.
+ * @param value Value stored in the display flags using its low byte.
+ * @param selected Value tested for zero and stored in the optional control flags.
+ */
+void ShopClass1880E0::func_slot10c(u32 value, u32 selected)
 {
     s32 i = 0;
     value &= 0xFF;
     for (; i < 5; i++)
     {
-        object->first[i]->field_3f = value;
-        object->second[i]->field_3f = value;
-        object->third[i]->field_3f = value;
-        object->fourth[i]->field_3f = value;
-        object->fifth[i]->field_3f = value;
-        object->sixth[i]->field_3f = value;
+        first[i]->unk3f = value;
+        second[i]->unk3f = value;
+        third[i]->unk3f = value;
+        fourth[i]->unk3f = value;
+        fifth[i]->unk3f = value;
+        sixth[i]->unk3f = value;
     }
-    if (object->seventh[0] != 0)
+    if (extra != 0)
     {
-        object->seventh[0]->field_3f = 1;
+        extra->unk3f = 1;
     }
-    if (object->field_ac != 0)
+    if (FieldClass15AE60::unk04 != 0)
     {
-        object->field_ac->field_3f = selected;
+        FieldClass15AE60::unk04->unk3f = selected;
         if (selected != 0)
         {
-            ObjectElement* control = object->field_ac;
-            control->field_70 = 128.0f;
-            control->active = 1;
+            LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+            control->LibMovementState::unk30 = 128.0f;
+            control->unk3c = 1;
         }
         else
         {
-            ObjectElement* control = object->field_ac;
-            control->field_70 = 64.0f;
-            control->active = 1;
+            LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+            control->LibMovementState::unk30 = 64.0f;
+            control->unk3c = 1;
         }
     }
-    if (object->field_a8 != 0)
+    if (FieldClass15AE60::unk00 != 0)
     {
-        object->field_a8->field_3f = selected;
+        FieldClass15AE60::unk00->unk3f = selected;
     }
 }
 
@@ -1747,58 +1617,67 @@ s32 func_0034CC10(void* receiver)
     return 1;
 }
 
-void func_0034CD10(ObjectElementsGrid6* object)
+/** @brief Update the current bucket selection, highlight, and countdown. */
+void ShopClass1880E0::func_slot5c()
 {
-    if (D_001B643C->unk10->unk14->func_00261150() == object)
+    if (D_001B643C->unk10->unk14->func_00261150() == this)
     {
-        set_shop_height(object->control_ac, 128.0f);
+        LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+        control->LibMovementState::unk30 = 128.0f;
+        control->unk3c = 1;
     }
     else
     {
-        set_shop_height(object->control_ac, 64.0f);
+        LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+        control->LibMovementState::unk30 = 64.0f;
+        control->unk3c = 1;
         return;
     }
-    func_002CD7C0(object);
+    func_002CD7C0(this);
     ShopState* state = D_001B643C->unk10->unk14;
-    state->unk326c = func_002FAB20(&state->buckets, state->unk3270, object->selection);
-    if (object->selection >= 0)
+    state->unk326c = func_002FAB20(&state->buckets, state->unk3270, FieldClass15AE60::unk24);
+    if (FieldClass15AE60::unk24 >= 0)
     {
-        ShopIconElement* icon = object->first[object->row];
-        func_002CD8B0(object, icon, icon->color);
+        LibObject172410* icon = first[FieldClass15AE60::unk28];
+        func_002CD8B0(this, icon, icon->unk94);
     }
-    if (object->countdown >= 0)
+    if (countdown >= 0)
     {
-        object->countdown--;
+        countdown--;
     }
 }
 
 INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034CE00);
 
-void func_0034CF20(ObjectElementsGrid6* object, float position)
+/**
+ * @brief Set the positions and active flags of six display columns.
+ * @param position Base position before the first offset.
+ */
+void ShopClass1880E0::set_scroll_position(float position)
 {
     s32 i = 0;
     float current = position + 16.0f;
     do
     {
-        ObjectElement* element;
-        element = object->first[i];
-        element->position = current;
-        element->active = 1;
-        element = object->second[i];
-        element->position = current;
-        element->active = 1;
-        element = object->third[i];
-        element->position = current;
-        element->active = 1;
-        element = object->fourth[i];
-        element->position = current;
-        element->active = 1;
-        element = object->fifth[i];
-        element->position = current;
-        element->active = 1;
-        element = object->sixth[i];
-        element->position = current;
-        element->active = 1;
+        LibClass178600* element;
+        element = this->first[i];
+        element->unk18.unk04 = current;
+        element->unk3c = 1;
+        element = this->second[i];
+        element->unk18.unk04 = current;
+        element->unk3c = 1;
+        element = this->third[i];
+        element->unk18.unk04 = current;
+        element->unk3c = 1;
+        element = this->fourth[i];
+        element->unk18.unk04 = current;
+        element->unk3c = 1;
+        element = this->fifth[i];
+        element->unk18.unk04 = current;
+        element->unk3c = 1;
+        element = this->sixth[i];
+        element->unk18.unk04 = current;
+        element->unk3c = 1;
         current += 28.0f;
         i++;
     } while (i < 6);
@@ -1844,18 +1723,22 @@ static inline u8 shop_bucket_value(FieldHalfwordBuckets* buckets, s32 code)
     return result;
 }
 
-void func_0034CFB0(ObjectElementsGrid6* object, s32 offset)
+/**
+ * @brief Refresh six rows of bucket icons and numeric values.
+ * @param offset First bucket entry to display.
+ */
+void ShopClass1880E0::refresh_rows(s32 offset)
 {
     ShopState* state = D_001B643C->unk10->unk14;
     FieldHalfwordBuckets* buckets = &state->buckets;
     for (s32 i = 0; i < 6; i++)
     {
-        object->first[i]->visible = 0;
-        object->second[i]->visible = 0;
-        object->fourth[i]->visible = 0;
-        object->third[i]->visible = 0;
-        object->fifth[i]->visible = 0;
-        object->sixth[i]->visible = 0;
+        this->first[i]->unk3d = 0;
+        this->second[i]->unk3d = 0;
+        this->fourth[i]->unk3d = 0;
+        this->third[i]->unk3d = 0;
+        this->fifth[i]->unk3d = 0;
+        this->sixth[i]->unk3d = 0;
         if (offset + i < shop_bucket_count(buckets, state->unk3270))
         {
             s32 code = func_002FAB20(buckets, state->unk3270, offset + i);
@@ -1868,23 +1751,26 @@ void func_0034CFB0(ObjectElementsGrid6* object, s32 offset)
                 {
                     color = 0x808050;
                 }
-                set_shop_icon(object->first[i], code, 0);
-                set_shop_color(object->first[i], color);
-                set_shop_number(object->second[i], func_002FA870(buckets, code));
-                set_shop_number(object->fourth[i], shop_bucket_value(buckets, code));
-                set_shop_number(object->sixth[i], func_002FA7B0(buckets, code));
-                object->first[i]->visible = 1;
-                object->second[i]->visible = 1;
-                object->fourth[i]->visible = 1;
-                object->fifth[i]->visible = 1;
-                object->third[i]->visible = 1;
-                object->sixth[i]->visible = 1;
+                LibObject172410* icon = this->first[i];
+                icon->unkfc = code;
+                icon->unkfe = 0;
+                icon->unk3c = 1;
+                this->first[i]->set_color(color);
+                set_shop_number(this->second[i], func_002FA870(buckets, code));
+                set_shop_number(this->fourth[i], shop_bucket_value(buckets, code));
+                set_shop_number(this->sixth[i], func_002FA7B0(buckets, code));
+                this->first[i]->unk3d = 1;
+                this->second[i]->unk3d = 1;
+                this->fourth[i]->unk3d = 1;
+                this->fifth[i]->unk3d = 1;
+                this->third[i]->unk3d = 1;
+                this->sixth[i]->unk3d = 1;
             }
         }
     }
 }
 
-s32 ShopClass1880E0::func_slot104(void* associated)
+s32 ShopClass1880E0::func_slot104(u32 associated)
 {
     FieldClass15AE70::func_slot14(associated, 0, 9, 1800, 16.0f, 260.0f, 0.0f);
     FieldClass15AE60::unk3c = 1;
@@ -1906,19 +1792,19 @@ s32 ShopClass1880E0::func_slot104(void* associated)
         func_004C6190(unk10, first[i]);
         second[i] = new (0) LibObject174F20;
         float y = 12.0f + 30.0f * i;
-        func_00464D90(second[i], 0, 0, 0, 360.0f, y, 126.0f, 24.0f);
+        second[i]->func_00464D90(360.0f, y, 126.0f, 24.0f, 0, 0, 0);
         func_004C6190(unk10, second[i]);
         third[i] = new (0) LibObject178750;
-        third[i]->func_004C7FE0(486.0f, y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2EEA, 1);
+        third[i]->func_004C7FE0(486.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0x2EEA, 1);
         func_004C6190(unk10, third[i]);
         fourth[i] = new (0) LibObject174F20;
-        func_00464D90(fourth[i], 0, 0, 0, 506.0f, y, 28.0f, 24.0f);
+        fourth[i]->func_00464D90(506.0f, y, 28.0f, 24.0f, 0, 0, 0);
         func_004C6190(unk10, fourth[i]);
         fifth[i] = new (0) LibObject178750;
-        fifth[i]->func_004C7FE0(534.0f, y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x7E7, 1);
+        fifth[i]->func_004C7FE0(534.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E7, 1);
         func_004C6190(unk10, fifth[i]);
         sixth[i] = new (0) LibObject174F20;
-        func_00464D90(sixth[i], 0, 0, 1, 544.0f, y, 28.0f, 24.0f);
+        sixth[i]->func_00464D90(544.0f, y, 28.0f, 24.0f, 0, 0, 1);
         func_004C6190(unk10, sixth[i]);
     }
     func_44B510(second_frame, 1);
@@ -1960,18 +1846,18 @@ void func_0034D920(ShopValueDisplay* object)
 {
     s32 value;
     ShopState* state = D_001B643C->unk10->unk14;
-    ShopCheckedRecord* record = D_001B643C->unk00;
+    ResidentCheckedRecord* record = D_001B643C->unk00;
     FieldHalfwordBuckets* buckets = &state->buckets;
     ItemCreationAllocationRecord* allocation = state->unk327c;
-    u16 checksum = record->unka4;
-    const u8* end = (const u8*)&record->unka4;
-    if (checksum != func_00457470(record->unka6, (u8*)record + 0x26, end - ((const u8*)record + 0x26)))
+    u16 checksum = record->checksum;
+    const u8* end = (const u8*)&record->checksum;
+    if (checksum != func_00457470(record->checksum_seed, (u8*)record + 0x26, end - ((const u8*)record + 0x26)))
     {
         value = 0;
     }
     else
     {
-        value = record->unk34 ^ 0x7CE3C7F7;
+        value = record->encoded_fol ^ 0x7CE3C7F7;
     }
     if (allocation != 0)
     {
@@ -1999,7 +1885,7 @@ void func_0034D920(ShopValueDisplay* object)
 }
 
 
-s32 ShopClass188200::func_slotf4(void* associated)
+s32 ShopClass188200::func_slotf4(u32 associated)
 {
     if (associated == 0)
     {
@@ -2010,22 +1896,22 @@ s32 ShopClass188200::func_slotf4(void* associated)
     func_004C5A80(panel, 0, 0.0f, 0.0f, 608.0f, 40.0f, 88.0f);
     func_004C6190(unk10, panel);
     LibObject178750* label = new (0) LibObject178750;
-    label->func_004C7FE0(24.0f, 8.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2EE7, 1);
+    label->func_004C7FE0(24.0f, 8.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x2EE7, 1);
     func_004C6190(unk10, label);
     label = new (0) LibObject178750;
-    label->func_004C7FE0(204.0f, 8.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2EE8, 1);
+    label->func_004C7FE0(204.0f, 8.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x2EE8, 1);
     func_004C6190(unk10, label);
     label = new (0) LibObject178750;
-    label->func_004C7FE0(396.0f, 8.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2EE9, 1);
+    label->func_004C7FE0(396.0f, 8.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x2EE9, 1);
     func_004C6190(unk10, label);
     first = new (0) LibObject174F20;
     second = new (0) LibObject174F20;
     third = new (0) LibObject174F20;
-    func_00464D90(first, 0, 0, 0, 64.0f, 8.0f, 126.0f, 24.0f);
+    first->func_00464D90(64.0f, 8.0f, 126.0f, 24.0f, 0, 0, 0);
     func_004C6190(unk10, first);
-    func_00464D90(second, 0, 0, 0, 260.0f, 8.0f, 126.0f, 24.0f);
+    second->func_00464D90(260.0f, 8.0f, 126.0f, 24.0f, 0, 0, 0);
     func_004C6190(unk10, second);
-    func_00464D90(third, 0, 0, 0, 464.0f, 8.0f, 126.0f, 24.0f);
+    third->func_00464D90(464.0f, 8.0f, 126.0f, 24.0f, 0, 0, 0);
     func_004C6190(unk10, third);
     return 1;
 }
@@ -2107,7 +1993,7 @@ void ShopClass188300::func_slot5c()
     func_4C6DF0(text, state->func_00263CC0(), state->unk3270 + 0x2EF6, 0);
 }
 
-s32 ShopClass188300::func_slotf4(void* associated)
+s32 ShopClass188300::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot14(associated, 0, 9, 2000, 16.0f, 220.0f, 0.0f);
     LibClass178630* panel = new (0) LibClass178630;
@@ -2115,8 +2001,8 @@ s32 ShopClass188300::func_slotf4(void* associated)
     func_004C6190(unk10, panel);
     first = new (0) LibObject178750;
     second = new (0) LibObject178750;
-    func_004C7FE0(first, reinterpret_cast<s32>(associated), 0x2EE4, 1, 34.0f, 8.0f, 0.0f, 0.0f);
-    func_004C7FE0(second, reinterpret_cast<s32>(associated), 0x2EE5, 1, 142.0f, 8.0f, 0.0f, 0.0f);
+    func_004C7FE0(first, static_cast<s32>(associated), 0x2EE4, 1, 34.0f, 8.0f, 0.0f, 0.0f);
+    func_004C7FE0(second, static_cast<s32>(associated), 0x2EE5, 1, 142.0f, 8.0f, 0.0f, 0.0f);
     func_004C6190(unk10, first);
     func_004C6190(unk10, second);
     choice = new (0) FieldObject23CEA0;
@@ -2125,7 +2011,7 @@ s32 ShopClass188300::func_slotf4(void* associated)
     choice->unkF2 = 0;
     choice->func_0023CF50(0, 40.0f, 224.0f);
     choice->func_0044B110(0, 9, 2000, 0, 0.0f);
-    func_00351CD0(reinterpret_cast<ShopList*>(&unk74), choice);
+    func_00351CD0(&unk74, choice);
     panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 250.0f, 0.0f, 358.0f, 40.0f, 88.0f);
     func_004C6190(unk10, panel);
@@ -2133,7 +2019,7 @@ s32 ShopClass188300::func_slotf4(void* associated)
     func_4530E0(unkb8, 10, 280.0f, 3.0f);
     func_004C6190(unk10, unkb8);
     text = new (0) LibObject178750;
-    func_004C7FE0(text, reinterpret_cast<s32>(associated), 0x2EF6, 1, 274.0f, 8.0f, 310.0f, 8.0f);
+    func_004C7FE0(text, static_cast<s32>(associated), 0x2EF6, 1, 274.0f, 8.0f, 310.0f, 8.0f);
     text->set_color(0x508050);
     text->set_mode(1);
     func_004C6190(unk10, text);
@@ -2149,7 +2035,7 @@ ItemCreationClass175110::~ItemCreationClass175110()
 
 INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034E630);
 
-s32 ShopClass188400::func_slotf4(void* associated)
+s32 ShopClass188400::func_slotf4(u32 associated)
 {
     if (associated == 0)
     {
@@ -2161,18 +2047,18 @@ s32 ShopClass188400::func_slotf4(void* associated)
     func_004C5A80(panel, 0, 0.0f, 0.0f, 404.0f, 140.0f, 88.0f);
     func_004C6190(unk10, panel);
     unka8 = new (0) LibObject174D90;
-    unka8->func_00461720(32.0f, 13.0f, 362.0f, 140.0f, reinterpret_cast<s32>(associated), 0x2F08, 8, 0);
+    unka8->func_00461720(32.0f, 13.0f, 362.0f, 140.0f, static_cast<s32>(associated), 0x2F08, 8, 0);
     LibObject174D90* multiline = unka8;
     multiline->unk52c = 0.0f;
     multiline->unk524 = 0.0f;
     func_004C6190(unk10, unka8);
     unka8->unk3f = 0;
     unkac = new (0) LibObject178750;
-    unkac->func_004C7FE0(40.0f, 13.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2F08, 0);
+    unkac->func_004C7FE0(40.0f, 13.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x2F08, 0);
     func_004C6190(unk10, unkac);
     unkac->unk3f = 0;
     unkb4 = new (0) LibObject178750;
-    unkb4->func_004C7FE0(40.0f, 16.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2F0F, 0);
+    unkb4->func_004C7FE0(40.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x2F0F, 0);
     unkb4->set_color(0x806080);
     unkb4->set_scale(0.75f, 0.75f);
     func_004C6190(unk10, unkb4);
@@ -2181,22 +2067,22 @@ s32 ShopClass188400::func_slotf4(void* associated)
     {
         first[i] = new (0) LibObject178750;
         float y = 42.0f + static_cast<float>(28 * (i / 2));
-        first[i]->func_004C7FE0(50.0f + static_cast<float>(190 * (i % 2)), y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2F02 + i, 0);
+        first[i]->func_004C7FE0(50.0f + static_cast<float>(190 * (i % 2)), y, 0.0f, 0.0f, static_cast<s32>(associated), 0x2F02 + i, 0);
         first[i]->set_color(0x805050);
         func_004C6190(unk10, first[i]);
         first[i]->unk3f = 0;
         second[i] = new (0) LibObject178750;
-        second[i]->func_004C7FE0(100.0f + static_cast<float>(190 * (i % 2)), y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2F07, 0);
+        second[i]->func_004C7FE0(100.0f + static_cast<float>(190 * (i % 2)), y, 0.0f, 0.0f, static_cast<s32>(associated), 0x2F07, 0);
         second[i]->set_color(0x805050);
         func_004C6190(unk10, second[i]);
         second[i]->unk3f = 0;
         numbers[i] = new (0) LibObject174F20;
-        func_00464D90(numbers[i], 0, reinterpret_cast<s32>(associated), 1, 90.0f + static_cast<float>(190 * (i % 2)), y, 80.0f, 30.0f);
+        numbers[i]->func_00464D90(90.0f + static_cast<float>(190 * (i % 2)), y, 80.0f, 30.0f, 0, static_cast<s32>(associated), 1);
         func_004C6190(unk10, numbers[i]);
         numbers[i]->unk3f = 0;
     }
     unkb0 = new (0) LibObject178750;
-    unkb0->func_004C7FE0(285.0f, 104.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2F0E, 0);
+    unkb0->func_004C7FE0(285.0f, 104.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x2F0E, 0);
     func_004C6190(unk10, unkb0);
     return 1;
 }
@@ -2255,7 +2141,7 @@ void func_003503E0(ShopScrollingWindow* object)
     text->unk3c = 1;
 }
 
-s32 ShopClass188600::func_slotf4(void* associated)
+s32 ShopClass188600::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot14(associated, 0, 9, 1400, 16.0f, 16.0f, 0.0f);
     text = new (0) LibObject178750;
@@ -2267,7 +2153,7 @@ s32 ShopClass188600::func_slotf4(void* associated)
         return 0;
     }
     LibObject178750* label = new (0) LibObject178750;
-    label->func_004C7FE0(16.0f, 6.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), D_001B643C->unk10->unk14->unk3274 + 0x12924, 0);
+    label->func_004C7FE0(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), D_001B643C->unk10->unk14->unk3274 + 0x12924, 0);
     func_004C6190(unk10, label);
     label_width = func_004C69B0(label)->unk08;
     bound = 18.0f + label_width;
@@ -2276,22 +2162,22 @@ s32 ShopClass188600::func_slotf4(void* associated)
     origin = 24.0f + label_width;
     func_44B570(frame, bound, 0.0f, extra, 56.0f);
     func_004C6190(unk10, frame);
-    func_00351DF0(reinterpret_cast<ShopList*>(&unk20), frame);
-    func_004C7FE0(text, reinterpret_cast<s32>(associated), 0x2EE1, 0, bound, 6.0f, 0.0f, 0.0f);
+    func_00351DF0(&unk20, frame);
+    func_004C7FE0(text, static_cast<s32>(associated), 0x2EE1, 0, bound, 6.0f, 0.0f, 0.0f);
     func_004C6190(unk10, text);
     text->unk3d = 0;
-    func_00351D60(reinterpret_cast<ShopList*>(&unk2c), text);
+    func_00351D60(&unk2c, text);
     func_44B510(second_frame, 1);
     func_004C6190(unk10, second_frame);
-    func_00351DF0(reinterpret_cast<ShopList*>(&unk20), second_frame);
-    func_004C7FE0(caption, reinterpret_cast<s32>(associated), 0x2EE0, 0, 36.0f, 39.0f, 0.0f, 0.0f);
+    func_00351DF0(&unk20, second_frame);
+    func_004C7FE0(caption, static_cast<s32>(associated), 0x2EE0, 0, 36.0f, 39.0f, 0.0f, 0.0f);
     caption->set_scale(0.65f, 0.65f);
     func_004C6190(unk10, caption);
     func_slot60(0);
     return 1;
 }
 
-s32 ShopClass188700::func_slotf4(void* associated)
+s32 ShopClass188700::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot14(associated, 0, 9, 1200, 16.0f, 16.0f, 0.0f);
     ItemCreationOptionResourceDisplay* first = new (0) ItemCreationOptionResourceDisplay;
@@ -2305,11 +2191,11 @@ s32 ShopClass188700::func_slotf4(void* associated)
     second->unkd0 = 11;
     third->unkd0 = 11;
     FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 5);
-    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(first)), record, 0.0f, 0.0f);
+    first->func_002D6440(record, 0.0f, 0.0f);
     record = func_002D3CC0(D_001B643C->unk20, 6);
-    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(second)), record, 256.0f, 0.0f);
+    second->func_002D6440(record, 256.0f, 0.0f);
     record = func_002D3CC0(D_001B643C->unk20, 7);
-    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(third)), record, 512.0f, 0.0f);
+    third->func_002D6440(record, 512.0f, 0.0f);
     func_004C6190(unk10, first);
     func_004C6190(unk10, second);
     func_004C6190(unk10, third);
@@ -2477,25 +2363,25 @@ s32 func_003510D0(void* receiver)
     object->unk48 = new (0) ShopClass1880E0;
     object->unk4c = new (0) ShopClass187EC0;
     object->unk50 = new (0) ShopClass188200;
-    title->func_slotf4(reinterpret_cast<void*>(object->unk34));
+    title->func_slotf4(object->unk34);
     object->FieldClass153E30::func_00263FD0(title);
-    message->func_slotf4(reinterpret_cast<void*>(object->unk34));
+    message->func_slotf4(object->unk34);
     object->FieldClass153E30::func_00263FD0(message);
     object->unk24 = message;
     message->func_slot40(title);
-    object->unk3c->func_slotf4(reinterpret_cast<void*>(object->unk34));
+    object->unk3c->func_slotf4(object->unk34);
     object->FieldClass153E30::func_00263FD0(object->unk3c);
-    object->unk40->func_slotf4(reinterpret_cast<void*>(object->unk34));
+    object->unk40->func_slotf4(object->unk34);
     object->FieldClass153E30::func_00263FD0(object->unk40);
-    object->unk44->func_slotf4(reinterpret_cast<void*>(object->unk34));
+    object->unk44->func_slotf4(object->unk34);
     object->FieldClass153E30::func_00263FD0(object->unk44);
-    object->unk48->func_slot104(reinterpret_cast<void*>(object->unk34));
+    object->unk48->func_slot104(object->unk34);
     object->FieldClass153E30::func_00263FD0(object->unk48);
     object->unk48->func_slot20(0);
-    object->unk4c->func_slot104(reinterpret_cast<void*>(object->unk34));
+    object->unk4c->func_slot104(object->unk34);
     object->FieldClass153E30::func_00263FD0(object->unk4c);
     object->unk4c->func_slot20(0);
-    object->unk50->func_slotf4(reinterpret_cast<void*>(object->unk34));
+    object->unk50->func_slotf4(object->unk34);
     object->FieldClass153E30::func_00263FD0(object->unk50);
     object->unk20 = object->unk44;
     object->unk38 = 1;
@@ -2692,70 +2578,90 @@ s32 func_00351CC0(void* object)
     return 0;
 }
 
-void func_00351CD0(ShopList* list, void* value)
+/**
+ * @brief Append a value after the list's sentinel node.
+ * @param list List containing an existing sentinel and element count.
+ * @param value Object pointer to append.
+ */
+void func_00351CD0(FieldCountedList* list, void* value)
 {
-    ShopListNode* node = static_cast<ShopListNode*>(func_00100AC0(sizeof(ShopListNode), 0));
+    FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
     if (node != 0)
     {
-        node->value = value;
-        node->next = 0;
-        ShopListNode* tail = list->head;
-        while (tail->next != 0)
+        node->unk00 = value;
+        node->unk04 = 0;
+        FieldListNode* tail = list->unk00;
+        while (tail->unk04 != 0)
         {
-            tail = tail->next;
+            tail = tail->unk04;
         }
-        tail->next = node;
-        list->count++;
+        tail->unk04 = node;
+        list->unk04++;
     }
 }
 
-void func_00351D60(ShopList* list, void* value)
+/**
+ * @brief Append a value after the list's sentinel node.
+ * @param list List containing an existing sentinel and element count.
+ * @param value Object pointer to append.
+ */
+void func_00351D60(FieldCountedList* list, void* value)
 {
-    ShopListNode* node = static_cast<ShopListNode*>(func_00100AC0(sizeof(ShopListNode), 0));
+    FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
     if (node != 0)
     {
-        node->value = value;
-        node->next = 0;
-        ShopListNode* tail = list->head;
-        while (tail->next != 0)
+        node->unk00 = value;
+        node->unk04 = 0;
+        FieldListNode* tail = list->unk00;
+        while (tail->unk04 != 0)
         {
-            tail = tail->next;
+            tail = tail->unk04;
         }
-        tail->next = node;
-        list->count++;
+        tail->unk04 = node;
+        list->unk04++;
     }
 }
 
-void func_00351DF0(ShopList* list, void* value)
+/**
+ * @brief Append a value after the list's sentinel node.
+ * @param list List containing an existing sentinel and element count.
+ * @param value Object pointer to append.
+ */
+void func_00351DF0(FieldCountedList* list, void* value)
 {
-    ShopListNode* node = static_cast<ShopListNode*>(func_00100AC0(sizeof(ShopListNode), 0));
+    FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
     if (node != 0)
     {
-        node->value = value;
-        node->next = 0;
-        ShopListNode* tail = list->head;
-        while (tail->next != 0)
+        node->unk00 = value;
+        node->unk04 = 0;
+        FieldListNode* tail = list->unk00;
+        while (tail->unk04 != 0)
         {
-            tail = tail->next;
+            tail = tail->unk04;
         }
-        tail->next = node;
-        list->count++;
+        tail->unk04 = node;
+        list->unk04++;
     }
 }
 
-void func_00351E80(ShopList* list, void* value)
+/**
+ * @brief Append a value after the list's sentinel node.
+ * @param list List containing an existing sentinel and element count.
+ * @param value Object pointer to append.
+ */
+void func_00351E80(FieldCountedList* list, void* value)
 {
-    ShopListNode* node = static_cast<ShopListNode*>(func_00100AC0(sizeof(ShopListNode), 0));
+    FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
     if (node != 0)
     {
-        node->value = value;
-        node->next = 0;
-        ShopListNode* tail = list->head;
-        while (tail->next != 0)
+        node->unk00 = value;
+        node->unk04 = 0;
+        FieldListNode* tail = list->unk00;
+        while (tail->unk04 != 0)
         {
-            tail = tail->next;
+            tail = tail->unk04;
         }
-        tail->next = node;
-        list->count++;
+        tail->unk04 = node;
+        list->unk04++;
     }
 }

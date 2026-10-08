@@ -42,11 +42,18 @@ typedef struct SkillDualSelection SkillDualSelection;
 typedef struct SkillGridChoice SkillGridChoice;
 typedef struct FieldClass15AE70 FieldClass15AE70;
 typedef struct SkillProtectedFlags SkillProtectedFlags;
-typedef struct SkillTransform SkillTransform;
+#ifdef __cplusplus
+class FieldClass153E30;
+class LibClass171EF0;
+class LibObject178660;
+#else
+typedef struct FieldClass153E30 FieldClass153E30;
+typedef struct LibClass171EF0 LibClass171EF0;
+typedef struct LibObject178660 LibObject178660;
+#endif
 typedef struct SkillTextReceiver SkillTextReceiver;
 typedef struct SkillComparisonDisplay SkillComparisonDisplay;
 typedef struct SkillVector4 SkillVector4;
-typedef struct SkillSelection SkillSelection;
 typedef struct SkillSecondarySelection SkillSecondarySelection;
 typedef struct SkillFourRowSelection SkillFourRowSelection;
 typedef struct SkillModeSelection SkillModeSelection;
@@ -58,7 +65,6 @@ typedef struct Record0035A560 Record0035A560;
 typedef struct StatusOwner003580D0 StatusOwner003580D0;
 typedef struct Record003581B0 Record003581B0;
 typedef SkillOptionsWindow Record0035E2A0;
-typedef struct Record0035BE50 Record0035BE50;
 typedef struct Record0035DDE0 Record0035DDE0;
 typedef struct Record0035DE40 Record0035DE40;
 typedef struct Record0035D4A0 Record0035D4A0;
@@ -82,7 +88,6 @@ typedef SkillOptionsWindow Record00364810;
 typedef struct Record00364720 Record00364720;
 typedef struct SkillModeSelection Record0034C110;
 typedef struct SkillModeSelection Record0034C1F0;
-typedef struct Record0034B190 Record0034B190;
 
 #ifdef __cplusplus
 struct SkillPairListNode;
@@ -151,10 +156,10 @@ void func_00364BF0(SkillPairList184258* list, SkillPairValue value);
 /**
  * @brief Initialize the nested window at its fixed coordinates and attach its panel widget.
  * @param object Window base receiver.
- * @param associated Object passed to the nested window initializer.
+ * @param associated Full resource source word.
  * @return One when the panel allocation succeeds, or zero otherwise.
  */
-s32 func_00351980(FieldClass15AE70* object, void* associated);
+s32 func_00351980(FieldClass15AE70* object, u32 associated);
 
 /**
  * @brief Refresh the selection rows and clear the associated active window's grid-list flags.
@@ -226,10 +231,10 @@ void func_00359E30(SkillSecondarySelection* object);
 /**
  * @brief Initialize the three-row secondary selection window and its resource badges.
  * @param object Secondary selection window.
- * @param associated Associated source word.
+ * @param associated Full resource source word.
  * @return One on success; zero if the owner or an initial display allocation is absent.
  */
-s32 func_00359EE0(SkillSecondarySelection* object, void* associated);
+s32 func_00359EE0(SkillSecondarySelection* object, u32 associated);
 
 /**
  * @brief Activate the secondary grid and update its controller's selected code.
@@ -260,10 +265,10 @@ void func_0035A650(Record0035A560* record, s32 key);
 /**
  * @brief Create the scrolling text display and its enclosing frames.
  * @param object Scrolling text window.
- * @param associated Associated text resource source.
+ * @param associated Full resource source word.
  * @return One when setup succeeds, or zero when a required display allocation fails.
  */
-s32 func_0035A6E0(Record0035A560* object, void* associated);
+s32 func_0035A6E0(Record0035A560* object, u32 associated);
 
 /**
  * @brief Apply the selected record's mode to its protected byte table.
@@ -328,18 +333,18 @@ u32 func_0035FA20(SkillProtectedFlags* record, u32 flags);
 void func_00364B70(SkillPairList184258* record);
 
 /**
- * @brief Copy the vector at offset 0x30 and mark the receiver changed.
+ * @brief Update the vector at offset 0x30 and mark the receiver changed.
  * @param object Vector receiver.
- * @param value Vector to copy.
+ * @param value Vector components.
  */
-void func_0035C1F0(SkillTransform* object, const SkillVector4* value);
+void func_0035C1F0(LibClass171EF0* object, const SkillVector4* value);
 
 /**
- * @brief Copy the vector at offset 0x30 and mark the receiver changed.
+ * @brief Update the vector at offset 0x30 and mark the receiver changed.
  * @param object Vector receiver.
- * @param value Vector to copy.
+ * @param value Vector components.
  */
-void func_0035C220(SkillTransform* object, const SkillVector4* value);
+void func_0035C220(LibClass171EF0* object, const SkillVector4* value);
 
 /**
  * @brief Forward the receiver to its state update helper.
@@ -351,7 +356,7 @@ void func_0035D440(void* object);
  * @brief Set the selected display object's status to one.
  * @param object Selection display receiver.
  */
-void func_003621F0(SkillSelection* object);
+void func_003621F0(Record003619C0* object);
 
 /**
  * @brief Advance the paired display lists toward scroll position 16.
@@ -381,84 +386,77 @@ void func_00362010(Record003619C0* object);
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_00348400(u8* object, u8 value);
+void func_00348400(FieldClass15AE70* object, u8 value);
 
 /**
  * @brief Read the 8-bit field at offset 0xC.
  * @param object Receiver storage.
  * @return Field value.
  */
-u8 func_00348410(u8* object);
+u8 func_00348410(FieldClass15AE70* object);
 
 /**
  * @brief Write the 8-bit field at offset 0x8.
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_00348420(u8* object, u8 value);
+void func_00348420(FieldClass15AE70* object, u8 value);
 
 /**
  * @brief Read the 8-bit field at offset 0x8.
  * @param object Receiver storage.
  * @return Field value.
  */
-u8 func_00348430(u8* object);
+u8 func_00348430(FieldClass15AE70* object);
 
 /**
  * @brief Write the 16-bit field at offset 0xA.
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_00348440(u8* object, u16 value);
+void func_00348440(FieldClass15AE70* object, u16 value);
 
 /**
  * @brief Read the 16-bit field at offset 0xA.
  * @param object Receiver storage.
  * @return Field value.
  */
-u16 func_00348450(u8* object);
+u16 func_00348450(FieldClass15AE70* object);
 
 /**
- * @brief Write the 32-bit field at offset 0x98.
- * @param object Receiver storage.
- * @param value Value to store.
+ * @brief Store the alternate associated pointer.
+ * @param object Window receiver.
+ * @param value Pointer to store.
  */
-void func_00348460(u8* object, u32 value);
+void func_00348480(FieldClass15AE70* object, void* value);
 
 /**
- * @brief Write the 32-bit field at offset 0x9C.
- * @param object Receiver storage.
- * @param value Value to store.
+ * @brief Return the alternate associated pointer.
+ * @param object Window receiver.
+ * @return Stored pointer.
  */
-void func_00348480(u8* object, u32 value);
-
-/**
- * @brief Read the 32-bit field at offset 0x9C.
- * @param object Receiver storage.
- * @return Field value.
- */
-u32 func_00348490(u8* object);
+void* func_00348490(FieldClass15AE70* object);
 
 /**
  * @brief Write the 32-bit field at offset 0x4.
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_003484A0(u8* object, u32 value);
+void func_003484A0(FieldClass15AE70* object, u32 value);
 
 /**
  * @brief Read the 32-bit field at offset 0x4.
  * @param object Receiver storage.
  * @return Field value.
  */
-u32 func_003484B0(u8* object);
+u32 func_003484B0(FieldClass15AE70* object);
 
 /**
- * @brief Read the 32-bit field at offset 0x10.
- * @param object Receiver storage.
- * @return Field value.
+ * @brief Return the nested display container.
+ * @param object Window receiver.
+ * @return Stored container pointer.
  */
-u32 func_003484C0(u8* object);
+LibObject178660* func_003484C0(FieldClass15AE70* object);
 
 /**
  * @brief Perform no work.
@@ -681,14 +679,14 @@ void func_003486E0(void* object);
  * @param object Receiver storage.
  * @return Field value.
  */
-u8 func_003486F0(u8* object);
+u8 func_003486F0(FieldClass15AE70* object);
 
 /**
  * @brief Write the 8-bit field at offset 0xD.
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_00348700(u8* object, u8 value);
+void func_00348700(FieldClass15AE70* object, u8 value);
 
 /**
  * @brief Perform no work.
@@ -816,12 +814,6 @@ s32 func_0035CEB0(SkillGridChoice* object);
  */
 s32 func_0035CE30(FieldClass15AE70* object);
 
-/**
- * @brief Update list item display values for the selected index.
- * @param object Receiver storage containing the list.
- * @param selected Selected list index.
- */
-void func_0035CCE0(void* object, s16 selected);
 
 /**
  * @brief Perform no work.
@@ -885,14 +877,14 @@ void func_0035C120(void* object);
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_0035C130(u8* object, const unsigned __int128* value);
+void func_0035C130(LibClass171EF0* object, const unsigned __int128* value);
 
 /**
  * @brief Store a 128-bit value at offset 0x20 and set the byte at 0x50.
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_0035C150(u8* object, const unsigned __int128* value);
+void func_0035C150(LibClass171EF0* object, const unsigned __int128* value);
 
 /**
  * @brief Store 3 float values at offset 0x20 and set the byte at 0x50. Set the fourth float to 1.0f.
@@ -901,7 +893,7 @@ void func_0035C150(u8* object, const unsigned __int128* value);
  * @param y Float value to store.
  * @param z Float value to store.
  */
-void func_0035C170(u8* object, float x, float y, float z);
+void func_0035C170(LibClass171EF0* object, float x, float y, float z);
 
 /**
  * @brief Store 4 float values at offset 0x30 and set the byte at 0x50.
@@ -911,44 +903,44 @@ void func_0035C170(u8* object, float x, float y, float z);
  * @param z Float value to store.
  * @param w Float value to store.
  */
-void func_0035C190(u8* object, float x, float y, float z, float w);
+void func_0035C190(LibClass171EF0* object, float x, float y, float z, float w);
 
 /**
  * @brief Store a 128-bit value at offset 0x30 and set the byte at 0x50.
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_0035C1B0(u8* object, const unsigned __int128* value);
+void func_0035C1B0(LibClass171EF0* object, const unsigned __int128* value);
 
 /**
  * @brief Store a 128-bit value at offset 0x30 and set the byte at 0x50.
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_0035C1D0(u8* object, const unsigned __int128* value);
+void func_0035C1D0(LibClass171EF0* object, const unsigned __int128* value);
 
 /**
- * @brief Copy three floats and a unit fourth component into the receiver at offset 0x30.
+ * @brief Update the vector at offset 0x30 and set the byte at 0x50.
  * @param object Receiver storage.
  * @param x First float component.
  * @param y Second float component.
  * @param z Third float component.
  */
-void func_0035C250(u8* object, float x, float y, float z);
+void func_0035C250(LibClass171EF0* object, float x, float y, float z);
 
 /**
  * @brief Store a 128-bit value at offset 0x40 and set the byte at 0x50.
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_0035C290(u8* object, const unsigned __int128* value);
+void func_0035C290(LibClass171EF0* object, const unsigned __int128* value);
 
 /**
  * @brief Store a 128-bit value at offset 0x40 and set the byte at 0x50.
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_0035C2B0(u8* object, const unsigned __int128* value);
+void func_0035C2B0(LibClass171EF0* object, const unsigned __int128* value);
 
 /**
  * @brief Store 3 float values at offset 0x40 and set the byte at 0x50.
@@ -957,7 +949,7 @@ void func_0035C2B0(u8* object, const unsigned __int128* value);
  * @param y Float value to store.
  * @param z Float value to store.
  */
-void func_0035C2D0(u8* object, float x, float y, float z);
+void func_0035C2D0(LibClass171EF0* object, float x, float y, float z);
 
 /**
  * @brief Return the fixed value 0.
@@ -1004,14 +996,14 @@ void func_0035C350(u8* object, u32 value);
  * @param object Receiver storage.
  * @param value Value to store.
  */
-void func_0035C360(u8* object, u8 value);
+void func_0035C360(FieldClass153E30* object, u8 value);
 
 /**
  * @brief Read the signed 8-bit field at offset 0x28.
  * @param object Receiver storage.
  * @return Field value.
  */
-s8 func_0035C370(u8* object);
+s8 func_0035C370(FieldClass153E30* object);
 
 /**
  * @brief Return the fixed value 0.
@@ -1139,14 +1131,14 @@ void func_0034C320(SkillModeSelection* object);
  * @param record Receiver containing the second grid and display owner.
  * @return One after setup, otherwise zero without the second grid.
  */
-s32 func_0034B190(Record0034B190* record);
+s32 func_0034B190(SkillDualSelection* record);
 
 /**
  * @brief Configure the first grid and register its newly allocated display object.
  * @param record Receiver containing the first grid and display owner.
  * @return One after setup, otherwise zero without the first grid.
  */
-s32 func_0034B2C0(Record0034B190* record);
+s32 func_0034B2C0(SkillDualSelection* record);
 
 /** @brief Advance the mode selection by one row and refresh its owner message. @param object Mode selection window. */
 void func_0034DF00(SkillModeSelection* object);
@@ -1171,14 +1163,14 @@ s32 func_0034E260(Record0034C1F0* record, s16 row_count);
 
 /** @brief Create the mode window's text and image rows. @param object Mode window. @return Nonzero after creating the rows. */
 s32 func_00351090(SkillModeSelection* object);
-/** @brief Initialize the mode window and attach its displays. @param object Mode window. @param associated Associated window source. @return One on success; zero on allocation or row initialization failure. */
-s32 func_00351490(SkillModeSelection* object, void* associated);
+/** @brief Initialize the mode window and attach its displays. @param object Mode window. @param associated Full resource source word. @return One on success; zero on allocation or row initialization failure. */
+s32 func_00351490(SkillModeSelection* object, u32 associated);
 
-/** @brief Attach three resource displays to the window. @param object Window to initialize. @param associated Associated window source. @return One after attaching the displays. */
-s32 func_0035AC50(FieldClass15AE70* object, void* associated);
+/** @brief Attach three resource displays to the window. @param object Window to initialize. @param associated Full resource source word. @return One after attaching the displays. */
+s32 func_0035AC50(FieldClass15AE70* object, u32 associated);
 
-/** @brief Create and attach the text receiver's seven displays. @param object Text receiver. @param associated Associated source word. @return One after attaching all displays. */
-s32 func_003499B0(SkillTextReceiver* object, void* associated);
+/** @brief Create and attach the text receiver's seven displays. @param object Text receiver. @param associated Full resource source word. @return One after attaching all displays. */
+s32 func_003499B0(SkillTextReceiver* object, u32 associated);
 
 /**
  * @brief Initialize the receiver metadata and its embedded object, then return its address.
@@ -1384,10 +1376,10 @@ RecordWithMethods* func_00357E80(RecordWithMethods* record, s16 flag);
 /**
  * @brief Initialize the nested window and attach its rectangular panel widget.
  * @param object Window base receiver.
- * @param associated Object passed to the nested window initializer.
+ * @param associated Full resource source word.
  * @return One when the panel allocation succeeds, or zero otherwise.
  */
-s32 func_00357F80(FieldClass15AE70* object, void* associated);
+s32 func_00357F80(FieldClass15AE70* object, u32 associated);
 
 /**
  * @brief Release the record and optionally free its storage.
@@ -1644,8 +1636,8 @@ s32 func_00350890(SkillModeSelection* object, s16 mode);
 /** @brief Create the second dual-grid display and row markers. @param object Dual-grid window. @return One after setup, or zero on failure. */
 u8 func_0034B720(SkillDualSelection* object);
 
-/** @brief Create both dual-grid panels and initialize their selections. @param object Dual-grid window. @param associated Opaque object passed to the window base. @return One after setup, or zero on allocation or setup failure. */
-s32 func_0034BA30(SkillDualSelection* object, void* associated);
+/** @brief Create both dual-grid panels and initialize their selections. @param object Dual-grid window. @param associated Full resource source word. @return One after setup, or zero on allocation or setup failure. */
+s32 func_0034BA30(SkillDualSelection* object, u32 associated);
 
 /** @brief Rebuild both paired selection grids. @param object Paired selection window. */
 void func_0034B3F0(SkillDualSelection* object);
@@ -1791,7 +1783,7 @@ s32 func_0035E470(SkillOptionsWindow* object);
  * @param record Owner of the selection state.
  * @return One when initialization succeeds, or zero on failure.
  */
-s32 func_0035BE50(Record0035BE50* record);
+s32 func_0035BE50(SkillQueueOwner* record);
 
 /**
  * @brief Reset the packet buffer, append its initial register packet, and update the record.

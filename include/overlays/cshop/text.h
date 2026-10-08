@@ -7,10 +7,8 @@
 #include "overlays/1067-00/text_0023B1D0.h"
 
 #ifdef __cplusplus
-class FieldClass150070;
+class FieldClass15BB90;
 class ItemCreationClass172870;
-struct ShopNumberElement;
-struct ShopIconElement;
 
 /** Shop list window using the Field callbacks at offset 0xA8. */
 struct ShopClass187DA0 : public FieldClass15AD40
@@ -44,12 +42,10 @@ struct ShopClass187DA0 : public FieldClass15AD40
     virtual void refresh_rows(s32 start);
     /** @brief Position the visible record displays. @param start Base vertical coordinate. */
     virtual void set_scroll_position(float start);
-    /** @brief Create the list displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slot104(void* associated);
+    /** @brief Create the list displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slot104(u32 associated);
     /** @brief Set the paired display flags. @param first First display flag. @param second Second display flag. */
     virtual void func_slot10c(u32 first, u32 second);
-    /** @brief Set the list display flag. @param value Flag to store. */
-    virtual void func_slot110(u8 value);
 };
 
 /** Shop list window with the Field callbacks at offset 0xA8. */
@@ -71,7 +67,7 @@ struct ShopClass187EC0 : public FieldClass15AD40
     u16 codes[750];
     /** @brief Destroy the Field list window. */
     virtual ~ShopClass187EC0();
-    /** @brief Run the list window hook. */
+    /** @brief Update the current catalog selection and its highlight. */
     virtual void func_slot5c();
     /** @brief Run the list window hook. @return Handler result. */
     virtual s32 func_slotb0();
@@ -87,12 +83,10 @@ struct ShopClass187EC0 : public FieldClass15AD40
     virtual void refresh_rows(s32 start);
     /** @brief Position the visible records. @param start Base vertical coordinate. */
     virtual void set_scroll_position(float start);
-    /** @brief Create the list displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slot104(void* associated);
+    /** @brief Create the list displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slot104(u32 associated);
     /** @brief Set the paired display flags. @param first First display flag. @param second Second display flag. */
     virtual void func_slot10c(u32 first, u32 second);
-    /** @brief Set the list display flag. @param value Flag to store. */
-    virtual void func_slot110(u8 value);
 };
 /** Shop list window with the Field callbacks at offset 0xA8. */
 struct ShopClass1880E0 : public FieldClass15AD40
@@ -109,7 +103,7 @@ struct ShopClass1880E0 : public FieldClass15AD40
     ShopClass1880E0();
     /** @brief Destroy the Field list window. */
     virtual ~ShopClass1880E0();
-    /** @brief Run the list window hook. */
+    /** @brief Update the current bucket selection, highlight, and countdown. */
     virtual void func_slot5c();
     /** @brief Remove one selected code and refresh its row. */
     virtual void func_slot70();
@@ -131,12 +125,10 @@ struct ShopClass1880E0 : public FieldClass15AD40
     virtual void refresh_rows(s32 start);
     /** @brief Position the visible records. @param start Base vertical coordinate. */
     virtual void set_scroll_position(float start);
-    /** @brief Create the list displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slot104(void* associated);
+    /** @brief Create the list displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slot104(u32 associated);
     /** @brief Set the paired display flags. @param first First display flag. @param second Second display flag. */
     virtual void func_slot10c(u32 first, u32 second);
-    /** @brief Set the list display flag. @param value Flag to store. */
-    virtual void func_slot110(u8 value);
 };
 
 /** Partial Field window using resident vtable 0x187FE0. */
@@ -148,10 +140,10 @@ struct ShopClass187FE0 : public FieldClass15AE70
     virtual void func_slot0c();
     /** @brief Window hook at virtual offset 0x5C. */
     virtual void func_slot5c();
-    /** @brief Window hook at virtual offset 0xB4. */
+    /** @brief Request cancellation of the attached status window when present. @return Always two. */
     virtual s32 func_slotb4();
-    /** @brief Create the window displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     /** @brief Clear the display pointers and initialize the temporary base window. */
     ShopClass187FE0();
     void* unka8;
@@ -169,7 +161,7 @@ struct ShopClass187FE0 : public FieldClass15AE70
     void* unkd8;
     LibClass178630* unkdc;
     LibObject178660* unke0;
-    FieldClass150070* unke4;
+    FieldClass15BB90* unke4;
     u8 unke8;
 };
 
@@ -184,8 +176,8 @@ struct ShopClass188200 : public FieldClass15AE70
     virtual ~ShopClass188200();
     /** @brief Window hook at virtual offset 0x5C. */
     virtual void func_slot5c();
-    /** @brief Create the window displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     LibObject174F20* first;
     LibObject174F20* second;
     LibObject174F20* third;
@@ -210,8 +202,8 @@ struct ShopClass188300 : public FieldClass15AE70
     virtual s32 func_slotb0();
     /** @brief Window hook at virtual offset 0xB4. */
     virtual s32 func_slotb4();
-    /** @brief Create the window displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* choice;
     LibObject178750* text;
     LibObject178750* first;
@@ -242,10 +234,10 @@ struct ShopClass188400 : public FieldClass15AE70
     virtual void func_slot5c();
     /**
      * @brief Create the description displays and five paired value rows.
-     * @param associated Resource slot encoded as a pointer.
+     * @param associated Full resource source word.
      * @return One after creating the displays, or zero for a missing resource slot.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
 };
 
 /** Partial Field window using resident vtable 0x188500. */
@@ -261,8 +253,8 @@ struct ShopClass188500 : public FieldClass15AE70
     virtual ~ShopClass188500();
     /** @brief Window hook at virtual offset 0x5C. */
     virtual void func_slot5c();
-    /** @brief Create the window displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
 };
 
 /** Partial Field window using resident vtable 0x188600. */
@@ -287,8 +279,8 @@ struct ShopClass188600 : public FieldClass15AE70
     virtual void func_slot5c();
     /** @brief Set the window text. @param text_key Text key before the resource offset. */
     virtual void func_slot60(s32 text_key);
-    /** @brief Create the window displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     LibObject178750* text;
     s32 width;
     s16 timer;
@@ -306,8 +298,8 @@ struct ShopClass188700 : public FieldClass15AE70
 {
     /** @brief Destroy the Field window base. */
     virtual ~ShopClass188700();
-    /** @brief Create the window displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
 };
 
 /** Choice window with paired text displays and resident vtable 0x187A70. */
@@ -317,8 +309,8 @@ struct ShopClass187A70 : public FieldClass15AE70
     ShopClass187A70()
     {
         unka8 = 0;
-        unkac = 0;
-        unkb0 = 0;
+        yes_label = 0;
+        no_label = 0;
     }
     /** @brief Destroy the Field window base. */
     virtual ~ShopClass187A70();
@@ -330,11 +322,11 @@ struct ShopClass187A70 : public FieldClass15AE70
     virtual s32 func_slotb0();
     /** @brief Return to the associated State. @return Transition result. */
     virtual s32 func_slotb4();
-    /** @brief Create the choice display. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* unka8;
-    LibObject178750* unkac;
-    LibObject178750* unkb0;
+    LibObject178750* yes_label;
+    LibObject178750* no_label;
 };
 
 /** Choice window with paired text displays and resident vtable 0x187CA0. */
@@ -359,8 +351,8 @@ struct ShopClass187CA0 : public FieldClass15AE70
     virtual s32 func_slotb0();
     /** @brief Return to the associated State. @return Transition result. */
     virtual s32 func_slotb4();
-    /** @brief Create the choice display. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* unka8;
     LibObject178750* unkac;
     LibObject178750* unkb0;
@@ -386,8 +378,8 @@ struct ShopClass187BA0 : public FieldClass15AE70
     virtual s32 func_slotb0();
     /** @brief Return to the associated State. @return Transition result. */
     virtual s32 func_slotb4();
-    /** @brief Create the choice display. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* unka8;
     LibObject178750* unkac;
     LibObject178750* unkb0;
@@ -409,21 +401,12 @@ extern "C" {
 typedef struct ShopState ShopState;
 typedef struct ShopClass188600 ShopScrollingWindow;
 typedef struct ShopClass188200 ShopValueDisplay;
-typedef struct ShopList ShopList;
-typedef struct ObjectFields ObjectFields;
 typedef struct ObjectField20 ObjectField20;
 typedef struct ObjectField34 ObjectField34;
-typedef struct ObjectField12C ObjectField12C;
 typedef struct ObjectStatusFields ObjectStatusFields;
-typedef struct ObjectCleanup ObjectCleanup;
-typedef struct ObjectElements5 ObjectElements5;
 #ifndef __cplusplus
 typedef struct ShopClass187DA0 ShopClass187DA0;
 #endif
-typedef struct ObjectElements6 ObjectElements6;
-typedef struct ObjectElementsGrid6 ObjectElementsGrid6;
-typedef struct ObjectToggleFields4 ObjectToggleFields4;
-typedef struct ObjectToggleFields ObjectToggleFields;
 
 /**
  * @brief Open the alternate choice window for the selected allocation.
@@ -493,18 +476,6 @@ s32 func_00349110(void* receiver);
  * @return Zero while the control byte is set, otherwise two.
  */
 s32 func_003499B0(void* receiver);
-
-/**
- * @brief Update the focused catalog selection and its highlight.
- * @param object Catalog list display.
- */
-void func_0034B170(ObjectElements6* object);
-
-/**
- * @brief Update the focused bucket selection, highlight, and countdown.
- * @param object Bucket list display.
- */
-void func_0034CD10(ObjectElementsGrid6* object);
 
 /**
  * @brief Pass the supplied object to the current state and select state code three.
@@ -839,97 +810,6 @@ s32 func_00351CB0(void* object);
 s32 func_00351CC0(void* object);
 
 /**
- * @brief Set field at offset 0xC.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00348460(ObjectFields* object, u8 value);
-
-/**
- * @brief Get field at offset 0xC.
- * @param object Object containing the field.
- * @return Field value.
- */
-u8 func_00348470(ObjectFields* object);
-
-/**
- * @brief Set field at offset 0x8.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00348480(ObjectFields* object, u8 value);
-
-/**
- * @brief Get field at offset 0x8.
- * @param object Object containing the field.
- * @return Field value.
- */
-u8 func_00348490(ObjectFields* object);
-
-/**
- * @brief Set field at offset 0xA.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_003484A0(ObjectFields* object, u16 value);
-
-/**
- * @brief Get field at offset 0xA.
- * @param object Object containing the field.
- * @return Field value.
- */
-u16 func_003484B0(ObjectFields* object);
-
-/**
- * @brief Set field at offset 0x9C.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_003484E0(ObjectFields* object, u32 value);
-
-/**
- * @brief Get field at offset 0x9C.
- * @param object Object containing the field.
- * @return Field value.
- */
-u32 func_003484F0(ObjectFields* object);
-
-/**
- * @brief Set field at offset 0x4.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00348500(ObjectFields* object, u32 value);
-
-/**
- * @brief Get field at offset 0x4.
- * @param object Object containing the field.
- * @return Field value.
- */
-u32 func_00348510(ObjectFields* object);
-
-/**
- * @brief Get field at offset 0x10.
- * @param object Object containing the field.
- * @return Field value.
- */
-u32 func_00348520(ObjectFields* object);
-
-/**
- * @brief Get field at offset 0xD.
- * @param object Object containing the field.
- * @return Field value.
- */
-u8 func_00348720(ObjectFields* object);
-
-/**
- * @brief Set field at offset 0xD.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00348730(ObjectFields* object, u8 value);
-
-/**
  * @brief Set field at offset 0x20.
  * @param object Object containing the field.
  * @param value Value to store.
@@ -949,13 +829,6 @@ u32 func_00349820(ObjectField20* object);
  * @return Field value.
  */
 u32 func_0034A1D0(ObjectField34* object);
-
-/**
- * @brief Set field at offset 0x12C.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_0034AE80(ObjectField12C* object, u8 value);
 
 /**
  * @brief Get field at offset 0x38.
@@ -992,64 +865,6 @@ void func_00351C10(ObjectStatusFields* object, s8 value);
  */
 s8 func_00351C20(ObjectStatusFields* object);
 
-/**
- * @brief Set the positions and active flags of 5 pairs of elements.
- * @param object Object containing the element arrays.
- * @param position Base position before the first offset.
- */
-void func_0034A480(ObjectElements5* object, float position);
-
-/**
- * @brief Set the positions and active flags of 6 pairs of elements.
- * @param object Object containing the element arrays.
- * @param position Base position before the first offset.
- */
-void func_0034B260(ObjectElements6* object, float position);
-
-/**
- * @brief Update four pairs of element status and optional controls.
- * @param object Object containing the element arrays and controls.
- * @param value Value assigned to the first four element pairs.
- * @param selected Value assigned to the optional controls.
- */
-void func_00349FF0(ObjectToggleFields4* object, u8 value, s32 selected);
-
-/**
- * @brief Update six columns of element status and optional controls.
- * @param object Object containing the element arrays and controls.
- * @param value Value assigned to the first five rows, using its low byte.
- * @param selected Value assigned to the optional controls.
- */
-void func_0034C7D0(ObjectToggleFields* object, s32 value, s32 selected);
-
-/**
- * @brief Update element status and optional controls.
- * @param object Object containing the element arrays and controls.
- * @param value Value assigned to the first five element pairs.
- * @param selected Value assigned to the optional controls.
- */
-void func_0034AE90(ObjectToggleFields* object, u8 value, s32 selected);
-
-/**
- * @brief Set the positions and active flags of 6 columns of elements.
- * @param object Object containing the element arrays.
- * @param position Base position before the first offset.
- */
-void func_0034CF20(ObjectElementsGrid6* object, float position);
-
-/**
- * @brief Refresh six rows of bucket icons and numeric values.
- * @param object Bucket display.
- * @param offset First bucket entry to display.
- */
-void func_0034CFB0(ObjectElementsGrid6* object, s32 offset);
-
-/**
- * @brief Process the field at offset 0xE4 when present.
- * @param object Object containing the field.
- * @return Always 2.
- */
-s32 func_0034BAB0(ObjectCleanup* object);
 
 /**
  * @brief Create and attach the shop State windows.
@@ -1173,28 +988,28 @@ void func_003510B0(void* object);
  * @param list List containing an existing sentinel and element count.
  * @param value Object pointer to append.
  */
-void func_00351CD0(ShopList* list, void* value);
+void func_00351CD0(FieldCountedList* list, void* value);
 
 /**
  * @brief Append a value after the list's sentinel node.
  * @param list List containing an existing sentinel and element count.
  * @param value Object pointer to append.
  */
-void func_00351D60(ShopList* list, void* value);
+void func_00351D60(FieldCountedList* list, void* value);
 
 /**
  * @brief Append a value after the list's sentinel node.
  * @param list List containing an existing sentinel and element count.
  * @param value Object pointer to append.
  */
-void func_00351DF0(ShopList* list, void* value);
+void func_00351DF0(FieldCountedList* list, void* value);
 
 /**
  * @brief Append a value after the list's sentinel node.
  * @param list List containing an existing sentinel and element count.
  * @param value Object pointer to append.
  */
-void func_00351E80(ShopList* list, void* value);
+void func_00351E80(FieldCountedList* list, void* value);
 
 /**
  * @brief Clear the current state's buckets and return to mode 1.
@@ -1209,20 +1024,6 @@ s32 func_0034CBD0(void* object);
  * @param category Category code to initialize.
  */
 void func_00350EC0(ShopState* object, u16 category);
-
-/**
- * @brief Populate five icon and number rows from the current category's records.
- * @param object Display containing the row arrays and record count.
- * @param offset First record to display.
- */
-void func_0034A4E0(ObjectElements5* object, s32 offset);
-
-/**
- * @brief Populate six catalog icon and number rows from the stored category codes.
- * @param object Display containing row arrays and category codes.
- * @param offset First category code to display.
- */
-void func_0034B2C0(ObjectElements6* object, s32 offset);
 
 /**
  * @brief Clamp a four-row list's range and selection to the current category's record count.

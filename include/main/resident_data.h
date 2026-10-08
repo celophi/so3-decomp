@@ -4,22 +4,15 @@
 #include "main/resident_001001E0.h"
 #include "main/resident_00101550.h"
 #include "main/resident_0010A0E0.h"
+#include "main/item_category.h"
 
 typedef struct FieldRuntime FieldRuntime;
 
-/** Partial twelve-byte HUD image record. */
-typedef struct ResidentHudImage0C
-{
-    u8 unk00[8];
-    u8 unk08;
-    u8 unk09[3];
-} ResidentHudImage0C;
-/** Partial view of the resident resource object reached through D_001B64F8. */
+/** Partial resident resource storage containing the category entries. */
 typedef struct ResidentObject1B64F8
 {
-    u8 unk00[0x101B8];
-    ResidentHudImage0C unk101b8;
-    ResidentHudImage0C unk101c4;
+    u8 unk00[0xEA60];
+    ItemCreationCategoryRecord item_types[750];
 } ResidentObject1B64F8;
 /** Partial view of the section selected by resource key four. */
 typedef struct ResidentHudSection1B4
@@ -87,7 +80,9 @@ typedef struct ResidentContextFlagsDD
 /** Partial object at field context offset 0x58. */
 typedef struct ResidentContextObject58
 {
-    u8 unk00[0x1E0];
+    u8 unk00[0x1B4];
+    s32 unk1b4;
+    u8 unk1b8[0x28];
     float unk1e0;
 } ResidentContextObject58;
 
@@ -153,20 +148,28 @@ typedef struct ResidentContext
     u8 unkde_6_7 : 2;
 } ResidentContext;
 
-/** Four halfword masks selected by field angle conditions. */
-typedef struct ResidentMaskSet8
+/** Partial resident record containing condition masks and checked Fol. */
+typedef struct ResidentCheckedRecord
 {
     u16 unk00;
     u16 unk02;
     u16 unk04;
     u16 unk06;
-} ResidentMaskSet8;
+    u8 unk08[0x2C];
+    /** Fol XOR-encoded with 0x7CE3C7F7. */
+    u32 encoded_fol;
+    u8 unk38[0x6C];
+    /** Checksum of the 126 bytes beginning at offset 0x26. */
+    u16 checksum;
+    /** Random seed used to calculate the checksum. */
+    u16 checksum_seed;
+} ResidentCheckedRecord;
 
 /** Partial holder of the current field context and its condition masks. */
 typedef struct ResidentContextRef
 {
     ResidentContext* context;
-    ResidentMaskSet8* unk04;
+    ResidentCheckedRecord* unk04;
 } ResidentContextRef;
 
 #ifdef __cplusplus

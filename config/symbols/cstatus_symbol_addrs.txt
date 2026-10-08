@@ -203,7 +203,7 @@ func_002CE4C0 = 0x002CE4C0; // type:func allow_duplicated:True
 
 func_002CE760 = 0x002CE760; // type:func allow_duplicated:True
 
-func_slot10__16FieldClass15AE70FPvffi = 0x002CE8D0; // type:func absolute:True allow_duplicated:True
+func_slot10__16FieldClass15AE70FUiffi = 0x002CE8D0; // type:func absolute:True allow_duplicated:True
 func_002CE8D0 = 0x002CE8D0; // type:func allow_duplicated:True absolute:True
 
 func_0034F6F0 = 0x0034F6F0; // type:func allow_duplicated:True
@@ -240,7 +240,7 @@ func_0034C000 = 0x0034C000; // type:func allow_duplicated:True
 func_slotdc__17StatusScrollStateFv = 0x0034C000; // type:func allow_duplicated:True
 
 func_0034C870 = 0x0034C870; // type:func allow_duplicated:True
-func_slotf4__17StatusScrollStateFPv = 0x0034C870; // type:func allow_duplicated:True
+func_slotf4__17StatusScrollStateFUi = 0x0034C870; // type:func allow_duplicated:True
 
 func_0034F780 = 0x0034F780; // type:func allow_duplicated:True
 __ct__17StatusScrollStateFv = 0x0034F780; // type:func allow_duplicated:True
@@ -266,7 +266,7 @@ func_0028E2B0 = 0x0028E2B0; // type:func absolute:True allow_duplicated:True
 __ct__16FieldClass15AE70Fv = 0x002CEBE0; // type:func absolute:True allow_duplicated:True
 __dt__16FieldClass15AE70Fv = 0x002CEAF0; // type:func absolute:True allow_duplicated:True
 
-func_slot14__16FieldClass15AE70FPviiifff = 0x002CE760; // type:func absolute:True allow_duplicated:True
+func_slot14__16FieldClass15AE70FUiiiifff = 0x002CE760; // type:func absolute:True allow_duplicated:True
 
 __ct__14LibClass174EF0Fv = 0x00464B10; // type:func absolute:True
 
@@ -337,10 +337,10 @@ __vt__16StatusTextWindow = 0x00188AC0; // absolute:True size:0xF8 allow_duplicat
 __dt__16StatusTextWindowFv = 0x0034FE40; // type:func
 func_slot5c__16StatusTextWindowFv = 0x0034F920; // type:func
 func_slot60__16StatusTextWindowFi = 0x0034FA10; // type:func
-func_slotf4__16StatusTextWindowFPv = 0x0034FAA0; // type:func
+func_slotf4__16StatusTextWindowFUi = 0x0034FAA0; // type:func
 __vt__22StatusBackgroundWindow = 0x00188BC0; // absolute:True size:0xF8 allow_duplicated:True
 __dt__22StatusBackgroundWindowFv = 0x00350100; // type:func
-func_slotf4__22StatusBackgroundWindowFPv = 0x0034FEA0; // type:func
+func_slotf4__22StatusBackgroundWindowFUi = 0x0034FEA0; // type:func
 __ct__20FieldRecordSelectionFv = 0x0028E4D0; // type:func absolute:True
 func_00263FD0__16FieldClass153E30FPv = 0x00263FD0; // type:func absolute:True
 

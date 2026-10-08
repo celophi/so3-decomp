@@ -1334,7 +1334,7 @@ void FieldClass1504F0::func_001ED160()
     }
     if (!func_00217600(state, 0x4E9))
     {
-        ResidentHudImage0C* resource = &((ResidentObject1B64F8*)D_001B64F8)->unk101c4;
+        ItemCreationCategoryRecord* resource = &((ResidentObject1B64F8*)D_001B64F8)->item_types[499];
         float offset = 0.0f;
         if (func_00217600(state, 0x810))
         {
@@ -1365,7 +1365,7 @@ void FieldClass1504F0::func_001ED160()
         {
             unk24[0]->unk3d = 0;
         }
-        ResidentHudImage0C* second_resource = &((ResidentObject1B64F8*)D_001B64F8)->unk101b8;
+        ItemCreationCategoryRecord* second_resource = &((ResidentObject1B64F8*)D_001B64F8)->item_types[498];
         if (func_00217600(state, 0x80F))
         {
             LibClass178600* second_panel = unk24[1];

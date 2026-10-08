@@ -60,7 +60,7 @@ segments:
         name: text_003483C0
         linker_section: .rodata.0036F680
         rodata_anchors:
-          - {function: func_slotf4__22PendingInventorSummaryFPv, offset: 0x0, size: 0x38}
+          - {function: func_slotf4__22PendingInventorSummaryFUi, offset: 0x0, size: 0x38}
         linker_section_order: .rodata
       - [0x27338, pad, rodata_pad_0036F6B8]
       - start: 0x27340

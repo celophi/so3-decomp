@@ -11,7 +11,8 @@
 
 typedef struct EquipLinkedList EquipLinkedList;
 typedef struct EquipWordList EquipWordList;
-typedef struct EquipSelectionOwner EquipSelectionOwner;
+typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
+typedef struct EquipListState EquipListState;
 
 #ifdef __cplusplus
 /** Equipment list with a sentinel node, element count, and virtual destructor. */
@@ -100,8 +101,8 @@ struct EquipClass182350 : public FieldClass15AE70
     virtual void func_slot5c();
     /** @brief Reset the text display and recompute its width for the supported key range. @param text_key Text resource key. */
     virtual void func_slot60(s32 text_key);
-    /** @brief Create the text, frame and scrolling display. @param associated Associated text resource. @return One when initial displays exist, otherwise zero. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the text, frame and scrolling display. @param associated Full resource source word. @return One when initial displays exist, otherwise zero. */
+    virtual s32 func_slotf4(u32 associated);
     LibObject178750* unka8;
     s32 unkac;
     u8 unkb0[2];
@@ -126,8 +127,8 @@ struct EquipClass182220 : public FieldClass15AE70
 
     /** @brief Destroy the initial equipment window. */
     virtual ~EquipClass182220();
-    /** @brief Create the panel, text labels and selection grid. @param associated Associated text resource. @param x Window horizontal position. @param y Window vertical position. @param code Nested display initializer code. @return One when all displays exist, otherwise zero. */
-    virtual s32 func_slot10(void* associated, float x, float y, s32 code);
+    /** @brief Create the panel, text labels and selection grid. @param associated Full resource source word. @param x Window horizontal position. @param y Window vertical position. @param code Nested display initializer code. @return One when all displays exist, otherwise zero. */
+    virtual s32 func_slot10(u32 associated, float x, float y, s32 code);
     /** @brief Refresh icon colors while this window is selected. */
     virtual void func_slot5c();
     /** @brief Activate the selected icon or set the empty-selection state. @return One to stay, or two after cancellation. */
@@ -155,8 +156,8 @@ struct EquipClass182C90 : public FieldClass15AE70
     virtual ~EquipClass182C90();
     /** @brief Enable the display widget while its State window is selected. */
     virtual void func_slot5c();
-    /** @brief Create the window displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     s16 unka8;
     u8 unkaa[2];
     FieldRecordSelection* unkac;
@@ -184,8 +185,8 @@ struct EquipClass182450 : public FieldClass15AE70
 
     /** @brief Destroy the option window. */
     virtual ~EquipClass182450();
-    /** @brief Create and attach the three option displays. @param associated Associated resource object. @return One. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create and attach the three option displays. @param associated Full resource source word. @return One. */
+    virtual s32 func_slotf4(u32 associated);
     ItemCreationOptionResourceDisplay* unka8;
     ItemCreationOptionResourceDisplay* unkac;
     ItemCreationOptionResourceDisplay* unkb0;
@@ -201,8 +202,8 @@ struct EquipClass182790 : public FieldClass15AE70
 
     /** @brief Destroy the panel window. */
     virtual ~EquipClass182790();
-    /** @brief Create and attach the panel display. @param associated Associated object. @return One. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create and attach the panel display. @param associated Full resource source word. @return One. */
+    virtual s32 func_slotf4(u32 associated);
 };
 
 struct EquipListState;
@@ -215,8 +216,8 @@ struct EquipClass182890 : public FieldClass15AE70
     void refresh_item_details(u8 category, s16 selected);
     /** @brief Destroy the item-details window. */
     virtual ~EquipClass182890();
-    /** @brief Create and attach the item-details displays. @param associated Associated object. @return One. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create and attach the item-details displays. @param associated Full resource source word. @return One. */
+    virtual s32 func_slotf4(u32 associated);
     EquipListState* unka8;
     u8 unkac;
     u8 unkad;
@@ -246,8 +247,8 @@ struct EquipClass182A90 : public FieldClass15AE70
 
     /** @brief Destroy the category panel window. */
     virtual ~EquipClass182A90();
-    /** @brief Create and attach the category panel display. @param associated Associated object. @return One. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create and attach the category panel display. @param associated Full resource source word. @return One. */
+    virtual s32 func_slotf4(u32 associated);
 };
 
 struct EquipClass182B90;
@@ -315,8 +316,8 @@ struct EquipClass182B90 : public FieldClass15AE70
     virtual ~EquipClass182B90();
     /** @brief Refresh the selected category detail displays. */
     virtual void func_slot5c();
-    /** @brief Create the multiline and comparison displays. @param associated Associated resource object. @return One, or zero without an associated object. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the multiline and comparison displays. @param associated Full resource source word. @return One, or zero without an associated object. */
+    virtual s32 func_slotf4(u32 associated);
     LibObject174D90* unka8;
     LibObject178750* unkac;
     LibObject178750* unkb0[5];
@@ -352,8 +353,8 @@ struct EquipClass182990 : public FieldClass15AE70
     virtual s32 func_slotd8();
     /** @brief Cycle to the next record and rebuild its displays. @return Four after cycling, or zero when unavailable. */
     virtual s32 func_slotdc();
-    /** @brief Create category widgets. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create category widgets. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     EquipListState* unka8;
     FieldRecordSelection* unkac;
     float unkb0;
@@ -366,7 +367,7 @@ struct EquipClass182990 : public FieldClass15AE70
     LibClass174EF0* unke4[4];
     void* unkf4;
     void* unkf8;
-    FieldState23B3A0* unkfc;
+    FieldState23B3A0* equipment_slot_selector;
     FieldClass15AE70* unk100;
     FieldClass15AD40* unk104;
     u16 unk108;
@@ -393,8 +394,8 @@ struct EquipClass182550 : public FieldClass15AD40
     virtual void refresh_rows(s32 start);
     /** @brief Set the visible equipment row positions. @param start Base row position. */
     virtual void set_scroll_position(float start);
-    /** @brief Create the equipment list displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slot104(void* associated);
+    /** @brief Create the equipment list displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slot104(u32 associated);
     /** @brief Set the paired display flags. @param first First flag. @param second Second flag. */
     virtual void func_slot10c(u32 first, u32 second);
     /** @brief Recount the category records and clamp the visible selection. */
@@ -426,8 +427,8 @@ struct EquipClass182670 : public FieldClass15AD40
     virtual void refresh_rows(s32 start);
     /** @brief Position all three displays in each row. @param start Base row position. */
     virtual void set_scroll_position(float start);
-    /** @brief Create the category names, counts, and selection displays. @param associated Associated resource object. @return One. */
-    virtual s32 func_slot104(void* associated);
+    /** @brief Create the category names, counts, and selection displays. @param associated Full resource source word. @return One. */
+    virtual s32 func_slot104(u32 associated);
     /** @brief Rebuild the list for the selected category. @param category Category index, clamped to two. */
     virtual void func_slot108(u8 category);
     virtual void func_slot10c(u32 first, u32 second);
@@ -444,8 +445,12 @@ struct EquipClass182670 : public FieldClass15AD40
 extern "C" {
 #endif
 
-/** @brief Allocate and initialize the record selection. @param object Selection owner. @return One when both allocation and initialization succeed. */
-s32 func_003510C0(EquipSelectionOwner* object);
+/**
+ * @brief Create and initialize the State's record selection.
+ * @param object Equipment State.
+ * @return One when allocation and initialization succeed; otherwise zero.
+ */
+s32 func_003510C0(EquipListState* object);
 
 
 /**
@@ -493,18 +498,18 @@ u16 func_00348450(void* object);
 
 
 /**
- * @brief Set the value at object offset 0x9C.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the alternate associated window pointer.
+ * @param object Window to update.
+ * @param value Pointer to store.
  */
-void func_00348480(void* object, u32 value);
+void func_00348480(void* object, void* value);
 
 /**
- * @brief Read the value at object offset 0x9C.
- * @param object Object to read.
- * @return Value stored at offset 0x9C.
+ * @brief Return the alternate associated window pointer.
+ * @param object Window to read.
+ * @return Stored alternate associated window pointer.
  */
-u32 func_00348490(void* object);
+void* func_00348490(void* object);
 
 /**
  * @brief Set the value at object offset 0x4.
@@ -521,11 +526,11 @@ void func_003484A0(void* object, u32 value);
 u32 func_003484B0(void* object);
 
 /**
- * @brief Read the value at object offset 0x10.
- * @param object Object to read.
- * @return Value stored at offset 0x10.
+ * @brief Return the nested display container.
+ * @param object Window to read.
+ * @return Stored container pointer.
  */
-u32 func_003484C0(void* object);
+void* func_003484C0(void* object);
 
 /**
  * @brief Read the value at object offset 0xD.
@@ -542,18 +547,18 @@ u8 func_003486B0(void* object);
 void func_003486C0(void* object, u8 value);
 
 /**
- * @brief Read the value at object offset 0x20.
- * @param object Object to read.
- * @return Value stored at offset 0x20.
+ * @brief Read the State's stored window pointer.
+ * @param object Equipment State.
+ * @return Stored window pointer.
  */
-u32 func_003487B0(void* object);
+void* func_003487B0(void* object);
 
 /**
- * @brief Set the value at object offset 0x20.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the State's stored window pointer.
+ * @param object Equipment State.
+ * @param value Window pointer to store.
  */
-void func_003488C0(void* object, u32 value);
+void func_003488C0(void* object, void* value);
 
 /**
  * @brief Toggle the target object's flag byte.
@@ -578,60 +583,53 @@ void func_0034A390(void* object, u8 value);
 s32 func_0034A460(void* object);
 
 /**
- * @brief Read the value at object offset 0x34.
- * @param object Object to read.
- * @return Value stored at offset 0x34.
+ * @brief Return the equipment State's resource source word.
+ * @param object Equipment State.
+ * @return Stored resource source word.
  */
 u32 func_0034A710(void* object);
 
+
+
 /**
- * @brief Store a nested value and select one of two scale settings.
- * @param object Holder of the nested state.
- * @param unused Unused second argument.
- * @param value Value to store and test.
+ * @brief Return the equipment State's record selection.
+ * @param object Equipment State.
+ * @return Stored record selection.
  */
-void func_0034A720(void* object, s32 unused, s32 value);
-
-
-/**
- * @brief Read the value at object offset 0x38.
- * @param object Object to read.
- * @return Value stored at offset 0x38.
- */
-u32 func_0034AC10(void* object);
+FieldRecordSelection* func_0034AC10(void* object);
 
 /**
- * @brief Read the low flag at object offset 0x3C.
- * @param object Object to read.
- * @return Low flag bit.
+ * @brief Return the equipment State's low flag bit.
+ * @param object Equipment State.
+ * @return Stored low flag bit.
  */
 u32 func_003515E0(void* object);
 
 /**
- * @brief Set the value at object offset 0x24.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Store the equipment State's pointer at offset 0x24.
+ * @param object Equipment State.
+ * @param value Pointer to store.
  */
-void func_00351600(void* object, u32 value);
+void func_00351600(void* object, void* value);
 
 /**
- * @brief Read the value at object offset 0x24.
- * @param object Object to read.
- * @return Value stored at offset 0x24.
+ * @brief Return the equipment State's pointer at offset 0x24.
+ * @param object Equipment State.
+ * @return Stored pointer.
  */
-u32 func_00351610(void* object);
+void* func_00351610(void* object);
 
 /**
- * @brief Set the value at object offset 0x28.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Store the equipment State's signed byte at offset 0x28.
+ * @param object Equipment State.
+ * @param value Signed byte to store.
  */
 void func_00351620(void* object, s8 value);
 
 /**
- * @brief Read the value at object offset 0x28.
- * @param object Object to read.
- * @return Value stored at offset 0x28.
+ * @brief Return the equipment State's signed byte at offset 0x28.
+ * @param object Equipment State.
+ * @return Stored signed byte.
  */
 s8 func_00351630(void* object);
 
@@ -643,11 +641,11 @@ s8 func_00351630(void* object);
 void func_003517D0(EquipLinkedList* list, u16 value);
 
 /**
- * @brief Append a word value to the linked list.
+ * @brief Append a category-record pointer to the list.
  * @param list List to update.
- * @param value Value to append.
+ * @param value Category-record pointer, which may be null.
  */
-void func_00351A20(EquipWordList* list, u32 value);
+void func_00351A20(EquipWordList* list, ItemCreationCategoryRecord* value);
 
 /**
  * @brief Append a word value to the linked list.

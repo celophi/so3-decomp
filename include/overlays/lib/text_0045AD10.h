@@ -172,31 +172,31 @@ struct LibObject175140 : public LibClass174EF0
     const char* unkfc;
 };
 
-/** Partial 0x100-byte image widget, with MAIN vtable D_174F20. */
+/** Partial 0x100-byte numeric widget, with MAIN vtable D_174F20. */
 struct LibObject174F20 : public LibClass174EF0
 {
-    /** @brief Initialize the image widget and select widget kind 13. */
+    /** @brief Initialize the numeric widget and select widget kind 13. */
     LibObject174F20()
     {
         unk38 = 13;
     }
-    /** @brief Destroy the image widget. */
+    /** @brief Destroy the numeric widget. */
     virtual ~LibObject174F20();
-    /** @brief Draw the image widget. */
+    /** @brief Draw the numeric widget. */
     virtual void func_00462310();
     /**
-     * @brief Configure an image slot and its rectangle.
+     * @brief Configure the numeric widget and its rectangle.
      * @param x Rectangle origin x.
      * @param y Rectangle origin y.
      * @param width Rectangle width.
      * @param height Rectangle height.
-     * @param value Resource value.
-     * @param slot Image slot index.
-     * @param flag Slot state flag.
+     * @param value Numeric value.
+     * @param slot Slot argument.
+     * @param flag Flag argument.
      * @return Configuration status.
      */
     s32 func_00464D90(float x, float y, float width, float height, u32 value, s32 slot, u8 flag);
-    u32 unkfc;
+    u32 numeric_value;
 };
 /** Item code widget with MAIN vtable at 0x172410. */
 struct LibObject172410 : public LibClass174EF0

@@ -108,7 +108,7 @@ struct ConfigPreviewSection
 /** Partial configuration text window with its message state and bounds. */
 struct ConfigMessageWindow : public FieldClass15AE70
 {
-    void* source;
+    u32 source;
     LibObject178750* text;
     s16 unkb0;
     u8 unkb2;
@@ -353,10 +353,10 @@ static inline u8 config_four_mode(ConfigSettings* settings)
     return value;
 }
 
-/** @brief Initialize a resource widget through its Field resource view. */
+/** @brief Initialize a resource widget. */
 static inline void initialize_preview_resource(ItemCreationOptionResourceDisplay* display, FieldResourceRecord* record, float x, float y)
 {
-    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(display)), record, x, y);
+    func_002D6440(display, record, x, y);
 }
 /** @brief Set an option icon's packed color and mark it active. */
 static inline void set_option_color(ConfigIcon* object, u32 color)
@@ -2166,7 +2166,7 @@ u32 func_0034D8A0(void* object)
     return ((ConfigValue34*)object)->field_34;
 }
 
-s32 func_0034D8B0(ConfigOptions* object, void* associated)
+s32 func_0034D8B0(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2184,7 +2184,7 @@ s32 func_0034D8B0(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2037, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2037, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fc5)
             {
@@ -2201,7 +2201,7 @@ s32 func_0034D8B0(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2038, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2038, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fc6)
             {
@@ -2226,7 +2226,7 @@ s32 func_0034D8B0(ConfigOptions* object, void* associated)
     return 1;
 }
 
-s32 func_0034DB50(ConfigOptions* object, void* associated)
+s32 func_0034DB50(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2244,7 +2244,7 @@ s32 func_0034DB50(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2033, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2033, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fc1)
             {
@@ -2261,7 +2261,7 @@ s32 func_0034DB50(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2034, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2034, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fc2)
             {
@@ -2286,7 +2286,7 @@ s32 func_0034DB50(ConfigOptions* object, void* associated)
     return 1;
 }
 
-s32 func_0034DDF0(ConfigOptions* object, void* associated)
+s32 func_0034DDF0(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2304,7 +2304,7 @@ s32 func_0034DDF0(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2031, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2031, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fbf)
             {
@@ -2321,7 +2321,7 @@ s32 func_0034DDF0(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2032, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2032, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fc0)
             {
@@ -2346,7 +2346,7 @@ s32 func_0034DDF0(ConfigOptions* object, void* associated)
     return 1;
 }
 
-s32 func_0034E090(ConfigOptions* object, void* associated)
+s32 func_0034E090(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2364,7 +2364,7 @@ s32 func_0034E090(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202f, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202f, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fbd)
             {
@@ -2381,7 +2381,7 @@ s32 func_0034E090(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2030, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2030, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fbe)
             {
@@ -2406,7 +2406,7 @@ s32 func_0034E090(ConfigOptions* object, void* associated)
     return 1;
 }
 
-s32 func_0034E330(ConfigOptions* object, void* associated)
+s32 func_0034E330(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2424,7 +2424,7 @@ s32 func_0034E330(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202d, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202d, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fbb)
             {
@@ -2441,7 +2441,7 @@ s32 func_0034E330(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202e, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202e, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fbc)
             {
@@ -2467,7 +2467,7 @@ s32 func_0034E330(ConfigOptions* object, void* associated)
 }
 
 
-s32 func_0034E5D0(ConfigOptions* object, void* associated)
+s32 func_0034E5D0(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2487,7 +2487,7 @@ s32 func_0034E5D0(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2029, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2029, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1FB6)
             {
@@ -2504,7 +2504,7 @@ s32 func_0034E5D0(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202A, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202A, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1FB7)
             {
@@ -2522,7 +2522,7 @@ s32 func_0034E5D0(ConfigOptions* object, void* associated)
         {
             float x = object->unk104;
             object->unka4 += object->unk10c;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202C, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202C, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1FB9)
             {
@@ -2539,7 +2539,7 @@ s32 func_0034E5D0(ConfigOptions* object, void* associated)
         case 3:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x202B, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202B, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             object->unkf4 = new (0) ItemCreationOptionResourceDisplay;
             void* allocation = func_002D3D80(D_001B643C->resources, 0);
@@ -2579,7 +2579,7 @@ ItemCreationClass175110::~ItemCreationClass175110()
 {
 }
 
-s32 func_0034EB40(ConfigOptions* object, void* associated)
+s32 func_0034EB40(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2597,7 +2597,7 @@ s32 func_0034EB40(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2027, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2027, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fb4)
             {
@@ -2614,7 +2614,7 @@ s32 func_0034EB40(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2028, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2028, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fb5)
             {
@@ -2639,7 +2639,7 @@ s32 func_0034EB40(ConfigOptions* object, void* associated)
     return 1;
 }
 
-s32 func_0034EDE0(ConfigOptions* object, void* associated)
+s32 func_0034EDE0(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2657,7 +2657,7 @@ s32 func_0034EDE0(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2025, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2025, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 32.0f);
             if (key == 0x1FB2)
             {
@@ -2676,7 +2676,7 @@ s32 func_0034EDE0(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = 264.0f + object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2026, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2026, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 32.0f);
             if (key == 0x1FB3)
             {
@@ -2701,7 +2701,7 @@ s32 func_0034EDE0(ConfigOptions* object, void* associated)
     return 1;
 }
 
-s32 func_0034F0A0(ConfigOptions* object, void* associated)
+s32 func_0034F0A0(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2719,7 +2719,7 @@ s32 func_0034F0A0(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2023, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2023, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fb0)
             {
@@ -2736,7 +2736,7 @@ s32 func_0034F0A0(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2024, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2024, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fb1)
             {
@@ -2761,7 +2761,7 @@ s32 func_0034F0A0(ConfigOptions* object, void* associated)
     return 1;
 }
 
-s32 func_0034F340(ConfigOptions* object, void* associated)
+s32 func_0034F340(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2779,7 +2779,7 @@ s32 func_0034F340(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201f, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201f, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fac)
             {
@@ -2796,7 +2796,7 @@ s32 func_0034F340(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2020, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2020, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fad)
             {
@@ -2821,7 +2821,7 @@ s32 func_0034F340(ConfigOptions* object, void* associated)
     return 1;
 }
 
-s32 func_0034F5E0(ConfigOptions* object, void* associated)
+s32 func_0034F5E0(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2839,7 +2839,7 @@ s32 func_0034F5E0(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201d, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201d, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1faa)
             {
@@ -2856,7 +2856,7 @@ s32 func_0034F5E0(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201e, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201e, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fab)
             {
@@ -2881,7 +2881,7 @@ s32 func_0034F5E0(ConfigOptions* object, void* associated)
     return 1;
 }
 
-s32 func_0034F880(ConfigOptions* object, void* associated)
+s32 func_0034F880(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2899,7 +2899,7 @@ s32 func_0034F880(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2019, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2019, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1FA6)
             {
@@ -2916,7 +2916,7 @@ s32 func_0034F880(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201A, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201A, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1FA7)
             {
@@ -2934,7 +2934,7 @@ s32 func_0034F880(ConfigOptions* object, void* associated)
         {
             float x = object->unk104;
             object->unka4 += object->unk10c;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201B, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201B, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1FA8)
             {
@@ -2951,7 +2951,7 @@ s32 func_0034F880(ConfigOptions* object, void* associated)
         case 3:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x201C, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201C, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1FA9)
             {
@@ -2976,7 +2976,7 @@ s32 func_0034F880(ConfigOptions* object, void* associated)
     return 1;
 }
 
-s32 func_0034FC70(ConfigOptions* object, void* associated)
+s32 func_0034FC70(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -2994,7 +2994,7 @@ s32 func_0034FC70(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2017, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2017, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fa4)
             {
@@ -3011,7 +3011,7 @@ s32 func_0034FC70(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2018, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2018, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fa5)
             {
@@ -3036,7 +3036,7 @@ s32 func_0034FC70(ConfigOptions* object, void* associated)
     return 1;
 }
 
-s32 func_0034FF10(ConfigOptions* object, void* associated)
+s32 func_0034FF10(ConfigOptions* object, u32 associated)
 {
     if (associated == 0)
     {
@@ -3054,7 +3054,7 @@ s32 func_0034FF10(ConfigOptions* object, void* associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2021, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2021, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1fae)
             {
@@ -3071,7 +3071,7 @@ s32 func_0034FF10(ConfigOptions* object, void* associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2022, 0);
+            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2022, 0);
             func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
             if (key == 0x1faf)
             {
@@ -3118,7 +3118,7 @@ extern "C" void func_0044B570(LibClass1746A0* object, float x, float y, float wi
  */
 extern "C" void func_0044B510(LibClass1746A0* object, u32 flag);
 
-s32 ConfigOptions::func_slotf4(void* associated)
+s32 ConfigOptions::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 11);
     unk28c = new (0) LibClass1725D0;
@@ -3172,7 +3172,7 @@ s32 ConfigOptions::func_slotf4(void* associated)
             positions[position] = 22.0f + positions[i - 1] + spacing;
             break;
         }
-        text->func_004C7FE0(24.0f, positions[position], 0.0f, 0.0f, reinterpret_cast<s32>(associated), i + 0x2008, 1);
+        text->func_004C7FE0(24.0f, positions[position], 0.0f, 0.0f, static_cast<s32>(associated), i + 0x2008, 1);
         text->set_color(0x806080);
         text->unk88 = -1.0f;
         text->unk3c = 1;
@@ -3205,11 +3205,11 @@ s32 ConfigOptions::func_slotf4(void* associated)
         float y = positions[position];
         if (i == 5)
         {
-            text->func_004C7FE0(24.0f, y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x2016, 1);
+            text->func_004C7FE0(24.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0x2016, 1);
         }
         else
         {
-            text->func_004C7FE0(24.0f, y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), i + 0x2010, 1);
+            text->func_004C7FE0(24.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), i + 0x2010, 1);
         }
         text->set_color(0x806080);
         text->unk88 = -1.0f;
@@ -3310,7 +3310,7 @@ ConfigOptions::ConfigOptions()
     unk101 = 0;
 }
 
-s32 func_003514E0(ConfigFrameWindow* object, void* associated)
+s32 func_003514E0(ConfigFrameWindow* object, u32 associated)
 {
     func_002CE8D0(reinterpret_cast<FieldObjectCE8D0*>(object), associated, 16.0f, 72.0f, 11);
     object->frame = new (0) LibClass178630;
@@ -3371,7 +3371,7 @@ void* func_00351BD0(void* object, s32 flags)
     return object;
 }
 
-s32 func_00351C30(ConfigPreviewWindow* object, void* associated)
+s32 func_00351C30(ConfigPreviewWindow* object, u32 associated)
 {
     func_002CE8D0(reinterpret_cast<FieldObjectCE8D0*>(object), associated, 16.0f, 16.0f, 20);
     object->resources[0] = new (0) ItemCreationOptionResourceDisplay;

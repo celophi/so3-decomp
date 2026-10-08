@@ -26,19 +26,19 @@ typedef struct AvailableInventorGrid AvailableInventorGrid;
 class InventoryItemInstanceList : public FieldClass15AD40
 {
 public:
-    /** @brief Clear the row displays and the list flag. */
+    /** @brief Clear the row displays and preview mode. */
     InventoryItemInstanceList()
     {
         for (s32 index = 0; index < 6; index++)
         {
             unk138[index] = 0;
         }
-        unk1b0 = 0;
+        preview_mode = 0;
         FieldClass15AD40();
     }
     /** @brief Release the optional panel and destroy the Field list window. */
     virtual ~InventoryItemInstanceList();
-    /** @brief Release the category container and base window contents. */
+    /** @brief Release the detail container and base window contents. */
     virtual void func_slot0c();
     /** @brief Update the category rows and selected item preview. */
     virtual void func_slot5c();
@@ -53,10 +53,10 @@ public:
     virtual s32 func_slotb8();
     /**
      * @brief Create the category list and item preview displays.
-     * @param associated Object associated with the window.
+     * @param associated Full resource source word.
      * @return Always one.
      */
-    virtual s32 func_slot104(void* associated);
+    virtual s32 func_slot104(u32 associated);
     /**
      * @brief Set the paired display flags and update auxiliary displays.
      * @param value Low byte stored in each paired display flag.
@@ -74,19 +74,26 @@ public:
     struct LibObject172440* unk168[8];
     struct ItemCreationClass172870* unk188;
     struct LibClass178630* unk18c;
-    LibObject178750* unk190;
-    LibObject178750* unk194;
+    /** Item-preview switch control label. */
+    LibObject178750* preview_switch_label;
+    /** Item-list action controls label. */
+    LibObject178750* action_controls_label;
     LibObject178750* unk198;
     u8 unk19c[4];
     LibObject178750* unk1a0;
     LibObject178750* unk1a4;
     struct LibObject172410* unk1a8;
-    LibObject178660* unk1ac;
-    u8 unk1b0;
+    /** Auxiliary container for item-detail widgets. */
+    LibObject178660* detail_container;
+    /** Item-preview mode used by the list callbacks. */
+    u8 preview_mode;
     u8 unk1b1[3];
-    ItemCreationSelectedDisplayState* unk1b4;
-    s32 unk1b8;
-    s32 unk1bc;
+    /** Selection state used by the item-instance list. */
+    ItemCreationSelectedDisplayState* selection_state;
+    /** Copied item-group index used by the list. */
+    s32 item_group_index;
+    /** One-based item-type identifier used by the list. */
+    s32 item_type_id;
 };
 
 class FieldClass153130;
@@ -100,12 +107,12 @@ public:
     StartInventingDialog(ItemCreationSelectedDisplayState* state) : selection_state(0)
     {
         selection_state = state;
-        unkb4 = 0;
+        choice_selector = 0;
         yes_label = 0;
-        unkb0 = 0;
-        unkbc[0] = 0;
-        unkbc[1] = 0;
-        unkbc[2] = 0;
+        no_label = 0;
+        line_development_requests[0] = 0;
+        line_development_requests[1] = 0;
+        line_development_requests[2] = 0;
     }
     /** Destroy the window through Field's window base. */
     virtual ~StartInventingDialog();
@@ -134,16 +141,16 @@ public:
     virtual void func_slotf0();
     /**
      * @brief Create and attach the selection window displays.
-     * @param associated Object associated with the window.
+     * @param associated Full resource source word.
      * @return Always one.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
     LibObject178750* yes_label;
-    LibObject178750* unkb0;
-    FieldClass153130* unkb4;
-    FieldClass153170* unkb8;
-    bool unkbc[3];
+    LibObject178750* no_label;
+    FieldClass153130* choice_selector;
+    FieldClass153170* selection_marker;
+    bool line_development_requests[3];
 };
 
 struct LibObject175140;
@@ -176,24 +183,30 @@ public:
     virtual void func_slotf0();
     /**
      * @brief Create and attach the detail window displays.
-     * @param associated Object associated with the window.
+     * @param associated Full resource source word.
      * @return One when the displays are created; zero when no state is attached.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
     /** @brief Refresh the selected inventor portrait, name and numeric talents. */
     void func_00358850();
     /** Selection state for the inventor information window. */
     ItemCreationSelectedDisplayState* selection_state;
-    ItemCreationOptionResourceDisplay* unkac;
-    LibObject175140* unkb0;
-    LibObject178750* unkb4;
+    /** Selected inventor portrait display. */
+    ItemCreationOptionResourceDisplay* portrait_display;
+    /** Inventor name display backed by selection text. */
+    LibObject175140* name_text_display;
+    /** Inventor name display backed by message keys. */
+    LibObject178750* name_message_display;
     /** Creation-skill label widgets. */
     LibObject178750* skill_labels[9];
     /** Numeric creation-skill talent displays. */
     LibObject174F20* talent_displays[9];
-    u8 unk100;
-    u8 unk101;
-    u16 unk102;
+    /** Cached state used by the information toggle callbacks. */
+    u8 toggle_state;
+    /** Inventor option code used by the information window. */
+    u8 inventor_option_code;
+    /** Cached creation-skill bits for talent display refresh. */
+    u16 skill_mask;
 };
 
 struct LibClass178600;
@@ -233,19 +246,19 @@ public:
     virtual void func_slotf0();
     /**
      * @brief Create and attach the resource window displays.
-     * @param associated Object associated with the window.
+     * @param associated Full resource source word.
      * @return Always one.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
     /**
      * @brief Select the visible resource widgets and the panel size.
      * @param mode Resource display mode.
      * @param unused Unused caller state word.
      */
     void func_003598E0(u16 mode, u32 unused);
-    LibClass178630* unka8;
-    LibObject178750* unkac;
-    LibObject178750* unkb0;
+    LibClass178630* panel;
+    LibObject178750* primary_action_label;
+    LibObject178750* primary_control_label;
     LibObject178750* unkb4;
     LibObject178750* unkb8;
     LibObject178750* unkbc;
@@ -256,7 +269,7 @@ public:
     LibObject174F20* unkd0;
     ItemCreationOptionResourceDisplay* unkd4;
     LibObject174F20* unkd8;
-    float unkdc;
+    float panel_width;
     float unke0;
     float unke4;
 };
@@ -278,8 +291,8 @@ public:
     virtual void func_slot5c();
     /** @brief Set a status message and reset its scroll. @param text_key Absolute text key or signed relative index. */
     virtual void func_slot60(s32 text_key);
-    /** @brief Create the message window widgets. @param associated Associated source. @return One on success, or zero for missing widgets. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the message window widgets. @param associated Full resource source word. @return One on success, or zero for missing widgets. */
+    virtual s32 func_slotf4(u32 associated);
     LibObject178750* heading_text;
     LibObject178750* message_text;
     s32 message_scroll_span;
@@ -307,8 +320,8 @@ public:
     }
     /** @brief Destroy the resource window and its Field base. */
     virtual ~ItemCreationBackground();
-    /** @brief Create and position the three resource displays. @param associated Associated source. @return Always one. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create and position the three resource displays. @param associated Full resource source word. @return Always one. */
+    virtual s32 func_slotf4(u32 associated);
     ItemCreationOptionResourceDisplay* left_display;
     ItemCreationOptionResourceDisplay* middle_display;
     ItemCreationOptionResourceDisplay* right_display;
@@ -339,8 +352,8 @@ public:
     virtual s32 func_slotb0();
     /** @brief Restore the prior display. @return Action status. */
     virtual s32 func_slotb4();
-    /** @brief Create the choice labels and field selection widgets. @param associated Associated source. @return Always one. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the choice labels and field selection widgets. @param associated Full resource source word. @return Always one. */
+    virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
     FieldObject23CEA0* choice_selector;
     FieldObject23BE00* selection_marker;
@@ -364,8 +377,8 @@ public:
     virtual s32 func_slotb0();
     /** @brief Return to the item-group window or restore its parent selection. @return Always two. */
     virtual s32 func_slotb4();
-    /** @brief Create the item-type list widgets and initialize its selection. @param associated Associated source. @return Always one. */
-    virtual s32 func_slot104(void* associated);
+    /** @brief Create the item-type list widgets and initialize its selection. @param associated Full resource source word. @return Always one. */
+    virtual s32 func_slot104(u32 associated);
     /** @brief Refresh twelve item-type rows beginning at the list index. @param start First record index. */
     virtual void refresh_rows(s32 start);
     /** @brief Position the item-type list rows. @param start Base vertical coordinate. */
@@ -408,8 +421,8 @@ public:
     virtual s32 func_slotb0();
     /** @brief Restore the prior item pair and parent window. @return Always two. */
     virtual s32 func_slotb4();
-    /** @brief Create the mode display widgets. @param associated Associated parent. @return Setup status. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the mode display widgets. @param associated Full resource source word. @return Setup status. */
+    virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* unka8;
     FieldClass153130* unkac;
     FieldClass153170* unkb0;
@@ -452,10 +465,10 @@ public:
     virtual s32 func_slotb4();
     /**
      * @brief Create the two choice displays and their selection widgets.
-     * @param associated Object associated with the window.
+     * @param associated Full resource source word.
      * @return Zero without a parent, otherwise one.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
     AssignedInventorGrid* unka8;
     u8 unkac;
     u8 unkad[0x3];
@@ -493,10 +506,10 @@ public:
     virtual s32 func_slotb4();
     /**
      * @brief Create the eight creation-skill labels and their selection widgets.
-     * @param associated Object associated with the window.
+     * @param associated Full resource source word.
      * @return Zero without a parent, otherwise one.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
     AssignedInventorGrid* unkac;
     LibClass178630* panel;
@@ -521,8 +534,8 @@ public:
     }
     /** Destroy the window through Field's window base. */
     virtual ~WorkshopFacilitiesWindow();
-    /** @brief Create the workshop-facility panel and eight skill labels. @param associated Object associated with the window. @return Always one. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the workshop-facility panel and eight skill labels. @param associated Full resource source word. @return Always one. */
+    virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
     u8 unkac;
     u8 unkad[3];
@@ -539,8 +552,8 @@ public:
     }
     /** Destroy the window through Field's window base. */
     virtual ~WorkshopNameWindow();
-    /** @brief Create the panel and name label for the current workshop. @param associated Object associated with the window. @return Zero without selection state, otherwise one. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the panel and name label for the current workshop. @param associated Full resource source word. @return Zero without selection state, otherwise one. */
+    virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
 };
 
@@ -578,8 +591,8 @@ public:
     virtual s32 func_slotb0();
     /** @brief Apply the three selected components. @return Action status. */
     virtual s32 func_slotbc();
-    /** @brief Create the selection displays. @param associated Associated window. @return Initialization status. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the selection displays. @param associated Full resource source word. @return Initialization status. */
+    virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* unka8;
     FieldObject23CEA0* unkac;
     FieldObject23CEA0* unkb0;
@@ -634,8 +647,8 @@ public:
     virtual s32 func_slotb0();
     /** @brief Handle the callback at native slot 0xb4. @return Callback result. */
     virtual s32 func_slotb4();
-    /** @brief Construct the panel widgets. @param associated Associated window. @return One on success, zero without an active state. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Construct the panel widgets. @param associated Full resource source word. @return One on success, zero without an active state. */
+    virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* unka8;
     /** One-based workshop ID selecting the expansion-price table. */
     u8 workshop_id;
@@ -670,10 +683,10 @@ public:
     virtual void func_slot5c();
     /**
      * @brief Construct the assigned and available option displays.
-     * @param associated Object associated with the window.
+     * @param associated Full resource source word.
      * @return One when the selection state is present, otherwise zero.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
     struct ItemCreationOptionResourceDisplay* unka8[9];
     struct ItemCreationOptionResourceDisplay* unkcc[14];
     FieldClass15B200* unk104[7];
@@ -725,7 +738,7 @@ public:
     virtual void func_slotac();
     virtual s32 func_slotb0();
     virtual s32 func_slotb4();
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* unka8;
     FieldObject23CEA0* unkac;
     FieldObject23CEA0* unkb0;

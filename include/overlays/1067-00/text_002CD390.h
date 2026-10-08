@@ -215,25 +215,25 @@ public:
     virtual void func_slot0c();
     /**
      * @brief Create the nested display at the supplied coordinates.
-     * @param associated Object associated with the window.
+     * @param associated Full resource source word.
      * @param x Horizontal coordinate.
      * @param y Vertical coordinate.
      * @param code Nested display initializer code.
-     * @return One when the nested display and associated object are present, or zero otherwise.
+     * @return One when the nested display is present and the source word is nonzero, or zero otherwise.
      */
-    virtual s32 func_slot10(void* associated, float x, float y, s32 code);
+    virtual s32 func_slot10(u32 associated, float x, float y, s32 code);
     /**
      * @brief Create the nested container with the supplied modes and coordinates.
-     * @param associated Opaque value associated with the window.
+     * @param associated Full resource source word.
      * @param first First container mode.
      * @param second Second container mode.
      * @param third Third container mode.
      * @param x Horizontal coordinate.
      * @param y Vertical coordinate.
      * @param z Third transform coordinate.
-     * @return One when the container and associated value are present, or zero otherwise.
+     * @return One when the container is present and the source word is nonzero, or zero otherwise.
      */
-    virtual s32 func_slot14(void* associated, s32 first, s32 second, s32 third, float x, float y, float z);
+    virtual s32 func_slot14(u32 associated, s32 first, s32 second, s32 third, float x, float y, float z);
     /**
      * @brief Set display flags on the selected window lists.
      * @param flag Flag word forwarded to grids; its low byte updates other displays.
@@ -273,8 +273,8 @@ public:
     virtual void* func_slot4c();
     /** @brief Store the opaque source word. @param value Word to store. */
     virtual void func_slot50(u32 value);
-    /** @brief Return the stored opaque source pointer. @return Stored pointer. */
-    virtual void* func_slot54();
+    /** @brief Return the stored resource source word. @return Stored word. */
+    virtual u32 func_slot54();
     /** @brief Return the nested display container. @return Stored container. */
     virtual LibObject178660* func_slot58();
     virtual void func_slot5c();
@@ -366,7 +366,7 @@ class FieldClass15AD40 : public FieldClass15AE70, public FieldClass15AE60
 public:
     FieldClass15AD40();
     virtual ~FieldClass15AD40();
-    virtual s32 func_slot104(void* associated);
+    virtual s32 func_slot104(u32 associated);
     /** @brief Refresh the list for a category. @param category Category byte supplied by the associated state. */
     virtual void func_slot108(u8 category);
     /**
@@ -438,15 +438,15 @@ int func_002CD9E0(void* object);
 void func_002CE510(FieldBytePtr10* object, u32 value);
 
 /**
- * @brief Create a nested display and initialize it with the associated object and coordinates.
+ * @brief Create a nested display and initialize it with the resource source word and coordinates.
  * @param object Receiver that owns the nested display.
- * @param associated Associated object forwarded to the receiver's handler.
+ * @param associated Full resource source word.
  * @param x Horizontal coordinate.
  * @param y Vertical coordinate.
  * @param code Value forwarded to the nested display initializer.
- * @return One when the nested display and associated object are present, or zero otherwise.
+ * @return One when the nested display is present and the source word is nonzero, or zero otherwise.
  */
-s32 func_002CE8D0(FieldObjectCE8D0* object, void* associated, float x, float y, s32 code);
+s32 func_002CE8D0(FieldObjectCE8D0* object, u32 associated, float x, float y, s32 code);
 
 #ifdef __cplusplus
 }

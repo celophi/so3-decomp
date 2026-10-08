@@ -99,8 +99,8 @@ struct ConfigOptions : public FieldClass15AE70
     virtual s32 func_slotb0();
     /** @brief Handle virtual slot 0xB4. @return Handler result. */
     virtual s32 func_slotb4();
-    /** @brief Create the option displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the option displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     void* unka8;
     LibClass175030* scroll;
     u8 unkb0;
@@ -168,114 +168,114 @@ extern "C" {
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034FC70(ConfigOptions* object, void* associated);
+s32 func_0034FC70(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034F880(ConfigOptions* object, void* associated);
+s32 func_0034F880(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034F5E0(ConfigOptions* object, void* associated);
+s32 func_0034F5E0(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034F340(ConfigOptions* object, void* associated);
+s32 func_0034F340(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034FF10(ConfigOptions* object, void* associated);
+s32 func_0034FF10(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034F0A0(ConfigOptions* object, void* associated);
+s32 func_0034F0A0(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034EDE0(ConfigOptions* object, void* associated);
+s32 func_0034EDE0(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034EB40(ConfigOptions* object, void* associated);
+s32 func_0034EB40(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034E5D0(ConfigOptions* object, void* associated);
+s32 func_0034E5D0(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034E330(ConfigOptions* object, void* associated);
+s32 func_0034E330(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034E090(ConfigOptions* object, void* associated);
+s32 func_0034E090(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034DDF0(ConfigOptions* object, void* associated);
+s32 func_0034DDF0(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034DB50(ConfigOptions* object, void* associated);
+s32 func_0034DB50(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Create the option row displays.
  * @param object Configuration options window.
- * @param associated Associated resource handle.
+ * @param associated Full resource source word.
  * @return One after creation, or zero without an associated resource.
  */
-s32 func_0034D8B0(ConfigOptions* object, void* associated);
+s32 func_0034D8B0(ConfigOptions* object, u32 associated);
 
 /**
  * @brief Color the option rows, distinguishing the selected row and disabled row twelve.
@@ -1156,10 +1156,10 @@ void func_003520C0(ConfigControlReceiver* object);
 /**
  * @brief Create and attach the configuration window's panel.
  * @param object Configuration panel window.
- * @param associated Object associated with the window.
+ * @param associated Full resource source word.
  * @return Always one.
  */
-s32 func_003514E0(ConfigFrameWindow* object, void* associated);
+s32 func_003514E0(ConfigFrameWindow* object, u32 associated);
 
 /**
  * @brief Load a completed resource and finish configuration receiver setup.
@@ -1172,10 +1172,10 @@ s32 func_00352330(ConfigControlReceiver* object, void* buffer);
 /**
  * @brief Create and attach the configuration preview's resource widgets.
  * @param object Configuration preview window.
- * @param associated Associated Field window object.
+ * @param associated Full resource source word.
  * @return Always one after initialization.
  */
-s32 func_00351C30(ConfigPreviewWindow* object, void* associated);
+s32 func_00351C30(ConfigPreviewWindow* object, u32 associated);
 
 /**
  * @brief Update the configuration preview origin, position, and scale from the saved display flag.

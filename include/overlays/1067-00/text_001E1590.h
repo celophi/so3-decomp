@@ -243,10 +243,10 @@ public:
      */
     virtual s8 func_00263CB0();
     /**
-     * @brief Return the default handler pointer.
-     * @return Null.
+     * @brief Return the default resource source word.
+     * @return Zero.
      */
-    virtual void* func_00263CC0();
+    virtual u32 func_00263CC0();
     /**
      * @brief Update the callback receiver.
      */

@@ -2,23 +2,13 @@
 #define SO3_OVERLAYS_LIB_TEXT_004095C0_H
 
 #include "types.h"
+#include "main/item_category.h"
 
 typedef struct FieldRecord FieldRecord;
 
 typedef struct ItemCreationAllocationRecord ItemCreationAllocationRecord;
 
-typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
 typedef struct ItemCreationCategoryDefinition ItemCreationCategoryDefinition;
-
-/** Twelve-byte category entry containing its list head and catalog index. */
-struct ItemCreationCategoryRecord
-{
-    s16 allocation_list_head;
-    u16 catalog_index;
-    u8 unk04[4];
-    u8 unk08;
-    u8 unk09[3];
-};
 
 /** Thirty-two-byte catalog entry containing the three mode-selection fields. */
 struct ItemCreationCategoryDefinition
