@@ -843,7 +843,7 @@ TacticsWindow18B620::~TacticsWindow18B620()
 {
 }
 
-s32 TacticsWindow18B720::func_slotf4(void* associated)
+s32 TacticsWindow18B720::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 20);
     ItemCreationOptionResourceDisplay* first = new (0) ItemCreationOptionResourceDisplay;
@@ -856,9 +856,9 @@ s32 TacticsWindow18B720::func_slotf4(void* associated)
     first->unkd0 = 11;
     second->unkd0 = 11;
     third->unkd0 = 11;
-    func_002D6440(reinterpret_cast<FieldState2D6410*>(first), func_002D3CC0(D_001B643C->resources, 5), 0.0f, 0.0f);
-    func_002D6440(reinterpret_cast<FieldState2D6410*>(second), func_002D3CC0(D_001B643C->resources, 6), 256.0f, 0.0f);
-    func_002D6440(reinterpret_cast<FieldState2D6410*>(third), func_002D3CC0(D_001B643C->resources, 7), 512.0f, 0.0f);
+    func_002D6440(first, func_002D3CC0(D_001B643C->resources, 5), 0.0f, 0.0f);
+    func_002D6440(second, func_002D3CC0(D_001B643C->resources, 6), 256.0f, 0.0f);
+    func_002D6440(third, func_002D3CC0(D_001B643C->resources, 7), 512.0f, 0.0f);
     func_004C6190(unk10, first);
     func_004C6190(unk10, second);
     func_004C6190(unk10, third);

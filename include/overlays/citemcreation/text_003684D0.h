@@ -59,8 +59,8 @@ typedef struct ItemCreationSelectedDisplayState
     virtual s8 func_00263CB0();
     /** @brief Read the selected-display state flag. @return Stored state flag. */
     virtual u8 func_00261D20();
-    /** @brief Return the associated state pointer. @return Stored pointer. */
-    virtual void* func_00263CC0();
+    /** @brief Read the resource source word. @return Stored word. */
+    virtual u32 func_00263CC0();
     /**
      * @brief Set a slot, consume an available category record, and reset its status bytes.
      * @param index Slot index from zero through two.
@@ -78,7 +78,7 @@ typedef struct ItemCreationSelectedDisplayState
 #else
     u8 unk00[0x34];
 #endif
-    void* unk34;
+    u32 unk34;
     /** @brief Readiness byte set after the entry screen setup. */
     u8 window_setup_ready;
     u8 unk39[3];
@@ -268,9 +268,11 @@ typedef struct ItemCreationSelection
     ItemCreationSelection();
 #endif
     ItemCreationFloatPair workshop_map_positions[12];
-    u8 unk60[12];
-    u8 unk6c;
-    u8 unk6d[12];
+    u8 workshop_selection_flags[12];
+    /** Workshop ID used by the map selection. */
+    u8 selected_workshop_id;
+    /** Navigation index for each workshop map entry. */
+    u8 workshop_navigation_indices[12];
     u8 unk79;
 #ifdef __cplusplus
     /** @brief Destroy the selection state. */

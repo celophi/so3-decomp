@@ -3,6 +3,7 @@
 #include "main/resident_data.h"
 #include "overlays/1067-00/text_0028E240.h"
 #include "overlays/1067-00/text_0023B1D0.h"
+#include "overlays/1067-00/grid_marker.h"
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_001E1590.h"
 #include "overlays/lib/text_004BD360.h"
@@ -57,21 +58,7 @@ typedef struct SkillVector4
     float w;
 } SkillVector4;
 
-/** Partial vector receiver with a change flag. */
-typedef struct SkillTransform
-{
-    u8 unk00[0x30];
-    SkillVector4 unk30;
-    u8 unk40[0x10];
-    u8 dirty;
-} SkillTransform;
 
-/** Partial receiver containing a selectable display object. */
-typedef struct SkillSelection
-{
-    u8 unk00[0xB0];
-    FieldObject23CEA0* display;
-} SkillSelection;
 
 typedef struct RecordWithMethods
 {
@@ -83,8 +70,8 @@ struct StatusDetail;
 /** Partial selected-record window with text and protected-value displays. */
 struct SkillProtectedDisplay : public FieldClass15AE70
 {
-    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     FieldRecordSelection* selection;
     LibObject175140* text;
     u8 unkb0[4];
@@ -94,8 +81,8 @@ struct SkillProtectedDisplay : public FieldClass15AE70
 /** Partial controller list window, created by func_00364670. */
 struct SkillOwnerListWindow : public FieldClass15AE70
 {
-    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     u8 unka8[0x18];
     LibClass178600* first;
     LibClass178600* second;
@@ -115,8 +102,8 @@ struct SkillResourceWindow : FieldClass15AE70
     virtual void func_slot5c();
     /** @brief Ignore the window message key. @param key Unused signed message key. */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the display widgets. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the display widgets. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     u32 unka8;
 };
 
@@ -131,8 +118,8 @@ struct SkillStatusMessageWindow : FieldClass15AE70
     virtual ~SkillStatusMessageWindow();
     /** @brief Handle a window message key. @param key Signed message key. */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the display widgets. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the display widgets. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
 };
 
 /** Message window associated with the mode display. */
@@ -146,8 +133,8 @@ struct SkillModeMessageWindow : FieldClass15AE70
     virtual ~SkillModeMessageWindow();
     /** @brief Handle a window message key. @param key Signed message key. */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the display widgets. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the display widgets. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
 };
 
 /** Partial receiver with primary and Field callback interfaces. */
@@ -155,7 +142,7 @@ struct SkillQueueOwner : public RecordWithMethods, public FieldClass153E30
 {
     u8 kind;
     u8 unk39[3];
-    void* associated;
+    u32 associated;
     u8 active;
     u8 unk41[3];
     FieldRecordSelection* mode_records;
@@ -208,8 +195,8 @@ struct SkillDualSelection : public FieldClass15AE70
     virtual s32 func_slotd8();
     /** @brief Leave the grid selection unchanged. @return Zero. */
     virtual s32 func_slotdc();
-    /** @brief Initialize both grids. @param associated Associated source word. @return One on success; zero on allocation failure. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize both grids. @param associated Full resource source word. @return One on success; zero on allocation failure. */
+    virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* first;
     FieldObject23CEA0* second;
     FieldObject23BE00* first_display;
@@ -261,8 +248,8 @@ struct SkillModeSelection : public FieldClass15AE70
     virtual s32 func_slotd8();
     /** @brief Leave the mode window unchanged. @return Zero. */
     virtual s32 func_slotdc();
-    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     u8 state;
     u8 animation_mode;
     u8 unkaa[2];
@@ -304,13 +291,13 @@ struct SkillGridChoice : public FieldClass15AE70
     virtual ~SkillGridChoice();
     /**
      * @brief Create the choice panel, text widgets, and two-entry grid.
-     * @param associated Opaque source word also used as the text slot index.
+     * @param associated Full resource source word.
      * @param x Horizontal coordinate.
      * @param y Vertical coordinate.
      * @param code Base display code.
      * @return One after setup, or zero when an allocation fails.
      */
-    virtual s32 func_slot10(void* associated, float x, float y, s32 code);
+    virtual s32 func_slot10(u32 associated, float x, float y, s32 code);
     /** @brief Refresh the current grid choice. */
     virtual void func_slot5c();
     /** @brief Leave the current choice message unchanged. @param text_key Unused message key. */
@@ -365,8 +352,8 @@ struct SkillSecondarySelection : FieldClass15AE70
     virtual s32 func_slotd8();
     /** @brief Cycle the status record in direction one. @return Selection event code. */
     virtual s32 func_slotdc();
-    /** @brief Initialize the display widgets. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the display widgets. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     SkillQueueOwner* owner;
     FieldObject23CEA0* selection;
     s16 code;
@@ -384,20 +371,20 @@ struct SkillSecondarySelection : FieldClass15AE70
 /** Partial four-row window with its record selection, grid, and cursor display. */
 struct SkillFourRowSelection : public FieldClass15AE70
 {
-    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     FieldRecordSelection* records;
     FieldObject23CEA0* selection;
     FieldClass15AE70* message;
     StatusOwner003580D0* status;
     u8 unkb8[8];
-    LibClass178600* first_display;
-    LibClass178600* second_display;
-    LibClass178600* third_display;
+    LibObject178750* first_display;
+    LibObject178750* second_display;
+    LibClass172870* third_display;
     FieldObject23BE00* cursor;
-    LibClass178600* first_rows[4];
-    LibClass178600* second_rows[4];
-    LibClass178600* third_rows[4];
+    LibObject174F20* first_rows[4];
+    LibObject174F20* second_rows[4];
+    LibObject178750* third_rows[4];
     u8 flag;
 };
 
@@ -566,8 +553,8 @@ typedef struct StatusOwner003580D0 : public FieldClass15AE70
     virtual void func_slot5c();
     /** @brief Ignore the supplied message key. @param key Unused signed message key. */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     FieldRecordSelection* selection;
     LibObject175140* portrait;
     LibObject178750* first_label;
@@ -725,8 +712,8 @@ struct SkillOptionsWindow : public FieldClass15AE70
     virtual s32 func_slotb0();
     /** @brief Restore the associated window. @return Two after cancellation. */
     virtual s32 func_slotb4();
-    /** @brief Create the option displays. @param associated Associated source object. @return Setup status. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the option displays. @param associated Full resource source word. @return Setup status. */
+    virtual s32 func_slotf4(u32 associated);
     FieldRecordSelection* records;
     SkillCoordinateSelector* child;
     float x;
@@ -744,11 +731,6 @@ struct SkillOptionsWindow : public FieldClass15AE70
     s32 selected_index;
 };
 
-typedef struct Record0035BE50
-{
-    u8 unk00[0x44];
-    FieldRecordSelection* selection;
-} Record0035BE50;
 
 typedef struct Record0035DDE0
 {
@@ -765,31 +747,11 @@ typedef struct Record0035DE40
 /** Grid selection state used by the mode query. */
 typedef FieldObject23CEA0 QuerySelection;
 
-typedef struct QueryDisplay
-{
-    u8 unk00[0x3F];
-    u8 flag;
-} QueryDisplay;
-
-/** The two display recipients reached by the mode query. */
-typedef struct QueryStatus
-{
-    u8 unk00[0x10C];
-    QueryDisplay* first;
-    QueryDisplay* second;
-} QueryStatus;
-
-typedef struct QueryParent
-{
-    u8 unk00[0x50];
-    QueryStatus* status;
-} QueryParent;
-
 /** Partial mode-query receiver with a six-element signed mode table. */
 typedef struct Record00352B30 : public FieldClass15AE70
 {
-    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     QuerySelection* selection;
     s16 unkac[5];
     u8 unkb6[0xE];
@@ -801,7 +763,7 @@ typedef struct Record00352B30 : public FieldClass15AE70
     s32 values[12];
     s32 unk104;
     s16 modes[6];
-    QueryParent* parent;
+    SkillQueueOwner* parent;
 } Record00352B30;
 
 typedef struct Record0035D4A0
@@ -828,8 +790,8 @@ typedef struct ListItem0035CCE0
 /** Partial receiver holding two arrays of 30 paired display items. */
 typedef struct Record003619C0 : public FieldClass15AE70
 {
-    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     u8 unka8[4];
     FieldRecordSelection* records;
     FieldObject23CEA0* selection;
@@ -847,13 +809,6 @@ typedef struct ListNode0035CCE0
     ListItem0035CCE0* value;
     struct ListNode0035CCE0* next;
 } ListNode0035CCE0;
-
-/** Partial metric storage returned for a display item. */
-typedef struct DisplayMetrics
-{
-    u8 unk00[8];
-    float unk08;
-} DisplayMetrics;
 
 /** Partial status attachment exposing its activity byte. */
 struct SkillStatusAttachment
@@ -887,8 +842,8 @@ typedef struct Record003538F0 : public FieldClass15AE70
     virtual s32 func_slotd8();
     /** @brief Cycle the status record in direction one. @return Record-change event code. */
     virtual s32 func_slotdc();
-    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     SkillStatusAttachment* attachment;
     FieldObject23CEA0* selection;
     FieldObject23BAB0* display;
@@ -918,8 +873,8 @@ typedef struct Record003538F0 : public FieldClass15AE70
 /** Partial display receiver with counter and horizontal position controls. */
 typedef struct Record0035A560 : public FieldClass15AE70
 {
-    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     LibObject178750* display;
     s32 limit;
     u8 unkb0[2];
@@ -933,47 +888,11 @@ typedef struct Record0035A560 : public FieldClass15AE70
     s32 mode;
 } Record0035A560;
 
-/** Partial display owner exposing the position used by grid setup. */
-typedef struct SkillDisplayOwner
-{
-    u8 unk00[0x40];
-    float x;
-    float y;
-} SkillDisplayOwner;
-
-/** Partial receiver containing two grid targets and their display objects. */
-typedef struct Record0034B190
-{
-    u8 unk00[0x10];
-    SkillDisplayOwner* owner;
-    u8 unk14[0x60];
-    SkillList display_list;
-    u8 unk7c[0x10];
-    SkillList item_list;
-    u8 unk94[0x14];
-    FieldObject23CEB0* first_grid;
-    FieldObject23CEB0* second_grid;
-    FieldObject23BE00* first_display;
-    FieldObject23BE00* second_display;
-    u8 unkb8[8];
-    float first_spacing;
-    float second_spacing;
-    u8 unkc8[0x20];
-    float first_x;
-    float first_y;
-    float second_x;
-    float second_y;
-} Record0034B190;
 
 
 
 
 
-typedef struct ListOwner0035CCE0
-{
-    u8 unk00[0x2C];
-    ListNode0035CCE0* head;
-} ListOwner0035CCE0;
 
 
 
@@ -1199,59 +1118,114 @@ static inline Record00361060* release_record175030(Record00361060* record, s16 f
     return record;
 }
 
-void func_00348400(u8* object, u8 value)
+/**
+ * @brief Write the 8-bit field at offset 0xC.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_00348400(FieldClass15AE70* object, u8 value)
 {
-    object[0xC] = value;
+    object->unk0c = value;
 }
 
-u8 func_00348410(u8* object)
+/**
+ * @brief Read the 8-bit field at offset 0xC.
+ * @param object Receiver storage.
+ * @return Field value.
+ */
+u8 func_00348410(FieldClass15AE70* object)
 {
-    return object[0xC];
+    return object->unk0c;
 }
 
-void func_00348420(u8* object, u8 value)
+/**
+ * @brief Write the 8-bit field at offset 0x8.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_00348420(FieldClass15AE70* object, u8 value)
 {
-    object[0x8] = value;
+    object->unk08 = value;
 }
 
-u8 func_00348430(u8* object)
+/**
+ * @brief Read the 8-bit field at offset 0x8.
+ * @param object Receiver storage.
+ * @return Field value.
+ */
+u8 func_00348430(FieldClass15AE70* object)
 {
-    return object[0x8];
+    return object->unk08;
 }
 
-void func_00348440(u8* object, u16 value)
+/**
+ * @brief Write the 16-bit field at offset 0xA.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_00348440(FieldClass15AE70* object, u16 value)
 {
-    *(u16*)(object + 0xA) = value;
+    object->unk0a = value;
 }
 
-u16 func_00348450(u8* object)
+/**
+ * @brief Read the 16-bit field at offset 0xA.
+ * @param object Receiver storage.
+ * @return Field value.
+ */
+u16 func_00348450(FieldClass15AE70* object)
 {
-    return *(u16*)(object + 0xA);
+    return object->unk0a;
 }
 
-void func_00348480(u8* object, u32 value)
+/**
+ * @brief Store the alternate associated pointer.
+ * @param object Window receiver.
+ * @param value Pointer to store.
+ */
+void func_00348480(FieldClass15AE70* object, void* value)
 {
-    *(u32*)(object + 0x9C) = value;
+    object->unk9c = value;
 }
 
-u32 func_00348490(u8* object)
+/**
+ * @brief Return the alternate associated pointer.
+ * @param object Window receiver.
+ * @return Stored pointer.
+ */
+void* func_00348490(FieldClass15AE70* object)
 {
-    return *(u32*)(object + 0x9C);
+    return object->unk9c;
 }
 
-void func_003484A0(u8* object, u32 value)
+/**
+ * @brief Write the 32-bit field at offset 0x4.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_003484A0(FieldClass15AE70* object, u32 value)
 {
-    *(u32*)(object + 0x4) = value;
+    object->unk04 = value;
 }
 
-u32 func_003484B0(u8* object)
+/**
+ * @brief Read the 32-bit field at offset 0x4.
+ * @param object Receiver storage.
+ * @return Field value.
+ */
+u32 func_003484B0(FieldClass15AE70* object)
 {
-    return *(u32*)(object + 0x4);
+    return object->unk04;
 }
 
-u32 func_003484C0(u8* object)
+/**
+ * @brief Return the nested display container.
+ * @param object Window receiver.
+ * @return Stored container pointer.
+ */
+LibObject178660* func_003484C0(FieldClass15AE70* object)
 {
-    return *(u32*)(object + 0x10);
+    return object->unk10;
 }
 
 void func_003484D0(void* object)
@@ -1402,14 +1376,24 @@ void func_003486E0(void* object)
 {
 }
 
-u8 func_003486F0(u8* object)
+/**
+ * @brief Read the 8-bit field at offset 0xD.
+ * @param object Receiver storage.
+ * @return Field value.
+ */
+u8 func_003486F0(FieldClass15AE70* object)
 {
-    return object[0xD];
+    return object->unk0d;
 }
 
-void func_00348700(u8* object, u8 value)
+/**
+ * @brief Write the 8-bit field at offset 0xD.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_00348700(FieldClass15AE70* object, u8 value)
 {
-    object[0xD] = value;
+    object->unk0d = value;
 }
 
 void func_00348710(void* object)
@@ -1425,8 +1409,8 @@ struct SkillComparisonDisplay : FieldClass15AE70
     virtual ~SkillComparisonDisplay();
     /** @brief Set the comparison title key. @param key Signed message key. */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the window displays. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     LibObject178750* title;
     u32 unkac;
     LibObject178750* item_label;
@@ -1525,7 +1509,7 @@ static inline void clear_comparison_rate(SkillComparisonDisplay* object)
  */
 static inline void comparison_value(LibObject174F20* image, s32 value)
 {
-    image->unkfc = value;
+    image->numeric_value = value;
     image->unk3c = 1;
 }
 void func_00348720(FieldClass15AE70* receiver)
@@ -1637,8 +1621,8 @@ struct SkillTextReceiver : FieldClass15AE70
     virtual ~SkillTextReceiver();
     /** @brief Handle a window message key. @param key Signed message key. */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the display widgets. @param associated Associated source word. @return Initialization result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Initialize the display widgets. @param associated Full resource source word. @return Initialization result. */
+    virtual s32 func_slotf4(u32 associated);
     LibObject178750* display;
     LibObject178750* first_choice;
     LibObject178750* second_choice;
@@ -1652,7 +1636,7 @@ void func_00348CB0(SkillComparisonDisplay* record, u32 key)
 {
     if (record->title != 0)
     {
-        void* source = record->func_slot54();
+        u32 source = record->func_slot54();
         func_4C6DF0(record->title, source, key, 0);
     }
 }
@@ -1706,7 +1690,7 @@ void func_00349920(u8* object, s32 mode)
     }
 }
 
-s32 func_003499B0(SkillTextReceiver* object, void* associated)
+s32 func_003499B0(SkillTextReceiver* object, u32 associated)
 {
     object->FieldClass15AE70::func_slot10(associated, 320.0f, 176.0f, 15);
     object->display = new (0) LibObject178750;
@@ -1897,63 +1881,73 @@ void func_0034B090(SkillDualSelection* object)
     }
 }
 
-s32 func_0034B190(Record0034B190* record)
+/**
+ * @brief Configure the second grid and register its newly allocated display object.
+ * @param record Receiver containing the second grid and display owner.
+ * @return One after setup, otherwise zero without the second grid.
+ */
+s32 func_0034B190(SkillDualSelection* record)
 {
     float x;
     float y;
     FieldObject23BE00* display;
-    if (record->second_grid == 0)
+    if (record->second == 0)
     {
         return 0;
     }
-    x = record->owner->x + record->second_x;
-    y = record->owner->y + record->second_y;
+    x = record->unk10->unk20.components[0] + record->second_x;
+    y = record->unk10->unk20.components[1] + record->second_y;
     display = (FieldObject23BE00*)::operator new(108, 0);
     if (display != 0)
     {
         display = func_0023BE00(display);
     }
     record->second_display = display;
-    func_0023BB20(record->second_display, record->second_grid, 0x808080, record->second_x, record->second_y, 96.0f, 1.0f);
-    func_4C6190(record->owner, record->second_display);
-    func_0035C440(&record->item_list, record->second_display);
-    func_0023CE80((FieldObject23CE80*)record->second_grid, 1, 2);
-    func_0023CE60((FieldObject23CE80*)record->second_grid, 0.0f, record->second_spacing);
-    record->second_grid->unkF2 = 0;
-    record->second_grid->unk119 = 1;
-    func_0023CF50(record->second_grid, 0, x, y);
-    func_0023CEA0((FieldObject23CEA0*)record->second_grid, 0);
-    func_0035C4D0(&record->display_list, record->second_grid);
+    func_0023BB20(record->second_display, reinterpret_cast<FieldObject23CEB0*>(record->second), 0x808080, record->second_x, record->second_y, 96.0f, 1.0f);
+    func_4C6190(record->unk10, record->second_display);
+    func_0035C440(reinterpret_cast<SkillList*>(&record->unk8c), record->second_display);
+    func_0023CE80((FieldObject23CE80*)record->second, 1, 2);
+    func_0023CE60((FieldObject23CE80*)record->second, 0.0f, record->second_spacing);
+    record->second->unkF2 = 0;
+    record->second->unk119 = 1;
+    func_0023CF50(reinterpret_cast<FieldObject23CEB0*>(record->second), 0, x, y);
+    func_0023CEA0(record->second, 0);
+    func_0035C4D0(reinterpret_cast<SkillList*>(&record->unk74), record->second);
     return 1;
 }
 
-s32 func_0034B2C0(Record0034B190* record)
+/**
+ * @brief Configure the first grid and register its newly allocated display object.
+ * @param record Receiver containing the first grid and display owner.
+ * @return One after setup, otherwise zero without the first grid.
+ */
+s32 func_0034B2C0(SkillDualSelection* record)
 {
     float x;
     float y;
     FieldObject23BE00* display;
-    if (record->first_grid == 0)
+    if (record->first == 0)
     {
         return 0;
     }
-    x = record->owner->x + record->first_x;
-    y = record->owner->y + record->first_y;
+    x = record->unk10->unk20.components[0] + record->first_x;
+    y = record->unk10->unk20.components[1] + record->first_y;
     display = (FieldObject23BE00*)::operator new(108, 0);
     if (display != 0)
     {
         display = func_0023BE00(display);
     }
     record->first_display = display;
-    func_0023BB20(record->first_display, record->first_grid, 0x808080, record->first_x, record->first_y, 48.0f, 1.0f);
-    func_4C6190(record->owner, record->first_display);
-    func_0035C440(&record->item_list, record->first_display);
-    func_0023CE80((FieldObject23CE80*)record->first_grid, 1, 7);
-    func_0023CE60((FieldObject23CE80*)record->first_grid, 0.0f, record->first_spacing);
-    record->first_grid->unkF2 = 0;
-    record->first_grid->unk119 = 1;
-    func_0023CF50(record->first_grid, 0, x, y);
-    func_0023CEA0((FieldObject23CEA0*)record->first_grid, 0);
-    func_0035C4D0(&record->display_list, record->first_grid);
+    func_0023BB20(record->first_display, reinterpret_cast<FieldObject23CEB0*>(record->first), 0x808080, record->first_x, record->first_y, 48.0f, 1.0f);
+    func_4C6190(record->unk10, record->first_display);
+    func_0035C440(reinterpret_cast<SkillList*>(&record->unk8c), record->first_display);
+    func_0023CE80((FieldObject23CE80*)record->first, 1, 7);
+    func_0023CE60((FieldObject23CE80*)record->first, 0.0f, record->first_spacing);
+    record->first->unkF2 = 0;
+    record->first->unk119 = 1;
+    func_0023CF50(reinterpret_cast<FieldObject23CEB0*>(record->first), 0, x, y);
+    func_0023CEA0(record->first, 0);
+    func_0035C4D0(reinterpret_cast<SkillList*>(&record->unk74), record->first);
     return 1;
 }
 
@@ -1977,7 +1971,7 @@ u8 func_0034B720(SkillDualSelection* object)
         {
             return 0;
         }
-        s32 slot = reinterpret_cast<s32>(object->func_slot54());
+        s32 slot = static_cast<s32>(object->func_slot54());
         func_004C7FE0(item, slot, index + 0x1AAA, 0, object->first_x, object->first_y + object->first_spacing * (float)index, 0.0f, 0.0f);
         item->unk88 = -1.0f;
         item->unk3c = 1;
@@ -1998,7 +1992,7 @@ u8 func_0034B720(SkillDualSelection* object)
         {
             return 0;
         }
-        s32 slot = reinterpret_cast<s32>(object->func_slot54());
+        s32 slot = static_cast<s32>(object->func_slot54());
         func_004C7FE0(item, slot, index + 0x1AB8, 0, object->second_x, object->second_y + object->second_spacing * (float)index, 0.0f, 0.0f);
         item->unk88 = -1.0f;
         item->unk3c = 1;
@@ -2012,7 +2006,7 @@ u8 func_0034B720(SkillDualSelection* object)
     return 1;
 }
 
-s32 func_0034BA30(SkillDualSelection* object, void* associated)
+s32 func_0034BA30(SkillDualSelection* object, u32 associated)
 {
     object->FieldClass15AE70::func_slot10(associated, 320.0f, 176.0f, 15);
     LibClass1746A0* first = new (0) LibClass1746A0;
@@ -2033,8 +2027,8 @@ s32 func_0034BA30(SkillDualSelection* object, void* associated)
     func_44B510(second, 1);
     func_004C6190(object->unk10, second);
     func_0035CB20(reinterpret_cast<SkillList*>(&object->unk20), second);
-    if ((u8)func_0034B2C0(reinterpret_cast<Record0034B190*>(object)) == 0 ||
-        (u8)func_0034B190(reinterpret_cast<Record0034B190*>(object)) == 0)
+    if ((u8)func_0034B2C0(object) == 0 ||
+        (u8)func_0034B190(object) == 0)
     {
         return 0;
     }
@@ -2177,6 +2171,10 @@ void func_0034C110(Record0034C110* record, float offset)
     }
 }
 
+/**
+ * @brief Refresh the selected item's display receiver and color.
+ * @param record Receiver containing the item list and selection state.
+ */
 void func_0034C1F0(Record0034C1F0* record)
 {
     SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&record->unk2c), record->selection->unk114);
@@ -2202,7 +2200,7 @@ void func_0034C1F0(Record0034C1F0* record)
             }
             record->recipient = recipient;
             func_0023B850((FieldObject23B850*)record->recipient, (FieldTarget23B850*)node->value, 0x288080);
-            func_4C6190(reinterpret_cast<SkillDisplayOwner*>(record->unk10), record->recipient);
+            func_4C6190(record->unk10, record->recipient);
         }
         func_0023B7E0(record->recipient, (FieldTarget23B850*)node->value);
         if (record->colors[record->selection->unk114] != 0)
@@ -2466,6 +2464,12 @@ void func_0034E0B0(SkillModeSelection* object)
     refresh_mode_message(object);
 }
 
+/**
+ * @brief Configure the selection grid position and register its display state.
+ * @param record Receiver with the display owner and selection grid.
+ * @param row_count Number of grid rows; zero leaves the grid unchanged.
+ * @return One for zero rows or completed setup, otherwise zero without a display owner.
+ */
 s32 func_0034E260(Record0034C1F0* record, s16 row_count)
 {
     float first;
@@ -2474,12 +2478,12 @@ s32 func_0034E260(Record0034C1F0* record, s16 row_count)
     {
         return 1;
     }
-    if (reinterpret_cast<SkillDisplayOwner*>(record->unk10) == 0)
+    if (record->unk10 == 0)
     {
         return 0;
     }
-    first = reinterpret_cast<SkillDisplayOwner*>(record->unk10)->x + record->offset;
-    second = 16.0f + reinterpret_cast<SkillDisplayOwner*>(record->unk10)->y;
+    first = record->unk10->unk20.components[0] + record->offset;
+    second = 16.0f + record->unk10->unk20.components[1];
     func_0023CE80((FieldObject23CE80*)record->selection, 1, row_count);
     func_0023CE60((FieldObject23CE80*)record->selection, 0.0f, record->spacing);
     record->selection->unkF2 = 0;
@@ -2564,11 +2568,11 @@ void func_00351360(SkillModeSelection* object, u32 flag, s32 active)
 
 #include "overlays/lib/list_indicator_inlines.h"
 
-s32 func_00351490(SkillModeSelection* object, void* associated)
+s32 func_00351490(SkillModeSelection* object, u32 associated)
 {
     object->FieldClass15AE70::func_slot10(associated, 320.0f, 176.0f, 15);
     object->display = new (0) LibObject178750;
-    object->display->func_004C7FE0(248.0f, 9.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x1787, 1);
+    object->display->func_004C7FE0(248.0f, 9.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x1787, 1);
     func_004C6190(object->unk10, object->display);
     object->display->set_color(0x288CFF);
     object->display->set_scale(0.6f, 0.6f);
@@ -2643,7 +2647,7 @@ SkillModeSelection::SkillModeSelection(SkillQueueOwner* controller)
     display = 0;
 }
 
-s32 func_00351980(FieldClass15AE70* object, void* associated)
+s32 func_00351980(FieldClass15AE70* object, u32 associated)
 {
     func_002CE8D0(reinterpret_cast<FieldObjectCE8D0*>(object), associated, 320.0f, 176.0f, 0xF);
     LibClass178630* widget = new (0) LibClass178630;
@@ -2822,13 +2826,13 @@ s32 func_00352920(Record00352B30* object)
     if (D_001B643C->callbacks->controller->func_00261150() == object)
     {
         s32 opacity = object->unk104 ? 128 : 0;
-        LibClass178600* cursor = reinterpret_cast<LibClass178600*>(object->cursor);
+        LibClass178600* cursor = object->cursor;
         cursor->unk28 = (float)opacity;
         cursor->unk3c = 1;
     }
     else
     {
-        LibClass178600* cursor = reinterpret_cast<LibClass178600*>(object->cursor);
+        LibClass178600* cursor = object->cursor;
         cursor->unk28 = 0.0f;
         cursor->unk3c = 1;
     }
@@ -2862,7 +2866,7 @@ s32 func_00352B30(Record00352B30* record)
     u8 inactive = !selection->unk35;
     s16 index;
     s16 mode;
-    QueryDisplay* display;
+    LibClass178600* display;
 
     if (inactive == 1)
     {
@@ -2877,15 +2881,15 @@ s32 func_00352B30(Record00352B30* record)
     if (mode == 4 || mode == 5)
     {
         func_003522C0(record);
-        display = record->parent->status->first;
+        display = record->parent->status->first_display;
         if (display != 0)
         {
-            display->flag = 0;
+            display->unk3f = 0;
         }
-        display = record->parent->status->second;
+        display = record->parent->status->second_display;
         if (display != 0)
         {
-            display->flag = 0;
+            display->unk3f = 0;
         }
         return 1;
     }
@@ -3055,12 +3059,12 @@ void func_003538F0(Record003538F0* record)
         ListItem0035CCE0* second = (ListItem0035CCE0*)func_0035CAE0(reinterpret_cast<SkillList*>(&record->second), index)->value;
         if (index == record->selection->unk114)
         {
-            DisplayMetrics* metrics;
+            LibBounds4C69B0* metrics;
             first->unk94 = 0x288080;
             first->unk3c = 1;
             second->unk94 = 0x288080;
             second->unk3c = 1;
-            metrics = (DisplayMetrics*)func_4C69B0(first);
+            metrics = (LibBounds4C69B0*)func_4C69B0(first);
             func_0023BAB0(record->display, first->position.x,
                          1.0f + (24.0f + first->position.y), 16.0f + metrics->unk08);
         }
@@ -3304,16 +3308,16 @@ void func_003558B0(SkillFourRowSelection* object, u32 flag, s32 active)
     object->first_display->unk3f = flag;
     object->second_display->unk3f = flag;
     object->third_display->unk3f = flag;
-    reinterpret_cast<LibClass178600*>(object->cursor)->unk3f = flag;
+    object->cursor->unk3f = flag;
     if (active != 0)
     {
-        LibClass178600* cursor = reinterpret_cast<LibClass178600*>(object->cursor);
+        LibClass178600* cursor = object->cursor;
         cursor->unk28 = 128.0f;
         cursor->unk3c = 1;
     }
     else
     {
-        LibClass178600* cursor = reinterpret_cast<LibClass178600*>(object->cursor);
+        LibClass178600* cursor = object->cursor;
         cursor->unk28 = 0.0f;
         cursor->unk3c = 1;
     }
@@ -3349,12 +3353,12 @@ void func_00355CA0(SkillFourRowSelection* object)
     }
     for (s32 index = 0; index < 4; index++)
     {
-        ListItem0035CCE0* item = static_cast<ListItem0035CCE0*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value);
+        LibObject178750* item = static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value);
         if (index == object->selection->unk114)
         {
             item->unk94 = 0x288080;
             item->unk3c = 1;
-            DisplayMetrics* metrics = static_cast<DisplayMetrics*>(func_4C69B0(item));
+            LibBounds4C69B0* metrics = func_004C69B0(item);
             func_0023B9B0(object->cursor, (s16)index, metrics->unk08);
         }
         else
@@ -3379,12 +3383,12 @@ void func_00355D90(SkillFourRowSelection* object)
     }
     for (s32 index = 0; index < 4; index++)
     {
-        ListItem0035CCE0* item = static_cast<ListItem0035CCE0*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value);
+        LibObject178750* item = static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value);
         if (index == object->selection->unk114)
         {
             item->unk94 = 0x288080;
             item->unk3c = 1;
-            DisplayMetrics* metrics = static_cast<DisplayMetrics*>(func_4C69B0(item));
+            LibBounds4C69B0* metrics = func_004C69B0(item);
             func_0023B9B0(object->cursor, (s16)index, metrics->unk08);
         }
         else
@@ -3436,7 +3440,7 @@ s32 func_00356130(SkillFourRowSelection* object)
     }
     for (s32 index = 0; index < 4; index++)
     {
-        ListItem0035CCE0* item = static_cast<ListItem0035CCE0*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value);
+        LibObject178750* item = static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value);
         item->unk94 = 0x808080;
         item->unk3c = 1;
     }
@@ -3580,7 +3584,7 @@ u8* func_00357EE0(u8* object)
     return object;
 }
 
-s32 func_00357F80(FieldClass15AE70* object, void* associated)
+s32 func_00357F80(FieldClass15AE70* object, u32 associated)
 {
     func_002CE8D0(reinterpret_cast<FieldObjectCE8D0*>(object), associated, 16.0f, 176.0f, 0x11);
     LibClass178630* widget = new (0) LibClass178630;
@@ -3607,7 +3611,7 @@ void func_003580D0(StatusOwner003580D0* owner, s32 first, s32 second, s32 third)
     else
     {
         LibObject174F20* item = owner->items[1];
-        item->unkfc = second - 1;
+        item->numeric_value = second - 1;
         item->unk3c = 1;
         owner->items[1]->unk3f = 1;
     }
@@ -3618,7 +3622,7 @@ void func_003580D0(StatusOwner003580D0* owner, s32 first, s32 second, s32 third)
     else
     {
         LibObject174F20* item = owner->items[0];
-        item->unkfc = first;
+        item->numeric_value = first;
         item->unk3c = 1;
         owner->items[0]->unk3f = 1;
     }
@@ -3635,7 +3639,7 @@ void func_003580D0(StatusOwner003580D0* owner, s32 first, s32 second, s32 third)
     else
     {
         LibObject174F20* item = owner->items[2];
-        item->unkfc = third;
+        item->numeric_value = third;
         item->unk3c = 1;
         owner->items[2]->unk3f = 1;
         owner->fallback_label->unk3f = 0;
@@ -3802,7 +3806,7 @@ void func_00359340(SkillSecondarySelection* object)
         {
             item->unk94 = 0x288080;
             item->unk3c = 1;
-            DisplayMetrics* metrics = static_cast<DisplayMetrics*>(func_4C69B0(item));
+            LibBounds4C69B0* metrics = static_cast<LibBounds4C69B0*>(func_4C69B0(item));
             func_0023B9B0(object->cursor, (s16)index, metrics->unk08);
         }
         else
@@ -3887,13 +3891,13 @@ static inline void refresh_query_cursor(Record00352B30* object)
     if (D_001B643C->callbacks->controller->func_00261150() == object)
     {
         s32 opacity = object->unk104 ? 128 : 0;
-        LibClass178600* cursor = reinterpret_cast<LibClass178600*>(object->cursor);
+        LibClass178600* cursor = object->cursor;
         cursor->unk28 = (float)opacity;
         cursor->unk3c = 1;
     }
     else
     {
-        LibClass178600* cursor = reinterpret_cast<LibClass178600*>(object->cursor);
+        LibClass178600* cursor = object->cursor;
         cursor->unk28 = 0.0f;
         cursor->unk3c = 1;
     }
@@ -3922,7 +3926,7 @@ s32 func_00359870(SkillSecondarySelection* object)
             {
                 item->unk94 = 0x288080;
                 item->unk3c = 1;
-                DisplayMetrics* metrics = static_cast<DisplayMetrics*>(func_4C69B0(item));
+                LibBounds4C69B0* metrics = static_cast<LibBounds4C69B0*>(func_4C69B0(item));
                 func_0023B9B0(window->cursor, (s16)index, metrics->unk08);
             }
             else
@@ -4075,7 +4079,7 @@ void func_00359E30(SkillSecondarySelection* object)
     func_0035AF00(owner, object->code, 1);
 }
 
-s32 func_00359EE0(SkillSecondarySelection* object, void* associated)
+s32 func_00359EE0(SkillSecondarySelection* object, u32 associated)
 {
     object->FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 8);
     object->owner = static_cast<SkillQueueOwner*>(D_001B643C->callbacks->controller);
@@ -4112,21 +4116,21 @@ s32 func_00359EE0(SkillSecondarySelection* object, void* associated)
     icon_first->unkd0 = 0;
     icon_second->unkd0 = 0;
     icon_third->unkd0 = 0;
-    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(icon_second)), func_002D3CC0(D_001B643C->resources, 0x12), 32.0f, 11.0f);
-    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(icon_first)), func_002D3CC0(D_001B643C->resources, 0x14), 32.0f, 38.0f);
-    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(icon_third)), func_002D3CC0(D_001B643C->resources, 0x15), 32.0f, 65.0f);
+    icon_second->func_002D6440(func_002D3CC0(D_001B643C->resources, 0x12), 32.0f, 11.0f);
+    icon_first->func_002D6440(func_002D3CC0(D_001B643C->resources, 0x14), 32.0f, 38.0f);
+    icon_third->func_002D6440(func_002D3CC0(D_001B643C->resources, 0x15), 32.0f, 65.0f);
     func_004C6190(object->unk10, icon_first);
     func_004C6190(object->unk10, icon_second);
     func_004C6190(object->unk10, icon_third);
-    DisplayMetrics* metrics = static_cast<DisplayMetrics*>(func_4C69B0(first));
+    LibBounds4C69B0* metrics = func_004C69B0(first);
     FieldObject23BE00* cursor = static_cast<FieldObject23BE00*>(::operator new(0x6C, 0));
     if (cursor != 0)
     {
         cursor = func_0023BE00(cursor);
     }
     object->cursor = cursor;
-    func_0023BB20(object->cursor, reinterpret_cast<FieldObject23CEB0*>(object->selection), 0x288080, 70.0f, 13.0f, metrics->unk08, 1.0f);
-    func_004C6190(object->unk10, reinterpret_cast<LibClass178600*>(object->cursor));
+    object->cursor->func_0023BB20(70.0f, 13.0f, metrics->unk08, 1.0f, object->selection, 0x288080);
+    func_004C6190(object->unk10, object->cursor);
     func_0035C440(reinterpret_cast<SkillList*>(&object->unk8c), object->cursor);
     object->selection->func_0023CE80(1, 3);
     object->selection->func_0023CE60(0.0f, 27.0f);
@@ -4184,9 +4188,9 @@ void func_0035A650(Record0035A560* record, s32 key)
     {
         record->active = 0;
         record->counter = 0;
-        void* source = record->func_slot54();
-        func_4C6DF0((LibObject178750*)record->display, source, key, 0);
-        DisplayMetrics* extent = (DisplayMetrics*)func_4C69B0(record->display);
+        u32 source = record->func_slot54();
+        func_4C6DF0(record->display, source, key, 0);
+        LibBounds4C69B0* extent = func_004C69B0(record->display);
         record->limit = (s32)extent->unk08 + 6;
     }
 }
@@ -4201,7 +4205,7 @@ static inline float shifted_position(const float& origin, float offset)
 {
     return origin + offset;
 }
-s32 func_0035A6E0(Record0035A560* object, void* associated)
+s32 func_0035A6E0(Record0035A560* object, u32 associated)
 {
     object->FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 19);
     LibObject178750* first = new (0) LibObject178750;
@@ -4235,7 +4239,7 @@ s32 func_0035A6E0(Record0035A560* object, void* associated)
     {
         return 0;
     }
-    object->extent = static_cast<DisplayMetrics*>(func_4C69B0(first))->unk08;
+    object->extent = func_004C69B0(first)->unk08;
     object->origin = 18.0f + object->extent;
     object->offset = 640.0f - (16.0f + shifted_position(object->origin, 32.0f));
     object->first_x = 24.0f + object->extent;
@@ -4290,7 +4294,7 @@ void SkillResourceWindow::func_slot5c()
 {
 }
 
-s32 func_0035AC50(FieldClass15AE70* object, void* associated)
+s32 func_0035AC50(FieldClass15AE70* object, u32 associated)
 {
     object->FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 20);
     ItemCreationOptionResourceDisplay* first = new (0) ItemCreationOptionResourceDisplay;
@@ -4303,9 +4307,9 @@ s32 func_0035AC50(FieldClass15AE70* object, void* associated)
     first->unkd0 = 11;
     second->unkd0 = 11;
     third->unkd0 = 11;
-    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(first)), func_002D3CC0(D_001B643C->resources, 5), 0.0f, 0.0f);
-    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(second)), func_002D3CC0(D_001B643C->resources, 6), 256.0f, 0.0f);
-    func_002D6440(static_cast<FieldState2D6410*>(static_cast<void*>(third)), func_002D3CC0(D_001B643C->resources, 7), 512.0f, 0.0f);
+    first->func_002D6440(func_002D3CC0(D_001B643C->resources, 5), 0.0f, 0.0f);
+    second->func_002D6440(func_002D3CC0(D_001B643C->resources, 6), 256.0f, 0.0f);
+    third->func_002D6440(func_002D3CC0(D_001B643C->resources, 7), 512.0f, 0.0f);
     func_004C6190(object->unk10, first);
     func_004C6190(object->unk10, second);
     func_004C6190(object->unk10, third);
@@ -4358,7 +4362,7 @@ void func_0035AF00(SkillQueueOwner* owner, s32 code, u8 enabled)
         u32 key = detail->key;
         s32 value = (detail->checksum != (((detail->second + key) ^ detail->first) ^ key)) ? 0 : (detail->first ^ 0x7E93);
         LibObject174F20* item = status->third_value;
-        item->unkfc = value;
+        item->numeric_value = value;
         item->unk3c = 1;
         status_detail_group(owner->status, 0);
         Record00352B30* query = owner->mode_query;
@@ -4383,7 +4387,7 @@ void func_0035AF00(SkillQueueOwner* owner, s32 code, u8 enabled)
             {
                 value = 0;
             }
-            item->unkfc = value;
+            item->numeric_value = value;
             item->unk3c = 1;
         }
         FieldRecordSelection* selection = status->selection;
@@ -4403,7 +4407,7 @@ void func_0035AF00(SkillQueueOwner* owner, s32 code, u8 enabled)
                     value = detail->second ^ 0x7E93;
                 }
                 LibObject174F20* item = status->second_value;
-                item->unkfc = value;
+                item->numeric_value = value;
                 item->unk3c = 1;
             }
         }
@@ -4529,7 +4533,7 @@ s32 func_0035B4E0(SkillQueueOwner* owner)
         owner->paired = new (0) SkillDualSelection;
         owner->text_window = new (0) SkillTextReceiver;
         owner->window = new (0) SkillComparisonDisplay(owner);
-        owner->mode_query->parent = reinterpret_cast<QueryParent*>(owner);
+        owner->mode_query->parent = owner;
         owner->paired->owner = owner;
         owner->secondary->func_slotf4(owner->associated);
         owner->FieldClass153E30::func_00263FD0(owner->secondary);
@@ -4606,19 +4610,24 @@ s32 func_0035B4E0(SkillQueueOwner* owner)
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0035BD90);
 
-s32 func_0035BE50(Record0035BE50* record)
+/**
+ * @brief Allocate and initialize the record's selection state.
+ * @param record Owner of the selection state.
+ * @return One when initialization succeeds, or zero on failure.
+ */
+s32 func_0035BE50(SkillQueueOwner* record)
 {
     FieldRecordSelection* selection = (FieldRecordSelection*)::operator new(24, 0);
     if (selection != 0)
     {
         selection = func_0028E4D0(selection);
     }
-    record->selection = selection;
-    if (record->selection == 0)
+    record->mode_records = selection;
+    if (record->mode_records == 0)
     {
         return 0;
     }
-    return (u8)func_0028E3D0(record->selection) != 0;
+    return (u8)func_0028E3D0(record->mode_records) != 0;
 }
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0035BEC0);
@@ -4656,85 +4665,154 @@ void func_0035C120(void* object)
 {
 }
 
-void func_0035C130(u8* object, const unsigned __int128* value)
+/**
+ * @brief Store a 128-bit value at offset 0x20 and set the byte at 0x50.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_0035C130(LibClass171EF0* object, const unsigned __int128* value)
 {
-    object[0x50] = 1;
-    *(unsigned __int128*)(object + 0x20) = *value;
+    object->unk50 = 1;
+    object->unk20.packed = *value;
 }
 
-void func_0035C150(u8* object, const unsigned __int128* value)
+/**
+ * @brief Store a 128-bit value at offset 0x20 and set the byte at 0x50.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_0035C150(LibClass171EF0* object, const unsigned __int128* value)
 {
-    object[0x50] = 1;
-    *(unsigned __int128*)(object + 0x20) = *value;
+    object->unk50 = 1;
+    object->unk20.packed = *value;
 }
 
-void func_0035C170(u8* object, float x, float y, float z)
+/**
+ * @brief Store 3 float values at offset 0x20 and set the byte at 0x50. Set the fourth float to 1.0f.
+ * @param object Receiver storage.
+ * @param x Float value to store.
+ * @param y Float value to store.
+ * @param z Float value to store.
+ */
+void func_0035C170(LibClass171EF0* object, float x, float y, float z)
 {
-    object[0x50] = 1;
-    *(float*)(object + 0x20) = x;
-    *(float*)(object + 0x24) = y;
-    *(float*)(object + 0x28) = z;
-    *(float*)(object + 0x2C) = 1.0f;
+    object->unk50 = 1;
+    object->unk20.components[0] = x;
+    object->unk20.components[1] = y;
+    object->unk20.components[2] = z;
+    object->unk20.components[3] = 1.0f;
 }
 
-void func_0035C190(u8* object, float x, float y, float z, float w)
+/**
+ * @brief Store 4 float values at offset 0x30 and set the byte at 0x50.
+ * @param object Receiver storage.
+ * @param x Float value to store.
+ * @param y Float value to store.
+ * @param z Float value to store.
+ * @param w Float value to store.
+ */
+void func_0035C190(LibClass171EF0* object, float x, float y, float z, float w)
 {
-    object[0x50] = 1;
-    *(float*)(object + 0x30) = x;
-    *(float*)(object + 0x34) = y;
-    *(float*)(object + 0x38) = z;
-    *(float*)(object + 0x3C) = w;
+    object->unk50 = 1;
+    object->unk30.components[0] = x;
+    object->unk30.components[1] = y;
+    object->unk30.components[2] = z;
+    object->unk30.components[3] = w;
 }
 
-void func_0035C1B0(u8* object, const unsigned __int128* value)
+/**
+ * @brief Store a 128-bit value at offset 0x30 and set the byte at 0x50.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_0035C1B0(LibClass171EF0* object, const unsigned __int128* value)
 {
-    object[0x50] = 1;
-    *(unsigned __int128*)(object + 0x30) = *value;
+    object->unk50 = 1;
+    object->unk30.packed = *value;
 }
 
-void func_0035C1D0(u8* object, const unsigned __int128* value)
+/**
+ * @brief Store a 128-bit value at offset 0x30 and set the byte at 0x50.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_0035C1D0(LibClass171EF0* object, const unsigned __int128* value)
 {
-    object[0x50] = 1;
-    *(unsigned __int128*)(object + 0x30) = *value;
+    object->unk50 = 1;
+    object->unk30.packed = *value;
 }
 
-void func_0035C1F0(SkillTransform* object, const SkillVector4* value)
+/**
+ * @brief Update the vector at offset 0x30 and mark the receiver changed.
+ * @param object Vector receiver.
+ * @param value Vector components.
+ */
+void func_0035C1F0(LibClass171EF0* object, const SkillVector4* value)
 {
-    object->dirty = 1;
+    object->unk50 = 1;
     func_4CE4C0(&object->unk30, value);
 }
 
-void func_0035C220(SkillTransform* object, const SkillVector4* value)
+/**
+ * @brief Update the vector at offset 0x30 and mark the receiver changed.
+ * @param object Vector receiver.
+ * @param value Vector components.
+ */
+void func_0035C220(LibClass171EF0* object, const SkillVector4* value)
 {
-    object->dirty = 1;
+    object->unk50 = 1;
     func_4CE4C0(&object->unk30, value);
 }
 
-void func_0035C250(u8* object, float x, float y, float z)
+/**
+ * @brief Update the vector at offset 0x30 and set the byte at 0x50.
+ * @param object Receiver storage.
+ * @param x First float component.
+ * @param y Second float component.
+ * @param z Third float component.
+ */
+void func_0035C250(LibClass171EF0* object, float x, float y, float z)
 {
-    object[0x50] = 1;
+    object->unk50 = 1;
     SkillVector4 value(x, y, z, 1.0f);
-    func_4CE4C0(object + 0x30, &value);
+    func_4CE4C0(&object->unk30, &value);
 }
 
-void func_0035C290(u8* object, const unsigned __int128* value)
+/**
+ * @brief Store a 128-bit value at offset 0x40 and set the byte at 0x50.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_0035C290(LibClass171EF0* object, const unsigned __int128* value)
 {
-    object[0x50] = 1;
-    *(unsigned __int128*)(object + 0x40) = *value;
+    object->unk50 = 1;
+    object->unk40.packed = *value;
 }
 
-void func_0035C2B0(u8* object, const unsigned __int128* value)
+/**
+ * @brief Store a 128-bit value at offset 0x40 and set the byte at 0x50.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_0035C2B0(LibClass171EF0* object, const unsigned __int128* value)
 {
-    object[0x50] = 1;
-    *(unsigned __int128*)(object + 0x40) = *value;
+    object->unk50 = 1;
+    object->unk40.packed = *value;
 }
 
-void func_0035C2D0(u8* object, float x, float y, float z)
+/**
+ * @brief Store 3 float values at offset 0x40 and set the byte at 0x50.
+ * @param object Receiver storage.
+ * @param x Float value to store.
+ * @param y Float value to store.
+ * @param z Float value to store.
+ */
+void func_0035C2D0(LibClass171EF0* object, float x, float y, float z)
 {
-    object[0x50] = 1;
-    *(float*)(object + 0x40) = x;
-    *(float*)(object + 0x44) = y;
-    *(float*)(object + 0x48) = z;
+    object->unk50 = 1;
+    object->unk40.components[0] = x;
+    object->unk40.components[1] = y;
+    object->unk40.components[2] = z;
 }
 
 s32 func_0035C2F0(void* object)
@@ -4766,14 +4844,24 @@ void func_0035C350(u8* object, u32 value)
     *(u32*)(object + 0x24) = value;
 }
 
-void func_0035C360(u8* object, u8 value)
+/**
+ * @brief Write the 8-bit field at offset 0x28.
+ * @param object Receiver storage.
+ * @param value Value to store.
+ */
+void func_0035C360(FieldClass153E30* object, u8 value)
 {
-    object[0x28] = value;
+    object->unk28 = value;
 }
 
-s8 func_0035C370(u8* object)
+/**
+ * @brief Read the signed 8-bit field at offset 0x28.
+ * @param object Receiver storage.
+ * @return Field value.
+ */
+s8 func_0035C370(FieldClass153E30* object)
 {
-    return ((s8*)object)[0x28];
+    return object->unk28;
 }
 
 s32 func_0035C380(void* object)
@@ -4837,18 +4925,14 @@ void func_0035C440(SkillList* list, void* value)
     SkillListNode* node = new (0) SkillListNode;
     if (node != 0)
     {
-        SkillListNode* current;
-        SkillListNode* next;
         node->value = value;
         node->next = 0;
-        current = list->head;
-        next = current->next;
-        while (next != 0)
+        SkillListNode* tail = list->head;
+        while (tail->next != 0)
         {
-            current = next;
-            next = next->next;
+            tail = tail->next;
         }
-        current->next = node;
+        tail->next = node;
         list->count++;
     }
 }
@@ -5126,14 +5210,14 @@ INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0035CCC0);
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0035CCD0);
 
-void func_0035CCE0(void* object, s16 selected)
+/** @brief Color the choice text entries for the selected index. @param selected Selected grid index. */
+void SkillGridChoice::func_slotf4(s16 selected)
 {
-    ListOwner0035CCE0* owner = (ListOwner0035CCE0*)object;
     s32 index = 0;
-    ListNode0035CCE0* node = owner->head->next;
+    SkillListNode* node = reinterpret_cast<SkillListNode*>(unk2c.unk00->unk04);
     while (node != 0)
     {
-        ListItem0035CCE0* item = node->value;
+        LibObject178750* item = static_cast<LibObject178750*>(node->value);
         if (index == selected)
         {
             item->unk94 = 0x288080;
@@ -5185,7 +5269,7 @@ s32 func_0035CEB0(SkillGridChoice* object)
     return result == 0 ? 1 : 2;
 }
 
-s32 SkillGridChoice::func_slot10(void* associated, float x, float y, s32 code)
+s32 SkillGridChoice::func_slot10(u32 associated, float x, float y, s32 code)
 {
     FieldClass15AE70::func_slot10(associated, x, y, code);
     LibClass178630* panel = new (0) LibClass178630;
@@ -5203,9 +5287,9 @@ s32 SkillGridChoice::func_slot10(void* associated, float x, float y, s32 code)
     {
         return 0;
     }
-    func_004C7FE0(first, reinterpret_cast<s32>(associated), 0x7E8, 0, 92.0f, 84.0f, 0.0f, 0.0f);
-    func_004C7FE0(second, reinterpret_cast<s32>(associated), 0x7E9, 0, 92.0f, 120.0f, 0.0f, 0.0f);
-    func_004C7FE0(title, reinterpret_cast<s32>(associated), 0x1793, 0, 16.0f, 16.0f, 0.0f, 0.0f);
+    func_004C7FE0(first, static_cast<s32>(associated), 0x7E8, 0, 92.0f, 84.0f, 0.0f, 0.0f);
+    func_004C7FE0(second, static_cast<s32>(associated), 0x7E9, 0, 92.0f, 120.0f, 0.0f, 0.0f);
+    func_004C7FE0(title, static_cast<s32>(associated), 0x1793, 0, 16.0f, 16.0f, 0.0f, 0.0f);
     func_004C6190(unk10, first);
     func_004C6190(unk10, second);
     func_004C6190(unk10, title);
@@ -5368,21 +5452,21 @@ void SkillOptionsWindow::func_slot5c()
             SkillProtectedFlags* entry = &reinterpret_cast<SkillProtectedFlags*>(records->records)[index];
             u32 first_value = protected_first(entry);
             LibObject174F20* first_display = first_values[row];
-            first_display->unkfc = first_value;
+            first_display->numeric_value = first_value;
             first_display->unk3c = 1;
             u32 second_value = protected_second(entry);
             LibObject174F20* second_display = second_values[row];
-            second_display->unkfc = second_value;
+            second_display->numeric_value = second_value;
             second_display->unk3c = 1;
             if (row < 3)
             {
                 u32 first_preview = protected_first_salt(entry);
                 LibObject174F20* first_preview_display = first_previews[row];
-                first_preview_display->unkfc = first_preview;
+                first_preview_display->numeric_value = first_preview;
                 first_preview_display->unk3c = 1;
                 u32 second_preview = protected_second_salt(entry);
                 LibObject174F20* second_preview_display = second_previews[row];
-                second_preview_display->unkfc = second_preview;
+                second_preview_display->numeric_value = second_preview;
                 second_preview_display->unk3c = 1;
             }
             badges[row][0]->unk3f = protected_flags(entry) & 2;
@@ -5838,9 +5922,13 @@ s32 func_00362170(Record003620F0* record)
     return func_00363740(primary, 0);
 }
 
-void func_003621F0(SkillSelection* object)
+/**
+ * @brief Set the row grid state to one.
+ * @param object Row window.
+ */
+void func_003621F0(Record003619C0* object)
 {
-    func_0023CEA0(object->display, 1);
+    func_0023CEA0(object->selection, 1);
 }
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_00362210);
@@ -5987,7 +6075,7 @@ void func_00363660(SkillProtectedDisplay* object)
     SkillProtectedFlags* record = &((SkillProtectedFlags*)object->selection->records)[object->selection->current];
     u32 value = protected_second(record);
     LibObject174F20* display = object->display;
-    display->unkfc = value;
+    display->numeric_value = value;
     display->unk3c = 1;
     object->display->unk3f = 1;
 }
@@ -6006,7 +6094,7 @@ s32 func_00363740(Record00363740* object, s32 mode)
     SkillProtectedFlags* record = &reinterpret_cast<SkillProtectedFlags*>(object->selection->records)[object->selection->current];
     u32 value = protected_second(record);
     LibObject174F20* display = object->display;
-    display->unkfc = value;
+    display->numeric_value = value;
     display->unk3c = 1;
     func_00363890(object);
     return 4;

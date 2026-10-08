@@ -14,6 +14,7 @@ typedef struct StatusScrollState StatusScrollState;
 typedef StatusScrollState StatusRecordWindow;
 
 #ifdef __cplusplus
+struct ItemCreationOptionResourceDisplay;
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_0028E240.h"
 #include "overlays/1067-00/text_002F9C90.h"
@@ -32,8 +33,8 @@ struct StatusBackgroundWindow : public FieldClass15AE70
     }
     /** @brief Destroy the background window base. */
     virtual ~StatusBackgroundWindow();
-    /** @brief Create the status resource panels. @param associated Resource source. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the status resource panels. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
 };
 /** Status caption window with a timed scrolling text display. */
 struct StatusTextWindow : public FieldClass15AE70
@@ -57,8 +58,8 @@ struct StatusTextWindow : public FieldClass15AE70
     virtual void func_slot5c();
     /** @brief Set the selected caption. @param key Signed caption key. */
     virtual void func_slot60(s32 key);
-    /** @brief Create the captions and frame geometry. @param associated Resource source. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the captions and frame geometry. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     LibObject178750* target;
     s32 distance;
     u8 unkb0[2];
@@ -132,8 +133,8 @@ struct StatusScrollState : public FieldClass15AE70
     virtual s32 func_slotd8();
     /** @brief Move to the following record. @return Handler result. */
     virtual s32 func_slotdc();
-    /** @brief Create the status record displays. @param associated Associated object. @return Creation result. */
-    virtual s32 func_slotf4(void* associated);
+    /** @brief Create the status record displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
     FieldRecordSelection* selection;
     u8 record_active;
     u8 unkad[3];
@@ -147,7 +148,7 @@ struct StatusScrollState : public FieldClass15AE70
     u8 resource_slots[8];
     float resource_x;
     float resource_y;
-    LibClass175110* display;
+    ItemCreationOptionResourceDisplay* display;
     LibClass178600* other_marker;
     LibObject178660* container;
     StatusList188D50 first;

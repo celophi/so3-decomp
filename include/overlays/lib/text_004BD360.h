@@ -39,11 +39,11 @@ s32 func_004C7FE0(LibObject178750* object, s32 slot, s32 key, u8 flag, float x, 
 /**
  * @brief Set the text widget's source and resource key.
  * @param object Text widget.
- * @param source Opaque resource source.
+ * @param source Full resource source word.
  * @param key Resource key.
  * @param flag Resource state flag.
  */
-void func_4C6DF0(LibObject178750* object, void* source, u32 key, u8 flag);
+void func_4C6DF0(LibObject178750* object, u32 source, u32 key, u8 flag);
 /**
  * @brief Attach a widget to the container.
  * @param object Container receiver.
@@ -55,6 +55,14 @@ void func_004C6190(LibObject178660* object, LibClass178600* child);
  * @param object Widget receiver.
  */
 void func_004C4A90(LibClass178630* object);
+
+/**
+ * @brief Allocate and initialize the panel transform, then set its third component.
+ * @param object Panel widget.
+ * @param z Third transform component.
+ * @return One on successful setup, otherwise zero.
+ */
+s32 func_004C4AB0(LibClass178630* object, float z);
 
 /**
  * @brief Configure the widget mode and rectangle.
@@ -258,7 +266,9 @@ public:
      */
     virtual void func_00412C40(u32 first, u32 second, u32 third);
     LibStorageBlock0C unkD0;
-    u8 unkDC[0x14];
+    u8 unkDC[4];
+    float unkE0;
+    u8 unkE4[0xC];
 };
 
 /** Partial 0x114-byte text widget, with MAIN vtable D_178750. */

@@ -61,10 +61,10 @@ struct TacticsWindow18B720 : public FieldClass15AE70
     virtual ~TacticsWindow18B720();
     /**
      * @brief Initialize the window and attach three resource displays.
-     * @param associated Associated window context forwarded to the base initializer.
+     * @param associated Full resource source word.
      * @return One after the displays are attached.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
 };
 
 /** Native 0xC4-byte scrolling window with its text widget and movement bounds. */

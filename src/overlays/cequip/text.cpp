@@ -65,11 +65,7 @@ struct EquipRecordStats
     u32 unka8;
     u8 unkac[0x18];
 };
-struct EquipRuntimeMenuState
-{
-    u8 unk00[0x64];
-    u16 unk64;
-};
+struct EquipRuntimeMenuState;
 struct EquipRuntimeMenuContext
 {
     u8 unk00[0x14];
@@ -93,7 +89,6 @@ extern EquipRuntimeMenuRoot* D_001B643C;
 extern ResidentObject1B64F8* D_001B64F8;
 extern "C" void func_002CD7C0(FieldClass15AD40* object);
 extern "C" void func_002CD8B0(FieldClass15AD40* object, LibClass178600* selected, u32 color);
-struct EquipResumeWindow;
 struct EquipResourceTextRecord;
 extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipResourceTextRecord* resource, s8 slot);
 extern "C" void func_003F9890(FieldRecord* record, EquipResourceTextRecord* resource, u32 flag, s32 index);
@@ -111,58 +106,13 @@ static inline void equip_set_icon_enabled(LibObject172410* icon, u8 enabled)
     icon->unkfa = enabled;
     icon->unk3c = 1;
 }
-extern "C" void func_004C6DF0(LibObject178750* object, void* buffer, s32 key, u8 flag);
+extern "C" void func_004C6DF0(LibObject178750* object, u32 buffer, s32 key, u8 flag);
 extern "C" void func_002CE220(FieldStateCE420* object, s32 count, s32 start, s32 row);
 /** @brief Cycle the selector in the supplied direction. @param object Selector. @param direction Direction code. @return Selector result code. */
 extern "C" u8 func_0023B3B0(FieldState23B3A0* object, u16 direction);
 /** @brief Queue a nonnull window on the menu context. @param context Menu context. @param window Window to queue. */
 extern "C" void func_002CFE10(EquipRuntimeMenuContext* context, FieldClass15AE70* window);
 
-struct EquipCategoryState
-{
-    u8 unk00[0x60];
-    u16 unk60;
-};
-
-/** Partial associated window view containing its two visibility-controlled widgets. */
-struct EquipActivationAssociated
-{
-    u8 unk00[0xBC];
-    LibClass178600* unkbc;
-    LibClass178600* unkc0;
-};
-/** Partial selector view containing its animation flag and position. */
-struct EquipActivationSelector
-{
-    u8 unk00[0x3C];
-    u8 unk3c;
-    u8 unk3d[0x33];
-    float unk70;
-};
-/** Partial record display window, containing its selection and display widgets. */
-struct EquipResumeWindow
-{
-    u8 unk00[0xAC];
-    FieldRecordSelection* unkac;
-    void* unkb0;
-    u8 unkb4[4];
-    void* unkb8;
-    LibClass178600* unkbc;
-    LibClass178600* unkc0;
-};
-/** Partial equipment State view with its record and category display windows. */
-struct EquipCycleState
-{
-    u8 unk00[0x38];
-    FieldRecordSelection* unk38;
-    u8 unk3c[4];
-    EquipResumeWindow* unk40;
-    void* unk44;
-    u8 unk48[8];
-    FieldClass15AD40* unk50;
-    u8 unk54[0xC];
-    u8 unk60;
-};
 /** Resource text record with its displayed payload beginning at offset 0x20. */
 struct EquipResourceTextRecord
 {
@@ -180,14 +130,6 @@ struct EquipRecordDetails
     u8 unk88[0x20];
     s32 unka8;
 };
-/** Partial code or resource widget containing its dirty flag and current data word. */
-struct EquipTextData
-{
-    u8 unk00[0x3C];
-    u8 unk3c;
-    u8 unk3d[0xBF];
-    u32 unkfc;
-};
 /** @brief Decode a field record display code after validating its check word. @param record Selected field record. @return Decoded code, or one when validation fails. */
 static inline s32 equip_record_value(const FieldRecord* record)
 {
@@ -200,19 +142,19 @@ static inline s32 equip_record_value(const FieldRecord* record)
 }
 
 /** @brief Refresh the selected record description, code, and active display widgets. @param associated Record display window. */
-static inline void equip_refresh_record_display(EquipResumeWindow* associated)
+static inline void equip_refresh_record_display(EquipClass182C90* associated)
 {
     if (associated->unkac != 0)
     {
-        EquipTextData* text = static_cast<EquipTextData*>(associated->unkb0);
-        text->unkfc = reinterpret_cast<u32>(static_cast<EquipResourceTextRecord*>(associated->unkac->unk04)[associated->unkac->current].unk20);
+        LibObject175140* text = associated->unkb0;
+        text->unkfc = reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(associated->unkac->unk04)[associated->unkac->current].unk20);
         text->unk3c = 1;
         FieldRecord* record = &associated->unkac->records[associated->unkac->current];
         s32 result = equip_record_value(record);
-        text = static_cast<EquipTextData*>(associated->unkb8);
-        text->unkfc = result;
-        text->unk3c = 1;
-        reinterpret_cast<EquipClass182C90*>(associated)->refresh_slot_marker();
+        LibObject174F20* number = associated->unkb8;
+        number->numeric_value = result;
+        number->unk3c = 1;
+        associated->refresh_slot_marker();
     }
 }
 
@@ -230,90 +172,6 @@ struct EquipCategoryNode
     EquipCategoryNode* next;
 };
 
-struct EquipStateWindow
-{
-    u8 unk00[0x44];
-    FieldClass15AE70* unk44;
-    FieldClass15AE70* unk48;
-    u8 unk4c[0x14];
-    u8 unk60;
-};
-
-struct EquipSelectionOwner
-{
-    u8 unk00[0x38];
-    FieldRecordSelection* selection;
-};
-
-typedef struct
-{
-    u8 pad_00[4];
-    u32 field_04;
-    u8 field_08;
-    u8 pad_09;
-    u16 field_0a;
-    u8 field_0c;
-    u8 field_0d;
-    u8 pad_0e[2];
-    u32 field_10;
-    u8 pad_14[0xC];
-    u32 field_20;
-    u8 pad_24[0x74];
-    u32 field_98;
-    u32 field_9c;
-} EquipObjectFields;
-
-typedef struct
-{
-    u8 pad_00[0x12C];
-    u8 field_12c;
-} EquipSelectionFields;
-
-typedef struct
-{
-    u8 pad_00[0x34];
-    u32 field_34;
-    u32 field_38;
-} EquipValueFields;
-
-typedef struct
-{
-    u8 pad_00[0x24];
-    u32 field_24;
-    s8 field_28;
-    u8 pad_29[0x13];
-    u8 field_3c;
-} EquipEntryFields;
-
-typedef struct
-{
-    u8 pad_00[0xF0];
-    u8 flag_f0;
-} EquipToggleTarget;
-
-typedef struct
-{
-    u8 pad_00[0x54];
-    EquipToggleTarget* target;
-} EquipToggleHolder;
-
-typedef struct
-{
-    u8 pad_00[0xA8];
-    EquipToggleHolder* holder;
-} EquipToggleOwnerA8;
-
-typedef struct
-{
-    u8 pad_00[0x180];
-    EquipToggleHolder* holder;
-} EquipToggleOwner180;
-
-typedef struct
-{
-    u8 pad_00[0x188];
-    EquipToggleHolder* holder;
-} EquipToggleOwner188;
 
 typedef struct EquipLinkedNode
 {
@@ -328,64 +186,13 @@ typedef struct EquipLinkedNode
 
 typedef struct EquipWordNode
 {
-    u32 value;
+    ItemCreationCategoryRecord* value;
     struct EquipWordNode* next;
     /** @brief Destroy the node without releasing its stored value. */
     ~EquipWordNode()
     {
     }
 } EquipWordNode;
-
-typedef struct
-{
-    u8 pad_00[0x3C];
-    u8 field_3c;
-    u8 pad_3d[2];
-    u8 field_3f;
-    u8 pad_40[0x30];
-    float field_70;
-} EquipNested;
-
-typedef struct
-{
-    u8 pad_00[0xAC];
-    EquipNested* nested;
-} EquipOwner;
-
-typedef struct
-{
-    u8 pad_00[0x1C];
-    float position;
-    u8 pad_20[0x1C];
-    u8 active;
-} EquipLayoutTarget;
-
-typedef struct
-{
-    u8 pad_00[0xF0];
-    EquipLayoutTarget* first[9];
-    u8 pad_114[0x24];
-    EquipLayoutTarget* second[9];
-    EquipLayoutTarget* third[9];
-} EquipLayout;
-
-/** Four scalar position components stored with four-byte alignment. */
-typedef struct EquipPosition
-{
-    float x;
-    float y;
-    float z;
-    float w;
-} EquipPosition;
-
-/** Partial Lib display receiver holding its position and refresh flag. */
-typedef struct EquipPositionTarget
-{
-    u8 pad_00[0x18];
-    EquipPosition position;
-    u8 pad_28[0x14];
-    u8 active;
-} EquipPositionTarget;
 
 typedef struct
 {
@@ -399,7 +206,7 @@ extern u8 D_182A90[];
 extern u8 D_182B90[];
 extern "C" void func_2CEAF0(void* object, s32 flags);
 
-static inline void equip_set_position(EquipPositionTarget* target, float x, float y, float z, float w);
+static inline void equip_set_position(LibClass178600* target, float x, float y, float z, float w);
 
 
 /**
@@ -463,72 +270,87 @@ static inline u32 final_stat_value(const EquipRecordStats* record)
 /** @brief Set a numeric widget value and mark it dirty. @param widget Numeric widget. @param value Display value. */
 static inline void set_number(LibObject174F20* widget, u32 value)
 {
-    widget->unkfc = value;
+    widget->numeric_value = value;
     widget->unk3c = 1;
 }
 
-static inline void equip_set_position(EquipPositionTarget* target, float x, float y, float z, float w)
+static inline void equip_set_position(LibClass178600* target, float x, float y, float z, float w)
 {
-    target->position.x = x;
-    target->position.y = y;
-    target->position.z = z;
-    target->position.w = w;
-    target->active = 1;
+    target->unk18.unk00 = x;
+    target->unk18.unk04 = y;
+    target->unk18.unk08 = z;
+    target->unk18.unk0c = w;
+    target->unk3c = 1;
 }
 
 void func_00348400(void* object, u8 value)
 {
-    ((EquipObjectFields*)object)->field_0c = value;
+    static_cast<FieldClass15AE70*>(object)->unk0c = value;
 }
 
 u8 func_00348410(void* object)
 {
-    return ((EquipObjectFields*)object)->field_0c;
+    return static_cast<FieldClass15AE70*>(object)->unk0c;
 }
 
 void func_00348420(void* object, u8 value)
 {
-    ((EquipObjectFields*)object)->field_08 = value;
+    static_cast<FieldClass15AE70*>(object)->unk08 = value;
 }
 
 u8 func_00348430(void* object)
 {
-    return ((EquipObjectFields*)object)->field_08;
+    return static_cast<FieldClass15AE70*>(object)->unk08;
 }
 
 void func_00348440(void* object, u16 value)
 {
-    ((EquipObjectFields*)object)->field_0a = value;
+    static_cast<FieldClass15AE70*>(object)->unk0a = value;
 }
 
 u16 func_00348450(void* object)
 {
-    return ((EquipObjectFields*)object)->field_0a;
+    return static_cast<FieldClass15AE70*>(object)->unk0a;
 }
 
-void func_00348480(void* object, u32 value)
+/**
+ * @brief Set the alternate associated window pointer.
+ * @param object Window to update.
+ * @param value Pointer to store.
+ */
+void func_00348480(void* object, void* value)
 {
-    ((EquipObjectFields*)object)->field_9c = value;
+    static_cast<FieldClass15AE70*>(object)->unk9c = value;
 }
 
-u32 func_00348490(void* object)
+/**
+ * @brief Return the alternate associated window pointer.
+ * @param object Window to read.
+ * @return Stored alternate associated window pointer.
+ */
+void* func_00348490(void* object)
 {
-    return ((EquipObjectFields*)object)->field_9c;
+    return static_cast<FieldClass15AE70*>(object)->unk9c;
 }
 
 void func_003484A0(void* object, u32 value)
 {
-    ((EquipObjectFields*)object)->field_04 = value;
+    static_cast<FieldClass15AE70*>(object)->unk04 = value;
 }
 
 u32 func_003484B0(void* object)
 {
-    return ((EquipObjectFields*)object)->field_04;
+    return static_cast<FieldClass15AE70*>(object)->unk04;
 }
 
-u32 func_003484C0(void* object)
+/**
+ * @brief Return the nested display container.
+ * @param object Window to read.
+ * @return Stored container pointer.
+ */
+void* func_003484C0(void* object)
 {
-    return ((EquipObjectFields*)object)->field_10;
+    return static_cast<FieldClass15AE70*>(object)->unk10;
 }
 
 void func_003484D0(void* object)
@@ -663,12 +485,12 @@ void func_003486A0(void* object)
 
 u8 func_003486B0(void* object)
 {
-    return ((EquipObjectFields*)object)->field_0d;
+    return static_cast<FieldClass15AE70*>(object)->unk0d;
 }
 
 void func_003486C0(void* object, u8 value)
 {
-    ((EquipObjectFields*)object)->field_0d = value;
+    static_cast<FieldClass15AE70*>(object)->unk0d = value;
 }
 
 void func_003486D0(void* object)
@@ -706,9 +528,14 @@ void EquipClass182220::func_slot5c()
     }
 }
 
-u32 func_003487B0(void* object)
+/**
+ * @brief Read the State's stored window pointer.
+ * @param object Equipment State.
+ * @return Stored window pointer.
+ */
+void* func_003487B0(void* object)
 {
-    return ((EquipObjectFields*)object)->field_20;
+    return static_cast<EquipListState*>(object)->unk20;
 }
 
 void EquipClass182220::func_slot6c()
@@ -736,9 +563,14 @@ s32 EquipClass182220::func_slotb4()
     return 2;
 }
 
-void func_003488C0(void* object, u32 value)
+/**
+ * @brief Set the State's stored window pointer.
+ * @param object Equipment State.
+ * @param value Window pointer to store.
+ */
+void func_003488C0(void* object, void* value)
 {
-    ((EquipObjectFields*)object)->field_20 = value;
+    static_cast<EquipListState*>(object)->unk20 = value;
 }
 
 s32 EquipClass182220::func_slotb0()
@@ -756,7 +588,7 @@ s32 EquipClass182220::func_slotb0()
     return result == 0 ? 1 : 2;
 }
 
-s32 EquipClass182220::func_slot10(void* associated, float x, float y, s32 code)
+s32 EquipClass182220::func_slot10(u32 associated, float x, float y, s32 code)
 {
     FieldClass15AE70::func_slot10(associated, x, y, code);
     LibClass178630* frame = new (0) LibClass178630;
@@ -775,9 +607,9 @@ s32 EquipClass182220::func_slot10(void* associated, float x, float y, s32 code)
     {
         return 0;
     }
-    first->func_004C7FE0(84.0f, 84.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x7E8, 0);
-    second->func_004C7FE0(84.0f, 120.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x7E9, 0);
-    title->func_004C7FE0(24.0f, 16.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFAC, 0);
+    first->func_004C7FE0(84.0f, 84.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E8, 0);
+    second->func_004C7FE0(84.0f, 120.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E9, 0);
+    title->func_004C7FE0(24.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAC, 0);
     func_004C6190(unk10, first);
     func_004C6190(unk10, second);
     func_004C6190(unk10, title);
@@ -798,11 +630,11 @@ EquipClass182220::~EquipClass182220()
 
 void EquipClass182350::func_slot5c()
 {
-    EquipPositionTarget* target = reinterpret_cast<EquipPositionTarget*>(unka8);
-    float x = target->position.x;
-    float y = target->position.y;
-    float z = target->position.z;
-    float w = target->position.w;
+    LibClass178600* target = unka8;
+    float x = target->unk18.unk00;
+    float y = target->unk18.unk04;
+    float z = target->unk18.unk08;
+    float w = target->unk18.unk0c;
     if (unkb4 == 0)
     {
         equip_set_position(target, unkbc, y, z, w);
@@ -833,7 +665,7 @@ void EquipClass182350::func_slot60(s32 text_key)
     }
 }
 
-s32 EquipClass182350::func_slotf4(void* associated)
+s32 EquipClass182350::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 19);
     unka8 = new (0) LibObject178750;
@@ -844,11 +676,11 @@ s32 EquipClass182350::func_slotf4(void* associated)
         return 0;
     }
     LibObject178750* title = new (0) LibObject178750;
-    title->func_004C7FE0(16.0f, 6.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFA0, 0);
+    title->func_004C7FE0(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA0, 0);
     func_004C6190(unk10, title);
     func_00351D20(&unk2c, title);
     LibObject178750* label = new (0) LibObject178750;
-    label->func_004C7FE0(36.0f, 40.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFAF, 0);
+    label->func_004C7FE0(36.0f, 40.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAF, 0);
     label->set_scale(0.65f, 0.65f);
     func_004C6190(unk10, label);
     func_00351D20(&unk2c, label);
@@ -860,7 +692,7 @@ s32 EquipClass182350::func_slotf4(void* associated)
     func_44B570(frame, unkc0, 0.0f, unkc4, 56.0f);
     func_004C6190(unk10, frame);
     func_00351DB0(&unk20, frame);
-    unka8->func_004C7FE0(unkbc, 6.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFAE, 0);
+    unka8->func_004C7FE0(unkbc, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAE, 0);
     func_004C6190(unk10, unka8);
     func_00351D20(&unk2c, unka8);
     func_44B510(overlay, 1);
@@ -884,7 +716,7 @@ void* func_00349230(void* object, s32 flags)
     return object;
 }
 
-s32 EquipClass182450::func_slotf4(void* associated)
+s32 EquipClass182450::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 20);
     unka8 = new (0) ItemCreationOptionResourceDisplay;
@@ -897,9 +729,9 @@ s32 EquipClass182450::func_slotf4(void* associated)
     unka8->unkd0 = 11;
     unkac->unkd0 = 11;
     unkb0->unkd0 = 11;
-    func_002D6440(reinterpret_cast<FieldState2D6410*>(unka8), func_002D3CC0(D_001B643C->unk20, 5), 0.0f, 0.0f);
-    func_002D6440(reinterpret_cast<FieldState2D6410*>(unkac), func_002D3CC0(D_001B643C->unk20, 6), 256.0f, 0.0f);
-    func_002D6440(reinterpret_cast<FieldState2D6410*>(unkb0), func_002D3CC0(D_001B643C->unk20, 7), 512.0f, 0.0f);
+    unka8->func_002D6440(func_002D3CC0(D_001B643C->unk20, 5), 0.0f, 0.0f);
+    unkac->func_002D6440(func_002D3CC0(D_001B643C->unk20, 6), 256.0f, 0.0f);
+    unkb0->func_002D6440(func_002D3CC0(D_001B643C->unk20, 7), 512.0f, 0.0f);
     func_004C6190(unk10, unka8);
     func_004C6190(unk10, unkac);
     func_004C6190(unk10, unkb0);
@@ -924,12 +756,6 @@ void* func_00349560(void* object, s32 flags)
     return object;
 }
 
-/** Partial nested display containing the float at offset 0x70. */
-struct EquipNested70
-{
-    u8 unk00[0x70];
-    float unk70;
-};
 /** @brief Write a stored display flag. @param display Display to update. @param flag Low-byte flag to store. */
 static inline void set_visibility(LibClass178600* display, const u8& flag)
 {
@@ -953,14 +779,14 @@ void EquipClass182550::func_slot10c(u32 value, u32 enabled)
         FieldStateCE420::unk04->unk3f = enabled;
         if (enabled != 0)
         {
-            LibClass178600* nested = FieldStateCE420::unk04;
-            reinterpret_cast<EquipNested70*>(nested)->unk70 = 128.0f;
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 128.0f;
             nested->unk3c = 1;
         }
         else
         {
-            LibClass178600* nested = FieldStateCE420::unk04;
-            reinterpret_cast<EquipNested70*>(nested)->unk70 = 64.0f;
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 64.0f;
             nested->unk3c = 1;
         }
     }
@@ -977,18 +803,18 @@ s32 func_00349680(void* object)
 
 s32 func_00349690(void* object)
 {
-    EquipToggleTarget* target = ((EquipToggleOwner188*)object)->holder->target;
-    target->flag_f0 = !target->flag_f0;
+    EquipClass182B90* target = static_cast<EquipClass182550*>(object)->unk188->unk54;
+    target->unkf0 = !target->unkf0;
     return 1;
 }
 
 s32 EquipClass182550::func_slotb4()
 {
-    reinterpret_cast<FieldClass153E30*>(unk188)->func_00263F50(this);
+    unk188->func_00263F50(this);
     FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
     associated->func_slot10c(1, 1);
     reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(associated);
-    func_0034B3D0(reinterpret_cast<EquipStateWindow*>(unk188)->unk48, 0);
+    func_0034B3D0(unk188->unk48, 0);
     func_004E97A0(unk18c);
     return 2;
 }
@@ -1008,8 +834,8 @@ s32 EquipClass182550::func_slotb0()
         {
             func_004E97A0(unk18c);
         }
-        FieldClass15AE70* first = reinterpret_cast<EquipStateWindow*>(unk188)->unk44;
-        FieldClass15AE70* second = reinterpret_cast<EquipStateWindow*>(unk188)->unk48;
+        FieldClass15AE70* first = unk188->unk44;
+        FieldClass15AE70* second = unk188->unk48;
         func_0034C540(first, func_0040D890(records[selected]));
         first->func_slot20(1);
         first->func_slot64();
@@ -1017,9 +843,9 @@ s32 EquipClass182550::func_slotb0()
         func_0034B3D0(second, 0);
         second->func_slot20(0);
         FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
-        associated->func_slot108(reinterpret_cast<EquipStateWindow*>(unk188)->unk60);
+        associated->func_slot108(static_cast<u8>(unk188->unk60));
         associated->func_slot10c(0, 0);
-        reinterpret_cast<FieldClass153E30*>(unk188)->func_00263F50(this);
+        unk188->func_00263F50(this);
         func_004E97A0(unk18c);
     }
     else
@@ -1037,14 +863,14 @@ void EquipClass182550::set_scroll_position(float offset)
     s32 index = 0;
     do
     {
-        EquipLayoutTarget* target_third;
-        EquipLayoutTarget* target_second;
-        target_third = reinterpret_cast<EquipLayoutTarget*>(unk15c[index]);
-        target_third->position = position;
-        target_third->active = 1;
-        target_second = reinterpret_cast<EquipLayoutTarget*>(unk138[index]);
-        target_second->position = position;
-        target_second->active = 1;
+        LibClass178600* target_third;
+        LibClass178600* target_second;
+        target_third = unk15c[index];
+        target_third->unk18.unk04 = position;
+        target_third->unk3c = 1;
+        target_second = unk138[index];
+        target_second->unk18.unk04 = position;
+        target_second->unk3c = 1;
         position += 28.0f;
         index++;
     } while (index < 9);
@@ -1091,7 +917,7 @@ void EquipClass182550::refresh_rows(s32 start)
                     count++;
                 }
             }
-            func_002D5CF0(reinterpret_cast<FieldResourceDisplay2D5CF0*>(unk138[row]), unk184,
+            unk138[row]->func_002D5CF0(unk184,
                          func_002D3CC0(D_001B643C->unk20, count + 60), 14);
             unk15c[row]->unk3d = 1;
             unk138[row]->unk3d = 1;
@@ -1103,7 +929,7 @@ void EquipClass182550::func_00349D50()
 {
     ItemCreationAllocationRecord* records[100];
     FieldClass15AE60::unk88 = 0;
-    FieldClass15AE60::unk88 = func_0040CF90(D_001B64F8, records, D_001B643C->unk10->unk14->unk64);
+    FieldClass15AE60::unk88 = func_0040CF90(D_001B64F8, records, static_cast<u16>(reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->unk64));
     s32 count = FieldClass15AE60::unk88;
     if (count >= 8)
     {
@@ -1144,7 +970,7 @@ static inline void set_resource_scale(ItemCreationOptionResourceDisplay* display
     display->unk50.unk30 = x;
     display->unk3c = 1;
 }
-s32 EquipClass182550::func_slot104(void* associated)
+s32 EquipClass182550::func_slot104(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 283.0f, 224.0f, 8);
     FieldStateCE420::unk3c = 1;
@@ -1170,7 +996,7 @@ s32 EquipClass182550::func_slot104(void* associated)
         void* allocation = unk184;
         unk138[index]->unkcc = allocation;
         unk138[index]->unkd0 = 14;
-        func_002D6440(reinterpret_cast<FieldState2D6410*>(unk138[index]), record, 13.0f, y);
+        unk138[index]->func_002D6440(record, 13.0f, y);
         set_resource_scale(unk138[index], 0.9f, 0.9f);
         func_004C6190(unk10, unk138[index]);
         unk138[index]->unk3f = 0;
@@ -1197,7 +1023,7 @@ s32 EquipClass182550::func_slot104(void* associated)
 
 void func_0034A390(void* object, u8 value)
 {
-    ((EquipSelectionFields*)object)->field_12c = value;
+    static_cast<FieldClass15AD40*>(object)->FieldClass15AE60::unk84 = value;
 }
 
 EquipClass182550::EquipClass182550(EquipListState* state)
@@ -1219,8 +1045,8 @@ EquipClass182550::EquipClass182550(EquipListState* state)
 
 s32 func_0034A460(void* object)
 {
-    EquipToggleTarget* target = ((EquipToggleOwner180*)object)->holder->target;
-    target->flag_f0 = !target->flag_f0;
+    EquipClass182B90* target = static_cast<EquipClass182670*>(object)->unk180->unk54;
+    target->unkf0 = !target->unkf0;
     return 1;
 }
 
@@ -1273,11 +1099,11 @@ s32 EquipClass182670::func_slotb0()
     if (FieldClass15AE60::unk88 != 0)
     {
         EquipClass182550* window = new (0) EquipClass182550(unk180);
-        void* associated = reinterpret_cast<FieldClass153E30*>(unk180)->func_00263CC0();
+        u32 associated = unk180->func_00263CC0();
         window->func_slot104(associated);
         window->func_slot40(this);
-        reinterpret_cast<FieldClass153E30*>(unk180)->func_00263FD0(window);
-        reinterpret_cast<FieldClass153E30*>(unk180)->func_00263C70(window);
+        unk180->func_00263FD0(window);
+        unk180->func_00263C70(window);
     }
     else
     {
@@ -1287,28 +1113,37 @@ s32 EquipClass182670::func_slotb0()
     return 1;
 }
 
+/**
+ * @brief Return the equipment State's resource source word.
+ * @param object Equipment State.
+ * @return Stored resource source word.
+ */
 u32 func_0034A710(void* object)
 {
-    return ((EquipValueFields*)object)->field_34;
+    return static_cast<EquipListState*>(object)->unk34;
 }
 
-void func_0034A720(void* object, s32 unused, s32 value)
+/**
+ * @brief Set the optional control's flag and opacity.
+ * @param unused Unused first word.
+ * @param value Value tested for zero and stored in the control's low-byte flag.
+ */
+void EquipClass182670::func_slot10c(u32 unused, u32 value)
 {
-    EquipOwner* owner = (EquipOwner*)object;
-    if (owner->nested != 0)
+    if (FieldStateCE420::unk04 != 0)
     {
-        owner->nested->field_3f = value;
+        FieldStateCE420::unk04->unk3f = value;
         if (value != 0)
         {
-            EquipNested* nested = owner->nested;
-            nested->field_70 = 128.0f;
-            nested->field_3c = 1;
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 128.0f;
+            nested->unk3c = 1;
         }
         else
         {
-            EquipNested* nested = owner->nested;
-            nested->field_70 = 64.0f;
-            nested->field_3c = 1;
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 64.0f;
+            nested->unk3c = 1;
         }
     }
 }
@@ -1375,7 +1210,7 @@ void EquipClass182670::refresh_rows(s32 start)
                     }
                     func_004C6DF0(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), key, 0);
                     LibObject174F20* image = unk15c[row];
-                    image->unkfc = record->unk08;
+                    image->numeric_value = record->unk08;
                     image->unk3c = 1;
                     FieldClass15AE60::unk48[row]->unk3d = 1;
                     unk138[row]->unk3d = 1;
@@ -1403,9 +1238,14 @@ void EquipClass182670::refresh_rows(s32 start)
 
 INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_0034A9E0);
 
-u32 func_0034AC10(void* object)
+/**
+ * @brief Return the equipment State's record selection.
+ * @param object Equipment State.
+ * @return Stored record selection.
+ */
+FieldRecordSelection* func_0034AC10(void* object)
 {
-    return ((EquipValueFields*)object)->field_38;
+    return static_cast<EquipListState*>(object)->unk38;
 }
 
 void EquipClass182670::func_slot5c()
@@ -1434,7 +1274,7 @@ void EquipClass182670::func_slot5c()
         {
             func_002CD8B0(this, 0, 0x808080);
         }
-        func_0034B3D0(reinterpret_cast<EquipStateWindow*>(unk180)->unk48, 0);
+        func_0034B3D0(unk180->unk48, 0);
     }
     else
     {
@@ -1442,7 +1282,7 @@ void EquipClass182670::func_slot5c()
     }
 }
 
-s32 EquipClass182670::func_slot104(void* associated)
+s32 EquipClass182670::func_slot104(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 283.0f, 224.0f, 9);
     FieldStateCE420::unk3c = 1;
@@ -1456,9 +1296,9 @@ s32 EquipClass182670::func_slot104(void* associated)
         unk138[index] = new (0) LibObject178750;
         unk15c[index] = new (0) LibObject174F20;
         float y = 16.0f + 28.0f * static_cast<float>(index);
-        static_cast<LibObject178750*>(unk48[index])->func_004C7FE0(13.0f, y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 50000, 0);
-        unk138[index]->func_004C7FE0(268.0f, y - 4.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x7E4, 1);
-        func_00464D90(unk15c[index], index, 0, 0, 276.0f, y, 28.0f, 24.0f);
+        static_cast<LibObject178750*>(unk48[index])->func_004C7FE0(13.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 50000, 0);
+        unk138[index]->func_004C7FE0(268.0f, y - 4.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 1);
+        unk15c[index]->func_00464D90(276.0f, y, 28.0f, 24.0f, index, 0, 0);
         set_display_depth(static_cast<LibObject178750*>(unk48[index]), -1.0f);
         static_cast<LibObject178750*>(unk48[index])->set_scale(0.9f, 0.9f);
         func_004C6190(unk10, unk48[index]);
@@ -1501,7 +1341,7 @@ EquipClass182670::EquipClass182670(EquipListState* state)
     unk1a4 = 0;
 }
 
-s32 EquipClass182790::func_slotf4(void* associated)
+s32 EquipClass182790::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 283.0f, 224.0f, 10);
     LibClass178630* widget = new (0) LibClass178630;
@@ -1560,11 +1400,11 @@ void EquipClass182890::refresh_item_details(u8 category, s16 selected)
     }
 }
 
-s32 EquipClass182890::func_slotf4(void* associated)
+s32 EquipClass182890::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 220.0f, 18);
     unk28c  =  new (0) LibObject178750;
-    unk28c->func_004C7FE0(14.0f, 16.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFA1, 1);
+    unk28c->func_004C7FE0(14.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA1, 1);
     func_004C6190(unk10, unk28c);
     unk28c->set_scale(0.8f, 0.8f);
     unk28c->set_color(0x806080);
@@ -1577,23 +1417,23 @@ s32 EquipClass182890::func_slotf4(void* associated)
     {
         float y  =  78.0f + 32.0f * static_cast<float>(index);
         unk294[index] = new(0) LibObject178750;
-        unk294[index]->func_004C7FE0(28.0f, y-2.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), index+0x81A, 0);
+        unk294[index]->func_004C7FE0(28.0f, y-2.0f, 0.0f, 0.0f, static_cast<s32>(associated), index+0x81A, 0);
         unk294[index]->set_color(0x805050);
         func_004C6190(unk10, unk294[index]);
         unk2a8[index] = new(0) LibObject178750;
-        unk2a8[index]->func_004C7FE0(73.0f, y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x7E4, 0);
+        unk2a8[index]->func_004C7FE0(73.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 0);
         unk2a8[index]->set_color(0x805050);
         func_004C6190(unk10, unk2a8[index]);
         unk2d0[index] = new(0) LibObject174F20;
-        func_00464D90(unk2d0[index], 9999, 0, 0, 92.0f, y, 48.0f, 22.8f);
+        unk2d0[index]->func_00464D90(92.0f, y, 48.0f, 22.8f, 9999, 0, 0);
         unk2d0[index]->set_scale(0.95f, 0.95f);
         func_004C6190(unk10, unk2d0[index]);
         unk2bc[index] = new(0) LibObject178750;
-        unk2bc[index]->func_004C7FE0(158.0f, y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFB7, 0);
+        unk2bc[index]->func_004C7FE0(158.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB7, 0);
         unk2bc[index]->set_scale(0.9f, 0.9f);
         func_004C6190(unk10, unk2bc[index]);
         unk2e4[index] = new(0) LibObject174F20;
-        func_00464D90(unk2e4[index], 9999, 0, 0, 196.0f, y, 48.0f, 22.8f);
+        unk2e4[index]->func_00464D90(196.0f, y, 48.0f, 22.8f, 9999, 0, 0);
         unk2e4[index]->set_scale(0.95f, 0.95f);
         unk2e4[index]->unk3f = 0;
         func_004C6190(unk10, unk2e4[index]);
@@ -1635,24 +1475,24 @@ INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_0034C540);
 
 void EquipClass182990::func_slot6c()
 {
-    if (static_cast<s16>(func_0023B3B0(unkfc, 1)) != 1)
+    if (static_cast<s16>(func_0023B3B0(equipment_slot_selector, 1)) != 1)
     {
-        s16 category = func_0023B3A0(unkfc);
+        s16 category = func_0023B3A0(equipment_slot_selector);
         unk104 = static_cast<FieldClass15AD40*>(func_slot4c());
         switch (category)
         {
             case 0:
                 unk104->func_slot108(0);
-                reinterpret_cast<EquipCategoryState*>(unka8)->unk60 = 0;
+                unka8->unk60 = 0;
                 break;
             case 1:
                 unk104->func_slot108(1);
-                reinterpret_cast<EquipCategoryState*>(unka8)->unk60 = 1;
+                unka8->unk60 = 1;
                 break;
             case 2:
             case 3:
                 unk104->func_slot108(2);
-                reinterpret_cast<EquipCategoryState*>(unka8)->unk60 = 2;
+                unka8->unk60 = 2;
                 break;
         }
     }
@@ -1660,24 +1500,24 @@ void EquipClass182990::func_slot6c()
 
 void EquipClass182990::func_slot68()
 {
-    if (static_cast<s16>(func_0023B3B0(unkfc, 0)) != 1)
+    if (static_cast<s16>(func_0023B3B0(equipment_slot_selector, 0)) != 1)
     {
-        s16 category = func_0023B3A0(unkfc);
+        s16 category = func_0023B3A0(equipment_slot_selector);
         unk104 = static_cast<FieldClass15AD40*>(func_slot4c());
         switch (category)
         {
             case 0:
                 unk104->func_slot108(0);
-                reinterpret_cast<EquipCategoryState*>(unka8)->unk60 = 0;
+                unka8->unk60 = 0;
                 break;
             case 1:
                 unk104->func_slot108(1);
-                reinterpret_cast<EquipCategoryState*>(unka8)->unk60 = 1;
+                unka8->unk60 = 1;
                 break;
             case 2:
             case 3:
                 unk104->func_slot108(2);
-                reinterpret_cast<EquipCategoryState*>(unka8)->unk60 = 2;
+                unka8->unk60 = 2;
                 break;
         }
     }
@@ -1685,7 +1525,7 @@ void EquipClass182990::func_slot68()
 
 s32 EquipClass182990::func_slotb0()
 {
-    s32 category = static_cast<u16>(func_0023B3A0(unkfc));
+    s32 category = static_cast<u16>(func_0023B3A0(equipment_slot_selector));
     if (unkc0 < category)
     {
         return 3;
@@ -1695,7 +1535,7 @@ s32 EquipClass182990::func_slotb0()
         static_cast<EquipClass182890*>(unk100)->refresh_item_details(category, unkb8[category]);
         unk100->func_slot20(1);
     }
-    EquipActivationAssociated* associated = static_cast<EquipActivationAssociated*>(func_slot44());
+    EquipClass182C90* associated = static_cast<EquipClass182C90*>(func_slot44());
     if (associated->unkbc != 0)
     {
         associated->unkbc->unk3f = 0;
@@ -1724,9 +1564,9 @@ s32 EquipClass182990::func_slotb0()
     unk104->func_slot10c(1, 1);
     reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->func_00263C70(unk104);
     unk108 = category;
-    EquipActivationSelector* selector = reinterpret_cast<EquipActivationSelector*>(unkfc);
-    selector->unk70 = 64.0f;
-    selector->unk3c = 1;
+    FieldClass153130* selector = reinterpret_cast<FieldClass153130*>(equipment_slot_selector);
+    selector->ItemCreationClass185050::unk30 = 64.0f;
+    selector->LibClass178600::unk3c = 1;
     func_slot20(0);
     func_004E97A0(unka8->unk68);
     return 1;
@@ -1761,7 +1601,7 @@ s32 EquipClass182990::func_slotb4()
 
 void EquipClass182990::func_slot64()
 {
-    EquipResumeWindow* associated = static_cast<EquipResumeWindow*>(func_slot44());
+    EquipClass182C90* associated = static_cast<EquipClass182C90*>(func_slot44());
     if (associated->unkbc != 0)
     {
         associated->unkbc->unk3f = 1;
@@ -1771,14 +1611,14 @@ void EquipClass182990::func_slot64()
         associated->unkc0->unk3f = 1;
     }
     equip_refresh_record_display(associated);
-    EquipActivationSelector* selector = reinterpret_cast<EquipActivationSelector*>(unkfc);
-    selector->unk70 = 128.0f;
-    selector->unk3c = 1;
+    FieldClass153130* selector = reinterpret_cast<FieldClass153130*>(equipment_slot_selector);
+    selector->ItemCreationClass185050::unk30 = 128.0f;
+    selector->LibClass178600::unk3c = 1;
 }
 
 s32 EquipClass182990::func_slotb8()
 {
-    EquipResumeWindow* associated = static_cast<EquipResumeWindow*>(func_slot44());
+    EquipClass182C90* associated = static_cast<EquipClass182C90*>(func_slot44());
     if (associated->unkbc != 0)
     {
         associated->unkbc->unk3f = 0;
@@ -1793,7 +1633,7 @@ s32 EquipClass182990::func_slotb8()
     func_003F9890(record, resource, 0, -1);
     func_004E97A0(unka8->unk68);
     func_0034D4C0(this);
-    s32 category = static_cast<u16>(func_0023B3A0(unkfc));
+    s32 category = static_cast<u16>(func_0023B3A0(equipment_slot_selector));
     if (category == 0 || category == 1)
     {
         func_slot44();
@@ -1814,8 +1654,8 @@ s32 EquipClass182990::func_slotb8()
 
 s32 EquipClass182990::func_slotbc()
 {
-    EquipToggleTarget* target = ((EquipToggleOwnerA8*)this)->holder->target;
-    target->flag_f0 = !target->flag_f0;
+    EquipClass182B90* target = unka8->unk54;
+    target->unkf0 = !target->unkf0;
     return 1;
 }
 
@@ -1830,14 +1670,14 @@ s32 EquipClass182990::func_slotdc()
     func_004E97A0(unka8->unk68);
     if (unkac->count > 1)
     {
-        EquipCycleState* state = reinterpret_cast<EquipCycleState*>(D_001B643C->unk10->unk14);
+        EquipListState* state = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14);
         if (state->unk38 != 0)
         {
             state->unk38->active = 0;
             func_0028E2B0(state->unk38, 1);
             equip_refresh_record_display(state->unk40);
             func_0034D4C0(state->unk44);
-            state->unk50->func_slot108(state->unk60);
+            state->unk50->func_slot108(static_cast<u8>(state->unk60));
         }
         return 4;
     }
@@ -1853,14 +1693,14 @@ s32 EquipClass182990::func_slotd8()
     func_004E97A0(unka8->unk68);
     if (unkac->count > 1)
     {
-        EquipCycleState* state = reinterpret_cast<EquipCycleState*>(D_001B643C->unk10->unk14);
+        EquipListState* state = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14);
         if (state->unk38 != 0)
         {
             state->unk38->active = 0;
             func_0028E2B0(state->unk38, 0);
             equip_refresh_record_display(state->unk40);
             func_0034D4C0(state->unk44);
-            state->unk50->func_slot108(state->unk60);
+            state->unk50->func_slot108(static_cast<u8>(state->unk60));
         }
         return 4;
     }
@@ -1869,7 +1709,7 @@ s32 EquipClass182990::func_slotd8()
 
 INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_0034D4C0);
 
-s32 EquipClass182990::func_slotf4(void* associated)
+s32 EquipClass182990::func_slotf4(u32 associated)
 {
     if (unkac == 0)
     {
@@ -1885,7 +1725,7 @@ s32 EquipClass182990::func_slotf4(void* associated)
     {
         float y = 16.0f + static_cast<float>(index) * unkb0;
         unkc4[index] = new (0) LibObject178750;
-        func_004C7FE0(static_cast<LibObject178750*>(unkc4[index]), reinterpret_cast<s32>(associated), index + 0xFA1, 1, 14.0f, y, 0.0f, 0.0f);
+        func_004C7FE0(static_cast<LibObject178750*>(unkc4[index]), static_cast<s32>(associated), index + 0xFA1, 1, 14.0f, y, 0.0f, 0.0f);
         func_004C6190(unk10, unkc4[index]);
         unkc4[index]->set_scale(0.8f, 0.8f);
         unkc4[index]->set_color(0x806080);
@@ -1895,16 +1735,16 @@ s32 EquipClass182990::func_slotf4(void* associated)
         unkd4[index]->set_scale(0.9f, 0.9f);
         func_004C6190(unk10, unkd4[index]);
         unke4[index] = new (0) LibObject178750;
-        func_004C7FE0(static_cast<LibObject178750*>(unke4[index]), reinterpret_cast<s32>(associated), 0xFBA, 0, 12.0f, 38.0f + unkb0 * static_cast<float>(index), 284.0f, 24.0f);
+        func_004C7FE0(static_cast<LibObject178750*>(unke4[index]), static_cast<s32>(associated), 0xFBA, 0, 12.0f, 38.0f + unkb0 * static_cast<float>(index), 284.0f, 24.0f);
         unke4[index]->set_scale(0.9f, 0.9f);
         unke4[index]->unk3f = 0;
         func_004C6190(unk10, unke4[index]);
     }
     func_44B510(overlay, 1);
     func_004C6190(unk10, overlay);
-    unkfc = reinterpret_cast<FieldState23B3A0*>(new (0) FieldClass153130);
-    reinterpret_cast<FieldClass153130*>(unkfc)->func_0023B530(1, 4, 1, 0, 1, 12.0f, 50.0f, 0.0f, unkb0);
-    func_004C6190(unk10, reinterpret_cast<FieldClass153130*>(unkfc));
+    equipment_slot_selector = reinterpret_cast<FieldState23B3A0*>(new (0) FieldClass153130);
+    reinterpret_cast<FieldClass153130*>(equipment_slot_selector)->func_0023B530(1, 4, 1, 0, 1, 12.0f, 50.0f, 0.0f, unkb0);
+    func_004C6190(unk10, reinterpret_cast<FieldClass153130*>(equipment_slot_selector));
     func_0034D4C0(this);
     return 1;
 }
@@ -1923,7 +1763,7 @@ EquipClass182990::EquipClass182990(EquipListState* state)
     unkb0 = 0;
     unkac = 0;
     unkac = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->func_00263D10();
-    unkfc = 0;
+    equipment_slot_selector = 0;
     unkf8 = 0;
     unkb4 = 0;
     unkc0 = 0;
@@ -1932,7 +1772,7 @@ EquipClass182990::EquipClass182990(EquipListState* state)
     unk104 = 0;
 }
 
-s32 EquipClass182A90::func_slotf4(void* associated)
+s32 EquipClass182A90::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 224.0f, 19);
     LibClass178630* widget = new (0) LibClass178630;
@@ -1963,7 +1803,7 @@ static inline void reset_scroll(LibObject174D90* display)
     display->unk52c = 0.0f;
     display->unk524 = 0.0f;
 }
-s32 EquipClass182B90::func_slotf4(void* associated)
+s32 EquipClass182B90::func_slotf4(u32 associated)
 {
     if (associated == 0)
     {
@@ -1974,12 +1814,12 @@ s32 EquipClass182B90::func_slotf4(void* associated)
     func_004C5A80(panel, 0, 0.0f, 0.0f, 404.0f, 145.0f, 88.0f);
     func_004C6190(unk10, panel);
     unka8 = new (0) LibObject174D90;
-    unka8->func_00461720(32.0f, 13.0f, 362.0f, 140.0f, reinterpret_cast<s32>(associated), 0xFAE, 8, 0);
+    unka8->func_00461720(32.0f, 13.0f, 362.0f, 140.0f, static_cast<s32>(associated), 0xFAE, 8, 0);
     reset_scroll(unka8);
     func_004C6190(unk10, unka8);
     unka8->unk3f = 0;
     unkac = new (0) LibObject178750;
-    unkac->func_004C7FE0(40.0f, 16.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFBB, 0);
+    unkac->func_004C7FE0(40.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFBB, 0);
     unkac->set_color(0x806080);
     unkac->set_scale(0.75f, 0.75f);
     func_004C6190(unk10, unkac);
@@ -1988,17 +1828,17 @@ s32 EquipClass182B90::func_slotf4(void* associated)
     {
         unkb0[index] = new (0) LibObject178750;
         float y = 42.0f + 28 * (index / 2);
-        unkb0[index]->func_004C7FE0(50.0f + 190 * (index % 2), y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFBC + index, 0);
+        unkb0[index]->func_004C7FE0(50.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), 0xFBC + index, 0);
         unkb0[index]->set_color(0x805050);
         func_004C6190(unk10, unkb0[index]);
         unkb0[index]->unk3f = 0;
         unkc4[index] = new (0) LibObject178750;
-        unkc4[index]->func_004C7FE0(100.0f + 190 * (index % 2), y, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0x7E4, 0);
+        unkc4[index]->func_004C7FE0(100.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 0);
         unkc4[index]->set_color(0x805050);
         func_004C6190(unk10, unkc4[index]);
         unkc4[index]->unk3f = 0;
         unkd8[index] = new (0) LibObject174F20;
-        unkd8[index]->func_00464D90(90.0f + 190 * (index % 2), y, 80.0f, 30.0f, 0, reinterpret_cast<s32>(associated), 1);
+        unkd8[index]->func_00464D90(90.0f + 190 * (index % 2), y, 80.0f, 30.0f, 0, static_cast<s32>(associated), 1);
         func_004C6190(unk10, unkd8[index]);
         unkd8[index]->unk3f = 0;
     }
@@ -2035,7 +1875,7 @@ void EquipClass182C90::refresh_slot_marker()
 void EquipClass182C90::func_slot5c()
 {
     EquipListState* state = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14);
-    FieldClass15AE70* window = reinterpret_cast<EquipStateWindow*>(state)->unk44;
+    FieldClass15AE70* window = state->unk44;
     if (state->func_00261150() == window)
     {
         unkec->unk3f = 1;
@@ -2052,7 +1892,7 @@ static inline void set_resource_text(LibObject175140* display, const char* text)
     display->unkfc = text;
     display->unk3c = 1;
 }
-s32 EquipClass182C90::func_slotf4(void* associated)
+s32 EquipClass182C90::func_slotf4(u32 associated)
 {
     if (unkac == 0)
     {
@@ -2072,7 +1912,7 @@ s32 EquipClass182C90::func_slotf4(void* associated)
     unkb0->set_scale(0.8f, 0.8f);
     unkb4 = new (0) LibObject178750;
     unkb8 = new (0) LibObject174F20;
-    unkb4->func_004C7FE0(120.0f, 48.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFA9, 0);
+    unkb4->func_004C7FE0(120.0f, 48.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA9, 0);
     unkb8->func_00464D90(170.0f, 48.0f, 42.0f, 24.0f, equip_record_value(&unkac->records[unkac->current]), 0, 0);
     func_004C6190(unk10, unkb4);
     func_00351D20(&unk2c, unkb4);
@@ -2081,11 +1921,11 @@ s32 EquipClass182C90::func_slotf4(void* associated)
     func_00351C90(&unk38, unkb8);
     unkb8->set_scale(0.9f, 0.9f);
     unkec = new (0) LibObject178750;
-    unkec->func_004C7FE0(105.0f, 80.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFB6, 0);
+    unkec->func_004C7FE0(105.0f, 80.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB6, 0);
     unkec->set_scale(0.8f, 0.8f);
     func_004C6190(unk10, unkec);
     unkf0 = new (0) LibObject178750;
-    unkf0->func_004C7FE0(105.0f, 110.0f, 0.0f, 0.0f, reinterpret_cast<s32>(associated), 0xFB5, 0);
+    unkf0->func_004C7FE0(105.0f, 110.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB5, 0);
     unkf0->set_scale(0.8f, 0.8f);
     func_004C6190(unk10, unkf0);
     if (unkac->count > 1)
@@ -2116,7 +1956,7 @@ s32 EquipClass182C90::func_slotf4(void* associated)
             FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 4);
             unkc4[index]->unkcc = allocation;
             unkc4[index]->unkd0 = slot;
-            func_002D6440(reinterpret_cast<FieldState2D6410*>(unkc4[index]), record, 20.0f, 50.0f);
+            unkc4[index]->func_002D6440(record, 20.0f, 50.0f);
             unkc4[index]->unk3f = 0;
             func_004C6190(unk10, unkc4[index]);
         }
@@ -2258,7 +2098,7 @@ static inline ItemCreationCategoryRecord* equip_category_record(s32 value)
     if (index > 0 && index <= 750)
         valid = true;
     if (valid)
-        return reinterpret_cast<ItemCreationCategoryRecord*>(reinterpret_cast<u8*>(base) + (index - 1) * 12 + 0xEA60);
+        return &base->item_types[index - 1];
     return 0;
 }
 /** @brief Find an allocation record in resident storage. @param value Signed halfword record index. @return Record, or null outside one through three thousand.
@@ -2503,30 +2343,30 @@ s32 EquipListState::func_00263CD0()
     unk48 = new (0) EquipClass182890(this);
     unk4c = new (0) EquipClass182790;
     unk50 = new (0) EquipClass182670(this);
-    options->func_slotf4(reinterpret_cast<void*>(unk34));
+    options->func_slotf4(unk34);
     FieldClass153E30::func_00263FD0(options);
     options->func_slot40(scrolling);
-    scrolling->func_slotf4(reinterpret_cast<void*>(unk34));
+    scrolling->func_slotf4(unk34);
     FieldClass153E30::func_00263FD0(scrolling);
     scrolling->func_slot40(0);
-    panel->func_slotf4(reinterpret_cast<void*>(unk34));
+    panel->func_slotf4(unk34);
     FieldClass153E30::func_00263FD0(panel);
-    unk54->func_slotf4(reinterpret_cast<void*>(unk34));
+    unk54->func_slotf4(unk34);
     FieldClass153E30::func_00263FD0(unk54);
-    unk40->func_slotf4(reinterpret_cast<void*>(unk34));
+    unk40->func_slotf4(unk34);
     FieldClass153E30::func_00263FD0(unk40);
     attach_comparison(unk44, unk54, unk48);
     unk44->func_slot48(unk50);
-    unk44->func_slotf4(reinterpret_cast<void*>(unk34));
+    unk44->func_slotf4(unk34);
     FieldClass153E30::func_00263FD0(unk44);
     unk44->func_slot40(unk40);
-    unk48->func_slotf4(reinterpret_cast<void*>(unk34));
+    unk48->func_slotf4(unk34);
     FieldClass153E30::func_00263FD0(unk48);
-    unk4c->func_slotf4(reinterpret_cast<void*>(unk34));
+    unk4c->func_slotf4(unk34);
     FieldClass153E30::func_00263FD0(unk4c);
     unk50->func_slot40(unk44);
     unk50->unk1a4 = unk48;
-    unk50->func_slot104(reinterpret_cast<void*>(unk34));
+    unk50->func_slot104(unk34);
     FieldClass153E30::func_00263FD0(unk50);
     unk20 = unk44;
     unk3c_active = 1;
@@ -2565,11 +2405,16 @@ s32 EquipListState::func_001E1820(void* buffer)
     return func_00263CD0();
 }
 
-s32 func_003510C0(EquipSelectionOwner* object)
+/**
+ * @brief Create and initialize the State's record selection.
+ * @param object Equipment State.
+ * @return One when allocation and initialization succeed; otherwise zero.
+ */
+s32 func_003510C0(EquipListState* object)
 {
-    object->selection = new (0) FieldRecordSelection;
-    u8 result = func_0028E3D0(object->selection);
-    if (object->selection == 0 || result == 0)
+    object->unk38 = new (0) FieldRecordSelection;
+    u8 result = func_0028E3D0(object->unk38);
+    if (object->unk38 == 0 || result == 0)
     {
         return 0;
     }
@@ -2660,9 +2505,14 @@ EquipClass182C90::~EquipClass182C90()
 {
 }
 
+/**
+ * @brief Return the equipment State's low flag bit.
+ * @param object Equipment State.
+ * @return Stored low flag bit.
+ */
 u32 func_003515E0(void* object)
 {
-    return ((EquipEntryFields*)object)->field_3c & 1;
+    return static_cast<EquipListState*>(object)->unk3c_active;
 }
 
 s32 func_003515F0(void* object)
@@ -2670,24 +2520,44 @@ s32 func_003515F0(void* object)
     return 4;
 }
 
-void func_00351600(void* object, u32 value)
+/**
+ * @brief Store the equipment State's pointer at offset 0x24.
+ * @param object Equipment State.
+ * @param value Pointer to store.
+ */
+void func_00351600(void* object, void* value)
 {
-    ((EquipEntryFields*)object)->field_24 = value;
+    static_cast<EquipListState*>(object)->unk24 = value;
 }
 
-u32 func_00351610(void* object)
+/**
+ * @brief Return the equipment State's pointer at offset 0x24.
+ * @param object Equipment State.
+ * @return Stored pointer.
+ */
+void* func_00351610(void* object)
 {
-    return ((EquipEntryFields*)object)->field_24;
+    return static_cast<EquipListState*>(object)->unk24;
 }
 
+/**
+ * @brief Store the equipment State's signed byte at offset 0x28.
+ * @param object Equipment State.
+ * @param value Signed byte to store.
+ */
 void func_00351620(void* object, s8 value)
 {
-    ((EquipEntryFields*)object)->field_28 = value;
+    static_cast<EquipListState*>(object)->unk28 = value;
 }
 
+/**
+ * @brief Return the equipment State's signed byte at offset 0x28.
+ * @param object Equipment State.
+ * @return Stored signed byte.
+ */
 s8 func_00351630(void* object)
 {
-    return ((EquipEntryFields*)object)->field_28;
+    return static_cast<EquipListState*>(object)->unk28;
 }
 
 s32 func_00351640(void* object)
@@ -2825,7 +2695,12 @@ EquipWordList::~EquipWordList()
     }
 }
 
-void func_00351A20(EquipWordList* list, u32 value)
+/**
+ * @brief Append a category-record pointer to the list.
+ * @param list List to update.
+ * @param value Category-record pointer, which may be null.
+ */
+void func_00351A20(EquipWordList* list, ItemCreationCategoryRecord* value)
 {
     EquipWordNode* node;
     EquipWordNode* cursor;

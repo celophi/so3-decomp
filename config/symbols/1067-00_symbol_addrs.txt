@@ -760,10 +760,12 @@ func_0020BCF0__16FieldClass153570FPv = 0x0020BEF0; // type:func
 __ct__16FieldClass152210Fv = 0x0021F6D0; // type:func
 __vt__16FieldClass152210 = 0x00152210; // size:0xC
 
-func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
-func_002D5CF0 = 0x002D5CF0; // type:func allow_duplicated:True
-func_002D6410 = 0x002D6410; // type:func allow_duplicated:True
-func_002D6440 = 0x002D6440; // type:func allow_duplicated:True
+func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func allow_duplicated:True
+func_002D5CF0 = 0x002D5CF0; // type:func absolute:True allow_duplicated:True
+func_002D5CF0__33ItemCreationOptionResourceDisplayFPvP19FieldResourceRecordUi = 0x002D5CF0; // type:func allow_duplicated:True
+func_002D6410 = 0x002D6410; // type:func absolute:True allow_duplicated:True
+func_002D6440 = 0x002D6440; // type:func absolute:True allow_duplicated:True
+func_002D6440__33ItemCreationOptionResourceDisplayFP19FieldResourceRecordff = 0x002D6440; // type:func allow_duplicated:True
 
 // Small FieldClass150070 subclasses that own one child; vtables are in main data.
 __vt__16FieldClass15BA10 = 0x0015BA10;
@@ -1486,3 +1488,16 @@ __dt__16FieldClass15B210Fv = 0x002D6570; // type:func
 __vt__16FieldClass15B210 = 0x0015B210;
 __dt__23ItemCreationClass1725D0Fv = 0x002D73B0; // type:func
 __vt__23ItemCreationClass1725D0 = 0x001725D0;
+
+__dt__16FieldClass15B200Fv = 0x002D59F0; // type:func
+__vt__16FieldClass15B200 = 0x0015B200;
+
+func_461860 = 0x00461860; // type:func absolute:True
+
+func_002D63F0 = 0x002D63F0; // type:func absolute:True allow_duplicated:True
+func_00413D20__33ItemCreationOptionResourceDisplayFv = 0x002D63F0; // type:func allow_duplicated:True
+func_467750 = 0x00467750; // type:func absolute:True allow_duplicated:True
+func_00413D20__23ItemCreationClass175110Fv = 0x00467750; // type:func absolute:True allow_duplicated:True
+
+func_44B1C0 = 0x0044B1C0; // type:func absolute:True allow_duplicated:True
+func_003EF740__14LibClass174610Fv = 0x0044B1C0; // type:func absolute:True allow_duplicated:True

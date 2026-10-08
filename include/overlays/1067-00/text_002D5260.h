@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_1067_00_TEXT_002D5260_H
 
 #include "types.h"
+#include "overlays/lib/ui_object.h"
 #include "overlays/1067-00/text_002D3BD0.h"
 
 #ifdef __cplusplus
@@ -29,7 +30,7 @@ public:
     u8 unk28;
     u8 unk29[3];
     float unk2c;
-    void* unk30;
+    LibClass178600* unk30;
     /** @brief Initialize the resource owner. @param parent Associated owner. @param flag Initial resource flag. */
     FieldClass15B200(LibObject178660* parent, u8 flag);
     /** @brief Destroy the resource owner. */
@@ -37,6 +38,14 @@ public:
 };
 
 struct LibWidgetColors4C5590;
+
+/**
+ * @brief Store two floats and mark the attached state updated when present.
+ * @param object Owner of the optional state.
+ * @param first First float to store.
+ * @param second Second float to store.
+ */
+extern "C" void func_002D5260(FieldClass15B200* object, float first, float second);
 
 /**
  * @brief Store the owner's bounds and flags, then create its colored child panel.
@@ -53,14 +62,65 @@ struct LibWidgetColors4C5590;
 extern "C" s32 func_002D5290(FieldClass15B200* object, u8 first, u8 second, const LibWidgetColors4C5590* colors,
                              float x, float y, float width, float height);
 
-#endif
+/**
+ * @brief Remove the first matching entry from the second registry list and queue the container for release.
+ * @param object Container to remove and release.
+ */
+extern "C" void func_002D70F0(LibObject178660* object);
 
-/** Partial resource display with its caller-controlled marker byte. */
-typedef struct FieldResourceDisplay2D5CF0
-{
-    u8 unk00[0x3F];
-    u8 unk3F;
-} FieldResourceDisplay2D5CF0;
+/**
+ * @brief Remove the first matching entry from the first registry list and queue the container for release.
+ * @param object Container to remove and release.
+ */
+extern "C" void func_002D7630(LibObject178660* object);
+
+
+struct FieldPanelState2D7820;
+
+/**
+ * @brief Configure the container transform and panel, then attach the panel and store the supplied value.
+ * @param object Container to initialize.
+ * @param value Word to store after panel setup succeeds.
+ * @param mode Signed byte passed to the container transform setup.
+ * @param transform Third transform setup argument.
+ * @param x Container horizontal position.
+ * @param y Container vertical position.
+ * @param width Panel width.
+ * @param height Panel height.
+ * @return One on panel setup success, otherwise zero.
+ */
+extern "C" s32 func_002D7820(FieldPanelState2D7820* object, u32 value, s8 mode, s32 transform,
+                  float x, float y, float width, float height);
+
+class FieldScalarTransition2D6AF0;
+
+/**
+ * @brief Advance the flagged scalar transition and dispatch its updated value.
+ * @param object Scalar transition state.
+ * @return One when a transition flag is set, otherwise zero.
+ */
+extern "C" s32 func_002D6AF0(FieldScalarTransition2D6AF0* object);
+
+class FieldClass15B300;
+class FieldClass15B670;
+class ItemCreationOptionResourceDisplay;
+class FieldClass178A90;
+class FieldClass15B770;
+
+/**
+ * @brief Apply controller input to the row container's selection and scrolling state.
+ * @param object Field row container.
+ * @return One when its selection or scrolling state changes, otherwise zero.
+ */
+extern "C" bool func_002D6CB0(FieldClass15B300* object);
+
+#else
+typedef struct FieldClass15B300 FieldClass15B300;
+typedef struct FieldClass15B670 FieldClass15B670;
+typedef struct ItemCreationOptionResourceDisplay ItemCreationOptionResourceDisplay;
+typedef struct FieldClass178A90 FieldClass178A90;
+typedef struct FieldClass15B770 FieldClass15B770;
+#endif
 
 /** Partial receiver with a one-bit flag at offset 0x14AC. */
 typedef struct FieldFlagState2D7AA0
@@ -114,83 +174,6 @@ typedef struct FieldSlotTable2D7A50
     FieldSlot2D7A50 entries[32];
 } FieldSlotTable2D7A50;
 
-/** Partial state holding two floats and an update flag. */
-typedef struct FieldState2D5260
-{
-    u8 unk00[0x20];
-    float unk20;
-    float unk24;
-    u8 unk28[0x14];
-    u8 unk3C;
-} FieldState2D5260;
-
-/** Partial owner of the state used by func_002D5260. */
-typedef struct FieldObject2D5260
-{
-    u8 unk00[0x30];
-    FieldState2D5260* unk30;
-} FieldObject2D5260;
-
-/** Partial receiver with the update flag used by func_002D63F0. */
-typedef struct FieldState2D63F0
-{
-    u8 unk00[0x3C];
-    u8 unk3C;
-} FieldState2D63F0;
-
-/** Partial receiver whose state is cleared by func_002D6410. */
-typedef struct FieldState2D6410
-{
-    u8 unk00[0xCC];
-    s32 unkCC;
-    u8 unkD0;
-    u8 unkD1[0x37];
-    s32 unk108;
-    s16 unk10C;
-    s16 unk10E;
-    u8 unk110;
-    u8 unk111;
-    u8 unk112;
-    u8 unk113;
-    u8 unk114;
-} FieldState2D6410;
-
-/** Partial receiver with a byte flag at offset 0x3C. */
-typedef struct FieldFlagObject2D5CE0
-{
-    u8 unk00[0x3C];
-    u8 unk3C;
-} FieldFlagObject2D5CE0;
-
-/** Partial scalar state reached through the 002D6A40 object. */
-typedef struct FieldScalarState2D6A40
-{
-    u8 unk00[0xCB];
-    u8 unkCB;
-    u8 unkCC[2];
-    u8 unkCE;
-    u8 unkCF[0x11];
-    float unkE0;
-} FieldScalarState2D6A40;
-
-/** Partial scalar state reached through the 002D8020 object. */
-typedef struct FieldScalarState2D8020
-{
-    u8 unk00[0xCB];
-    u8 unkCB;
-    u8 unkCC[2];
-    u8 unkCE;
-    u8 unkCF[0x11];
-    float unkE0;
-} FieldScalarState2D8020;
-
-/** Partial receiver with a byte at offset 0x60. */
-typedef struct FieldState2D82F0
-{
-    u8 unk00[0x60];
-    u8 unk60;
-} FieldState2D82F0;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -201,13 +184,19 @@ extern "C" {
  * @param record Resource record, or null to retain the current record.
  * @param index Nonzero value whose low byte replaces the current resource index.
  */
-void func_002D5CF0(FieldResourceDisplay2D5CF0* object, void* allocation, FieldResourceRecord* record, u32 index);
+void func_002D5CF0(ItemCreationOptionResourceDisplay* object, void* allocation, FieldResourceRecord* record, u32 index);
 
 /**
  * @brief Set the receiver's active bit and run its imported update routine.
  * @param object Receiver to update.
  */
 void func_002D7AA0(FieldFlagState2D7AA0* object);
+
+/**
+ * @brief Submit prepared packet addresses with the callback attached to the final entry.
+ * @param object Packet batch owner.
+ */
+void func_002D7AD0(FieldClass15B770* object);
 
 /**
  * @brief Unpack one table entry when the receiver's presence flag is set.
@@ -228,24 +217,16 @@ s32 func_002D79D0(FieldPackedTable2D79D0* object, s32 index, FieldPackedValues2D
 s32 func_002D7A50(FieldSlotTable2D7A50* object, void* first, void* second);
 
 /**
- * @brief Store two floats and mark the attached state updated when present.
- * @param object Owner of the optional state.
- * @param first First float to store.
- * @param second Second float to store.
- */
-void func_002D5260(FieldObject2D5260* object, float first, float second);
-
-/**
  * @brief Mark the receiver updated and run its imported update routine.
  * @param object Receiver to update.
  */
-void func_002D63F0(FieldState2D63F0* object);
+void func_002D63F0(ItemCreationOptionResourceDisplay* object);
 
 /**
  * @brief Clear the known fields in this receiver's state.
  * @param object Receiver to reset.
  */
-void func_002D6410(FieldState2D6410* object);
+void func_002D6410(ItemCreationOptionResourceDisplay* object);
 
 /**
  * @brief Set the resource record and its displayed position.
@@ -255,27 +236,27 @@ void func_002D6410(FieldState2D6410* object);
  * @param y Vertical coordinate.
  * @return One on success, or zero when allocation fails.
  */
-s32 func_002D6440(FieldState2D6410* object, FieldResourceRecord* record, float x, float y);
+s32 func_002D6440(ItemCreationOptionResourceDisplay* object, FieldResourceRecord* record, float x, float y);
 
 /**
  * @brief Set the receiver's byte at offset 0x3C.
  * @param object Receiver to update.
  */
-void func_002D5CE0(FieldFlagObject2D5CE0* object);
+void func_002D5CE0(LibClass178600* object);
 
 /**
- * @brief Store a byte in the receiver's scalar state.
- * @param object Receiver to update.
+ * @brief Store the row container's transform byte.
+ * @param object Field row container.
  * @param value Byte to store.
  */
-void func_002D6AD0(FieldScalarState2D6A40* object, u8 value);
+void func_002D6AD0(FieldClass15B300* object, u8 value);
 
 /**
  * @brief Store a float and mark it present.
  * @param object Receiver to update.
  * @param value Float to store.
  */
-void func_002D6AE0(FieldScalarState2D6A40* object, float value);
+void func_002D6AE0(FieldClass15B300* object, float value);
 
 /**
  * @brief Return the default float value.
@@ -289,20 +270,20 @@ float func_002D8000(void* object);
  * @param object Receiver to update.
  * @param value Byte to store.
  */
-void func_002D80E0(FieldScalarState2D8020* object, u8 value);
+void func_002D80E0(FieldClass15B670* object, u8 value);
 
 /**
  * @brief Store a float and mark it present.
  * @param object Receiver to update.
  * @param value Float to store.
  */
-void func_002D80F0(FieldScalarState2D8020* object, float value);
+void func_002D80F0(FieldClass15B670* object, float value);
 
 /**
  * @brief Set the receiver's byte at offset 0x60 to 9.
  * @param object Receiver to update.
  */
-void func_002D82F0(FieldState2D82F0* object);
+void func_002D82F0(FieldClass178A90* object);
 
 #ifdef __cplusplus
 /**
