@@ -43,6 +43,8 @@ typedef struct ItemCreationSelectedDisplayState
     virtual ~ItemCreationSelectedDisplayState();
     /** @brief Report the selected-display object kind. @return Object kind 4. */
     virtual s32 func_001DF3D0();
+    /** @brief Advance display transitions and the active target animation. */
+    virtual void func_001DF360();
     /** @brief Prepare record selection and count available option records. @return One on success, zero when required runtime data is missing. */
     virtual u8 func_00264110();
     /** @brief Store the associated state pointer. @param value Pointer to store. */
@@ -214,7 +216,7 @@ typedef struct ItemCreationSelectedDisplayState
     u8 resource_window_release_pending;
     u8 unk1a9[3];
     /** @brief Countdown used to schedule inventor resources. */
-    u32 inventor_resource_countdown;
+    s32 inventor_resource_countdown;
     /** @brief Line used by submission, abort, details and outcome dialogs; 0xFF when unset. */
     u8 dialog_line_index;
     /** @brief Lines excluded from further processing in the current run. */

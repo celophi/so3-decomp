@@ -5402,7 +5402,231 @@ extern "C" void func_003568F0(ItemCreationClass186770* object, u8 index, u8 mode
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00356A40);
+/**
+ * @brief Test whether a resource group's duration has finished.
+ * @param state Selection state.
+ * @param index Resource group.
+ * @return Nonzero when the group's finished flag is set.
+ */
+static inline u32 group_finished(ItemCreationSelectedDisplayState* state, u16 index)
+{
+    return state->line_stopped[index] != 0;
+}
+
+
+/**
+ * @brief Test whether any resource group is still running.
+ * @param state Selection state.
+ * @return False when all three groups have finished.
+ */
+static inline bool groups_pending(ItemCreationSelectedDisplayState* state)
+{
+    if (state->line_stopped[0] != 0 && state->line_stopped[1] != 0 && state->line_stopped[2] != 0)
+    {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief Reread the window's selection state.
+ * @param window Resource window.
+ * @return Selection state.
+ */
+// TODO: volatile is only known to match (keeps this load ahead of the slot index); find the real cause.
+static inline ItemCreationSelectedDisplayState* reread_state(ItemCreationClass186770* window)
+{
+    return *const_cast<ItemCreationSelectedDisplayState* volatile*>(&window->unka8);
+}
+
+/** @brief Refresh the resource meters and handle groups whose duration has run out. */
+void ItemCreationClass186770::func_slot5c()
+{
+    if (D_001B643C->unk10->unk14->func_00261150() == this && this->unka8 != 0)
+    {
+        for (s32 group = 0; group < 3; group++)
+        {
+            ItemCreationSelectedDisplayState* state = this->unka8;
+            if (state->line_targets[static_cast<s8>(group)] != 0 && state->line_development_enabled[group] != 0 &&
+            !group_finished(state, static_cast<u16>(group)))
+            {
+                s32 index = static_cast<u8>(group);
+                FieldClass15B200* meter = this->unk128[index];
+                float amount = state->line_time_meter_widths[group];
+                if (meter != 0)
+                {
+                    func_002D5260(meter, amount, 8.0f);
+                }
+                for (s32 entry = 0; entry < 3; entry++)
+                {
+                    state = reread_state(this);
+                    u8 code = state->line_inventor_states[group][entry];
+                    func_003568F0(this, static_cast<u8>(group * 3 + entry), code, 1);
+                }
+                this->unk164[group]->unk3f = 1;
+                LibClass178600* marker = static_cast<LibClass178600*>(this->unk11c[group]->unk30);
+                if (marker != 0)
+                {
+                    marker->unk3f = 1;
+                }
+                marker = static_cast<LibClass178600*>(this->unk128[group]->unk30);
+                if (marker != 0)
+                {
+                    marker->unk3f = 1;
+                }
+                bool active = true;
+                float value = this->unka8->line_quality_percentages[group];
+                if (this->unk11c[index] != 0)
+                {
+                    float width = 256.0f * (value / 100.0f);
+                    if (width <= 0.0f)
+                    {
+                        width = 0.0f;
+                        active = false;
+                    }
+                    func_002D5260(this->unk11c[index], width, 8.0f);
+                }
+                if (active == 0)
+                {
+                    this->unka8->development_processing_enabled = 0;
+                    func_0036C080(this->unka8, group, 0);
+                    if (this->unk128[index] != 0)
+                    {
+                        func_002D5260(this->unk128[index], 0.0f, 8.0f);
+                    }
+                    for (s32 entry = 0; entry < 3; entry++)
+                    {
+                        func_003568F0(this, static_cast<u8>(group * 3 + entry), 0, 0);
+                    }
+                    state = this->unka8;
+                    state->line_stopped[index] = 1;
+                    ItemCreationClass184EF0* target = state->line_targets[index];
+                    if (target != 0)
+                    {
+                        target->func_slot10();
+                    }
+                    state = this->unka8;
+                    if (state->resource_window != 0)
+                    {
+                        func_002FD940(state->resource_window);
+                        state->resource_window_release_pending = 1;
+                    }
+                    state->pending_secondary_resource_key = 0;
+                    state->pending_resource_key = 0;
+                    state->inventor_resource_countdown = 0;
+                    if (this->unk118 != 0)
+                    {
+                        func_003500D0(this->unk118, static_cast<u8>(group));
+                        this->unk118->func_slot20(1);
+                        D_001B643C->unk10->unk14->func_00263C70(this->unk118);
+                    }
+                    FieldObject23CEA0* grid = this->unk10c;
+                    if (grid != 0)
+                    {
+                        grid->FieldClass151C50::unk30 = 64.0f;
+                        grid->unkae = 1;
+                        this->unka8->development_processing_enabled = 0;
+                        state = this->unka8;
+                        if (state->resource_window != 0)
+                        {
+                            func_002FD940(state->resource_window);
+                            state->resource_window_release_pending = 1;
+                        }
+                        state->pending_secondary_resource_key = 0;
+                        state->pending_resource_key = 0;
+                        state->inventor_resource_countdown = 0;
+                    }
+                    func_00112400(D_001B65F8, 3, 0, 0, 127, 64, 0);
+                    return;
+                }
+            }
+            else
+            {
+                s32 index = static_cast<u8>(group);
+                if (this->unk128[index] != 0)
+                {
+                    func_002D5260(this->unk128[index], 0.0f, 8.0f);
+                }
+                if (this->unk11c[index] != 0)
+                {
+                    func_002D5260(this->unk11c[index], 0.0f, 8.0f);
+                }
+                for (s32 entry = 0; entry < 3; entry++)
+                {
+                    func_003568F0(this, static_cast<u8>(group * 3 + entry), 0, 0);
+                }
+                LibObject178750* display = this->unk134[group];
+                display->unk94 = 0x505050;
+                display->unk3c = 1;
+                display = this->unk140[group];
+                display->unk94 = 0x505050;
+                display->unk3c = 1;
+                display = this->unk14c[group];
+                display->unk94 = 0x505050;
+                display->unk3c = 1;
+                display = this->unk158[group];
+                display->unk94 = 0x505050;
+                display->unk3c = 1;
+                this->unk164[group]->unk3f = 0;
+            }
+        }
+        if (groups_pending(this->unka8))
+        {
+            FieldObject23CEA0* grid = this->unk10c;
+            u16 index = static_cast<u16>(grid->unk114);
+            if (this->unk134[index]->unk94 == 0x505050UL)
+            {
+                switch (index)
+                {
+                case 0:
+                    if (this->unk134[1]->unk94 == 0x505050UL)
+                    {
+                        if (this->unk134[2]->unk94 == 0x505050UL)
+                        {
+                            return;
+                        }
+                        index = 2;
+                    }
+                    else
+                    {
+                        index = 1;
+                    }
+                    break;
+                case 1:
+                    if (this->unk134[2]->unk94 == 0x505050UL)
+                    {
+                        if (this->unk134[0]->unk94 == 0x505050UL)
+                        {
+                            return;
+                        }
+                        index = 0;
+                    }
+                    else
+                    {
+                        index = 2;
+                    }
+                    break;
+                case 2:
+                    if (this->unk134[0]->unk94 == 0x505050UL)
+                    {
+                        if (this->unk134[1]->unk94 == 0x505050UL)
+                        {
+                            return;
+                        }
+                        index = 2;
+                    }
+                    else
+                    {
+                        index = 0;
+                    }
+                    break;
+                }
+                func_0023C550(grid, static_cast<u8>(index));
+            }
+            func_00356780(this, index);
+        }
+    }
+}
 
 void func_00356FD0(ItemCreationNineResourceView* object)
 {
@@ -8333,7 +8557,105 @@ CreationSkillWindow::CreationSkillWindow(ItemCreationSelectedDisplayState* state
     selectable_skill_mask = 0;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003608C0);
+/**
+ * @brief Return the creation-skill channels an inventor can be assigned to.
+ * @param inventor_id Inventor ID.
+ * @return All nine channels for a party inventor, otherwise the NPC's one skill channel.
+ */
+static inline u16 inventor_channel_mask(u8 inventor_id)
+{
+    if (is_party_inventor(inventor_id))
+    {
+        return 0x1FF;
+    }
+    return (u16)(1 << (inventor_talent_record(inventor_id - 1)->skill - 1));
+}
+/**
+ * @brief Restrict the permitted channels by an assigned inventor.
+ * @param mask Channel mask to narrow.
+ * @param value Inventor option code, or zero for an empty slot.
+ */
+static inline void restrict_channels(u32& mask, u8 value)
+{
+    if (value > 0)
+    {
+        ItemCreationInventorRecord* record = detail_record(option_list_index(value));
+        if (record)
+        {
+            mask &= inventor_channel_mask(record->inventor_id);
+        }
+    }
+}
+
+/** @brief Refresh the selected groups and clear assignments outside their permitted channels. */
+void AssignedInventorGrid::func_slot5c()
+{
+    ItemCreationSelectedDisplayState* state = static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14);
+    for (s32 index = 0; index < state->line_count; index++)
+    {
+        u8* channel = &state->line_skill_ids[(u16)index];
+        if (*channel > 0)
+        {
+            u32 mask = 0;
+            u32 first = state->assigned_inventor_option_codes[(u16)(index * 3)];
+            if (first != 0 || state->assigned_inventor_option_codes[(u16)(index * 3 + 1)] != 0 || state->assigned_inventor_option_codes[(u16)(index * 3 + 2)] != 0)
+            {
+                for (s32 slot = 0; slot < 8; slot++)
+                {
+                    if (this->unka8->workshop_skill_enabled[(u8)(slot + 1) - 1])
+                    {
+                        mask |= 1 << slot;
+                    }
+                }
+                restrict_channels(mask, first);
+                restrict_channels(mask, state->assigned_inventor_option_codes[(u16)(index * 3 + 1)]);
+                restrict_channels(mask, state->assigned_inventor_option_codes[(u16)(index * 3 + 2)]);
+            }
+            if (mask == 0 || !(mask & (1 << (*channel - 1))))
+            {
+                state->line_skill_ids[(u8)index] = 0;
+                state->line_plan_modes[(u8)index] = 0;
+                state->line_item_ids[(u16)index][0] = 0;
+                state->line_item_ids[(u16)index][1] = 0;
+                state->line_fol_costs[index] = 0;
+                item_creation_rebuild_line_target(state, index);
+            }
+        }
+        u16 selected = *channel;
+        u16 status = state->line_plan_modes[(u16)index];
+        if (selected)
+        {
+            this->unk1fc[index] = selected + 0x3457;
+            func_4C6DF0(this->unk194[index], this->func_slot54(), this->unk1fc[index], 0);
+        }
+        else
+        {
+            this->unk1fc[index] = 0x15FDD;
+            func_4C6DF0(this->unk194[index], this->func_slot54(), this->unk1fc[index], 0);
+        }
+        if (selected == 8)
+        {
+            this->unk208[index] = 0x15FD6;
+            func_4C6DF0(this->unk1a0[index], this->func_slot54(), this->unk208[index], 0);
+            this->unk1a0[index]->set_color(0x505050);
+        }
+        else if (status)
+        {
+            this->unk208[index] = status + 0x15FD3;
+            func_4C6DF0(this->unk1a0[index], this->func_slot54(), this->unk208[index], 0);
+            this->unk1a0[index]->set_color(0x808080);
+        }
+        else
+        {
+            this->unk208[index] = 0x15FDD;
+            func_4C6DF0(this->unk1a0[index], this->func_slot54(), this->unk208[index], 0);
+            this->unk1a0[index]->set_color(0x808080);
+        }
+        LibObject174F20* image = this->unk1ac[index];
+        image->numeric_value = state->line_fol_costs[index];
+        image->unk3c = 1;
+    }
+}
 
 void func_00360E60(AssignedInventorGrid* object, u16 mode)
 {
@@ -13078,7 +13400,374 @@ void item_creation_schedule_inventor_resource(ItemCreationSelectedDisplayState* 
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0036C340);
+/** Partial native animation (only the attachment fields used here). */
+struct ItemCreationRuntimeAnimation
+{
+    u8 unk00[0xC0];
+    void* unkc0;
+    u8 unkc4[0x2C];
+    u8 unkf0;
+};
+/** Partial resident animation owner reached through the field context's object 0x38. */
+struct ItemCreationAnimationOwner
+{
+    u8 unk00[0x5A4];
+    ItemCreationRuntimeAnimation* unk5a4;
+};
+/** Partial runtime section 1: the wide-screen flag at 0x18C. */
+struct ItemCreationRuntimeSection1
+{
+    u8 unk00[0x18C];
+    u8 unk18c;
+};
+/** Partial view of D_001B643C's geometry receiver at 0x1C. */
+struct ItemCreationRuntime643CGeometry
+{
+    u8 unk00[0x1C];
+    LibClass171EC0* unk1c;
+};
+extern "C"
+{
+    /** Attachment for the window-group animation. */
+    // TODO: volatile is only known to match (keeps the attach argument a separate temp); find the real cause.
+    extern void* volatile D_001B6694;
+    extern s16 D_0036F400[][2];
+    extern s16 D_0036F402[][2];
+    s32 func_002FDA70(FieldClass15BB90* object, s32 first, s32 second);
+    void func_002FD2E0(FieldClass15BB90* object, float first, float second, float third, float fourth, float fifth);
+    void func_002FB560(FieldStateTargets* object);
+    void func_40B7E0(ItemCreationRuntimeData* records);
+    ItemCreationRuntimeAnimation* func_0020F230(ItemCreationAnimationOwner* owner, u32 index, s32 first, s32 second,
+                                                float duration, float angle, float distance, u32 mode, u32 extra, u32 flags);
+    s32 func_0022A160(ItemCreationRuntimeAnimation* animation);
+}
+/** @brief View a status window as its float-state block. @param object Status window. @return Same object. */
+static inline FieldFloatState5C* window_float_state(FieldClass15BB90* object)
+{
+    return reinterpret_cast<FieldFloatState5C*>(object);
+}
+/** @brief Find the resident animation owner through the field context. @return Animation owner. */
+static inline ItemCreationAnimationOwner* animation_owner()
+{
+    return reinterpret_cast<ItemCreationAnimationOwner*>(D_001B6430->context->unk38);
+}
+
+/** @brief Read a line target's kind. @param target Line target. @return Kind byte. */
+static inline u32 target_kind(const FieldStateTargets* target)
+{
+    return target->unk83;
+}
+/**
+ * @brief Fill a four-component vector.
+ * @param vector Vector to fill.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ * @param w Fourth component.
+ */
+static inline void initialize_vector(LibVector4* vector, float x, float y, float z, float w)
+{
+    vector->components[0] = x;
+    vector->components[1] = y;
+    vector->components[2] = z;
+    vector->components[3] = w;
+}
+
+/** @brief Set the status window's five geometry floats. @param window Status window. @param a Angle. @param b Distance. @param c Pitch. @param d Height. @param e Offset. */
+static inline void set_window_geometry(FieldClass15BB90* window, float a, float b, float c, float d, float e)
+{
+    func_002FD1B0(window_float_state(window), a, b, c, d, e);
+}
+/**
+ * @brief Attach an object to the owner's current animation.
+ * @param owner Animation owner.
+ * @param attachment Object to attach.
+ * @param phase Animation phase.
+ */
+static inline void attach_animation(ItemCreationAnimationOwner* owner, void* attachment, u8 phase)
+{
+    ItemCreationRuntimeAnimation* animation = owner->unk5a4;
+    animation->unkc0 = attachment;
+    animation->unkf0 = phase;
+}
+
+/** @brief Advance display transitions and active target animation. */
+void ItemCreationSelectedDisplayState::func_001DF360()
+{
+    if (resource_window_release_pending)
+    {
+        if (resource_window && func_002FD480(resource_window))
+        {
+            if (resource_window)
+            {
+                resource_window->func_001DD7B0();
+                resource_window = 0;
+            }
+            resource_window_release_pending = 0;
+        }
+    }
+    if (pending_resource_key > 0 && !resource_window)
+    {
+        resource_window = new(0) FieldClass15BB90;
+        LibVector4 vector;
+        initialize_vector(&vector, 400.0f, -400.0f, 500.0f, 1.0f);
+        reinterpret_cast<ItemCreationRuntime643CGeometry*>(D_001B643C)->unk1c->func_003EF780(&vector);
+        resource_window->unk5b = 1;
+        func_002FD220(resource_window, reinterpret_cast<ItemCreationRuntime643CGeometry*>(D_001B643C)->unk1c);
+        func_002FD1D0(resource_window);
+        ItemCreationRuntimeSection1* section = static_cast<ItemCreationRuntimeSection1*>(func_101440(func_101290(func_10D8E0()), 1));
+        if (pending_resource_key > 487)
+        {
+            if (pending_secondary_resource_key)
+            {
+                func_002FDA70(resource_window, pending_resource_key, pending_secondary_resource_key);
+            }
+            else
+            {
+                func_002FDC00(resource_window, pending_resource_key);
+            }
+            s32 difference = 0;
+            if (pending_secondary_resource_key)
+            {
+                difference = pending_secondary_resource_key - pending_resource_key;
+            }
+            if (section->unk18c)
+            {
+                resource_placement_offset = 0.6f * D_0036F402[pending_resource_key - 538 + difference][0];
+                resource_placement_radius = 510.0f;
+                resource_motion_offset = 360.0f;
+            }
+            else
+            {
+                resource_placement_offset = D_0036F400[pending_resource_key - 538 + difference][0];
+                resource_placement_radius = 450.0f;
+                resource_motion_offset = 320.0f;
+            }
+        }
+        else
+        {
+            func_002FDC00(resource_window, pending_resource_key);
+            if (section->unk18c)
+            {
+                set_window_geometry(resource_window, 0.5235988f, 600.0f, 0.34906584f, 120.0f, 35.0f);
+            }
+            else
+            {
+                set_window_geometry(resource_window, 0.5235988f, 500.0f, 0.34906584f, 90.0f, 50.0f);
+            }
+        }
+        D_001B6614->func_004D74F0(resource_window, (void*)-1);
+        if (section->unk18c)
+        {
+            inventor_resource_countdown = 750;
+        }
+        else
+        {
+            inventor_resource_countdown = 650;
+        }
+        pending_secondary_resource_key = 0;
+        pending_resource_key = 0;
+    }
+    switch (update_phase)
+    {
+    case 0:
+        if (!window_setup_ready)
+        {
+            break;
+        }
+        update_phase = 1;
+        break;
+    case 1:
+        update_phase = 2;
+        return;
+    case 2:
+        if (requested_window_group == 2)
+        {
+            if (development_processing_enabled)
+            {
+                for (s32 index = 0; index < 3; index++)
+                {
+                    if (line_development_enabled[index] && !line_stopped[index])
+                    {
+                        line_time_meter_widths[index] += 256.0f / line_target_update_intervals[index];
+                        if (!(line_time_meter_widths[index] <= 256.0f))
+                        {
+                            line_time_meter_widths[index] = 0.0f;
+                        }
+                        if (unk191[index][0] > 0)
+                        {
+                            if (--unk191[index][0] <= 0)
+                            {
+                                func_002FB560(line_targets[index]);
+                                for (s32 column = 0; column < 3; column++)
+                                {
+                                    if (assigned_inventor_option_codes[index * 3 + column])
+                                    {
+                                        line_inventor_states[index][column] = func_002FB510(line_targets[index], column);
+                                    }
+                                }
+                            }
+                        }
+                        line_target_update_countdowns[index] -= 1.0f;
+                        if (line_target_update_countdowns[index] <= 0.0f && line_target_update_results[index] != 2)
+                        {
+                            line_target_update_countdowns[index] = line_target_update_intervals[index];
+                            line_time_meter_widths[index] = 0.0f;
+                            line_target_update_results[index] = line_targets[index]->func_slot08();
+                            ItemCreationClass184EF0* target = line_targets[index];
+                            if (target_kind(target) != 1 && line_target_update_results[index] == 2)
+                            {
+                                development_processing_enabled = 0;
+                                line_stopped[(u8)index] = 1;
+                                ItemCreationClass184EF0* selected = line_targets[(u8)index];
+                                if (selected)
+                                {
+                                    selected->func_slot0c();
+                                }
+                                dialog_line_index = index;
+                                if (resource_window)
+                                {
+                                    func_002FD940(resource_window);
+                                    resource_window_release_pending = 1;
+                                }
+                                pending_secondary_resource_key = 0;
+                                pending_resource_key = 0;
+                                inventor_resource_countdown = 0;
+                                InventionSuccessDialog* popup = new(0) InventionSuccessDialog;
+                                popup->func_slotf4(func_00263CC0());
+                                FieldClass153E30::func_00263FD0(popup);
+                                FieldClass153E30::unk20 = popup;
+                                func_00112400(D_001B65F8, 18, 0, 0, 127, 64, 0);
+                                break;
+                            }
+                            else if (target->unk88[2])
+                            {
+                                development_processing_enabled = 0;
+                                line_stopped[(u8)index] = 1;
+                                ItemCreationClass184EF0* selected = line_targets[(u8)index];
+                                if (selected)
+                                {
+                                    selected->func_slot10();
+                                }
+                                func_0036C080(this, index, 0);
+                                dialog_line_index = index;
+                                if (resource_window)
+                                {
+                                    func_002FD940(resource_window);
+                                    resource_window_release_pending = 1;
+                                }
+                                pending_secondary_resource_key = 0;
+                                pending_resource_key = 0;
+                                inventor_resource_countdown = 0;
+                                func_003500D0(inadequate_line_dialog, (u8)index);
+                                inadequate_line_dialog->func_slot20(1);
+                                FieldClass153E30::unk20 = inadequate_line_dialog;
+                                func_00112400(D_001B65F8, 3, 0, 0, 127, 64, 0);
+                                break;
+                            }
+                            else
+                            {
+                                float percent;
+                                if (target->unk83 == 3)
+                                {
+                                    percent = 100.0f;
+                                }
+                                else
+                                {
+                                    percent = 100.0f * ((float)target->unk68 / (float)target->unk64);
+                                }
+                                line_quality_percentages[index] = percent;
+                                for (s32 column = 0; column < 3; column++)
+                                {
+                                    if (assigned_inventor_option_codes[index * 3 + column])
+                                    {
+                                        line_inventor_states[index][column] = func_002FB510(line_targets[index], column);
+                                    }
+                                }
+                                unk191[index][0] = 90;
+                                s32 value = checked_fol(D_001B643C->unk00);
+                                if (value < 0)
+                                {
+                                    value = 0;
+                                }
+                                ItemCreationControlHelp* display = control_help;
+                                if (display)
+                                {
+                                    if (display->unkd0)
+                                    {
+                                        LibObject174F20* quantity = display->unkd0;
+                                        quantity->numeric_value = value;
+                                        quantity->unk3c = 1;
+                                    }
+                                    if (display->unkd8)
+                                    {
+                                        LibObject174F20* quantity = display->unkd8;
+                                        quantity->numeric_value = value;
+                                        quantity->unk3c = 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (development_processing_enabled)
+                {
+                    if (--inventor_resource_countdown < 0)
+                    {
+                        item_creation_schedule_inventor_resource(this);
+                    }
+                    if (resource_window)
+                    {
+                        resource_motion_offset -= 0.9f;
+                        func_002FD2E0(resource_window, resource_placement_radius, 0.34906584f, 1.5707964f, resource_motion_offset, 0.75f * resource_placement_offset);
+                    }
+                    s32 previous = runtime_data_update_countdown--;
+                    if (previous < 0)
+                    {
+                        func_40B7E0(D_001B64F8);
+                        runtime_data_update_countdown = 360;
+                    }
+                }
+            }
+        }
+        if (window_group_snapshot != requested_window_group)
+        {
+            window_group_change_pending = 1;
+            func_0020F230(animation_owner(), 0, 0, (s32)0x80000000, 4.0f, 0.0f, 0.0f, 0, 0, 0);
+            attach_animation(animation_owner(), D_001B6694, 10);
+            update_phase = 3;
+        }
+        break;
+    case 3:
+    {
+        ItemCreationRuntimeAnimation* animation = animation_owner()->unk5a4;
+        if (!animation || !(func_0022A160(animation) & 0xFF))
+        {
+            if (!resource_window_release_pending || !resource_window || (func_002FD480(resource_window) & 0xFF))
+            {
+                if (window_group_change_pending)
+                {
+                    update_phase = 4;
+                }
+                else
+                {
+                    update_phase = 2;
+                }
+            }
+        }
+        break;
+    }
+    case 4:
+    {
+        item_creation_activate_window_group(this, requested_window_group);
+        window_group_change_pending = 0;
+        func_0020F230(animation_owner(), 0, (s32)0x80000000, 0, 4.0f, 0.0f, 0.0f, 0, 0, 0);
+        attach_animation(animation_owner(), D_001B6694, 10);
+        update_phase = 3;
+        break;
+    }
+    }
+}
 
 s32 func_0036CD60(void* object)
 {
