@@ -25,7 +25,7 @@ import subprocess
 import sys
 
 from tools.so3 import ROOT
-from tools.so3.build.main import first_difference, sha256
+from tools.so3.build.main import MAIN_CONFIG, first_difference, original_main, sha256
 from tools.so3.formats import OVERLAY_HEADER_SIZE, overlay_info, require
 
 BUILD = Path('build/overlays')
@@ -66,6 +66,19 @@ def load_config(path):
             require(segment['vram'] == info['load_address'] + segment['start'],
                     f'{path}: segment does not map to its runtime address')
     return config, original
+
+
+def module_configs():
+    """Every module's config: the main executable's first, then the overlays by name."""
+    return [MAIN_CONFIG, *sorted(CONFIGS.glob('*.yaml'))]
+
+
+def load_module(path):
+    """Load any module's config and original file, the main executable's included."""
+    if path.name == MAIN_CONFIG.name:
+        import yaml
+        return yaml.safe_load(path.read_text()), original_main()
+    return load_config(path)
 
 
 def compared_discs(name, config, original):

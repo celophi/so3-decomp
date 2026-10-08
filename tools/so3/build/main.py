@@ -37,6 +37,11 @@ DISC = 'us-disc1'
 VERIFY_SCOPE = 'C/assembly scaffold; resident data/VU region and ELF metadata retained.'
 
 
+def module_name(config_path):
+    """The name a Splat config's module goes by: 'main', or the overlay's name."""
+    return 'main' if config_path.name == MAIN_CONFIG.name else config_path.stem
+
+
 def sha256(data):
     return hashlib.sha256(data).hexdigest()
 

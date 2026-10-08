@@ -33,8 +33,8 @@ import sys
 from tools.so3.build.assembly import ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, LITTLE_ENDIAN
 from tools.so3.build.compile import MWCCGAP_DIR, module_lists, thunk_map_path
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, setup, working_candidate
-from tools.so3.build.main import MAIN_CONFIG, ROOT, VERSIONS, original_main
-from tools.so3.build.overlays import CONFIGS, load_config
+from tools.so3.build.main import MAIN_CONFIG, ROOT, VERSIONS, module_name
+from tools.so3.build.overlays import load_module, module_configs
 from tools.so3.build.sdk import MANIFEST as SDK_MANIFEST, code_units, validate_sdk_units
 from tools.so3.build.subsegments import subsegment_parts
 from tools.so3.build.text_order import symbol_addresses
@@ -205,7 +205,7 @@ class Module:
         self.config = config
         self.options = options = config['options']
         self.is_main = path.name == MAIN_CONFIG.name
-        self.name = 'main' if self.is_main else path.stem
+        self.name = module_name(path)
         self.output = Path(options['build_path'])
         self.layout = options['ld_script_path']
         self.undefined_functions = options['undefined_funcs_auto_path']
@@ -388,16 +388,13 @@ def run(configs, command):
 
 
 def main():
-    import yaml
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('command', choices=('split', 'build', 'objdiff-objects', 'report'))
     args = parser.parse_args()
     os.chdir(ROOT)
     try:
-        # This checks the original main executable is there and is the version I expect.
-        original_main()
-        configs = [(MAIN_CONFIG, yaml.safe_load(MAIN_CONFIG.read_text()))]
-        configs += [(path, load_config(path)[0]) for path in sorted(CONFIGS.glob('*.yaml'))]
+        # Loading each module also checks its original file is the version I support.
+        configs = [(path, load_module(path)[0]) for path in module_configs()]
         run(configs, args.command)
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         print(f'error: {error}', file=sys.stderr)
