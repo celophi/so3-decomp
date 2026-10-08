@@ -1,0 +1,200 @@
+"""Check that splat's linker scripts turn into MWLDPS2 command files that link the same bytes."""
+
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import tempfile
+import unittest
+
+from tools.so3.build.assembly import LITTLE_ENDIAN
+from tools.so3.build.compiler_probe import COMPILER_EXE, COMPILERS, CONFIG, LINKER_EXE, working_candidate
+from tools.so3.build.driver import BINARY_ARCHITECTURE, BINARY_OBJECT_FORMAT, BINUTILS_PREFIX, MWLDPS2_FLAGS
+from tools.so3.build.lcf import command_file, parse_linker_script, symbol_definitions
+from tools.so3.formats import FormatError
+
+# Each line splat writes inside a section, and what it should become.
+LINE_TRANSLATIONS = [
+    ('build/mod/src/code.c.o(.text);', 'code.c.o (.text)'),
+    ('build/mod/src/code.c.o(.rodata.00001200);', 'code.c.o (.rodata.00001200)'),
+    ('. = ALIGN(., 16);', '. = ALIGN(0x10);'),
+    ('. += 0x10;', '. = . + 0x10;'),
+]
+
+# Each kind of section header, and the lines it should start with.
+HEADER_TRANSLATIONS = [
+    ('.text 0x1010 : AT(text_ROM_START) SUBALIGN(16)', ['. = 0x1010;', 'ALIGNALL(16);']),
+    ('.text 0x1010 : AT(text_ROM_START)', ['. = 0x1010;']),
+    ('.data : AT(data_ROM_START) SUBALIGN(4)', ['ALIGNALL(4);']),
+    ('.text_bss (NOLOAD) : SUBALIGN(16)', ['ALIGNALL(16);']),
+]
+
+# splat's bookkeeping, which should leave nothing behind.
+BOOKKEEPING_LINES = [
+    'HIDDEN(__romPos = 0);',
+    'text_ROM_START = __romPos;',
+    'text_VRAM = ADDR(.text);',
+    'text_DATA_START = .;',
+    'text_DATA_SIZE = ABSOLUTE(text_DATA_END - text_DATA_START);',
+    '__romPos += SIZEOF(.text);',
+    '__romPos = ALIGN(__romPos, 16);',
+    'FILL(0x00000000);',
+]
+
+
+def splat_script(*lines, header='.text : AT(text_ROM_START)', before=()):
+    """A splat script with the given lines in one section.
+
+    An empty section at 0x1000 comes first, because the command file has to
+    start from a fixed address, so every converted body starts `. = 0x1000;`.
+    """
+    top = ''.join(f'    {line}\n' for line in before)
+    body = ''.join(f'        {line}\n' for line in lines)
+    return (f'SECTIONS\n{{\n{top}    .start 0x1000 : AT(0)\n    {{\n    }}\n'
+            f'    {header}\n    {{\n{body}    }}\n'
+            f'    /DISCARD/ :\n    {{\n        *(*);\n    }}\n}}\n')
+
+
+def converted(script, symbols=()):
+    sections, gp = parse_linker_script(script)
+    return command_file(sections, gp, list(symbols))
+
+
+def section_body(script):
+    """The command file lines for the script's sections, after the entry point and without comments."""
+    lines = [line.strip() for line in converted(script).splitlines()]
+    body = lines[lines.index('__start = .;') + 1:lines.index('} > module')]
+    return [line for line in body if not line.startswith('#')]
+
+
+class TranslationTests(unittest.TestCase):
+    def test_lines_inside_a_section(self):
+        for splat_line, expected in LINE_TRANSLATIONS:
+            with self.subTest(splat_line):
+                self.assertEqual(section_body(splat_script(splat_line)), ['. = 0x1000;', expected])
+
+    def test_section_headers(self):
+        for header, expected in HEADER_TRANSLATIONS:
+            with self.subTest(header):
+                body = section_body(splat_script('code.c.o(.text);', header=header))
+                self.assertEqual(body, ['. = 0x1000;', *expected, 'code.c.o (.text)'])
+
+    def test_bookkeeping_is_left_out(self):
+        self.assertEqual(section_body(splat_script(*BOOKKEEPING_LINES)), ['. = 0x1000;'])
+
+    def test_whole_file_layout(self):
+        script = splat_script('code.c.o(.text);', before=['_gp = 0x1BDFF0;'])
+        lines = [line.strip() for line in converted(script, ['func_2000 = 0x2000;']).splitlines()]
+        self.assertIn('module (RWX) : ORIGIN = 0x1000, LENGTH = 0', lines)
+        self.assertEqual(lines[lines.index('.module : {') + 1], '__start = .;')
+        # The gp value and the symbol addresses come last.
+        self.assertEqual(lines[-4:], ['_gp = 0x1BDFF0;', 'func_2000 = 0x2000;', '} > module', '}'])
+
+
+class RefusalTests(unittest.TestCase):
+    def test_unknown_lines_stop_the_conversion(self):
+        for line in ('KEEP(*(.init));', 'build/mod/a.o(.text) build/mod/b.o(.text);', 'INCLUDE other.ld'):
+            with self.subTest(line), self.assertRaisesRegex(ValueError, 'no MWLDPS2 equivalent'):
+                converted(splat_script(line))
+
+    def test_objects_with_the_same_file_name(self):
+        script = splat_script('build/one/code.c.o(.text);', 'build/two/code.c.o(.data);')
+        with self.assertRaisesRegex(FormatError, 'share a file name'):
+            converted(script)
+
+    def test_symbol_scripts_must_be_plain_addresses(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'symbols.ld'
+            path.write_text('func_2000 = 0x2000;\n\nD_3000 = 0x3000;\n')
+            self.assertEqual(symbol_definitions([path]), ['func_2000 = 0x2000;', 'D_3000 = 0x3000;'])
+            path.write_text('func_2000 = func_1000 + 4;\n')
+            with self.assertRaisesRegex(FormatError, 'not a plain symbol address'):
+                symbol_definitions([path])
+
+
+def compiler_folder():
+    return COMPILERS / working_candidate(json.loads(CONFIG.read_text()))['id']
+
+
+# A tiny module, laid out like the real overlays: a header, then the code and
+# its read-only data, then a data block. It's written out in full, the way
+# splat writes it. (The helper above starts with an empty section, which GNU ld
+# throws away without moving to its address, so the two linkers would disagree.)
+TINY_MODULE = """SECTIONS
+{
+    .text 0x1000 : AT(0) SUBALIGN(4)
+    {
+        header.bin.o(.data);
+        code.c.o(.text);
+        . = ALIGN(., 16);
+        code.c.o(.rodata);
+        . = ALIGN(., 16);
+        data.bin.o(.data);
+    }
+    /DISCARD/ :
+    {
+        *(*);
+    }
+}
+"""
+HEADER = b'MWo3' + bytes(12)
+DATA = bytes(range(16))
+CODE = ('extern int D_3000;\n'
+        'static const int table[4] = {1, 2, 3, 4};\n'
+        'int entry(int index) { return table[index] + D_3000; }\n')
+SYMBOLS = ['D_3000 = 0x3000;']
+OBJECTS = ('header.bin.o', 'code.c.o', 'data.bin.o')
+
+
+@unittest.skipUnless(shutil.which(f'{BINUTILS_PREFIX}ld') and shutil.which('wibo')
+                     and (compiler_folder() / LINKER_EXE).exists(),
+                     'requires development binutils, wibo and the downloaded compiler')
+class LinkTests(unittest.TestCase):
+    """Link a tiny module with both linkers and compare the images."""
+
+    def run_tool(self, *command):
+        result = subprocess.run(command, capture_output=True, text=True, cwd=self.work)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def build_objects(self):
+        # The same way driver.py builds them: blobs wrapped by objcopy, and the
+        # code compiled with MWCC.
+        (self.work / 'header.bin').write_bytes(HEADER)
+        (self.work / 'data.bin').write_bytes(DATA)
+        for name in ('header', 'data'):
+            self.run_tool(f'{BINUTILS_PREFIX}objcopy', '-I', 'binary', '-O', BINARY_OBJECT_FORMAT,
+                          '-B', BINARY_ARCHITECTURE, f'{name}.bin', f'{name}.bin.o')
+        (self.work / 'code.c').write_text(CODE)
+        self.run_tool('wibo', str(compiler_folder() / COMPILER_EXE), '-c', '-O3,p', '-o', 'code.c.o', 'code.c')
+
+    def link_with_gnu_ld(self):
+        (self.work / 'layout.ld').write_text(TINY_MODULE + '\n'.join(SYMBOLS) + '\n')
+        self.run_tool(f'{BINUTILS_PREFIX}ld', LITTLE_ENDIAN, '-T', 'layout.ld', '-o', 'gnu.elf', *OBJECTS)
+        return self.flat_image('gnu.elf')
+
+    def link_with_mwldps2(self):
+        (self.work / 'layout.lcf').write_text(converted(TINY_MODULE, SYMBOLS))
+        self.run_tool('wibo', str(compiler_folder() / LINKER_EXE), *MWLDPS2_FLAGS.split(),
+                      '-o', 'mw.elf', 'layout.lcf', *OBJECTS)
+        return self.flat_image('mw.elf')
+
+    def flat_image(self, elf):
+        image = Path(elf).with_suffix('.bin').name
+        self.run_tool(f'{BINUTILS_PREFIX}objcopy', '-O', 'binary', elf, image)
+        return (self.work / image).read_bytes()
+
+    def test_both_linkers_make_the_same_image(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.work = Path(directory)
+            self.build_objects()
+            gnu_image = self.link_with_gnu_ld()
+            # Make sure the image really has everything in it, so two empty
+            # images can't pass as equal.
+            self.assertTrue(gnu_image.startswith(HEADER))
+            self.assertTrue(gnu_image.endswith(DATA))
+            self.assertGreater(len(gnu_image), len(HEADER) + len(DATA))
+            self.assertEqual(self.link_with_mwldps2(), gnu_image)
+
+
+if __name__ == '__main__':
+    unittest.main()

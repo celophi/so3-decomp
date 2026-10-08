@@ -64,10 +64,12 @@ There's one awkward detail: the main executable contains the string
 `3.0.0`. Several older releases write the same `2.4.1.01` string. It could
 have come from an older library or linker, but I don't know yet.
 
-I'm using PS2 GNU binutils to assemble and link the rebuild. I haven't
-identified the original linker. Field's class and exception tables live in
-the main executable even though they refer to overlay code, which suggests
-the original build linked the code together before separating the overlays.
+I'm using PS2 GNU binutils to assemble the rebuild and to link most of it. I
+think the original linker was CodeWarrior's own, MWLDPS2, and I'm starting to
+move the build over to it (see Linking below). Field's class and exception
+tables live in the main executable even though they refer to overlay code,
+which suggests the original build linked the code together before separating
+the overlays.
 
 I'd still like to compare more complex functions, especially C++ and
 floating-point code, in case something else separates the builds. The SDK
@@ -154,6 +156,61 @@ my best guess because of the padding before it.
 I'd like to come back to this once I've worked out where 1070's real files
 start and end. Then it could work the same way as 1067.
 
+## Linking
+
+Up to now I've linked everything with GNU ld, which is what splat sets
+projects up for. I'm moving the build over to MWLDPS2, the linker that comes
+with CodeWarrior, since that's most likely what the game was built with. Other
+CodeWarrior decomps do the same, like Monster Hunter and Persona 3 on PS2, and
+most of the GameCube ones.
+
+The main reason is C++. When a file uses an inline function (one written in a
+header so it can be pasted into the code that calls it), the compiler also
+leaves a normal copy of it in that file, and the linker is meant to keep just
+one. GNU ld doesn't know how to do that with CodeWarrior's objects, so my build
+has been doing it by hand, by looking up where the game kept each copy.
+
+I hoped the original linker would also put those copies in the right order.
+It doesn't. I tried it, and MWLDPS2 keeps whatever order the compiler wrote.
+From what I can tell, the compiler writes a copy right after the first
+function that needs it, so when a copy ends up in the wrong place, it's my
+source that's different, not the linker. Most of the time the function that
+needs it is still assembly, so that should sort itself out as I decompile
+more. In one case it meant a file boundary was wrong: the destructor at
+0x20D9A0 really belongs to the file before it, so that file now starts at
+0x20DA30.
+
+So far only `cmc` links with MWLDPS2. Splat only writes linker scripts for GNU
+ld, so the build translates splat's script into MWLDPS2's own kind, a linker
+command file (`.lcf`), with
+[tools/so3/build/lcf.py](../tools/so3/build/lcf.py). `cmc` still comes out
+identical to the game's. Everything else still uses GNU ld for now, and the
+modules that use MWLDPS2 are listed in
+[config/manifests/linker.json](../config/manifests/linker.json).
+
+A few things I learned about MWLDPS2 on the way:
+
+- Everything has to go in one output section. When I gave each part its own,
+  it wrote a broken result.
+- The command file names objects by their file name only, not their path.
+- It refuses the `NON_MATCHING` marker symbols splat adds to every assembly
+  function, so `cmc`'s config turns those off.
+
+There are two problems I still need to solve before other modules can switch:
+
+- Data pieces assembled with GNU as always carry empty `.text`, `.data` and
+  `.bss` sections, and MWLDPS2 refuses them. `cmc` doesn't have any, which is
+  why it worked first.
+- GNU ld can lower a section's alignment, and a few of Lib's files rely on
+  that. As far as I can tell, MWLDPS2's closest option can only raise it.
+
+The bigger goal is linking the main program and its overlays together in one
+go, the way the original seems to have been built. That would put Field's
+class tables back where they belong and let the build check them, instead of
+throwing the compiled ones away like it does now. I'll need a lot more of the
+main program's data worked out first. 1070 will probably have to stay its own
+link either way, since it seems to have been built against an older main
+program (see above).
 
 ## Sony libraries in Lib.bin
 

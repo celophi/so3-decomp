@@ -32,7 +32,7 @@ import sys
 
 from tools.so3.build.assembly import ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, LITTLE_ENDIAN
 from tools.so3.build.compile import MWCCGAP_DIR, module_lists, thunk_map_path
-from tools.so3.build.compiler_probe import COMPILERS, CONFIG, setup, working_candidate
+from tools.so3.build.compiler_probe import COMPILERS, CONFIG, LINKER_EXE, setup, working_candidate
 from tools.so3.build.main import MAIN_CONFIG, ROOT, VERSIONS, module_name
 from tools.so3.build.overlays import load_module, module_configs
 from tools.so3.build.sdk import MANIFEST as SDK_MANIFEST, code_units, validate_sdk_units
@@ -66,6 +66,13 @@ HEADER_SUFFIXES = ('.h', '.hpp', '.inc')
 
 OBJDIFF_VERSION = '3.8.2'
 
+# The modules that link with MWLDPS2, the game's original linker, instead of GNU
+# ld. I'm moving them over one at a time.
+LINKER_CONFIG = ROOT / 'config/manifests/linker.json'
+# Keep functions nothing calls (MWLDPS2 strips them by default), and don't pull
+# in Metrowerks' standard libraries.
+MWLDPS2_FLAGS = '-nostdlib -nodeadstrip'
+
 # The scripts and inputs each step reads. If one changes, ninja reruns the step.
 SPLIT_INPUTS = ['tools/so3/build/driver.py', 'tools/so3/__init__.py', 'tools/so3/formats.py',
                 'tools/so3/build/sdk.py', 'tools/so3/build/subsegments.py', str(SDK_MANIFEST)]
@@ -77,6 +84,7 @@ COMPILE_INPUTS = ['tools/so3/build/compile.py', 'tools/so3/build/compiler_probe.
                   'tools/so3/__init__.py', 'config/manifests/compilers.json',
                   f'{MWCCGAP_DIR}/mwccgap/mwccgap.py']
 ABSOLUTE_SYMBOL_INPUTS = ['tools/so3/build/linker_symbols.py', 'tools/so3/build/text_order.py']
+COMMAND_FILE_INPUTS = ['tools/so3/build/lcf.py', 'tools/so3/formats.py', str(LINKER_CONFIG.relative_to(ROOT))]
 
 # INCLUDE_ASM and INCLUDE_RODATA placeholders, which pull in a .s file by folder and name.
 ASM_INCLUDE = re.compile(r'INCLUDE_(?:ASM|RODATA)\("([^"\n]+)",\s*([\w.$]+)\)')
@@ -174,16 +182,30 @@ def ninja_rules():
         'rule link',
         f'  command = ${{binutils}}ld {LITTLE_ENDIAN} -T $layout -T $functions -T $symbols $absolute_symbols -o $out',
         '  description = LD $out',
+        'rule command_file',
+        '  command = python -m tools.so3.build.lcf $in --output $out',
+        '  description = LCF $out',
+        'rule mwld_link',
+        f'  command = wibo $linker {MWLDPS2_FLAGS} -o $out $command_file $in',
+        '  description = MWLD $out',
         'rule binary_image', '  command = ${binutils}objcopy -O binary $in $out',
         '  description = IMAGE $out',
         'rule verify', '  command = $verify_command', '  description = VERIFY $module', '',
     ]
 
 
+def working_compiler_folder():
+    record = working_candidate(json.loads(CONFIG.read_text()))
+    return COMPILERS.relative_to(ROOT) / record['id']
+
+
 def working_compiler_files():
     record = working_candidate(json.loads(CONFIG.read_text()))
-    folder = COMPILERS.relative_to(ROOT) / record['id']
-    return [str(folder / name) for name in record['files']]
+    return [str(working_compiler_folder() / name) for name in record['files']]
+
+
+def mwldps2_modules():
+    return set(json.loads(LINKER_CONFIG.read_text())['mwldps2_modules'])
 
 
 def project_headers():
@@ -200,14 +222,16 @@ def write_if_changed(path, content):
 class Module:
     """The paths and settings one module's part of the build needs."""
 
-    def __init__(self, path, config):
+    def __init__(self, path, config, uses_mwldps2=False):
         self.config_path = path
+        self.uses_mwldps2 = uses_mwldps2
         self.config = config
         self.options = options = config['options']
         self.is_main = path.name == MAIN_CONFIG.name
         self.name = module_name(path)
         self.output = Path(options['build_path'])
         self.layout = options['ld_script_path']
+        self.command_file = str(Path(self.layout).with_suffix('.lcf'))
         self.undefined_functions = options['undefined_funcs_auto_path']
         self.undefined_symbols = options['undefined_syms_auto_path']
         self.symbol_maps = options.get('symbol_addrs_path', [])
@@ -258,6 +282,24 @@ class Module:
         # Compiled objects go under the build folder. Splat's assembly is
         # already under build/, so its objects sit next to it.
         return f'{self.output / source}.o' if rule == 'compile' else f'{source}.o'
+
+
+def link_rules(module, objects):
+    """Link the module's objects into linked.elf, with GNU ld or MWLDPS2."""
+    symbol_scripts = [module.undefined_functions, module.undefined_symbols]
+    if module.absolute_symbols:
+        symbol_scripts.append(str(module.absolute_symbols))
+    linked = f'{module.output}/linked.elf'
+    if module.uses_mwldps2:
+        linker = working_compiler_folder() / LINKER_EXE
+        return [f'build {module.command_file}: command_file {module.layout} {" ".join(symbol_scripts)} | '
+                f'{" ".join(COMMAND_FILE_INPUTS)}',
+                f'build {linked}: mwld_link {" ".join(objects)} | {module.command_file} {linker}',
+                f'  command_file = {module.command_file}', f'  linker = {linker}']
+    absolute = f' -T {module.absolute_symbols}' if module.absolute_symbols else ''
+    return [f'build {linked}: link {" ".join(objects)} | {module.layout} {" ".join(symbol_scripts)}',
+            f'  layout = {module.layout}', f'  functions = {module.undefined_functions}',
+            f'  symbols = {module.undefined_symbols}', f'  absolute_symbols ={absolute}']
 
 
 def module_rules(module, headers, compiler_files, sdk_sources):
@@ -316,14 +358,8 @@ def module_rules(module, headers, compiler_files, sdk_sources):
         report_units.append(unit)
         progress_objects.append(unit['target_path'])
 
-    absolute = f' -T {module.absolute_symbols}' if module.absolute_symbols else ''
-    link_inputs = [module.layout, module.undefined_functions, module.undefined_symbols]
-    if module.absolute_symbols:
-        link_inputs.append(str(module.absolute_symbols))
-    lines += [f'build {module.output}/linked.elf: link {" ".join(objects)} | {" ".join(link_inputs)}',
-              f'  layout = {module.layout}', f'  functions = {module.undefined_functions}',
-              f'  symbols = {module.undefined_symbols}', f'  absolute_symbols ={absolute}',
-              f'build {module.image}: binary_image {module.output}/linked.elf',
+    lines += link_rules(module, objects)
+    lines += [f'build {module.image}: binary_image {module.output}/linked.elf',
               f'build {module.output}/verify.json: verify {module.image} | '
               f'{module.target} {" ".join(module.split_inputs())}',
               f'  verify_command = {module.verify_command()}', f'  module = {module.name}', '']
@@ -338,8 +374,9 @@ def configure(configs):
     lines = ninja_rules()
     split_outputs, verify_outputs, progress_objects = [], [], []
     report_units, categories = [], []
+    original_linker = mwldps2_modules()
     for path, config in configs:
-        module = Module(path, config)
+        module = Module(path, config, uses_mwldps2=module_name(path) in original_linker)
         module_lines, units, objects = module_rules(module, headers, compiler_files, sdk_sources)
         lines += module_lines
         report_units += units
