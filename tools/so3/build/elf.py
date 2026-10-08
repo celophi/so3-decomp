@@ -13,10 +13,15 @@ import struct
 ELF_HEADER_SIZE = 52
 ELF32_LITTLE_ENDIAN = b'\x7fELF\x01\x01\x01'  # The magic, then 32-bit, little-endian, version 1.
 E_TYPE = 16  # Where the header keeps the file type, then the machine.
+E_ENTRY = 24  # Where it keeps the entry address, the two header tables' offsets, and the flags.
+E_PHENTSIZE = 42  # Where it keeps one program header's size and count, then the same for section headers.
 E_SHOFF = 32  # Where it keeps the section header table's offset.
 E_SHENTSIZE = 46  # Where it keeps one section header's size, then their count and the names section.
 ET_REL = 1  # A relocatable object (a .o file), not a linked program.
 EM_MIPS = 8
+
+# Program header (segment) types.
+PT_LOAD = 1  # A segment that gets loaded into memory.
 
 # Section types.
 SHT_NULL = 0
@@ -44,10 +49,12 @@ R_MIPS_32 = 2  # A whole 32-bit address.
 R_MIPS_HI16 = 5  # The high half of an address, for lui.
 R_MIPS_LO16 = 6  # The low half, for addiu or a load.
 
+PROGRAM_HEADER = struct.Struct('<8I')
 SECTION_HEADER = struct.Struct('<10I')
 SYMBOL = struct.Struct('<IIIBBH')
 REL = struct.Struct('<II')
 
+ProgramHeader = namedtuple('ProgramHeader', 'type offset address physical_address file_size memory_size flags alignment')
 SectionHeader = namedtuple('SectionHeader', 'name type flags address offset size link info alignment entry_size')
 Symbol = namedtuple('Symbol', 'name value size info other section')
 
