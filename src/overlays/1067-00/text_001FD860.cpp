@@ -1,7 +1,10 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_001FD860.h"
+#include "overlays/1067-00/text_001ED7E0.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/text_0044ABE0.h"
 
 struct FieldScriptCursorU32
 {
@@ -138,7 +141,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDA
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDAD0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDB50);
+/** Partial FieldClass1507A0 object with vtable D_150BF0 in main data. */
+class FieldClass150BF0 : public FieldClass1507A0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150BF0();
+};
+
+FieldClass150BF0::~FieldClass150BF0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDBF0);
 
@@ -201,7 +214,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FE3
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FE6D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FE7A0);
+/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
+extern "C" void func_001FE7A0(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FE7D0);
 
@@ -274,7 +292,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FEE
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FEF40);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FF060);
+LibClass174790::~LibClass174790()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FF0D0);
 

@@ -271,13 +271,7 @@ bool func_001EF4A0(struct LibClass178DD0* list, struct FieldClass151510* actor, 
 #endif
 
 
-/** One 16-byte value also accessed as four floats. */
-typedef unsigned __int128 FieldQword;
-typedef union FieldVector4
-{
-    float floats[4];
-    FieldQword packed;
-} FieldVector4;
+#include "overlays/1067-00/field_vector4.h"
 
 /** Partial receiver with three four-float values and a byte flag. */
 typedef struct FieldVectorState50

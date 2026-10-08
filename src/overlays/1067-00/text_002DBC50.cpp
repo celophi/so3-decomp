@@ -53,7 +53,17 @@ void* func_002DBFF0(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DC000);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DC3E0);
+/** Partial FieldClass150070 object with vtable D_15B8E0 in main data. */
+class FieldClass15B8E0 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15B8E0();
+};
+
+FieldClass15B8E0::~FieldClass15B8E0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DC470);
 

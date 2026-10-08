@@ -42,7 +42,17 @@ typedef struct FieldFlag272290
     u8 unk1c_1_7 : 7;
 } FieldFlag272290;
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026EE10);
+/** Partial FieldClass150070 object with vtable D_154BB0 in main data. */
+class FieldClass154BB0 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass154BB0();
+};
+
+FieldClass154BB0::~FieldClass154BB0()
+{
+}
 
 void func_0026EEA0(void* object)
 {
@@ -181,7 +191,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026FA
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026FC00);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026FE80);
+/** Partial FieldClass150070 object with vtable D_156F60 in main data. */
+class FieldClass156F60 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156F60();
+};
+
+FieldClass156F60::~FieldClass156F60()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026FF10);
 
@@ -263,7 +283,17 @@ extern "C" void func_00271560(FieldClass150070* object)
     object->func_001DD7B0();
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002715A0);
+/** Partial FieldClass150070 object with vtable D_154BF0 in main data. */
+class FieldClass154BF0 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass154BF0();
+};
+
+FieldClass154BF0::~FieldClass154BF0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00271630);
 

@@ -12,13 +12,6 @@
 #include "overlays/1067-00/text_002D5260.h"
 #endif
 
-/** Partial nested object with a flag byte. */
-typedef struct ItemCreationFlagNode
-{
-    u8 unk00[0x3F];
-    u8 unk3f;
-} ItemCreationFlagNode;
-
 #ifdef __cplusplus
 class AbortDevelopmentDialog;
 class ItemSubmissionDialog;
@@ -77,13 +70,6 @@ typedef struct ItemCreationClass186770
     struct AbortDevelopmentDialog* unk1c0;
 } ItemCreationNineResourceView;
 
-/** Partial owner of twelve nested flag objects. */
-typedef struct ItemCreationFlagGroups
-{
-    u8 unk00[0x174];
-    ItemCreationFlagNode* unk174[12];
-} ItemCreationFlagGroups;
-
 #ifdef __cplusplus
 class InventorTransferWindow;
 #else
@@ -129,6 +115,11 @@ public:
     virtual u8 func_slote8();
     virtual void func_slotec(u8 value);
     virtual void func_slotf0();
+    /**
+     * @brief Initialize the base selection window at its fixed coordinates.
+     * @param associated Associated object forwarded to the Field initializer.
+     * @return Always one.
+     */
     virtual s32 func_slotf4(void* associated);
     /** @brief Move the optional workshop selection display. @param direction Direction code. */
     virtual void func_slotf8(u16 direction);
@@ -487,12 +478,12 @@ class InadequateLineDialog : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window and attach its State. @param state Owning selection State. */
-    InadequateLineDialog(ItemCreationSelectedDisplayState* state) : unka8(0)
+    InadequateLineDialog(ItemCreationSelectedDisplayState* state) : selection_state(0)
     {
-        unka8 = state;
-        unkac = 0;
+        selection_state = state;
+        line_index = 0;
 
-        unkb0 = 0;
+        line_label = 0;
     }
     /** @brief Destroy the window through its Field base. */
     virtual ~InadequateLineDialog();
@@ -502,10 +493,10 @@ public:
     virtual s32 func_slotb0();
     /** @brief Restore the associated window and dispatch the alternate result action. @return One. */
     virtual s32 func_slotb4();
-    ItemCreationSelectedDisplayState* unka8;
-    u8 unkac;
+    ItemCreationSelectedDisplayState* selection_state;
+    u8 line_index;
     u8 unkad[3];
-    LibObject178750* unkb0;
+    LibObject178750* line_label;
 };
 
 /** @brief Warning dialog for insufficient Fol to begin development. */
@@ -806,7 +797,7 @@ class LibClass1721F0;
 class ItemCreationClass185030
 {
 public:
-    /** @brief Destroy the option row interface. */
+    /** @brief Destroy the inventor status row interface. */
     virtual ~ItemCreationClass185030()
     {
     }
@@ -1011,14 +1002,6 @@ void func_0034A7A0(WorkshopSelectionWindow* object, u8 selected);
 void func_0034D980(InventorTransferWindow* object, u8 option);
 
 /**
- * @brief Initialize the view display at its fixed coordinates and report success.
- * @param object View that owns the display.
- * @param associated Associated object forwarded to the field initializer.
- * @return Always one.
- */
-s32 func_0034FD50(InventorTransferWindow* object, void* associated);
-
-/**
  * @brief Refresh an option display from its current option list.
  * @param object Option display to refresh.
  */
@@ -1036,31 +1019,7 @@ void func_0034DB00(InventorTransferWindow* object, u8 option);
  * @param object Owner of the optional nested objects.
  * @param group Group to enable, from zero through two; other values leave all flags clear.
  */
-void func_00356780(ItemCreationFlagGroups* object, u16 group);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003484D0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003484E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003484F0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348500(void* object);
+void func_00356780(ItemCreationClass186770* object, u16 group);
 
 /**
  * @brief Perform no work.
@@ -1126,112 +1085,6 @@ void func_003485A0(void* object);
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
-void func_003485B0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003485C0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003485D0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003485E0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003485F0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00348600(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00348610(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00348620(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00348630(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00348640(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00348650(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00348660(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00348670(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00348680(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348690(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003486A0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
 void func_003486D0(void* object);
 
 /**
@@ -1257,97 +1110,6 @@ void func_00351C30(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00351C40(void* object);
-
-/**
- * @brief Store the window control byte.
- * @param object Window base.
- * @param value Value to store.
- */
-void func_00348400(FieldClass15AE70* object, u8 value);
-
-/**
- * @brief Read the window control byte.
- * @param object Window base.
- * @return Control value.
- */
-u8 func_00348410(const FieldClass15AE70* object);
-
-/**
- * @brief Store the byte state code.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00348420(struct FieldClass15AE70* object, u8 value);
-
-/**
- * @brief Read the byte state code.
- * @param object Object containing the field.
- * @return Field value.
- */
-u8 func_00348430(struct FieldClass15AE70* object);
-
-/**
- * @brief Store the halfword state flags.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00348440(struct FieldClass15AE70* object, u16 value);
-
-/**
- * @brief Read the halfword state flags.
- * @param object Object containing the field.
- * @return Field value.
- */
-u16 func_00348450(struct FieldClass15AE70* object);
-
-/**
- * @brief Store the alternate associated window pointer.
- * @param object Window base containing the pointer.
- * @param value Pointer to store.
- */
-void func_00348480(struct FieldClass15AE70* object, void* value);
-
-/**
- * @brief Read the alternate associated window pointer.
- * @param object Window base containing the pointer.
- * @return Associated window pointer.
- */
-void* func_00348490(struct FieldClass15AE70* object);
-
-/**
- * @brief Write the word at offset 0x4.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_003484A0(void* object, u32 value);
-
-/**
- * @brief Read the word at offset 0x4.
- * @param object Object containing the field.
- * @return Field value.
- */
-u32 func_003484B0(void* object);
-
-/**
- * @brief Read the word at offset 0x10.
- * @param object Object containing the field.
- * @return Field value.
- */
-u32 func_003484C0(void* object);
-
-/**
- * @brief Read the byte at offset 0xD.
- * @param object Object containing the field.
- * @return Field value.
- */
-u8 func_003486B0(struct FieldClass15AE70* object);
-
-/**
- * @brief Write the byte at offset 0xD.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_003486C0(struct FieldClass15AE70* object, u8 value);
 
 /**
  * @brief Return the selection state's associated pointer.

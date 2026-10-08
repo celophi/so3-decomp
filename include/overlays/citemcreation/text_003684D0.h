@@ -11,6 +11,7 @@ class FieldClass15BB90;
 
 struct FieldClass15AE70;
 struct FieldRecordSelection;
+struct FieldRuntimeValues;
 struct InventorInformationWindow;
 
 typedef FieldListNode ItemCreationListNode;
@@ -28,13 +29,6 @@ public:
     virtual ~ItemCreationClass187A60();
 };
 #endif
-
-/** Partial option-code table through entry 59. */
-typedef struct ItemCreationOptionTable
-{
-    u8 unk00[0x188];
-    s32 unk188[60];
-} ItemCreationOptionTable;
 
 /** Partial item creation state with inventor assignments, workshop selections and development lines. */
 typedef struct ItemCreationSelectedDisplayState
@@ -85,121 +79,171 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unk00[0x34];
 #endif
     void* unk34;
-    u8 unk38;
+    /** @brief Readiness byte set after the entry screen setup. */
+    u8 window_setup_ready;
     u8 unk39[3];
-    struct FieldBufferSlots* unk3c;
-    ItemCreationOptionTable* unk40;
-    u8 unk44;
-    u8 unk45;
-    u8 unk46;
-    u8 unk47;
-    struct FieldRecordSelection* unk48;
-    u8 unk4c;
+    /** @brief Cached Field resource buffer slots. */
+    struct FieldBufferSlots* resource_buffer_slots;
+    struct FieldRuntimeValues* unk40;
+    /** @brief Phase used by the State update and exit paths. */
+    u8 update_phase;
+    /** @brief Manager argument selecting the entry screen set. */
+    u8 entry_mode;
+    /** @brief Requested window group copied after group handling. */
+    u8 window_group_snapshot;
+    /** @brief Window group requested by the menu, dialog and grid handlers. */
+    u8 requested_window_group;
+    /** @brief Field record selection used by inventor screens. */
+    struct FieldRecordSelection* record_selection;
+    /** @brief Pending window-group activation across the transition phases. */
+    u8 window_group_change_pending;
     u8 workshop_id;
     /** Enabled workshop skills; the ninth appraisal entry is always enabled. */
     u8 workshop_skill_enabled[9];
-    u8 unk57;
-    u8 unk58;
-    u8 unk59;
-    u8 unk5a[14];
-    u8 unk68[9];
-    u8 unk71[6];
-    u8 unk77[6];
+    u8 line_count;
+    u8 source_transfer_workshop_id;
+    u8 destination_transfer_workshop_id;
+    /** @brief Inventor option codes in the fourteen-slot available grid. */
+    u8 available_inventor_option_codes[14];
+    u8 assigned_inventor_option_codes[9];
+    u8 source_transfer_inventor_option_codes[6];
+    u8 destination_transfer_inventor_option_codes[6];
     u8 unk7d;
     u16 workshop_facility_masks[12];
     u8 unk96[2];
-    struct ItemCreationBackground* unk98;
-    struct ItemCreationStatusBanner* unk9c;
-    struct ItemCreationMainMenu* unka0;
-    struct WorkshopNameWindow* unka4;
-    struct WorkshopFacilitiesWindow* unka8;
-    struct WorkshopExpansionWindow* unkac;
-    struct DevelopmentTeamsWindow* unkb0;
-    struct ItemCreationControlHelp* unkb4;
-    struct AvailableInventorGrid* unkb8;
-    struct AssignedInventorGrid* unkbc;
-    struct InventorInformationWindow* unkc0;
-    struct CreationSkillWindow* unkc4;
-    struct InventionPolicyWindow* unkc8;
-    struct StartInventingDialog* unkcc;
-    struct PlanItemGroupWindow* unkd0;
-    struct InventoryItemTypeList* unkd4;
-    struct ItemCreationClass186770* unkd8;
-    struct ItemSubmissionDialog* unkdc;
-    struct ItemDetailsWindow* unke0;
-    struct DevelopmentControlPanel* unke4;
-    struct InventorStatusWindow* unke8;
-    struct AbortDevelopmentDialog* unkec;
-    struct InadequateLineDialog* unkf0;
-    struct InventorTransferWindow* unkf4;
-    struct SourceInventorStrip* unkf8;
-    struct DestinationInventorStrip* unkfc;
-    struct WorkshopSelectionWindow* unk100;
-    struct WorkshopInventorStrip* unk104;
-    struct PendingInventorSummary* unk108;
-    struct AssignInventorDialog* unk10c;
-    struct WorkshopFullDialog* unk110;
-    struct InventorTalentsWindow* unk114;
-    void* unk118;
-    void* unk11c;
-    void* unk120;
-    s16 unk124;
-    s16 unk126;
-    u8 unk128;
-    u8 unk129;
-    u8 unk12a;
-    u8 unk12b;
-    u8 unk12c;
-    u8 unk12d;
+    /** @brief Background image window. */
+    struct ItemCreationBackground* background;
+    /** @brief Title and scrolling status-message banner. */
+    struct ItemCreationStatusBanner* status_banner;
+    /** @brief Main invention, expansion and transfer menu. */
+    struct ItemCreationMainMenu* main_menu;
+    struct WorkshopNameWindow* workshop_name_window;
+    struct WorkshopFacilitiesWindow* workshop_facilities_window;
+    struct WorkshopExpansionWindow* workshop_expansion_window;
+    struct DevelopmentTeamsWindow* development_teams_window;
+    struct ItemCreationControlHelp* control_help;
+    struct AvailableInventorGrid* available_inventor_grid;
+    struct AssignedInventorGrid* assigned_inventor_grid;
+    struct InventorInformationWindow* inventor_information_window;
+    struct CreationSkillWindow* creation_skill_window;
+    struct InventionPolicyWindow* invention_policy_window;
+    struct StartInventingDialog* start_inventing_dialog;
+    struct PlanItemGroupWindow* plan_item_group_window;
+    struct InventoryItemTypeList* inventory_item_type_list;
+    struct ItemCreationClass186770* development_lines_window;
+    struct ItemSubmissionDialog* item_submission_dialog;
+    struct ItemDetailsWindow* item_details_window;
+    struct DevelopmentControlPanel* development_control_panel;
+    struct InventorStatusWindow* inventor_status_window;
+    struct AbortDevelopmentDialog* abort_development_dialog;
+    struct InadequateLineDialog* inadequate_line_dialog;
+    struct InventorTransferWindow* inventor_transfer_window;
+    struct SourceInventorStrip* source_inventor_strip;
+    struct DestinationInventorStrip* destination_inventor_strip;
+    struct WorkshopSelectionWindow* workshop_selection_window;
+    struct WorkshopInventorStrip* workshop_inventor_strip;
+    struct PendingInventorSummary* pending_inventor_summary;
+    struct AssignInventorDialog* assign_inventor_dialog;
+    /** @brief Workshop-capacity warning dialog. */
+    struct WorkshopFullDialog* workshop_full_dialog;
+    /** @brief Selected inventor's creation-skill talent display. */
+    struct InventorTalentsWindow* inventor_talents_window;
+    /** @brief Grid supplying inventor information during a refresh. */
+    void* inventor_information_grid;
+    /** @brief Grid containing the source slot of the pending inventor swap. */
+    void* swap_source_grid;
+    /** @brief Grid containing the destination slot of the pending inventor swap. */
+    void* swap_destination_grid;
+    /** @brief Source grid slot selected for the inventor swap; -1 when unset. */
+    s16 swap_source_slot_index;
+    /** @brief Destination grid slot selected for the inventor swap; -1 when unset. */
+    s16 swap_destination_slot_index;
+    /** @brief Selection stage for the two-slot inventor swap. */
+    u8 inventor_swap_stage;
+    /** @brief Selection stage for the workshop/inventor transfer. */
+    u8 inventor_transfer_stage;
+    /** @brief Source workshop selected for the pending transfer. */
+    u8 pending_transfer_source_workshop_id;
+    /** @brief Source inventor option code selected for the pending transfer. */
+    u8 pending_transfer_source_inventor_option_code;
+    /** @brief Destination workshop selected for the pending transfer. */
+    u8 pending_transfer_destination_workshop_id;
+    /** @brief Destination inventor option code selected for the pending transfer. */
+    u8 pending_transfer_destination_inventor_option_code;
     u8 unk12e[2];
     u16 facility_mask;
     u8 unk132[2];
     struct ItemCreationWorkshopRecord* workshop;
     u32 unk138;
-    u8 unk13c[4];
-    float unk140;
-    u8 unk144[4];
-    u8 unk148[3];
+    /** @brief Offset advanced while positioning the resource window. */
+    float resource_motion_offset;
+    /** @brief Offset used to position the resource window. */
+    float resource_placement_offset;
+    /** @brief Radial distance used to position the resource window. */
+    float resource_placement_radius;
+    /** @brief Development enable bytes for the three lines. */
+    u8 line_development_enabled[3];
     u8 unk14b;
-    float unk14c[3];
-    float unk158[3];
-    float unk164[3];
+    /** @brief Countdown for each line's target updates. */
+    float line_target_update_countdowns[3];
+    /** @brief Quality percentage displayed for each line. */
+    float line_quality_percentages[3];
+    /** @brief Interval used to reset each line's target update countdown. */
+    float line_target_update_intervals[3];
     float unk170[3];
-    float unk17c[3];
-    u8 unk188[3][3];
+    /** @brief Width of each line's Time bar. */
+    float line_time_meter_widths[3];
+    /** @brief Cached target states for each line's three inventor slots. */
+    u8 line_inventor_states[3][3];
     s8 unk191[3][3];
-    u8 unk19a;
-    u8 unk19b;
+    /** @brief Enable development-line processing and the main development window's actions. */
+    u8 development_processing_enabled;
+    /** @brief Tally accumulated by scans of contracted inventors. */
+    u8 contracted_inventor_tally;
+    /** @brief Window used to display keyed resources. */
 #ifdef __cplusplus
-    FieldClass15BB90* unk19c;
+    FieldClass15BB90* resource_window;
 #else
-    struct FieldStatus14* unk19c;
+    struct FieldStatus14* resource_window;
 #endif
-    s32 unk1a0;
-    s32 unk1a4;
-    u8 unk1a8;
+    /** @brief Primary resource key awaiting display. */
+    s32 pending_resource_key;
+    /** @brief Optional secondary resource key awaiting display. */
+    s32 pending_secondary_resource_key;
+    /** @brief Pending release of the current resource window. */
+    u8 resource_window_release_pending;
     u8 unk1a9[3];
-    u32 unk1ac;
-    u8 unk1b0;
-    u8 unk1b1[3];
+    /** @brief Countdown used to schedule inventor resources. */
+    u32 inventor_resource_countdown;
+    /** @brief Line used by submission, abort, details and outcome dialogs; 0xFF when unset. */
+    u8 dialog_line_index;
+    /** @brief Lines excluded from further processing in the current run. */
+    u8 line_stopped[3];
+    /** @brief Development target for each workshop line, or null. */
 #ifdef __cplusplus
-    ItemCreationClass184EF0* unk1b4[3];
+    ItemCreationClass184EF0* line_targets[3];
 #else
-    struct FieldStateTargets* unk1b4[3];
+    struct FieldStateTargets* line_targets[3];
 #endif
-    u8 unk1c0[3];
-    u8 unk1c3[3];
+    u8 line_skill_ids[3];
+    /** @brief Target mode per line: zero unset, one original invention, two/three use one/two items. */
+    u8 line_plan_modes[3];
     u8 unk1c6[2];
-    u32 unk1c8[3];
-    s32 unk1d4[3];
-    s8 unk1e0;
+    u32 line_fol_costs[3];
+    s32 line_target_update_results[3];
+    /** @brief Zero-based line selected for skill and invention-policy editing. */
+    s8 selected_line_index;
     u8 unk1e1;
-    s16 unk1e2[3][2];
+    /** @brief One-based inventory allocation-record IDs for each line; zero marks an unused slot. */
+    s16 line_item_ids[3][2];
     u8 unk1ee[2];
     s32 unk1f0;
-    s32 unk1f4;
-    s16 unk1f8;
-    s16 unk1fa;
+    /** @brief Countdown for periodic runtime-data updates. */
+    s32 runtime_data_update_countdown;
+    /** @brief First plan item ID saved for cancellation of item selection. */
+    s16 saved_first_plan_item_id;
+    /** @brief Second plan item ID saved for cancellation of item selection. */
+    s16 saved_second_plan_item_id;
 } ItemCreationSelectedDisplayState;
 
 /** Two scalar coordinates, cleared when a selection pair is constructed. */
@@ -223,7 +267,7 @@ typedef struct ItemCreationSelection
     /** @brief Initialize the selection coordinates and enabled slots. */
     ItemCreationSelection();
 #endif
-    ItemCreationFloatPair unk00[12];
+    ItemCreationFloatPair workshop_map_positions[12];
     u8 unk60[12];
     u8 unk6c;
     u8 unk6d[12];
@@ -350,7 +394,7 @@ void func_0036B6E0(ItemCreationSelectedDisplayState* object, u32 enabled);
 /**
  * @brief Enable or disable the main menu and workshop summary windows.
  * @param object State owning the main menu, facilities, workshop name and development-team summary.
- * @param enabled Full-word control flag; nonzero restores main-menu focus and its status prompt.
+ * @param enabled Full-word control flag; nonzero selects the main menu as active receiver when present and restores its status prompt.
  */
 void func_0036BA10(ItemCreationSelectedDisplayState* object, u32 enabled);
 

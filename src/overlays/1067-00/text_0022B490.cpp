@@ -5,6 +5,7 @@
 #include "overlays/1067-00/text_0021FB80.h"
 #include "overlays/1067-00/text_00202240_callbacks.h"
 #include "overlays/1067-00/text_0022B490.h"
+#include "overlays/1067-00/field_class_155780.h"
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/1067-00/text_0023DC90.h"
 #include "overlays/1067-00/text_0026EE10.h"
@@ -391,7 +392,9 @@ void func_0022B790(FieldObject22B790* object)
     object->unk20 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022B7B0);
+FieldClass1526C0::~FieldClass1526C0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022B850);
 
@@ -519,7 +522,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022BF
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022C380);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022C480);
+FieldClass152740::~FieldClass152740()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022C590);
 

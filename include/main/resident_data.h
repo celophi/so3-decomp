@@ -183,8 +183,11 @@ extern ResidentRequest112400* D_001B65F8;
 extern ResidentContextRef* D_001B6430;
 extern FieldRuntime* D_001B657C;
 extern u8 D_001B6448;
+extern void* D_001B644C;
+extern void* D_001B6450;
 extern void* D_001B6458;
 extern void* D_001B661C;
+extern void* D_001B6684;
 extern float D_001B6688;
 extern float D_001B6690;
 

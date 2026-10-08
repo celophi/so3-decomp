@@ -8,7 +8,9 @@ struct FieldByte60F3310
     u8 value;
 };
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3310);
+FieldClass15BA10::~FieldClass15BA10()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F33A0);
 
@@ -25,7 +27,17 @@ void FieldClass15BA10::func_001DD7B0()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3760);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F37D0);
+/** Partial FieldClass150070 object with vtable D_15BA30 in main data. */
+class FieldClass15BA30 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15BA30();
+};
+
+FieldClass15BA30::~FieldClass15BA30()
+{
+}
 
 /**
  * @brief Report this object's type value.
@@ -55,7 +67,13 @@ void FieldClass15BA50::func_001DD7B0()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3C00);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F4260);
+FieldClass15BA50::~FieldClass15BA50()
+{
+    if (unk18 != 0)
+    {
+        unk18->func_001DD7B0();
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F4310);
 
@@ -90,7 +108,13 @@ extern "C" void func_002F9760(FieldByte60F3310* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F9770);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F97C0);
+extern "C" void func_4D00B0(void* object);
+
+/** @brief Forward the object to func_4D00B0. @param object Object to forward. */
+extern "C" void func_002F97C0(void* object)
+{
+    func_4D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F97E0);
 

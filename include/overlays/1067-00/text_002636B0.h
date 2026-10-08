@@ -66,9 +66,7 @@ void func_002646E0(FieldObject15AE70* object, u8 value);
 /** @brief Store the unsigned halfword at offset 0x0A. */
 void func_002646F0(FieldObject15AE70* object, u16 value);
 /** @brief Store the object pointer at offset 0x98. */
-void func_00264700(FieldObject15AE70* object, void* value);
 /** @brief Read the object pointer at offset 0x98. */
-void* func_00264710(const FieldObject15AE70* object);
 /** @brief Store the object pointer at offset 0x9C. */
 void func_00264720(FieldObject15AE70* object, void* value);
 /** @brief Read the object pointer at offset 0x9C. */

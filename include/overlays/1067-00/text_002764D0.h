@@ -367,6 +367,30 @@ s32 func_0027CB50(void* object, s32 identifier, s32 first, s32 second);
 
 #ifdef __cplusplus
 }
+
+/** Partial FieldClass150070 object with vtable D_1553B0 in main data. */
+class FieldClass1553B0 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1553B0()
+    {
+    }
+
+    /**
+     * @brief Release the object's storage through the Lib heap.
+     * @param object Storage to release.
+     */
+    static void operator delete(void* object);
+};
+
+/** Partial FieldClass1553B0 object with vtable D_155610 in main data. */
+class FieldClass155610 : public FieldClass1553B0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass155610();
+};
 #endif
 
 #endif

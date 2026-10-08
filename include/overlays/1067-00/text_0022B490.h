@@ -294,6 +294,374 @@ s32 func_0022C9E0(struct FieldCallback22C9E0* object);
 
 #ifdef __cplusplus
 }
+/** Partial FieldClass150440 command with vtable D_1527B0 in main data. */
+class FieldClass1527B0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass1527B0();
+};
+
+/** Partial FieldClass150440 command with vtable D_1527D0 in main data. */
+class FieldClass1527D0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass1527D0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152810 in main data. */
+class FieldClass152810 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152810();
+};
+
+/** Partial FieldClass150440 command with vtable D_152830 in main data. */
+class FieldClass152830 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152830();
+};
+
+/** Partial FieldClass150440 command with vtable D_152850 in main data. */
+class FieldClass152850 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152850();
+};
+
+/** Partial FieldClass150440 command with vtable D_152870 in main data. */
+class FieldClass152870 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152870();
+};
+
+/** Partial FieldClass150440 command with vtable D_152890 in main data. */
+class FieldClass152890 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152890();
+};
+
+/** Partial FieldClass150440 command with vtable D_1528B0 in main data. */
+class FieldClass1528B0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass1528B0();
+};
+
+/** Partial FieldClass150440 command with vtable D_1528D0 in main data. */
+class FieldClass1528D0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass1528D0();
+};
+
+/** Partial FieldClass150440 command with vtable D_1528F0 in main data. */
+class FieldClass1528F0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass1528F0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152910 in main data. */
+class FieldClass152910 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152910();
+};
+
+/** Partial FieldClass150440 command with vtable D_152930 in main data. */
+class FieldClass152930 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152930();
+};
+
+/** Partial FieldClass150440 command with vtable D_152950 in main data. */
+class FieldClass152950 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152950();
+};
+
+/** Partial FieldClass150440 command with vtable D_152970 in main data. */
+class FieldClass152970 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152970();
+};
+
+/** Partial FieldClass150440 command with vtable D_152990 in main data. */
+class FieldClass152990 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152990();
+};
+
+/** Partial FieldClass150440 command with vtable D_1529B0 in main data. */
+class FieldClass1529B0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass1529B0();
+};
+
+/** Partial FieldClass150440 command with vtable D_1529D0 in main data. */
+class FieldClass1529D0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass1529D0();
+};
+
+/** Partial FieldClass150440 command with vtable D_1529F0 in main data. */
+class FieldClass1529F0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass1529F0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152A10 in main data. */
+class FieldClass152A10 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152A10();
+};
+
+/** Partial FieldClass150440 command with vtable D_152A30 in main data. */
+class FieldClass152A30 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152A30();
+};
+
+/** Partial FieldClass150440 command with vtable D_152A50 in main data. */
+class FieldClass152A50 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152A50();
+};
+
+/** Partial FieldClass150440 command with vtable D_152A70 in main data. */
+class FieldClass152A70 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152A70();
+};
+
+/** Partial FieldClass150440 command with vtable D_152A90 in main data. */
+class FieldClass152A90 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152A90();
+};
+
+/** Partial FieldClass150440 command with vtable D_152AB0 in main data. */
+class FieldClass152AB0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152AB0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152AD0 in main data. */
+class FieldClass152AD0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152AD0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152AF0 in main data. */
+class FieldClass152AF0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152AF0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152B10 in main data. */
+class FieldClass152B10 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152B10();
+};
+
+/** Partial FieldClass150440 command with vtable D_152B30 in main data. */
+class FieldClass152B30 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152B30();
+};
+
+/** Partial FieldClass150440 command with vtable D_152B50 in main data. */
+class FieldClass152B50 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152B50();
+};
+
+/** Partial FieldClass150440 command with vtable D_152B70 in main data. */
+class FieldClass152B70 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152B70();
+};
+
+/** Partial FieldClass150440 command with vtable D_152B90 in main data. */
+class FieldClass152B90 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152B90();
+};
+
+/** Partial FieldClass150440 command with vtable D_152BB0 in main data. */
+class FieldClass152BB0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152BB0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152BD0 in main data. */
+class FieldClass152BD0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152BD0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152BF0 in main data. */
+class FieldClass152BF0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152BF0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152C10 in main data. */
+class FieldClass152C10 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152C10();
+};
+
+/** Partial FieldClass150440 command with vtable D_152C30 in main data. */
+class FieldClass152C30 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152C30();
+};
+
+/** Partial FieldClass150440 command with vtable D_152C50 in main data. */
+class FieldClass152C50 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152C50();
+};
+
+/** Partial FieldClass150440 command with vtable D_152CB0 in main data. */
+class FieldClass152CB0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152CB0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152CD0 in main data. */
+class FieldClass152CD0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152CD0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152CF0 in main data. */
+class FieldClass152CF0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152CF0();
+};
+
+/** Partial FieldClass150440 command with vtable D_152D10 in main data. */
+class FieldClass152D10 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152D10();
+};
+
+/** Partial FieldClass150440 command with vtable D_152D30 in main data. */
+class FieldClass152D30 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152D30();
+};
+
+/** Partial FieldClass150440 command with vtable D_152D50 in main data. */
+class FieldClass152D50 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152D50();
+};
+
+/** Partial FieldClass150440 command with vtable D_152D70 in main data. */
+class FieldClass152D70 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152D70();
+};
+
+/** Partial FieldClass150440 command with vtable D_152D90 in main data. */
+class FieldClass152D90 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152D90();
+};
+
+/** Partial FieldClass150440 command with vtable D_152DB0 in main data. */
+class FieldClass152DB0 : public FieldClass150440
+{
+public:
+    /** @brief Destroy the command. */
+    virtual ~FieldClass152DB0();
+};
+
 #endif
 
 #endif

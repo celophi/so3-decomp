@@ -1,5 +1,9 @@
 #include "include_asm.h"
+#include "main/resident_data.h"
+#include "main/resident_0010A0E0.h"
+#include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_00202240.h"
+#include "overlays/1067-00/text_0021FB80.h"
 
 typedef unsigned __int128 FieldLocalQword;
 extern "C" s32 func_0022A160(void*);
@@ -149,7 +153,13 @@ extern "C" void func_00203500(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203510);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203630);
+FieldClass150EB0::~FieldClass150EB0()
+{
+    delete unk384;
+    unk384 = 0;
+    delete unk3a0;
+    unk3a0 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002036F0);
 
@@ -184,7 +194,9 @@ extern "C" s32 func_00203A70(void* object)
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203A80);
+FieldClass150F50::~FieldClass150F50()
+{
+}
 
 extern "C" s32 func_00203B10(void* object)
 {
@@ -195,7 +207,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203CB0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203DF0);
+/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
+extern "C" void func_00203DF0(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 /** Partial item flags with the enable bit word at offset 0x6A. */
 struct FieldItemFlags
@@ -355,7 +372,17 @@ FieldClass150F90::FieldClass150F90()
     unk8d_1 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00205670);
+/** Partial FieldClass150070 object with vtable D_150F70 in main data. */
+class FieldClass150F70 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150F70();
+};
+
+FieldClass150F70::~FieldClass150F70()
+{
+}
 
 extern "C" s32 func_00205700(void* object)
 {
@@ -512,7 +539,17 @@ extern "C" void func_00207400(FieldState634* object)
     func_448250(object);
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00207450);
+/** Partial FieldClass150F90 with vtable D_1511F0 in main data. */
+class FieldClass1511F0 : public FieldClass150F90
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1511F0();
+};
+
+FieldClass1511F0::~FieldClass1511F0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002074B0);
 

@@ -1,11 +1,14 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002AE9E0.h"
 #include "overlays/1067-00/text_002BE0A0.h"
+#include "overlays/1067-00/text_002BEA90.h"
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BE0A0", func_002BE0A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BE0A0", func_002BE100);
+FieldClass159B60::~FieldClass159B60()
+{
+}
 
 s32 func_002BE180(const FieldObject159B60* object)
 {

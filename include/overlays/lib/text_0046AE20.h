@@ -51,4 +51,14 @@ void* func_00473390(void* object, const char* name);
 }
 #endif
 
+#ifdef __cplusplus
+/** Partial Lib class with vtable D_175320 in main data; its destructor is func_004792A0. */
+class LibClass175320
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~LibClass175320();
+};
+#endif
+
 #endif

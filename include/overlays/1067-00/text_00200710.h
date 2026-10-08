@@ -39,6 +39,14 @@ extern "C" {
 s32 func_002019C0(FieldResourceList14* object, s32 character_key, s32 animation_key, s32 mode);
 
 /**
+ * @brief Release the selected character and animation resources.
+ * @param object Resource list to process.
+ * @param character_key Key of character resources to process.
+ * @param animation_key Key of animation resources to process.
+ */
+void func_00201870(FieldResourceList14* object, s32 character_key, s32 animation_key);
+
+/**
  * @brief Decrement counters for matching resource entries that pass their flag checks.
  * @param object Resource list to update.
  * @param first Low-halfword key for kinds 0x43484152 and 0x41545243.

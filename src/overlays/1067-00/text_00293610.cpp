@@ -1,6 +1,8 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_00293610.h"
 #include "overlays/1067-00/text_0029E9E0.h"
+#include "overlays/lib/text_0044ABE0.h"
+#include "overlays/lib/text_0046AE20.h"
 
 extern "C" float D_001B6688;
 extern "C" u8 D_001B6448;
@@ -73,38 +75,6 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002938
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00293A40);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294510);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294590);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294600);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294680);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002946F0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294750);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002947D0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294840);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002948A0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294920);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294990);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002949F0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294A70);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294AE0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294B60);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294BD0);
-
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294C30);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00294F20);
@@ -126,66 +96,177 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002951
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002951F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295270);
+FieldClass157540::~FieldClass157540()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002952E0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295340);
+/**
+ * @brief Resize the grid with the default heap selected.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+extern "C" void func_00295340(FieldClass157540* object, s32 rows, s32 columns)
+{
+    void* heap = func_00100C80(0);
+    func_002A78C0(object, rows, columns);
+    func_00100C80(heap);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002953B0);
+FieldClass157610::~FieldClass157610()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295440);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002954A0);
+/**
+ * @brief Resize the grid with the default heap selected.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+extern "C" void func_002954A0(FieldClass157610* object, s32 rows, s32 columns)
+{
+    void* heap = func_00100C80(0);
+    func_002A6910(object, rows, columns);
+    func_00100C80(heap);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295510);
+FieldClass157880::~FieldClass157880()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002955A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295600);
+/**
+ * @brief Resize the grid with the default heap selected.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+extern "C" void func_00295600(FieldClass157880* object, s32 rows, s32 columns)
+{
+    void* heap = func_00100C80(0);
+    func_002A70D0(object, rows, columns);
+    func_00100C80(heap);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295670);
+FieldClass157BC0::~FieldClass157BC0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295700);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295760);
+/**
+ * @brief Resize the grid with the default heap selected.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+extern "C" void func_00295760(FieldClass157BC0* object, s32 rows, s32 columns)
+{
+    void* heap = func_00100C80(0);
+    func_002A6910(object, rows, columns);
+    func_00100C80(heap);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002957D0);
+FieldClass157F00::~FieldClass157F00()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295860);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002958C0);
+/**
+ * @brief Resize the grid with the default heap selected.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+extern "C" void func_002958C0(FieldClass157F00* object, s32 rows, s32 columns)
+{
+    void* heap = func_00100C80(0);
+    func_002A6170(object, rows, columns);
+    func_00100C80(heap);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295930);
+FieldClass158240::~FieldClass158240()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002959C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295A20);
+/**
+ * @brief Resize the grid with the default heap selected.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+extern "C" void func_00295A20(FieldClass158240* object, s32 rows, s32 columns)
+{
+    void* heap = func_00100C80(0);
+    func_002A5A70(object, rows, columns);
+    func_00100C80(heap);
+}
 
 bool func_00295A90(FieldObject158240* object)
 {
     return *object->unkA0 != 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295AB0);
+FieldClass1584B0::~FieldClass1584B0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295B40);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295BA0);
+/**
+ * @brief Resize the grid with the default heap selected.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+extern "C" void func_00295BA0(FieldClass1584B0* object, s32 rows, s32 columns)
+{
+    void* heap = func_00100C80(0);
+    func_002A5A70(object, rows, columns);
+    func_00100C80(heap);
+}
 
 bool func_00295C10(FieldObject1584B0* object)
 {
     return *object->unkA0 != 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295C30);
+/** Partial LibClass174C20 with vtable D_158800 in main data. */
+class FieldClass158800 : public LibClass174C20
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass158800();
+};
+
+FieldClass158800::~FieldClass158800()
+{
+}
 
 s32 func_00295C90(void* object)
 {
     return 35;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295CA0);
+/** Partial LibClass175320 with vtable D_158820 in main data. */
+class FieldClass158820 : public LibClass175320
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass158820();
+};
+
+FieldClass158820::~FieldClass158820()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295D00);
 
@@ -264,7 +345,40 @@ bool func_00295E40(FieldObject158650* object)
 // Vector dispatcher; runtime layouts and vector-unit operations remain unresolved.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295E50);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002989C0);
+/** Leading 0x140 bytes of a FieldElement2989C0. */
+struct FieldElementHead2989C0
+{
+    u8 unk00[0x140];
+};
+
+/** Part at offset 0x140 of a FieldElement2989C0. */
+struct FieldElementPart2989C0
+{
+    u8 unk00[0x30];
+};
+
+/** Partial 0x170-byte element whose second base starts at offset 0x140. */
+struct FieldElement2989C0 : public FieldElementHead2989C0, public FieldElementPart2989C0
+{
+};
+
+/** Partial owner of an element array at offset 0x14. */
+struct FieldOwner2989C0
+{
+    u8 unk00[0x14];
+    FieldElement2989C0* unk14;
+};
+
+/**
+ * @brief Return an element's part at offset 0x140.
+ * @param object Owner of the elements.
+ * @param index Element index.
+ * @return The element's part, or null when the element pointer is null.
+ */
+extern "C" FieldElementPart2989C0* func_002989C0(const FieldOwner2989C0* object, s32 index)
+{
+    return &object->unk14[index];
+}
 
 void func_002989F0(FieldObject158860* object, float value)
 {
@@ -425,20 +539,66 @@ bool func_0029B6D0(FieldObject157AF0* object)
     return true;
 }
 
-void* func_0029B6E0(FieldObject158D00* object, s32 index)
+void* func_0029B6E0(FieldClass158D00* object, s32 index)
 {
-    FieldArrayEntry158D00* item = &object->unk14[index];
+    FieldClass158A18* item = &object->unk14[index];
     void* result = item;
     if (item != 0)
     {
-        result = &item->unk20[0xD0];
+        result = &item->unkF0;
     }
     return result;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029B710);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029BB20);
+/**
+ * @brief Fill a row of secondary elements from a cell (or an explicit vector).
+ * @param object Grid owning the row.
+ * @param cell Cell whose vectors are copied.
+ * @param row First secondary element of the row.
+ * @param index Unused.
+ * @param source Vector copied to each element, or null to use the cell's.
+ */
+extern "C" void func_0029BB20(FieldClass157AF0* object, FieldClass158A18* cell, FieldClass154E60* row, s32 index, const FieldVector4* source)
+{
+    if (object->unk50 != 0)
+    {
+        cell->unk3C = object->unk3C;
+    }
+    bool blend = false;
+    if (object->unk4D != 1 && object->unk4D != 3)
+    {
+        blend = true;
+    }
+    s32 count = object->unk10 - 1;
+    if (source == 0)
+    {
+        for (s32 i = 0; i < count; i++)
+        {
+            row->unk10 = cell->position();
+            if (blend)
+            {
+                row->unk20 = cell->unk20;
+            }
+            row->unk30.packed = 0;
+            row++;
+        }
+    }
+    else
+    {
+        for (s32 i = 0; i < count; i++)
+        {
+            row->unk10 = *source;
+            if (blend)
+            {
+                row->unk20 = cell->unk20;
+            }
+            row->unk30.packed = 0;
+            row++;
+        }
+    }
+}
 
 void func_0029BC20(FieldObject157AF0* object, float value)
 {

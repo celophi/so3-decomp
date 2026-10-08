@@ -1,4 +1,7 @@
 #include "include_asm.h"
+#include "main/resident_data.h"
+#include "main/resident_0010A0E0.h"
+#include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_002F9C90.h"
 
 /** Partial receiver with a byte at offset 0x60. */
@@ -56,7 +59,13 @@ u16 func_002FAB20(const FieldHalfwordBuckets* object, u8 category, u16 index)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FAB70);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FAE00);
+extern "C" void func_002FB840(void* object);
+
+/** @brief Forward the object to func_002FB840. @param object Object to forward. */
+extern "C" void func_002FAE00(void* object)
+{
+    func_002FB840(object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FAE20);
 
@@ -108,7 +117,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FBA
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FBED0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FBFC0);
+/** @brief Forward the object to func_002FB840. @param object Object to forward. */
+extern "C" void func_002FBFC0(void* object)
+{
+    func_002FB840(object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FBFE0);
 
@@ -120,7 +133,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FC7
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FC880);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FC9D0);
+/** @brief Forward the object to func_002FB840. @param object Object to forward. */
+extern "C" void func_002FC9D0(void* object)
+{
+    func_002FB840(object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FC9F0);
 
@@ -169,7 +186,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FE3
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FE650);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FE6F0);
+FieldClass15BB90::~FieldClass15BB90()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FE790);
 
@@ -188,7 +207,12 @@ extern "C" void func_002FE880(FieldByte60F9C90* object)
     object->value = 9;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FE890);
+/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
+extern "C" void func_002FE890(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FE8C0);
 
@@ -198,7 +222,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FEC
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FECF0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FED30);
+extern "C" void func_4D00B0(void* object);
+
+/** @brief Forward the object to func_4D00B0. @param object Object to forward. */
+extern "C" void func_002FED30(void* object)
+{
+    func_4D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FED50);
 

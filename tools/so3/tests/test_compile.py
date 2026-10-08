@@ -44,7 +44,7 @@ class UnitFlagsTests(unittest.TestCase):
         self.assertFalse(any(name.startswith('//') or ' ' in name for name in copies))
 
     def test_modules_without_external_copies_have_none(self):
-        self.assertEqual(external_copies('src/overlays/1067-00/text_001DD3C0.cpp'), set())
+        self.assertEqual(external_copies('src/overlays/cconfig/text.cpp'), set())
 
 
 if __name__ == '__main__':

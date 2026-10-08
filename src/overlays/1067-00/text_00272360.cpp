@@ -1,5 +1,7 @@
 #include "include_asm.h"
+#include "overlays/1067-00/field_class_154D40.h"
 #include "overlays/1067-00/text_00272360.h"
+#include "overlays/1067-00/field_class_154EF0.h"
 #include "overlays/1067-00/text_00207AF0.h"
 
 
@@ -62,11 +64,11 @@ extern "C" s32 func_00272950(FieldClass1514F8* object, float first, float second
     return object->unk00 - 1;
 }
 
-void func_002729A0(void* object)
+void FieldClass154D50::func_002729A0()
 {
 }
 
-void func_002729B0(void* object)
+void FieldClass154D50::func_002729B0()
 {
 }
 
@@ -84,8 +86,6 @@ s32 func_00272A40(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272A50);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272AE0);
-
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272B50);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272B80);
@@ -94,14 +94,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272CC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272D00);
 
-s32 func_00272D60(void* object)
+s32 FieldClass154D50::func_00272D60()
 {
     return -1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272D70);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", __dt__16FieldClass154E20Fv);
 
 void func_00272DD0(void* object)
 {
@@ -111,13 +110,22 @@ void func_00272DE0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272DF0);
+FieldClass154E60::FieldClass154E60()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272E30);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272EA0);
+FieldClass154E60::~FieldClass154E60()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272F20);
+FieldBitset154E80::~FieldBitset154E80()
+{
+    if (!unk0C)
+    {
+        delete[] unk08;
+    }
+}
 
 s32 func_00272F90(void* object)
 {
@@ -146,7 +154,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002733
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002734C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002735A0);
+FieldClass154EF0::~FieldClass154EF0()
+{
+    func_slot28();
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00273640);
 

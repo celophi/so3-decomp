@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_0028E530.h"
+#include "overlays/1067-00/text_0021FB80.h"
 
 /** Partial nested state containing three adjacent words. */
 typedef struct FieldState5CC
@@ -95,7 +96,9 @@ s32 func_00291110(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E530", func_00291130);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E530", func_00291170);
+FieldClass1570D0::~FieldClass1570D0()
+{
+}
 
 void func_002911D0(FieldState2F0* object)
 {

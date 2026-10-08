@@ -2,6 +2,7 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_0023DC90.h"
 #include "overlays/1067-00/text_0027E520.h"
+#include "overlays/1067-00/text_0021FB80.h"
 
 
 typedef struct FieldContextDC49880
@@ -10,7 +11,7 @@ typedef struct FieldContextDC49880
     void* active;
 } FieldContextDC49880;
 
-extern void func_00249760(FieldObject24B6B0* object, void* target, const void* value);
+extern "C" void func_00249760(FieldObject24B6B0* object, void* target, const void* value);
 
 struct FieldObject24C380
 {
@@ -40,7 +41,7 @@ struct FieldObject24A410
     u8 rest : 7;
 };
 
-extern void func_0023DDD0(FieldObject24A410* object);
+extern "C" void func_0023DDD0(FieldObject24A410* object);
 
 struct FieldObject24C300
 {
@@ -138,7 +139,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", func_002485
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", func_00248C50);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", func_00248F60);
+FieldClass153330::~FieldClass153330()
+{
+    unk3d0.func_001DD730();
+    delete unk4b8;
+    unk4b8 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", func_00249000);
 
@@ -273,7 +279,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", func_0024BF
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", __ct__16FieldClass153400Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", func_0024C200);
+/** Partial FieldClass153330 with vtable D_15AC40 in main data. */
+class FieldClass15AC40 : public FieldClass153330
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15AC40();
+};
+
+FieldClass15AC40::~FieldClass15AC40()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", func_0024C260);
 

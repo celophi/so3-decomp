@@ -80,9 +80,9 @@ public:
 } __attribute__((aligned(16)));
 
 /**
- * Second 16-byte aligned four-float vector type. It has a copy constructor and
- * its assignment from FieldVec4A returns a copy, which leaves a 16-byte stack
- * temporary in the caller.
+ * Second 16-byte aligned four-float vector type. It has a copy constructor, and
+ * its assignments (from FieldVec4A or FieldVec4B) copy all 16 bytes and return
+ * a copy, which leaves a 16-byte stack temporary in the caller.
  */
 class FieldVec4B
 {
@@ -140,6 +140,17 @@ public:
     }
 
     FieldVec4B operator=(const FieldVec4A& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+        return *this;
+    }
+
+    /**
+     * @brief Copy all four components.
+     * @param other Vector to copy.
+     * @return A copy of this vector.
+     */
+    FieldVec4B operator=(const FieldVec4B& other)
     {
         *(unsigned __int128*)this = *(const unsigned __int128*)&other;
         return *this;

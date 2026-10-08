@@ -2,6 +2,9 @@
 #define SO3_OVERLAYS_1067_00_TEXT_0027E520_H
 
 #include "types.h"
+#ifdef __cplusplus
+#include "overlays/1067-00/field_class_154D40.h"
+#endif
 
 /** Partial holder of an attached object at offset 0x20, reached through D_001B645C. */
 typedef struct FieldHeldObject20
@@ -64,77 +67,411 @@ typedef struct FieldResourceRecord273720 FieldResourceRecord273720;
 
 typedef struct FieldBitset154E80 FieldBitset154E80;
 
-/** Partial array owner associated with table D_156A50. */
-typedef struct FieldObject156A50
-{
-    u8 unk00[0xC];
-    s32 unk0C;
-    s32 unk10;
-    u8* base14;
-    u8 unk18[4];
-    FieldBitset154E80* unk1C;
-    u8* base20;
-} FieldObject156A50;
 
-/** Partial array owner associated with table D_156980. */
-typedef struct FieldObject156980
-{
-    u8 unk00[0xC];
-    s32 unk0C;
-    s32 unk10;
-    u8* base14;
-    u8 unk18[4];
-    FieldBitset154E80* unk1C;
-    u8* base20;
-} FieldObject156980;
 
-/** Partial array owner associated with table D_1568B0. */
-typedef struct FieldObject1568B0
-{
-    u8 unk00[0xC];
-    s32 unk0C;
-    s32 unk10;
-    u8* base14;
-    u8 unk18[4];
-    FieldBitset154E80* unk1C;
-    u8* base20;
-} FieldObject1568B0;
 
-/** Partial array owner associated with table D_1567E0. */
-typedef struct FieldObject1567E0
-{
-    u8 unk00[0xC];
-    s32 unk0C;
-    s32 unk10;
-    u8* base14;
-    u8 unk18[4];
-    FieldBitset154E80* unk1C;
-    u8* base20;
-} FieldObject1567E0;
 
-/** Partial array owner associated with table D_156710. */
-typedef struct FieldObject156710
-{
-    u8 unk00[0xC];
-    s32 unk0C;
-    s32 unk10;
-    u8* base14;
-    u8 unk18[4];
-    FieldBitset154E80* unk1C;
-    u8* base20;
-} FieldObject156710;
 
-/** Partial array owner associated with table D_156640. */
-typedef struct FieldObject156640
+#ifdef __cplusplus
+/** Partial FieldClass154E70 with vtable D_1565E0 in main data; its only virtual is the destructor. */
+class FieldClass1565E0 : public FieldClass154E70
 {
-    u8 unk00[0xC];
-    s32 unk0C;
-    s32 unk10;
+public:
+    /** @brief Construct the object. */
+    FieldClass1565E0();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1565E0();
+
+    u8 unk04[0x7C];
+};
+
+/** Partial 96-byte grid element with vtable D_156620 in main data. */
+class FieldClass156620 : public FieldClass154E70
+{
+public:
+    /** @brief Start with a random delay from 60 to 120 and cleared state. */
+    FieldClass156620();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156620();
+
+    u8 unk04[0x2C];
+    float unk30;
+    u8 unk34[4];
+    s32 unk38;
+    u8 unk3C[0x14];
+    u8 unk50;
+    u8 unk51[0xF];
+};
+
+/** Partial 128-byte grid element with vtable D_156610 in main data. */
+class FieldClass156610 : public FieldClass154E70
+{
+public:
+    /** @brief Start with a unit scale. */
+    FieldClass156610();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156610();
+
+    u8 unk04[0x5C];
+    float unk60;
+    u8 unk64[0x1C];
+};
+
+/** Partial 112-byte grid element with vtable D_156600 in main data. */
+class FieldClass156600 : public FieldClass154E70
+{
+public:
+    /** @brief Start with a cleared word and a unit scale. */
+    FieldClass156600();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156600();
+
+    u8 unk04[0x5C];
+    s32 unk60;
+    float unk64;
+    u8 unk68[8];
+};
+
+/** Partial 80-byte grid element with vtable D_1565F0 in main data. */
+class FieldClass1565F0 : public FieldClass154E70
+{
+public:
+    /** @brief Start with a 64.0 extent and the first flag set. */
+    FieldClass1565F0();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1565F0();
+
+    u8 unk04[0x3C];
+    float unk40;
+    u8 unk44_0 : 1;
+    u8 unk44_1_7 : 7;
+    u8 unk45[0xB];
+};
+
+/** Partial 112-byte grid element with vtable D_156E80 in main data. */
+class FieldClass156E80 : public FieldClass154E70
+{
+public:
+    /** @brief Start with 15.0 extents and both flags clear. */
+    FieldClass156E80();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156E80();
+
+    u8 unk04[0x5C];
+    float unk60;
+    float unk64;
+    u8 unk68[4];
+    u8 unk6C_0 : 1;
+    u8 unk6C_1 : 1;
+    u8 unk6C_2_7 : 6;
+    u8 unk6D[3];
+};
+
+/** Partial grid of FieldClass156620 cells with vtable D_156710 in main data. */
+class FieldClass156710 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass156710();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass156710();
+
     u8* base14;
-    u8 unk18[4];
+    FieldClass156620* unk18;
     FieldBitset154E80* unk1C;
     u8* base20;
-} FieldObject156640;
+    FieldClass154E60* unk24;
+};
+
+/** Partial grid of FieldClass156610 cells with vtable D_1567E0 in main data. */
+class FieldClass1567E0 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass1567E0();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass1567E0();
+
+    u8* base14;
+    FieldClass156610* unk18;
+    FieldBitset154E80* unk1C;
+    u8* base20;
+    FieldClass154E60* unk24;
+};
+
+/** Partial grid of FieldClass156600 cells with vtable D_1568B0 in main data. */
+class FieldClass1568B0 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass1568B0();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass1568B0();
+
+    u8* base14;
+    FieldClass156600* unk18;
+    FieldBitset154E80* unk1C;
+    u8* base20;
+    FieldClass154E60* unk24;
+};
+
+/** Partial grid of FieldClass1565F0 cells with vtable D_156980 in main data. */
+class FieldClass156980 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass156980();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass156980();
+
+    u8* base14;
+    FieldClass1565F0* unk18;
+    FieldBitset154E80* unk1C;
+    u8* base20;
+    FieldClass154E60* unk24;
+};
+
+/** Partial grid of FieldClass1565E0 cells with vtable D_156A50 in main data. */
+class FieldClass156A50 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass156A50();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass156A50();
+
+    u8* base14;
+    FieldClass1565E0* unk18;
+    FieldBitset154E80* unk1C;
+    u8* base20;
+    FieldClass154E60* unk24;
+};
+
+/** Partial grid of FieldClass156E80 cells with vtable D_156E90 in main data. */
+class FieldClass156E90 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass156E90();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass156E90();
+
+    u8* base14;
+    FieldClass156E80* unk18;
+    FieldBitset154E80* unk1C;
+    u8* base20;
+    FieldClass154E60* unk24;
+};
+
+/** Partial 128-byte grid element with vtable D_156630 in main data. */
+class FieldClass156630 : public FieldClass154E70
+{
+public:
+    /** @brief Start with a unit scale and no flags. */
+    FieldClass156630();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156630();
+
+    u8 unk04[0x5C];
+    float unk60;
+    s32 unk64;
+    u8 unk68[0x18];
+};
+
+/** Partial grid of FieldClass156630 cells with vtable D_156640 in main data. */
+class FieldClass156640 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass156640();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass156640();
+
+    u8* base14;
+    FieldClass156630* unk18;
+    FieldBitset154E80* unk1C;
+    u8* base20;
+    FieldClass154E60* unk24;
+};
+
+/** Partial FieldClass156A50 with vtable D_1559A0 in main data. */
+class FieldClass1559A0 : public FieldClass156A50
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1559A0()
+    {
+    }
+};
+
+/** Partial FieldClass156980 with vtable D_155C50 in main data. */
+class FieldClass155C50 : public FieldClass156980
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass155C50()
+    {
+    }
+};
+
+/** Partial FieldClass1568B0 with vtable D_155E60 in main data. */
+class FieldClass155E60 : public FieldClass1568B0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass155E60()
+    {
+    }
+};
+
+/** Partial FieldClass156640 with vtable D_156080 in main data. */
+class FieldClass156080 : public FieldClass156640
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156080()
+    {
+    }
+};
+
+/** Partial FieldClass1567E0 with vtable D_156220 in main data. */
+class FieldClass156220 : public FieldClass1567E0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156220()
+    {
+    }
+};
+
+/** Partial FieldClass156710 with vtable D_1564D0 in main data. */
+class FieldClass1564D0 : public FieldClass156710
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1564D0()
+    {
+    }
+};
+
+/** Partial FieldClass156E90 with vtable D_156D50 in main data. */
+class FieldClass156D50 : public FieldClass156E90
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156D50()
+    {
+    }
+};
+
+/** Partial FieldClass1559A0 with vtable D_155A70 in main data. */
+class FieldClass155A70 : public FieldClass1559A0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass155A70()
+    {
+    }
+};
+
+/** Partial FieldClass155C50 with vtable D_155B80 in main data. */
+class FieldClass155B80 : public FieldClass155C50
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass155B80();
+};
+
+/** Partial FieldClass155E60 with vtable D_155D90 in main data. */
+class FieldClass155D90 : public FieldClass155E60
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass155D90();
+};
+
+/** Partial FieldClass156080 with vtable D_155FB0 in main data. */
+class FieldClass155FB0 : public FieldClass156080
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass155FB0()
+    {
+    }
+};
+
+/** Partial FieldClass156220 with vtable D_1562F0 in main data. */
+class FieldClass1562F0 : public FieldClass156220
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1562F0()
+    {
+    }
+};
+
+/** Partial FieldClass1564D0 with vtable D_156400 in main data. */
+class FieldClass156400 : public FieldClass1564D0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156400();
+};
+
+/** Partial FieldClass156D50 with vtable D_156C80 in main data. */
+class FieldClass156C80 : public FieldClass156D50
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156C80();
+};
+
+/** Partial FieldClass155A70 with vtable D_1558D0 in main data. */
+class FieldClass1558D0 : public FieldClass155A70
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass1558D0();
+};
+
+/** Partial FieldClass1562F0 with vtable D_156150 in main data. */
+class FieldClass156150 : public FieldClass1562F0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156150();
+};
+
+/** Partial FieldClass155FB0 with vtable D_156B70 in main data. */
+class FieldClass156B70 : public FieldClass155FB0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass156B70();
+};
+#else
+typedef struct FieldClass156710 FieldClass156710;
+typedef struct FieldClass1567E0 FieldClass1567E0;
+typedef struct FieldClass1568B0 FieldClass1568B0;
+typedef struct FieldClass156980 FieldClass156980;
+typedef struct FieldClass156A50 FieldClass156A50;
+typedef struct FieldClass156E90 FieldClass156E90;
+typedef struct FieldClass156640 FieldClass156640;
+#endif
 
 /** Partial receiver containing its signed iteration count. */
 typedef struct FieldObject156B70
@@ -154,17 +491,6 @@ typedef struct FieldObject156C80
 /** Base callback receiver identified by table D_156D50. */
 typedef struct FieldObject156D50 FieldObject156D50;
 
-/** Partial array owner associated with table D_156E90. */
-typedef struct FieldObject156E90
-{
-    u8 unk00[0xC];
-    s32 unk0C;
-    s32 unk10;
-    u8* base14;
-    u8 unk18[4];
-    FieldBitset154E80* unk1C;
-    u8* base20;
-} FieldObject156E90;
 
 
 /** Callback receiver identified by table D_157020. */
@@ -704,7 +1030,7 @@ u8 func_00283260(FieldObject156080* object);
  * @param index Element index.
  * @return Address of the indexed element.
  */
-void* func_00283320(FieldObject156A50* object, s32 index);
+void* func_00283320(FieldClass156A50* object, s32 index);
 
 /**
  * @brief Get an address in the receiver's 64-byte-stride grid.
@@ -713,42 +1039,42 @@ void* func_00283320(FieldObject156A50* object, s32 index);
  * @param column Column index.
  * @return Address selected by the row and column.
  */
-void* func_00283330(FieldObject156A50* object, s32 row, s32 column);
+void* func_00283330(FieldClass156A50* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
  * @param object Callback receiver.
  * @return Stored bitset object pointer.
  */
-FieldBitset154E80* func_00283350(FieldObject156A50* object);
+FieldBitset154E80* func_00283350(FieldClass156A50* object);
 
 /**
  * @brief Get the first configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0xC.
  */
-s32 func_00283360(FieldObject156A50* object);
+s32 func_00283360(FieldClass156A50* object);
 
 /**
  * @brief Get the second configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0x10.
  */
-s32 func_00283370(FieldObject156A50* object);
+s32 func_00283370(FieldClass156A50* object);
 
 /**
  * @brief Report the supported operation flags.
  * @param object Callback receiver.
  * @return Always 0x20.
  */
-u32 func_00283380(FieldObject156A50* object);
+u32 func_00283380(FieldClass156A50* object);
 
 /**
  * @brief Report whether the receiver has an array at offset 0x14.
  * @param object Receiver holding the optional array.
  * @return One when the array exists, otherwise zero.
  */
-s32 func_00283390(FieldObject156A50* object);
+s32 func_00283390(FieldClass156A50* object);
 
 /**
  * @brief Get the address of an element in the 80-byte-stride array.
@@ -756,7 +1082,7 @@ s32 func_00283390(FieldObject156A50* object);
  * @param index Element index.
  * @return Address of the indexed element.
  */
-void* func_00283440(FieldObject156980* object, s32 index);
+void* func_00283440(FieldClass156980* object, s32 index);
 
 /**
  * @brief Get an address in the receiver's 64-byte-stride grid.
@@ -765,42 +1091,42 @@ void* func_00283440(FieldObject156980* object, s32 index);
  * @param column Column index.
  * @return Address selected by the row and column.
  */
-void* func_00283460(FieldObject156980* object, s32 row, s32 column);
+void* func_00283460(FieldClass156980* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
  * @param object Callback receiver.
  * @return Stored bitset object pointer.
  */
-FieldBitset154E80* func_00283480(FieldObject156980* object);
+FieldBitset154E80* func_00283480(FieldClass156980* object);
 
 /**
  * @brief Get the first configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0xC.
  */
-s32 func_00283490(FieldObject156980* object);
+s32 func_00283490(FieldClass156980* object);
 
 /**
  * @brief Get the second configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0x10.
  */
-s32 func_002834A0(FieldObject156980* object);
+s32 func_002834A0(FieldClass156980* object);
 
 /**
  * @brief Report the supported operation flags.
  * @param object Callback receiver.
  * @return Always 1.
  */
-u32 func_002834B0(FieldObject156980* object);
+u32 func_002834B0(FieldClass156980* object);
 
 /**
  * @brief Report whether the receiver has an array at offset 0x14.
  * @param object Receiver holding the optional array.
  * @return One when the array exists, otherwise zero.
  */
-s32 func_002834C0(FieldObject156980* object);
+s32 func_002834C0(FieldClass156980* object);
 
 /**
  * @brief Get the address of an element in the 112-byte-stride array.
@@ -808,7 +1134,7 @@ s32 func_002834C0(FieldObject156980* object);
  * @param index Element index.
  * @return Address of the indexed element.
  */
-void* func_00283570(FieldObject1568B0* object, s32 index);
+void* func_00283570(FieldClass1568B0* object, s32 index);
 
 /**
  * @brief Get an address in the receiver's 64-byte-stride grid.
@@ -817,42 +1143,42 @@ void* func_00283570(FieldObject1568B0* object, s32 index);
  * @param column Column index.
  * @return Address selected by the row and column.
  */
-void* func_00283590(FieldObject1568B0* object, s32 row, s32 column);
+void* func_00283590(FieldClass1568B0* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
  * @param object Callback receiver.
  * @return Stored bitset object pointer.
  */
-FieldBitset154E80* func_002835B0(FieldObject1568B0* object);
+FieldBitset154E80* func_002835B0(FieldClass1568B0* object);
 
 /**
  * @brief Get the first configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0xC.
  */
-s32 func_002835C0(FieldObject1568B0* object);
+s32 func_002835C0(FieldClass1568B0* object);
 
 /**
  * @brief Get the second configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0x10.
  */
-s32 func_002835D0(FieldObject1568B0* object);
+s32 func_002835D0(FieldClass1568B0* object);
 
 /**
  * @brief Report the supported operation flags.
  * @param object Callback receiver.
  * @return Always 0x20.
  */
-u32 func_002835E0(FieldObject1568B0* object);
+u32 func_002835E0(FieldClass1568B0* object);
 
 /**
  * @brief Report whether the receiver has an array at offset 0x14.
  * @param object Receiver holding the optional array.
  * @return One when the array exists, otherwise zero.
  */
-s32 func_002835F0(FieldObject1568B0* object);
+s32 func_002835F0(FieldClass1568B0* object);
 
 /**
  * @brief Get the address of an element in the 128-byte-stride array.
@@ -860,7 +1186,7 @@ s32 func_002835F0(FieldObject1568B0* object);
  * @param index Element index.
  * @return Address of the indexed element.
  */
-void* func_002836A0(FieldObject1567E0* object, s32 index);
+void* func_002836A0(FieldClass1567E0* object, s32 index);
 
 /**
  * @brief Get an address in the receiver's 64-byte-stride grid.
@@ -869,42 +1195,42 @@ void* func_002836A0(FieldObject1567E0* object, s32 index);
  * @param column Column index.
  * @return Address selected by the row and column.
  */
-void* func_002836B0(FieldObject1567E0* object, s32 row, s32 column);
+void* func_002836B0(FieldClass1567E0* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
  * @param object Callback receiver.
  * @return Stored bitset object pointer.
  */
-FieldBitset154E80* func_002836D0(FieldObject1567E0* object);
+FieldBitset154E80* func_002836D0(FieldClass1567E0* object);
 
 /**
  * @brief Get the first configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0xC.
  */
-s32 func_002836E0(FieldObject1567E0* object);
+s32 func_002836E0(FieldClass1567E0* object);
 
 /**
  * @brief Get the second configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0x10.
  */
-s32 func_002836F0(FieldObject1567E0* object);
+s32 func_002836F0(FieldClass1567E0* object);
 
 /**
  * @brief Report the supported operation flags.
  * @param object Callback receiver.
  * @return Always 0x20.
  */
-u32 func_00283700(FieldObject1567E0* object);
+u32 func_00283700(FieldClass1567E0* object);
 
 /**
  * @brief Report whether the receiver has an array at offset 0x14.
  * @param object Receiver holding the optional array.
  * @return One when the array exists, otherwise zero.
  */
-s32 func_00283710(FieldObject1567E0* object);
+s32 func_00283710(FieldClass1567E0* object);
 
 /**
  * @brief Get the address of an element in the 96-byte-stride array.
@@ -912,7 +1238,7 @@ s32 func_00283710(FieldObject1567E0* object);
  * @param index Element index.
  * @return Address of the indexed element.
  */
-void* func_002837C0(FieldObject156710* object, s32 index);
+void* func_002837C0(FieldClass156710* object, s32 index);
 
 /**
  * @brief Get an address in the receiver's 64-byte-stride grid.
@@ -921,42 +1247,42 @@ void* func_002837C0(FieldObject156710* object, s32 index);
  * @param column Column index.
  * @return Address selected by the row and column.
  */
-void* func_002837E0(FieldObject156710* object, s32 row, s32 column);
+void* func_002837E0(FieldClass156710* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
  * @param object Callback receiver.
  * @return Stored bitset object pointer.
  */
-FieldBitset154E80* func_00283800(FieldObject156710* object);
+FieldBitset154E80* func_00283800(FieldClass156710* object);
 
 /**
  * @brief Get the first configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0xC.
  */
-s32 func_00283810(FieldObject156710* object);
+s32 func_00283810(FieldClass156710* object);
 
 /**
  * @brief Get the second configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0x10.
  */
-s32 func_00283820(FieldObject156710* object);
+s32 func_00283820(FieldClass156710* object);
 
 /**
  * @brief Report the supported operation flags.
  * @param object Callback receiver.
  * @return Always 1.
  */
-u32 func_00283830(FieldObject156710* object);
+u32 func_00283830(FieldClass156710* object);
 
 /**
  * @brief Report whether the receiver has an array at offset 0x14.
  * @param object Receiver holding the optional array.
  * @return One when the array exists, otherwise zero.
  */
-s32 func_00283840(FieldObject156710* object);
+s32 func_00283840(FieldClass156710* object);
 
 /**
  * @brief Get the address of an element in the 128-byte-stride array.
@@ -964,7 +1290,7 @@ s32 func_00283840(FieldObject156710* object);
  * @param index Element index.
  * @return Address of the indexed element.
  */
-void* func_002838F0(FieldObject156640* object, s32 index);
+void* func_002838F0(FieldClass156640* object, s32 index);
 
 /**
  * @brief Get an address in the receiver's 64-byte-stride grid.
@@ -973,84 +1299,92 @@ void* func_002838F0(FieldObject156640* object, s32 index);
  * @param column Column index.
  * @return Address selected by the row and column.
  */
-void* func_00283900(FieldObject156640* object, s32 row, s32 column);
+void* func_00283900(FieldClass156640* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
  * @param object Callback receiver.
  * @return Stored bitset object pointer.
  */
-FieldBitset154E80* func_00283920(FieldObject156640* object);
+FieldBitset154E80* func_00283920(FieldClass156640* object);
 
 /**
  * @brief Get the first configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0xC.
  */
-s32 func_00283930(FieldObject156640* object);
+s32 func_00283930(FieldClass156640* object);
 
 /**
  * @brief Get the second configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0x10.
  */
-s32 func_00283940(FieldObject156640* object);
+s32 func_00283940(FieldClass156640* object);
 
 /**
  * @brief Report the supported operation flags.
  * @param object Callback receiver.
  * @return Always 0x20.
  */
-u32 func_00283950(FieldObject156640* object);
+u32 func_00283950(FieldClass156640* object);
 
 /**
  * @brief Report whether the receiver has an array at offset 0x14.
  * @param object Receiver holding the optional array.
  * @return One when the array exists, otherwise zero.
  */
-s32 func_00283960(FieldObject156640* object);
+s32 func_00283960(FieldClass156640* object);
+
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void func_002839B0(FieldClass156640* object, s32 rows, s32 columns);
 
 /**
  * @brief Return the default floating-point value.
  * @param object Callback receiver.
  * @return Always 1.0f.
  */
-float func_00286400(FieldObject156A50* object);
+float func_00286400(FieldClass156A50* object);
 
 /**
  * @brief Return the default floating-point value.
  * @param object Callback receiver.
  * @return Always 1.0f.
  */
-float func_00286410(FieldObject156980* object);
+float func_00286410(FieldClass156980* object);
 
 /**
  * @brief Return the default floating-point value.
  * @param object Callback receiver.
  * @return Always 1.0f.
  */
-float func_00286420(FieldObject1568B0* object);
+float func_00286420(FieldClass1568B0* object);
 
 /**
  * @brief Return the default floating-point value.
  * @param object Callback receiver.
  * @return Always 1.0f.
  */
-float func_00286430(FieldObject1567E0* object);
+float func_00286430(FieldClass1567E0* object);
 
 /**
  * @brief Return the default floating-point value.
  * @param object Callback receiver.
  * @return Always 1.0f.
  */
-float func_00286440(FieldObject156710* object);
+float func_00286440(FieldClass156710* object);
 
 /**
  * @brief Return the default floating-point value.
  * @param object Callback receiver.
  * @return Always 1.0f.
  */
-float func_00286450(FieldObject156640* object);
+float func_00286450(FieldClass156640* object);
 
 /**
  * @brief Complete this script command without changing its receiver.
@@ -1208,7 +1542,7 @@ u8 func_002895E0(FieldObject156D50* object);
  * @param index Element index.
  * @return Address of the indexed element.
  */
-void* func_002896A0(FieldObject156E90* object, s32 index);
+void* func_002896A0(FieldClass156E90* object, s32 index);
 
 /**
  * @brief Get an address in the receiver's 64-byte-stride grid.
@@ -1217,49 +1551,49 @@ void* func_002896A0(FieldObject156E90* object, s32 index);
  * @param column Column index.
  * @return Address selected by the row and column.
  */
-void* func_002896C0(FieldObject156E90* object, s32 row, s32 column);
+void* func_002896C0(FieldClass156E90* object, s32 row, s32 column);
 
 /**
  * @brief Get the associated bitset object.
  * @param object Callback receiver.
  * @return Stored bitset object pointer.
  */
-FieldBitset154E80* func_002896E0(FieldObject156E90* object);
+FieldBitset154E80* func_002896E0(FieldClass156E90* object);
 
 /**
  * @brief Get the first configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0xC.
  */
-s32 func_002896F0(FieldObject156E90* object);
+s32 func_002896F0(FieldClass156E90* object);
 
 /**
  * @brief Get the second configured dimension.
  * @param object Callback receiver.
  * @return Signed dimension stored at offset 0x10.
  */
-s32 func_00289700(FieldObject156E90* object);
+s32 func_00289700(FieldClass156E90* object);
 
 /**
  * @brief Report the supported operation flags.
  * @param object Callback receiver.
  * @return Always 1.
  */
-u32 func_00289710(FieldObject156E90* object);
+u32 func_00289710(FieldClass156E90* object);
 
 /**
  * @brief Report whether the receiver has an array at offset 0x14.
  * @param object Receiver holding the optional array.
  * @return One when the array exists, otherwise zero.
  */
-s32 func_00289720(FieldObject156E90* object);
+s32 func_00289720(FieldClass156E90* object);
 
 /**
  * @brief Return the default floating-point value.
  * @param object Callback receiver.
  * @return Always 1.0f.
  */
-float func_00289EB0(FieldObject156E90* object);
+float func_00289EB0(FieldClass156E90* object);
 
 /**
  * @brief Report the default signed category.
@@ -2362,6 +2696,103 @@ void func_00289630(void* object);
  * @return Always 4.
  */
 s32 func_0028E090(void* object);
+
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void func_002840B0(FieldClass156710* object, s32 rows, s32 columns);
+
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void func_002847F0(FieldClass1567E0* object, s32 rows, s32 columns);
+
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void func_00284EE0(FieldClass1568B0* object, s32 rows, s32 columns);
+
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void func_002855F0(FieldClass156980* object, s32 rows, s32 columns);
+
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void func_00285D10(FieldClass156A50* object, s32 rows, s32 columns);
+
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param object Grid to resize.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void func_00289770(FieldClass156E90* object, s32 rows, s32 columns);
+
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+void func_00283970(FieldClass156640* object, const FieldClass156640* other);
+
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+void func_00283850(FieldClass156710* object, const FieldClass156710* other);
+
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+void func_00283720(FieldClass1567E0* object, const FieldClass1567E0* other);
+
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+void func_00283600(FieldClass1568B0* object, const FieldClass1568B0* other);
+
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+void func_002834D0(FieldClass156980* object, const FieldClass156980* other);
+
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+void func_002833A0(FieldClass156A50* object, const FieldClass156A50* other);
+
+/**
+ * @brief Copy another grid's size and reallocate this grid to match.
+ * @param object Grid to resize.
+ * @param other Grid whose size is copied.
+ */
+void func_00289730(FieldClass156E90* object, const FieldClass156E90* other);
 
 #ifdef __cplusplus
 }

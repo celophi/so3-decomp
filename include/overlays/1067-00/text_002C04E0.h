@@ -8,6 +8,176 @@
 typedef struct FieldFloat48 FieldFloat48;
 
 #ifdef __cplusplus
+#include "overlays/1067-00/field_class_154D40.h"
+
+/** Partial FieldClass154E70 with vtable D_15A220 in main data; its only virtual is the destructor. */
+class FieldClass15A220 : public FieldClass154E70
+{
+public:
+    /** @brief Construct the object. */
+    FieldClass15A220();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A220();
+
+    u8 unk04[0x4C];
+};
+
+/** Partial grid of FieldClass15A220 cells with vtable D_15A230 in main data. */
+class FieldClass15A230 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass15A230();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass15A230();
+
+    u8* unk14;
+    FieldClass15A220* unk18;
+    FieldBitset154E80* unk1C;
+    u8* unk20;
+    FieldClass154E60* unk24;
+};
+
+/** Partial FieldClass154E70 with vtable D_15A5B0 in main data; its only virtual is the destructor. */
+class FieldClass15A5B0 : public FieldClass154E70
+{
+public:
+    /** @brief Construct the object. */
+    FieldClass15A5B0();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A5B0();
+
+    u8 unk04[0x9C];
+};
+
+/** Partial grid of FieldClass15A5B0 cells with vtable D_15A5C0 in main data. */
+class FieldClass15A5C0 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass15A5C0();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass15A5C0();
+
+    u8* unk14;
+    FieldClass15A5B0* unk18;
+    FieldBitset154E80* unk1C;
+    u8* unk20;
+    FieldClass154E60* unk24;
+};
+
+/** Partial 0x40-byte grid element with vtable D_15AB58 in main data. */
+class FieldClass15AB58 : public FieldClass154E70
+{
+public:
+    /** @brief Start with a 60.0 extent. */
+    FieldClass15AB58();
+
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15AB58();
+
+    u8 unk04[0x2C];
+    float unk30;
+    u8 unk34[0xC];
+};
+
+/** Partial grid of FieldClass15AB58 cells with vtable D_15AB70 in main data. */
+class FieldClass15AB70 : public FieldClass154D50
+{
+public:
+    /** @brief Start with no storage. */
+    FieldClass15AB70();
+
+    /** @brief Release the cells, the bit set and the secondary elements. */
+    virtual ~FieldClass15AB70();
+
+    u8* unk14;
+    FieldClass15AB58* unk18;
+    FieldBitset154E80* unk1C;
+    u8* unk20;
+    FieldClass154E60* unk24;
+};
+
+/** Partial FieldClass15A230 with vtable D_15A110 in main data. */
+class FieldClass15A110 : public FieldClass15A230
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A110()
+    {
+    }
+};
+
+/** Partial FieldClass15A5C0 with vtable D_15A3D0 in main data. */
+class FieldClass15A3D0 : public FieldClass15A5C0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A3D0()
+    {
+    }
+};
+
+/** Partial FieldClass15AB70 with vtable D_15A8D0 in main data. */
+class FieldClass15A8D0 : public FieldClass15AB70
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A8D0()
+    {
+    }
+};
+
+/** Partial FieldClass15A110 with vtable D_15A040 in main data. */
+class FieldClass15A040 : public FieldClass15A110
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A040();
+};
+
+/** Partial FieldClass15A3D0 with vtable D_15A4A0 in main data. */
+class FieldClass15A4A0 : public FieldClass15A3D0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A4A0()
+    {
+    }
+};
+
+/** Partial FieldClass15A8D0 with vtable D_15A9A0 in main data. */
+class FieldClass15A9A0 : public FieldClass15A8D0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A9A0()
+    {
+    }
+};
+
+/** Partial FieldClass15A4A0 with vtable D_15A300 in main data. */
+class FieldClass15A300 : public FieldClass15A4A0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A300();
+};
+
+/** Partial FieldClass15A9A0 with vtable D_15A800 in main data. */
+class FieldClass15A800 : public FieldClass15A9A0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A800();
+};
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -960,8 +1130,74 @@ float func_002CABA0(void* object);
 #endif
 
 #ifdef __cplusplus
+/** Partial FieldClass150070 object with vtable D_15A760 in main data. */
+class FieldClass15A760 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A760()
+    {
+    }
+
+    /**
+     * @brief Release the object's storage through the Lib heap.
+     * @param object Storage to release.
+     */
+    static void operator delete(void* object);
+};
+
+/** Partial FieldClass15A760 object with vtable D_15A690 in main data. */
+class FieldClass15A690 : public FieldClass15A760
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A690();
+};
+
+/** Partial FieldClass15A760 object with vtable D_15A7E0 in main data. */
+class FieldClass15A7E0 : public FieldClass15A760
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A7E0()
+    {
+    }
+};
+
+/** Partial FieldClass15A7E0 object with vtable D_15A780 in main data. */
+class FieldClass15A780 : public FieldClass15A7E0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A780();
+};
+
+/** Partial FieldClass15A7E0 object with vtable D_15A7A0 in main data. */
+class FieldClass15A7A0 : public FieldClass15A7E0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A7A0();
+};
+
+/** Partial FieldClass15A7E0 object with vtable D_15A7C0 in main data. */
+class FieldClass15A7C0 : public FieldClass15A7E0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15A7C0();
+};
+
+/** Partial FieldClass15A760 object with vtable D_15AAD0 in main data. */
+class FieldClass15AAD0 : public FieldClass15A760
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15AAD0();
+};
+
 /** Partial Field object with vtable D_15AAB0 in main data and an owned child at offset 0x2C. */
-class FieldClass15AAB0 : public FieldClass150070
+class FieldClass15AAB0 : public FieldClass15A760
 {
 public:
     /** @brief Destroy the object. */

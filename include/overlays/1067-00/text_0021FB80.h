@@ -315,6 +315,65 @@ public:
     u8 unk2e2_1_7 : 7;
 };
 
+/** Partial base actor; the native constructor is 0x0024E420. */
+class FieldClass1535B0 : public FieldClass152430
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Initialize the inherited actor and named-object state. */
+    FieldClass1535B0();
+    /** @brief Destroy the named-object state and inherited actor. */
+    virtual ~FieldClass1535B0();
+    /** @brief Bind a named resident object and copy its transform. @param name Object name. @return One when found, zero otherwise. */
+    s32 func_0024D1C0(const char* name);
+    u8 unk2f0[0x44];
+    u8 unk334_0_1 : 2;
+    u8 unk334_2 : 1;
+    u8 unk334_3_7 : 5;
+};
+
+/** 0x3D0-byte actor derived from the native 0x340-byte base. */
+class FieldClass155580 : public FieldClass1535B0
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
+    static void* operator new(u32 size);
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+    /** @brief Set the actor category and clear its transition state. */
+    FieldClass155580()
+    {
+        unk78 |= 0x1000;
+        unk348 = 0.0f;
+        unk3a4 = 0;
+        unk3c0 = 0;
+        unk3c4 = 0;
+        unk3a0 = 0;
+        unk3b0 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+        unk350_0 = 0;
+        unk350_1 = 0;
+    }
+    /** @brief Destroy the inherited named actor. */
+    virtual ~FieldClass155580();
+    float unk340;
+    float unk344;
+    float unk348;
+    float unk34c;
+    u8 unk350_0 : 1;
+    u8 unk350_1 : 1;
+    u8 unk350_2_7 : 6;
+    u8 unk351[0x4F];
+    void* unk3a0;
+    void* unk3a4;
+    u8 unk3a8[8];
+    FieldVec4A unk3b0;
+    void* unk3c0;
+    void* unk3c4;
+};
+
 /** Partial Field object with vtable D_152410 in main data and an owned child at offset 0x300. */
 class FieldClass152410 : public FieldClass150070
 {
@@ -365,6 +424,8 @@ class FieldClass1502E0;
 class FieldClass150EB0 : public FieldClass152430
 {
 public:
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
     /** @brief Destroy the object. */
     virtual ~FieldClass150EB0();
 
@@ -388,7 +449,11 @@ public:
      */
     virtual void func_00200110(void* arg);
 
-    u8 unk2f0[0xA0];
+    u8 unk2f0[0x20];
+    FieldClass150280 unk310;
+    u8 unk380[4];
+    FieldClass1502A0* unk384;
+    u8 unk388[8];
     FieldVec4B unk390;
     FieldClass1502E0* unk3a0;
     u8 unk3a4[8];
@@ -424,13 +489,18 @@ public:
     /** @brief Virtual handler slot 36. */
     virtual void func_002378E0();
 
-    u8 unk3c0[0x170];
+    u8 unk3c0[0x30];
+    FieldClass1502A0 unk3f0;
+    u8 unk468[0xC8];
     FieldVec4B unk530;
-    u8 unk540[0x8D];
+    u8 unk540[0x48];
+    void* unk588;
+    u8 unk58c[0x41];
     u8 unk5cd_0_1 : 2;
     u8 unk5cd_2 : 1;
     u8 unk5cd_3 : 1;
-    u8 unk5cd_4_7 : 4;
+    u8 unk5cd_4 : 1;
+    u8 unk5cd_5_7 : 3;
 };
 
 /**
@@ -441,6 +511,8 @@ public:
 class FieldClass153330 : public FieldClass152430
 {
 public:
+    /** @brief Release through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
     /** @brief Destroy the object. */
     virtual ~FieldClass153330();
 
@@ -477,13 +549,15 @@ public:
      */
     virtual void func_0023D3C0(void* arg);
 
-    u8 unk2f0[0x174];
+    u8 unk2f0[0xE0];
+    FieldClass1502A0 unk3d0;
+    u8 unk448[0x1C];
     float unk464;
     u8 unk468[0x4D];
     u8 unk4b5;
     u8 unk4b6;
     u8 unk4b7;
-    void* unk4b8;
+    u8* unk4b8;
 };
 
 /**

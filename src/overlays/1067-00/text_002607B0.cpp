@@ -3,11 +3,9 @@
 #include "overlays/1067-00/text_001E1590.h"
 
 extern "C" {
-extern void* D_175290[];
 extern void* D_153D40[];
 extern void* D_153D50[];
 extern void* D_153DD8[];
-FieldObject262910* func_4DAD90(FieldObject262910* object);
 void __dl__FPv(void* object);
 FieldObject262E20* func_4E2940(FieldObject262E20* object, s16 flags);
 }
@@ -23,14 +21,6 @@ struct FieldObject262F70
 {
     u8 unk00[0x24];
     void** table;
-};
-
-struct FieldObject262910
-{
-    void** table;
-    u8 unk04[0x20C];
-    u32 unk210;
-    u32 unk214;
 };
 
 struct FieldObject262490
@@ -52,7 +42,17 @@ struct FieldObject261810
     void* unk28;
 };
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_002607B0);
+/** Partial FieldClass150070 object with vtable D_153D20 in main data. */
+class FieldClass153D20 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass153D20();
+};
+
+FieldClass153D20::~FieldClass153D20()
+{
+}
 
 s32 func_00260840(FieldObject153D20* object)
 {
@@ -158,13 +158,10 @@ void func_00262900(FieldVector262900* vector)
     vector->floats[3] = 1.0f;
 }
 
-FieldObject262910* func_00262910(FieldObject262910* object)
+FieldClass175290::FieldClass175290()
 {
-    func_4DAD90(object);
-    object->table = D_175290;
-    object->unk210 = 0;
-    object->unk214 = 0;
-    return object;
+    unk210 = 0;
+    unk214 = 0;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_00262950);
@@ -223,7 +220,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_002632
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_002632C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_00263330);
+FieldClass153E00::~FieldClass153E00()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_002633C0);
 

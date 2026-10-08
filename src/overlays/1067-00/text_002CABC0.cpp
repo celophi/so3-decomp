@@ -339,7 +339,12 @@ FieldNameEntry* func_002CB9D0(FieldNameOwner* object, FieldNameGroup** group_ptr
 
 extern "C" int func_002CBAA0(void* object) { return 9; }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CBAB0);
+/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
+extern "C" void func_002CBAB0(void* object)
+{
+    func_004D65C0(object);
+    func_0011ED90(D_001B65F4, object);
+}
 
 u32 func_002CBAE0()
 {

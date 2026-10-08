@@ -1,5 +1,8 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002D5260.h"
+#include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/text_0044ABE0.h"
 
 
 extern "C" void func_467750(FieldState2D63F0* object);
@@ -55,11 +58,32 @@ void func_002D6410(FieldState2D6410* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D6440);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D6570);
+/** Partial LibClass178600 widget with vtable D_15B210 in main data. */
+class FieldClass15B210 : public LibClass178600
+{
+public:
+    /** @brief Release the widget storage and destroy its base. */
+    virtual ~FieldClass15B210();
+    LibStorageBlock0C unk40;
+};
+
+FieldClass15B210::~FieldClass15B210()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D65E0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D6660);
+/** Partial LibClass178EA0 with vtable D_15B270 in main data. */
+class FieldClass15B270 : public LibClass178EA0
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass15B270();
+};
+
+FieldClass15B270::~FieldClass15B270()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D66C0);
 
@@ -98,7 +122,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D71
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D72B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D73B0);
+ItemCreationClass1725D0::~ItemCreationClass1725D0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D7420);
 

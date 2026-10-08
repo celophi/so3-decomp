@@ -4,7 +4,6 @@
 #include "overlays/1067-00/text_002636B0.h"
 
 typedef struct FieldObject261810 FieldObject261810;
-typedef struct FieldObject262910 FieldObject262910;
 typedef struct FieldObject262F70 FieldObject262F70;
 typedef struct FieldObject262E20 FieldObject262E20;
 typedef struct FieldObject262490 FieldObject262490;
@@ -13,6 +12,20 @@ typedef struct FieldObject153E00 FieldObject153E00;
 
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/lib/text_004CD3A0.h"
+
+/** Partial LibClass178EA0 with vtable D_175290 in main data. */
+class FieldClass175290 : public LibClass178EA0
+{
+public:
+    /** @brief Construct the object and clear the words at offsets 0x210 and 0x214. */
+    FieldClass175290();
+    /** @brief Destroy the object. */
+    virtual ~FieldClass175290();
+
+    u32 unk210;
+    u32 unk214;
+};
 /** Four aligned floating-point components; C++ copies them as one 128-bit word. */
 typedef FieldVec4A FieldVector2624;
 
@@ -48,13 +61,6 @@ typedef union FieldVector262900
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * @brief Initialize the receiver after its base initializer.
- * @param object Receiver to initialize.
- * @return The receiver.
- */
-FieldObject262910* func_00262910(FieldObject262910* object);
 
 /**
  * @brief Restore the receiver's table pointer and delete it when the signed flag is positive.

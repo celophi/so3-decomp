@@ -93,7 +93,17 @@ extern "C" void func_00204E40(FieldCallbackState*);
 extern "C" void* func_00204A10(void*);
 extern "C" void func_45B0E0(void*, void*, bool);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FF260", func_001FF260);
+/** Partial FieldClass151460 with vtable D_150D00 in main data. */
+class FieldClass150D00 : public FieldClass151460
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass150D00();
+};
+
+FieldClass150D00::~FieldClass150D00()
+{
+}
 
 void func_001FF2C0(u8* object)
 {

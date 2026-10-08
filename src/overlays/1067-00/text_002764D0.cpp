@@ -6,6 +6,7 @@
 #include "main/resident_data.h"
 #include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/1067-00/text_0021FB80.h"
 
 
 typedef struct FieldFlagState271B0
@@ -244,7 +245,6 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00277A
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00277B40);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00277C10);
 
 s32 func_00277CA0(void* object)
 {
@@ -278,7 +278,17 @@ s32 func_00278300(FieldObject155540* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278310);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002786D0);
+/** Partial FieldClass150070 object with vtable D_155540 in main data. */
+class FieldClass155540 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass155540();
+};
+
+FieldClass155540::~FieldClass155540()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278760);
 
@@ -292,7 +302,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002789
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002789F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278A80);
+FieldClass155580::~FieldClass155580()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278AE0);
 
@@ -328,7 +340,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002790
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279130);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002791E0);
+FieldClass155610::~FieldClass155610()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279280);
 
@@ -799,7 +813,42 @@ void func_0027B320(FieldFlagState2B320* object)
     object->unk24 = -3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B350);
+/** Partial list node with a flag byte at offset 0x4C. */
+struct FieldNode27B350
+{
+    u8 unk00[8];
+    FieldNode27B350* next;
+    u8 unk0c[0x40];
+    u8 unk4c_0 : 1;
+    u8 unk4c_1_2 : 2;
+    u8 unk4c_3 : 1;
+    u8 unk4c_4_7 : 4;
+};
+
+/** Partial owner of a node list whose sentinel starts at offset 0x14. */
+struct FieldList27B350
+{
+    u8 unk00[0x14];
+    FieldNode27B350 head;
+};
+
+/**
+ * @brief Set bit 3 of the flag byte on every listed node.
+ * @param object Owner of the list.
+ */
+extern "C" void func_0027B350(FieldList27B350* object)
+{
+    FieldNode27B350* node = &object->head;
+    while (1)
+    {
+        node = node->next;
+        if (&object->head == node)
+        {
+            break;
+        }
+        node->unk4c_3 = 1;
+    }
+}
 
 void func_0027B390(FieldState2B390* object, u32 value, s32 force)
 {
@@ -814,11 +863,65 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B3
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B4C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B5F0);
+/** Partial list node with a signed word at offset 0x24. */
+struct FieldNode27B5F0
+{
+    u8 unk00[8];
+    FieldNode27B5F0* next;
+    u8 unk0c[0x18];
+    s32 unk24;
+};
+
+/** Partial owner of a node list whose sentinel starts at offset 0x14. */
+struct FieldList27B5F0
+{
+    u8 unk00[0x14];
+    FieldNode27B5F0 head;
+};
+
+/**
+ * @brief Test whether any listed node has a non-negative word at offset 0x24.
+ * @param object Owner of the list.
+ * @return One when such a node exists, otherwise zero.
+ */
+extern "C" s32 func_0027B5F0(const FieldList27B5F0* object)
+{
+    const FieldNode27B5F0* node = &object->head;
+    while (1)
+    {
+        node = node->next;
+        if (&object->head == node)
+        {
+            break;
+        }
+        s32 waiting = node->unk24 <= -1;
+        if (!waiting)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B640);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B6D0);
+/**
+ * @brief Set bit 0 of the flag byte on every listed node.
+ * @param object Owner of the list.
+ */
+extern "C" void func_0027B6D0(FieldList27B350* object)
+{
+    FieldNode27B350* node = &object->head;
+    while (1)
+    {
+        node = node->next;
+        if (&object->head == node)
+        {
+            break;
+        }
+        node->unk4c_0 = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027B710);
 

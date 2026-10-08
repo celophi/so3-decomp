@@ -1,5 +1,7 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_0020F9F0.h"
+#include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/text_0044ABE0.h"
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020F9F0);
@@ -8,9 +10,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FA
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FB70);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FC00);
+ItemCreationClass172600::~ItemCreationClass172600()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FC70);
+ItemCreationClass172870::~ItemCreationClass172870()
+{
+}
 
 void func_0020FCE0(FieldFlags141C* object)
 {
@@ -26,7 +32,13 @@ s32 func_0020FDD0(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FDE0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FE90);
+extern "C" void func_4C61F0(void* object);
+
+/** @brief Forward the object to func_4C61F0. @param object Object to forward. */
+extern "C" void func_0020FE90(void* object)
+{
+    func_4C61F0(object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FEB0);
 
@@ -57,7 +69,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002105
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210770);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002107F0);
+/** @brief Forward the object to func_4C61F0. @param object Object to forward. */
+extern "C" void func_002107F0(void* object)
+{
+    func_4C61F0(object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210810);
 
@@ -72,9 +88,13 @@ void func_00210DA0(FieldFlags10A1* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210DC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210FE0);
+LibClass175170::~LibClass175170()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00211050);
+ItemCreationClass1746A0::~ItemCreationClass1746A0()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002110C0);
 
@@ -103,7 +123,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00211C
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00211CA0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00212360);
+FieldClass151C00::~FieldClass151C00()
+{
+}
 
 extern "C" void* D_001B6650;
 extern "C" void func_4DB9E0(void* manager, u32 first, u32 second, u32 third, u32 fourth);

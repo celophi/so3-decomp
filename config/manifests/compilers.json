@@ -31,6 +31,18 @@
       "flags": ["-inline", "level=5"]
     },
     {
+      "source": "src/overlays/1067-00/text_0022B490.cpp",
+      "flags": ["-inline", "level=5"]
+    },
+    {
+      "source": "src/overlays/1067-00/text_0029E9E0.cpp",
+      "flags": ["-inline", "level=7"]
+    },
+    {
+      "source": "src/overlays/1067-00/text_002C04E0.cpp",
+      "flags": ["-inline", "level=5"]
+    },
+    {
       "source": "src/overlays/citemcreation/text_003483C0.cpp",
       "flags": ["-O4,p"]
     }

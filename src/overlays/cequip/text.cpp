@@ -766,7 +766,7 @@ s32 EquipClass182220::func_slot10(void* associated, float x, float y, s32 code)
     }
     func_004C5A80(frame, 1, 0.0f, 0.0f, 240.0f, 160.0f, 88.0f);
     func_004C6190(unk10, frame);
-    func_00351E40(reinterpret_cast<FieldCountedList*>(unk14), frame);
+    func_00351E40(&unk14, frame);
     LibObject178750* first = new (0) LibObject178750;
     LibObject178750* second = new (0) LibObject178750;
     LibObject178750* title = new (0) LibObject178750;
@@ -2063,12 +2063,12 @@ s32 EquipClass182C90::func_slotf4(void* associated)
     LibClass178630* panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 232.0f, 144.0f, 88.0f);
     func_004C6190(unk10, panel);
-    func_00351E40(reinterpret_cast<FieldCountedList*>(unk14), panel);
+    func_00351E40(&unk14, panel);
     unkb0 = new (0) LibObject175140;
     const char* text = reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(unkac->unk04)[unkac->current].unk20);
     unkb0->func_00467AD0(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
     func_004C6190(unk10, unkb0);
-    func_00351C00(reinterpret_cast<FieldCountedList*>(unk40 + 4), unkb0);
+    func_00351C00(&unk44, unkb0);
     unkb0->set_scale(0.8f, 0.8f);
     unkb4 = new (0) LibObject178750;
     unkb8 = new (0) LibObject174F20;
@@ -2368,7 +2368,7 @@ extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipR
         if (entry && entry->unk08 > 0)
         {
             const EquipCategoryMaskView* definition =
-                reinterpret_cast<const EquipCategoryMaskView*>(reinterpret_cast<const u8*>(D_001B64F0) + entry->unk02 * 32);
+                reinterpret_cast<const EquipCategoryMaskView*>(reinterpret_cast<const u8*>(D_001B64F0) + entry->catalog_index * 32);
             if (mask & static_cast<u16>(definition->mask))
             {
                 switch (static_cast<u8>(definition->mode))

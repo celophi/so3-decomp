@@ -38,7 +38,9 @@ extern "C" void* D_001B6650;
 extern "C" void func_4DCEA0(void* state, bool enabled, bool other);
 
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BC510", func_002BC510);
+FieldClass159A80::~FieldClass159A80()
+{
+}
 
 /**
  * @brief Report this object's type value.
@@ -145,7 +147,17 @@ bool func_002BDF70(FieldState2BDF70* object, u16 value)
     return true;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BC510", func_002BE020);
+/** Partial FieldClass159A70 with vtable D_159B50 in main data. */
+class FieldClass159B50 : public FieldClass159A70
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass159B50();
+};
+
+FieldClass159B50::~FieldClass159B50()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BC510", func_002BE080);
 
