@@ -2,7 +2,7 @@
 #define SO3_OVERLAYS_1067_00_TEXT_0026EE10_H
 
 #include "types.h"
-#include "overlays/1067-00/text_0020D9A0.h"
+#include "overlays/1067-00/text_0020DA30.h"
 #ifdef __cplusplus
 #include "overlays/1067-00/text_00202240.h"
 #endif

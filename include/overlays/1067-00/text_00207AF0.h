@@ -8,7 +8,7 @@
 #include "overlays/1067-00/text_002DBC50.h"
 #include "overlays/1067-00/text_001E6C50.h"
 #include "overlays/1067-00/text_001ED7E0.h"
-#include "overlays/1067-00/text_0020D9A0.h"
+#include "overlays/1067-00/text_0020DA30.h"
 #include "overlays/1067-00/text_0022DC70.h"
 
 #endif
