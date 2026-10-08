@@ -64,6 +64,11 @@ SectionHeader = namedtuple('SectionHeader', 'name type flags address offset size
 Symbol = namedtuple('Symbol', 'name value size info other section')
 
 
+def working_candidate(config):
+    """The manifest entry for the compiler the build uses."""
+    return next(record for record in config['candidates'] if record['id'] == config['working_candidate'])
+
+
 def verify_compiler(record, directory):
     """Check every file of a compiler against the hashes in the manifest."""
     for name, expected in record['files'].items():

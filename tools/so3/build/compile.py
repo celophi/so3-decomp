@@ -23,7 +23,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from tools.so3.build.compiler_probe import COMPILER_EXE, COMPILERS, CONFIG, verify_compiler
+from tools.so3.build.compiler_probe import COMPILER_EXE, COMPILERS, CONFIG, verify_compiler, working_candidate
 from tools.so3.build.assembly import ASSEMBLER, ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, assembly_inputs, assemble
 from tools.so3.build.rodata_ownership import owned_rodata_sections
 from tools.so3.build.subsegments import configured_rodata_groups
@@ -64,25 +64,39 @@ def module_of(unit):
     return parts[2] if parts[:2] == ('src', 'overlays') else 'main'
 
 
-def symbol_map_path(unit):
-    return SYMBOL_MAPS / f'{module_of(unit)}_symbol_addrs.txt'
+def symbol_map_path(module):
+    return SYMBOL_MAPS / f'{module}_symbol_addrs.txt'
+
+
+def thunk_map_path(module):
+    return THUNK_MAPS / f'{module}_thunk_addrs.txt'
+
+
+def external_copies_path(module):
+    return EXTERNAL_COPY_LISTS / f'{module}_external_copies.txt'
+
+
+def module_lists(module):
+    """The module's symbol, thunk, and copy lists that exist. Changing any of them changes the objects."""
+    paths = [symbol_map_path(module), thunk_map_path(module), external_copies_path(module)]
+    return [path for path in paths if path.is_file()]
 
 
 def symbol_map(unit):
     """The Splat symbol map for the module that owns a source unit."""
-    path = symbol_map_path(unit)
+    path = symbol_map_path(module_of(unit))
     return symbol_addresses(path) if path.is_file() else {}
 
 
 def thunk_map(unit):
     """Original addresses of the copies of MWCC's this-adjusting thunks that the game kept."""
-    path = THUNK_MAPS / f'{module_of(unit)}_thunk_addrs.txt'
+    path = thunk_map_path(module_of(unit))
     return symbol_addresses(path) if path.is_file() else {}
 
 
 def external_copies(unit):
     """Inline-function copies whose kept copy isn't in any image we have (one name per line, // comments)."""
-    path = EXTERNAL_COPY_LISTS / f'{module_of(unit)}_external_copies.txt'
+    path = external_copies_path(module_of(unit))
     if not path.is_file():
         return set()
     lines = (line.split('//', 1)[0].strip() for line in path.read_text().splitlines())
@@ -106,7 +120,7 @@ def overlay_range(unit):
 
 def working_compiler(config):
     """Find the compiler I'm currently using, and check that it's the one I expect."""
-    compiler = next(entry for entry in config['candidates'] if entry['id'] == config['working_candidate'])
+    compiler = working_candidate(config)
     path = COMPILERS / compiler['id']
     verify_compiler(compiler, path)
     return path / COMPILER_EXE
@@ -147,7 +161,7 @@ def match_original_layout(path, unit, unit_options, language, rodata_groups):
         data = merge_rodata_sections(data)
 
     # Rename references that use an alias so they match the symbol map's name.
-    aliases = symbol_map_path(unit)
+    aliases = symbol_map_path(module_of(unit))
     if aliases.is_file():
         data = normalize_symbol_aliases(data, symbol_aliases(aliases))
 
