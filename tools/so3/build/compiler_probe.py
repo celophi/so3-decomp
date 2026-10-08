@@ -20,7 +20,6 @@ comparison can be exact.
 """
 
 import argparse
-from collections import namedtuple
 import io
 import json
 import os
@@ -33,6 +32,8 @@ import tempfile
 import urllib.request
 
 from tools.so3.build.main import ROOT, original_main, sha256
+from tools.so3.build.elf import (ET_REL, REL, SHT_PROGBITS, SHT_REL, SHT_RELA, SHT_SYMTAB, STT_FUNC, SYMBOL,
+                                 Symbol, section_headers, symbol_type)
 from tools.so3.formats import elf_info, require
 
 CONFIG = ROOT / 'config/manifests/compilers.json'
@@ -45,23 +46,8 @@ REPORT_SCHEMA_VERSION = 1
 COMPILER_EXE = 'mwccps2.exe'
 DOWNLOAD_TIMEOUT_SECONDS = 60
 
-# The few ELF values I need to read a compiled object. I kept the names from
-# the ELF spec so they're easy to look up.
-ET_REL = 1  # A relocatable object (a .o file), not a linked program.
-SHT_PROGBITS = 1  # A section with real contents, like .text.
-SHT_SYMTAB = 2
-SHT_RELA = 4
-SHT_REL = 9
-STT_FUNC = 2
-SYMBOL_TYPE_MASK = 0xF  # The low four bits of a symbol's st_info hold its type.
-E_SHOFF = 32  # Where the ELF header keeps the section header table's offset.
-E_SHENTSIZE = 46  # Where it keeps one section header's size, then their count.
-SECTION_HEADER = struct.Struct('<10I')
-SYMBOL = struct.Struct('<IIIBBH')
-RELOCATION_SIZE = {SHT_REL: 8, SHT_RELA: 12}
-
-SectionHeader = namedtuple('SectionHeader', 'name type flags address offset size link info alignment entry_size')
-Symbol = namedtuple('Symbol', 'name value size info other section')
+# A RELA entry has an extra addend word on the end of a REL entry.
+RELOCATION_SIZE = {SHT_REL: REL.size, SHT_RELA: REL.size + 4}
 
 
 def working_candidate(config):
@@ -105,12 +91,6 @@ def setup(record):
                     (staging / name).write_bytes(source.read())
         verify_compiler(record, staging)
         staging.rename(directory)
-
-
-def section_headers(data):
-    table = struct.unpack_from('<I', data, E_SHOFF)[0]
-    size, count = struct.unpack_from('<HH', data, E_SHENTSIZE)
-    return [SectionHeader(*SECTION_HEADER.unpack_from(data, table + index * size)) for index in range(count)]
 
 
 def symbols(data, table):
@@ -157,7 +137,7 @@ def object_functions(data):
         names = headers[table.link]
         strings = data[names.offset:names.offset + names.size]
         for symbol in symbols(data, table):
-            if symbol.info & SYMBOL_TYPE_MASK != STT_FUNC:
+            if symbol_type(symbol.info) != STT_FUNC:
                 continue
             require(0 < symbol.section < len(headers), 'Invalid function section')
             section = headers[symbol.section]
