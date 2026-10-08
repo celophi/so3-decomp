@@ -1,5 +1,5 @@
 #include "include_asm.h"
-#include "overlays/1067-00/text_0020D9A0.h"
+#include "overlays/1067-00/text_0020DA30.h"
 #include "overlays/1067-00/text_00207AF0.h"
 #include "overlays/1067-00/text_0026EE10.h"
 #include "main/resident_data.h"
@@ -66,7 +66,7 @@ void FieldClass1515B0::func_0020DBC0(FieldShapeOwner18* shape, FieldShapeData10*
     unk1c = index;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020D9A0", func_0020DBD0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020DA30", func_0020DBD0);
 
 /**
  * @brief Create each kind of shape node and optional animation attachments.

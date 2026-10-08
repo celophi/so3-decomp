@@ -65,7 +65,7 @@ segments:
       - [0x24EC0, cpp, text_00202240]
       - [0x2A200, cpp, text_00207580]
       - [0x2A770, cpp, text_00207AF0]
-      - [0x30620, cpp, text_0020D9A0]
+      - [0x306B0, cpp, text_0020DA30]
       - [0x31130, cpp, text_0020E4B0]
       - [0x32670, cpp, text_0020F9F0]
       - [0x351E0, c, text_00212560]
