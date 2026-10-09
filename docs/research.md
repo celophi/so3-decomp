@@ -180,9 +180,8 @@ more. In one case it meant a file boundary was wrong: the destructor at
 0x20D9A0 really belongs to the file before it, so that file now starts at
 0x20DA30.
 
-So far 14 of the 16 link with MWLDPS2, and they all still come out identical
-to the game's. That's every overlay except Lib. The main program is still on
-GNU ld too. Splat only writes linker
+So far 15 of the 16 link with MWLDPS2, and they all still come out identical
+to the game's. That's every overlay. The main program is still on GNU ld. Splat only writes linker
 scripts for GNU ld, so the build translates splat's script into MWLDPS2's own
 kind, a linker command file (`.lcf`), with
 [tools/so3/build/lcf.py](../tools/so3/build/lcf.py). Everything else still uses
@@ -216,17 +215,27 @@ because it never looked inside the vtables. One of Field's virtual functions
 vtable for `FieldClass1591D0` was missing from the symbol map. Both are fixed,
 and the function still matches.
 
-Lib isn't on MWLDPS2 yet because of one instruction. There's a tiny wait loop
-at 0x4D99B0 that's still assembly, and it branches back to its own start. GNU
-as leaves the linker a note to fill in that branch, and the two linkers read
-the note differently, so MWLDPS2 lands one instruction off. It's the only
-branch like that in the whole game, so I just need to decide how to deal with
-it.
+Lib was held up by one instruction. There was a tiny wait loop at 0x4D99B0
+that was still assembly, and it branched back to its own start. GNU as leaves
+the linker a note to fill in a branch like that, and the two linkers read the
+note differently, so MWLDPS2 landed one instruction off. It was the only one
+in the whole game, so I decompiled the loop instead, and the compiler fills in
+the branch itself. The loop has four `nop`s that look hand-written, but they
+come from the compiler: the PS2's processor has a bug with very short loops,
+and CodeWarrior pads them out to work around it.
 
 I was also worried about alignment, since GNU ld can lower it and MWLDPS2
 can't. Lib links fine as long as its files that are still all assembly stay
 assembled the way they are now. When I tried sending those through CodeWarrior
 instead, Lib's code came out too long, and I haven't worked out why yet.
+
+The main program is harder. 278 of its 1,041 functions start 8 bytes past a
+16-byte boundary, mostly from 0x1221E0 onwards, and CodeWarrior always lines
+functions up to 16 bytes. So I don't think CodeWarrior built them. My guess is
+they're more of Sony's libraries, built with GCC. A few of them are already
+decompiled and compiled with CodeWarrior, which only fits because GNU ld can
+squeeze the alignment back down. MWLDPS2 can't, so everything after them moves.
+I need to work out what that code really is before the main program can switch.
 
 The bigger goal is linking the main program and its overlays together in one
 go, the way the original seems to have been built. That would put Field's

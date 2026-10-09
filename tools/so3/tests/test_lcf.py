@@ -10,7 +10,8 @@ import unittest
 from tools.so3.build.assembly import LITTLE_ENDIAN
 from tools.so3.build.compiler_probe import COMPILER_EXE, COMPILERS, CONFIG, LINKER_EXE, working_candidate
 from tools.so3.build.driver import BINARY_ARCHITECTURE, BINARY_OBJECT_FORMAT, BINUTILS_PREFIX, MWLDPS2_FLAGS
-from tools.so3.build.lcf import MEMORY_REGION, command_file, parse_linker_script, symbol_definitions
+from tools.so3.build.flat_image import image
+from tools.so3.build.lcf import command_file, parse_linker_script, symbol_definitions
 from tools.so3.formats import FormatError
 
 # Each line splat writes inside a section, and what it should become.
@@ -94,6 +95,25 @@ class TranslationTests(unittest.TestCase):
         # Then every object's exception tables go elsewhere.
         self.assertEqual(lines[end + 1:], ['.elsewhere : {', 'code.c.o (.exceptix)', 'code.c.o (.exception)',
                                            '} > elsewhere', '}'])
+
+
+class FileStartTests(unittest.TestCase):
+    def test_sections_before_the_first_fixed_address_get_their_own_region(self):
+        # Like the main program: its ELF header has no address, then the code is at 0x100000.
+        script = ('SECTIONS\n{\n    .elf_header : AT(elf_header_ROM_START) SUBALIGN(4)\n    {\n'
+                  '        build/main/bin/elf_header.bin.o(.data);\n    }\n'
+                  '    .resident 0x100000 : AT(resident_ROM_START) SUBALIGN(4)\n    {\n'
+                  '        build/main/src/code.c.o(.text);\n    }\n}\n')
+        lines = [line.strip() for line in converted(script).splitlines()]
+        self.assertIn('file_start (RWX) : ORIGIN = 0x0, LENGTH = 0', lines)
+        self.assertIn('module (RWX) : ORIGIN = 0x100000, LENGTH = 0', lines)
+        start = lines.index('.file_start : {')
+        self.assertEqual(lines[start + 1:start + 5], ['# .elf_header', 'ALIGNALL(4);', 'elf_header.bin.o (.data)',
+                                                      '} > file_start'])
+        self.assertEqual(lines[start + 5:start + 9], ['.module : {', '__start = .;', '# .resident', '. = 0x100000;'])
+
+    def test_overlays_keep_a_single_region(self):
+        self.assertNotIn('file_start', converted(splat_script('code.c.o(.text);')))
 
 
 class RefusalTests(unittest.TestCase):
@@ -181,13 +201,13 @@ class LinkTests(unittest.TestCase):
         (self.work / 'layout.lcf').write_text(converted(TINY_MODULE, SYMBOLS))
         self.run_tool('wibo', str(compiler_folder() / LINKER_EXE), *MWLDPS2_FLAGS.split(),
                       '-o', 'mw.elf', 'layout.lcf', *OBJECTS)
-        # Only the module's region, like the build.
-        return self.flat_image('mw.elf', '-j', MEMORY_REGION)
+        # The module's regions, like the build writes them.
+        return image((self.work / 'mw.elf').read_bytes())
 
-    def flat_image(self, elf, *options):
-        image = Path(elf).with_suffix('.bin').name
-        self.run_tool(f'{BINUTILS_PREFIX}objcopy', '-O', 'binary', *options, elf, image)
-        return (self.work / image).read_bytes()
+    def flat_image(self, elf):
+        image_name = Path(elf).with_suffix('.bin').name
+        self.run_tool(f'{BINUTILS_PREFIX}objcopy', '-O', 'binary', elf, image_name)
+        return (self.work / image_name).read_bytes()
 
     def test_both_linkers_make_the_same_image(self):
         with tempfile.TemporaryDirectory() as directory:
