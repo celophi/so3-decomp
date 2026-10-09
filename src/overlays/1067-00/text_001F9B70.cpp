@@ -1,6 +1,5 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
-#include "sdk/main/syscalls_00121940.h"
 #include "overlays/1067-00/text_001F9B70.h"
 #include "overlays/1067-00/text_0026EE10.h"
 #include "overlays/1067-00/text_0027E520.h"

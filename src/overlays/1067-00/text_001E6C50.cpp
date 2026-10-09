@@ -2,7 +2,7 @@
 #include "overlays/1067-00/text_001E6C50.h"
 #include "overlays/1067-00/field_runtime.h"
 #include "main/resident_data.h"
-#include "main/resident_0012F0F8.h"
+#include "main/resident_0013A4C0.h"
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/text_004BD360.h"

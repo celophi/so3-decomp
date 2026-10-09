@@ -3,7 +3,7 @@
 #include "overlays/1067-00/text_00207AF0.h"
 #include "overlays/1067-00/text_0026EE10.h"
 #include "main/resident_data.h"
-#include "main/resident_0012F0F8.h"
+#include "main/resident_0013A4C0.h"
 #include "overlays/lib/text_0046AE20.h"
 
 /** @brief Test the descriptor terminal flag. @param shape Descriptor to test. @return Whether the array ends here. */

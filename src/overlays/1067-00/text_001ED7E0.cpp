@@ -1,9 +1,12 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_001E6C50.h"
-#include "main/resident_0012F0F8.h"
+#include "sdk/main/libkernl_00121940.h"
+#include "sdk/main/libc_0013C6D0.h"
+#include "main/resident_00137290.h"
+#include "main/resident_0013A4C0.h"
+#include "main/resident_0013CD50.h"
 #include "overlays/lib/text_00429B00.h"
 #include "main/resident_data.h"
-#include "sdk/main/syscalls_00121940.h"
 #include "overlays/1067-00/text_001ED7E0.h"
 #include "overlays/1067-00/text_0020E4B0.h"
 #include "overlays/1067-00/text_001DED80_callbacks.h"
@@ -1660,7 +1663,7 @@ s32 func_001F0E40(void* unused)
 extern "C" s32 func_001F0E80(FieldScriptCursorU32* cursor)
 {
     FieldContextName36E* object = (FieldContextName36E*)D_001B6430->context->unk14;
-    if (func_0013C800(object->unk35d, D_31A7E0) == 0)
+    if (strcmp(object->unk35d, D_31A7E0) == 0)
     {
         cursor->unk14 = 1.0f;
         return 0;
@@ -2960,7 +2963,7 @@ extern "C" void func_001F90D0(FieldLateFlag30* object)
 {
     if (!object->unk30_1)
     {
-        func_00121FE0(0);
+        FlushCache(0);
         object->unk30_1 = 1;
     }
 }
@@ -3040,7 +3043,7 @@ void FieldClass150700::func_001E0A50(s32 flag)
     case 0:
         if (!flag && unk1c)
         {
-            func_00121FE0(0);
+            FlushCache(0);
             FieldClass152210* record = &unk1c[unk2e];
             void* buffer = func_001F9A80(this, (record->unk00 + 0x7FF) & ~0x7FF, 1);
             if (buffer)

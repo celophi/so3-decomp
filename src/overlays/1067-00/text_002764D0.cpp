@@ -1,7 +1,7 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002764D0.h"
 #include "main/resident_0011EE70.h"
-#include "sdk/main/syscalls_00121940.h"
+#include "sdk/main/libkernl_00121940.h"
 #include "overlays/1067-00/text_002CABC0.h"
 #include "main/resident_data.h"
 #include "main/resident_0010A0E0.h"
@@ -677,7 +677,7 @@ void FieldClass155640::func_001E0A50(s32 flag)
         if (!record->rounded_unk04())
         {
             u32 word = record->unk00;
-            func_00121FE0(0);
+            FlushCache(0);
             s32 size = func_433880((void*)word, 0x40);
             if (!size)
             {

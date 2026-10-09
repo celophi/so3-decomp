@@ -59,10 +59,12 @@ instead. So that file gets `-inline level=5` on its own, through the
 at both levels. My guess is that the original files weren't all built with the
 same settings, but one file isn't much to go on yet.
 
-There's one awkward detail: the main executable contains the string
+There was one awkward detail: the main executable contains the string
 `MW MIPS C Compiler (2.4.1.01)`, while the three matching compiler builds write
-`3.0.0`. Several older releases write the same `2.4.1.01` string. It could
-have come from an older library or linker, but I don't know yet.
+`3.0.0`. It turns out the linker writes that string, not the compiler. It's in
+the executable's `.comment` section, and MWLDPS2 writes exactly the same bytes
+there when it links one of my overlays. So I'm now fairly sure the game was
+linked with a Metrowerks linker.
 
 I'm using PS2 GNU binutils to assemble the rebuild and to link most of it. I
 think the original linker was CodeWarrior's own, MWLDPS2, and I'm starting to
@@ -229,13 +231,42 @@ can't. Lib links fine as long as its files that are still all assembly stay
 assembled the way they are now. When I tried sending those through CodeWarrior
 instead, Lib's code came out too long, and I haven't worked out why yet.
 
-The main program is harder. 278 of its 1,041 functions start 8 bytes past a
-16-byte boundary, mostly from 0x1221E0 onwards, and CodeWarrior always lines
-functions up to 16 bytes. So I don't think CodeWarrior built them. My guess is
-they're more of Sony's libraries, built with GCC. A few of them are already
-decompiled and compiled with CodeWarrior, which only fits because GNU ld can
-squeeze the alignment back down. MWLDPS2 can't, so everything after them moves.
-I need to work out what that code really is before the main program can switch.
+The main program is harder. Lots of its functions start 8 bytes past a
+16-byte boundary, and CodeWarrior always lines functions up to 16 bytes, so it
+didn't build them. I compared the main program with the same Sony SDK 2.7.2
+libraries I used for Lib, and most of that code turned out to be Sony's:
+`libkernl` (the kernel library) plus `libcdvd`, `libmc`, `libpad2`, `libdma`,
+`libgraph` and a few more. Sony built those with GCC, which lines functions up
+to 8 bytes. About 68 KB of code matches the libraries exactly.
+
+Five of those functions had already been decompiled and compiled with
+CodeWarrior. They're tiny stubs in `libkernl` (`close`, `ioctl`, `lseek`,
+`isatty` and `getpid`), and they only fit because GNU ld can squeeze the
+alignment back down. MWLDPS2 can't, which is why the main program didn't link
+with it.
+
+All of the Sony code now has Sony's names in the main program's symbol map,
+and it sits in `src/sdk/main` as placeholders, like Lib's libraries do, so it
+doesn't count toward progress. That includes the five stubs, so they're
+assembled again instead of compiled. Each group of functions is listed in
+`config/manifests/sdk-functions.json` with a hash, and the build checks it.
+
+There's still a C library from about 0x132000 to 0x13D000 (`memset`,
+`sprintf` and so on) that I can't place. Ten small functions in the middle of
+it (`strcmp`, `strlen`, `memcmp` and a few others) do match the GCC C library
+(newlib) that comes with the SDK, so those are labeled too. The rest don't
+match it, and neither does `abort`, which is 8 bytes longer in the game. My
+guess is the rest is Metrowerks' own runtime library, but I don't have a copy
+to compare against.
+
+With the stubs assembled again, MWLDPS2 links the main program without
+complaint, and everything up to the end of the Sony code lands in the right
+place. It goes wrong in that C library, because its functions are lined up to
+8 bytes too. Four tiny functions in there (they just return) have been
+decompiled, so the two files holding them go through CodeWarrior, which pads
+every function in those files out to 16 bytes. The files that are still all
+assembly come out fine. So the main program stays on GNU ld until I can tell
+what that library is.
 
 The bigger goal is linking the main program and its overlays together in one
 go, the way the original seems to have been built. That would put Field's

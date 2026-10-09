@@ -2,10 +2,10 @@
 #include "overlays/1067-00/text_001E1590.h"
 #include "main/resident_data.h"
 #include "main/resident_001001E0.h"
-#include "main/resident_0012F0F8.h"
+#include "sdk/main/libkernl_00121940.h"
+#include "main/resident_00137290.h"
 #include "overlays/lib/text_00429B00.h"
 #include "main/resident_0010A0E0.h"
-#include "sdk/main/syscalls_00121940.h"
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/1067-00/text_002D3BD0.h"
 #include "overlays/1067-00/field_runtime.h"
@@ -1098,7 +1098,7 @@ void FieldClass150120::func_001E4E50()
             func_004D65C0(loader);
             loader->func_001DD7B0();
         }
-        func_00121FE0(0);
+        FlushCache(0);
     }
 }
 
@@ -1116,7 +1116,7 @@ void FieldClass150120::func_001DDB30(void* arg)
         if (destination)
         {
             func_001025A0(D_001B65EC, source, destination, 0);
-            func_00121FE0(0);
+            FlushCache(0);
             func_001011B0(func_10D8E0(), destination, 4, source->unk08);
         }
         unk1d = 0;
@@ -1330,7 +1330,7 @@ void FieldClass1501A0::func_001DDB30(void* arg)
 {
     if (!unk44)
     {
-        func_00121FE0(0);
+        FlushCache(0);
         unk44 = 1;
     }
 }
@@ -1516,7 +1516,7 @@ void FieldClass150150::func_001E0A50(s32 flag)
     case 0:
         if (!flag && unk1c)
         {
-            func_00121FE0(0);
+            FlushCache(0);
             FieldClass1530C0* record = &unk1c[unk2e];
             void* result = func_001E6B40(this, (record->unk00 + 0x7FF) & ~0x7FF, 1);
             if (result)
@@ -1737,7 +1737,7 @@ void FieldClass150150::func_001DDB30(void* arg)
 {
     if (!unk30_1)
     {
-        func_00121FE0(0);
+        FlushCache(0);
         unk30_1 = 1;
     }
 }
