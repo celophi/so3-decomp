@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002607B0.h"
+#include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_001E1590.h"
 
 extern "C" {
@@ -168,14 +169,16 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_002629
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_00262A80);
 
-u16 func_00262B90(const FieldObject15AE70* object)
+/** @brief Read the halfword state flags. @return Stored value. */
+u16 FieldClass15AE70::func_slot38()
 {
-    return object->unk0A;
+    return unk0a;
 }
 
-u8 func_00262BA0(const FieldObject15AE70* object)
+/** @brief Read the byte state code. @return Stored value. */
+u8 FieldClass15AE70::func_slot30()
 {
-    return object->unk08;
+    return unk08;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_00262BB0);

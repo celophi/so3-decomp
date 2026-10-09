@@ -83,21 +83,7 @@ typedef struct FieldObject22E3A0
     FieldObject31E30* nested;
 } FieldObject22E3A0;
 
-struct FieldObject22E170
-{
-    u8 unk00[0x10];
-    FieldObject22E3A0* target;
-};
-
 struct FieldObject22DD50
-{
-    u8 unk00[0x10];
-    FieldObject22E3A0* target;
-    u8 unk14[8];
-    float unk1c;
-};
-
-struct FieldObject22E380
 {
     u8 unk00[0x10];
     FieldObject22E3A0* target;
@@ -220,13 +206,13 @@ bool FieldClass1570D0::func_002039C0() const
     return unk2f0;
 }
 
-s32 func_0022E170(FieldObject22E170* object)
+s32 FieldClass152DD0::func_0022E170()
 {
-    FieldObject22E3A0* target = object->target;
-    s32 enabled = (target->nested->flags & 1) ? 1 : 0;
+    FieldClass152E50* owner = (FieldClass152E50*)unk10;
+    s32 enabled = (owner->unk7c->unk204 & 1) ? 1 : 0;
     if (enabled)
     {
-        target->unk78 = 1.0f;
+        owner->unk78 = 1.0f;
         return 0;
     }
     return 1;
@@ -236,15 +222,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022E1
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", __ct__16FieldClass152DF0FfUif);
 
-s32 func_0022E350(FieldObject22E170* object)
+s32 FieldClass152E10::func_0022E350()
 {
-    func_001DEDF0(D_001B6430->context->unk04, object->target->nested);
+    func_001DEDF0(D_001B6430->context->unk04, ((FieldClass152E50*)unk10)->unk7c);
     return 1;
 }
 
-s32 func_0022E380(FieldObject22E380* object)
+s32 FieldClass152E30::func_0022E380()
 {
-    object->target->unk78 = object->unk1c;
+    ((FieldClass152E50*)unk10)->unk78 = unk1c;
     return 1;
 }
 

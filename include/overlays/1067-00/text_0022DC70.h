@@ -55,33 +55,8 @@ typedef struct FieldObject22DD50 FieldObject22DD50;
  */
 s32 func_0022DD50(FieldObject22DD50* object);
 
-typedef struct FieldObject22E170 FieldObject22E170;
-
-/**
- * @brief Set the attached float to 1.0 when its nested flag is set.
- * @param object Receiver holding the attached object.
- * @return 0 when the flag is set, otherwise 1.
- */
-s32 func_0022E170(FieldObject22E170* object);
-
-typedef struct FieldObject22E380 FieldObject22E380;
-
-/**
- * @brief Copy this object's float at 0x1C to the attached object's float at 0x78.
- * @param object Receiver holding the attached object.
- * @return Always 1.
- */
-s32 func_0022E380(FieldObject22E380* object);
-
 typedef struct FieldObject22E680 FieldObject22E680;
 typedef struct FieldObject2320D0 FieldObject2320D0;
-
-/**
- * @brief Forward the attached object to the resident release helper.
- * @param object Callback receiver.
- * @return Always 1.
- */
-s32 func_0022E350(FieldObject22E170* object);
 
 /**
  * @brief Reset the attached state and point the receiver at its own byte.

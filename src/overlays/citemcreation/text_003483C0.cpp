@@ -14051,12 +14051,11 @@ s32 ItemCreationSelectedDisplayState::func_001E1820(void* buffer)
 
 /**
  * @brief Save workshop lines and append the selection state to the resident queue.
- * @param object Selection state to save and enqueue.
  */
-void item_creation_save_and_enqueue_selection(ItemCreationSelectedDisplayState* object)
+void ItemCreationSelectedDisplayState::func_001DD7B0()
 {
-    item_creation_save_workshop_lines(object);
-    func_0011ED90(D_001B65F4, object);
+    item_creation_save_workshop_lines(this);
+    func_0011ED90(D_001B65F4, this);
 }
 
 /** @brief Find a saved workshop. @param index Workshop ID. @return Record, or null outside IDs one through twelve. */
@@ -14269,16 +14268,16 @@ ItemCreationSelectedDisplayState::ItemCreationSelectedDisplayState()
     }
 }
 
-s32 func_0036E540(void* object)
+s32 LibClass171EA0::func_003EEBC0()
 {
     return 3;
 }
 
-void func_0036E550(void* object)
+void LibClass171EA0::func_003EEBD0()
 {
 }
 
-void func_0036E560(void* object)
+void LibClass171EA0::func_003EEBE0()
 {
 }
 

@@ -179,6 +179,13 @@ public:
     virtual ~FieldClass154C10();
     /** @brief Detach and delete the child, release the base object and notify the field context. */
     virtual void func_001DD7B0();
+    /**
+     * @brief Test the inherited gate while the field context permits it.
+     * @return False when context flag bit 5 at offset 0xF5 is clear, context
+     *         bit 7 at offset 0xDD is set, or context bit 1 at offset 0xDE is set;
+     *         otherwise the inherited gate result.
+     */
+    virtual bool func_00204420();
     u8 unka0[0x38];
     FieldClass150070* unkd8;
 };

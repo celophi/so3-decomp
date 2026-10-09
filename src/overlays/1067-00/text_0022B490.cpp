@@ -206,14 +206,6 @@ typedef struct FieldCallback22B8F0
     u32 value;
 } FieldCallback22B8F0;
 
-typedef struct FieldCallback22B920
-{
-    u8 unk00[0x10];
-    FieldHandle22B8F0* handle;
-    u8 unk14[8];
-    float value;
-} FieldCallback22B920;
-
 typedef struct FieldCallback22BC30
 {
     u8 unk00[0x10];
@@ -398,15 +390,17 @@ FieldClass1526C0::~FieldClass1526C0()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022B850);
 
-s32 func_0022B8F0(FieldCallback22B8F0* object)
+s32 FieldClass152770::func_0022B8F0()
 {
-    func_00204070(object->handle->target, object->value);
+    FieldClass152E50* list = static_cast<FieldClass152E50*>(unk10);
+    func_00204070(list->unk7c, unk1c);
     return 1;
 }
 
-s32 func_0022B920(FieldCallback22B920* object)
+s32 FieldClass152790::func_0022B920()
 {
-    func_002040E0(object->handle->target, object->value);
+    FieldClass152E50* list = static_cast<FieldClass152E50*>(unk10);
+    func_002040E0(list->unk7c, unk1c);
     return 1;
 }
 

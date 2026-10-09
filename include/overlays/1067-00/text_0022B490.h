@@ -87,7 +87,6 @@ public:
 
 struct FieldCallback22BEC0;
 struct FieldCallback22B8F0;
-struct FieldCallback22B920;
 struct FieldCallback22BC30;
 struct FieldCallback22BC90;
 struct FieldCallback22BCE0;
@@ -114,20 +113,6 @@ extern "C" {
  * @param object Object to detach and queue.
  */
 void func_0022B550(void* object);
-
-/**
- * @brief Forward a callback word to the attached target.
- * @param object Callback receiver.
- * @return Always 1.
- */
-s32 func_0022B8F0(struct FieldCallback22B8F0* object);
-
-/**
- * @brief Forward a callback float to the attached target.
- * @param object Callback receiver.
- * @return Always 1.
- */
-s32 func_0022B920(struct FieldCallback22B920* object);
 
 /**
  * @brief Forward the callback word to the attached entry selector.

@@ -2,10 +2,27 @@
 #include "overlays/1067-00/text_002636B0.h"
 #include "overlays/1067-00/text_0026E460.h"
 #include "overlays/1067-00/text_002CD390.h"
+#include "overlays/1067-00/text_001E1590.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_0044ABE0.h"
 
 extern "C" void func_00264580(FieldCountedList* list);
+
+/** Active window receiver directory reached through the Field runtime. */
+struct FieldWindowCallbacks
+{
+    u8 unk00[0x14];
+    FieldClass153E30* unk14;
+};
+
+/** Field runtime prefix containing the active window directory. */
+struct FieldWindowRuntime
+{
+    u8 unk00[0x10];
+    FieldWindowCallbacks* unk10;
+};
+
+extern "C" FieldWindowRuntime* D_001B643C;
 
 /** Partial receiver and guarded nested state for the constant reset. */
 typedef struct FieldInnerC000
@@ -139,7 +156,8 @@ void func_00263E80(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00263E90);
 
-void func_00263F40(void* object)
+/** @brief Perform the default window hook at slot 0x5C. */
+void FieldClass15AE70::func_slot5c()
 {
 }
 
@@ -244,72 +262,87 @@ extern "C" s32 func_00264650(FieldCountedList* list, void** value)
     return 1;
 }
 
-void func_002646C0(FieldObject15AE70* object, u8 value)
+/** @brief Store the window control byte. @param value Value to store. */
+void FieldClass15AE70::func_slot24(u8 value)
 {
-    object->unk0C = value;
+    unk0c = value;
 }
 
-u8 func_002646D0(const FieldObject15AE70* object)
+/** @brief Read the window control byte. @return Stored value. */
+u8 FieldClass15AE70::func_slot28()
 {
-    return object->unk0C;
+    return unk0c;
 }
 
-void func_002646E0(FieldObject15AE70* object, u8 value)
+/** @brief Store the byte state code. @param value Value to store. */
+void FieldClass15AE70::func_slot2c(u8 value)
 {
-    object->unk08 = value;
+    unk08 = value;
 }
 
-void func_002646F0(FieldObject15AE70* object, u16 value)
+/** @brief Store the halfword state flags. @param value Value to store. */
+void FieldClass15AE70::func_slot34(u16 value)
 {
-    object->unk0A = value;
+    unk0a = value;
 }
 
-void func_00264720(FieldObject15AE70* object, void* value)
+/** @brief Store the alternate window pointer. @param associated Value to store. */
+void FieldClass15AE70::func_slot48(void* associated)
 {
-    object->unk9C = value;
+    unk9c = associated;
 }
 
-void* func_00264730(const FieldObject15AE70* object)
+/** @brief Return the alternate window pointer. @return Stored value. */
+void* FieldClass15AE70::func_slot4c()
 {
-    return object->unk9C;
+    return unk9c;
 }
 
-void func_00264740(FieldObject15AE70* object, void* value)
+/** @brief Store the resource source word. @param value Value to store. */
+void FieldClass15AE70::func_slot50(u32 value)
 {
-    object->unk04 = value;
+    unk04 = value;
 }
 
-void* func_00264750(const FieldObject15AE70* object)
+/** @brief Return the resource source word. @return Stored value. */
+u32 FieldClass15AE70::func_slot54()
 {
-    return object->unk04;
+    return unk04;
 }
 
-void* func_00264760(const FieldObject15AE70* object)
+/** @brief Return the nested display container. @return Stored value. */
+LibObject178660* FieldClass15AE70::func_slot58()
 {
-    return object->unk10;
+    return unk10;
 }
 
-void func_00264770(void* object)
-{
-}
-
-void func_00264780(void* object)
-{
-}
-
-void func_00264790(void* object)
-{
-}
-
-void func_002647A0(void* object)
+/** @brief Perform the default message hook. @param text_key Message key; unused by the base hook. */
+void FieldClass15AE70::func_slot60(s32 text_key)
 {
 }
 
-void func_002647B0(void* object)
+/** @brief Perform the default window hook at slot 0x64. */
+void FieldClass15AE70::func_slot64()
 {
 }
 
-void func_002647C0(void* object)
+/** @brief Perform the default window hook at slot 0x68. */
+void FieldClass15AE70::func_slot68()
+{
+}
+
+/** @brief Perform the default window hook at slot 0x6C. */
+void FieldClass15AE70::func_slot6c()
+{
+}
+
+/** @brief Perform the default window hook at slot 0x70. */
+void FieldClass15AE70::func_slot70()
+{
+}
+
+/** @brief Perform the default window hook at slot 0x74. */
+void FieldClass15AE70::func_slot74()
 {
 }
 
@@ -363,97 +396,112 @@ void FieldClass15AE70::func_slot9c()
 {
 }
 
-void func_00264870(void* object)
+/** @brief Perform the default window hook at slot 0xA0. */
+void FieldClass15AE70::func_slota0()
 {
 }
 
-void func_00264880(void* object)
+/** @brief Perform the default window hook at slot 0xA4. */
+void FieldClass15AE70::func_slota4()
 {
 }
 
-void func_00264890(void* object)
+/** @brief Perform the default window hook at slot 0xA8. */
+void FieldClass15AE70::func_slota8()
 {
 }
 
-void func_002648A0(void* object)
+/** @brief Perform the default window hook at slot 0xAC. */
+void FieldClass15AE70::func_slotac()
 {
 }
 
-s32 func_002648B0(void* object)
-{
-    return 0;
-}
-
-s32 func_002648C0(void* object)
-{
-    return 0;
-}
-
-s32 func_002648D0(void* object)
+/** @brief Return the default result for the window hook at slot 0xB8. @return Zero. */
+s32 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
-s32 func_002648E0(void* object)
+/** @brief Return the default result for the window hook at slot 0xBC. @return Zero. */
+s32 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
 
-s32 func_002648F0(void* object)
+/** @brief Return the default result for the window hook at slot 0xC0. @return Zero. */
+s32 FieldClass15AE70::func_slotc0()
 {
     return 0;
 }
 
-s32 func_00264900(void* object)
+/** @brief Return the default result for the window hook at slot 0xC4. @return Zero. */
+s32 FieldClass15AE70::func_slotc4()
 {
     return 0;
 }
 
-s32 func_00264910(void* object)
+/** @brief Return the default result for the window hook at slot 0xC8. @return Zero. */
+s32 FieldClass15AE70::func_slotc8()
 {
     return 0;
 }
 
-s32 func_00264920(void* object)
+/** @brief Return the default result for the window hook at slot 0xCC. @return Zero. */
+s32 FieldClass15AE70::func_slotcc()
 {
     return 0;
 }
 
-s32 func_00264930(void* object)
+/** @brief Return the default result for the window hook at slot 0xD0. @return Zero. */
+s32 FieldClass15AE70::func_slotd0()
 {
     return 0;
 }
 
-s32 func_00264940(void* object)
+/** @brief Return the default result for the window hook at slot 0xD4. @return Zero. */
+s32 FieldClass15AE70::func_slotd4()
 {
     return 0;
 }
 
-void func_00264950(void* object)
+/** @brief Return the default result for the window hook at slot 0xD8. @return Zero. */
+s32 FieldClass15AE70::func_slotd8()
+{
+    return 0;
+}
+
+/** @brief Return the default result for the window hook at slot 0xDC. @return Zero. */
+s32 FieldClass15AE70::func_slotdc()
+{
+    return 0;
+}
+
+/** @brief Perform the default window hook at slot 0xE0. */
+void FieldClass15AE70::func_slote0()
 {
 }
 
-void func_00264960(void* object)
+/** @brief Perform the default window hook at slot 0xE4. */
+void FieldClass15AE70::func_slote4()
 {
 }
 
-u8 func_00264970(const FieldObject15AE70* object)
+/** @brief Read the auxiliary control byte. @return Stored value. */
+u8 FieldClass15AE70::func_slote8()
 {
-    return object->unk0D;
+    return unk0d;
 }
 
-void func_00264980(FieldObject15AE70* object, u8 value)
+/** @brief Store the auxiliary control byte. @param value Value to store. */
+void FieldClass15AE70::func_slotec(u8 value)
 {
-    object->unk0D = value;
+    unk0d = value;
 }
 
-void func_00264990(void* object)
+/** @brief Perform the default window hook at slot 0xF0. */
+void FieldClass15AE70::func_slotf0()
 {
 }
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002649A0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264A30);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264AC0);
 
@@ -463,7 +511,37 @@ class FieldClass153ED0 : public FieldClass15AE70
 public:
     /** @brief Destroy the window. */
     virtual ~FieldClass153ED0();
+    /** @brief Restore the parent window and hide this window. @return One. */
+    virtual s32 func_slotb0();
+    /** @brief Restore the parent window and hide this window. @return Two. */
+    virtual s32 func_slotb4();
 };
+
+/** @brief Restore the parent window and hide this window. @return Two. */
+s32 FieldClass153ED0::func_slotb4()
+{
+    FieldClass15AE70* parent = static_cast<FieldClass15AE70*>(func_slot44());
+    if (parent != 0)
+    {
+        parent->func_slot64();
+        D_001B643C->unk10->unk14->func_00263C70(parent);
+    }
+    func_slot18(0, 0x7F);
+    return 2;
+}
+
+/** @brief Restore the parent window and hide this window. @return One. */
+s32 FieldClass153ED0::func_slotb0()
+{
+    FieldClass15AE70* parent = static_cast<FieldClass15AE70*>(func_slot44());
+    if (parent != 0)
+    {
+        parent->func_slot64();
+        D_001B643C->unk10->unk14->func_00263C70(parent);
+    }
+    func_slot18(0, 0x7F);
+    return 1;
+}
 
 FieldClass153ED0::~FieldClass153ED0()
 {
@@ -745,12 +823,14 @@ void func_0026E390(void* object)
 {
 }
 
-u8 func_0026E3A0(const FieldObject15AE70* object)
+/** @brief Return the default result for the window hook at slot 0xB0. @return Zero. */
+s32 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
-u8 func_0026E3B0(const FieldObject15AE70* object)
+/** @brief Return the default result for the window hook at slot 0xB4. @return Zero. */
+s32 FieldClass15AE70::func_slotb4()
 {
     return 0;
 }

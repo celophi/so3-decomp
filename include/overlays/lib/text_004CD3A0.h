@@ -246,10 +246,15 @@ public:
      * @brief Store the attached object pointer at offset 0x70.
      * @param attached Object pointer to store.
      */
-    virtual void func_004295B0(void* attached);
+    virtual void func_004295B0(void* attached)
+    {
+        unk70 = attached;
+    }
 
     /** @brief Default handler that performs no work. */
-    virtual void func_004295C0();
+    virtual void func_004295C0()
+    {
+    }
 
     u8 unk14[0x48];
     s32 unk5c;

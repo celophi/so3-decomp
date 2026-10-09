@@ -374,14 +374,6 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00228F
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", __ct__16FieldClass152430Fv);
 
-/** Partial FieldClass152FA0 with vtable D_152E50 in main data. */
-class FieldClass152E50 : public FieldClass152FA0
-{
-public:
-    /** @brief Destroy the object. */
-    virtual ~FieldClass152E50();
-};
-
 FieldClass152E50::~FieldClass152E50()
 {
 }

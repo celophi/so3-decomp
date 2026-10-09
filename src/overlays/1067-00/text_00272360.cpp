@@ -3,6 +3,9 @@
 #include "overlays/1067-00/text_00272360.h"
 #include "overlays/1067-00/field_class_154EF0.h"
 #include "overlays/1067-00/text_00207AF0.h"
+#include "overlays/lib/text_0046AE20.h"
+#include "main/resident_0010A0E0.h"
+#include "main/resident_data.h"
 
 
 /** @brief Destroy the derived shape storage and release its owned base buffer. */
@@ -72,27 +75,75 @@ void FieldClass154D50::func_002729B0()
 {
 }
 
-s32 func_002729C0(FieldObject154EF0* object)
+s32 FieldClass154EF0::func_001DF3D0()
 {
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002729D0);
+void FieldClass154EF0::func_001DD7B0()
+{
+    func_004D65C0(this);
+    if (!unk20_3)
+    {
+        func_slot28();
+        func_0011ED90(D_001B65F4, this);
+        unk20_3 = 1;
+    }
+}
 
-s32 func_00272A40(void* object)
+s32 FieldClass154EF0::func_slot24()
 {
     return 300;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272A50);
+void FieldClass154EF0::func_slot28()
+{
+    if (unk18 != 0)
+    {
+        func_0046B3F0(unk18);
+        if (unk18 != 0)
+        {
+            unk18->func_00434FA0();
+            unk18 = 0;
+        }
+    }
+    if (unk1c != 0 && unk1c->unk08 == 0)
+    {
+        delete unk1c;
+        unk1c = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272B50);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272B80);
+void FieldClass154EF0::func_slot2c()
+{
+    unk20_2 = 0;
+    unk20_0 = unk20_1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272BC0);
+void FieldClass154EF0::func_slot38()
+{
+    if (unk1c != 0)
+    {
+        unk1c->func_slot30()->clear();
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272CC0);
+void FieldClass154EF0::func_slot3c(s32 enabled)
+{
+    if (unk18 != 0)
+    {
+        if (enabled)
+        {
+            unk18->unk6A |= 1;
+        }
+        else
+        {
+            unk18->unk6A = unk18->unk6A & ~1;
+        }
+    }
+}
 
 
 s32 FieldClass154D50::func_00272D60()
@@ -102,11 +153,11 @@ s32 FieldClass154D50::func_00272D60()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", __dt__16FieldClass154E20Fv);
 
-void func_00272DD0(void* object)
+void FieldClass154EF0::func_slot1c(LibObject1751A0* target)
 {
 }
 
-void func_00272DE0(void* object)
+void FieldClass154EF0::func_slot20()
 {
 }
 
@@ -152,7 +203,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002733
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002733A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002734C0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_slot34__16FieldClass154EF0Fv);
 
 FieldClass154EF0::~FieldClass154EF0()
 {

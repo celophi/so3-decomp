@@ -96,25 +96,6 @@ public:
     virtual ~ItemCreationClass185A60()
     {
     }
-    /** @brief Apply the current selection. @return Selection result code. */
-    virtual s32 func_slotb0();
-    /** @brief Reset the current selection. @return Selection result code. */
-    virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
-    virtual s32 func_slotc0();
-    virtual s32 func_slotc4();
-    virtual s32 func_slotc8();
-    virtual s32 func_slotcc();
-    virtual s32 func_slotd0();
-    virtual s32 func_slotd4();
-    virtual s32 func_slotd8();
-    virtual s32 func_slotdc();
-    virtual void func_slote0();
-    virtual void func_slote4();
-    virtual u8 func_slote8();
-    virtual void func_slotec(u8 value);
-    virtual void func_slotf0();
     /**
      * @brief Initialize the base selection window at its fixed coordinates.
      * @param associated Full resource source word.
@@ -168,21 +149,6 @@ public:
      * @return Always two.
      */
     virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
-    virtual s32 func_slotc0();
-    virtual s32 func_slotc4();
-    virtual s32 func_slotc8();
-    virtual s32 func_slotcc();
-    virtual s32 func_slotd0();
-    virtual s32 func_slotd4();
-    virtual s32 func_slotd8();
-    virtual s32 func_slotdc();
-    virtual void func_slote0();
-    virtual void func_slote4();
-    virtual u8 func_slote8();
-    virtual void func_slotec(u8 value);
-    virtual void func_slotf0();
     virtual s32 func_slotf4(u32 associated);
     /**
      * @brief Dispatch a grid direction and refresh the selected option markers.

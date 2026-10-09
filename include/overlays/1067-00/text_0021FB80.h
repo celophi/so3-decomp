@@ -246,7 +246,7 @@ s32 func_00229240(void* object);
 /**
  * Partial FieldClass151510 with 13 more virtual slots, with vtable D_152430 in
  * main data. Its constructor sets type bit 0x2 in unk78.
- * Overrides of earlier slots other than slot 15 are not declared yet.
+ * Overrides of earlier slots other than slots 9 and 15 are not declared yet.
  */
 class FieldClass152430 : public FieldClass151510
 {
@@ -258,13 +258,19 @@ public:
     virtual ~FieldClass152430();
 
     /**
+     * @brief Test the inherited gate while flag bit 5 at offset 0x8C is clear.
+     * @return True when both conditions pass.
+     */
+    virtual bool func_00204420();
+
+    /**
      * @brief Optionally copy a vector to offset 0x20, then update the vectors at offsets 0x170-0x190.
      * @param value Vector to copy, or null to keep the current one.
      */
     virtual void func_00205710(const FieldVec4A* value);
 
-    /** @brief Virtual handler slot 19. */
-    virtual void func_00203990();
+    /** @brief Return the default result for slot 19. @return Always zero. */
+    virtual s32 func_00203990();
 
     /** @brief Virtual handler slot 20. */
     virtual void func_00227840();
@@ -284,8 +290,8 @@ public:
     /** @brief Virtual handler slot 25. */
     virtual void func_001FED00();
 
-    /** @brief Virtual handler slot 26. */
-    virtual void func_002039B0();
+    /** @brief Default scalar-setting handler. @param setting Setting to ignore. @param value Scalar to ignore. */
+    virtual void func_002039B0(u8 setting, float value);
 
     /** @brief Virtual handler slot 27. */
     virtual void func_00228DD0();
@@ -313,6 +319,16 @@ public:
     s8 unk2e1;
     u8 unk2e2_0 : 1;
     u8 unk2e2_1_7 : 7;
+};
+
+/** Actor command list retaining its owning receiver. */
+class FieldClass152E50 : public FieldClass152FA0
+{
+public:
+    /** @brief Destroy the command list. */
+    virtual ~FieldClass152E50();
+
+    FieldClass152430* unk7c;
 };
 
 /** Partial base actor; the native constructor is 0x0024E420. */

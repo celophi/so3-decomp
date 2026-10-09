@@ -16,15 +16,6 @@ public:
     {
     }
 
-    /**
-     * @brief Store the attached object pointer at offset 0x70.
-     * @param attached Object pointer to store.
-     */
-    virtual void func_004295B0(void* attached);
-
-    /** @brief Default handler that performs no work. */
-    virtual void func_004295C0();
-
     /** @brief Detach and delete every listed object; traversal stops on return to the sentinel or at a null link. */
     virtual void func_001DD730();
 };

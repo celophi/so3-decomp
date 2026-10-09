@@ -42,13 +42,6 @@ void func_00202840(void* object);
 u32 func_00202240(const FieldPackedKeySource* object);
 
 /**
- * @brief Test the float value when the object pointer and flag permit it.
- * @param object Receiver containing the pointer, flag and float value.
- * @return True when the object pointer is nonnull, bit zero is clear and the float value is not positive.
- */
-bool func_00204420(const FieldFloatGateState7C* object);
-
-/**
  * @brief Copy the known fields from one record to another.
  * @param dest Destination record.
  * @param src Source record.
@@ -76,33 +69,6 @@ void func_00203500(void* object);
 bool func_00203930(FieldState3BA* obj);
 
 /**
- * @brief Return the fixed value zero.
- * @param object Receiver of the call.
- * @return Zero.
- */
-s32 func_00203990(void* object);
-
-/**
- * @brief Perform no action for this receiver.
- * @param object Receiver of the call.
- */
-void func_002039B0(void* object);
-
-/**
- * @brief Test whether any of three vector components is nonzero.
- * @param obj Receiver containing the vector.
- * @return True when any component is nonzero.
- */
-bool func_002039C0(const FieldVector180* obj);
-
-/**
- * @brief Return the fixed value four.
- * @param object Receiver of the call.
- * @return Four.
- */
-s32 func_00203A70(void* object);
-
-/**
  * @brief Return the fixed value five.
  * @param object Receiver of the call.
  * @return Five.
@@ -122,13 +88,6 @@ void func_00204FA0(FieldByteState210* obj, u8 value);
  * @return Fourteen.
  */
 s32 func_00205700(void* object);
-
-/**
- * @brief Copy a 16-byte value into the receiver.
- * @param object Receiver to update.
- * @param value Value to copy.
- */
-void func_00205710(FieldSlot* object, const unsigned __int128* value);
 
 /**
  * @brief Return the fixed value zero.
@@ -273,9 +232,7 @@ void func_00207400(FieldState634* object);
 /**
  * Partial base of the field object classes, with vtable D_150F90 in main data.
  * Derived classes set a type bit in unk78 (0x1 FieldClass151510, 0x2
- * FieldClass152430, 0x400 FieldClass153330, 0x20000 FieldClass15B090). Slots
- * 9 and 15 are still implemented as the C functions func_00204420 and
- * func_00205710.
+ * FieldClass152430, 0x400 FieldClass153330, 0x20000 FieldClass15B090).
  */
 class FieldClass150F90 : public FieldClass150070
 {

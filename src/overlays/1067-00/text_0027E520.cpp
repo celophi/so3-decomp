@@ -62,6 +62,8 @@ class FieldClass155F30 : public FieldClass154E20
 public:
     /** @brief Clear D_001B6458 if it refers to this object, then destroy the object. */
     virtual ~FieldClass155F30();
+    /** @brief Create the grid for this object. */
+    virtual void func_slot30();
     /** @brief Run the base update. */
     virtual void func_001DF360();
 };
@@ -111,6 +113,8 @@ class FieldClass1563C0 : public FieldClass154E20
 public:
     /** @brief Clear D_001B6450 if it refers to this object, then destroy the object. */
     virtual ~FieldClass1563C0();
+    /** @brief Create the grid for this object. */
+    virtual void func_slot30();
     /** @brief Run the base update. */
     virtual void func_001DF360();
 };
@@ -144,6 +148,8 @@ class FieldClass1565A0 : public FieldClass154E20
 public:
     /** @brief Clear D_001B644C if it refers to this object, then destroy the object. */
     virtual ~FieldClass1565A0();
+    /** @brief Create the grid for this object. */
+    virtual void func_slot30();
     /** @brief Run the base update. */
     virtual void func_001DF360();
 };
@@ -197,7 +203,7 @@ FieldClass155B40::~FieldClass155B40()
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_002807A0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_slot30__16FieldClass155B40Fv);
 
 FieldClass155B80::~FieldClass155B80()
 {
@@ -229,13 +235,15 @@ class FieldClass155D20 : public FieldClass154EF0
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass155D20();
+    /** @brief Create the grid for this object. */
+    virtual void func_slot30();
 };
 
 FieldClass155D20::~FieldClass155D20()
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00280A00);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_slot30__16FieldClass155D20Fv);
 
 s32 func_00280AE0(void* object)
 {
@@ -277,9 +285,9 @@ s32 func_00280C00(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00280C70);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_slot30__16FieldClass155F30Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00280D40);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_slot30__16FieldClass156C40Fv);
 
 void func_00280EE0(void* object)
 {
@@ -309,7 +317,7 @@ s32 func_00280FB0(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00281090);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_slot30__16FieldClass1563C0Fv);
 
 FieldClass156400::~FieldClass156400()
 {
@@ -335,7 +343,7 @@ s32 func_00281210(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00281280);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_slot30__16FieldClass1565A0Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00281340);
 
@@ -2386,6 +2394,8 @@ class FieldClass156C40 : public FieldClass154E20
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass156C40();
+    /** @brief Create the grid for this object. */
+    virtual void func_slot30();
 };
 
 FieldClass156C40::~FieldClass156C40()
@@ -2426,6 +2436,8 @@ class FieldClass156E20 : public FieldClass154E20
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass156E20();
+    /** @brief Create the grid for this object. */
+    virtual void func_slot30();
     /** @brief Run the base update. */
     virtual void func_001DF360();
 };
@@ -2466,7 +2478,7 @@ void func_002892C0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_002892D0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_slot30__16FieldClass156E20Fv);
 
 FieldClass156E60::~FieldClass156E60()
 {

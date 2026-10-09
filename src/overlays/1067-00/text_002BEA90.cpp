@@ -289,13 +289,15 @@ class FieldClass159DD0 : public FieldClass154E20
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass159DD0();
+    /** @brief Create the grid for this object. */
+    virtual void func_slot30();
 };
 
 FieldClass159DD0::~FieldClass159DD0()
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_002BEBD0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", func_slot30__16FieldClass159DD0Fv);
 
 /** Partial FieldClass1553B0 object with vtable D_159E10 in main data. */
 class FieldClass159E10 : public FieldClass1553B0
