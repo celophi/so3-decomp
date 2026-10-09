@@ -33,6 +33,7 @@ import sys
 from tools.so3.build.assembly import ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, LITTLE_ENDIAN
 from tools.so3.build.compile import MWCCGAP_DIR, module_lists, thunk_map_path
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, LINKER_EXE, setup, working_candidate
+from tools.so3.build.lcf import LINKER_CONFIG, mwldps2_modules
 from tools.so3.build.main import MAIN_CONFIG, ROOT, VERSIONS, module_name
 from tools.so3.build.overlays import load_module, module_configs
 from tools.so3.build.sdk import MANIFEST as SDK_MANIFEST, code_units, validate_sdk_units
@@ -66,9 +67,6 @@ HEADER_SUFFIXES = ('.h', '.hpp', '.inc')
 
 OBJDIFF_VERSION = '3.8.2'
 
-# The modules that link with MWLDPS2, the game's original linker, instead of GNU
-# ld. I'm moving them over one at a time.
-LINKER_CONFIG = ROOT / 'config/manifests/linker.json'
 # Keep functions nothing calls (MWLDPS2 strips them by default), and don't pull
 # in Metrowerks' standard libraries.
 MWLDPS2_FLAGS = '-nostdlib -nodeadstrip'
@@ -84,6 +82,7 @@ COMPILE_INPUTS = ['tools/so3/build/compile.py', 'tools/so3/build/compiler_probe.
                   'tools/so3/__init__.py', 'config/manifests/compilers.json',
                   f'{MWCCGAP_DIR}/mwccgap/mwccgap.py']
 ABSOLUTE_SYMBOL_INPUTS = ['tools/so3/build/linker_symbols.py', 'tools/so3/build/text_order.py']
+ASSEMBLE_INPUTS = ['tools/so3/build/assembly.py', 'tools/so3/build/elf.py']
 COMMAND_FILE_INPUTS = ['tools/so3/build/lcf.py', 'tools/so3/formats.py', str(LINKER_CONFIG.relative_to(ROOT))]
 
 # INCLUDE_ASM and INCLUDE_RODATA placeholders, which pull in a .s file by folder and name.
@@ -171,7 +170,7 @@ def ninja_rules():
         '  command = python -m tools.so3.build.compile $in $out --macros $macro --skip-asm',
         '  description = PROGRESS $in', '  pool = compile_pool',
         'rule assemble',
-        f'  command = ${{binutils}}as {assembler_flags} -I $include -o $out $in',
+        f'  command = ${{binutils}}as {assembler_flags} -I $include -o $out $in && python -m tools.so3.build.assembly $out',
         '  description = AS $in',
         'rule binary_object',
         f'  command = ${{binutils}}objcopy -I binary -O {BINARY_OBJECT_FORMAT} -B {BINARY_ARCHITECTURE} $in $out',
@@ -202,10 +201,6 @@ def working_compiler_folder():
 def working_compiler_files():
     record = working_candidate(json.loads(CONFIG.read_text()))
     return [str(working_compiler_folder() / name) for name in record['files']]
-
-
-def mwldps2_modules():
-    return set(json.loads(LINKER_CONFIG.read_text())['mwldps2_modules'])
 
 
 def project_headers():
@@ -322,7 +317,7 @@ def module_rules(module, headers, compiler_files, sdk_sources):
         objects.append(target)
         inputs = []
         if rule == 'assemble':
-            inputs = [module.macros]
+            inputs = [module.macros, *ASSEMBLE_INPUTS]
         elif rule == 'compile':
             inputs = module.compile_inputs(source, headers, compiler_files)
         lines += [f'build {target}: {rule} {source}' + (f' | {" ".join(inputs)}' if inputs else '')]
@@ -341,7 +336,7 @@ def module_rules(module, headers, compiler_files, sdk_sources):
             full_asm = full_asm_path(module.options, source)
             target = f'{full_asm}.o'
             base = f'{PROGRESS_OBJECTS / source}.o'
-            lines += [f'build {target}: assemble {full_asm} | {module.macros}',
+            lines += [f'build {target}: assemble {full_asm} | {module.macros} {" ".join(ASSEMBLE_INPUTS)}',
                       f'  include = {module.include}',
                       f'build {base}: compile_progress {source} | {" ".join(inputs)}',
                       f'  macro = {module.macros}']

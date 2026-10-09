@@ -18,9 +18,15 @@ things with MWLDPS2 itself, and the comments below say what I found.
 import argparse
 from collections import Counter
 from dataclasses import dataclass, field
+import json
 from pathlib import Path
 
+from tools.so3 import ROOT
 from tools.so3.formats import require
+
+# The modules that link with MWLDPS2 instead of GNU ld. I'm moving them over
+# one at a time.
+LINKER_CONFIG = ROOT / 'config/manifests/linker.json'
 
 # MWLDPS2 starts a program at __start unless it's told otherwise. An overlay
 # doesn't have a real entry point, so I put it at the overlay's first byte.
@@ -320,6 +326,11 @@ def command_file(sections, gp, symbols):
     lines += [INDENT + symbol for symbol in symbols]
     lines += [f'    }} > {MEMORY_REGION}', '}']
     return '\n'.join(lines) + '\n'
+
+
+def mwldps2_modules():
+    """The names of the modules that link with MWLDPS2."""
+    return set(json.loads(LINKER_CONFIG.read_text())['mwldps2_modules'])
 
 
 def main():

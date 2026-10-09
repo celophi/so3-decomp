@@ -180,12 +180,12 @@ more. In one case it meant a file boundary was wrong: the destructor at
 0x20D9A0 really belongs to the file before it, so that file now starts at
 0x20DA30.
 
-So far only `cmc` links with MWLDPS2. Splat only writes linker scripts for GNU
-ld, so the build translates splat's script into MWLDPS2's own kind, a linker
-command file (`.lcf`), with
-[tools/so3/build/lcf.py](../tools/so3/build/lcf.py). `cmc` still comes out
-identical to the game's. Everything else still uses GNU ld for now, and the
-modules that use MWLDPS2 are listed in
+So far `cmc`, `citem`, `boot` and Battle (`3454-00`) link with MWLDPS2, and
+they all still come out identical to the game's. Splat only writes linker
+scripts for GNU ld, so the build translates splat's script into MWLDPS2's own
+kind, a linker command file (`.lcf`), with
+[tools/so3/build/lcf.py](../tools/so3/build/lcf.py). Everything else still uses
+GNU ld for now, and the modules that use MWLDPS2 are listed in
 [config/manifests/linker.json](../config/manifests/linker.json).
 
 A few things I learned about MWLDPS2 on the way:
@@ -194,15 +194,22 @@ A few things I learned about MWLDPS2 on the way:
   it wrote a broken result.
 - The command file names objects by their file name only, not their path.
 - It refuses the `NON_MATCHING` marker symbols splat adds to every assembly
-  function, so `cmc`'s config turns those off.
+  function, so those modules' configs turn them off.
+- It also refuses the empty `.text`, `.data` and `.bss` sections GNU as adds to
+  everything it assembles, so the build takes those out afterwards. GNU ld
+  doesn't care either way.
 
-There are two problems I still need to solve before other modules can switch:
+Lib isn't on MWLDPS2 yet because of one instruction. There's a tiny wait loop
+at 0x4D99B0 that's still assembly, and it branches back to its own start. GNU
+as leaves the linker a note to fill in that branch, and the two linkers read
+the note differently, so MWLDPS2 lands one instruction off. It's the only
+branch like that in the whole game, so I just need to decide how to deal with
+it.
 
-- Data pieces assembled with GNU as always carry empty `.text`, `.data` and
-  `.bss` sections, and MWLDPS2 refuses them. `cmc` doesn't have any, which is
-  why it worked first.
-- GNU ld can lower a section's alignment, and a few of Lib's files rely on
-  that. As far as I can tell, MWLDPS2's closest option can only raise it.
+I was also worried about alignment, since GNU ld can lower it and MWLDPS2
+can't. Lib links fine as long as its files that are still all assembly stay
+assembled the way they are now. When I tried sending those through CodeWarrior
+instead, Lib's code came out too long, and I haven't worked out why yet.
 
 The bigger goal is linking the main program and its overlays together in one
 go, the way the original seems to have been built. That would put Field's

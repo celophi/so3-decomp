@@ -71,6 +71,13 @@ def section_headers(data):
     return [SectionHeader(*SECTION_HEADER.unpack_from(data, offset + index * entry_size)) for index in range(count)]
 
 
+def section_names(data, headers):
+    """Each section's name, in the same order as the headers."""
+    names = headers[section_table(data)[3]]
+    strings = data[names.offset:names.offset + names.size]
+    return [strings[header.name:].split(b'\0', 1)[0].decode() for header in headers]
+
+
 def symbol_type(info):
     return info & SYMBOL_TYPE_MASK
 

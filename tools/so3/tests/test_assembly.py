@@ -1,10 +1,14 @@
-"""Check that only complete assembly scaffolds bypass the C compiler."""
+"""Check that only complete assembly scaffolds bypass the C compiler, and that assembled objects get tidied."""
 
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
 import unittest
 
-from tools.so3.build.assembly import assembly_inputs
+from tools.so3.build.assembly import (ASSEMBLER, ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, LITTLE_ENDIAN,
+                                      assembly_inputs, drop_empty_sections)
+from tools.so3.build.elf import section_headers, section_names
 
 
 class AssemblySourceTests(unittest.TestCase):
@@ -45,6 +49,30 @@ class AssemblySourceTests(unittest.TestCase):
         source = '#include "include_asm.h"\nINCLUDE_ASM("build//unit", first);\n'
         self.assertEqual(self.read(source), [Path('build/unit/first.s')])
         self.assertIsNone(self.read(source.replace('build//unit', 'build\\unit')))
+
+
+@unittest.skipUnless(shutil.which(ASSEMBLER), 'requires development binutils')
+class EmptySectionTests(unittest.TestCase):
+    def sections(self, path):
+        data = path.read_bytes()
+        headers = section_headers(data)
+        return {name: header.size for name, header in zip(section_names(data, headers), headers)}
+
+    def test_only_empty_default_sections_are_removed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source, output = Path(directory) / 'data.s', Path(directory) / 'data.o'
+            # Like a data piece: something in .rodata, nothing in .text, .data or .bss.
+            source.write_text('.section .rodata, "a"\n.word 1, 2\n')
+            subprocess.run([ASSEMBLER, LITTLE_ENDIAN, f'-march={ASSEMBLER_CPU}', f'-mabi={ASSEMBLER_ABI}',
+                            *ASSEMBLER_FLAGS, '-o', str(output), str(source)], check=True)
+            self.assertIn('.data', self.sections(output))
+            drop_empty_sections(output)
+            sections = self.sections(output)
+            self.assertNotIn('.text', sections)
+            self.assertNotIn('.data', sections)
+            self.assertNotIn('.bss', sections)
+            self.assertNotIn('.pdr', sections)
+            self.assertEqual(sections['.rodata'], 8)
 
 
 if __name__ == '__main__':
