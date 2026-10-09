@@ -23,6 +23,18 @@ typedef struct LibObject178660 LibObject178660;
 #ifdef __cplusplus
 extern "C" {
 #endif
+/** Native panel table stored in MAIN; its contents remain opaque here. */
+extern u8 D_178630[];
+/** Native text-widget table stored in MAIN; its contents remain opaque here. */
+extern u8 D_178750[];
+
+/**
+ * @brief Initialize the widget base rectangle and state bytes, and install its native table.
+ * @param object Storage for the 0x40-byte widget base.
+ * @return The constructed base.
+ */
+LibClass178600* func_004C4960(LibClass178600* object);
+
 /**
  * @brief Configure a text slot and its rectangle.
  * @param object Text widget.

@@ -13,6 +13,9 @@
 #include "overlays/1067-00/text_002D5260.h"
 #include "overlays/lib/text_003F90C0.h"
 
+#include "overlays/1067-00/text_002AE9E0.h"
+#include "main/resident_0011EE70.h"
+
 #define SKILL_FLAG_ENCODING_MASK 0x7DE3F7E3
 
 /** Partial record containing protected flag bits and two encoded values. */
@@ -730,17 +733,27 @@ struct SkillOptionsWindow : public FieldClass15AE70
 };
 
 
-typedef struct Record0035DDE0
+/** Packet drawing base with data before its inherited virtual pointer. */
+struct Record0035DE40 : public FieldClass159A70
 {
-    u8 unk00[8];
-    PacketBuffer0035DDE0* buffer;
-} Record0035DDE0;
+    /** @brief Release the drawing packet and base. */
+    virtual ~Record0035DE40();
+    /** @brief Rebuild the drawing packet. */
+    virtual void func_002BC4F0();
+    float unk30;
+    float unk34;
+    float unk38;
+    s16 unk3c;
+    u8 unk3e[2];
+    u32 unk40;
+};
 
-typedef struct Record0035DE40
+/** Virtual-pointer prefix used while releasing the native drawing base. */
+struct SkillDrawingVtableView
 {
     u8 unk00[0x2C];
     void* methods;
-} Record0035DE40;
+};
 
 /** Grid selection state used by the mode query. */
 typedef FieldObject23CEA0 QuerySelection;
@@ -764,14 +777,25 @@ typedef struct Record00352B30 : public FieldClass15AE70
     SkillQueueOwner* parent;
 } Record00352B30;
 
-typedef struct Record0035D4A0
+/** Skill packet receiver with transform and drawing bases at their native offsets. */
+struct Record0035D4A0 : public FieldClass1599E0, public Record0035DE40
+{
+    /** @brief Release the drawing and transform bases. */
+    virtual ~Record0035D4A0();
+    /** @brief Submit the drawing packet for DMA notification. */
+    virtual void func_003EEBE0();
+    u8 unk104;
+};
+
+/** Virtual-pointer prefixes restored by the receiver's existing release routine. */
+struct SkillPacketVtableView
 {
     void* methods;
     u8 unk04[0x8C];
     void* secondary_methods;
     u8 unk94[0x2C];
-    Record0035DE40 nested;
-} Record0035D4A0;
+    SkillDrawingVtableView nested;
+};
 
 typedef struct ListItem0035CCE0
 {
@@ -941,7 +965,6 @@ typedef struct Record0035D3E0
     u32 unkb8;
 } Record0035D3E0;
 
-extern "C" FieldRecordSelection* func_0028E4D0(FieldRecordSelection* selection);
 extern "C" u64 D_4ED330[];
 extern "C" void func_11F140(PacketBuffer0035DDE0* buffer, u64 value);
 extern "C" u8 D_50CD30[];
@@ -1084,7 +1107,8 @@ static inline Record0035DE40* release_record183e50(Record0035DE40* record, s16 f
 {
     if (record != 0)
     {
-        record->methods = D_183E50;
+        SkillDrawingVtableView* tables = reinterpret_cast<SkillDrawingVtableView*>(record);
+        tables->methods = D_183E50;
         func_2BC410(record, 0);
         if (flag > 0)
         {
@@ -5337,16 +5361,24 @@ void func_0035D440(void* object)
     func_4D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0035D460);
+void Record0035D4A0::func_003EEBE0()
+{
+    dma_pending = 1;
+    if (unk08 != 0)
+    {
+        func_0011F770(unk08, this);
+    }
+}
 
 Record0035D4A0* func_0035D4A0(Record0035D4A0* record, s16 flag)
 {
     if (record != 0)
     {
-        record->methods = D_183DB0;
-        record->secondary_methods = D_183E24;
-        record->nested.methods = D_183E3C;
-        release_record183e50(&record->nested, 0);
+        SkillPacketVtableView* tables = reinterpret_cast<SkillPacketVtableView*>(record);
+        tables->methods = D_183DB0;
+        tables->secondary_methods = D_183E24;
+        tables->nested.methods = D_183E3C;
+        release_record183e50(reinterpret_cast<Record0035DE40*>(&tables->nested), 0);
         func_002BC280(record, 0);
         if (flag > 0)
         {
@@ -5360,7 +5392,7 @@ INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0035D540);
 
 void func_0035DDE0(Record0035DDE0* record)
 {
-    PacketBuffer0035DDE0* buffer = record->buffer;
+    PacketBuffer0035DDE0* buffer = reinterpret_cast<PacketBuffer0035DDE0*>(record->unk08);
     if (buffer != 0)
     {
         buffer->cursor = buffer->base + 64;

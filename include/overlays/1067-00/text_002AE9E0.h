@@ -6,6 +6,7 @@
 #include "overlays/1067-00/field_packet.h"
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001DED80.h"
+#include "overlays/lib/text_004BD360.h"
 #endif
 
 /** Shared sequence fields with signed counters, halfword indices, and packed modes. */
@@ -1588,6 +1589,25 @@ typedef struct FieldSequenceVectorC0
 #endif
 
 #ifdef __cplusplus
+/** Transform and DMA notification receiver with MAIN tables D_1599E0 and D_159A54. */
+class FieldClass1599E0 : public LibClass174610
+{
+public:
+    /** @brief Initialize the transform receiver and clear its three added words. */
+    FieldClass1599E0();
+    /** @brief Destroy the transform and notification bases. */
+    virtual ~FieldClass1599E0();
+    /** @brief Report the transform kind. @return Fourteen. */
+    virtual s32 func_003EEBC0();
+    /** @brief Queue the receiver for release. */
+    virtual void func_003EF740();
+    /** @brief Leave the default update state unchanged. */
+    virtual void func_003EEBE0();
+    u32 unkb0;
+    u32 unkb4;
+    u32 unkb8;
+};
+
 /** Partial packet drawer with vtable D_159A70 in main data; its data comes before the vptr. */
 class FieldClass159A70
 {

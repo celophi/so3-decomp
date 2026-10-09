@@ -374,3 +374,14 @@ func_002D6410 = 0x002D6410; // type:func absolute:True allow_duplicated:True
 func_002D6440 = 0x002D6440; // type:func absolute:True allow_duplicated:True
 func_00464D90__15LibObject174F20FffffUiiUc = 0x00464D90; // type:func absolute:True allow_duplicated:True
 func_002D6440__33ItemCreationOptionResourceDisplayFP19FieldResourceRecordff = 0x002D6440; // type:func absolute:True allow_duplicated:True
+
+__ct__9ShopStateFv = 0x00351570; // type:func
+func_00351570 = 0x00351570; // type:func absolute:True
+__dt__9ShopStateFv = 0x00351B60; // type:func
+func_00351B60 = 0x00351B60; // type:func absolute:True
+func_00264110__9ShopStateFv = 0x00351540; // type:func absolute:True
+__vt__9ShopState = 0x00188800; // size:0x8C absolute:True
+__ct__16FieldClass153E30Fv = 0x002642D0; // type:func absolute:True
+__dt__16FieldClass153E30Fv = 0x00264230; // type:func absolute:True
+__ct__20FieldRecordSelectionFv = 0x0028E4D0; // type:func absolute:True
+__dt__20FieldRecordSelectionFv = 0x0028E480; // type:func absolute:True

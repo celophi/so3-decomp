@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+struct LibClass171FF0;
+
 /**
  * Partial GS packet buffer: base, allocated storage, write cursor, capacity in 64-bit words, a
  * borrowed-storage flag at offset 0x14 and a flag byte at offset 0x15.
@@ -43,6 +45,13 @@ void func_0011EF90(ResidentPacket* packet, u64 data);
  * @param data Register value.
  */
 void func_0011F140(ResidentPacket* packet, u64 data);
+
+/**
+ * @brief Finish pending packet data and submit it with a DMA notification receiver.
+ * @param packet Packet buffer to submit.
+ * @param notification Secondary interface notified after submission.
+ */
+void func_0011F770(ResidentPacket* packet, struct LibClass171FF0* notification);
 
 /**
  * @brief Advance the packet cursor to the next 16-byte boundary at or after a supplied cursor.

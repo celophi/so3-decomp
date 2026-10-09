@@ -82,28 +82,6 @@ extern "C" const ShopPanelColors D_00351FA0;
 extern "C" const ShopPanelColors D_00351FB0;
 extern "C" const ShopPanelColors D_00351FC0;
 
-/** Partial current shop state. */
-struct ShopState : FieldClass153E30
-{
-    s32 unk34;
-    u8 unk38;
-    u8 unk39[3];
-    ShopClass188500* unk3c;
-    ShopClass188400* unk40;
-    ShopClass188300* unk44;
-    ShopClass1880E0* unk48;
-    ShopClass187EC0* unk4c;
-    ShopClass188200* unk50;
-    u8 unk54[0x18];
-    FieldHalfwordBuckets buckets;
-    u8 unk3268[4];
-    s32 unk326c;
-    s32 unk3270;
-    s32 unk3274;
-    s32 unk3278;
-    ItemCreationAllocationRecord* unk327c;
-    u8 unk3280;
-};
 /** Partial resource runtime containing the selected slot and display code. */
 struct FieldRuntime
 {
@@ -2424,7 +2402,24 @@ s32 func_00351540(u8* object)
     return func_28E3D0(object + 0x54) != 0;
 }
 
-INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_00351570);
+/** @brief Initialize the shop controller and its record selection. */
+ShopState::ShopState()
+{
+    unk34 = 0;
+    unk38 = 0;
+    unk3c = 0;
+    unk40 = 0;
+    unk44 = 0;
+    unk48 = 0;
+    unk4c = 0;
+    unk50 = 0;
+    unk326c = -1;
+    unk3274 = -1;
+    unk3278 = 0;
+    unk327c = 0;
+    unk3280 = 0;
+    unk3270 = 7;
+}
 
 void func_003516A0(void* object)
 {
@@ -2500,7 +2495,10 @@ ShopClass188700::~ShopClass188700()
 {
 }
 
-INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_00351B60);
+/** @brief Destroy the record selection and Field controller base. */
+ShopState::~ShopState()
+{
+}
 
 u8 func_00351BD0(ObjectStatusFields* object)
 {

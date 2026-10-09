@@ -321,7 +321,22 @@ extern "C" void func_002CE420(FieldStateCE420* object, u8 first, u32 second, u16
     object->unk2c = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE450);
+/**
+ * @brief Find the final window in the associated-window chain.
+ * @return Last window, including this window when it has no association.
+ */
+void* FieldClass15AE70::func_slot3c()
+{
+    FieldClass15AE70* window = this;
+    if (window->func_slot44())
+    {
+        do
+        {
+            window = (FieldClass15AE70*)window->func_slot44();
+        } while (window->func_slot44());
+    }
+    return window;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE4C0);
 

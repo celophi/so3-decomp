@@ -4,9 +4,16 @@
 #include "types.h"
 
 typedef struct LibDrawState64 LibDrawState64;
+typedef struct LibClass174610 LibClass174610;
 #ifdef __cplusplus
 extern "C" {
 #endif
+/**
+ * @brief Detach the transform receiver from its parent container when attached.
+ * @param object Transform receiver to detach.
+ */
+void func_0044B210(LibClass174610* object);
+
 /**
  * @brief Apply the saved input mode, slot configuration, and input flag.
  * @param settings Saved settings receiver.

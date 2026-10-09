@@ -37,7 +37,9 @@ public:
     virtual ~FieldClass153E00();
     /** @brief Delete the attached object at offset 0x4C. */
     virtual void func_slot1c();
-    u8 unk14[0x38];
+    u8 unk14[0x19];
+    u8 unk2d;
+    u8 unk2e[0x1E];
     FieldClass150070* unk4c;
 };
 #else

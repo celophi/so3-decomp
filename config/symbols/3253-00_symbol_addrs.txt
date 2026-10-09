@@ -1,0 +1,16 @@
+battle_clear_vector4 = 0x00222D20; // type:func
+battle_has_quaternion_key = 0x00222CC0; // type:func
+battle_float_is_negative = 0x00218E90; // type:func
+battle_set_point_vector = 0x00218B70; // type:func
+
+battle_set_point_vector_and_flag = 0x00218C60; // type:func
+
+battle_quaternion_key_span = 0x00222D40; // type:func
+
+battle_use_external_quaternion_keys = 0x00222AE0; // type:func
+
+battle_set_quaternion_high_mode = 0x00222B40; // type:func
+
+battle_reset_quaternion_channel = 0x00222980; // type:func
+
+battle_set_quaternion_low_mode = 0x002227F0; // type:func

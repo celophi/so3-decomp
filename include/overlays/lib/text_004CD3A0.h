@@ -152,7 +152,10 @@ public:
 
     u8 unk60;
     u8 unk61;
-    u8 unk62[8];
+    u8 unk62[2];
+    /** Nonzero while the submitted packet awaits its DMA notification. */
+    u8 dma_pending;
+    u8 unk65[5];
     u16 unk6a;
     u16 unk6c;
     u8 unk6e[0x22];

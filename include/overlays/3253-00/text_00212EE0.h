@@ -3,7 +3,12 @@
 
 #include "types.h"
 
+union LibVector4;
+struct BattlePointFlagFields20;
+struct BattleQuaternionTrackFields;
+struct BattleQuaternionKey;
 struct BattleVectorSlot20;
+struct BattleVectorFields20;
 struct BattleGetters38;
 struct BattleGetters18;
 struct BattleGetters48;
@@ -14,6 +19,71 @@ struct BattleStateByte60;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Clear all four vector components.
+ * @param vector Vector to clear.
+ */
+void battle_clear_vector4(LibVector4* vector);
+
+/**
+ * @brief Test whether a packed quaternion track contains an exact key value.
+ * @param object Partial quaternion track receiver.
+ * @param key Key value to find.
+ * @return One when a key matches exactly; zero otherwise.
+ */
+s32 battle_has_quaternion_key(const BattleQuaternionTrackFields* object, float key);
+
+/**
+ * @brief Use externally owned quaternion keys and record their value span.
+ * @param object Quaternion channel receiver.
+ * @param count Number of supplied keys.
+ * @param keys Caller-owned packed quaternion keys.
+ */
+void battle_use_external_quaternion_keys(BattleQuaternionTrackFields* object, s32 count, BattleQuaternionKey* keys);
+
+/**
+ * @brief Reset the observed quaternion channel state and clear its key pointer.
+ * @param object Quaternion channel receiver.
+ */
+void battle_reset_quaternion_channel(BattleQuaternionTrackFields* object);
+
+/**
+ * @brief Set the high quaternion mode nibble and update the native mode flag.
+ * @param object Quaternion channel receiver.
+ * @param mode Mode value whose low four bits are stored.
+ */
+void battle_set_quaternion_high_mode(BattleQuaternionTrackFields* object, s32 mode);
+
+/**
+ * @brief Set the low quaternion mode nibble and update the native mode flag.
+ * @param object Quaternion channel receiver.
+ * @param mode Mode value whose low four bits are stored.
+ */
+void battle_set_quaternion_low_mode(BattleQuaternionTrackFields* object, s32 mode);
+
+/**
+ * @brief Return the span of the packed quaternion key values.
+ * @param object Partial quaternion track receiver.
+ * @return Last key value minus first, or zero when there are fewer than two keys.
+ */
+float battle_quaternion_key_span(const BattleQuaternionTrackFields* object);
+
+/**
+ * @brief Store a point vector and set the receiver's byte at 0x50.
+ * @param object Partial point-vector receiver.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
+void battle_set_point_vector_and_flag(BattlePointFlagFields20* object, float x, float y, float z);
+
+/**
+ * @brief Test whether a floating-point value is less than zero.
+ * @param value Value to test.
+ * @return One for a negative value; zero otherwise, including unordered values.
+ */
+s32 battle_float_is_negative(float value);
 
 /**
  * @brief Return the fixed value 3.
@@ -370,6 +440,15 @@ void func_00218B50(BattleVectorSlot20* object, const unsigned __int128* value);
  * @param value Value to copy.
  */
 void func_00218B60(BattleVectorSlot20* object, const unsigned __int128* value);
+
+/**
+ * @brief Store three vector components and set the fourth component to one.
+ * @param object Receiver containing the vector at offset 0x20.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
+void battle_set_point_vector(BattleVectorFields20* object, float x, float y, float z);
 
 /**
  * @brief Read the receiver's word at offset 0x30.

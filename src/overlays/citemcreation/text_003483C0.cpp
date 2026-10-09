@@ -4474,19 +4474,6 @@ extern "C" s32 func_413F70(LibObject172410* object, float x, float y, float widt
  * @return One on success, or zero if its drawing storage could not be initialized.
  */
 extern "C" s32 func_4143F0(LibObject172440* object, u16 value, u8 variant, u8 flag, float x, float y, float width, float height);
-/**
- * @brief Create and configure the Field window's nested display container.
- * @param object Field window receiver.
- * @param associated Full resource source word.
- * @param first First container configuration value.
- * @param second Second container configuration value.
- * @param third Third container configuration value.
- * @param x Horizontal coordinate.
- * @param y Vertical coordinate.
- * @param z Third coordinate.
- * @return One when the container is present and the source word is nonzero, otherwise zero.
- */
-extern "C" s32 func_002CE760(FieldClass15AE70* object, u32 associated, s32 first, s32 second, s32 third, float x, float y, float z);
 /** @brief Attach a widget to its container. @param object Container. @param child Widget to attach. */
 extern "C" void func_4C6190(LibObject178660* object, LibClass178600* child);
 /** Partial Field runtime reached through D_001B657C. */
@@ -11270,19 +11257,6 @@ enum
     ITEM_CREATION_FLAG_8 = 0x100
 };
 
-/**
- * @brief Create and configure the Field window's nested display container.
- * @param object Field window receiver.
- * @param associated Full resource source word.
- * @param first First container configuration value.
- * @param second Second container configuration value.
- * @param third Third container configuration value.
- * @param x Horizontal coordinate.
- * @param y Vertical coordinate.
- * @param z Third coordinate.
- * @return One when the container is present and the source word is nonzero, otherwise zero.
- */
-extern "C" s32 func_002CE760(FieldClass15AE70* object, u32 associated, s32 first, s32 second, s32 third, float x, float y, float z);
 extern "C"
 {
     extern LibVector4 D_50CD30[];
