@@ -24,7 +24,9 @@ options:
     .set noat
     .set noreorder
   migrate_rodata_to_functions: false
-  subalign: 4
+  # No SUBALIGN (splat's default is 16). Every object already carries the
+  # alignment it needs, and MWLDPS2 could only raise it.
+  subalign: null
   find_file_boundaries: false
   disasm_unknown: true
   gp_value: 0x1bdff0
@@ -52,7 +54,6 @@ segments:
     type: code
     start: 0x40
     vram: 0x3483c0
-    subalign: 16
     subsegments:
       - [0x40, pad, text_start]
       - [0x80, cpp, text]

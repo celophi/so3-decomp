@@ -161,6 +161,14 @@ to find which copy the game kept, and it drops each copy's bookkeeping with it
 the order the compiler wrote, so when a kept copy lands in the wrong place, my
 source is different from the original.
 
+MWLDPS2 can drop the duplicate copies itself. It keeps the copy from the first
+object on its command line, wherever that object is placed. That only explains
+the game's choices in 1070 and Battle, though. In Field, 6 of the 25 functions
+with more than one copy are kept in a later file than another file that has
+one, and no single order fits them all. My guess is that those files don't have
+that copy in the original, so it's another sign my source is different there.
+Until that's sorted out, the build still picks the kept copy by address.
+
 Some things are still open:
 
 - Lib's files that are still all assembly have to stay assembled. If they go
