@@ -47,7 +47,7 @@ PROGRESS_REPORT = PROGRESS_OBJECTS / 'report.json'
 MAIN_EXECUTABLE = 'SLUS_204.88'  # The main executable's file name on the disc.
 OVERLAY_IMAGE = 'rebuilt.bin'
 
-# Every binutils tool has this prefix in the dev image, like mips-ps2-decompals-ld.
+# Every binutils tool has this prefix in the dev image, like mips-ps2-decompals-as.
 BINUTILS_PREFIX = 'mips-ps2-decompals-'
 # objcopy settings that wrap a raw .bin file in an object the linker accepts.
 BINARY_OBJECT_FORMAT = 'elf32-littlemips'

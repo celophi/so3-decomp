@@ -1,3 +1,7 @@
 D_001B65F0 = 0x001B65F0; // size:0x4
 D_001B6614 = 0x001B6614; // size:0x4
 D_205E10 = 0x00205E10; // size:0x28
+
+// newlib string functions in main.
+strcat = 0x0013C6D0; // type:func
+strlen = 0x0013CA60; // type:func

@@ -306,9 +306,7 @@ void* func_101440(void* table, s32 selector);
 
 void* func_100B00(u32 size, s32 flags);
 void* func_13A678(void* destination, s32 value, u32 size);
-u32 func_13CA60(const char* string);
 char* func_13C948(char* destination, const char* source);
-char* func_13C6D0(char* destination, const char* source);
 extern const char D_205100[];
 extern const char D_205980[];
 

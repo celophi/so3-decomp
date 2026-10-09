@@ -1,10 +1,6 @@
 {
   "schema_version": 1,
-  "reference": {
-    "url": "https://github.com/chaoticgd/ghidra-emotionengine-reloaded/blob/ae013ee1475dc970db4fdeba3ec88def6b933d43/data/patterns/r5900_LE_patterns.xml",
-    "sha256": "1db3752102be9a681fbc79996f6e7c10024fd52187de18f8cb0ca74b9a97dd79"
-  },
-  "scope": "Reviewed SDK exclusions only; aliases are upstream labels, not proven unique names or an SDK version.",
+  "scope": "Reviewed library exclusions. Each unit's evidence says what it was matched against. Units and functions named *_guess are assumptions that haven't been matched to a library yet.",
   "units": [
     {
       "module": "main",
