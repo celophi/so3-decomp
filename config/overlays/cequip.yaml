@@ -26,8 +26,6 @@ options:
     .set noat
     .set noreorder
   migrate_rodata_to_functions: false
-  # No SUBALIGN (splat's default is 16). Every object already carries the
-  # alignment it needs, and MWLDPS2 could only raise it.
   subalign: null
   find_file_boundaries: false
   disasm_unknown: true
