@@ -180,8 +180,9 @@ more. In one case it meant a file boundary was wrong: the destructor at
 0x20D9A0 really belongs to the file before it, so that file now starts at
 0x20DA30.
 
-So far `cmc`, `citem`, `boot` and Battle (`3454-00`) link with MWLDPS2, and
-they all still come out identical to the game's. Splat only writes linker
+So far 11 of the 16 link with MWLDPS2, and they all still come out identical
+to the game's. That's Battle (both copies), `boot`, and every menu overlay
+except item creation. Splat only writes linker
 scripts for GNU ld, so the build translates splat's script into MWLDPS2's own
 kind, a linker command file (`.lcf`), with
 [tools/so3/build/lcf.py](../tools/so3/build/lcf.py). Everything else still uses
@@ -198,6 +199,17 @@ A few things I learned about MWLDPS2 on the way:
 - It also refuses the empty `.text`, `.data` and `.bss` sections GNU as adds to
   everything it assembles, so the build takes those out afterwards. GNU ld
   doesn't care either way.
+- It wants the C++ exception tables placed somewhere, even though they aren't
+  part of the overlays. In the game they're in the main program. For now they
+  go in a separate area that doesn't end up in the image.
+
+Field (both copies), item creation, Lib and the main program are still on GNU
+ld. For Field and item creation, the problem is the C++ copies my build drops.
+It drops just the code, but each copy also has some bookkeeping (an entry in
+the exception tables and a few other small records) that still points at it.
+GNU ld throws those away without looking, but MWLDPS2 still checks them. The
+original linker would have dropped each copy together with its bookkeeping, so
+that's what I need to do too.
 
 Lib isn't on MWLDPS2 yet because of one instruction. There's a tiny wait loop
 at 0x4D99B0 that's still assembly, and it branches back to its own start. GNU

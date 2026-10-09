@@ -10,7 +10,7 @@ import unittest
 from tools.so3.build.assembly import LITTLE_ENDIAN
 from tools.so3.build.compiler_probe import COMPILER_EXE, COMPILERS, CONFIG, LINKER_EXE, working_candidate
 from tools.so3.build.driver import BINARY_ARCHITECTURE, BINARY_OBJECT_FORMAT, BINUTILS_PREFIX, MWLDPS2_FLAGS
-from tools.so3.build.lcf import command_file, parse_linker_script, symbol_definitions
+from tools.so3.build.lcf import MEMORY_REGION, command_file, parse_linker_script, symbol_definitions
 from tools.so3.formats import FormatError
 
 # Each line splat writes inside a section, and what it should become.
@@ -86,9 +86,14 @@ class TranslationTests(unittest.TestCase):
         script = splat_script('code.c.o(.text);', before=['_gp = 0x1BDFF0;'])
         lines = [line.strip() for line in converted(script, ['func_2000 = 0x2000;']).splitlines()]
         self.assertIn('module (RWX) : ORIGIN = 0x1000, LENGTH = 0', lines)
+        self.assertIn('elsewhere (RWX) : ORIGIN = 0x10000000, LENGTH = 0', lines)
         self.assertEqual(lines[lines.index('.module : {') + 1], '__start = .;')
-        # The gp value and the symbol addresses come last.
-        self.assertEqual(lines[-4:], ['_gp = 0x1BDFF0;', 'func_2000 = 0x2000;', '} > module', '}'])
+        # The gp value and the symbol addresses end the module's region.
+        end = lines.index('} > module')
+        self.assertEqual(lines[end - 2:end], ['_gp = 0x1BDFF0;', 'func_2000 = 0x2000;'])
+        # Then every object's exception tables go elsewhere.
+        self.assertEqual(lines[end + 1:], ['.elsewhere : {', 'code.c.o (.exceptix)', 'code.c.o (.exception)',
+                                           '} > elsewhere', '}'])
 
 
 class RefusalTests(unittest.TestCase):
@@ -176,11 +181,12 @@ class LinkTests(unittest.TestCase):
         (self.work / 'layout.lcf').write_text(converted(TINY_MODULE, SYMBOLS))
         self.run_tool('wibo', str(compiler_folder() / LINKER_EXE), *MWLDPS2_FLAGS.split(),
                       '-o', 'mw.elf', 'layout.lcf', *OBJECTS)
-        return self.flat_image('mw.elf')
+        # Only the module's region, like the build.
+        return self.flat_image('mw.elf', '-j', MEMORY_REGION)
 
-    def flat_image(self, elf):
+    def flat_image(self, elf, *options):
         image = Path(elf).with_suffix('.bin').name
-        self.run_tool(f'{BINUTILS_PREFIX}objcopy', '-O', 'binary', elf, image)
+        self.run_tool(f'{BINUTILS_PREFIX}objcopy', '-O', 'binary', *options, elf, image)
         return (self.work / image).read_bytes()
 
     def test_both_linkers_make_the_same_image(self):

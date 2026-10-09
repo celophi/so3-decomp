@@ -32,7 +32,13 @@ options:
   gp_value: 0x1bdff0
   global_vram_start: 0x100000
   global_vram_end: 0x507A00
+  # MWLDPS2 rejects the sized <function>.NON_MATCHING symbol splat's nonmatching
+  # macro adds to every assembly function, so this module redefines it as empty.
+  # The nonmatching lines stay in the .s files for the tools that read them.
   generated_macro_inc_content: |
+    .purgem nonmatching
+    .macro nonmatching label, size=1
+    .endm
     .set Q, $Q
     .set ACC, $ACC
     .set I, $I

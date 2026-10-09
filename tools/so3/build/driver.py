@@ -33,7 +33,7 @@ import sys
 from tools.so3.build.assembly import ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, LITTLE_ENDIAN
 from tools.so3.build.compile import MWCCGAP_DIR, module_lists, thunk_map_path
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, LINKER_EXE, setup, working_candidate
-from tools.so3.build.lcf import LINKER_CONFIG, mwldps2_modules
+from tools.so3.build.lcf import LINKER_CONFIG, MEMORY_REGION, mwldps2_modules
 from tools.so3.build.main import MAIN_CONFIG, ROOT, VERSIONS, module_name
 from tools.so3.build.overlays import load_module, module_configs
 from tools.so3.build.sdk import MANIFEST as SDK_MANIFEST, code_units, validate_sdk_units
@@ -188,6 +188,10 @@ def ninja_rules():
         f'  command = wibo $linker {MWLDPS2_FLAGS} -o $out $command_file $in',
         '  description = MWLD $out',
         'rule binary_image', '  command = ${binutils}objcopy -O binary $in $out',
+        '  description = IMAGE $out',
+        # Only the module's own region. MWLDPS2's link also has a region for
+        # things that belong elsewhere, like the exception tables.
+        'rule mwld_image', f'  command = ${{binutils}}objcopy -O binary -j {MEMORY_REGION} $in $out',
         '  description = IMAGE $out',
         'rule verify', '  command = $verify_command', '  description = VERIFY $module', '',
     ]
@@ -354,7 +358,8 @@ def module_rules(module, headers, compiler_files, sdk_sources):
         progress_objects.append(unit['target_path'])
 
     lines += link_rules(module, objects)
-    lines += [f'build {module.image}: binary_image {module.output}/linked.elf',
+    image_rule = 'mwld_image' if module.uses_mwldps2 else 'binary_image'
+    lines += [f'build {module.image}: {image_rule} {module.output}/linked.elf',
               f'build {module.output}/verify.json: verify {module.image} | '
               f'{module.target} {" ".join(module.split_inputs())}',
               f'  verify_command = {module.verify_command()}', f'  module = {module.name}', '']

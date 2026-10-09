@@ -4,6 +4,13 @@
     "cmc",
     "citem",
     "boot",
-    "3454-00"
+    "3454-00",
+    "cstatus",
+    "ctactics",
+    "cconfig",
+    "cequip",
+    "cshop",
+    "cskill",
+    "3253-00"
   ]
 }
