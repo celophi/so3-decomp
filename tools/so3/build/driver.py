@@ -381,6 +381,9 @@ def configure(configs):
         'min_version': OBJDIFF_VERSION,
         # Objects are built explicitly with make objdiff-objects or make report.
         'build_target': False, 'build_base': False,
+        # MWCC gives every jump table its own .rodata section, and the original
+        # has one. The report combines them by default, but the app doesn't.
+        'options': {'combineDataSections': True},
         'units': report_units, 'progress_categories': categories,
     }
     write_if_changed(OBJDIFF_CONFIG, json.dumps(objdiff, indent=2) + '\n')

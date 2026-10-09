@@ -30,8 +30,8 @@ from tools.so3.build.compiler_probe import COMPILER_EXE, COMPILERS, CONFIG, veri
 from tools.so3.build.assembly import ASSEMBLER, ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, assembly_inputs, assemble
 from tools.so3.build.rodata_ownership import owned_rodata_sections
 from tools.so3.build.subsegments import configured_rodata_groups, segment_start
-from tools.so3.build.text_order import (CopyReport, merge_rodata_sections, normalize_symbol_aliases,
-                                        order_text_sections, symbol_addresses, symbol_aliases, unit_range)
+from tools.so3.build.text_order import (CopyReport, normalize_symbol_aliases, order_text_sections,
+                                        symbol_addresses, symbol_aliases, unit_range)
 
 LANGUAGES = {'.c': 'c', '.cpp': 'c++'}
 
@@ -177,13 +177,10 @@ def match_original_layout(path, unit, unit_options, language, rodata_groups, rep
         data = order_text_sections(data, symbol_map(unit), thunk_map(unit), overlay_range(unit),
                                    reorder=deferred(unit_options), external=external_copies(unit), report=report)
 
-    # MWCC gives every jump table its own .rodata section. Usually I merge them
-    # into one so objdiff can compare them, but a few units own tables that sit
-    # in separate places in the original, and those keep their own sections.
+    # A few units own jump tables that sit in separate places in the original,
+    # so those tables get their own sections.
     if rodata_groups:
         data, _ = owned_rodata_sections(data, rodata_groups)
-    else:
-        data = merge_rodata_sections(data)
 
     # Rename references that use an alias so they match the symbol map's name.
     aliases = symbol_map_path(module_of(unit))
