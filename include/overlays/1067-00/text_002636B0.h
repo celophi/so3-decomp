@@ -253,66 +253,6 @@ void func_002647C0(void* object);
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
-void func_002647D0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_002647E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_002647F0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00264800(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00264810(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00264820(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00264830(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00264840(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00264850(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00264860(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
 void func_00264870(void* object);
 
 /**

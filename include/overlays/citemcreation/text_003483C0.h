@@ -1025,66 +1025,6 @@ void func_00356780(ItemCreationClass186770* object, u16 group);
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
-void func_00348510(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348520(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348530(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348540(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348550(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348560(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348570(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348580(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348590(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003485A0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
 void func_00350DE0(void* object);
 
 /**

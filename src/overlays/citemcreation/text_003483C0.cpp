@@ -575,43 +575,53 @@ void FieldClass15AE70::func_slot6c()
 {
 }
 
-void func_00348510(void* object)
+/** @brief Perform the default window hook at slot 0x78. */
+void FieldClass15AE70::func_slot78()
 {
 }
 
-void func_00348520(void* object)
+/** @brief Perform the default window hook at slot 0x7C. */
+void FieldClass15AE70::func_slot7c()
 {
 }
 
-void func_00348530(void* object)
+/** @brief Perform the default window hook at slot 0x80. */
+void FieldClass15AE70::func_slot80()
 {
 }
 
-void func_00348540(void* object)
+/** @brief Perform the default window hook at slot 0x84. */
+void FieldClass15AE70::func_slot84()
 {
 }
 
-void func_00348550(void* object)
+/** @brief Perform the default window hook at slot 0x88. */
+void FieldClass15AE70::func_slot88()
 {
 }
 
-void func_00348560(void* object)
+/** @brief Perform the default window hook at slot 0x8C. */
+void FieldClass15AE70::func_slot8c()
 {
 }
 
-void func_00348570(void* object)
+/** @brief Perform the default window hook at slot 0x90. */
+void FieldClass15AE70::func_slot90()
 {
 }
 
-void func_00348580(void* object)
+/** @brief Perform the default window hook at slot 0x94. */
+void FieldClass15AE70::func_slot94()
 {
 }
 
-void func_00348590(void* object)
+/** @brief Perform the default window hook at slot 0x98. */
+void FieldClass15AE70::func_slot98()
 {
 }
 
-void func_003485A0(void* object)
+/** @brief Perform the default window hook at slot 0x9C. */
+void FieldClass15AE70::func_slot9c()
 {
 }
 
