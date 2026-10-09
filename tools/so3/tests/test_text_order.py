@@ -8,8 +8,8 @@ from pathlib import Path
 import unittest
 
 from tools.so3.build.compiler_probe import object_functions
-from tools.so3.build.text_order import (CopyReport, DroppedCopy, MovedCopy, normalize_symbol_aliases,
-                                        order_text_sections, symbol_aliases, unit_range)
+from tools.so3.build.text_order import (CopyReport, DroppedCopy, MovedCopy, compiled_vtables,
+                                        normalize_symbol_aliases, order_text_sections, symbol_aliases, unit_range)
 from tools.so3.tests.test_compiler_probe import object_fixture
 
 
@@ -177,6 +177,11 @@ class TextOrderTests(unittest.TestCase):
         data = order_text_sections(vtable_fixture(), {'second': 0x80}, keep=(0x100, 0x200), reorder=False)
         self.assertEqual(section_names(data), ['.text', '.vtables'])
         self.assertEqual(symbol_record(data, 2)[1:], (0, 0, 0x11, 0, 0))
+
+    def test_compiled_vtable_is_read_before_it_is_set_aside(self):
+        self.assertEqual(compiled_vtables(vtable_fixture(), {'second': 0x80}),
+                         [{'name': 'second', 'address': 0x80, 'bytes': '42424242', 'slots': []}])
+        self.assertEqual(compiled_vtables(vtable_fixture(), {}), [])
 
     def test_unmapped_vtable_is_unchanged(self):
         original = vtable_fixture()

@@ -282,6 +282,47 @@ def moved_copies(compiler_order, game_order, copies, function_names, addresses):
     return moved
 
 
+def compiled_vtables(data, addresses):
+    """Read the vtables the compiler made, for the ones the symbol map has an address for.
+
+    order_text_sections turns these into references to the game's vtables, so
+    this has to run first. Each vtable comes back as a dict with its name, the
+    game's address for it, its bytes, and the function each relocated slot
+    points at, as [offset, function name].
+    """
+    shoff = struct.unpack_from('<I', data, 32)[0]
+    size, count, names_index = struct.unpack_from('<HHH', data, 46)
+    headers = [struct.unpack_from('<10I', data, shoff + i * size) for i in range(count)]
+    strings = data[headers[names_index][4]:]
+    names = [strings[h[0]:].split(b'\0', 1)[0].decode() for h in headers]
+    symtab = next(h for h in headers if h[1] == 2)
+    symbol_strings = data[headers[symtab[6]][4]:]
+    symbols = []
+    for offset in range(symtab[4], symtab[4] + symtab[5], symtab[9]):
+        label, value, length, info, _, index = struct.unpack_from('<IIIBBH', data, offset)
+        symbols.append((symbol_strings[label:].split(b'\0', 1)[0].decode(), value, length, info, index))
+    vtables = []
+    for index, header in enumerate(headers):
+        if names[index] != '.vtables':
+            continue
+        contents = data[header[4]:header[4] + header[5]]
+        slots = {}
+        for relocations in (h for h in headers if h[1] == 9 and h[7] == index):
+            for offset in range(relocations[4], relocations[4] + relocations[5], 8):
+                where, info = struct.unpack_from('<II', data, offset)
+                slots[where] = (info & 0xFF, symbols[info >> 8][0])
+        for name, value, length, info, section in symbols:
+            if section != index or not info >> 4 or name not in addresses:
+                continue
+            vtables.append({
+                'name': name, 'address': addresses[name],
+                'bytes': contents[value:value + length].hex(),
+                'slots': [[where - value, kind, target] for where, (kind, target) in sorted(slots.items())
+                          if value <= where < value + length],
+            })
+    return vtables
+
+
 def discard_sections(data, indices):
     """Rename sections so the overlay link script's /DISCARD/ rule drops them."""
     shoff = struct.unpack_from('<I', data, 32)[0]
