@@ -13,10 +13,13 @@ into an object file with the pinned Metrowerks compiler (MWCC):
   objects to measure progress, so copied assembly can't count as decompiled.
 
 Afterwards I clean up the object so it lines up with the original layout. That
-part is explained next to each step below.
+part is explained next to each step below. Next to the object I also write
+`<object>.copies.json`, which lists the C++ copies that cleanup had to move or
+drop. copy_report.py collects those for the whole build.
 """
 
 import argparse
+from dataclasses import asdict
 import json
 import os
 from pathlib import Path
@@ -26,8 +29,9 @@ import sys
 from tools.so3.build.compiler_probe import COMPILER_EXE, COMPILERS, CONFIG, verify_compiler, working_candidate
 from tools.so3.build.assembly import ASSEMBLER, ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, assembly_inputs, assemble
 from tools.so3.build.rodata_ownership import owned_rodata_sections
-from tools.so3.build.subsegments import configured_rodata_groups
-from tools.so3.build.text_order import merge_rodata_sections, normalize_symbol_aliases, order_text_sections, symbol_addresses, symbol_aliases, unit_range
+from tools.so3.build.subsegments import configured_rodata_groups, segment_start
+from tools.so3.build.text_order import (CopyReport, merge_rodata_sections, normalize_symbol_aliases,
+                                        order_text_sections, symbol_addresses, symbol_aliases, unit_range)
 
 LANGUAGES = {'.c': 'c', '.cpp': 'c++'}
 
@@ -66,6 +70,11 @@ def module_of(unit):
 
 def symbol_map_path(module):
     return SYMBOL_MAPS / f'{module}_symbol_addrs.txt'
+
+
+def copy_record_path(output):
+    """Where the list of an object's moved and dropped C++ copies goes."""
+    return Path(f'{output}.copies.json')
 
 
 def thunk_map_path(module):
@@ -118,6 +127,18 @@ def overlay_range(unit):
     return unit_range(config, unit) if config else None
 
 
+def overlay_span(unit):
+    """The VRAM range the unit's whole overlay covers, or None for main sources."""
+    config = overlay_config(unit)
+    if config is None:
+        return None
+    segments = config['segments']
+    spans = [(segment['vram'], segment['vram'] + segment_start(segments[i + 1]) - segment['start'])
+             for i, segment in enumerate(segments[:-1])
+             if isinstance(segment, dict) and segment.get('type') == 'code']
+    return (min(start for start, _ in spans), max(end for _, end in spans))
+
+
 def working_compiler(config):
     """Find the compiler I'm currently using, and check that it's the one I expect."""
     compiler = working_candidate(config)
@@ -140,8 +161,12 @@ def compile_with_mwccgap(source, output, flags, compiler, macros):
     )
 
 
-def match_original_layout(path, unit, unit_options, language, rodata_groups):
-    """Rewrite the object's sections so they line up with the original game."""
+def match_original_layout(path, unit, unit_options, language, rodata_groups, report=None):
+    """Rewrite the object's sections so they line up with the original game.
+
+    If report (a CopyReport) is given, the C++ copies that had to be moved or
+    dropped are added to it.
+    """
     data = path.read_bytes()
 
     # With deferred code generation MWCC writes C functions in reverse order,
@@ -150,7 +175,7 @@ def match_original_layout(path, unit, unit_options, language, rodata_groups):
     # thunks and inline functions that the original linker didn't keep here.
     if deferred(unit_options) or language == 'c++':
         data = order_text_sections(data, symbol_map(unit), thunk_map(unit), overlay_range(unit),
-                                   reorder=deferred(unit_options), external=external_copies(unit))
+                                   reorder=deferred(unit_options), external=external_copies(unit), report=report)
 
     # MWCC gives every jump table its own .rodata section. Usually I merge them
     # into one so objdiff can compare them, but a few units own tables that sit
@@ -214,10 +239,25 @@ def main():
             subprocess.run(['wibo', str(compiler), '-c', *flags, '-o', str(temporary), str(args.source)], check=True)
         else:
             compile_with_mwccgap(args.source, temporary, flags, compiler, args.macros)
-        match_original_layout(temporary, unit, unit_options, language, rodata_groups)
+        report = CopyReport()
+        match_original_layout(temporary, unit, unit_options, language, rodata_groups, report)
         temporary.replace(args.output)
     finally:
         temporary.unlink(missing_ok=True)
+    if not args.skip_asm:
+        write_copy_record(args.output, unit, report)
+
+
+def write_copy_record(output, unit, report):
+    """Write the object's moved and dropped copies, with the unit's address range."""
+    # Only units with copies need a range, and only C++ units have copies.
+    has_copies = report.moved or report.dropped
+    record = {'source': str(unit),
+              'range': overlay_range(unit) if has_copies else None,
+              'module_range': overlay_span(unit) if has_copies else None,
+              'moved': [asdict(copy) for copy in report.moved],
+              'dropped': [asdict(copy) for copy in report.dropped]}
+    copy_record_path(output).write_text(json.dumps(record, indent=1) + '\n')
 
 
 if __name__ == '__main__':

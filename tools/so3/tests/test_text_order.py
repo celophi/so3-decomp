@@ -8,7 +8,8 @@ from pathlib import Path
 import unittest
 
 from tools.so3.build.compiler_probe import object_functions
-from tools.so3.build.text_order import merge_rodata_sections, normalize_symbol_aliases, order_text_sections, symbol_aliases, unit_range
+from tools.so3.build.text_order import (CopyReport, DroppedCopy, MovedCopy, merge_rodata_sections,
+                                        normalize_symbol_aliases, order_text_sections, symbol_aliases, unit_range)
 from tools.so3.tests.test_compiler_probe import object_fixture
 
 
@@ -115,6 +116,24 @@ class TextOrderTests(unittest.TestCase):
         data = order_text_sections(multidef_fixture(), {'first': 0x180, 'second': 0x100}, {},
                                    keep=(0x100, 0x200), reorder=False)
         self.assertEqual(text_payloads(data), [b'BBBB', b'AAAA'])
+
+    def test_report_lists_a_kept_copy_that_had_to_move(self):
+        report = CopyReport()
+        order_text_sections(multidef_fixture(), {'first': 0x180, 'second': 0x100}, {},
+                            keep=(0x100, 0x200), reorder=False, report=report)
+        self.assertEqual(report.moved, [MovedCopy('second', 0x100, 'first', None)])
+        self.assertEqual(report.dropped, [])
+
+    def test_report_lists_dropped_copies_once(self):
+        report = CopyReport()
+        order_text_sections(two_copy_fixture(), {'first': 0x180}, {}, keep=(0x100, 0x200),
+                            reorder=False, external={'second'}, report=report)
+        self.assertEqual(report.dropped, [DroppedCopy('second', None)])
+        report = CopyReport()
+        order_text_sections(multidef_fixture(), {'second': 0x300}, {}, keep=(0x100, 0x200),
+                            reorder=False, report=report)
+        self.assertEqual(report.dropped, [DroppedCopy('second', 0x300)])
+        self.assertEqual(report.moved, [])
 
     def test_unmapped_inline_copy_is_rejected(self):
         with self.assertRaisesRegex(ValueError, 'multiply-defined function second is not in the symbol map'):
