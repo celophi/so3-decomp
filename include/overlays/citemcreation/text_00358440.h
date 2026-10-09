@@ -63,8 +63,6 @@ public:
      * @param alternate Auxiliary flag value; its full value selects the height.
      */
     virtual void func_slot10c(u32 value, u32 alternate);
-    /** @brief Set the list flag. @param value Flag value to store. */
-    virtual void func_slot110(u8 value);
     /** @brief Refresh the visible record rows. @param start First record index. */
     virtual void refresh_rows(s32 start);
     /** @brief Position the row displays. @param start Base vertical coordinate. */

@@ -100,8 +100,6 @@ struct SkillResourceWindow : FieldClass15AE70
     virtual ~SkillResourceWindow();
     /** @brief Leave the resource-window drawing state unchanged. */
     virtual void func_slot5c();
-    /** @brief Ignore the window message key. @param key Unused signed message key. */
-    virtual void func_slot60(s32 key);
     /** @brief Initialize the display widgets. @param associated Full resource source word. @return Initialization result. */
     virtual s32 func_slotf4(u32 associated);
     u32 unka8;
@@ -3818,7 +3816,7 @@ void func_00359340(SkillSecondarySelection* object)
     object->state = 0;
 }
 
-void SkillResourceWindow::func_slot60(s32 key)
+void FieldClass15AE70::func_slot60(s32 key)
 {
 }
 

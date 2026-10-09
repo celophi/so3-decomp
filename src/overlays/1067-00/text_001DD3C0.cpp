@@ -284,8 +284,9 @@ void func_001DD9A0(FieldClass150060* list, s8 mode, s32 arg)
     }
 }
 
-void func_001DDB30(FieldFlaggedListObject* list)
+void FieldClass14FE30::func_001DDB30(void* arg)
 {
+    FieldFlaggedListObject* list = reinterpret_cast<FieldFlaggedListObject*>(this);
     FieldFlaggedListObject* node = list;
     for (;;)
     {

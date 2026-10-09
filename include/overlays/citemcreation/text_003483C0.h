@@ -1085,12 +1085,6 @@ void func_003485A0(void* object);
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
-void func_003486D0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
 void func_00350DE0(void* object);
 
 /**

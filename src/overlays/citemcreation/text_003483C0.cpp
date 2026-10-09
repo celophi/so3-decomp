@@ -717,7 +717,7 @@ void FieldClass15AE70::func_slotec(u8 value)
     unk0d = value;
 }
 
-void func_003486D0(void* object)
+void FieldClass15AE70::func_slotf0()
 {
 }
 
@@ -7511,7 +7511,7 @@ s32 InventoryItemInstanceList::func_slot104(u32 associated)
     return 1;
 }
 
-void InventoryItemInstanceList::func_slot110(u8 value)
+void FieldClass15AD40::func_slot110(u8 value)
 {
     unk84 = value;
 }
