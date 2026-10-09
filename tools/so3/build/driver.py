@@ -31,7 +31,7 @@ import subprocess
 import sys
 
 from tools.so3.build.assembly import ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, LITTLE_ENDIAN
-from tools.so3.build.compile import MWCCGAP_DIR, copy_record_path, module_lists, thunk_map_path
+from tools.so3.build.compile import MWCCGAP_DIR, copy_record_path, module_lists, thunk_map_path, vtable_record_path
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, LINKER_EXE, setup, working_candidate
 from tools.so3.build.main import MAIN_CONFIG, ROOT, VERSIONS, module_name
 from tools.so3.build.overlays import load_module, module_configs
@@ -45,6 +45,7 @@ OBJDIFF_CONFIG = Path('objdiff.json')
 PROGRESS_OBJECTS = Path('build/progress')
 PROGRESS_REPORT = PROGRESS_OBJECTS / 'report.json'
 COPY_REPORT = Path('build/copy-report.json')
+VTABLE_REPORT = Path('build/vtable-report.json')
 MAIN_EXECUTABLE = 'SLUS_204.88'  # The main executable's file name on the disc.
 OVERLAY_IMAGE = 'rebuilt.bin'
 
@@ -187,7 +188,9 @@ def ninja_rules():
         '  description = IMAGE $out',
         'rule verify', '  command = $verify_command', '  description = VERIFY $module',
         'rule copy_report', '  command = python -m tools.so3.build.copy_report $in --output $out',
-        '  description = COPIES', '',
+        '  description = COPIES',
+        'rule vtable_report', '  command = python -m tools.so3.build.vtable_report $in --output $out',
+        '  description = VTABLES', '',
     ]
 
 
@@ -307,8 +310,10 @@ def module_rules(module, headers, compiler_files, sdk_sources):
             inputs = [module.macros, *ASSEMBLE_INPUTS]
         elif rule == 'compile':
             inputs = module.compile_inputs(source, headers, compiler_files)
-        # A compiled object also gets a list of the C++ copies the build moved or dropped.
-        outputs = f'{target} | {copy_record_path(target)}' if rule == 'compile' else target
+        # A compiled object also gets lists of the C++ copies the build moved or
+        # dropped and the vtables it set aside.
+        outputs = (f'{target} | {copy_record_path(target)} {vtable_record_path(target)}'
+                   if rule == 'compile' else target)
         lines += [f'build {outputs}: {rule} {source}' + (f' | {" ".join(inputs)}' if inputs else '')]
         if rule == 'assemble':
             lines += [f'  include = {module.include}']
@@ -357,6 +362,7 @@ def configure(configs):
     headers = project_headers()
     lines = ninja_rules()
     split_outputs, verify_outputs, progress_objects, copy_records = [], [], [], []
+    vtable_records, linked = [], []
     report_units, categories = [], []
     for path, config in configs:
         module = Module(path, config)
@@ -369,9 +375,14 @@ def configure(configs):
         verify_outputs.append(f'{module.output}/verify.json')
         copy_records += [str(copy_record_path(module.object_path(source, rule)))
                          for source, rule in module.units if rule == 'compile']
+        vtable_records += [str(vtable_record_path(module.object_path(source, rule)))
+                           for source, rule in module.units if rule == 'compile']
+        linked.append(f'{module.output}/linked.elf')
     lines += [f'build {COPY_REPORT}: copy_report {" ".join(copy_records)} | tools/so3/build/copy_report.py',
+              f'build {VTABLE_REPORT}: vtable_report {" ".join(vtable_records)} | '
+              f'{" ".join(linked)} tools/so3/build/vtable_report.py tools/so3/build/elf.py',
               f'build split: phony {" ".join(split_outputs)}',
-              f'build all: phony {" ".join(verify_outputs)} {COPY_REPORT}',
+              f'build all: phony {" ".join(verify_outputs)} {COPY_REPORT} {VTABLE_REPORT}',
               f'build objdiff-objects: phony {" ".join(progress_objects)}', 'default all', '']
     BUILD_FILE.parent.mkdir(parents=True, exist_ok=True)
     write_if_changed(BUILD_FILE, '\n'.join(lines))
@@ -381,6 +392,9 @@ def configure(configs):
         'min_version': OBJDIFF_VERSION,
         # Objects are built explicitly with make objdiff-objects or make report.
         'build_target': False, 'build_base': False,
+        # MWCC gives every jump table its own .rodata section, and the original
+        # has one. The report combines them by default, but the app doesn't.
+        'options': {'combineDataSections': True},
         'units': report_units, 'progress_categories': categories,
     }
     write_if_changed(OBJDIFF_CONFIG, json.dumps(objdiff, indent=2) + '\n')

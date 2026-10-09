@@ -282,94 +282,45 @@ def moved_copies(compiler_order, game_order, copies, function_names, addresses):
     return moved
 
 
-def merge_rodata_sections(data):
-    """Merge an object's .rodata sections into its first one, in section order.
+def compiled_vtables(data, addresses):
+    """Read the vtables the compiler made, for the ones the symbol map has an address for.
 
-    MWCC gives each jump table its own .rodata section. The linker lays them out
-    one after another (each at its own alignment), so merging them in the same
-    order and spacing doesn't change the linked bytes. It lets objdiff find each
-    table at the same offset as in the original's single .rodata section. Each
-    table's relocations move with it; the emptied sections are renamed out of the
-    way and discarded by the link.
+    order_text_sections turns these into references to the game's vtables, so
+    this has to run first. Each vtable comes back as a dict with its name, the
+    game's address for it, its bytes, and the function each relocated slot
+    points at, as [offset, function name].
     """
-    if data[:6] != b'\x7fELF\x01\x01':
-        raise ValueError('expected a little-endian ELF32 object')
     shoff = struct.unpack_from('<I', data, 32)[0]
     size, count, names_index = struct.unpack_from('<HHH', data, 46)
-    headers = [list(struct.unpack_from('<10I', data, shoff + i * size)) for i in range(count)]
-    strings = data[headers[names_index][4]:headers[names_index][4] + headers[names_index][5]]
-
-    def name(header):
-        return strings[header[0]:].split(b'\0', 1)[0].decode()
-
-    rodata = [i for i, h in enumerate(headers) if name(h) == '.rodata' and h[1] == 1]
-    if len(rodata) < 2:
-        return data
-    first = rodata[0]
-    offsets, merged, alignment = {}, bytearray(), 1
-    for index in rodata:
-        header = headers[index]
-        align = max(header[8], 1)
-        merged.extend(bytes(-len(merged) % align))
-        offsets[index] = len(merged)
-        merged.extend(data[header[4]:header[4] + header[5]])
-        alignment = max(alignment, align)
-
-    relocations = {i: [j for j, h in enumerate(headers) if h[1] in (4, 9) and h[7] == i] for i in rodata}
-    sections = [j for i in rodata for j in relocations[i]]
-    kinds = {(headers[j][1], headers[j][6]) for j in sections}
-    if len(kinds) > 1 or any(len(relocations[i]) > 1 for i in rodata):
-        raise ValueError('.rodata relocation sections differ in kind or symbol table')
-    entries = bytearray()
-    for index in rodata:
-        for j in relocations[index]:
-            header = headers[j]
-            step = header[9] or (8 if header[1] == 9 else 12)
-            for position in range(header[4], header[4] + header[5], step):
-                offset = struct.unpack_from('<I', data, position)[0]
-                entries.extend(struct.pack('<I', offset + offsets[index]))
-                entries.extend(data[position + 4:position + step])
-
-    symtab_index = next(i for i, h in enumerate(headers) if h[1] == 2)
-    symtab = headers[symtab_index]
-    moved = set(rodata[1:])
-    section_symbols = set()
-    out = bytearray(data)
-    for position in range(symtab[4], symtab[4] + symtab[5], symtab[9]):
-        label, value, length, info, other, index = struct.unpack_from('<IIIBBH', data, position)
-        if index not in moved:
+    headers = [struct.unpack_from('<10I', data, shoff + i * size) for i in range(count)]
+    strings = data[headers[names_index][4]:]
+    names = [strings[h[0]:].split(b'\0', 1)[0].decode() for h in headers]
+    symtab = next(h for h in headers if h[1] == 2)
+    symbol_strings = data[headers[symtab[6]][4]:]
+    symbols = []
+    for offset in range(symtab[4], symtab[4] + symtab[5], symtab[9]):
+        label, value, length, info, _, index = struct.unpack_from('<IIIBBH', data, offset)
+        symbols.append((symbol_strings[label:].split(b'\0', 1)[0].decode(), value, length, info, index))
+    vtables = []
+    for index, header in enumerate(headers):
+        if names[index] != '.vtables':
             continue
-        if info & 15 == 3:  # STT_SECTION: left on its emptied section, must stay unused
-            section_symbols.add((position - symtab[4]) // symtab[9])
-            continue
-        struct.pack_into('<IIIBBH', out, position, label, value + offsets[index], length, info, other, first)
-    for j, header in enumerate(headers):
-        if header[1] in (4, 9):
-            step = header[9] or (8 if header[1] == 9 else 12)
-            for position in range(header[4], header[4] + header[5], step):
-                if struct.unpack_from('<I', data, position + 4)[0] >> 8 in section_symbols:
-                    raise ValueError('a relocation refers to a merged .rodata section symbol')
-
-    def append(blob, align):
-        out.extend(bytes(-len(out) % align))
-        position = len(out)
-        out.extend(blob)
-        return position
-
-    headers[first][4], headers[first][5], headers[first][8] = append(merged, 16), len(merged), alignment
-    if sections:
-        kept = sections[0]
-        headers[kept][4], headers[kept][5], headers[kept][7] = append(entries, 4), len(entries), first
-    names = headers[names_index]
-    position = strings.find(DISCARDED + b'\0')
-    if position < 0:
-        position = len(strings)
-        names[4], names[5] = append(strings + DISCARDED + b'\0', 1), len(strings) + len(DISCARDED) + 1
-    for index in rodata[1:] + sections[1:]:
-        headers[index][0], headers[index][5] = position, 0
-    for i, header in enumerate(headers):
-        struct.pack_into('<10I', out, shoff + i * size, *header)
-    return bytes(out)
+        contents = data[header[4]:header[4] + header[5]]
+        slots = {}
+        for relocations in (h for h in headers if h[1] == 9 and h[7] == index):
+            for offset in range(relocations[4], relocations[4] + relocations[5], 8):
+                where, info = struct.unpack_from('<II', data, offset)
+                slots[where] = (info & 0xFF, symbols[info >> 8][0])
+        for name, value, length, info, section in symbols:
+            if section != index or not info >> 4 or name not in addresses:
+                continue
+            vtables.append({
+                'name': name, 'address': addresses[name],
+                'bytes': contents[value:value + length].hex(),
+                'slots': [[where - value, kind, target] for where, (kind, target) in sorted(slots.items())
+                          if value <= where < value + length],
+            })
+    return vtables
 
 
 def discard_sections(data, indices):
