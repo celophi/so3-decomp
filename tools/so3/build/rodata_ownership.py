@@ -1,16 +1,16 @@
 """Keep jump tables in the separate places the original put them.
 
 MWCC puts each switch statement's jump table (the list of code addresses the
-switch jumps through) in its own .rodata section. Usually compile.py merges
-them all into one, the way the original has them. In a few units though, the
+switch jumps through) in its own .rodata section, and the linker places them
+one after another, the way the original has them. In a few units though, the
 original keeps the tables in separate islands, with other data in between.
 I describe those islands in the overlay's Splat config with `rodata_anchors`:
 the function that uses each table, plus the table's offset and size inside the
 island. subsegments.py reads them for compile.py.
 
-For each island I merge just its tables into one section, named after the
-island's linker_section (like .rodata.0036F6C0). The linker script then places
-it at the original address.
+For each island I give its tables the island's linker_section name (like
+.rodata.0036F6C0). The linker script places that name at the original address,
+and objdiff combines sections with the same name, so both see one island.
 
 I'm strict about it. Before changing anything I check that the compiler's
 tables really are the ones the config describes. Each one is used by exactly
@@ -30,7 +30,6 @@ from tools.so3.build.elf import (
     SHT_RELA, SHT_STRTAB, SHT_SYMTAB, SHT_SYMTAB_SHNDX, STT_FUNC, STT_SECTION, SYMBOL, SectionHeader, Symbol,
     relocation_symbol, relocation_type, section_headers, section_table, symbol_type,
 )
-from tools.so3.build.text_order import merge_rodata_sections
 from tools.so3.formats import require
 
 # The section name an island gets, like .rodata.0036F6C0.
@@ -198,8 +197,8 @@ def anchored_table(obj, anchor, island_size, tables, owners):
 def check_island_layout(obj, address, size, entries):
     """Check that the tables, laid out with the compiler's alignment, land at their configured offsets.
 
-    That's what the linker will do when it merges them, so if this works out
-    the island comes out the same as the original.
+    That's what the linker does when it places them one after another, so if
+    this works out the island comes out the same as the original.
     """
     sections = [entry['section'] for entry in entries]
     require(sections == sorted(sections), 'compiler table order differs from native ownership')
@@ -283,22 +282,19 @@ def check_references_to_tables(obj, owners):
 
 
 def group_islands(data, rodata_sections, islands):
-    """Merge each island's tables into one section with the island's name."""
-    # First I rename every .rodata section out of the way, empty ones too,
-    # because merge_rodata_sections merges into the first section called
-    # .rodata, even when it's empty.
-    data = rename_sections(data, {index: f'.rodata.pending.{index}' for index in rodata_sections})
-    for island in islands:
-        # Then for each island, only its tables are called .rodata while they get merged.
-        sections = [entry['section'] for entry in island['tables']]
-        data = rename_sections(data, {index: '.rodata' for index in sections})
-        data = merge_rodata_sections(data)
-        data = rename_sections(data, {sections[0]: island['section']})
-    return data
+    """Give each island's tables the island's section name.
+
+    The other .rodata sections are all empty (every table belongs to an
+    island), so they get a name nothing places, where their alignment can't
+    move anything.
+    """
+    names = {index: '.rodata.unused' for index in rodata_sections}
+    names.update({entry['section']: island['section'] for island in islands for entry in island['tables']})
+    return rename_sections(data, names)
 
 
 def owned_rodata_sections(data, groups):
-    """Merge the compiler's jump tables island by island, as the config describes.
+    """Sort the compiler's jump tables into their islands, as the config describes.
 
     `groups` comes from subsegments.configured_rodata_groups. Returns the new
     object and what I matched in each island.
