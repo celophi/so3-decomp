@@ -23,6 +23,7 @@ an older resident program). Those are listed by name as external copies and
 always discarded, without inventing an address.
 """
 
+from dataclasses import dataclass, field
 import re
 import struct
 from pathlib import Path
@@ -38,6 +39,39 @@ DISCARDED = b'.discarded'
 # index entry (.exceptix) for each function. MWLDPS2 reads these even when they
 # aren't placed, so a dropped copy's own records can't keep pointing at it.
 BOOKKEEPING_SECTIONS = ('.mwcats', '.exceptix')
+
+
+@dataclass
+class MovedCopy:
+    """A kept copy that had to be moved to where the game has it.
+
+    The compiler writes a copy right after the first function that needs it,
+    so a copy in the wrong place means the source is different from the
+    original. `after_in_compiler` and `after_in_game` name the function it
+    followed in each (None when it came first).
+    """
+    function: str
+    address: int
+    after_in_compiler: str | None
+    after_in_game: str | None
+
+
+@dataclass
+class DroppedCopy:
+    """A copy that was dropped because the game kept one somewhere else.
+
+    `kept_at` is the address of the copy the game kept, or None when it isn't
+    in any image we have.
+    """
+    function: str
+    kept_at: int | None
+
+
+@dataclass
+class CopyReport:
+    """What order_text_sections did with one object's copies."""
+    moved: list = field(default_factory=list)
+    dropped: list = field(default_factory=list)
 
 
 def unit_range(config, unit):
@@ -107,7 +141,7 @@ def normalize_symbol_aliases(data, aliases):
     return bytes(out)
 
 
-def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, external=None):
+def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, external=None, report=None):
     """Return ELF32 little-endian object bytes with .text headers sorted by function address.
 
     thunks maps compiler thunk names to the original address of their kept copy;
@@ -115,7 +149,8 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, e
     discarded. external names inline-function copies whose kept copy is
     outside every available image; they are always discarded. With
     reorder=False only copy selection and resident vtable references are
-    processed.
+    processed. If report (a CopyReport) is given, the copies that were moved
+    or dropped are added to it.
     """
     thunks = thunks or {}
     external = set(external or ())
@@ -142,11 +177,14 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, e
     key = {}
     dropped = set()
     copies = set()
+    function_names = {}
+    dropped_copies = []
     for offset in symbols:
         label, _, _, info, _, index = struct.unpack_from('<IIIBBH', data, offset)
         if info & 15 != 2 or index not in texts:
             continue
         symbol = symbol_strings[label:].split(b'\0', 1)[0].decode()
+        function_names[index] = symbol
         match = ADDRESS_NAME.fullmatch(symbol)
         if symbol.startswith('@') or info >> 4 >= STB_MULTIDEF:
             # Thunks and out-of-line copies of inline functions are emitted in
@@ -154,6 +192,7 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, e
             if symbol in external:
                 copies.add(index)
                 dropped.add(index)
+                dropped_copies.append(DroppedCopy(symbol, None))
                 continue
             address = thunks.get(symbol) if symbol.startswith('@') else (
                 int(match.group(1), 16) if match else addresses.get(symbol))
@@ -164,6 +203,7 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, e
             copies.add(index)
             if keep is not None and not keep[0] <= address < keep[1]:
                 dropped.add(index)
+                dropped_copies.append(DroppedCopy(symbol, address))
         elif not reorder:
             continue
         else:
@@ -181,7 +221,9 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, e
         # Where the compiler and the original linker placed kept copies
         # differs (for example the order of inline destructor copies), so any
         # unit that keeps one is placed in original address order.
-        return order_text_sections(data, addresses, thunks, keep, reorder=True, external=external)
+        return order_text_sections(data, addresses, thunks, keep, reorder=True, external=external, report=report)
+    if report is not None:
+        report.dropped += dropped_copies
     if dropped:
         data = discard_sections(data, dropped)
         headers = [list(struct.unpack_from('<10I', data, shoff + i * size)) for i in range(count)]
@@ -199,7 +241,10 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, e
     # right after it, the way the compiler wrote them.
     relocations = {t: [i for i, h in enumerate(headers) if h[1] in (4, 9) and h[7] == t] for t in texts}
     members = sorted(i for t in texts for i in [t, *relocations[t]])
-    ordered = [i for t in sorted(texts, key=lambda i: key[i]) for i in [t, *relocations[t]]]
+    in_game_order = sorted(texts, key=lambda i: key[i])
+    ordered = [i for t in in_game_order for i in [t, *relocations[t]]]
+    if report is not None:
+        report.moved += moved_copies(texts, in_game_order, copies, function_names, key)
     remap = {old: old for old in range(count)}
     remap.update(zip(ordered, members))  # old index -> new index
     if all(old == new for old, new in remap.items()):
@@ -221,6 +266,20 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, e
         if 0 < index < SHN_LORESERVE:
             struct.pack_into('<H', out, offset + 14, remap[index])
     return bytes(out)
+
+
+def moved_copies(compiler_order, game_order, copies, function_names, addresses):
+    """The kept copies whose neighbour before them changes between the two orders."""
+    def before(order, index):
+        position = order.index(index)
+        return function_names.get(order[position - 1]) if position else None
+
+    moved = []
+    for index in compiler_order:
+        if index in copies and before(compiler_order, index) != before(game_order, index):
+            moved.append(MovedCopy(function_names[index], addresses[index],
+                                   before(compiler_order, index), before(game_order, index)))
+    return moved
 
 
 def merge_rodata_sections(data):

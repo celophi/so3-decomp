@@ -31,7 +31,7 @@ import subprocess
 import sys
 
 from tools.so3.build.assembly import ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, LITTLE_ENDIAN
-from tools.so3.build.compile import MWCCGAP_DIR, module_lists, thunk_map_path
+from tools.so3.build.compile import MWCCGAP_DIR, copy_record_path, module_lists, thunk_map_path
 from tools.so3.build.compiler_probe import COMPILERS, CONFIG, LINKER_EXE, setup, working_candidate
 from tools.so3.build.main import MAIN_CONFIG, ROOT, VERSIONS, module_name
 from tools.so3.build.overlays import load_module, module_configs
@@ -44,6 +44,7 @@ BUILD_FILE = Path('build/build.ninja')
 OBJDIFF_CONFIG = Path('objdiff.json')
 PROGRESS_OBJECTS = Path('build/progress')
 PROGRESS_REPORT = PROGRESS_OBJECTS / 'report.json'
+COPY_REPORT = Path('build/copy-report.json')
 MAIN_EXECUTABLE = 'SLUS_204.88'  # The main executable's file name on the disc.
 OVERLAY_IMAGE = 'rebuilt.bin'
 
@@ -184,7 +185,9 @@ def ninja_rules():
         # elsewhere, like the exception tables.
         'rule image', '  command = python -m tools.so3.build.flat_image $in $out',
         '  description = IMAGE $out',
-        'rule verify', '  command = $verify_command', '  description = VERIFY $module', '',
+        'rule verify', '  command = $verify_command', '  description = VERIFY $module',
+        'rule copy_report', '  command = python -m tools.so3.build.copy_report $in --output $out',
+        '  description = COPIES', '',
     ]
 
 
@@ -304,7 +307,9 @@ def module_rules(module, headers, compiler_files, sdk_sources):
             inputs = [module.macros, *ASSEMBLE_INPUTS]
         elif rule == 'compile':
             inputs = module.compile_inputs(source, headers, compiler_files)
-        lines += [f'build {target}: {rule} {source}' + (f' | {" ".join(inputs)}' if inputs else '')]
+        # A compiled object also gets a list of the C++ copies the build moved or dropped.
+        outputs = f'{target} | {copy_record_path(target)}' if rule == 'compile' else target
+        lines += [f'build {outputs}: {rule} {source}' + (f' | {" ".join(inputs)}' if inputs else '')]
         if rule == 'assemble':
             lines += [f'  include = {module.include}']
         elif rule == 'compile':
@@ -351,7 +356,7 @@ def configure(configs):
     compiler_files = working_compiler_files()
     headers = project_headers()
     lines = ninja_rules()
-    split_outputs, verify_outputs, progress_objects = [], [], []
+    split_outputs, verify_outputs, progress_objects, copy_records = [], [], [], []
     report_units, categories = [], []
     for path, config in configs:
         module = Module(path, config)
@@ -362,8 +367,11 @@ def configure(configs):
         categories.append({'id': module.name, 'name': 'Main' if module.is_main else module.name})
         split_outputs += module.split_outputs()
         verify_outputs.append(f'{module.output}/verify.json')
-    lines += [f'build split: phony {" ".join(split_outputs)}',
-              f'build all: phony {" ".join(verify_outputs)}',
+        copy_records += [str(copy_record_path(module.object_path(source, rule)))
+                         for source, rule in module.units if rule == 'compile']
+    lines += [f'build {COPY_REPORT}: copy_report {" ".join(copy_records)} | tools/so3/build/copy_report.py',
+              f'build split: phony {" ".join(split_outputs)}',
+              f'build all: phony {" ".join(verify_outputs)} {COPY_REPORT}',
               f'build objdiff-objects: phony {" ".join(progress_objects)}', 'default all', '']
     BUILD_FILE.parent.mkdir(parents=True, exist_ok=True)
     write_if_changed(BUILD_FILE, '\n'.join(lines))
