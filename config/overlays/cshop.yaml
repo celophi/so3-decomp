@@ -30,6 +30,8 @@ options:
   gp_value: 0x1bdff0
   symbol_addrs_path:
     - config/symbols/cshop_symbol_addrs.txt
+  reloc_addrs_path:
+    - config/relocations/cshop_reloc_addrs.txt
   global_vram_start: 0x100000
   global_vram_end: 0x507A00
   # MWLDPS2 rejects the sized <function>.NON_MATCHING symbol splat's nonmatching

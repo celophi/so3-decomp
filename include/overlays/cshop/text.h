@@ -14,6 +14,7 @@
 struct ItemCreationAllocationRecord;
 class FieldClass15BB90;
 class ItemCreationClass172870;
+class ItemCreationOptionResourceDisplay;
 
 /** Shop list window using the Field callbacks at offset 0xA8. */
 struct ShopClass187DA0 : public FieldClass15AD40
@@ -151,19 +152,12 @@ struct ShopClass187FE0 : public FieldClass15AE70
     virtual s32 func_slotf4(u32 associated);
     /** @brief Clear the display pointers and initialize the temporary base window. */
     ShopClass187FE0();
-    void* unka8;
-    void* unkac;
-    void* unkb0;
-    void* unkb4;
-    void* unkb8;
-    void* unkbc;
-    void* unkc0;
-    void* unkc4;
-    void* unkc8;
-    void* unkcc;
-    void* unkd0;
-    void* unkd4;
-    void* unkd8;
+    LibObject178750* unka8;
+    LibObject172410* unkac;
+    ItemCreationClass172870* unkb0;
+    LibObject178750* unkb4;
+    LibObject178750* unkb8;
+    LibObject172440* unkbc[8];
     LibClass178630* unkdc;
     LibObject178660* unke0;
     FieldClass15BB90* unke4;
@@ -199,9 +193,9 @@ struct ShopClass188300 : public FieldClass15AE70
     virtual ~ShopClass188300();
     /** @brief Window hook at virtual offset 0x5C. */
     virtual void func_slot5c();
-    /** @brief Window hook at virtual offset 0x70. */
+    /** @brief Move the choice grid in direction 3 unless the window state byte is set. */
     virtual void func_slot70();
-    /** @brief Window hook at virtual offset 0x74. */
+    /** @brief Move the choice grid in direction 2 unless the window state byte is set. */
     virtual void func_slot74();
     /** @brief Window hook at virtual offset 0xB0. */
     virtual s32 func_slotb0();
@@ -235,7 +229,7 @@ struct ShopClass188400 : public FieldClass15AE70
     }
     /** @brief Destroy the Field window base. */
     virtual ~ShopClass188400();
-    /** @brief Window hook at virtual offset 0x5C. */
+    /** @brief Show the selected category's five catalog values, or its description text when the value view is off. */
     virtual void func_slot5c();
     /**
      * @brief Create the description displays and five paired value rows.
@@ -249,7 +243,10 @@ struct ShopClass188400 : public FieldClass15AE70
 struct ShopClass188500 : public FieldClass15AE70
 {
     void* unka8;
-    u8 unkac[0x48];
+    ItemCreationOptionResourceDisplay* resources[8];
+    LibObject178750* labels[8];
+    s32 unkec;
+    s32 unkf0;
     /** @brief Clear the window display pointer. */
     ShopClass188500() : unka8(0)
     {
@@ -992,18 +989,18 @@ void func_00350B30(ShopState* object, s32 direction);
 void func_00350D00(ShopState* object, u32 mode);
 
 /**
- * @brief Refresh the receiver's element contents.
- * @param object Receiver to refresh.
- * @param value Refresh option.
+ * @brief Rebuild the catalog code list for the current mode and clamp its scroll and cursor.
+ * @param object Catalog list window.
+ * @param reset Nonzero to move the scroll offset and cursor back to the first row.
  */
-void func_0034B3C0(void* object, u8 value);
+void func_0034B3C0(void* object, u8 reset);
 
 /**
- * @brief Refresh the receiver's element contents.
- * @param object Receiver to refresh.
- * @param value Refresh option.
+ * @brief Size the bucket list to the current bucket's entry count and clamp its scroll and cursor.
+ * @param object Bucket list window.
+ * @param reset Nonzero to move the scroll offset and cursor back to the first row.
  */
-void func_0034CE00(void* object, u8 value);
+void func_0034CE00(void* object, u8 reset);
 
 /**
  * @brief Release the shop state resources and clear its runtime flags.

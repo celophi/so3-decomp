@@ -10,14 +10,19 @@ typedef struct ItemCreationAllocationRecord ItemCreationAllocationRecord;
 
 typedef struct ItemCreationCategoryDefinition ItemCreationCategoryDefinition;
 
-/** Thirty-two-byte catalog entry containing the three mode-selection fields. */
+/** Thirty-two-byte catalog entry with packed 14-bit values, a mode field and selection flags. */
 struct ItemCreationCategoryDefinition
 {
-    u8 unk00[0xB];
-    u8 unk0b_low : 4;
-    u8 unk0b_mode : 3;
-    u8 unk0b_high : 1;
-    u8 unk0c[4];
+    u8 unk00[4];
+    u32 unk04_low : 14;
+    u32 unk04_high : 14;
+    u32 unk04_rest : 4;
+    u32 unk08_low : 14;
+    u32 unk08_high : 14;
+    u32 unk0b_mode : 3;
+    u32 unk0b_flag : 1;
+    u32 unk0c_low : 14;
+    u32 unk0c_rest : 18;
 #ifdef __cplusplus
     u32 unk10_low : 10;
     u32 unk10_code : 10;
@@ -35,7 +40,10 @@ struct ItemCreationCategoryDefinition
         u16 sort_key_bits;
     };
 #endif
-    u8 unk14[7];
+    u8 unk14[3];
+    u8 unk17_low : 7;
+    u8 unk17_flag : 1;
+    u8 unk18[3];
     u8 unk1b_low : 6;
     u8 unk1b_flag : 1;
     u8 unk1b_high : 1;
