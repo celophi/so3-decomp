@@ -575,43 +575,53 @@ void FieldClass15AE70::func_slot6c()
 {
 }
 
-void func_00348510(void* object)
+/** @brief Perform the default window hook at slot 0x78. */
+void FieldClass15AE70::func_slot78()
 {
 }
 
-void func_00348520(void* object)
+/** @brief Perform the default window hook at slot 0x7C. */
+void FieldClass15AE70::func_slot7c()
 {
 }
 
-void func_00348530(void* object)
+/** @brief Perform the default window hook at slot 0x80. */
+void FieldClass15AE70::func_slot80()
 {
 }
 
-void func_00348540(void* object)
+/** @brief Perform the default window hook at slot 0x84. */
+void FieldClass15AE70::func_slot84()
 {
 }
 
-void func_00348550(void* object)
+/** @brief Perform the default window hook at slot 0x88. */
+void FieldClass15AE70::func_slot88()
 {
 }
 
-void func_00348560(void* object)
+/** @brief Perform the default window hook at slot 0x8C. */
+void FieldClass15AE70::func_slot8c()
 {
 }
 
-void func_00348570(void* object)
+/** @brief Perform the default window hook at slot 0x90. */
+void FieldClass15AE70::func_slot90()
 {
 }
 
-void func_00348580(void* object)
+/** @brief Perform the default window hook at slot 0x94. */
+void FieldClass15AE70::func_slot94()
 {
 }
 
-void func_00348590(void* object)
+/** @brief Perform the default window hook at slot 0x98. */
+void FieldClass15AE70::func_slot98()
 {
 }
 
-void func_003485A0(void* object)
+/** @brief Perform the default window hook at slot 0x9C. */
+void FieldClass15AE70::func_slot9c()
 {
 }
 
@@ -717,7 +727,7 @@ void FieldClass15AE70::func_slotec(u8 value)
     unk0d = value;
 }
 
-void func_003486D0(void* object)
+void FieldClass15AE70::func_slotf0()
 {
 }
 
@@ -4464,19 +4474,6 @@ extern "C" s32 func_413F70(LibObject172410* object, float x, float y, float widt
  * @return One on success, or zero if its drawing storage could not be initialized.
  */
 extern "C" s32 func_4143F0(LibObject172440* object, u16 value, u8 variant, u8 flag, float x, float y, float width, float height);
-/**
- * @brief Create and configure the Field window's nested display container.
- * @param object Field window receiver.
- * @param associated Full resource source word.
- * @param first First container configuration value.
- * @param second Second container configuration value.
- * @param third Third container configuration value.
- * @param x Horizontal coordinate.
- * @param y Vertical coordinate.
- * @param z Third coordinate.
- * @return One when the container is present and the source word is nonzero, otherwise zero.
- */
-extern "C" s32 func_002CE760(FieldClass15AE70* object, u32 associated, s32 first, s32 second, s32 third, float x, float y, float z);
 /** @brief Attach a widget to its container. @param object Container. @param child Widget to attach. */
 extern "C" void func_4C6190(LibObject178660* object, LibClass178600* child);
 /** Partial Field runtime reached through D_001B657C. */
@@ -7511,7 +7508,7 @@ s32 InventoryItemInstanceList::func_slot104(u32 associated)
     return 1;
 }
 
-void InventoryItemInstanceList::func_slot110(u8 value)
+void FieldClass15AD40::func_slot110(u8 value)
 {
     unk84 = value;
 }
@@ -11260,19 +11257,6 @@ enum
     ITEM_CREATION_FLAG_8 = 0x100
 };
 
-/**
- * @brief Create and configure the Field window's nested display container.
- * @param object Field window receiver.
- * @param associated Full resource source word.
- * @param first First container configuration value.
- * @param second Second container configuration value.
- * @param third Third container configuration value.
- * @param x Horizontal coordinate.
- * @param y Vertical coordinate.
- * @param z Third coordinate.
- * @return One when the container is present and the source word is nonzero, otherwise zero.
- */
-extern "C" s32 func_002CE760(FieldClass15AE70* object, u32 associated, s32 first, s32 second, s32 third, float x, float y, float z);
 extern "C"
 {
     extern LibVector4 D_50CD30[];
@@ -14041,12 +14025,11 @@ s32 ItemCreationSelectedDisplayState::func_001E1820(void* buffer)
 
 /**
  * @brief Save workshop lines and append the selection state to the resident queue.
- * @param object Selection state to save and enqueue.
  */
-void item_creation_save_and_enqueue_selection(ItemCreationSelectedDisplayState* object)
+void ItemCreationSelectedDisplayState::func_001DD7B0()
 {
-    item_creation_save_workshop_lines(object);
-    func_0011ED90(D_001B65F4, object);
+    item_creation_save_workshop_lines(this);
+    func_0011ED90(D_001B65F4, this);
 }
 
 /** @brief Find a saved workshop. @param index Workshop ID. @return Record, or null outside IDs one through twelve. */
@@ -14259,16 +14242,16 @@ ItemCreationSelectedDisplayState::ItemCreationSelectedDisplayState()
     }
 }
 
-s32 func_0036E540(void* object)
+s32 LibClass171EA0::func_003EEBC0()
 {
     return 3;
 }
 
-void func_0036E550(void* object)
+void LibClass171EA0::func_003EEBD0()
 {
 }
 
-void func_0036E560(void* object)
+void LibClass171EA0::func_003EEBE0()
 {
 }
 

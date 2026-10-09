@@ -17,12 +17,13 @@ import re
 
 import yaml
 
-from tools.so3.build.elf import R_MIPS_32, SYMBOL, section_headers
+from tools.so3.build.elf import R_MIPS_32, STT_FUNC, SYMBOL, SYMBOL_TYPE_MASK, section_headers
 from tools.so3.build.text_order import symbol_addresses
 
 MAIN_CONFIG = Path('config/main.us.yaml')
 OVERLAY_CONFIGS = Path('config/overlays')
 SYMBOL_MAPS = Path('config/symbols')
+THUNK_MAPS = Path('config/thunks')
 SHARED_MODULE = 'lib'  # Lib stays loaded alongside the other overlays.
 # A function that only has its address for a name, which means it's still assembly.
 ADDRESS_NAME = re.compile(r'func_[0-9A-F]+')
@@ -42,11 +43,14 @@ def linked_symbols(data):
     strings = data[headers[symtab.link].offset:]
     by_name, by_address = {}, {}
     for offset in range(symtab.offset, symtab.offset + symtab.size, SYMBOL.size):
-        label, value, _, _, _, section = SYMBOL.unpack_from(data, offset)
+        label, value, _, info, _, section = SYMBOL.unpack_from(data, offset)
         name = strings[label:].split(b'\0', 1)[0].decode()
         if section and name:
             by_name[name] = value
-            by_address.setdefault(value, name)
+            # Section labels can share a function's address, including MWCC's
+            # bookkeeping records. They aren't names for vtable slots.
+            if info & SYMBOL_TYPE_MASK == STT_FUNC:
+                by_address.setdefault(value, name)
     return by_name, by_address
 
 
@@ -73,6 +77,12 @@ def symbol_map(module):
     return symbol_addresses(path) if path.is_file() else {}
 
 
+def thunk_map(module):
+    """Original addresses of the adjusting thunks kept for this module."""
+    path = THUNK_MAPS / f'{module}_thunk_addrs.txt'
+    return symbol_addresses(path) if path.is_file() else {}
+
+
 def every_map():
     """Each name's address from all the symbol maps, leaving out names they disagree on."""
     found, conflicts = {}, set()
@@ -84,30 +94,61 @@ def every_map():
 
 
 def resolver(module, linked, maps):
-    """Where to look up a slot's function: the module's link, its symbol map, main, Lib, then any map.
+    """Where to look up a slot's function: the module's link, its symbol and thunk maps, main, Lib, then any map.
 
     A function can be missing from the module's own link when it's still an
     assembly placeholder under its address name, or when it lives in another
-    module. The symbol maps know it by its real name.
+    module. The symbol and thunk maps know it by its real name.
     """
     names = {}
-    for table in reversed([linked[module][0], symbol_map(module), linked.get('main', ({},))[0],
+    for table in reversed([linked[module][0], symbol_map(module), thunk_map(module), linked.get('main', ({},))[0],
                            linked.get(SHARED_MODULE, ({},))[0], maps]):
         names.update(table)
     addresses = {}
-    for table in [maps, linked.get(SHARED_MODULE, ({}, {}))[1], linked.get('main', ({}, {}))[1], linked[module][1]]:
-        addresses.update(table)
+    # Other overlays reuse these addresses, so only reverse maps from the
+    # modules that can supply this table's functions. A map can name a method
+    # whose link still calls it func_XXXXXXXX.
+    for name in dict.fromkeys([SHARED_MODULE, 'main', module]):
+        addresses.update(linked.get(name, ({}, {}))[1])
+        addresses.update({address: symbol for symbol, address in symbol_map(name).items()})
     return names, addresses
+
+
+def config_path(module):
+    return MAIN_CONFIG if module == 'main' else OVERLAY_CONFIGS / f'{module}.yaml'
+
+
+def default_images(module):
+    return list(dict.fromkeys(['main', module, SHARED_MODULE]))
+
+
+def vtable_images(module):
+    """The available original images this module's vtables were linked against."""
+    config = yaml.safe_load(config_path(module).read_text())
+    names = config.get('vtable_images', default_images(module))
+    if not isinstance(names, list) or not all(isinstance(name, str) for name in names):
+        raise ValueError(f'{module}: vtable_images must be a list of module names')
+    for name in names:
+        if not config_path(name).is_file():
+            raise ValueError(f'{module}: unknown vtable image {name}')
+    return list(dict.fromkeys(names))
 
 
 def image_for(module, cache):
     if module not in cache:
-        path = MAIN_CONFIG if module == 'main' else OVERLAY_CONFIGS / f'{module}.yaml'
-        cache[module] = Image(path)
+        cache[module] = Image(config_path(module))
     return cache[module]
 
 
-def check_vtable(vtable, module, symbols, images):
+def original_vtable(vtable, names, images):
+    for name in names:
+        original = image_for(name, images).read(vtable['address'], len(bytes.fromhex(vtable['bytes'])))
+        if original is not None:
+            return original
+    return None
+
+
+def check_vtable(vtable, module, symbols, images, image_names=None):
     """Compare one compiled vtable with the game's. Returns (status, slots).
 
     The status is `match`, `wrong` when a slot points at a different function
@@ -119,11 +160,7 @@ def check_vtable(vtable, module, symbols, images):
     override it yet.
     """
     compiled = bytearray.fromhex(vtable['bytes'])
-    original = None
-    for name in dict.fromkeys(['main', module, SHARED_MODULE]):
-        original = image_for(name, images).read(vtable['address'], len(compiled))
-        if original is not None:
-            break
+    original = original_vtable(vtable, default_images(module) if image_names is None else image_names, images)
     if original is None:
         return 'outside', []
     by_name, by_address = symbols
@@ -160,7 +197,7 @@ def check_vtable(vtable, module, symbols, images):
 
 def build_report(record_paths):
     report = {'match': [], 'wrong': [], 'incomplete': [], 'outside': []}
-    images, linked, resolvers = {}, {}, {}
+    images, linked, resolvers, references = {}, {}, {}, {}
     maps = every_map()
     for name, folder in (('main', Path('build/main')), (SHARED_MODULE, Path(f'build/overlays/{SHARED_MODULE}'))):
         linked[name] = linked_symbols((folder / 'linked.elf').read_bytes())
@@ -172,11 +209,16 @@ def build_report(record_paths):
         if module not in resolvers:
             linked.setdefault(module, linked_symbols((output / 'linked.elf').read_bytes()))
             resolvers[module] = resolver(module, linked, maps)
+            references[module] = vtable_images(module)
         for vtable in record['vtables']:
-            status, details = check_vtable(vtable, module, resolvers[module], images)
+            status, details = check_vtable(vtable, module, resolvers[module], images, references[module])
             entry = {'source': record['source'], 'vtable': vtable['name'], 'address': vtable['address']}
             if details:
                 entry['slots'] = details
+            if status == 'outside':
+                excluded = [name for name in default_images(module) if name not in references[module]]
+                if original_vtable(vtable, excluded, images) is not None:
+                    entry['why'] = 'reference image unavailable'
             report[status].append(entry)
     for entries in report.values():
         entries.sort(key=lambda entry: (entry['source'], entry['vtable']))
@@ -187,7 +229,7 @@ def summary(report):
     checked = sum(len(entries) for entries in report.values())
     return (f"Vtables: {checked} compiled, {len(report['match'])} match the game's, "
             f"{len(report['wrong'])} point a slot at the wrong function, "
-            f"{len(report['incomplete'])} are incomplete, {len(report['outside'])} outside every image")
+            f"{len(report['incomplete'])} are incomplete, {len(report['outside'])} lack an available reference image")
 
 
 def main():

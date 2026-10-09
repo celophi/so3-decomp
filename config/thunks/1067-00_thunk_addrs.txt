@@ -5,6 +5,7 @@
 @120@func_001DD7B0__16FieldClass14FE30Fv = 0x001E1550;
 @120@func_001DF3D0__16FieldClass14FE30Fv = 0x001E1560;
 @120@func_001DF360__16FieldClass14FE30Fv = 0x001E1540;
+@144@func_001DDB30__16FieldClass14FE30FPv = 0x001E1580;
 // FieldClass150120 (vtable D_150120); kept copy ends text_001E1590.
 @20@func_001DDB30__16FieldClass150120FPv = 0x001E6C40;
 // FieldClass14FFB0 (vtable D_14FFB0); kept copy ends text_001DED80.

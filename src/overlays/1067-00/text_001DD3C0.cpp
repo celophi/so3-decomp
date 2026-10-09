@@ -81,15 +81,6 @@ void FieldClass150070::func_001DD410()
 {
 }
 
-void FieldClass1502A0::func_004295B0(void* attached)
-{
-    unk70 = attached;
-}
-
-void FieldClass1502A0::func_004295C0()
-{
-}
-
 void FieldClass14FE30::func_001DD7B0()
 {
     FieldClass150070& base = *this;
@@ -284,8 +275,9 @@ void func_001DD9A0(FieldClass150060* list, s8 mode, s32 arg)
     }
 }
 
-void func_001DDB30(FieldFlaggedListObject* list)
+void FieldClass14FE30::func_001DDB30(void* arg)
 {
+    FieldFlaggedListObject* list = reinterpret_cast<FieldFlaggedListObject*>(this);
     FieldFlaggedListObject* node = list;
     for (;;)
     {
@@ -353,13 +345,14 @@ FieldClass1515D0* FieldClass154D20::func_001DDCD0()
     return this;
 }
 
-bool func_001DDCE0(const FieldFloatGateState7C* object)
+/** @brief Test the actor gate and require its disable flag to be clear. @return Whether the actor passes both tests. */
+bool FieldClass152430::func_00204420()
 {
-    if (!func_00204420(object))
+    if (!FieldClass150F90::func_00204420())
     {
         return false;
     }
-    return object->unk8c_5 ? false : true;
+    return unk8c_5 ? false : true;
 }
 
 bool func_001DDD30(FieldListOwner94* list, FieldClass151510** target)
@@ -529,11 +522,13 @@ void FieldClass14FE30::func_004D6730()
     unk6c = 0;
 }
 
-void func_001DE3B0(void* object)
+/** @brief Perform the default actor handler. */
+void FieldClass150F90::func_001DE3B0()
 {
 }
 
-void func_001DE3C0(void* object)
+/** @brief Perform the default actor handler. */
+void FieldClass152430::func_001DE3C0()
 {
 }
 

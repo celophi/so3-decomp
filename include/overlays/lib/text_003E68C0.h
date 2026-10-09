@@ -48,7 +48,7 @@ public:
 /**
  * Partial Lib root class with its vtable pointer at offset 0, with vtable
  * D_171EA0 in main data (its own bases D_171E90 and D_171E80 are not modelled).
- * Slots 1, 3 and 4 keep placeholder signatures.
+ * Slots 3 and 4 keep placeholder signatures.
  */
 class LibClass171EA0
 {
@@ -56,8 +56,8 @@ public:
     /** @brief Destroy the object. */
     virtual ~LibClass171EA0();
 
-    /** @brief Virtual slot 1. */
-    virtual void func_003EEBC0();
+    /** @brief Report the fixed object kind. @return Always 3. */
+    virtual s32 func_003EEBC0();
 
     /** @brief Delete the object through its virtual destructor; null is ignored. */
     virtual void func_003EF740();

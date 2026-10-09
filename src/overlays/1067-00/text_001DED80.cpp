@@ -10,18 +10,19 @@
 #include "overlays/1067-00/text_00207AF0.h"
 #include "overlays/1067-00/text_002DBC50.h"
 #include "overlays/1067-00/text_0021FB80.h"
+#include "overlays/1067-00/text_0026EE10.h"
 #include "overlays/lib/text_004AB8B0.h"
 
 extern "C" s32 func_0023AEB0(FieldClass1530D0* owner, FieldClass150070* loader);
 
-bool func_001DED80(const FieldFloatGateState7C* object)
+bool FieldClass154C10::func_00204420()
 {
     ResidentContext* context = D_001B6430->context;
     if (!context->unk08->unkf5_5 || context->unkdd.unk7 || context->unkde_1)
     {
         return false;
     }
-    return func_00204420(object);
+    return FieldClass150F90::func_00204420();
 }
 
 void func_001DEDF0(void* list, void* object)
@@ -129,7 +130,7 @@ FieldClass177C70::~FieldClass177C70()
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", __ct__16FieldClass14FE30Fv);
 
 
-void func_001DF220(void* object)
+void FieldClass150090::func_001DF220()
 {
 }
 
@@ -152,7 +153,7 @@ s32 func_001DF2D0(const void* object)
     return 0;
 }
 
-s32 func_001DF2E0(const void* object)
+s32 FieldClass150090::func_001DF2E0(s32 index, float* key, float* x, float* y, float* z) const
 {
     return 0;
 }
@@ -161,7 +162,7 @@ void func_001DF2F0(void* object)
 {
 }
 
-void func_001DF300(void* object)
+void FieldClass150090::func_001DF300()
 {
 }
 
@@ -279,10 +280,10 @@ void FieldClass14FFB0::func_001DDB30(void* arg)
     }
 }
 
-void func_001DF850(FieldEntryArrayObject* object)
+void FieldClass14FEB0::func_001DFAE0()
 {
-    object->unk4c = 0;
-    func_001DFAE0(object);
+    unk4c = 0.0f;
+    FieldClass150090::func_001DFAE0();
 }
 
 s32 FieldClass14FEB0::func_001E1470(const float* x, const float* y, const float* z, float key)
@@ -335,17 +336,17 @@ void FieldClass14FEB0::func_001DF300()
     func_001E1500(&zero, &zero, &zero, 0.0f);
 }
 
-void func_001DFA30(const FieldEntryArrayObject* object, float* out)
+void FieldClass14FEB0::func_001DFA30(float* out) const
 {
-    *out = object->unk50;
+    *out = unk50;
 }
 
-void func_001DFA40(const FieldEntryArrayObject* object, float* out)
+void FieldClass14FEB0::func_001DFA40(float* out) const
 {
-    FieldArrayEntry10* entries = object->unk04;
+    FieldArrayEntry10* entries = unk04;
     if (entries)
     {
-        *out = entries[object->unk20 - 1].unk04 - entries[0].unk04;
+        *out = entries[unk20 - 1].unk04 - entries[0].unk04;
     }
 }
 
@@ -354,19 +355,19 @@ FieldClass150090::~FieldClass150090()
     func_001DFD90();
 }
 
-void func_001DFAE0(FieldEntryArrayObject* object)
+void FieldClass150090::func_001DFAE0()
 {
-    object->unk04 = 0;
-    object->unk2a_0_3 = 1;
-    object->unk2a_4_7 = 1;
-    object->unk22 = 0;
-    object->unk20 = 0;
-    object->unk24 = -1;
-    object->unk18 = 0;
-    object->unk26 = -1;
-    object->unk28 = -1;
-    object->unk2b_0 = 0;
-    object->unk2b_1 = 0;
+    unk04 = 0;
+    unk2a_0_3 = 1;
+    unk2a_4_7 = 1;
+    unk22 = 0;
+    unk20 = 0;
+    unk24 = -1;
+    unk18 = 0;
+    unk26 = -1;
+    unk28 = -1;
+    unk2b_0 = 0;
+    unk2b_1 = 0;
 }
 
 /**
@@ -385,53 +386,53 @@ void FieldClass150090::func_001DFB70(s32 count)
     }
 }
 
-void func_001DFC10(FieldEntryArrayObject* object, s32 value)
+void FieldClass150090::func_001DFC10(s32 value)
 {
-    object->unk2a_0_3 = value;
-    object->unk2b_0 = object->unk2a_0_3 == 4 || object->unk2a_4_7 == 4;
+    unk2a_0_3 = value;
+    unk2b_0 = unk2a_0_3 == 4 || unk2a_4_7 == 4;
 }
 
-void func_001DFC70(FieldEntryArrayObject* object, s32 value)
+void FieldClass150090::func_001DFC70(s32 value)
 {
-    object->unk2a_4_7 = value;
-    object->unk2b_0 = object->unk2a_0_3 == 4 || object->unk2a_4_7 == 4;
+    unk2a_4_7 = value;
+    unk2b_0 = unk2a_0_3 == 4 || unk2a_4_7 == 4;
 }
 
-s32 func_001DFCD0(const FieldEntryArrayObject* object)
+s32 FieldClass150090::func_001DFCD0() const
 {
-    return object->unk18;
+    return unk18;
 }
 
-s16 func_001DFCE0(const FieldEntryArrayObject* object)
+s16 FieldClass150090::func_001DFCE0() const
 {
-    return object->unk20;
+    return unk20;
 }
 
-s16 func_001DFCF0(const FieldEntryArrayObject* object)
+s16 FieldClass150090::func_001DFCF0() const
 {
-    return object->unk22;
+    return unk22;
 }
 
-s32 func_001DFD00(const void* object)
-{
-    return 0;
-}
-
-s32 func_001DFD10(const void* object)
+s32 FieldClass150090::func_001DFD00(const float* x, const float* y, const float* z, float key)
 {
     return 0;
 }
 
-s32 func_001DFD20(const void* object)
+s32 FieldClass150090::func_001DFD10(s32 index, float key, const float* x, const float* y, const float* z)
 {
     return 0;
 }
 
-void func_001DFD30(void* object)
+s32 FieldClass150090::func_001DFD20(s32 index, float key, const float* x, const float* y, const float* z)
+{
+    return 0;
+}
+
+void FieldClass150090::func_001DFD30(const float* x, const float* y, const float* z, float key)
 {
 }
 
-float func_001DFD40(const void* object)
+float FieldClass150090::func_001DFD40() const
 {
     return 0.0f;
 }
@@ -441,9 +442,9 @@ void FieldClass150090::func_001DFD50(float key, float* out)
     *out = func_001E0380(key);
 }
 
-FieldArrayEntry10* func_001DFD80(const FieldEntryArrayObject* object)
+FieldArrayEntry10* FieldClass150090::func_001DFD80() const
 {
-    return object->unk04;
+    return unk04;
 }
 
 void FieldClass150090::func_001DFD90()
@@ -455,10 +456,10 @@ void FieldClass150090::func_001DFD90()
     unk04 = 0;
 }
 
-float func_001DFDE0(const FieldEntryArrayObject* object, float value)
+float FieldClass150090::func_001DFDE0(float value) const
 {
-    FieldArrayEntry10* entries = object->unk04;
-    s32 last = object->unk20 - 1;
+    FieldArrayEntry10* entries = unk04;
+    s32 last = unk20 - 1;
     float first = entries[0].unk00;
     float span = entries[last].unk00 - first;
     float cycles = (value - first) / span;
@@ -493,24 +494,24 @@ float FieldClass150090::func_001DFE70(float key)
     return 0.0f;
 }
 
-float func_001DFED0(const FieldEntryArrayObject* object)
+float FieldClass150090::func_001DFED0() const
 {
     s32 last;
-    if (object->unk20 < 2)
+    if (unk20 < 2)
     {
         return 0.0f;
     }
-    last = object->unk20 - 1;
-    return object->unk04[last].unk00 - object->unk04[0].unk00;
+    last = unk20 - 1;
+    return unk04[last].unk00 - unk04[0].unk00;
 }
 
-s32 func_001DFF20(const FieldEntryArrayObject* object, float key)
+s32 FieldClass150090::func_001DFF20(float key) const
 {
-    s16 count = object->unk20;
+    s16 count = unk20;
     s32 i;
     for (i = 0; i < count; i++)
     {
-        if (key == object->unk04[i].unk00)
+        if (key == unk04[i].unk00)
         {
             return 1;
         }
@@ -518,41 +519,41 @@ s32 func_001DFF20(const FieldEntryArrayObject* object, float key)
     return 0;
 }
 
-void func_001DFF70(FieldEntryArrayObject* object, s32 count, FieldArrayEntry10* entries)
+void FieldClass150090::func_001DFF70(s32 count, FieldArrayEntry10* entries)
 {
     s32 last = count - 1;
-    object->unk2b_1 = 1;
-    object->unk04 = entries;
-    object->unk22 = count;
-    object->unk20 = count;
-    object->unk1c = object->unk04[last].unk00 - object->unk04[0].unk00;
+    unk2b_1 = 1;
+    unk04 = entries;
+    unk22 = count;
+    unk20 = count;
+    unk1c = unk04[last].unk00 - unk04[0].unk00;
 }
 
-s32 func_001DFFC0(const FieldEntryArrayObject* object, s32 index, float* key, float* x, float* y, float* z)
+s32 FieldClass14FEB0::func_001DF2E0(s32 index, float* key, float* x, float* y, float* z) const
 {
-    if (object->unk04 == 0)
+    if (unk04 == 0)
     {
         return 0;
     }
-    if (index >= object->unk22)
+    if (index >= unk22)
     {
         return 0;
     }
     if (key)
     {
-        *key = object->unk04[index].unk00;
+        *key = unk04[index].unk00;
     }
     if (x)
     {
-        *x = object->unk04[index].unk04;
+        *x = unk04[index].unk04;
     }
     if (y)
     {
-        *y = object->unk04[index].unk08;
+        *y = unk04[index].unk08;
     }
     if (z)
     {
-        *z = object->unk04[index].unk0c;
+        *z = unk04[index].unk0c;
     }
     return 1;
 }
@@ -566,76 +567,76 @@ void FieldClass14FEB0::func_001E0080(const float* x, const float* y, const float
     unk08.unk00 = key;
 }
 
-s32 func_001E0100(FieldEntryArrayObject* object, s32 index, float key, const float* x, const float* y, const float* z)
+s32 FieldClass14FEB0::func_001E0100(s32 index, float key, const float* x, const float* y, const float* z)
 {
     s16 count;
     s32 i;
-    if (object->unk04 == 0)
+    if (unk04 == 0)
     {
         return 0;
     }
-    count = object->unk20;
+    count = unk20;
     if (index >= count)
     {
         return 0;
     }
-    if (count >= object->unk22)
+    if (count >= unk22)
     {
         return 0;
     }
     for (i = count; i > index; i--)
     {
-        object->unk04[i] = object->unk04[i - 1];
+        unk04[i] = unk04[i - 1];
     }
-    object->unk04[index].unk04 = *x;
-    object->unk04[index].unk08 = *y;
-    object->unk04[index].unk0c = *z;
-    object->unk04[index].unk00 = key;
-    if (index == object->unk20 - 1)
+    unk04[index].unk04 = *x;
+    unk04[index].unk08 = *y;
+    unk04[index].unk0c = *z;
+    unk04[index].unk00 = key;
+    if (index == unk20 - 1)
     {
-        object->unk1c = key - object->unk04[0].unk00;
+        unk1c = key - unk04[0].unk00;
     }
-    object->unk20++;
+    unk20++;
     return 1;
 }
 
-s32 func_001E0220(FieldEntryArrayObject* object, s32 index, float key, const float* x, const float* y, const float* z)
+s32 FieldClass14FEB0::func_001E0220(s32 index, float key, const float* x, const float* y, const float* z)
 {
-    if (object->unk04 == 0)
+    if (unk04 == 0)
     {
         return 0;
     }
-    if (index >= object->unk22)
+    if (index >= unk22)
     {
         return 0;
     }
-    object->unk04[index].unk04 = *x;
-    object->unk04[index].unk08 = *y;
-    object->unk04[index].unk0c = *z;
-    object->unk04[index].unk00 = key;
-    if (index == object->unk20 - 1)
+    unk04[index].unk04 = *x;
+    unk04[index].unk08 = *y;
+    unk04[index].unk0c = *z;
+    unk04[index].unk00 = key;
+    if (index == unk20 - 1)
     {
-        object->unk1c = key - object->unk04[0].unk00;
+        unk1c = key - unk04[0].unk00;
     }
     return 1;
 }
 
-s32 func_001E02C0(FieldEntryArrayObject* object, const float* x, const float* y, const float* z, float key)
+s32 FieldClass14FEB0::func_001E02C0(const float* x, const float* y, const float* z, float key)
 {
-    if (object->unk04 == 0)
+    if (unk04 == 0)
     {
         return 0;
     }
-    if (object->unk20 >= object->unk22)
+    if (unk20 >= unk22)
     {
         return 0;
     }
-    object->unk04[object->unk20].unk04 = *x;
-    object->unk04[object->unk20].unk08 = *y;
-    object->unk04[object->unk20].unk0c = *z;
-    object->unk04[object->unk20].unk00 = key;
-    object->unk1c = key - object->unk04[0].unk00;
-    object->unk20++;
+    unk04[unk20].unk04 = *x;
+    unk04[unk20].unk08 = *y;
+    unk04[unk20].unk0c = *z;
+    unk04[unk20].unk00 = key;
+    unk1c = key - unk04[0].unk00;
+    unk20++;
     return 1;
 }
 

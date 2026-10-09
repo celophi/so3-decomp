@@ -41,6 +41,8 @@ typedef struct ItemCreationSelectedDisplayState
     ItemCreationSelectedDisplayState();
     /** @brief Destroy the selection state and its Field base. */
     virtual ~ItemCreationSelectedDisplayState();
+    /** @brief Save workshop lines and append the selection state to the resident queue. */
+    virtual void func_001DD7B0();
     /** @brief Report the selected-display object kind. @return Object kind 4. */
     virtual s32 func_001DF3D0();
     /** @brief Advance display transitions and the active target animation. */
@@ -341,12 +343,6 @@ void item_creation_restore_workshop_assignments(ItemCreationSelectedDisplayState
 void item_creation_save_workshop_lines(ItemCreationSelectedDisplayState* object);
 
 /**
- * @brief Save workshop lines and append the selection state to the resident queue.
- * @param object Selection state to save and enqueue.
- */
-void item_creation_save_and_enqueue_selection(ItemCreationSelectedDisplayState* object);
-
-/**
  * @brief Refresh inventor information from a slot in the assigned or available grid.
  * @param object Selection state.
  * @param grid Grid supplying the inventor code; another nonnull grid clears the inventor.
@@ -466,25 +462,6 @@ u32 item_creation_current_workshop_name_key(void* object);
  * @return Always -1.
  */
 s32 func_0036CD60(void* object);
-
-/**
- * @brief Return the fixed value 3.
- * @param object Receiver or first argument; unused.
- * @return Always 3.
- */
-s32 func_0036E540(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0036E550(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0036E560(void* object);
 
 /**
  * @brief Perform no work.

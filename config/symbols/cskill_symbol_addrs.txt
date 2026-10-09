@@ -158,7 +158,7 @@ func_00348430 = 0x00348430; // type:func allow_duplicated:True
 func_00348420 = 0x00348420; // type:func allow_duplicated:True
 func_00348410 = 0x00348410; // type:func allow_duplicated:True
 func_00348400 = 0x00348400; // type:func allow_duplicated:True
-func_0035CCE0 = 0x0035CCE0; // type:func allow_duplicated:True
+func_0035CCE0 = 0x0035CCE0; // type:func absolute:True allow_duplicated:True
 func_0035CE30 = 0x0035CE30; // type:func allow_duplicated:True
 func_0035CEB0 = 0x0035CEB0; // type:func allow_duplicated:True
 func_0035CDB0 = 0x0035CDB0; // type:func allow_duplicated:True
@@ -265,7 +265,6 @@ func_slotdc__18SkillDualSelectionFv = 0x0034A560; // type:func absolute:True all
 func_0034A560 = 0x0034A560; // type:func allow_duplicated:True
 func_slotf4__18SkillDualSelectionFUi = 0x0034BA30; // type:func absolute:True allow_duplicated:True
 func_0034BA30 = 0x0034BA30; // type:func allow_duplicated:True
-func_slot60__16FieldClass15AE70Fi = 0x00264770; // type:func absolute:True allow_duplicated:True
 func_slot5c__16FieldClass15AE70Fv = 0x003484D0; // type:func absolute:True allow_duplicated:True
 func_003484D0 = 0x003484D0; // type:func allow_duplicated:True
 
@@ -394,7 +393,8 @@ func_0034C550 = 0x0034C550; // type:func allow_duplicated:True
 func_0034C7D0 = 0x0034C7D0; // type:func allow_duplicated:True
 func_0034DF00 = 0x0034DF00; // type:func allow_duplicated:True
 func_0034E0B0 = 0x0034E0B0; // type:func allow_duplicated:True
-func_slot60__19SkillResourceWindowFi = 0x00359480; // type:func allow_duplicated:True
+func_slot60__19SkillResourceWindowFi = 0x00359480; // type:func absolute:True allow_duplicated:True
+func_slot60__16FieldClass15AE70Fi = 0x00359480; // type:func allow_duplicated:True
 func_0034C320 = 0x0034C320; // type:func allow_duplicated:True
 
 func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
@@ -407,3 +407,6 @@ func_004C69B0 = 0x004C69B0; // type:func absolute:True allow_duplicated:True
 
 func_0023BB20 = 0x0023BB20; // type:func absolute:True allow_duplicated:True
 func_0023BB20__17FieldObject23BE00FffffP17FieldObject23CEA0Ui = 0x0023BB20; // type:func absolute:True allow_duplicated:True
+
+func_003EEBE0__14Record0035D4A0Fv = 0x0035D460; // type:func
+func_0011F770 = 0x0011F770; // type:func absolute:True

@@ -6,7 +6,7 @@
 
 extern "C" {
 void func_44B210(void* object);
-extern void* D_172870[];
+extern void* __vt__23ItemCreationClass172870[];
 extern void* D_153170[];
 extern void* D_1531D0[];
 extern void* D_153244[];
@@ -90,13 +90,6 @@ struct FieldObject23BAB0
     void* target;
     u8 unk5C[8];
     float unk64;
-};
-
-struct FieldNode23D310
-{
-    float x;
-    float y;
-    FieldNode23D310* next;
 };
 
 struct FieldObject23B280
@@ -217,7 +210,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B8
 FieldObject23B950* func_0023B950(FieldObject23B950* object)
 {
     func_4C4960(object);
-    object->table = D_172870;
+    object->table = __vt__23ItemCreationClass172870;
     object->unk40 = 0;
     object->state = 6;
     object->table = D_153170;

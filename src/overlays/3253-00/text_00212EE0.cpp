@@ -1,10 +1,74 @@
 #include "include_asm.h"
+#include "overlays/lib/text_003E68C0.h"
 #include "overlays/3253-00/text_00212EE0.h"
+
+/** A packed quaternion key: signed Q15 vector components followed by a signed key value. */
+struct BattleQuaternionKey
+{
+    s16 x;
+    s16 y;
+    s16 z;
+    s16 key;
+};
+
+/** Observed ownership bit in the native channel flags. */
+struct BattleQuaternionFlags
+{
+    u8 unk0 : 1;
+    u8 external_keys : 1;
+    u8 unk2 : 6;
+};
+
+/** The native low and high mode nibbles share one byte. */
+struct BattleQuaternionModes
+{
+    u8 low : 4;
+    u8 high : 4;
+};
+
+/** Observed quaternion channel fields; the complete native extent is unknown. */
+struct BattleQuaternionTrackFields
+{
+    void* methods;
+    BattleQuaternionKey* keys;
+    u8 unk08[8];
+    u32 unk10;
+    float key_span;
+    s16 key_count;
+    s16 capacity;
+    s16 unk1c;
+    s16 unk1e;
+    s16 unk20;
+    BattleQuaternionModes modes;
+    BattleQuaternionFlags flags;
+};
+
+/** Partial receiver with a point vector at 0x20 and a one-byte flag at 0x50. */
+struct BattlePointFlagFields20
+{
+    u8 unk00[0x20];
+    float x;
+    float y;
+    float z;
+    float w;
+    u8 unk30[0x20];
+    u8 flag50;
+};
 
 struct BattleVectorSlot20
 {
     u8 pad[0x20];
     unsigned __int128 slot;
+};
+
+/** Partial receiver with four vector components at offset 0x20. */
+struct BattleVectorFields20
+{
+    u8 unk00[0x20];
+    float x;
+    float y;
+    float z;
+    float w;
 };
 
 struct BattleGetters38
@@ -96,7 +160,13 @@ void func_00218B60(BattleVectorSlot20* object, const unsigned __int128* value)
     object->slot = *value;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218B70);
+void battle_set_point_vector(BattleVectorFields20* object, float x, float y, float z)
+{
+    object->x = x;
+    object->y = y;
+    object->z = z;
+    object->w = 1.0f;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218B90);
 
@@ -111,7 +181,14 @@ void func_00218C30(void* object)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218C40);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218C60);
+void battle_set_point_vector_and_flag(BattlePointFlagFields20* object, float x, float y, float z)
+{
+    object->flag50 = 1;
+    object->x = x;
+    object->y = y;
+    object->z = z;
+    object->w = 1.0f;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218C80);
 
@@ -155,7 +232,20 @@ s32 func_00218E80(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218E90);
+/**
+ * @brief Test whether a floating-point value is less than zero.
+ * @param value Value to test.
+ * @return One for a negative value; zero otherwise, including unordered values.
+ */
+s32 battle_float_is_negative(float value)
+{
+    s32 result = 1;
+    if (!(value < 0.0f))
+    {
+        result = 0;
+    }
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218EB0);
 
@@ -924,7 +1014,16 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_002227
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00222790);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_002227F0);
+/**
+ * @brief Set the low quaternion mode nibble and update the native mode flag.
+ * @param object Quaternion channel receiver.
+ * @param mode Mode value whose low four bits are stored.
+ */
+void battle_set_quaternion_low_mode(BattleQuaternionTrackFields* object, s32 mode)
+{
+    object->modes.low = mode;
+    object->flags.unk0 = object->modes.low == 4 || object->modes.high == 4;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00222850);
 
@@ -942,13 +1041,49 @@ void func_00222970(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00222980);
+/**
+ * @brief Reset the observed quaternion channel state and clear its key pointer.
+ * @param object Quaternion channel receiver.
+ */
+void battle_reset_quaternion_channel(BattleQuaternionTrackFields* object)
+{
+    object->keys = 0;
+    object->modes.low = 1;
+    object->modes.high = 1;
+    object->capacity = 0;
+    object->key_count = 0;
+    object->unk1c = -1;
+    object->unk10 = 0;
+    object->unk1e = -1;
+    object->unk20 = -1;
+    object->flags.unk0 = 0;
+    object->flags.external_keys = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00222A10);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00222AE0);
+/** @brief Use the caller's quaternion keys and record their span. */
+void battle_use_external_quaternion_keys(BattleQuaternionTrackFields* object, s32 count, BattleQuaternionKey* keys)
+{
+    s32 last_index = count - 1;
+    object->flags.external_keys = 1;
+    object->keys = keys;
+    object->capacity = count;
+    object->key_count = count;
+    const BattleQuaternionKey* last_key = object->keys + last_index;
+    object->key_span = (float)last_key->key - (float)object->keys[0].key;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00222B40);
+/**
+ * @brief Set the high quaternion mode nibble and update the native mode flag.
+ * @param object Quaternion channel receiver.
+ * @param mode Mode value whose low four bits are stored.
+ */
+void battle_set_quaternion_high_mode(BattleQuaternionTrackFields* object, s32 mode)
+{
+    object->modes.high = mode;
+    object->flags.unk0 = object->modes.low == 4 || object->modes.high == 4;
+}
 
 u32 func_00222BA0(const BattleGetters18* object)
 {
@@ -987,11 +1122,48 @@ void func_00222C80(void* object)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00222C90);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00222CC0);
+/** @brief Test whether a packed quaternion track contains an exact key value. */
+s32 battle_has_quaternion_key(const BattleQuaternionTrackFields* object, float key)
+{
+    const BattleQuaternionKey* cursor;
+    s32 index = 0;
+    s32 key_count = object->key_count;
+    if (index < key_count)
+    {
+        cursor = object->keys;
+        do
+        {
+            if (key == (float)cursor->key)
+            {
+                return 1;
+            }
+            ++index;
+            ++cursor;
+        } while (index < key_count);
+    }
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00222D20);
+/** @brief Clear all four vector components. @param vector Vector to clear. */
+void battle_clear_vector4(LibVector4* vector)
+{
+    vector->components[0] = 0.0f;
+    vector->components[1] = 0.0f;
+    vector->components[2] = 0.0f;
+    vector->components[3] = 0.0f;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00222D40);
+/** @brief Return the difference between the last and first packed quaternion key values. */
+float battle_quaternion_key_span(const BattleQuaternionTrackFields* object)
+{
+    if (object->key_count < 2)
+    {
+        return 0.0f;
+    }
+    s32 last_index = object->key_count - 1;
+    const BattleQuaternionKey* last_key = object->keys + last_index;
+    return (float)last_key->key - (float)object->keys[0].key;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00222DA0);
 

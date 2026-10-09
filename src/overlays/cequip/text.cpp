@@ -199,11 +199,11 @@ typedef struct
     void* methods;
 } EquipDestructorObject;
 
-extern u8 D_182350[];
-extern u8 D_182450[];
-extern u8 D_182790[];
-extern u8 D_182A90[];
-extern u8 D_182B90[];
+extern u8 __vt__16EquipClass182350[];
+extern u8 __vt__16EquipClass182450[];
+extern u8 __vt__16EquipClass182790[];
+extern u8 __vt__16EquipClass182A90[];
+extern u8 __vt__16EquipClass182B90[];
 extern "C" void func_2CEAF0(void* object, s32 flags);
 
 static inline void equip_set_position(LibClass178600* target, float x, float y, float z, float w);
@@ -706,7 +706,7 @@ void* func_00349230(void* object, s32 flags)
 {
     if (object != 0)
     {
-        ((EquipDestructorObject*)object)->methods = D_182350;
+        ((EquipDestructorObject*)object)->methods = __vt__16EquipClass182350;
         func_2CEAF0(object, 0);
         if ((s16)flags > 0)
         {
@@ -746,7 +746,7 @@ void* func_00349560(void* object, s32 flags)
 {
     if (object != 0)
     {
-        ((EquipDestructorObject*)object)->methods = D_182450;
+        ((EquipDestructorObject*)object)->methods = __vt__16EquipClass182450;
         func_2CEAF0(object, 0);
         if ((s16)flags > 0)
         {
@@ -1354,7 +1354,7 @@ void* func_0034B370(void* object, s32 flags)
 {
     if (object != 0)
     {
-        ((EquipDestructorObject*)object)->methods = D_182790;
+        ((EquipDestructorObject*)object)->methods = __vt__16EquipClass182790;
         func_2CEAF0(object, 0);
         if ((s16)flags > 0)
         {
@@ -1785,7 +1785,7 @@ void* func_0034DD30(void* object, s32 flags)
 {
     if (object != 0)
     {
-        ((EquipDestructorObject*)object)->methods = D_182A90;
+        ((EquipDestructorObject*)object)->methods = __vt__16EquipClass182A90;
         func_2CEAF0(object, 0);
         if ((s16)flags > 0)
         {
@@ -2491,7 +2491,7 @@ void* func_00351520(void* object, s32 flags)
 {
     if (object != 0)
     {
-        ((EquipDestructorObject*)object)->methods = D_182B90;
+        ((EquipDestructorObject*)object)->methods = __vt__16EquipClass182B90;
         func_2CEAF0(object, 0);
         if ((s16)flags > 0)
         {

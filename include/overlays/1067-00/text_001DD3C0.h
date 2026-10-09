@@ -334,14 +334,20 @@ public:
         func_004DB570(object);
     }
 
+    /** @brief Detach the FieldClass150070 base and queue it on the resident object queue. */
+    virtual void func_001DD7B0();
+
+    /**
+     * @brief Call func_00227130 for each listed object whose flag bit 1 is set.
+     * @param arg Unused interface argument.
+     */
+    virtual void func_001DDB30(void* arg);
+
     /**
      * @brief Report the fixed value 4 for this class.
      * @return Always 4.
      */
     virtual s32 func_001DF3D0();
-
-    /** @brief Detach the FieldClass150070 base and queue it on the resident object queue. */
-    virtual void func_001DD7B0();
 
     /**
      * @brief Sort the list items by height, then run their per-frame handlers.
@@ -623,37 +629,12 @@ void func_001DD570(FieldFlaggedListObject* list);
 void func_001DD6E0(FieldFlaggedListObject* list);
 
 /**
- * @brief Call func_00227130 for each listed object whose flag bit 1 is set.
- * @param list Head of a circular object list; traversal stops on return to it or at a null link.
- */
-void func_001DDB30(FieldFlaggedListObject* list);
-
-/**
- * @brief Combine the func_00204420 test with a clear bit 5 at offset 0x8C.
- * @param object Receiver passed to func_00204420.
- * @return True when func_00204420 succeeds and bit 5 of the byte at offset 0x8C is clear.
- */
-bool func_001DDCE0(const FieldFloatGateState7C* object);
-
-/**
  * @brief Find a listed object with a matching key, bit 2 at offset 0x8C clear and a nonnull pointer at offset 0x7C.
  * @param list Head of a circular object list; traversal stops on return to it or at a null link.
  * @param key Value compared with the word at offset 0x74.
  * @return The first matching object, or null if none matches.
  */
 FieldFlaggedListObject* func_001DDF50(FieldFlaggedListObject* list, s32 key);
-
-/**
- * @brief Default virtual handler that performs no work.
- * @param object Receiver of the virtual call.
- */
-void func_001DE3B0(void* object);
-
-/**
- * @brief Default virtual handler that performs no work.
- * @param object Receiver of the virtual call.
- */
-void func_001DE3C0(void* object);
 
 /**
  * @brief Update the table of every listed object that has one at offset 0x7C.

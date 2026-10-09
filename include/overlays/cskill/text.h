@@ -65,8 +65,8 @@ typedef struct Record0035A560 Record0035A560;
 typedef struct StatusOwner003580D0 StatusOwner003580D0;
 typedef struct Record003581B0 Record003581B0;
 typedef SkillOptionsWindow Record0035E2A0;
-typedef struct Record0035DDE0 Record0035DDE0;
 typedef struct Record0035DE40 Record0035DE40;
+typedef Record0035DE40 Record0035DDE0;
 typedef struct Record0035D4A0 Record0035D4A0;
 typedef struct Record0035D3E0 Record0035D3E0;
 #ifdef __cplusplus

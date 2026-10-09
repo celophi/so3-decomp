@@ -362,7 +362,7 @@ def configure(configs):
     headers = project_headers()
     lines = ninja_rules()
     split_outputs, verify_outputs, progress_objects, copy_records = [], [], [], []
-    vtable_records, linked = [], []
+    vtable_records, linked, thunk_maps = [], [], []
     report_units, categories = [], []
     for path, config in configs:
         module = Module(path, config)
@@ -378,9 +378,12 @@ def configure(configs):
         vtable_records += [str(vtable_record_path(module.object_path(source, rule)))
                            for source, rule in module.units if rule == 'compile']
         linked.append(f'{module.output}/linked.elf')
+        thunks = thunk_map_path(module.name)
+        if thunks.is_file():
+            thunk_maps.append(str(thunks))
     lines += [f'build {COPY_REPORT}: copy_report {" ".join(copy_records)} | tools/so3/build/copy_report.py',
               f'build {VTABLE_REPORT}: vtable_report {" ".join(vtable_records)} | '
-              f'{" ".join(linked)} tools/so3/build/vtable_report.py tools/so3/build/elf.py',
+              f'{" ".join(linked + thunk_maps)} tools/so3/build/vtable_report.py tools/so3/build/elf.py',
               f'build split: phony {" ".join(split_outputs)}',
               f'build all: phony {" ".join(verify_outputs)} {COPY_REPORT} {VTABLE_REPORT}',
               f'build objdiff-objects: phony {" ".join(progress_objects)}', 'default all', '']

@@ -1,6 +1,8 @@
 name: Star Ocean 3 US overlay 1070-00 (Field.bin)
 sha1: 60359decb1cf209d591b4b89207e28239c03327e
 sha256: 70d4fa07abf8c7cead5f6cef829ac86dc0d894d12a6cb5214c79b900b1a6a671
+# The matching resident image is unavailable for this module.
+vtable_images: [1070-00]
 options:
   basename: 1070-00
   target_path: disc/us-disc1/modules/1070-00.bin

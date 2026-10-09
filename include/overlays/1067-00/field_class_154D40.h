@@ -157,7 +157,8 @@ public:
     virtual void func_slot24() = 0;
     virtual void func_slot28() = 0;
     virtual void func_slot2c() = 0;
-    virtual void func_slot30() = 0;
+    /** @brief Read the grid bit set. @return The bit set. */
+    virtual FieldBitset154E80* func_slot30() = 0;
     virtual void func_slot34() = 0;
     virtual void func_slot38() = 0;
     /**

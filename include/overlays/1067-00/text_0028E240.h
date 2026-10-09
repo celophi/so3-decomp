@@ -28,12 +28,29 @@ struct FieldRecordSelection
     virtual ~FieldRecordSelection();
 };
 #else
-typedef struct FieldRecordSelection FieldRecordSelection;
+/** C view of the 0x18-byte record selection, with its native destructor table at 0x14. */
+typedef struct FieldRecordSelection
+{
+    FieldRecord* records;
+    void* unk04;
+    s8 slots[8];
+    s8 count;
+    s8 current;
+    u8 active;
+    void* methods;
+} FieldRecordSelection;
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Clear the selection links, slots, and active state, and install its native table.
+ * @param selection Storage for a 0x18-byte record selection.
+ * @return The constructed selection.
+ */
+FieldRecordSelection* func_0028E4D0(FieldRecordSelection* selection);
 
 /**
  * @brief Advance an inactive selection to the next positive slot, wrapping at either end.

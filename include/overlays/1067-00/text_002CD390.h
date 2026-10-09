@@ -10,6 +10,12 @@
 typedef struct FieldBytePtr10 FieldBytePtr10;
 #endif
 
+#ifdef __cplusplus
+class FieldClass15AE70;
+#else
+typedef struct FieldClass15AE70 FieldClass15AE70;
+#endif
+
 typedef struct FieldStateCD390 FieldStateCD390;
 /** Field list parameters preceding the callback base. */
 typedef struct FieldStateCE420
@@ -256,7 +262,11 @@ public:
     virtual void func_slot34(u16 value);
     /** @brief Read the halfword state flags. @return State flags. */
     virtual u16 func_slot38();
-    virtual void func_slot3c();
+    /**
+     * @brief Return the final window in the associated-window chain.
+     * @return Last window, including this window when it has no association.
+     */
+    virtual void* func_slot3c();
     /** @brief Store the associated window pointer. @param associated Pointer to store. */
     virtual void func_slot40(void* associated)
     {
@@ -436,6 +446,20 @@ int func_002CD9E0(void* object);
  * @param value Value whose low byte is stored.
  */
 void func_002CE510(FieldBytePtr10* object, u32 value);
+
+/**
+ * @brief Create and configure the window's nested display container.
+ * @param object Field window receiver.
+ * @param associated Full resource source word.
+ * @param first First container configuration value.
+ * @param second Second container configuration value.
+ * @param third Third container configuration value.
+ * @param x Horizontal coordinate.
+ * @param y Vertical coordinate.
+ * @param z Third coordinate.
+ * @return One when the container is present and the source word is nonzero, otherwise zero.
+ */
+s32 func_002CE760(FieldClass15AE70* object, u32 associated, s32 first, s32 second, s32 third, float x, float y, float z);
 
 /**
  * @brief Create a nested display and initialize it with the resource source word and coordinates.

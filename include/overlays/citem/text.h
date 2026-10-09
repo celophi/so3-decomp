@@ -7,11 +7,15 @@ typedef struct ItemRecord ItemRecord;
 typedef struct StatusRecord StatusRecord;
 typedef struct DisplayRecord DisplayRecord;
 typedef struct Record00349190 Record00349190;
+typedef struct Record00349250 Record00349250;
 typedef struct Record00349C50 Record00349C50;
+typedef struct Record00353E40 Record00353E40;
 typedef struct Record0034C800 Record0034C800;
 typedef struct Record00349BF0 Record00349BF0;
 typedef struct Record0034C7A0 Record0034C7A0;
 typedef struct Record0034C6A0 Record0034C6A0;
+typedef struct Record0034B770 Record0034B770;
+typedef struct Record0034E7E0 Record0034E7E0;
 typedef struct Record00350BD0 Record00350BD0;
 typedef struct Record00353EF0 Record00353EF0;
 typedef struct Record00350C20 Record00350C20;
@@ -22,6 +26,8 @@ typedef struct Record00354740 Record00354740;
 typedef struct Record0034E8B0 Record0034E8B0;
 typedef struct TransformRecord TransformRecord;
 typedef struct ScreenOwner ScreenOwner;
+typedef struct Record00351F50 Record00351F50;
+typedef struct Record00353850 Record00353850;
 typedef struct Record00353A50 Record00353A50;
 typedef struct Record00352960 Record00352960;
 typedef struct Record00352EE0 Record00352EE0;
@@ -30,6 +36,13 @@ typedef struct ItemListNode ItemListNode;
 typedef struct ItemListOwner ItemListOwner;
 typedef struct AngleOwner AngleOwner;
 typedef struct ControlOwner ControlOwner;
+
+/** Two scalar coordinates passed together to the coordinate list. */
+typedef struct CitemCoordinate2
+{
+    float x;
+    float y;
+} CitemCoordinate2;
 
 /** Four float components stored on a 16-byte boundary. */
 typedef struct Vector4
@@ -53,6 +66,13 @@ extern "C" {
 s32 func_00351E40(const ItemListNode* left, const ItemListNode* right);
 
 /**
+ * @brief Append a coordinate pair to the selector's sentinel list.
+ * @param owner Coordinate list receiver.
+ * @param value Coordinate pair to append.
+ */
+void item_append_selector_coordinate(Record00354740* owner, CitemCoordinate2 value);
+
+/**
  * @brief Initialize a record and pass its setup arguments to the shared initializer.
  * @param record Record to initialize.
  * @param arg1 First integer setup argument.
@@ -64,6 +84,18 @@ s32 func_00351E40(const ItemListNode* left, const ItemListNode* right);
  * @return Always 1.
  */
 s32 func_00349190(Record00349190* record, s32 arg1, s32 arg2, void* arg3, float first, float second, float third);
+
+/**
+ * @brief Mark DMA pending and submit the transform packet when present.
+ * @param object Transform receiver containing the packet and notification interface.
+ */
+void item_submit_transform_packet(Record00349250* object);
+
+/**
+ * @brief Mark the transform for release, detach it, and queue its destruction.
+ * @param object Transform receiver to release.
+ */
+void item_queue_transform_release(Record00349250* object);
 
 /**
  * @brief Initialize a record and run cleanup when requested.
@@ -121,6 +153,13 @@ void func_00350FC0(Record00350FC0* owner, float start);
 void func_0034E8B0(Record0034E8B0* record, u8 flag, s32 control_flag);
 
 /**
+ * @brief Populate six pairs of code and resource widgets from a category allocation list.
+ * @param object Allocation-window receiver.
+ * @param first_index First allocation-record index shown in the six widget pairs.
+ */
+void item_update_allocation_page(Record0034E8B0* object, s32 first_index);
+
+/**
  * @brief Free list nodes and optionally the owner.
  * @param record List owner to clean up.
  * @param flag Cleanup flag.
@@ -153,6 +192,66 @@ Record00354740* func_00354740(Record00354740* record, s16 flag);
 void func_00350F70(ControlOwner* owner, s32 ignored, s32 flag);
 
 /**
+ * @brief Move the selector back one entry, wrapping to its eighth entry.
+ * @param owner Item window containing the coordinate selector.
+ */
+void item_select_previous_entry(Record0034B770* owner);
+
+/**
+ * @brief Advance the selector one entry, wrapping after its eighth entry.
+ * @param owner Item window containing the coordinate selector.
+ */
+void item_select_next_entry(Record0034B770* owner);
+
+/**
+ * @brief Move the selector from its first coordinate row to its second row.
+ *
+ * Maps entries zero, one and two to entries three, five and six respectively.
+ * Other indices and a clear control byte leave the selection unchanged.
+ * @param owner Item window containing the coordinate selector.
+ */
+void item_select_second_row(Record0034B770* owner);
+
+/**
+ * @brief Move the selector from its second coordinate row to its first row.
+ *
+ * Maps entry three to zero, entries four and five to one, and entries six and seven to two.
+ * Other indices and a clear control byte leave the selection unchanged.
+ * @param owner Item window containing the coordinate selector.
+ */
+void item_select_first_row(Record0034B770* owner);
+
+/**
+ * @brief Move the list window's selector back one entry, wrapping to its eighth entry.
+ * @param owner Item window containing the selector and display list.
+ */
+void item_list_select_previous_entry(Record0034E7E0* owner);
+
+/**
+ * @brief Advance the list window's selector one entry, wrapping after its eighth entry.
+ * @param owner Item window containing the selector and display list.
+ */
+void item_list_select_next_entry(Record0034E7E0* owner);
+
+/**
+ * @brief Move the selector from its first coordinate row to its second row.
+ *
+ * Maps entries zero, one and two to entries three, five and six respectively.
+ * Other indices and a clear control byte leave the selection unchanged.
+ * @param owner Item window containing the selector and display list.
+ */
+void item_list_select_second_row(Record0034E7E0* owner);
+
+/**
+ * @brief Move the selector from its second coordinate row to its first row.
+ *
+ * Maps entry three to zero, entries four and five to one, and entries six and seven to two.
+ * Other indices and a clear control byte leave the selection unchanged.
+ * @param owner Item window containing the selector and display list.
+ */
+void item_list_select_first_row(Record0034E7E0* owner);
+
+/**
  * @brief Increase the attached angle and clamp it at its limit.
  * @param owner Record holding the angle.
  */
@@ -163,6 +262,13 @@ void func_0034F340(AngleOwner* owner);
  * @param owner Record holding the angle.
  */
 void func_0034F2E0(AngleOwner* owner);
+
+/**
+ * @brief Append a payload to the list when node allocation succeeds.
+ * @param owner List with a sentinel head and element count.
+ * @param value Payload stored in the new node.
+ */
+void item_append_list_value(Record003540E0* owner, void* value);
 
 /**
  * @brief Append a payload to the list when node allocation succeeds.
@@ -216,6 +322,13 @@ void func_00354620(ItemListOwner* owner, void* value);
 void func_003546B0(ItemListOwner* owner, void* value);
 
 /**
+ * @brief Allocate and populate a missing record selection, then look up resident key 4.
+ * @param object Receiver that owns the selection.
+ * @return One after successful population, or zero if already present or initialization fails.
+ */
+s32 item_initialize_record_selection(Record00353850* object);
+
+/**
  * @brief Initialize a display record and run cleanup when requested.
  * @param display Display record to initialize.
  * @param flag Cleanup flag.
@@ -240,6 +353,12 @@ Record00352960* func_00352960(Record00352960* record, s16 flag);
 Record00352EE0* func_00352EE0(Record00352EE0* record, s16 flag);
 
 /**
+ * @brief Hold the text at its starting position, then scroll and wrap it horizontally.
+ * @param record Window storing the display, delay and scrolling bounds.
+ */
+void item_update_horizontal_scroll(Record00352EE0* record);
+
+/**
  * @brief Initialize a record and run cleanup when requested.
  * @param record Record to initialize.
  * @param flag Cleanup flag.
@@ -254,6 +373,14 @@ Record003531B0* func_003531B0(Record003531B0* record, s16 flag);
  * @return The item record.
  */
 ItemRecord* func_00348400(ItemRecord* item, s16 flag);
+
+/**
+ * @brief Initialize the window container and attach its configured panel.
+ * @param object Window receiver with a FieldClass15AE70 base.
+ * @param associated Associated source word passed to the Field initializer.
+ * @return Always one.
+ */
+s32 item_initialize_panel(Record00351F50* object, u32 associated);
 
 /**
  * @brief Initialize a screen owner and run cleanup when requested.
@@ -369,6 +496,22 @@ void func_00351FB0(ScreenOwner* owner);
  * @return Current field value.
  */
 u32 func_00349C50(Record00349C50* record);
+
+/**
+ * @brief Initialize two panels, four text widgets and a two-column choice grid.
+ * @param object Choice-window receiver.
+ * @param associated Associated resource source word.
+ * @return Always one.
+ */
+s32 item_initialize_choice_window(ItemRecord* object, u32 associated);
+
+/**
+ * @brief Initialize a panel with three positioned and scaled text widgets.
+ * @param object Text-window receiver.
+ * @param associated Associated resource source word.
+ * @return One after initialization.
+ */
+s32 item_initialize_text_panel(Record00353E40* object, u32 associated);
 
 /**
  * @brief Read the word field at 0x40.

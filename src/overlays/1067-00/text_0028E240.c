@@ -16,16 +16,6 @@ typedef struct FieldRecordSource
     FieldSourceContext* context;
 } FieldRecordSource;
 
-struct FieldRecordSelection
-{
-    FieldRecord* records;
-    void* unk04;
-    s8 slots[8];
-    s8 count;
-    s8 current;
-    u8 active;
-};
-
 extern FieldRecordSource* D_001B643C;
 
 s32 func_0028E240(FieldRecordSelection* selection, s8 value)

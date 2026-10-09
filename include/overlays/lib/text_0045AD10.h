@@ -254,6 +254,13 @@ extern "C" {
 #endif
 
 /**
+ * @brief Initialize the native drawing-widget base and install its table.
+ * @param object Storage for the 0xFC-byte drawing widget.
+ * @return The constructed drawing widget.
+ */
+LibClass174EF0* func_00464B10(LibClass174EF0* object);
+
+/**
  * @brief Reset the multiline widget rectangle, allocation, and scrolling state.
  * @param object Multiline text widget.
  * @param x Rectangle origin x.

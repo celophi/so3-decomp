@@ -96,25 +96,6 @@ public:
     virtual ~ItemCreationClass185A60()
     {
     }
-    /** @brief Apply the current selection. @return Selection result code. */
-    virtual s32 func_slotb0();
-    /** @brief Reset the current selection. @return Selection result code. */
-    virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
-    virtual s32 func_slotc0();
-    virtual s32 func_slotc4();
-    virtual s32 func_slotc8();
-    virtual s32 func_slotcc();
-    virtual s32 func_slotd0();
-    virtual s32 func_slotd4();
-    virtual s32 func_slotd8();
-    virtual s32 func_slotdc();
-    virtual void func_slote0();
-    virtual void func_slote4();
-    virtual u8 func_slote8();
-    virtual void func_slotec(u8 value);
-    virtual void func_slotf0();
     /**
      * @brief Initialize the base selection window at its fixed coordinates.
      * @param associated Full resource source word.
@@ -168,21 +149,6 @@ public:
      * @return Always two.
      */
     virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
-    virtual s32 func_slotc0();
-    virtual s32 func_slotc4();
-    virtual s32 func_slotc8();
-    virtual s32 func_slotcc();
-    virtual s32 func_slotd0();
-    virtual s32 func_slotd4();
-    virtual s32 func_slotd8();
-    virtual s32 func_slotdc();
-    virtual void func_slote0();
-    virtual void func_slote4();
-    virtual u8 func_slote8();
-    virtual void func_slotec(u8 value);
-    virtual void func_slotf0();
     virtual s32 func_slotf4(u32 associated);
     /**
      * @brief Dispatch a grid direction and refresh the selected option markers.
@@ -1020,72 +986,6 @@ void func_0034DB00(InventorTransferWindow* object, u8 option);
  * @param group Group to enable, from zero through two; other values leave all flags clear.
  */
 void func_00356780(ItemCreationClass186770* object, u16 group);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348510(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348520(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348530(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348540(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348550(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348560(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348570(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348580(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348590(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003485A0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003486D0(void* object);
 
 /**
  * @brief Perform no work.

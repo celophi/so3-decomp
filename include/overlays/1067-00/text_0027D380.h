@@ -25,6 +25,8 @@ class FieldClass155B40 : public FieldClass154EF0
 public:
     /** @brief Destroy the object through its base. */
     virtual ~FieldClass155B40();
+    /** @brief Create the grid for this object. */
+    virtual void func_slot30();
     /** @brief Update the base, then place the target at this object's position. */
     virtual void func_001DF360();
 };

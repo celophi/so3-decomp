@@ -318,6 +318,8 @@ class FieldClass15A1E0 : public FieldClass154E20
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass15A1E0();
+    /** @brief Create the grid for this object. */
+    virtual void func_slot30();
 };
 
 FieldClass15A1E0::~FieldClass15A1E0()
@@ -328,7 +330,7 @@ extern "C" void func_002C1370(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C1380);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_slot30__16FieldClass15A1E0Fv);
 
 extern "C" int func_002C1580(void* object)
 {
@@ -663,13 +665,15 @@ class FieldClass15A570 : public FieldClass154E20
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass15A570();
+    /** @brief Create the grid for this object. */
+    virtual void func_slot30();
 };
 
 FieldClass15A570::~FieldClass15A570()
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C28C0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_slot30__16FieldClass15A570Fv);
 
 extern "C" void func_002C29D0(FieldInputState* state, u8* input, u32 unk30)
 {
@@ -1191,13 +1195,15 @@ class FieldClass15AA70 : public FieldClass154E20
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass15AA70();
+    /** @brief Create the grid for this object. */
+    virtual void func_slot30();
 };
 
 FieldClass15AA70::~FieldClass15AA70()
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C9800);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_slot30__16FieldClass15AA70Fv);
 
 FieldClass15AAB0::~FieldClass15AAB0()
 {

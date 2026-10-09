@@ -3,9 +3,17 @@
 
 #include "types.h"
 
+typedef struct LibObject1751A0 LibObject1751A0;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Release the grid reference held by the linked Lib object.
+ * @param object Linked object holding the grid.
+ */
+void func_0046B3F0(LibObject1751A0* object);
 
 /**
  * @brief Find a camera entry matching its name and state filters.

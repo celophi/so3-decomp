@@ -56,6 +56,28 @@ segments:
       - [0x40, pad, text_start]
       - [0x80, cpp, text]
       - [0x9C80, databin, data]
-      - [0x9D70, .rodata, text]
+      - start: 0x9D10
+        type: .rodata
+        name: text
+        linker_section: .rodata.00352090
+        rodata_anchors:
+          - {function: set_grid_record__19TacticsWindow18B420FsUc, offset: 0x0, size: 0x2C}
+        linker_section_order: .rodata
+      - [0x9D3C, pad, rodata_pad_003520BC]
+      - start: 0x9D40
+        type: .rodata
+        name: text
+        linker_section: .rodata.003520C0
+        rodata_anchors:
+          - {function: get_record_text_key__19TacticsWindow18B520Fsi, offset: 0x0, size: 0x2C}
+        linker_section_order: .rodata
+      - [0x9D6C, pad, rodata_pad_003520EC]
+      - start: 0x9D70
+        type: .rodata
+        name: text
+        linker_section: .rodata.003520F0
+        rodata_anchors:
+          - {function: func_0034F190, offset: 0x0, size: 0x20}
+        linker_section_order: .rodata
       - [0x9D90, rodatabin, rodata_00352110]
   - [0x9e00]

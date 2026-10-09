@@ -7,6 +7,11 @@
 #include "overlays/1067-00/text_0023B1D0.h"
 
 #ifdef __cplusplus
+#include "overlays/1067-00/text_001E1590.h"
+#include "overlays/1067-00/text_0028E240.h"
+#include "overlays/1067-00/text_002F9C90.h"
+
+struct ItemCreationAllocationRecord;
 class FieldClass15BB90;
 class ItemCreationClass172870;
 
@@ -392,6 +397,35 @@ typedef LibMovementState ShopClass187B90;
 typedef LibClass171E80 ShopClass187B68;
 /** Shop copy of the shared intrusive-list sentinel. */
 typedef LibClass171E90 ShopClass187B78;
+
+/** Shop callback controller with MAIN table 0x188800 and an owned record selection at offset 0x54. */
+struct ShopState : FieldClass153E30
+{
+    /** @brief Initialize the shop controller and its record selection. */
+    ShopState();
+    /** @brief Initialize the selected records. @return Nonzero when selection links are present. */
+    virtual u8 func_00264110();
+    /** @brief Destroy the record selection and Field controller base. */
+    virtual ~ShopState();
+    s32 unk34;
+    u8 unk38;
+    u8 unk39[3];
+    ShopClass188500* unk3c;
+    ShopClass188400* unk40;
+    ShopClass188300* unk44;
+    ShopClass1880E0* unk48;
+    ShopClass187EC0* unk4c;
+    ShopClass188200* unk50;
+    FieldRecordSelection selection;
+    FieldHalfwordBuckets buckets;
+    u8 unk3268[4];
+    s32 unk326c;
+    s32 unk3270;
+    s32 unk3274;
+    s32 unk3278;
+    ItemCreationAllocationRecord* unk327c;
+    u8 unk3280;
+};
 #endif
 
 #ifdef __cplusplus

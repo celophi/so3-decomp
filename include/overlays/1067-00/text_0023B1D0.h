@@ -25,6 +25,14 @@ typedef struct FieldObject23B1D0 FieldObject23B1D0;
 typedef struct FieldObject23B280 FieldObject23B280;
 typedef struct FieldObject23BE00 FieldObject23BE00;
 
+/** Coordinate selector node containing two scalar positions and its next link. */
+struct FieldNode23D310
+{
+    float x;
+    float y;
+    FieldNode23D310* next;
+};
+
 /** Partial selector state containing its control byte and current index. */
 struct FieldState23B3A0
 {
@@ -248,7 +256,9 @@ struct FieldObject23CEA0
     u8 unkE5;
     u8 unkE6[0xA];
     u8 width;
-    u8 unkF1[0x1F];
+    u8 unkF1;
+    u8 unkF2;
+    u8 unkF3[0x1D];
     s16 row_count;
     s16 index;
     s16 unk114;
@@ -281,6 +291,13 @@ struct FieldObject23B1D0
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Construct the native grid and initialize its field transform bases.
+ * @param object Storage for the 0x130-byte grid widget.
+ * @return The constructed grid.
+ */
+FieldObject23CEA0* func_0023D170(FieldObject23CEA0* object);
 
 /**
  * @brief Select a node and either copy or apply its coordinates.

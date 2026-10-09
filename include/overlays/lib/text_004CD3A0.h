@@ -152,7 +152,10 @@ public:
 
     u8 unk60;
     u8 unk61;
-    u8 unk62[8];
+    u8 unk62[2];
+    /** Nonzero while the submitted packet awaits its DMA notification. */
+    u8 dma_pending;
+    u8 unk65[5];
     u16 unk6a;
     u16 unk6c;
     u8 unk6e[0x22];
@@ -246,10 +249,15 @@ public:
      * @brief Store the attached object pointer at offset 0x70.
      * @param attached Object pointer to store.
      */
-    virtual void func_004295B0(void* attached);
+    virtual void func_004295B0(void* attached)
+    {
+        unk70 = attached;
+    }
 
     /** @brief Default handler that performs no work. */
-    virtual void func_004295C0();
+    virtual void func_004295C0()
+    {
+    }
 
     u8 unk14[0x48];
     s32 unk5c;

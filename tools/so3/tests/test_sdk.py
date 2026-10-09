@@ -129,6 +129,8 @@ class SdkTests(unittest.TestCase):
             Path('config/manifests/sdk-functions.json').write_text(json.dumps(manifest))
             Path('src/main').mkdir()
             Path('src/main/game.c').write_text('int game(void) { return 0; }\n')
+            Path('config/thunks').mkdir()
+            Path('config/thunks/main_thunk_addrs.txt').write_text('@4@__dt__4BaseFv = 0x1000;\n')
             with patch.object(build, 'CONFIG', ROOT / 'config/manifests/compilers.json'):
                 build.configure(configs)
             ninja = Path('build/build.ninja').read_text()
@@ -139,6 +141,8 @@ class SdkTests(unittest.TestCase):
             self.assertIn(' build/main/src/sdk/main/calls.c.o', link)
             self.assertNotIn('build/progress/src/sdk', ninja)
             self.assertIn('asm/main/game.s.o: assemble asm/main/game.s', ninja)
+            vtables = next(line for line in ninja.splitlines() if line.startswith('build build/vtable-report.json:'))
+            self.assertIn('config/thunks/main_thunk_addrs.txt', vtables.split('|', 1)[1])
             self.assertEqual([u['metadata']['source_path'] for u in report['units']], ['src/main/game.c'])
 
 

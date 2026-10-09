@@ -20,7 +20,6 @@ union FieldLocalVector4
 extern "C" void func_00228DD0(FieldTransform*);
 extern "C" bool func_00227280(FieldState3BA*);
 
-struct FieldSlot { u8 pad[0x20]; FieldLocalQword unk20; };
 struct FieldState704 { u8 pad[0x704]; u32 unk704; };
 struct FieldState79C { u8 pad[0x79C]; u8 unk79c; };
 struct FieldState794 { u8 pad[0x794]; u8 unk794; };
@@ -171,25 +170,25 @@ extern "C" bool func_00203930(FieldState3BA* obj)
     return true;
 }
 
-extern "C" s32 func_00203990(void* object)
+s32 FieldClass152430::func_00203990()
 {
     return 0;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002039A0);
 
-extern "C" void func_002039B0(void* object)
+void FieldClass152430::func_002039B0(u8 setting, float value)
 {
 }
 
-extern "C" bool func_002039C0(const FieldVector180* obj)
+bool FieldClass152430::func_002039C0() const
 {
-    return obj->x != 0.0f || obj->y != 0.0f || obj->z != 0.0f;
+    return unk180.x != 0.0f || unk180.y != 0.0f || unk180.z != 0.0f;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203A30);
 
-extern "C" s32 func_00203A70(void* object)
+s32 FieldClass150F90::func_001DF3D0()
 {
     return 4;
 }
@@ -306,17 +305,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002042
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204370__16FieldClass150F90FUci);
 
-bool func_00204420(const FieldFloatGateState7C* object)
+bool FieldClass150F90::func_00204420()
 {
-    if (object->unk7c == 0)
+    if (unk7c == 0)
     {
         return false;
     }
-    if (object->unk8c_0)
+    if (unk8c_0)
     {
         return false;
     }
-    return !(object->unk90 > 0.0f);
+    return !(unk90 > 0.0f);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204480__16FieldClass150F90FPv);
@@ -389,9 +388,9 @@ extern "C" s32 func_00205700(void* object)
     return 14;
 }
 
-extern "C" void func_00205710(FieldSlot* object, const FieldLocalQword* value)
+void FieldClass150F90::func_00205710(const FieldVec4A* value)
 {
-    object->unk20 = *value;
+    unk20 = *value;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00205720);
