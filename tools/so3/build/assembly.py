@@ -8,9 +8,9 @@ same order and skip the compiler.
 
 This also tidies up everything GNU as builds. It always adds .text, .data and
 .bss sections, even when there's nothing in them, and MWLDPS2 (the original
-linker) refuses empty ones, so I take those out. GNU ld doesn't care either
-way. The build runs `python -m tools.so3.build.assembly OBJECT` after
-assembling each data piece for the same reason.
+linker) refuses empty ones, so I take those out. The build runs
+`python -m tools.so3.build.assembly OBJECT` after assembling each data piece
+for the same reason.
 """
 
 import argparse
@@ -27,8 +27,7 @@ from tools.so3.build.elf import section_headers, section_names
 ASSEMBLER = 'mips-ps2-decompals-as'
 ASSEMBLER_CPU = 'r5900'  # The PS2's main CPU (the Emotion Engine).
 ASSEMBLER_ABI = 'eabi'
-# -mno-pdr leaves out the .pdr debugging section, which GNU ld throws away
-# and MWLDPS2 refuses.
+# -mno-pdr leaves out the .pdr debugging section, which MWLDPS2 refuses.
 ASSEMBLER_FLAGS = ['-no-pad-sections', '-mno-pdr']
 LITTLE_ENDIAN = '-EL'
 OBJCOPY = 'mips-ps2-decompals-objcopy'

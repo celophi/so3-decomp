@@ -1,7 +1,7 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002CABC0.h"
 #include "main/resident_data.h"
-#include "main/resident_0013CD50.h"
+#include "sdk/main/libc_guess_0013CD50.h"
 #include "sdk/main/libc_0013C6D0.h"
 
 struct FieldNameEntry

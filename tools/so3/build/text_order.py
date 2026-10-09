@@ -188,15 +188,15 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, e
         texts = [i for i in texts if i not in dropped]
     if keep is not None:
         # Overlay vtables live in retained resident data, not these generated
-        # sections. GNU ld diagnoses duplicate definitions before /DISCARD/.
+        # sections. Nothing places the generated ones, and MWLDPS2 refuses a
+        # definition in a section it doesn't place, so they become references.
         vtables = {i for i, h in enumerate(headers) if name(h) == '.vtables'}
         data = undefine_symbols(data, vtables, addresses)
     if not reorder:
         return data
 
-    # GNU ld's ELF reader creates a relocation section's target when it reaches
-    # that relocation section, so each .text moves together with its own
-    # relocation sections and keeps them after it.
+    # Each .text moves together with its own relocation sections, which stay
+    # right after it, the way the compiler wrote them.
     relocations = {t: [i for i, h in enumerate(headers) if h[1] in (4, 9) and h[7] == t] for t in texts}
     members = sorted(i for t in texts for i in [t, *relocations[t]])
     ordered = [i for t in sorted(texts, key=lambda i: key[i]) for i in [t, *relocations[t]]]
@@ -340,8 +340,7 @@ def release_bookkeeping(data, indices):
     exception index entry. Here those records stay in the object, but every
     function has its own small relocation table for each of them, so I empty
     the tables that point at a dropped copy. (Turning the entries into
-    R_MIPS_NONE made MWLDPS2 crash.) Nothing moves, and GNU ld, which throws the
-    records away anyway, sees no difference.
+    R_MIPS_NONE made MWLDPS2 crash.) Nothing moves.
     """
     shoff = struct.unpack_from('<I', data, 32)[0]
     size, count, names_index = struct.unpack_from('<HHH', data, 46)

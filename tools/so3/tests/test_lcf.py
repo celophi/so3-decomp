@@ -1,4 +1,4 @@
-"""Check that splat's linker scripts turn into MWLDPS2 command files that link the same bytes."""
+"""Check that splat's linker scripts turn into MWLDPS2 command files that link the right bytes."""
 
 import json
 from pathlib import Path
@@ -7,11 +7,10 @@ import subprocess
 import tempfile
 import unittest
 
-from tools.so3.build.assembly import LITTLE_ENDIAN
 from tools.so3.build.compiler_probe import COMPILER_EXE, COMPILERS, CONFIG, LINKER_EXE, working_candidate
 from tools.so3.build.driver import BINARY_ARCHITECTURE, BINARY_OBJECT_FORMAT, BINUTILS_PREFIX, MWLDPS2_FLAGS
 from tools.so3.build.flat_image import image
-from tools.so3.build.lcf import command_file, parse_linker_script, symbol_definitions
+from tools.so3.build.lcf import absolute_definitions, absolute_symbols, command_file, parse_linker_script, symbol_definitions
 from tools.so3.formats import FormatError
 
 # Each line splat writes inside a section, and what it should become.
@@ -137,14 +136,36 @@ class RefusalTests(unittest.TestCase):
                 symbol_definitions([path])
 
 
+class AbsoluteSymbolTests(unittest.TestCase):
+    def test_only_symbols_marked_absolute_are_taken(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'symbols.txt'
+            path.write_text('__dl__FPv = 0x00100D60; // type:func absolute:True\n'
+                            '__vt__16FieldClass16AB90 = 0x0016AB90; // absolute:True\n'
+                            'local = 0x00294DA0; // type:func\n'
+                            'other = 0x00295000; // absolute:False\n'
+                            '// ignored = 0x00100000; // absolute:True\n')
+            self.assertEqual(absolute_symbols([path]),
+                             {'__dl__FPv': 0x100D60, '__vt__16FieldClass16AB90': 0x16AB90})
+            self.assertEqual(absolute_definitions([path]),
+                             ['__dl__FPv = 0x100D60;', '__vt__16FieldClass16AB90 = 0x16AB90;'])
+
+    def test_maps_that_disagree_are_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            first, second = Path(directory) / 'first.txt', Path(directory) / 'second.txt'
+            first.write_text('resident = 0x00100000; // absolute:True\n')
+            second.write_text('resident = 0x00100004; // absolute:True\n')
+            with self.assertRaisesRegex(FormatError, 'conflicting'):
+                absolute_symbols([first, second])
+
+
 def compiler_folder():
     return COMPILERS / working_candidate(json.loads(CONFIG.read_text()))['id']
 
 
 # A tiny module, laid out like the real overlays: a header, then the code and
 # its read-only data, then a data block. It's written out in full, the way
-# splat writes it. (The helper above starts with an empty section, which GNU ld
-# throws away without moving to its address, so the two linkers would disagree.)
+# splat writes it.
 TINY_MODULE = """SECTIONS
 {
     .text 0x1000 : AT(0) SUBALIGN(4)
@@ -167,15 +188,17 @@ DATA = bytes(range(16))
 CODE = ('extern int D_3000;\n'
         'static const int table[4] = {1, 2, 3, 4};\n'
         'int entry(int index) { return table[index] + D_3000; }\n')
-SYMBOLS = ['D_3000 = 0x3000;']
+# D_3000 lives outside the module, like the main program's data an overlay uses.
+SYMBOL_MAP = 'D_3000 = 0x00003000; // absolute:True\n'
 OBJECTS = ('header.bin.o', 'code.c.o', 'data.bin.o')
+TABLE = b''.join(value.to_bytes(4, 'little') for value in (1, 2, 3, 4))
 
 
-@unittest.skipUnless(shutil.which(f'{BINUTILS_PREFIX}ld') and shutil.which('wibo')
+@unittest.skipUnless(shutil.which(f'{BINUTILS_PREFIX}objcopy') and shutil.which('wibo')
                      and (compiler_folder() / LINKER_EXE).exists(),
                      'requires development binutils, wibo and the downloaded compiler')
 class LinkTests(unittest.TestCase):
-    """Link a tiny module with both linkers and compare the images."""
+    """Link a tiny module with MWLDPS2 and check where everything landed."""
 
     def run_tool(self, *command):
         result = subprocess.run(command, capture_output=True, text=True, cwd=self.work)
@@ -192,34 +215,33 @@ class LinkTests(unittest.TestCase):
         (self.work / 'code.c').write_text(CODE)
         self.run_tool('wibo', str(compiler_folder() / COMPILER_EXE), '-c', '-O3,p', '-o', 'code.c.o', 'code.c')
 
-    def link_with_gnu_ld(self):
-        (self.work / 'layout.ld').write_text(TINY_MODULE + '\n'.join(SYMBOLS) + '\n')
-        self.run_tool(f'{BINUTILS_PREFIX}ld', LITTLE_ENDIAN, '-T', 'layout.ld', '-o', 'gnu.elf', *OBJECTS)
-        return self.flat_image('gnu.elf')
-
-    def link_with_mwldps2(self):
-        (self.work / 'layout.lcf').write_text(converted(TINY_MODULE, SYMBOLS))
+    def link(self):
+        (self.work / 'symbols.txt').write_text(SYMBOL_MAP)
+        symbols = absolute_definitions([self.work / 'symbols.txt'])
+        (self.work / 'layout.lcf').write_text(converted(TINY_MODULE, symbols))
         self.run_tool('wibo', str(compiler_folder() / LINKER_EXE), *MWLDPS2_FLAGS.split(),
                       '-o', 'mw.elf', 'layout.lcf', *OBJECTS)
         # The module's regions, like the build writes them.
         return image((self.work / 'mw.elf').read_bytes())
 
-    def flat_image(self, elf):
-        image_name = Path(elf).with_suffix('.bin').name
-        self.run_tool(f'{BINUTILS_PREFIX}objcopy', '-O', 'binary', elf, image_name)
-        return (self.work / image_name).read_bytes()
-
-    def test_both_linkers_make_the_same_image(self):
+    def test_everything_lands_where_the_script_says(self):
         with tempfile.TemporaryDirectory() as directory:
             self.work = Path(directory)
             self.build_objects()
-            gnu_image = self.link_with_gnu_ld()
-            # Make sure the image really has everything in it, so two empty
-            # images can't pass as equal.
-            self.assertTrue(gnu_image.startswith(HEADER))
-            self.assertTrue(gnu_image.endswith(DATA))
-            self.assertGreater(len(gnu_image), len(HEADER) + len(DATA))
-            self.assertEqual(self.link_with_mwldps2(), gnu_image)
+            result = self.link()
+            # The header comes first, and the data block ends the module on a
+            # 16-byte boundary.
+            self.assertTrue(result.startswith(HEADER))
+            self.assertTrue(result.endswith(DATA))
+            self.assertEqual((len(result) - len(DATA)) % 16, 0)
+            # The read-only table follows the code, on a 16-byte boundary.
+            table = result.index(TABLE)
+            self.assertEqual(table % 16, 0)
+            self.assertGreater(table, len(HEADER))
+            # The code found D_3000 at the address the symbol map gives.
+            code = result[len(HEADER):table]
+            words = [int.from_bytes(code[i:i + 4], 'little') for i in range(0, len(code), 4)]
+            self.assertIn(0x3000, [word & 0xFFFF for word in words])
 
 
 if __name__ == '__main__':

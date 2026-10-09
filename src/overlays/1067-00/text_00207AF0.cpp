@@ -7,9 +7,9 @@
 #include "overlays/1067-00/text_002934A0.h"
 #include "overlays/1067-00/text_00272360.h"
 #include "overlays/lib/text_0046AE20.h"
-#include "main/resident_0013F3E0.h"
+#include "sdk/main/libm_guess_0013F3E0.h"
 #include "overlays/lib/text_004BD360.h"
-#include "main/resident_0013A4C0.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/1067-00/text_0022DC70.h"
 

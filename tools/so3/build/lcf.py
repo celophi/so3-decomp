@@ -14,21 +14,26 @@ Each module is one continuous block, apart from anything that comes before
 its first fixed address (the main program's ELF header), which gets a block of
 its own at address 0. I worked out the command file format by trying things
 with MWLDPS2 itself, and the comments below say what I found.
+
+The command file also gives the addresses of symbols that live outside the
+module, like the main program's functions an overlay calls. Those come from
+splat's undefined-symbol scripts, and from the symbol maps (see
+absolute_symbols()).
 """
 
 import argparse
 from collections import Counter
 from dataclasses import dataclass, field
 from itertools import takewhile
-import json
 from pathlib import Path
+import re
 
-from tools.so3 import ROOT
+from tools.so3.build.text_order import SYMBOL_LINE
 from tools.so3.formats import require
 
-# The modules that link with MWLDPS2 instead of GNU ld. I'm moving them over
-# one at a time.
-LINKER_CONFIG = ROOT / 'config/manifests/linker.json'
+# In a symbol map, `absolute:True` in a line's comment marks a symbol that's
+# outside the module. The flag sits among splat's other attributes after //.
+ABSOLUTE_FLAG = re.compile(r'\babsolute\s*:\s*True\b')
 
 # MWLDPS2 starts a program at __start unless it's told otherwise. An overlay
 # doesn't have a real entry point, so I put it at the overlay's first byte.
@@ -296,7 +301,7 @@ def parse_linker_script(text):
 
 
 def symbol_definitions(paths):
-    """Read the `name = 0x...;` lines of the symbol scripts, from splat and linker_symbols.py."""
+    """Read the `name = 0x...;` lines of splat's undefined-symbol scripts."""
     lines = []
     for path in paths:
         for number, raw in enumerate(Path(path).read_text().splitlines(), 1):
@@ -370,19 +375,48 @@ def command_file(sections, gp, symbols):
     return '\n'.join(lines) + '\n'
 
 
-def mwldps2_modules():
-    """The names of the modules that link with MWLDPS2."""
-    return set(json.loads(LINKER_CONFIG.read_text())['mwldps2_modules'])
+def absolute_symbols(paths):
+    """Collect the symbols the maps mark `absolute:True`, by name.
+
+    These live outside the module at a fixed address, mostly in the main
+    program, which stays loaded while the overlays run. For example:
+
+        __dl__FPv = 0x00100D60; // type:func absolute:True
+
+    The flag tells splat the symbol already exists, so it doesn't define one.
+    The linker still needs the address, so the command file gives it. A symbol
+    can show up in more than one map, but it has to have the same address in
+    each.
+    """
+    result = {}
+    for path in paths:
+        for line in Path(path).read_text().splitlines():
+            match = SYMBOL_LINE.match(line)
+            _, _, comment = line.partition('//')
+            if not match or not ABSOLUTE_FLAG.search(comment):
+                continue
+            name, address = match.group(1), int(match.group(2), 16)
+            require(result.get(name, address) == address, f'{name}: conflicting absolute symbol addresses')
+            result[name] = address
+    return result
+
+
+def absolute_definitions(paths):
+    """The absolute symbols as `name = 0x...;` lines, sorted by name."""
+    return [f'{name} = 0x{address:X};' for name, address in sorted(absolute_symbols(paths).items())]
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('linker_script', type=Path, help="splat's linker script for the module")
-    parser.add_argument('symbols', nargs='*', type=Path, help='symbol scripts to copy in')
+    parser.add_argument('symbols', nargs='*', type=Path, help="splat's undefined-symbol scripts to copy in")
+    parser.add_argument('--symbol-map', action='append', default=[], type=Path, dest='symbol_maps',
+                        help='a symbol map to take absolute symbols from (can be repeated)')
     parser.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
     sections, gp = parse_linker_script(args.linker_script.read_text())
-    content = command_file(sections, gp, symbol_definitions(args.symbols))
+    symbols = symbol_definitions(args.symbols) + absolute_definitions(args.symbol_maps)
+    content = command_file(sections, gp, symbols)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(content)
 

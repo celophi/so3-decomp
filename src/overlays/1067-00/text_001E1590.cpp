@@ -3,7 +3,7 @@
 #include "main/resident_data.h"
 #include "main/resident_001001E0.h"
 #include "sdk/main/libkernl_00121940.h"
-#include "main/resident_00137290.h"
+#include "sdk/main/libc_guess_00137290.h"
 #include "overlays/lib/text_00429B00.h"
 #include "main/resident_0010A0E0.h"
 #include "overlays/1067-00/text_0022DC70.h"

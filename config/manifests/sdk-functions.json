@@ -5118,6 +5118,26 @@
     },
     {
       "module": "main",
+      "source": "src/sdk/main/libgraph_guess_0012FD10.c",
+      "start": 197520,
+      "end": 197656,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Assumed Sony EE libgraph (not matched to a reference)",
+      "evidence": "sits between verified libgraph objects, and both pieces start with the same code; assumed library code pending a matching SDK; see docs/research.md",
+      "functions": [
+        {
+          "name": "func_0012FD10",
+          "offset": 197520,
+          "address": 1244432,
+          "size": 136,
+          "sha256": "8a6ee10c14649aba4de10207dca100efce88ffbff27d077ffb38d47edf2e4538",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "module": "main",
       "source": "src/sdk/main/libgraph_0012FD98.c",
       "start": 197656,
       "end": 198136,
@@ -5136,6 +5156,26 @@
             "sceGsSetDefDrawEnv2"
           ],
           "member": "graph022.o"
+        }
+      ]
+    },
+    {
+      "module": "main",
+      "source": "src/sdk/main/libgraph_guess_0012FF78.c",
+      "start": 198136,
+      "end": 198272,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Assumed Sony EE libgraph (not matched to a reference)",
+      "evidence": "sits between verified libgraph objects, and both pieces start with the same code; assumed library code pending a matching SDK; see docs/research.md",
+      "functions": [
+        {
+          "name": "func_0012FF78",
+          "offset": 198136,
+          "address": 1245048,
+          "size": 136,
+          "sha256": "8a6ee10c14649aba4de10207dca100efce88ffbff27d077ffb38d47edf2e4538",
+          "aliases": []
         }
       ]
     },
@@ -5505,6 +5545,650 @@
     },
     {
       "module": "main",
+      "source": "src/sdk/main/libc_guess_00131D18.c",
+      "start": 205720,
+      "end": 226624,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Assumed GCC-built C library, newlib from a Sony toolchain (not matched to a reference)",
+      "evidence": "functions start 8 bytes past 16-byte boundaries, which CodeWarrior never produces, so this was built with GCC; 11 functions in the surrounding region match newlib from the SDK 2.7.2 toolchain (sha256 4053f36360d5c90da8050b6eecb07c4fba449cdcf992dd177257dedc7070a440) exactly but abort does not; assumed library code pending a matching toolchain; see docs/research.md",
+      "functions": [
+        {
+          "name": "func_00131D18",
+          "offset": 205720,
+          "address": 1252632,
+          "size": 88,
+          "sha256": "40f50c08633fc1604ad6edcb5fabb150761a8a21e73ec294c009d900a3be2cb2",
+          "aliases": []
+        },
+        {
+          "name": "func_00131D70",
+          "offset": 205808,
+          "address": 1252720,
+          "size": 176,
+          "sha256": "30cabad511fbd7ddf553fb715432027ee5dc8e24cde699bfc9eef969a3a9caa1",
+          "aliases": []
+        },
+        {
+          "name": "func_00131E20",
+          "offset": 205984,
+          "address": 1252896,
+          "size": 32,
+          "sha256": "759ecf6957aa9df854dd59366bc8f0013f68c58eca41828a4f01bb01b95e4232",
+          "aliases": []
+        },
+        {
+          "name": "func_00131E40",
+          "offset": 206016,
+          "address": 1252928,
+          "size": 1776,
+          "sha256": "612a660d806bfc80d7f9b204d07289f031ac7c26db865066aca84f919d3062d9",
+          "aliases": []
+        },
+        {
+          "name": "func_00132530",
+          "offset": 207792,
+          "address": 1254704,
+          "size": 16,
+          "sha256": "82b4d620fd4f338b1194126f6abbbdadce5c4df386e94be79525774b07f0cec7",
+          "aliases": []
+        },
+        {
+          "name": "func_00132540",
+          "offset": 207808,
+          "address": 1254720,
+          "size": 40,
+          "sha256": "776cea7a310bedb7f32b53467bac4e1bbeaf2a861a5a90dca111825d0d7c273a",
+          "aliases": []
+        },
+        {
+          "name": "func_00132568",
+          "offset": 207848,
+          "address": 1254760,
+          "size": 48,
+          "sha256": "ed14d98891b5d53096a9aeae8f3d395fb2ae485ec017500d3a66b57c08013025",
+          "aliases": []
+        },
+        {
+          "name": "func_00132598",
+          "offset": 207896,
+          "address": 1254808,
+          "size": 8,
+          "sha256": "6d64edf91449c1b17746c1ef18afa2eb25c70bdf1322ab3df5a2630993b7e2f1",
+          "aliases": []
+        },
+        {
+          "name": "func_001325A0",
+          "offset": 207904,
+          "address": 1254816,
+          "size": 88,
+          "sha256": "f1c3e16ed8409f3734ea609d30f95ad22de517e8005c96dab7340b61c96cb0ca",
+          "aliases": []
+        },
+        {
+          "name": "func_001325F8",
+          "offset": 207992,
+          "address": 1254904,
+          "size": 40,
+          "sha256": "88ee44b664bc159096f9f58d6ae2fe29874b21c0a537e4881dd4acec9f7ca70d",
+          "aliases": []
+        },
+        {
+          "name": "func_00132620",
+          "offset": 208032,
+          "address": 1254944,
+          "size": 40,
+          "sha256": "c71be81b4b3db9dba3abe20fb727a13a54b3b9c7e06e13b46e00c927cf544d03",
+          "aliases": []
+        },
+        {
+          "name": "func_00132648",
+          "offset": 208072,
+          "address": 1254984,
+          "size": 40,
+          "sha256": "d8dae57b024aa2d87c773a103c28d13baaf57e783527c2df469111208487085d",
+          "aliases": []
+        },
+        {
+          "name": "func_00132670",
+          "offset": 208112,
+          "address": 1255024,
+          "size": 104,
+          "sha256": "2c0cf98f57c0581faefbd3af3e96bba176753727cb83fb2198f5d5f0bf7d4262",
+          "aliases": []
+        },
+        {
+          "name": "func_001326D8",
+          "offset": 208216,
+          "address": 1255128,
+          "size": 40,
+          "sha256": "e7099de6e0b59fafad633a2010d0b8224af26120d2cb4e9aa85ae0c3161dac9c",
+          "aliases": []
+        },
+        {
+          "name": "func_00132700",
+          "offset": 208256,
+          "address": 1255168,
+          "size": 728,
+          "sha256": "fadcef0235e0faa8bc1d81936c50887c36ea9aab6b3577eeb499d0ea592ee66b",
+          "aliases": []
+        },
+        {
+          "name": "func_001329D8",
+          "offset": 208984,
+          "address": 1255896,
+          "size": 8,
+          "sha256": "d1b6fee6523016c187e4ef0cefdebbf32c5a8b2bd6f8a7923e69ea4d63a962fb",
+          "aliases": []
+        },
+        {
+          "name": "func_001329E0",
+          "offset": 208992,
+          "address": 1255904,
+          "size": 8,
+          "sha256": "df7a13b2c8a65514d82ec9c5a874fdac16df1c5cdaf638e52699c94483f68644",
+          "aliases": []
+        },
+        {
+          "name": "func_001329E8",
+          "offset": 209000,
+          "address": 1255912,
+          "size": 216,
+          "sha256": "52a8917b395dcc1247ae8b0a89f7c65f212494cac35c01e326208d32083e5cd3",
+          "aliases": []
+        },
+        {
+          "name": "func_00132AC0",
+          "offset": 209216,
+          "address": 1256128,
+          "size": 328,
+          "sha256": "b952d6bee43477eee7253ae9bf711abb5c39610d1783a72a40ea071d96a98781",
+          "aliases": []
+        },
+        {
+          "name": "func_00132C08",
+          "offset": 209544,
+          "address": 1256456,
+          "size": 136,
+          "sha256": "d42b847a5dc909287fe31203d1a95fd920ba22b1339c37aa15e67678d94d964f",
+          "aliases": []
+        },
+        {
+          "name": "func_00132C90",
+          "offset": 209680,
+          "address": 1256592,
+          "size": 128,
+          "sha256": "0362053b3d3ff563a6471e11b36fc7e84a47bc90aa5755ad12a4e434ec96459b",
+          "aliases": []
+        },
+        {
+          "name": "func_00132D10",
+          "offset": 209808,
+          "address": 1256720,
+          "size": 144,
+          "sha256": "4d9c2ad3913d7ddba6715d72f690ac4414fcc152bf58817214c717a0717e55f3",
+          "aliases": []
+        },
+        {
+          "name": "func_00132DA0",
+          "offset": 209952,
+          "address": 1256864,
+          "size": 8,
+          "sha256": "6d64edf91449c1b17746c1ef18afa2eb25c70bdf1322ab3df5a2630993b7e2f1",
+          "aliases": []
+        },
+        {
+          "name": "func_00132DA8",
+          "offset": 209960,
+          "address": 1256872,
+          "size": 816,
+          "sha256": "34f1127df9d4bfbc0e8870e195fb930f461a241075bfc26fba6e7f6e33af6451",
+          "aliases": []
+        },
+        {
+          "name": "func_001330D8",
+          "offset": 210776,
+          "address": 1257688,
+          "size": 480,
+          "sha256": "1384d8bd4a30f7c27ed312ef70b6036af4c6e00d38c14d7d600c650367e574b2",
+          "aliases": []
+        },
+        {
+          "name": "func_001332B8",
+          "offset": 211256,
+          "address": 1258168,
+          "size": 488,
+          "sha256": "26ed53dba7aab9dc9c8c8f98bd75135d0762e2a87ec89be65b026f57b70115cf",
+          "aliases": []
+        },
+        {
+          "name": "func_001334A0",
+          "offset": 211744,
+          "address": 1258656,
+          "size": 48,
+          "sha256": "013c1064c6264718272a59180c0bcf53ad75312fc1406b9ea5da41ac59bbe971",
+          "aliases": []
+        },
+        {
+          "name": "func_001334D0",
+          "offset": 211792,
+          "address": 1258704,
+          "size": 240,
+          "sha256": "037ac03bde5f0d5cc47558d1f514beb2fcd09b06ef8c0cee7f0e8a17fb198596",
+          "aliases": []
+        },
+        {
+          "name": "func_001335C0",
+          "offset": 212032,
+          "address": 1258944,
+          "size": 248,
+          "sha256": "03a182521bf0c15850c145e3a5d73976bc2c0c5d9fe8b95560ec03bc0e335b7d",
+          "aliases": []
+        },
+        {
+          "name": "func_001336B8",
+          "offset": 212280,
+          "address": 1259192,
+          "size": 152,
+          "sha256": "18614e9bde549074fa4d2ef03f763e4437ee99af914398d3347e119d019b3278",
+          "aliases": []
+        },
+        {
+          "name": "func_00133750",
+          "offset": 212432,
+          "address": 1259344,
+          "size": 1640,
+          "sha256": "6594539ef75540a968caa643565e01c5ed016a3a7bc02b34575470394c2c772a",
+          "aliases": []
+        },
+        {
+          "name": "func_00133DB8",
+          "offset": 214072,
+          "address": 1260984,
+          "size": 96,
+          "sha256": "3c09d81263316d3174c3a87cc650fa8bcfaf1397d0f36beb4544d7814b34534b",
+          "aliases": []
+        },
+        {
+          "name": "func_00133E18",
+          "offset": 214168,
+          "address": 1261080,
+          "size": 1488,
+          "sha256": "2ba41e3af908e3ea3d706dc7dedcc6aac1218b9e1693e63d25dd78a16fa7fc51",
+          "aliases": []
+        },
+        {
+          "name": "func_001343E8",
+          "offset": 215656,
+          "address": 1262568,
+          "size": 1344,
+          "sha256": "8a52f09399c43e52d5d451e64dfe5570ac875b0c2ef24a6c32edff713bb521c0",
+          "aliases": []
+        },
+        {
+          "name": "func_00134928",
+          "offset": 217000,
+          "address": 1263912,
+          "size": 304,
+          "sha256": "8787fc3950a0a57863f989f21aff6cbb45e4d3a7d1db5b028d2d6aa2cb2812ce",
+          "aliases": []
+        },
+        {
+          "name": "func_00134A58",
+          "offset": 217304,
+          "address": 1264216,
+          "size": 160,
+          "sha256": "0969b92d6e1ce17a61ba13dc73ae182776f7aa7af0c65bba899e5da75f4b71ab",
+          "aliases": []
+        },
+        {
+          "name": "func_00134AF8",
+          "offset": 217464,
+          "address": 1264376,
+          "size": 576,
+          "sha256": "9aafacf090d9e8ed6572bf078659446aec977bb957ea4afb2ca76908e3446d9c",
+          "aliases": []
+        },
+        {
+          "name": "func_00134D38",
+          "offset": 218040,
+          "address": 1264952,
+          "size": 88,
+          "sha256": "50f808966bbc5d5a3b6a364017bc57a0e23899d94366ad556e868abb1f3f8b5c",
+          "aliases": []
+        },
+        {
+          "name": "func_00134D90",
+          "offset": 218128,
+          "address": 1265040,
+          "size": 104,
+          "sha256": "2625c4d4e0a7ef4bc6d8d3caf97ed5d4b6b3a21a1eb0e1ea2ad7fdf62393a207",
+          "aliases": []
+        },
+        {
+          "name": "func_00134DF8",
+          "offset": 218232,
+          "address": 1265144,
+          "size": 680,
+          "sha256": "3e5a88634a2ec906fa4a885830df548139b095900f49bb80b067d28a9c61b31e",
+          "aliases": []
+        },
+        {
+          "name": "func_001350A0",
+          "offset": 218912,
+          "address": 1265824,
+          "size": 360,
+          "sha256": "954718ce4c46306755b72b0a121196d0d31a8fd606c0925f7123ac1f065bf2b7",
+          "aliases": []
+        },
+        {
+          "name": "func_00135208",
+          "offset": 219272,
+          "address": 1266184,
+          "size": 280,
+          "sha256": "31a223954285596deb3cc246055a0f7c9cb91ed3b3f96414e1b8b3ec2e7d14fe",
+          "aliases": []
+        },
+        {
+          "name": "func_00135320",
+          "offset": 219552,
+          "address": 1266464,
+          "size": 80,
+          "sha256": "5341750928758bd285c849ac9255aa868283f9d2d3c7c93ce83d737ae62ba904",
+          "aliases": []
+        },
+        {
+          "name": "func_00135370",
+          "offset": 219632,
+          "address": 1266544,
+          "size": 184,
+          "sha256": "1ffb8415b7acc8866a37da84b98b20747e4d1b69fb7488fcf81b42ec2a910b25",
+          "aliases": []
+        },
+        {
+          "name": "func_00135428",
+          "offset": 219816,
+          "address": 1266728,
+          "size": 152,
+          "sha256": "4f1fe977b03450756200ab3ba3dc3a6ee37309cdabc8b23912e5e1eb4810ab3d",
+          "aliases": []
+        },
+        {
+          "name": "func_001354C0",
+          "offset": 219968,
+          "address": 1266880,
+          "size": 160,
+          "sha256": "3b8f0520f6e7df387b0ffb0bb83802a4dfa1262ac7f4862c762b4eba2c0eee47",
+          "aliases": []
+        },
+        {
+          "name": "func_00135560",
+          "offset": 220128,
+          "address": 1267040,
+          "size": 56,
+          "sha256": "678251279981dafbfb7b5b39237f482a66cd1a34fb27733f9e5e820cdbe492cf",
+          "aliases": []
+        },
+        {
+          "name": "func_00135598",
+          "offset": 220184,
+          "address": 1267096,
+          "size": 48,
+          "sha256": "b86281feadfd41a2f7be861e31a4d1c7881261cdc25ebefa879d9729ed6d4760",
+          "aliases": []
+        },
+        {
+          "name": "func_001355C8",
+          "offset": 220232,
+          "address": 1267144,
+          "size": 88,
+          "sha256": "12b40d48b0367f12a709ed505eb5311ffeef9e675fd970a350b241432acbc27f",
+          "aliases": []
+        },
+        {
+          "name": "func_00135620",
+          "offset": 220320,
+          "address": 1267232,
+          "size": 272,
+          "sha256": "305966a6f438b056e1d917ea11d0300a9721809021b06ff3f6281775e8700503",
+          "aliases": []
+        },
+        {
+          "name": "func_00135730",
+          "offset": 220592,
+          "address": 1267504,
+          "size": 144,
+          "sha256": "8accf01339157815bc3785c18c7aebeab0d0c653b941938b6f1fa67a16fdff54",
+          "aliases": []
+        },
+        {
+          "name": "func_001357C0",
+          "offset": 220736,
+          "address": 1267648,
+          "size": 568,
+          "sha256": "6c699796ad98dd1a39c8c18e0d42409118fb4861ab2097e7ae021265176540f9",
+          "aliases": []
+        },
+        {
+          "name": "func_001359F8",
+          "offset": 221304,
+          "address": 1268216,
+          "size": 88,
+          "sha256": "9c35847185cced3e10bd2f469604e147a92412a0353b8a286be302ff62f1a200",
+          "aliases": []
+        },
+        {
+          "name": "func_00135A50",
+          "offset": 221392,
+          "address": 1268304,
+          "size": 104,
+          "sha256": "90fe3a0edd2737796dce7f14aad55e039b3b7b63285b70ec354f87d06df86bf1",
+          "aliases": []
+        },
+        {
+          "name": "func_00135AB8",
+          "offset": 221496,
+          "address": 1268408,
+          "size": 504,
+          "sha256": "21fd77b770d4c9beaef67fe226960c55da8b4419b41b1a1e09c591f9850ae8fd",
+          "aliases": []
+        },
+        {
+          "name": "func_00135CB0",
+          "offset": 222000,
+          "address": 1268912,
+          "size": 352,
+          "sha256": "045a8f2792fd6e32340c15b51cd2cdeaae6081cc885ad63dbbebb783b7afc535",
+          "aliases": []
+        },
+        {
+          "name": "func_00135E10",
+          "offset": 222352,
+          "address": 1269264,
+          "size": 280,
+          "sha256": "06190c002faeac923041a2e54a1bed9a134c82e0b85198f6792af3ae343b3524",
+          "aliases": []
+        },
+        {
+          "name": "func_00135F28",
+          "offset": 222632,
+          "address": 1269544,
+          "size": 80,
+          "sha256": "196c8d755981bcd7b9fc1549056409208fcd4fd7279d4369b28c7f7cfb368a1d",
+          "aliases": []
+        },
+        {
+          "name": "func_00135F78",
+          "offset": 222712,
+          "address": 1269624,
+          "size": 184,
+          "sha256": "2075cef197d2bfa79e07e8c85500b902ecf876dd0c7d5db9a3c48aa31b99c6fe",
+          "aliases": []
+        },
+        {
+          "name": "func_00136030",
+          "offset": 222896,
+          "address": 1269808,
+          "size": 144,
+          "sha256": "4fe6bb644b533c5e957658bc57b21ef6a4e882dd2024d40835ac4bf5d384b4b5",
+          "aliases": []
+        },
+        {
+          "name": "func_001360C0",
+          "offset": 223040,
+          "address": 1269952,
+          "size": 152,
+          "sha256": "328a61e2be8f5b3a9994d24cc32731074d4b192661c61cb2189e5213ee6ada06",
+          "aliases": []
+        },
+        {
+          "name": "func_00136158",
+          "offset": 223192,
+          "address": 1270104,
+          "size": 56,
+          "sha256": "a6abd3d0ebb58447038e21d28b20dc858d2359e40d69607a5d8017cbc86d61a1",
+          "aliases": []
+        },
+        {
+          "name": "func_00136190",
+          "offset": 223248,
+          "address": 1270160,
+          "size": 48,
+          "sha256": "eb0e5ab249adb54724aaa2c7bf965757961c885a0db5782920feeb94da54fd24",
+          "aliases": []
+        },
+        {
+          "name": "func_001361C0",
+          "offset": 223296,
+          "address": 1270208,
+          "size": 64,
+          "sha256": "225ba0538954bb8f761a7b7cdcba134972f9b3b96bd5bb0a0acd7b32462df859",
+          "aliases": []
+        },
+        {
+          "name": "func_00136200",
+          "offset": 223360,
+          "address": 1270272,
+          "size": 72,
+          "sha256": "e49b3d323880abb37821a554807289072333bf861ff2df7e2634bb10a7c2175c",
+          "aliases": []
+        },
+        {
+          "name": "func_00136248",
+          "offset": 223432,
+          "address": 1270344,
+          "size": 80,
+          "sha256": "45f6cb84e316a7d85b53095e9803c240cce15984d48c98bd018584d76f6028f8",
+          "aliases": []
+        },
+        {
+          "name": "func_00136298",
+          "offset": 223512,
+          "address": 1270424,
+          "size": 256,
+          "sha256": "a4ec42de78b90c0a2117b904446543a67bd2617e09a8b4e42ad71a5faaee763e",
+          "aliases": []
+        },
+        {
+          "name": "func_00136398",
+          "offset": 223768,
+          "address": 1270680,
+          "size": 616,
+          "sha256": "7fe8f7442835e3cb68c91fe8ccd4112a0d6348d723b6b0451b84e08c5fc389c1",
+          "aliases": []
+        },
+        {
+          "name": "func_00136600",
+          "offset": 224384,
+          "address": 1271296,
+          "size": 72,
+          "sha256": "b19c45207701371a0b6a589034ce124bbf3205592ebaca74251c7182fe287c1a",
+          "aliases": []
+        },
+        {
+          "name": "func_00136648",
+          "offset": 224456,
+          "address": 1271368,
+          "size": 136,
+          "sha256": "91f2d99a42e09e4af858d7b52c7228e3b5841c6780a82840b28d773acf0e22b3",
+          "aliases": []
+        },
+        {
+          "name": "func_001366D0",
+          "offset": 224592,
+          "address": 1271504,
+          "size": 320,
+          "sha256": "2356d9e81b0809a858d0d0c8d69400b9bfa8a67a3a410f0bb86b2c904fbea088",
+          "aliases": []
+        },
+        {
+          "name": "func_00136810",
+          "offset": 224912,
+          "address": 1271824,
+          "size": 232,
+          "sha256": "8e0b4ef8a03e77e5b0ee56c95b1eb8af1c494cd0a2dba1873bc5f4cf277e39c3",
+          "aliases": []
+        },
+        {
+          "name": "func_001368F8",
+          "offset": 225144,
+          "address": 1272056,
+          "size": 264,
+          "sha256": "0685d4a20ed424fa87d6497edc3f47a4605f6efffa95d4996482a1f1886d020f",
+          "aliases": []
+        },
+        {
+          "name": "func_00136A00",
+          "offset": 225408,
+          "address": 1272320,
+          "size": 920,
+          "sha256": "53b4c65385cc7da639750f95f234c243ba569459a878873638057bc33660fa5b",
+          "aliases": []
+        },
+        {
+          "name": "func_00136D98",
+          "offset": 226328,
+          "address": 1273240,
+          "size": 40,
+          "sha256": "a9ec05c5c63f598a6e74185f35e5a38e39c96d86579013bcfece4e041be646f3",
+          "aliases": []
+        },
+        {
+          "name": "func_00136DC0",
+          "offset": 226368,
+          "address": 1273280,
+          "size": 48,
+          "sha256": "c201a03b87f4e7bb6915659c462690a9ebc8a2330cd4a79d44fce3b1d571b151",
+          "aliases": []
+        },
+        {
+          "name": "func_00136DF0",
+          "offset": 226416,
+          "address": 1273328,
+          "size": 40,
+          "sha256": "0191fe78a112f770186d83c4a3436da40829645099e9161425bac50f262d45e8",
+          "aliases": []
+        },
+        {
+          "name": "func_00136E18",
+          "offset": 226456,
+          "address": 1273368,
+          "size": 48,
+          "sha256": "83079e4a8698cce5e081047e791388bf099f924458287ff4c32fdc8c89822c12",
+          "aliases": []
+        },
+        {
+          "name": "func_00136E48",
+          "offset": 226504,
+          "address": 1273416,
+          "size": 120,
+          "sha256": "b161d41779d4c55930e91ae607a8cd492160e50f8e57c48413e12d794b4055b2",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "module": "main",
       "source": "src/sdk/main/libc_00136EC0.c",
       "start": 226624,
       "end": 226656,
@@ -5523,6 +6207,42 @@
             "ctime"
           ],
           "member": "ctime.o"
+        }
+      ]
+    },
+    {
+      "module": "main",
+      "source": "src/sdk/main/libc_guess_00136EE0.c",
+      "start": 226656,
+      "end": 227536,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Assumed GCC-built C library, newlib from a Sony toolchain (not matched to a reference)",
+      "evidence": "functions start 8 bytes past 16-byte boundaries, which CodeWarrior never produces, so this was built with GCC; 11 functions in the surrounding region match newlib from the SDK 2.7.2 toolchain (sha256 4053f36360d5c90da8050b6eecb07c4fba449cdcf992dd177257dedc7070a440) exactly but abort does not; assumed library code pending a matching toolchain; see docs/research.md",
+      "functions": [
+        {
+          "name": "func_00136EE0",
+          "offset": 226656,
+          "address": 1273568,
+          "size": 472,
+          "sha256": "57eac95710b72d9ada1752b027ef31a5e111de7ad98062139e3b6dc271348f69",
+          "aliases": []
+        },
+        {
+          "name": "func_001370B8",
+          "offset": 227128,
+          "address": 1274040,
+          "size": 376,
+          "sha256": "a887d6a463ec349a44e26c36790cefbc1ef2a98d4872ccbca7572a39a16f3ba0",
+          "aliases": []
+        },
+        {
+          "name": "func_00137230",
+          "offset": 227504,
+          "address": 1274416,
+          "size": 32,
+          "sha256": "56dccb6f153cb1a36b101c2ba84c5bf4fc32f75f677678b961ea0466d55f43b9",
+          "aliases": []
         }
       ]
     },
@@ -5562,6 +6282,258 @@
     },
     {
       "module": "main",
+      "source": "src/sdk/main/libc_guess_00137290.c",
+      "start": 227600,
+      "end": 240072,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Assumed GCC-built C library, newlib from a Sony toolchain (not matched to a reference)",
+      "evidence": "functions start 8 bytes past 16-byte boundaries, which CodeWarrior never produces, so this was built with GCC; 11 functions in the surrounding region match newlib from the SDK 2.7.2 toolchain (sha256 4053f36360d5c90da8050b6eecb07c4fba449cdcf992dd177257dedc7070a440) exactly but abort does not; assumed library code pending a matching toolchain; see docs/research.md",
+      "functions": [
+        {
+          "name": "func_00137290",
+          "offset": 227600,
+          "address": 1274512,
+          "size": 192,
+          "sha256": "d4dde4020816f61e9d639f16bacb9104cacf3301d6d15f087b269a2078c08dda",
+          "aliases": []
+        },
+        {
+          "name": "func_00137350",
+          "offset": 227792,
+          "address": 1274704,
+          "size": 88,
+          "sha256": "31cbe6bab575fa67df5223fd15f162e5f577fca44626e1ea3d9df2876bcf64f7",
+          "aliases": []
+        },
+        {
+          "name": "func_001373A8",
+          "offset": 227880,
+          "address": 1274792,
+          "size": 536,
+          "sha256": "c449d34eb875220e6573f36c56ccbe461e30d19946877db91d78d0ed04aa433f",
+          "aliases": []
+        },
+        {
+          "name": "func_001375C0",
+          "offset": 228416,
+          "address": 1275328,
+          "size": 4560,
+          "sha256": "07dbe7cda0cc806c21e796323211d92e1aed3eb8a1ba1ddcfa4ddb200013c5ba",
+          "aliases": []
+        },
+        {
+          "name": "func_00138790",
+          "offset": 232976,
+          "address": 1279888,
+          "size": 16,
+          "sha256": "b146c3c5e95b21fc48981b3cefae9063e2c97a6ed92c78626f7779b88041d74c",
+          "aliases": []
+        },
+        {
+          "name": "func_001387A0",
+          "offset": 232992,
+          "address": 1279904,
+          "size": 264,
+          "sha256": "593645ed884a9cb3dfd3bda0972eae7c9ac009dbe6fd9460008f42f36afa37c3",
+          "aliases": []
+        },
+        {
+          "name": "func_001388A8",
+          "offset": 233256,
+          "address": 1280168,
+          "size": 88,
+          "sha256": "3647cce3fc4a748e0f3bb49ee999c8763dd582aa235928f0d118b7e551adf266",
+          "aliases": []
+        },
+        {
+          "name": "func_00138900",
+          "offset": 233344,
+          "address": 1280256,
+          "size": 112,
+          "sha256": "d843de00455596d83444c329c3512924b747aca4011afd1aacb2d03b8f8d729a",
+          "aliases": []
+        },
+        {
+          "name": "func_00138970",
+          "offset": 233456,
+          "address": 1280368,
+          "size": 224,
+          "sha256": "7fe9904814ed29c73980a58409d9ac7eec3696f7d8f24cdb177d2b87b8c7d623",
+          "aliases": []
+        },
+        {
+          "name": "func_00138A50",
+          "offset": 233680,
+          "address": 1280592,
+          "size": 16,
+          "sha256": "41f8b83ad3bb574612a93cc9e9cd3b6a01b59f9a3fe4cc0c085dc6375d17a674",
+          "aliases": []
+        },
+        {
+          "name": "func_00138A60",
+          "offset": 233696,
+          "address": 1280608,
+          "size": 16,
+          "sha256": "d62abe7d1d574f9dcd0db5e8bc2d2a59d7349c55d0aad5711fbeb3f3ae9a9298",
+          "aliases": []
+        },
+        {
+          "name": "func_00138A70",
+          "offset": 233712,
+          "address": 1280624,
+          "size": 144,
+          "sha256": "43014f3de23d03c035b09469ec8e1c455ea31364e2d9c140b24d21a036f98281",
+          "aliases": []
+        },
+        {
+          "name": "func_00138B00",
+          "offset": 233856,
+          "address": 1280768,
+          "size": 800,
+          "sha256": "3586358e594022178588598d57b6437d77ebe77aa5585d61027c21739b3eb34b",
+          "aliases": []
+        },
+        {
+          "name": "func_00138E20",
+          "offset": 234656,
+          "address": 1281568,
+          "size": 368,
+          "sha256": "7ecc273e42620343f6a7972cd1a4c79860ac045264576ab074722099f7c0ffec",
+          "aliases": []
+        },
+        {
+          "name": "func_00138F90",
+          "offset": 235024,
+          "address": 1281936,
+          "size": 96,
+          "sha256": "c7973c24e31cfc44df2165b0bcc049507a419729f63680ef50bfdcf28ef99e7a",
+          "aliases": []
+        },
+        {
+          "name": "func_00138FF0",
+          "offset": 235120,
+          "address": 1282032,
+          "size": 984,
+          "sha256": "bc91552d0eed92482a95ae526ea026902b4be863cc1e6896a7c12f2b4985d364",
+          "aliases": []
+        },
+        {
+          "name": "func_001393C8",
+          "offset": 236104,
+          "address": 1283016,
+          "size": 152,
+          "sha256": "31bcda47c00e28ac4e2ef7e780b772e619ffc8681d4de413b82ff0882a5881f6",
+          "aliases": []
+        },
+        {
+          "name": "func_00139460",
+          "offset": 236256,
+          "address": 1283168,
+          "size": 136,
+          "sha256": "0d2121b3fbd3b06f9d6a191955dc6148c93f4db656857e6ef960ff5f60cac6a6",
+          "aliases": []
+        },
+        {
+          "name": "func_001394E8",
+          "offset": 236392,
+          "address": 1283304,
+          "size": 16,
+          "sha256": "a5e154491d0a711288185b664205a87cf62191c17558763e3c0793a9b8cce3ac",
+          "aliases": []
+        },
+        {
+          "name": "func_001394F8",
+          "offset": 236408,
+          "address": 1283320,
+          "size": 48,
+          "sha256": "14f86795a6f226d1a8e13ef3a2fdae4286efe2985a3de9407da02f38896574da",
+          "aliases": []
+        },
+        {
+          "name": "func_00139528",
+          "offset": 236456,
+          "address": 1283368,
+          "size": 40,
+          "sha256": "94192f508b82847528046627f289de74e83e095232fbd186b0c3f4424cbc3b4d",
+          "aliases": []
+        },
+        {
+          "name": "func_00139550",
+          "offset": 236496,
+          "address": 1283408,
+          "size": 96,
+          "sha256": "1e89b0dfcabb8f03d44a19dbc0e30d30fcf88fbdf6d3082640acf77bda64055d",
+          "aliases": []
+        },
+        {
+          "name": "func_001395B0",
+          "offset": 236592,
+          "address": 1283504,
+          "size": 336,
+          "sha256": "0d5f5662156cf421be93d511ef9b4543fa471a6a16ccdc3b2ac7bcc682031ca9",
+          "aliases": []
+        },
+        {
+          "name": "func_00139700",
+          "offset": 236928,
+          "address": 1283840,
+          "size": 48,
+          "sha256": "7feb7df4e3e23f8d3e4a0c3d4f6b6b786b6a7345bc93ec64927fae738d7621a2",
+          "aliases": []
+        },
+        {
+          "name": "func_00139730",
+          "offset": 236976,
+          "address": 1283888,
+          "size": 464,
+          "sha256": "cfe9e4cb8a8569f09554141107734a658b2a74c82febd414153ea39bc1f9c19e",
+          "aliases": []
+        },
+        {
+          "name": "func_00139900",
+          "offset": 237440,
+          "address": 1284352,
+          "size": 40,
+          "sha256": "5672e10f0ffa2fa6461022baa9cb9b00a43fe0d51076f2224fd85eaa45289025",
+          "aliases": []
+        },
+        {
+          "name": "func_00139928",
+          "offset": 237480,
+          "address": 1284392,
+          "size": 16,
+          "sha256": "e4cca9f8a5a2c810f1d272fea5fdced13eae03a73d3c519d4937fb304ffa0fe1",
+          "aliases": []
+        },
+        {
+          "name": "func_00139938",
+          "offset": 237496,
+          "address": 1284408,
+          "size": 600,
+          "sha256": "acfa93ab32041c23f94cf1d132b38c14c4071dda834d64aeb5381847f4154771",
+          "aliases": []
+        },
+        {
+          "name": "func_00139B90",
+          "offset": 238096,
+          "address": 1285008,
+          "size": 1912,
+          "sha256": "e2a7cc4faccfc8b9548aaef24200c58c8b6fa567c3d63409b242b7f8286851c2",
+          "aliases": []
+        },
+        {
+          "name": "func_0013A308",
+          "offset": 240008,
+          "address": 1286920,
+          "size": 64,
+          "sha256": "ccfd744b501f3a50157085468ad4a607111ae57f56be8d8ae1c61e7fdcc75c92",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "module": "main",
       "source": "src/sdk/main/libc_0013A348.c",
       "start": 240072,
       "end": 240448,
@@ -5591,6 +6563,418 @@
             "memcmp"
           ],
           "member": "memcmp.o"
+        }
+      ]
+    },
+    {
+      "module": "main",
+      "source": "src/sdk/main/libc_guess_0013A4C0.c",
+      "start": 240448,
+      "end": 249168,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Assumed GCC-built C library, newlib from a Sony toolchain (not matched to a reference)",
+      "evidence": "functions start 8 bytes past 16-byte boundaries, which CodeWarrior never produces, so this was built with GCC; 11 functions in the surrounding region match newlib from the SDK 2.7.2 toolchain (sha256 4053f36360d5c90da8050b6eecb07c4fba449cdcf992dd177257dedc7070a440) exactly but abort does not; assumed library code pending a matching toolchain; see docs/research.md",
+      "functions": [
+        {
+          "name": "func_0013A4C0",
+          "offset": 240448,
+          "address": 1287360,
+          "size": 176,
+          "sha256": "7ae9d0a246091b2eacc24234674a36854a69d81e2264a2cec3cc8609a9f0b173",
+          "aliases": []
+        },
+        {
+          "name": "func_0013A570",
+          "offset": 240624,
+          "address": 1287536,
+          "size": 264,
+          "sha256": "5e1b7c51d606497164053dcdae5afe2013c2341ef21989fd533533f32f49d287",
+          "aliases": []
+        },
+        {
+          "name": "func_0013A678",
+          "offset": 240888,
+          "address": 1287800,
+          "size": 192,
+          "sha256": "c5f1aa718cdde7254e8717f3391b139c18b774187e1595f779a3d9615633b383",
+          "aliases": []
+        },
+        {
+          "name": "__malloc_lock_guess",
+          "offset": 241080,
+          "address": 1287992,
+          "size": 8,
+          "sha256": "6d64edf91449c1b17746c1ef18afa2eb25c70bdf1322ab3df5a2630993b7e2f1",
+          "aliases": []
+        },
+        {
+          "name": "__malloc_unlock_guess",
+          "offset": 241088,
+          "address": 1288000,
+          "size": 8,
+          "sha256": "6d64edf91449c1b17746c1ef18afa2eb25c70bdf1322ab3df5a2630993b7e2f1",
+          "aliases": []
+        },
+        {
+          "name": "func_0013A748",
+          "offset": 241096,
+          "address": 1288008,
+          "size": 168,
+          "sha256": "fe4117f118fe3087bd2b289075501b16cebe308e76b6ef79b7f9e1eb328ef5cb",
+          "aliases": []
+        },
+        {
+          "name": "func_0013A7F0",
+          "offset": 241264,
+          "address": 1288176,
+          "size": 48,
+          "sha256": "edf1260d93471b9aaffceb3f6fe5603c50e017b46e404fac9ce3be5e61c41860",
+          "aliases": []
+        },
+        {
+          "name": "func_0013A820",
+          "offset": 241312,
+          "address": 1288224,
+          "size": 280,
+          "sha256": "42ee49a5026ca1dfc3193271676826c05024c36819470efc927c5fd0b6163d98",
+          "aliases": []
+        },
+        {
+          "name": "func_0013A938",
+          "offset": 241592,
+          "address": 1288504,
+          "size": 328,
+          "sha256": "0a39144ddd0b7c28698575a800ec1a352ff67f2a6e0ab4a318e28896c3825366",
+          "aliases": []
+        },
+        {
+          "name": "func_0013AA80",
+          "offset": 241920,
+          "address": 1288832,
+          "size": 136,
+          "sha256": "e2049982314879c4693a07677cf2cd90df64fe9bf7f51738611a44f6c2f6abee",
+          "aliases": []
+        },
+        {
+          "name": "func_0013AB08",
+          "offset": 242056,
+          "address": 1288968,
+          "size": 192,
+          "sha256": "c7feb867b8ed3cea067c2f9aacd494f9e7d3aa38258acafc44adbb287183b227",
+          "aliases": []
+        },
+        {
+          "name": "func_0013ABC8",
+          "offset": 242248,
+          "address": 1289160,
+          "size": 56,
+          "sha256": "a7cc2f7f6780fbf1d94d932b4a3cc61030012613671ce047bf7976133b984489",
+          "aliases": []
+        },
+        {
+          "name": "func_0013AC00",
+          "offset": 242304,
+          "address": 1289216,
+          "size": 560,
+          "sha256": "f96d4adbd44eecc000ed8a7d10d042b3854108deb988b3a119f3479265a45fbc",
+          "aliases": []
+        },
+        {
+          "name": "func_0013AE30",
+          "offset": 242864,
+          "address": 1289776,
+          "size": 256,
+          "sha256": "1ca4f4d231be49e43c225ceffa032fca7623053b68d4c213be4851e9e775f1fd",
+          "aliases": []
+        },
+        {
+          "name": "func_0013AF30",
+          "offset": 243120,
+          "address": 1290032,
+          "size": 376,
+          "sha256": "d427c6d5f46961b093e6dbde43349f8abd12cba351d938a606767da6e7180280",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B0A8",
+          "offset": 243496,
+          "address": 1290408,
+          "size": 104,
+          "sha256": "0b7cec049ff8a84daa05d27522309e08e777144bcc3210b177bb13d866913768",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B110",
+          "offset": 243600,
+          "address": 1290512,
+          "size": 400,
+          "sha256": "072401c2216c9a3abc2e3ce16650b358fc4bcd248f8b06c5a79c18bb8b381edd",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B2A0",
+          "offset": 244000,
+          "address": 1290912,
+          "size": 152,
+          "sha256": "3f75214baecd33ada2dc22f93cb131f69b05a4f333c17b992b0511ba8ed5b3dc",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B338",
+          "offset": 244152,
+          "address": 1291064,
+          "size": 384,
+          "sha256": "514a27daff8c84381104bd6a5f2de6dc5fc5a9943cb0d1b4f1a7e4c9477e1d87",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B4B8",
+          "offset": 244536,
+          "address": 1291448,
+          "size": 384,
+          "sha256": "b4a4d4516dbd5d2eb9fcc1da78ec88ea93d802e83e01af6ab1716a9885ee611f",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B638",
+          "offset": 244920,
+          "address": 1291832,
+          "size": 192,
+          "sha256": "350754818b621c69c5b35431fc0190ac05a765d67f911208c41bcf4127bc9550",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B6F8",
+          "offset": 245112,
+          "address": 1292024,
+          "size": 112,
+          "sha256": "f0483ba73facd36714326d1893cd313d4c4e2e7a38e014d4121c3530d6613cf9",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B768",
+          "offset": 245224,
+          "address": 1292136,
+          "size": 64,
+          "sha256": "b83f217186be8cfcc2bdc87558aec7cc3803b4c6bc9cf32ed0813b7052596eea",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B7A8",
+          "offset": 245288,
+          "address": 1292200,
+          "size": 80,
+          "sha256": "9268fe19206ca1bc6849bc3ea8932ff2662b93b389c62b35221bd6842a717c62",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B7F8",
+          "offset": 245368,
+          "address": 1292280,
+          "size": 96,
+          "sha256": "a93c420f22d50503599711045587cb2e13ba07e8eecf685961989fd8c95066dd",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B858",
+          "offset": 245464,
+          "address": 1292376,
+          "size": 48,
+          "sha256": "1b7d20e40a1db971d342246d917a39424ac1c6c0aa589932182c03ae8c9b169b",
+          "aliases": []
+        },
+        {
+          "name": "func_0013B888",
+          "offset": 245512,
+          "address": 1292424,
+          "size": 1392,
+          "sha256": "26098d9ba57b62adf2d8304ba7e8613c366621db026e3f31611ff1b604fa2d51",
+          "aliases": []
+        },
+        {
+          "name": "func_0013BDF8",
+          "offset": 246904,
+          "address": 1293816,
+          "size": 72,
+          "sha256": "bebbd2172b9847997d64bdbb4447ba46b324a33ffd1df0b0d55f3f5d4541c51d",
+          "aliases": []
+        },
+        {
+          "name": "func_0013BE40",
+          "offset": 246976,
+          "address": 1293888,
+          "size": 56,
+          "sha256": "942b8825f45b114106eeb59258b8640c41b934bfcdad5ae63a734bc1ec703b7f",
+          "aliases": []
+        },
+        {
+          "name": "func_0013BE78",
+          "offset": 247032,
+          "address": 1293944,
+          "size": 96,
+          "sha256": "32299968043dbc1dcd2ff42757ec615365affa5c2da8d09e3e16a91f4dc2dded",
+          "aliases": []
+        },
+        {
+          "name": "func_0013BED8",
+          "offset": 247128,
+          "address": 1294040,
+          "size": 48,
+          "sha256": "1b20fa32432a78e14f75f8c38f4a0568b1af9ed60e16b1248c407c1e32a689a0",
+          "aliases": []
+        },
+        {
+          "name": "func_0013BF08",
+          "offset": 247176,
+          "address": 1294088,
+          "size": 40,
+          "sha256": "9ccf2b42e329104a9475189b613a31aafd5058994047a92ce67f74aaa87ee18e",
+          "aliases": []
+        },
+        {
+          "name": "func_0013BF30",
+          "offset": 247216,
+          "address": 1294128,
+          "size": 40,
+          "sha256": "b056eb5c8d2c12dd2e9334ab42cc42aa3224eba4020ba1788bb174b6681bcb63",
+          "aliases": []
+        },
+        {
+          "name": "func_0013BF58",
+          "offset": 247256,
+          "address": 1294168,
+          "size": 352,
+          "sha256": "376e07f4773b3347330e9834b99acb538ecb7403d6fb76c4bf90954e43a871a5",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C0B8",
+          "offset": 247608,
+          "address": 1294520,
+          "size": 112,
+          "sha256": "0897272fdd69ca8d03d6d9e123692d59b1b44200a3724606297d43dfc1bb995e",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C128",
+          "offset": 247720,
+          "address": 1294632,
+          "size": 144,
+          "sha256": "a1eb5409011e8a66fe7ca02d996605d9509394c21e4cce4a148fdcec475fbc74",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C1B8",
+          "offset": 247864,
+          "address": 1294776,
+          "size": 240,
+          "sha256": "2072e08f9183f7b42320b50cc2294d12356cae0f31d8be69d09271bf7e210d93",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C2A8",
+          "offset": 248104,
+          "address": 1295016,
+          "size": 184,
+          "sha256": "79d47f249b270ebd401157c224676178b000a995214c028ce41710fce38bf741",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C360",
+          "offset": 248288,
+          "address": 1295200,
+          "size": 40,
+          "sha256": "69a5b3e9013572c6465d41e8dcdbb4b886fd1ad483870b2c2f83316f7e98faa8",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C388",
+          "offset": 248328,
+          "address": 1295240,
+          "size": 48,
+          "sha256": "ecbbc30b2f8f3754cdfa1818bc01138971bc072fe85981c9d0ced7c8cd7945a6",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C3B8",
+          "offset": 248376,
+          "address": 1295288,
+          "size": 40,
+          "sha256": "ff7ccbcd53a3efa23da7e9ff0cc2ac162a95fdcc569ca184f46d19f849d5c1ec",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C3E0",
+          "offset": 248416,
+          "address": 1295328,
+          "size": 40,
+          "sha256": "8fc71bd8f313911c6c1df1dce046e1a37b4e848f78da7923d9bf96f5f6751697",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C408",
+          "offset": 248456,
+          "address": 1295368,
+          "size": 96,
+          "sha256": "7c721bc06e81ebf482238a3bb3718b969ccb5ee9a8cfe4af832b65ea73fced71",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C468",
+          "offset": 248552,
+          "address": 1295464,
+          "size": 32,
+          "sha256": "dd0e4f88fd0ee6b44f6b72c4c137add13b62a497d53ddea8087fa3fea3cc2d0b",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C488",
+          "offset": 248584,
+          "address": 1295496,
+          "size": 104,
+          "sha256": "e7e0e8afa41d11fee88687f39a49b96e61a45911c73cf8a90bdb0ca2c0736546",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C4F0",
+          "offset": 248688,
+          "address": 1295600,
+          "size": 112,
+          "sha256": "9beacdd9d669d70e1aa4f0ae4b21d751e86c446273b93e2f05c977c8eccac86d",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C560",
+          "offset": 248800,
+          "address": 1295712,
+          "size": 104,
+          "sha256": "fc1b5b079287a333fe712612430b3c32fb60b25e684581dbada53bc503bb3858",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C5C8",
+          "offset": 248904,
+          "address": 1295816,
+          "size": 128,
+          "sha256": "2c6fa37aca02d32fd16db1fdd771b1268b7ed3824d7d67be64781bcb6534f6f8",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C648",
+          "offset": 249032,
+          "address": 1295944,
+          "size": 104,
+          "sha256": "ff238b1c57b463ee1ee49cd3a9df56e0fd0c70f4ae7f823a6d2f684a640c14e8",
+          "aliases": []
+        },
+        {
+          "name": "func_0013C6B0",
+          "offset": 249136,
+          "address": 1296048,
+          "size": 32,
+          "sha256": "f73e18fb82d9d88030024100200c9e094a44f58cd1a3413b0ea98792c1c12803",
+          "aliases": []
         }
       ]
     },
@@ -5630,6 +7014,26 @@
     },
     {
       "module": "main",
+      "source": "src/sdk/main/libc_guess_0013C948.c",
+      "start": 249800,
+      "end": 250080,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Assumed GCC-built C library, newlib from a Sony toolchain (not matched to a reference)",
+      "evidence": "functions start 8 bytes past 16-byte boundaries, which CodeWarrior never produces, so this was built with GCC; 11 functions in the surrounding region match newlib from the SDK 2.7.2 toolchain (sha256 4053f36360d5c90da8050b6eecb07c4fba449cdcf992dd177257dedc7070a440) exactly but abort does not; assumed library code pending a matching toolchain; see docs/research.md",
+      "functions": [
+        {
+          "name": "func_0013C948",
+          "offset": 249800,
+          "address": 1296712,
+          "size": 280,
+          "sha256": "632c439a5dc8ca2a18fdbdcb56e3eaab1a732205e4ca119a05011125d6de45a1",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "module": "main",
       "source": "src/sdk/main/libc_0013CA60.c",
       "start": 250080,
       "end": 250832,
@@ -5659,6 +7063,318 @@
             "strncmp"
           ],
           "member": "strncmp.o"
+        }
+      ]
+    },
+    {
+      "module": "main",
+      "source": "src/sdk/main/libc_guess_0013CD50.c",
+      "start": 250832,
+      "end": 260704,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Assumed GCC-built C library, newlib from a Sony toolchain (not matched to a reference)",
+      "evidence": "functions start 8 bytes past 16-byte boundaries, which CodeWarrior never produces, so this was built with GCC; 11 functions in the surrounding region match newlib from the SDK 2.7.2 toolchain (sha256 4053f36360d5c90da8050b6eecb07c4fba449cdcf992dd177257dedc7070a440) exactly but abort does not; assumed library code pending a matching toolchain; see docs/research.md",
+      "functions": [
+        {
+          "name": "func_0013CD50",
+          "offset": 250832,
+          "address": 1297744,
+          "size": 448,
+          "sha256": "26bc3a12596ea67aa024a2a4b86f6dccce16d1ee330c73b2807df7688ed5cde8",
+          "aliases": []
+        },
+        {
+          "name": "func_0013CF10",
+          "offset": 251280,
+          "address": 1298192,
+          "size": 568,
+          "sha256": "2f914ebf89084a405bf999724577ec3c8e2820c6fc9e9041111383c635b11c45",
+          "aliases": []
+        },
+        {
+          "name": "func_0013D148",
+          "offset": 251848,
+          "address": 1298760,
+          "size": 56,
+          "sha256": "12fd22112f69a4af4a4a9f1edc7cf9f39f5acfb731ba0c4a388b17c57d6585ee",
+          "aliases": []
+        },
+        {
+          "name": "func_0013D180",
+          "offset": 251904,
+          "address": 1298816,
+          "size": 72,
+          "sha256": "afa9adbc07e88bd370dc00bc0c681fc74d622e76185398ccc2d7f48b0130801f",
+          "aliases": []
+        },
+        {
+          "name": "func_0013D1C8",
+          "offset": 251976,
+          "address": 1298888,
+          "size": 184,
+          "sha256": "c4684d20f537ccab55c7fd6853c49836f4a9e64dafb5ffa0fe243ce5fa266a92",
+          "aliases": []
+        },
+        {
+          "name": "func_0013D280",
+          "offset": 252160,
+          "address": 1299072,
+          "size": 120,
+          "sha256": "190db916d22bd85ddbd4edcf234feabb5bb5128f2ba73d5a19dc916cdb58da4b",
+          "aliases": []
+        },
+        {
+          "name": "func_0013D2F8",
+          "offset": 252280,
+          "address": 1299192,
+          "size": 5400,
+          "sha256": "bc283f90dbae1093ff395be9baa990a4e3a1597a89ca2ef4775e539bf28eb874",
+          "aliases": []
+        },
+        {
+          "name": "func_0013E810",
+          "offset": 257680,
+          "address": 1304592,
+          "size": 432,
+          "sha256": "02bdf0d990ddf1d33ef262eb1083548969bcb8130cae8e437269e5c95f66bc0e",
+          "aliases": []
+        },
+        {
+          "name": "func_0013E9C0",
+          "offset": 258112,
+          "address": 1305024,
+          "size": 224,
+          "sha256": "13e6e0fb360e41b97f3c66fc57e7986d6ef1e958b39ce39bde922cbce7b5521b",
+          "aliases": []
+        },
+        {
+          "name": "func_0013EAA0",
+          "offset": 258336,
+          "address": 1305248,
+          "size": 96,
+          "sha256": "219c58a0828a748e77a6b142172943fbc604bf6193c4c1a90f8cf9262503f2cb",
+          "aliases": []
+        },
+        {
+          "name": "func_0013EB00",
+          "offset": 258432,
+          "address": 1305344,
+          "size": 272,
+          "sha256": "aa9071d0d9d1fec9b78ebacbba54f63cb2a90740526941a721a032d7ade23b50",
+          "aliases": []
+        },
+        {
+          "name": "func_0013EC10",
+          "offset": 258704,
+          "address": 1305616,
+          "size": 1072,
+          "sha256": "1a8395c220ad593f882eccc3d0a7680a9b5bd353e24e8d192366091a7af60c74",
+          "aliases": []
+        },
+        {
+          "name": "func_0013F040",
+          "offset": 259776,
+          "address": 1306688,
+          "size": 928,
+          "sha256": "84451282bfc8d2fc154ded8a45e3c4012ff39abf939a8389729a85f8e96db83d",
+          "aliases": []
+        }
+      ]
+    },
+    {
+      "module": "main",
+      "source": "src/sdk/main/libm_guess_0013F3E0.c",
+      "start": 260704,
+      "end": 274248,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Assumed GCC-built math library, newlib from a Sony toolchain (not matched to a reference)",
+      "evidence": "functions start 8 bytes past 16-byte boundaries, which CodeWarrior never produces, so this was built with GCC; 11 functions in the surrounding region match newlib from the SDK 2.7.2 toolchain (sha256 4053f36360d5c90da8050b6eecb07c4fba449cdcf992dd177257dedc7070a440) exactly but abort does not; assumed library code pending a matching toolchain; see docs/research.md",
+      "functions": [
+        {
+          "name": "func_0013F3E0",
+          "offset": 260704,
+          "address": 1307616,
+          "size": 744,
+          "sha256": "a995750e6516c597026aefa97239e21bcd6d55568f6fe28014408b6fb861214a",
+          "aliases": []
+        },
+        {
+          "name": "func_0013F6C8",
+          "offset": 261448,
+          "address": 1308360,
+          "size": 808,
+          "sha256": "1c3fb40e5cecedd62fbfc30f78567b9dc533ed804fbaf31e8098f0459ab65dae",
+          "aliases": []
+        },
+        {
+          "name": "func_0013F9F0",
+          "offset": 262256,
+          "address": 1309168,
+          "size": 304,
+          "sha256": "a291670dea4f29b5de52f82ce985fccf3bca6039676beb6ced1957b30deb2b3f",
+          "aliases": []
+        },
+        {
+          "name": "func_0013FB20",
+          "offset": 262560,
+          "address": 1309472,
+          "size": 2192,
+          "sha256": "ab6155f5ec861e4d6adf3400a71381ce3613e98a1cd9b0963e987e392b5f0779",
+          "aliases": []
+        },
+        {
+          "name": "func_001403B0",
+          "offset": 264752,
+          "address": 1311664,
+          "size": 992,
+          "sha256": "fabe67f6ceae0d67b6be908e16b71f7f26548c176d8addb12f9a12cf0801c6d0",
+          "aliases": []
+        },
+        {
+          "name": "func_00140790",
+          "offset": 265744,
+          "address": 1312656,
+          "size": 312,
+          "sha256": "d757b9e66d1255b2c66722162a5cede225578beb823eb34d74758cd4520622e2",
+          "aliases": []
+        },
+        {
+          "name": "func_001408C8",
+          "offset": 266056,
+          "address": 1312968,
+          "size": 344,
+          "sha256": "97aeb5c7e70f99919e434c5a21caa805086ffc4706ebc4b43f623219b27ce6f5",
+          "aliases": []
+        },
+        {
+          "name": "func_00140A20",
+          "offset": 266400,
+          "address": 1313312,
+          "size": 2384,
+          "sha256": "c90c3de08bbb90b6fd14402d6a1c0e898ffdc35cbacceb98175b8d0ba9e37677",
+          "aliases": []
+        },
+        {
+          "name": "func_00141370",
+          "offset": 268784,
+          "address": 1315696,
+          "size": 264,
+          "sha256": "b686c96ebfec67d09b76ae74d67922056a63a138d341652a75b1dbd71d68a9d9",
+          "aliases": []
+        },
+        {
+          "name": "func_00141478",
+          "offset": 269048,
+          "address": 1315960,
+          "size": 664,
+          "sha256": "1e0d77c0610a85755fba26b077eb62a00bfe0460a26936216072819024d46970",
+          "aliases": []
+        },
+        {
+          "name": "func_00141710",
+          "offset": 269712,
+          "address": 1316624,
+          "size": 40,
+          "sha256": "0eb610faf9f997e49d88383c340e5e92835a1323c4be6b34b35e3d56764e31a4",
+          "aliases": []
+        },
+        {
+          "name": "func_00141738",
+          "offset": 269752,
+          "address": 1316664,
+          "size": 512,
+          "sha256": "9a0fde2f7fdf4e2af7b6a4cbe664340c472a70ce1de37ddd2f9f34c67f205fc6",
+          "aliases": []
+        },
+        {
+          "name": "func_00141938",
+          "offset": 270264,
+          "address": 1317176,
+          "size": 680,
+          "sha256": "d36e88f477913bdff2d26013cd262cd0a2ed51fbc2a0720adc56a55e285b9e4d",
+          "aliases": []
+        },
+        {
+          "name": "func_00141BE0",
+          "offset": 270944,
+          "address": 1317856,
+          "size": 232,
+          "sha256": "4163fb0aa5cf7b6da3b6303a030e95b93691c274988fbb9f0dd774ebb58ecd6b",
+          "aliases": []
+        },
+        {
+          "name": "func_00141CC8",
+          "offset": 271176,
+          "address": 1318088,
+          "size": 32,
+          "sha256": "92846e4c253601ae3c1f1f3603a91b8b9d6cd26dcbe3e2664170685664ee0cb0",
+          "aliases": []
+        },
+        {
+          "name": "func_00141CE8",
+          "offset": 271208,
+          "address": 1318120,
+          "size": 232,
+          "sha256": "8a14ff61874d530b6b3ba46371bee08872c96099a18de4395e003ef8bfddda9a",
+          "aliases": []
+        },
+        {
+          "name": "func_00141DD0",
+          "offset": 271440,
+          "address": 1318352,
+          "size": 240,
+          "sha256": "ae001c94366d275bbfcbd2946fd3c721ec194076c07c31d224fd66b7714329a2",
+          "aliases": []
+        },
+        {
+          "name": "func_00141EC0",
+          "offset": 271680,
+          "address": 1318592,
+          "size": 136,
+          "sha256": "705c0237862448e3060133d53d2a7728077094a3074bd32281304750f7045240",
+          "aliases": []
+        },
+        {
+          "name": "func_00141F48",
+          "offset": 271816,
+          "address": 1318728,
+          "size": 256,
+          "sha256": "54d4b94960911aa478aed4618eb59dd2fdcf5589cdf5bcf4754b1d0ccf4a2beb",
+          "aliases": []
+        },
+        {
+          "name": "func_00142048",
+          "offset": 272072,
+          "address": 1318984,
+          "size": 256,
+          "sha256": "a4bbcfadaf6b2aac1586fc87277f22fa14961235db8fb1c6ebda09313ccc4a66",
+          "aliases": []
+        },
+        {
+          "name": "func_00142148",
+          "offset": 272328,
+          "address": 1319240,
+          "size": 296,
+          "sha256": "516064039051b0791e661363149c4913a34d051175e238fd8f49eed935d78bbc",
+          "aliases": []
+        },
+        {
+          "name": "func_00142270",
+          "offset": 272624,
+          "address": 1319536,
+          "size": 336,
+          "sha256": "29daeead91ae7220412ac4cab2fe3c72e524f578f7edebc2e3d2354b4f9d61c1",
+          "aliases": []
+        },
+        {
+          "name": "func_001423C0",
+          "offset": 272960,
+          "address": 1319872,
+          "size": 1288,
+          "sha256": "d2712d89871301367c03e81ce0a3ac13e1a20c935480474a86644e5611e4f508",
+          "aliases": []
         }
       ]
     },
@@ -5697,6 +7413,274 @@
       ]
     },
     {
+      "module": "main",
+      "source": "src/sdk/main/mslgcc_00142A40.c",
+      "start": 274624,
+      "end": 279040,
+      "binary": "disc/us-disc1/iso/SLUS_204.88",
+      "binary_sha256": "7b58c4b0b1997711ba5c224ed8699e306671ff0ca3558afed17cff81b86fe8ed",
+      "classification": "Metrowerks C++ runtime (MSLGCC_PS2) from a CodeWarrior for PS2 release after R3.04",
+      "evidence": "27 of 31 functions match MSLGCC_PS2.LIB from CodeWarrior for PS2 R3.04 (sha256 a1c1a6f8f322a3c75f8f090a8b880601e0d8497c1b2f470b15e26ab4f2ccda98) exactly with relocations masked; three more are near matches of newer revisions of R3.04 functions and one is unidentified, so the release is a later one I do not have; see docs/research.md",
+      "functions": [
+        {
+          "name": "mwOverlayInit",
+          "offset": 274624,
+          "address": 1321536,
+          "size": 128,
+          "sha256": "8948d963eb6aa2187f656bf7ba3c0017c62b48f83c5f5fbaf0164975f534fea9",
+          "aliases": []
+        },
+        {
+          "name": "func_00142AC0",
+          "offset": 274752,
+          "address": 1321664,
+          "size": 32,
+          "sha256": "ae7ef3591d365272dc27c97531c7e012116dbe3142f4457e17e959dccfaab544",
+          "aliases": []
+        },
+        {
+          "name": "func_00142AE0",
+          "offset": 274784,
+          "address": 1321696,
+          "size": 64,
+          "sha256": "5dcb562685a380682d158a867d6a6c9427251ee89833820a29f35cf5e11ac713",
+          "aliases": []
+        },
+        {
+          "name": "__destroy_new_array3",
+          "offset": 274848,
+          "address": 1321760,
+          "size": 240,
+          "sha256": "bf6a169d12818b10e1f5f497ab4e4e30e9c29890790581d0c3008dbf1539a89d",
+          "aliases": []
+        },
+        {
+          "name": "__destroy_new_array",
+          "offset": 275088,
+          "address": 1322000,
+          "size": 160,
+          "sha256": "75f6741f04b42a691d956258b2d704ede3991a13b25567bfd7496da7d95e8db7",
+          "aliases": []
+        },
+        {
+          "name": "__destroy_arr",
+          "offset": 275248,
+          "address": 1322160,
+          "size": 112,
+          "sha256": "084ac4dea4224f28ad7f208ca908d7bcab5982b0b75198d2545ba335a53f71fb",
+          "aliases": []
+        },
+        {
+          "name": "__construct_array",
+          "offset": 275360,
+          "address": 1322272,
+          "size": 304,
+          "sha256": "3fe8e1a73b3edfa10778e4ec5c4daff1b237a9cb40276a6ebf91be62a0257b99",
+          "aliases": []
+        },
+        {
+          "name": "__dt__26__partial_array_destructorFv",
+          "offset": 275664,
+          "address": 1322576,
+          "size": 192,
+          "sha256": "cf176c539f80f5a434cadf17f1676fd553de92edb2c65c0975e0b08bc9e0da82",
+          "aliases": []
+        },
+        {
+          "name": "__construct_new_array",
+          "offset": 275856,
+          "address": 1322768,
+          "size": 352,
+          "sha256": "d42d8c495e88d26a9d1dae6fc14409c0bbaff7305f7fa101c9eadc6e63d3e77e",
+          "aliases": []
+        },
+        {
+          "name": "__dt__Q23std9exceptionFv",
+          "offset": 276208,
+          "address": 1323120,
+          "size": 80,
+          "sha256": "87068a7c2697cb163a2fa147d3d4c49bd80b3c6be0cbf7bdbd363b634f880ccd",
+          "aliases": []
+        },
+        {
+          "name": "func_001430C0",
+          "offset": 276288,
+          "address": 1323200,
+          "size": 16,
+          "sha256": "42157a033bc72ad98ea491247279c4198f5b3ab5f9471a1e1e7332529f040fa9",
+          "aliases": []
+        },
+        {
+          "name": "func_001430D0",
+          "offset": 276304,
+          "address": 1323216,
+          "size": 32,
+          "sha256": "135b5fd7928c0f1eed98939f9d409f3ddd7aafaf697608d2bff777ff9c7171fb",
+          "aliases": []
+        },
+        {
+          "name": "default_new_handler_guess__3stdFv",
+          "offset": 276336,
+          "address": 1323248,
+          "size": 128,
+          "sha256": "4f1da5fd26022b65d8a9a9880d0a600194dbabec635ff8749cbead2c0deb1551",
+          "aliases": []
+        },
+        {
+          "name": "func_00143170",
+          "offset": 276464,
+          "address": 1323376,
+          "size": 96,
+          "sha256": "26e7741dd64415cb98db8c07b92900fa134eaf2a51b7ebf8fe2fac891d4dc49c",
+          "aliases": []
+        },
+        {
+          "name": "func_001431D0",
+          "offset": 276560,
+          "address": 1323472,
+          "size": 16,
+          "sha256": "95d9f1d62590935cdcc97ab4583d428de80550603316c558d902ff6d9a615305",
+          "aliases": []
+        },
+        {
+          "name": "__nw__FUi",
+          "offset": 276576,
+          "address": 1323488,
+          "size": 176,
+          "sha256": "645a7eb6bc60be86e1d70cd5970fe1125109089c7aae9325efe41c2e3903265f",
+          "aliases": []
+        },
+        {
+          "name": "__throw_catch_compare_guess",
+          "offset": 276752,
+          "address": 1323664,
+          "size": 640,
+          "sha256": "af8e6f777a0da740ff87ec3760c744be75790e785c1b9bcec4ac69960c5f630a",
+          "aliases": []
+        },
+        {
+          "name": "func_00143510",
+          "offset": 277392,
+          "address": 1324304,
+          "size": 48,
+          "sha256": "0bb3eac4771e347b30eccef7e4a6cde5660416a151a22049bd6e3785d6f4969a",
+          "aliases": []
+        },
+        {
+          "name": "func_00143540",
+          "offset": 277440,
+          "address": 1324352,
+          "size": 48,
+          "sha256": "1cafdd046445afdcab5cd82b272f22f833f265df1d80e4665b763cc902796b82",
+          "aliases": []
+        },
+        {
+          "name": "func_00143570",
+          "offset": 277488,
+          "address": 1324400,
+          "size": 48,
+          "sha256": "1cafdd046445afdcab5cd82b272f22f833f265df1d80e4665b763cc902796b82",
+          "aliases": []
+        },
+        {
+          "name": "func_001435A0",
+          "offset": 277536,
+          "address": 1324448,
+          "size": 32,
+          "sha256": "61e430a817d6838be4e90edc5671f2feefd834bafb22a511afac220d0478cfff",
+          "aliases": []
+        },
+        {
+          "name": "__destroy_global_chain",
+          "offset": 277568,
+          "address": 1324480,
+          "size": 96,
+          "sha256": "9be0962956daaee831a82e59dc33208aada9c53f0d137fd422dd8b30ca1be884",
+          "aliases": []
+        },
+        {
+          "name": "__register_global_object",
+          "offset": 277664,
+          "address": 1324576,
+          "size": 48,
+          "sha256": "f2de66458615bd1f618f51cbe98e337ddfc0c6bf18af98307752843d438d2bf3",
+          "aliases": []
+        },
+        {
+          "name": "func_00143650",
+          "offset": 277712,
+          "address": 1324624,
+          "size": 96,
+          "sha256": "fa063839243a308b654c84bd1db748704e38f82d890be36359e4c9ce97ca8d68",
+          "aliases": []
+        },
+        {
+          "name": "__ptmf_scall",
+          "offset": 277808,
+          "address": 1324720,
+          "size": 64,
+          "sha256": "89d7de70ea2b322c0ca464d77b19eef485cb41a47ffce23577d630992c49b4a1",
+          "aliases": []
+        },
+        {
+          "name": "__ptmf_test",
+          "offset": 277872,
+          "address": 1324784,
+          "size": 32,
+          "sha256": "227b8eccf0310aac0fb986844ade769c1a198df55f95a5476320e939d339ac0e",
+          "aliases": []
+        },
+        {
+          "name": "__DecodeUnsignedNumber__FPcPUi",
+          "offset": 277904,
+          "address": 1324816,
+          "size": 176,
+          "sha256": "1aeb00ab1913461efea167050ac210e489d35f074d38c1a1ab301f07b11f38fa",
+          "aliases": []
+        },
+        {
+          "name": "__DecodeSignedNumber__FPcPi",
+          "offset": 278080,
+          "address": 1324992,
+          "size": 176,
+          "sha256": "fda21c86c80a0903dfde87a987b8455064b81252cda23c7fc3150b1b3feebe09",
+          "aliases": []
+        },
+        {
+          "name": "__end__catch",
+          "offset": 278256,
+          "address": 1325168,
+          "size": 64,
+          "sha256": "471881aae18e2db1d366c0245b985d82901b1228c90835873f36ab56becee441",
+          "aliases": []
+        },
+        {
+          "name": "__unexpected",
+          "offset": 278320,
+          "address": 1325232,
+          "size": 528,
+          "sha256": "e35573f6a7bb128d6eaf216fe5e8a1800471d2b55b99b63a462c1e6b01dd20b2",
+          "aliases": []
+        },
+        {
+          "name": "func_00143AC0",
+          "offset": 278848,
+          "address": 1325760,
+          "size": 96,
+          "sha256": "494b8c87e9a6be3e6d5721b9f36bdb60ba0adb5b6bffe41c311572d274249e9c",
+          "aliases": []
+        },
+        {
+          "name": "func_00143B20",
+          "offset": 278944,
+          "address": 1325856,
+          "size": 96,
+          "sha256": "da9a1d493228d8ea3eb0e37e3393f817230767911cfcf350e73ff539f80f8462",
+          "aliases": []
+        }
+      ]
+    },
+    {
       "module": "lib",
       "source": "src/overlays/lib/sdk/libmpeg_003E6900.c",
       "start": 128,
@@ -5704,7 +7688,7 @@
       "binary": "disc/us-disc1/modules/0002-01.bin",
       "binary_sha256": "748e51ea1ce9339bb76d3b1455b4b9548c0bf65593a84cfcc930587c12e8d0ef",
       "classification": "Sony EE libmpeg (SDK 2.7, tag PsIIlibmpeg 2700)",
-      "evidence": "every linked member of libmpeg.a from the SDK 2.7.2 runtime (sha256 e205f17028f8438eed39d5a350c47a230df189b2d1bf2e68ddcb00589fe29a05) matches its whole .text contiguously with relocations masked; all internal call and data references resolve; see docs/research.md and working/library-identification.md",
+      "evidence": "every linked member of libmpeg.a from the SDK 2.7.2 runtime (sha256 e205f17028f8438eed39d5a350c47a230df189b2d1bf2e68ddcb00589fe29a05) matches its whole .text contiguously with relocations masked; all internal call and data references resolve; see docs/research.md",
       "functions": [
         {
           "name": "_motionComp0",
@@ -7278,7 +9262,7 @@
       "binary": "disc/us-disc1/modules/0002-01.bin",
       "binary_sha256": "748e51ea1ce9339bb76d3b1455b4b9548c0bf65593a84cfcc930587c12e8d0ef",
       "classification": "Sony EE libipu (SDK 2.7, tag PsIIlibipu 2700)",
-      "evidence": "every linked member of libipu.a from the SDK 2.7.2 runtime (sha256 743ff8a6ab2ce9813b2280e32ead752da912a7e94628ee1053ecb9aba5c7a022) matches its whole .text contiguously with relocations masked; all internal call and data references resolve; see docs/research.md and working/library-identification.md",
+      "evidence": "every linked member of libipu.a from the SDK 2.7.2 runtime (sha256 743ff8a6ab2ce9813b2280e32ead752da912a7e94628ee1053ecb9aba5c7a022) matches its whole .text contiguously with relocations masked; all internal call and data references resolve; see docs/research.md",
       "functions": [
         {
           "name": "setD3_CHCR",

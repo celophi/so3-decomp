@@ -529,3 +529,28 @@ strncmp = 0x0013CB98; // type:func size:0x1B8
 // libvib.a: libvib.o
 sceVibGetProfile = 0x001428C8; // type:func size:0x80
 sceVibSetActParam = 0x00142948; // type:func size:0xF8
+
+// Runtime code I haven't matched exactly yet. Names ending in _guess are my
+// best guess and need research. The Metrowerks C++ runtime names without _guess
+// match CodeWarrior for PS2 R3.04's runtime byte for byte. See docs/research.md.
+__malloc_lock_guess = 0x0013A738; // type:func
+__malloc_unlock_guess = 0x0013A740; // type:func
+mwOverlayInit = 0x00142A40; // type:func
+__destroy_new_array3 = 0x00142B20; // type:func
+__destroy_new_array = 0x00142C10; // type:func
+__destroy_arr = 0x00142CB0; // type:func
+__construct_array = 0x00142D20; // type:func
+__dt__26__partial_array_destructorFv = 0x00142E50; // type:func
+__construct_new_array = 0x00142F10; // type:func
+__dt__Q23std9exceptionFv = 0x00143070; // type:func
+default_new_handler_guess__3stdFv = 0x001430F0; // type:func
+__nw__FUi = 0x001431E0; // type:func
+__throw_catch_compare_guess = 0x00143290; // type:func
+__destroy_global_chain = 0x001435C0; // type:func
+__register_global_object = 0x00143620; // type:func
+__ptmf_scall = 0x001436B0; // type:func
+__ptmf_test = 0x001436F0; // type:func
+__DecodeUnsignedNumber__FPcPUi = 0x00143710; // type:func
+__DecodeSignedNumber__FPcPi = 0x001437C0; // type:func
+__end__catch = 0x00143870; // type:func
+__unexpected = 0x001438B0; // type:func

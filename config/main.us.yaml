@@ -28,7 +28,13 @@ options:
   find_file_boundaries: false
   disasm_unknown: true
   gp_value: 0x001BDFF0
+  # MWLDPS2 rejects the sized <function>.NON_MATCHING symbol splat's nonmatching
+  # macro adds to every assembly function, so this module redefines it as empty.
+  # The nonmatching lines stay in the .s files for the tools that read them.
   generated_macro_inc_content: |
+    .purgem nonmatching
+    .macro nonmatching label, size=1
+    .endm
     .set Q, $Q
     .set ACC, $ACC
     .set I, $I
@@ -57,24 +63,24 @@ segments:
       - [0x2D980, c, sdk/main/libpad2_0012D300]
       - [0x2E238, c, sdk/main/libdbc_0012DBB8]
       - [0x2F148, c, sdk/main/libgraph_0012EAC8]
-      - [0x30390, c, main/resident_0012FD10]
+      - [0x30390, c, sdk/main/libgraph_guess_0012FD10]
       - [0x30418, c, sdk/main/libgraph_0012FD98]
-      - [0x305F8, c, main/resident_0012FF78]
+      - [0x305F8, c, sdk/main/libgraph_guess_0012FF78]
       - [0x30680, c, sdk/main/libcdvd_00130000]
-      - [0x32398, c, main/resident_00131D18]
+      - [0x32398, c, sdk/main/libc_guess_00131D18]
       - [0x37540, c, sdk/main/libc_00136EC0]
-      - [0x37560, c, main/resident_00136EE0]
+      - [0x37560, c, sdk/main/libc_guess_00136EE0]
       - [0x378D0, c, sdk/main/libc_00137250]
-      - [0x37910, c, main/resident_00137290]
+      - [0x37910, c, sdk/main/libc_guess_00137290]
       - [0x3A9C8, c, sdk/main/libc_0013A348]
-      - [0x3AB40, c, main/resident_0013A4C0]
+      - [0x3AB40, c, sdk/main/libc_guess_0013A4C0]
       - [0x3CD50, c, sdk/main/libc_0013C6D0]
-      - [0x3CFC8, c, main/resident_0013C948]
+      - [0x3CFC8, c, sdk/main/libc_guess_0013C948]
       - [0x3D0E0, c, sdk/main/libc_0013CA60]
-      - [0x3D3D0, c, main/resident_0013CD50]
-      - [0x3FA60, c, main/resident_0013F3E0]
+      - [0x3D3D0, c, sdk/main/libc_guess_0013CD50]
+      - [0x3FA60, c, sdk/main/libm_guess_0013F3E0]
       - [0x42F48, c, sdk/main/libvib_001428C8]
-      - [0x430C0, c, main/resident_00142A40]
+      - [0x430C0, c, sdk/main/mslgcc_00142A40]
   - [0x44200, bin, resident_data]
   - [0xB6A80, bin, elf_metadata]
   - [0xB73B0]

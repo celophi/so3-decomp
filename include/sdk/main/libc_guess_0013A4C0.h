@@ -1,5 +1,5 @@
-#ifndef SO3_MAIN_RESIDENT_0013A4C0_H
-#define SO3_MAIN_RESIDENT_0013A4C0_H
+#ifndef SO3_SDK_MAIN_LIBC_GUESS_0013A4C0_H
+#define SO3_SDK_MAIN_LIBC_GUESS_0013A4C0_H
 
 #include "types.h"
 
@@ -24,18 +24,6 @@ void* func_0013A4C0(void* destination, const void* source, u32 size);
  * @return The original destination pointer.
  */
 void* func_0013A678(void* destination, s32 value, u32 size);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0013A738(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0013A740(void* object);
 
 /**
  * @brief Format text into a null-terminated destination buffer.
