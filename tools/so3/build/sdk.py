@@ -1,7 +1,8 @@
 """Check that the SDK code I've set aside really is SDK code.
 
 Some of the game's code isn't the game's own. It's Sony's console libraries
-(the SDK), like the kernel syscall wrappers. I don't decompile those, and they
+(the SDK), like the kernel syscall wrappers, plus the C library and the
+compiler's C++ runtime that got linked in. I don't decompile those, and they
 don't count toward progress. They stay as INCLUDE_ASM placeholders in src/sdk/
 for the main executable, or src/overlays/<module>/sdk/ for an overlay.
 
@@ -10,7 +11,9 @@ an sdk folder isn't enough. Every SDK unit has to be listed in
 config/manifests/sdk-functions.json, with its range and a hash of each function.
 tools/so3/analysis/identify_sdk.py finds candidates by matching functions
 against known SDK byte patterns, and they go in the manifest once I've
-reviewed them. On every build I check that:
+reviewed them. Each entry says why I think it's library code. A few are
+assumptions I haven't matched to a library yet, and their unit names end in
+_guess. On every build I check that:
 
 - every SDK unit in the configs is in the manifest, and the other way around,
 - its range hasn't moved, and its functions still cover it exactly,

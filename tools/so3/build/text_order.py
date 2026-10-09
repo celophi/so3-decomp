@@ -34,6 +34,10 @@ SYMBOL_LINE = re.compile(r'^(\S+) = (0x[0-9A-Fa-f]+);', re.M)
 SHN_LORESERVE = 0xFF00
 STB_MULTIDEF = 13  # MWCC's binding for thunks and inline-function copies
 DISCARDED = b'.discarded'
+# Metrowerks' per-function bookkeeping: a small .mwcats record and an exception
+# index entry (.exceptix) for each function. MWLDPS2 reads these even when they
+# aren't placed, so a dropped copy's own records can't keep pointing at it.
+BOOKKEEPING_SECTIONS = ('.mwcats', '.exceptix')
 
 
 def unit_range(config, unit):
@@ -184,15 +188,15 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, e
         texts = [i for i in texts if i not in dropped]
     if keep is not None:
         # Overlay vtables live in retained resident data, not these generated
-        # sections. GNU ld diagnoses duplicate definitions before /DISCARD/.
+        # sections. Nothing places the generated ones, and MWLDPS2 refuses a
+        # definition in a section it doesn't place, so they become references.
         vtables = {i for i, h in enumerate(headers) if name(h) == '.vtables'}
         data = undefine_symbols(data, vtables, addresses)
     if not reorder:
         return data
 
-    # GNU ld's ELF reader creates a relocation section's target when it reaches
-    # that relocation section, so each .text moves together with its own
-    # relocation sections and keeps them after it.
+    # Each .text moves together with its own relocation sections, which stay
+    # right after it, the way the compiler wrote them.
     relocations = {t: [i for i, h in enumerate(headers) if h[1] in (4, 9) and h[7] == t] for t in texts}
     members = sorted(i for t in texts for i in [t, *relocations[t]])
     ordered = [i for t in sorted(texts, key=lambda i: key[i]) for i in [t, *relocations[t]]]
@@ -325,7 +329,43 @@ def discard_sections(data, indices):
         struct.pack_into('<10I', out, shoff + names_index * size, *names)
     for index in indices:
         struct.pack_into('<I', out, shoff + index * size, position)
-    return undefine_symbols(bytes(out), indices)
+    out = release_bookkeeping(bytes(out), indices)
+    return undefine_symbols(out, indices)
+
+
+def release_bookkeeping(data, indices):
+    """Cut a dropped copy's own bookkeeping loose from it.
+
+    The original linker dropped each copy together with its .mwcats record and
+    exception index entry. Here those records stay in the object, but every
+    function has its own small relocation table for each of them, so I empty
+    the tables that point at a dropped copy. (Turning the entries into
+    R_MIPS_NONE made MWLDPS2 crash.) Nothing moves.
+    """
+    shoff = struct.unpack_from('<I', data, 32)[0]
+    size, count, names_index = struct.unpack_from('<HHH', data, 46)
+    headers = [struct.unpack_from('<10I', data, shoff + i * size) for i in range(count)]
+    names = headers[names_index]
+    strings = data[names[4]:names[4] + names[5]]
+
+    def name(header):
+        return strings[header[0]:].split(b'\0', 1)[0].decode()
+
+    symtab = next(h for h in headers if h[1] == 2)
+    dropped = {number for number, offset in enumerate(range(symtab[4], symtab[4] + symtab[5], symtab[9]))
+               if struct.unpack_from('<H', data, offset + 14)[0] in indices}
+    out = bytearray(data)
+    for number, header in enumerate(headers):
+        # SHT_REL tables whose target (sh_info) is a bookkeeping section.
+        if header[1] != 9 or name(headers[header[7]]) not in BOOKKEEPING_SECTIONS:
+            continue
+        targets = {struct.unpack_from('<I', data, position + 4)[0] >> 8
+                   for position in range(header[4], header[4] + header[5], 8)}
+        if targets & dropped:
+            emptied = list(header)
+            emptied[5] = 0  # sh_size
+            struct.pack_into('<10I', out, shoff + number * size, *emptied)
+    return bytes(out)
 
 
 def undefine_symbols(data, indices, mapped=None):

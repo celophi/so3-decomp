@@ -44,6 +44,7 @@ MATRIX_REPORT = RESULTS / 'matrix.json'
 REPORT_SCHEMA_VERSION = 1
 
 COMPILER_EXE = 'mwccps2.exe'
+LINKER_EXE = 'mwldps2.exe'
 DOWNLOAD_TIMEOUT_SECONDS = 60
 
 # A RELA entry has an extra addend word on the end of a REL entry.

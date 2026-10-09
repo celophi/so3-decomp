@@ -386,7 +386,12 @@ void* func_004D99A0(void* object)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D99B0);
+void func_004D99B0(LibBusyObject* object)
+{
+    while (object->busy)
+    {
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D99E0);
 

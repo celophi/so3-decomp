@@ -91,7 +91,7 @@ func_001DF3D0__16FieldClass150010Fv = 0x001DF310; // type:func
 func_001DD7B0__16FieldClass150010Fv = 0x001DF320; // type:func
 
 // EE kernel syscall 100 (FlushCache), an SDK wrapper in main.
-func_00121FE0 = 0x00121FE0; // type:func
+FlushCache = 0x00121FE0; // type:func
 
 // Resident helper that takes a manager object from main and an object.
 func_0011ED90 = 0x0011ED90; // type:func
@@ -576,8 +576,7 @@ func_001DF360__16FieldClass150650Fv = 0x001F7750; // type:func
 __nw__16FieldClass1507A0FUi = 0x004DB5B0; // type:func allow_duplicated:True
 __dl__16FieldClass1507A0FPv = 0x004DB570; // type:func allow_duplicated:True
 
-func_13C800 = 0x0013C800; // type:func allow_duplicated:true
-func_0013C800 = 0x0013C800; // type:func allow_duplicated:true
+strcmp = 0x0013C800; // type:func allow_duplicated:true
 
 __vt__16FieldClass152C70 = 0x00152C70; // size:0x20
 __dt__16FieldClass152C70Fv = 0x001F1C10; // type:func
@@ -793,6 +792,8 @@ func_slot0c__16FieldClass1547D0Fv = 0x0026BE30; // type:func
 func_slot0c__16FieldClass1548D0Fv = 0x0026D4F0; // type:func
 func_00261150__16FieldClass153E30Fv = 0x00261150; // type:func
 func_002039C0__16FieldClass1570D0CFv = 0x0022E160; // type:func
+__vt__16FieldClass1591D0 = 0x001591D0; // size:0x10
+func_001E11E0__16FieldClass159960FPCfPCfPCfPCfff = 0x001E11E0; // type:func
 func_002B6DF0__16FieldClass1591D0Ff = 0x002B6DF0; // type:func
 func_002B8A90__16FieldClass1596F0CFfPf = 0x002B8A90; // type:func
 __dt__16FieldClass1595D0Fv = 0x002B8BE0; // type:func

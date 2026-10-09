@@ -28,7 +28,13 @@ options:
   find_file_boundaries: false
   disasm_unknown: true
   gp_value: 0x001BDFF0
+  # MWLDPS2 rejects the sized <function>.NON_MATCHING symbol splat's nonmatching
+  # macro adds to every assembly function, so this module redefines it as empty.
+  # The nonmatching lines stay in the .s files for the tools that read them.
   generated_macro_inc_content: |
+    .purgem nonmatching
+    .macro nonmatching label, size=1
+    .endm
     .set Q, $Q
     .set ACC, $ACC
     .set I, $I
@@ -51,30 +57,30 @@ segments:
       - [0xA760, c, main/resident_0010A0E0]
       - [0x1F480, c, main/func_0011EE00]
       - [0x1F4F0, c, main/resident_0011EE70]
-      - [0x21FC0, c, sdk/main/syscalls_00121940]
-      - [0x22860, c, main/resident_001221E0]
-      - [0x2A9C8, c, sdk/main/syscalls_0012A348]
-      - [0x2A9E8, c, main/resident_0012A368]
-      - [0x2AAC0, c, sdk/main/syscalls_0012A440]
-      - [0x2AAE0, c, main/resident_0012A460]
-      - [0x2AB20, c, sdk/main/syscalls_0012A4A0]
-      - [0x2AB30, c, main/resident_0012A4B0]
-      - [0x2AB50, c, sdk/main/syscalls_0012A4D0]
-      - [0x2AB70, c, main/resident_0012A4F0]
-      - [0x2B398, c, sdk/main/syscalls_0012AD18]
-      - [0x2B3A8, c, main/resident_0012AD28]
-      - [0x2B3E8, c, sdk/main/syscalls_0012AD68]
-      - [0x2B3F8, c, main/resident_0012AD78]
-      - [0x2B440, c, sdk/main/syscalls_0012ADC0]
-      - [0x2B450, c, main/resident_0012ADD0]
-      - [0x2B5A8, c, sdk/main/syscalls_0012AF28]
-      - [0x2B5B8, c, main/resident_0012AF38]
-      - [0x2B808, c, sdk/main/syscalls_0012B188]
-      - [0x2B818, c, main/resident_0012B198]
-      - [0x2B860, c, sdk/main/syscalls_0012B1E0]
-      - [0x2B870, c, main/resident_0012B1F0]
-      - [0x2F778, c, main/resident_0012F0F8]
-      - [0x3FA60, c, main/resident_0013F3E0]
+      - [0x21FC0, c, sdk/main/libkernl_00121940]
+      - [0x2B948, c, sdk/main/libdma_0012B2C8]
+      - [0x2C190, c, sdk/main/libmc_0012BB10]
+      - [0x2D980, c, sdk/main/libpad2_0012D300]
+      - [0x2E238, c, sdk/main/libdbc_0012DBB8]
+      - [0x2F148, c, sdk/main/libgraph_0012EAC8]
+      - [0x30390, c, sdk/main/libgraph_guess_0012FD10]
+      - [0x30418, c, sdk/main/libgraph_0012FD98]
+      - [0x305F8, c, sdk/main/libgraph_guess_0012FF78]
+      - [0x30680, c, sdk/main/libcdvd_00130000]
+      - [0x32398, c, sdk/main/libc_guess_00131D18]
+      - [0x37540, c, sdk/main/libc_00136EC0]
+      - [0x37560, c, sdk/main/libc_guess_00136EE0]
+      - [0x378D0, c, sdk/main/libc_00137250]
+      - [0x37910, c, sdk/main/libc_guess_00137290]
+      - [0x3A9C8, c, sdk/main/libc_0013A348]
+      - [0x3AB40, c, sdk/main/libc_guess_0013A4C0]
+      - [0x3CD50, c, sdk/main/libc_0013C6D0]
+      - [0x3CFC8, c, sdk/main/libc_guess_0013C948]
+      - [0x3D0E0, c, sdk/main/libc_0013CA60]
+      - [0x3D3D0, c, sdk/main/libc_guess_0013CD50]
+      - [0x3FA60, c, sdk/main/libm_guess_0013F3E0]
+      - [0x42F48, c, sdk/main/libvib_001428C8]
+      - [0x430C0, c, sdk/main/mslgcc_00142A40]
   - [0x44200, bin, resident_data]
   - [0xB6A80, bin, elf_metadata]
   - [0xB73B0]

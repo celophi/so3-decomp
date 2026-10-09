@@ -4,6 +4,14 @@
 #include "types.h"
 #include "overlays/lib/text_003E68C0.h"
 
+/** Partial object with a busy flag that something else clears; the rest is unknown. */
+typedef struct LibBusyObject
+{
+    u8 unk00[0x50];
+    /** Nonzero while the object is busy. It changes outside the code that waits on it. */
+    volatile u8 busy;
+} LibBusyObject;
+
 /** Partial list node; the leading bytes and full object extent are unknown. */
 typedef struct LibListNode
 {
@@ -349,6 +357,12 @@ void* func_004D6DE0(void* object);
  * @return The same pointer.
  */
 void* func_004D99A0(void* object);
+
+/**
+ * @brief Wait until the object's busy flag clears.
+ * @param object Object to wait on.
+ */
+void func_004D99B0(LibBusyObject* object);
 
 /**
  * @brief Return the base transform's null matrix pointer.

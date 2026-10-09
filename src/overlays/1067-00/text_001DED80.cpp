@@ -1,9 +1,9 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
 #include "main/resident_001001E0.h"
-#include "main/resident_0012F0F8.h"
+#include "sdk/main/libkernl_00121940.h"
+#include "sdk/main/libc_guess_00137290.h"
 #include "overlays/lib/text_00429B00.h"
-#include "sdk/main/syscalls_00121940.h"
 #include "overlays/1067-00/text_001DED80.h"
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/1067-00/text_00202240.h"
@@ -274,7 +274,7 @@ void FieldClass14FFB0::func_001DDB30(void* arg)
 {
     if (!unk30_1)
     {
-        func_00121FE0(0);
+        FlushCache(0);
         unk30_1 = 1;
     }
 }
@@ -819,7 +819,7 @@ void FieldClass14FFB0::func_001E0A50(s32 flag)
     case 0:
         if (!flag && unk1c)
         {
-            func_00121FE0(0);
+            FlushCache(0);
             FieldClass150040* record = &unk1c[unk2e];
             void* buffer = func_001E1100(this, (record->unk00 + 0x7FF) & ~0x7FF, 1);
             if (buffer)
@@ -990,18 +990,18 @@ void* func_001E1100(FieldClass150070* owner, u32 size, s32 mode)
     return 0;
 }
 
-void func_001E11E0(FieldFloatSpan1C* object, const float* a, const float* b, const float* c, const float* d, float start, float end)
+void FieldClass159960::func_001E11E0(const float* a, const float* b, const float* c, const float* d, float start, float end)
 {
-    object->unk00 = *a;
-    object->unk10 = start;
-    object->unk08 = *b;
-    object->unk04 = *c;
-    object->unk14 = end;
-    object->unk0c = *d;
-    object->unk18 = end - start;
-    if (object->unk18 == 0.0f)
+    unk00 = *a;
+    unk10 = start;
+    unk08 = *b;
+    unk04 = *c;
+    unk14 = end;
+    unk0c = *d;
+    unk18 = end - start;
+    if (unk18 == 0.0f)
     {
-        object->unk18 = 1.0f;
+        unk18 = 1.0f;
     }
 }
 

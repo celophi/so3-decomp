@@ -6248,7 +6248,7 @@ s32 InventionSuccessDialog::func_slotf4(u32 associated)
     return 1;
 }
 
-#include "main/resident_0012F0F8.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 #include "main/resident_001001E0.h"
 #include "overlays/1067-00/text_0028E240.h"
 

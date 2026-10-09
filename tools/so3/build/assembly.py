@@ -5,21 +5,34 @@ functions I haven't decompiled. Running those through the compiler would only
 hand the same assembly back, so compile.py asks this module first. If the file
 really is just placeholders, I assemble the functions' .s files myself in the
 same order and skip the compiler.
+
+This also tidies up everything GNU as builds. It always adds .text, .data and
+.bss sections, even when there's nothing in them, and MWLDPS2 (the original
+linker) refuses empty ones, so I take those out. The build runs
+`python -m tools.so3.build.assembly OBJECT` after assembling each data piece
+for the same reason.
 """
 
+import argparse
 import json
 from pathlib import Path
 import re
 import subprocess
 import tempfile
 
+from tools.so3.build.elf import section_headers, section_names
+
 # compile.py hands the same settings to mwccgap, so both paths assemble the
 # same way. mwccgap adds -EL by itself.
 ASSEMBLER = 'mips-ps2-decompals-as'
 ASSEMBLER_CPU = 'r5900'  # The PS2's main CPU (the Emotion Engine).
 ASSEMBLER_ABI = 'eabi'
-ASSEMBLER_FLAGS = ['-no-pad-sections']
+# -mno-pdr leaves out the .pdr debugging section, which MWLDPS2 refuses.
+ASSEMBLER_FLAGS = ['-no-pad-sections', '-mno-pdr']
 LITTLE_ENDIAN = '-EL'
+OBJCOPY = 'mips-ps2-decompals-objcopy'
+# The sections GNU as adds to every object, whether or not they hold anything.
+DEFAULT_SECTIONS = ('.text', '.data', '.bss')
 
 # The header that defines INCLUDE_ASM. A placeholder-only file has to include it.
 PLACEHOLDER_HEADER = 'include_asm.h'
@@ -95,3 +108,26 @@ def assemble(files, macros, output):
             '-I', str(macros.parent),
             '-o', str(output), wrapper.name,
         ], check=True)
+    drop_empty_sections(output)
+
+
+def drop_empty_sections(path):
+    """Take out the default sections GNU as added to an object but left empty."""
+    data = Path(path).read_bytes()
+    headers = section_headers(data)
+    empty = [name for name, header in zip(section_names(data, headers), headers)
+             if name in DEFAULT_SECTIONS and header.size == 0]
+    if empty:
+        removals = [option for name in empty for option in ('--remove-section', name)]
+        subprocess.run([OBJCOPY, *removals, str(path)], check=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('objects', nargs='+', type=Path, help='objects GNU as just built')
+    for path in parser.parse_args().objects:
+        drop_empty_sections(path)
+
+
+if __name__ == '__main__':
+    main()

@@ -8,7 +8,7 @@ those I write build/build.ninja. For every module it:
 
 1. splits the original binary into assembly, data, and C/C++ files,
 2. compiles or assembles every piece into an object,
-3. links the objects back into one image, and
+3. links the objects back into one image with MWLDPS2, CodeWarrior's linker, and
 4. checks that the image matches the original byte for byte.
 
 I also write objdiff.json, which tells objdiff (the progress tool) which of my
@@ -32,7 +32,7 @@ import sys
 
 from tools.so3.build.assembly import ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, LITTLE_ENDIAN
 from tools.so3.build.compile import MWCCGAP_DIR, module_lists, thunk_map_path
-from tools.so3.build.compiler_probe import COMPILERS, CONFIG, setup, working_candidate
+from tools.so3.build.compiler_probe import COMPILERS, CONFIG, LINKER_EXE, setup, working_candidate
 from tools.so3.build.main import MAIN_CONFIG, ROOT, VERSIONS, module_name
 from tools.so3.build.overlays import load_module, module_configs
 from tools.so3.build.sdk import MANIFEST as SDK_MANIFEST, code_units, validate_sdk_units
@@ -47,7 +47,7 @@ PROGRESS_REPORT = PROGRESS_OBJECTS / 'report.json'
 MAIN_EXECUTABLE = 'SLUS_204.88'  # The main executable's file name on the disc.
 OVERLAY_IMAGE = 'rebuilt.bin'
 
-# Every binutils tool has this prefix in the dev image, like mips-ps2-decompals-ld.
+# Every binutils tool has this prefix in the dev image, like mips-ps2-decompals-as.
 BINUTILS_PREFIX = 'mips-ps2-decompals-'
 # objcopy settings that wrap a raw .bin file in an object the linker accepts.
 BINARY_OBJECT_FORMAT = 'elf32-littlemips'
@@ -66,6 +66,10 @@ HEADER_SUFFIXES = ('.h', '.hpp', '.inc')
 
 OBJDIFF_VERSION = '3.8.2'
 
+# Keep functions nothing calls (MWLDPS2 strips them by default), and don't pull
+# in Metrowerks' standard libraries.
+MWLDPS2_FLAGS = '-nostdlib -nodeadstrip'
+
 # The scripts and inputs each step reads. If one changes, ninja reruns the step.
 SPLIT_INPUTS = ['tools/so3/build/driver.py', 'tools/so3/__init__.py', 'tools/so3/formats.py',
                 'tools/so3/build/sdk.py', 'tools/so3/build/subsegments.py', str(SDK_MANIFEST)]
@@ -76,7 +80,9 @@ COMPILE_INPUTS = ['tools/so3/build/compile.py', 'tools/so3/build/compiler_probe.
                   'tools/so3/build/rodata_ownership.py', 'tools/so3/build/subsegments.py',
                   'tools/so3/__init__.py', 'config/manifests/compilers.json',
                   f'{MWCCGAP_DIR}/mwccgap/mwccgap.py']
-ABSOLUTE_SYMBOL_INPUTS = ['tools/so3/build/linker_symbols.py', 'tools/so3/build/text_order.py']
+IMAGE_INPUTS = ['tools/so3/build/flat_image.py', 'tools/so3/build/elf.py', 'tools/so3/build/lcf.py']
+ASSEMBLE_INPUTS = ['tools/so3/build/assembly.py', 'tools/so3/build/elf.py']
+COMMAND_FILE_INPUTS = ['tools/so3/build/lcf.py', 'tools/so3/build/text_order.py', 'tools/so3/formats.py']
 
 # INCLUDE_ASM and INCLUDE_RODATA placeholders, which pull in a .s file by folder and name.
 ASM_INCLUDE = re.compile(r'INCLUDE_(?:ASM|RODATA)\("([^"\n]+)",\s*([\w.$]+)\)')
@@ -163,27 +169,33 @@ def ninja_rules():
         '  command = python -m tools.so3.build.compile $in $out --macros $macro --skip-asm',
         '  description = PROGRESS $in', '  pool = compile_pool',
         'rule assemble',
-        f'  command = ${{binutils}}as {assembler_flags} -I $include -o $out $in',
+        f'  command = ${{binutils}}as {assembler_flags} -I $include -o $out $in && python -m tools.so3.build.assembly $out',
         '  description = AS $in',
         'rule binary_object',
         f'  command = ${{binutils}}objcopy -I binary -O {BINARY_OBJECT_FORMAT} -B {BINARY_ARCHITECTURE} $in $out',
         '  description = BIN $in',
-        'rule absolute_symbols',
-        '  command = python -m tools.so3.build.linker_symbols --output $out $in',
-        '  description = SYMS $out',
+        'rule command_file',
+        '  command = python -m tools.so3.build.lcf $in $symbol_maps --output $out',
+        '  description = LCF $out',
         'rule link',
-        f'  command = ${{binutils}}ld {LITTLE_ENDIAN} -T $layout -T $functions -T $symbols $absolute_symbols -o $out',
-        '  description = LD $out',
-        'rule binary_image', '  command = ${binutils}objcopy -O binary $in $out',
+        f'  command = wibo $linker {MWLDPS2_FLAGS} -o $out $command_file $in',
+        '  description = MWLD $out',
+        # The module's own regions, without the one for things that belong
+        # elsewhere, like the exception tables.
+        'rule image', '  command = python -m tools.so3.build.flat_image $in $out',
         '  description = IMAGE $out',
         'rule verify', '  command = $verify_command', '  description = VERIFY $module', '',
     ]
 
 
+def working_compiler_folder():
+    record = working_candidate(json.loads(CONFIG.read_text()))
+    return COMPILERS.relative_to(ROOT) / record['id']
+
+
 def working_compiler_files():
     record = working_candidate(json.loads(CONFIG.read_text()))
-    folder = COMPILERS.relative_to(ROOT) / record['id']
-    return [str(folder / name) for name in record['files']]
+    return [str(working_compiler_folder() / name) for name in record['files']]
 
 
 def project_headers():
@@ -208,10 +220,10 @@ class Module:
         self.name = module_name(path)
         self.output = Path(options['build_path'])
         self.layout = options['ld_script_path']
+        self.command_file = str(Path(self.layout).with_suffix('.lcf'))
         self.undefined_functions = options['undefined_funcs_auto_path']
         self.undefined_symbols = options['undefined_syms_auto_path']
         self.symbol_maps = options.get('symbol_addrs_path', [])
-        self.absolute_symbols = self.output / 'absolute_symbols.ld' if self.symbol_maps else None
         self.include = options['generated_asm_macros_directory']
         self.macros = f'{self.include}/macro.inc'
         self.target = options['target_path']
@@ -260,6 +272,19 @@ class Module:
         return f'{self.output / source}.o' if rule == 'compile' else f'{source}.o'
 
 
+def link_rules(module, objects):
+    """Write the module's command file, then link its objects into linked.elf with MWLDPS2."""
+    symbol_scripts = [module.undefined_functions, module.undefined_symbols]
+    symbol_maps = ' '.join(f'--symbol-map {path}' for path in module.symbol_maps)
+    linked = f'{module.output}/linked.elf'
+    linker = working_compiler_folder() / LINKER_EXE
+    return [f'build {module.command_file}: command_file {module.layout} {" ".join(symbol_scripts)} | '
+            f'{" ".join([*module.symbol_maps, *COMMAND_FILE_INPUTS])}',
+            f'  symbol_maps = {symbol_maps}',
+            f'build {linked}: link {" ".join(objects)} | {module.command_file} {linker}',
+            f'  command_file = {module.command_file}', f'  linker = {linker}']
+
+
 def module_rules(module, headers, compiler_files, sdk_sources):
     """Write one module's build steps.
 
@@ -267,12 +292,8 @@ def module_rules(module, headers, compiler_files, sdk_sources):
     every piece that isn't SDK code (the console's own library, which isn't
     part of the game's progress).
     """
-    lines = []
-    if module.absolute_symbols:
-        lines += [f'build {module.absolute_symbols}: absolute_symbols {" ".join(module.symbol_maps)} | '
-                  f'{" ".join(ABSOLUTE_SYMBOL_INPUTS)}']
-    lines += [f'build {" ".join(module.split_outputs())}: split {module.target} | {" ".join(module.split_inputs())}',
-              f'  split_command = {module.split_command()}', f'  module = {module.name}']
+    lines = [f'build {" ".join(module.split_outputs())}: split {module.target} | {" ".join(module.split_inputs())}',
+             f'  split_command = {module.split_command()}', f'  module = {module.name}']
 
     objects, report_units, progress_objects = [], [], []
     for source, rule in module.units:
@@ -280,7 +301,7 @@ def module_rules(module, headers, compiler_files, sdk_sources):
         objects.append(target)
         inputs = []
         if rule == 'assemble':
-            inputs = [module.macros]
+            inputs = [module.macros, *ASSEMBLE_INPUTS]
         elif rule == 'compile':
             inputs = module.compile_inputs(source, headers, compiler_files)
         lines += [f'build {target}: {rule} {source}' + (f' | {" ".join(inputs)}' if inputs else '')]
@@ -299,7 +320,7 @@ def module_rules(module, headers, compiler_files, sdk_sources):
             full_asm = full_asm_path(module.options, source)
             target = f'{full_asm}.o'
             base = f'{PROGRESS_OBJECTS / source}.o'
-            lines += [f'build {target}: assemble {full_asm} | {module.macros}',
+            lines += [f'build {target}: assemble {full_asm} | {module.macros} {" ".join(ASSEMBLE_INPUTS)}',
                       f'  include = {module.include}',
                       f'build {base}: compile_progress {source} | {" ".join(inputs)}',
                       f'  macro = {module.macros}']
@@ -316,15 +337,9 @@ def module_rules(module, headers, compiler_files, sdk_sources):
         report_units.append(unit)
         progress_objects.append(unit['target_path'])
 
-    absolute = f' -T {module.absolute_symbols}' if module.absolute_symbols else ''
-    link_inputs = [module.layout, module.undefined_functions, module.undefined_symbols]
-    if module.absolute_symbols:
-        link_inputs.append(str(module.absolute_symbols))
-    lines += [f'build {module.output}/linked.elf: link {" ".join(objects)} | {" ".join(link_inputs)}',
-              f'  layout = {module.layout}', f'  functions = {module.undefined_functions}',
-              f'  symbols = {module.undefined_symbols}', f'  absolute_symbols ={absolute}',
-              f'build {module.image}: binary_image {module.output}/linked.elf',
-              f'build {module.output}/verify.json: verify {module.image} | '
+    lines += link_rules(module, objects)
+    lines += [f'build {module.image}: image {module.output}/linked.elf | {" ".join(IMAGE_INPUTS)}']
+    lines += [f'build {module.output}/verify.json: verify {module.image} | '
               f'{module.target} {" ".join(module.split_inputs())}',
               f'  verify_command = {module.verify_command()}', f'  module = {module.name}', '']
     return lines, report_units, progress_objects

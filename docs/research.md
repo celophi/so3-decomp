@@ -1,81 +1,199 @@
 # Research
 
-## Compiler
+## Toolchain
 
-I think SO3 was built with CodeWarrior for PS2. I'm using **3.0 build 38
-(March 7, 2003)** with these flags for now:
+This is what I think the game was built with:
+
+| Part | Tool |
+| --- | --- |
+| Compiler | CodeWarrior for PS2 (MWCC), version 3.0 build 38, from March 7, 2003 |
+| Linker | MWLDPS2, the linker that comes with CodeWarrior |
+| CodeWarrior release | Something after R3.04, most likely R3.5 or R3.51 |
+| Console libraries | Sony's SDK 2.7 (my copy is 2.7.2) |
+| C library | newlib, built with GCC, from a Sony toolchain I haven't identified |
+
+The compiler versions and current flags are in
+[config/manifests/compilers.json](../config/manifests/compilers.json).
+`make compiler-probe` checks the current version, and `make compiler-matrix`
+compares all of them.
+
+### Compiler
+
+These are the flags:
 
 ```text
 -O3,p -RTTI off -inline level=4
 ```
 
-That gets matching code from the functions I've worked on, but I'm not
-completely sure it's the exact original version yet.
+Builds 38, 50 and 52 all match five small functions from the main program,
+with both `-O3,p` and `-O4,p`. That's only 272 bytes, so it doesn't tell them
+apart. Jump tables do. When a switch statement's lowest case isn't 0, the code
+subtracts it before looking up the table of addresses to jump to. The game
+always does that with `addi` (64 tables, and none use `addiu`). Builds from
+before May 2003 write `addi` and later ones write `addiu`, and build 38 is the
+only one of those older builds that matches the rest of the game's code too.
+Apart from that one instruction, every file in the project compiles the same
+with builds 38 and 52.
 
-I compared 15 compiler versions using five small functions from the main
-executable. Builds 38, 50, and 52 all matched with both `-O3,p` and `-O4,p`.
-Those tests only cover 272 bytes, so they couldn't tell those three apart.
-`-O3,p` is the current choice for optimizing for speed.
+The other settings come from Field's C++ code:
 
-I was using build 52 until I got stuck on two small functions in the item
-creation menu. Both are switch statements, and the compiler turns those into
-jump tables (lists of addresses it jumps through). When the first case isn't
-0, the code subtracts the lowest case before it looks in the table. The game
-does that subtraction with an `addi` instruction, but build 52 always writes
-`addiu`. They do the same thing here, so it came down to that one instruction.
-The disassembler even marks the game's `addi` as handwritten, because it
-doesn't expect a compiler to write it.
-
-I couldn't find any way to write the source that got build 52 to use `addi`,
-so I tried the same switch on every version I have. The builds from before
-May 2003 write `addi`, and the later ones write `addiu`. Then I looked through
-the whole game. Every jump table like this uses `addi` (64 of them), and none
-use `addiu`. The ones I'd already matched all start at case 0, so they never
-needed the subtraction, which I think is why this didn't show up sooner.
-
-I also compiled all of the project's source files with builds 38 and 52, and
-apart from this they came out the same. So switching doesn't change anything
-that already matched, and it gets those functions unstuck. The other older
-builds that write `addi` produce quite different code elsewhere, so build 38
-is the only one I have that fits both. There could still be a build I don't
-have that fits too.
-
-The C++ code in Field gives me a better idea of the other settings:
-
-- `-RTTI off` disables runtime type information. Field's virtual function
+- `-RTTI off` turns off runtime type information. Field's virtual function
   tables have empty type-information pointers, which agrees with this setting.
 - `-inline level=4` lets the compiler copy small functions into their callers
-  four levels deep. Some destructors need that extra level to match. Another
-  function matches at level 4 but fails at level 8, so simply turning it up
-  further doesn't help.
-- C++ exceptions appear to have been enabled. The exception records produced
-  for the functions I've checked match the game's, so I'm leaving them on.
+  four levels deep. Some destructors need that to match, and one function
+  matches at level 4 but not at level 8.
+- C++ exceptions are on. The exception records for the functions I've checked
+  match the game's.
 
-Level 4 isn't enough everywhere, though. One destructor in Field's
-`text_001E6C50` sits on a chain of six classes, and the game copies all five
-base destructors into it. Level 4 stops one short and calls the last one
-instead. So that file gets `-inline level=5` on its own, through the
-`unit_flags` list in the compiler config. Everything else in the file matches
-at both levels. My guess is that the original files weren't all built with the
-same settings, but one file isn't much to go on yet.
+One file needs more. A destructor in Field's `text_001E6C50` sits on a chain of
+six classes, and the game copies all five base destructors into it. Level 4
+stops one short, so that file gets `-inline level=5` through the `unit_flags`
+list in the compiler config. My guess is that the original files weren't all
+built with the same settings, but one file isn't much to go on.
 
-There's one awkward detail: the main executable contains the string
-`MW MIPS C Compiler (2.4.1.01)`, while the three matching compiler builds write
-`3.0.0`. Several older releases write the same `2.4.1.01` string. It could
-have come from an older library or linker, but I don't know yet.
+I haven't compared bigger C++ or floating-point functions across versions yet,
+and the IOP code may have used different tools.
 
-I'm using PS2 GNU binutils to assemble and link the rebuild. I haven't
-identified the original linker. Field's class and exception tables live in
-the main executable even though they refer to overlay code, which suggests
-the original build linked the code together before separating the overlays.
+### Linker
 
-I'd still like to compare more complex functions, especially C++ and
-floating-point code, in case something else separates the builds. The SDK
-libraries and IOP code may have used different tools too.
+The main program's `.comment` section says `MW MIPS C Compiler (2.4.1.01)`,
+even though the compiler is version 3.0. The linker writes that string, not
+the compiler, and MWLDPS2 writes exactly those bytes.
 
-The compiler versions and current flags are in
-[config/manifests/compilers.json](../config/manifests/compilers.json). `make compiler-probe` checks
-the current candidate; `make compiler-matrix` runs the full comparison.
+Field's class and exception tables are in the main program even though they
+refer to overlay code. So I think the main program and its overlays were
+linked together and split up afterwards.
+
+### CodeWarrior release
+
+CodeWarrior's C++ runtime library (`MSLGCC_PS2`) is linked into the main
+program, from 0x142A40 to 0x143B80. It's the C++ support code: `new` and
+`delete`, building and destroying arrays of objects, and exceptions. 27 of its
+31 functions match the runtime from CodeWarrior for PS2 R3.04 exactly. Three
+more are newer versions of R3.04 functions, and one isn't in R3.04 at all.
+Earlier releases match less.
+
+R3.04 comes with compiler build 22, from September 2002, and the game's
+compiler is build 38, from March 2003. So the game used a release after
+R3.04, most likely R3.5 or R3.51.
+
+### C library
+
+CodeWarrior for PS2 doesn't have its own C library. It uses the one from
+Sony's GCC toolchain, which is where the "GCC" in `MSLGCC` comes from. The
+game's C library is newlib built with GCC. Its functions sit on 8-byte
+boundaries, and CodeWarrior always puts functions on 16-byte boundaries.
+
+Ten small functions in it (`strcmp`, `strlen`, `memcmp` and a few others)
+match the newlib from SDK 2.7.2 exactly. The rest don't, and `abort` is 8 bytes
+longer in the game, so it's a different build of newlib.
+
+## The main program
+
+| Address | What it is | Matched |
+| --- | --- | --- |
+| 0x100000 to 0x121940 | Startup code and the game's own code | |
+| 0x121940 to 0x131D18 | Sony's `libkernl` (the kernel library), `libdma`, `libmc`, `libpad2`, `libdbc`, `libgraph` and `libcdvd` | Exactly |
+| 0x131D18 to 0x13F3E0 | The C library (`memset`, `sprintf`, `malloc` and so on) | 10 functions |
+| 0x13F3E0 to 0x1428C8 | A math library | No |
+| 0x1428C8 to 0x142A40 | Sony's `libvib` | Exactly |
+| 0x142A40 to 0x143B80 | CodeWarrior's C++ runtime | 27 of 31 functions |
+
+Everything except the game's own code is library code. It sits in
+`src/sdk/main` as assembly placeholders and doesn't count toward progress.
+Each piece is listed in
+[config/manifests/sdk-functions.json](../config/manifests/sdk-functions.json)
+with a hash of each function and the reason I think it's library code, and the
+build checks it.
+
+Library functions have their real names where they match exactly. Anything
+that's an assumption has `_guess` in its name and needs more research:
+
+- The C library and math library are `libc_guess_...` and `libm_guess_...`.
+- Two small pieces between the `libgraph` objects (at 0x12FD10 and 0x12FF78)
+  are `libgraph_guess_...`. They're probably more of `libgraph`, but they don't
+  match my copy.
+- `__malloc_lock_guess` and `__malloc_unlock_guess` are two empty functions
+  the memory allocator calls on the way in and out. That's what newlib's
+  versions look like in a build without threads.
+- Two of the C++ runtime functions are newer versions of R3.04's
+  (`default_new_handler_guess__3stdFv` and `__throw_catch_compare_guess`). A
+  third could be either of two R3.04 functions, so it keeps its address name.
+
+The overlays call a function at 0x1330D8 that I've named `__throw`. It's called
+the way CodeWarrior calls `__throw`, but it's in the C library and doesn't look
+like CodeWarrior's `__throw`, so that name needs a second look.
+
+## Linking
+
+Every module links with MWLDPS2 and comes out identical to the game's. Splat
+writes linker scripts for GNU ld, so
+[tools/so3/build/lcf.py](../tools/so3/build/lcf.py) translates them into
+MWLDPS2's own kind, called a linker command file (`.lcf`).
+
+What MWLDPS2 needs:
+
+- Everything in a module goes in one output section. With more than one, it
+  writes a broken result.
+- The command file names objects by their file name only, not their path.
+- It refuses the `NON_MATCHING` marker symbols splat adds to every assembly
+  function, so the configs turn them off.
+- It refuses the empty `.text`, `.data` and `.bss` sections GNU as adds to
+  everything it assembles, so the build takes those out.
+- The C++ exception tables have to be placed somewhere. In the game they're in
+  the main program, so for now they go in a separate area that doesn't end up
+  in the image.
+- Alignment can only go up. Library code built with GCC sits on 8-byte
+  boundaries, so it has to stay assembled. If it goes through CodeWarrior,
+  every function gets padded out to 16 bytes.
+- A branch back to the start of its own function comes out one instruction
+  off when GNU as assembled it. The only one in the game was a tiny wait loop
+  in Lib at 0x4D99B0, which is decompiled now. Its four `nop`s come from the
+  compiler: the PS2's processor has a bug with very short loops, and
+  CodeWarrior pads them out to avoid it.
+
+When a file uses an inline function (one written in a header so it can be
+pasted into the code that calls it), the compiler also writes a normal copy of
+it into that file, right after the first function that needs it. The original
+linker kept one copy of each. My build drops the others, using the symbol maps
+to find which copy the game kept, and it drops each copy's bookkeeping with it
+(an entry in the exception tables and a small `.mwcats` record). MWLDPS2 keeps
+the order the compiler wrote, so when a kept copy lands in the wrong place, my
+source is different from the original.
+
+Some things are still open:
+
+- Lib's files that are still all assembly have to stay assembled. If they go
+  through CodeWarrior, Lib's code comes out too long, and I haven't worked out
+  why.
+- Linking the main program and its overlays together, the way the original
+  seems to have been built, would put Field's class and exception tables back
+  where they belong. That needs a lot more of the main program's data worked
+  out first. 1070 will probably have to stay its own link, since it seems to
+  have been built against an older main program (see below).
+
+## Sony libraries in Lib.bin
+
+`Lib.bin` (`lib`) is a module the rest of the game shares. Most of it is
+tri-Ace's own code, but near the start there's a block of Sony code: the
+library the game uses to play its videos (`libmpeg`) and the one it uses to
+drive the PS2's video decoding hardware (`libipu`).
+
+The game was built with version 2.7 of Sony's SDK. Sony's libraries carry a
+version tag, and every tag in the game matches my 2.7.2 copy. The code matches
+exactly from 0x3E6900 to 0x3EEB50, with its data in the right places too. SDK
+3.0's version doesn't match, so the version matters. Those functions have
+their Sony names and don't count toward progress.
+
+A few things I'm not sure about yet:
+
+- One small piece of the library's data, its own version tag, is missing from
+  the game. I think the linker left it out because nothing uses it.
+- The library calls 11 functions in the main program. Eight of them are Sony's
+  and have their names there now (`FlushCache`, `scePrintf` and so on). The
+  other three are in the C library.
+- Some other code in `Lib.bin` uses the video hardware too. It's probably the
+  game's own movie code.
 
 ## Field and Battle modules
 
@@ -103,14 +221,11 @@ of the 8.59 MB of code that progress currently counts.
 
 ## Field 1070's missing destructor copies
 
-I'm still getting my head around some of this, but this
-is what I think is going on rather than something I've proven.
-
 Three destructors in 1070 match now, but the build wouldn't accept them at
 first. From what I can tell, when a destructor is written inline (in a header,
 so it can be pasted into other functions), the compiler also writes a normal
 copy of it into every file that uses the class, because the class's vtable
-needs something to point at. The original linker seems to have kept just one of those copies. 
+needs something to point at. The original linker kept just one of those copies.
 My build tries to do the same, so it needs to know where the game's copy is.
 
 I couldn't find it for these three. As far as I can see, nothing in 1070 uses
@@ -118,7 +233,7 @@ those base classes apart from the destructors themselves and the code that
 creates the objects, and I didn't find them in any other module on the disc
 either.
 
-My guess is that it's because 1070 looks like a leftover from an older build (?).
+My guess is that it's because 1070 looks like a leftover from an older build.
 Its vtables seem to belong to a version of the main program that isn't on the
 disc, and the main program I do have has something unrelated at those
 addresses. Two of the base destructors call into what looks like an older
@@ -153,36 +268,3 @@ my best guess because of the padding before it.
 
 I'd like to come back to this once I've worked out where 1070's real files
 start and end. Then it could work the same way as 1067.
-
-
-## Sony libraries in Lib.bin
-
-`Lib.bin` (`lib`) is a module the rest of the game shares. Most of it is
-tri-Ace's own code, but near the start there's a block of Sony code: the
-library the game uses to play its videos (`libmpeg`) and the one it uses to
-drive the PS2's video decoding hardware (`libipu`).
-
-The game was built with version 2.7 of Sony's SDK. Sony's libraries carry a
-version tag, and every tag I found in the game matches my 2.7.2 copy.
-
-I compared that copy with the original module, and the code matches exactly
-from 0x3E6900 to 0x3EEB50, with its data in the right places too. SDK 3.0's
-version doesn't match, so the version matters. The Ratchet & Clank decomp
-found the same library, down to the typos in Sony's error messages ("picure",
-"sutructure").
-
-Since this isn't tri-Ace's code, I've given those functions their Sony names
-and taken them out of the progress count. They stay in the build as the
-original assembly.
-
-A few things I'm not sure about yet:
-
-- One small piece of the library's data, its own version tag, is missing from
-  the game. I think the linker left it out because nothing uses it.
-- The library calls 11 functions in the main executable. I know what Sony
-  calls them, but I haven't checked the executable's code against the SDK
-  yet, so I haven't named them.
-- Some other code in `Lib.bin` uses the video hardware too. It's probably the
-  game's own movie code.
-
-The next step is to check the main executable against the same SDK.

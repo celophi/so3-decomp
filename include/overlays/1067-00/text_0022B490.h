@@ -4,7 +4,7 @@
 #include "types.h"
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001E6C50.h"
-#include "main/resident_0012F0F8.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 
 /** Command retaining a byte setting, a float and the current context mode. */
 class FieldClass152C90 : public FieldClass150440

@@ -1,7 +1,8 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002CABC0.h"
 #include "main/resident_data.h"
-#include "main/resident_0012F0F8.h"
+#include "sdk/main/libc_guess_0013CD50.h"
+#include "sdk/main/libc_0013C6D0.h"
 
 struct FieldNameEntry
 {
@@ -173,7 +174,6 @@ struct FieldCollection50
 };
 // This overlay uses shorter aliases for these resident functions.
 extern "C" u32 func_11C8C0(void* table, s32 index);
-extern "C" s32 func_13C800(const char* left, const char* right);
 extern "C" void func_113EA0();
 extern "C" void func_4C74E0(FieldState100* state);
 extern "C" void func_462320(FieldState100* state, s32, s32);
@@ -329,7 +329,7 @@ FieldNameEntry* func_002CB9D0(FieldNameOwner* object, FieldNameGroup** group_ptr
         const char* source = (const char*)(group->names + entry->name_index * 0x14 + 4);
         func_0013CD50(buffer, source, 16);
         buffer[16] = 0;
-        if (func_13C800(buffer, object->name) == 0)
+        if (strcmp(buffer, object->name) == 0)
         {
             return entry;
         }

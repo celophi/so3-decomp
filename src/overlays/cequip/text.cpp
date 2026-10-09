@@ -2,7 +2,7 @@
 #include "overlays/cequip/text.h"
 #include "main/resident_data.h"
 #include "main/resident_0010A0E0.h"
-#include "main/resident_0012F0F8.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 #include "main/resident_001001E0.h"
 #include "main/resident_00101260.h"
 #include "overlays/1067-00/text_0028E240.h"

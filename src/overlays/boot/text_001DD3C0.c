@@ -1,5 +1,7 @@
 #include "include_asm.h"
 #include "overlays/boot/text_001DD3C0.h"
+#include "sdk/main/libc_0013C6D0.h"
+#include "sdk/main/libc_0013CA60.h"
 #include "vu0.h"
 
 #define BOOT_TRANSFER_BUFFER_SIZE 1158050
@@ -125,7 +127,7 @@ static inline void copy_transfer_name(BootState1E1A40* object, const char* base,
         func_13C948(object->unk2E, base);
         if (suffix != 0)
         {
-            func_13C6D0(object->unk2E, suffix);
+            strcat(object->unk2E, suffix);
         }
     }
 }
@@ -145,7 +147,7 @@ static inline s32 prepare_transfer_request(BootState1E1A40* object)
     else
     {
         func_13A678(object->unkDC4, 0, BOOT_TRANSFER_BUFFER_SIZE);
-        if (func_13CA60(D_205100) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
+        if (strlen(D_205100) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
         {
             copy_transfer_name(object, D_205100, D_205980);
         }
