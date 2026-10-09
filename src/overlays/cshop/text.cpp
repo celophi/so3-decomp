@@ -46,11 +46,83 @@ struct ObjectStatusFields
     u8 field_38;
 };
 
-/** Partial allocation record containing the packed variant byte. */
+/** Packed sixteen-byte allocation record checked before displaying its value. */
 struct ItemCreationAllocationRecord
 {
-    u8 unk00[0xC];
+    union
+    {
+        u16 raw;
+        struct
+        {
+            u16 value : 10;
+            u16 other : 6;
+        } bits;
+    } unk00;
+    u16 unk02;
+    u16 unk04;
+    u16 unk06;
+    u16 unk08;
+    u16 unk0a;
     u8 unk0c;
+    u8 unk0d_low : 3;
+    /** @brief Random two-bit shift used in the record checksum. */
+    u8 checksum_shift : 2;
+    u8 unk0d_high : 2;
+    u8 unk0d_flag : 1;
+    /** @brief Checksum of the six halfwords at offsets 00 through 0A. */
+    u16 checksum;
+
+    /**
+     * @brief Calculate the checksum of the six halfwords for a given shift.
+     * @param shift Two-bit shift applied to the checksum key.
+     * @return Calculated checksum.
+     */
+    u16 calculate_checksum(u32 shift) const
+    {
+        return (0x83CF << shift) ^ ((unk08 + (unk00.raw + unk04)) ^ (unk02 + (unk06 + unk0a)));
+    }
+    /**
+     * @brief Calculate the checksum of the six halfwords with the stored shift.
+     * @return Calculated checksum.
+     */
+    u16 calculate_checksum() const
+    {
+        return (0x83CF << checksum_shift) ^ ((unk08 + (unk00.raw + unk04)) ^ (unk02 + (unk06 + unk0a)));
+    }
+    /**
+     * @brief Clear the record, choose its checksum shift and store the checksum.
+     * @param key Fixed shift to use instead of a random one, or null.
+     */
+    void reset(const u8* key)
+    {
+        *(unsigned __int128*)this = 0;
+        checksum_shift = func_0010CF80() & 3;
+        if (key != 0)
+        {
+            checksum_shift = *key;
+        }
+        checksum = calculate_checksum(checksum_shift);
+    }
+    /**
+     * @brief Test whether the stored checksum differs from the record contents.
+     * @return True when the checksum differs.
+     */
+    bool invalid() const
+    {
+        return checksum != calculate_checksum();
+    }
+    /**
+     * @brief Read the ten-bit allocation value from a valid record.
+     * @return Packed value, or zero when the checksum differs.
+     */
+    u16 value()
+    {
+        if (invalid())
+        {
+            return 0;
+        }
+        return unk00.bits.value;
+    }
 };
 
 
@@ -110,7 +182,8 @@ typedef struct ShopRuntime
     ResidentCheckedRecord* unk00;
     u8 unk04[0xC];
     ShopCallbacks* unk10;
-    u8 unk14[0xC];
+    u8 unk14[0x8];
+    void* unk1c;
     FieldBufferSlots* unk20;
 } ShopRuntime;
 /**
@@ -1345,7 +1418,90 @@ void ShopClass187EC0::refresh_rows(s32 offset)
     }
 }
 
-INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034B3C0);
+/**
+ * @brief Find the catalog definition for a runtime category record.
+ * @param record Runtime category record.
+ * @return Definition selected by the record's catalog index.
+ */
+static inline ItemCreationCategoryDefinition* shop_category(const ShopRuntimeRecord* record)
+{
+    return &D_001B64F0[record->unk02];
+}
+
+/**
+ * @brief Read a catalog definition's three-bit mode field.
+ * @param record Catalog definition.
+ * @return Mode stored in bits 4 through 6 of byte 0xB.
+ */
+static inline u8 shop_record_mode(const ItemCreationCategoryDefinition* record)
+{
+    return record->unk0b_mode;
+}
+
+void func_0034B3C0(void* receiver, u8 reset)
+{
+    ShopClass187EC0* object = static_cast<ShopClass187EC0*>(receiver);
+    object->FieldClass15AE60::unk88 = 0;
+    ShopState* state = D_001B643C->unk10->unk14;
+    s32 count = 0;
+    for (s32 code = 1; code <= 750; code++)
+    {
+        ShopRuntimeRecord* record = shop_record(D_001B64F8, code);
+        if (record == 0)
+        {
+            continue;
+        }
+        ItemCreationCategoryDefinition* definition = shop_category(record);
+        if (definition->unk17_flag || record->unk08 == 0)
+        {
+            continue;
+        }
+        if (state->unk3270 == 7)
+        {
+            object->codes[count++] = code;
+        }
+        else
+        {
+            u8 mode = shop_record_mode(definition);
+            if (mode == state->unk3270)
+            {
+                object->codes[count++] = code;
+            }
+        }
+    }
+    object->FieldClass15AE60::unk88 = count;
+    for (; count < 750; count++)
+    {
+        object->codes[count] = 0;
+    }
+    count = object->FieldClass15AE60::unk88;
+    s32 visible = count >= 5 ? 5 : count;
+    s32 offset = object->FieldClass15AE60::unk22;
+    if (count < offset + 5)
+    {
+        offset = count - 5;
+    }
+    if (offset < 0)
+    {
+        offset = 0;
+    }
+    s32 selected = object->FieldClass15AE60::unk28;
+    if (selected >= visible)
+    {
+        selected = visible - 1;
+    }
+    if (selected < 0)
+    {
+        selected = 0;
+    }
+    if (reset)
+    {
+        selected = 0;
+        offset = 0;
+    }
+    func_002CE420(&static_cast<FieldClass15AE60&>(*object), 1, visible, 378, 28);
+    func_002CE220(&static_cast<FieldClass15AE60&>(*object), object->FieldClass15AE60::unk88, offset, selected);
+}
 
 s32 ShopClass187EC0::func_slot104(u32 associated)
 {
@@ -1422,6 +1578,47 @@ s32 ShopClass187FE0::func_slotb4()
     return 2;
 }
 
+/**
+ * @brief Configure the packed allocation record and its detail values.
+ * @param record Allocation record to configure.
+ * @param value Ten-bit allocation value.
+ * @param channel Channel identifier.
+ * @param values Eight detail values, or null for catalog defaults.
+ * @param flag Packed record flag.
+ * @param suppress_allocation_id Suppress the resident allocation identifier when the record checksum is valid.
+ */
+extern "C" void func_0040D2E0(ItemCreationAllocationRecord* record, u16 value, u8 channel,
+                              const u16* values, bool flag, bool suppress_allocation_id);
+
+/**
+ * @brief Load a text resource into the multiline text widget.
+ * @param object Multiline text widget.
+ * @param slot Resource slot index.
+ * @param key Resource key.
+ * @param mode Drawing mode mask.
+ * @param flag Flag whose low byte is stored by the widget.
+ * @return Setup status.
+ */
+extern "C" s32 func_0045F690(LibObject174D90* object, u32 slot, s32 key, u32 mode, u32 flag);
+
+/**
+ * @brief Reset an allocation record and initialize it from a catalog record.
+ * @param allocation Allocation record to initialize.
+ * @param item Catalog record supplying the allocation value.
+ * @param values Eight detail values, or null for catalog defaults.
+ */
+static inline void initialize_allocation(ItemCreationAllocationRecord* allocation, const ShopRuntimeRecord* item,
+                                         const u16* values)
+{
+    allocation->reset(0);
+    // TODO: The body of this check is a guess. The code only shows a compiled-out test on values.
+    if (values != 0)
+    {
+        allocation->unk04 = values[0];
+    }
+    func_0040D2E0(allocation, item->unk02 + 1, 0, values, false, true);
+}
+
 INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034BB00);
 
 /** @brief Destroy the list receiver and its contained sentinel. */
@@ -1450,14 +1647,14 @@ ShopClass187FE0::ShopClass187FE0()
     unkb0 = 0;
     unkb4 = 0;
     unkb8 = 0;
-    unkbc = 0;
-    unkc0 = 0;
-    unkc4 = 0;
-    unkc8 = 0;
-    unkcc = 0;
-    unkd0 = 0;
-    unkd4 = 0;
-    unkd8 = 0;
+    unkbc[0] = 0;
+    unkbc[1] = 0;
+    unkbc[2] = 0;
+    unkbc[3] = 0;
+    unkbc[4] = 0;
+    unkbc[5] = 0;
+    unkbc[6] = 0;
+    unkbc[7] = 0;
     unkdc = 0;
     FieldClass15AE70();
 }
@@ -1625,7 +1822,56 @@ void ShopClass1880E0::func_slot5c()
     }
 }
 
-INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034CE00);
+/**
+ * @brief Read the entry count for a valid bucket.
+ * @param buckets Bucket storage.
+ * @param category Bucket index.
+ * @return Entry count, or zero when the index is out of range.
+ */
+static inline s32 shop_bucket_count(FieldHalfwordBuckets* buckets, u8 category)
+{
+    if (category < 8)
+    {
+        return buckets->buckets[category].count;
+    }
+    return 0;
+}
+
+void func_0034CE00(void* receiver, u8 reset)
+{
+    ShopClass1880E0* object = static_cast<ShopClass1880E0*>(receiver);
+    object->FieldClass15AE60::unk88 = 0;
+    ShopState* state = D_001B643C->unk10->unk14;
+    FieldHalfwordBuckets* buckets = &state->buckets;
+    object->FieldClass15AE60::unk88 = shop_bucket_count(buckets, state->unk3270);
+    s32 count = object->FieldClass15AE60::unk88;
+    s32 visible = count >= 5 ? 5 : count;
+    s32 offset = object->FieldClass15AE60::unk22;
+    if (count < offset + 5)
+    {
+        offset = count - 5;
+    }
+    if (offset < 0)
+    {
+        offset = 0;
+    }
+    s32 selected = object->FieldClass15AE60::unk28;
+    if (selected >= visible)
+    {
+        selected = visible - 1;
+    }
+    if (selected < 0)
+    {
+        selected = 0;
+    }
+    if (reset)
+    {
+        selected = 0;
+        offset = 0;
+    }
+    func_002CE420(&static_cast<FieldClass15AE60&>(*object), 1, visible, 378, 28);
+    func_002CE220(&static_cast<FieldClass15AE60&>(*object), object->FieldClass15AE60::unk88, offset, selected);
+}
 
 /**
  * @brief Set the positions and active flags of six display columns.
@@ -1664,21 +1910,6 @@ void ShopClass1880E0::set_scroll_position(float position)
 // Resident bucket accessors are not yet declared by their owning header.
 extern "C" s32 func_002FA870(FieldHalfwordBuckets* object, u16 code);
 extern "C" s32 func_002FA7B0(FieldHalfwordBuckets* object, u16 code);
-
-/**
- * @brief Read the entry count for a valid bucket.
- * @param buckets Bucket storage.
- * @param category Bucket index.
- * @return Entry count, or zero when the index is out of range.
- */
-static inline s32 shop_bucket_count(FieldHalfwordBuckets* buckets, u8 category)
-{
-    if (category < 8)
-    {
-        return buckets->buckets[category].count;
-    }
-    return 0;
-}
 
 /**
  * @brief Read the stored byte for a one-based code.
@@ -1894,9 +2125,29 @@ s32 ShopClass188200::func_slotf4(u32 associated)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034DE30);
+void ShopClass188300::func_slot74()
+{
+    if (func_slot28())
+    {
+        return;
+    }
+    if (choice->func_0023CDB0(2) == 1)
+    {
+        return;
+    }
+}
 
-INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034DE90);
+void ShopClass188300::func_slot70()
+{
+    if (func_slot28())
+    {
+        return;
+    }
+    if (choice->func_0023CDB0(3) == 1)
+    {
+        return;
+    }
+}
 
 s32 func_0034DEF0(void* receiver)
 {
@@ -2011,7 +2262,69 @@ ItemCreationClass175110::~ItemCreationClass175110()
 {
 }
 
-INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034E630);
+void ShopClass188400::func_slot5c()
+{
+    ShopState* state = D_001B643C->unk10->unk14;
+    if (state->unk326c >= 0)
+    {
+        if (unkf8 != 0)
+        {
+            unkac->unk3f = 0;
+            unka8->unk3f = 0;
+            unkb4->unk3f = 1;
+            ItemCreationAllocationRecord allocation __attribute__((aligned(16)));
+            allocation.reset(0);
+            ShopRuntimeRecord* record = shop_record(D_001B64F8, state->unk326c);
+            initialize_allocation(&allocation, record, 0);
+            set_shop_number(numbers[0], D_001B64F0[allocation.value()].unk04_low);
+            set_shop_number(numbers[1], D_001B64F0[allocation.value()].unk04_high);
+            set_shop_number(numbers[2], D_001B64F0[allocation.value()].unk08_high);
+            set_shop_number(numbers[3], D_001B64F0[allocation.value()].unk08_low);
+            set_shop_number(numbers[4], D_001B64F0[allocation.value()].unk0c_low);
+            for (s32 i = 0; i < 5; i++)
+            {
+                first[i]->unk3f = 1;
+                second[i]->unk3f = 1;
+                numbers[i]->unk3f = 1;
+            }
+        }
+        else
+        {
+            s32 key = state->unk326c + 0x1294E;
+            if (key != unkf4)
+            {
+                unkac->unk3f = 0;
+                unka8->unk3f = 1;
+                func_0045F690(unka8, func_slot54(), key, 8, 1);
+                LibObject174D90* message = unka8;
+                message->unk80 = 0.8f;
+                message->unk84 = 0.8f;
+                message->unk3c = 1;
+            }
+            for (s32 i = 0; i < 5; i++)
+            {
+                first[i]->unk3f = 0;
+                second[i]->unk3f = 0;
+                numbers[i]->unk3f = 0;
+            }
+            unkb4->unk3f = 0;
+        }
+        unkb0->unk3f = 1;
+    }
+    else
+    {
+        unkac->unk3f = 1;
+        unka8->unk3f = 0;
+        unkb0->unk3f = 0;
+        unkb4->unk3f = 0;
+        for (s32 i = 0; i < 5; i++)
+        {
+            first[i]->unk3f = 0;
+            second[i]->unk3f = 0;
+            numbers[i]->unk3f = 0;
+        }
+    }
+}
 
 s32 ShopClass188400::func_slotf4(u32 associated)
 {
@@ -2180,10 +2493,6 @@ s32 ShopClass188700::func_slotf4(u32 associated)
     return 1;
 }
 
-static inline u8 shop_record_mode(const ItemCreationCategoryDefinition* record)
-{
-    return record->unk0b_mode;
-}
 void func_00350B30(ShopState* object, s32 direction)
 {
     switch (object->unk3280)
