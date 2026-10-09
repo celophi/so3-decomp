@@ -78,13 +78,13 @@ public:
     FieldClass159960();
 
     /**
-     * @brief Copy four coefficients and cache the segment's key range.
-     * @param a First coefficient.
-     * @param b Second coefficient.
-     * @param c Third coefficient.
-     * @param d Fourth coefficient.
-     * @param start First key.
-     * @param end Last key.
+     * @brief Copy four coefficients and cache the segment's key range, using 1.0f when the range is empty.
+     * @param a First coefficient, stored at offset 0.
+     * @param b Second coefficient, stored at offset 8.
+     * @param c Third coefficient, stored at offset 4.
+     * @param d Fourth coefficient, stored at offset 0xC.
+     * @param start First key, stored at offset 0x10.
+     * @param end Last key, stored at offset 0x14.
      */
     virtual void func_001E11E0(const float* a, const float* b, const float* c, const float* d, float start, float end);
 
@@ -353,18 +353,6 @@ void func_001DFF70(FieldEntryArrayObject* object, s32 count, FieldArrayEntry10* 
  * @return 1 when the entry was written, or 0 when the array is null or the index is rejected.
  */
 s32 func_001E0220(FieldEntryArrayObject* object, s32 index, float key, const float* x, const float* y, const float* z);
-
-/**
- * @brief Copy four floats, store the start and end values, and cache their span, using 1.0f when the span is zero.
- * @param object Record to fill.
- * @param a Float stored at offset 0.
- * @param b Float stored at offset 8.
- * @param c Float stored at offset 4.
- * @param d Float stored at offset 0xC.
- * @param start Value stored at offset 0x10.
- * @param end Value stored at offset 0x14.
- */
-void func_001E11E0(FieldFloatSpan1C* object, const float* a, const float* b, const float* c, const float* d, float start, float end);
 
 /**
  * @brief Copy one entry's sort value and floats to the optional outputs.

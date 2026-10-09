@@ -180,9 +180,9 @@ more. In one case it meant a file boundary was wrong: the destructor at
 0x20D9A0 really belongs to the file before it, so that file now starts at
 0x20DA30.
 
-So far 11 of the 16 link with MWLDPS2, and they all still come out identical
-to the game's. That's Battle (both copies), `boot`, and every menu overlay
-except item creation. Splat only writes linker
+So far 14 of the 16 link with MWLDPS2, and they all still come out identical
+to the game's. That's every overlay except Lib. The main program is still on
+GNU ld too. Splat only writes linker
 scripts for GNU ld, so the build translates splat's script into MWLDPS2's own
 kind, a linker command file (`.lcf`), with
 [tools/so3/build/lcf.py](../tools/so3/build/lcf.py). Everything else still uses
@@ -203,13 +203,18 @@ A few things I learned about MWLDPS2 on the way:
   part of the overlays. In the game they're in the main program. For now they
   go in a separate area that doesn't end up in the image.
 
-Field (both copies), item creation, Lib and the main program are still on GNU
-ld. For Field and item creation, the problem is the C++ copies my build drops.
-It drops just the code, but each copy also has some bookkeeping (an entry in
-the exception tables and a few other small records) that still points at it.
-GNU ld throws those away without looking, but MWLDPS2 still checks them. The
-original linker would have dropped each copy together with its bookkeeping, so
-that's what I need to do too.
+Field and item creation needed one more thing. My build drops the C++ copies
+the game didn't keep, but it was only dropping the code. Each copy also has a
+little bookkeeping (an entry in the exception tables and a small `.mwcats`
+record) that still pointed at it. GNU ld throws those away without looking,
+but MWLDPS2 checks them, so now the build cuts them loose too, the way the
+original linker would have dropped them along with the copy.
+
+MWLDPS2 also caught two real mistakes in my source that GNU ld never noticed,
+because it never looked inside the vtables. One of Field's virtual functions
+(`FieldClass159960::func_001E11E0`) was written as a plain function, and the
+vtable for `FieldClass1591D0` was missing from the symbol map. Both are fixed,
+and the function still matches.
 
 Lib isn't on MWLDPS2 yet because of one instruction. There's a tiny wait loop
 at 0x4D99B0 that's still assembly, and it branches back to its own start. GNU

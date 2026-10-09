@@ -990,18 +990,18 @@ void* func_001E1100(FieldClass150070* owner, u32 size, s32 mode)
     return 0;
 }
 
-void func_001E11E0(FieldFloatSpan1C* object, const float* a, const float* b, const float* c, const float* d, float start, float end)
+void FieldClass159960::func_001E11E0(const float* a, const float* b, const float* c, const float* d, float start, float end)
 {
-    object->unk00 = *a;
-    object->unk10 = start;
-    object->unk08 = *b;
-    object->unk04 = *c;
-    object->unk14 = end;
-    object->unk0c = *d;
-    object->unk18 = end - start;
-    if (object->unk18 == 0.0f)
+    unk00 = *a;
+    unk10 = start;
+    unk08 = *b;
+    unk04 = *c;
+    unk14 = end;
+    unk0c = *d;
+    unk18 = end - start;
+    if (unk18 == 0.0f)
     {
-        object->unk18 = 1.0f;
+        unk18 = 1.0f;
     }
 }
 
