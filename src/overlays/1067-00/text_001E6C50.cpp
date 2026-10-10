@@ -1352,7 +1352,7 @@ void FieldClass1504F0::func_001ED160()
             }
             if (unk34[0])
             {
-                func_00464D90(unk34[0], resource->unk08, 0, 0, 92.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
+                func_00464D90(unk34[0], resource->inventory_count, 0, 0, 92.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
                 LibClass174EF0* widget = unk34[0];
                 widget->unk9c = 0;
                 widget->unk3c = 1;
@@ -1394,7 +1394,7 @@ void FieldClass1504F0::func_001ED160()
             }
             if (unk34[1])
             {
-                func_00464D90(unk34[1], second_resource->unk08, 0, 0, 80.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
+                func_00464D90(unk34[1], second_resource->inventory_count, 0, 0, 80.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
                 LibClass174EF0* widget = unk34[1];
                 widget->unk9c = 0;
                 widget->unk3c = 1;

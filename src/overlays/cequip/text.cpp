@@ -2205,7 +2205,7 @@ extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipR
     for (category = 1; category <= 750; ++category)
     {
         ItemCreationCategoryRecord* entry = equip_category_record(category);
-        if (entry && entry->unk08 > 0)
+        if (entry && entry->inventory_count > 0)
         {
             const EquipCategoryMaskView* definition =
                 reinterpret_cast<const EquipCategoryMaskView*>(reinterpret_cast<const u8*>(D_001B64F0) + entry->catalog_index * 32);

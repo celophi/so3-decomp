@@ -54,7 +54,9 @@ enum ShopMessage
     SHOP_MSG_SWITCH_HELP = 0x2F0E,
     SHOP_MSG_BASE_PARAMETERS = 0x2F0F,
     SHOP_MSG_SHOP_NAMES = 0x12924,
-    SHOP_MSG_ITEM_DESCRIPTIONS = 0x1294E
+    SHOP_MSG_ITEM_DESCRIPTIONS = 0x1294E,
+    SHOP_MSG_ITEM_NAMES = 50000,
+    SHOP_MSG_FACTORS = 70000
 };
 
 enum ShopMode
@@ -83,32 +85,16 @@ enum ShopDiscountFlag
     SHOP_DISCOUNT_30_PERCENT = 8
 };
 
+enum ShopItemFlag
+{
+    SHOP_ITEM_PLAYER_INVENTED = 0x04
+};
+
 /** Partial aligned resource header with the payload size. */
 struct ShopAlignedResource
 {
     u8 unk00[0x40];
     s32 payload_size;
-};
-
-struct ObjectField20
-{
-    u8 unknown_0[0x20];
-    u32 field_20;
-};
-
-struct ObjectField34
-{
-    u8 unknown_0[0x34];
-    u32 field_34;
-};
-
-struct ObjectStatusFields
-{
-    u8 unknown_0[0x24];
-    u32 field_24;
-    s8 field_28;
-    u8 unknown_29[0xF];
-    u8 field_38;
 };
 
 /** Packed sixteen-byte item allocation record. */
@@ -132,7 +118,8 @@ struct ItemCreationAllocationRecord
     u8 unk0d_low : 3;
     /** @brief Random two-bit shift used in the record checksum. */
     u8 checksum_shift : 2;
-    u8 unk0d_high : 2;
+    u8 battle_usable : 1;
+    u8 allocated : 1;
     u8 unk0d_flag : 1;
     /** @brief Checksum of the six halfwords at offsets 00 through 0A. */
     u16 checksum;
@@ -195,12 +182,14 @@ struct ShopRuntimeRecord
 {
     u16 allocation_list_head;
     u16 definition_index;
-    u8 unk04[3];
+    u8 unk04;
+    u8 inventor_id;
+    u8 unk06;
     u8 shop_stock;
     /** Items in inventory, excluding equipped items. */
     u8 inventory_count;
     u8 equipped_count;
-    u8 unk0a;
+    u8 battle_usable_count;
     u8 flags;
 };
 
@@ -225,10 +214,10 @@ extern "C" const ShopPanelColors D_00351FC0;
 struct FieldRuntime
 {
     u8 unk00[0x514];
-    s32 unk514;
-    u32 unk518;
-    s32 unk51c;
-    u32 unk520;
+    s32 item_name_resource_slot;
+    u32 item_name_base_key;
+    s32 factor_resource_slot;
+    u32 factor_base_key;
 };
 
 struct ShopRuntimeFlags
@@ -236,8 +225,8 @@ struct ShopRuntimeFlags
     u8 unk00[0x81];
     u8 flags;
     u8 unk82[0x13E];
-    /** While positive, overrides the shop discount with 100%, capped to 99% at initialization. */
-    s32 discount_timer;
+    /** Invincibility effect countdown; also triggers the maximum shop discount while active. */
+    s32 invincibility_timer;
 };
 
 typedef struct ShopCallbacks
@@ -598,7 +587,7 @@ void ShopSellAllConfirmWindow::func_slot70()
     }
 }
 
-s32 func_003488D0(void* receiver)
+s32 shop_cancel_sell_all_confirmation(void* receiver)
 {
     FieldClass15AE70* object = static_cast<FieldClass15AE70*>(receiver);
     if (object->func_slot28())
@@ -611,9 +600,9 @@ s32 func_003488D0(void* receiver)
     return 2;
 }
 
-void func_00348960(ObjectField20* object, u32 value)
+void shop_set_active_window(ShopState* object, void* value)
 {
-    object->field_20 = value;
+    object->unk20 = value;
 }
 
 /**
@@ -658,13 +647,13 @@ s32 ShopSellAllConfirmWindow::func_slotf4(u32 associated)
     LibClass178630* panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 370.0f, 176.0f, 88.0f);
     func_004C6190(unk10, panel);
-    func_00351E80(&unk14, panel);
+    shop_append_panel(&unk14, panel);
     panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 370.0f, 48.0f, 88.0f);
     func_004C6190(unk10, panel);
     ShopPanelColors colors = D_00351FC0;
     func_4C5590(panel, &colors.colors);
-    func_00351E80(&unk14, panel);
+    shop_append_panel(&unk14, panel);
     LibObject178750* text = new (0) LibObject178750;
     text->func_004C7FE0(0.0f, 12.0f, 370.0f, 24.0f, static_cast<s32>(associated), SHOP_MSG_CONFIRM_SALE, 0);
     text->set_mode(1);
@@ -684,7 +673,7 @@ s32 ShopSellAllConfirmWindow::func_slotf4(u32 associated)
     choice->func_0023CE60(93.0f, 0.0f);
     choice->unkF2 = 0;
     choice->func_0023CF50(1, 222.0f, 302.0f);
-    func_00351CD0(&unk74, choice);
+    shop_append_choice(&unk74, choice);
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -742,7 +731,7 @@ void ShopSellConfirmWindow::func_slot70()
     }
 }
 
-s32 func_00349110(void* receiver)
+s32 shop_cancel_sell_confirmation(void* receiver)
 {
     FieldClass15AE70* object = static_cast<FieldClass15AE70*>(receiver);
     if (object->func_slot28())
@@ -799,13 +788,13 @@ s32 ShopSellConfirmWindow::func_slotf4(u32 associated)
     LibClass178630* panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 320.0f, 176.0f, 88.0f);
     func_004C6190(unk10, panel);
-    func_00351E80(&unk14, panel);
+    shop_append_panel(&unk14, panel);
     panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 320.0f, 48.0f, 88.0f);
     func_004C6190(unk10, panel);
     ShopPanelColors colors = D_00351FB0;
     func_4C5590(panel, &colors.colors);
-    func_00351E80(&unk14, panel);
+    shop_append_panel(&unk14, panel);
     LibObject178750* text = new (0) LibObject178750;
     func_004C7FE0(text, static_cast<s32>(associated), SHOP_MSG_CONFIRM_SALE, 0, 0.0f, 12.0f, 320.0f, 24.0f);
     text->set_mode(1);
@@ -825,7 +814,7 @@ s32 ShopSellConfirmWindow::func_slotf4(u32 associated)
     choice->func_0023CE60(90.0f, 0.0f);
     choice->unkF2 = 0;
     choice->func_0023CF50(1, 212.0f, 302.0f);
-    func_00351CD0(&unk74, choice);
+    shop_append_choice(&unk74, choice);
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -846,9 +835,9 @@ void ShopBuyConfirmWindow::func_slot5c()
     D_001B643C->callbacks->shop->func_00261150();
 }
 
-u32 func_00349820(ObjectField20* object)
+void* shop_get_active_window(ShopState* object)
 {
-    return object->field_20;
+    return object->unk20;
 }
 
 void ShopBuyConfirmWindow::func_slot74()
@@ -895,7 +884,7 @@ void ShopBuyConfirmWindow::func_slot70()
     }
 }
 
-s32 func_003499B0(void* receiver)
+s32 shop_cancel_buy_confirmation(void* receiver)
 {
     FieldClass15AE70* object = static_cast<FieldClass15AE70*>(receiver);
     if (object->func_slot28())
@@ -943,13 +932,13 @@ s32 ShopBuyConfirmWindow::func_slotf4(u32 associated)
     LibClass178630* panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 320.0f, 176.0f, 88.0f);
     func_004C6190(unk10, panel);
-    func_00351E80(&unk14, panel);
+    shop_append_panel(&unk14, panel);
     panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 0.0f, 0.0f, 320.0f, 48.0f, 88.0f);
     func_004C6190(unk10, panel);
     ShopPanelColors colors = D_00351FA0;
     func_4C5590(panel, &colors.colors);
-    func_00351E80(&unk14, panel);
+    shop_append_panel(&unk14, panel);
     LibObject178750* text = new (0) LibObject178750;
     func_004C7FE0(text, static_cast<s32>(associated), SHOP_MSG_CONFIRM_PURCHASE, 0, 0.0f, 12.0f, 320.0f, 24.0f);
     text->set_mode(1);
@@ -970,7 +959,7 @@ s32 ShopBuyConfirmWindow::func_slotf4(u32 associated)
     choice->unkF2 = 0;
     choice->func_0023CF50(0, 232.0f, 302.0f);
     choice->unkad = 0;
-    func_00351CD0(&unk74, choice);
+    shop_append_choice(&unk74, choice);
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -1025,7 +1014,7 @@ void ShopSaleItemWindow::func_slot10c(u32 value, u32 selected)
     }
 }
 
-s32 func_0034A0A0(void* object)
+s32 shop_return_to_sell_list(void* object)
 {
     ShopState* state = D_001B643C->callbacks->shop;
     state->func_00263F50(object);
@@ -1033,7 +1022,7 @@ s32 func_0034A0A0(void* object)
     return 2;
 }
 
-s32 func_0034A0F0(void* receiver)
+s32 shop_open_sell_all_confirmation(void* receiver)
 {
     ShopState* state = D_001B643C->callbacks->shop;
     if (state->selected_allocation != 0)
@@ -1047,12 +1036,12 @@ s32 func_0034A0F0(void* receiver)
     return 1;
 }
 
-u32 func_0034A1D0(ObjectField34* object)
+s32 shop_get_resource_slot(ShopState* object)
 {
-    return object->field_34;
+    return object->resource_slot;
 }
 
-s32 func_0034A1E0(void* receiver)
+s32 shop_open_sell_confirmation(void* receiver)
 {
     ShopState* state = D_001B643C->callbacks->shop;
     if (state->selected_allocation != 0)
@@ -1302,8 +1291,8 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
     separator->unk3c = 1;
     func_004C6190(unk10, factor_separator);
     FieldRuntime* runtime = D_001B657C;
-    runtime->unk51c = static_cast<s32>(associated);
-    runtime->unk520 = 0x11171;
+    runtime->factor_resource_slot = static_cast<s32>(associated);
+    runtime->factor_base_key = SHOP_MSG_FACTORS + 1;
     for (s32 i = 0; i < 8; i++)
     {
         factors[i] = new (0) LibObject172440;
@@ -1392,28 +1381,28 @@ void ShopSellListWindow::func_slot10c(u32 value, u32 selected)
     }
 }
 
-s32 func_0034AF50(void* object)
+s32 shop_next_sell_category(void* object)
 {
     shop_change_category(D_001B643C->callbacks->shop, 1);
     shop_refresh_sell_list(object, 1);
     return 1;
 }
 
-s32 func_0034AFA0(void* object)
+s32 shop_previous_sell_category(void* object)
 {
     shop_change_category(D_001B643C->callbacks->shop, -1);
     shop_refresh_sell_list(object, 1);
     return 1;
 }
 
-s32 func_0034AFF0(void* object)
+s32 shop_toggle_sell_parameters(void* object)
 {
     ShopDescriptionWindow* toggle = D_001B643C->callbacks->shop->description_window;
     toggle->show_parameters = !toggle->show_parameters;
     return 1;
 }
 
-s32 func_0034B020(void* object)
+s32 shop_cancel_sell(void* object)
 {
     shop_set_mode(D_001B643C->callbacks->shop, SHOP_MODE_ACTION);
     return 2;
@@ -1507,7 +1496,7 @@ void ShopSellListWindow::refresh_rows(s32 offset)
             ShopRuntimeRecord* record = shop_record(D_001B64F8, identifier);
             if (record != 0)
             {
-                u8 dimmed = record->flags & 0x04;
+                u8 dimmed = record->flags & SHOP_ITEM_PLAYER_INVENTED;
                 u32 color = 0x808080;
                 if (dimmed)
                 {
@@ -1531,19 +1520,19 @@ void ShopSellListWindow::refresh_rows(s32 offset)
  * @param record Runtime category record.
  * @return Definition selected by the record's catalog index.
  */
-static inline ItemCreationCategoryDefinition* shop_category(const ShopRuntimeRecord* record)
+static inline ItemCreationCategoryDefinition* shop_definition(const ShopRuntimeRecord* record)
 {
     return &D_001B64F0[record->definition_index];
 }
 
 /**
- * @brief Read a catalog definition's three-bit mode field.
+ * @brief Read an item definition's category.
  * @param record Catalog definition.
- * @return Mode stored in bits 4 through 6 of byte 0xB.
+ * @return Item category stored in the definition.
  */
-static inline u8 shop_record_mode(const ItemCreationCategoryDefinition* record)
+static inline u8 shop_definition_category(const ItemCreationCategoryDefinition* record)
 {
-    return record->unk0b_mode;
+    return record->category;
 }
 
 void shop_refresh_sell_list(void* receiver, u8 reset)
@@ -1559,8 +1548,8 @@ void shop_refresh_sell_list(void* receiver, u8 reset)
         {
             continue;
         }
-        ItemCreationCategoryDefinition* definition = shop_category(record);
-        if (definition->unk17_flag || record->inventory_count == 0)
+        ItemCreationCategoryDefinition* definition = shop_definition(record);
+        if (definition->unsellable || record->inventory_count == 0)
         {
             continue;
         }
@@ -1570,7 +1559,7 @@ void shop_refresh_sell_list(void* receiver, u8 reset)
         }
         else
         {
-            u8 mode = shop_record_mode(definition);
+            u8 mode = shop_definition_category(definition);
             if (mode == state->category)
             {
                 object->item_codes[count++] = code;
@@ -1689,13 +1678,13 @@ s32 ShopItemDetailWindow::func_slotb4()
 /**
  * @brief Configure the packed allocation record and its detail values.
  * @param record Allocation record to configure.
- * @param value Ten-bit allocation value.
+ * @param item_code One-based item code.
  * @param channel Channel identifier.
- * @param values Eight detail values, or null for catalog defaults.
+ * @param factors Eight factor codes, or null for catalog defaults.
  * @param flag Packed record flag.
  * @param suppress_allocation_id Suppress the resident allocation identifier when the record checksum is valid.
  */
-extern "C" void func_0040D2E0(ItemCreationAllocationRecord* record, u16 value, u8 channel, const u16* values, bool flag, bool suppress_allocation_id);
+extern "C" void func_0040D2E0(ItemCreationAllocationRecord* record, u16 item_code, u8 channel, const u16* factors, bool flag, bool suppress_allocation_id);
 
 /**
  * @brief Load a text resource into the multiline text widget.
@@ -1712,7 +1701,7 @@ extern "C" s32 func_0045F690(LibObject174D90* object, u32 slot, s32 key, u32 mod
  * @brief Reset an allocation record and initialize it from a catalog record.
  * @param allocation Allocation record to initialize.
  * @param item Catalog record supplying the allocation value.
- * @param values Eight detail values, or null for catalog defaults.
+ * @param factors Eight factor codes, or null for catalog defaults.
  */
 static inline void initialize_allocation(ItemCreationAllocationRecord* allocation, const ShopRuntimeRecord* item, const u16* values)
 {
@@ -1776,7 +1765,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     ShopRuntimeRecord* record = shop_record(D_001B64F8, item_code);
     initialize_allocation(&allocation, record, 0);
     category_label = new (0) LibObject178750;
-    category_label->func_004C7FE0(16.0f, 12.0f, 0.0f, 0.0f, associated, shop_record_mode(&D_001B64F0[allocation.definition_index()]) + SHOP_MSG_WEAPONS, 0);
+    category_label->func_004C7FE0(16.0f, 12.0f, 0.0f, 0.0f, associated, shop_definition_category(&D_001B64F0[allocation.definition_index()]) + SHOP_MSG_WEAPONS, 0);
     LibObject178750* heading = category_label;
     heading->unk88 = -1.0f;
     heading->unk3c = 1;
@@ -1785,7 +1774,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     category_label->set_mode(0);
     func_004C6190(unk10, category_label);
     item_icon = new (0) LibObject172410;
-    func_00413F70(item_icon, 24.0f, 34.0f, 0.0f, 0.0f, associated, item_code + 50000, 0);
+    func_00413F70(item_icon, 24.0f, 34.0f, 0.0f, 0.0f, associated, item_code + SHOP_MSG_ITEM_NAMES, 0);
     set_shop_icon_scalar(item_icon, -1.0f);
     item_icon->set_scale(1.2f, 1.2f);
     set_shop_icon_code(item_icon, allocation.definition_index() + 1);
@@ -1814,8 +1803,8 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     values_heading->unk3c = 1;
     func_004C6190(unk10, factor_heading);
     FieldRuntime* runtime = D_001B657C;
-    runtime->unk51c = static_cast<s32>(associated);
-    runtime->unk520 = 0x11171;
+    runtime->factor_resource_slot = static_cast<s32>(associated);
+    runtime->factor_base_key = SHOP_MSG_FACTORS + 1;
     for (s32 i = 0; i < 8; i++)
     {
         factors[i] = new (0) LibObject172440;
@@ -1845,7 +1834,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     footer->func_004C7FE0(12.0f, positions.values[4] - 8.0f, 560.0f, 24.0f, static_cast<s32>(associated), SHOP_MSG_BACK_HELP, 0);
     footer->set_mode(2);
     func_004C6190(detail_container, footer);
-    s32 key = static_cast<u16>(D_001B64F0[record->definition_index].unk10_code) + 0x88;
+    s32 key = static_cast<u16>(D_001B64F0[record->definition_index].model_index) + 0x88;
     closing = 0;
     item_model = new (0) FieldClass15BB90;
     func_002FDC00(item_model, key);
@@ -1978,21 +1967,21 @@ void ShopBuyListWindow::func_slot70()
     }
 }
 
-s32 func_0034CA50(void* object)
+s32 shop_next_buy_category(void* object)
 {
     shop_change_category(D_001B643C->callbacks->shop, 1);
     shop_refresh_buy_list(object, 0);
     return 1;
 }
 
-s32 func_0034CAA0(void* object)
+s32 shop_previous_buy_category(void* object)
 {
     shop_change_category(D_001B643C->callbacks->shop, -1);
     shop_refresh_buy_list(object, 0);
     return 1;
 }
 
-s32 func_0034CAF0(void* object)
+s32 shop_toggle_parameters(void* object)
 {
     ShopDescriptionWindow* toggle = D_001B643C->callbacks->shop->description_window;
     toggle->show_parameters = !toggle->show_parameters;
@@ -2009,7 +1998,7 @@ s32 shop_open_item_details(void)
     return 1;
 }
 
-s32 func_0034CBD0(void* object)
+s32 shop_cancel_purchase(void* object)
 {
     ShopState* state = D_001B643C->callbacks->shop;
     shop_clear_purchases(&state->transaction);
@@ -2017,10 +2006,10 @@ s32 func_0034CBD0(void* object)
     return 2;
 }
 
-s32 func_0034CC10(void* receiver)
+s32 shop_open_buy_confirmation(void* receiver)
 {
     ShopState* state = D_001B643C->callbacks->shop;
-    if ((u16)(state->transaction.unk2f08 + state->transaction.unk2f0a))
+    if ((u16)(state->transaction.pending_unsellable_count + state->transaction.pending_sellable_count))
     {
         ShopBuyConfirmWindow* window = new (0) ShopBuyConfirmWindow;
         window->func_slotf4(state->func_00263CC0());
@@ -2193,7 +2182,7 @@ void ShopBuyListWindow::refresh_rows(s32 offset)
             ShopRuntimeRecord* record = shop_record(D_001B64F8, code);
             if (record != 0)
             {
-                u8 dimmed = record->flags & 0x04;
+                u8 dimmed = record->flags & SHOP_ITEM_PLAYER_INVENTED;
                 u32 color = 0x808080;
                 if (dimmed)
                 {
@@ -2387,7 +2376,7 @@ void ShopActionWindow::func_slot70()
     }
 }
 
-s32 func_0034DEF0(void* receiver)
+s32 shop_cancel_action(void* receiver)
 {
     FieldClass15AE70* object = static_cast<FieldClass15AE70*>(receiver);
     if (object->func_slot28())
@@ -2398,7 +2387,7 @@ s32 func_0034DEF0(void* receiver)
     return 2;
 }
 
-s32 func_0034DF50(void* receiver)
+s32 shop_select_action(void* receiver)
 {
     ShopActionWindow* object = static_cast<ShopActionWindow*>(receiver);
     if (object->func_slot28())
@@ -2478,7 +2467,7 @@ s32 ShopActionWindow::func_slotf4(u32 associated)
     choice->unkF2 = 0;
     choice->func_0023CF50(0, 40.0f, 224.0f);
     choice->func_0044B110(0, 9, 2000, 0, 0.0f);
-    func_00351CD0(&unk74, choice);
+    shop_append_choice(&unk74, choice);
     panel = new (0) LibClass178630;
     func_004C5A80(panel, 0, 250.0f, 0.0f, 358.0f, 40.0f, 88.0f);
     func_004C6190(unk10, panel);
@@ -2867,8 +2856,8 @@ void ShopEquipmentPreviewWindow::func_slot5c()
     if (state->selected_item >= 0)
     {
         const ShopRuntimeRecord* record = shop_record(D_001B64F8, state->selected_item);
-        if (shop_record_mode(shop_category(record)) != SHOP_CATEGORY_WEAPONS && shop_record_mode(shop_category(record)) != SHOP_CATEGORY_ARMOR &&
-            shop_record_mode(shop_category(record)) != SHOP_CATEGORY_ACCESSORIES)
+        if (shop_definition_category(shop_definition(record)) != SHOP_CATEGORY_WEAPONS && shop_definition_category(shop_definition(record)) != SHOP_CATEGORY_ARMOR &&
+            shop_definition_category(shop_definition(record)) != SHOP_CATEGORY_ACCESSORIES)
         {
             return;
         }
@@ -2888,7 +2877,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
                 continue;
             }
             s32 bit = 1 << (slot - 1);
-            u16 mask = shop_category(record)->unk0c_mask;
+            u16 mask = shop_definition(record)->equipment_mask;
             if (mask & bit)
             {
                 found = false;
@@ -2922,7 +2911,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
             const ShopCharacterRecord* original = reinterpret_cast<const ShopCharacterRecord*>(member);
             ShopCharacterRecord copy = *original;
             ShopCharacterEquipment copy_entry = *entry;
-            switch (shop_record_mode(shop_category(record)))
+            switch (shop_definition_category(shop_definition(record)))
             {
             case SHOP_CATEGORY_WEAPONS:
                 func_003F9890(&copy, &copy_entry, &allocation, 0);
@@ -3109,14 +3098,14 @@ s32 ShopHelpWindow::func_slotf4(u32 associated)
     scroll_start_x = 24.0f + label_width;
     func_44B570(frame, scroll_left, 0.0f, scroll_width, 56.0f);
     func_004C6190(unk10, frame);
-    func_00351DF0(&unk20, frame);
+    shop_append_frame(&unk20, frame);
     func_004C7FE0(text, static_cast<s32>(associated), SHOP_MSG_BUY_HELP, 0, scroll_left, 6.0f, 0.0f, 0.0f);
     func_004C6190(unk10, text);
     text->unk3d = 0;
-    func_00351D60(&unk2c, text);
+    shop_append_text(&unk2c, text);
     func_44B510(second_frame, 1);
     func_004C6190(unk10, second_frame);
-    func_00351DF0(&unk20, second_frame);
+    shop_append_frame(&unk20, second_frame);
     func_004C7FE0(caption, static_cast<s32>(associated), SHOP_MSG_TITLE, 0, 36.0f, 39.0f, 0.0f, 0.0f);
     caption->set_scale(0.65f, 0.65f);
     func_004C6190(unk10, caption);
@@ -3203,7 +3192,7 @@ void shop_change_category(ShopState* object, s32 direction)
             {
                 ShopRuntimeRecord* record = shop_record(D_001B64F8, code);
                 if (record != 0 && record->inventory_count != 0 &&
-                    (object->category == SHOP_CATEGORY_ALL || object->category == shop_record_mode(&D_001B64F0[record->definition_index])))
+                    (object->category == SHOP_CATEGORY_ALL || object->category == shop_definition_category(&D_001B64F0[record->definition_index])))
                 {
                     break;
                 }
@@ -3270,7 +3259,7 @@ void shop_set_id(ShopState* object, u16 shop_id)
     {
         discount_percent = 30;
     }
-    if (shop_runtime_flags()->discount_timer > 0)
+    if (shop_runtime_flags()->invincibility_timer > 0)
     {
         discount_percent = 100;
     }
@@ -3290,7 +3279,7 @@ void shop_release_resources(ShopState* object)
     clear_shop_runtime_flag(SHOP_DISCOUNT_30_PERCENT);
 }
 
-void func_003510B0(void* object)
+void shop_queue_object(void* object)
 {
     func_0011ED90(D_001B65F4, object);
 }
@@ -3357,14 +3346,14 @@ s32 shop_register_resource(void* receiver, void* buffer)
     object->resource_slot = func_004656B0(D_001B657C, aligned);
     func_00100C80(saved_heap);
     FieldRuntime* runtime = D_001B657C;
-    runtime->unk514 = object->resource_slot;
-    runtime->unk518 = 0xC351;
+    runtime->item_name_resource_slot = object->resource_slot;
+    runtime->item_name_base_key = SHOP_MSG_ITEM_NAMES + 1;
     return object->func_00263CD0();
 }
 
-s32 func_00351540(u8* object)
+s32 shop_init_record_selection(ShopState* object)
 {
-    return func_28E3D0(object + 0x54) != 0;
+    return func_28E3D0(&object->selection) != 0;
 }
 
 /** @brief Initialize the shop controller and its record selection. */
@@ -3465,9 +3454,9 @@ ShopState::~ShopState()
 {
 }
 
-u8 func_00351BD0(ObjectStatusFields* object)
+u8 shop_windows_initialized(ShopState* object)
 {
-    return object->field_38;
+    return object->windows_initialized;
 }
 
 s32 func_00351BE0(void* object)
@@ -3475,24 +3464,24 @@ s32 func_00351BE0(void* object)
     return 4;
 }
 
-void func_00351BF0(ObjectStatusFields* object, u32 value)
+void shop_set_help_window(ShopState* object, void* value)
 {
-    object->field_24 = value;
+    object->unk24 = value;
 }
 
-u32 func_00351C00(ObjectStatusFields* object)
+void* shop_get_help_window(ShopState* object)
 {
-    return object->field_24;
+    return object->unk24;
 }
 
-void func_00351C10(ObjectStatusFields* object, s8 value)
+void func_00351C10(ShopState* object, s8 value)
 {
-    object->field_28 = value;
+    object->unk28 = value;
 }
 
-s8 func_00351C20(ObjectStatusFields* object)
+s8 func_00351C20(ShopState* object)
 {
-    return object->field_28;
+    return object->unk28;
 }
 
 s32 func_00351C30(void* object)
@@ -3546,7 +3535,7 @@ s32 func_00351CC0(void* object)
  * @param list List containing an existing sentinel and element count.
  * @param value Object pointer to append.
  */
-void func_00351CD0(FieldCountedList* list, void* value)
+void shop_append_choice(FieldCountedList* list, void* value)
 {
     FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
     if (node != 0)
@@ -3568,7 +3557,7 @@ void func_00351CD0(FieldCountedList* list, void* value)
  * @param list List containing an existing sentinel and element count.
  * @param value Object pointer to append.
  */
-void func_00351D60(FieldCountedList* list, void* value)
+void shop_append_text(FieldCountedList* list, void* value)
 {
     FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
     if (node != 0)
@@ -3590,7 +3579,7 @@ void func_00351D60(FieldCountedList* list, void* value)
  * @param list List containing an existing sentinel and element count.
  * @param value Object pointer to append.
  */
-void func_00351DF0(FieldCountedList* list, void* value)
+void shop_append_frame(FieldCountedList* list, void* value)
 {
     FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
     if (node != 0)
@@ -3612,7 +3601,7 @@ void func_00351DF0(FieldCountedList* list, void* value)
  * @param list List containing an existing sentinel and element count.
  * @param value Object pointer to append.
  */
-void func_00351E80(FieldCountedList* list, void* value)
+void shop_append_panel(FieldCountedList* list, void* value)
 {
     FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
     if (node != 0)

@@ -289,14 +289,14 @@ typedef struct ItemCreationRuntime643C
 /**
  * @brief Configure the packed allocation record and its detail values.
  * @param record Allocation record to configure.
- * @param value Ten-bit allocation value.
+ * @param item_code One-based item code.
  * @param channel Channel identifier.
- * @param values Eight detail values, or null for catalog defaults.
+ * @param factors Eight factor codes, or null for catalog defaults.
  * @param flag Packed record flag.
  * @param suppress_allocation_id Suppress the resident allocation identifier when the record checksum is valid.
  */
-extern "C" void func_40D2E0(ItemCreationAllocationRecord* record, u16 value, u8 channel,
-                          const u16* values, bool flag, bool suppress_allocation_id);
+extern "C" void func_40D2E0(ItemCreationAllocationRecord* record, u16 item_code, u8 channel,
+                          const u16* factors, bool flag, bool suppress_allocation_id);
 
 /**
  * @brief Set horizontal glyph spacing and mark the widget for redraw.
@@ -4362,7 +4362,7 @@ void func_00352DE0(ItemDetailsWindow* object)
             break;
         }
     }
-    func_4C6DF0(object->unkac, object->func_slot54(), (u8)D_001B64F0[allocation_value(record)].unk0b_mode + 0x1B62, 0);
+    func_4C6DF0(object->unkac, object->func_slot54(), (u8)D_001B64F0[allocation_value(record)].category + 0x1B62, 0);
     set_item_name_code(object->unkb0, allocation_value(record) + 1, record->unk0c & 0x7F);
     func_4C6DF0(object->unkbc, object->func_slot54(), (u16)(allocation_value(record) + 1) + 0xD6D8, 0);
     for (s32 index = 0; index < 8; index++)
@@ -4382,7 +4382,7 @@ void func_00352DE0(ItemDetailsWindow* object)
             display_index++;
         }
     }
-    s32 message = (u16)D_001B64F0[allocation_value(record)].unk10_code + 0x88;
+    s32 message = (u16)D_001B64F0[allocation_value(record)].model_index + 0x88;
     state = object->unka8;
     if (state->resource_window != 0)
     {
@@ -6974,7 +6974,7 @@ s32 InventoryItemInstanceList::func_slotb8()
         s32 selected = unk24;
         if (count != 0 && selected >= 0)
         {
-            s32 message = (u16)D_001B64F0[allocation_value(records[selected])].unk10_code + 0x88;
+            s32 message = (u16)D_001B64F0[allocation_value(records[selected])].model_index + 0x88;
             if (state->resource_window != 0)
             {
                 func_002FD940(state->resource_window);
@@ -7725,7 +7725,7 @@ void InventoryItemTypeList::refresh_rows(s32 start)
                     }
                     func_4C6DF0(static_cast<LibObject178750*>(unk48[index]), func_slot54(), key, 0);
                     LibObject174F20* value = unk168[index];
-                    value->numeric_value = record->unk08;
+                    value->numeric_value = record->inventory_count;
                     value->unk3c = 1;
                     unk48[index]->unk3d = 1;
                     unk168[index]->unk3d = 1;
@@ -7776,7 +7776,7 @@ u8 func_0035CAD0(InventoryItemTypeList* object, const ItemCreationCategoryRecord
         break;
     }
     case 0:
-        if ((u8)D_001B64F0[category->catalog_index].unk0b_mode != 0)
+        if ((u8)D_001B64F0[category->catalog_index].category != 0)
         {
             result = true;
         }

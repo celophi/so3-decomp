@@ -29,8 +29,8 @@ void shop_clear_purchases(ShopTransaction* object)
         object->purchase_quantities[index] = 0;
     }
     object->purchase_total = 0;
-    object->unk2f08 = 0;
-    object->unk2f0a = 0;
+    object->pending_unsellable_count = 0;
+    object->pending_sellable_count = 0;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_decrease_quantity);

@@ -432,33 +432,30 @@ extern "C"
     typedef struct ShopState ShopState;
     typedef struct ShopHelpWindow ShopScrollingWindow;
     typedef struct ShopFolWindow ShopValueDisplay;
-    typedef struct ObjectField20 ObjectField20;
-    typedef struct ObjectField34 ObjectField34;
-    typedef struct ObjectStatusFields ObjectStatusFields;
 #ifndef __cplusplus
     typedef struct ShopSaleItemWindow ShopSaleItemWindow;
 #endif
 
     /**
-     * @brief Open the alternate choice window for the selected allocation.
+     * @brief Open confirmation for selling all instances of the selected item.
      * @param receiver Window associated with the new choice window.
      * @return Always one.
      */
-    s32 func_0034A0F0(void* receiver);
+    s32 shop_open_sell_all_confirmation(void* receiver);
 
     /**
-     * @brief Open the bucket choice window when the combined count is nonzero.
+     * @brief Open purchase confirmation when items are selected.
      * @param receiver Window associated with the new choice window.
      * @return One after opening, or three when the count is zero.
      */
-    s32 func_0034CC10(void* receiver);
+    s32 shop_open_buy_confirmation(void* receiver);
 
     /**
-     * @brief Open the choice window when an allocation record is selected.
+     * @brief Open confirmation for selling the selected item instance.
      * @param receiver Window associated with the new choice window.
      * @return Always one.
      */
-    s32 func_0034A1E0(void* receiver);
+    s32 shop_open_sell_confirmation(void* receiver);
 
     /**
      * @brief Set the text key and reset its scrolling timer.
@@ -474,46 +471,46 @@ extern "C"
     void shop_update_help_text(ShopScrollingWindow* object);
 
     /**
-     * @brief Set the window state code and flags when its control byte is clear.
+     * @brief Cancel the shop action window when its control byte is clear.
      * @param receiver Window callback receiver.
      * @return Zero while the control byte is set, otherwise two.
      */
-    s32 func_0034DEF0(void* receiver);
+    s32 shop_cancel_action(void* receiver);
 
     /**
-     * @brief Select the shop mode from the choice control's signed selection.
+     * @brief Enter buy or sell mode for the selected action.
      * @param receiver Window containing the choice control.
      * @return Zero while the control byte is set, otherwise one.
      */
-    s32 func_0034DF50(void* receiver);
+    s32 shop_select_action(void* receiver);
 
     /**
      * @brief Return the current window to its associated state when its control byte is clear.
      * @param receiver Window callback receiver.
      * @return Zero while the control byte is set, otherwise two.
      */
-    s32 func_003488D0(void* receiver);
+    s32 shop_cancel_sell_all_confirmation(void* receiver);
 
     /**
      * @brief Return the current window to its associated state when its control byte is clear.
      * @param receiver Window callback receiver.
      * @return Zero while the control byte is set, otherwise two.
      */
-    s32 func_00349110(void* receiver);
+    s32 shop_cancel_sell_confirmation(void* receiver);
 
     /**
      * @brief Return the current window to its associated state when its control byte is clear.
      * @param receiver Window callback receiver.
      * @return Zero while the control byte is set, otherwise two.
      */
-    s32 func_003499B0(void* receiver);
+    s32 shop_cancel_buy_confirmation(void* receiver);
 
     /**
-     * @brief Pass the supplied object to the current state and select state code three.
+     * @brief Close the supplied window and return to the sell list.
      * @param object Supplied window or callback object.
      * @return Always two.
      */
-    s32 func_0034A0A0(void* object);
+    s32 shop_return_to_sell_list(void* object);
 
     /**
      * @brief Refresh the checked value and the totals for the current allocation.
@@ -841,60 +838,60 @@ extern "C"
     s32 func_00351CC0(void* object);
 
     /**
-     * @brief Set field at offset 0x20.
-     * @param object Object containing the field.
-     * @param value Value to store.
+     * @brief Store the active shop window.
+     * @param object Shop controller.
+     * @param value Active window pointer to store.
      */
-    void func_00348960(ObjectField20* object, u32 value);
+    void shop_set_active_window(ShopState* object, void* value);
 
     /**
-     * @brief Get field at offset 0x20.
-     * @param object Object containing the field.
-     * @return Field value.
+     * @brief Return the active shop window.
+     * @param object Shop controller.
+     * @return Active window pointer.
      */
-    u32 func_00349820(ObjectField20* object);
+    void* shop_get_active_window(ShopState* object);
 
     /**
-     * @brief Get field at offset 0x34.
-     * @param object Object containing the field.
-     * @return Field value.
+     * @brief Return the shop item-name resource slot.
+     * @param object Shop controller.
+     * @return Resource slot.
      */
-    u32 func_0034A1D0(ObjectField34* object);
+    s32 shop_get_resource_slot(ShopState* object);
 
     /**
-     * @brief Get field at offset 0x38.
-     * @param object Object containing the field.
-     * @return Field value.
+     * @brief Report whether the shop windows have been initialized.
+     * @param object Shop controller.
+     * @return Window initialization flag.
      */
-    u8 func_00351BD0(ObjectStatusFields* object);
+    u8 shop_windows_initialized(ShopState* object);
 
     /**
-     * @brief Set field at offset 0x24.
-     * @param object Object containing the field.
-     * @param value Value to store.
+     * @brief Store the shop help window.
+     * @param object Shop controller.
+     * @param value Help window pointer to store.
      */
-    void func_00351BF0(ObjectStatusFields* object, u32 value);
+    void shop_set_help_window(ShopState* object, void* value);
 
     /**
-     * @brief Get field at offset 0x24.
-     * @param object Object containing the field.
-     * @return Field value.
+     * @brief Return the shop help window.
+     * @param object Shop controller.
+     * @return Help window pointer.
      */
-    u32 func_00351C00(ObjectStatusFields* object);
+    void* shop_get_help_window(ShopState* object);
 
     /**
      * @brief Set field at offset 0x28.
      * @param object Object containing the field.
      * @param value Value to store.
      */
-    void func_00351C10(ObjectStatusFields* object, s8 value);
+    void func_00351C10(ShopState* object, s8 value);
 
     /**
      * @brief Get field at offset 0x28.
      * @param object Object containing the field.
      * @return Field value.
      */
-    s8 func_00351C20(ObjectStatusFields* object);
+    s8 func_00351C20(ShopState* object);
 
     /**
      * @brief Create and attach the shop state windows.
@@ -912,53 +909,53 @@ extern "C"
     s32 shop_register_resource(void* receiver, void* buffer);
 
     /**
-     * @brief Check the value associated with the field at offset 0x54.
-     * @param object Object containing the field.
-     * @return Nonzero if the value is set.
+     * @brief Initialize the shop record selection from the resident tables.
+     * @param object Shop controller.
+     * @return Nonzero when both selection tables are present.
      */
-    s32 func_00351540(u8* object);
+    s32 shop_init_record_selection(ShopState* object);
 
     /**
-     * @brief Advance the current selection and refresh the receiver.
+     * @brief Select the next item category and refresh the sell list.
      * @param object Receiver to refresh.
      * @return Always 1.
      */
-    s32 func_0034AF50(void* object);
+    s32 shop_next_sell_category(void* object);
 
     /**
-     * @brief Move the current selection backward and refresh the receiver.
+     * @brief Select the previous item category and refresh the sell list.
      * @param object Receiver to refresh.
      * @return Always 1.
      */
-    s32 func_0034AFA0(void* object);
+    s32 shop_previous_sell_category(void* object);
 
     /**
-     * @brief Advance the current selection and refresh the receiver.
+     * @brief Select the next item category and refresh the buy list.
      * @param object Receiver to refresh.
      * @return Always 1.
      */
-    s32 func_0034CA50(void* object);
+    s32 shop_next_buy_category(void* object);
 
     /**
-     * @brief Move the current selection backward and refresh the receiver.
+     * @brief Select the previous item category and refresh the buy list.
      * @param object Receiver to refresh.
      * @return Always 1.
      */
-    s32 func_0034CAA0(void* object);
+    s32 shop_previous_buy_category(void* object);
 
     /**
-     * @brief Toggle the current display's byte flag.
+     * @brief Toggle the description and base-parameter views.
      * @param object Callback receiver; unused.
      * @return Always 1.
      */
-    s32 func_0034AFF0(void* object);
+    s32 shop_toggle_sell_parameters(void* object);
 
     /**
-     * @brief Toggle the current display's byte flag.
+     * @brief Toggle the description and base-parameter views.
      * @param object Callback receiver; unused.
      * @return Always 1.
      */
-    s32 func_0034CAF0(void* object);
+    s32 shop_toggle_parameters(void* object);
 
     /**
      * @brief Create and select the shop message window.
@@ -967,11 +964,11 @@ extern "C"
     s32 shop_open_item_details(void);
 
     /**
-     * @brief Set the current shop state to mode 1.
+     * @brief Return from the sell list to the shop action menu.
      * @param object Callback receiver; unused.
      * @return Always 2.
      */
-    s32 func_0034B020(void* object);
+    s32 shop_cancel_sell(void* object);
 
     /**
      * @brief Move to the next nonempty item category.
@@ -1011,42 +1008,42 @@ extern "C"
      * @brief Enqueue the receiver for resident processing.
      * @param object Receiver to enqueue.
      */
-    void func_003510B0(void* object);
+    void shop_queue_object(void* object);
 
     /**
      * @brief Append a value after the list's sentinel node.
      * @param list List containing an existing sentinel and element count.
      * @param value Object pointer to append.
      */
-    void func_00351CD0(FieldCountedList* list, void* value);
+    void shop_append_choice(FieldCountedList* list, void* value);
 
     /**
      * @brief Append a value after the list's sentinel node.
      * @param list List containing an existing sentinel and element count.
      * @param value Object pointer to append.
      */
-    void func_00351D60(FieldCountedList* list, void* value);
+    void shop_append_text(FieldCountedList* list, void* value);
 
     /**
      * @brief Append a value after the list's sentinel node.
      * @param list List containing an existing sentinel and element count.
      * @param value Object pointer to append.
      */
-    void func_00351DF0(FieldCountedList* list, void* value);
+    void shop_append_frame(FieldCountedList* list, void* value);
 
     /**
      * @brief Append a value after the list's sentinel node.
      * @param list List containing an existing sentinel and element count.
      * @param value Object pointer to append.
      */
-    void func_00351E80(FieldCountedList* list, void* value);
+    void shop_append_panel(FieldCountedList* list, void* value);
 
     /**
-     * @brief Clear the current state's transaction and return to mode 1.
+     * @brief Clear pending purchases and return to the action window.
      * @param object Callback receiver; unused.
      * @return Always 2.
      */
-    s32 func_0034CBD0(void* object);
+    s32 shop_cancel_purchase(void* object);
 
     /**
      * @brief Set the shop identifier and its runtime-dependent price adjustment.

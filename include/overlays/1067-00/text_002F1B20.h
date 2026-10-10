@@ -17,8 +17,8 @@ typedef struct ShopTransaction
     /** Play time in seconds when the shop opened; added to Pomello Juice prices. */
     u32 play_time_seconds;
     u32 purchase_total;
-    u16 unk2f08;
-    u16 unk2f0a;
+    u16 pending_unsellable_count;
+    u16 pending_sellable_count;
     u8 purchase_quantities[750];
     u8 shop_id;
     u8 shop_index;
