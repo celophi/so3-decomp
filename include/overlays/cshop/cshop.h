@@ -19,7 +19,7 @@ class ItemCreationOptionResourceDisplay;
 /** Owned instances of the selected item, with sale prices and factors. */
 struct ShopSaleItemWindow : public FieldClass15AD40
 {
-    LibObject172410* item_icons[5];
+    LibObject172410* item_names[5];
     LibObject174F20* sale_prices[5];
     LibObject172440* factors[8];
     ItemCreationClass172870* factor_separator;
@@ -29,7 +29,7 @@ struct ShopSaleItemWindow : public FieldClass15AD40
     {
         for (s32 i = 0; i < 5; i++)
         {
-            item_icons[i] = 0;
+            item_names[i] = 0;
             sale_prices[i] = 0;
         }
         FieldClass15AD40();
@@ -62,12 +62,12 @@ struct ShopSellListWindow : public FieldClass15AD40
     {
         for (s32 i = 0; i < 6; i++)
         {
-            item_icons[i] = 0;
+            item_names[i] = 0;
             item_counts[i] = 0;
         }
         FieldClass15AD40();
     }
-    LibObject172410* item_icons[6];
+    LibObject172410* item_names[6];
     LibObject174F20* item_counts[6];
     LibClass178630* panel;
     u16 item_codes[750];
@@ -97,7 +97,7 @@ struct ShopSellListWindow : public FieldClass15AD40
 /** Shop inventory with prices and purchase quantities. */
 struct ShopBuyListWindow : public FieldClass15AD40
 {
-    LibObject172410* item_icons[6];
+    LibObject172410* item_names[6];
     LibObject174F20* price_displays[6];
     LibObject178750* multiply_labels[6];
     LibObject174F20* quantity_displays[6];
@@ -153,7 +153,7 @@ struct ShopItemDetailWindow : public FieldClass15AE70
     /** @brief Initialize the item detail window. */
     ShopItemDetailWindow();
     LibObject178750* category_label;
-    LibObject172410* item_icon;
+    LibObject172410* item_name;
     ItemCreationClass172870* factor_separator;
     LibObject178750* description_text;
     LibObject178750* factor_heading;
@@ -243,8 +243,8 @@ struct ShopDescriptionWindow : public FieldClass15AE70
 struct ShopEquipmentPreviewWindow : public FieldClass15AE70
 {
     void* unka8;
-    ItemCreationOptionResourceDisplay* resources[8];
-    LibObject178750* labels[8];
+    ItemCreationOptionResourceDisplay* character_displays[8];
+    LibObject178750* comparison_labels[8];
     s32 pulse_level;
     s32 pulse_step;
     /** @brief Clear the window display pointer. */
@@ -265,15 +265,15 @@ struct ShopHelpWindow : public FieldClass15AE70
     /** @brief Clear the message display and scroll state. */
     ShopHelpWindow()
     {
-        text = 0;
-        text_width = 0;
+        help_text = 0;
+        help_text_width = 0;
         scroll_timer = 0;
-        help_index = 0;
+        help_action = 0;
         scrolling = 0;
-        label_width = 0;
-        scroll_start_x = 0;
-        scroll_left = 0;
-        scroll_width = 0;
+        shop_name_width = 0;
+        help_start_x = 0;
+        help_clip_left = 0;
+        help_clip_width = 0;
     }
     /** @brief Destroy the Field window base. */
     virtual ~ShopHelpWindow();
@@ -283,16 +283,16 @@ struct ShopHelpWindow : public FieldClass15AE70
     virtual void func_slot60(s32 text_key);
     /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
-    LibObject178750* text;
-    s32 text_width;
+    LibObject178750* help_text;
+    s32 help_text_width;
     s16 scroll_timer;
     u8 scrolling;
     u8 unkb3;
-    s32 help_index;
-    float label_width;
-    float scroll_start_x;
-    float scroll_left;
-    float scroll_width;
+    s32 help_action;
+    float shop_name_width;
+    float help_start_x;
+    float help_clip_left;
+    float help_clip_width;
 };
 
 /** Background assembled from three resource images. */
