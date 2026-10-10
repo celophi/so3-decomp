@@ -7754,7 +7754,7 @@ u8 func_0035CAD0(InventoryItemTypeList* object, const ItemCreationCategoryRecord
     case 2:
     {
         ItemCreationSelectedDisplayState* selected = object->unk1a0;
-        if (selected->line_skill_ids[(u16)selected->selected_line_index] != (u8)D_001B64F0[category->catalog_index].unk1e_value)
+        if (selected->line_skill_ids[(u16)selected->selected_line_index] != (u8)D_001B64F0[category->catalog_index].creation_skill_id)
         {
             result = true;
         }
@@ -7797,7 +7797,7 @@ u8 func_0035CAD0(InventoryItemTypeList* object, const ItemCreationCategoryRecord
         }
         break;
     case 1:
-        if ((u8)D_001B64F0[category->catalog_index].unk1b_flag == 0)
+        if ((u8)D_001B64F0[category->catalog_index].synthesis_material == 0)
         {
             result = true;
         }

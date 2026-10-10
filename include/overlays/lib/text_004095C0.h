@@ -21,7 +21,8 @@ struct ItemCreationCategoryDefinition
     u32 agility : 14;
     u32 defense : 14;
     u32 category : 3;
-    u32 unk0b_flag : 1;
+    /** Unused catalog entry, excluded from invention candidate lists. */
+    u32 unused : 1;
     u32 intelligence : 14;
     u32 equipment_mask : 10;
     u32 unk0c_rest : 8;
@@ -51,13 +52,14 @@ struct ItemCreationCategoryDefinition
     u8 unsellable : 1;
     u8 unk18[3];
     u8 unk1b_low : 6;
-    u8 unk1b_flag : 1;
+    /** May supply factors as the second item in synthesis. */
+    u8 synthesis_material : 1;
     u8 unk1b_high : 1;
-    u8 unk1c[2];
-    u8 unk1e_low : 1;
-    u8 unk1e_value : 3;
-    u8 unk1e_high : 4;
-    u8 unk1f;
+    u32 final_factor : 10;
+    /** Base difficulty used by invention and Specify Plan. */
+    u32 creation_difficulty : 7;
+    u32 creation_skill_id : 3;
+    u32 unk1c_high : 12;
 };
 
 typedef ItemCreationCategoryRecord LibCategoryRecord;
