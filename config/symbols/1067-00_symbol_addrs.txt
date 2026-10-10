@@ -1727,6 +1727,8 @@ func_44B1C0 = 0x0044B1C0; // type:func absolute:True allow_duplicated:True
 func_003EF740__14LibClass174610Fv = 0x0044B1C0; // type:func absolute:True allow_duplicated:True
 func_slot3c__16FieldClass15AE70Fv = 0x002CE450; // type:func
 
+shop_sell_item = 0x002F9C90; // type:func
+
 shop_complete_purchase = 0x002F9FD0; // type:func
 
 shop_clear_purchases = 0x002FA210; // type:func

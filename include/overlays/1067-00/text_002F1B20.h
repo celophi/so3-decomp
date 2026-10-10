@@ -14,8 +14,8 @@ typedef struct ShopItemList
 typedef struct ShopTransaction
 {
     ShopItemList category_items[8];
-    /** Saved price adjustment applied to Pomello Juice. */
-    u32 pomello_price_adjustment;
+    /** Play time in seconds when the shop opened; added to Pomello Juice prices. */
+    u32 play_time_seconds;
     u32 purchase_total;
     u16 unk2f08;
     u16 unk2f0a;

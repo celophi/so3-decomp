@@ -18,7 +18,7 @@ struct FieldByte4F9C90
     u8 value;
 };
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002F9C90);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_sell_item);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_complete_purchase);
 

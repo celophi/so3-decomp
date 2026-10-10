@@ -197,8 +197,10 @@ struct ShopRuntimeRecord
     u16 definition_index;
     u8 unk04[3];
     u8 shop_stock;
+    /** Items in inventory, excluding equipped items. */
     u8 inventory_count;
-    u8 unk09[2];
+    u8 equipped_count;
+    u8 unk0a;
     u8 flags;
 };
 
@@ -265,7 +267,6 @@ extern ShopRecordState* D_001B64F8;
 
 // This Field overlay interface has no recovered declaration in its owning header.
 extern "C" void func_002CE220(FieldStateCE420* object, s32 count, s32 offset, s32 selected);
-extern "C" s32 func_002F9C90(ShopTransaction* transaction, s16 identifier);
 
 /**
  * @brief Return the saved runtime section containing the shop flags.
@@ -634,7 +635,7 @@ s32 ShopSellAllConfirmWindow::func_slotb0()
     s32 count = func_0040CF90(D_001B64F8, records, state->selected_item);
     for (s32 i = 0; i < count; i++)
     {
-        func_002F9C90(transaction, func_0040D890(records[i]));
+        shop_sell_item(transaction, func_0040D890(records[i]));
     }
     func_00112400(D_001B65F8, 6, 0, 0, 127, 64, 0);
     shop_refresh_sale_item_range(static_cast<ShopSaleItemWindow*>(func_slot44()));
@@ -769,7 +770,7 @@ s32 ShopSellConfirmWindow::func_slotb0()
         return func_slotb4();
     }
     ShopState* state = D_001B643C->callbacks->shop;
-    func_002F9C90(&state->transaction, func_0040D890(state->selected_allocation));
+    shop_sell_item(&state->transaction, func_0040D890(state->selected_allocation));
     func_00112400(D_001B65F8, 6, 0, 0, 127, 64, 0);
     shop_refresh_sale_item_range(static_cast<ShopSaleItemWindow*>(func_slot44()));
     state->func_00263F50(this);

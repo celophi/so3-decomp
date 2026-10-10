@@ -159,6 +159,14 @@ void shop_clear_purchases(ShopTransaction* object);
 u16 shop_get_category_item(const ShopTransaction* object, u8 category, u16 index);
 
 /**
+ * @brief Sell one item allocation, credit fol and update the inventory counts.
+ * @param transaction Shop transaction containing the play time used for pricing.
+ * @param identifier One-based allocation identifier.
+ * @return One when the allocation is removed, or zero for an invalid or inactive allocation.
+ */
+s32 shop_sell_item(ShopTransaction* transaction, s16 identifier);
+
+/**
  * @brief Complete pending purchases, update stock and deduct the total from fol.
  * @param transaction Shop transaction to complete and reset.
  */
@@ -182,7 +190,7 @@ s32 shop_increase_quantity(ShopTransaction* transaction, u32 code);
 
 /**
  * @brief Calculate the sale price of an item instance.
- * @param transaction Shop transaction containing the price adjustment.
+ * @param transaction Shop transaction containing the play time used for pricing.
  * @param identifier One-based allocation identifier.
  * @return Sale price, or zero for an invalid or unsellable instance.
  */

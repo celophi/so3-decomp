@@ -392,6 +392,8 @@ shop_refresh_sale_item_range = 0x0034A640; // type:func
 shop_refresh_sell_list = 0x0034B3C0; // type:func
 shop_refresh_buy_list = 0x0034CE00; // type:func
 
+shop_sell_item = 0x002F9C90; // type:func
+
 shop_complete_purchase = 0x002F9FD0; // type:func
 
 shop_clear_purchases = 0x002FA210; // type:func
