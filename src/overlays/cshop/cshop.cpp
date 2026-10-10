@@ -1,5 +1,5 @@
 #include "include_asm.h"
-#include "overlays/cshop/text.h"
+#include "overlays/cshop/cshop.h"
 #include "overlays/lib/resource_widget_inlines.h"
 #include "overlays/lib/movement_widget_inlines.h"
 #include "overlays/lib/list_indicator_inlines.h"

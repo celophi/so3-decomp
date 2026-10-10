@@ -1,5 +1,5 @@
-#ifndef SO3_OVERLAYS_CSHOP_TEXT_H
-#define SO3_OVERLAYS_CSHOP_TEXT_H
+#ifndef SO3_OVERLAYS_CSHOP_CSHOP_H
+#define SO3_OVERLAYS_CSHOP_CSHOP_H
 
 #include "types.h"
 #include "overlays/lib/text_0044ABE0.h"
