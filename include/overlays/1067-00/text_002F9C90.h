@@ -144,19 +144,82 @@ void func_002FD940(FieldStatus14* object);
 s32 func_002FD480(const FieldStatus14* object);
 
 /**
- * @brief Reset the byte counts and associated totals.
- * @param object Receiver containing the counts and totals.
+ * @brief Clear pending purchase quantities and totals.
+ * @param object Shop transaction to reset.
  */
-void func_002FA210(FieldHalfwordBuckets* object);
+void shop_clear_purchases(ShopTransaction* object);
 
 /**
- * @brief Read a halfword from an in-range category and populated bucket index.
- * @param object Receiver containing the buckets.
- * @param category Bucket category.
- * @param index Index within the selected bucket.
- * @return The stored halfword, or zero when either index is out of range.
+ * @brief Read an item code from a shop category.
+ * @param object Shop transaction containing the item lists.
+ * @param category Item category, including the all-items list.
+ * @param index Index within the selected category.
+ * @return One-based item code, or zero when either index is out of range.
  */
-u16 func_002FAB20(const FieldHalfwordBuckets* object, u8 category, u16 index);
+u16 shop_get_category_item(const ShopTransaction* object, u8 category, u16 index);
+
+/**
+ * @brief Sell one item allocation, credit fol and update the inventory counts.
+ * @param transaction Shop transaction containing the play time used for pricing.
+ * @param identifier One-based allocation identifier.
+ * @return One when the allocation is removed, or zero for an invalid or inactive allocation.
+ */
+s32 shop_sell_item(ShopTransaction* transaction, s16 identifier);
+
+/**
+ * @brief Complete pending purchases, update stock and deduct the total from fol.
+ * @param transaction Shop transaction to complete and reset.
+ */
+void shop_complete_purchase(ShopTransaction* transaction);
+
+/**
+ * @brief Decrease the selected purchase quantity by one.
+ * @param transaction Shop transaction to update.
+ * @param code Item code in the low halfword.
+ * @return One on success, or zero for an invalid code or an empty quantity.
+ */
+s32 shop_decrease_quantity(ShopTransaction* transaction, u32 code);
+
+/**
+ * @brief Increase the selected purchase quantity after checking stock, fol and inventory space.
+ * @param transaction Shop transaction to update.
+ * @param code Item code in the low halfword.
+ * @return One on success, or zero when the item cannot be added.
+ */
+s32 shop_increase_quantity(ShopTransaction* transaction, u32 code);
+
+/**
+ * @brief Calculate the sale price of an item instance.
+ * @param transaction Shop transaction containing the play time used for pricing.
+ * @param identifier One-based allocation identifier.
+ * @return Sale price, or zero for an invalid or unsellable instance.
+ */
+s32 shop_get_sale_price(ShopTransaction* transaction, s16 identifier);
+
+/**
+ * @brief Limit purchases by the per-item inventory capacity and finite shop stock.
+ * @param transaction Shop transaction; unused by this accessor.
+ * @param code One-based item code.
+ * @return Purchase limit, or zero when the code is invalid or the inventory is full.
+ */
+s32 shop_get_buy_limit(ShopTransaction* transaction, u16 code);
+
+/**
+ * @brief Calculate an item's purchase price with stock adjustments and the shop discount.
+ * @param transaction Shop transaction containing the price adjustments.
+ * @param code One-based item code.
+ * @return Purchase price from one through 99999999, or zero for an invalid code.
+ */
+s32 shop_get_buy_price(ShopTransaction* transaction, u16 code);
+
+/**
+ * @brief Initialize the shop lists, pending purchases and price adjustments.
+ * @param transaction Shop transaction to initialize.
+ * @param shop_id One-based shop identifier from one through 42.
+ * @param discount_percent Purchase discount, capped at 99 percent.
+ * @return One on success, or zero for an invalid shop identifier.
+ */
+s32 shop_init_transaction(ShopTransaction* transaction, u8 shop_id, u8 discount_percent);
 
 /**
  * @brief Find a target entry by its byte key and return its state.

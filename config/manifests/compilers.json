@@ -45,6 +45,10 @@
     {
       "source": "src/overlays/citemcreation/text_003483C0.cpp",
       "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/cshop/cshop.cpp",
+      "flags": ["-O4,p"]
     }
   ],
   "source": "tools/so3/build/probes/main.c",

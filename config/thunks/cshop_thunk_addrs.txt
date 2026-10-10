@@ -1,6 +1,6 @@
-@168@refresh_rows__15ShopClass187DA0Fi = 0x00351F60;
-@168@set_scroll_position__15ShopClass187DA0Ff = 0x00351F50;
-@168@refresh_rows__15ShopClass187EC0Fi = 0x00351F40;
-@168@set_scroll_position__15ShopClass187EC0Ff = 0x00351F30;
-@168@refresh_rows__15ShopClass1880E0Fi = 0x00351F20;
-@168@set_scroll_position__15ShopClass1880E0Ff = 0x00351F10;
+@168@refresh_rows__18ShopSaleItemWindowFi = 0x00351F60;
+@168@set_scroll_position__18ShopSaleItemWindowFf = 0x00351F50;
+@168@refresh_rows__18ShopSellListWindowFi = 0x00351F40;
+@168@set_scroll_position__18ShopSellListWindowFf = 0x00351F30;
+@168@refresh_rows__17ShopBuyListWindowFi = 0x00351F20;
+@168@set_scroll_position__17ShopBuyListWindowFf = 0x00351F10;

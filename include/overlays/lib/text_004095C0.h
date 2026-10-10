@@ -10,48 +10,57 @@ typedef struct ItemCreationAllocationRecord ItemCreationAllocationRecord;
 
 typedef struct ItemCreationCategoryDefinition ItemCreationCategoryDefinition;
 
-/** Thirty-two-byte catalog entry with packed 14-bit values, a mode field and selection flags. */
+/** Thirty-two-byte item definition with packed stats, factors and inventory flags. */
 struct ItemCreationCategoryDefinition
 {
-    u8 unk00[4];
-    u32 unk04_low : 14;
-    u32 unk04_high : 14;
-    u32 unk04_rest : 4;
-    u32 unk08_low : 14;
-    u32 unk08_high : 14;
-    u32 unk0b_mode : 3;
-    u32 unk0b_flag : 1;
-    u32 unk0c_low : 14;
-    u32 unk0c_rest : 18;
+    u32 base_price : 24;
+    u32 stamina : 8;
+    u32 attack : 14;
+    u32 hit : 14;
+    /** Variant added to character-specific weapon resource IDs. */
+    u32 weapon_variant : 4;
+    u32 agility : 14;
+    u32 defense : 14;
+    u32 category : 3;
+    /** Unused catalog entry, excluded from invention candidate lists. */
+    u32 unused : 1;
+    u32 intelligence : 14;
+    u32 equipment_mask : 10;
+    u32 luck : 8;
 #ifdef __cplusplus
-    u32 unk10_low : 10;
-    u32 unk10_code : 10;
-    u32 unk10_high : 12;
+    u32 sort_order : 10;
+    u32 model_index : 10;
+    u32 initial_factor : 10;
+    u32 unk13_high : 2;
 #else
     union
     {
         struct
         {
-            u32 unk10_low : 10;
-            u32 unk10_code : 10;
-            u32 unk10_high : 12;
+            u32 sort_order : 10;
+            u32 model_index : 10;
+            u32 initial_factor : 10;
+            u32 unk13_high : 2;
         };
         /** Low halfword containing the ten-bit list-order key. */
         u16 sort_key_bits;
     };
 #endif
     u8 unk14[3];
-    u8 unk17_low : 7;
-    u8 unk17_flag : 1;
+    u8 unk17_low : 6;
+    u8 unlimited_stock : 1;
+    /** Also selects the reserved 100-allocation inventory pool. */
+    u8 unsellable : 1;
     u8 unk18[3];
     u8 unk1b_low : 6;
-    u8 unk1b_flag : 1;
+    /** May supply factors as the second item in synthesis. */
+    u8 synthesis_material : 1;
     u8 unk1b_high : 1;
-    u8 unk1c[2];
-    u8 unk1e_low : 1;
-    u8 unk1e_value : 3;
-    u8 unk1e_high : 4;
-    u8 unk1f;
+    u32 final_factor : 10;
+    /** Base difficulty used by invention and Specify Plan. */
+    u32 creation_difficulty : 7;
+    u32 creation_skill_id : 3;
+    u32 unk1c_high : 12;
 };
 
 typedef ItemCreationCategoryRecord LibCategoryRecord;

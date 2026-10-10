@@ -3,23 +3,29 @@
 
 #include "types.h"
 
-/** Halfword bucket with a signed used count. */
-typedef struct FieldHalfwordBucket
+/** Item codes in one shop category, with a signed used count. */
+typedef struct ShopItemList
 {
-    u16 values[750];
+    u16 item_codes[750];
     s32 count;
-} FieldHalfwordBucket;
+} ShopItemList;
 
-/** Partial receiver containing eight halfword buckets and associated byte counts. */
-typedef struct FieldHalfwordBuckets
+/** Shop inventory lists, pending purchases and price adjustments. */
+typedef struct ShopTransaction
 {
-    FieldHalfwordBucket buckets[8];
-    u8 unk2f00[4];
-    u32 unk2f04;
-    u16 unk2f08;
-    u16 unk2f0a;
-    u8 unk2f0c[750];
-} FieldHalfwordBuckets;
+    ShopItemList category_items[8];
+    /** Play time in seconds when the shop opened; added to Pomello Juice prices. */
+    u32 play_time_seconds;
+    u32 purchase_total;
+    u16 pending_unsellable_count;
+    u16 pending_sellable_count;
+    u8 purchase_quantities[750];
+    u8 shop_id;
+    u8 shop_index;
+    u8 dynamic_inventory_slot;
+    u8 discount_percent;
+    u8 unk31fe[2];
+} ShopTransaction;
 
 /** Partial target with an unsigned byte state. */
 typedef struct FieldByteState0A
