@@ -19,6 +19,7 @@ extern "C" u8 func_28E3D0(void* object);
 
 enum ShopMessage
 {
+    SHOP_MSG_QUANTITY_SEPARATOR = 0x7E7,
     SHOP_MSG_TITLE = 0x2EE0,
     SHOP_MSG_BUY_HELP = 0x2EE1,
     SHOP_MSG_BUY = 0x2EE4,
@@ -39,7 +40,11 @@ enum ShopMessage
     SHOP_MSG_STAT_INCREASE = 0x2EFF,
     SHOP_MSG_STAT_DECREASE = 0x2F00,
     SHOP_MSG_STAT_UNCHANGED = 0x2F01,
-    SHOP_MSG_PARAMETER_LABELS = 0x2F02,
+    SHOP_MSG_ATK = 0x2F02,
+    SHOP_MSG_HIT = 0x2F03,
+    SHOP_MSG_DEF = 0x2F04,
+    SHOP_MSG_AGL = 0x2F05,
+    SHOP_MSG_INT = 0x2F06,
     SHOP_MSG_PARAMETER_SEPARATOR = 0x2F07,
     SHOP_MSG_DESCRIPTION_HELP = 0x2F08,
     SHOP_MSG_SELL_ALL_HELP = 0x2F0A,
@@ -47,7 +52,9 @@ enum ShopMessage
     SHOP_MSG_BACK_HELP = 0x2F0C,
     SHOP_MSG_FACTOR = 0x2F0D,
     SHOP_MSG_SWITCH_HELP = 0x2F0E,
-    SHOP_MSG_BASE_PARAMETERS = 0x2F0F
+    SHOP_MSG_BASE_PARAMETERS = 0x2F0F,
+    SHOP_MSG_SHOP_NAMES = 0x12924,
+    SHOP_MSG_ITEM_DESCRIPTIONS = 0x1294E
 };
 
 enum ShopMode
@@ -62,7 +69,18 @@ enum ShopCategory
     SHOP_CATEGORY_WEAPONS = 0,
     SHOP_CATEGORY_ARMOR = 1,
     SHOP_CATEGORY_ACCESSORIES = 2,
+    SHOP_CATEGORY_USABLE_ITEMS = 3,
+    SHOP_CATEGORY_FOOD = 4,
+    SHOP_CATEGORY_OTHER_ITEMS = 5,
+    SHOP_CATEGORY_MATERIALS = 6,
     SHOP_CATEGORY_ALL = 7
+};
+
+enum ShopDiscountFlag
+{
+    SHOP_DISCOUNT_10_PERCENT = 2,
+    SHOP_DISCOUNT_20_PERCENT = 4,
+    SHOP_DISCOUNT_30_PERCENT = 8
 };
 
 /** Partial aligned resource header with the payload size. */
@@ -176,9 +194,10 @@ struct ItemCreationAllocationRecord
 struct ShopRuntimeRecord
 {
     u16 unk00;
-    u16 unk02;
-    u8 unk04[4];
-    u8 unk08;
+    u16 definition_index;
+    u8 unk04[3];
+    u8 shop_stock;
+    u8 inventory_count;
     u8 unk09[2];
     u8 flags;
 };
@@ -213,7 +232,7 @@ struct FieldRuntime
 struct ShopRuntimeFlags
 {
     u8 unk00[0x81];
-    u8 unk81;
+    u8 flags;
     u8 unk82[0x13E];
     s32 unk1c0;
 };
@@ -246,10 +265,7 @@ extern ShopRecordState* D_001B64F8;
 
 // This Field overlay interface has no recovered declaration in its owning header.
 extern "C" void func_002CE220(FieldStateCE420* object, s32 count, s32 offset, s32 selected);
-extern "C" s32 func_002FA620(FieldHalfwordBuckets* buckets, s16 identifier);
-extern "C" s32 func_002FAB70(FieldHalfwordBuckets* buckets, u8 category, u8 value);
-extern "C" s32 func_002F9C90(FieldHalfwordBuckets* buckets, s16 identifier);
-extern "C" void func_002F9FD0(FieldHalfwordBuckets* buckets);
+extern "C" s32 func_002F9C90(ShopTransaction* transaction, s16 identifier);
 
 /**
  * @brief Return the saved runtime section containing the shop flags.
@@ -267,7 +283,7 @@ static inline ShopRuntimeFlags* shop_runtime_flags()
  */
 static inline u8 shop_runtime_flag(u8 mask)
 {
-    return (shop_runtime_flags()->unk81 & mask) != 0;
+    return (shop_runtime_flags()->flags & mask) != 0;
 }
 
 /**
@@ -277,7 +293,7 @@ static inline u8 shop_runtime_flag(u8 mask)
 static inline void clear_shop_runtime_flag(u32 mask)
 {
     ShopRuntimeFlags* flags = shop_runtime_flags();
-    flags->unk81 = flags->unk81 & ~mask;
+    flags->flags = flags->flags & ~mask;
 }
 
 /**
@@ -306,14 +322,6 @@ static inline void set_shop_number(LibObject174F20* object, s32 number)
     object->numeric_value = number;
     object->unk3c = 1;
 }
-
-// These Field bucket interfaces have no declarations in their owning header.
-/** @brief Add the encoded record to the buckets. @param object Bucket storage. @param code Encoded value whose low halfword selects the record. @return One on
- * success, or zero when the record cannot be added. */
-extern "C" s32 func_002FA3B0(FieldHalfwordBuckets* object, u32 code);
-/** @brief Remove the encoded record from the buckets. @param object Bucket storage. @param code Encoded value whose low halfword selects the record. @return
- * One on success, or zero when the record cannot be removed. */
-extern "C" s32 func_002FA2A0(FieldHalfwordBuckets* object, u32 code);
 
 // These Field list interfaces have no declarations in their owning header.
 extern "C" void func_002CD7C0(void* object);
@@ -622,11 +630,11 @@ s32 ShopSellAllConfirmWindow::func_slotb0()
         return func_slotb4();
     }
     ShopState* state = D_001B643C->callbacks->shop;
-    FieldHalfwordBuckets* buckets = &state->buckets;
+    ShopTransaction* transaction = &state->transaction;
     s32 count = func_0040CF90(D_001B64F8, records, state->selected_item);
     for (s32 i = 0; i < count; i++)
     {
-        func_002F9C90(buckets, func_0040D890(records[i]));
+        func_002F9C90(transaction, func_0040D890(records[i]));
     }
     func_00112400(D_001B65F8, 6, 0, 0, 127, 64, 0);
     shop_refresh_sale_item_range(static_cast<ShopSaleItemWindow*>(func_slot44()));
@@ -761,7 +769,7 @@ s32 ShopSellConfirmWindow::func_slotb0()
         return func_slotb4();
     }
     ShopState* state = D_001B643C->callbacks->shop;
-    func_002F9C90(&state->buckets, func_0040D890(state->selected_allocation));
+    func_002F9C90(&state->transaction, func_0040D890(state->selected_allocation));
     func_00112400(D_001B65F8, 6, 0, 0, 127, 64, 0);
     shop_refresh_sale_item_range(static_cast<ShopSaleItemWindow*>(func_slot44()));
     state->func_00263F50(this);
@@ -913,7 +921,7 @@ s32 ShopBuyConfirmWindow::func_slotb0()
         return func_slotb4();
     }
     ShopState* state = D_001B643C->callbacks->shop;
-    func_002F9FD0(&state->buckets);
+    shop_complete_purchase(&state->transaction);
     func_00112400(D_001B65F8, 6, 0, 0, 127, 64, 0);
     state->func_00263F50(this);
     void* window = func_slot44();
@@ -1140,7 +1148,7 @@ void ShopSaleItemWindow::refresh_rows(s32 offset)
 {
     ItemCreationAllocationRecord* records[100];
     ShopState* state = D_001B643C->callbacks->shop;
-    FieldHalfwordBuckets* buckets = &state->buckets;
+    ShopTransaction* transaction = &state->transaction;
     s32 category = state->selected_item;
     for (s32 i = 99; i >= 0; i--)
     {
@@ -1162,7 +1170,7 @@ void ShopSaleItemWindow::refresh_rows(s32 offset)
             icon->unkfc = identifier;
             icon->unkfe = variant;
             icon->unk3c = 1;
-            set_shop_number(this->sale_prices[i], func_002FA620(buckets, func_0040D890(records[offset + i])));
+            set_shop_number(this->sale_prices[i], shop_get_sale_price(transaction, func_0040D890(records[offset + i])));
             this->item_icons[i]->unk3d = 1;
             this->sale_prices[i]->unk3d = 1;
         }
@@ -1509,7 +1517,7 @@ void ShopSellListWindow::refresh_rows(s32 offset)
                 icon->unk3c = 1;
                 this->item_icons[i]->set_color(color);
                 this->item_icons[i]->unk3d = 1;
-                set_shop_number(this->item_counts[i], record->unk08);
+                set_shop_number(this->item_counts[i], record->inventory_count);
                 this->item_counts[i]->unk3d = 1;
             }
         }
@@ -1523,7 +1531,7 @@ void ShopSellListWindow::refresh_rows(s32 offset)
  */
 static inline ItemCreationCategoryDefinition* shop_category(const ShopRuntimeRecord* record)
 {
-    return &D_001B64F0[record->unk02];
+    return &D_001B64F0[record->definition_index];
 }
 
 /**
@@ -1550,7 +1558,7 @@ void shop_refresh_sell_list(void* receiver, u8 reset)
             continue;
         }
         ItemCreationCategoryDefinition* definition = shop_category(record);
-        if (definition->unk17_flag || record->unk08 == 0)
+        if (definition->unk17_flag || record->inventory_count == 0)
         {
             continue;
         }
@@ -1707,7 +1715,7 @@ extern "C" s32 func_0045F690(LibObject174D90* object, u32 slot, s32 key, u32 mod
 static inline void initialize_allocation(ItemCreationAllocationRecord* allocation, const ShopRuntimeRecord* item, const u16* values)
 {
     allocation->reset(0);
-    func_0040D2E0(allocation, item->unk02 + 1, 0, values, false, true);
+    func_0040D2E0(allocation, item->definition_index + 1, 0, values, false, true);
 }
 
 /** Five vertical row positions; the last places the detail window footer. */
@@ -1835,7 +1843,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     footer->func_004C7FE0(12.0f, positions.values[4] - 8.0f, 560.0f, 24.0f, static_cast<s32>(associated), SHOP_MSG_BACK_HELP, 0);
     footer->set_mode(2);
     func_004C6190(detail_container, footer);
-    s32 key = static_cast<u16>(D_001B64F0[record->unk02].unk10_code) + 0x88;
+    s32 key = static_cast<u16>(D_001B64F0[record->definition_index].unk10_code) + 0x88;
     closing = 0;
     item_model = new (0) FieldClass15BB90;
     func_002FDC00(item_model, key);
@@ -1908,7 +1916,7 @@ void ShopBuyListWindow::func_slot10c(u32 value, u32 selected)
         multiply_labels[i]->unk3f = value;
         quantity_displays[i]->unk3f = value;
         separator_labels[i]->unk3f = value;
-        owned_count_displays[i]->unk3f = value;
+        buy_limit_displays[i]->unk3f = value;
     }
     if (panel != 0)
     {
@@ -1939,8 +1947,8 @@ void ShopBuyListWindow::func_slot10c(u32 value, u32 selected)
 void ShopBuyListWindow::func_slot74()
 {
     ShopState* state = D_001B643C->callbacks->shop;
-    FieldHalfwordBuckets* buckets = &state->buckets;
-    if (func_002FA3B0(buckets, func_002FAB20(buckets, state->category, FieldClass15AE60::unk24)))
+    ShopTransaction* transaction = &state->transaction;
+    if (shop_increase_quantity(transaction, shop_get_category_item(transaction, state->category, FieldClass15AE60::unk24)))
     {
         func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
         refresh_rows(FieldClass15AE60::unk22);
@@ -1955,8 +1963,8 @@ void ShopBuyListWindow::func_slot74()
 void ShopBuyListWindow::func_slot70()
 {
     ShopState* state = D_001B643C->callbacks->shop;
-    FieldHalfwordBuckets* buckets = &state->buckets;
-    if (func_002FA2A0(buckets, func_002FAB20(buckets, state->category, FieldClass15AE60::unk24)))
+    ShopTransaction* transaction = &state->transaction;
+    if (shop_decrease_quantity(transaction, shop_get_category_item(transaction, state->category, FieldClass15AE60::unk24)))
     {
         func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
         refresh_rows(FieldClass15AE60::unk22);
@@ -2002,7 +2010,7 @@ s32 shop_open_item_details(void)
 s32 func_0034CBD0(void* object)
 {
     ShopState* state = D_001B643C->callbacks->shop;
-    func_002FA210(&state->buckets);
+    shop_clear_purchases(&state->transaction);
     shop_set_mode(state, SHOP_MODE_ACTION);
     return 2;
 }
@@ -2010,7 +2018,7 @@ s32 func_0034CBD0(void* object)
 s32 func_0034CC10(void* receiver)
 {
     ShopState* state = D_001B643C->callbacks->shop;
-    if ((u16)(state->buckets.unk2f08 + state->buckets.unk2f0a))
+    if ((u16)(state->transaction.unk2f08 + state->transaction.unk2f0a))
     {
         ShopBuyConfirmWindow* window = new (0) ShopBuyConfirmWindow;
         window->func_slotf4(state->func_00263CC0());
@@ -2043,7 +2051,7 @@ void ShopBuyListWindow::func_slot5c()
     }
     func_002CD7C0(this);
     ShopState* state = D_001B643C->callbacks->shop;
-    state->selected_item = func_002FAB20(&state->buckets, state->category, FieldClass15AE60::unk24);
+    state->selected_item = shop_get_category_item(&state->transaction, state->category, FieldClass15AE60::unk24);
     if (FieldClass15AE60::unk24 >= 0)
     {
         LibObject172410* icon = item_icons[FieldClass15AE60::unk28];
@@ -2056,16 +2064,16 @@ void ShopBuyListWindow::func_slot5c()
 }
 
 /**
- * @brief Read the entry count for a valid bucket.
- * @param buckets Bucket storage.
- * @param category Bucket index.
+ * @brief Read the number of items in a shop category.
+ * @param transaction Shop transaction.
+ * @param category Item category.
  * @return Entry count, or zero when the index is out of range.
  */
-static inline s32 shop_bucket_count(FieldHalfwordBuckets* buckets, u8 category)
+static inline s32 shop_category_item_count(ShopTransaction* transaction, u8 category)
 {
     if (category < 8)
     {
-        return buckets->buckets[category].count;
+        return transaction->category_items[category].count;
     }
     return 0;
 }
@@ -2075,8 +2083,8 @@ void shop_refresh_buy_list(void* receiver, u8 reset)
     ShopBuyListWindow* object = static_cast<ShopBuyListWindow*>(receiver);
     object->FieldClass15AE60::unk88 = 0;
     ShopState* state = D_001B643C->callbacks->shop;
-    FieldHalfwordBuckets* buckets = &state->buckets;
-    object->FieldClass15AE60::unk88 = shop_bucket_count(buckets, state->category);
+    ShopTransaction* transaction = &state->transaction;
+    object->FieldClass15AE60::unk88 = shop_category_item_count(transaction, state->category);
     s32 count = object->FieldClass15AE60::unk88;
     s32 visible = count >= 5 ? 5 : count;
     s32 offset = object->FieldClass15AE60::unk22;
@@ -2132,7 +2140,7 @@ void ShopBuyListWindow::set_scroll_position(float position)
         element = this->separator_labels[i];
         element->unk18.unk04 = current;
         element->unk3c = 1;
-        element = this->owned_count_displays[i];
+        element = this->buy_limit_displays[i];
         element->unk18.unk04 = current;
         element->unk3c = 1;
         current += 28.0f;
@@ -2140,23 +2148,19 @@ void ShopBuyListWindow::set_scroll_position(float position)
     } while (i < 6);
 }
 
-// Resident bucket accessors are not yet declared by their owning header.
-extern "C" s32 func_002FA870(FieldHalfwordBuckets* object, u16 code);
-extern "C" s32 func_002FA7B0(FieldHalfwordBuckets* object, u16 code);
-
 /**
- * @brief Read the stored byte for a one-based code.
- * @param buckets Bucket storage.
- * @param code One-based entry code.
- * @return Stored value, or zero when the code is out of range.
+ * @brief Read the pending purchase quantity for an item.
+ * @param transaction Shop transaction.
+ * @param code One-based item code.
+ * @return Purchase quantity, or zero when the code is out of range.
  */
-static inline u8 shop_bucket_value(FieldHalfwordBuckets* buckets, s32 code)
+static inline u8 shop_purchase_quantity(ShopTransaction* transaction, s32 code)
 {
     u8 result;
     u8 valid = code >= 1 && code < 751;
     if (valid)
     {
-        result = buckets->unk2f0c[code - 1];
+        result = transaction->purchase_quantities[code - 1];
     }
     else
     {
@@ -2166,13 +2170,13 @@ static inline u8 shop_bucket_value(FieldHalfwordBuckets* buckets, s32 code)
 }
 
 /**
- * @brief Refresh buy-list prices, purchase quantities and owned counts.
- * @param offset First bucket entry to display.
+ * @brief Refresh buy-list prices, purchase quantities and purchase limits.
+ * @param offset First category entry to display.
  */
 void ShopBuyListWindow::refresh_rows(s32 offset)
 {
     ShopState* state = D_001B643C->callbacks->shop;
-    FieldHalfwordBuckets* buckets = &state->buckets;
+    ShopTransaction* transaction = &state->transaction;
     for (s32 i = 0; i < 6; i++)
     {
         this->item_icons[i]->unk3d = 0;
@@ -2180,10 +2184,10 @@ void ShopBuyListWindow::refresh_rows(s32 offset)
         this->quantity_displays[i]->unk3d = 0;
         this->multiply_labels[i]->unk3d = 0;
         this->separator_labels[i]->unk3d = 0;
-        this->owned_count_displays[i]->unk3d = 0;
-        if (offset + i < shop_bucket_count(buckets, state->category))
+        this->buy_limit_displays[i]->unk3d = 0;
+        if (offset + i < shop_category_item_count(transaction, state->category))
         {
-            s32 code = func_002FAB20(buckets, state->category, offset + i);
+            s32 code = shop_get_category_item(transaction, state->category, offset + i);
             ShopRuntimeRecord* record = shop_record(D_001B64F8, code);
             if (record != 0)
             {
@@ -2198,15 +2202,15 @@ void ShopBuyListWindow::refresh_rows(s32 offset)
                 icon->unkfe = 0;
                 icon->unk3c = 1;
                 this->item_icons[i]->set_color(color);
-                set_shop_number(this->price_displays[i], func_002FA870(buckets, code));
-                set_shop_number(this->quantity_displays[i], shop_bucket_value(buckets, code));
-                set_shop_number(this->owned_count_displays[i], func_002FA7B0(buckets, code));
+                set_shop_number(this->price_displays[i], shop_get_buy_price(transaction, code));
+                set_shop_number(this->quantity_displays[i], shop_purchase_quantity(transaction, code));
+                set_shop_number(this->buy_limit_displays[i], shop_get_buy_limit(transaction, code));
                 this->item_icons[i]->unk3d = 1;
                 this->price_displays[i]->unk3d = 1;
                 this->quantity_displays[i]->unk3d = 1;
                 this->separator_labels[i]->unk3d = 1;
                 this->multiply_labels[i]->unk3d = 1;
-                this->owned_count_displays[i]->unk3d = 1;
+                this->buy_limit_displays[i]->unk3d = 1;
             }
         }
     }
@@ -2243,11 +2247,11 @@ s32 ShopBuyListWindow::func_slot104(u32 associated)
         quantity_displays[i]->func_00464D90(506.0f, y, 28.0f, 24.0f, 0, 0, 0);
         func_004C6190(unk10, quantity_displays[i]);
         separator_labels[i] = new (0) LibObject178750;
-        separator_labels[i]->func_004C7FE0(534.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E7, 1);
+        separator_labels[i]->func_004C7FE0(534.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_QUANTITY_SEPARATOR, 1);
         func_004C6190(unk10, separator_labels[i]);
-        owned_count_displays[i] = new (0) LibObject174F20;
-        owned_count_displays[i]->func_00464D90(544.0f, y, 28.0f, 24.0f, 0, 0, 1);
-        func_004C6190(unk10, owned_count_displays[i]);
+        buy_limit_displays[i] = new (0) LibObject174F20;
+        buy_limit_displays[i]->func_00464D90(544.0f, y, 28.0f, 24.0f, 0, 0, 1);
+        func_004C6190(unk10, buy_limit_displays[i]);
     }
     func_44B510(second_frame, 1);
     func_004C6190(unk10, second_frame);
@@ -2278,7 +2282,7 @@ ShopBuyListWindow::ShopBuyListWindow()
         item_icons[i] = 0;
         price_displays[i] = 0;
         quantity_displays[i] = 0;
-        owned_count_displays[i] = 0;
+        buy_limit_displays[i] = 0;
     }
     error_sound_timer = 0;
     FieldClass15AD40();
@@ -2289,7 +2293,7 @@ void shop_update_fol(ShopValueDisplay* object)
     s32 value;
     ShopState* state = D_001B643C->callbacks->shop;
     ResidentCheckedRecord* record = D_001B643C->saved_record;
-    FieldHalfwordBuckets* buckets = &state->buckets;
+    ShopTransaction* transaction = &state->transaction;
     ItemCreationAllocationRecord* allocation = state->selected_allocation;
     u16 checksum = record->checksum;
     const u8* end = (const u8*)&record->checksum;
@@ -2303,7 +2307,7 @@ void shop_update_fol(ShopValueDisplay* object)
     }
     if (allocation != 0)
     {
-        s32 count = func_002FA620(buckets, func_0040D890(allocation));
+        s32 count = shop_get_sale_price(transaction, func_0040D890(allocation));
         s32 total = value + count;
         set_shop_number(object->transaction_total, count);
         if (total > 99999999)
@@ -2314,7 +2318,7 @@ void shop_update_fol(ShopValueDisplay* object)
     }
     else
     {
-        s32 count = buckets->unk2f04;
+        s32 count = transaction->purchase_total;
         s32 total = value - count;
         set_shop_number(object->transaction_total, count);
         if (total < 0)
@@ -2508,11 +2512,11 @@ void ShopDescriptionWindow::func_slot5c()
             allocation.reset(0);
             ShopRuntimeRecord* record = shop_record(D_001B64F8, state->selected_item);
             initialize_allocation(&allocation, record, 0);
-            set_shop_number(parameter_values[0], D_001B64F0[allocation.value()].unk04_low);
-            set_shop_number(parameter_values[1], D_001B64F0[allocation.value()].unk04_high);
-            set_shop_number(parameter_values[2], D_001B64F0[allocation.value()].unk08_high);
-            set_shop_number(parameter_values[3], D_001B64F0[allocation.value()].unk08_low);
-            set_shop_number(parameter_values[4], D_001B64F0[allocation.value()].unk0c_low);
+            set_shop_number(parameter_values[0], D_001B64F0[allocation.value()].attack);
+            set_shop_number(parameter_values[1], D_001B64F0[allocation.value()].hit);
+            set_shop_number(parameter_values[2], D_001B64F0[allocation.value()].defense);
+            set_shop_number(parameter_values[3], D_001B64F0[allocation.value()].agility);
+            set_shop_number(parameter_values[4], D_001B64F0[allocation.value()].intelligence);
             for (s32 i = 0; i < 5; i++)
             {
                 parameter_labels[i]->unk3f = 1;
@@ -2522,7 +2526,7 @@ void ShopDescriptionWindow::func_slot5c()
         }
         else
         {
-            s32 key = state->selected_item + 0x1294E;
+            s32 key = state->selected_item + SHOP_MSG_ITEM_DESCRIPTIONS;
             if (key != description_key)
             {
                 help_text->unk3f = 0;
@@ -2591,7 +2595,7 @@ s32 ShopDescriptionWindow::func_slotf4(u32 associated)
         parameter_labels[i] = new (0) LibObject178750;
         float y = 42.0f + static_cast<float>(28 * (i / 2));
         parameter_labels[i]->func_004C7FE0(50.0f + static_cast<float>(190 * (i % 2)), y, 0.0f, 0.0f, static_cast<s32>(associated),
-                                           SHOP_MSG_PARAMETER_LABELS + i, 0);
+                                           SHOP_MSG_ATK + i, 0);
         parameter_labels[i]->set_color(0x805050);
         func_004C6190(unk10, parameter_labels[i]);
         parameter_labels[i]->unk3f = 0;
@@ -2612,8 +2616,8 @@ s32 ShopDescriptionWindow::func_slotf4(u32 associated)
     return 1;
 }
 
-/** Field record copy layout, with scalar statistics followed by a fifteen-word array. */
-struct ShopRecordCopyView
+/** Character record copied before applying a prospective equipment change. */
+struct ShopCharacterRecord
 {
     s16 unk00;
     s16 unk02;
@@ -2632,10 +2636,10 @@ struct ShopRecordCopyView
     float unk30;
     s32 unk34;
     s32 unk38;
-    s32 unk3c;
+    s32 encoded_attack;
     s32 unk40;
     s32 unk44;
-    s32 unk48;
+    s32 encoded_defense;
     s32 unk4c;
     s32 unk50;
     s32 unk54;
@@ -2658,16 +2662,16 @@ struct ShopRecordCopyView
     s32 unkc0;
 };
 
-/** Resource copy layout with the protected equipment identifiers, bound, check word and salt. */
-struct ShopResourceCopyView
+/** Character equipment with encoded allocation identifiers and their checksum. */
+struct ShopCharacterEquipment
 {
     u8 unk00[0xE];
-    s16 count;
-    s16 values[4];
+    s16 encoded_slot_limit;
+    s16 encoded_equipment_ids[4];
     u8 unk18[0xD8];
-    u32 check;
+    u32 checksum;
     u8 unkf4[0x18];
-    u32 salt;
+    u32 checksum_salt;
     u32 unk110;
 };
 
@@ -2677,35 +2681,36 @@ struct ShopResourceCopyView
  * @param resource Resource copy to update.
  * @param allocation Allocation record to apply.
  * @param index Statistic group to apply.
+ * @return One on success, or zero when either copied record is null.
  */
-extern "C" void func_003F9890(ShopRecordCopyView* record, ShopResourceCopyView* resource, ItemCreationAllocationRecord* allocation, s32 index);
+extern "C" s32 func_003F9890(ShopCharacterRecord* record, ShopCharacterEquipment* resource, ItemCreationAllocationRecord* allocation, s32 index);
 
 /**
- * @brief Decode the first protected equipment statistic.
+ * @brief Read the checksum-protected attack value.
  * @param r Field record.
  * @return Decoded statistic, or zero when its check word is invalid.
  */
-static inline s32 shop_first_statistic(const ShopRecordCopyView& r)
+static inline s32 shop_attack(const ShopCharacterRecord& r)
 {
-    if (r.unk84[4] != (r.unk84[9] ^ (r.unk3c ^ (r.unk34 + r.unk38))))
+    if (r.unk84[4] != (r.unk84[9] ^ (r.encoded_attack ^ (r.unk34 + r.unk38))))
     {
         return 0;
     }
-    return r.unk3c ^ 0x7DE3F7E3;
+    return r.encoded_attack ^ 0x7DE3F7E3;
 }
 
 /**
- * @brief Decode the second protected equipment statistic.
+ * @brief Read the checksum-protected defense value.
  * @param r Field record.
  * @return Decoded statistic, or zero when its check word is invalid.
  */
-static inline s32 shop_second_statistic(const ShopRecordCopyView& r)
+static inline s32 shop_defense(const ShopCharacterRecord& r)
 {
-    if (r.unk84[5] != (r.unk84[9] ^ (r.unk48 ^ (r.unk40 + r.unk44))))
+    if (r.unk84[5] != (r.unk84[9] ^ (r.encoded_defense ^ (r.unk40 + r.unk44))))
     {
         return 0;
     }
-    return r.unk48 ^ 0x7DE3F7E3;
+    return r.encoded_defense ^ 0x7DE3F7E3;
 }
 
 /**
@@ -2713,9 +2718,10 @@ static inline s32 shop_second_statistic(const ShopRecordCopyView& r)
  * @param r Resource record.
  * @return True when the check word agrees with the identifiers and salt.
  */
-static inline bool shop_resource_valid(const ShopResourceCopyView* r)
+static inline bool shop_resource_valid(const ShopCharacterEquipment* r)
 {
-    return r->check == (r->salt ^ ((r->values[1] + r->values[2]) ^ (r->values[3] + r->values[0])));
+    return r->checksum == (r->checksum_salt ^ ((r->encoded_equipment_ids[1] + r->encoded_equipment_ids[2]) ^
+                                             (r->encoded_equipment_ids[3] + r->encoded_equipment_ids[0])));
 }
 
 /**
@@ -2724,7 +2730,7 @@ static inline bool shop_resource_valid(const ShopResourceCopyView* r)
  * @param index Equipment index.
  * @return Decoded identifier, or zero for an invalid check word or index.
  */
-static inline s16 shop_equipped(const ShopResourceCopyView* r, s32 index)
+static inline s16 shop_equipped(const ShopCharacterEquipment* r, s32 index)
 {
     if (!shop_resource_valid(r))
     {
@@ -2734,11 +2740,11 @@ static inline s16 shop_equipped(const ShopResourceCopyView* r, s32 index)
     {
         return 0;
     }
-    if (index > (r->count ^ 0x7E93))
+    if (index > (r->encoded_slot_limit ^ 0x7E93))
     {
         return 0;
     }
-    return r->values[index] ^ 0x7E93;
+    return r->encoded_equipment_ids[index] ^ 0x7E93;
 }
 
 /**
@@ -2803,7 +2809,7 @@ static inline void reset_shop_allocation(ItemCreationAllocationRecord* record, c
 static inline void initialize_shop_allocation(ItemCreationAllocationRecord* allocation, const ShopRuntimeRecord* item)
 {
     reset_shop_allocation(allocation, 0);
-    func_0040D2E0(allocation, item->unk02 + 1, 0, 0, false, true);
+    func_0040D2E0(allocation, item->definition_index + 1, 0, 0, false, true);
 }
 
 /**
@@ -2874,7 +2880,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
             FieldRecordSelection* selection = shop_record_selection(state);
             FieldRecord* member = &selection->records[static_cast<s16>(i)];
             s8 slot = selection->slots[static_cast<s16>(i)];
-            const ShopResourceCopyView* entry = &static_cast<const ShopResourceCopyView*>(selection->unk04)[static_cast<s16>(i)];
+            const ShopCharacterEquipment* entry = &static_cast<const ShopCharacterEquipment*>(selection->unk04)[static_cast<s16>(i)];
             if (slot <= 0)
             {
                 continue;
@@ -2911,22 +2917,22 @@ void ShopEquipmentPreviewWindow::func_slot5c()
                 labels[i]->unk3f = 0;
                 continue;
             }
-            const ShopRecordCopyView* original = reinterpret_cast<const ShopRecordCopyView*>(member);
-            ShopRecordCopyView copy = *original;
-            ShopResourceCopyView copy_entry = *entry;
+            const ShopCharacterRecord* original = reinterpret_cast<const ShopCharacterRecord*>(member);
+            ShopCharacterRecord copy = *original;
+            ShopCharacterEquipment copy_entry = *entry;
             switch (shop_record_mode(shop_category(record)))
             {
             case SHOP_CATEGORY_WEAPONS:
                 func_003F9890(&copy, &copy_entry, &allocation, 0);
                 labels[i]->unk3f = 1;
-                if (shop_first_statistic(copy) > shop_first_statistic(*original))
+                if (shop_attack(copy) > shop_attack(*original))
                 {
                     func_4C6DF0(labels[i], state->func_00263CC0(), SHOP_MSG_STAT_INCREASE, 0);
                     labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
                 }
-                else if (shop_first_statistic(copy) == shop_first_statistic(*original))
+                else if (shop_attack(copy) == shop_attack(*original))
                 {
                     func_4C6DF0(labels[i], state->func_00263CC0(), SHOP_MSG_STAT_UNCHANGED, 0);
                 }
@@ -2941,14 +2947,14 @@ void ShopEquipmentPreviewWindow::func_slot5c()
             case SHOP_CATEGORY_ARMOR:
                 func_003F9890(&copy, &copy_entry, &allocation, 1);
                 labels[i]->unk3f = 1;
-                if (shop_second_statistic(copy) > shop_second_statistic(*original))
+                if (shop_defense(copy) > shop_defense(*original))
                 {
                     func_4C6DF0(labels[i], state->func_00263CC0(), SHOP_MSG_STAT_INCREASE, 0);
                     labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
                 }
-                else if (shop_second_statistic(copy) == shop_second_statistic(*original))
+                else if (shop_defense(copy) == shop_defense(*original))
                 {
                     func_4C6DF0(labels[i], state->func_00263CC0(), SHOP_MSG_STAT_UNCHANGED, 0);
                 }
@@ -3092,7 +3098,7 @@ s32 ShopHelpWindow::func_slotf4(u32 associated)
         return 0;
     }
     LibObject178750* label = new (0) LibObject178750;
-    label->func_004C7FE0(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), D_001B643C->callbacks->shop->shop_id + 0x12924, 0);
+    label->func_004C7FE0(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), D_001B643C->callbacks->shop->shop_id + SHOP_MSG_SHOP_NAMES, 0);
     func_004C6190(unk10, label);
     label_width = func_004C69B0(label)->unk08;
     scroll_left = 18.0f + label_width;
@@ -3163,7 +3169,7 @@ void shop_change_category(ShopState* object, s32 direction)
             {
                 break;
             }
-            if (shop_bucket_count(&object->buckets, object->category) != 0)
+            if (shop_category_item_count(&object->transaction, object->category) != 0)
             {
                 break;
             }
@@ -3194,8 +3200,8 @@ void shop_change_category(ShopState* object, s32 direction)
             for (code = 1; code <= 750; code++)
             {
                 ShopRuntimeRecord* record = shop_record(D_001B64F8, code);
-                if (record != 0 && record->unk08 != 0 &&
-                    (object->category == SHOP_CATEGORY_ALL || object->category == shop_record_mode(&D_001B64F0[record->unk02])))
+                if (record != 0 && record->inventory_count != 0 &&
+                    (object->category == SHOP_CATEGORY_ALL || object->category == shop_record_mode(&D_001B64F0[record->definition_index])))
                 {
                     break;
                 }
@@ -3249,24 +3255,24 @@ void shop_set_mode(ShopState* object, u32 mode)
 void shop_set_id(ShopState* object, u16 shop_id)
 {
     object->shop_id = shop_id;
-    s32 value = 0;
-    if (shop_runtime_flag(2))
+    s32 discount_percent = 0;
+    if (shop_runtime_flag(SHOP_DISCOUNT_10_PERCENT))
     {
-        value = 10;
+        discount_percent = 10;
     }
-    if (shop_runtime_flag(4))
+    if (shop_runtime_flag(SHOP_DISCOUNT_20_PERCENT))
     {
-        value = 20;
+        discount_percent = 20;
     }
-    if (shop_runtime_flag(8))
+    if (shop_runtime_flag(SHOP_DISCOUNT_30_PERCENT))
     {
-        value = 30;
+        discount_percent = 30;
     }
     if (shop_runtime_flags()->unk1c0 > 0)
     {
-        value = 100;
+        discount_percent = 100;
     }
-    func_002FAB70(&object->buckets, object->shop_id, value);
+    shop_init_transaction(&object->transaction, object->shop_id, discount_percent);
 }
 
 void shop_release_resources(ShopState* object)
@@ -3277,9 +3283,9 @@ void shop_release_resources(ShopState* object)
     }
     func_004D65C0(object);
     object->func_001DD7B0();
-    clear_shop_runtime_flag(2);
-    clear_shop_runtime_flag(4);
-    clear_shop_runtime_flag(8);
+    clear_shop_runtime_flag(SHOP_DISCOUNT_10_PERCENT);
+    clear_shop_runtime_flag(SHOP_DISCOUNT_20_PERCENT);
+    clear_shop_runtime_flag(SHOP_DISCOUNT_30_PERCENT);
 }
 
 void func_003510B0(void* object)

@@ -20,44 +20,44 @@ struct FieldByte4F9C90
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002F9C90);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002F9FD0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_complete_purchase);
 
-void func_002FA210(FieldHalfwordBuckets* object)
+void shop_clear_purchases(ShopTransaction* object)
 {
     for (s32 index = 0; index < 750; index++)
     {
-        object->unk2f0c[index] = 0;
+        object->purchase_quantities[index] = 0;
     }
-    object->unk2f04 = 0;
+    object->purchase_total = 0;
     object->unk2f08 = 0;
     object->unk2f0a = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FA2A0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_decrease_quantity);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FA3B0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_increase_quantity);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FA620);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_get_sale_price);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FA7B0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_get_buy_limit);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FA870);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_get_buy_price);
 
-u16 func_002FAB20(const FieldHalfwordBuckets* object, u8 category, u16 index)
+u16 shop_get_category_item(const ShopTransaction* object, u8 category, u16 index)
 {
     u16 value = 0;
     if (category < 8)
     {
-        const FieldHalfwordBucket* bucket = object->buckets + category;
-        if (index < bucket->count)
+        const ShopItemList* items = object->category_items + category;
+        if (index < items->count)
         {
-            value = bucket->values[index];
+            value = items->item_codes[index];
         }
     }
     return value;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FAB70);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_init_transaction);
 
 extern "C" void func_002FB840(void* object);
 

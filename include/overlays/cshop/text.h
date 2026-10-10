@@ -102,7 +102,7 @@ struct ShopBuyListWindow : public FieldClass15AD40
     LibObject178750* multiply_labels[6];
     LibObject174F20* quantity_displays[6];
     LibObject178750* separator_labels[6];
-    LibObject174F20* owned_count_displays[6];
+    LibObject174F20* buy_limit_displays[6];
     LibClass178630* panel;
     s32 error_sound_timer;
     /** @brief Initialize the buy list window. */
@@ -111,9 +111,9 @@ struct ShopBuyListWindow : public FieldClass15AD40
     virtual ~ShopBuyListWindow();
     /** @brief Update the selected item, row highlight and error sound timer. */
     virtual void func_slot5c();
-    /** @brief Remove one selected code and refresh its row. */
+    /** @brief Decrease the selected purchase quantity and refresh its row. */
     virtual void func_slot70();
-    /** @brief Add one selected code and refresh its row. */
+    /** @brief Increase the selected purchase quantity and refresh its row. */
     virtual void func_slot74();
     /** @brief Open purchase confirmation. @return Action result. */
     virtual s32 func_slotb0();
@@ -414,8 +414,7 @@ struct ShopState : FieldClass153E30
     ShopSellListWindow* sell_window;
     ShopFolWindow* fol_window;
     FieldRecordSelection selection;
-    FieldHalfwordBuckets buckets;
-    u8 unk3268[4];
+    ShopTransaction transaction;
     s32 selected_item;
     s32 category;
     s32 shop_id;
@@ -1043,7 +1042,7 @@ extern "C"
     void func_00351E80(FieldCountedList* list, void* value);
 
     /**
-     * @brief Clear the current state's buckets and return to mode 1.
+     * @brief Clear the current state's transaction and return to mode 1.
      * @param object Callback receiver; unused.
      * @return Always 2.
      */

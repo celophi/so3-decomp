@@ -14,14 +14,14 @@ typedef struct ItemCreationCategoryDefinition ItemCreationCategoryDefinition;
 struct ItemCreationCategoryDefinition
 {
     u8 unk00[4];
-    u32 unk04_low : 14;
-    u32 unk04_high : 14;
+    u32 attack : 14;
+    u32 hit : 14;
     u32 unk04_rest : 4;
-    u32 unk08_low : 14;
-    u32 unk08_high : 14;
+    u32 agility : 14;
+    u32 defense : 14;
     u32 unk0b_mode : 3;
     u32 unk0b_flag : 1;
-    u32 unk0c_low : 14;
+    u32 intelligence : 14;
     u32 unk0c_mask : 10;
     u32 unk0c_rest : 8;
 #ifdef __cplusplus
