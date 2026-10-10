@@ -14,7 +14,7 @@ typedef struct ItemCreationCategoryDefinition ItemCreationCategoryDefinition;
 struct ItemCreationCategoryDefinition
 {
     u32 base_price : 24;
-    u32 unk03 : 8;
+    u32 stamina : 8;
     u32 attack : 14;
     u32 hit : 14;
     /** Variant added to character-specific weapon resource IDs. */
@@ -26,7 +26,7 @@ struct ItemCreationCategoryDefinition
     u32 unused : 1;
     u32 intelligence : 14;
     u32 equipment_mask : 10;
-    u32 unk0c_rest : 8;
+    u32 luck : 8;
 #ifdef __cplusplus
     u32 sort_order : 10;
     u32 model_index : 10;
