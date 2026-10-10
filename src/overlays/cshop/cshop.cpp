@@ -111,7 +111,7 @@ struct ObjectStatusFields
     u8 field_38;
 };
 
-/** Packed sixteen-byte allocation record checked before displaying its value. */
+/** Packed sixteen-byte item allocation record. */
 struct ItemCreationAllocationRecord
 {
     union
@@ -119,7 +119,7 @@ struct ItemCreationAllocationRecord
         u16 raw;
         struct
         {
-            u16 value : 10;
+            u16 definition_index : 10;
             u16 other : 6;
         } bits;
     } unk00;
@@ -177,23 +177,23 @@ struct ItemCreationAllocationRecord
         return checksum != calculate_checksum();
     }
     /**
-     * @brief Read the ten-bit allocation value from a valid record.
-     * @return Packed value, or zero when the checksum differs.
+     * @brief Read the catalog definition index from a valid allocation.
+     * @return Definition index, or zero when the checksum differs.
      */
-    u16 value()
+    u16 definition_index()
     {
         if (invalid())
         {
             return 0;
         }
-        return unk00.bits.value;
+        return unk00.bits.definition_index;
     }
 };
 
 /** Twelve-byte category record used by the runtime catalog. */
 struct ShopRuntimeRecord
 {
-    u16 unk00;
+    u16 allocation_list_head;
     u16 definition_index;
     u8 unk04[3];
     u8 shop_stock;
@@ -236,7 +236,8 @@ struct ShopRuntimeFlags
     u8 unk00[0x81];
     u8 flags;
     u8 unk82[0x13E];
-    s32 unk1c0;
+    /** While positive, overrides the shop discount with 100%, capped to 99% at initialization. */
+    s32 discount_timer;
 };
 
 typedef struct ShopCallbacks
@@ -1775,7 +1776,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     ShopRuntimeRecord* record = shop_record(D_001B64F8, item_code);
     initialize_allocation(&allocation, record, 0);
     category_label = new (0) LibObject178750;
-    category_label->func_004C7FE0(16.0f, 12.0f, 0.0f, 0.0f, associated, shop_record_mode(&D_001B64F0[allocation.value()]) + SHOP_MSG_WEAPONS, 0);
+    category_label->func_004C7FE0(16.0f, 12.0f, 0.0f, 0.0f, associated, shop_record_mode(&D_001B64F0[allocation.definition_index()]) + SHOP_MSG_WEAPONS, 0);
     LibObject178750* heading = category_label;
     heading->unk88 = -1.0f;
     heading->unk3c = 1;
@@ -1787,7 +1788,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     func_00413F70(item_icon, 24.0f, 34.0f, 0.0f, 0.0f, associated, item_code + 50000, 0);
     set_shop_icon_scalar(item_icon, -1.0f);
     item_icon->set_scale(1.2f, 1.2f);
-    set_shop_icon_code(item_icon, allocation.value() + 1);
+    set_shop_icon_code(item_icon, allocation.definition_index() + 1);
     func_004C6190(unk10, item_icon);
     factor_separator = new (0) ItemCreationClass172870;
     func_421170(factor_separator, 8.0f, 66.0f, 568.0f, 3.0f);
@@ -2513,11 +2514,11 @@ void ShopDescriptionWindow::func_slot5c()
             allocation.reset(0);
             ShopRuntimeRecord* record = shop_record(D_001B64F8, state->selected_item);
             initialize_allocation(&allocation, record, 0);
-            set_shop_number(parameter_values[0], D_001B64F0[allocation.value()].attack);
-            set_shop_number(parameter_values[1], D_001B64F0[allocation.value()].hit);
-            set_shop_number(parameter_values[2], D_001B64F0[allocation.value()].defense);
-            set_shop_number(parameter_values[3], D_001B64F0[allocation.value()].agility);
-            set_shop_number(parameter_values[4], D_001B64F0[allocation.value()].intelligence);
+            set_shop_number(parameter_values[0], D_001B64F0[allocation.definition_index()].attack);
+            set_shop_number(parameter_values[1], D_001B64F0[allocation.definition_index()].hit);
+            set_shop_number(parameter_values[2], D_001B64F0[allocation.definition_index()].defense);
+            set_shop_number(parameter_values[3], D_001B64F0[allocation.definition_index()].agility);
+            set_shop_number(parameter_values[4], D_001B64F0[allocation.definition_index()].intelligence);
             for (s32 i = 0; i < 5; i++)
             {
                 parameter_labels[i]->unk3f = 1;
@@ -2824,19 +2825,19 @@ static inline FieldRecordSelection* shop_record_selection(ShopState* state)
 }
 
 /**
- * @brief Read the ten-bit allocation value from a valid record.
+ * @brief Read the catalog definition index from a valid allocation.
  * @param record Allocation record.
- * @return Packed value, or zero when the checksum differs.
+ * @return Definition index, or zero when the checksum differs.
  */
-static inline u16 shop_allocation_value(const ItemCreationAllocationRecord& record)
+static inline u16 shop_allocation_definition_index(const ItemCreationAllocationRecord& record)
 {
-    u16 value = record.unk00.bits.value;
+    u16 definition_index = record.unk00.bits.definition_index;
     if (record.checksum !=
         (u16)((0x83CF << record.checksum_shift) ^ ((record.unk08 + (*(u16*)&record + record.unk04)) ^ (record.unk02 + (record.unk06 + record.unk0a)))))
     {
         return 0;
     }
-    return value;
+    return definition_index;
 }
 
 /**
@@ -2897,7 +2898,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
                     if (identifier > 0)
                     {
                         ItemCreationAllocationRecord* candidate = shop_allocation_record(identifier);
-                        if (candidate != 0 && static_cast<u16>(candidate->value() + 1) == static_cast<u16>(shop_allocation_value(allocation) + 1))
+                        if (candidate != 0 && static_cast<u16>(candidate->definition_index() + 1) == static_cast<u16>(shop_allocation_definition_index(allocation) + 1))
                         {
                             found = true;
                             break;
@@ -3269,7 +3270,7 @@ void shop_set_id(ShopState* object, u16 shop_id)
     {
         discount_percent = 30;
     }
-    if (shop_runtime_flags()->unk1c0 > 0)
+    if (shop_runtime_flags()->discount_timer > 0)
     {
         discount_percent = 100;
     }
