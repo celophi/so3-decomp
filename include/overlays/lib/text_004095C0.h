@@ -22,7 +22,8 @@ struct ItemCreationCategoryDefinition
     u32 unk0b_mode : 3;
     u32 unk0b_flag : 1;
     u32 unk0c_low : 14;
-    u32 unk0c_rest : 18;
+    u32 unk0c_mask : 10;
+    u32 unk0c_rest : 8;
 #ifdef __cplusplus
     u32 unk10_low : 10;
     u32 unk10_code : 10;

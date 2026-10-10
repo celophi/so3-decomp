@@ -1009,7 +1009,58 @@ s32 func_0034A1E0(void* receiver)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034A2C0);
+/**
+ * @brief Resize the selection control for focus and show the selected allocation's detail values.
+ */
+void ShopClass187DA0::func_slot5c()
+{
+    ItemCreationAllocationRecord* records[100];
+    if (D_001B643C->unk10->unk14->func_00261150() == this)
+    {
+        LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+        control->LibMovementState::unk30 = 128.0f;
+        control->unk3c = 1;
+    }
+    else
+    {
+        LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+        control->LibMovementState::unk30 = 64.0f;
+        control->unk3c = 1;
+        return;
+    }
+    func_002CD7C0(this);
+    ShopState* state = D_001B643C->unk10->unk14;
+    s32 count = func_0040CF90(D_001B64F8, records, state->unk326c);
+    s32 selection = FieldClass15AE60::unk24;
+    if (count != 0 && selection >= 0)
+    {
+        s32 filled = 0;
+        for (s32 i = 0; i < 8; i++)
+        {
+            u16 identifier = func_0040D930(records[selection], i);
+            if (identifier != 0 && identifier != 700)
+            {
+                LibObject172440* number = third[filled];
+                number->unkfc = identifier;
+                number->unk3c = 1;
+                third[filled]->unk3f = 1;
+                filled++;
+            }
+        }
+        for (; filled < 8; filled++)
+        {
+            third[filled]->unk3f = 0;
+        }
+        state->unk327c = records[selection];
+        LibObject172410* icon = first[FieldClass15AE60::unk28];
+        func_002CD8B0(this, icon, icon->unk94);
+    }
+    else
+    {
+        state->unk327c = 0;
+        func_002CD8B0(this, 0, 0x808080);
+    }
+}
 
 /**
  * @brief Set the positions and active flags of five display pairs.
@@ -1108,16 +1159,16 @@ void func_0034A640(ShopClass187DA0* object)
 /**
  * @brief Configure an item-code widget and its display rectangle.
  * @param object Item-code widget.
- * @param code Encoded item code stored in the widget.
- * @param variation Encoded variation stored in the widget.
- * @param flag Display flag.
  * @param x Horizontal position.
  * @param y Vertical position.
  * @param width Display width.
  * @param height Display height.
+ * @param code Encoded item code stored in the widget.
+ * @param variation Encoded variation stored in the widget.
+ * @param flag Display flag.
  * @return One on success, or zero if initialization fails.
  */
-extern "C" s32 func_00413F70(LibObject172410* object, u32 code, u32 variation, u8 flag, float x, float y, float width, float height);
+extern "C" s32 func_00413F70(LibObject172410* object, float x, float y, float width, float height, u16 code, u8 variation, u8 flag);
 /**
  * @brief Set the icon flag and request a refresh.
  * @param object Item-code widget.
@@ -1175,7 +1226,7 @@ s32 ShopClass187DA0::func_slot104(u32 associated)
     for (s32 i = 0; i < 5; i++)
     {
         first[i] = new (0) LibObject172410;
-        func_00413F70(first[i], 100, 0, 0, 30.0f, 16.0f + 28.0f * i, 323.999969482421875f, 21.599998474121094f);
+        func_00413F70(first[i], 30.0f, 16.0f + 28.0f * i, 323.999969482421875f, 21.599998474121094f, 100, 0, 0);
         first[i]->set_scale(0.9f, 0.9f);
         set_shop_icon_flag(first[i], 1);
         set_shop_icon_scalar(first[i], -1.0f);
@@ -1517,7 +1568,7 @@ s32 ShopClass187EC0::func_slot104(u32 associated)
     for (s32 i = 0; i < 6; i++)
     {
         first[i] = new (0) LibObject172410;
-        func_00413F70(first[i], 100, 0, 0, 30.0f, 16.0f + 28.0f * i, 323.999969482421875f, 21.599998474121094f);
+        func_00413F70(first[i], 30.0f, 16.0f + 28.0f * i, 323.999969482421875f, 21.599998474121094f, 100, 0, 0);
         first[i]->set_scale(0.9f, 0.9f);
         set_shop_icon_flag(first[i], 1);
         set_shop_icon_scalar(first[i], -1.0f);
@@ -1619,7 +1670,149 @@ static inline void initialize_allocation(ItemCreationAllocationRecord* allocatio
     func_0040D2E0(allocation, item->unk02 + 1, 0, values, false, true);
 }
 
-INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034BB00);
+/** Five vertical row positions; the last places the detail window footer. */
+struct ShopFooterPositions
+{
+    float values[5];
+};
+extern "C" ShopFooterPositions D_00351F80;
+
+/** Partial section record with the flag that selects the status window framing. */
+struct ShopWindowSection
+{
+    u8 unk00[0x18C];
+    u8 enabled;
+};
+
+/**
+ * @brief Read the selected shop category.
+ * @return Category index from the shop state.
+ */
+static inline s32 shop_selected_category()
+{
+    return D_001B643C->unk10->unk14->unk326c;
+}
+
+/**
+ * @brief Store an item icon's code and request a refresh.
+ * @param object Item icon widget.
+ * @param code Item code to display.
+ */
+static inline void set_shop_icon_code(LibObject172410* object, u16 code)
+{
+    object->unkfc = code;
+    object->unkfe = 0;
+    object->unk3c = 1;
+}
+
+/**
+ * @brief Create the item detail window's text, icon, value rows and status window.
+ * @param associated Resource source word.
+ * @return Always one.
+ */
+s32 ShopClass187FE0::func_slotf4(u32 associated)
+{
+    FieldClass15AE70::func_slot14(associated, 0, 9, 2200, 28.0f, 87.0f, 0.0f);
+    unke0 = new (0) LibObject178660;
+    func_004C6510(unke0, 5, 0, 0, 28.0f, 87.0f, 0.0f);
+    func_00465B20(D_001B657C, unke0);
+    unkdc = new (0) LibClass178630;
+    func_004C5A80(unkdc, 1, 0.0f, 0.0f, 584.0f, 369.0f, 88.0f);
+    func_004C6190(unk10, unkdc);
+    func_004C4AB0(unkdc, 1500.0f);
+    s32 category = shop_selected_category();
+    ItemCreationAllocationRecord allocation __attribute__((aligned(16)));
+    allocation.reset(0);
+    ShopRuntimeRecord* record = shop_record(D_001B64F8, category);
+    initialize_allocation(&allocation, record, 0);
+    unka8 = new (0) LibObject178750;
+    unka8->func_004C7FE0(16.0f, 12.0f, 0.0f, 0.0f, associated, shop_record_mode(&D_001B64F0[allocation.value()]) + 0x2EF6, 0);
+    LibObject178750* heading = unka8;
+    heading->unk88 = -1.0f;
+    heading->unk3c = 1;
+    unka8->set_scale(0.8f, 0.8f);
+    unka8->set_color(0x805050);
+    unka8->set_mode(0);
+    func_004C6190(unk10, unka8);
+    unkac = new (0) LibObject172410;
+    func_00413F70(unkac, 24.0f, 34.0f, 0.0f, 0.0f, associated, category + 50000, 0);
+    set_shop_icon_scalar(unkac, -1.0f);
+    unkac->set_scale(1.2f, 1.2f);
+    set_shop_icon_code(unkac, allocation.value() + 1);
+    func_004C6190(unk10, unkac);
+    unkb0 = new (0) ItemCreationClass172870;
+    func_421170(unkb0, 8.0f, 66.0f, 568.0f, 3.0f);
+    ItemCreationClass172870* separator = unkb0;
+    separator->unk50 = 0x606060;
+    separator->unk3c = 1;
+    func_004C6190(unk10, unkb0);
+    unkb4 = new (0) LibObject178750;
+    unkb4->func_004C7FE0(24.0f, 78.0f, 534.0f, 66.0f, static_cast<s32>(associated), category + 55000, 0);
+    unkb4->set_mode(0);
+    unkb4->set_vertical_alignment(1);
+    LibObject178750* description = unkb4;
+    description->unk88 = -1.0f;
+    description->unk3c = 1;
+    unkb4->set_scale(0.9f, 0.9f);
+    func_004C6190(unke0, unkb4);
+    unkb8 = new (0) LibObject178750;
+    unkb8->func_004C7FE0(16.0f, 150.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x2F0D, 0);
+    unkb8->set_scale(0.8f, 0.8f);
+    unkb8->set_color(0x805050);
+    LibObject178750* values_heading = unkb8;
+    values_heading->unk88 = -1.0f;
+    values_heading->unk3c = 1;
+    func_004C6190(unk10, unkb8);
+    FieldRuntime* runtime = D_001B657C;
+    runtime->unk51c = static_cast<s32>(associated);
+    runtime->unk520 = 0x11171;
+    for (s32 i = 0; i < 8; i++)
+    {
+        unkbc[i] = new (0) LibObject172440;
+        func_4143F0(unkbc[i], 0, 1, 0, 26.0f, 172.0f + 23 * i, 0.0f, 0.0f);
+        LibObject172440* value = unkbc[i];
+        value->unk88 = -1.0f;
+        value->unk3c = 1;
+        unkbc[i]->set_scale(0.8f, 0.8f);
+        unkbc[i]->unk3f = 0;
+        func_004C6190(unke0, unkbc[i]);
+    }
+    s32 filled = 0;
+    for (s32 i = 0; i < 8; i++)
+    {
+        u16 value = func_0040D930(&allocation, i);
+        if (value != 0 && value != 700)
+        {
+            LibObject172440* number = unkbc[filled];
+            number->unkfc = value;
+            number->unk3c = 1;
+            unkbc[filled]->unk3f = 1;
+            filled++;
+        }
+    }
+    ShopFooterPositions positions = D_00351F80;
+    LibObject178750* footer = new (0) LibObject178750;
+    footer->func_004C7FE0(12.0f, positions.values[4] - 8.0f, 560.0f, 24.0f, static_cast<s32>(associated), 0x2F0C, 0);
+    footer->set_mode(2);
+    func_004C6190(unke0, footer);
+    s32 key = static_cast<u16>(D_001B64F0[record->unk02].unk10_code) + 0x88;
+    unke8 = 0;
+    unke4 = new (0) FieldClass15BB90;
+    func_002FDC00(unke4, key);
+    unke4->unk5b = 1;
+    func_002FD220(unke4, D_001B643C->unk1c);
+    func_002FD1D0(unke4);
+    if (reinterpret_cast<ShopWindowSection*>(func_00101440(func_00101290(func_0010D8E0()), 1))->enabled != 0)
+    {
+        func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(unke4), 0.5235988f, 600.0f, 0.34906584f, 120.0f, 35.0f);
+    }
+    else
+    {
+        func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(unke4), 0.5235988f, 500.0f, 0.34906584f, 90.0f, 50.0f);
+    }
+    D_001B6614->func_004D74F0(unke4, reinterpret_cast<void*>(-1));
+    return 1;
+}
 
 /** @brief Destroy the list receiver and its contained sentinel. */
 LibClass178A70::~LibClass178A70()
@@ -1993,7 +2186,7 @@ s32 ShopClass1880E0::func_slot104(u32 associated)
     for (s32 i = 0; i < 6; i++)
     {
         first[i] = new (0) LibObject172410;
-        func_00413F70(first[i], 100, 0, 0, 30.0f, 16.0f + 28.0f * i, 323.999969482421875f, 21.599998474121094f);
+        func_00413F70(first[i], 30.0f, 16.0f + 28.0f * i, 323.999969482421875f, 21.599998474121094f, 100, 0, 0);
         first[i]->set_scale(0.9f, 0.9f);
         set_shop_icon_flag(first[i], 1);
         set_shop_icon_scalar(first[i], -1.0f);
@@ -2378,9 +2571,418 @@ s32 ShopClass188400::func_slotf4(u32 associated)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034F350);
+/** Field record copy layout, with scalar statistics followed by a fifteen-word array. */
+struct ShopRecordCopyView
+{
+    s16 unk00;
+    s16 unk02;
+    s16 unk04;
+    s16 unk06;
+    s32 unk08;
+    s32 unk0c;
+    s32 unk10;
+    s32 unk14;
+    s32 unk18;
+    s32 unk1c;
+    s32 unk20;
+    s32 unk24;
+    float unk28;
+    float unk2c;
+    float unk30;
+    s32 unk34;
+    s32 unk38;
+    s32 unk3c;
+    s32 unk40;
+    s32 unk44;
+    s32 unk48;
+    s32 unk4c;
+    s32 unk50;
+    s32 unk54;
+    s32 unk58;
+    s32 unk5c;
+    s32 unk60;
+    s32 unk64;
+    s32 unk68;
+    s32 unk6c;
+    s16 unk70;
+    s16 unk72;
+    s16 unk74;
+    s16 unk76;
+    s16 unk78;
+    s16 unk7a;
+    s16 unk7c;
+    s16 unk7e;
+    s16 unk80;
+    s32 unk84[15];
+    s32 unkc0;
+};
 
-INCLUDE_ASM("build/overlays/cshop/asm/nonmatchings/text", func_0034FEE0);
+/** Resource copy layout with the protected equipment identifiers, bound, check word and salt. */
+struct ShopResourceCopyView
+{
+    u8 unk00[0xE];
+    s16 count;
+    s16 values[4];
+    u8 unk18[0xD8];
+    u32 check;
+    u8 unkf4[0x18];
+    u32 salt;
+    u32 unk110;
+};
+
+/**
+ * @brief Apply an allocation to copied record and resource data.
+ * @param record Record copy to update.
+ * @param resource Resource copy to update.
+ * @param allocation Allocation record to apply.
+ * @param index Statistic group to apply.
+ */
+extern "C" void func_003F9890(ShopRecordCopyView* record, ShopResourceCopyView* resource,
+                              ItemCreationAllocationRecord* allocation, s32 index);
+
+/**
+ * @brief Decode a record's first protected statistic.
+ * @param r Field record.
+ * @return Decoded statistic, or zero when its check word is invalid.
+ */
+static inline s32 shop_first_statistic(const ShopRecordCopyView& r)
+{
+    if (r.unk84[4] != (r.unk84[9] ^ (r.unk3c ^ (r.unk34 + r.unk38))))
+        return 0;
+    return r.unk3c ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Decode a record's second protected statistic.
+ * @param r Field record.
+ * @return Decoded statistic, or zero when its check word is invalid.
+ */
+static inline s32 shop_second_statistic(const ShopRecordCopyView& r)
+{
+    if (r.unk84[5] != (r.unk84[9] ^ (r.unk48 ^ (r.unk40 + r.unk44))))
+        return 0;
+    return r.unk48 ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Validate the equipment identifier check word.
+ * @param r Resource record.
+ * @return True when the check word agrees with the identifiers and salt.
+ */
+static inline bool shop_resource_valid(const ShopResourceCopyView* r)
+{
+    return r->check == (r->salt ^ ((r->values[1] + r->values[2]) ^ (r->values[3] + r->values[0])));
+}
+
+/**
+ * @brief Read a protected equipment identifier.
+ * @param r Resource record.
+ * @param index Equipment index.
+ * @return Decoded identifier, or zero for an invalid check word or index.
+ */
+static inline s16 shop_equipped(const ShopResourceCopyView* r, s32 index)
+{
+    if (!shop_resource_valid(r))
+        return 0;
+    if (index < 0)
+        return 0;
+    if (index > (r->count ^ 0x7E93))
+        return 0;
+    return r->values[index] ^ 0x7E93;
+}
+
+/**
+ * @brief Find an allocation record in resident storage.
+ * @param index One-based allocation index.
+ * @return Allocation record, or null outside one through three thousand.
+ */
+static inline ItemCreationAllocationRecord* shop_allocation_record(s16 index)
+{
+    ShopRecordState* base = D_001B64F8;
+    u8 valid = index >= 1 && index <= 3000;
+    if (valid)
+        return reinterpret_cast<ItemCreationAllocationRecord*>(reinterpret_cast<u8*>(base) + (index - 1) * 16);
+    return 0;
+}
+
+/**
+ * @brief Set a resource widget's colour scale and request a redraw.
+ * @param object Resource widget.
+ * @param value Scale for all three colour channels.
+ */
+static inline void set_shop_resource_brightness(ItemCreationOptionResourceDisplay* object, float value)
+{
+    object->unk50.unk44 = value;
+    object->unk50.unk48 = value;
+    object->unk50.unk4c = value;
+    object->unk3c = 1;
+}
+
+/**
+ * @brief Calculate an allocation record's checksum for a given shift.
+ * @param record Allocation record.
+ * @param shift Two-bit shift applied to the checksum key.
+ * @return Calculated checksum.
+ */
+static inline u16 shop_allocation_checksum(ItemCreationAllocationRecord* record, u32 shift)
+{
+    return (0x83CF << shift) ^
+        ((record->unk08 + (record->unk00.raw + record->unk04)) ^ (record->unk02 + (record->unk06 + record->unk0a)));
+}
+
+/**
+ * @brief Clear an allocation record, choose its checksum shift and store the checksum.
+ * @param record Allocation record to reset.
+ * @param key Fixed shift to use instead of a random one, or null.
+ */
+static inline void reset_shop_allocation(ItemCreationAllocationRecord* record, const u8* key)
+{
+    *(unsigned __int128*)record = 0;
+    record->checksum_shift = func_0010CF80() & 3;
+    if (key != 0)
+    {
+        record->checksum_shift = *key;
+    }
+    record->checksum = shop_allocation_checksum(record, record->checksum_shift);
+}
+
+/**
+ * @brief Reset an allocation record and initialize it from a catalog record.
+ * @param allocation Allocation record to initialize.
+ * @param item Catalog record supplying the allocation value.
+ */
+static inline void initialize_shop_allocation(ItemCreationAllocationRecord* allocation, const ShopRuntimeRecord* item)
+{
+    reset_shop_allocation(allocation, 0);
+    func_0040D2E0(allocation, item->unk02 + 1, 0, 0, false, true);
+}
+
+/**
+ * @brief Get the shop state's record selection.
+ * @param state Shop state.
+ * @return Record selection.
+ */
+static inline FieldRecordSelection* shop_record_selection(ShopState* state)
+{
+    return &state->selection;
+}
+
+/**
+ * @brief Read the ten-bit allocation value from a valid record.
+ * @param record Allocation record.
+ * @return Packed value, or zero when the checksum differs.
+ */
+static inline u16 shop_allocation_value(const ItemCreationAllocationRecord& record)
+{
+    u16 value = record.unk00.bits.value;
+    if (record.checksum != (u16)((0x83CF << record.checksum_shift) ^
+        ((record.unk08 + (*(u16*)&record + record.unk04)) ^ (record.unk02 + (record.unk06 + record.unk0a)))))
+    {
+        return 0;
+    }
+    return value;
+}
+
+/**
+ * @brief Refresh the resource slot highlights and compare each member's statistic with the selected allocation applied.
+ */
+void ShopClass188500::func_slot5c()
+{
+    ShopState* state = D_001B643C->unk10->unk14;
+    for (s32 i = 0; i < 8; i++)
+    {
+        ItemCreationOptionResourceDisplay* resource = resources[i];
+        if (resource != 0)
+        {
+            set_shop_resource_brightness(resource, 128.0f);
+        }
+        labels[i]->unk3f = 0;
+    }
+    unkec += unkf0;
+    if (unkec > 18)
+    {
+        unkf0 = -1;
+    }
+    if (unkec < 0)
+    {
+        unkf0 = 1;
+    }
+    if (state->unk326c >= 0)
+    {
+        const ShopRuntimeRecord* record = shop_record(D_001B64F8, state->unk326c);
+        if (shop_record_mode(shop_category(record)) != 0 && shop_record_mode(shop_category(record)) != 1 &&
+            shop_record_mode(shop_category(record)) != 2)
+        {
+            return;
+        }
+        ItemCreationAllocationRecord allocation __attribute__((aligned(16)));
+        reset_shop_allocation(&allocation, 0);
+        initialize_shop_allocation(&allocation, record);
+        for (s32 i = 0; i < 8; i++)
+        {
+            bool found;
+            s32 k;
+            FieldRecordSelection* selection = shop_record_selection(state);
+            FieldRecord* member = &selection->records[static_cast<s16>(i)];
+            s8 slot = selection->slots[static_cast<s16>(i)];
+            const ShopResourceCopyView* entry =
+                &static_cast<const ShopResourceCopyView*>(selection->unk04)[static_cast<s16>(i)];
+            if (slot <= 0)
+            {
+                continue;
+            }
+            s32 bit = 1 << (slot - 1);
+            u16 mask = shop_category(record)->unk0c_mask;
+            if (mask & bit)
+            {
+                found = false;
+                for (k = 0; k < 4; k++)
+                {
+                    s16 identifier = shop_equipped(entry, k);
+                    if (identifier > 0)
+                    {
+                        ItemCreationAllocationRecord* candidate = shop_allocation_record(identifier);
+                        if (candidate != 0 &&
+                            static_cast<u16>(candidate->value() + 1) == static_cast<u16>(shop_allocation_value(allocation) + 1))
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (found)
+                {
+                    func_4C6DF0(labels[i], state->func_00263CC0(), 0x2EFE, 0);
+                    labels[i]->set_color(0xFF8028);
+                    labels[i]->unk3f = 1;
+                    continue;
+                }
+            }
+            else
+            {
+                set_shop_resource_brightness(resources[i], 50.0f);
+                labels[i]->unk3f = 0;
+                continue;
+            }
+            const ShopRecordCopyView* original = reinterpret_cast<const ShopRecordCopyView*>(member);
+            ShopRecordCopyView copy = *original;
+            ShopResourceCopyView copy_entry = *entry;
+            switch (shop_record_mode(shop_category(record)))
+            {
+            case 0:
+                func_003F9890(&copy, &copy_entry, &allocation, 0);
+                labels[i]->unk3f = 1;
+                if (shop_first_statistic(copy) > shop_first_statistic(*original))
+                {
+                    func_4C6DF0(labels[i], state->func_00263CC0(), 0x2EFF, 0);
+                    labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * unkec))) |
+                    (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * unkec))) << 8) |
+                    (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * unkec))) << 16));
+                }
+                else if (shop_first_statistic(copy) == shop_first_statistic(*original))
+                {
+                    func_4C6DF0(labels[i], state->func_00263CC0(), 0x2F01, 0);
+                }
+                else
+                {
+                    func_4C6DF0(labels[i], state->func_00263CC0(), 0x2F00, 0);
+                    labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * unkec))) |
+                    (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * unkec))) << 8) |
+                    (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * unkec))) << 16));
+                }
+                break;
+            case 1:
+                func_003F9890(&copy, &copy_entry, &allocation, 1);
+                labels[i]->unk3f = 1;
+                if (shop_second_statistic(copy) > shop_second_statistic(*original))
+                {
+                    func_4C6DF0(labels[i], state->func_00263CC0(), 0x2EFF, 0);
+                    labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * unkec))) |
+                    (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * unkec))) << 8) |
+                    (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * unkec))) << 16));
+                }
+                else if (shop_second_statistic(copy) == shop_second_statistic(*original))
+                {
+                    func_4C6DF0(labels[i], state->func_00263CC0(), 0x2F01, 0);
+                }
+                else
+                {
+                    func_4C6DF0(labels[i], state->func_00263CC0(), 0x2F00, 0);
+                    labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * unkec))) |
+                    (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * unkec))) << 8) |
+                    (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * unkec))) << 16));
+                }
+                break;
+            case 2:
+                labels[i]->unk3f = 0;
+                break;
+            }
+        }
+    }
+}
+
+/**
+ * @brief Create the window's resource slots and their labels for the selected records.
+ * @param associated Resource source word.
+ * @return One on success, or zero when no source word is given.
+ */
+s32 ShopClass188500::func_slotf4(u32 associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+    unkec = 0;
+    unkf0 = 1;
+    FieldClass15AE70::func_slot14(associated, 0, 9, 2000, 16.0f, 68.0f, 0.0f);
+    unk10->LibClass174610::func_0044B110(0, 9, 2000, 200, 0.0f);
+    LibClass178630* panel = new (0) LibClass178630;
+    func_004C5A80(panel, 0, 0.0f, 0.0f, 232.0f, 152.0f, 88.0f);
+    func_004C6190(unk10, panel);
+    ShopState* state = D_001B643C->unk10->unk14;
+    FieldRecordSelection* selection;
+    s32 resource;
+    u16 column;
+    u16 row;
+    for (s32 i = 0; i < 8; i++)
+    {
+        selection = &state->selection;
+        resource = static_cast<u16>(selection->slots[static_cast<s16>(i)]);
+        // TODO: Unused read that only makes this match; look for the real source shape.
+        FieldRecord* unused_record = &selection->records[static_cast<s16>(i)];
+        column = i % 4;
+        row = i / 4;
+        if (resource != 0)
+        {
+            resources[i] = new (0) ItemCreationOptionResourceDisplay;
+            void* allocation = func_002D3D80(D_001B643C->unk20, static_cast<u8>(resource));
+            FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 4);
+            resources[i]->unkcc = allocation;
+            resources[i]->unkd0 = resource;
+            resources[i]->func_002D6440(record, 20.0f + 50.0f * column, 12.0f + 68.0f * row);
+            ItemCreationOptionResourceDisplay* widget = resources[i];
+            widget->unk50.unk30 = 0.62f;
+            widget->unk50.unk34 = 0.72f;
+            widget->unk3c = 1;
+            resources[i]->unk34 = 3;
+            func_004C6190(unk10, resources[i]);
+        }
+        else
+        {
+            resources[i] = 0;
+        }
+        labels[i] = new (0) LibObject178750;
+        labels[i]->func_004C7FE0(20.0f + 50.0f * column, 43.0f + (12.0f + 68.0f * row), 0.0f, 0.0f,
+            static_cast<s32>(associated), 0x2EFE, 0);
+        LibObject178750* label = labels[i];
+        label->unk84 = 0.8f;
+        label->unk80 = 0.8f;
+        label->unk3c = 1;
+        labels[i]->unk3f = 0;
+        func_004C6190(unk10, labels[i]);
+    }
+    return 1;
+}
 
 void func_00350360(ShopScrollingWindow* object, s32 key)
 {
