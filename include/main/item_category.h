@@ -10,9 +10,11 @@ struct ItemCreationCategoryRecord
 {
     s16 allocation_list_head;
     u16 catalog_index;
-    u8 unk04;
+    /** First nonzero creator ID recorded when an item is acquired. */
+    u8 first_creator_id;
     u8 inventor_id;
-    u8 unk06;
+    /** Factor changes for this item type, capped at 99. */
+    u8 modification_count;
     u8 shop_stock;
     /** Items in inventory, excluding equipped items. */
     u8 inventory_count;

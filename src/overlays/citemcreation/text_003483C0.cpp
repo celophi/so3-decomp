@@ -215,7 +215,7 @@ typedef struct ItemCreationAllocationRecord
     /** @brief Random two-bit shift used in the record checksum. */
     u8 checksum_shift : 2;
     u8 unk0d_high : 2;
-    u8 unk0d_flag : 1;
+    u8 new_item : 1;
     /** @brief Checksum of the six halfwords at offsets 00 through 0A. */
     u16 checksum;
 } ItemCreationAllocationRecord;
@@ -290,13 +290,13 @@ typedef struct ItemCreationRuntime643C
  * @brief Configure the packed allocation record and its detail values.
  * @param record Allocation record to configure.
  * @param item_code One-based item code.
- * @param channel Channel identifier.
+ * @param modification_number Item type's factor-change count, or zero for an unmodified item.
  * @param factors Eight factor codes, or null for catalog defaults.
- * @param flag Packed record flag.
+ * @param new_item Mark the item as new in inventory lists.
  * @param suppress_allocation_id Suppress the resident allocation identifier when the record checksum is valid.
  */
-extern "C" void func_40D2E0(ItemCreationAllocationRecord* record, u16 item_code, u8 channel,
-                          const u16* factors, bool flag, bool suppress_allocation_id);
+extern "C" void func_40D2E0(ItemCreationAllocationRecord* record, u16 item_code, u8 modification_number,
+                          const u16* factors, bool new_item, bool suppress_allocation_id);
 
 /**
  * @brief Set horizontal glyph spacing and mark the widget for redraw.
@@ -7334,7 +7334,7 @@ void InventoryItemInstanceList::refresh_rows(s32 start)
                 display->unk94 = ITEM_CREATION_COLOR_DIM;
                 display->unk3c = 1;
             }
-            else if (record->unk0d_flag)
+            else if (record->new_item)
             {
                 LibObject172410* display = unk138[row];
                 display->unk94 = 0x508050;
