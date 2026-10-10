@@ -8,6 +8,7 @@
 #include "main/resident_00101260.h"
 #include "main/resident_001001E0.h"
 #include "main/resident_data.h"
+#include "main/item_category.h"
 #include "overlays/1067-00/text_002F9C90.h"
 #include "overlays/1067-00/text_002D5260.h"
 #include "overlays/lib/text_004095C0.h"
@@ -102,20 +103,45 @@ struct ItemCreationAllocationRecord
 {
     union
     {
-        u16 raw;
+        u16 halves[2];
         struct
         {
             u16 definition_index : 10;
-            u16 other : 6;
+            u16 factor0_low_bits : 6;
+            u16 factor0_high_bits : 4;
+            u16 factor1 : 10;
+            u16 unk03_high : 2;
         } bits;
-    } unk00;
-    u16 unk02;
-    u16 unk04;
-    u16 unk06;
-    u16 unk08;
-    u16 unk0a;
-    u8 unk0c;
-    u8 unk0d_low : 3;
+    } definition_factors;
+    union
+    {
+        u16 halves[2];
+        struct
+        {
+            u16 factor2 : 10;
+            u16 factor3_low_bits : 6;
+            u16 factor3_high_bits : 4;
+            u16 factor4 : 10;
+            /** Suppress the allocation ID when the record checksum is valid. */
+            u16 suppress_allocation_id : 1;
+            u16 unk07_high : 1;
+        } bits;
+    } factors_234;
+    union
+    {
+        u16 halves[2];
+        struct
+        {
+            u16 factor5 : 10;
+            u16 factor6_low_bits : 6;
+            u16 factor6_high_bits : 4;
+            u16 factor7 : 10;
+            u16 unk0b_high : 2;
+        } bits;
+    } factors_567;
+    u8 modification_number : 7;
+    u8 equipped_owner_low_bit : 1;
+    u8 equipped_owner_high_bits : 3;
     /** @brief Random two-bit shift used in the record checksum. */
     u8 checksum_shift : 2;
     u8 battle_usable : 1;
@@ -131,7 +157,8 @@ struct ItemCreationAllocationRecord
      */
     u16 calculate_checksum(u32 shift) const
     {
-        return (0x83CF << shift) ^ ((unk08 + (unk00.raw + unk04)) ^ (unk02 + (unk06 + unk0a)));
+        return (0x83CF << shift) ^ ((factors_567.halves[0] + (definition_factors.halves[0] + factors_234.halves[0])) ^
+                                  (definition_factors.halves[1] + (factors_234.halves[1] + factors_567.halves[1])));
     }
     /**
      * @brief Calculate the checksum of the six halfwords with the stored shift.
@@ -139,7 +166,8 @@ struct ItemCreationAllocationRecord
      */
     u16 calculate_checksum() const
     {
-        return (0x83CF << checksum_shift) ^ ((unk08 + (unk00.raw + unk04)) ^ (unk02 + (unk06 + unk0a)));
+        return (0x83CF << checksum_shift) ^ ((factors_567.halves[0] + (definition_factors.halves[0] + factors_234.halves[0])) ^
+                                           (definition_factors.halves[1] + (factors_234.halves[1] + factors_567.halves[1])));
     }
     /**
      * @brief Clear the record, choose its checksum shift and store the checksum.
@@ -173,33 +201,23 @@ struct ItemCreationAllocationRecord
         {
             return 0;
         }
-        return unk00.bits.definition_index;
+        return definition_factors.bits.definition_index;
     }
 };
 
-/** Twelve-byte category record used by the runtime catalog. */
-struct ShopRuntimeRecord
+/** Allocation indices linking the instances of one item type. */
+struct ShopAllocationLink
 {
-    u16 allocation_list_head;
-    u16 definition_index;
-    /** First nonzero creator ID recorded when an item is acquired. */
-    u8 first_creator_id;
-    u8 inventor_id;
-    /** Factor changes for this item type, capped at 99. */
-    u8 modification_count;
-    u8 shop_stock;
-    /** Items in inventory, excluding equipped items. */
-    u8 inventory_count;
-    u8 equipped_count;
-    u8 battle_usable_count;
-    u8 flags;
+    s16 previous;
+    s16 next;
 };
 
-/** Partial runtime catalog containing category records. */
-struct ShopRecordState
+/** Item allocations, their list links and the inventory totals for each item type. */
+struct ShopInventoryState
 {
-    u8 unk00[0xEA60];
-    ShopRuntimeRecord records[750];
+    ItemCreationAllocationRecord allocations[3000];
+    ShopAllocationLink allocation_links[3000];
+    ItemCreationCategoryRecord item_records[750];
 };
 
 /** Four packed panel colors copied as one aligned block. */
@@ -242,7 +260,8 @@ typedef struct ShopRuntime
     u8 unk04[0xC];
     ShopCallbacks* callbacks;
     u8 unk14[0x8];
-    void* unk1c;
+    /** Field camera supplying the item preview's view and projection settings. */
+    void* field_camera;
     FieldBufferSlots* resource_buffers;
 } ShopRuntime;
 /**
@@ -255,7 +274,7 @@ extern "C" void func_002CFE10(ShopCallbacks* context, FieldClass15AE70* window);
 extern ShopRuntime* D_001B643C;
 extern ResidentObjectQueue* D_001B65F4;
 extern float D_001B6690;
-extern ShopRecordState* D_001B64F8;
+extern ShopInventoryState* D_001B64F8;
 
 // This Field overlay interface has no recovered declaration in its owning header.
 extern "C" void func_002CE220(FieldStateCE420* object, s32 count, s32 offset, s32 selected);
@@ -295,12 +314,12 @@ static inline void clear_shop_runtime_flag(u32 mask)
  * @param code One-based item code.
  * @return Selected record, or null when the code is out of range.
  */
-static inline ShopRuntimeRecord* shop_record(ShopRecordState* state, u16 code)
+static inline ItemCreationCategoryRecord* shop_record(ShopInventoryState* state, u16 code)
 {
     u8 valid = code > 0 && code < 751;
     if (valid)
     {
-        return &state->records[code - 1];
+        return &state->item_records[code - 1];
     }
     return 0;
 }
@@ -1134,36 +1153,36 @@ void ShopSaleItemWindow::set_scroll_position(float position)
 }
 
 /**
- * @brief Populate five icon and number rows from the current category records.
- * @param offset First record to display.
+ * @brief Populate five icon and price rows from the selected item's allocations.
+ * @param offset First allocation to display.
  */
 void ShopSaleItemWindow::refresh_rows(s32 offset)
 {
-    ItemCreationAllocationRecord* records[100];
+    ItemCreationAllocationRecord* allocations[100];
     ShopState* state = D_001B643C->callbacks->shop;
     ShopTransaction* transaction = &state->transaction;
-    s32 category = state->selected_item;
+    s32 item_code = state->selected_item;
     for (s32 i = 99; i >= 0; i--)
     {
-        records[i] = 0;
+        allocations[i] = 0;
     }
-    this->FieldClass15AE60::unk88 = func_0040CF90(D_001B64F8, records, category);
+    this->FieldClass15AE60::unk88 = func_0040CF90(D_001B64F8, allocations, item_code);
     for (s32 i = 0; i < 5; i++)
     {
-        if (records[offset + i] == 0)
+        if (allocations[offset + i] == 0)
         {
             this->item_icons[i]->unk3d = 0;
             this->sale_prices[i]->unk3d = 0;
         }
         else
         {
-            u16 identifier = category;
-            u8 variant = records[offset + i]->unk0c & 0x7F;
+            u16 identifier = item_code;
+            u8 modification_number = allocations[offset + i]->modification_number;
             LibObject172410* icon = this->item_icons[i];
             icon->unkfc = identifier;
-            icon->unkfe = variant;
+            icon->unkfe = modification_number;
             icon->unk3c = 1;
-            set_shop_number(this->sale_prices[i], shop_get_sale_price(transaction, func_0040D890(records[offset + i])));
+            set_shop_number(this->sale_prices[i], shop_get_sale_price(transaction, func_0040D890(allocations[offset + i])));
             this->item_icons[i]->unk3d = 1;
             this->sale_prices[i]->unk3d = 1;
         }
@@ -1495,7 +1514,7 @@ void ShopSellListWindow::refresh_rows(s32 offset)
         if (code != 0)
         {
             u16 identifier = code;
-            ShopRuntimeRecord* record = shop_record(D_001B64F8, identifier);
+            ItemCreationCategoryRecord* record = shop_record(D_001B64F8, identifier);
             if (record != 0)
             {
                 u8 dimmed = record->flags & SHOP_ITEM_PLAYER_INVENTED;
@@ -1522,9 +1541,9 @@ void ShopSellListWindow::refresh_rows(s32 offset)
  * @param record Runtime category record.
  * @return Definition selected by the record's catalog index.
  */
-static inline ItemCreationCategoryDefinition* shop_definition(const ShopRuntimeRecord* record)
+static inline ItemCreationCategoryDefinition* shop_definition(const ItemCreationCategoryRecord* record)
 {
-    return &D_001B64F0[record->definition_index];
+    return &D_001B64F0[record->catalog_index];
 }
 
 /**
@@ -1545,7 +1564,7 @@ void shop_refresh_sell_list(void* receiver, u8 reset)
     s32 count = 0;
     for (s32 code = 1; code <= 750; code++)
     {
-        ShopRuntimeRecord* record = shop_record(D_001B64F8, code);
+        ItemCreationCategoryRecord* record = shop_record(D_001B64F8, code);
         if (record == 0)
         {
             continue;
@@ -1705,10 +1724,10 @@ extern "C" s32 func_0045F690(LibObject174D90* object, u32 slot, s32 key, u32 mod
  * @param item Catalog record supplying the allocation value.
  * @param factors Eight factor codes, or null for catalog defaults.
  */
-static inline void initialize_allocation(ItemCreationAllocationRecord* allocation, const ShopRuntimeRecord* item, const u16* values)
+static inline void initialize_allocation(ItemCreationAllocationRecord* allocation, const ItemCreationCategoryRecord* item, const u16* values)
 {
     allocation->reset(0);
-    func_0040D2E0(allocation, item->definition_index + 1, 0, values, false, true);
+    func_0040D2E0(allocation, item->catalog_index + 1, 0, values, false, true);
 }
 
 /** Five vertical row positions; the last places the detail window footer. */
@@ -1764,7 +1783,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     s32 item_code = shop_selected_item();
     ItemCreationAllocationRecord allocation __attribute__((aligned(16)));
     allocation.reset(0);
-    ShopRuntimeRecord* record = shop_record(D_001B64F8, item_code);
+    ItemCreationCategoryRecord* record = shop_record(D_001B64F8, item_code);
     initialize_allocation(&allocation, record, 0);
     category_label = new (0) LibObject178750;
     category_label->func_004C7FE0(16.0f, 12.0f, 0.0f, 0.0f, associated, shop_definition_category(&D_001B64F0[allocation.definition_index()]) + SHOP_MSG_WEAPONS, 0);
@@ -1836,12 +1855,12 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     footer->func_004C7FE0(12.0f, positions.values[4] - 8.0f, 560.0f, 24.0f, static_cast<s32>(associated), SHOP_MSG_BACK_HELP, 0);
     footer->set_mode(2);
     func_004C6190(detail_container, footer);
-    s32 key = static_cast<u16>(D_001B64F0[record->definition_index].model_index) + 0x88;
+    s32 key = static_cast<u16>(D_001B64F0[record->catalog_index].model_index) + 0x88;
     closing = 0;
     item_model = new (0) FieldClass15BB90;
     func_002FDC00(item_model, key);
     item_model->unk5b = 1;
-    func_002FD220(item_model, D_001B643C->unk1c);
+    func_002FD220(item_model, D_001B643C->field_camera);
     func_002FD1D0(item_model);
     if (reinterpret_cast<ShopWindowSection*>(func_00101440(func_00101290(func_0010D8E0()), 1))->enabled != 0)
     {
@@ -2181,7 +2200,7 @@ void ShopBuyListWindow::refresh_rows(s32 offset)
         if (offset + i < shop_category_item_count(transaction, state->category))
         {
             s32 code = shop_get_category_item(transaction, state->category, offset + i);
-            ShopRuntimeRecord* record = shop_record(D_001B64F8, code);
+            ItemCreationCategoryRecord* record = shop_record(D_001B64F8, code);
             if (record != 0)
             {
                 u8 dimmed = record->flags & SHOP_ITEM_PLAYER_INVENTED;
@@ -2503,7 +2522,7 @@ void ShopDescriptionWindow::func_slot5c()
             parameters_heading->unk3f = 1;
             ItemCreationAllocationRecord allocation __attribute__((aligned(16)));
             allocation.reset(0);
-            ShopRuntimeRecord* record = shop_record(D_001B64F8, state->selected_item);
+            ItemCreationCategoryRecord* record = shop_record(D_001B64F8, state->selected_item);
             initialize_allocation(&allocation, record, 0);
             set_shop_number(parameter_values[0], D_001B64F0[allocation.definition_index()].attack);
             set_shop_number(parameter_values[1], D_001B64F0[allocation.definition_index()].hit);
@@ -2612,58 +2631,83 @@ s32 ShopDescriptionWindow::func_slotf4(u32 associated)
 /** Character record copied before applying a prospective equipment change. */
 struct ShopCharacterRecord
 {
-    s16 unk00;
+    s16 character_id;
     s16 unk02;
-    s16 unk04;
+    s16 encoded_level;
     s16 unk06;
-    s32 unk08;
-    s32 unk0c;
-    s32 unk10;
-    s32 unk14;
-    s32 unk18;
-    s32 unk1c;
-    s32 unk20;
-    s32 unk24;
+    s32 encoded_flags;
+    s32 encoded_experience;
+    s32 encoded_base_hp;
+    s32 encoded_max_hp;
+    s32 encoded_hp;
+    s32 encoded_base_mp;
+    s32 encoded_max_mp;
+    s32 encoded_mp;
     float unk28;
-    float unk2c;
-    float unk30;
-    s32 unk34;
-    s32 unk38;
+    /** Fury is stored at sixteen times its displayed amount. */
+    float scaled_max_fury;
+    float scaled_fury;
+    s32 encoded_base_attack;
+    s32 encoded_effective_attack;
     s32 encoded_attack;
-    s32 unk40;
-    s32 unk44;
+    s32 encoded_base_defense;
+    s32 encoded_effective_defense;
     s32 encoded_defense;
-    s32 unk4c;
-    s32 unk50;
-    s32 unk54;
-    s32 unk58;
-    s32 unk5c;
-    s32 unk60;
-    s32 unk64;
-    s32 unk68;
-    s32 unk6c;
-    s16 unk70;
-    s16 unk72;
-    s16 unk74;
-    s16 unk76;
-    s16 unk78;
-    s16 unk7a;
-    s16 unk7c;
-    s16 unk7e;
-    s16 unk80;
-    s32 unk84[15];
+    s32 encoded_base_agility;
+    s32 encoded_effective_agility;
+    s32 encoded_agility;
+    s32 encoded_base_hit;
+    s32 encoded_effective_hit;
+    s32 encoded_hit;
+    /** The resident INT helpers validate these values through the HIT checksum. */
+    s32 encoded_base_intelligence;
+    s32 encoded_effective_intelligence;
+    s32 encoded_intelligence;
+    s16 encoded_base_knockback_power;
+    s16 encoded_effective_knockback_power;
+    s16 encoded_knockback_power;
+    s16 encoded_base_knockback_resistance;
+    s16 encoded_effective_knockback_resistance;
+    s16 encoded_knockback_resistance;
+    s16 encoded_base_critical_rate;
+    s16 encoded_effective_critical_rate;
+    s16 encoded_critical_rate;
+    s32 level_checksum;
+    s32 flags_experience_checksum;
+    s32 hp_checksum;
+    s32 mp_checksum;
+    s32 attack_checksum;
+    s32 defense_checksum;
+    s32 agility_checksum;
+    s32 hit_checksum;
+    s32 knockback_power_checksum;
+    s32 checksum_salt;
+    s32 critical_rate_checksum;
+    s32 knockback_resistance_checksum;
+    s32 unkb4[3];
     s32 unkc0;
 };
 
-/** Character equipment with encoded allocation identifiers and their checksum. */
+/** Character equipment and skill values copied for an equipment preview. */
 struct ShopCharacterEquipment
 {
-    u8 unk00[0xE];
+    s16 encoded_base_luck;
+    s16 encoded_effective_luck;
+    s16 encoded_luck;
+    s16 encoded_base_stamina;
+    s16 encoded_effective_stamina;
+    s16 encoded_stamina;
+    u8 unk0c[2];
     s16 encoded_slot_limit;
     s16 encoded_equipment_ids[4];
-    u8 unk18[0xD8];
-    u32 checksum;
-    u8 unkf4[0x18];
+    s16 encoded_sp;
+    s16 encoded_cp;
+    u8 unk1c[0xCC];
+    u32 luck_checksum;
+    u32 stamina_checksum;
+    u32 equipment_checksum;
+    u32 sp_cp_checksum;
+    u8 unkf8[0x14];
     u32 checksum_salt;
     u32 unk110;
 };
@@ -2685,7 +2729,7 @@ extern "C" s32 func_003F9890(ShopCharacterRecord* record, ShopCharacterEquipment
  */
 static inline s32 shop_attack(const ShopCharacterRecord& r)
 {
-    if (r.unk84[4] != (r.unk84[9] ^ (r.encoded_attack ^ (r.unk34 + r.unk38))))
+    if (r.attack_checksum != (r.checksum_salt ^ (r.encoded_attack ^ (r.encoded_base_attack + r.encoded_effective_attack))))
     {
         return 0;
     }
@@ -2699,7 +2743,7 @@ static inline s32 shop_attack(const ShopCharacterRecord& r)
  */
 static inline s32 shop_defense(const ShopCharacterRecord& r)
 {
-    if (r.unk84[5] != (r.unk84[9] ^ (r.encoded_defense ^ (r.unk40 + r.unk44))))
+    if (r.defense_checksum != (r.checksum_salt ^ (r.encoded_defense ^ (r.encoded_base_defense + r.encoded_effective_defense))))
     {
         return 0;
     }
@@ -2713,7 +2757,7 @@ static inline s32 shop_defense(const ShopCharacterRecord& r)
  */
 static inline bool shop_resource_valid(const ShopCharacterEquipment* r)
 {
-    return r->checksum == (r->checksum_salt ^ ((r->encoded_equipment_ids[1] + r->encoded_equipment_ids[2]) ^
+    return r->equipment_checksum == (r->checksum_salt ^ ((r->encoded_equipment_ids[1] + r->encoded_equipment_ids[2]) ^
                                              (r->encoded_equipment_ids[3] + r->encoded_equipment_ids[0])));
 }
 
@@ -2747,10 +2791,10 @@ static inline s16 shop_equipped(const ShopCharacterEquipment* r, s32 index)
  */
 static inline ItemCreationAllocationRecord* shop_allocation_record(s16 index)
 {
-    ShopRecordState* base = D_001B64F8;
+    ShopInventoryState* base = D_001B64F8;
     u8 valid = index >= 1 && index <= 3000;
     if (valid)
-        return reinterpret_cast<ItemCreationAllocationRecord*>(reinterpret_cast<u8*>(base) + (index - 1) * 16);
+        return &base->allocations[index - 1];
     return 0;
 }
 
@@ -2775,7 +2819,8 @@ static inline void set_shop_resource_brightness(ItemCreationOptionResourceDispla
  */
 static inline u16 shop_allocation_checksum(ItemCreationAllocationRecord* record, u32 shift)
 {
-    return (0x83CF << shift) ^ ((record->unk08 + (record->unk00.raw + record->unk04)) ^ (record->unk02 + (record->unk06 + record->unk0a)));
+    return (0x83CF << shift) ^ ((record->factors_567.halves[0] + (record->definition_factors.halves[0] + record->factors_234.halves[0])) ^
+                              (record->definition_factors.halves[1] + (record->factors_234.halves[1] + record->factors_567.halves[1])));
 }
 
 /**
@@ -2799,10 +2844,10 @@ static inline void reset_shop_allocation(ItemCreationAllocationRecord* record, c
  * @param allocation Allocation record to initialize.
  * @param item Catalog record supplying the allocation value.
  */
-static inline void initialize_shop_allocation(ItemCreationAllocationRecord* allocation, const ShopRuntimeRecord* item)
+static inline void initialize_shop_allocation(ItemCreationAllocationRecord* allocation, const ItemCreationCategoryRecord* item)
 {
     reset_shop_allocation(allocation, 0);
-    func_0040D2E0(allocation, item->definition_index + 1, 0, 0, false, true);
+    func_0040D2E0(allocation, item->catalog_index + 1, 0, 0, false, true);
 }
 
 /**
@@ -2822,9 +2867,10 @@ static inline FieldRecordSelection* shop_record_selection(ShopState* state)
  */
 static inline u16 shop_allocation_definition_index(const ItemCreationAllocationRecord& record)
 {
-    u16 definition_index = record.unk00.bits.definition_index;
+    u16 definition_index = record.definition_factors.bits.definition_index;
     if (record.checksum !=
-        (u16)((0x83CF << record.checksum_shift) ^ ((record.unk08 + (*(u16*)&record + record.unk04)) ^ (record.unk02 + (record.unk06 + record.unk0a)))))
+        (u16)((0x83CF << record.checksum_shift) ^ ((record.factors_567.halves[0] + (*(u16*)&record + record.factors_234.halves[0])) ^
+                                               (record.definition_factors.halves[1] + (record.factors_234.halves[1] + record.factors_567.halves[1])))))
     {
         return 0;
     }
@@ -2857,7 +2903,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
     }
     if (state->selected_item >= 0)
     {
-        const ShopRuntimeRecord* record = shop_record(D_001B64F8, state->selected_item);
+        const ItemCreationCategoryRecord* record = shop_record(D_001B64F8, state->selected_item);
         if (shop_definition_category(shop_definition(record)) != SHOP_CATEGORY_WEAPONS && shop_definition_category(shop_definition(record)) != SHOP_CATEGORY_ARMOR &&
             shop_definition_category(shop_definition(record)) != SHOP_CATEGORY_ACCESSORIES)
         {
@@ -3192,9 +3238,9 @@ void shop_change_category(ShopState* object, s32 direction)
             s32 code;
             for (code = 1; code <= 750; code++)
             {
-                ShopRuntimeRecord* record = shop_record(D_001B64F8, code);
+                ItemCreationCategoryRecord* record = shop_record(D_001B64F8, code);
                 if (record != 0 && record->inventory_count != 0 &&
-                    (object->category == SHOP_CATEGORY_ALL || object->category == shop_definition_category(&D_001B64F0[record->definition_index])))
+                    (object->category == SHOP_CATEGORY_ALL || object->category == shop_definition_category(&D_001B64F0[record->catalog_index])))
                 {
                     break;
                 }
