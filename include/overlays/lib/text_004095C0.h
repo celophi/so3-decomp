@@ -17,7 +17,8 @@ struct ItemCreationCategoryDefinition
     u32 unk03 : 8;
     u32 attack : 14;
     u32 hit : 14;
-    u32 unk04_rest : 4;
+    /** Variant added to character-specific weapon resource IDs. */
+    u32 weapon_variant : 4;
     u32 agility : 14;
     u32 defense : 14;
     u32 category : 3;
