@@ -23,7 +23,10 @@ public:
     /** @brief Destroy the object. */
     virtual ~FieldClass175290();
 
-    u32 unk210;
+    /** @brief Copy the associated transform and inherited state. @param source Transform source. */
+    virtual void func_0046B890(const FieldClass175290* source);
+
+    LibClass178EA0* unk210;
     u32 unk214;
 };
 /** Four aligned floating-point components; C++ copies them as one 128-bit word. */

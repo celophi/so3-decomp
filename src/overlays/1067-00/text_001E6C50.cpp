@@ -335,13 +335,13 @@ void FieldClass150280::func_001E76B0(float start, float end)
 {
     if (!unk66_3)
     {
-        void* heap = func_00100C80(D_001B6430->context->unk70);
+        void* heap = resident_exchange_allocation_heap(D_001B6430->context->unk70);
         if (!func_004BF100(unk14, unk1c->unk7c, 0))
         {
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
-        func_00100C80(heap);
+        resident_exchange_allocation_heap(heap);
         unk66_3 = 1;
     }
     unk14->unk6a = 0;
@@ -507,7 +507,7 @@ s32 FieldClass1502E0::func_001E82B0(s32 key)
     anim->unk68 = 1;
     anim->unk30 = (void*)(((u32)data + 0x7F) & ~0x7F);
     func_004BFE10(item->unk14, item->unk1c->unk7c);
-    func_004D74F0(item, (void*)-1);
+    func_004D74F0(item, -1);
     return 1;
 }
 
@@ -647,10 +647,10 @@ FieldClass150320::FieldClass150320(LibClass178220* animation, void* owner, float
     unk08 = count;
     if (count > 0)
     {
-        void* heap = func_00100C80(0);
+        void* heap = resident_exchange_allocation_heap(0);
         u32 size = count * sizeof(FieldSavedChannelEntry);
         unk04 = new(0) FieldSavedChannelEntry[count];
-        func_00100C80(heap);
+        resident_exchange_allocation_heap(heap);
         if (unk04)
         {
             func_0013A4C0(unk04, temporary, size);
@@ -697,8 +697,8 @@ void func_001E94F0(LibClass177B50* object)
 
 void FieldClass150330::func_001DD7B0()
 {
-    func_004D65C0(this);
-    func_0011ED90(D_001B65F4, this);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 s32 func_001E95B0(s32 flag)
@@ -711,7 +711,7 @@ s32 func_001E95B0(s32 flag)
             if (object)
             {
                 object->unk4d_2 = flag;
-                D_001B6614->func_004D74F0(object, (void*)-1);
+                D_001B6614->func_004D74F0(object, -1);
                 return 1;
             }
         }
@@ -1076,7 +1076,7 @@ FieldClass1504C0::~FieldClass1504C0()
             break;
         }
         node = node->unk08;
-        func_004D65C0(current);
+        lib_object_detach_owner(current);
         static_cast<FieldClass150070*>(current)->func_001DD7B0();
     }
 }
@@ -1198,7 +1198,7 @@ void FieldClass1504F0::func_001EB590()
         unk14->unk590_3 = 0;
         unk14 = 0;
     }
-    func_004D65C0(this);
+    lib_object_detach_owner(this);
     func_001DD7B0();
     FieldObject220150* state = (FieldObject220150*)D_001B6430->context->unk18;
     state->unk6D3_1 = 1;
@@ -1206,8 +1206,8 @@ void FieldClass1504F0::func_001EB590()
 
 void FieldClass1504C0::func_001DD7B0()
 {
-    func_004D65C0(this);
-    func_0011ED90(D_001B65F4, this);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 void func_001EB690(FieldCountOwner34* object, s32 count)
@@ -1242,8 +1242,8 @@ void FieldClass1504F0::func_001DD7B0()
 {
     if (!unk4d_1)
     {
-        func_004D65C0(this);
-        func_0011ED90(D_001B65F4, this);
+        lib_object_detach_owner(this);
+        resident_enqueue_object(D_001B65F4, this);
         if (unk18)
         {
             static_cast<LibClass174610&>(*unk18).func_003EF740();
@@ -1258,7 +1258,7 @@ FieldClass1504F0::~FieldClass1504F0()
 {
     if (unk3c != -1)
     {
-        func_00465430(D_001B657C, unk3c);
+        lib_release_resource_slot(D_001B657C, unk3c);
     }
     if (unk40)
     {
@@ -1341,23 +1341,23 @@ void FieldClass1504F0::func_001ED160()
             LibUiRect16* position = &unk24[0]->unk18;
             if (unk2c[0])
             {
-                if (func_004C7FE0(unk2c[0], unk3c, 0x20, 0, 16.0f + position->unk00, 8.0f + position->unk04, 352.0f, 48.0f))
+                if (lib_text_init_resource_rectangle(unk2c[0], unk3c, 0x20, 0, 16.0f + position->unk00, 8.0f + position->unk04, 352.0f, 48.0f))
                 {
                     LibClass174EF0* widget = unk2c[0];
                     widget->unk80 = 0.8f;
                     widget->unk3c = 1;
                     unk2c[0]->unk3d = 1;
                 }
-                func_004C6190(unk18, unk2c[0]);
+                lib_container_attach_widget(unk18, unk2c[0]);
             }
             if (unk34[0])
             {
-                func_00464D90(unk34[0], resource->inventory_count, 0, 0, 92.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
+                lib_numeric_widget_init_rectangle(unk34[0], resource->inventory_count, 0, 0, 92.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
                 LibClass174EF0* widget = unk34[0];
                 widget->unk9c = 0;
                 widget->unk3c = 1;
                 unk34[0]->unk3d = 1;
-                func_004C6190(unk18, unk34[0]);
+                lib_container_attach_widget(unk18, unk34[0]);
             }
             offset += 124.0f;
         }
@@ -1379,14 +1379,14 @@ void FieldClass1504F0::func_001ED160()
             }
             if (unk2c[1])
             {
-                if (func_004C7FE0(unk2c[1], unk3c, 0x21, 0, 16.0f + position->unk00, 8.0f + position->unk04, 352.0f, 48.0f))
+                if (lib_text_init_resource_rectangle(unk2c[1], unk3c, 0x21, 0, 16.0f + position->unk00, 8.0f + position->unk04, 352.0f, 48.0f))
                 {
                     LibClass174EF0* widget = unk2c[1];
                     widget->unk80 = 0.9f;
                     widget->unk3c = 1;
                     unk2c[1]->unk3d = 1;
                 }
-                func_004C6190(unk18, unk2c[1]);
+                lib_container_attach_widget(unk18, unk2c[1]);
             }
             if (!unk34[1])
             {
@@ -1394,12 +1394,12 @@ void FieldClass1504F0::func_001ED160()
             }
             if (unk34[1])
             {
-                func_00464D90(unk34[1], second_resource->inventory_count, 0, 0, 80.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
+                lib_numeric_widget_init_rectangle(unk34[1], second_resource->inventory_count, 0, 0, 80.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
                 LibClass174EF0* widget = unk34[1];
                 widget->unk9c = 0;
                 widget->unk3c = 1;
                 unk34[1]->unk3d = 1;
-                func_004C6190(unk18, unk34[1]);
+                lib_container_attach_widget(unk18, unk34[1]);
             }
         }
         else
@@ -1415,23 +1415,23 @@ void FieldClass1504F0::func_001ED160()
         LibUiRect16* position = &unk24[0]->unk18;
         if (unk2c[0])
         {
-            if (func_004C7FE0(unk2c[0], unk3c, 0x22, 0, 16.0f + position->unk00, 8.0f + position->unk04, 352.0f, 48.0f))
+            if (lib_text_init_resource_rectangle(unk2c[0], unk3c, 0x22, 0, 16.0f + position->unk00, 8.0f + position->unk04, 352.0f, 48.0f))
             {
                 LibClass174EF0* widget = unk2c[0];
                 widget->unk80 = 0.8f;
                 widget->unk3c = 1;
                 unk2c[0]->unk3d = 1;
             }
-            func_004C6190(unk18, unk2c[0]);
+            lib_container_attach_widget(unk18, unk2c[0]);
         }
         if (unk34[0])
         {
-            func_00464D90(unk34[0], section->unk1b0, 0, 0, 208.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
+            lib_numeric_widget_init_rectangle(unk34[0], section->unk1b0, 0, 0, 208.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
             LibClass174EF0* widget = unk34[0];
             widget->unk9c = 0;
             widget->unk3c = 1;
             unk34[0]->unk3d = 1;
-            func_004C6190(unk18, unk34[0]);
+            lib_container_attach_widget(unk18, unk34[0]);
         }
     }
 }

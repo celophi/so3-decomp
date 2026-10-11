@@ -235,8 +235,8 @@ FieldClass1507C0::~FieldClass1507C0()
 
 extern "C" void func_001FA270(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 extern "C" int func_001FA2A0(void* object)
@@ -269,7 +269,7 @@ extern "C" s32 func_001FA2D0(FieldLateCommandStream* stream)
                     if (key == entry->key244)
                     {
                         func_4289B0(entry);
-                        func_004D65C0(entry);
+                        lib_object_detach_owner(entry);
                         entry->unk08();
                     }
                     break;
@@ -277,7 +277,7 @@ extern "C" s32 func_001FA2D0(FieldLateCommandStream* stream)
                     if (key == entry->key254)
                     {
                         func_4289B0(entry);
-                        func_004D65C0(entry);
+                        lib_object_detach_owner(entry);
                         entry->unk08();
                     }
                     break;
@@ -293,7 +293,7 @@ extern "C" s32 func_001FA2D0(FieldLateCommandStream* stream)
             if (entry && entry->kind == 0x4040 && key == entry->key274)
             {
                 func_428C80(entry);
-                func_004D65C0(entry);
+                lib_object_detach_owner(entry);
                 entry->unk08();
             }
         }
@@ -374,8 +374,8 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FBA
 
 extern "C" void func_001FBD10(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FBD40);
@@ -430,8 +430,8 @@ extern "C" void func_001FC980(FieldHeldObject20* object)
 {
     func_0027E7D0(object);
     object->unk250 = 0;
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 extern "C" void func_001FC9C0(FieldLateRecords* object)
@@ -512,7 +512,7 @@ extern "C" s32 func_001FD340(void* object)
     FieldLateVirtual* target = func_00217A90(object, 5);
     if (target)
     {
-        func_004D65C0(target);
+        lib_object_detach_owner(target);
         target->unk08();
     }
     return 1;
@@ -566,7 +566,7 @@ extern "C" void func_001FD770(void* object)
 extern "C" void func_001FD780(FieldLateDeleting* object)
 {
     func_002D47A0(object);
-    func_004D65C0(object);
+    lib_object_detach_owner(object);
     if (object)
     {
         object->unk00(1);

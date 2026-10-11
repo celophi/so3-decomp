@@ -261,14 +261,14 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002782
 
 void func_002782A0(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 void func_002782D0(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 s32 func_00278300(FieldObject155540* object)

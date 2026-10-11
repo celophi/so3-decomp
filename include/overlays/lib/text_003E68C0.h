@@ -45,16 +45,50 @@ public:
     void* unk790;
 };
 
-/**
- * Partial Lib root class with its vtable pointer at offset 0, with vtable
- * D_171EA0 in main data (its own bases D_171E90 and D_171E80 are not modelled).
- * Slots 3 and 4 keep placeholder signatures.
- */
-class LibClass171EA0
+/** Virtual intrusive-link root. */
+class LibClass171E80
 {
 public:
-    /** @brief Destroy the object. */
-    virtual ~LibClass171EA0();
+    /** @brief Destroy the intrusive-link root. */
+    virtual ~LibClass171E80()
+    {
+    }
+};
+/** Intrusive list sentinel initialized by the resident list constructor. */
+class LibClass171E90 : public LibClass171E80
+{
+public:
+    /** @brief Clear the intrusive links before a sentinel owner installs itself. */
+    LibClass171E90() : previous(0), next(0)
+    {
+    }
+    /** @brief Destroy the list sentinel and its virtual root. */
+    virtual ~LibClass171E90()
+    {
+    }
+    LibClass171E90* previous;
+    LibClass171E90* next;
+};
+class LibClass178DD0;
+/** @brief Detach an object from its owner. @param object Intrusive receiver. */
+extern "C" void lib_object_detach_owner(void* object);
+
+/**
+ * Partial 0x14-byte intrusive object with its vtable pointer at offset 0.
+ * Vtable D_171EA0 is stored in main data. Slots 3 and 4 remain unknown.
+ */
+class LibClass171EA0 : public LibClass171E90
+{
+public:
+    /** @brief Clear the object flags and its owner after initializing the links. */
+    LibClass171EA0() : unk0e(0), unk0f(0), owner(0)
+    {
+    }
+    /** @brief Detach from the owner, then destroy the intrusive links. */
+    virtual ~LibClass171EA0()
+    {
+        lib_object_detach_owner(this);
+    }
 
     /** @brief Report the fixed object kind. @return Always 3. */
     virtual s32 func_003EEBC0();
@@ -67,6 +101,10 @@ public:
 
     /** @brief Virtual slot 4. */
     virtual void func_003EEBE0();
+    s16 unk0c;
+    u8 unk0e;
+    u8 unk0f;
+    LibClass178DD0* owner;
 };
 
 /** Position transform, with root vtable D_171EC0. */
@@ -81,7 +119,13 @@ public:
      * @param y Scalar component.
      * @param z Scalar component.
      */
-    virtual void func_003EF790(float x, float y, float z);
+    virtual void func_003EF790(float x, float y, float z)
+    {
+        unk20.components[0] = x;
+        unk20.components[1] = y;
+        unk20.components[2] = z;
+        unk20.components[3] = 1.0f;
+    }
     /**
      * @brief Update transform components.
      * @param value Vector components.
@@ -92,7 +136,7 @@ public:
      * @param value Vector components.
      */
     virtual void func_003EF770(const LibVector4* value);
-    u8 unk04[0x1C];
+    u8 unk14[0x0C];
     LibVector4 unk20;
 };
 /** Position, quaternion and scale transform, with root vtable D_171EF0. */

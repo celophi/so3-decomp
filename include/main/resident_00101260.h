@@ -12,7 +12,7 @@ extern "C" {
  * @param object Opaque table owner.
  * @return Opaque entry table.
  */
-void* func_00101290(void* object);
+void* resident_get_entry_table(void* object);
 
 /**
  * @brief Find the entry associated with one of the table's sixteen keys.
@@ -20,7 +20,7 @@ void* func_00101290(void* object);
  * @param key Full-word entry key.
  * @return Matching full-word entry, or zero when the key is absent.
  */
-u32 func_00101440(void* table, s32 key);
+u32 resident_find_entry(void* table, s32 key);
 
 #ifdef __cplusplus
 }

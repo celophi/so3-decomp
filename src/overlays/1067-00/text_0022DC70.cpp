@@ -506,8 +506,8 @@ s32 func_00231110(FieldObject152EB0* object)
 
 void func_00231120(FieldObject152EB0* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00231150);
@@ -837,8 +837,8 @@ FieldClass1530A0::~FieldClass1530A0()
 
 void func_0023A6E0(FieldObject1530A0* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023A710);

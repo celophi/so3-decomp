@@ -45,12 +45,14 @@ typedef struct FieldRecordSelection
 extern "C" {
 #endif
 
+#ifndef __cplusplus
 /**
- * @brief Clear the selection links, slots, and active state, and install its native table.
- * @param selection Storage for a 0x18-byte record selection.
+ * @brief Enter the native C++ constructor from a C caller.
+ * @param selection Storage for the 0x18-byte record selection.
  * @return The constructed selection.
  */
 FieldRecordSelection* func_0028E4D0(FieldRecordSelection* selection);
+#endif
 
 /**
  * @brief Advance an inactive selection to the next positive slot, wrapping at either end.

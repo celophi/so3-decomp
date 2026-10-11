@@ -1,4 +1,41 @@
 #include "include_asm.h"
+#include "main/resident_data.h"
+#include "sdk/main/libkernl_00121940.h"
+#include "overlays/lib/text_0045AD10.h"
+#include "overlays/lib/text_004BD360.h"
+#include "main/resident_001001E0.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
+
+/** Partial text resource fields and the inherited redraw flag. */
+typedef struct LibMultilineResourceState
+{
+    u8 pad00[0x3C];
+    u8 redraw;
+    u8 pad3d[0xCB];
+    u32 source;
+    u32 key;
+    u8 flag;
+    u8 pending;
+    u8 pad112[0x432];
+    u32 mode;
+} LibMultilineResourceState;
+
+/** Partial runtime queue links carried by each transform receiver. */
+typedef struct LibRuntimeListNode
+{
+    u8 pad00[0x94];
+    FieldRuntime* owner;
+    struct LibRuntimeListNode* previous;
+    struct LibRuntimeListNode* next;
+} LibRuntimeListNode;
+/** Partial runtime display queue with its head, tail, and count. */
+typedef struct LibRuntimeListState
+{
+    u8 pad00[0x55C];
+    LibRuntimeListNode* first;
+    LibRuntimeListNode* last;
+    s32 count;
+} LibRuntimeListState;
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045AD10);
 
@@ -94,7 +131,16 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F650);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F660);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F690);
+extern "C" void lib_multiline_text_set_resource(LibObject174D90* object, u32 source, s32 key, u32 mode, u32 flag)
+{
+    LibMultilineResourceState* state = (LibMultilineResourceState*)object;
+    state->source = source;
+    state->key = key;
+    state->mode = mode;
+    state->flag = flag;
+    state->pending = 1;
+    state->redraw = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F6B0);
 
@@ -112,9 +158,74 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461230);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004614E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004616D0);
+typedef struct LibMultilineRectangleState
+{
+    u8 pad00[0x70];
+    void* display;
+    u8 pad74[0x84];
+    u8 flag;
+    u8 padf9[0x1B];
+    void* allocation;
+    u8 pad118[0x40C];
+    float unk524;
+    float unk528;
+    u8 pad52c[0x28];
+    u32 unk554;
+    u8 pad558[0xC];
+    u32 unk564;
+    u8 pad568[0xC];
+    u8 unk574;
+} LibMultilineRectangleState;
+/**
+ * @brief Initialize the text rectangle and reset the multiline drawing state.
+ * @param object Multiline text widget.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ */
+extern "C" void lib_multiline_text_init_rectangle(LibObject174D90* object, float x, float y, float width, float height)
+{
+    LibMultilineRectangleState* state = (LibMultilineRectangleState*)object;
+    lib_text_init_rectangle((LibObject178750*)object, x, y, width, height);
+    state->allocation = 0;
+    state->display = 0;
+    state->unk524 = 0.05f;
+    state->unk528 = 1.5f;
+    state->unk554 = 2;
+    state->unk564 = 0;
+    state->unk574 = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461720);
+extern "C" s32 func_004614E0(LibObject174D90* object, s32 slot, s32 key, u32 mode, u32 flag);
+
+/**
+ * @brief Initialize the multiline text rectangle and load its resource.
+ * @param object Multiline text widget.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @param slot Resource source word.
+ * @param key Text resource key.
+ * @param mode Drawing mode mask.
+ * @param flag Slot state flag whose low byte is stored.
+ * @return Resource initialization status.
+ */
+extern "C" s32 lib_multiline_text_init_resource_rectangle(LibObject174D90* object, float x, float y, float width, float height, s32 slot, s32 key, u32 mode, u32 flag)
+{
+    LibMultilineRectangleState* state = (LibMultilineRectangleState*)object;
+    state->flag = flag;
+    lib_text_init_rectangle((LibObject178750*)object, x, y, width, height);
+    state->allocation = 0;
+    state->display = 0;
+    state->unk524 = 0.05f;
+    state->unk528 = 1.5f;
+    state->unk554 = 2;
+    state->unk564 = 0;
+    state->unk574 = 0;
+    return func_004614E0(object, slot, key, mode, 1);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004617B0);
 
@@ -122,7 +233,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461830);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461860);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004618F0);
+/** @brief Free the owned byte array and clear its allocation pointer. */
+LibStorageBlock0C::~LibStorageBlock0C()
+{
+    if (allocation)
+    {
+        delete[] (u8*)allocation;
+        allocation = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461960);
 
@@ -172,7 +291,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004622F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462300);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462310);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462310__14LibClass178600Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462320);
 
@@ -228,9 +347,32 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464900);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464A30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464A80);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", __dt__14LibClass174EF0Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464B10);
+/** @brief Initialize drawing storage, bounds, scale, colors, and display flags. */
+LibClass174EF0::LibClass174EF0()
+{
+    unkf4 = 0.0f;
+    unkf0 = 0.0f;
+    unkec = 0.0f;
+    unke8 = 0.0f;
+    unk38 = 10;
+    unkf8 = 0;
+    unkf9 = 1;
+    unkfa = 0;
+    allocation = 0;
+    unk7c = 0;
+    unk78 = 0;
+    unk84 = 1.0f;
+    unk80 = 1.0f;
+    unk88 = 0.0f;
+    unk8c = 2.0f;
+    unk90 = 0;
+    unk94 = 0x808080;
+    unk98 = 0x020202;
+    unk9c = 0;
+    unka0 = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464BC0);
 
@@ -238,7 +380,64 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464C20);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464C80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464D90);
+/** One opaque 0x50-byte resource slot in the runtime's sixteen-slot table. */
+typedef struct LibNumericResourceSlot
+{
+    u8 bytes[0x50];
+} LibNumericResourceSlot;
+
+/** Partial runtime prefix containing the resource slot table. */
+typedef struct LibNumericResourceOwner
+{
+    u8 pad00[0x14];
+    LibNumericResourceSlot slots[16];
+} LibNumericResourceOwner;
+
+/** Partial numeric widget fields used during resource initialization. */
+typedef struct LibNumericResourceState
+{
+    u8 pad00[0x39];
+    u8 initialized;
+    u8 pad3a[0x32];
+    LibNumericResourceSlot* source;
+    u8 pad70[0x2C];
+    s32 mode;
+    u8 pada0[0x58];
+    u8 flag;
+    u8 padf9[3];
+    u32 value;
+} LibNumericResourceState;
+
+extern "C" void func_00464870(void* object, float x, float y, float width, float height);
+extern "C" s32 func_00464900(void* object, s32 first, s32 capacity, s32 second, s32 third);
+
+/**
+ * @brief Initialize the numeric widget rectangle, resource slot, and displayed value.
+ * @param object Numeric widget.
+ * @param value Initial numeric value.
+ * @param slot Runtime resource slot index.
+ * @param flag Slot state flag.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @return One when initialization succeeds, otherwise zero.
+ */
+extern "C" s32 lib_numeric_widget_init_rectangle(LibObject174F20* object, u32 value, s32 slot, u8 flag, float x, float y, float width, float height)
+{
+    LibNumericResourceState* state = (LibNumericResourceState*)object;
+    state->flag = flag;
+    func_00464870(object, x, y, width, height);
+    state->source = &((LibNumericResourceOwner*)D_001B657C)->slots[slot];
+    if (!func_00464900(object, 0, 16, 0, 0))
+    {
+        return 0;
+    }
+    state->value = value;
+    state->mode = 2;
+    state->initialized = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464E30);
 
@@ -252,7 +451,50 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465100);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465340);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465430);
+/** Resource header prefix containing section offsets, counts, and total size. */
+struct LibResourceHeader {
+    u8 unk00[0x10];
+    s32 offsets[4];
+    s32 unk20, unk24, unk28, unk2c, unk30, unk34, unk38, unk3c;
+    s32 size;
+};
+
+/** One 0x50-byte resource slot in the runtime table. */
+struct LibManagedResourceSlot {
+    void* allocation;
+    LibResourceHeader* data;
+    u8* sections[4];
+    s32 unk18, unk1c, unk20, unk24, unk28, unk2c, unk30;
+    s32 loaded, unit_count, loaded_units, start, end, unk48;
+    u16 identifier;
+    u8 flag, active;
+};
+
+typedef struct LibResourceSlotOwner
+{
+    u8 pad00[0x14];
+    LibManagedResourceSlot slots[16];
+} LibResourceSlotOwner;
+extern "C" s32 func_0011EE00(void* queue, void* object);
+/**
+ * @brief Queue the slot allocation for release and deactivate the resource slot.
+ * @param manager Owner of the sixteen resource slots.
+ * @param index Resource slot to release.
+ */
+extern "C" void lib_release_resource_slot(void* manager, s32 index)
+{
+    LibManagedResourceSlot* slot = &((LibResourceSlotOwner*)manager)->slots[index];
+    if (slot->active)
+    {
+        if (slot->allocation)
+        {
+            func_0011EE00(D_001B65F4, slot->allocation);
+            slot->allocation = 0;
+        }
+        slot->active = 0;
+        FlushCache(0);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004654A0);
 
@@ -260,13 +502,152 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465520);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465610);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004656B0);
+/** Available transfer range in one of the runtime's sixteen resource slots. */
+struct LibResourceGap {
+    u8 available;
+    u8 unk01[3];
+    s32 start, end, size;
+};
+extern "C" LibManagedResourceSlot* func_004659B0(FieldRuntime*, LibResourceGap*);
+extern "C" u8* func_00451C00(LibResourceHeader*, s32, s32);
+
+
+extern "C" s32 lib_load_resource_slot(FieldRuntime* runtime, void* data)
+{
+    LibResourceHeader* source = (LibResourceHeader*)data;
+    LibResourceGap gaps[16];
+    LibManagedResourceSlot* slot = func_004659B0(runtime, gaps);
+    s32 prefix;
+    u8* remainder;
+    s32 remainder_size;
+    if (slot == 0)
+        return 0;
+    remainder = 0;
+    slot->unk18 = source->unk20;
+    slot->unk1c = source->unk24;
+    slot->unk20 = source->unk28;
+    slot->unk24 = source->unk2c;
+    slot->unk28 = source->unk30;
+    slot->unk2c = source->unk34;
+    slot->unk30 = source->unk3c;
+    slot->flag = source->unk38 != 1;
+    remainder_size = 0;
+    if (slot->unk18 > 0)
+    {
+        slot->unit_count = 1024 / slot->unk28;
+        s32 required = slot->unk18 / slot->unit_count + 1;
+        s32 selected = -1;
+        s32 capacity = 0;
+        LibResourceGap* gap = gaps;
+        for (s32 i = 0; i < 16; i++, gap++)
+        {
+            if (gap->available)
+            {
+                s32 units = gap->size / slot->unk2c;
+                if (capacity < required)
+                {
+                    if (capacity < units)
+                    {
+                        capacity = units;
+                        selected = i;
+                    }
+                }
+                else if (units >= required && units < capacity)
+                {
+                    capacity = units;
+                    selected = i;
+                }
+            }
+        }
+        if (selected >= 0)
+        {
+            prefix = source->offsets[3];
+            slot->start = gaps[selected].start;
+            if (capacity >= required)
+            {
+                slot->loaded = source->unk20;
+                slot->loaded_units = required;
+                slot->unk48 = 0;
+                func_00451C00(source, slot->start, slot->loaded);
+            }
+            else
+            {
+                slot->loaded = slot->unit_count * capacity;
+                slot->loaded_units = capacity;
+                slot->unk48 = slot->unk18 - slot->loaded;
+                remainder = func_00451C00(source, slot->start, slot->loaded);
+                remainder_size = source->size - (remainder - (u8*)source);
+            }
+            slot->end = slot->start + slot->unk2c * slot->loaded_units;
+        }
+        else
+        {
+            prefix = source->size;
+            slot->loaded = 0;
+            slot->unk48 = slot->unk18;
+        }
+    }
+    else
+    {
+        prefix = source->size;
+        slot->unk48 = 0;
+        slot->loaded = 0;
+    }
+    u8* allocation = new (0) u8[prefix + remainder_size + 128];
+    if (allocation == 0)
+        return 0;
+    source = (LibResourceHeader*)(((u32)allocation + 127) & ~127u);
+    func_0013A4C0(source, data, prefix);
+    if (remainder_size != 0)
+        func_0013A4C0((u8*)source + prefix, remainder, remainder_size);
+    slot->allocation = allocation;
+    slot->data = source;
+    slot->sections[0] = (u8*)source + source->offsets[0];
+    slot->sections[1] = (u8*)source + source->offsets[1];
+    slot->sections[2] = (u8*)source + source->offsets[2];
+    slot->sections[3] = (u8*)source + source->offsets[3];
+    slot->active = 1;
+    FlushCache(0);
+    return slot->identifier;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004659B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465A90);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465B20);
+/**
+ * @brief Append a transform receiver to the runtime display queue.
+ * @param runtime Runtime manager.
+ * @param object Transform receiver.
+ * @return One when queued, or zero if the receiver already has an owner.
+ */
+extern "C" s32 lib_queue_display_object(FieldRuntime* runtime, LibClass178A90* object)
+{
+    LibRuntimeListState* list = (LibRuntimeListState*)runtime;
+    LibRuntimeListNode* node = (LibRuntimeListNode*)object;
+    if (node->owner)
+    {
+        return 0;
+    }
+    node->owner = runtime;
+    if (!list->first)
+    {
+        list->last = node;
+        list->first = node;
+        node->previous = 0;
+        node->next = 0;
+    }
+    else
+    {
+        LibRuntimeListNode* last = list->last;
+        last->next = node;
+        node->previous = last;
+        node->next = 0;
+        list->last = node;
+    }
+    list->count++;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465B90);
 
@@ -300,7 +681,34 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004672C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467320);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467360);
+typedef struct LibFieldWidgetState
+{
+    u8 pad00[0x34];
+    u32 unk34;
+    u8 pad38;
+    u8 unk39;
+    u8 pad3a[6];
+    u8 storage[0x3C];
+} LibFieldWidgetState;
+extern "C" s32 func_00467250(void* object, float x, float y);
+/**
+ * @brief Initialize the moving widget storage and position, then set its drawing flags.
+ * @param object Moving widget.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @return One on success, or zero when storage initialization fails.
+ */
+extern "C" s32 lib_moving_widget_init_position(LibClass175030* object, float x, float y)
+{
+    LibFieldWidgetState* state = (LibFieldWidgetState*)object;
+    if (!func_00467250(state->storage, x, y))
+    {
+        return 0;
+    }
+    state->unk34 = 8;
+    state->unk39 = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004673B0);
 

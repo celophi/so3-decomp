@@ -18,7 +18,7 @@ void FieldClass15BA10::func_001DD7B0()
 {
     if (unk14 != 0)
     {
-        func_004D65C0(unk14);
+        lib_object_detach_owner(unk14);
         unk14->func_001DD7B0();
         unk14 = 0;
     }
@@ -55,10 +55,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3B
 
 void FieldClass15BA50::func_001DD7B0()
 {
-    func_004D65C0(this);
+    lib_object_detach_owner(this);
     if (unk18 != 0)
     {
-        func_004D65C0(this);
+        lib_object_detach_owner(this);
         unk18->func_001DD7B0();
     }
     unk18 = 0;

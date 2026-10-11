@@ -96,7 +96,7 @@ extern "C" void func_0024E7C0(FieldOwner24E860* owner)
     }
     if (owner->unk120c >= 0)
     {
-        func_00465430(D_001B657C, owner->unk120c);
+        lib_release_resource_slot(D_001B657C, owner->unk120c);
     }
     owner->unk120c = -1;
     owner->unk1218 = 5;

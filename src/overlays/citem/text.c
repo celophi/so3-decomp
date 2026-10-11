@@ -475,7 +475,6 @@ extern void func_003541F0(Record003540E0* record);
 extern void func_00354400(Record003542F0* record);
 extern void func_003547C0(Record00354740* record);
 extern void func_2CD9F0(void* record, s32 flag);
-extern void func_4C4A90(void* object);
 extern void func_44B110(void* object, s32 arg1, s32 arg2, void* arg3, float value, s32 flag);
 
 /** @brief Allocate and construct the native panel widget. @return The panel storage, or null. */
@@ -510,7 +509,7 @@ static inline LibObject178750* allocate_text_widget(void)
         func_00464B10((LibClass174EF0*)widget);
         state->methods = D_178750;
         state->unk38 = 11;
-        func_004C7FB0(widget, 0.0f, 0.0f, 0.0f, 0.0f);
+        lib_text_init_rectangle(widget, 0.0f, 0.0f, 0.0f, 0.0f);
     }
     return widget;
 }
@@ -872,29 +871,29 @@ s32 item_initialize_choice_window(ItemRecord* object, u32 associated)
     LibWidgetColors4C5590 colors;
     func_002CE8D0((FieldObjectCE8D0*)object, associated, 145.0f, 170.0f, 13);
     panel = allocate_panel();
-    func_004C5A80(panel, 0, 0.0f, 0.0f, 350.0f, 176.0f, 88.0f);
-    func_004C6190((LibObject178660*)object->unk10, (LibClass178600*)panel);
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 350.0f, 176.0f, 88.0f);
+    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)panel);
     func_003546B0(&object->panels, panel);
     panel = allocate_panel();
-    func_004C5A80(panel, 0, 0.0f, 0.0f, 350.0f, 48.0f, 88.0f);
-    func_004C6190((LibObject178660*)object->unk10, (LibClass178600*)panel);
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 350.0f, 48.0f, 88.0f);
+    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)panel);
     colors = D_354C40;
-    func_4C5590(panel, &colors);
+    lib_panel_set_colors(panel, &colors);
     func_003546B0(&object->panels, panel);
     text = allocate_text_widget();
-    func_004C7FE0(text, associated, 0x1BA1, 0, 0.0f, 12.0f, 350.0f, 48.0f);
+    lib_text_init_resource_rectangle(text, associated, 0x1BA1, 0, 0.0f, 12.0f, 350.0f, 48.0f);
     set_text_mode(text, 1);
-    func_004C6190((LibObject178660*)object->unk10, (LibClass178600*)text);
+    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)text);
     text = allocate_text_widget();
-    func_004C7FE0(text, associated, 0x1BA2, 0, 0.0f, 64.0f, 350.0f, 64.0f);
+    lib_text_init_resource_rectangle(text, associated, 0x1BA2, 0, 0.0f, 64.0f, 350.0f, 64.0f);
     set_text_mode(text, 1);
-    func_004C6190((LibObject178660*)object->unk10, (LibClass178600*)text);
+    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)text);
     object->first_text = allocate_text_widget();
     object->second_text = allocate_text_widget();
-    func_004C7FE0(object->first_text, associated, 0x1BA3, 0, 122.0f, 132.0f, 0.0f, 0.0f);
-    func_004C6190((LibObject178660*)object->unk10, (LibClass178600*)object->first_text);
-    func_004C7FE0(object->second_text, associated, 0x1BA4, 0, 212.0f, 132.0f, 0.0f, 0.0f);
-    func_004C6190((LibObject178660*)object->unk10, (LibClass178600*)object->second_text);
+    lib_text_init_resource_rectangle(object->first_text, associated, 0x1BA3, 0, 122.0f, 132.0f, 0.0f, 0.0f);
+    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)object->first_text);
+    lib_text_init_resource_rectangle(object->second_text, associated, 0x1BA4, 0, 212.0f, 132.0f, 0.0f, 0.0f);
+    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)object->second_text);
     grid = (FieldObject23CEA0*)func_00100AC0(0x130, 0);
     if (grid != 0)
     {
@@ -984,8 +983,8 @@ s32 item_initialize_text_panel(Record00353E40* object, u32 associated)
     object->height = 104.0f;
     func_002CE760((FieldClass15AE70*)object, associated, 0, 9, 0x578, 16.0f, 360.0f, 0.0f);
     panel = allocate_panel();
-    func_004C5A80(panel, 0, 0.0f, 0.0f, object->width, object->height, 88.0f);
-    func_004C6190(object->container, (LibClass178600*)panel);
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, object->width, object->height, 88.0f);
+    lib_container_attach_widget(object->container, (LibClass178600*)panel);
     object->text[0] = allocate_text_widget();
     object->text[1] = allocate_text_widget();
     object->text[2] = allocate_text_widget();
@@ -995,15 +994,15 @@ s32 item_initialize_text_panel(Record00353E40* object, u32 associated)
     object->text_x = 16.0f;
     object->text_y = object->height / 3.0f - object->row_spacing / 2.0f;
     object->unkd0 = 3.0f;
-    func_004C7FE0(object->text[0], associated, 0x1B80, 0, object->text_x, object->text_y, 0.0f, 0.0f);
-    func_004C7FE0(object->text[1], associated, 0x1B7D, 0, object->text_x, object->text_y + object->row_spacing, 0.0f, 0.0f);
-    func_004C7FE0(object->text[2], associated, 0x1B7E, 0, 80.0f + object->text_x, object->text_y + object->row_spacing, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(object->text[0], associated, 0x1B80, 0, object->text_x, object->text_y, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(object->text[1], associated, 0x1B7D, 0, object->text_x, object->text_y + object->row_spacing, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(object->text[2], associated, 0x1B7E, 0, 80.0f + object->text_x, object->text_y + object->row_spacing, 0.0f, 0.0f);
     scale_window_text(object, 0);
     scale_window_text(object, 1);
     scale_window_text(object, 2);
-    func_004C6190(object->container, (LibClass178600*)object->text[0]);
-    func_004C6190(object->container, (LibClass178600*)object->text[1]);
-    func_004C6190(object->container, (LibClass178600*)object->text[2]);
+    lib_container_attach_widget(object->container, (LibClass178600*)object->text[0]);
+    lib_container_attach_widget(object->container, (LibClass178600*)object->text[1]);
+    lib_container_attach_widget(object->container, (LibClass178600*)object->text[2]);
     ((struct CitemTextDisplay*)object->text[0])->unk3f = 0;
     return 1;
 }
@@ -1262,7 +1261,7 @@ void item_queue_transform_release(Record00349250* object)
 {
     object->release_pending = 1;
     func_0044B210((LibClass174610*)object);
-    func_0011ED90(D_001B65F4, object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034E7E0);
@@ -1368,7 +1367,7 @@ void item_update_allocation_page(Record0034E8B0* object, s32 first_index)
         u32 category = selected->category;
         s32 index;
         func_0013A678(records, 0, sizeof(records));
-        object->record_count = func_0040CF90(D_001B64F8, records, (u16)category);
+        object->record_count = lib_collect_unequipped_allocations(D_001B64F8, records, (u16)category);
         for (index = 0; index < 6; index++)
         {
             if (records[first_index + index] != 0)
@@ -1426,7 +1425,7 @@ Record00350C20* func_00350C20(Record00350C20* record, s16 flag)
         record->unke8 = D_1848A4;
         if (record->unk174 != 0)
         {
-            func_4C4A90(record->unk174);
+            lib_panel_detach(record->unk174);
         }
         func_2CD9F0(record, 0);
         if (flag > 0)
@@ -1509,8 +1508,8 @@ s32 item_initialize_panel(Record00351F50* object, u32 associated)
     LibClass178630* panel;
     func_002CE760((FieldClass15AE70*)object, associated, 0, 9, 0x578, 204.0f, 72.0f, 0.0f);
     panel = allocate_panel();
-    func_004C5A80(panel, 1, 0.0f, 0.0f, 412.0f, 396.0f, 88.0f);
-    func_004C6190(object->container, (LibClass178600*)panel);
+    lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 412.0f, 396.0f, 88.0f);
+    lib_container_attach_widget(object->container, (LibClass178600*)panel);
     return 1;
 }
 
@@ -1645,7 +1644,7 @@ s32 item_initialize_record_selection(Record00353850* object)
     {
         return 0;
     }
-    func_00101440(func_00101290(func_0010D8E0()), 4);
+    resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4);
     return 1;
 }
 

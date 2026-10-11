@@ -36,13 +36,13 @@ void* func_00100AC0(u32 size, s32 unused);
  * @param heap Heap to use, or null for the default allocator.
  * @return The previous heap.
  */
-void* func_00100C80(void* heap);
+void* resident_exchange_allocation_heap(void* heap);
 
 /**
  * @brief Read the heap used by operator new and operator new[].
  * @return The current heap, or null for the default allocator.
  */
-void* func_00100C90(void);
+void* resident_get_allocation_heap(void);
 
 struct FieldRuntimeRoot;
 

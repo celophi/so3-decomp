@@ -3,6 +3,14 @@
 
 #include "types.h"
 
+/** Runtime window directory containing a deferred-removal list. */
+typedef struct FieldWindowRemovalContext FieldWindowRemovalContext;
+#ifdef __cplusplus
+class FieldClass15AE70;
+#else
+typedef struct FieldClass15AE70 FieldClass15AE70;
+#endif
+
 /** Partial receiver containing 64 allocations and three aligned buffer slots. */
 typedef struct FieldBufferSlots
 {
@@ -34,6 +42,13 @@ typedef struct FieldD1440Object FieldD1440Object;
 extern "C" {
 #endif
 
+
+/**
+ * @brief Queue a non-null window for removal by the runtime update.
+ * @param context Runtime window directory.
+ * @param window Window to remove after the current update.
+ */
+void field_queue_window_removal(FieldWindowRemovalContext* context, FieldClass15AE70* window);
 
 #ifdef __cplusplus
 /**

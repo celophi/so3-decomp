@@ -60,14 +60,16 @@ public:
     u8 unk59[2];
     u8 unk5b;
     u8 unk5c;
-    u8 unk5d;
-    u8 unk5e[0x1A];
+    u8 display_attached;
+    u8 unk5e[2];
+    float rotation;
+    u8 unk64[0x14];
     u32 unk78;
     u8 unk7c[4];
     LibVector4 unk80;
     LibVector4 unk90;
-    u32 unka0;
-    u32 unka4;
+    LibClass171EA0* display;
+    LibClass171EA0* previous_display;
     u8 unka8[8];
     LibClass178EA0 member;
     u8 unk2c0[0x10];
@@ -113,14 +115,14 @@ void func_002FD1B0(FieldFloatState5C* object, float first, float second, float t
  * @brief Attach the current auxiliary display to its manager.
  * @param object Status window containing the display.
  */
-void func_002FD1D0(FieldStatus14* object);
+void field_attach_model_display(FieldStatus14* object);
 
 /**
- * @brief Replace the auxiliary display and attach its associated object.
+ * @brief Replace the model preview camera with a copy of the source camera.
  * @param object Status window containing the display.
- * @param attached Associated object passed to the display.
+ * @param attached Camera supplying the view and projection state.
  */
-void func_002FD220(FieldStatus14* object, void* attached);
+void field_replace_model_camera(FieldStatus14* object, void* attached);
 
 /**
  * @brief Request the keyed status resource while the window is idle.
@@ -128,13 +130,13 @@ void func_002FD220(FieldStatus14* object, void* attached);
  * @param key Resource key.
  * @return One after a successful request, or zero otherwise.
  */
-s32 func_002FDC00(FieldStatus14* object, s32 key);
+s32 field_request_model_resource(FieldStatus14* object, s32 key);
 
 /**
  * @brief Advance cancellation state or clear the receiver's associated object.
  * @param object Receiver with a signed status at offset 0x14 and associated resources.
  */
-void func_002FD940(FieldStatus14* object);
+void field_cancel_model_request(FieldStatus14* object);
 
 /**
  * @brief Return whether the receiver's halfword at offset 0x14 is zero.
@@ -207,10 +209,10 @@ s32 shop_get_buy_limit(ShopTransaction* transaction, u16 code);
 /**
  * @brief Calculate an item's purchase price with stock adjustments and the shop discount.
  * @param transaction Shop transaction containing the price adjustments.
- * @param code One-based item code.
+ * @param code One-based item code in the low halfword.
  * @return Purchase price from one through 99999999, or zero for an invalid code.
  */
-s32 shop_get_buy_price(ShopTransaction* transaction, u16 code);
+s32 shop_get_buy_price(ShopTransaction* transaction, u32 code);
 
 /**
  * @brief Initialize the shop lists, pending purchases and price adjustments.
@@ -234,6 +236,7 @@ u8 func_002FB510(const FieldStateTargets* object, u8 key);
  * @param object Receiver containing the target entries.
  */
 void func_002FB8A0(FieldStateTargets* object);
+
 
 #ifdef __cplusplus
 /**

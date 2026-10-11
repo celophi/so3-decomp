@@ -380,7 +380,7 @@ u32 func_003484C0(void* object)
 /** @brief Move to the following grid entry and update its text highlight. */
 void TacticsWindow18B020::func_slot6c()
 {
-    if (grid->func_0023CDB0(1) != 1)
+    if (grid->process_direction(1) != 1)
     {
         func_slotf8(grid->unk114);
     }
@@ -389,7 +389,7 @@ void TacticsWindow18B020::func_slot6c()
 /** @brief Move to the preceding grid entry and update its text highlight. */
 void TacticsWindow18B020::func_slot68()
 {
-    if (grid->func_0023CDB0(0) != 1)
+    if (grid->process_direction(0) != 1)
     {
         func_slotf8(grid->unk114);
     }
@@ -420,12 +420,12 @@ s32 TacticsWindow18B020::func_slotf4(u32 associated, float x, float y,
     LibWidgetColors4C5590 colors = D_00352020;
     LibClass178630* title_panel = new (0) LibClass178630;
     LibClass178630* panel = new (0) LibClass178630;
-    func_004C5A80(panel, 1, 0.0f, 0.0f, 290.0f, 208.0f, 88.0f);
-    func_004C6190(unk10, panel);
+    lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 290.0f, 208.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
     func_00351CC0(&unk14, panel);
-    func_004C5A80(title_panel, 1, 0.0f, 0.0f, 290.0f, 40.0f, 88.0f);
-    func_4C5590(title_panel, &colors);
-    func_004C6190(unk10, title_panel);
+    lib_panel_init_rectangle(title_panel, 1, 0.0f, 0.0f, 290.0f, 40.0f, 88.0f);
+    lib_panel_set_colors(title_panel, &colors);
+    lib_container_attach_widget(unk10, title_panel);
     func_00351CC0(&unk14, title_panel);
     LibObject178750* first = new (0) LibObject178750;
     LibObject178750* second = new (0) LibObject178750;
@@ -436,15 +436,15 @@ s32 TacticsWindow18B020::func_slotf4(u32 associated, float x, float y,
     {
         return 0;
     }
-    func_004C7FE0(first, associated, 0x7E8, 0, 110.0f, 132.0f, 0.0f, 0.0f);
-    func_004C7FE0(second, associated, 0x7E9, 0, 110.0f, 168.0f, 0.0f, 0.0f);
-    func_004C7FE0(heading, associated, text_key, 0, 24.0f, 64.0f, 0.0f, 0.0f);
-    func_004C7FE0(notice, associated, 0x29D0, 0, 0.0f, 8.0f, 290.0f, 40.0f);
+    lib_text_init_resource_rectangle(first, associated, 0x7E8, 0, 110.0f, 132.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(second, associated, 0x7E9, 0, 110.0f, 168.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(heading, associated, text_key, 0, 24.0f, 64.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(notice, associated, 0x29D0, 0, 0.0f, 8.0f, 290.0f, 40.0f);
     notice->set_mode(1);
-    func_004C6190(unk10, first);
-    func_004C6190(unk10, second);
-    func_004C6190(unk10, heading);
-    func_004C6190(unk10, notice);
+    lib_container_attach_widget(unk10, first);
+    lib_container_attach_widget(unk10, second);
+    lib_container_attach_widget(unk10, heading);
+    lib_container_attach_widget(unk10, notice);
     func_00351AE0(&unk2c, first);
     func_00351AE0(&unk2c, second);
     func_00351AE0(&unk2c, heading);
@@ -468,7 +468,7 @@ void TacticsWindow18B120::func_slot6c()
 {
     if (entry_count != 1)
     {
-        if (grid->func_0023CDB0(1) != 1)
+        if (grid->process_direction(1) != 1)
         {
             s32 selected_entry = grid->unk114;
             s32 index = 0;
@@ -500,7 +500,7 @@ void TacticsWindow18B120::func_slot68()
 {
     if (entry_count != 1)
     {
-        if (grid->func_0023CDB0(0) != 1)
+        if (grid->process_direction(0) != 1)
         {
             s32 selected_entry = grid->unk114;
             s32 index = 0;
@@ -604,22 +604,22 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
     {
         return 0;
     }
-    func_004C5A80(panel, 1, 0.0f, 0.0f, 232.0f, 148.0f, 88.0f);
-    func_004C6190(unk10, panel);
+    lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 232.0f, 148.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
     func_00351CC0(&unk14, panel);
     LibClass178630* title_panel = new (0) LibClass178630;
     if (title_panel == 0)
     {
         return 0;
     }
-    func_004C5A80(title_panel, 1, 0.0f, 0.0f, 232.0f, 40.0f, 88.0f);
+    lib_panel_init_rectangle(title_panel, 1, 0.0f, 0.0f, 232.0f, 40.0f, 88.0f);
     LibWidgetColors4C5590 colors = D_00352010;
-    func_4C5590(title_panel, &colors);
-    func_004C6190(unk10, title_panel);
+    lib_panel_set_colors(title_panel, &colors);
+    lib_container_attach_widget(unk10, title_panel);
     func_00351CC0(&unk14, title_panel);
     LibObject178750* title = new (0) LibObject178750;
-    func_004C7FE0(title, associated, 0x272A, 1, 42.0f, 8.0f, 0.0f, 0.0f);
-    func_004C6190(unk10, title);
+    lib_text_init_resource_rectangle(title, associated, 0x272A, 1, 42.0f, 8.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(unk10, title);
     if (resource == 0)
     {
         return 0;
@@ -640,7 +640,7 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
             icon->func_00467AD0(24.0f, y, 0.0f, 0.0f,
                 reinterpret_cast<const char*>(&static_cast<TacticsEntryResourceRecord*>(
                     resource->unk04)[static_cast<s16>(index)]) + 0x20, 0);
-            func_004C6190(unk10, icon);
+            lib_container_attach_widget(unk10, icon);
             func_003516C0(&unk44, icon);
             grid_entries[index] = grid_entry;
             grid_entry++;
@@ -681,11 +681,11 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
     func_00351630(&unk74, grid);
     cursor = new (0) FieldObject23BE00;
     cursor->func_0023BB20(24.0f, 48.0f, 120.0f, 1.0f, grid, 0x288080);
-    func_004C6190(unk10, cursor);
+    lib_container_attach_widget(unk10, cursor);
     func_003515A0(&unk8c, cursor);
     indicator = new (0) ItemCreationClass172600;
     func_0041AD10(indicator, base_x, base_y, 144.0f, 24.0f);
-    func_004C6190(unk10, indicator);
+    lib_container_attach_widget(unk10, indicator);
     s32 selected_entry = grid_entries[selected];
     s32 index = 0;
     FieldListNode* node = unk44.unk00->unk04;
@@ -795,7 +795,7 @@ s32 TacticsWindow18B220::func_slotb4()
     u8 control_mode = runtime->unk2d != 0;
     if (control_mode == 1)
     {
-        func_slot1c(1, 0x80);
+        set_state(1, 0x80);
     }
     else
     {
@@ -806,7 +806,7 @@ s32 TacticsWindow18B220::func_slotb4()
         }
         child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, 0x29CF);
         child->func_slot40(this);
-        D_001B643C->callbacks->state->func_00263FD0(child);
+        D_001B643C->callbacks->state->add_child(child);
         D_001B643C->callbacks->state->func_00263C70(child);
     }
     return 2;
@@ -832,7 +832,7 @@ u8 func_00349B40(TacticsGridOwner* object)
     D_001B643C->state->selected = object->selected;
     TacticsPosition* position =
         &((TacticsPositionTarget*)func_00351BF0(&object->nodes, object->selected)->value)->position;
-    LibBounds4C69B0* bounds = func_004C69B0(
+    LibBounds4C69B0* bounds = lib_text_measure_bounds(
         (LibObject178750*)func_00351BF0(&object->nodes, object->selected)->value);
     tactics_set_position(object->target, position->x, position->y, bounds->unk08, 24.0f);
     return 1;
@@ -1101,7 +1101,7 @@ s32 TacticsWindow18B320::func_slotb4()
     u8 control_mode = runtime->unk2d != 0;
     if (control_mode == 1)
     {
-        func_slot1c(1, 0x80);
+        set_state(1, 0x80);
     }
     else
     {
@@ -1115,7 +1115,7 @@ s32 TacticsWindow18B320::func_slotb4()
         LibClass175030* first_target = reinterpret_cast<LibClass175030*>(first);
         first_target->unk30 = 64.0f;
         first_target->unk3c = 1;
-        D_001B643C->callbacks->state->func_00263FD0(child);
+        D_001B643C->callbacks->state->add_child(child);
         D_001B643C->callbacks->state->func_00263C70(child);
     }
     return 2;
@@ -1212,7 +1212,7 @@ void func_0034DD10(TacticsWindow18B420* object)
             display->unk94 = 0x288080;
             display->unk3c = 1;
             func_0023B9B0(object->cursor, index,
-                func_004C69B0(display)->unk08);
+                lib_text_measure_bounds(display)->unk08);
         }
         else
         {
@@ -1226,7 +1226,7 @@ void func_0034DD10(TacticsWindow18B420* object)
 
 void TacticsWindow18B420::func_slot6c()
 {
-    if (static_cast<s16>(grid->func_0023CDB0(1)) == 1)
+    if (static_cast<s16>(grid->process_direction(1)) == 1)
     {
         return;
     }
@@ -1235,7 +1235,7 @@ void TacticsWindow18B420::func_slot6c()
 
 void TacticsWindow18B420::func_slot68()
 {
-    if (static_cast<s16>(grid->func_0023CDB0(0)) == 1)
+    if (static_cast<s16>(grid->process_direction(0)) == 1)
     {
         return;
     }
@@ -1280,7 +1280,7 @@ s32 TacticsWindow18B420::func_slotb0()
         kind = 0;
     }
     u32 key = parent->get_record_text_key(kind, record_index);
-    func_4C6DF0(display, parent->func_slot54(), key, 0);
+    lib_text_set_resource(display, parent->func_slot54(), key, 0);
     cursor->unk3f = 0;
     unkd4->unk3f = 0;
     FieldClass15AE70::func_slot18(0, 0x7F);
@@ -1354,7 +1354,7 @@ s32 TacticsWindow18B420::set_grid_record(s16 record_index, u8 initial_entry)
         {
             keys[index] = first_key + index;
             LibObject178750* display = grid_display(this, index);
-            func_4C6DF0(display, func_slot54(), keys[index], 0);
+            lib_text_set_resource(display, func_slot54(), keys[index], 0);
         }
     }
     for (s32 index = 0; index < 6; index++)
@@ -1364,7 +1364,7 @@ s32 TacticsWindow18B420::set_grid_record(s16 record_index, u8 initial_entry)
         display->unk3c = 1;
     }
     LibUiRect16* rectangle = &grid_display(this, unkf6)->unk18;
-    LibBounds4C69B0* bounds = func_004C69B0(grid_display(this, unkf6));
+    LibBounds4C69B0* bounds = lib_text_measure_bounds(grid_display(this, unkf6));
     FieldObject23CEA0* selection = grid;
     selection->index = unkf6;
     func_0023CB30(selection);
@@ -1409,12 +1409,12 @@ s32 TacticsWindow18B420::func_slotf4(u32 associated)
         return 0;
     }
     LibWidgetColors4C5590 colors = D_00352000;
-    func_004C5A80(panel, 1, 0.0f, 0.0f, 364.0f, 256.0f, 88.0f);
-    func_004C6190(unk10, panel);
+    lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 364.0f, 256.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
     func_00351CC0(&unk14, panel);
-    func_004C5A80(title_panel, 1, 0.0f, 0.0f, 364.0f, 48.0f, 88.0f);
-    func_4C5590(title_panel, &colors);
-    func_004C6190(unk10, title_panel);
+    lib_panel_init_rectangle(title_panel, 1, 0.0f, 0.0f, 364.0f, 48.0f, 88.0f);
+    lib_panel_set_colors(title_panel, &colors);
+    lib_container_attach_widget(unk10, title_panel);
     func_00351CC0(&unk14, title_panel);
     clear_grid_state(this);
     keys[0] = 0x29CC;
@@ -1423,32 +1423,32 @@ s32 TacticsWindow18B420::func_slotf4(u32 associated)
     keys[3] = 0x29CC;
     keys[4] = 0x29CC;
     keys[5] = 0x29CC;
-    func_004C7FE0(text[0], associated, keys[0], 0, 28.0f, 60.0f, 0.0f, 0.0f);
-    func_004C7FE0(text[1], associated, keys[1], 0, 28.0f, 90.0f, 0.0f, 0.0f);
-    func_004C7FE0(text[2], associated, keys[2], 0, 28.0f, 120.0f, 0.0f, 0.0f);
-    func_004C7FE0(text[3], associated, keys[3], 0, 28.0f, 150.0f, 0.0f, 0.0f);
-    func_004C7FE0(text[4], associated, keys[4], 0, 28.0f, 180.0f, 0.0f, 0.0f);
-    func_004C7FE0(text[5], associated, keys[5], 0, 28.0f, 210.0f, 0.0f, 0.0f);
-    func_004C6190(unk10, text[0]);
-    func_004C6190(unk10, text[1]);
-    func_004C6190(unk10, text[2]);
-    func_004C6190(unk10, text[3]);
-    func_004C6190(unk10, text[4]);
-    func_004C6190(unk10, text[5]);
+    lib_text_init_resource_rectangle(text[0], associated, keys[0], 0, 28.0f, 60.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(text[1], associated, keys[1], 0, 28.0f, 90.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(text[2], associated, keys[2], 0, 28.0f, 120.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(text[3], associated, keys[3], 0, 28.0f, 150.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(text[4], associated, keys[4], 0, 28.0f, 180.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(text[5], associated, keys[5], 0, 28.0f, 210.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(unk10, text[0]);
+    lib_container_attach_widget(unk10, text[1]);
+    lib_container_attach_widget(unk10, text[2]);
+    lib_container_attach_widget(unk10, text[3]);
+    lib_container_attach_widget(unk10, text[4]);
+    lib_container_attach_widget(unk10, text[5]);
     func_00351AE0(&unk2c, text[0]);
     func_00351AE0(&unk2c, text[1]);
     func_00351AE0(&unk2c, text[2]);
     func_00351AE0(&unk2c, text[3]);
     func_00351AE0(&unk2c, text[4]);
     func_00351AE0(&unk2c, text[5]);
-    func_004C7FE0(title, associated, 0x2723, 1, 0.0f, 12.0f, 364.0f, 48.0f);
+    lib_text_init_resource_rectangle(title, associated, 0x2723, 1, 0.0f, 12.0f, 364.0f, 48.0f);
     title->unk9c = 1;
     title->unk3c = 1;
-    func_004C6190(unk10, title);
+    lib_container_attach_widget(unk10, title);
     func_00351AE0(&unk2c, title);
-    LibBounds4C69B0* bounds = func_004C69B0(text[0]);
+    LibBounds4C69B0* bounds = lib_text_measure_bounds(text[0]);
     func_0041AD10(unkd4, bounds->unk00, bounds->unk04, bounds->unk08, 24.0f);
-    func_004C6190(unk10, unkd4);
+    lib_container_attach_widget(unk10, unkd4);
     grid->func_0023CE80(1, 6);
     grid->func_0023CE60(0.0f, 30.0f);
     grid->unkF2 = 0;
@@ -1459,7 +1459,7 @@ s32 TacticsWindow18B420::func_slotf4(u32 associated)
     func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(grid));
     func_00351630(&unk74, grid);
     cursor->func_0023BB20(28.0f, 60.0f, 192.0f, 1.0f, grid, 0x288080);
-    func_004C6190(unk10, cursor);
+    lib_container_attach_widget(unk10, cursor);
     cursor->unk3f = 0;
     unkd4->unk3f = 0;
     FieldClass15AE70::func_slot18(0, 0x7F);
@@ -1605,7 +1605,7 @@ s32 TacticsWindow18B520::func_slotb4()
     u8 control_mode = runtime->unk2d != 0;
     if (control_mode == 1)
     {
-        func_slot1c(1, 0x80);
+        set_state(1, 0x80);
     }
     else
     {
@@ -1616,7 +1616,7 @@ s32 TacticsWindow18B520::func_slotb4()
         }
         child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, 0x29CD);
         child->func_slot40(this);
-        D_001B643C->callbacks->state->func_00263FD0(child);
+        D_001B643C->callbacks->state->add_child(child);
         D_001B643C->callbacks->state->func_00263C70(child);
     }
     return 2;
@@ -1769,8 +1769,8 @@ void TacticsWindow18B620::func_slot60(s32 text_key)
     {
         state = 0;
         timer = 0;
-        func_4C6DF0(text, func_slot54(), text_key, 1);
-        distance = static_cast<s32>(func_004C69B0(text)->unk08) + 6;
+        lib_text_set_resource(text, func_slot54(), text_key, 1);
+        distance = static_cast<s32>(lib_text_measure_bounds(text)->unk08) + 6;
     }
 }
 
@@ -1822,9 +1822,9 @@ s32 TacticsWindow18B720::func_slotf4(u32 associated)
     func_002D6440(first, func_002D3CC0(D_001B643C->resources, 5), 0.0f, 0.0f);
     func_002D6440(second, func_002D3CC0(D_001B643C->resources, 6), 256.0f, 0.0f);
     func_002D6440(third, func_002D3CC0(D_001B643C->resources, 7), 512.0f, 0.0f);
-    func_004C6190(unk10, first);
-    func_004C6190(unk10, second);
-    func_004C6190(unk10, third);
+    lib_container_attach_widget(unk10, first);
+    lib_container_attach_widget(unk10, second);
+    lib_container_attach_widget(unk10, third);
     return 1;
 }
 
@@ -1836,9 +1836,9 @@ void TacticsState18B820::func_00263D80()
 {
     if (resource_slot != 0)
     {
-        func_00465430(D_001B657C, resource_slot);
+        lib_release_resource_slot(D_001B657C, resource_slot);
     }
-    func_004D65C0(this);
+    lib_object_detach_owner(this);
     func_001DD7B0();
 }
 
@@ -1848,7 +1848,7 @@ void TacticsState18B820::func_00263D80()
  */
 void func_00350790(void* object)
 {
-    func_0011ED90(D_001B65F4, object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 void func_003507B0(void* object)
@@ -1870,16 +1870,16 @@ s32 TacticsState18B820::func_001E1820(void* buffer)
     }
     TacticsAlignedResource* aligned = aligned_resource(buffer);
     s32 size = aligned->unk40 + 0x80;
-    void* saved_heap = func_00100C90();
+    void* saved_heap = resident_get_allocation_heap();
     void* heap = D_001B6430->context->unk70;
-    void* memory = func_00113710(heap, size);
+    void* memory = resident_heap_allocate(heap, size);
     if (memory != 0)
     {
-        func_001134C0(memory);
-        func_00100C80(heap);
+        resident_heap_release(memory);
+        resident_exchange_allocation_heap(heap);
     }
-    resource_slot = func_004656B0(D_001B657C, aligned);
-    func_00100C80(saved_heap);
+    resource_slot = lib_load_resource_slot(D_001B657C, aligned);
+    resident_exchange_allocation_heap(saved_heap);
     return func_00263CD0();
 }
 

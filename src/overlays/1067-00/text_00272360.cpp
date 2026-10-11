@@ -82,11 +82,11 @@ s32 FieldClass154EF0::func_001DF3D0()
 
 void FieldClass154EF0::func_001DD7B0()
 {
-    func_004D65C0(this);
+    lib_object_detach_owner(this);
     if (!unk20_3)
     {
         func_slot28();
-        func_0011ED90(D_001B65F4, this);
+        resident_enqueue_object(D_001B65F4, this);
         unk20_3 = 1;
     }
 }

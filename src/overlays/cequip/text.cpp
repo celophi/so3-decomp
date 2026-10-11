@@ -13,6 +13,7 @@
 #include "overlays/lib/resource_widget_inlines.h"
 #include "overlays/lib/movement_widget_inlines.h"
 #include "overlays/lib/list_indicator_inlines.h"
+#include "overlays/1067-00/text_002CEAF0.h"
 
 /** Partial aligned resource header, with its payload size at offset 0x40. */
 struct EquipAlignedResource
@@ -87,8 +88,7 @@ struct EquipRuntimeMenuRoot
 };
 extern EquipRuntimeMenuRoot* D_001B643C;
 extern ResidentObject1B64F8* D_001B64F8;
-extern "C" void func_002CD7C0(FieldClass15AD40* object);
-extern "C" void func_002CD8B0(FieldClass15AD40* object, LibClass178600* selected, u32 color);
+
 struct EquipResourceTextRecord;
 extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipResourceTextRecord* resource, s8 slot);
 extern "C" void func_003F9890(FieldRecord* record, EquipResourceTextRecord* resource, u32 flag, s32 index);
@@ -98,20 +98,16 @@ extern "C" void func_0034C540(void* object, s16 category);
 extern "C" void func_004E97A0(void* object);
 /** @brief Initialize the embedded tooltip displays. @param object Tooltip container. @return One after initialization, otherwise zero. */
 extern "C" s32 func_004E9BC0(EquipClass1796F0* object);
-/** @brief Configure an item icon and its rectangle. @param object Item icon. @param x Horizontal position. @param y Vertical position. @param width Rectangle width. @param height Rectangle height. @param value Item code. @param variant Code variant. @param flag Configuration flag. @return Configuration result. */
-extern "C" s32 func_00413F70(LibObject172410* object, float x, float y, float width, float height, u16 value, u8 variant, u8 flag);
 /** @brief Set the item icon's mode flag and mark its display dirty. @param icon Item icon. @param enabled Mode flag. */
 static inline void equip_set_icon_enabled(LibObject172410* icon, u8 enabled)
 {
     icon->unkfa = enabled;
     icon->unk3c = 1;
 }
-extern "C" void func_004C6DF0(LibObject178750* object, u32 buffer, s32 key, u8 flag);
-extern "C" void func_002CE220(FieldStateCE420* object, s32 count, s32 start, s32 row);
+
 /** @brief Cycle the selector in the supplied direction. @param object Selector. @param direction Direction code. @return Selector result code. */
 extern "C" u8 func_0023B3B0(FieldState23B3A0* object, u16 direction);
 /** @brief Queue a nonnull window on the menu context. @param context Menu context. @param window Window to queue. */
-extern "C" void func_002CFE10(EquipRuntimeMenuContext* context, FieldClass15AE70* window);
 
 /** Resource text record with its displayed payload beginning at offset 0x20. */
 struct EquipResourceTextRecord
@@ -540,7 +536,7 @@ void* func_003487B0(void* object)
 
 void EquipClass182220::func_slot6c()
 {
-    if (static_cast<s16>(unka8->func_0023CDB0(1)) == 1)
+    if (static_cast<s16>(unka8->process_direction(1)) == 1)
     {
         return;
     }
@@ -548,7 +544,7 @@ void EquipClass182220::func_slot6c()
 
 void EquipClass182220::func_slot68()
 {
-    if (static_cast<s16>(unka8->func_0023CDB0(0)) == 1)
+    if (static_cast<s16>(unka8->process_direction(0)) == 1)
     {
         return;
     }
@@ -559,7 +555,7 @@ s32 EquipClass182220::func_slotb4()
     FieldClass15AE70::func_slot18(0, 0x7F);
     EquipListState* state = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14);
     state->func_00263C70(func_slot44());
-    func_002CFE10(D_001B643C->unk10, this);
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->unk10), this);
     return 2;
 }
 
@@ -579,7 +575,7 @@ s32 EquipClass182220::func_slotb0()
     u8 result = 0;
     if (unkac == 0)
     {
-        func_slot1c(0xFF, 0x80);
+        set_state(0xFF, 0x80);
     }
     else
     {
@@ -596,8 +592,8 @@ s32 EquipClass182220::func_slot10(u32 associated, float x, float y, s32 code)
     {
         return 0;
     }
-    func_004C5A80(frame, 1, 0.0f, 0.0f, 240.0f, 160.0f, 88.0f);
-    func_004C6190(unk10, frame);
+    lib_panel_init_rectangle(frame, 1, 0.0f, 0.0f, 240.0f, 160.0f, 88.0f);
+    lib_container_attach_widget(unk10, frame);
     func_00351E40(&unk14, frame);
     LibObject178750* first = new (0) LibObject178750;
     LibObject178750* second = new (0) LibObject178750;
@@ -607,12 +603,12 @@ s32 EquipClass182220::func_slot10(u32 associated, float x, float y, s32 code)
     {
         return 0;
     }
-    first->func_004C7FE0(84.0f, 84.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E8, 0);
-    second->func_004C7FE0(84.0f, 120.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E9, 0);
-    title->func_004C7FE0(24.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAC, 0);
-    func_004C6190(unk10, first);
-    func_004C6190(unk10, second);
-    func_004C6190(unk10, title);
+    first->init_resource_rectangle(84.0f, 84.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E8, 0);
+    second->init_resource_rectangle(84.0f, 120.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E9, 0);
+    title->init_resource_rectangle(24.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAC, 0);
+    lib_container_attach_widget(unk10, first);
+    lib_container_attach_widget(unk10, second);
+    lib_container_attach_widget(unk10, title);
     func_00351D20(&unk2c, first);
     func_00351D20(&unk2c, second);
     func_00351D20(&unk2c, title);
@@ -660,8 +656,8 @@ void EquipClass182350::func_slot60(s32 text_key)
     {
         unkb2 = 0;
         unkb4 = 0;
-        func_004C6DF0(unka8, func_slot54(), text_key, 1);
-        unkac = static_cast<s32>(func_004C69B0(unka8)->unk08) + 6;
+        lib_text_set_resource(unka8, func_slot54(), text_key, 1);
+        unkac = static_cast<s32>(lib_text_measure_bounds(unka8)->unk08) + 6;
     }
 }
 
@@ -676,27 +672,27 @@ s32 EquipClass182350::func_slotf4(u32 associated)
         return 0;
     }
     LibObject178750* title = new (0) LibObject178750;
-    title->func_004C7FE0(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA0, 0);
-    func_004C6190(unk10, title);
+    title->init_resource_rectangle(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA0, 0);
+    lib_container_attach_widget(unk10, title);
     func_00351D20(&unk2c, title);
     LibObject178750* label = new (0) LibObject178750;
-    label->func_004C7FE0(36.0f, 40.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAF, 0);
+    label->init_resource_rectangle(36.0f, 40.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAF, 0);
     label->set_scale(0.65f, 0.65f);
-    func_004C6190(unk10, label);
+    lib_container_attach_widget(unk10, label);
     func_00351D20(&unk2c, label);
-    unkb8 = func_004C69B0(title)->unk08;
+    unkb8 = lib_text_measure_bounds(title)->unk08;
     unkc0 = 18.0f + unkb8;
     float right_margin = 32.0f;
     unkc4 = 640.0f - (16.0f + (unkc0 + right_margin));
     unkbc = 24.0f + unkb8;
-    func_44B570(frame, unkc0, 0.0f, unkc4, 56.0f);
-    func_004C6190(unk10, frame);
+    lib_scissor_init_rectangle(frame, unkc0, 0.0f, unkc4, 56.0f);
+    lib_container_attach_widget(unk10, frame);
     func_00351DB0(&unk20, frame);
-    unka8->func_004C7FE0(unkbc, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAE, 0);
-    func_004C6190(unk10, unka8);
+    unka8->init_resource_rectangle(unkbc, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAE, 0);
+    lib_container_attach_widget(unk10, unka8);
     func_00351D20(&unk2c, unka8);
-    func_44B510(overlay, 1);
-    func_004C6190(unk10, overlay);
+    lib_scissor_init_reset(overlay, 1);
+    lib_container_attach_widget(unk10, overlay);
     func_00351DB0(&unk20, overlay);
     func_slot60(0xFAE);
     return 1;
@@ -732,9 +728,9 @@ s32 EquipClass182450::func_slotf4(u32 associated)
     unka8->func_002D6440(func_002D3CC0(D_001B643C->unk20, 5), 0.0f, 0.0f);
     unkac->func_002D6440(func_002D3CC0(D_001B643C->unk20, 6), 256.0f, 0.0f);
     unkb0->func_002D6440(func_002D3CC0(D_001B643C->unk20, 7), 512.0f, 0.0f);
-    func_004C6190(unk10, unka8);
-    func_004C6190(unk10, unkac);
-    func_004C6190(unk10, unkb0);
+    lib_container_attach_widget(unk10, unka8);
+    lib_container_attach_widget(unk10, unkac);
+    lib_container_attach_widget(unk10, unkb0);
     return 1;
 }
 
@@ -810,7 +806,7 @@ s32 func_00349690(void* object)
 
 s32 EquipClass182550::func_slotb4()
 {
-    unk188->func_00263F50(this);
+    unk188->remove_child(this);
     FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
     associated->func_slot10c(1, 1);
     reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(associated);
@@ -826,7 +822,7 @@ s32 EquipClass182550::func_slotb0()
     {
         return 3;
     }
-    s32 count = func_0040CF90(D_001B64F8, records, static_cast<u16>(unk188->unk64));
+    s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(unk188->unk64));
     s32 selected = FieldStateCE420::unk24;
     if (count != 0 && selected >= 0)
     {
@@ -836,7 +832,7 @@ s32 EquipClass182550::func_slotb0()
         }
         FieldClass15AE70* first = unk188->unk44;
         FieldClass15AE70* second = unk188->unk48;
-        func_0034C540(first, func_0040D890(records[selected]));
+        func_0034C540(first, lib_allocation_get_identifier(records[selected]));
         first->func_slot20(1);
         first->func_slot64();
         reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(first);
@@ -845,7 +841,7 @@ s32 EquipClass182550::func_slotb0()
         FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
         associated->func_slot108(static_cast<u8>(unk188->unk60));
         associated->func_slot10c(0, 0);
-        unk188->func_00263F50(this);
+        unk188->remove_child(this);
         func_004E97A0(unk18c);
     }
     else
@@ -896,7 +892,7 @@ void EquipClass182550::refresh_rows(s32 start)
     {
         records[index] = 0;
     }
-    FieldClass15AE60::unk88 = func_0040CF90(D_001B64F8, records, category);
+    FieldClass15AE60::unk88 = lib_collect_unequipped_allocations(D_001B64F8, records, category);
     for (s32 row = 0; row < 9; row++)
     {
         if (records[start + row] == 0)
@@ -929,7 +925,7 @@ void EquipClass182550::func_00349D50()
 {
     ItemCreationAllocationRecord* records[100];
     FieldClass15AE60::unk88 = 0;
-    FieldClass15AE60::unk88 = func_0040CF90(D_001B64F8, records, static_cast<u16>(reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->unk64));
+    FieldClass15AE60::unk88 = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->unk64));
     s32 count = FieldClass15AE60::unk88;
     if (count >= 8)
     {
@@ -954,7 +950,7 @@ void EquipClass182550::func_00349D50()
         row = 0;
     }
     func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, count, 312, 28);
-    func_002CE220(&static_cast<FieldStateCE420&>(*this), FieldClass15AE60::unk88, start, row);
+    FieldClass15AE60::configure_selection(FieldClass15AE60::unk88, start, row);
 }
 
 /** @brief Set the drawing depth and mark the display dirty. @param icon Drawing widget. @param depth Drawing depth. */
@@ -977,20 +973,20 @@ s32 EquipClass182550::func_slot104(u32 associated)
     ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
     unk180 = new (0) LibClass178630;
-    func_004C5A80(unk180, 1, 0.0f, 0.0f, 340.0f, 248.0f, 88.0f);
-    func_004C6190(unk10, unk180);
-    func_44B570(frame, 8.0f, 10.0f, 302.0f, 224.0f);
-    func_004C6190(unk10, frame);
+    lib_panel_init_rectangle(unk180, 1, 0.0f, 0.0f, 340.0f, 248.0f, 88.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, unk180);
+    lib_scissor_init_rectangle(frame, 8.0f, 10.0f, 302.0f, 224.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, frame);
     unk184 = func_002D3D80(D_001B643C->unk20, 14);
     for (s32 index = 0; index < 9; index++)
     {
         unk15c[index] = new (0) LibObject172410;
         float y = 12.0f + 28.0f * static_cast<float>(index);
-        func_00413F70(unk15c[index], 34.0f, y, 302.0f, 21.599998f, 0, 0, 0);
+        lib_item_code_init_rectangle(unk15c[index], 34.0f, y, 302.0f, 21.599998f, 0, 0, 0);
         unk15c[index]->set_scale(0.9f, 0.9f);
         equip_set_icon_enabled(unk15c[index], 1);
         set_display_depth(unk15c[index], -1.0f);
-        func_004C6190(unk10, unk15c[index]);
+        lib_container_attach_widget(FieldClass15AE70::unk10, unk15c[index]);
         unk138[index] = new (0) ItemCreationOptionResourceDisplay;
         FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 60);
         void* allocation = unk184;
@@ -998,20 +994,20 @@ s32 EquipClass182550::func_slot104(u32 associated)
         unk138[index]->unkd0 = 14;
         unk138[index]->func_002D6440(record, 13.0f, y);
         set_resource_scale(unk138[index], 0.9f, 0.9f);
-        func_004C6190(unk10, unk138[index]);
+        lib_container_attach_widget(FieldClass15AE70::unk10, unk138[index]);
         unk138[index]->unk3f = 0;
     }
-    func_44B510(overlay, 1);
-    func_004C6190(unk10, overlay);
+    lib_scissor_init_reset(overlay, 1);
+    lib_container_attach_widget(FieldClass15AE70::unk10, overlay);
     FieldStateCE420::unk34 = 8.0f;
     FieldStateCE420::unk38 = 24.0f;
     FieldStateCE420::unk04 = new (0) ItemCreationClass175030;
-    func_00467360(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 10.0f, 24.0f);
-    func_004C6190(unk10, FieldStateCE420::unk04);
+    lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 10.0f, 24.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
     FieldStateCE420::unk04->unk3f = 0;
     FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
-    func_41A930(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 12.0f, 224.0f, 10.0f, 0);
-    func_004C6190(unk10, FieldStateCE420::unk00);
+    lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 12.0f, 224.0f, 10.0f, 0);
+    lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
     func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, 8, 312, 28);
     FieldStateCE420::unk2b = 3;
     unk85 = 0;
@@ -1102,7 +1098,7 @@ s32 EquipClass182670::func_slotb0()
         u32 associated = unk180->func_00263CC0();
         window->func_slot104(associated);
         window->func_slot40(this);
-        unk180->func_00263FD0(window);
+        unk180->add_child(window);
         unk180->func_00263C70(window);
     }
     else
@@ -1208,7 +1204,7 @@ void EquipClass182670::refresh_rows(s32 start)
                     {
                         static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[row])->set_color(0x808080);
                     }
-                    func_004C6DF0(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), key, 0);
+                    lib_text_set_resource(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), key, 0);
                     LibObject174F20* image = unk15c[row];
                     image->numeric_value = record->unk08;
                     image->unk3c = 1;
@@ -1219,7 +1215,7 @@ void EquipClass182670::refresh_rows(s32 start)
                 else
                 {
                     static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[row])->set_color(0x808080);
-                    func_004C6DF0(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), 0xFBA, 0);
+                    lib_text_set_resource(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), 0xFBA, 0);
                     FieldClass15AE60::unk48[row]->unk3d = 1;
                     unk138[row]->unk3d = 0;
                     unk15c[row]->unk3d = 0;
@@ -1252,7 +1248,7 @@ void EquipClass182670::func_slot5c()
 {
     if (reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00261150() == this)
     {
-        func_002CD7C0(this);
+        FieldClass15AD40::func_slot5c();
         EquipCategoryRecord** selected = reinterpret_cast<EquipCategoryRecord**>(func_00351B30(&unk188, FieldStateCE420::unk24));
         if (selected != 0)
         {
@@ -1268,17 +1264,17 @@ void EquipClass182670::func_slot5c()
         if (FieldStateCE420::unk24 >= 0 && FieldClass15AE60::unk88 != 0)
         {
             LibClass174EF0* display = static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[FieldStateCE420::unk28]);
-            func_002CD8B0(this, display, display->unk94);
+            set_selection_marker(display, display->unk94);
         }
         else
         {
-            func_002CD8B0(this, 0, 0x808080);
+            set_selection_marker(0, 0x808080);
         }
         func_0034B3D0(unk180->unk48, 0);
     }
     else
     {
-        func_002CD8B0(this, 0, 0x808080);
+        set_selection_marker(0, 0x808080);
     }
 }
 
@@ -1288,34 +1284,34 @@ s32 EquipClass182670::func_slot104(u32 associated)
     FieldStateCE420::unk3c = 1;
     ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
-    func_44B570(frame, 10.0f, 10.0f, 312.0f, 224.0f);
-    func_004C6190(unk10, frame);
+    lib_scissor_init_rectangle(frame, 10.0f, 10.0f, 312.0f, 224.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, frame);
     for (s32 index = 0; index < 9; index++)
     {
         unk48[index] = new (0) LibObject178750;
         unk138[index] = new (0) LibObject178750;
         unk15c[index] = new (0) LibObject174F20;
         float y = 16.0f + 28.0f * static_cast<float>(index);
-        static_cast<LibObject178750*>(unk48[index])->func_004C7FE0(13.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 50000, 0);
-        unk138[index]->func_004C7FE0(268.0f, y - 4.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 1);
-        unk15c[index]->func_00464D90(276.0f, y, 28.0f, 24.0f, index, 0, 0);
+        static_cast<LibObject178750*>(unk48[index])->init_resource_rectangle(13.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 50000, 0);
+        unk138[index]->init_resource_rectangle(268.0f, y - 4.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 1);
+        unk15c[index]->init_numeric_resource_rectangle(276.0f, y, 28.0f, 24.0f, index, 0, 0);
         set_display_depth(static_cast<LibObject178750*>(unk48[index]), -1.0f);
         static_cast<LibObject178750*>(unk48[index])->set_scale(0.9f, 0.9f);
-        func_004C6190(unk10, unk48[index]);
-        func_004C6190(unk10, unk138[index]);
-        func_004C6190(unk10, unk15c[index]);
+        lib_container_attach_widget(FieldClass15AE70::unk10, unk48[index]);
+        lib_container_attach_widget(FieldClass15AE70::unk10, unk138[index]);
+        lib_container_attach_widget(FieldClass15AE70::unk10, unk15c[index]);
     }
-    func_44B510(overlay, 1);
-    func_004C6190(unk10, overlay);
+    lib_scissor_init_reset(overlay, 1);
+    lib_container_attach_widget(FieldClass15AE70::unk10, overlay);
     FieldStateCE420::unk34 = 8.0f;
     FieldStateCE420::unk38 = 28.0f;
     FieldStateCE420::unk04 = new (0) ItemCreationClass175030;
-    func_00467360(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 8.0f, 28.0f);
-    func_004C6190(unk10, FieldStateCE420::unk04);
+    lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 8.0f, 28.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
     FieldStateCE420::unk04->unk3f = 0;
     FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
-    func_41A930(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 16.0f, 220.0f, 10.0f, 0.0f);
-    func_004C6190(unk10, FieldStateCE420::unk00);
+    lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 16.0f, 220.0f, 10.0f, 0.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
     func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, 8, 312, 28);
     FieldStateCE420::unk2b = 3;
     unk84 = 0;
@@ -1345,8 +1341,8 @@ s32 EquipClass182790::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 283.0f, 224.0f, 10);
     LibClass178630* widget = new (0) LibClass178630;
-    func_004C5A80(widget, 1, 0.0f, 0.0f, 340.0f, 248.0f, 88.0f);
-    func_004C6190(unk10, widget);
+    lib_panel_init_rectangle(widget, 1, 0.0f, 0.0f, 340.0f, 248.0f, 88.0f);
+    lib_container_attach_widget(unk10, widget);
     return 1;
 }
 
@@ -1369,7 +1365,7 @@ INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_0034B3D0);
 void EquipClass182890::refresh_item_details(u8 category, s16 selected)
 {
     unkac = category;
-    func_004C6DF0(unk28c, func_slot54(), unkac + 0xFA1, 0);
+    lib_text_set_resource(unk28c, func_slot54(), unkac + 0xFA1, 0);
     unkae = selected;
     if (unkae != 0)
     {
@@ -1404,39 +1400,39 @@ s32 EquipClass182890::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 220.0f, 18);
     unk28c  =  new (0) LibObject178750;
-    unk28c->func_004C7FE0(14.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA1, 1);
-    func_004C6190(unk10, unk28c);
+    unk28c->init_resource_rectangle(14.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA1, 1);
+    lib_container_attach_widget(unk10, unk28c);
     unk28c->set_scale(0.8f, 0.8f);
     unk28c->set_color(0x806080);
     unk290  =  new (0) LibObject172410;
-    func_00413F70(unk290, 12.0f, 38.0f, 244.0f, 24.0f, 0, 0, 0);
+    lib_item_code_init_rectangle(unk290, 12.0f, 38.0f, 244.0f, 24.0f, 0, 0, 0);
     equip_set_icon_enabled(unk290, 1);
     unk290->set_scale(0.9f, 0.9f);
-    func_004C6190(unk10, unk290);
+    lib_container_attach_widget(unk10, unk290);
     for (s32 index  =  0; index < 5; index++)
     {
         float y  =  78.0f + 32.0f * static_cast<float>(index);
         unk294[index] = new(0) LibObject178750;
-        unk294[index]->func_004C7FE0(28.0f, y-2.0f, 0.0f, 0.0f, static_cast<s32>(associated), index+0x81A, 0);
+        unk294[index]->init_resource_rectangle(28.0f, y-2.0f, 0.0f, 0.0f, static_cast<s32>(associated), index+0x81A, 0);
         unk294[index]->set_color(0x805050);
-        func_004C6190(unk10, unk294[index]);
+        lib_container_attach_widget(unk10, unk294[index]);
         unk2a8[index] = new(0) LibObject178750;
-        unk2a8[index]->func_004C7FE0(73.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 0);
+        unk2a8[index]->init_resource_rectangle(73.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 0);
         unk2a8[index]->set_color(0x805050);
-        func_004C6190(unk10, unk2a8[index]);
+        lib_container_attach_widget(unk10, unk2a8[index]);
         unk2d0[index] = new(0) LibObject174F20;
-        unk2d0[index]->func_00464D90(92.0f, y, 48.0f, 22.8f, 9999, 0, 0);
+        unk2d0[index]->init_numeric_resource_rectangle(92.0f, y, 48.0f, 22.8f, 9999, 0, 0);
         unk2d0[index]->set_scale(0.95f, 0.95f);
-        func_004C6190(unk10, unk2d0[index]);
+        lib_container_attach_widget(unk10, unk2d0[index]);
         unk2bc[index] = new(0) LibObject178750;
-        unk2bc[index]->func_004C7FE0(158.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB7, 0);
+        unk2bc[index]->init_resource_rectangle(158.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB7, 0);
         unk2bc[index]->set_scale(0.9f, 0.9f);
-        func_004C6190(unk10, unk2bc[index]);
+        lib_container_attach_widget(unk10, unk2bc[index]);
         unk2e4[index] = new(0) LibObject174F20;
-        unk2e4[index]->func_00464D90(196.0f, y, 48.0f, 22.8f, 9999, 0, 0);
+        unk2e4[index]->init_numeric_resource_rectangle(196.0f, y, 48.0f, 22.8f, 9999, 0, 0);
         unk2e4[index]->set_scale(0.95f, 0.95f);
         unk2e4[index]->unk3f = 0;
-        func_004C6190(unk10, unk2e4[index]);
+        lib_container_attach_widget(unk10, unk2e4[index]);
     }
     func_slot20(0);
     return 1;
@@ -1581,7 +1577,7 @@ s32 EquipClass182990::func_slotb4()
     bool active = D_001B643C->unk0c->unk2d != 0;
     if (active == 1)
     {
-        func_slot1c(1, 0x80);
+        set_state(1, 0x80);
     }
     else
     {
@@ -1592,7 +1588,7 @@ s32 EquipClass182990::func_slotb4()
         }
         window->func_slot10(func_slot54(), 200.0f, 160.0f, 13);
         window->func_slot40(this);
-        reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263FD0(window);
+        reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->add_child(window);
         reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(window);
     }
     func_004E97A0(unka8->unk68);
@@ -1718,33 +1714,33 @@ s32 EquipClass182990::func_slotf4(u32 associated)
     FieldClass15AE70::func_slot10(associated, 16.0f, 220.0f, 18);
     ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
-    func_44B570(frame, 12.0f, 12.0f, 270.0f, 224.0f);
-    func_004C6190(unk10, frame);
+    lib_scissor_init_rectangle(frame, 12.0f, 12.0f, 270.0f, 224.0f);
+    lib_container_attach_widget(unk10, frame);
     unkb0 = 58.0f;
     for (s32 index = 0; index < 4; index++)
     {
         float y = 16.0f + static_cast<float>(index) * unkb0;
         unkc4[index] = new (0) LibObject178750;
-        func_004C7FE0(static_cast<LibObject178750*>(unkc4[index]), static_cast<s32>(associated), index + 0xFA1, 1, 14.0f, y, 0.0f, 0.0f);
-        func_004C6190(unk10, unkc4[index]);
+        lib_text_init_resource_rectangle(static_cast<LibObject178750*>(unkc4[index]), static_cast<s32>(associated), index + 0xFA1, 1, 14.0f, y, 0.0f, 0.0f);
+        lib_container_attach_widget(unk10, unkc4[index]);
         unkc4[index]->set_scale(0.8f, 0.8f);
         unkc4[index]->set_color(0x806080);
         unkd4[index] = new (0) LibObject172410;
-        func_00413F70(unkd4[index], 12.0f, 38.0f + unkb0 * static_cast<float>(index), 244.0f, 24.0f, 0, 0, 0);
+        lib_item_code_init_rectangle(unkd4[index], 12.0f, 38.0f + unkb0 * static_cast<float>(index), 244.0f, 24.0f, 0, 0, 0);
         equip_set_icon_enabled(unkd4[index], 1);
         unkd4[index]->set_scale(0.9f, 0.9f);
-        func_004C6190(unk10, unkd4[index]);
+        lib_container_attach_widget(unk10, unkd4[index]);
         unke4[index] = new (0) LibObject178750;
-        func_004C7FE0(static_cast<LibObject178750*>(unke4[index]), static_cast<s32>(associated), 0xFBA, 0, 12.0f, 38.0f + unkb0 * static_cast<float>(index), 284.0f, 24.0f);
+        lib_text_init_resource_rectangle(static_cast<LibObject178750*>(unke4[index]), static_cast<s32>(associated), 0xFBA, 0, 12.0f, 38.0f + unkb0 * static_cast<float>(index), 284.0f, 24.0f);
         unke4[index]->set_scale(0.9f, 0.9f);
         unke4[index]->unk3f = 0;
-        func_004C6190(unk10, unke4[index]);
+        lib_container_attach_widget(unk10, unke4[index]);
     }
-    func_44B510(overlay, 1);
-    func_004C6190(unk10, overlay);
+    lib_scissor_init_reset(overlay, 1);
+    lib_container_attach_widget(unk10, overlay);
     equipment_slot_selector = reinterpret_cast<FieldState23B3A0*>(new (0) FieldClass153130);
     reinterpret_cast<FieldClass153130*>(equipment_slot_selector)->func_0023B530(1, 4, 1, 0, 1, 12.0f, 50.0f, 0.0f, unkb0);
-    func_004C6190(unk10, reinterpret_cast<FieldClass153130*>(equipment_slot_selector));
+    lib_container_attach_widget(unk10, reinterpret_cast<FieldClass153130*>(equipment_slot_selector));
     func_0034D4C0(this);
     return 1;
 }
@@ -1776,8 +1772,8 @@ s32 EquipClass182A90::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 224.0f, 19);
     LibClass178630* widget = new (0) LibClass178630;
-    func_004C5A80(widget, 0, 0.0f, 0.0f, 270.0f, 248.0f, 88.0f);
-    func_004C6190(unk10, widget);
+    lib_panel_init_rectangle(widget, 0, 0.0f, 0.0f, 270.0f, 248.0f, 88.0f);
+    lib_container_attach_widget(unk10, widget);
     return 1;
 }
 
@@ -1811,35 +1807,35 @@ s32 EquipClass182B90::func_slotf4(u32 associated)
     }
     FieldClass15AE70::func_slot10(associated, 220.0f, 80.0f, 18);
     LibClass178630* panel = new (0) LibClass178630;
-    func_004C5A80(panel, 0, 0.0f, 0.0f, 404.0f, 145.0f, 88.0f);
-    func_004C6190(unk10, panel);
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 404.0f, 145.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
     unka8 = new (0) LibObject174D90;
-    unka8->func_00461720(32.0f, 13.0f, 362.0f, 140.0f, static_cast<s32>(associated), 0xFAE, 8, 0);
+    unka8->init_multiline_resource_rectangle(32.0f, 13.0f, 362.0f, 140.0f, static_cast<s32>(associated), 0xFAE, 8, 0);
     reset_scroll(unka8);
-    func_004C6190(unk10, unka8);
+    lib_container_attach_widget(unk10, unka8);
     unka8->unk3f = 0;
     unkac = new (0) LibObject178750;
-    unkac->func_004C7FE0(40.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFBB, 0);
+    unkac->init_resource_rectangle(40.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFBB, 0);
     unkac->set_color(0x806080);
     unkac->set_scale(0.75f, 0.75f);
-    func_004C6190(unk10, unkac);
+    lib_container_attach_widget(unk10, unkac);
     unkac->unk3f = 0;
     for (s32 index = 0; index < 5; index++)
     {
         unkb0[index] = new (0) LibObject178750;
         float y = 42.0f + 28 * (index / 2);
-        unkb0[index]->func_004C7FE0(50.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), 0xFBC + index, 0);
+        unkb0[index]->init_resource_rectangle(50.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), 0xFBC + index, 0);
         unkb0[index]->set_color(0x805050);
-        func_004C6190(unk10, unkb0[index]);
+        lib_container_attach_widget(unk10, unkb0[index]);
         unkb0[index]->unk3f = 0;
         unkc4[index] = new (0) LibObject178750;
-        unkc4[index]->func_004C7FE0(100.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 0);
+        unkc4[index]->init_resource_rectangle(100.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 0);
         unkc4[index]->set_color(0x805050);
-        func_004C6190(unk10, unkc4[index]);
+        lib_container_attach_widget(unk10, unkc4[index]);
         unkc4[index]->unk3f = 0;
         unkd8[index] = new (0) LibObject174F20;
-        unkd8[index]->func_00464D90(90.0f + 190 * (index % 2), y, 80.0f, 30.0f, 0, static_cast<s32>(associated), 1);
-        func_004C6190(unk10, unkd8[index]);
+        unkd8[index]->init_numeric_resource_rectangle(90.0f + 190 * (index % 2), y, 80.0f, 30.0f, 0, static_cast<s32>(associated), 1);
+        lib_container_attach_widget(unk10, unkd8[index]);
         unkd8[index]->unk3f = 0;
     }
     return 1;
@@ -1901,43 +1897,43 @@ s32 EquipClass182C90::func_slotf4(u32 associated)
     unka8 = unkac->slots[unkac->current];
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 17);
     LibClass178630* panel = new (0) LibClass178630;
-    func_004C5A80(panel, 0, 0.0f, 0.0f, 232.0f, 144.0f, 88.0f);
-    func_004C6190(unk10, panel);
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 232.0f, 144.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
     func_00351E40(&unk14, panel);
     unkb0 = new (0) LibObject175140;
     const char* text = reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(unkac->unk04)[unkac->current].unk20);
     unkb0->func_00467AD0(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
-    func_004C6190(unk10, unkb0);
+    lib_container_attach_widget(unk10, unkb0);
     func_00351C00(&unk44, unkb0);
     unkb0->set_scale(0.8f, 0.8f);
     unkb4 = new (0) LibObject178750;
     unkb8 = new (0) LibObject174F20;
-    unkb4->func_004C7FE0(120.0f, 48.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA9, 0);
-    unkb8->func_00464D90(170.0f, 48.0f, 42.0f, 24.0f, equip_record_value(&unkac->records[unkac->current]), 0, 0);
-    func_004C6190(unk10, unkb4);
+    unkb4->init_resource_rectangle(120.0f, 48.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA9, 0);
+    unkb8->init_numeric_resource_rectangle(170.0f, 48.0f, 42.0f, 24.0f, equip_record_value(&unkac->records[unkac->current]), 0, 0);
+    lib_container_attach_widget(unk10, unkb4);
     func_00351D20(&unk2c, unkb4);
     unkb4->set_color(0x806080);
-    func_004C6190(unk10, unkb8);
+    lib_container_attach_widget(unk10, unkb8);
     func_00351C90(&unk38, unkb8);
     unkb8->set_scale(0.9f, 0.9f);
     unkec = new (0) LibObject178750;
-    unkec->func_004C7FE0(105.0f, 80.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB6, 0);
+    unkec->init_resource_rectangle(105.0f, 80.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB6, 0);
     unkec->set_scale(0.8f, 0.8f);
-    func_004C6190(unk10, unkec);
+    lib_container_attach_widget(unk10, unkec);
     unkf0 = new (0) LibObject178750;
-    unkf0->func_004C7FE0(105.0f, 110.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB5, 0);
+    unkf0->init_resource_rectangle(105.0f, 110.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB5, 0);
     unkf0->set_scale(0.8f, 0.8f);
-    func_004C6190(unk10, unkf0);
+    lib_container_attach_widget(unk10, unkf0);
     if (unkac->count > 1)
     {
         unkbc = new (0) ItemCreationClass174C40;
         unkc0 = new (0) ItemCreationClass174C40;
-        func_4530E0(unkbc, 10, 8.0f, 8.0f);
-        func_4530E0(unkc0, 11, 196.0f, 8.0f);
+        lib_indexed_resource_init(unkbc, 10, 8.0f, 8.0f);
+        lib_indexed_resource_init(unkc0, 11, 196.0f, 8.0f);
         unkbc->set_scale(0.9f, 0.9f);
         unkc0->set_scale(0.9f, 0.9f);
-        func_004C6190(unk10, unkbc);
-        func_004C6190(unk10, unkc0);
+        lib_container_attach_widget(unk10, unkbc);
+        lib_container_attach_widget(unk10, unkc0);
     }
     FieldListNode* node = unk2c.unk00->unk04;
     while (node != 0)
@@ -1958,7 +1954,7 @@ s32 EquipClass182C90::func_slotf4(u32 associated)
             unkc4[index]->unkd0 = slot;
             unkc4[index]->func_002D6440(record, 20.0f, 50.0f);
             unkc4[index]->unk3f = 0;
-            func_004C6190(unk10, unkc4[index]);
+            lib_container_attach_widget(unk10, unkc4[index]);
         }
     }
     if (unkac != 0)
@@ -2215,7 +2211,7 @@ extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipR
                 {
                 case 0:
                 {
-                    count_first = func_0040CF90(D_001B64F8, candidates, category);
+                    count_first = lib_collect_unequipped_allocations(D_001B64F8, candidates, category);
                     for (index_first = 0; index_first < count_first; ++index_first)
                     {
                         copy = *original;
@@ -2232,7 +2228,7 @@ extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipR
                 }
                 case 1:
                 {
-                    count_second = func_0040CF90(D_001B64F8, candidates, category);
+                    count_second = lib_collect_unequipped_allocations(D_001B64F8, candidates, category);
                     for (index_second = 0; index_second < count_second; ++index_second)
                     {
                         copy = *original;
@@ -2262,14 +2258,14 @@ extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipR
             if (equip_allocation_record(current) && equip_first_statistic(copy) < max_first)
             {
                 func_0040C7E0(D_001B64F8, current, 0);
-                func_0040C7E0(D_001B64F8, func_0040D890(best_first), slot);
-                equip_set_equipped(original_resource, 0, func_0040D890(best_first));
+                func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_first), slot);
+                equip_set_equipped(original_resource, 0, lib_allocation_get_identifier(best_first));
             }
         }
         else
         {
-            func_0040C7E0(D_001B64F8, func_0040D890(best_first), slot);
-            equip_set_equipped(original_resource, 0, func_0040D890(best_first));
+            func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_first), slot);
+            equip_set_equipped(original_resource, 0, lib_allocation_get_identifier(best_first));
         }
     }
     if (best_second)
@@ -2280,14 +2276,14 @@ extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipR
             if (equip_allocation_record(current) && equip_second_statistic(copy) < max_second)
             {
                 func_0040C7E0(D_001B64F8, current, 0);
-                func_0040C7E0(D_001B64F8, func_0040D890(best_second), slot);
-                equip_set_equipped(original_resource, 1, func_0040D890(best_second));
+                func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_second), slot);
+                equip_set_equipped(original_resource, 1, lib_allocation_get_identifier(best_second));
             }
         }
         else
         {
-            func_0040C7E0(D_001B64F8, func_0040D890(best_second), slot);
-            equip_set_equipped(original_resource, 1, func_0040D890(best_second));
+            func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_second), slot);
+            equip_set_equipped(original_resource, 1, lib_allocation_get_identifier(best_second));
         }
     }
 }
@@ -2301,15 +2297,15 @@ void EquipListState::func_00263D80()
     }
     if (unk34 != 0)
     {
-        func_00465430(D_001B657C, unk34);
+        lib_release_resource_slot(D_001B657C, unk34);
     }
-    func_004D65C0(this);
+    lib_object_detach_owner(this);
     func_001DD7B0();
 }
 
 void func_00350980(void* object)
 {
-    func_0011ED90(D_001B65F4, object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 void func_003509A0(void* object)
@@ -2332,7 +2328,7 @@ s32 EquipListState::func_00263CD0()
     if (unk68 != 0)
     {
         func_004E9BC0(static_cast<EquipClass1796F0*>(unk68));
-        func_00465B20(D_001B657C, static_cast<EquipClass1796F0*>(unk68));
+        lib_queue_display_object(D_001B657C, static_cast<EquipClass1796F0*>(unk68));
     }
     EquipClass182450* options = new (0) EquipClass182450;
     EquipClass182350* scrolling = new (0) EquipClass182350;
@@ -2344,30 +2340,30 @@ s32 EquipListState::func_00263CD0()
     unk4c = new (0) EquipClass182790;
     unk50 = new (0) EquipClass182670(this);
     options->func_slotf4(unk34);
-    FieldClass153E30::func_00263FD0(options);
+    FieldClass153E30::add_child(options);
     options->func_slot40(scrolling);
     scrolling->func_slotf4(unk34);
-    FieldClass153E30::func_00263FD0(scrolling);
+    FieldClass153E30::add_child(scrolling);
     scrolling->func_slot40(0);
     panel->func_slotf4(unk34);
-    FieldClass153E30::func_00263FD0(panel);
+    FieldClass153E30::add_child(panel);
     unk54->func_slotf4(unk34);
-    FieldClass153E30::func_00263FD0(unk54);
+    FieldClass153E30::add_child(unk54);
     unk40->func_slotf4(unk34);
-    FieldClass153E30::func_00263FD0(unk40);
+    FieldClass153E30::add_child(unk40);
     attach_comparison(unk44, unk54, unk48);
     unk44->func_slot48(unk50);
     unk44->func_slotf4(unk34);
-    FieldClass153E30::func_00263FD0(unk44);
+    FieldClass153E30::add_child(unk44);
     unk44->func_slot40(unk40);
     unk48->func_slotf4(unk34);
-    FieldClass153E30::func_00263FD0(unk48);
+    FieldClass153E30::add_child(unk48);
     unk4c->func_slotf4(unk34);
-    FieldClass153E30::func_00263FD0(unk4c);
+    FieldClass153E30::add_child(unk4c);
     unk50->func_slot40(unk44);
     unk50->unk1a4 = unk48;
     unk50->func_slot104(unk34);
-    FieldClass153E30::func_00263FD0(unk50);
+    FieldClass153E30::add_child(unk50);
     unk20 = unk44;
     unk3c_active = 1;
     return 1;
@@ -2389,16 +2385,16 @@ s32 EquipListState::func_001E1820(void* buffer)
     }
     EquipAlignedResource* aligned = aligned_resource(buffer);
     s32 size = aligned->unk40 + 0x80;
-    void* saved_heap = func_00100C90();
+    void* saved_heap = resident_get_allocation_heap();
     void* heap = D_001B6430->context->unk70;
-    void* memory = func_00113710(heap, size);
+    void* memory = resident_heap_allocate(heap, size);
     if (memory != 0)
     {
-        func_001134C0(memory);
-        func_00100C80(heap);
+        resident_heap_release(memory);
+        resident_exchange_allocation_heap(heap);
     }
-    unk34 = func_004656B0(D_001B657C, aligned);
-    func_00100C80(saved_heap);
+    unk34 = lib_load_resource_slot(D_001B657C, aligned);
+    resident_exchange_allocation_heap(saved_heap);
     EquipRuntimeResource* runtime = reinterpret_cast<EquipRuntimeResource*>(D_001B657C);
     runtime->unk514 = unk34;
     runtime->unk518 = 0xC351;
@@ -2438,9 +2434,9 @@ EquipListState::EquipListState()
     unk64 = 0;
     unk58 = 0;
     unk5c = 0;
-    void* table = func_00101290(func_0010D8E0());
-    unk58 = func_00101440(table, 2);
-    unk5c = func_00101440(table, 3);
+    void* table = resident_get_entry_table(resident_get_runtime_owner());
+    unk58 = resident_find_entry(table, 2);
+    unk5c = resident_find_entry(table, 3);
     unk60 = 0;
     unk68 = 0;
 }

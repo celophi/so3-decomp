@@ -687,8 +687,8 @@ FieldClass151570::~FieldClass151570()
 /** @brief Detach the node and enqueue it for deferred destruction. */
 void FieldClass151570::func_001DD7B0()
 {
-    func_004D65C0(this);
-    func_0011ED90(D_001B65F4, this);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_001DF360__16FieldClass151570Fv);
@@ -754,7 +754,7 @@ FieldClass151620::~FieldClass151620()
 {
     if (unk80)
     {
-        func_004D65C0(unk80);
+        lib_object_detach_owner(unk80);
         unk80->func_001DD7B0();
         unk80 = 0;
     }
@@ -1078,7 +1078,7 @@ extern "C" void func_0020D4C0(FieldClass151640* object, FieldShapeOwner18* shape
     node->unk18 = node->unk14 = shape->unk04;
     node->unk1c = shape;
     node->unk30 = *(const LibMatrix44Value*)node->unk18->func_004D00A0();
-    object->unk88.func_004D74F0(node, (void*)-1);
+    object->unk88.func_004D74F0(node, -1);
 }
 
 /** @brief Test the descriptor array's terminal flag. @param shape Descriptor to test. @return Whether the array ends here. */
@@ -1130,7 +1130,7 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibClass178
                 node->unk18 = transform;
                 node->unk1c = shape;
                 node->unk30 = *(const LibMatrix44Value*)node->unk18->func_004D00A0();
-                object->unk88.func_004D74F0(node, (void*)-1);
+                object->unk88.func_004D74F0(node, -1);
             }
         }
         if (shape->unk00)
@@ -1164,7 +1164,7 @@ extern "C" void func_0020D810(FieldClass151640* object, FieldShapeOwner18* shape
                 break;
             }
             node->func_0020DBC0(shape, (FieldShapeData10*)object->FieldClass1515D0::unk00, index);
-            object->unk1f0.func_004D74F0(node, (void*)-1);
+            object->unk1f0.func_004D74F0(node, -1);
             for (;; index++)
             {
                 records[index].unk0c_4 = 1;

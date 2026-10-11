@@ -1,5 +1,64 @@
 #include "include_asm.h"
 #include "overlays/lib/text_004095C0.h"
+#include "overlays/lib/text_0045AD10.h"
+#include "main/resident_data.h"
+#include "overlays/lib/item_allocation.h"
+extern "C" ResidentObject1B64F8* D_001B64F8;
+
+/** Opaque 0x50-byte runtime resource slot. */
+typedef struct LibCodeResourceSlot
+{
+    u8 bytes[0x50];
+} LibCodeResourceSlot;
+/** Partial sixteen-slot runtime table and code-resource selectors. */
+typedef struct LibRuntimeCodeResources
+{
+    u8 pad00[0x14];
+    LibCodeResourceSlot slots[16];
+    s32 item_slot;
+    u8 pad518[4];
+    s32 factor_slot;
+} LibRuntimeCodeResources;
+/** Partial code-widget state and inherited initialization flag. */
+typedef struct LibCodeWidgetState
+{
+    u8 pad00[0x39];
+    u8 initialized;
+    u8 pad3a[0x32];
+    LibCodeResourceSlot* source;
+    u8 pad70[0x88];
+    u8 flag;
+    u8 padf9[3];
+    u16 code;
+    u8 variation;
+} LibCodeWidgetState;
+extern "C" void func_00464870(void* object, float x, float y, float width, float height);
+extern "C" s32 func_00464900(void* object, s32 first, s32 capacity, s32 second, s32 third);
+
+/** Packed allocation view with the four-bit equipped owner spanning bytes C and D. */
+typedef struct LibAllocationEquipmentView
+{
+    u8 unk00[12];
+    u16 modification_number : 7;
+    u16 equipped_owner : 4;
+    u16 unk0d_high : 5;
+    u16 checksum;
+} LibAllocationEquipmentView;
+
+/** Previous and next one-based allocation IDs in a resident category list. */
+typedef struct LibInventoryAllocationLinks
+{
+    s16 previous;
+    s16 next;
+} LibInventoryAllocationLinks;
+
+/** Resident allocation records, intrusive links and twelve-byte category entries. */
+typedef struct LibInventoryAllocationLists
+{
+    LibAllocationEquipmentView allocations[3000];
+    LibInventoryAllocationLinks links[3000];
+    ItemCreationCategoryRecord item_types[750];
+} LibInventoryAllocationLists;
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004095C0);
 
@@ -85,7 +144,48 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040C9F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040CC70);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040CF90);
+/**
+ * @brief Collect a category's allocations that have no equipped owner.
+ * @param state Resident allocation records, category links and category entries.
+ * @param records Output array receiving unequipped allocation pointers.
+ * @param category One-based category ID from one through seven hundred fifty.
+ * @return Number of allocations collected, or zero for an invalid or empty category.
+ */
+s32 lib_collect_unequipped_allocations(const void* state, ItemCreationAllocationRecord** records, u16 category)
+{
+    const LibInventoryAllocationLists* inventory = (const LibInventoryAllocationLists*)state;
+    bool valid = false;
+    s32 category_index = category;
+    if (category > 0 && category < 751)
+    {
+        valid = true;
+    }
+    s32 count;
+    s32 identifier;
+    if (!valid)
+    {
+        return 0;
+    }
+    category_index--;
+    const ItemCreationCategoryRecord* category_record = (const ItemCreationCategoryRecord*)((const u8*)inventory +
+        category_index * sizeof(ItemCreationCategoryRecord) + sizeof(inventory->allocations) + sizeof(inventory->links));
+    identifier = category_record->allocation_list_head;
+    count = 0;
+    while (identifier != 0)
+    {
+        const LibAllocationEquipmentView* allocation;
+        s32 index = (s16)identifier - 1;
+        allocation = &inventory->allocations[index];
+        u8 equipped_owner = allocation->equipped_owner;
+        if (equipped_owner == 0)
+        {
+            *records++ = (ItemCreationAllocationRecord*)allocation;
+            count++;
+        }
+        identifier = inventory->links[index].next;
+    }
+    return count;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D050);
 
@@ -99,7 +199,33 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D680);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D760);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D890);
+/**
+ * @brief Return a resident allocation ID unless a validated record suppresses it.
+ * @param record Packed allocation record in the resident table.
+ * @return One-based allocation ID, or zero when a valid record suppresses its ID.
+ */
+extern "C" s16 lib_allocation_get_identifier(const ItemCreationAllocationRecord* record)
+{
+    u32 suppress;
+    s32 id;
+    if (record->invalid())
+    {
+        suppress = 0;
+    }
+    else
+    {
+        suppress = record->factors_234.bits.suppress_allocation_id;
+    }
+    if (suppress)
+    {
+        id = 0;
+    }
+    else
+    {
+        id = (s16)(((u32)record - (u32)D_001B64F8) / sizeof(ItemCreationAllocationRecord) + 1);
+    }
+    return id;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D930);
 
@@ -249,13 +375,41 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413C00);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413CC0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413D20);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413D20__14LibClass178600Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413D30);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413D90);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413F70);
+/**
+ * @brief Initialize the item code widget's rectangle and drawing storage.
+ * @param object Item code widget.
+ * @param x Rectangle origin x.
+ * @param y Rectangle origin y.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @param code Initial item code.
+ * @param variation Code variation.
+ * @param flag Drawing state flag.
+ * @return One on successful initialization, otherwise zero.
+ */
+s32 lib_item_code_init_rectangle(LibObject172410* object, float x, float y, float width, float height, u16 code, u8 variation, u8 flag)
+{
+    LibCodeWidgetState* state = (LibCodeWidgetState*)object;
+    LibRuntimeCodeResources* resources;
+    state->flag = flag;
+    func_00464870(object, x, y, width, height);
+    resources = (LibRuntimeCodeResources*)D_001B657C;
+    state->source = &resources->slots[resources->item_slot];
+    if (!func_00464900(object, 0, 64, 0, 0))
+    {
+        return 0;
+    }
+    state->code = code;
+    state->variation = variation;
+    state->initialized = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414010);
 
@@ -265,7 +419,35 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414280);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004142E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004143F0);
+/**
+ * @brief Initialize the detail code widget's rectangle and drawing storage.
+ * @param object Detail code widget.
+ * @param code Initial detail code.
+ * @param variation Code variation.
+ * @param flag Drawing state flag.
+ * @param x Rectangle origin x.
+ * @param y Rectangle origin y.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @return One on successful initialization, otherwise zero.
+ */
+s32 lib_detail_code_init_rectangle(LibObject172440* object, u16 code, u8 variation, u8 flag, float x, float y, float width, float height)
+{
+    LibCodeWidgetState* state = (LibCodeWidgetState*)object;
+    LibRuntimeCodeResources* resources;
+    state->flag = flag;
+    func_00464870(object, x, y, width, height);
+    resources = (LibRuntimeCodeResources*)D_001B657C;
+    state->source = &resources->slots[resources->factor_slot];
+    if (!func_00464900(object, 0, 128, 0, 0))
+    {
+        return 0;
+    }
+    state->code = code;
+    state->variation = variation;
+    state->initialized = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414490);
 

@@ -5,3 +5,7 @@ D_205E10 = 0x00205E10; // size:0x28
 // newlib string functions in main.
 strcat = 0x0013C6D0; // type:func
 strlen = 0x0013CA60; // type:func
+lib_object_detach_owner = 0x004D65C0; // type:func absolute:True
+lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True
+lib_release_resource_slot = 0x00465430; // type:func absolute:True
+resident_next_random_word = 0x0010CF80; // type:func absolute:True

@@ -7,6 +7,7 @@
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/1067-00/field_duration.h"
 #include "overlays/1067-00/text_001E1590.h"
+#include "overlays/1067-00/text_002CEAF0.h"
 
 /** Drawing parameter prefix consumed by the library packet builder. */
 struct CmcDrawParameters
@@ -53,7 +54,6 @@ struct FieldWindowRuntime
 };
 
 extern "C" FieldWindowRuntime* D_001B643C;
-extern "C" void func_002CFE10(FieldWindowCallbacks* directory, FieldClass15AE70* window);
 
 /** Partial containing row list, with its resource source word at offset 0x4B0. */
 struct CmcRowList
@@ -727,7 +727,7 @@ void CmcClass189900::refresh_row(void* owner, s32 index)
     CmcRowList* list = static_cast<CmcRowList*>(owner);
     CmcRowRecord* record;
     u32 source = list->resource_source;
-    func_4C6DF0(&first_text, source, index + 2801, 0);
+    lib_text_set_resource(&first_text, source, index + 2801, 0);
     record = func_0034BB50(list, static_cast<u16>(index));
 
     if (unk04 == 3)
@@ -745,7 +745,7 @@ void CmcClass189900::refresh_row(void* owner, s32 index)
         numbers[3].unk3c = 1;
         numbers[4].numeric_value = duration.second_digit(1);
         numbers[4].unk3c = 1;
-        func_4C6DF0(&second_text, source, record->text_resource_key + 1, 0);
+        lib_text_set_resource(&second_text, source, record->text_resource_key + 1, 0);
         if (record->unk7d == 1)
         {
             third_text.unk3d = 1;
@@ -753,19 +753,19 @@ void CmcClass189900::refresh_row(void* owner, s32 index)
     }
     else if (unk04 == 5)
     {
-        func_4C6DF0(&fourth_text, source, 9021, 0);
+        lib_text_set_resource(&fourth_text, source, 9021, 0);
         fourth_text.unk94 = 0x505050;
         fourth_text.unk3c = 1;
     }
     else if (unk04 == 6)
     {
-        func_4C6DF0(&fourth_text, source, 9022, 0);
+        lib_text_set_resource(&fourth_text, source, 9022, 0);
         fourth_text.unk94 = 0x505050;
         fourth_text.unk3c = 1;
     }
     else if (unk04 == 2)
     {
-        func_4C6DF0(&fourth_text, source, 9023, 0);
+        lib_text_set_resource(&fourth_text, source, 9023, 0);
         if (unk05)
         {
             fourth_text.unk94 = 0x808080;
@@ -870,7 +870,7 @@ s32 CmcClass189920::func_slotb0()
     FieldClass153E30* callbacks = D_001B643C->unk10->unk14;
     callbacks->func_00263C70(func_slot44());
     static_cast<FieldClass15AE70*>(func_slot44())->func_slot18(1, 0x7F);
-    func_002CFE10(D_001B643C->unk10, this);
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->unk10), this);
     static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(9001);
     return 1;
 }
@@ -899,7 +899,7 @@ s32 CmcClass189A20::func_slotb0()
     FieldClass153E30* callbacks = D_001B643C->unk10->unk14;
     callbacks->func_00263C70(func_slot44());
     static_cast<FieldClass15AE70*>(func_slot44())->func_slot18(1, 0x7F);
-    func_002CFE10(D_001B643C->unk10, this);
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->unk10), this);
     static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(9001);
     return 1;
 }
@@ -982,7 +982,7 @@ s32 CmcClass189F20::func_slotb0()
     FieldClass153E30* callbacks = D_001B643C->unk10->unk14;
     callbacks->func_00263C70(func_slot44());
     FieldClass15AE70::func_slot18(0, 0x7F);
-    func_002CFE10(D_001B643C->unk10, this);
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->unk10), this);
     static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(9001);
     return 1;
 }
@@ -1011,7 +1011,7 @@ s32 CmcClass18A020::func_slotb0()
     FieldClass153E30* callbacks = D_001B643C->unk10->unk14;
     callbacks->func_00263C70(func_slot44());
     FieldClass15AE70::func_slot18(0, 0x7F);
-    func_002CFE10(D_001B643C->unk10, this);
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->unk10), this);
     static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(9001);
     return 1;
 }
@@ -1059,7 +1059,7 @@ s32 CmcClass18A220::func_slotb0()
     FieldClass153E30* callbacks = D_001B643C->unk10->unk14;
     callbacks->func_00263C70(func_slot44());
     FieldClass15AE70::func_slot18(0, 0x7F);
-    func_002CFE10(D_001B643C->unk10, this);
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->unk10), this);
     static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(9001);
     return 1;
 }
@@ -1399,16 +1399,16 @@ void CmcClass18AF20::release_resources()
 {
     if (resource_slot)
     {
-        func_00465430(D_001B657C, resource_slot);
+        lib_release_resource_slot(D_001B657C, resource_slot);
     }
-    func_004D65C0(this);
+    lib_object_detach_owner(this);
     func_001DD7B0();
 }
 
 /** @brief Add this object to the resident queue. */
 void CmcClass18AF20::func_001DD7B0()
 {
-    func_0011ED90(D_001B65F4, this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_00358620);
@@ -1427,16 +1427,16 @@ s32 CmcClass18AF20::func_001E1820(void* buffer)
     }
     resource = reinterpret_cast<CmcResourceBuffer*>((reinterpret_cast<u32>(resource) + 0x7F) & ~0x7F);
     s32 allocation_size = resource->byte_count + 0x80;
-    void* previous_heap = func_00100C90();
+    void* previous_heap = resident_get_allocation_heap();
     void* resource_heap = D_001B6430->context->unk70;
-    void* allocation = func_00113710(resource_heap, allocation_size);
+    void* allocation = resident_heap_allocate(resource_heap, allocation_size);
     if (allocation)
     {
-        func_001134C0(allocation);
-        func_00100C80(resource_heap);
+        resident_heap_release(allocation);
+        resident_exchange_allocation_heap(resource_heap);
     }
-    resource_slot = func_004656B0(D_001B657C, resource);
-    func_00100C80(previous_heap);
+    resource_slot = lib_load_resource_slot(D_001B657C, resource);
+    resident_exchange_allocation_heap(previous_heap);
     return func_00263CD0();
 }
 
@@ -1447,7 +1447,7 @@ CmcClass18AF20::~CmcClass18AF20()
 {
     if (linked_object != 0)
     {
-        func_004D65C0(linked_object);
+        lib_object_detach_owner(linked_object);
         linked_object->func_00358F90();
     }
 }

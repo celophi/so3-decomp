@@ -166,7 +166,7 @@ struct FieldRuntime
 /** @brief Refresh the aggregate's scalar display. @param object Widget aggregate. */
 extern "C" void func_413BB0(LibClass1723F0* object);
 /** @brief Dispatch a resident request. @param receiver Request receiver. @param arg1 Request kind. @param arg2 Request argument. @param arg3 Request argument. @param arg4 Request argument. @param arg5 Request argument. @param arg6 Request argument. @return Request result. */
-extern "C" s32 func_112400(ResidentRequest112400* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
+extern "C" s32 resident_allocate_request(ResidentRequest112400* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
 /** @brief Set the movement target. @param object Movement state. @param x Horizontal coordinate. @param y Vertical coordinate. @param duration Movement duration. */
 extern "C" void func_466E40(ItemCreationClass185050* object, float x, float y, float duration);
 
@@ -616,7 +616,7 @@ bool func_002D6CB0(FieldClass15B300* object)
     }
     if (changed)
     {
-        func_112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
     }
     return changed;
 }
@@ -695,14 +695,14 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D76
 s32 func_002D7820(FieldPanelState2D7820* object, u32 value, s8 mode, s32 transform,
                   float x, float y, float width, float height)
 {
-    func_004C6510(object, mode, 9, transform, x, y, 0.0f);
+    lib_container_init(object, mode, x, y, 9, 0.0f, transform);
     object->unk6c = 0x400E;
-    if (func_004C5A80(&object->unk100, 0, 0.0f, 0.0f, width, height, 88.0f) == 0)
+    if (lib_panel_init_rectangle(&object->unk100, 0, 0.0f, 0.0f, width, height, 88.0f) == 0)
     {
         return 0;
     }
     object->unk100.unk3d = 1;
-    func_004C6190(object, &object->unk100);
+    lib_container_attach_widget(object, &object->unk100);
     object->unk190 = value;
     return 1;
 }

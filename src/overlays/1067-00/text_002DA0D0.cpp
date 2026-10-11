@@ -18,8 +18,8 @@ s32 func_002DA170(FieldClass150070* object)
 
 void func_002DA180(FieldClass150070* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DA0D0", func_002DA1B0);

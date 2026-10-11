@@ -547,38 +547,38 @@ FieldClass1504F0::FieldClass1504F0()
     {
         return;
     }
-    func_00465B20(D_001B657C, unk18);
+    lib_queue_display_object(D_001B657C, unk18);
     unk1c = new(0) LibClass178630;
     if (!unk1c)
     {
         return;
     }
-    if (!func_004C5A80(unk1c, 0, 0.0f, 52.0f, 528.0f, 48.0f, 88.0f))
+    if (!lib_panel_init_rectangle(unk1c, 0, 0.0f, 52.0f, 528.0f, 48.0f, 88.0f))
     {
         return;
     }
     unk1c->unk3d = 1;
-    func_004C6190(unk18, unk1c);
+    lib_container_attach_widget(unk18, unk1c);
     for (s32 i = 0; i < 2; i++)
     {
         unk24[i] = new(0) LibClass178630;
         if (unk24[i])
         {
-            if (func_004C5A80(unk24[i], 0, 0.0f, 20.0f, i == 0 ? 132.0f : 120.0f, 40.0f, 88.0f))
+            if (lib_panel_init_rectangle(unk24[i], 0, 0.0f, 20.0f, i == 0 ? 132.0f : 120.0f, 40.0f, 88.0f))
             {
                 unk24[i]->unk3d = 0;
             }
-            func_004C6190(unk18, unk24[i]);
+            lib_container_attach_widget(unk18, unk24[i]);
         }
     }
     void* data = func_00201EA0(D_001B6430->context->unk2c, 0x535953, 0, 0);
     if (data)
     {
-        unk3c = func_004656B0(D_001B657C, (void*)(((u32)data + 127) & ~127));
+        unk3c = lib_load_resource_slot(D_001B657C, (void*)(((u32)data + 127) & ~127));
         unk20 = new(0) LibObject178750;
-        if (unk20 && func_004C7FE0(unk20, unk3c, 1, 0, 16.0f, 56.0f, 352.0f, 48.0f))
+        if (unk20 && lib_text_init_resource_rectangle(unk20, unk3c, 1, 0, 16.0f, 56.0f, 352.0f, 48.0f))
         {
-            func_004C6190(unk18, unk20);
+            lib_container_attach_widget(unk18, unk20);
             func_001ED160();
         }
     }
@@ -733,8 +733,8 @@ s32 func_001EE260(void* object)
 
 void func_001EE270(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 /** @brief Subtract position components while preserving the left vector's fourth component. */
@@ -1233,7 +1233,7 @@ extern "C" s32 func_001EF6C0(FieldScriptCursorU32* cursor)
         if (owner == ((FieldClass1505B0*)node)->unk18)
         {
             list->func_004D72A0(node);
-            func_0011ED90(D_001B65F4, node);
+            resident_enqueue_object(D_001B65F4, node);
         }
     }
     return 1;
@@ -1265,7 +1265,7 @@ extern "C" s32 func_001EFA20(FieldScriptCursorU32* cursor)
     word34 = *cursor->current;
     FieldClass150570* shape = new FieldClass150570(owner, position, dimensions, flags, word38, word34);
     LibClass178DD0* list = (LibClass178DD0*)D_001B6430->context->unk3c;
-    list->func_004D74F0(shape, (void*)-1);
+    list->func_004D74F0(shape, -1);
     return 1;
 }
 
@@ -1297,7 +1297,7 @@ extern "C" s32 func_001EFC80(FieldScriptCursorU32* cursor)
     word34 = *cursor->current;
     FieldClass150550* shape = new FieldClass150550(owner, position, dimensions, word38, word34, mask, flags);
     LibClass178DD0* list = (LibClass178DD0*)D_001B6430->context->unk3c;
-    list->func_004D74F0(shape, (void*)-1);
+    list->func_004D74F0(shape, -1);
     return 1;
 }
 
@@ -1323,7 +1323,7 @@ extern "C" s32 func_001EFEC0(FieldScriptCursorU32* cursor)
     word34 = *cursor->current;
     FieldClass150530* shape = new FieldClass150530(owner, position, dimensions, flags, word38, word34);
     LibClass178DD0* list = (LibClass178DD0*)D_001B6430->context->unk3c;
-    list->func_004D74F0(shape, (void*)-1);
+    list->func_004D74F0(shape, -1);
     return 1;
 }
 
@@ -1406,7 +1406,7 @@ extern "C" s32 func_001F0360(FieldScriptCursorU32* cursor, u32 count)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1435,7 +1435,7 @@ extern "C" s32 func_001F04D0(FieldScriptCursorU32* cursor)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1460,7 +1460,7 @@ extern "C" s32 func_001F06E0(FieldScriptCursorU32* cursor, u32 count)
     motion = &object->motion;
     if (mode != 2 && object->unk300)
     {
-        func_004D65C0(object->unk300);
+        lib_object_detach_owner(object->unk300);
         object->unk300->func_001DD7B0();
         object->unk300 = 0;
     }
@@ -1527,7 +1527,7 @@ extern "C" s32 func_001F09C0(FieldScriptCursorU32* cursor)
     command->unk19 = 1;
     command->unk1a = mode;
     command->unk1c = value;
-    D_001B6614->func_004D74F0(command, (void*)-1);
+    D_001B6614->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1619,7 +1619,7 @@ extern "C" s32 func_001F0C00(FieldScriptCursorU32* cursor)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1642,7 +1642,7 @@ extern "C" s32 func_001F0D20(FieldScriptCursorU32* cursor)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1713,7 +1713,7 @@ extern "C" s32 func_001F0FC0(FieldScriptCursorU32* cursor)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1735,7 +1735,7 @@ extern "C" s32 func_001F10B0(FieldScriptCursorU32* cursor)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1759,7 +1759,7 @@ extern "C" s32 func_001F1410(FieldScriptCursorU32* cursor)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1782,7 +1782,7 @@ extern "C" s32 func_001F14F0(FieldScriptCursorU32* cursor)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1805,7 +1805,7 @@ extern "C" s32 func_001F1610(FieldScriptCursorU32* cursor)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1828,7 +1828,7 @@ extern "C" s32 func_001F1730(FieldScriptCursorU32* cursor)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1851,7 +1851,7 @@ extern "C" s32 func_001F1880(FieldScriptCursorU32* cursor)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1882,7 +1882,7 @@ extern "C" s32 func_001F1CD0(FieldScriptCursorU32* cursor)
     {
         channel = &object->unk250;
     }
-    channel->list->func_004D74F0(command, (void*)-1);
+    channel->list->func_004D74F0(command, -1);
     return 1;
 }
 
@@ -1913,7 +1913,7 @@ FieldClass150630::~FieldClass150630()
 void FieldClass150630::func_001DF360()
 {
     func_004DAFE0(D_001B6628, D_001B6650, unk18 != 0, unk19 != 0, unk1a != 0, unk1c, 0xFFFFFF);
-    func_004D65C0(this);
+    lib_object_detach_owner(this);
     func_001DD7B0();
 }
 
@@ -1926,8 +1926,8 @@ s32 FieldClass150630::func_001DF3D0()
 /** @brief Unlink the callback and add it to the resident queue. */
 void FieldClass150630::func_001DD7B0()
 {
-    func_004D65C0(this);
-    func_0011ED90(D_001B65F4, this);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 /** @brief Destroy the queue object. */
@@ -1938,8 +1938,8 @@ FieldClass150650::~FieldClass150650()
 /** @brief Unlink and add this object to the resident queue. */
 void FieldClass150650::func_001DD7B0()
 {
-    func_004D65C0(this);
-    func_0011ED90(D_001B65F4, this);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 extern "C" s32 func_001F2070(FieldScriptCursorF32* cursor)
@@ -1995,7 +1995,7 @@ extern "C" s32 func_001F2140(FieldScriptCursorU32* cursor)
     object->unk14 = (cursor->unk420 >> 16) & 0xFFFF;
     object->unk18 = value;
     object->unk1c = flags;
-    D_001B6614->func_004D74F0(object, (void*)-1);
+    D_001B6614->func_004D74F0(object, -1);
     return 1;
 }
 
@@ -2038,7 +2038,7 @@ extern "C" s32 func_001F22C0(FieldScriptCursorU32* cursor)
         cursor->unk14 = 1.0f;
         return 1;
     }
-    owner->commands.func_004D74F0(object, (void*)-1);
+    owner->commands.func_004D74F0(object, -1);
     return 1;
 }
 
@@ -2073,7 +2073,7 @@ extern "C" s32 func_001F2470(FieldScriptCursorU32* cursor)
         cursor->unk14 = 1.0f;
         return 1;
     }
-    owner->commands.func_004D74F0(object, (void*)-1);
+    owner->commands.func_004D74F0(object, -1);
     return 1;
 }
 
@@ -2091,7 +2091,7 @@ extern "C" s32 func_001F2560(FieldScriptCursorU32* cursor)
         cursor->unk14 = 1.0f;
         return 1;
     }
-    owner->commands.func_004D74F0(object, (void*)-1);
+    owner->commands.func_004D74F0(object, -1);
     return 1;
 }
 
@@ -2174,7 +2174,7 @@ extern "C" s32 func_001F2B00(FieldScriptCursorU32* cursor)
     func_0021F530(loader, key);
     FieldClass1530D0* manager = (FieldClass1530D0*)D_001B6430->context->unk30;
     LibClass178DD0& list = *manager;
-    list.func_004D74F0(loader, (void*)-1);
+    list.func_004D74F0(loader, -1);
     return 1;
 }
 
@@ -2426,13 +2426,13 @@ extern "C" s32 func_001F7470(FieldScriptCursorU32* cursor, s32 word_count)
     FieldClass152C70* command = new FieldClass152C70;
     u32* source = cursor->current;
     s32 byte_count = word_count * 4;
-    command->unk1c = func_00113710(D_001B6430->context->unk6c, byte_count);
+    command->unk1c = resident_heap_allocate(D_001B6430->context->unk6c, byte_count);
     if (command->unk1c != 0)
     {
         func_0013A4C0(command->unk1c, source, byte_count);
         command->unk20 = word_count / 10;
     }
-    actor->commands.func_004D74F0(command, (void*)-1);
+    actor->commands.func_004D74F0(command, -1);
     return 1;
 }
 
@@ -2456,7 +2456,7 @@ extern "C" s32 func_001F75C0(FieldScriptCursorU32* cursor, u32 count)
         value = *(float*)cursor->current++;
     }
     FieldClass152C90* command = new FieldClass152C90(setting, value);
-    actor->commands.func_004D74F0(command, (void*)-1);
+    actor->commands.func_004D74F0(command, -1);
     return 1;
 }
 
@@ -2499,7 +2499,7 @@ void FieldClass150650::func_001DF360()
     }
     else
     {
-        func_004D65C0(this);
+        lib_object_detach_owner(this);
         func_001DD7B0();
     }
 }
@@ -2515,7 +2515,7 @@ extern "C" s32 func_001F7850(FieldScriptCursorU32* cursor)
     command->unk1c = (float)*cursor->current;
     if (field_actor_commands_pending())
     {
-        ((FieldClass151D40*)cursor)->func_004D74F0(command, (void*)-1);
+        ((FieldClass151D40*)cursor)->func_004D74F0(command, -1);
         cursor->unk14 = 1.0f;
     }
     else
@@ -2563,7 +2563,7 @@ extern "C" s32 func_001F7B80(FieldScriptCursorU32* cursor)
 {
     FieldActorCommandState* actor = (FieldActorCommandState*)func_0020F520(cursor);
     FieldClass152DD0* command = new FieldClass152DD0;
-    actor->commands.func_004D74F0(command, (void*)-1);
+    actor->commands.func_004D74F0(command, -1);
     return 1;
 }
 
@@ -2579,7 +2579,7 @@ extern "C" s32 func_001F7C30(FieldScriptCursorU32* cursor)
     u32 word = *cursor->current++;
     float duration = *cursor->current;
     FieldClass152DF0* command = new FieldClass152DF0(value, word, duration);
-    actor->commands.func_004D74F0(command, (void*)-1);
+    actor->commands.func_004D74F0(command, -1);
     return 1;
 }
 
@@ -2592,7 +2592,7 @@ extern "C" s32 func_001F7D10(FieldScriptCursorU32* cursor)
 {
     FieldActorCommandState* actor = (FieldActorCommandState*)func_0020F520(cursor);
     FieldClass152E10* command = new FieldClass152E10;
-    actor->commands.func_004D74F0(command, (void*)-1);
+    actor->commands.func_004D74F0(command, -1);
     actor->unk8d_1 = 1;
     return 1;
 }
@@ -2606,7 +2606,7 @@ extern "C" s32 func_001F7DE0(FieldScriptCursorU32* cursor)
 {
     FieldActorCommandState* actor = (FieldActorCommandState*)func_0020F520(cursor);
     FieldClass152E30* command = new FieldClass152E30((float)*cursor->current);
-    actor->commands.func_004D74F0(command, (void*)-1);
+    actor->commands.func_004D74F0(command, -1);
     return 1;
 }
 
@@ -2644,7 +2644,7 @@ extern "C" s32 func_001F7EE0(FieldScriptCursorU32* cursor)
         }
     }
     actor->func_00205710(&position);
-    ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, (void*)-1);
+    ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, -1);
     return 1;
 }
 
@@ -2665,7 +2665,7 @@ extern "C" s32 func_001F80E0(FieldScriptCursorU32* cursor)
         FieldClass155580* actor = new FieldClass155580;
         actor->unk70 = key;
         actor->func_0024D1C0(name);
-        ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, (void*)-1);
+        ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, -1);
         return 1;
     }
     cursor->unk14 = 1.0f;
@@ -2699,7 +2699,7 @@ extern "C" s32 func_001F8230(FieldScriptCursorU32* cursor)
             cursor->unk14 = 1.0f;
             return 1;
         }
-        ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, (void*)-1);
+        ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, -1);
     }
     else
     {
@@ -2736,7 +2736,7 @@ extern "C" s32 func_001F83A0(FieldScriptCursorU32* cursor, u32 count)
         {
             actor->unk334_2 = 1;
         }
-        ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, (void*)-1);
+        ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, -1);
         return 1;
     }
     cursor->unk14 = 1.0f;
@@ -2813,7 +2813,7 @@ extern "C" s32 func_001F84D0(FieldScriptCursorU32* cursor, FieldClass152F00* act
     }
     actor->func_00205710(&position);
     func_00227610(actor, heading, 0.0f);
-    ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, (void*)-1);
+    ((LibClass178DD0*)D_001B6430->context->unk04)->func_004D74F0(actor, -1);
     return 1;
 }
 
@@ -2883,7 +2883,7 @@ extern "C" void* func_001F8C80(void* object)
 /** @brief Add this object to the resident queue. */
 void FieldClass1507A0::func_001DD7B0()
 {
-    func_0011ED90(D_001B65F4, this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 /** @brief Start the request for the current record when its size is nonzero. */

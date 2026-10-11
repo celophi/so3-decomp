@@ -27,7 +27,7 @@ bool FieldClass154C10::func_00204420()
 
 void func_001DEDF0(void* list, void* object)
 {
-    func_004D65C0(object);
+    lib_object_detach_owner(object);
     static_cast<FieldClass150070*>(object)->func_001DD7B0();
 }
 
@@ -102,7 +102,7 @@ void func_001DEF70(FieldClass150060* list, s32 preserve_focus)
         node = node->unk08;
         if (!preserve_focus || focus != current)
         {
-            func_004D65C0(current);
+            lib_object_detach_owner(current);
             static_cast<FieldClass150070*>(current)->func_001DD7B0();
         }
         else if (focus->unk144)
@@ -173,8 +173,8 @@ s32 FieldClass150010::func_001DF3D0()
 
 void FieldClass150010::func_001DD7B0()
 {
-    func_004D65C0(this);
-    func_0011ED90(D_001B65F4, this);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 u8 FieldClass150010::func_001DF350()

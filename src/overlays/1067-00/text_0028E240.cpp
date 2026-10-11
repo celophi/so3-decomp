@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_0028E240.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 
 typedef struct FieldSourceContext
 {
@@ -16,9 +17,9 @@ typedef struct FieldRecordSource
     FieldSourceContext* context;
 } FieldRecordSource;
 
-extern FieldRecordSource* D_001B643C;
+extern "C" FieldRecordSource* D_001B643C;
 
-s32 func_0028E240(FieldRecordSelection* selection, s8 value)
+extern "C" s32 func_0028E240(FieldRecordSelection* selection, s8 value)
 {
     s32 index;
     s32 result = -1;
@@ -35,7 +36,7 @@ s32 func_0028E240(FieldRecordSelection* selection, s8 value)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E240", func_0028E2B0);
 
-s32 func_0028E3D0(FieldRecordSelection* selection)
+extern "C" s32 func_0028E3D0(FieldRecordSelection* selection)
 {
     s32 index;
     selection->records = D_001B643C->records;
@@ -59,6 +60,18 @@ s32 func_0028E3D0(FieldRecordSelection* selection)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E240", func_0028E480);
+/** @brief Destroy the record selection through its native virtual destructor. */
+FieldRecordSelection::~FieldRecordSelection()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E240", func_0028E4D0);
+/** @brief Clear record links and slot bytes, then select no current slot. */
+FieldRecordSelection::FieldRecordSelection()
+{
+    records = 0;
+    unk04 = 0;
+    func_0013A678(slots, 0, 8);
+    count = 0;
+    current = -1;
+    active = 0;
+}

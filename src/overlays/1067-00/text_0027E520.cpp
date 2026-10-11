@@ -17,7 +17,7 @@ void func_0027E520(FieldHeldObject20* object)
     {
         if (object->unk20 != 0)
         {
-            func_004D65C0(object->unk20);
+            lib_object_detach_owner(object->unk20);
             object->unk20->func_001DD7B0();
             object->unk20 = 0;
         }
@@ -32,7 +32,7 @@ void func_0027E7D0(FieldHeldObject20* object)
 {
     if (object->unk20 != 0)
     {
-        func_004D65C0(object->unk20);
+        lib_object_detach_owner(object->unk20);
         object->unk20->func_001DD7B0();
         object->unk20 = 0;
     }
@@ -254,7 +254,7 @@ void func_00280AF0(FieldHeldObject20* object)
 {
     if (object->unk20 != 0)
     {
-        func_004D65C0(object->unk20);
+        lib_object_detach_owner(object->unk20);
         object->unk20->func_001DD7B0();
         object->unk20 = 0;
     }
@@ -1624,13 +1624,13 @@ void func_002839B0(FieldClass156640* object, s32 rows, s32 columns)
     delete object->unk1C;
     if (D_001B6684 != 0)
     {
-        void* heap = func_00100C80(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
         if (object->unk1C->unk08 == 0)
@@ -1639,10 +1639,10 @@ void func_002839B0(FieldClass156640* object, s32 rows, s32 columns)
             object->unk18 = 0;
             delete object->unk1C;
             object->unk1C = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
-        func_00100C80(heap);
+        resident_exchange_allocation_heap(heap);
     }
     else
     {
@@ -1729,13 +1729,13 @@ void func_002840B0(FieldClass156710* object, s32 rows, s32 columns)
     delete object->unk1C;
     if (D_001B6684 != 0)
     {
-        void* heap = func_00100C80(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
         if (object->unk1C->unk08 == 0)
@@ -1744,10 +1744,10 @@ void func_002840B0(FieldClass156710* object, s32 rows, s32 columns)
             object->unk18 = 0;
             delete object->unk1C;
             object->unk1C = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
-        func_00100C80(heap);
+        resident_exchange_allocation_heap(heap);
     }
     else
     {
@@ -1835,13 +1835,13 @@ void func_002847F0(FieldClass1567E0* object, s32 rows, s32 columns)
     delete object->unk1C;
     if (D_001B6684 != 0)
     {
-        void* heap = func_00100C80(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
         if (object->unk1C->unk08 == 0)
@@ -1850,10 +1850,10 @@ void func_002847F0(FieldClass1567E0* object, s32 rows, s32 columns)
             object->unk18 = 0;
             delete object->unk1C;
             object->unk1C = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
-        func_00100C80(heap);
+        resident_exchange_allocation_heap(heap);
     }
     else
     {
@@ -1939,13 +1939,13 @@ void func_00284EE0(FieldClass1568B0* object, s32 rows, s32 columns)
     delete object->unk1C;
     if (D_001B6684 != 0)
     {
-        void* heap = func_00100C80(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
         if (object->unk1C->unk08 == 0)
@@ -1954,10 +1954,10 @@ void func_00284EE0(FieldClass1568B0* object, s32 rows, s32 columns)
             object->unk18 = 0;
             delete object->unk1C;
             object->unk1C = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
-        func_00100C80(heap);
+        resident_exchange_allocation_heap(heap);
     }
     else
     {
@@ -2044,13 +2044,13 @@ void func_002855F0(FieldClass156980* object, s32 rows, s32 columns)
     delete object->unk1C;
     if (D_001B6684 != 0)
     {
-        void* heap = func_00100C80(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
         if (object->unk1C->unk08 == 0)
@@ -2059,10 +2059,10 @@ void func_002855F0(FieldClass156980* object, s32 rows, s32 columns)
             object->unk18 = 0;
             delete object->unk1C;
             object->unk1C = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
-        func_00100C80(heap);
+        resident_exchange_allocation_heap(heap);
     }
     else
     {
@@ -2149,13 +2149,13 @@ void func_00285D10(FieldClass156A50* object, s32 rows, s32 columns)
     delete object->unk1C;
     if (D_001B6684 != 0)
     {
-        void* heap = func_00100C80(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
         if (object->unk1C->unk08 == 0)
@@ -2164,10 +2164,10 @@ void func_00285D10(FieldClass156A50* object, s32 rows, s32 columns)
             object->unk18 = 0;
             delete object->unk1C;
             object->unk1C = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
-        func_00100C80(heap);
+        resident_exchange_allocation_heap(heap);
     }
     else
     {
@@ -2459,12 +2459,12 @@ void FieldClass156E60::func_001DD7B0()
 {
     if (unk40 != 0)
     {
-        func_004D65C0(unk40);
+        lib_object_detach_owner(unk40);
         unk40->func_001DD7B0();
         unk40 = 0;
     }
-    func_004D65C0(this);
-    func_0011ED90(D_001B65F4, this);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_002890B0);
@@ -2707,13 +2707,13 @@ void func_00289770(FieldClass156E90* object, s32 rows, s32 columns)
     delete object->unk1C;
     if (D_001B6684 != 0)
     {
-        void* heap = func_00100C80(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
         if (object->unk1C->unk08 == 0)
@@ -2722,10 +2722,10 @@ void func_00289770(FieldClass156E90* object, s32 rows, s32 columns)
             object->unk18 = 0;
             delete object->unk1C;
             object->unk1C = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
-        func_00100C80(heap);
+        resident_exchange_allocation_heap(heap);
     }
     else
     {
@@ -2803,8 +2803,8 @@ float func_00289EB0(FieldClass156E90* object)
 /** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
 extern "C" void func_00289EC0(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00289EF0);
@@ -2836,8 +2836,8 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0028CA
 /** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
 extern "C" void func_0028CCE0(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0028CD10);

@@ -47,7 +47,7 @@ LibClass178600* func_004C4960(LibClass178600* object);
  * @param height Rectangle height.
  * @return Configuration status.
  */
-s32 func_004C7FE0(LibObject178750* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
+s32 lib_text_init_resource_rectangle(LibObject178750* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
 /**
  * @brief Set the text widget's source and resource key.
  * @param object Text widget.
@@ -55,18 +55,18 @@ s32 func_004C7FE0(LibObject178750* object, s32 slot, s32 key, u8 flag, float x, 
  * @param key Resource key.
  * @param flag Resource state flag.
  */
-void func_4C6DF0(LibObject178750* object, u32 source, u32 key, u8 flag);
+void lib_text_set_resource(LibObject178750* object, u32 source, u32 key, u8 flag);
 /**
  * @brief Attach a widget to the container.
  * @param object Container receiver.
  * @param child Widget to attach.
  */
-void func_004C6190(LibObject178660* object, LibClass178600* child);
+void lib_container_attach_widget(LibObject178660* object, LibClass178600* child);
 /**
  * @brief Detach the widget from its associated object.
  * @param object Widget receiver.
  */
-void func_004C4A90(LibClass178630* object);
+void lib_panel_detach(LibClass178630* object);
 
 /**
  * @brief Allocate and initialize the panel transform, then set its third component.
@@ -74,7 +74,7 @@ void func_004C4A90(LibClass178630* object);
  * @param z Third transform component.
  * @return One on successful setup, otherwise zero.
  */
-s32 func_004C4AB0(LibClass178630* object, float z);
+s32 lib_panel_init_transform(LibClass178630* object, float z);
 
 /**
  * @brief Configure the widget mode and rectangle.
@@ -87,9 +87,9 @@ s32 func_004C4AB0(LibClass178630* object, float z);
  * @param extra Additional widget component.
  * @return Configuration status.
  */
-s32 func_004C5A80(LibClass178630* object, s32 mode, float x, float y, float width, float height, float extra);
+s32 lib_panel_init_rectangle(LibClass178630* object, s32 mode, float x, float y, float width, float height, float extra);
 /** @brief Set the four packed panel colors. @param object Panel widget. @param colors Four packed colors. */
-void func_4C5590(LibClass178630* object, const LibWidgetColors4C5590* colors);
+void lib_panel_set_colors(LibClass178630* object, const LibWidgetColors4C5590* colors);
 #ifdef __cplusplus
 }
 #endif
@@ -104,7 +104,7 @@ typedef struct LibBounds4C69B0
 } LibBounds4C69B0;
 
 /**
- * @brief Set the text widget rectangle.
+ * @brief Initialize the text widget rectangle and clear its allocation and pending flag.
  * @param object Text widget.
  * @param x Origin x.
  * @param y Origin y.
@@ -114,29 +114,9 @@ typedef struct LibBounds4C69B0
 #ifdef __cplusplus
 extern "C"
 #endif
-void func_004C7FB0(LibObject178750* object, float x, float y, float width, float height);
+void lib_text_init_rectangle(LibObject178750* object, float x, float y, float width, float height);
 
 #ifdef __cplusplus
-/** Virtual intrusive-link root. */
-class LibClass171E80
-{
-public:
-    /** @brief Destroy the intrusive-link root. */
-    virtual ~LibClass171E80()
-    {
-    }
-};
-/** Intrusive list sentinel initialized by the resident list constructor. */
-class LibClass171E90 : public LibClass171E80
-{
-public:
-    /** @brief Destroy the list sentinel and its virtual root. */
-    virtual ~LibClass171E90()
-    {
-    }
-    LibClass171E90* unk04;
-    LibClass171E90* unk08;
-};
 /** Partial 0x20-byte list receiver with the actual virtual pointer at 0x10. */
 class LibClass178A70
 {
@@ -207,12 +187,15 @@ public:
      * @brief Set the transform codes and its third coordinate.
      * @param code Transform code.
      * @param first First byte value.
+     * @param z Third coordinate.
      * @param second Word value.
      * @param third Second byte value.
-     * @param z Third coordinate.
      */
-    void func_0044B110(s32 code, u8 first, u32 second, u8 third, float z);
-    u8 unk94[0x14];
+    void set_codes_and_z(s32 code, u32 first, float z, u32 second, u32 third);
+    u32 unk94;
+    u8 unk98[8];
+    s32 unka0;
+    u32 unka4;
     u8 unka8;
     u8 unka9;
     u8 unkaa;
@@ -235,7 +218,18 @@ class LibObject178660;
  * @param z Third transform component.
  * @return Configuration status.
  */
-extern "C" s32 func_004C6510(LibObject178660* object, s32 first, s32 second, s32 third, float x, float y, float z);
+/**
+ * @brief Allocate container drawing storage and initialize its transform.
+ * @param object Container receiver.
+ * @param code Transform code.
+ * @param first First byte value.
+ * @param second Word value.
+ * @param x First coordinate.
+ * @param y Second coordinate.
+ * @param z Third coordinate.
+ * @return One on success, or zero if storage cannot be allocated.
+ */
+extern "C" s32 lib_container_init(LibObject178660* object, s32 code, float x, float y, s32 first, float z, s32 second);
 
 /** 0xF0-byte container, with a list base and a secondary transform base. */
 class LibObject178660 : public LibClass178A70, public LibClass174610
@@ -255,7 +249,7 @@ public:
     LibObject178660(float x, float y, float z)
     {
         unk6c = 0x6FF1;
-        func_004C6510(this, 5, 0, 0, x, y, z);
+        lib_container_init(this, 5, x, y, 0, z, 0);
     }
     /** @brief Destroy the container. */
     virtual ~LibObject178660();
@@ -290,7 +284,7 @@ struct LibObject178750 : public LibClass174EF0
     LibObject178750()
     {
         unk38 = 11;
-        func_004C7FB0(this, 0.0f, 0.0f, 0.0f, 0.0f);
+        lib_text_init_rectangle(this, 0.0f, 0.0f, 0.0f, 0.0f);
     }
     /** @brief Destroy the text widget. */
     virtual ~LibObject178750();
@@ -309,7 +303,7 @@ struct LibObject178750 : public LibClass174EF0
      * @param flag Slot state flag.
      * @return Configuration status.
      */
-    s32 func_004C7FE0(float x, float y, float width, float height, s32 slot, s32 key, u8 flag);
+    s32 init_resource_rectangle(float x, float y, float width, float height, s32 slot, s32 key, u8 flag);
     LibClass171EA0* unkfc;
     u8 unk100[0x14];
 };
@@ -321,7 +315,7 @@ struct LibObject174D90 : public LibObject178750
     LibObject174D90()
     {
         unk38 = 12;
-        func_004616D0(this, 0.0f, 0.0f, 0.0f, 0.0f);
+        lib_multiline_text_init_rectangle(this, 0.0f, 0.0f, 0.0f, 0.0f);
     }
     /** @brief Release the multiline allocation and destroy the text widget. */
     virtual ~LibObject174D90();
@@ -341,7 +335,7 @@ struct LibObject174D90 : public LibObject178750
      * @param flag Flag whose low byte is stored by the widget.
      * @return One on successful setup, otherwise zero.
      */
-    s32 func_00461720(float x, float y, float width, float height, s32 slot, s32 key, u32 mode, u32 flag);
+    s32 init_multiline_resource_rectangle(float x, float y, float width, float height, s32 slot, s32 key, u32 mode, u32 flag);
     u8 unk114[0x410];
     float unk524;
     float unk528;
@@ -378,12 +372,12 @@ struct LibClass178630 : public LibClass178600
         unk50.unk04 = 0.0f;
         unk50.unk00 = 0.0f;
         unk38 = 1;
-        func_004C5A80(this, mode, x, y, width, height, extra);
+        lib_panel_init_rectangle(this, mode, x, y, width, height, extra);
     }
     /** @brief Destroy the widget. */
     virtual ~LibClass178630()
     {
-        func_004C4A90(this);
+        lib_panel_detach(this);
     }
     /** @brief Refresh the panel drawing state. */
     virtual void func_00413D20();
@@ -393,7 +387,9 @@ struct LibClass178630 : public LibClass178600
     u8 unk4c[4];
     LibUiRect16 unk50;
     void* unk60;
-    u8 unk64[0x2C];
+    u8 unk64[0x28];
+    u8 unk8c;
+    u8 unk8d[3];
 };
 
 /** Partial Lib keyframe channel interface, with root vtable D_173180 and known derived table D_1782E0. */
@@ -545,7 +541,7 @@ public:
     /** @brief Construct an empty object. */
     LibClass178220();
 
-    u8 unk04[0x2C];
+    u8 unk14[0x1C];
     void* unk30;
     u8 unk34[4];
     s32 unk38;
@@ -671,7 +667,7 @@ void func_004BD9D0(LibClass178220* object, s32 index, LibClass173180* channel, u
  * @param object Lib text receiver to rebuild.
  * @return Bounds at offset 0xE8, or null when rebuilding fails.
  */
-LibBounds4C69B0* func_004C69B0(LibObject178750* object);
+LibBounds4C69B0* lib_text_measure_bounds(LibObject178750* object);
 
 /**
  * @brief Release the data a LibClass178220 builds from its block at offset 0x40.

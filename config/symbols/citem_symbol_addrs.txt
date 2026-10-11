@@ -3,13 +3,13 @@ func_00100AC0 = 0x100AC0; // type:func
 func_100B40 = 0x100B40; // type:func
 func_100C80 = 0x100C80; // type:func
 func_100C90 = 0x100C90; // type:func
-func_00101290 = 0x101290; // type:func
-func_00101440 = 0x101440; // type:func
-func_0010D8E0 = 0x10D8E0; // type:func
+resident_get_entry_table = 0x101290; // type:func
+resident_find_entry = 0x101440; // type:func
+resident_get_runtime_owner = 0x10D8E0; // type:func
 func_112400 = 0x112400; // type:func
-func_1134C0 = 0x1134C0; // type:func
-func_113710 = 0x113710; // type:func
-func_0011ED90 = 0x11ED90; // type:func
+func_1134C0 = 0x001134C0; // type:func absolute:True allow_duplicated:True
+func_113710 = 0x00113710; // type:func absolute:True allow_duplicated:True
+resident_enqueue_object = 0x11ED90; // type:func
 func_11F140 = 0x11F140; // type:func
 func_0011F770 = 0x0011F770; // type:func
 func_11F830 = 0x11F830; // type:func
@@ -41,7 +41,7 @@ func_2BC410 = 0x2BC410; // type:func
 func_2BC4A0 = 0x2BC4A0; // type:func
 func_2CD7C0 = 0x2CD7C0; // type:func
 func_2CD8B0 = 0x2CD8B0; // type:func
-func_2CD9F0 = 0x2CD9F0; // type:func
+func_2CD9F0 = 0x2CD9F0; // type:func absolute:True allow_duplicated:True
 func_2CDA60 = 0x2CDA60; // type:func
 func_2CDFB0 = 0x2CDFB0; // type:func
 func_2CE220 = 0x2CE220; // type:func
@@ -72,40 +72,36 @@ func_40C9F0 = 0x40C9F0; // type:func
 func_0040CF90 = 0x40CF90; // type:func
 func_40D890 = 0x40D890; // type:func
 func_0040D930 = 0x40D930; // type:func
-func_413F70 = 0x413F70; // type:func
-func_4143F0 = 0x4143F0; // type:func
-func_41A930 = 0x41A930; // type:func
+lib_item_code_init_rectangle = 0x00413F70; // type:func absolute:True
+lib_detail_code_init_rectangle = 0x004143F0; // type:func absolute:True
+lib_list_indicator_init = 0x41A930; // type:func
 func_421170 = 0x421170; // type:func
 func_44B110 = 0x44B110; // type:func
 func_0044B210 = 0x44B210; // type:func
 func_44B2D0 = 0x44B2D0; // type:func
-func_44B510 = 0x44B510; // type:func
-func_44B570 = 0x44B570; // type:func
-func_453FF0 = 0x453FF0; // type:func
+lib_draw_state_init = 0x00453FF0; // type:func absolute:True
 func_4618F0 = 0x4618F0; // type:func
 func_00464B10 = 0x464B10; // type:func
-func_464D90 = 0x464D90; // type:func
-func_465430 = 0x465430; // type:func
+lib_numeric_widget_init_rectangle = 0x464D90; // type:func absolute:True
+lib_release_resource_slot = 0x465430; // type:func absolute:True
 func_4656B0 = 0x4656B0; // type:func
-func_465B20 = 0x465B20; // type:func
-func_467360 = 0x467360; // type:func
+lib_queue_display_object = 0x465B20; // type:func absolute:True
+lib_moving_widget_init_position = 0x467360; // type:func
 func_467AD0 = 0x467AD0; // type:func
 func_4C48B0 = 0x4C48B0; // type:func
 func_004C4960 = 0x4C4960; // type:func
-func_4C4A90 = 0x4C4A90; // type:func
 func_4C4AB0 = 0x4C4AB0; // type:func
-func_4C5590 = 0x4C5590; // type:func
+lib_panel_set_colors = 0x4C5590; // type:func
 func_004C5A80 = 0x4C5A80; // type:func
-func_004C6190 = 0x4C6190; // type:func
+lib_container_attach_widget = 0x4C6190; // type:func
 func_4C6510 = 0x4C6510; // type:func
-func_4C69B0 = 0x4C69B0; // type:func
-func_4C6DF0 = 0x4C6DF0; // type:func
-func_004C7FB0 = 0x4C7FB0; // type:func
-func_004C7FE0 = 0x4C7FE0; // type:func
+lib_text_measure_bounds = 0x4C69B0; // type:func
+lib_text_init_rectangle = 0x4C7FB0; // type:func
+lib_text_init_resource_rectangle = 0x4C7FE0; // type:func absolute:True
 func_4CA050 = 0x4CA050; // type:func
 func_4CE4C0 = 0x4CE4C0; // type:func
 func_4D00B0 = 0x4D00B0; // type:func
-func_4D65C0 = 0x4D65C0; // type:func
+lib_object_detach_owner = 0x4D65C0; // type:func absolute:True
 item_update_horizontal_scroll = 0x003529C0; // type:func
 item_append_list_value = 0x00354160; // type:func
 item_select_previous_entry = 0x0034AE90; // type:func
@@ -184,3 +180,42 @@ item_initialize_text_panel = 0x00349C60; // type:func
 item_initialize_choice_window = 0x348C40; // type:func
 
 item_update_allocation_page = 0x34F9F0; // type:func
+lib_text_set_resource = 0x004C6DF0; // type:func absolute:True
+lib_multiline_text_set_resource = 0x0045F690; // type:func absolute:True
+lib_panel_detach = 0x004C4A90; // type:func absolute:True
+
+remove_child__16FieldClass153E30FPv = 0x00263F50; // type:func absolute:True
+
+field_queue_window_removal = 0x002CFE10; // type:func absolute:True
+
+lib_multiline_text_init_rectangle = 0x004616D0; // type:func absolute:True allow_duplicated:True
+lib_multiline_text_init_resource_rectangle = 0x00461720; // type:func absolute:True
+resident_next_random_word = 0x0010CF80; // type:func absolute:True
+lib_scissor_init_reset = 0x0044B510; // type:func absolute:True
+lib_scissor_init_rectangle = 0x0044B570; // type:func absolute:True
+
+lib_panel_init_rectangle = 0x004C5A80; // type:func size:0xD8 absolute:True allow_duplicated:True
+
+lib_collect_unequipped_allocations = 0x0040CF90; // type:func absolute:True allow_duplicated:True
+
+func_slot5c__16FieldClass15AD40Fv = 0x002CD7C0; // type:func absolute:True allow_duplicated:True
+
+set_selection_marker__16FieldClass15AD40FP14LibClass174EF0Ui = 0x002CD8B0; // type:func absolute:True allow_duplicated:True
+
+configure_selection__16FieldClass15AE60Fiii = 0x002CE220; // type:func absolute:True allow_duplicated:True
+
+__ct__16FieldClass15AD40Fv = 0x002CDA60; // type:func absolute:True allow_duplicated:True
+
+__dt__16FieldClass15AD40Fv = 0x002CD9F0; // type:func absolute:True allow_duplicated:True
+
+__vt__16FieldClass15AD40 = 0x0015AD40; // type:u32 absolute:True allow_duplicated:True
+
+__vt__16FieldClass15AE60 = 0x0015AE60; // type:u32 absolute:True allow_duplicated:True
+
+resident_heap_release = 0x001134C0; // type:func absolute:True allow_duplicated:True
+
+resident_heap_allocate = 0x00113710; // type:func absolute:True allow_duplicated:True
+
+resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplicated:True
+
+lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True

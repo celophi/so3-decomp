@@ -20,6 +20,15 @@ extern "C" void func_002CFA80(FieldCountedList* list);
 extern "C" void func_002CFC00(FieldCountedList* list);
 extern "C" void func_002CFD80(FieldCountedList* list);
 
+/** Partial runtime directory containing the deferred window-removal list. */
+struct FieldWindowRemovalContext
+{
+    u8 pad00[0x30];
+    FieldCountedList pending_removals;
+};
+
+extern "C" void func_00264460(FieldCountedList* list, void* value);
+
 /** Partial object with byte values at 0x18 and 0x88, and flags at 0x1A. */
 typedef struct FieldD1440Object
 {
@@ -35,7 +44,19 @@ FieldClass15AE70::~FieldClass15AE70()
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CEBE0);
+FieldClass15AE70::FieldClass15AE70()
+{
+    unk04 = 0;
+    unk08 = 0;
+    unk0a = 0x80;
+    unk0c = 0;
+    unk10 = 0;
+    unk98 = 0;
+    unk9c = 0;
+    unk0d = 0;
+    unka4 = 0.0f;
+    unka0 = 0;
+}
 
 FieldClass15B008::FieldClass15B008()
 {
@@ -522,7 +543,13 @@ s32 func_002CFE00(FieldClass150070* object)
     return 3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CFE10);
+void field_queue_window_removal(FieldWindowRemovalContext* context, FieldClass15AE70* window)
+{
+    if (window != 0)
+    {
+        func_00264460(&context->pending_removals, window);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CFE40);
 
@@ -559,8 +586,8 @@ s32 func_002D1440(FieldD1440Object* object, u8 value, u32 flags)
 /** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
 extern "C" void func_002D1480(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D14B0);
@@ -590,7 +617,7 @@ FieldClass15B090::~FieldClass15B090()
 extern "C" void func_002D19E0(FieldClass150F90* object)
 {
     object->FieldClass150F90::func_00204E40();
-    func_004D65C0(object);
+    lib_object_detach_owner(object);
     object->func_001DD7B0();
 }
 

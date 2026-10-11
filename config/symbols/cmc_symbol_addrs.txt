@@ -40,10 +40,7 @@ __dt__14LibClass178600Fv = 0x004C48B0; // type:func absolute:True allow_duplicat
 func_4C48B0 = 0x004C48B0; // type:func absolute:True allow_duplicated:True
 __ct__14LibClass178600Fv = 0x004C4960; // type:func absolute:True allow_duplicated:True
 func_4C4960 = 0x004C4960; // type:func absolute:True allow_duplicated:True
-func_004C4A90 = 0x004C4A90; // type:func absolute:True allow_duplicated:True
-func_4C4A90 = 0x004C4A90; // type:func absolute:True allow_duplicated:True
-func_004C7FB0 = 0x004C7FB0; // type:func absolute:True allow_duplicated:True
-func_4C7FB0 = 0x004C7FB0; // type:func absolute:True allow_duplicated:True
+lib_text_init_rectangle = 0x004C7FB0; // type:func absolute:True allow_duplicated:True
 __dt__15LibObject178750Fv = 0x004C8040; // type:func absolute:True allow_duplicated:True
 func_4C8040 = 0x004C8040; // type:func absolute:True allow_duplicated:True
 __vt__14CmcClass189C20 = 0x00189C20; // absolute:True
@@ -120,7 +117,7 @@ func_slotb0__14CmcClass189920Fv = 0x0034DC70; // type:func
 
 func_slotb0__14CmcClass189A20Fv = 0x0034DF60; // type:func
 
-func_002CFE10 = 0x002CFE10; // type:func absolute:True
+field_queue_window_removal = 0x002CFE10; // type:func absolute:True
 D_001B643C = 0x001B643C; // type:u32 absolute:True
 func_slot44__16FieldClass15AE70Fv = 0x0034BB40; // type:func allow_duplicated:True
 func_slotb0__14CmcClass189F20Fv = 0x00350BF0; // type:func
@@ -173,18 +170,18 @@ func_003591A0 = 0x003591A0; // type:func absolute:True
 
 release_resources__14CmcClass18AF20Fv = 0x003585B0; // type:func
 func_001DD7B0__14CmcClass18AF20Fv = 0x00358600; // type:func
-func_00465430 = 0x00465430; // type:func absolute:True
-func_004D65C0 = 0x004D65C0; // type:func absolute:True
-func_0011ED90 = 0x0011ED90; // type:func absolute:True
+lib_release_resource_slot = 0x00465430; // type:func absolute:True
+lib_object_detach_owner = 0x004D65C0; // type:func absolute:True
+resident_enqueue_object = 0x0011ED90; // type:func absolute:True
 func_003585B0 = 0x003585B0; // type:func absolute:True
 func_00358600 = 0x00358600; // type:func absolute:True
 
 func_001E1820__14CmcClass18AF20FPv = 0x00358C90; // type:func
 func_00358C90 = 0x00358C90; // type:func absolute:True
-func_00100C90 = 0x00100C90; // type:func absolute:True
-func_00100C80 = 0x00100C80; // type:func absolute:True
-func_00113710 = 0x00113710; // type:func absolute:True
-func_001134C0 = 0x001134C0; // type:func absolute:True
+resident_get_allocation_heap = 0x00100C90; // type:func absolute:True
+resident_exchange_allocation_heap = 0x00100C80; // type:func absolute:True
+func_00113710 = 0x00113710; // type:func absolute:True allow_duplicated:True
+func_001134C0 = 0x001134C0; // type:func absolute:True allow_duplicated:True
 func_004656B0 = 0x004656B0; // type:func absolute:True
 
 func_slot6c__14CmcClass189110Fv = 0x0034A1F0; // type:func
@@ -247,3 +244,49 @@ func_slotb4__14CmcClass189110Fv = 0x0034A230; // type:func
 func_0034A230 = 0x0034A230; // type:func absolute:True
 dispatch_window_request__14CmcClass18AF20Fv = 0x00357FC0; // type:func
 func_00357FC0 = 0x00357FC0; // type:func absolute:True
+lib_text_set_resource = 0x004C6DF0; // type:func absolute:True
+lib_multiline_text_set_resource = 0x0045F690; // type:func absolute:True
+lib_panel_detach = 0x004C4A90; // type:func absolute:True
+
+remove_child__16FieldClass153E30FPv = 0x00263F50; // type:func absolute:True
+
+lib_container_attach_widget = 0x004C6190; // type:func absolute:True allow_duplicated:True
+
+lib_multiline_text_init_rectangle = 0x004616D0; // type:func absolute:True allow_duplicated:True
+
+lib_moving_widget_init_position = 0x00467360; // type:func absolute:True allow_duplicated:True
+
+lib_panel_set_colors = 0x004C5590; // type:func absolute:True allow_duplicated:True
+
+lib_text_measure_bounds = 0x004C69B0; // type:func absolute:True allow_duplicated:True
+
+lib_list_indicator_init = 0x0041A930; // type:func absolute:True allow_duplicated:True
+lib_draw_state_init = 0x00453FF0; // type:func absolute:True
+lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True
+lib_multiline_text_init_resource_rectangle = 0x00461720; // type:func absolute:True
+lib_numeric_widget_init_rectangle = 0x00464D90; // type:func absolute:True
+resident_next_random_word = 0x0010CF80; // type:func absolute:True
+lib_scissor_init_reset = 0x0044B510; // type:func absolute:True
+lib_scissor_init_rectangle = 0x0044B570; // type:func absolute:True
+
+func_slot5c__16FieldClass15AD40Fv = 0x002CD7C0; // type:func absolute:True allow_duplicated:True
+
+set_selection_marker__16FieldClass15AD40FP14LibClass174EF0Ui = 0x002CD8B0; // type:func absolute:True allow_duplicated:True
+
+configure_selection__16FieldClass15AE60Fiii = 0x002CE220; // type:func absolute:True allow_duplicated:True
+
+__ct__16FieldClass15AD40Fv = 0x002CDA60; // type:func absolute:True allow_duplicated:True
+
+__dt__16FieldClass15AD40Fv = 0x002CD9F0; // type:func absolute:True allow_duplicated:True
+
+__vt__16FieldClass15AD40 = 0x0015AD40; // type:u32 absolute:True allow_duplicated:True
+
+__vt__16FieldClass15AE60 = 0x0015AE60; // type:u32 absolute:True allow_duplicated:True
+
+resident_heap_release = 0x001134C0; // type:func absolute:True allow_duplicated:True
+
+resident_heap_allocate = 0x00113710; // type:func absolute:True allow_duplicated:True
+
+resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplicated:True
+
+lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True

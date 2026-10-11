@@ -32,7 +32,7 @@ extern "C" void func_0020DA30(FieldClass151640* object, FieldShapeOwner18* shape
         {
             FieldClass151590* node = new (0) FieldClass151590;
             node->func_0020DBC0(shape, (FieldShapeData10*)object->FieldClass1515D0::unk00, index);
-            object->unk178.func_004D74F0(node, (void*)-1);
+            object->unk178.func_004D74F0(node, -1);
             for (;; index++)
             {
                 records[index].unk0c_4 = 1;
@@ -129,8 +129,8 @@ extern "C" void func_0020DEF0(FieldClass151640* object, LibClass178DD0* source)
             break;
         }
         node = node->unk08;
-        func_004D65C0(current);
-        object->func_004D74F0(current, (void*)-1);
+        lib_object_detach_owner(current);
+        object->func_004D74F0(current, -1);
     }
 }
 
@@ -151,8 +151,8 @@ extern "C" void func_0020DF80(FieldClass151640* object, LibClass178DD0* destinat
             break;
         }
         node = node->unk08;
-        func_004D65C0(current);
-        destination->func_004D74F0(current, (void*)-1);
+        lib_object_detach_owner(current);
+        destination->func_004D74F0(current, -1);
     }
 }
 
@@ -169,7 +169,7 @@ void FieldClass151640::func_001DD730()
             break;
         }
         node = node->unk08;
-        func_004D65C0(current);
+        lib_object_detach_owner(current);
         static_cast<FieldClass150070*>(current)->func_001DD7B0();
     }
 }
@@ -183,7 +183,7 @@ extern "C" void func_0020E090(FieldClass151640* object, FieldClass150070* node)
 {
     if (node)
     {
-        func_004D65C0(node);
+        lib_object_detach_owner(node);
         node->func_001DD7B0();
     }
 }
@@ -196,7 +196,7 @@ extern "C" void func_0020E090(FieldClass151640* object, FieldClass150070* node)
  */
 extern "C" FieldClass151570* func_0020E0D0(FieldClass151640* object, FieldClass151620* entry)
 {
-    object->func_004D74F0(entry, (void*)-1);
+    object->func_004D74F0(entry, -1);
     FieldClass151570* attachment = func_0020D5E0(object,
         ((FieldRoot26FF70*)D_001B6430->context->unk08->unkdc)->unkD8->unk8c, &entry->shape);
     if (attachment)

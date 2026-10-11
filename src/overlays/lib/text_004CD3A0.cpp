@@ -83,14 +83,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0020);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0090);
 
-const void* func_004D00A0(void* object)
+extern "C" const void* func_004D00A0(void* object)
 {
     return 0;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D00B0);
 
-s32 func_004D0160(void* object)
+extern "C" s32 func_004D0160(void* object)
 {
     return 16;
 }
@@ -181,12 +181,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5760);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5780);
 
-s32 func_004D5810(void* object)
+extern "C" s32 func_004D5810(void* object)
 {
     return 10;
 }
 
-void func_004D5820(void* object)
+extern "C" void func_004D5820(void* object)
 {
 }
 
@@ -200,7 +200,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5860);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5870);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D58C0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __ct__14LibClass172000Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5940);
 
@@ -224,7 +224,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5C90);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5CD0);
 
-s32 func_004D5D70(void* object)
+extern "C" s32 func_004D5D70(void* object)
 {
     return 0;
 }
@@ -255,7 +255,25 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6430);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6510);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D65C0);
+/** Partial node prefix with its registered list owner at offset 0x10. */
+struct LibOwnedObjectState
+{
+    u8 pad00[0x10];
+    LibClass178DD0* owner;
+};
+/**
+ * @brief Remove the object from its owner and clear the owner pointer.
+ * @param object Object whose owner receives the removal callback.
+ */
+extern "C" void lib_object_detach_owner(void* object)
+{
+    LibOwnedObjectState* state = (LibOwnedObjectState*)object;
+    if (state->owner)
+    {
+        state->owner->func_004D72A0(object);
+    }
+    state->owner = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6610);
 
@@ -263,7 +281,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6660);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D66B0);
 
-void func_004D66F0(void* object)
+extern "C" void func_004D66F0(void* object)
 {
 }
 
@@ -279,22 +297,22 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6AF0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6C20);
 
-s32 func_004D6DB0(const LibListNode* node)
+extern "C" s32 func_004D6DB0(const LibListNode* node)
 {
     return node->unk0c;
 }
 
-s32 func_004D6DC0(const void* sentinel, const void* node)
+extern "C" s32 func_004D6DC0(const void* sentinel, const void* node)
 {
     return sentinel == node;
 }
 
-LibListNode* func_004D6DD0(const LibListNode* node)
+extern "C" LibListNode* func_004D6DD0(const LibListNode* node)
 {
     return node->next;
 }
 
-void* func_004D6DE0(void* object)
+extern "C" void* func_004D6DE0(void* object)
 {
     return object;
 }
@@ -381,12 +399,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9670);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9810);
 
-void* func_004D99A0(void* object)
+extern "C" void* func_004D99A0(void* object)
 {
     return object;
 }
 
-void func_004D99B0(LibBusyObject* object)
+extern "C" void func_004D99B0(LibBusyObject* object)
 {
     while (object->busy)
     {
@@ -403,7 +421,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9AB0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9AF0);
 
-void func_004D9B50(void* object)
+extern "C" void func_004D9B50(void* object)
 {
 }
 
@@ -449,7 +467,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __dt__14LibClas
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DAD90);
 
-s32 func_004DAFD0(void* object)
+extern "C" s32 func_004DAFD0(void* object)
 {
     return 8;
 }

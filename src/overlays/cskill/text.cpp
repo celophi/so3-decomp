@@ -3,6 +3,7 @@
 #include "main/resident_data.h"
 #include "overlays/1067-00/text_0028E240.h"
 #include "overlays/1067-00/text_0023B1D0.h"
+#include "overlays/1067-00/text_marker.h"
 #include "overlays/1067-00/grid_marker.h"
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_001E1590.h"
@@ -12,6 +13,7 @@
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/1067-00/text_002D5260.h"
 #include "overlays/lib/text_003F90C0.h"
+#include "overlays/1067-00/text_002CEAF0.h"
 
 #include "overlays/1067-00/text_002AE9E0.h"
 #include "main/resident_0011EE70.h"
@@ -481,7 +483,7 @@ static inline void move_active_grid(FieldObject23CEA0* selection, s16 direction)
     u8 inactive = !selection->unk35;
     if (inactive != 1)
     {
-        selection->func_0023CDB0(direction);
+        selection->process_direction(direction);
     }
 }
 
@@ -489,7 +491,6 @@ static inline void move_active_grid(FieldObject23CEA0* selection, s16 direction)
 /** @brief Set display flags for the selected window lists. @param object Window base. @param flag Flag value. @param lists List-selection bit mask. */
 extern "C" void func_002CE530(FieldClass15AE70* object, u32 flag, u32 lists);
 /** @brief Queue a nonnull window in the runtime callback list. @param runtime Runtime callback state. @param object Window to queue. */
-extern "C" void func_002CFE10(SkillRuntimeCallbacks* runtime, FieldClass15AE70* object);
 
 
 typedef struct State003620F0
@@ -1016,10 +1017,8 @@ extern "C" void func_4CE4C0(void* destination, const void* source);
 extern "C" void func_4D00B0(void* object);
 
 extern "C" void func_420D20(FieldObject23B850* object, u32 color);
-extern "C" void func_4C6190(void* owner, void* object);
 
 extern "C" void func_0034BD30(Record0034C1F0* record, s32 index);
-extern "C" void* func_4C69B0(void* item);
 extern "C" s32 func_4C6A40(void* item);
 
 /**
@@ -1569,12 +1568,12 @@ void func_00348720(FieldClass15AE70* receiver)
         {
             if (result_seventh == 0)
             {
-                func_4C6DF0(object->third_label, object->func_slot54(), 0x17C3, 0);
+                lib_text_set_resource(object->third_label, object->func_slot54(), 0x17C3, 0);
                 value = result_eighth;
             }
             else
             {
-                func_4C6DF0(object->third_label, object->func_slot54(), 0x17C4, 0);
+                lib_text_set_resource(object->third_label, object->func_slot54(), 0x17C4, 0);
                 value = result_seventh;
             }
             comparison_value(object->hundreds, hundreds);
@@ -1589,12 +1588,12 @@ void func_00348720(FieldClass15AE70* receiver)
         {
             if (result_first == 0)
             {
-                func_4C6DF0(object->third_label, object->func_slot54(), 0x17C3, 0);
+                lib_text_set_resource(object->third_label, object->func_slot54(), 0x17C3, 0);
                 value = result_second;
             }
             else
             {
-                func_4C6DF0(object->third_label, object->func_slot54(), 0x17C4, 0);
+                lib_text_set_resource(object->third_label, object->func_slot54(), 0x17C4, 0);
                 value = result_first;
             }
             comparison_value(object->hundreds, 1);
@@ -1659,7 +1658,7 @@ void func_00348CB0(SkillComparisonDisplay* record, u32 key)
     if (record->title != 0)
     {
         u32 source = record->func_slot54();
-        func_4C6DF0(record->title, source, key, 0);
+        lib_text_set_resource(record->title, source, key, 0);
     }
 }
 
@@ -1722,22 +1721,22 @@ s32 func_003499B0(SkillTextReceiver* object, u32 associated)
     object->first_value = new (0) LibObject178750;
     object->second_icon = new (0) ItemCreationClass174C40;
     object->second_value = new (0) LibObject178750;
-    object->display->func_004C7FE0(64.0f, 38.0f, 0.0f, 0.0f, (s32)associated, 0x1797, 0);
-    object->first_choice->func_004C7FE0(140.0f, 38.0f, 0.0f, 0.0f, (s32)associated, 0x1798, 0);
-    object->second_choice->func_004C7FE0(140.0f, 38.0f, 0.0f, 0.0f, (s32)associated, 0x1799, 0);
+    object->display->init_resource_rectangle(64.0f, 38.0f, 0.0f, 0.0f, (s32)associated, 0x1797, 0);
+    object->first_choice->init_resource_rectangle(140.0f, 38.0f, 0.0f, 0.0f, (s32)associated, 0x1798, 0);
+    object->second_choice->init_resource_rectangle(140.0f, 38.0f, 0.0f, 0.0f, (s32)associated, 0x1799, 0);
     object->first_choice->unk3f = 0;
     object->second_choice->unk3f = 0;
-    func_4530E0(object->first_icon, 35, 64.0f, 86.0f);
-    object->first_value->func_004C7FE0(100.0f, 90.0f, 0.0f, 0.0f, (s32)associated, 0x1791, 0);
-    func_4530E0(object->second_icon, 32, 64.0f, 122.0f);
-    object->second_value->func_004C7FE0(100.0f, 126.0f, 0.0f, 0.0f, (s32)associated, 0x1792, 0);
-    func_004C6190(object->unk10, object->display);
-    func_004C6190(object->unk10, object->first_choice);
-    func_004C6190(object->unk10, object->second_choice);
-    func_004C6190(object->unk10, object->first_icon);
-    func_004C6190(object->unk10, object->first_value);
-    func_004C6190(object->unk10, object->second_icon);
-    func_004C6190(object->unk10, object->second_value);
+    lib_indexed_resource_init(object->first_icon, 35, 64.0f, 86.0f);
+    object->first_value->init_resource_rectangle(100.0f, 90.0f, 0.0f, 0.0f, (s32)associated, 0x1791, 0);
+    lib_indexed_resource_init(object->second_icon, 32, 64.0f, 122.0f);
+    object->second_value->init_resource_rectangle(100.0f, 126.0f, 0.0f, 0.0f, (s32)associated, 0x1792, 0);
+    lib_container_attach_widget(object->unk10, object->display);
+    lib_container_attach_widget(object->unk10, object->first_choice);
+    lib_container_attach_widget(object->unk10, object->second_choice);
+    lib_container_attach_widget(object->unk10, object->first_icon);
+    lib_container_attach_widget(object->unk10, object->first_value);
+    lib_container_attach_widget(object->unk10, object->second_icon);
+    lib_container_attach_widget(object->unk10, object->second_value);
     return 1;
 }
 
@@ -1845,7 +1844,7 @@ void func_0034AF90(SkillDualSelection* object)
         {
             return;
         }
-        if (selection->func_0023CDB0(1) != 1)
+        if (selection->process_direction(1) != 1)
         {
             func_0034A2B0(object, 0);
             func_00349E80(object);
@@ -1859,7 +1858,7 @@ void func_0034AF90(SkillDualSelection* object)
         {
             return;
         }
-        if (selection->func_0023CDB0(1) != 1)
+        if (selection->process_direction(1) != 1)
         {
             func_0034A130(object, 0);
             func_00349E80(object);
@@ -1881,7 +1880,7 @@ void func_0034B090(SkillDualSelection* object)
         {
             return;
         }
-        if (selection->func_0023CDB0(0) != 1)
+        if (selection->process_direction(0) != 1)
         {
             func_0034A2B0(object, 0);
             func_00349E80(object);
@@ -1895,7 +1894,7 @@ void func_0034B090(SkillDualSelection* object)
         {
             return;
         }
-        if (selection->func_0023CDB0(0) != 1)
+        if (selection->process_direction(0) != 1)
         {
             func_0034A130(object, 0);
             func_00349E80(object);
@@ -1926,7 +1925,7 @@ s32 func_0034B190(SkillDualSelection* record)
     }
     record->second_display = display;
     func_0023BB20(record->second_display, reinterpret_cast<FieldObject23CEB0*>(record->second), 0x808080, record->second_x, record->second_y, 96.0f, 1.0f);
-    func_4C6190(record->unk10, record->second_display);
+    lib_container_attach_widget(record->unk10, reinterpret_cast<LibClass178600*>(record->second_display));
     func_0035C440(reinterpret_cast<SkillList*>(&record->unk8c), record->second_display);
     func_0023CE80((FieldObject23CE80*)record->second, 1, 2);
     func_0023CE60((FieldObject23CE80*)record->second, 0.0f, record->second_spacing);
@@ -1961,7 +1960,7 @@ s32 func_0034B2C0(SkillDualSelection* record)
     }
     record->first_display = display;
     func_0023BB20(record->first_display, reinterpret_cast<FieldObject23CEB0*>(record->first), 0x808080, record->first_x, record->first_y, 48.0f, 1.0f);
-    func_4C6190(record->unk10, record->first_display);
+    lib_container_attach_widget(record->unk10, reinterpret_cast<LibClass178600*>(record->first_display));
     func_0035C440(reinterpret_cast<SkillList*>(&record->unk8c), record->first_display);
     func_0023CE80((FieldObject23CE80*)record->first, 1, 7);
     func_0023CE60((FieldObject23CE80*)record->first, 0.0f, record->first_spacing);
@@ -1994,16 +1993,16 @@ u8 func_0034B720(SkillDualSelection* object)
             return 0;
         }
         s32 slot = static_cast<s32>(object->func_slot54());
-        func_004C7FE0(item, slot, index + 0x1AAA, 0, object->first_x, object->first_y + object->first_spacing * (float)index, 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(item, slot, index + 0x1AAA, 0, object->first_x, object->first_y + object->first_spacing * (float)index, 0.0f, 0.0f);
         item->unk88 = -1.0f;
         item->unk3c = 1;
-        func_004C6190(object->unk10, item);
+        lib_container_attach_widget(object->unk10, item);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), item);
     }
     object->first_marker = new (0) LibClass172600;
     func_0041AD10(object->first_marker, object->first_x, object->first_y, 72.0f, 24.0f);
     object->first_marker->unk3d = 0;
-    func_004C6190(object->unk10, object->first_marker);
+    lib_container_attach_widget(object->unk10, object->first_marker);
     object->second_spacing = 48.0f;
     object->second_x = 116.0f;
     object->second_y = 8.0f + (104.0f - object->second_spacing);
@@ -2015,16 +2014,16 @@ u8 func_0034B720(SkillDualSelection* object)
             return 0;
         }
         s32 slot = static_cast<s32>(object->func_slot54());
-        func_004C7FE0(item, slot, index + 0x1AB8, 0, object->second_x, object->second_y + object->second_spacing * (float)index, 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(item, slot, index + 0x1AB8, 0, object->second_x, object->second_y + object->second_spacing * (float)index, 0.0f, 0.0f);
         item->unk88 = -1.0f;
         item->unk3c = 1;
-        func_004C6190(object->unk10, item);
+        lib_container_attach_widget(object->unk10, item);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->list), item);
     }
     object->second_marker = new (0) LibClass172600;
     func_0041AD10(object->second_marker, object->second_x, object->second_y, 96.0f, 24.0f);
     object->second_marker->unk3d = 0;
-    func_004C6190(object->unk10, object->second_marker);
+    lib_container_attach_widget(object->unk10, object->second_marker);
     return 1;
 }
 
@@ -2039,15 +2038,15 @@ s32 func_0034BA30(SkillDualSelection* object, u32 associated)
     {
         return 0;
     }
-    func_44B570(first, 14.0f, 14.0f, 278.0f, 182.0f);
-    func_004C6190(object->unk10, first);
+    lib_scissor_init_rectangle(first, 14.0f, 14.0f, 278.0f, 182.0f);
+    lib_container_attach_widget(object->unk10, first);
     func_0035CB20(reinterpret_cast<SkillList*>(&object->unk20), first);
     if ((u8)func_0034B720(object) == 0)
     {
         return 0;
     }
-    func_44B510(second, 1);
-    func_004C6190(object->unk10, second);
+    lib_scissor_init_reset(second, 1);
+    lib_container_attach_widget(object->unk10, second);
     func_0035CB20(reinterpret_cast<SkillList*>(&object->unk20), second);
     if ((u8)func_0034B2C0(object) == 0 ||
         (u8)func_0034B190(object) == 0)
@@ -2115,7 +2114,7 @@ void func_0034BEE0(Record0034C1F0* record)
                 second->unk3c = 1;
             }
             func_0034BD30(record, index);
-            func_4C69B0(first);
+            lib_text_measure_bounds(reinterpret_cast<LibObject178750*>(first));
             func_4C6A40(first);
         }
         else if (record->colors[index] != 0)
@@ -2215,14 +2214,9 @@ void func_0034C1F0(Record0034C1F0* record)
     {
         if (record->recipient == 0)
         {
-            FieldObject23B950* recipient = (FieldObject23B950*)::operator new(sizeof(FieldObject23B950), 0);
-            if (recipient != 0)
-            {
-                recipient = func_0023B950(recipient);
-            }
-            record->recipient = recipient;
+            record->recipient = (FieldObject23B950*)new (0) FieldClass153170;
             func_0023B850((FieldObject23B850*)record->recipient, (FieldTarget23B850*)node->value, 0x288080);
-            func_4C6190(record->unk10, record->recipient);
+            lib_container_attach_widget(record->unk10, reinterpret_cast<LibClass178600*>(record->recipient));
         }
         func_0023B7E0(record->recipient, (FieldTarget23B850*)node->value);
         if (record->colors[record->selection->unk114] != 0)
@@ -2411,7 +2405,7 @@ s32 func_0034DA70(SkillModeSelection* object)
     refresh_mode_message(object);
     refresh_mode_message(object);
     func_0034C1F0(object);
-    func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
     return 0;
 }
 
@@ -2433,7 +2427,7 @@ void func_0034DF00(SkillModeSelection* object)
     {
         return;
     }
-    u8 result = selection->func_0023CDB0(1);
+    u8 result = selection->process_direction(1);
     if (result == 1)
     {
         return;
@@ -2468,7 +2462,7 @@ void func_0034E0B0(SkillModeSelection* object)
     {
         return;
     }
-    u8 result = selection->func_0023CDB0(0);
+    u8 result = selection->process_direction(0);
     if (result == 1)
     {
         return;
@@ -2594,8 +2588,8 @@ s32 func_00351490(SkillModeSelection* object, u32 associated)
 {
     object->FieldClass15AE70::func_slot10(associated, 320.0f, 176.0f, 15);
     object->display = new (0) LibObject178750;
-    object->display->func_004C7FE0(248.0f, 9.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x1787, 1);
-    func_004C6190(object->unk10, object->display);
+    object->display->init_resource_rectangle(248.0f, 9.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x1787, 1);
+    lib_container_attach_widget(object->unk10, object->display);
     object->display->set_color(0x288CFF);
     object->display->set_scale(0.6f, 0.6f);
     {
@@ -2611,19 +2605,19 @@ s32 func_00351490(SkillModeSelection* object, u32 associated)
     {
         return 0;
     }
-    func_44B570(first, 14.0f, 20.0f, 278.0f, 176.0f);
-    func_004C6190(object->unk10, first);
+    lib_scissor_init_rectangle(first, 14.0f, 20.0f, 278.0f, 176.0f);
+    lib_container_attach_widget(object->unk10, first);
     func_0035CB20(reinterpret_cast<SkillList*>(&object->unk20), first);
     if ((u8)func_00351090(object) == 0)
     {
         return 0;
     }
     object->marker = new (0) LibClass1725D0;
-    func_41A930(object->marker, 280.0f, 18.0f, 178.0f, 100.0f, 0.0f);
-    func_004C6190(object->unk10, object->marker);
+    lib_list_indicator_init(object->marker, 280.0f, 18.0f, 178.0f, 100.0f, 0.0f);
+    lib_container_attach_widget(object->unk10, object->marker);
     object->marker->unk3f = 0;
-    func_44B510(second, 1);
-    func_004C6190(object->unk10, second);
+    lib_scissor_init_reset(second, 1);
+    lib_container_attach_widget(object->unk10, second);
     func_0035CB20(reinterpret_cast<SkillList*>(&object->unk20), second);
     if ((u8)func_0034E260(object, 6) == 0)
     {
@@ -2677,8 +2671,8 @@ s32 func_00351980(FieldClass15AE70* object, u32 associated)
     {
         return 0;
     }
-    func_004C5A80(widget, 0, 0.0f, 0.0f, 304.0f, 208.0f, 88.0f);
-    func_004C6190(object->unk10, widget);
+    lib_panel_init_rectangle(widget, 0, 0.0f, 0.0f, 304.0f, 208.0f, 88.0f);
+    lib_container_attach_widget(object->unk10, widget);
     return 1;
 }
 
@@ -2732,7 +2726,7 @@ void func_003521C0(Record00352B30* record)
     {
         return;
     }
-    if (selection->func_0023CDB0(1) != 1)
+    if (selection->process_direction(1) != 1)
     {
         func_00351BE0(record);
     }
@@ -2750,7 +2744,7 @@ void func_00352240(Record00352B30* record)
     {
         return;
     }
-    if (selection->func_0023CDB0(0) != 1)
+    if (selection->process_direction(0) != 1)
     {
         func_00351BE0(record);
     }
@@ -3086,7 +3080,7 @@ void func_003538F0(Record003538F0* record)
             first->unk3c = 1;
             second->unk94 = 0x288080;
             second->unk3c = 1;
-            metrics = (LibBounds4C69B0*)func_4C69B0(first);
+            metrics = lib_text_measure_bounds(reinterpret_cast<LibObject178750*>(first));
             func_0023BAB0(record->display, first->position.x,
                          1.0f + (24.0f + first->position.y), 16.0f + metrics->unk08);
         }
@@ -3144,7 +3138,7 @@ void func_00353CA0(Record003538F0* object)
     {
         func_0023CE70(reinterpret_cast<FieldObject23CEB0*>(selection), object->x, object->y + object->spacing);
     }
-    if (object->selection->func_0023CDB0(1) == 1)
+    if (object->selection->process_direction(1) == 1)
     {
         return;
     }
@@ -3184,7 +3178,7 @@ void func_00353DC0(Record003538F0* object)
     {
         func_0023CE70(reinterpret_cast<FieldObject23CEB0*>(selection), object->x, object->y);
     }
-    if (object->selection->func_0023CDB0(0) == 1)
+    if (object->selection->process_direction(0) == 1)
     {
         return;
     }
@@ -3369,7 +3363,7 @@ void func_00355CA0(SkillFourRowSelection* object)
     {
         return;
     }
-    if (selection->func_0023CDB0(1) == 1)
+    if (selection->process_direction(1) == 1)
     {
         return;
     }
@@ -3380,7 +3374,7 @@ void func_00355CA0(SkillFourRowSelection* object)
         {
             item->unk94 = 0x288080;
             item->unk3c = 1;
-            LibBounds4C69B0* metrics = func_004C69B0(item);
+            LibBounds4C69B0* metrics = lib_text_measure_bounds(item);
             func_0023B9B0(object->cursor, (s16)index, metrics->unk08);
         }
         else
@@ -3399,7 +3393,7 @@ void func_00355D90(SkillFourRowSelection* object)
     {
         return;
     }
-    if (selection->func_0023CDB0(0) == 1)
+    if (selection->process_direction(0) == 1)
     {
         return;
     }
@@ -3410,7 +3404,7 @@ void func_00355D90(SkillFourRowSelection* object)
         {
             item->unk94 = 0x288080;
             item->unk3c = 1;
-            LibBounds4C69B0* metrics = func_004C69B0(item);
+            LibBounds4C69B0* metrics = lib_text_measure_bounds(item);
             func_0023B9B0(object->cursor, (s16)index, metrics->unk08);
         }
         else
@@ -3614,9 +3608,9 @@ s32 func_00357F80(FieldClass15AE70* object, u32 associated)
     {
         return 0;
     }
-    func_004C5A80(widget, 0, 0.0f, 0.0f, 304.0f, 208.0f, 88.0f);
+    lib_panel_init_rectangle(widget, 0, 0.0f, 0.0f, 304.0f, 208.0f, 88.0f);
     func_0035CBB0(reinterpret_cast<SkillList*>(&object->unk14), widget);
-    func_004C6190(object->unk10, widget);
+    lib_container_attach_widget(object->unk10, widget);
     return 1;
 }
 
@@ -3828,7 +3822,7 @@ void func_00359340(SkillSecondarySelection* object)
         {
             item->unk94 = 0x288080;
             item->unk3c = 1;
-            LibBounds4C69B0* metrics = static_cast<LibBounds4C69B0*>(func_4C69B0(item));
+            LibBounds4C69B0* metrics = lib_text_measure_bounds(reinterpret_cast<LibObject178750*>(item));
             func_0023B9B0(object->cursor, (s16)index, metrics->unk08);
         }
         else
@@ -3887,7 +3881,7 @@ s32 func_00359730(FieldClass15AE70* object)
     u8 ready = loader->unk2d != 0;
     if (ready == 1)
     {
-        object->func_slot1c(1, 0x80);
+        object->set_state(1, 0x80);
     }
     else
     {
@@ -3898,7 +3892,7 @@ s32 func_00359730(FieldClass15AE70* object)
         }
         choice->func_slot10(object->func_slot54(), 192.0f, 160.0f, 5);
         choice->func_slot40(object);
-        D_001B643C->callbacks->controller->func_00263FD0(choice);
+        D_001B643C->callbacks->controller->add_child(choice);
         D_001B643C->callbacks->controller->func_00263C70(choice);
     }
     return 2;
@@ -3948,7 +3942,7 @@ s32 func_00359870(SkillSecondarySelection* object)
             {
                 item->unk94 = 0x288080;
                 item->unk3c = 1;
-                LibBounds4C69B0* metrics = static_cast<LibBounds4C69B0*>(func_4C69B0(item));
+                LibBounds4C69B0* metrics = lib_text_measure_bounds(reinterpret_cast<LibObject178750*>(item));
                 func_0023B9B0(window->cursor, (s16)index, metrics->unk08);
             }
             else
@@ -4063,7 +4057,7 @@ void func_00359D80(SkillSecondarySelection* object)
     {
         return;
     }
-    if (object->selection->func_0023CDB0(1) == 1)
+    if (object->selection->process_direction(1) == 1)
     {
         return;
     }
@@ -4085,7 +4079,7 @@ void func_00359E30(SkillSecondarySelection* object)
     {
         return;
     }
-    if (object->selection->func_0023CDB0(0) == 1)
+    if (object->selection->process_direction(0) == 1)
     {
         return;
     }
@@ -4114,17 +4108,17 @@ s32 func_00359EE0(SkillSecondarySelection* object, u32 associated)
     {
         return 0;
     }
-    func_004C5A80(panel, 0, 0.0f, 0.0f, 200.0f, 104.0f, 88.0f);
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 200.0f, 104.0f, 88.0f);
     func_0035CBB0(reinterpret_cast<SkillList*>(&object->unk14), panel);
-    func_004C6190(object->unk10, panel);
-    second->func_004C7FE0(70.0f, 13.0f, 0.0f, 0.0f, (s32)associated, 0x1777, 0);
-    first->func_004C7FE0(70.0f, 40.0f, 0.0f, 0.0f, (s32)associated, 0x1776, 0);
-    third->func_004C7FE0(70.0f, 67.0f, 0.0f, 0.0f, (s32)associated, 0x1778, 0);
-    func_004C6190(object->unk10, second);
+    lib_container_attach_widget(object->unk10, panel);
+    second->init_resource_rectangle(70.0f, 13.0f, 0.0f, 0.0f, (s32)associated, 0x1777, 0);
+    first->init_resource_rectangle(70.0f, 40.0f, 0.0f, 0.0f, (s32)associated, 0x1776, 0);
+    third->init_resource_rectangle(70.0f, 67.0f, 0.0f, 0.0f, (s32)associated, 0x1778, 0);
+    lib_container_attach_widget(object->unk10, second);
     func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), second);
-    func_004C6190(object->unk10, first);
+    lib_container_attach_widget(object->unk10, first);
     func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), first);
-    func_004C6190(object->unk10, third);
+    lib_container_attach_widget(object->unk10, third);
     func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), third);
     second->unk94 = 0x288080;
     second->unk3c = 1;
@@ -4141,10 +4135,10 @@ s32 func_00359EE0(SkillSecondarySelection* object, u32 associated)
     icon_second->func_002D6440(func_002D3CC0(D_001B643C->resources, 0x12), 32.0f, 11.0f);
     icon_first->func_002D6440(func_002D3CC0(D_001B643C->resources, 0x14), 32.0f, 38.0f);
     icon_third->func_002D6440(func_002D3CC0(D_001B643C->resources, 0x15), 32.0f, 65.0f);
-    func_004C6190(object->unk10, icon_first);
-    func_004C6190(object->unk10, icon_second);
-    func_004C6190(object->unk10, icon_third);
-    LibBounds4C69B0* metrics = func_004C69B0(first);
+    lib_container_attach_widget(object->unk10, icon_first);
+    lib_container_attach_widget(object->unk10, icon_second);
+    lib_container_attach_widget(object->unk10, icon_third);
+    LibBounds4C69B0* metrics = lib_text_measure_bounds(first);
     FieldObject23BE00* cursor = static_cast<FieldObject23BE00*>(::operator new(0x6C, 0));
     if (cursor != 0)
     {
@@ -4152,7 +4146,7 @@ s32 func_00359EE0(SkillSecondarySelection* object, u32 associated)
     }
     object->cursor = cursor;
     object->cursor->func_0023BB20(70.0f, 13.0f, metrics->unk08, 1.0f, object->selection, 0x288080);
-    func_004C6190(object->unk10, object->cursor);
+    lib_container_attach_widget(object->unk10, object->cursor);
     func_0035C440(reinterpret_cast<SkillList*>(&object->unk8c), object->cursor);
     object->selection->func_0023CE80(1, 3);
     object->selection->func_0023CE60(0.0f, 27.0f);
@@ -4211,8 +4205,8 @@ void func_0035A650(Record0035A560* record, s32 key)
         record->active = 0;
         record->counter = 0;
         u32 source = record->func_slot54();
-        func_4C6DF0(record->display, source, key, 0);
-        LibBounds4C69B0* extent = func_004C69B0(record->display);
+        lib_text_set_resource(record->display, source, key, 0);
+        LibBounds4C69B0* extent = lib_text_measure_bounds(record->display);
         record->limit = (s32)extent->unk08 + 6;
     }
 }
@@ -4235,24 +4229,24 @@ s32 func_0035A6E0(Record0035A560* object, u32 associated)
     s32 mode = object->mode;
     if (mode == 1)
     {
-        first->func_004C7FE0(16.0f, 5.0f, 0.0f, 0.0f, (s32)associated, 0x17C7, 0);
-        second->func_004C7FE0(36.0f, 40.0f, 0.0f, 0.0f, (s32)associated, 0x17C8, 0);
+        first->init_resource_rectangle(16.0f, 5.0f, 0.0f, 0.0f, (s32)associated, 0x17C7, 0);
+        second->init_resource_rectangle(36.0f, 40.0f, 0.0f, 0.0f, (s32)associated, 0x17C8, 0);
     }
     else if (mode == 2)
     {
-        first->func_004C7FE0(16.0f, 5.0f, 0.0f, 0.0f, (s32)associated, 0x1770, 0);
-        second->func_004C7FE0(36.0f, 40.0f, 0.0f, 0.0f, (s32)associated, 0x1794, 0);
+        first->init_resource_rectangle(16.0f, 5.0f, 0.0f, 0.0f, (s32)associated, 0x1770, 0);
+        second->init_resource_rectangle(36.0f, 40.0f, 0.0f, 0.0f, (s32)associated, 0x1794, 0);
         first->set_scale(1.1f, 1.1f);
     }
     else
     {
-        first->func_004C7FE0(16.0f, 5.0f, 0.0f, 0.0f, (s32)associated, 0x1770, 0);
-        second->func_004C7FE0(36.0f, 40.0f, 0.0f, 0.0f, (s32)associated, 0x1794, 0);
+        first->init_resource_rectangle(16.0f, 5.0f, 0.0f, 0.0f, (s32)associated, 0x1770, 0);
+        second->init_resource_rectangle(36.0f, 40.0f, 0.0f, 0.0f, (s32)associated, 0x1794, 0);
     }
-    func_004C6190(object->unk10, first);
+    lib_container_attach_widget(object->unk10, first);
     func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), first);
     second->set_scale(0.65f, 0.65f);
-    func_004C6190(object->unk10, second);
+    lib_container_attach_widget(object->unk10, second);
     func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), second);
     object->display = new (0) LibObject178750;
     ItemCreationClass1746A0* first_frame = new (0) ItemCreationClass1746A0;
@@ -4261,18 +4255,18 @@ s32 func_0035A6E0(Record0035A560* object, u32 associated)
     {
         return 0;
     }
-    object->extent = func_004C69B0(first)->unk08;
+    object->extent = lib_text_measure_bounds(first)->unk08;
     object->origin = 18.0f + object->extent;
     object->offset = 640.0f - (16.0f + shifted_position(object->origin, 32.0f));
     object->first_x = 24.0f + object->extent;
-    func_44B570(first_frame, object->origin, 0.0f, object->offset, 56.0f);
-    func_004C6190(object->unk10, first_frame);
+    lib_scissor_init_rectangle(first_frame, object->origin, 0.0f, object->offset, 56.0f);
+    lib_container_attach_widget(object->unk10, first_frame);
     func_0035CB20(reinterpret_cast<SkillList*>(&object->unk20), first_frame);
-    object->display->func_004C7FE0(object->first_x, 6.0f, 0.0f, 0.0f, (s32)associated, 0x1771, 0);
-    func_004C6190(object->unk10, object->display);
+    object->display->init_resource_rectangle(object->first_x, 6.0f, 0.0f, 0.0f, (s32)associated, 0x1771, 0);
+    lib_container_attach_widget(object->unk10, object->display);
     func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), object->display);
-    func_44B510(second_frame, 1);
-    func_004C6190(object->unk10, second_frame);
+    lib_scissor_init_reset(second_frame, 1);
+    lib_container_attach_widget(object->unk10, second_frame);
     func_0035CB20(reinterpret_cast<SkillList*>(&object->unk20), second_frame);
     object->func_slot60(0x1771);
     return 1;
@@ -4332,9 +4326,9 @@ s32 func_0035AC50(FieldClass15AE70* object, u32 associated)
     first->func_002D6440(func_002D3CC0(D_001B643C->resources, 5), 0.0f, 0.0f);
     second->func_002D6440(func_002D3CC0(D_001B643C->resources, 6), 256.0f, 0.0f);
     third->func_002D6440(func_002D3CC0(D_001B643C->resources, 7), 512.0f, 0.0f);
-    func_004C6190(object->unk10, first);
-    func_004C6190(object->unk10, second);
-    func_004C6190(object->unk10, third);
+    lib_container_attach_widget(object->unk10, first);
+    lib_container_attach_widget(object->unk10, second);
+    lib_container_attach_widget(object->unk10, third);
     return 1;
 }
 
@@ -4476,7 +4470,7 @@ INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0035B440);
 void func_0035B4B0(SkillQueueOwner* record)
 {
     FieldClass153E30* entry = record;
-    func_0011ED90(D_001B65F4, entry);
+    resident_enqueue_object(D_001B65F4, entry);
 }
 
 s32 func_0035B4E0(SkillQueueOwner* owner)
@@ -4488,11 +4482,11 @@ s32 func_0035B4E0(SkillQueueOwner* owner)
         message = reinterpret_cast<Record0035A560*>(func_0035ABC0(reinterpret_cast<u8*>(message)));
     }
     resource->func_slotf4(owner->associated);
-    owner->FieldClass153E30::func_00263FD0(resource);
+    owner->FieldClass153E30::add_child(resource);
     resource->func_slot40(0);
     message->mode = owner->kind;
     message->func_slotf4(owner->associated);
-    owner->FieldClass153E30::func_00263FD0(message);
+    owner->FieldClass153E30::add_child(message);
     owner->unk24 = message;
     message->func_slot40(resource);
     if (owner->kind == 1)
@@ -4517,17 +4511,17 @@ s32 func_0035B4E0(SkillQueueOwner* owner)
         owner->primary_rows = rows;
         owner->options = new (0) SkillOptionsWindow;
         owner->list_window->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->list_window);
+        owner->FieldClass153E30::add_child(owner->list_window);
         owner->list_window->func_slot40(owner->primary);
         owner->primary->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->primary);
+        owner->FieldClass153E30::add_child(owner->primary);
         owner->primary->func_slot40(owner->primary_rows);
         owner->primary_rows->func_slot40(owner->list_window);
         owner->primary_rows->func_slot48(owner->options);
         owner->primary_rows->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->primary_rows);
+        owner->FieldClass153E30::add_child(owner->primary_rows);
         owner->options->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->options);
+        owner->FieldClass153E30::add_child(owner->options);
         owner->options->func_slot40(owner->primary_rows);
         message->func_slot60(0x1775);
         owner->unk20 = owner->primary_rows;
@@ -4558,14 +4552,14 @@ s32 func_0035B4E0(SkillQueueOwner* owner)
         owner->mode_query->parent = owner;
         owner->paired->owner = owner;
         owner->secondary->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->secondary);
+        owner->FieldClass153E30::add_child(owner->secondary);
         owner->secondary->func_slot40(message);
         owner->secondary->status = owner->status;
         owner->secondary->four_rows = owner->four_rows;
         owner->secondary->status_rows = owner->status_rows;
         owner->secondary->mode_query = owner->mode_query;
         owner->status->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->status);
+        owner->FieldClass153E30::add_child(owner->status);
         owner->status->func_slot40(owner->secondary);
         owner->status->four_rows = owner->four_rows;
         owner->status->status_rows = owner->status_rows;
@@ -4573,20 +4567,20 @@ s32 func_0035B4E0(SkillQueueOwner* owner)
         owner->status->mode_window = owner->mode_window;
         owner->status->paired = owner->paired;
         owner->four_rows->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->four_rows);
+        owner->FieldClass153E30::add_child(owner->four_rows);
         owner->four_rows->func_slot40(owner->secondary);
         owner->four_rows->message = owner->window;
         owner->four_rows->status = owner->status;
         owner->status_rows->mode_records = owner->mode_records;
         owner->status_rows->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->status_rows);
+        owner->FieldClass153E30::add_child(owner->status_rows);
         owner->status_rows->func_slot40(owner->secondary);
         owner->status_rows->func_slot48(owner->mode_window);
         reinterpret_cast<SkillComparisonDisplay*>(owner->window)->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->window);
+        owner->FieldClass153E30::add_child(owner->window);
         owner->window->func_slot40(owner->status_message);
         owner->text_window->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->text_window);
+        owner->FieldClass153E30::add_child(owner->text_window);
         owner->text_window->func_slot40(owner->mode_query);
         LibObject178660* attachment = owner->text_window->unk10;
         if (attachment != 0)
@@ -4597,20 +4591,20 @@ s32 func_0035B4E0(SkillQueueOwner* owner)
         owner->mode_query->func_slot48(owner->paired);
         owner->mode_query->attachment = owner->text_window;
         owner->mode_query->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->mode_query);
+        owner->FieldClass153E30::add_child(owner->mode_query);
         owner->status_message->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->status_message);
+        owner->FieldClass153E30::add_child(owner->status_message);
         owner->status_message->func_slot40(owner->status);
         owner->mode_message->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->mode_message);
+        owner->FieldClass153E30::add_child(owner->mode_message);
         owner->mode_message->func_slot40(owner->mode_window);
         owner->mode_window->mode_records = owner->mode_records;
         owner->mode_window->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->mode_window);
+        owner->FieldClass153E30::add_child(owner->mode_window);
         owner->mode_window->func_slot40(owner->status_rows);
         owner->mode_window->func_slot48(owner->status);
         owner->paired->func_slotf4(owner->associated);
-        owner->FieldClass153E30::func_00263FD0(owner->paired);
+        owner->FieldClass153E30::add_child(owner->paired);
         owner->paired->func_slot40(owner->mode_query);
         func_00353570(owner->status_rows, 1, 0);
         func_00354190(owner->status_rows);
@@ -4639,11 +4633,7 @@ INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/text", func_0035BD90);
  */
 s32 func_0035BE50(SkillQueueOwner* record)
 {
-    FieldRecordSelection* selection = (FieldRecordSelection*)::operator new(24, 0);
-    if (selection != 0)
-    {
-        selection = func_0028E4D0(selection);
-    }
+    FieldRecordSelection* selection = new (0) FieldRecordSelection;
     record->mode_records = selection;
     if (record->mode_records == 0)
     {
@@ -5272,7 +5262,7 @@ s32 func_0035CE30(FieldClass15AE70* object)
     func_002CE530(object, 0, 0x7F);
     FieldClass153E30* controller = D_001B643C->callbacks->controller;
     controller->func_00263C70(object->func_slot44());
-    func_002CFE10(D_001B643C->callbacks, object);
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->callbacks), object);
     return 2;
 }
 
@@ -5282,7 +5272,7 @@ s32 func_0035CEB0(SkillGridChoice* object)
     object->selected = object->selection->unk114;
     if (object->selected == 0)
     {
-        object->func_slot1c(0xFF, 0x80);
+        object->set_state(0xFF, 0x80);
     }
     else
     {
@@ -5299,8 +5289,8 @@ s32 SkillGridChoice::func_slot10(u32 associated, float x, float y, s32 code)
     {
         return 0;
     }
-    func_004C5A80(panel, 1, 0.0f, 0.0f, 256.0f, 160.0f, 88.0f);
-    func_004C6190(unk10, panel);
+    lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 256.0f, 160.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
     func_0035CBB0(reinterpret_cast<SkillList*>(&unk14), panel);
     LibObject178750* first = new (0) LibObject178750;
     LibObject178750* second = new (0) LibObject178750;
@@ -5309,12 +5299,12 @@ s32 SkillGridChoice::func_slot10(u32 associated, float x, float y, s32 code)
     {
         return 0;
     }
-    func_004C7FE0(first, static_cast<s32>(associated), 0x7E8, 0, 92.0f, 84.0f, 0.0f, 0.0f);
-    func_004C7FE0(second, static_cast<s32>(associated), 0x7E9, 0, 92.0f, 120.0f, 0.0f, 0.0f);
-    func_004C7FE0(title, static_cast<s32>(associated), 0x1793, 0, 16.0f, 16.0f, 0.0f, 0.0f);
-    func_004C6190(unk10, first);
-    func_004C6190(unk10, second);
-    func_004C6190(unk10, title);
+    lib_text_init_resource_rectangle(first, static_cast<s32>(associated), 0x7E8, 0, 92.0f, 84.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(second, static_cast<s32>(associated), 0x7E9, 0, 92.0f, 120.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(title, static_cast<s32>(associated), 0x1793, 0, 16.0f, 16.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(unk10, first);
+    lib_container_attach_widget(unk10, second);
+    lib_container_attach_widget(unk10, title);
     func_0035C9D0(reinterpret_cast<SkillList*>(&unk2c), first);
     func_0035C9D0(reinterpret_cast<SkillList*>(&unk2c), second);
     func_0035C9D0(reinterpret_cast<SkillList*>(&unk2c), title);
@@ -5681,8 +5671,6 @@ Record003610F0* func_003610F0(Record003610F0* record, s16 flag)
     return release_record183da0(record, flag);
 }
 
-extern "C" void func_002CEA20(void* object);
-
 void func_00361150(Record00364810* object)
 {
     SkillListNode* node = object->nested.head->next;
@@ -5692,14 +5680,14 @@ void func_00361150(Record00364810* object)
         display->func_003EF740();
         node = node->next;
     }
-    func_002CEA20(object);
+    object->FieldClass15AE70::func_slot0c();
 }
 
 void func_003611B0(Record003611B0* record)
 {
     record->unk104 = 1;
     func_44B210(record);
-    func_0011ED90(D_001B65F4, record);
+    resident_enqueue_object(D_001B65F4, record);
 }
 
 SkillOptionsWindow::SkillOptionsWindow()
@@ -5751,7 +5739,7 @@ s32 func_003619C0(Record003619C0* record)
             }
         }
     }
-    func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
     return 0;
 }
 
@@ -5792,7 +5780,7 @@ s32 func_00361B90(Record003619C0* record)
             }
         }
     }
-    func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
     return 0;
 }
 
@@ -5874,7 +5862,7 @@ void func_00361F30(Record003619C0* object)
         }
         object->shift = -33;
         object->position += 2;
-        func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
     }
     else
     {
@@ -5903,7 +5891,7 @@ void func_00362010(Record003619C0* object)
         }
         object->shift = 33;
         object->position -= 2;
-        func_00112400(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
     }
     else
     {
@@ -5973,7 +5961,7 @@ s32 func_00362500(FieldClass15AE70* object)
     u8 ready = loader->unk2d != 0;
     if (ready == 1)
     {
-        object->func_slot1c(1, 0x80);
+        object->set_state(1, 0x80);
     }
     else
     {
@@ -5984,7 +5972,7 @@ s32 func_00362500(FieldClass15AE70* object)
         }
         choice->func_slot10(object->func_slot54(), 192.0f, 160.0f, 5);
         choice->func_slot40(object);
-        D_001B643C->callbacks->controller->func_00263FD0(choice);
+        D_001B643C->callbacks->controller->add_child(choice);
         D_001B643C->callbacks->controller->func_00263C70(choice);
     }
     return 2;

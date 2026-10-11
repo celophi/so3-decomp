@@ -2,6 +2,7 @@ name: Star Ocean 3 US overlay 3454-00 (i)
 sha1: 083f07ca09e313e56d7baa29e3dc27878e2cc915
 sha256: 12d41f3c5ac3e644891ccebaac1dbe3bc28a0f1014f438dcf966bc25b57be630
 options:
+  symbol_addrs_path: [config/symbols/3454-00_symbol_addrs.txt]
   basename: 3454-00
   target_path: disc/us-disc1/modules/3454-00.bin
   base_path: ../..

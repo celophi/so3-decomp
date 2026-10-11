@@ -342,8 +342,8 @@ extern "C" int func_002CBAA0(void* object) { return 9; }
 /** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
 extern "C" void func_002CBAB0(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 u32 func_002CBAE0()

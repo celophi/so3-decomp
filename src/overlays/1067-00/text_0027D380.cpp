@@ -16,7 +16,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027D380", func_0027D3
 void FieldClass155810::func_slot20()
 {
     FieldClass152740::func_slot20();
-    func_004D65C0(this);
+    lib_object_detach_owner(this);
     func_001DD7B0();
 }
 

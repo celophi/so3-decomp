@@ -24,10 +24,13 @@ typedef struct FieldStateCE420
     struct LibClass178600* unk04;
     float unk08;
     float unk0c;
-    u8 pad10[0xA];
+    float unk10;
+    float unk14;
+    u16 unk18;
     u16 unk1a;
     u16 unk1c;
-    u8 pad1e[4];
+    u16 unk1e;
+    s16 unk20;
     s16 unk22;
     s16 unk24;
     u8 unk26;
@@ -207,6 +210,7 @@ public:
 };
 
 struct LibObject178660;
+struct LibClass174EF0;
 
 /** Partial interface of Field's window base, primary vtable 0x15AE70 (destructor in Field). */
 class FieldClass15AE70 : public FieldClass150050
@@ -218,6 +222,7 @@ public:
     virtual ~FieldClass15AE70();
     // Placeholder virtuals in their vtable order (byte offset in the name); only
     // their positions are known.
+    /** @brief Release the grid displays and container, then queue the window for removal. */
     virtual void func_slot0c();
     /**
      * @brief Create the nested display at the supplied coordinates.
@@ -247,7 +252,7 @@ public:
      */
     virtual void func_slot18(u32 flag, u32 list_mask);
     /** @brief Store the byte state and halfword flags. @param code Byte state code. @param flags Halfword state flags. */
-    virtual void func_slot1c(u8 code, u16 flags);
+    virtual void set_state(u8 code, u16 flags);
     /** @brief Set the nested display byte flag. @param flag Flag value. */
     virtual void func_slot20(u32 flag);
     /** @brief Store the window control byte. @param value Control value. */
@@ -347,11 +352,12 @@ public:
     FieldClass15B008 unk8c;
     void* unk98;
     void* unk9c;
-    u8 unka0[4];
+    float unka0;
     float unka4;
 };
 
 /** Field list callback base with a parameter prefix and two update hooks. */
+class FieldClass153170;
 class FieldClass15AE60 : public FieldStateCE420
 {
 public:
@@ -359,9 +365,15 @@ public:
     virtual void refresh_rows(s32 start);
     /** @brief Position the row displays. @param start Base vertical coordinate. */
     virtual void set_scroll_position(float start);
-    u8 unk44[4];
-    LibClass178600* unk48[12];
-    u8 unk78[0xC];
+    /**
+     * @brief Configure the list extent, selected cell, and scroll indicator.
+     * @param count Number of records; stored as a halfword.
+     * @param start Initial scroll row; stored as a signed halfword.
+     * @param selected Relative selection index; stored as a byte.
+     */
+    void configure_selection(s32 count, s32 start, s32 selected);
+    FieldClass153170* selection_marker;
+    LibClass178600* unk48[15];
     u8 unk84;
     u8 unk85;
     u8 unk86[2];
@@ -374,8 +386,18 @@ public:
 class FieldClass15AD40 : public FieldClass15AE70, public FieldClass15AE60
 {
 public:
+    /** @brief Initialize list state and all fifteen display slots. */
     FieldClass15AD40();
+    /** @brief Release the window base and its display lists. */
     virtual ~FieldClass15AD40();
+    /** @brief Process list selection input and refresh pending rows. */
+    virtual void func_slot5c();
+    /**
+     * @brief Update the list marker target, color, and visibility.
+     * @param target Display to mark, or null to hide the marker.
+     * @param color Packed marker color.
+     */
+    void set_selection_marker(LibClass174EF0* target, u32 color);
     virtual s32 func_slot104(u32 associated);
     /** @brief Refresh the list for a category. @param category Category byte supplied by the associated state. */
     virtual void func_slot108(u8 category);
