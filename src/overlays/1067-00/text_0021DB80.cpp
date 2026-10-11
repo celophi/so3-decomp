@@ -226,8 +226,8 @@ s32 func_0021FB30(FieldObject1522C0* object)
 
 void func_0021FB40(FieldObject1522C0* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021FB70);

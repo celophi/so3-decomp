@@ -28,12 +28,12 @@ extern "C" {
  * @brief Return the resident runtime table owner.
  * @return Opaque table owner.
  */
-void* func_0010D8E0(void);
+void* resident_get_runtime_owner(void);
 
 /** @brief Allocate a block from the resident heap. @param heap Heap receiver. @param size Requested byte count. @return Allocated block, or null. */
-void* func_00113710(void* heap, s32 size);
+void* resident_heap_allocate(void* heap, s32 size);
 /** @brief Return a block to the resident heap. @param memory Allocated block. */
-void func_001134C0(void* memory);
+void resident_heap_release(void* memory);
 
 /**
  * @brief Store a request target, float value, and squared distance value.
@@ -48,7 +48,7 @@ void func_0010EA70(ResidentRequest112400* request, void* target, float value, fl
  * @brief Advance the resident random sequence and return its next word.
  * @return Next unsigned random word.
  */
-u32 func_0010CF80(void);
+u32 resident_next_random_word(void);
 
 /**
  * @brief Read the byte size associated with a key in the resident descriptor table.
@@ -72,7 +72,7 @@ void func_0011E030(struct BootInputRoot9670* root, s32 slot, u32 flag);
  * @param object Object to append; null is accepted and ignored.
  * @return 1 when the object was appended or is null, 0 when the queue is full.
  */
-s32 func_0011ED90(ResidentObjectQueue* queue, void* object);
+s32 resident_enqueue_object(ResidentObjectQueue* queue, void* object);
 
 /**
  * @brief Allocate a resident request using its selector and packed values.
@@ -85,7 +85,7 @@ s32 func_0011ED90(ResidentObjectQueue* queue, void* object);
  * @param arg6 Value packed into the lower 16 bits.
  * @return Request identifier, zero on dispatch failure, one when disabled, or minus one when unavailable.
  */
-s32 func_00112400(ResidentRequest112400* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
+s32 resident_allocate_request(ResidentRequest112400* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
 
 #ifdef __cplusplus
 }

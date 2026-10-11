@@ -12,6 +12,7 @@ typedef struct LibUiRect16
 } LibUiRect16;
 typedef struct LibClass178600 LibClass178600;
 #ifdef __cplusplus
+struct LibObject178660;
 /** Partial 0x40-byte widget base, with MAIN vtable D_178600. */
 struct LibClass178600 : public LibClass171EA0
 {
@@ -25,10 +26,10 @@ struct LibClass178600 : public LibClass171EA0
     virtual void func_00413D20();
     /** @brief Virtual widget slot at 0x20; its base implementation does no work. */
     virtual void func_00462310();
-    u8 unk04[0x14];
+    LibObject178660* container;
     LibUiRect16 unk18;
     float unk28;
-    u8 unk2c[8];
+    u32 unk2c[2];
     u32 unk34;
     u8 unk38;
     u8 unk39;

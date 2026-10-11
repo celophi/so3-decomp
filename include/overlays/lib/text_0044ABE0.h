@@ -4,6 +4,7 @@
 #include "types.h"
 
 typedef struct LibDrawState64 LibDrawState64;
+typedef struct ItemCreationClass174C40 ItemCreationClass174C40;
 typedef struct LibClass174610 LibClass174610;
 #ifdef __cplusplus
 extern "C" {
@@ -29,8 +30,18 @@ void func_004587C0(void* settings);
  */
 u16 func_00457470(u16 seed, const void* data, s32 size);
 
-/** @brief Initialize the drawing state. @param state State to initialize. */
-void func_453FF0(LibDrawState64* state);
+/**
+ * @brief Select the indexed resource and initialize its drawing position.
+ * @param object Resource widget.
+ * @param index Resource index.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @return Initialization status.
+ */
+s32 lib_indexed_resource_init(ItemCreationClass174C40* object, s32 index, float x, float y);
+
+/** @brief Initialize resource pointers, drawing scales, colors, and descriptor defaults. @param state State to initialize. */
+void lib_draw_state_init(LibDrawState64* state);
 #ifdef __cplusplus
 }
 #endif
@@ -66,7 +77,8 @@ struct LibDrawState64
     u8 unk5a;
     u8 unk5b;
     u8 unk5c[2];
-    u8 unk5e;
+    /** Negative values use the resource record's default descriptor byte. */
+    s8 unk5e;
     u8 unk5f;
     u8 unk60;
     u8 unk61[3];
@@ -74,7 +86,7 @@ struct LibDrawState64
     /** @brief Initialize the drawing state. */
     LibDrawState64()
     {
-        func_453FF0(this);
+        lib_draw_state_init(this);
     }
 #endif
 };
@@ -90,25 +102,25 @@ public:
     virtual ~LibClass174C20();
 };
 
-/** Partial widget with resident vtable at 0x1746A0. */
+/** Clipping widget with resident vtable at 0x1746A0. */
 class ItemCreationClass1746A0 : public LibClass178600
 {
 public:
     /** @brief Initialize the widget storage and select kind 4. */
     inline ItemCreationClass1746A0();
     /**
-     * @brief Initialize frame geometry and storage.
+     * @brief Initialize clipping rectangle geometry and drawing storage.
      * @param x Horizontal position.
      * @param y Vertical position.
      * @param width Drawing width.
      * @param height Drawing height.
      */
     inline ItemCreationClass1746A0(float x, float y, float width, float height);
-    /** @brief Initialize enabled frame storage. @param code Initialization code passed to the resident routine. */
+    /** @brief Initialize storage that restores the runtime clipping bounds. @param code Initialization code passed to the resident routine. */
     inline ItemCreationClass1746A0(s32 code);
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass1746A0();
-    /** @brief Draw the frame widget. */
+    /** @brief Write the widget clipping bounds into its drawing packet. */
     virtual void func_00462310();
     LibStorageBlock0C unk40;
     u8 unk4c[4];
@@ -169,20 +181,18 @@ public:
         unk3c = 1;
     }
 };
-/** @brief Initialize the indexed resource drawing state. @param object Resource widget. @param index Resource index. @param x Horizontal position. @param y Vertical position. @return Initialization status. */
-extern "C" s32 func_4530E0(ItemCreationClass174C40* object, s32 index, float x, float y);
 
 typedef ItemCreationClass1746A0 LibClass1746A0;
 typedef ItemCreationClass175110 LibClass175110;
 typedef ItemCreationClass174C40 LibClass174C40;
 
-/** @brief Initialize enabled frame storage. @param object Frame widget. @param code Initialization code. @return Initialization status. */
-extern "C" s32 func_44B510(ItemCreationClass1746A0* object, s32 code);
-/** @brief Initialize frame geometry and storage. @param object Frame widget. @param x Horizontal position. @param y Vertical position. @param width Drawing width. @param height Drawing height. @return Initialization status. */
-extern "C" s32 func_44B570(ItemCreationClass1746A0* object, float x, float y, float width, float height);
+/** @brief Initialize storage that restores the runtime clipping bounds. @param object Clipping widget. @param code Unused initialization argument. @return True when drawing storage was allocated. */
+extern "C" bool lib_scissor_init_reset(ItemCreationClass1746A0* object, s32 code);
+/** @brief Initialize clipping rectangle geometry and drawing storage. @param object Clipping widget. @param x Horizontal position. @param y Vertical position. @param width Drawing width. @param height Drawing height. @return True when drawing storage was allocated. */
+extern "C" bool lib_scissor_init_rectangle(ItemCreationClass1746A0* object, float x, float y, float width, float height);
 
 /**
- * @brief Initialize frame geometry and storage.
+ * @brief Initialize clipping rectangle geometry and drawing storage.
  * @param x Horizontal position.
  * @param y Vertical position.
  * @param width Drawing width.
@@ -191,13 +201,13 @@ extern "C" s32 func_44B570(ItemCreationClass1746A0* object, float x, float y, fl
 inline ItemCreationClass1746A0::ItemCreationClass1746A0(float x, float y, float width, float height)
 {
     unk38 = 4;
-    func_44B570(this, x, y, width, height);
+    lib_scissor_init_rectangle(this, x, y, width, height);
 }
-/** @brief Initialize enabled frame storage. @param code Initialization code passed to the resident routine. */
+/** @brief Initialize storage that restores the runtime clipping bounds. @param code Initialization code passed to the resident routine. */
 inline ItemCreationClass1746A0::ItemCreationClass1746A0(s32 code)
 {
     unk38 = 4;
-    func_44B510(this, code);
+    lib_scissor_init_reset(this, code);
 }
 
 #endif

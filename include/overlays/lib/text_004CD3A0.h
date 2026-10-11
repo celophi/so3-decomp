@@ -228,7 +228,7 @@ public:
      * @param a Opaque first argument.
      * @param b Opaque second argument.
      */
-    virtual void func_004D74F0(void* a, void* b);
+    virtual void func_004D74F0(void* object, s32 kind);
 
     /**
      * @brief Lib virtual slot 8.
@@ -268,6 +268,25 @@ public:
     u8 unk74[4];
 };
 
+/** 0x98-byte display manager with a list interface and secondary intrusive receiver. */
+class LibClass178F30 : public LibClass178DD0, public LibClass171EA0
+{
+public:
+    /** @brief Initialize the manager interfaces and current display. */
+    LibClass178F30();
+    /** @brief Destroy both manager interfaces. */
+    virtual ~LibClass178F30();
+    /** @brief Report the manager type. @return Manager type value. */
+    virtual s32 func_003EEBC0();
+    /** @brief Update the manager's intrusive receiver. */
+    virtual void func_003EEBD0();
+    u8 unk8c[4];
+    LibClass171EA0* current_display;
+    u8 unk94;
+    u8 unk95;
+    u8 unk96[2];
+};
+
 /** Partial Lib class used as a member object, with vtable D_178EA0 in main data. */
 class LibClass178EA0 : public LibClass178A90
 {
@@ -278,6 +297,14 @@ public:
     /** @brief Destroy the object. */
     virtual ~LibClass178EA0();
 
+    /** @brief Return the first local transform vector. @return Vector at offset 0x1D0. */
+    virtual LibVector4* func_003F4520();
+    /** @brief Return the second local transform vector. @return Vector at offset 0x1E0. */
+    virtual LibVector4* func_003F4530();
+    /** @brief Return the third local transform vector. @return Vector at offset 0x1F0. */
+    virtual LibVector4* func_003F4540();
+    /** @brief Copy transform state from another receiver. @param source Transform to copy. */
+    virtual void func_004D9F40(const LibClass178EA0* source);
     u8 unk90[0x180];
 };
 #endif
@@ -328,7 +355,7 @@ void func_004DB570(void* object);
  * @brief Detach the object from the owner stored at offset 0x10, then clear that pointer.
  * @param object Object to detach; the owner receives it through its virtual handler at vtable offset 0x1C.
  */
-void func_004D65C0(void* object);
+void lib_object_detach_owner(void* object);
 
 /**
  * @brief Test whether a list traversal has reached its sentinel.

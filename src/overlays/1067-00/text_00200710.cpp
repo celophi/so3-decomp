@@ -127,13 +127,13 @@ extern "C" float func_00201530(void* object)
 
 extern "C" void func_00201540(void* object)
 {
-    func_0011ED90(D_001B65F4, object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 extern "C" void func_00201560(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201590);
@@ -221,8 +221,8 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_002020
 /** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
 extern "C" void func_002020F0(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 extern "C" s32 func_00202120(void* object)

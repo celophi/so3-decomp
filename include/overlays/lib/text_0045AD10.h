@@ -38,15 +38,20 @@ struct LibClass174EF0 : public LibClass178600
     LibClass174EF0();
     /** @brief Destroy the drawing widget. */
     virtual ~LibClass174EF0();
-    u8 unk40[0x30];
+    /** Backing drawing-storage allocation. */
+    void* allocation;
+    u8 unk44[0x2C];
     void* unk70;
-    u8 unk74[0xC];
+    u8 unk74[4];
+    u32 unk78;
+    u32 unk7c;
     float unk80;
     float unk84;
     float unk88;
-    u8 unk8c[8];
+    float unk8c;
+    u32 unk90;
     u32 unk94;
-    u8 unk98[4];
+    u32 unk98;
     u32 unk9c;
     u32 unka0;
     u8 unka4[0x44];
@@ -54,7 +59,8 @@ struct LibClass174EF0 : public LibClass178600
     float unkec;
     float unkf0;
     float unkf4;
-    u8 unkf8[2];
+    u8 unkf8;
+    u8 unkf9;
     u8 unkfa;
     u8 unkfb;
     /** @brief Set the display scale. @param x Horizontal scale. @param y Vertical scale. */
@@ -195,7 +201,7 @@ struct LibObject174F20 : public LibClass174EF0
      * @param flag Flag argument.
      * @return Configuration status.
      */
-    s32 func_00464D90(float x, float y, float width, float height, u32 value, s32 slot, u8 flag);
+    s32 init_numeric_resource_rectangle(float x, float y, float width, float height, u32 value, s32 slot, u8 flag);
     u32 numeric_value;
 };
 /** Item code widget with MAIN vtable at 0x172410. */
@@ -254,6 +260,43 @@ extern "C" {
 #endif
 
 /**
+ * @brief Initialize the item code widget's rectangle and drawing storage.
+ * @param object Item code widget.
+ * @param x Rectangle origin x.
+ * @param y Rectangle origin y.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @param code Initial item code.
+ * @param variation Code variation.
+ * @param flag Drawing state flag.
+ * @return One on successful initialization, otherwise zero.
+ */
+s32 lib_item_code_init_rectangle(LibObject172410* object, float x, float y, float width, float height, u16 code, u8 variation, u8 flag);
+
+/**
+ * @brief Initialize the detail code widget's rectangle and drawing storage.
+ * @param object Detail code widget.
+ * @param code Initial detail code.
+ * @param variation Code variation.
+ * @param flag Drawing state flag.
+ * @param x Rectangle origin x.
+ * @param y Rectangle origin y.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @return One on successful initialization, otherwise zero.
+ */
+s32 lib_detail_code_init_rectangle(LibObject172440* object, u16 code, u8 variation, u8 flag, float x, float y, float width, float height);
+
+/** @brief Select the multiline text resource and drawing mode, then request a redraw.
+ * @param object Multiline text widget.
+ * @param source Resource source word.
+ * @param key Text resource key.
+ * @param mode Drawing mode.
+ * @param flag Resource state flag.
+ */
+void lib_multiline_text_set_resource(LibObject174D90* object, u32 source, s32 key, u32 mode, u32 flag);
+
+/**
  * @brief Initialize the native drawing-widget base and install its table.
  * @param object Storage for the 0xFC-byte drawing widget.
  * @return The constructed drawing widget.
@@ -268,7 +311,22 @@ LibClass174EF0* func_00464B10(LibClass174EF0* object);
  * @param width Rectangle width.
  * @param height Rectangle height.
  */
-void func_004616D0(LibObject174D90* object, float x, float y, float width, float height);
+void lib_multiline_text_init_rectangle(LibObject174D90* object, float x, float y, float width, float height);
+
+/**
+ * @brief Initialize the multiline text rectangle and load its resource.
+ * @param object Multiline text widget.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @param slot Resource source word.
+ * @param key Text resource key.
+ * @param mode Drawing mode mask.
+ * @param flag Slot state flag whose low byte is stored.
+ * @return Resource initialization status.
+ */
+s32 lib_multiline_text_init_resource_rectangle(LibObject174D90* object, float x, float y, float width, float height, s32 slot, s32 key, u32 mode, u32 flag);
 
 /**
  * @brief Set the widget movement target and reset its completion flags.
@@ -286,7 +344,7 @@ void func_00466E40(void* object, float x, float y, float duration);
  * @param y Vertical position.
  * @return One on successful setup, otherwise zero.
  */
-s32 func_00467360(LibClass175030* object, float x, float y);
+s32 lib_moving_widget_init_position(LibClass175030* object, float x, float y);
 
 /**
  * @brief Refresh the record widget and return its measured bounds.
@@ -341,24 +399,25 @@ s32 func_0045B210(void* storage, const void* resource);
 s32 func_0045CBE0(void* shape, void* query);
 
 /**
- * @brief Attach a transform receiver to the runtime.
+ * @brief Append a transform receiver to the runtime display queue.
  * @param runtime Runtime manager.
  * @param object Transform receiver.
+ * @return One when queued, or zero if the receiver already has an owner.
  */
-void func_00465B20(FieldRuntime* runtime, LibClass178A90* object);
+s32 lib_queue_display_object(FieldRuntime* runtime, LibClass178A90* object);
 /**
- * @brief Bind resource storage in the runtime.
+ * @brief Load resource data into an owned runtime slot.
  * @param runtime Runtime manager.
- * @param data Aligned resource storage.
- * @return Bound resource slot.
+ * @param data Source resource data.
+ * @return Loaded slot identifier, or zero when allocation fails.
  */
-s32 func_004656B0(FieldRuntime* runtime, void* data);
+s32 lib_load_resource_slot(FieldRuntime* runtime, void* data);
 
 /**
- * @brief Configure one image slot and its rectangle.
- * @param object Image widget.
- * @param value Resource value.
- * @param slot Image slot index.
+ * @brief Initialize the numeric widget rectangle, resource slot, and displayed value.
+ * @param object Numeric widget.
+ * @param value Initial numeric value.
+ * @param slot Runtime resource slot index.
  * @param flag Slot state flag.
  * @param x Rectangle origin x.
  * @param y Rectangle origin y.
@@ -366,7 +425,7 @@ s32 func_004656B0(FieldRuntime* runtime, void* data);
  * @param height Rectangle height.
  * @return Configuration status.
  */
-s32 func_00464D90(LibObject174F20* object, u32 value, s32 slot, u8 flag, float x, float y, float width, float height);
+s32 lib_numeric_widget_init_rectangle(LibObject174F20* object, u32 value, s32 slot, u8 flag, float x, float y, float width, float height);
 
 /**
  * @brief Release one slot of the manager's table of 0x50-byte slots at offset 0x14.
@@ -376,7 +435,7 @@ s32 func_00464D90(LibObject174F20* object, u32 value, s32 slot, u8 flag, float x
  * @param manager Slot manager.
  * @param index Slot to release.
  */
-void func_00465430(void* manager, s32 index);
+void lib_release_resource_slot(void* manager, s32 index);
 
 /**
  * @brief Run the test at offset 0x30 of the object referenced by the first word of object.

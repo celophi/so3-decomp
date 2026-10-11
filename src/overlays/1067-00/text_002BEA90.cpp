@@ -546,13 +546,13 @@ extern "C" void func_002BF760(FieldClass159E50* object, s32 rows, s32 columns)
     delete object->unk1C;
     if (D_001B6684 != 0)
     {
-        void* heap = func_00100C80(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
         if (object->unk1C->unk08 == 0)
@@ -561,10 +561,10 @@ extern "C" void func_002BF760(FieldClass159E50* object, s32 rows, s32 columns)
             object->unk18 = 0;
             delete object->unk1C;
             object->unk1C = 0;
-            func_00100C80(heap);
+            resident_exchange_allocation_heap(heap);
             return;
         }
-        func_00100C80(heap);
+        resident_exchange_allocation_heap(heap);
     }
     else
     {

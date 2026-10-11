@@ -170,6 +170,8 @@ struct FieldGridPosition
 class FieldClass151C50
 {
 public:
+    /** @brief Clear the owned storage and initial coordinate values. */
+    FieldClass151C50();
     LibStorageBlock0C unk00;
     u8 unk0c[4];
     FieldGridPosition unk10;
@@ -192,6 +194,8 @@ public:
 class FieldClass175070 : public LibClass174610, public FieldClass151C50
 {
 public:
+    /** @brief Initialize the Field transform and its drawing code. */
+    FieldClass175070();
     /** @brief Destroy the field storage and transform bases. */
     virtual ~FieldClass175070();
     /** @brief Prepare the field transform after notification. @param value Notification word. */
@@ -203,6 +207,8 @@ struct FieldObject23CEA0 : public FieldClass175070
 {
     /** @brief Initialize the grid and its field transform bases. */
     FieldObject23CEA0();
+    /** @brief Destroy the grid and its transform bases. */
+    virtual ~FieldObject23CEA0();
     /**
      * @brief Store the grid dimensions.
      * @param width Column count.
@@ -228,7 +234,7 @@ struct FieldObject23CEA0 : public FieldClass175070
      * @param direction Signed direction code.
      * @return Selection handler result.
      */
-    virtual s16 func_0023CDB0(s16 direction);
+    virtual s16 process_direction(s16 direction);
     u8 width;
     u8 unkF1;
     u8 unkF2;
@@ -238,7 +244,11 @@ struct FieldObject23CEA0 : public FieldClass175070
     s16 unk114;
     u8 unk116[3];
     u8 unk119;
-    u8 unk11a[0x16];
+    u8 unk11a[0xA];
+    s16 unk124;
+    s16 unk126;
+    u32 unk128;
+    u32 unk12c;
 };
 #else
 /** Partial field grid flag and selection storage. */
@@ -368,12 +378,6 @@ FieldObject23BE00* func_0023BE00(FieldObject23BE00* object);
  */
 void func_0023BF50(void* object);
 
-/**
- * @brief Initialize the receiver's table and state fields after its base initializer.
- * @param object Receiver to initialize.
- * @return The receiver.
- */
-FieldObject23B950* func_0023B950(FieldObject23B950* object);
 
 /**
  * @brief Position the display using its grid target, signed index, and supplied size.

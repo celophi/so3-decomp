@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/text_00419A70.h"
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00419A70);
 
@@ -30,7 +31,51 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A550);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A560);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A930);
+typedef struct LibListIndicatorState
+{
+    u8 pad00[0x18];
+    float x;
+    float y;
+    float width;
+    float height;
+    u8 pad28[0xC];
+    u32 unk34;
+    u8 unk38;
+    u8 unk39;
+    u8 pad3a[6];
+    u8 storage[0xC];
+    u8 pad4c[4];
+    float first;
+    float second;
+} LibListIndicatorState;
+extern s32 func_00461860(void* storage, s32 count);
+/**
+ * @brief Initialize the list indicator rectangle, scalar pair, and drawing storage.
+ * @param object List indicator widget.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param height Rectangle height.
+ * @param first First scalar value.
+ * @param second Second scalar value.
+ * @return One on success, or zero when storage initialization fails.
+ */
+s32 lib_list_indicator_init(ItemCreationClass1725D0* object, float x, float y, float height, float first, float second)
+{
+    LibListIndicatorState* state = (LibListIndicatorState*)object;
+    state->x = x;
+    state->y = y;
+    state->width = 14.0f;
+    state->height = height;
+    state->first = first;
+    state->second = second;
+    if (!func_00461860(state->storage, 0x26))
+    {
+        return 0;
+    }
+    state->unk34 = 6;
+    state->unk39 = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A9A0);
 
@@ -132,7 +177,54 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00420D20);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00420F20);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421170);
+/** Partial marker rectangle, drawing storage, flags, and packed colors. */
+typedef struct LibMarkerState
+{
+    u8 pad00[0x18];
+    float x;
+    float y;
+    float width;
+    float height;
+    u8 pad28[0x11];
+    u8 active;
+    u8 pad3a[2];
+    u8 redraw;
+    u8 pad3d[3];
+    u8 storage[0xC];
+    u8 pad4c[4];
+    u32 color;
+    u32 dark_color;
+} LibMarkerState;
+/**
+ * @brief Allocate marker drawing storage and initialize its rectangle and colors.
+ * @param object Marker widget.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @return One on success, or zero if storage cannot be allocated.
+ */
+s32 lib_marker_init_rectangle(ItemCreationClass172870* object, float x, float y, float width, float height)
+{
+    LibMarkerState* state = (LibMarkerState*)object;
+    u32 shade;
+    float intensity;
+    state->x = x;
+    state->y = y;
+    state->width = width;
+    state->height = height;
+    if (!func_00461860(state->storage, 12))
+    {
+        return 0;
+    }
+    intensity = 0.9f;
+    shade = (u32)(256.0f * intensity);
+    state->color = (shade << 16) | (shade << 8) | shade;
+    state->redraw = 1;
+    state->dark_color = 0x020202;
+    state->active = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421240);
 

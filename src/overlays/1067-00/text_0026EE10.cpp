@@ -56,8 +56,8 @@ FieldClass154BB0::~FieldClass154BB0()
 
 void func_0026EEA0(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 s32 func_0026EED0(const void* object)
@@ -259,7 +259,7 @@ void FieldClass154C10::func_001DD7B0()
 {
     if (unkd8 != 0)
     {
-        func_004D65C0(unkd8);
+        lib_object_detach_owner(unkd8);
         unkd8->func_001DD7B0();
         unkd8 = 0;
     }
@@ -279,7 +279,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002714
  */
 extern "C" void func_00271560(FieldClass150070* object)
 {
-    func_004D65C0(object);
+    lib_object_detach_owner(object);
     object->func_001DD7B0();
 }
 
@@ -365,8 +365,8 @@ s32 func_00272080(const void* object)
 
 void func_00272090(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002720C0);

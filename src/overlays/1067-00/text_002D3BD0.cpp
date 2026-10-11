@@ -37,8 +37,8 @@ s32 func_002D3BD0(FieldClass150070* object)
 
 void func_002D3BE0(FieldClass150070* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 void func_002D3C10(void* object)
@@ -211,7 +211,7 @@ void func_002D47A0(void* receiver)
     FieldAttached2D47A0* object = (FieldAttached2D47A0*)receiver;
     if (object->unk40 != 0)
     {
-        func_004D65C0(object->unk40);
+        lib_object_detach_owner(object->unk40);
         object->unk40->func_001DD7B0();
         object->unk40 = 0;
     }
@@ -235,7 +235,7 @@ void func_002D4A30(FieldLinkedAttached2D4A30* list)
         {
             continue;
         }
-        func_004D65C0(current->unk40);
+        lib_object_detach_owner(current->unk40);
         current->unk40->func_001DD7B0();
         current->unk40 = 0;
     }
@@ -259,8 +259,8 @@ s32 func_002D4D40(FieldClass150070* object)
 
 void func_002D4D50(FieldClass150070* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D4D80);

@@ -612,13 +612,13 @@ void func_00348D00(StatusSelectionWindow* object)
         if (key != 0)
         {
             u32 source = object->func_slot54();
-            func_4C6DF0(object->displays[i], source, key, 0);
+            lib_text_set_resource(object->displays[i], source, key, 0);
             object->displays[i]->unk3f = 1;
         }
         else
         {
             u32 source = object->func_slot54();
-            func_4C6DF0(object->displays[i], source, 0x13C8, 0);
+            lib_text_set_resource(object->displays[i], source, 0x13C8, 0);
             object->displays[i]->unk3f = 1;
         }
     }
@@ -981,7 +981,7 @@ s32 StatusSelectionWindow::func_slotb4()
 static inline void close_status_selection(StatusSelectionWindow* object)
 {
     StatusResourceState* target = D_001B643C->unk10->unk14;
-    target->func_00263F50(object);
+    target->remove_child(object);
     target->field_40 = 0;
     target->scroll->func_slot20(0);
     target->func_00263C70(target->scroll);
@@ -1234,8 +1234,8 @@ void StatusScrollState::func_slot64()
     this->selected_slot = this->selection->slots[this->selection->current];
     LibBounds4C69B0* record_bounds = func_00467950(this->record);
     u32 source = this->func_slot54();
-    func_4C6DF0(this->caption, source, this->selected_slot + 0x13BB, 0);
-    LibBounds4C69B0* caption_bounds = func_004C69B0(this->caption);
+    lib_text_set_resource(this->caption, source, this->selected_slot + 0x13BB, 0);
+    LibBounds4C69B0* caption_bounds = lib_text_measure_bounds(this->caption);
     set_status_record_rectangle(this->caption, this->x + record_bounds->unk08,
                                 this->y, caption_bounds->unk08, 24.0f);
     this->marker->unk3f = 1;
@@ -1263,7 +1263,7 @@ void StatusScrollState::func_slot5c()
         else
         {
             this->display->unk3f = 1;
-            func_4C6DF0(this->variant_text, this->func_slot54(), 0x13CC, 0);
+            lib_text_set_resource(this->variant_text, this->func_slot54(), 0x13CC, 0);
         }
         this->unk1d8 = 0;
     }
@@ -1272,7 +1272,7 @@ void StatusScrollState::func_slot5c()
     {
         if (this->unk1d4 != 0)
         {
-            func_002FD940(this->unk1d4);
+            field_cancel_model_request(this->unk1d4);
             this->unk1d8 = 1;
         }
         return;
@@ -1285,7 +1285,7 @@ void StatusScrollState::func_slot5c()
     }
     if (this->unk1da != 0 && this->unk1d4 == 0)
     {
-        this->func_slot1c(1, 0x80);
+        this->set_state(1, 0x80);
     }
 }
 
@@ -1304,7 +1304,7 @@ s32 StatusScrollState::func_slotdc()
     func_0028E2B0(selection, 1);
     if (unk1d4 != 0)
     {
-        func_002FD940(unk1d4);
+        field_cancel_model_request(unk1d4);
         unk1d8 = 1;
     }
     return 4;
@@ -1325,7 +1325,7 @@ s32 StatusScrollState::func_slotd8()
     func_0028E2B0(selection, 0);
     if (unk1d4 != 0)
     {
-        func_002FD940(unk1d4);
+        field_cancel_model_request(unk1d4);
         unk1d8 = 1;
     }
     return 4;
@@ -1347,10 +1347,10 @@ void func_0034C130(StatusScrollState* object)
         {
             variant = 3;
         }
-        func_002FDC00(object->unk1d4, 0x290 + 4 * (identifier - 1) + (u16)variant);
+        field_request_model_resource(object->unk1d4, 0x290 + 4 * (identifier - 1) + (u16)variant);
         object->unk1d4->unk5b = 1;
-        func_002FD220(object->unk1d4, D_001B643C->unk1c);
-        func_002FD1D0(object->unk1d4);
+        field_replace_model_camera(object->unk1d4, D_001B643C->unk1c);
+        field_attach_model_display(object->unk1d4);
         if (static_cast<StatusWindowSection*>(func_101440(func_101290(func_10D8E0()), 1))->enabled != 0)
         {
             func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->unk1d4), 0.5235988f, 750.0f, 0.0f, 140.0f, 115.0f);
@@ -1359,7 +1359,7 @@ void func_0034C130(StatusScrollState* object)
         {
             func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->unk1d4), 0.5235988f, 480.0f, 0.0f, 90.0f, 110.0f);
         }
-        D_001B6614->func_004D74F0(object->unk1d4, reinterpret_cast<void*>(-1));
+        D_001B6614->func_004D74F0(object->unk1d4, -1);
     }
 }
 
@@ -1371,7 +1371,7 @@ s32 StatusScrollState::func_slotb8()
     }
     if (this->unk1d4 != 0)
     {
-        func_002FD940(this->unk1d4);
+        field_cancel_model_request(this->unk1d4);
         this->unk1d8 = 1;
         FieldRecordSelection* selection = this->selection;
         s32 next = static_cast<StatusVariantRecord*>(selection->unk04)[selection->current].variant + 1;
@@ -1396,7 +1396,7 @@ s32 StatusScrollState::func_slotb8()
     }
     func_0034C130(this);
     this->display->unk3f = 0;
-    func_4C6DF0(this->variant_text, this->func_slot54(), 0x13CD, 0);
+    lib_text_set_resource(this->variant_text, this->func_slot54(), 0x13CD, 0);
     return 1;
 }
 
@@ -1408,7 +1408,7 @@ s32 StatusScrollState::func_slotb4()
     }
     if (this->unk1d4 != 0)
     {
-        func_002FD940(this->unk1d4);
+        field_cancel_model_request(this->unk1d4);
         this->unk1d8 = 1;
     }
     this->unk1da = 1;
@@ -1427,7 +1427,7 @@ s32 StatusScrollState::func_slotb0()
     }
     if (this->unk1d4 != 0)
     {
-        func_002FD940(this->unk1d4);
+        field_cancel_model_request(this->unk1d4);
         this->unk1d8 = 1;
     }
     return 1;
@@ -1647,8 +1647,8 @@ void StatusTextWindow::func_slot60(s32 key)
     {
         object->timer = 0;
         object->state = 0;
-        func_4C6DF0(object->target, object->func_slot54(), key, 1);
-        object->distance = (s32)func_004C69B0(object->target)->unk08 + 6;
+        lib_text_set_resource(object->target, object->func_slot54(), key, 1);
+        object->distance = (s32)lib_text_measure_bounds(object->target)->unk08 + 6;
     }
 }
 
@@ -1662,13 +1662,13 @@ s32 StatusTextWindow::func_slotf4(u32 associated)
     StatusTextWindow* object = this;
     object->FieldClass15AE70::func_slot14(associated, 0, 9, 1400, 16.0f, 16.0f, 0.0f);
     LibObject178750* label = new (0) LibObject178750;
-    func_004C7FE0(label, static_cast<s32>(associated), 0x1388, 0, 16.0f, 6.0f, 0.0f, 0.0f);
-    func_004C6190(object->unk10, label);
+    lib_text_init_resource_rectangle(label, static_cast<s32>(associated), 0x1388, 0, 16.0f, 6.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(object->unk10, label);
     func_00351120(reinterpret_cast<OverlayList*>(&object->unk2c), label);
     LibObject178750* caption = new (0) LibObject178750;
-    func_004C7FE0(caption, static_cast<s32>(associated), 0x13C9, 0, 36.0f, 40.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(caption, static_cast<s32>(associated), 0x13C9, 0, 36.0f, 40.0f, 0.0f, 0.0f);
     caption->set_scale(0.65f, 0.65f);
-    func_004C6190(object->unk10, caption);
+    lib_container_attach_widget(object->unk10, caption);
     func_00351120(reinterpret_cast<OverlayList*>(&object->unk2c), caption);
     object->target = new (0) LibObject178750;
     LibClass1746A0* frame = new (0) LibClass1746A0;
@@ -1677,19 +1677,19 @@ s32 StatusTextWindow::func_slotf4(u32 associated)
     {
         return 0;
     }
-    object->label_width = func_004C69B0(label)->unk08;
+    object->label_width = lib_text_measure_bounds(label)->unk08;
     object->base_x = 18.0f + object->label_width;
     float frame_padding = 32.0f;
     object->width = 640.0f - (16.0f + (object->base_x + frame_padding));
     object->initial_x = 24.0f + object->label_width;
-    func_44B570(frame, object->base_x, 0.0f, object->width, 56.0f);
-    func_004C6190(object->unk10, frame);
+    lib_scissor_init_rectangle(frame, object->base_x, 0.0f, object->width, 56.0f);
+    lib_container_attach_widget(object->unk10, frame);
     func_00351270(reinterpret_cast<OverlayList*>(&object->unk20), frame);
-    func_004C7FE0(object->target, static_cast<s32>(associated), 0x138A, 0, object->initial_x, 6.0f, 0.0f, 0.0f);
-    func_004C6190(object->unk10, object->target);
+    lib_text_init_resource_rectangle(object->target, static_cast<s32>(associated), 0x138A, 0, object->initial_x, 6.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(object->unk10, object->target);
     func_00351120(reinterpret_cast<OverlayList*>(&object->unk2c), object->target);
-    func_44B510(background, 1);
-    func_004C6190(object->unk10, background);
+    lib_scissor_init_reset(background, 1);
+    lib_container_attach_widget(object->unk10, background);
     func_00351270(reinterpret_cast<OverlayList*>(&object->unk20), background);
     object->func_slot60(0x138A);
     return 1;
@@ -1722,9 +1722,9 @@ s32 StatusBackgroundWindow::func_slotf4(u32 associated)
     initialize_status_resource(first, func_002D3CC0(D_001B643C->slots, 5), 0.0f, 0.0f);
     initialize_status_resource(second, func_002D3CC0(D_001B643C->slots, 6), 256.0f, 0.0f);
     initialize_status_resource(third, func_002D3CC0(D_001B643C->slots, 7), 512.0f, 0.0f);
-    func_004C6190(object->unk10, first);
-    func_004C6190(object->unk10, second);
-    func_004C6190(object->unk10, third);
+    lib_container_attach_widget(object->unk10, first);
+    lib_container_attach_widget(object->unk10, second);
+    lib_container_attach_widget(object->unk10, third);
     return 1;
 }
 
@@ -1737,9 +1737,9 @@ void func_00350160(StatusResourceState* object)
 {
     if (object->resource != 0)
     {
-        func_00465430(D_001B657C, object->resource);
+        lib_release_resource_slot(D_001B657C, object->resource);
     }
-    func_004D65C0(object);
+    lib_object_detach_owner(object);
     object->func_001DD7B0();
     FieldBufferSlots* slots = D_001B643C->slots;
     for (s32 index = 15; index <= 22; index++)
@@ -1752,7 +1752,7 @@ void func_00350160(StatusResourceState* object)
 
 void func_00350200(void* object)
 {
-    func_0011ED90(D_001B65F4, object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/cstatus/asm/nonmatchings/text", func_00350220);
@@ -1779,14 +1779,14 @@ s32 func_00350540(StatusResourceState* object)
     }
     object->unk20 = object->scroll;
     background->func_slotf4(object->resource);
-    object->FieldClass153E30::func_00263FD0(background);
+    object->FieldClass153E30::add_child(background);
     background->func_slot40(0);
     text->func_slotf4(object->resource);
-    object->FieldClass153E30::func_00263FD0(text);
+    object->FieldClass153E30::add_child(text);
     object->unk24 = text;
     text->func_slot40(background);
     object->scroll->func_slotf4(object->resource);
-    object->FieldClass153E30::func_00263FD0(object->scroll);
+    object->FieldClass153E30::add_child(object->scroll);
     object->flag_38 = 1;
     return 1;
 }
@@ -1799,16 +1799,16 @@ s32 func_00350700(StatusResourceState* object, void* buffer)
     }
     StatusAlignedResource* aligned = aligned_status_resource(buffer);
     s32 size = aligned->size + 0x80;
-    void* saved_heap = func_00100C90();
+    void* saved_heap = resident_get_allocation_heap();
     void* heap = D_001B6430->context->unk70;
-    void* memory = func_00113710(heap, size);
+    void* memory = resident_heap_allocate(heap, size);
     if (memory != 0)
     {
-        func_001134C0(memory);
-        func_00100C80(heap);
+        resident_heap_release(memory);
+        resident_exchange_allocation_heap(heap);
     }
-    object->resource = func_004656B0(D_001B657C, aligned);
-    func_00100C80(saved_heap);
+    object->resource = lib_load_resource_slot(D_001B657C, aligned);
+    resident_exchange_allocation_heap(saved_heap);
     StatusRuntimeResource* runtime = reinterpret_cast<StatusRuntimeResource*>(D_001B657C);
     runtime->resource = object->resource;
     runtime->code = 0xC351;

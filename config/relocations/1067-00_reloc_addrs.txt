@@ -94,3 +94,19 @@ rom:0x15874 reloc:MIPS_LO16 symbol:__vt__16FieldClass150750 addend:0x2C
 // Common loader secondary callback table in its record-array destructor.
 rom:0x1BAC0 reloc:MIPS_HI16 symbol:__vt__16FieldClass150700 addend:0x2C
 rom:0x1BAC8 reloc:MIPS_LO16 symbol:__vt__16FieldClass150700 addend:0x2C
+
+// List-window secondary callback table in construction and destruction.
+rom:0xF0690 reloc:MIPS_HI16 symbol:__vt__16FieldClass15AD40 addend:0xF4
+rom:0xF0698 reloc:MIPS_LO16 symbol:__vt__16FieldClass15AD40 addend:0xF4
+rom:0xF070C reloc:MIPS_HI16 symbol:__vt__16FieldClass15AD40 addend:0xF4
+rom:0xF0714 reloc:MIPS_LO16 symbol:__vt__16FieldClass15AD40 addend:0xF4
+
+// Container transform and callback tables in window setup.
+rom:0xF1454 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0xF145C reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0xF1464 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0xF146C reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0xF15AC reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0xF15B4 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0xF15BC reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0xF15C4 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90

@@ -209,8 +209,8 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203C
 /** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
 extern "C" void func_00203DF0(void* object)
 {
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 /** Partial item flags with the enable bit word at offset 0x6A. */

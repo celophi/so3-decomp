@@ -626,8 +626,8 @@ public:
     /** @brief Detach the command node and add it to the resident queue. */
     virtual void func_001DD7B0()
     {
-        func_004D65C0(this);
-        func_0011ED90(D_001B65F4, this);
+        lib_object_detach_owner(this);
+        resident_enqueue_object(D_001B65F4, this);
     }
 
     /**
@@ -966,7 +966,7 @@ public:
     void append_shape(FieldShapeOwner18* owner, FieldShapeRecord20* record)
     {
         FieldClass150330* shape = new(0) FieldClass150330;
-        unk38.func_004D74F0(shape, (void*)-1);
+        unk38.func_004D74F0(shape, -1);
         shape->unk34 = &unk34->unk08[owner->unk0c].unk04;
         shape->func_001EA2E0(owner, record, 0x8040FF40, unkc4_5);
     }

@@ -1,0 +1,8 @@
+lib_object_detach_owner = 0x004D65C0; // type:func absolute:True
+lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True
+lib_release_resource_slot = 0x00465430; // type:func absolute:True
+lib_multiline_text_init_resource_rectangle = 0x00461720; // type:func absolute:True
+lib_numeric_widget_init_rectangle = 0x00464D90; // type:func absolute:True
+resident_next_random_word = 0x0010CF80; // type:func absolute:True
+lib_scissor_init_reset = 0x0044B510; // type:func absolute:True
+lib_scissor_init_rectangle = 0x0044B570; // type:func absolute:True

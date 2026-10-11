@@ -1,5 +1,32 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002CD390.h"
+#include "overlays/1067-00/text_0023B1D0.h"
+#include "main/resident_data.h"
+#include "main/resident_001001E0.h"
+#include "main/resident_0010A0E0.h"
+#include "overlays/1067-00/text_marker.h"
+#include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_0045AD10.h"
+
+extern "C" void func_420D20(ItemCreationClass172870* object, u32 color);
+
+extern "C" s32 func_002CF190(FieldCountedList* list, void** object);
+extern "C" s32 func_002CEFA0(FieldCountedList* list, void** object);
+extern "C" void func_002CDB20(FieldClass15AE60* object);
+extern "C" void func_002CE010(FieldClass15AE60* object);
+struct FieldListInputFlags
+{
+    u16 unk00;
+    u16 unk02;
+};
+struct FieldListInputRuntime
+{
+    u8 pad00[0x554];
+    FieldListInputFlags* flags;
+    u8 pad558[0x9A];
+    u16 mask;
+};
+
 
 /** Partial receiver with a float at 0x14 and a state bit at 0x604. */
 struct FieldStateCD390
@@ -290,15 +317,95 @@ extern "C" void func_002CD7A0(void* object) {}
 
 extern "C" void func_002CD7B0(void* object) {}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CD7C0);
+void FieldClass15AD40::func_slot5c()
+{
+    if (this->FieldClass15AE60::unk2c)
+    {
+        this->FieldClass15AE60::unk2c--;
+    }
+    if (this->FieldClass15AE60::unk84)
+    {
+        s32 active = ((FieldState23B3A0*)this->FieldClass15AE60::unk04)->unk75 != 0;
+        active = active ? this->FieldClass15AE60::pad29[1] == 0 : active;
+        if (active)
+        {
+            this->FieldClass15AE60::unk24 = this->FieldClass15AE60::unk28 + this->FieldClass15AE60::unk22 * this->FieldClass15AE60::unk26;
+            FieldListInputRuntime* runtime = (FieldListInputRuntime*)D_001B657C;
+            FieldListInputFlags* flags = runtime->flags;
+            u16 mask = runtime->mask;
+            if (!(mask & flags->unk00) && (mask & flags->unk02))
+            {
+                this->FieldClass15AE60::unk24 = -1;
+            }
+            func_002CDB20(&static_cast<FieldClass15AE60&>(*this));
+        }
+        func_002CE010(&static_cast<FieldClass15AE60&>(*this));
+    }
+    else if (this->FieldClass15AE60::unk85)
+    {
+        this->refresh_rows(this->FieldClass15AE60::unk22);
+        this->FieldClass15AE60::unk85 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CD8B0);
+void FieldClass15AD40::set_selection_marker(LibClass174EF0* target, u32 color)
+{
+    if (!this->selection_marker)
+    {
+        this->selection_marker = new (0) FieldClass153170;
+        func_0023B850((FieldObject23B850*)this->selection_marker, (FieldTarget23B850*)target, color);
+        lib_container_attach_widget(this->FieldClass15AE70::unk10, this->selection_marker);
+        if (this->FieldClass15AE60::unk3c)
+        {
+            this->selection_marker->unk5c = 1;
+        }
+    }
+    if (target)
+    {
+        if (this->FieldClass15AE60::pad29[1] == 0 || this->FieldClass15AE60::unk3c)
+        {
+            this->selection_marker->unk3f = 1;
+            if (this->FieldClass15AE60::unk3c && this->FieldClass15AE60::pad29[1] == 2 && (s8)this->FieldClass15AE60::pad29[0] > 0)
+            {
+                this->selection_marker->unk3f = 0;
+            }
+            func_0023B7E0((FieldObject23B950*)this->selection_marker, (FieldTarget23B850*)target);
+            func_420D20(this->selection_marker, color);
+            func_0023B780((FieldObject23B950*)this->selection_marker);
+        }
+    }
+    else
+    {
+        this->selection_marker->unk3f = 0;
+    }
+}
 
 extern "C" int func_002CD9E0(void* object) { return 1; }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CD9F0);
+/** @brief Release the list window and its base display lists. */
+FieldClass15AD40::~FieldClass15AD40()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CDA60);
+/** @brief Initialize the list window and its display slots. */
+FieldClass15AD40::FieldClass15AD40()
+{
+    FieldClass15AE60::unk04 = 0;
+    FieldClass15AE60::unk00 = 0;
+    selection_marker = 0;
+    unk88 = 0;
+    FieldClass15AE60::unk2b = 0;
+    FieldClass15AE60::pad30[0] = 0;
+    unk84 = 0;
+    unk85 = 0;
+    FieldClass15AE60::unk8c = 0xFF;
+    for (s32 i = 0; i <= 14; i++)
+    {
+        unk48[i] = 0;
+    }
+    FieldClass15AE70();
+    FieldClass15AE60::unk3c = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CDB20);
 
@@ -306,7 +413,47 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CDF
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE010);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE220);
+/**
+ * @brief Store the selector coordinates and enable position updates.
+ * @param selector Selector widget to update.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ */
+static inline void set_selector_position(ItemCreationClass175030* selector, float x, float y)
+{
+    selector->ItemCreationClass185050::unk10 = x;
+    selector->ItemCreationClass185050::unk14 = y;
+    selector->unk35 = 1;
+    selector->unk3c = 1;
+}
+void FieldClass15AE60::configure_selection(s32 count, s32 start, s32 selected)
+{
+    this->unk18 = count;
+    this->unk1e = (this->unk18 + this->unk26 - 1) / this->unk26;
+    this->unk20 = this->unk1e - this->unk27;
+    if (this->unk20 < 0)
+    {
+        this->unk20 = 0;
+    }
+    this->unk22 = start;
+    this->refresh_rows(this->unk22);
+    this->unk14 = 0.0f;
+    this->unk10 = 0.0f;
+    this->pad29[1] = 0;
+    this->set_scroll_position(this->unk10);
+    this->unk28 = selected;
+    ItemCreationClass175030* selector = (ItemCreationClass175030*)this->unk04;
+    set_selector_position(selector,
+                          this->unk08 + (float)(this->unk1a * (this->unk28 % this->unk26)),
+                          this->unk0c + (float)(this->unk1c * (this->unk28 / this->unk26)));
+    this->unk04->unk3c = 1;
+    ItemCreationClass1725D0* indicator = (ItemCreationClass1725D0*)this->unk00;
+    indicator->unk50 = 100.0f * (u32)this->unk27 / (u32)this->unk1e;
+    indicator->unk3c = 1;
+    indicator = (ItemCreationClass1725D0*)this->unk00;
+    indicator->unk54 = 100.0f * (this->unk14 + (float)(this->unk22 * this->unk1c)) / (float)(this->unk1e * this->unk1c);
+    indicator->unk3c = 1;
+}
 
 extern "C" void func_002CE420(FieldStateCE420* object, u8 first, u32 second, u16 third, u16 fourth)
 {
@@ -338,7 +485,17 @@ void* FieldClass15AE70::func_slot3c()
     return window;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE4C0);
+/**
+ * @brief Enable window control and store the state code and flags.
+ * @param code Byte state code.
+ * @param flags Halfword state flags.
+ */
+void FieldClass15AE70::set_state(u8 code, u16 flags)
+{
+    func_slot24(1);
+    unk08 = code;
+    unk0a = flags;
+}
 
 /**
  * @brief Store the low byte of the activation value in the nested display.
@@ -355,8 +512,62 @@ extern "C" void func_002CE510(FieldBytePtr10* object, u32 value)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE530);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE760);
+/** @brief Queue a constructed container. @param container Container to queue. @return Zero for a null container, otherwise one. */
+static inline u8 queue_container(LibObject178660* container)
+{
+    if (!container)
+    {
+        return 0;
+    }
+    lib_queue_display_object(D_001B657C, container);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE8D0);
+/** @brief Allocate and queue the container, configure its transform, and associate it with the window. */
+s32 FieldClass15AE70::func_slot14(u32 associated, s32 first, s32 second, s32 third, float x, float y, float z)
+{
+    unk10 = new (0) LibObject178660;
+    if (queue_container(unk10) == 0 || !associated)
+    {
+        return 0;
+    }
+    lib_container_init(unk10, first, x, y, second, z, third);
+    func_slot50(associated);
+    unka0 = x;
+    unka4 = y;
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CEA20);
+/** @brief Allocate and queue the container with default mode words and zero depth. */
+s32 FieldClass15AE70::func_slot10(u32 associated, float x, float y, s32 code)
+{
+    unk10 = new (0) LibObject178660;
+    if (queue_container(unk10) == 0 || !associated)
+    {
+        return 0;
+    }
+    lib_container_init(unk10, code, x, y, 0, 0.0f, 0);
+    func_slot50(associated);
+    unka0 = x;
+    unka4 = y;
+    return 1;
+}
+
+void FieldClass15AE70::func_slot0c()
+{
+    void* first = 0;
+    while (func_002CF190(&unk74, &first))
+    {
+        ((LibClass171EA0*)first)->func_003EF740();
+    }
+    void* second = 0;
+    while (func_002CEFA0(&unk80, &second))
+    {
+        ((LibClass171EA0*)second)->func_003EF740();
+    }
+    if (unk10)
+    {
+        static_cast<LibClass174610&>(*unk10).func_003EF740();
+    }
+    resident_enqueue_object(D_001B65F4, this);
+}

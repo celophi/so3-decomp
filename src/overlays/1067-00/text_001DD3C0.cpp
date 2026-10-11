@@ -84,8 +84,8 @@ void FieldClass150070::func_001DD410()
 void FieldClass14FE30::func_001DD7B0()
 {
     FieldClass150070& base = *this;
-    func_004D65C0(&base);
-    func_0011ED90(D_001B65F4, static_cast<FieldClass150070*>(this));
+    lib_object_detach_owner(&base);
+    resident_enqueue_object(D_001B65F4, static_cast<FieldClass150070*>(this));
 }
 
 s32 FieldClass14FE30::func_001DF3D0()
@@ -95,7 +95,7 @@ s32 FieldClass14FE30::func_001DF3D0()
 
 FieldClass14FE30::~FieldClass14FE30()
 {
-    func_004D65C0(&unkA0);
+    lib_object_detach_owner(&unkA0);
 }
 
 void func_001DD570(FieldFlaggedListObject* list)
@@ -178,7 +178,7 @@ void FieldClass1502A0::func_001DD730()
             break;
         }
         node = node->unk08;
-        func_004D65C0(current);
+        lib_object_detach_owner(current);
         static_cast<FieldClass150070*>(current)->func_001DD7B0();
     }
 }
@@ -206,7 +206,7 @@ void func_001DD860(FieldClass150060* list)
         }
         else if (current->unk78 & 0x20000)
         {
-            func_004D65C0(current);
+            lib_object_detach_owner(current);
             current->func_001DD7B0();
         }
         else if (current->unk78 & 0x20)
@@ -660,13 +660,13 @@ void FieldClass14FFB0::func_001DE8B0(s32 count)
     }
     else
     {
-        void* heap = func_00100C80(D_001B6430->context->unk6c);
+        void* heap = resident_exchange_allocation_heap(D_001B6430->context->unk6c);
         if (unk1c)
         {
             delete[] unk1c;
         }
         unk1c = new(0) FieldClass150040[count];
-        func_00100C80(heap);
+        resident_exchange_allocation_heap(heap);
     }
     unk24 = count;
 }

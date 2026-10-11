@@ -207,7 +207,7 @@ void func_0024A410(FieldObject24A410* object)
     object->state = 0;
     if (object->owned != 0)
     {
-        func_004D65C0(object->owned);
+        lib_object_detach_owner(object->owned);
     }
 }
 

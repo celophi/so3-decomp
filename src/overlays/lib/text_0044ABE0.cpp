@@ -1,4 +1,17 @@
 #include "include_asm.h"
+#include "overlays/lib/text_0044ABE0.h"
+#include "main/resident_data.h"
+
+/** Partial indexed-resource fields at CC and D0. */
+typedef struct LibIndexedResourceState
+{
+    u8 pad00[0xCC];
+    s32 current;
+    s32 selected;
+} LibIndexedResourceState;
+extern "C" s32 func_00461860(LibStorageBlock0C* storage, s32 count);
+extern "C" s32 func_00464EF0(FieldRuntime* runtime, s32 index);
+extern "C" s32 func_00467800(ItemCreationClass174C40* object, s32 resource, s32 first, s32 second, s32 third, s32 fourth, float x, float y);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044ABE0);
 
@@ -12,7 +25,33 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AFF0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B100);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B110);
+/**
+ * @brief Set transform codes and the third coordinate while preserving x and y.
+ * @param code Transform code.
+ * @param first First byte value.
+ * @param z Third coordinate.
+ * @param second Word value.
+ * @param third Second byte value.
+ */
+void LibClass174610::set_codes_and_z(s32 code, u32 first, float z, u32 second, u32 third)
+{
+    if (code != 0)
+    {
+        z = (float)(code * 16);
+        first = 9;
+        second = 0xFFFFFE - code * 16;
+    }
+    unka0 = code;
+    unka8 = first;
+    unka4 = second;
+    if (code >= 13 && code < 21)
+    {
+        third = 255 - (code - 13);
+    }
+    unka9 = third;
+    LibClass171EC0::func_003EF790(unk20.components[0], unk20.components[1], z);
+    unkae = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B190);
 
@@ -22,13 +61,73 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B210);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B240);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B2D0);
+/** @brief Initialize transform flags and drawing modes after the base receivers. */
+LibClass174610::LibClass174610()
+{
+    unk6a |= 0x400;
+    unk94 = 0;
+    unkaf = 0;
+    unkae = 1;
+    unkad = 1;
+    unkac = 1;
+    unkab = 1;
+    unkaa = 2;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B350);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B510);
+/**
+ * @brief Initialize a widget that restores the runtime clipping bounds.
+ * @param object Clipping widget.
+ * @param code Retained initialization argument; this routine does not use it.
+ * @return True when the six-entry drawing storage was allocated.
+ */
+extern "C" bool lib_scissor_init_reset(ItemCreationClass1746A0* object, s32 code)
+{
+    object->unk50 = 1;
+    object->unk3c = 1;
+    bool success;
+    if (!func_00461860(&object->unk40, 6))
+    {
+        success = false;
+    }
+    else
+    {
+        object->unk39 = 1;
+        success = true;
+    }
+    return success;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B570);
+/**
+ * @brief Initialize a widget that sets a clipping rectangle.
+ * @param object Clipping widget.
+ * @param x Rectangle's horizontal position.
+ * @param y Rectangle's vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @return True when the six-entry drawing storage was allocated.
+ */
+extern "C" bool lib_scissor_init_rectangle(ItemCreationClass1746A0* object, float x, float y, float width, float height)
+{
+    object->unk18.unk00 = x;
+    object->unk18.unk04 = y;
+    object->unk18.unk08 = width;
+    object->unk18.unk0c = height;
+    object->unk50 = 0;
+    object->unk3c = 1;
+    bool success;
+    if (!func_00461860(&object->unk40, 6))
+    {
+        success = false;
+    }
+    else
+    {
+        object->unk39 = 1;
+        success = true;
+    }
+    return success;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B5E0);
 
@@ -168,7 +267,21 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453000);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453080);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004530E0);
+/**
+ * @brief Select the indexed resource and initialize its drawing position.
+ * @param object Resource widget.
+ * @param index Resource index.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @return Initialization status.
+ */
+extern "C" s32 lib_indexed_resource_init(ItemCreationClass174C40* object, s32 index, float x, float y)
+{
+    LibIndexedResourceState* state = (LibIndexedResourceState*)object;
+    state->selected = index;
+    state->current = index;
+    return func_00467800(object, func_00464EF0(D_001B657C, state->current) + 0x22, 0, 0, 0, 0, x, y);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453150);
 
@@ -182,7 +295,26 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453F30);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453F70);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453FF0);
+/**
+ * @brief Initialize resource pointers, drawing scales, colors, and descriptor defaults.
+ * @param state State to initialize.
+ */
+extern "C" void lib_draw_state_init(LibDrawState64* state)
+{
+    state->unk04 = 0;
+    state->unk00 = 0;
+    state->unk08 = 0;
+    state->unk18 = state->unk1c = 0.0f;
+    state->unk20 = state->unk24 = 0.0f;
+    state->unk28 = state->unk2c = 0.0f;
+    state->unk30 = state->unk34 = 1.0f;
+    state->unk38 = state->unk3c = 0.0f;
+    state->unk40 = 0.0f;
+    state->unk44 = state->unk48 = state->unk4c = state->unk50 = 128.0f;
+    state->unk5e = -1;
+    state->unk5f = 0;
+    state->unk60 = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454060);
 

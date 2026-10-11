@@ -101,7 +101,7 @@ inline FieldClass152C70::~FieldClass152C70()
 {
     if (unk1c)
     {
-        func_001134C0(unk1c);
+        resident_heap_release(unk1c);
     }
 }
 

@@ -3,6 +3,9 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_001DED80.h"
+#ifdef __cplusplus
+#include "overlays/1067-00/text_002CD390.h"
+#endif
 
 /** Partial receiver with a word at offset 0x30 and a byte at offset 0x34. */
 typedef struct FieldWordByte30
@@ -196,17 +199,17 @@ public:
      */
     virtual u8 func_00264110();
     /**
-     * @brief Handle a supplied object; remaining contract is unresolved.
-     * @param value Supplied object.
-     * @return Handler result.
+     * @brief Append a non-null display child to the receiver list.
+     * @param value Child to append.
+     * @return One when a child was supplied, otherwise zero.
      */
-    virtual s32 func_00263FD0(void* value);
+    virtual s32 add_child(void* value);
     /**
-     * @brief Handle a supplied object; remaining contract is unresolved.
-     * @param value Supplied object.
-     * @return Handler result.
+     * @brief Unlink a registered display child and invoke its release hook.
+     * @param value Child to remove.
+     * @return Zero for a null child, otherwise one.
      */
-    virtual s32 func_00263F50(void* value);
+    virtual s32 remove_child(void* value);
     /**
      * @brief Report the handler state.
      * @return Handler result.
@@ -269,11 +272,14 @@ public:
      * @param flag Flag forwarded without narrowing.
      */
     virtual void func_00263E20(u32 flag);
-    u8 unk14[0xC];
+    FieldClass153EC0 unk14;
     void* unk20;
     void* unk24;
     s8 unk28;
-    u8 unk29[0xB];
+    u8 unk29;
+    u8 unk2a[2];
+    void* unk2c;
+    void* unk30;
 };
 
 /** Partial class with a FieldClass1DD400 base at offset 0x14, with vtable D_150120 in main data. */

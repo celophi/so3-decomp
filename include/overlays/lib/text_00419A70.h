@@ -93,7 +93,18 @@ typedef struct ItemCreationClass172870 ItemCreationClass172870;
  * @param second Second scalar value.
  * @return One on success, or zero if its storage could not be initialized.
  */
-s32 func_41A930(ItemCreationClass1725D0* object, float x, float y, float height, float first, float second);
+s32 lib_list_indicator_init(ItemCreationClass1725D0* object, float x, float y, float height, float first, float second);
+
+/**
+ * @brief Allocate marker drawing storage and initialize its rectangle and colors.
+ * @param object Marker widget.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @return One on success, or zero if storage cannot be allocated.
+ */
+s32 lib_marker_init_rectangle(ItemCreationClass172870* object, float x, float y, float width, float height);
 
 /**
  * @brief Initialize the scalar indicator rectangle and storage.

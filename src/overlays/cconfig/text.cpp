@@ -9,6 +9,7 @@
 #include "overlays/1067-00/text_002D5260.h"
 #include "overlays/1067-00/text_0020E4B0.h"
 #include "overlays/1067-00/field_runtime.h"
+#include "overlays/1067-00/text_002CEAF0.h"
 
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_0045AD10.h"
@@ -44,7 +45,6 @@ struct ConfigRuntimeCallbacks
  * @param callbacks Runtime callback directory.
  * @param object Window to process.
  */
-extern "C" void func_002CFE10(ConfigRuntimeCallbacks* callbacks, FieldClass15AE70* object);
 
 /** Partial settings storage containing the protected option flags and checksums. */
 struct ConfigSettings
@@ -326,7 +326,7 @@ static inline void config_set_mode(ConfigSettings* settings, u8 mode)
     if (settings->checksum == func_00457470(settings->key, &settings->unk26, length))
     {
         settings->mode = mode;
-        settings->key = func_0010CF80();
+        settings->key = resident_next_random_word();
         settings->checksum = func_00457470(settings->key, &settings->unk26, length);
     }
 }
@@ -693,7 +693,7 @@ s32 func_00348840(FieldClass15AE70* object)
     object->FieldClass15AE70::func_slot18(0, 0x7F);
     FieldClass153E30* state = D_001B643C->unk10->unk14;
     state->func_00263C70(object->func_slot44());
-    func_002CFE10(D_001B643C->unk10, object);
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->unk10), object);
     return 2;
 }
 
@@ -708,7 +708,7 @@ s32 func_003488D0(ConfigGridWindow* object)
     object->selected = object->grid->unk114;
     if (object->selected == 0)
     {
-        object->func_slot1c(0xFF, 0x80);
+        object->set_state(0xFF, 0x80);
     }
     else
     {
@@ -778,7 +778,7 @@ s32 func_00349190(FieldClass15AE70* object)
     object->FieldClass15AE70::func_slot18(0, 0x7F);
     FieldClass153E30* state = D_001B643C->unk10->unk14;
     state->func_00263C70(object->func_slot44());
-    func_002CFE10(D_001B643C->unk10, object);
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->unk10), object);
     static_cast<FieldClass15AE70*>(object->func_slot44())->func_slot64();
     return 2;
 }
@@ -823,7 +823,7 @@ s32 func_00349950(FieldClass15AE70* object)
     object->FieldClass15AE70::func_slot18(0, 0x7F);
     FieldClass153E30* state = D_001B643C->unk10->unk14;
     state->func_00263C70(object->func_slot44());
-    func_002CFE10(D_001B643C->unk10, object);
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->unk10), object);
     static_cast<FieldClass15AE70*>(object->func_slot44())->func_slot64();
     return 2;
 }
@@ -886,7 +886,7 @@ INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034A270);
 
 void func_0034A300(ConfigBindingWindow* object)
 {
-    D_001B643C->unk10->unk14->func_00263F50(object);
+    D_001B643C->unk10->unk14->remove_child(object);
     FieldClass153E30* state = D_001B643C->unk10->unk14;
     state->func_00263C70(object->func_slot44());
     static_cast<FieldClass15AE70*>(object->func_slot44())->func_slot64();
@@ -2119,7 +2119,7 @@ void ConfigOptions::func_slotac()
         s32 selected = this->selected;
         if (selected == 12 && unk101 == 0)
         {
-            func_00112400(D_001B65F8, 3, 0, 0, 127, 64, 0);
+            resident_allocate_request(D_001B65F8, 3, 0, 0, 127, 64, 0);
         }
         else
         {
@@ -2136,7 +2136,7 @@ void ConfigOptions::func_slota8()
         s32 selected = this->selected;
         if (selected == 12 && unk101 == 0)
         {
-            func_00112400(D_001B65F8, 3, 0, 0, 127, 64, 0);
+            resident_allocate_request(D_001B65F8, 3, 0, 0, 127, 64, 0);
         }
         else
         {
@@ -2184,8 +2184,8 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2037, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2037, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fc5)
             {
                 text->set_color(0x808080);
@@ -2201,8 +2201,8 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2038, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2038, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fc6)
             {
                 text->set_color(0x808080);
@@ -2216,8 +2216,8 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list14_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list14_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2244,8 +2244,8 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2033, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2033, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fc1)
             {
                 text->set_color(0x808080);
@@ -2261,8 +2261,8 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2034, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2034, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fc2)
             {
                 text->set_color(0x808080);
@@ -2276,8 +2276,8 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list13_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list13_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2304,8 +2304,8 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2031, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2031, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fbf)
             {
                 text->set_color(0x808080);
@@ -2321,8 +2321,8 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2032, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2032, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fc0)
             {
                 text->set_color(0x808080);
@@ -2336,8 +2336,8 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list12_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list12_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2364,8 +2364,8 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202f, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202f, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fbd)
             {
                 text->set_color(0x808080);
@@ -2381,8 +2381,8 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2030, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2030, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fbe)
             {
                 text->set_color(0x808080);
@@ -2396,8 +2396,8 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list11_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list11_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2424,8 +2424,8 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202d, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202d, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fbb)
             {
                 text->set_color(0x808080);
@@ -2441,8 +2441,8 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202e, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202e, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fbc)
             {
                 text->set_color(0x808080);
@@ -2456,8 +2456,8 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list10_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list10_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2487,8 +2487,8 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2029, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2029, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1FB6)
             {
                 text->set_color(0x808080);
@@ -2504,8 +2504,8 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202A, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202A, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1FB7)
             {
                 text->set_color(0x808080);
@@ -2522,8 +2522,8 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             object->unka4 += object->unk10c;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202C, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202C, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1FB9)
             {
                 text->set_color(0x808080);
@@ -2539,15 +2539,15 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
         case 3:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202B, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202B, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             object->unkf4 = new (0) ItemCreationOptionResourceDisplay;
             void* allocation = func_002D3D80(D_001B643C->resources, 0);
             FieldResourceRecord* record = func_002D3CC0(D_001B643C->resources, 13);
             object->unkf4->unkcc = allocation;
             object->unkf4->unkd0 = 0;
             initialize_preview_resource(object->unkf4, record, x, object->unka4);
-            func_004C6190(object->unk10, object->unkf4);
+            lib_container_attach_widget(object->unk10, object->unkf4);
             if (key == 0x1FB8)
             {
                 text->set_color(0x808080);
@@ -2565,8 +2565,8 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list9_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list9_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2597,8 +2597,8 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2027, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2027, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fb4)
             {
                 text->set_color(0x808080);
@@ -2614,8 +2614,8 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2028, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2028, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fb5)
             {
                 text->set_color(0x808080);
@@ -2629,8 +2629,8 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list8_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list8_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2657,8 +2657,8 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2025, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 32.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2025, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 32.0f);
             if (key == 0x1FB2)
             {
                 text->set_color(0x808080);
@@ -2676,8 +2676,8 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = 264.0f + object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2026, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 32.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2026, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 32.0f);
             if (key == 0x1FB3)
             {
                 text->set_color(0x808080);
@@ -2691,8 +2691,8 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list7_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list7_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2719,8 +2719,8 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2023, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2023, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fb0)
             {
                 text->set_color(0x808080);
@@ -2736,8 +2736,8 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2024, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2024, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fb1)
             {
                 text->set_color(0x808080);
@@ -2751,8 +2751,8 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list6_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list6_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2779,8 +2779,8 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201f, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201f, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fac)
             {
                 text->set_color(0x808080);
@@ -2796,8 +2796,8 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2020, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2020, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fad)
             {
                 text->set_color(0x808080);
@@ -2811,8 +2811,8 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list4_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list4_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2839,8 +2839,8 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201d, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201d, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1faa)
             {
                 text->set_color(0x808080);
@@ -2856,8 +2856,8 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201e, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201e, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fab)
             {
                 text->set_color(0x808080);
@@ -2871,8 +2871,8 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list3_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list3_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2899,8 +2899,8 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2019, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2019, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1FA6)
             {
                 text->set_color(0x808080);
@@ -2916,8 +2916,8 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201A, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201A, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1FA7)
             {
                 text->set_color(0x808080);
@@ -2934,8 +2934,8 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             object->unka4 += object->unk10c;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201B, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201B, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1FA8)
             {
                 text->set_color(0x808080);
@@ -2951,8 +2951,8 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
         case 3:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201C, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201C, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1FA9)
             {
                 text->set_color(0x808080);
@@ -2966,8 +2966,8 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list2_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list2_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -2994,8 +2994,8 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2017, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2017, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fa4)
             {
                 text->set_color(0x808080);
@@ -3011,8 +3011,8 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2018, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2018, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fa5)
             {
                 text->set_color(0x808080);
@@ -3026,8 +3026,8 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list1_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list1_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -3054,8 +3054,8 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
         case 0:
         {
             float x = object->unk104;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2021, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2021, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1fae)
             {
                 text->set_color(0x808080);
@@ -3071,8 +3071,8 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
         case 1:
         {
             float x = object->unk104 + object->unk108;
-            text->func_004C7FE0(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2022, 0);
-            func_0041AD10(marker, x, object->unka4, func_004C69B0(text)->unk08, 24.0f);
+            text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2022, 0);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
             if (key == 0x1faf)
             {
                 text->set_color(0x808080);
@@ -3086,8 +3086,8 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
             break;
         }
         }
-        func_004C6190(object->unk10, text);
-        func_004C6190(object->unk10, marker);
+        lib_container_attach_widget(object->unk10, text);
+        lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list5_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list5_second), marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
@@ -3102,32 +3102,17 @@ INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00350270);
 
 INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_slotb4__13ConfigOptionsFv);
 
-/**
- * @brief Configure the frame bounds.
- * @param object Frame widget.
- * @param x Horizontal position.
- * @param y Vertical position.
- * @param width Frame width.
- * @param height Frame height.
- */
-extern "C" void func_0044B570(LibClass1746A0* object, float x, float y, float width, float height);
-/**
- * @brief Set the frame display flag.
- * @param object Frame widget.
- * @param flag Display flag.
- */
-extern "C" void func_0044B510(LibClass1746A0* object, u32 flag);
 
 s32 ConfigOptions::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 11);
     unk28c = new (0) LibClass1725D0;
-    func_41A930(unk28c, 586.0f, 16.0f, 368.0f, unk290, unk294);
-    func_004C6190(unk10, unk28c);
+    lib_list_indicator_init(unk28c, 586.0f, 16.0f, 368.0f, unk290, unk294);
+    lib_container_attach_widget(unk10, unk28c);
     LibClass1746A0* frame = new (0) LibClass1746A0;
     LibClass1746A0* cover = new (0) LibClass1746A0;
-    func_0044B570(frame, 8.0f, 8.0f, 576.0f, 384.0f);
-    func_004C6190(unk10, frame);
+    lib_scissor_init_rectangle(frame, 8.0f, 8.0f, 576.0f, 384.0f);
+    lib_container_attach_widget(unk10, frame);
     last_index = 13;
     s32 extra_key;
     if (config_extra(D_001B643C->settings) == 0)
@@ -3172,11 +3157,11 @@ s32 ConfigOptions::func_slotf4(u32 associated)
             positions[position] = 22.0f + positions[i - 1] + spacing;
             break;
         }
-        text->func_004C7FE0(24.0f, positions[position], 0.0f, 0.0f, static_cast<s32>(associated), i + 0x2008, 1);
+        text->init_resource_rectangle(24.0f, positions[position], 0.0f, 0.0f, static_cast<s32>(associated), i + 0x2008, 1);
         text->set_color(0x806080);
         text->unk88 = -1.0f;
         text->unk3c = 1;
-        func_004C6190(unk10, text);
+        lib_container_attach_widget(unk10, text);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list0_first), text);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list), text);
     }
@@ -3205,16 +3190,16 @@ s32 ConfigOptions::func_slotf4(u32 associated)
         float y = positions[position];
         if (i == 5)
         {
-            text->func_004C7FE0(24.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0x2016, 1);
+            text->init_resource_rectangle(24.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0x2016, 1);
         }
         else
         {
-            text->func_004C7FE0(24.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), i + 0x2010, 1);
+            text->init_resource_rectangle(24.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), i + 0x2010, 1);
         }
         text->set_color(0x806080);
         text->unk88 = -1.0f;
         text->unk3c = 1;
-        func_004C6190(unk10, text);
+        lib_container_attach_widget(unk10, text);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list0_first), text);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list), text);
     }
@@ -3252,12 +3237,12 @@ s32 ConfigOptions::func_slotf4(u32 associated)
     {
         func_0034D8B0(this, associated);
     }
-    func_0044B510(cover, 1);
-    func_004C6190(unk10, cover);
+    lib_scissor_init_reset(cover, 1);
+    lib_container_attach_widget(unk10, cover);
     unk110 = 24.0f;
     scroll = new (0) LibClass175030;
-    func_00467360(scroll, unk110, 12.0f + positions[0]);
-    func_004C6190(unk10, scroll);
+    lib_moving_widget_init_position(scroll, unk110, 12.0f + positions[0]);
+    lib_container_attach_widget(unk10, scroll);
     func_0034B180(this, 0);
     s32 key = func_00350270(this, selected);
     if (key != unkb8)
@@ -3314,8 +3299,8 @@ s32 func_003514E0(ConfigFrameWindow* object, u32 associated)
 {
     func_002CE8D0(reinterpret_cast<FieldObjectCE8D0*>(object), associated, 16.0f, 72.0f, 11);
     object->frame = new (0) LibClass178630;
-    func_004C5A80(object->frame, 0, 0.0f, 0.0f, 608.0f, 400.0f, 88.0f);
-    func_004C6190(object->unk10, object->frame);
+    lib_panel_init_rectangle(object->frame, 0, 0.0f, 0.0f, 608.0f, 400.0f, 88.0f);
+    lib_container_attach_widget(object->unk10, object->frame);
     return 1;
 }
 
@@ -3339,8 +3324,8 @@ void func_00351610(ConfigMessageWindow* object, s32 key)
     {
         object->unkb2 = 0;
         object->unkb0 = 0;
-        func_4C6DF0(object->text, object->source, key, 1);
-        object->extent = func_004C69B0(object->text)->unk08;
+        lib_text_set_resource(object->text, object->source, key, 1);
+        object->extent = lib_text_measure_bounds(object->text)->unk08;
         if (key == 0x1FB8 || key == 0x1FBA)
         {
             object->key = key;
@@ -3387,9 +3372,9 @@ s32 func_00351C30(ConfigPreviewWindow* object, u32 associated)
     initialize_preview_resource(object->resources[0], func_002D3CC0(D_001B643C->resources, 5), 0.0f, 0.0f);
     initialize_preview_resource(object->resources[1], func_002D3CC0(D_001B643C->resources, 6), 256.0f, 0.0f);
     initialize_preview_resource(object->resources[2], func_002D3CC0(D_001B643C->resources, 7), 512.0f, 0.0f);
-    func_004C6190(object->unk10, object->resources[0]);
-    func_004C6190(object->unk10, object->resources[1]);
-    func_004C6190(object->unk10, object->resources[2]);
+    lib_container_attach_widget(object->unk10, object->resources[0]);
+    lib_container_attach_widget(object->unk10, object->resources[1]);
+    lib_container_attach_widget(object->unk10, object->resources[2]);
     object->display = new (0) ItemCreationOptionResourceDisplay;
     object->display->unkcc = func_002D3D80(D_001B643C->resources, 12);
     object->display->unkd0 = 12;
@@ -3398,7 +3383,7 @@ s32 func_00351C30(ConfigPreviewWindow* object, u32 associated)
     display->unk50.unk34 = 1.4f;
     display->unk50.unk30 = 1.4f;
     display->unk3c = 1;
-    func_004C6190(object->unk10, object->display);
+    lib_container_attach_widget(object->unk10, object->display);
     return 1;
 }
 
@@ -3455,15 +3440,15 @@ void func_003520C0(ConfigControlReceiver* object)
 {
     if (object->resource)
     {
-        func_00465430(D_001B657C, object->resource);
+        lib_release_resource_slot(D_001B657C, object->resource);
     }
-    func_004D65C0(object);
+    lib_object_detach_owner(object);
     object->func_001DD7B0();
 }
 
 void func_00352110(void* object)
 {
-    func_0011ED90(D_001B65F4, object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00352130);
@@ -3476,16 +3461,16 @@ s32 func_00352330(ConfigControlReceiver* object, void* buffer)
     }
     ConfigAlignedResource* aligned = aligned_config_resource(buffer);
     s32 size = aligned->size + 0x80;
-    void* saved_heap = func_00100C90();
+    void* saved_heap = resident_get_allocation_heap();
     void* heap = D_001B6430->context->unk70;
-    void* memory = func_00113710(heap, size);
+    void* memory = resident_heap_allocate(heap, size);
     if (memory != 0)
     {
-        func_001134C0(memory);
-        func_00100C80(heap);
+        resident_heap_release(memory);
+        resident_exchange_allocation_heap(heap);
     }
-    object->resource = func_004656B0(D_001B657C, aligned);
-    func_00100C80(saved_heap);
+    object->resource = lib_load_resource_slot(D_001B657C, aligned);
+    resident_exchange_allocation_heap(saved_heap);
     return object->func_00263CD0();
 }
 

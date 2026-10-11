@@ -245,7 +245,7 @@ public:
     /** @brief Detach the object from the owner at offset 0x10, then destroy it. */
     virtual ~FieldClass150070()
     {
-        func_004D65C0(this);
+        lib_object_detach_owner(this);
     }
 
     /**

@@ -110,9 +110,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002952
  */
 extern "C" void func_00295340(FieldClass157540* object, s32 rows, s32 columns)
 {
-    void* heap = func_00100C80(0);
+    void* heap = resident_exchange_allocation_heap(0);
     func_002A78C0(object, rows, columns);
-    func_00100C80(heap);
+    resident_exchange_allocation_heap(heap);
 }
 
 FieldClass157610::~FieldClass157610()
@@ -129,9 +129,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002954
  */
 extern "C" void func_002954A0(FieldClass157610* object, s32 rows, s32 columns)
 {
-    void* heap = func_00100C80(0);
+    void* heap = resident_exchange_allocation_heap(0);
     func_002A6910(object, rows, columns);
-    func_00100C80(heap);
+    resident_exchange_allocation_heap(heap);
 }
 
 FieldClass157880::~FieldClass157880()
@@ -148,9 +148,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002955
  */
 extern "C" void func_00295600(FieldClass157880* object, s32 rows, s32 columns)
 {
-    void* heap = func_00100C80(0);
+    void* heap = resident_exchange_allocation_heap(0);
     func_002A70D0(object, rows, columns);
-    func_00100C80(heap);
+    resident_exchange_allocation_heap(heap);
 }
 
 FieldClass157BC0::~FieldClass157BC0()
@@ -167,9 +167,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002957
  */
 extern "C" void func_00295760(FieldClass157BC0* object, s32 rows, s32 columns)
 {
-    void* heap = func_00100C80(0);
+    void* heap = resident_exchange_allocation_heap(0);
     func_002A6910(object, rows, columns);
-    func_00100C80(heap);
+    resident_exchange_allocation_heap(heap);
 }
 
 FieldClass157F00::~FieldClass157F00()
@@ -186,9 +186,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002958
  */
 extern "C" void func_002958C0(FieldClass157F00* object, s32 rows, s32 columns)
 {
-    void* heap = func_00100C80(0);
+    void* heap = resident_exchange_allocation_heap(0);
     func_002A6170(object, rows, columns);
-    func_00100C80(heap);
+    resident_exchange_allocation_heap(heap);
 }
 
 FieldClass158240::~FieldClass158240()
@@ -205,9 +205,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_002959
  */
 extern "C" void func_00295A20(FieldClass158240* object, s32 rows, s32 columns)
 {
-    void* heap = func_00100C80(0);
+    void* heap = resident_exchange_allocation_heap(0);
     func_002A5A70(object, rows, columns);
-    func_00100C80(heap);
+    resident_exchange_allocation_heap(heap);
 }
 
 bool func_00295A90(FieldObject158240* object)
@@ -229,9 +229,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_00295B
  */
 extern "C" void func_00295BA0(FieldClass1584B0* object, s32 rows, s32 columns)
 {
-    void* heap = func_00100C80(0);
+    void* heap = resident_exchange_allocation_heap(0);
     func_002A5A70(object, rows, columns);
-    func_00100C80(heap);
+    resident_exchange_allocation_heap(heap);
 }
 
 bool func_00295C10(FieldObject1584B0* object)

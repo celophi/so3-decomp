@@ -14,6 +14,7 @@ options:
   generated_asm_macros_directory: build/main/include
   cache_path: build/main/splat.cache
   symbol_addrs_path: [config/symbols/main_symbol_addrs.txt]
+  reloc_addrs_path: [config/relocations/main_reloc_addrs.txt]
   undefined_funcs_auto_path: build/main/undefined_funcs.ld
   undefined_syms_auto_path: build/main/undefined_syms.ld
   create_c_files: true
@@ -28,6 +29,9 @@ options:
   find_file_boundaries: false
   disasm_unknown: true
   gp_value: 0x001BDFF0
+  # Resident memory, including BSS, from the first ELF load segment.
+  global_vram_start: 0x00100000
+  global_vram_end: 0x001DD380
   # MWLDPS2 rejects the sized <function>.NON_MATCHING symbol splat's nonmatching
   # macro adds to every assembly function, so this module redefines it as empty.
   # The nonmatching lines stay in the .s files for the tools that read them.
@@ -47,7 +51,7 @@ segments:
     vram: 0x100000
     subsegments:
       - [0x680, asm, startup]
-      - [0x860, c, main/resident_001001E0]
+      - [0x860, cpp, main/resident_001001E0]
       - [0x18D0, c, main/func_00101250]
       - [0x18E0, c, main/resident_00101260]
       - [0x1B90, c, main/func_00101510]
@@ -55,6 +59,7 @@ segments:
       - [0xA700, c, main/func_0010A080]
       - [0xA730, c, main/func_0010A0B0]
       - [0xA760, c, main/resident_0010A0E0]
+      - [0x1F478, pad, resident_queue_end_align]
       - [0x1F480, c, main/func_0011EE00]
       - [0x1F4F0, c, main/resident_0011EE70]
       - [0x21FC0, c, sdk/main/libkernl_00121940]

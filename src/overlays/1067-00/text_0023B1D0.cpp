@@ -3,6 +3,7 @@
 #include "main/resident_0010A0E0.h"
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/1067-00/text_0023B1D0.h"
+#include "overlays/1067-00/text_marker.h"
 
 extern "C" {
 void func_44B210(void* object);
@@ -17,7 +18,6 @@ void __dl__FPv(void* object);
 void func_466E40(void* point, float x, float y, float scale);
 void func_002CFE40(void* target, s32 value);
 void func_467570(FieldObject23D020* object, s32 enabled, s32 first, s32 second, float first_float, float second_float, float third_float);
-void func_465B20(FieldRuntime* runtime, FieldObject23D020* object);
 void func_421170(FieldObject23B850* object, FieldTarget23B850* target,
                  float x, float y, float z, float scale);
 void func_420D20(FieldObject23B850* object, u32 color);
@@ -207,16 +207,12 @@ void func_0023B850(FieldObject23B850* object, FieldTarget23B850* target, u32 col
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B8D0);
 
-FieldObject23B950* func_0023B950(FieldObject23B950* object)
+inline ItemCreationClass172870::ItemCreationClass172870()
 {
-    func_4C4960(object);
-    object->table = __vt__23ItemCreationClass172870;
-    object->unk40 = 0;
-    object->state = 6;
-    object->table = D_153170;
-    object->target = 0;
-    object->unk5C = 0;
-    return object;
+    unk38 = 6;
+}
+FieldClass153170::FieldClass153170() : unk58(0), unk5c(0)
+{
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B9B0);
@@ -253,7 +249,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023BE
 void func_0023BF50(void* object)
 {
     func_44B210(object);
-    func_0011ED90(D_001B65F4, object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023BF80);
@@ -312,7 +308,33 @@ void func_0023CB30(FieldObject23CB30* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023CB50);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023CDB0);
+extern "C" u8 func_0023C830(FieldObject23CEA0* object, s16 direction);
+extern "C" u8 func_0023CB50(FieldObject23CEA0* object, s16 direction);
+
+s16 FieldObject23CEA0::process_direction(s16 direction)
+{
+    if (FieldClass151C50::unk35 == 0)
+    {
+        return 1;
+    }
+    unkF3[0] = 0;
+    switch (unkF2)
+    {
+    case 0:
+    case 2:
+        unkF3[0] = func_0023C830(this, direction);
+        break;
+    case 1:
+        unkF3[0] = func_0023CB50(this, direction);
+        break;
+    }
+    if (unkF3[0] != 1)
+    {
+        func_002CFE40(D_001B643C->target, 0);
+    }
+    return unkF3[0];
+}
+
 
 void func_0023CE60(FieldObject23CE80* object, float first, float second)
 {
@@ -412,12 +434,35 @@ void func_0023D020(FieldObject23D020* object, float first_float, float second_fl
     object->unk12C = 0;
     object->unk128 = 0;
     func_467570(object, 1, 0, 0, first_float, second_float, 0.0f);
-    func_465B20(D_001B657C, object);
+    lib_queue_display_object(D_001B657C, (LibClass178A90*)object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D0C0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D170);
+inline FieldClass151C50::FieldClass151C50()
+{
+    unk10.y = 0;
+    unk10.x = 0;
+    unk1c = 0;
+    unk18 = 0;
+    unk24 = 0;
+    unk20 = 0;
+}
+
+inline FieldClass175070::FieldClass175070()
+{
+    unk6c = 0x6FF0;
+}
+
+FieldObject23CEA0::FieldObject23CEA0()
+{
+    unk126 = 0;
+    unk124 = 0;
+    unk12c = 0;
+    unk128 = 0;
+    func_0023D020(reinterpret_cast<FieldObject23D020*>(this), 0.0f, 0.0f);
+}
+
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D230);
 
@@ -444,8 +489,8 @@ struct FieldObject23D2C0
 extern "C" void func_0023D2C0(FieldObject23D2C0* object)
 {
     object->attachment->func_001DD7B0();
-    func_004D65C0(object);
-    func_0011ED90(D_001B65F4, object);
+    lib_object_detach_owner(object);
+    resident_enqueue_object(D_001B65F4, object);
 }
 
 FieldNode23D310* func_0023D310(FieldObject23D310* object, s32 count)

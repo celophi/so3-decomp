@@ -7,6 +7,9 @@
 #include "overlays/lib/text_0044ABE0.h"
 
 extern "C" void func_00264580(FieldCountedList* list);
+extern "C" void func_00264460(FieldCountedList* list, void* value);
+extern "C" FieldListNode* func_00264600(FieldCountedList* list, void* value, FieldListNode* after);
+extern "C" s32 func_002644F0(FieldCountedList* list, FieldListNode* node);
 
 /** Active window receiver directory reached through the Field runtime. */
 struct FieldWindowCallbacks
@@ -161,9 +164,30 @@ void FieldClass15AE70::func_slot5c()
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00263F50);
+s32 FieldClass153E30::remove_child(void* value)
+{
+    if (value == 0)
+    {
+        return 0;
+    }
+    FieldListNode* node = func_00264600(&unk14, value, 0);
+    if (node != 0)
+    {
+        func_002644F0(&unk14, node);
+        static_cast<FieldClass15AE70*>(value)->func_slot0c();
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00263FD0);
+s32 FieldClass153E30::add_child(void* value)
+{
+    if (value == 0)
+    {
+        return 0;
+    }
+    func_00264460(&unk14, value);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264010);
 
@@ -173,9 +197,19 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002641
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264200);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264230);
+FieldClass153E30::~FieldClass153E30()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002642D0);
+FieldClass153E30::FieldClass153E30()
+{
+    unk20 = 0;
+    unk28 = -128;
+    unk24 = 0;
+    unk2c = 0;
+    unk29 = 0;
+    unk30 = 0;
+}
 
 FieldClass153EC0::FieldClass153EC0()
 {

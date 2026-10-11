@@ -160,3 +160,101 @@ sceIpuInit = 0x003EE918; // type:func
 // Lib classes used by Field (D_171EA0 root; D_178220 and D_178370 derived).
 __ct__14LibClass178220Fv = 0x004C04A0; // type:func
 __ct__14LibClass178370Fv = 0x004C2E60; // type:func
+lib_text_set_resource = 0x004C6DF0; // type:func size:0x1C
+lib_multiline_text_set_resource = 0x0045F690; // type:func size:0x20
+lib_panel_detach = 0x004C4A90; // type:func size:0x20
+
+lib_container_attach_widget = 0x004C6190; // type:func size:0x34
+
+lib_text_init_rectangle = 0x004C7FB0; // type:func size:0x2C
+
+lib_multiline_text_init_rectangle = 0x004616D0; // type:func size:0x50
+
+lib_moving_widget_init_position = 0x00467360; // type:func size:0x48
+
+lib_panel_set_colors = 0x004C5590; // type:func size:0x4C
+
+lib_text_measure_bounds = 0x004C69B0; // type:func size:0x88
+
+lib_list_indicator_init = 0x0041A930; // type:func size:0x68
+D_001B657C = 0x001B657C; // size:0x4 absolute:True
+lib_indexed_resource_init = 0x004530E0; // type:func size:0x70
+lib_queue_display_object = 0x00465B20; // type:func size:0x70
+func_100B00 = 0x00100B00; // type:func absolute:True
+__nwa__FUii = 0x00100B00; // type:func absolute:True allow_duplicated:True
+func_100BE0 = 0x00100BE0; // type:func absolute:True
+lib_item_code_init_rectangle = 0x00413F70; // type:func size:0x98
+lib_detail_code_init_rectangle = 0x004143F0; // type:func size:0x98
+lib_draw_state_init = 0x00453FF0; // type:func size:0x64
+lib_object_detach_owner = 0x004D65C0; // type:func size:0x44
+lib_text_init_resource_rectangle = 0x004C7FE0; // type:func size:0x5C
+lib_release_resource_slot = 0x00465430; // type:func size:0x68
+FlushCache = 0x00121FE0; // type:func absolute:True
+lib_multiline_text_init_resource_rectangle = 0x00461720; // type:func size:0x90
+lib_numeric_widget_init_rectangle = 0x00464D90; // type:func size:0xA0
+resident_next_random_word = 0x0010CF80; // type:func absolute:True
+lib_scissor_init_reset = 0x0044B510; // type:func size:0x58
+lib_scissor_init_rectangle = 0x0044B570; // type:func size:0x68
+__ct__14LibClass174610Fv = 0x0044B2D0; // type:func size:0x7C
+__ct__14LibClass172000Fv = 0x004D58C0; // type:func size:0x80
+__vt__14LibClass174610 = 0x00174610; // size:0x84 absolute:True
+__vt__14LibClass171FF0 = 0x00171FF0; // size:0x10 absolute:True
+__ct__14LibClass178A70Fv = 0x004CA050; // type:func size:0x40
+__vt__14LibClass178A70 = 0x00178A70; // size:0x1C absolute:True
+__vt__14LibClass171E80 = 0x00171E80; // size:0xC absolute:True
+__vt__14LibClass171E90 = 0x00171E90; // size:0xC absolute:True
+__dt__14LibClass171E80Fv = 0x003EF610; // type:func size:0x4C
+__dt__14LibClass171E90Fv = 0x003EF660; // type:func size:0x5C
+__ct__14LibClass178600Fv = 0x004C4960; // type:func size:0x98
+__dt__14LibClass178600Fv = 0x004C48B0; // type:func size:0xA8
+__dt__14LibClass171EA0Fv = 0x003EF6C0; // type:func size:0x80
+__vt__14LibClass171EA0 = 0x00171EA0; // size:0x1C absolute:True
+__vt__14LibClass178600 = 0x00178600; // size:0x24 absolute:True
+func_003EEBC0__14LibClass171EA0Fv = 0x003EEBC0; // type:func size:0x8
+func_003EF740__14LibClass171EA0Fv = 0x003EF740; // type:func size:0x2C
+func_003EEBD0__14LibClass171EA0Fv = 0x003EEBD0; // type:func size:0x8
+func_003EEBE0__14LibClass171EA0Fv = 0x003EEBE0; // type:func size:0x8
+func_003EF740__14LibClass178600Fv = 0x004C4860; // type:func size:0x50
+func_00413D20__14LibClass178600Fv = 0x00413D20; // type:func size:0x8
+func_00462310__14LibClass178600Fv = 0x00462310; // type:func size:0x8
+__dl__FPv = 0x00100B40; // type:func size:0x94 absolute:True
+
+__dt__17LibStorageBlock0CFv = 0x004618F0; // type:func size:0x68
+__dla__FPv = 0x00100BE0; // type:func absolute:True allow_duplicated:True
+
+__ct__14LibClass174EF0Fv = 0x00464B10; // type:func size:0xA4
+__dt__14LibClass174EF0Fv = 0x00464A80; // type:func size:0x90
+__vt__14LibClass174EF0 = 0x00174EF0; // size:0x24 absolute:True
+
+set_codes_and_z__14LibClass174610FiUifUiUi = 0x0044B110; // type:func size:0x7C
+func_003EF790__14LibClass171EC0Ffff = 0x003EF790; // type:func size:0x18
+
+lib_container_init = 0x004C6510; // type:func size:0xC8
+
+lib_panel_init_rectangle = 0x004C5A80; // type:func size:0xD8
+
+lib_marker_init_rectangle = 0x00421170; // type:func size:0xC8
+
+lib_allocation_get_identifier = 0x0040D890; // type:func size:0x9C
+
+lib_collect_unequipped_allocations = 0x0040CF90; // type:func size:0xB8
+
+resident_heap_release = 0x001134C0; // type:func absolute:True allow_duplicated:True
+
+resident_heap_allocate = 0x00113710; // type:func absolute:True allow_duplicated:True
+
+resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplicated:True
+
+__nw__FUii = 0x00100AC0; // type:func
+__ct__16FieldClass15BA90Fv = 0x002F9BB0; // type:func
+
+lib_panel_init_transform = 0x004C4AB0; // type:func size:0xD4
+func_004C4AB0 = 0x004C4AB0; // type:func absolute:True allow_duplicated:True
+func_4C4AB0 = 0x004C4AB0; // type:func absolute:True allow_duplicated:True
+
+func_004D74F0__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
+__dt__16FieldClass15BA90Fv = 0x002F9A80; // type:func absolute:True allow_duplicated:True
+
+lib_load_resource_slot = 0x004656B0; // type:func size:0x2F4
+func_004656B0 = 0x004656B0; // type:func absolute:True allow_duplicated:True
+func_4656B0 = 0x004656B0; // type:func absolute:True allow_duplicated:True

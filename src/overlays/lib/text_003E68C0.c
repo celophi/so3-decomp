@@ -3,11 +3,11 @@
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEB50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEBC0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEBC0__14LibClass171EA0Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEBD0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEBD0__14LibClass171EA0Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEBE0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEBE0__14LibClass171EA0Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEBF0);
 
@@ -69,19 +69,19 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF490);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF570);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF610);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", __dt__14LibClass171E80Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF660);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", __dt__14LibClass171E90Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF6C0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", __dt__14LibClass171EA0Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF740);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF740__14LibClass171EA0Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF770);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF780);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF790);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF790__14LibClass171EC0Ffff);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF7B0);
 
