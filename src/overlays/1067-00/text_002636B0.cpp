@@ -195,7 +195,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002640
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264110);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00264200);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_001DD7B0__16FieldClass153E30Fv);
 
 FieldClass153E30::~FieldClass153E30()
 {
