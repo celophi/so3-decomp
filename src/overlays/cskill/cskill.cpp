@@ -6107,7 +6107,7 @@ void SkillHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
     {
         return;
     }
-    unk62[1] = 0;
+    unk63 = 0;
     if (first == 0)
     {
         return;
@@ -6125,7 +6125,7 @@ void SkillHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
         SkillHpMpGaugeDrawer::unk00 = 0xFFFFFE - (SkillHpMpGaugeDrawer::unk04->unka0 << 4);
         func_002BC4F0(0, SkillHpMpGaugeDrawer::unk00, 128.0f);
     }
-    unk62[1] = 1;
+    unk63 = 1;
 }
 
 s32 SkillHpMpGauge::initialize(s32 code, s32 first, void* source, float x, float y, float z)

@@ -46,6 +46,8 @@ class FieldClass155840 : public LibClass178EA0
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass155840();
+    /** @brief Return the object transformation matrix. @return Transformation matrix. */
+    virtual const LibMatrix44Value* func_004D00A0();
 };
 
 FieldClass155840::~FieldClass155840()

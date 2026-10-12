@@ -5,6 +5,19 @@
 extern "C" {
 #endif
 
+/** @brief Compute the single-precision cosine. @param angle Angle in radians. @return Cosine of the angle. */
+float func_00141BE0(float angle);
+
+/** @brief Compute the single-precision sine. @param angle Angle in radians. @return Sine of the angle. */
+float func_00141DD0(float angle);
+
+/**
+ * @brief Compute the single-precision tangent.
+ * @param angle Angle in radians.
+ * @return Tangent of the angle.
+ */
+float func_00141EC0(float angle);
+
 /**
  * @brief Compute the angle from two floating-point components.
  * @param y First component.

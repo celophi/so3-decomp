@@ -5,6 +5,7 @@
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/vector.h"
 
 /** Opaque Lib text receiver using the main table D_178750. */
 typedef struct LibObject178750 LibObject178750;
@@ -117,6 +118,25 @@ extern "C"
 void lib_text_init_rectangle(LibObject178750* object, float x, float y, float width, float height);
 
 #ifdef __cplusplus
+/** Local perspective volume used by visibility tests. */
+struct LibProjectionVolume
+{
+    /** @brief Recompute the derived perspective-volume coefficients. */
+    void update_coefficients();
+
+    FieldVec4A origin;
+    FieldVec4A x_axis;
+    FieldVec4A y_axis;
+    FieldVec4A z_axis;
+    float near_half_width;
+    float near_half_height;
+    float near_distance;
+    float far_distance;
+    float far_near_ratio;
+    float unk54;
+    float unk58;
+};
+
 /** Partial 0x20-byte list receiver with the actual virtual pointer at 0x10. */
 class LibClass178A70
 {
@@ -599,6 +619,27 @@ extern "C" {
 
 #ifdef __cplusplus
 /**
+ * @brief Extract quaternion components from a rotation matrix.
+ * @param output Destination quaternion.
+ * @param input Source matrix.
+ */
+void func_004CBAC0(FieldVec4B* output, const LibMatrix44Value* input);
+
+/**
+ * @brief Extract a quaternion after mapping each matrix row from (x, y, z) to (x, -z, y).
+ * @param source Source matrix.
+ * @param output Destination quaternion.
+ */
+void func_004CCCF0(const LibMatrix44Value* source, FieldVec4B* output);
+
+/**
+ * @brief Evaluate the degree-six Taylor polynomial for exp(value).
+ * @param value Polynomial argument.
+ * @return Polynomial approximation to exp(value).
+ */
+float func_004CCD90(float value);
+
+/**
  * @brief Find an animation channel by key and kind.
  * @param object Animation object.
  * @param key Entry key.
@@ -695,6 +736,18 @@ float func_004CC3E0(float angle);
 
 /** @brief Evaluate the VU0 sine approximation. @param angle Angle in radians. @return Approximated sine. */
 float func_004CC5B0(float angle);
+
+/**
+ * @brief Compute the fog mapping offset + reciprocal_scale / z for perspective fog.
+ * @param offset Receives the constant fog coefficient.
+ * @param reciprocal_scale Receives the reciprocal-distance fog coefficient.
+ * @param far_factor Fog factor at the far distance.
+ * @param near_factor Fog factor at the near distance.
+ * @param near_plane Near-plane distance; must differ from far_plane.
+ * @param far_plane Far-plane distance.
+ */
+void lib_compute_perspective_fog_coefficients(float* offset, float* reciprocal_scale, float far_factor, float near_factor,
+                                              float near_plane, float far_plane);
 
 /**
  * @brief Evaluate a VU0 polynomial approximation of a trigonometric function.

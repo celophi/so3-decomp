@@ -13,22 +13,8 @@ typedef struct FieldObject153E00 FieldObject153E00;
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_004DD440.h"
 
-/** Partial LibClass178EA0 with vtable D_175290 in main data. */
-class FieldClass175290 : public LibClass178EA0
-{
-public:
-    /** @brief Construct the object and clear the words at offsets 0x210 and 0x214. */
-    FieldClass175290();
-    /** @brief Destroy the object. */
-    virtual ~FieldClass175290();
-
-    /** @brief Copy the associated transform and inherited state. @param source Transform source. */
-    virtual void func_0046B890(const FieldClass175290* source);
-
-    LibClass178EA0* unk210;
-    u32 unk214;
-};
 /** Four aligned floating-point components; C++ copies them as one 128-bit word. */
 typedef FieldVec4A FieldVector2624;
 

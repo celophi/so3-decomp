@@ -1,4 +1,48 @@
 #include "include_asm.h"
+#include "overlays/lib/text_0046AE20.h"
+#include "overlays/lib/text_004CD3A0.h"
+
+/** Partial metadata used to filter and name resource entries. */
+typedef struct LibEntryMetadata
+{
+    u16 unk00;
+    u16 name_offset;
+    u8 unk04[10];
+    u8 state;
+    u8 kind;
+} LibEntryMetadata;
+
+/** Runtime handle and source metadata for one resource entry. */
+typedef struct LibManagedEntry
+{
+    u32 unk00;
+    u32 unk04;
+    void* handle;
+    LibEntryMetadata* metadata;
+} LibManagedEntry;
+
+/** Resource flags and signed entry count used by table searches. */
+typedef struct LibEntryTableHeader
+{
+    u32 flags;
+    s32 count;
+} LibEntryTableHeader;
+
+/** Partial view of the manager's runtime table and resource header. */
+struct LibEntryManager
+{
+    u8 unk00[0x18];
+    LibManagedEntry* entries;
+    u32 unk1c;
+    LibEntryTableHeader* header;
+};
+
+enum
+{
+    LIB_ENTRY_ALLOW_NAMED_LOOKUP = 1,
+    LIB_ENTRY_KIND_CAMERA = 3,
+    LIB_ENTRY_NAME_COMPARE_LENGTH = 16
+};
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046AE20);
 
@@ -28,7 +72,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B830);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B890);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B8B0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004D0090__16FieldClass175290Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046BA00);
 
@@ -152,7 +196,43 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00473390);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00473530);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00473680);
+/**
+ * @brief Find a camera entry whose metadata passes the state and name filters.
+ * @param manager Runtime entry table and source resource header.
+ * @param name Name to compare, or null or empty to accept any name.
+ * @return The first matching camera handle, or null.
+ */
+void* lib_find_camera_entry(LibEntryManager* manager, const char* name)
+{
+    u8 any_name = 0;
+    s32 index;
+    if (name == 0 || name[0] == 0)
+    {
+        any_name = 1;
+    }
+    if (!(manager->header->flags & LIB_ENTRY_ALLOW_NAMED_LOOKUP) && !any_name)
+    {
+        return 0;
+    }
+    if (manager->entries == 0)
+    {
+        return 0;
+    }
+    for (index = 0; index < manager->header->count; index++)
+    {
+        LibEntryMetadata* metadata = manager->entries[index].metadata;
+        if (metadata != 0 && (metadata->state == 2 || metadata->state == 0) &&
+            metadata->kind == LIB_ENTRY_KIND_CAMERA)
+        {
+            if (any_name || lib_compare_bounded_strings(name, (const char*)metadata + metadata->name_offset,
+                                                        LIB_ENTRY_NAME_COMPARE_LENGTH) == 0)
+            {
+                return manager->entries[index].handle;
+            }
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004737E0);
 
@@ -180,7 +260,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00478FE0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479010);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479090);
+/** @brief Copy one aligned 16-byte value. @param output Destination value. @param input Source value. */
+void func_00479090(void* output, const void* input)
+{
+    *(unsigned __int128*)output = *(const unsigned __int128*)input;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004790A0);
 

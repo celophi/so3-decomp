@@ -4,6 +4,8 @@
 #include "types.h"
 
 typedef struct LibObject1751A0 LibObject1751A0;
+/** Opaque owner of the runtime resource-entry table. */
+typedef struct LibEntryManager LibEntryManager;
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +23,7 @@ void func_0046B3F0(LibObject1751A0* object);
  * @param name Entry name; null or empty accepts any name.
  * @return Matching entry handle, or null.
  */
-void* func_00473680(void* object, const char* name);
+void* lib_find_camera_entry(LibEntryManager* object, const char* name);
 
 /**
  * @brief Update each active entry of the object's table with a boolean setting and an option flag.
@@ -54,6 +56,11 @@ void* func_00473940(void* object, const char* name);
  * @return Matching entry handle, or null.
  */
 void* func_00473390(void* object, const char* name);
+
+/** @brief Copy one aligned 16-byte value. @param output Destination value. @param input Source value. */
+void func_00479090(void* output, const void* input);
+/** @brief Store the receiver's byte at offset 0x50. @param object Receiver. @param value Byte to store. */
+void func_004790C0(void* object, u8 value);
 
 #ifdef __cplusplus
 }

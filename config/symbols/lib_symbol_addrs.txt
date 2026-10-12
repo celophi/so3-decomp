@@ -1,4 +1,7 @@
 // Lib classes named after their vtables in main data.
+enqueue_submission__14LibClass179080Fv = 0x004E20F0; // type:func
+func_004E20F0 = 0x004E20F0; // type:func absolute:True
+g_vif1_dma_queue = 0x001B6610; // size:0x4 absolute:True
 __vt__14LibClass178DD0 = 0x00178DD0; // size:0x38
 __ct__14LibClass178DD0Fv = 0x004D7620; // type:func
 __dt__14LibClass178DD0Fv = 0x004D7590; // type:func
@@ -258,3 +261,60 @@ __dt__16FieldClass15BA90Fv = 0x002F9A80; // type:func absolute:True allow_duplic
 lib_load_resource_slot = 0x004656B0; // type:func size:0x2F4
 func_004656B0 = 0x004656B0; // type:func absolute:True allow_duplicated:True
 func_4656B0 = 0x004656B0; // type:func absolute:True allow_duplicated:True
+
+func_00473680 = 0x00473680; // type:func absolute:True allow_duplicated:True
+lib_find_camera_entry = 0x00473680; // type:func allow_duplicated:True
+func_004D8910 = 0x004D8910; // type:func absolute:True allow_duplicated:True
+lib_compare_bounded_strings = 0x004D8910; // type:func allow_duplicated:True
+lib_compute_perspective_fog_coefficients = 0x004CCCA0; // type:func allow_duplicated:True
+func_004E1D70 = 0x004E1D70; // type:func absolute:True allow_duplicated:True
+set_near_fog_fraction__14LibClass179080Ff = 0x004E1D70; // type:func allow_duplicated:True
+func_004E1DC0 = 0x004E1DC0; // type:func absolute:True allow_duplicated:True
+set_far_fog_fraction__14LibClass179080Ff = 0x004E1DC0; // type:func allow_duplicated:True
+func_004E1E10 = 0x004E1E10; // type:func absolute:True allow_duplicated:True
+set_fog__14LibClass179080FUiffff = 0x004E1E10; // type:func allow_duplicated:True
+func_004E1EA0 = 0x004E1EA0; // type:func absolute:True allow_duplicated:True
+copy_camera__14LibClass179080FPC14LibClass179080 = 0x004E1EA0; // type:func allow_duplicated:True
+func_004E1EF0 = 0x004E1EF0; // type:func absolute:True allow_duplicated:True
+copy_view_and_fog__14LibClass179080FPC14LibClass179080 = 0x004E1EF0; // type:func allow_duplicated:True
+func_004D9F40 = 0x004D9F40; // type:func absolute:True allow_duplicated:True
+func_004D9F40__14LibClass178EA0FPC14LibClass178EA0 = 0x004D9F40; // type:func allow_duplicated:True
+func_004E1BD0 = 0x004E1BD0; // type:func absolute:True allow_duplicated:True
+get_fog_factors__14LibClass179080CFPfPf = 0x004E1BD0; // type:func allow_duplicated:True
+func_004E1D40 = 0x004E1D40; // type:func absolute:True allow_duplicated:True
+set_fog_coefficients__14LibClass179080Fff = 0x004E1D40; // type:func allow_duplicated:True
+func_004E1D50 = 0x004E1D50; // type:func absolute:True allow_duplicated:True
+get_fog_coefficients__14LibClass179080CFPfPf = 0x004E1D50; // type:func allow_duplicated:True
+func_004E28D0 = 0x004E28D0; // type:func absolute:True allow_duplicated:True
+compute_projection_distance__14LibClass179080CFv = 0x004E28D0; // type:func allow_duplicated:True
+
+func_003EF740__14LibClass178A90Fv = 0x004D0020; // type:func allow_duplicated:True
+func_003EF740__14LibClass179080Fv = 0x004E1470; // type:func allow_duplicated:True
+initialize_projection__14LibClass179080FPC16LibCameraContext = 0x004E14B0; // type:func allow_duplicated:True
+
+func_004D0090__14LibClass178EA0Fv = 0x004DA8B0; // type:func allow_duplicated:True
+func_004D00A0__14LibClass178EA0Fv = 0x003F4510; // type:func allow_duplicated:True
+func_003EEBD0__14LibClass178EA0Fv = 0x004D9D60; // type:func allow_duplicated:True
+func_004D0090__16FieldClass175290Fv = 0x0046B8B0; // type:func allow_duplicated:True
+func_004D0090__14LibClass179080Fv = 0x004E1BF0; // type:func allow_duplicated:True
+func_003EEBD0__14LibClass179080Fv = 0x004E1C30; // type:func allow_duplicated:True
+func_004E24D0__14LibClass179080Fv = 0x004E24D0; // type:func allow_duplicated:True
+
+func_0012B420 = 0x0012B420; // type:func absolute:True allow_duplicated:True
+sceDmaGetChan = 0x0012B420; // type:func absolute:True allow_duplicated:True
+func_0012B750 = 0x0012B750; // type:func absolute:True allow_duplicated:True
+sceDmaSend = 0x0012B750; // type:func absolute:True allow_duplicated:True
+submit_dma__14LibClass179080FUi = 0x004E2090; // type:func allow_duplicated:True
+complete_dma__14LibClass179080FUi = 0x004E20E0; // type:func allow_duplicated:True
+
+build_projection_volume__14LibClass179080CFP19LibProjectionVolume = 0x004E1AD0; // type:func allow_duplicated:True
+update_coefficients__19LibProjectionVolumeFv = 0x004CBA70; // type:func allow_duplicated:True
+upload_clip_geometry__14LibClass179080CFv = 0x004E15C0; // type:func allow_duplicated:True
+
+set_identity__16LibMatrix44ValueFv = 0x004CFF50;
+func_004CFFA0__14LibClass178A90FPC14LibClass178A90 = 0x004CFFA0;
+lib_invalidate_transform_chain = 0x004DA2C0;
+
+func_003F4520__14LibClass178EA0CFv = 0x003F4520;
+func_003F4530__14LibClass178EA0CFv = 0x003F4530;
+func_003F4540__14LibClass178EA0CFv = 0x003F4540;
