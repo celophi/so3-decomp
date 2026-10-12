@@ -14,7 +14,7 @@ typedef struct ResidentPacket
     u8* unk00;
     u8* unk04;
     u8* unk08;
-    u8 unk0c[4];
+    u8* unk0c;
     s32 unk10;
     u8 unk14;
     u8 unk15;

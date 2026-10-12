@@ -1395,7 +1395,7 @@ void func_003585A0(void* object)
 }
 
 /** @brief Release the retained resource slot, detach the controller, and queue it. */
-void CmcClass18AF20::release_resources()
+void CmcClass18AF20::func_slot5c()
 {
     if (resource_slot)
     {

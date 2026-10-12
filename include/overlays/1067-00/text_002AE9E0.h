@@ -1603,6 +1603,10 @@ public:
     virtual void func_003EF740();
     /** @brief Leave the default update state unchanged. */
     virtual void func_003EEBE0();
+    /** @brief Run the default transform update hook. @param first First state value. @param second Second state value. @param third Third state value. */
+    virtual void func_0044B100(u32 first, u32 second, u32 third);
+    /** @brief Run the default DMA completion hook. @param value Notification value. */
+    virtual void func_003F4410(u32 value);
     u32 unkb0;
     u32 unkb4;
     u32 unkb8;
@@ -1613,7 +1617,7 @@ class FieldClass159A70
 {
 public:
     u32 unk00;
-    void* unk04;
+    LibObject178660* unk04;
     FieldClass1525F0* unk08;
     float unk0c;
     float unk10;
@@ -1631,8 +1635,8 @@ public:
     /** @brief Release the packet. */
     virtual ~FieldClass159A70();
 
-    /** @brief Do nothing (the default draw). */
-    virtual void func_002BC4F0();
+    /** @brief Default packet draw hook. @param first Draw flag. @param depth Drawing depth. @param value Additional drawing value. */
+    virtual void func_002BC4F0(u32 first, u32 depth, float value);
 };
 #endif
 

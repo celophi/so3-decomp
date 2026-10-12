@@ -178,6 +178,7 @@ public:
 };
 
 struct FieldBufferSlots;
+struct FieldRecordSelection;
 
 /** Partial FieldClass150070 receiver with MAIN vtable 0x153E30. */
 class FieldClass153E30 : public FieldClass150070
@@ -272,6 +273,30 @@ public:
      * @param flag Flag forwarded without narrowing.
      */
     virtual void func_00263E20(u32 flag);
+    /** @brief Release the receiver's associated objects and queued children. */
+    virtual void func_slot5c();
+    /** @brief Default receiver hook. @return Zero. */
+    virtual s32 func_slot60();
+    /** @brief Default receiver hook. @return Zero. */
+    virtual s32 func_slot64();
+    /** @brief Default receiver hook. */
+    virtual void func_slot68();
+    /** @brief Return the receiver's selection object. @return Null in the base implementation. */
+    virtual FieldRecordSelection* selected_records();
+    /** @brief Default receiver hook. */
+    virtual void func_slot70();
+    /** @brief Default receiver hook. */
+    virtual void func_slot74();
+    /** @brief Default receiver hook. */
+    virtual void func_slot78();
+    /** @brief Default receiver hook. @return Zero. */
+    virtual s32 func_slot7c();
+    /** @brief Default receiver hook. @return Zero. */
+    virtual s32 func_slot80();
+    /** @brief Default receiver hook. @return Zero. */
+    virtual s32 func_slot84();
+    /** @brief Default receiver hook. */
+    virtual void func_slot88();
     FieldClass153EC0 unk14;
     void* unk20;
     void* unk24;

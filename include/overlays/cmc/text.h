@@ -34,7 +34,7 @@ public:
      */
     virtual s32 func_001E1820(void* buffer);
     /** @brief Release the retained resource slot, detach the controller, and queue it. */
-    virtual void release_resources();
+    virtual void func_slot5c();
     s32 resource_slot;
     CmcClass188EF0* linked_object;
     void* unk3c;

@@ -1379,7 +1379,7 @@ void EquipClass182890::refresh_item_details(u8 category, s16 selected)
     {
         unk290->unk3f = 0;
     }
-    FieldRecordSelection* selection = unka8->func_00263D10();
+    FieldRecordSelection* selection = unka8->selected_records();
     const EquipRecordStats* record = reinterpret_cast<const EquipRecordStats*>(&selection->records[selection->current]);
     if (record != 0)
     {
@@ -1758,7 +1758,7 @@ EquipClass182990::EquipClass182990(EquipListState* state)
     }
     unkb0 = 0;
     unkac = 0;
-    unkac = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->func_00263D10();
+    unkac = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->selected_records();
     equipment_slot_selector = 0;
     unkf8 = 0;
     unkb4 = 0;
@@ -1970,7 +1970,7 @@ EquipClass182C90::EquipClass182C90()
 {
     unka8 = 0;
     unkac = 0;
-    unkac = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->func_00263D10();
+    unkac = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->selected_records();
     unkb4 = 0;
     unkb8 = 0;
     unkbc = 0;
@@ -2288,7 +2288,7 @@ extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipR
     }
 }
 
-void EquipListState::func_00263D80()
+void EquipListState::func_slot5c()
 {
     LibObject178660* tooltip = static_cast<LibObject178660*>(unk68);
     if (tooltip != 0)

@@ -181,7 +181,8 @@ func_00413D20__14LibClass178630Fv = 0x004C56E0; // type:func absolute:True
 func_00462310__14LibClass178630Fv = 0x004C55E0; // type:func absolute:True
 func_slotf4__16EquipClass182790FUi = 0x0034B2A0; // type:func
 func_001E1820__14EquipListStateFPv = 0x00350FE0; // type:func
-func_00263D80__14EquipListStateFv = 0x00350910; // type:func
+func_00263D80__14EquipListStateFv = 0x00350910; // type:func absolute:True allow_duplicated:True
+func_slot5c__14EquipListStateFv = 0x00350910; // type:func allow_duplicated:True
 func_slotb0__16EquipClass182990Fv = 0x0034CA50; // type:func
 func_slotf4__16EquipClass182A90FUi = 0x0034DC60; // type:func
 func_slot64__16EquipClass182990Fv = 0x0034CD50; // type:func
@@ -345,7 +346,7 @@ func_00263CD0__14EquipListStateFv = 0x003509B0; // type:func
 __ct__14EquipListStateFv = 0x003511E0; // type:func
 __ct__16FieldClass153E30Fv = 0x002642D0; // type:func absolute:True
 __dt__16FieldClass153E30Fv = 0x00264230; // type:func absolute:True
-__vt__14EquipListState = 0x00182D90; // absolute:True size:0x90
+__vt__14EquipListState = 0x00182D90; // absolute:True size:0x8C
 
 func_slot6c__16EquipClass182220Fv = 0x003487C0; // type:func
 func_slot68__16EquipClass182220Fv = 0x00348800; // type:func
@@ -415,3 +416,12 @@ resident_heap_allocate = 0x00113710; // type:func absolute:True allow_duplicated
 resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplicated:True
 
 lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True
+
+func_00351640 = 0x00351640; // type:func allow_duplicated:True
+func_slot60__14EquipListStateFv = 0x00351640; // type:func absolute:True allow_duplicated:True
+func_00351650 = 0x00351650; // type:func allow_duplicated:True
+func_slot64__14EquipListStateFv = 0x00351650; // type:func absolute:True allow_duplicated:True
+func_00351660 = 0x00351660; // type:func allow_duplicated:True
+func_slot68__14EquipListStateFv = 0x00351660; // type:func absolute:True allow_duplicated:True
+func_0034AC10 = 0x0034AC10; // type:func allow_duplicated:True
+selected_records__14EquipListStateFv = 0x0034AC10; // type:func absolute:True allow_duplicated:True
