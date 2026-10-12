@@ -1,12 +1,12 @@
 D_001B6690 = 0x001B6690; // size:0x4
-func_2642D0 = 0x002642D0; // type:func
+__ct__16FieldClass153E30Fv = 0x002642D0; // type:func absolute:True
 func_4618F0 = 0x004618F0; // type:func allow_duplicated:True
 __dl__FPv = 0x00100B40; // type:func
 func_100AC0 = 0x00100AC0; // type:func allow_duplicated:True
 func_4C48B0 = 0x004C48B0; // type:func allow_duplicated:True
 func_002FD940 = 0x002FD940; // type:func
 D_1889C0 = 0x001889C0; // allow_duplicated:True
-D_188CC0 = 0x00188CC0;
+__vt__19StatusResourceState = 0x00188CC0; // size:0x70 absolute:True
 D_1888B0 = 0x001888B0;
 D_188BC0 = 0x00188BC0; // absolute:True allow_duplicated:True
 D_188AC0 = 0x00188AC0; // absolute:True allow_duplicated:True
@@ -371,10 +371,12 @@ lib_text_measure_bounds = 0x004C69B0; // type:func absolute:True allow_duplicate
 
 lib_list_indicator_init = 0x0041A930; // type:func absolute:True allow_duplicated:True
 lib_object_detach_owner = 0x004D65C0; // type:func absolute:True
-lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True
+lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
+init_resource_rectangle__15LibObject178750FffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 lib_release_resource_slot = 0x00465430; // type:func absolute:True
 lib_multiline_text_init_resource_rectangle = 0x00461720; // type:func absolute:True
-lib_numeric_widget_init_rectangle = 0x00464D90; // type:func absolute:True
+lib_numeric_widget_init_rectangle = 0x00464D90; // type:func absolute:True allow_duplicated:True
+init_numeric_resource_rectangle__15LibObject174F20FffffUiiUc = 0x00464D90; // type:func absolute:True allow_duplicated:True
 resident_next_random_word = 0x0010CF80; // type:func absolute:True
 lib_scissor_init_reset = 0x0044B510; // type:func absolute:True
 lib_scissor_init_rectangle = 0x0044B570; // type:func absolute:True
@@ -408,3 +410,72 @@ resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplica
 lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True
 
 field_replace_model_camera = 0x002FD220; // type:func absolute:True allow_duplicated:True
+
+status_remove_last_name_entry = 0x00348AE0; // type:func
+
+status_update_window_transition = 0x00350220; // type:func absolute:True allow_duplicated:True
+func_0020F230 = 0x0020F230; // type:func absolute:True
+func_0022A160 = 0x0022A160; // type:func absolute:True
+func_004DCEA0 = 0x004DCEA0; // type:func absolute:True
+D_001B6650 = 0x001B6650; // size:0x4 absolute:True
+D_001B6694 = 0x001B6694; // size:0x4 absolute:True
+
+func_0034AC90 = 0x0034AC90; // type:func allow_duplicated:True
+__dt__23ItemCreationClass185050Fv = 0x0034AC90; // type:func allow_duplicated:True
+__vt__23ItemCreationClass185050 = 0x001888B0; // size:0x10 absolute:True allow_duplicated:True
+__vt__14LibClass178630 = 0x00178630; // size:0x24 absolute:True
+lib_panel_init_rectangle = 0x004C5A80; // type:func absolute:True
+__vt__15LibObject175140 = 0x00175140; // size:0x24 absolute:True
+func_00467AD0__15LibObject175140FffffPCcUc = 0x00467AD0; // type:func absolute:True
+__vt__23ItemCreationClass172600 = 0x00172600; // size:0x24 absolute:True
+func_002D6440__33ItemCreationOptionResourceDisplayFP19FieldResourceRecordff = 0x002D6440; // type:func absolute:True allow_duplicated:True
+__vt__23ItemCreationClass175030 = 0x00175030; // size:0x34 absolute:True
+func_00466E40 = 0x00466E40; // type:func absolute:True allow_duplicated:True
+func_00466E40__23ItemCreationClass185050Ffff = 0x00466E40; // type:func absolute:True allow_duplicated:True
+func_003509B0 = 0x003509B0; // type:func allow_duplicated:True
+func_slot0c__23ItemCreationClass185050Fv = 0x003509B0; // type:func allow_duplicated:True
+
+func_00261150__19StatusResourceStateFv = 0x003486E0; // type:func
+func_00263C70__19StatusResourceStateFPv = 0x003486F0; // type:func
+func_slot5c__19StatusResourceStateFv = 0x00350160; // type:func
+func_001DD7B0__19StatusResourceStateFv = 0x00350200; // type:func
+func_001DF360__19StatusResourceStateFv = 0x00350220; // type:func allow_duplicated:True
+func_00263C90__19StatusResourceStateFv = 0x00350530; // type:func
+func_00263CD0__19StatusResourceStateFv = 0x00350540; // type:func
+func_001E1820__19StatusResourceStateFPv = 0x00350700; // type:func
+func_00264110__19StatusResourceStateFv = 0x003507E0; // type:func
+func_001DD410__19StatusResourceStateFv = 0x003509A0; // type:func
+func_00261D20__19StatusResourceStateFv = 0x00350A70; // type:func
+func_00263CC0__19StatusResourceStateFv = 0x00350A80; // type:func
+func_001DF3D0__19StatusResourceStateFv = 0x00350A90; // type:func
+selected_records__19StatusResourceStateFv = 0x00350AA0; // type:func
+func_00263C80__19StatusResourceStateFPv = 0x00350AB0; // type:func
+func_00263CA0__19StatusResourceStateFSc = 0x00350AC0; // type:func
+func_00263CB0__19StatusResourceStateFv = 0x00350AD0; // type:func
+func_slot60__19StatusResourceStateFv = 0x00350AE0; // type:func
+func_slot64__19StatusResourceStateFv = 0x00350AF0; // type:func
+func_slot68__19StatusResourceStateFv = 0x00350B00; // type:func
+__dt__19StatusResourceStateFv = 0x003507F0; // type:func
+__ct__19StatusResourceStateFv = 0x00350890; // type:func
+__dt__16FieldClass153E30Fv = 0x00264230; // type:func absolute:True
+func_00264080__16FieldClass153E30Fv = 0x00264080; // type:func absolute:True
+func_00263E90__16FieldClass153E30Fv = 0x00263E90; // type:func absolute:True
+func_00263E20__16FieldClass153E30FUi = 0x00263E20; // type:func absolute:True
+
+__ct__21StatusExperienceTableFv = 0x00402990; // type:func absolute:True
+
+func_0034B1B0 = 0x0034B1B0; // type:func absolute:True allow_duplicated:True
+status_refresh_character_display = 0x0034B1B0; // type:func allow_duplicated:True
+status_initialize_character_display = 0x0034C870; // type:func absolute:True allow_duplicated:True
+
+__ct__14LibClass178A70Fv = 0x004CA050; // type:func absolute:True
+__ct__14LibClass174610Fv = 0x0044B2D0; // type:func absolute:True
+lib_container_init = 0x004C6510; // type:func absolute:True
+lib_queue_display_object = 0x00465B20; // type:func absolute:True
+lib_marker_init_rectangle = 0x00421170; // type:func absolute:True
+lib_item_code_init_rectangle = 0x00413F70; // type:func absolute:True
+__vt__15LibObject178660 = 0x00178660; // type:u32 size:0xB4 absolute:True
+__vt__15LibObject174F20 = 0x00174F20; // type:u32 size:0x24 absolute:True
+__vt__15LibObject172410 = 0x00172410; // type:u32 size:0x24 absolute:True
+__vt__23ItemCreationClass172870 = 0x00172870; // type:u32 size:0x24 absolute:True
+__vt__23ItemCreationClass1725D0 = 0x001725D0; // type:u32 size:0x24 absolute:True

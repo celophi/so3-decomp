@@ -229,6 +229,7 @@ __vt__15LibObject178750 = 0x00178750; // absolute:True allow_duplicated:True
 __vt__15LibObject174F20 = 0x00174F20; // absolute:True allow_duplicated:True
 lib_text_init_rectangle = 0x004C7FB0; // type:func absolute:True allow_duplicated:True
 init_resource_rectangle__15LibObject178750FffffiiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
+init_resource_rectangle__15LibObject178750FffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 lib_numeric_widget_init_rectangle = 0x00464D90; // type:func absolute:True allow_duplicated:True
 func_004C5A80 = 0x004C5A80; // type:func absolute:True allow_duplicated:True

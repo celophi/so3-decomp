@@ -220,6 +220,7 @@ __dt__15LibObject174F20Fv = 0x00464BC0; // type:func absolute:True
 func_00462310__15LibObject174F20Fv = 0x00464C80; // type:func absolute:True
 lib_text_init_resource_rectangle = 0x004C7FE0; // type:func allow_duplicated:True absolute:True
 init_resource_rectangle__15LibObject178750FffffiiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
+init_resource_rectangle__15LibObject178750FffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 func_slotf4__16EquipClass182890FUi = 0x0034BEF0; // type:func
 refresh_item_details__16EquipClass182890FUcs = 0x0034BA90; // type:func
 func_slotf4__16EquipClass182350FUi = 0x00348E90; // type:func

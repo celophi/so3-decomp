@@ -1,0 +1,6 @@
+rom:0x2740 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x2750 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x45F0 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0x45F8 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0x4600 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0x4608 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90

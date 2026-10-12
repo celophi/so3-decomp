@@ -4,7 +4,6 @@
 #include "types.h"
 
 typedef struct OverlayList OverlayList;
-typedef struct StatusObject StatusObject;
 typedef struct StatusResourceState StatusResourceState;
 typedef struct StateC000 StateC000;
 typedef struct StatusTextWindow StatusTextWindow;
@@ -133,14 +132,14 @@ struct StatusScrollState : public FieldClass15AE70
     virtual s32 func_slotd8();
     /** @brief Move to the following record. @return Handler result. */
     virtual s32 func_slotdc();
-    /** @brief Create the status record displays. @param associated Full resource source word. @return Creation result. */
+    /** @brief Create the character's portrait, stats, equipment, and scroll widgets. @param associated Full resource source word. @return One on completion, zero on failure. */
     virtual s32 func_slotf4(u32 associated);
     FieldRecordSelection* selection;
     u8 record_active;
     u8 unkad[3];
     LibObject175140* record;
     LibObject178750* caption;
-    LibClass178600* marker;
+    LibObject178750* marker;
     u16 selected_slot;
     u8 unkbe[2];
     float x;
@@ -149,48 +148,48 @@ struct StatusScrollState : public FieldClass15AE70
     float resource_x;
     float resource_y;
     ItemCreationOptionResourceDisplay* display;
-    LibClass178600* other_marker;
+    ItemCreationClass172870* other_marker;
     LibObject178660* container;
     StatusList188D50 first;
     StatusList188D60 second;
     StatusList188D70 third;
-    void* unk108;
-    void* unk10c;
-    void* unk110;
-    void* unk114;
-    void* unk118;
-    void* unk11c;
-    void* unk120;
-    void* unk124;
-    void* unk128;
-    void* unk12c;
-    void* unk130;
-    void* unk134;
-    u8 unk138[4];
-    void* unk13c;
-    void* unk140;
-    void* unk144;
-    void* unk148;
-    void* unk14c;
-    void* unk150;
-    void* unk154;
-    void* unk158;
-    void* unk15c;
-    void* unk160;
-    void* unk164;
-    void* unk168;
-    void* unk16c;
-    void* unk170;
-    void* unk174;
-    void* unk178;
-    void* unk17c;
-    void* unk180;
-    void* unk184;
-    void* unk188;
-    void* unk18c;
-    void* unk190;
-    void* unk194;
-    s32 keys[6];
+    LibObject174F20* unk108;
+    LibObject174F20* unk10c;
+    LibObject174F20* unk110;
+    LibObject174F20* unk114;
+    LibObject174F20* unk118;
+    LibObject174F20* unk11c;
+    LibObject174F20* unk120;
+    LibObject174F20* unk124;
+    LibObject174F20* unk128;
+    LibObject174F20* unk12c;
+    LibObject174F20* unk130;
+    LibObject174F20* unk134;
+    LibObject178750* unk138;
+    LibObject178750* unk13c;
+    LibObject178750* unk140;
+    LibObject178750* unk144;
+    LibObject174F20* unk148;
+    LibObject174F20* unk14c;
+    LibObject178750* unk150;
+    LibObject174F20* unk154;
+    LibObject178750* unk158;
+    LibObject178750* unk15c;
+    LibObject178750* unk160;
+    LibObject178750* unk164;
+    LibObject178750* unk168;
+    LibObject178750* unk16c;
+    LibObject178750* unk170;
+    LibObject178750* unk174;
+    LibObject178750* unk178;
+    LibObject178750* unk17c;
+    LibObject178750* unk180;
+    LibObject178750* unk184;
+    LibObject178750* unk188;
+    LibObject178750* unk18c;
+    LibObject178750* unk190;
+    LibObject178750* unk194;
+    u32 keys[6];
     s32 option_total;
     u8 mode;
     u8 active;
@@ -209,7 +208,7 @@ struct StatusScrollState : public FieldClass15AE70
     u8 unk1da;
     u8 unk1db;
     LibObject178750* variant_text;
-    LibObject178750* first_tail[4];
+    LibObject172410* first_tail[4];
     LibObject178750* second_tail[4];
 };
 
@@ -264,12 +263,12 @@ struct StatusSelectionWindow : public FieldClass15AE70
     u8 unk115;
     u16 unk116;
     float left;
-    u32 unk11c;
-    u32 unk120;
-    u32 unk124;
+    float row_height;
+    float glyph_scale;
+    float glyph_width;
     s8 rows[10][32];
-    u8 unk268[0x1C];
-    u32 unk284;
+    LibObject178750* command_labels[7];
+    ItemCreationOptionResourceDisplay* character_display;
     u8 unk288;
     u8 unk289[3];
     LibObject178750* unk28c;
@@ -350,27 +349,6 @@ void func_0034AF00(StatusScrollState* object);
 void func_0034BDA0(StatusRecordWindow* object);
 
 /**
- * @brief Create and attach the status windows and record selection.
- * @param object Status resource state.
- * @return One after record selection and window setup succeed, or zero otherwise.
- */
-s32 func_00350540(StatusResourceState* object);
-
-/**
- * @brief Load the completed status resource and finish receiver setup.
- * @param object Status resource state.
- * @param buffer Completed resource buffer, or null.
- * @return Zero without a buffer, otherwise the receiver setup result.
- */
-s32 func_00350700(StatusResourceState* object, void* buffer);
-
-/**
- * @brief Release the status resource, queue the receiver, and clear its allocation slots.
- * @param object Status resource state to release.
- */
-void func_00350160(StatusResourceState* object);
-
-/**
  * @brief Clamp the focused status selection and move its cursor.
  * @param object Status selection window.
  */
@@ -398,17 +376,18 @@ void func_00348960(StatusSelectionWindow* object, s16 code);
 void func_00349070(StatusSelectionWindow* object, u8 mode);
 
 /**
- * @brief Update the selection command state.
- * @param object Status selection receiver.
- * @return Selection handler result.
+ * @brief Remove the last encoded name entry and refresh the text and cursor.
+ * @param object Name selection window.
+ * @return Two after removing an entry, or three when the name is empty.
  */
-s32 func_00348AE0(StatusSelectionWindow* object);
+s32 status_remove_last_name_entry(StatusSelectionWindow* object);
 
 /**
  * @brief Select grid mode two and refresh its display flags.
  * @param object Status selection receiver.
+ * @param mode Supplied grid mode; unused.
  */
-void func_00349260(StatusSelectionWindow* object);
+void func_00349260(StatusSelectionWindow* object, u8 mode);
 
 /** @brief Refresh the selected entry and its cursor. @param object Status selection receiver. */
 void func_00348C10(StatusSelectionWindow* object);
@@ -445,10 +424,10 @@ void func_0034B170(StatusScrollState* object);
 void func_0034B190(StatusScrollState* object);
 
 /**
- * @brief Refresh the selected record's status displays.
+ * @brief Refresh the selected character's name, statistics, equipment, and status captions.
  * @param object Status record window.
  */
-void func_0034B1B0(StatusScrollState* object);
+void status_refresh_character_display(StatusScrollState* object);
 
 /**
  * @brief Update nested-display cancellation and status-window transitions.
@@ -484,10 +463,10 @@ s32 func_0034C410(StatusScrollState* object);
 s32 func_0034C480(StatusScrollState* object);
 
 /**
- * @brief Submit the status receiver to the resident object queue.
- * @param object Receiver to submit.
+ * @brief Switch between the record and name windows through a timed transition.
+ * @param state Status resource state whose transition phase is updated.
  */
-void func_00350200(void* object);
+void status_update_window_transition(void* state);
 
 /**
  * @brief Release the nodes after the sentinel without destroying their payloads.
@@ -724,50 +703,10 @@ s32 func_003498C0(void* object);
 s32 func_003498D0(void* object);
 
 /**
- * @brief Return the fixed value 1.
- * @param object Receiver or first argument; unused.
- * @return Always 1.
- */
-s32 func_003507E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003509A0(void* object);
-
-/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
 void func_003509B0(void* object);
-
-/**
- * @brief Return the fixed value 4.
- * @param object Receiver or first argument; unused.
- * @return Always 4.
- */
-s32 func_00350A90(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00350AE0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00350AF0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00350B00(void* object);
 
 /**
  * @brief Perform no work.
@@ -914,74 +853,11 @@ u8 func_003486B0(void* object);
 void func_003486C0(void* object, u8 value);
 
 /**
- * @brief Read the field at offset 0x20.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 func_003486E0(void* object);
-
-/**
- * @brief Set the field at offset 0x20.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_003486F0(void* object, u32 value);
-
-/**
- * @brief Run func_00348AE0 and report status 2.
- * @param object Object passed to func_00348AE0.
+ * @brief Remove the last name entry and report status 2.
+ * @param object Name selection window.
  * @return Always 2.
  */
 s32 func_003498E0(void* object);
-
-/**
- * @brief Read the low bit of the byte at offset 0x38.
- * @param object Object containing the field.
- * @return The low bit.
- */
-u32 func_00350A70(void* object);
-
-/**
- * @brief Read the field at offset 0x34.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 func_00350A80(void* object);
-
-/**
- * @brief Read the field at offset 0x3C.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 func_00350AA0(void* object);
-
-/**
- * @brief Set the field at offset 0x24.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00350AB0(void* object, u32 value);
-
-/**
- * @brief Set the field at offset 0x28.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00350AC0(void* object, u8 value);
-
-/**
- * @brief Read the field at offset 0x28.
- * @param object Object containing the field.
- * @return The field value.
- */
-s8 func_00350AD0(void* object);
-
-/**
- * @brief Read the field at offset 0x24.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 func_00350530(void* object);
 
 /**
  * @brief Follow links from the first node in a list.
@@ -1126,13 +1002,6 @@ void func_00349730(StatusSelectionWindow* object);
  * @return Initialized object.
  */
 void* func_0034F780(void* object);
-
-/**
- * @brief Initialize a status object and clear its state fields.
- * @param object Status object to initialize.
- * @return Initialized object.
- */
-StatusObject* func_00350890(StatusObject* object);
 
 #ifdef __cplusplus
 }

@@ -228,6 +228,7 @@ func_0035E3C0 = 0x0035E3C0; // type:func allow_duplicated:True
 func_0035E470 = 0x0035E470; // type:func allow_duplicated:True
 
 init_resource_rectangle__15LibObject178750FffffiiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
+init_resource_rectangle__15LibObject178750FffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 __vt__23ItemCreationClass1725D0 = 0x001725D0; // absolute:True allow_duplicated:True
 __dt__23ItemCreationClass1725D0Fv = 0x00412DC0; // type:func absolute:True allow_duplicated:True
 func_00462310__23ItemCreationClass1725D0Fv = 0x0041A560; // type:func absolute:True allow_duplicated:True
