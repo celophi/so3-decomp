@@ -323,6 +323,8 @@ class FieldClass150990 : public LibClass178EA0
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass150990();
+    /** @brief Return the object transformation matrix. @return Transformation matrix. */
+    virtual const LibMatrix44Value* func_004D00A0();
 };
 
 FieldClass150990::~FieldClass150990()

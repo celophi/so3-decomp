@@ -20,9 +20,34 @@ struct ResidentObject1B65E4;
 /** Opaque receiver for resident request allocation. */
 typedef struct ResidentRequest112400 ResidentRequest112400;
 
+/** Opaque resident queue of DMA submissions for a single channel. */
+typedef struct ResidentDmaQueue ResidentDmaQueue;
+
+#ifdef __cplusplus
+/** Interface called by the resident queue when a DMA transfer starts or completes. */
+class DmaSubmission
+{
+public:
+    /** @brief Start the queued DMA transfer. @param channel DMA channel number. */
+    virtual void submit_dma(u32 channel) = 0;
+    /** @brief Complete the queued DMA transfer. @param channel DMA channel number. */
+    virtual void complete_dma(u32 channel) = 0;
+};
+#else
+typedef struct DmaSubmission DmaSubmission;
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Queue a DMA submission and start processing if the channel is idle.
+ * @param queue Resident queue for the DMA channel.
+ * @param submission Transfer callbacks to enqueue.
+ * @return 1 on success, 0 when the queue is full.
+ */
+s32 func_00114100(ResidentDmaQueue* queue, DmaSubmission* submission);
 
 /**
  * @brief Return the resident runtime table owner.

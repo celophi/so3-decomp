@@ -2,16 +2,175 @@
 #define SO3_OVERLAYS_LIB_TEXT_004DD440_H
 
 #include "types.h"
+#include "main/resident_0010A0E0.h"
+#include "sdk/main/libdma_0012B2C8.h"
+
+#ifdef __cplusplus
+#include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/vector.h"
+
+/** Partial LibClass178EA0 with vtable D_175290 in main data. */
+class FieldClass175290 : public LibClass178EA0
+{
+public:
+    /** @brief Construct the object and clear the words at offsets 0x210 and 0x214. */
+    FieldClass175290();
+    /** @brief Destroy the object. */
+    virtual ~FieldClass175290();
+
+    /** @brief Copy the associated transform and inherited state. @param source Transform source. */
+    virtual void func_0046B890(const FieldClass175290* source);
+
+    /** @brief Update the attached transform state. */
+    virtual void func_004D0090();
+
+    LibClass178EA0* unk210;
+    u32 unk214;
+};
+/** Partial resident context supplying signed viewport dimensions. */
+struct LibCameraContext
+{
+    u8 unk00[0x3C6C];
+    s16 viewport_width;
+    s16 viewport_height;
+};
+
+/** Scene and model-preview camera, with its submission callback interface at 0x220. */
+class LibClass179080 : public FieldClass175290, public DmaSubmission
+{
+public:
+    /** @brief Initialize the camera from the resident context. @param context Resident context. */
+    LibClass179080(void* context);
+    /** @brief Release camera resources and its transform base. */
+    virtual ~LibClass179080();
+    /** @brief Clear the manager camera reference, then detach and queue the transform. */
+    virtual void func_003EF740();
+    /** @brief Initialize viewport bounds and default projection settings. @param context Resident viewport context. */
+    void initialize_projection(const LibCameraContext* context);
+    /** @brief Build the local perspective volume for visibility tests. @param volume Destination volume. */
+    void build_projection_volume(LibProjectionVolume* volume) const;
+    /** @brief Upload the camera's clip geometry into VU0 data memory. */
+    void upload_clip_geometry() const;
+    /** @brief Update the transform and extract its rotation components. */
+    virtual void func_004D0090();
+    /** @brief Update camera state and its attached-transform distance. */
+    virtual void func_003EEBD0();
+    /** @brief Update the active camera projection state. */
+    void func_004E24D0();
+    /** @brief Submit the camera's DMA chain. @param channel DMA channel number. */
+    virtual void submit_dma(u32 channel);
+    /** @brief Complete the camera transfer. @param channel DMA channel number. */
+    virtual void complete_dma(u32 channel);
+    /** @brief Queue the camera for VIF1 DMA. @return 1 on success, 0 when the queue is full. */
+    s32 enqueue_submission();
+    /** @brief Copy view and projection state from another camera. @param source Camera source. */
+    virtual void copy_camera(const LibClass179080* source);
+    /** @brief Copy the camera's view and fog settings. @param source Camera to copy. */
+    void copy_view_and_fog(const LibClass179080* source);
+    /**
+     * @brief Read the configured far and near fog factors.
+     * @param far_factor Receives the far fog factor.
+     * @param near_factor Receives the near fog factor.
+     */
+    void get_fog_factors(float* far_factor, float* near_factor) const;
+    /**
+     * @brief Set the perspective fog mapping coefficients directly.
+     * @param offset Constant fog coefficient.
+     * @param reciprocal_scale Reciprocal-distance fog coefficient.
+     */
+    void set_fog_coefficients(float offset, float reciprocal_scale);
+    /**
+     * @brief Read the perspective fog mapping coefficients.
+     * @param offset Receives the constant fog coefficient.
+     * @param reciprocal_scale Receives the reciprocal-distance fog coefficient.
+     */
+    void get_fog_coefficients(float* offset, float* reciprocal_scale) const;
+    /** @brief Set the near fog-distance fraction and recompute fog coefficients. @param fraction Fraction of the configured distance range. */
+    void set_near_fog_fraction(float fraction);
+    /** @brief Set the far fog-distance fraction and recompute fog coefficients. @param fraction Fraction of the configured distance range. */
+    void set_far_fog_fraction(float fraction);
+    /**
+     * @brief Set the fog color, factors and distance range, then recompute the perspective coefficients.
+     * @param color Packed RGB fog color.
+     * @param far_factor Fog factor at the far distance.
+     * @param near_factor Fog factor at the near distance.
+     * @param near_distance Near fog distance.
+     * @param far_distance Far fog distance.
+     */
+    void set_fog(u32 color, float far_factor, float near_factor, float near_distance, float far_distance);
+    /**
+     * @brief Calculate the scaled screen-plane distance from the horizontal field of view.
+     * @return Perspective projection distance.
+     */
+    float compute_projection_distance() const;
+private:
+    /** @brief Recompute the perspective fog mapping. @param far_factor Far fog factor. @param near_factor Near fog factor. */
+    void update_fog_coefficients(float far_factor, float near_factor)
+    {
+        float distance_span = far_fog_distance - near_fog_distance;
+        lib_compute_perspective_fog_coefficients(&fog_offset, &fog_reciprocal_scale, far_factor, near_factor,
+                                               near_fog_distance + near_fog_fraction * distance_span,
+                                               near_fog_distance + far_fog_fraction * distance_span);
+    }
+public:
+    u8 unk224[0xC];
+    DmaSourceTag dma_chain;
+    float unk240;
+    float unk244;
+    u32 unk248;
+    float unk24c;
+    float unk250;
+    float unk254;
+    u32 unk258;
+    float horizontal_fov;
+    float unk260;
+    float unk264;
+    float unk268;
+    float unk26c;
+    float unk270;
+    float projection_distance;
+    float unk278;
+    u32 unk27c;
+    float unk280;
+    float unk284;
+    u8 unk288[8];
+    FieldVec4B screen_min;
+    FieldVec4B screen_max;
+    u8 unk2b0[0x118];
+    u32 unk3c8;
+    u32 unk3cc;
+    u8 unk3d0;
+    u8 unk3d1;
+    u8 unk3d2;
+    u8 unk3d3;
+    u32 unk3d4;
+    u8 unk3d8[0x18];
+    FieldVec4A clip_points[10];
+    FieldVec4A clip_normals[10];
+    u32 fog_color;
+    u8 fog_enabled;
+    u8 unk535[3];
+    float fog_offset;
+    float fog_reciprocal_scale;
+    float far_fog_fraction;
+    float near_fog_fraction;
+    float far_fog_distance;
+    float near_fog_distance;
+    float near_fog_factor;
+    float far_fog_factor;
+    u8 unk558[8];
+    float rotation_angles[3];
+    u8 unk56c[0x314];
+};
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_004E20E0(void* object);
+/** Resident VIF1 DMA queue initialized by the Lib runtime. */
+extern ResidentDmaQueue* g_vif1_dma_queue;
 
 /**
  * @brief Perform no work.

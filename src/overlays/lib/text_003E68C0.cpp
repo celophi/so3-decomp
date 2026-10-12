@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/lib/text_003E68C0.h"
+#include "overlays/lib/text_004CD3A0.h"
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEB50);
 
@@ -177,13 +178,29 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F44E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4500);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4510);
+/** @brief Read the object transformation matrix. @return Pointer to the stored matrix. */
+const LibMatrix44Value* LibClass178EA0::func_004D00A0()
+{
+    return &transform;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4520);
+/** @brief Read the local transform vector. @return Pointer to the stored vector. */
+const LibVector4* LibClass178EA0::func_003F4520() const
+{
+    return &unk1d0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4530);
+/** @brief Read the local transform vector. @return Pointer to the stored vector. */
+const LibVector4* LibClass178EA0::func_003F4530() const
+{
+    return &unk1e0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4540);
+/** @brief Read the local transform vector. @return Pointer to the stored vector. */
+const LibVector4* LibClass178EA0::func_003F4540() const
+{
+    return &unk1f0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4550);
 

@@ -559,27 +559,6 @@ extern "C" void field_attach_model_display(FieldStatus14* object)
     object->display_attached = 1;
 }
 
-/** Abstract callback interface, with resident table D_171E60. */
-class LibClass171E60
-{
-public:
-    virtual void func_slot00(u32 value) = 0;
-    virtual void func_slot04() = 0;
-};
-/** Preview camera with its callback interface at 0x220. */
-class LibClass179080 : public FieldClass175290, public LibClass171E60
-{
-public:
-    /** @brief Initialize the camera from the resident context. @param context Resident context. */
-    LibClass179080(void* context);
-    /** @brief Release camera resources and its transform base. */
-    virtual ~LibClass179080();
-    virtual void func_slot00(u32 value);
-    virtual void func_slot04();
-    /** @brief Copy view and projection state from another camera. @param source Camera source. */
-    virtual void copy_camera(const LibClass179080* source);
-    u8 unk224[0x65C];
-};
 extern "C" void* D_001B6650;
 extern "C" void field_replace_model_camera(FieldStatus14* object, void* attached)
 {

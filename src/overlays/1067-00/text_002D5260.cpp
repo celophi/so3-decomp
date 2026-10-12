@@ -362,6 +362,10 @@ class FieldClass15B270 : public LibClass178EA0
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass15B270();
+    /** @brief Return the object transformation matrix. @return Transformation matrix. */
+    virtual const LibMatrix44Value* func_004D00A0();
+    /** @brief Update the object transformation and its additional matrices. */
+    virtual void func_004D0090();
 };
 
 /** @brief Destroy the object. */
@@ -369,7 +373,7 @@ FieldClass15B270::~FieldClass15B270()
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D66C0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_004D0090__16FieldClass15B270Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D68F0);
 

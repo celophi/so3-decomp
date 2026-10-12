@@ -693,7 +693,7 @@ __vt__16FieldClass151440 = 0x00151440; // size:0x20
 __dt__16FieldClass151440Fv = 0x00208A10; // type:func
 func_00208230__16FieldClass151440Fv = 0x00208230; // type:func
 func_0045BFB0 = 0x0045BFB0; // type:func
-func_00473680 = 0x00473680; // type:func
+func_00473680 = 0x00473680; // type:func absolute:True allow_duplicated:True
 func_0013C4F0 = 0x0013C4F0; // type:func
 func_0010EA70 = 0x0010EA70; // type:func
 __ct__16FieldClass152430Fv = 0x00229020; // type:func
@@ -1872,9 +1872,9 @@ func_002FD220 = 0x002FD220; // type:func absolute:True allow_duplicated:True
 func_2FD220 = 0x002FD220; // type:func absolute:True allow_duplicated:True
 func_4E2940 = 0x004E2940; // type:func absolute:True allow_duplicated:True
 __dt__14LibClass179080Fv = 0x004E2940; // type:func absolute:True allow_duplicated:True
-func_003F4520__14LibClass178EA0Fv = 0x003F4520; // type:func absolute:True allow_duplicated:True
-func_003F4530__14LibClass178EA0Fv = 0x003F4530; // type:func absolute:True allow_duplicated:True
-func_003F4540__14LibClass178EA0Fv = 0x003F4540; // type:func absolute:True allow_duplicated:True
+func_003F4520__14LibClass178EA0CFv = 0x003F4520; // type:func absolute:True allow_duplicated:True
+func_003F4530__14LibClass178EA0CFv = 0x003F4530; // type:func absolute:True allow_duplicated:True
+func_003F4540__14LibClass178EA0CFv = 0x003F4540; // type:func absolute:True allow_duplicated:True
 func_4D9F40 = 0x004D9F40; // type:func absolute:True allow_duplicated:True
 func_004D9F40__14LibClass178EA0FPC14LibClass178EA0 = 0x004D9F40; // type:func absolute:True allow_duplicated:True
 func_0046B890__16FieldClass175290FPC16FieldClass175290 = 0x0046B890; // type:func absolute:True allow_duplicated:True
@@ -1902,3 +1902,18 @@ func_slot80__16FieldClass153E30Fv = 0x00263D60; // type:func absolute:True
 func_slot84__16FieldClass153E30Fv = 0x00263D70; // type:func absolute:True
 
 func_slot88__16FieldClass153E30Fv = 0x00263E80; // type:func absolute:True
+
+lib_find_camera_entry = 0x00473680; // type:func absolute:True allow_duplicated:True
+
+func_004D0090__14LibClass178EA0Fv = 0x004DA8B0; // type:func absolute:True allow_duplicated:True
+func_004D00A0__14LibClass178EA0Fv = 0x003F4510; // type:func absolute:True allow_duplicated:True
+func_003EEBD0__14LibClass178EA0Fv = 0x004D9D60; // type:func absolute:True allow_duplicated:True
+func_004D0090__16FieldClass175290Fv = 0x0046B8B0; // type:func absolute:True allow_duplicated:True
+func_004D0090__14LibClass179080Fv = 0x004E1BF0; // type:func absolute:True allow_duplicated:True
+func_003EEBD0__14LibClass179080Fv = 0x004E1C30; // type:func absolute:True allow_duplicated:True
+func_004E24D0__14LibClass179080Fv = 0x004E24D0; // type:func absolute:True allow_duplicated:True
+
+func_004D00A0__16FieldClass150990Fv = 0x001E9B70; // type:func absolute:True allow_duplicated:True
+func_004D00A0__16FieldClass155840Fv = 0x001E9B70; // type:func absolute:True allow_duplicated:True
+func_004D00A0__16FieldClass15B270Fv = 0x001E9B70; // type:func absolute:True allow_duplicated:True
+func_004D0090__16FieldClass15B270Fv = 0x002D66C0; // type:func allow_duplicated:True

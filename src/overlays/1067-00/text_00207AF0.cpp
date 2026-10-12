@@ -875,7 +875,7 @@ extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
         {
             char name[32];
             func_0013C4F0(name, D_31A840, (u8)(shape->unk18->unk0b - 0x3f));
-            result = func_00473680(((FieldClass150F90*)D_001B6430->context->unk08->unkdc)->unk7c, name);
+            result = lib_find_camera_entry(static_cast<LibEntryManager*>(((FieldClass150F90*)D_001B6430->context->unk08->unkdc)->unk7c), name);
         }
         if (result)
         {
@@ -1077,7 +1077,7 @@ extern "C" void func_0020D4C0(FieldClass151640* object, FieldShapeOwner18* shape
     FieldClass151570* node = new (0) FieldClass151570;
     node->unk18 = node->unk14 = shape->unk04;
     node->unk1c = shape;
-    node->unk30 = *(const LibMatrix44Value*)node->unk18->func_004D00A0();
+    node->unk30 = *node->unk18->func_004D00A0();
     object->unk88.func_004D74F0(node, -1);
 }
 
@@ -1129,7 +1129,7 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibClass178
                 node->unk14 = shape->unk04;
                 node->unk18 = transform;
                 node->unk1c = shape;
-                node->unk30 = *(const LibMatrix44Value*)node->unk18->func_004D00A0();
+                node->unk30 = *node->unk18->func_004D00A0();
                 object->unk88.func_004D74F0(node, -1);
             }
         }

@@ -5,6 +5,12 @@
 
 extern "C" s32 func_00461860(LibStorageBlock0C* storage, s32 count);
 
+/** @brief View an aligned matrix row as a vector. @param matrix Destination matrix. @param row Row index. @return Writable row vector. */
+static inline FieldVec4A& matrix_row_vector(LibMatrix44Value& matrix, s32 row)
+{
+    return *(FieldVec4A*)matrix.m[row];
+}
+
 /** @brief Unlink a container child. @param object Container. @param child Widget to unlink. */
 extern "C" void func_004C6120(LibObject178660* object, LibClass178600* child);
 
@@ -777,7 +783,13 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA270);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CAB20);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CBA70);
+/** @brief Recompute the derived perspective-volume coefficients. */
+void LibProjectionVolume::update_coefficients()
+{
+    far_near_ratio = far_distance / near_distance;
+    unk54 = (-2.0f * near_half_width) * far_distance;
+    unk58 = (-2.0f * near_half_height) * far_distance;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CBAC0);
 
@@ -809,11 +821,64 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCBE0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCC50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCCA0);
+/**
+ * @brief Compute the fog mapping offset + reciprocal_scale / z for perspective fog.
+ * @param offset Receives the constant fog coefficient.
+ * @param reciprocal_scale Receives the reciprocal-distance fog coefficient.
+ * @param far_factor Fog factor at the far distance.
+ * @param near_factor Fog factor at the near distance.
+ * @param near_plane Near-plane distance; must differ from far_plane.
+ * @param far_plane Far-plane distance.
+ */
+extern "C" void lib_compute_perspective_fog_coefficients(float* offset, float* reciprocal_scale, float far_factor, float near_factor,
+                                                        float near_plane, float far_plane)
+{
+    float plane_span = far_plane - near_plane;
+    *offset = 0.5f * (far_factor + near_factor + (far_factor - near_factor) * (far_plane + near_plane) / plane_span);
+    *reciprocal_scale = far_plane * near_plane * (near_factor - far_factor) / plane_span;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCCF0);
+/**
+ * @brief Extract a quaternion after mapping each matrix row from (x, y, z) to (x, -z, y).
+ * @param source Source matrix.
+ * @param output Destination quaternion.
+ */
+extern "C" void func_004CCCF0(const LibMatrix44Value* source, FieldVec4B* output)
+{
+    LibMatrix44Value converted;
+    ((unsigned __int128*)&converted)[0] = 0;
+    ((unsigned __int128*)&converted)[1] = 0;
+    ((unsigned __int128*)&converted)[2] = 0;
+    ((unsigned __int128*)&converted)[3] = 0;
+    FieldVec4A& row1 = matrix_row_vector(converted, 1);
+    FieldVec4A& row2 = matrix_row_vector(converted, 2);
+    converted.m[0][0] = source->m[0][0];
+    row1.x = source->m[1][0];
+    row2.x = source->m[2][0];
+    converted.m[0][1] = -source->m[0][2];
+    row1.y = -source->m[1][2];
+    row2.y = -source->m[2][2];
+    converted.m[0][2] = source->m[0][1];
+    row1.z = source->m[1][1];
+    row2.z = source->m[2][1];
+    converted.m[3][3] = 1.0f;
+    func_004CBAC0(output, &converted);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCD90);
+/**
+ * @brief Evaluate the degree-six Taylor polynomial for exp(value).
+ * @param value Polynomial argument.
+ * @return Polynomial approximation to exp(value).
+ */
+extern "C" float func_004CCD90(float value)
+{
+    float squared = value * value;
+    float cubed = squared * value;
+    float result = (1.0f + value) + 0.5f * squared;
+    result = ((1.0f / 6.0f) * cubed + result) + (1.0f / 24.0f) * (squared * squared);
+    float fifth_term = (1.0f / 120.0f) * (cubed * squared);
+    return (fifth_term + result) + (1.0f / 720.0f) * (cubed * cubed);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCE10);
 
