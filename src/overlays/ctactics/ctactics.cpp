@@ -370,7 +370,7 @@ void func_00348410(void* object, s16 selected)
     }
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00348480);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00348480);
 
 u32 func_003484C0(void* object)
 {
@@ -395,14 +395,14 @@ void TacticsWindow18B020::func_slot68()
     }
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00348590);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00348590);
 
 void func_00348630(void* object, u32 value)
 {
     *(u32*)((u8*)object + 0x20) = value;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00348650);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00348650);
 
 /**
  * @brief Create the child window's two-entry grid, panels, and text displays.
@@ -838,9 +838,9 @@ u8 func_00349B40(TacticsGridOwner* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00349C10);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00349C10);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00349D40);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00349D40);
 
 void func_00349E70(void* object)
 {
@@ -903,11 +903,11 @@ void func_00349EB0(TacticsGridOwner* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034A120);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034A120);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034A200);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034A200);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034A350);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034A350);
 
 ItemCreationClass175110::~ItemCreationClass175110()
 {
@@ -1121,20 +1121,20 @@ s32 TacticsWindow18B320::func_slotb4()
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034B390);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034B390);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034BA40);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034BA40);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034C120);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034C120);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034D900);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034D900);
 
 /** @brief Release the receiver's owned storage. */
 TacticsStorage18B010::~TacticsStorage18B010()
 {
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", __dt__19TacticsWindow18B320Fv);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", __dt__19TacticsWindow18B320Fv);
 
 /** @brief Construct the owned lists and clear the window control fields. */
 TacticsWindow18B320::TacticsWindow18B320()
@@ -1757,7 +1757,7 @@ TacticsPresetPosition* func_0034F190(TacticsPresetOwner* object, s32 index)
     return &object->position;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034F290);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034F290);
 
 TacticsWindow18B520::~TacticsWindow18B520()
 {
@@ -1800,7 +1800,7 @@ void TacticsWindow18B620::func_slot5c()
     set_text_position(target, x, y, z, w);
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_0034FE50);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034FE50);
 
 TacticsWindow18B620::~TacticsWindow18B620()
 {
@@ -1832,7 +1832,7 @@ TacticsWindow18B720::~TacticsWindow18B720()
 {
 }
 
-void TacticsState18B820::func_00263D80()
+void TacticsState18B820::func_slot5c()
 {
     if (resource_slot != 0)
     {
@@ -1855,7 +1855,7 @@ void func_003507B0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_003507C0);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_003507C0);
 
 void func_00350D10(void* object, u32 value)
 {
@@ -1894,7 +1894,7 @@ u8 TacticsState18B820::func_00264110()
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00350E60);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00350E60);
 
 /** @brief Clear the resource slot, window initialization flag, and selection pointer. */
 TacticsState18B820::TacticsState18B820()
@@ -1904,7 +1904,7 @@ TacticsState18B820::TacticsState18B820()
     selection = 0;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00350F60);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00350F60);
 
 void func_00351020(void* object)
 {
@@ -2534,4 +2534,4 @@ TacticsList18B8B0::TacticsList18B8B0()
     count = 0;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/text", func_00351F90);
+INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00351F90);

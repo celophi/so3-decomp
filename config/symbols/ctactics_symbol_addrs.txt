@@ -92,7 +92,8 @@ __dt__23ItemCreationClass175110Fv = 0x0034AE50; // type:func
 func_001E1820__18TacticsState18B820FPv = 0x00350D20; // type:func
 func_00264110__18TacticsState18B820Fv = 0x00350DE0; // type:func
 
-func_00263D80__18TacticsState18B820Fv = 0x00350740; // type:func
+func_00263D80__18TacticsState18B820Fv = 0x00350740; // type:func absolute:True allow_duplicated:True
+func_slot5c__18TacticsState18B820Fv = 0x00350740; // type:func allow_duplicated:True
 func_003EEBC0__14LibClass171EA0Fv = 0x003EEBC0; // type:func absolute:True
 func_003EEBD0__14LibClass171EA0Fv = 0x003EEBD0; // type:func absolute:True
 func_003EEBE0__14LibClass171EA0Fv = 0x003EEBE0; // type:func absolute:True

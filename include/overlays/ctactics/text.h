@@ -65,7 +65,7 @@ struct TacticsState18B820 : public FieldClass153E30
     virtual s32 func_001E1820(void* buffer);
 
     /** @brief Release the loaded resource, detach the State, and dispatch its release handler. */
-    virtual void func_00263D80();
+    virtual void func_slot5c();
 
     s32 resource_slot;
     u8 windows_initialized : 1;

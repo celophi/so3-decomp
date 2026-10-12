@@ -55,12 +55,12 @@ segments:
     vram: 0x3483c0
     subsegments:
       - [0x40, pad, text_start]
-      - [0x80, cpp, text]
+      - [0x80, cpp, cstatus]
       - [0x8F80, pad, text_end]
       - [0x9000, databin, data]
       - start: 0x91D0
         type: .rodata
-        name: text
+        name: cstatus
         linker_section: .rodata.00351550
         rodata_anchors:
           - {function: status_select_alphanumeric_grid, offset: 0x0, size: 0x18}
@@ -68,14 +68,14 @@ segments:
       - [0x91E8, rodatabin, data_00351568]
       - start: 0x91F0
         type: .rodata
-        name: text
+        name: cstatus
         linker_section: .rodata.00351570
         rodata_anchors:
           - {function: func_slotf4__16StatusNameWindowFPv, offset: 0x0, size: 0x30}
         linker_section_order: .rodata
       - start: 0x9220
         type: .rodata
-        name: text
+        name: cstatus
         linker_section: .rodata.003515A0
         rodata_anchors:
           - {function: func_slotf4__21StatusCharacterWindowFUi, offset: 0x0, size: 0x28}

@@ -6,7 +6,7 @@ func_100AC0 = 0x00100AC0; // type:func allow_duplicated:True
 func_4C48B0 = 0x004C48B0; // type:func allow_duplicated:True
 func_002FD940 = 0x002FD940; // type:func
 D_1889C0 = 0x001889C0; // allow_duplicated:True
-__vt__19StatusResourceState = 0x00188CC0; // size:0x88 absolute:True
+__vt__19StatusResourceState = 0x00188CC0; // size:0x8C absolute:True
 D_1888B0 = 0x001888B0;
 D_188BC0 = 0x00188BC0; // absolute:True allow_duplicated:True
 D_188AC0 = 0x00188AC0; // absolute:True allow_duplicated:True
@@ -635,3 +635,5 @@ __dt__16StatusTextWindowFv = 0x0034FE40; // type:func absolute:True allow_duplic
 func_slot5c__16StatusTextWindowFv = 0x0034F920; // type:func absolute:True allow_duplicated:True
 func_slot60__16StatusTextWindowFi = 0x0034FA10; // type:func absolute:True allow_duplicated:True
 func_slotf4__16StatusTextWindowFUi = 0x0034FAA0; // type:func absolute:True allow_duplicated:True
+
+func_slot88__16FieldClass153E30Fv = 0x00263E80; // type:func absolute:True

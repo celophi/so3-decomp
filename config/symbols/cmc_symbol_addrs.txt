@@ -168,7 +168,8 @@ __dt__23ItemCreationClass185050Fv = 0x0034D1D0; // type:func allow_duplicated:Tr
 func_0034D1D0 = 0x0034D1D0; // type:func absolute:True
 func_003591A0 = 0x003591A0; // type:func absolute:True
 
-release_resources__14CmcClass18AF20Fv = 0x003585B0; // type:func
+release_resources__14CmcClass18AF20Fv = 0x003585B0; // type:func absolute:True allow_duplicated:True
+func_slot5c__14CmcClass18AF20Fv = 0x003585B0; // type:func allow_duplicated:True
 func_001DD7B0__14CmcClass18AF20Fv = 0x00358600; // type:func
 lib_release_resource_slot = 0x00465430; // type:func absolute:True
 lib_object_detach_owner = 0x004D65C0; // type:func absolute:True

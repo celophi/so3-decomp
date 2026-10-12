@@ -3249,7 +3249,7 @@ FieldClass159A70::FieldClass159A70()
     unk10 = 5.0f;
 }
 
-void FieldClass159A70::func_002BC4F0()
+void FieldClass159A70::func_002BC4F0(u32 first, u32 depth, float value)
 {
 }
 

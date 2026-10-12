@@ -1,2 +1,21 @@
 rom:0x15A80 reloc:MIPS_HI16 symbol:D_4ED330
 rom:0x15A9C reloc:MIPS_LO16 symbol:D_4ED330
+
+rom:0x13B5C reloc:MIPS_HI16 symbol:__vt__15SkillController
+
+rom:0x13B60 reloc:MIPS_HI16 symbol:__vt__15SkillController addend:0x10
+
+rom:0x13B64 reloc:MIPS_LO16 symbol:__vt__15SkillController
+
+rom:0x13B68 reloc:MIPS_LO16 symbol:__vt__15SkillController addend:0x10
+
+rom:0x13C14 reloc:MIPS_HI16 symbol:__vt__15SkillController
+
+rom:0x13C18 reloc:MIPS_HI16 symbol:__vt__15SkillController addend:0x10
+
+rom:0x13C1C reloc:MIPS_LO16 symbol:__vt__15SkillController
+
+rom:0x13C20 reloc:MIPS_LO16 symbol:__vt__15SkillController addend:0x10
+
+rom:0x13BF4 reloc:MIPS_HI16 symbol:__vt__14LibClass171FF0
+rom:0x13BFC reloc:MIPS_LO16 symbol:__vt__14LibClass171FF0

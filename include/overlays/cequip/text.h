@@ -268,15 +268,15 @@ struct EquipListState : public FieldClass153E30
     /** @brief Forward a display flag to the owned windows. @param flag Display flag. */
     virtual void func_00263E20(u32 flag);
     /** @brief Release the State resources and queue its receiver. */
-    virtual void func_00263D80();
+    virtual void func_slot5c();
     /** @brief Return the default State result. @return Zero. */
-    virtual void* func_00263CE0();
+    virtual s32 func_slot60();
     /** @brief Return the alternate State result. @return Zero. */
-    virtual void* func_00263CF0();
+    virtual s32 func_slot64();
     /** @brief Run the empty State hook. */
-    virtual void func_00263D00();
+    virtual void func_slot68();
     /** @brief Return the record selection. @return Current record selection. */
-    virtual FieldRecordSelection* func_00263D10();
+    virtual FieldRecordSelection* selected_records();
     s32 unk34;
     FieldRecordSelection* unk38;
     u8 unk3c_active : 1;
