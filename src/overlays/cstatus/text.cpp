@@ -1,4 +1,3 @@
-#include "include_asm.h"
 #include "overlays/cstatus/text.h"
 #include "main/resident_data.h"
 #include "main/resident_001001E0.h"
@@ -26,1537 +25,141 @@
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/item_allocation.h"
 
-/** Partial 0x114-byte record with display data at offset 0x20. */
-struct StatusDisplayRecord
-{
-    u8 unk00[0x20];
-    char data[0xF4];
-};
-/** Partial 0x114-byte detail with six encoded entries and their checksum. */
-struct StatusProtectedEntries
-{
-    u8 unk00[0x41];
-    u8 values[6];
-    u8 unk47[0xBD];
-    u32 checksum;
-    u8 unk108[0xC];
-};
-/**
- * @brief Read one encoded entry when its six-byte checksum is valid.
- * @param record Detail record containing the protected entries.
- * @param index Signed entry index, from zero through five.
- * @return Decoded entry, or zero for an invalid checksum or index.
- */
-static inline s32 status_protected_entry(StatusProtectedEntries* record, s32 index)
-{
-    u32 checksum = 0x8D3C43F9;
-    for (s32 entry = 0; entry < 6; entry++)
-    {
-        checksum ^= record->values[entry];
-        checksum = checksum * 2 + 0x31;
-    }
-    if (record->checksum != checksum)
-    {
-        return 0;
-    }
-    if (index < 0)
-    {
-        return 0;
-    }
-    if (static_cast<u32>(index) >= 6)
-    {
-        return 0;
-    }
-    return record->values[index] ^ 0x77;
-}
+#define STATUS_STAT_WORD_XOR_KEY 0x7DE3F7E3
+#define STATUS_STAT_HALFWORD_XOR_KEY 0x7E93
+#define STATUS_BATTLE_SKILL_XOR_KEY 0x77
 
-/** Saved section containing the ten fixed-width character names. */
-struct StatusNameSection
+/** Message keys from the status resource and shared menu bank. */
+enum StatusTextKey
 {
-    u8 unk00[0xC6B0];
-    s8 names[10][24];
-};
-/** Typed display payload and forward link in a status list. */
-struct StatusDisplayNode
-{
-    LibClass178600* value;
-    StatusDisplayNode* next;
-};
-/** Partial 0x114-byte status record containing the selected variant. */
-struct StatusVariantRecord
-{
-    u8 unk00[0xE7];
-    u8 variant;
-    u8 unke8[0x2C];
-};
-
-/** Saved section flag selecting the nested status display geometry. */
-struct StatusWindowSection
-{
-    u8 unk00[0x18C];
-    u8 enabled;
-};
-
-/** Partial saved section containing variant limits and their checksum. */
-struct StatusVariantSection
-{
-    u8 unk00[0x1A0];
-    u8 values[4];
-    u16 checksum;
-    u16 seed;
+    STATUS_TEXT_SLASH = 0x7E7,
+    STATUS_TEXT_MINOR_ATTACK_BUTTON = 0x80A,
+    STATUS_TEXT_MAJOR_ATTACK_BUTTON = 0x80B,
+    STATUS_TEXT_NONE = 0x822,
+    STATUS_TEXT_HEADING = 0x1388,
+    STATUS_TEXT_CHARACTER_HELP = 0x138A,
+    STATUS_TEXT_NAME_HELP = 0x138B,
+    STATUS_TEXT_HP = 0x138D,
+    STATUS_TEXT_MP = 0x138E,
+    STATUS_TEXT_LEVEL = 0x138F,
+    STATUS_TEXT_EXPERIENCE = 0x1390,
+    STATUS_TEXT_NEXT_LEVEL = 0x1391,
+    STATUS_TEXT_ATTACK = 0x1393,
+    STATUS_TEXT_DEFENSE = 0x1394,
+    STATUS_TEXT_AGILITY = 0x1395,
+    STATUS_TEXT_HIT = 0x1396,
+    STATUS_TEXT_INTELLIGENCE = 0x1397,
+    STATUS_TEXT_MAX_LEVEL = 0x1398,
+    STATUS_TEXT_WEAPON = 0x1399,
+    STATUS_TEXT_ARMOR = 0x139A,
+    STATUS_TEXT_ACCESSORY_1 = 0x139B,
+    STATUS_TEXT_ACCESSORY_2 = 0x139C,
+    STATUS_TEXT_SKILLS = 0x139D,
+    STATUS_TEXT_SP = 0x139E,
+    STATUS_TEXT_CP = 0x139F,
+    STATUS_TEXT_SHORT_RANGE = 0x13A0,
+    STATUS_TEXT_LONG_RANGE = 0x13A1,
+    STATUS_TEXT_SUPPORT_1 = 0x13A2,
+    STATUS_TEXT_SUPPORT_2 = 0x13A3,
+    STATUS_TEXT_HIRAGANA = 0x13A8,
+    STATUS_TEXT_KATAKANA = 0x13A9,
+    STATUS_TEXT_ALPHANUMERIC = 0x13AA,
+    STATUS_TEXT_BACKSPACE = 0x13AB,
+    STATUS_TEXT_DEFAULT_NAME = 0x13AC,
+    STATUS_TEXT_CANCEL = 0x13AD,
+    STATUS_TEXT_CONFIRM = 0x13AE,
+    STATUS_TEXT_HIRAGANA_GRID = 0x13AF,
+    STATUS_TEXT_HIRAGANA_GRID_TAIL = 0x13B0,
+    STATUS_TEXT_HIRAGANA_DIACRITICS = 0x13B1,
+    STATUS_TEXT_KATAKANA_GRID = 0x13B2,
+    STATUS_TEXT_KATAKANA_GRID_TAIL = 0x13B3,
+    STATUS_TEXT_KATAKANA_GRID_SPACE = 0x13B4,
+    STATUS_TEXT_DIGIT_GRID_LEFT = 0x13B5,
+    STATUS_TEXT_DIGIT_GRID_RIGHT = 0x13B6,
+    STATUS_TEXT_LETTER_GRID_LEFT = 0x13B7,
+    STATUS_TEXT_LETTER_GRID_RIGHT = 0x13B8,
+    STATUS_TEXT_SYMBOL_GRID_LEFT = 0x13B9,
+    STATUS_TEXT_SYMBOL_GRID_RIGHT = 0x13BA,
+    STATUS_TEXT_CHARACTER_SURNAME_BASE = 0x13BB,
+    STATUS_TEXT_NAME_UNDERLINE = 0x13C6,
+    STATUS_TEXT_NAME_SHADOW = 0x13C7,
+    STATUS_TEXT_BLANK = 0x13C8,
+    STATUS_TEXT_STATUS = 0x13C9,
+    STATUS_TEXT_MEMBER_HINT = 0x13CA,
+    STATUS_TEXT_NAME_HINT = 0x13CB,
+    STATUS_TEXT_COLOR_SETUP_HINT = 0x13CC,
+    STATUS_TEXT_COLOR_CHANGE_HINT = 0x13CD,
+    STATUS_TEXT_HIRAGANA_GLYPH_BASE = 0x157C,
+    STATUS_TEXT_KATAKANA_GLYPH_BASE = 0x15E0,
+    STATUS_TEXT_ALPHABET_SYMBOL_GRID = 0x16DB,
+    STATUS_TEXT_ALPHANUMERIC_GLYPH_BASE = 0x170C,
+    STATUS_TEXT_BATTLE_SKILL_BASE = 0x18FF,
 };
 
-/** Resource descriptor with its signed size at offset 0x40. */
-struct StatusAlignedResource
+/** Character modes used by the name-entry grid. */
+enum StatusNameGridMode
 {
-    u8 unk00[0x40];
-    s32 size;
-};
-/** Partial Field runtime containing the active resource and request code. */
-struct StatusRuntimeResource
-{
-    u8 unk00[0x514];
-    s32 resource;
-    u32 code;
-};
-/** Partial status window holding a Lib container at offset 0xE0. */
-struct StatusContainerWindow : public FieldClass15AE70
-{
-    u8 unka8[0x38];
-    LibObject178660* container;
+    STATUS_NAME_HIRAGANA = 0,
+    STATUS_NAME_KATAKANA = 1,
+    STATUS_NAME_ALPHANUMERIC = 2
 };
 
-/** Status resource receiver with its resident vtable at 0x188CC0. */
-struct StatusResourceState : public FieldClass153E30
+/** Command cells in the name grid's first column, eleven cells per row. */
+enum StatusNameCommand
 {
-    /** @brief Initialize the resource handle, selection, and transition state. */
-    StatusResourceState();
-    /** @brief Destroy the owned record selection and the Field receiver base. */
-    virtual ~StatusResourceState();
-    /** @brief Report the status receiver type. @return Four. */
-    virtual s32 func_001DF3D0();
-    /** @brief Submit this receiver to the resident object queue. */
-    virtual void func_001DD7B0();
-    /** @brief Switch between record and name windows through a timed transition. */
-    virtual void func_001DF360();
-    /** @brief Leave the status receiver unchanged. */
-    virtual void func_001DD410();
-    /** @brief Report the receiver state. @return One. */
-    virtual u8 func_00264110();
-    /** @brief Set the active window. @param value Window pointer to store. */
-    virtual void func_00263C70(void* value);
-    /** @brief Get the active window. @return Stored window pointer. */
-    virtual void* func_00261150();
-    /** @brief Set the text window. @param value Window pointer to store. */
-    virtual void func_00263C80(void* value);
-    /** @brief Get the text window. @return Stored text window pointer. */
-    virtual void* func_00263C90();
-    /** @brief Set the receiver byte. @param value Signed byte to store. */
-    virtual void func_00263CA0(s8 value);
-    /** @brief Get the receiver byte. @return Stored signed byte. */
-    virtual s8 func_00263CB0();
-    /** @brief Get the loaded resource handle. @return Resource handle. */
-    virtual u32 func_00263CC0();
-    /** @brief Report whether window setup finished. @return Setup flag. */
-    virtual u8 func_00261D20();
-    /**
-     * @brief Load the completed status resource and finish receiver setup.
-     * @param buffer Completed resource buffer, or null.
-     * @return Zero without a buffer, otherwise the receiver setup result.
-     */
-    virtual s32 func_001E1820(void* buffer);
-    /**
-     * @brief Create and attach the status windows and record selection.
-     * @return One after setup succeeds, or zero otherwise.
-     */
-    virtual s32 func_00263CD0();
-    /** @brief Release the status resource, queue this receiver, and clear its allocation slots. */
-    virtual void func_slot5c();
-    /** @brief Report the default command result. @return Zero. */
-    virtual s32 func_slot60();
-    /** @brief Report the default command result. @return Zero. */
-    virtual s32 func_slot64();
-    /** @brief Leave the resource state unchanged. */
-    virtual void func_slot68();
-    /** @brief Get the record selection. @return Owned record selection. */
-    virtual FieldRecordSelection* selected_records();
-    s32 resource;
-    u8 flag_38 : 1;
-    u8 unknown_38 : 7;
-    u8 unknown_39[3];
-    FieldRecordSelection* selection;
-    u16 field_40;
-    u16 field_42;
-    StatusScrollState* scroll;
+    STATUS_NAME_COMMAND_HIRAGANA = 0,
+    STATUS_NAME_COMMAND_KATAKANA = 11,
+    STATUS_NAME_COMMAND_ALPHANUMERIC = 22,
+    STATUS_NAME_COMMAND_BACKSPACE = 33,
+    STATUS_NAME_COMMAND_DEFAULT = 44,
+    STATUS_NAME_COMMAND_CANCEL = 55,
+    STATUS_NAME_COMMAND_UNUSED_ROW_6 = 66,
+    STATUS_NAME_COMMAND_UNUSED_ROW_7 = 77,
+    STATUS_NAME_COMMAND_CONFIRM = 88
 };
 
-/** Partial effect with transition value and display mode. */
-struct StatusTransitionEffect
+/** Ordered grid labels stored at the start of the name window text list. */
+enum StatusNameGridLabel
 {
-    u8 unk00[0xC0];
-    s32 value;
-    u8 unkc4[0x2C];
-    u8 mode;
-};
-/** Partial Field context receiver holding the active transition effect. */
-struct StatusTransitionOwner
-{
-    u8 unk00[0x5A4];
-    StatusTransitionEffect* effect;
-};
-extern "C" void* func_0020F230(ResidentContextObject38* state, u32 index, u32 first, u32 second, s32 mode, u32 third, u32 flags, float duration, float x, float y);
-extern "C" s32 func_0022A160(void* object);
-extern "C" void func_004DCEA0(void* object, s32 enabled, s32 other);
-extern "C" void* D_001B6650;
-extern "C" s32 D_001B6694;
-
-
-struct StatusRuntimeCallbacks;
-
-/** Partial resident runtime view used by this overlay. */
-struct StatusRuntime
-{
-    u8 unk00[0xC];
-    void* unk0c;
-    StatusRuntimeCallbacks* unk10;
-    u8 unk14[8];
-    void* unk1c;
-    FieldBufferSlots* slots;
+    STATUS_NAME_GRID_HIRAGANA_MAIN = 0,
+    STATUS_NAME_GRID_HIRAGANA_TAIL = 1,
+    STATUS_NAME_GRID_HIRAGANA_DIACRITICS = 2,
+    STATUS_NAME_GRID_KATAKANA_MAIN = 3,
+    STATUS_NAME_GRID_KATAKANA_TAIL = 4,
+    STATUS_NAME_GRID_KATAKANA_SPACE = 5,
+    STATUS_NAME_GRID_DIGITS_LEFT = 6,
+    STATUS_NAME_GRID_DIGITS_RIGHT = 7,
+    STATUS_NAME_GRID_LETTERS_LEFT = 8,
+    STATUS_NAME_GRID_LETTERS_RIGHT = 9,
+    STATUS_NAME_GRID_SYMBOLS_LEFT = 10,
+    STATUS_NAME_GRID_SYMBOLS_RIGHT = 11,
+    STATUS_NAME_GRID_LABEL_COUNT = 12
 };
 
-
-/** Partial resident callback state used by status transitions. */
-struct StatusRuntimeCallbacks
+/** Windows selected by the status receiver. */
+enum StatusWindowKind
 {
-    u8 unk00[0x14];
-    StatusResourceState* unk14;
-    u8 unk18[0x48];
-    u8 unk60;
+    STATUS_WINDOW_CHARACTER = 0,
+    STATUS_WINDOW_NAME = 1
 };
 
-typedef struct OverlayNode
+/** Outgoing and incoming effects bracket the active-window change. */
+enum StatusWindowTransitionPhase
 {
-    void* value;
-    struct OverlayNode* next;
-    /** @brief Release the link without destroying its payload. */
-    ~OverlayNode()
-    {
-    }
-} OverlayNode;
-
-struct OverlayList
-{
-    OverlayNode* head;
-    s32 count;
-    void* methods;
+    STATUS_TRANSITION_IDLE = 0,
+    STATUS_TRANSITION_START = 1,
+    STATUS_TRANSITION_SWITCH_WINDOW = 2,
+    STATUS_TRANSITION_FINISH = 3
 };
 
-extern StatusRuntime* D_001B643C;
-extern "C" s32 func_002CFE40(void* object, s16 index);
-
-extern u8 D_1889C0[];
-extern u8 D_1888B0[];
-extern u8 D_1888C0[];
-extern u8 D_175110[];
-
-extern "C" void func_4618F0(void* object, s32 flags);
-extern "C" void func_2CEAF0(void* object, s32 flags);
-extern "C" void* func_100AC0(s32 size, s32 flags);
-extern "C" void func_4C48B0(void* object, s32 flags);
-extern "C" void func_28E2B0(void* object, s32 flags);
-extern "C" void func_2CEBE0(void* object);
-extern "C" void func_00351020(void* list);
-extern "C" void func_00350E10(void* list);
-extern "C" void func_00350B70(void* list);
-
-static inline void close_status_selection(StatusSelectionWindow* object);
-static inline void set_status_record_rectangle(LibObject178750* target, float x, float y, float width, float height);
-static inline void set_status_widget_position(LibClass178600* widget, float x, float y);
-template <class List>
-static inline void move_status_display_list(List* list, StatusScrollState* object);
-static inline void set_status_resource_scale(LibClass175110* display, float x, float y);
-static inline StatusAlignedResource* aligned_status_resource(void* buffer);
-static inline void status_set_position(LibObject178750* target, float x, float y, float z, float w);
-
-/**
- * @brief Set the record caption rectangle and mark it for refresh.
- * @param target Caption widget.
- * @param x Horizontal origin.
- * @param y Vertical origin.
- * @param width Caption width.
- * @param height Caption height.
- */
-static inline void set_status_record_rectangle(LibObject178750* target, float x, float y, float width, float height)
-{
-    target->unk18.unk00 = x;
-    target->unk18.unk04 = y;
-    target->unk18.unk08 = width;
-    target->unk18.unk0c = height;
-    target->unk3c = 1;
-}
-
-/**
- * @brief Initialize a resource display.
- * @param display Resource display to initialize.
- * @param record Resource record to display.
- * @param x Horizontal position.
- * @param y Vertical position.
- */
-static inline void initialize_status_resource(ItemCreationOptionResourceDisplay* display, FieldResourceRecord* record, float x, float y)
-{
-    func_002D6440(display, record, x, y);
-}
-
-/** @brief Set widget coordinates and request refresh. @param widget Display widget. @param x Horizontal coordinate. @param y Vertical coordinate. */
-static inline void set_status_widget_position(LibClass178600* widget, float x, float y)
-{
-    widget->unk18.unk00 = x;
-    widget->unk18.unk04 = y;
-    widget->unk3c = 1;
-}
-/** @brief Move each non-null display by the current scroll delta. @param list Display list to move. @param object Window supplying the delta. */
-template <class List>
-static inline void move_status_display_list(List* list, StatusScrollState* object)
-{
-    OverlayNode* node = list->head->next;
-    while (node != 0)
-    {
-        LibClass178600* widget = static_cast<LibClass178600*>(node->value);
-        if (widget != 0)
-        {
-            set_status_widget_position(widget, widget->unk18.unk00,
-                                       widget->unk18.unk04 + object->delta);
-        }
-        node = node->next;
-    }
-}
-
-/** @brief Set resource display scales and request refresh. @param display Resource display. @param x Horizontal scale. @param y Vertical scale. */
-static inline void set_status_resource_scale(LibClass175110* display, float x, float y)
-{
-    display->unk50.unk34 = y;
-    display->unk50.unk30 = x;
-    display->unk3c = 1;
-}
-
-/** @brief Align a resource descriptor to 128 bytes. @param buffer Raw resource buffer. @return Aligned resource descriptor. */
-static inline StatusAlignedResource* aligned_status_resource(void* buffer)
-{
-    return reinterpret_cast<StatusAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
-}
-
-/**
- * @brief Store the display position and mark it for refresh.
- * @param target Display receiver to update.
- * @param x Horizontal position.
- * @param y Vertical position.
- * @param z Third position component.
- * @param w Fourth position component.
- */
-static inline void status_set_position(LibObject178750* target, float x, float y, float z, float w)
-{
-    target->unk18.unk00 = x;
-    target->unk18.unk04 = y;
-    target->unk18.unk08 = z;
-    target->unk18.unk0c = w;
-    target->unk3c = 1;
-}
-
-void func_00348400(void* object, u8 value)
-{
-    ((u8*)object)[0xC] = value;
-}
-
-u8 func_00348410(void* object)
-{
-    return ((u8*)object)[0xC];
-}
-
-void func_00348420(void* object, u8 value)
-{
-    ((u8*)object)[0x8] = value;
-}
-
-u8 func_00348430(void* object)
-{
-    return ((u8*)object)[0x8];
-}
-
-void func_00348440(void* object, u16 value)
-{
-    *(u16*)((u8*)object + 0xA) = value;
-}
-
-u16 func_00348450(void* object)
-{
-    return *(u16*)((u8*)object + 0xA);
-}
-
-void func_00348480(void* object, u32 value)
-{
-    *(u32*)((u8*)object + 0x9C) = value;
-}
-
-u32 func_00348490(void* object)
-{
-    return *(u32*)((u8*)object + 0x9C);
-}
-
-void func_003484A0(void* object, u32 value)
-{
-    *(u32*)((u8*)object + 4) = value;
-}
-
-u32 func_003484B0(void* object)
-{
-    return *(u32*)((u8*)object + 4);
-}
-
-u32 func_003484C0(void* object)
-{
-    return *(u32*)((u8*)object + 0x10);
-}
-
-void func_003484D0(void* object)
-{
-}
-
-void func_003484E0(void* object)
-{
-}
-
-void func_003484F0(void* object)
-{
-}
-
-void func_00348500(void* object)
-{
-}
-
-void func_00348510(void* object)
-{
-}
-
-void func_00348520(void* object)
-{
-}
-
-void func_00348530(void* object)
-{
-}
-
-void func_00348540(void* object)
-{
-}
-
-void func_00348550(void* object)
-{
-}
-
-void func_00348560(void* object)
-{
-}
-
-void func_00348570(void* object)
-{
-}
-
-void func_00348580(void* object)
-{
-}
-
-void func_00348590(void* object)
-{
-}
-
-void func_003485A0(void* object)
-{
-}
-
-void func_003485B0(void* object)
-{
-}
-
-void func_003485C0(void* object)
-{
-}
-
-void func_003485D0(void* object)
-{
-}
-
-void func_003485E0(void* object)
-{
-}
-
-s32 func_003485F0(void* object)
-{
-    return 0;
-}
-
-s32 func_00348600(void* object)
-{
-    return 0;
-}
-
-s32 func_00348610(void* object)
-{
-    return 0;
-}
-
-s32 func_00348620(void* object)
-{
-    return 0;
-}
-
-s32 func_00348630(void* object)
-{
-    return 0;
-}
-
-s32 func_00348640(void* object)
-{
-    return 0;
-}
-
-s32 func_00348650(void* object)
-{
-    return 0;
-}
-
-s32 func_00348660(void* object)
-{
-    return 0;
-}
-
-s32 func_00348670(void* object)
-{
-    return 0;
-}
-
-s32 func_00348680(void* object)
-{
-    return 0;
-}
-
-void func_00348690(void* object)
-{
-}
-
-void func_003486A0(void* object)
-{
-}
-
-u8 func_003486B0(void* object)
-{
-    return ((u8*)object)[0xD];
-}
-
-void func_003486C0(void* object, u8 value)
-{
-    ((u8*)object)[0xD] = value;
-}
-
-void func_003486D0(void* object)
-{
-}
-
-/** @brief Get the active window. @return Stored window pointer. */
-void* StatusResourceState::func_00261150()
-{
-    return unk20;
-}
-
-/** @brief Set the active window. @param value Window pointer to store. */
-void StatusResourceState::func_00263C70(void* value)
-{
-    unk20 = value;
-}
-
-void func_00348700(StatusSelectionWindow* object)
-{
-    func_0013A678(object->map290, 0, 90);
-    func_0013A678(object->map2ea, 0, 90);
-    func_0013A678(object->map344, 0, 80);
-    StatusGlyphMap90 first = D_00351380;
-    for (s32 i = 0; i < 90; ++i)
-    {
-        object->map290[i] = first.values[i];
-    }
-    StatusGlyphMap90 second = D_003513E0;
-    for (s32 i = 0; i < 90; ++i)
-    {
-        object->map2ea[i] = second.values[i];
-    }
-    StatusGlyphMap80 third = D_00351440;
-    for (s32 i = 0; i < 80; ++i)
-    {
-        object->map344[i] = third.values[i];
-    }
-}
-
-void func_00348960(StatusSelectionWindow* object, s16 code)
-{
-    if (object->grid_mode == 0)
-    {
-        if ((code >= 15 && code <= 24) || (code >= 40 && code <= 44) || (code >= 60 && code <= 64))
-        {
-            object->entries[object->last_entry++] = 0xDE;
-        }
-        if (code >= 25 && code <= 29)
-        {
-            object->entries[object->last_entry++] = 0xDF;
-        }
-    }
-    else if (object->grid_mode == 1)
-    {
-        if ((code >= 15 && code <= 24) || (code >= 40 && code <= 44) || (code >= 60 && code <= 64))
-        {
-            ++object->last_entry;
-            object->entries[object->last_entry] = 0xDE;
-        }
-        if (code >= 25 && code <= 29)
-        {
-            ++object->last_entry;
-            object->entries[object->last_entry] = 0xDF;
-        }
-        if (code == 75)
-        {
-            ++object->last_entry;
-            object->entries[object->last_entry] = 0xDE;
-        }
-    }
-}
-
-s32 status_remove_last_name_entry(StatusSelectionWindow* object)
-{
-    if (object->last_entry < 0)
-    {
-        return 3;
-    }
-    u8 marker = 0;
-    while (1)
-    {
-        u8* entry = &object->entries[object->last_entry];
-        if (*entry == 0x7E)
-        {
-            *entry = 0;
-            marker = 1;
-            object->last_entry--;
-            continue;
-        }
-        if (*entry == 0xDE)
-        {
-            *entry = 0;
-            object->last_entry--;
-            continue;
-        }
-        if (*entry == 0xDF)
-        {
-            *entry = 0;
-            object->last_entry--;
-            continue;
-        }
-        break;
-    }
-    object->entries[object->last_entry] = 0;
-    object->last_entry--;
-    if (marker == 1)
-    {
-        if (object->entries[object->last_entry] == 0x7E)
-        {
-            object->entries[object->last_entry] = 0;
-            object->last_entry--;
-        }
-        else
-        {
-            object->last_entry++;
-            object->entries[object->last_entry] = 0x7E;
-        }
-    }
-    func_00348C10(object);
-    func_00348D00(object);
-    return 2;
-}
-
-void func_00348C10(StatusSelectionWindow* object)
-{
-    object->selected = func_004679B0(object->text);
-    for (s32 i = object->first_marker; i < object->first_marker + 7; ++i)
-    {
-        StatusDisplayNode* node = static_cast<StatusDisplayNode*>(func_00351230(&object->unk2c, i));
-        LibClass178600* marker = node->value;
-        marker->unk3f = 0;
-        if (i == object->first_marker + object->selected)
-        {
-            marker->unk3f = 1;
-        }
-    }
-    if (object->selected >= 6)
-    {
-        StatusDisplayNode* node = static_cast<StatusDisplayNode*>(func_00351230(&object->unk2c, object->first_marker + 6));
-        node->value->unk3f = 1;
-    }
-    if (object->selected <= 0)
-    {
-        StatusDisplayNode* node = static_cast<StatusDisplayNode*>(func_00351230(&object->unk2c, object->first_marker));
-        node->value->unk3f = 1;
-    }
-}
-
-void func_00348D00(StatusSelectionWindow* object)
-{
-    s32 empty = object->entries[0] == 0;
-    if (empty == 0)
-    {
-        LibObject175140* text = object->text;
-        text->unkfc = reinterpret_cast<const char*>(object->entries);
-        text->unk3c = 1;
-        object->text->unk3f = 0;
-    }
-    func_00348E50(object);
-    for (s32 i = 0; i < 7; ++i)
-    {
-        object->displays[i]->unk3f = 0;
-    }
-    for (s32 i = 0; i < 7; ++i)
-    {
-        u16 key = object->glyphs[i];
-        if (key != 0)
-        {
-            u32 source = object->func_slot54();
-            lib_text_set_resource(object->displays[i], source, key, 0);
-            object->displays[i]->unk3f = 1;
-        }
-        else
-        {
-            u32 source = object->func_slot54();
-            lib_text_set_resource(object->displays[i], source, 0x13C8, 0);
-            object->displays[i]->unk3f = 1;
-        }
-    }
-}
-
-void func_00348E50(StatusSelectionWindow* object)
-{
-    for (s32 i = 0; i < 7; ++i)
-    {
-        object->glyphs[i] = 0;
-    }
-    u16 position = 0;
-    u16 output = 0;
-    u8 alternate = 0;
-    for (;;)
-    {
-        if (position >= 24 || output >= 8)
-        {
-            break;
-        }
-        u8 value = object->entries[position];
-        if (value == 0)
-        {
-            break;
-        }
-        if (value == 0x7E)
-        {
-            alternate = alternate != 1;
-            ++position;
-            continue;
-        }
-        if (value == 0xDE)
-        {
-            u16* destination = object->glyphs + output;
-            u16& previous = destination[-1];
-            if (previous == 0x15E2)
-            {
-                previous += 0x49;
-            }
-            else
-            {
-                previous += 10;
-            }
-        }
-        else if (value == 0xDF)
-        {
-            object->glyphs[output - 1] += 20;
-        }
-        else if (value == 0x20)
-        {
-            object->glyphs[output++] = 0x13C8;
-        }
-        else if (alternate == 1)
-        {
-            for (s32 i = 0; i < 90; ++i)
-            {
-                if (value == object->map290[i])
-                {
-                    object->glyphs[output++] = i + 0x157C;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            for (s32 i = 0; i < 90; ++i)
-            {
-                if (value == object->map2ea[i])
-                {
-                    object->glyphs[output++] = i + 0x15E0;
-                    break;
-                }
-            }
-            for (s32 i = 0; i < 80; ++i)
-            {
-                if (value == object->map344[i])
-                {
-                    object->glyphs[output++] = i + 0x170C;
-                    break;
-                }
-            }
-        }
-        ++position;
-    }
-}
-
-void func_00349070(StatusSelectionWindow* object, u8 mode)
-{
-    if (object->last_entry < 24)
-    {
-        u8 full = func_004679B0(object->text) >= 7;
-        if (full == 1)
-        {
-            return;
-        }
-        ++object->last_entry;
-        s16 code = object->grid_selected % 11 + 10 * (object->grid_selected / 11) - 1;
-        if (object->grid_mode == 0)
-        {
-            if (object->last_entry > 0 && object->entries[object->last_entry - 1] == 0x7E)
-            {
-                --object->last_entry;
-                object->entries[object->last_entry++] = object->map290[code];
-                func_00348960(object, code);
-                object->entries[object->last_entry] = 0x7E;
-            }
-            else
-            {
-                object->entries[object->last_entry++] = 0x7E;
-                object->entries[object->last_entry++] = object->map290[code];
-                func_00348960(object, code);
-                object->entries[object->last_entry] = 0x7E;
-            }
-        }
-        else if (object->grid_mode == 1)
-        {
-            object->entries[object->last_entry] = object->map2ea[code];
-            func_00348960(object, code);
-        }
-        else
-        {
-            if (code >= 80)
-            {
-                object->entries[object->last_entry] = 0x20;
-            }
-            else
-            {
-                object->entries[object->last_entry] = object->map344[code];
-            }
-        }
-        func_00348C10(object);
-        func_00348D00(object);
-    }
-}
-
-extern "C" void func_00349260(StatusSelectionWindow* object, u8 mode)
-{
-    object->grid_mode = 2;
-    for (s32 i = 0; i < 12; ++i)
-    {
-        StatusDisplayNode* node = static_cast<StatusDisplayNode*>(func_00351230(&object->unk2c, i));
-        LibClass178600* display = node->value;
-        display->unk3f = 0;
-        switch (object->grid_mode)
-        {
-        case 0:
-            switch (i)
-            {
-            case 0:
-            case 1:
-            case 2:
-                display->unk3f = 1;
-                break;
-            }
-            break;
-        case 1:
-            switch (i)
-            {
-            case 3:
-                display->unk3f = 1;
-                break;
-            case 4:
-            case 5:
-                display->unk3f = 0;
-                break;
-            }
-            break;
-        case 2:
-            switch (i)
-            {
-            case 6:
-            case 7:
-            case 8:
-            case 9:
-            case 10:
-            case 11:
-                display->unk3f = 1;
-                if (object->unk28c != 0)
-                {
-                    object->unk28c->unk3f = 1;
-                }
-                break;
-            }
-            break;
-        }
-    }
-}
-
-void StatusSelectionWindow::func_slot5c()
-{
-    FieldClass153E30* receiver = reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14);
-    if (receiver->func_00261150() == this)
-    {
-        if (this->selected < 0)
-        {
-            this->selected = 0;
-        }
-        if (this->selected >= 6)
-        {
-            this->selected = 6;
-        }
-        LibClass178600* cursor = this->cursor;
-        float x = this->x + 36.0f * this->selected;
-        float y = this->y;
-        cursor->unk18.unk00 = x;
-        cursor->unk18.unk04 = y;
-        cursor->unk3c = 1;
-    }
-}
-
-void func_00349440(StatusSelectionWindow* object, s32 value)
-{
-    LibClass175030* marker = object->grid_marker;
-    LibMovementState& movement = *marker;
-    if (movement.unk35 != 0)
-    {
-        if (value < 0)
-        {
-            value = 98;
-        }
-        if (value > 98)
-        {
-            value = 0;
-        }
-        s32 row = value / 11;
-        s32 column = value % 11;
-        float x;
-        if (column == 0)
-        {
-            x = object->left - 6.0f;
-        }
-        else if (column < 6)
-        {
-            x = (155.0f + 34.0f * column) - 4.0f;
-        }
-        else
-        {
-            x = 48.0f + (155.0f + 34.0f * column);
-        }
-        func_00466E40(&movement, x, 16.0f + (110.0f + 28.0f * row), 1.0f / 15.0f);
-        object->grid_selected = value;
-        func_002CFE40(D_001B643C->unk10, 0);
-    }
-}
-
-void StatusSelectionWindow::func_slot74()
-{
-    s32 value = this->grid_selected;
-    s32 quotient = value / 11;
-    s32 remainder = value % 11;
-    if (remainder == 10)
-    {
-        func_00349440(this, quotient * 11);
-    }
-    else
-    {
-        func_00349440(this, value + 1);
-    }
-}
-
-void StatusSelectionWindow::func_slot70()
-{
-    s32 value = this->grid_selected;
-    s32 quotient = value / 11;
-    s32 remainder = value % 11;
-    if (remainder == 0)
-    {
-        func_00349440(this, quotient * 11 + 10);
-    }
-    else
-    {
-        func_00349440(this, value - 1);
-    }
-}
-
-void StatusSelectionWindow::func_slot6c()
-{
-    s32 value = this->grid_selected;
-    if (value / 11 == 8)
-    {
-        func_00349440(this, value % 11);
-    }
-    else
-    {
-        func_00349440(this, value + 11);
-    }
-}
-
-void StatusSelectionWindow::func_slot68()
-{
-    s32 value = this->grid_selected;
-    if (value / 11 == 0)
-    {
-        func_00349440(this, value % 11 + 88);
-    }
-    else
-    {
-        func_00349440(this, value - 11);
-    }
-}
-
-void StatusSelectionWindow::func_slote4()
-{
-    s8* row = this->rows[this->selection->slots[this->selection->current] - 1];
-    for (s32 i = 0; i < 24; ++i)
-    {
-        this->entries[i] = 0;
-    }
-    for (s32 i = 0; i < 24; ++i)
-    {
-        s8 value = row[i];
-        if (value == 0)
-        {
-            break;
-        }
-        this->entries[i] = value;
-    }
-    this->last_entry = 0;
-    s8 last;
-    for (;;)
-    {
-        last = this->last_entry;
-        if (this->entries[last] == 0)
-        {
-            break;
-        }
-        this->last_entry = last + 1;
-    }
-    if (last > 0)
-    {
-        this->last_entry = last - 1;
-    }
-    func_00348C10(this);
-    func_00348D00(this);
-    func_002CFE40(D_001B643C->unk10, 1);
-}
-
-void StatusSelectionWindow::func_slote0()
-{
-    func_00349440(this, 88);
-}
-
-s32 StatusSelectionWindow::func_slotc4()
-{
-    return 0;
-}
-
-s32 StatusSelectionWindow::func_slotc0()
-{
-    return 0;
-}
-
-s32 StatusSelectionWindow::func_slotb4()
-{
-    status_remove_last_name_entry(this);
-    return 2;
-}
-
-/** @brief Restore the scroll window after a selection command. @param object Selection window to detach. */
-static inline void close_status_selection(StatusSelectionWindow* object)
-{
-    StatusResourceState* target = D_001B643C->unk10->unk14;
-    target->remove_child(object);
-    target->field_40 = 0;
-    target->scroll->func_slot20(0);
-    target->func_00263C70(target->scroll);
-    target->field_42 = 1;
-    D_001B643C->unk10->unk60 = 0;
-}
-s32 StatusSelectionWindow::func_slotb0()
-{
-    u8 result = 0;
-    switch (grid_selected)
-    {
-    case 0:
-    case 11:
-    case 22:
-        return 0;
-    case 33:
-        result = status_remove_last_name_entry(this);
-        break;
-    case 44:
-    {
-        s8* row = rows[selection->slots[selection->current] - 1];
-        for (s32 i = 0; i < 24; ++i)
-        {
-            entries[i] = 0;
-        }
-        for (s32 i = 0; i < 24; ++i)
-        {
-            s8 value = row[i];
-            if (value == 0)
-            {
-                break;
-            }
-            entries[i] = value;
-        }
-        last_entry = 0;
-        s8 last;
-        for (;;)
-        {
-            last = last_entry;
-            if (entries[last] == 0)
-            {
-                break;
-            }
-            last_entry = last + 1;
-        }
-        if (last > 0)
-        {
-            last_entry = last - 1;
-        }
-        func_00348C10(this);
-        func_00348D00(this);
-        break;
-    }
-    case 55:
-        close_status_selection(this);
-        return 2;
-    case 66:
-    case 77:
-        return 0;
-    case 88:
-    {
-        u8 empty = entries[0] == 0;
-        if (empty == 1)
-        {
-            return 3;
-        }
-        u8 blank = 1;
-        for (s32 i = 0; i < 24; ++i)
-        {
-            u8 value = entries[i];
-            if (value != 32 && value != 0 && value != 126)
-            {
-                blank = 0;
-            }
-        }
-        if (blank == 0)
-        {
-            s8* destination = reinterpret_cast<s8*>(static_cast<StatusDisplayRecord*>(selection->unk04)[selection->current].data);
-            const s8* source = reinterpret_cast<const s8*>(entries);
-            do
-            {
-            } while ((*destination++ = *source++) != 0);
-            StatusNameSection* section = static_cast<StatusNameSection*>(func_101440(func_101290(func_10D8E0()), 4));
-            func_0013A4C0(section->names[selection->slots[selection->current] - 1], entries, 24);
-            close_status_selection(this);
-        }
-        else
-        {
-            return 3;
-        }
-        break;
-    }
-    default:
-        u8 full = func_004679B0(text) >= 7;
-        if (full)
-        {
-            return 3;
-        }
-        func_00349070(this, grid_mode);
-        break;
-    }
-    return result == 0 ? 1 : 2;
-}
-
-static inline void set_label_spacing_x(LibObject178750* label, float value)
-{
-    label->unk88 = value;
-    label->unk3c = 1;
-}
-static inline void set_label_spacing_y(LibObject178750* label, float value)
-{
-    label->unk8c = value;
-    label->unk3c = 1;
-}
-
-s32 StatusSelectionWindow::func_slotf4(void* associated)
-{
-    selection = D_001B643C->unk10->unk14->selected_records();
-    unk116 = selection->slots[selection->current];
-    FieldClass15AE70::func_slot10(reinterpret_cast<u32>(associated), 16.0f, 72.0f, 16);
-    LibClass178630* panel = new (0) LibClass178630;
-    lib_panel_init_rectangle(panel, 0, 0.0f, 110.0f, 608.0f, 268.0f, 88.0f);
-    lib_container_attach_widget(unk10, panel);
-    for (s32 index = 0; index < 12; index++)
-    {
-        LibObject178750* label = new (0) LibObject178750;
-        if (label == 0)
-        {
-            return 0;
-        }
-        switch (index)
-        {
-        case 0:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5039, 0, 184.0f, 118.0f, 0.0f, 0.0f);
-            set_label_spacing_x(label, 10.0f);
-            set_label_spacing_y(label, 4.0f);
-            break;
-        case 1:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5040, 0, 406.0f, 230.0f, 0.0f, 0.0f);
-            set_label_spacing_x(label, 44.0f);
-            set_label_spacing_y(label, 32.0f);
-            break;
-        case 2:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5041, 0, 542.0f, 314.0f, 0.0f, 0.0f);
-            break;
-        case 3:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5042, 0, 184.0f, 118.0f, 0.0f, 0.0f);
-            set_label_spacing_x(label, 10.0f);
-            set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
-            break;
-        case 4:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5043, 0, 406.0f, 230.0f, 0.0f, 0.0f);
-            set_label_spacing_x(label, 44.0f);
-            set_label_spacing_y(label, 32.0f);
-            label->unk3f = 0;
-            break;
-        case 5:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5044, 0, 406.0f, 314.0f, 0.0f, 0.0f);
-            set_label_spacing_x(label, 112.0f);
-            label->unk3f = 0;
-            break;
-        case 6:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5045, 0, 184.0f, 118.0f, 0.0f, 0.0f);
-            set_label_spacing_x(label, 22.0f);
-            set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
-            break;
-        case 7:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5046, 0, 406.0f, 118.0f, 0.0f, 0.0f);
-            set_label_spacing_x(label, 22.0f);
-            set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
-            break;
-        case 8:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5047, 0, 184.0f, 146.0f, 0.0f, 0.0f);
-            set_label_spacing_x(label, 18.0f);
-            set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
-            break;
-        case 9:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5048, 0, 406.0f, 146.0f, 0.0f, 0.0f);
-            set_label_spacing_x(label, 18.0f);
-            set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
-            break;
-        case 10:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5049, 0, 184.0f, 230.0f, 0.0f, 0.0f);
-            set_label_spacing_x(label, 26.0f);
-            set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
-            break;
-        case 11:
-            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), 5050, 0, 406.0f, 230.0f, 0.0f, 0.0f);
-            set_label_spacing_x(label, 26.0f);
-            set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
-            break;
-        }
-        lib_container_attach_widget(unk10, label);
-        func_00351120(reinterpret_cast<OverlayList*>(&unk2c), label);
-        if (0 <= index && index < 6)
-        {
-            label->unk3d = 0;
-        }
-        if (8 <= index && index < 12)
-        {
-            label->unk3d = 0;
-        }
-    }
-    unk28c = new (0) LibObject178750;
-    lib_text_init_resource_rectangle(unk28c, reinterpret_cast<s32>(associated), 5851, 0, 184.0f, 146.0f, 0.0f, 0.0f);
-    set_label_spacing_y(unk28c, 4.0f);
-    unk28c->unk3f = 0;
-    lib_container_attach_widget(unk10, unk28c);
-    left = 32.0f;
-    row_height = 28.0f;
-    glyph_scale = 0.86f;
-    glyph_width = 24.0f * glyph_scale;
-    for (s32 index = 0; index < 6; index++)
-    {
-        command_labels[index] = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(command_labels[index], reinterpret_cast<s32>(associated), index + 5032, 1,
-                                         left, 9.0f + (110.0f + row_height * index), 0.0f, 0.0f);
-        LibObject178750* label = command_labels[index];
-        label->set_scale(glyph_scale, glyph_scale);
-        lib_container_attach_widget(unk10, command_labels[index]);
-        func_00351120(reinterpret_cast<OverlayList*>(&unk2c), command_labels[index]);
-        if (0 <= index && index < 3)
-        {
-            command_labels[index]->unk3d = 0;
-        }
-    }
-    command_labels[6] = new (0) LibObject178750;
-    lib_text_init_resource_rectangle(command_labels[6], reinterpret_cast<s32>(associated), 5038, 1, left, 334.0f, 0.0f, 0.0f);
-    command_labels[6]->set_scale(0.9f, 0.9f);
-    lib_container_attach_widget(unk10, command_labels[6]);
-    func_00351120(reinterpret_cast<OverlayList*>(&unk2c), command_labels[6]);
-    panel = new (0) LibClass178630;
-    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 608.0f, 110.0f, 88.0f);
-    lib_container_attach_widget(unk10, panel);
-    caption = new (0) LibObject178750;
-    lib_text_init_resource_rectangle(caption, reinterpret_cast<s32>(associated), selection->slots[selection->current] + 5051, 0,
-                                     404.0f, 43.0f, 0.0f, 0.0f);
-    lib_container_attach_widget(unk10, caption);
-    func_00351120(reinterpret_cast<OverlayList*>(&unk2c), caption);
-    for (s32 index = 0; index < 7; index++)
-    {
-        LibObject178750* marker = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(marker, reinterpret_cast<s32>(associated), 5062, 0,
-                                         (152.0f + 36.0f * index) - 2.0f, 57.0f, 0.0f, 0.0f);
-        if (first_marker == 0)
-        {
-            first_marker = unk2c.unk04;
-        }
-        lib_container_attach_widget(unk10, marker);
-        func_00351120(reinterpret_cast<OverlayList*>(&unk2c), marker);
-        marker->set_color(0x288080);
-        marker->set_scale(1.2f, 1.2f);
-        marker->unk80 = 3.6f;
-        marker->unk3c = 1;
-    }
-    for (s32 index = 0; index < 7; index++)
-    {
-        LibObject178750* marker = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(marker, reinterpret_cast<s32>(associated), 5063, 0, 152.0f + 36.0f * index, 59.0f, 0.0f, 0.0f);
-        marker->unk80 = 1.8f;
-        marker->unk3c = 1;
-        lib_container_attach_widget(unk10, marker);
-        func_00351120(reinterpret_cast<OverlayList*>(&unk2c), marker);
-        marker->set_color(0x505050);
-    }
-    x = 152.0f;
-    y = 43.0f;
-    for (s32 index = 0; index < 7; index++)
-    {
-        displays[index] = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(displays[index], reinterpret_cast<s32>(associated), 5064, 0, x + 36.0f * index, y, 0.0f, 0.0f);
-        lib_container_attach_widget(unk10, displays[index]);
-        func_00351120(reinterpret_cast<OverlayList*>(&unk2c), displays[index]);
-        displays[index]->unk3f = 0;
-    }
-    text = new (0) LibObject175140;
-    const char* name = static_cast<StatusDisplayRecord*>(selection->unk04)[selection->current].data;
-    text->func_00467AD0(x, y, 0.0f, 0.0f, name, 0);
-    lib_container_attach_widget(unk10, text);
-    func_00350D80(reinterpret_cast<OverlayList*>(&unk44), text);
-    set_label_spacing_x(reinterpret_cast<LibObject178750*>(text), 8.0f);
-    cursor = new (0) ItemCreationClass172600;
-    func_0041AD10(static_cast<ItemCreationClass172600*>(cursor), x + 36.0f * selected, y, 24.0f, 24.0f);
-    lib_container_attach_widget(unk10, cursor);
-    unk288 = selection->slots[selection->current];
-    character_display = new (0) ItemCreationOptionResourceDisplay;
-    void* allocation = func_002D3D80(D_001B643C->slots, unk288);
-    FieldResourceRecord* resource = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->slots, unk288));
-    character_display->unkcc = allocation;
-    character_display->unkd0 = unk288;
-    character_display->func_002D6440(resource, 40.0f, 15.0f);
-    lib_container_attach_widget(unk10, character_display);
-    character_display->unk34 = 3;
-    grid_marker = new (0) LibClass175030;
-    lib_moving_widget_init_position(grid_marker, 0.0f, 0.0f);
-    lib_container_attach_widget(unk10, grid_marker);
-    grid_marker->func_00466E40(left - 6.0f, 214.0f, 0.1f);
-    func_00349260(this, grid_mode);
-    lib_text_set_resource(caption, func_slot54(), selection->slots[selection->current] + 5051, 0);
-    const s8* saved = reinterpret_cast<const s8*>(static_cast<StatusDisplayRecord*>(selection->unk04)[selection->current].data);
-    for (s32 index = 0; index < 24; index++)
-    {
-        entries[index] = 0;
-    }
-    for (s32 index = 0; index < 24; index++)
-    {
-        s8 value = saved[index];
-        if (value == 0)
-        {
-            break;
-        }
-        entries[index] = value;
-    }
-    last_entry = 0;
-    s8 last;
-    for (;;)
-    {
-        last = last_entry;
-        if (entries[last] == 0)
-        {
-            break;
-        }
-        last_entry = last + 1;
-    }
-    if (last > 0)
-    {
-        last_entry = last - 1;
-    }
-    func_00348D00(this);
-    func_00348C10(this);
-    return 1;
-}
-
-
-ItemCreationClass175110::~ItemCreationClass175110()
-{
-}
-
-StatusSelectionWindow::StatusSelectionWindow()
-{
-    selection = 0;
-    caption = 0;
-    text = 0;
-    displays[0] = 0;
-    displays[1] = 0;
-    displays[2] = 0;
-    displays[3] = 0;
-    displays[4] = 0;
-    displays[5] = 0;
-    displays[6] = 0;
-    first_marker = 0;
-    selected = 0;
-    last_entry = 0;
-    for (s32 i = 0; i < 24; ++i)
-    {
-        entries[i] = 0;
-    }
-    glyphs[0] = 0;
-    glyphs[1] = 0;
-    glyphs[2] = 0;
-    glyphs[3] = 0;
-    glyphs[4] = 0;
-    glyphs[5] = 0;
-    glyphs[6] = 0;
-    func_00348700(this);
-    cursor = 0;
-    x = 0;
-    y = 0;
-    unk116 = 0;
-    left = 0;
-    row_height = 0;
-    glyph_scale = 0;
-    glyph_width = 0;
-    func_0013C948(reinterpret_cast<char*>(rows[0]), D_00351500);
-    func_0013C948(reinterpret_cast<char*>(rows[1]), D_00351508);
-    func_0013C948(reinterpret_cast<char*>(rows[2]), D_00351510);
-    func_0013C948(reinterpret_cast<char*>(rows[3]), D_00351518);
-    func_0013C948(reinterpret_cast<char*>(rows[4]), D_00351520);
-    func_0013C948(reinterpret_cast<char*>(rows[5]), D_00351528);
-    func_0013C948(reinterpret_cast<char*>(rows[6]), D_00351530);
-    func_0013C948(reinterpret_cast<char*>(rows[7]), D_00351538);
-    func_0013C948(reinterpret_cast<char*>(rows[8]), D_00351540);
-    func_0013C948(reinterpret_cast<char*>(rows[9]), D_00351548);
-    character_display = 0;
-    unk288 = 0;
-    grid_selected = 33;
-    grid_mode = 2;
-    unk28c = 0;
-}
-
-void func_0034AF00(StatusScrollState* object)
-{
-    if (object->active == 0)
-    {
-        return;
-    }
-    if (object->active == 1)
-    {
-        move_status_display_list(&object->first, object);
-        move_status_display_list(&object->second, object);
-        move_status_display_list(&object->third, object);
-        object->timer += 1.0f;
-        if (object->timer >= 4.0f)
-        {
-            object->active = 0;
-        }
-        if (object->delta >= 0.0f)
-        {
-            object->position -= object->extent / 4.0f;
-        }
-        else
-        {
-            object->position += object->extent / 4.0f;
-        }
-        LibClass1725D0* marker = object->scroll_marker;
-        marker->unk54 = object->position;
-        marker->unk3c = 1;
-    }
-}
-
-void func_0034B0A0(StatusScrollState* object, u16 mode)
-{
-    if (object->active == 0 && (mode != 0 || object->mode != 0) && (mode != 1 || object->mode != 1))
-    {
-        object->mode++;
-        if (object->mode >= 2)
-        {
-            object->mode = 0;
-        }
-        if (mode == 0)
-        {
-            object->delta = object->step;
-        }
-        else if (mode == 1)
-        {
-            object->delta = -object->step;
-        }
-        if (object->active == 0)
-        {
-            object->active = 1;
-            object->timer = 0.0f;
-        }
-        func_002CFE40(D_001B643C->unk10, 0);
-    }
-}
-
-void StatusScrollState::func_slot6c()
-{
-    func_0034B0A0(this, 1);
-}
-
-void StatusScrollState::func_slot68()
-{
-    func_0034B0A0(this, 0);
-}
+/** Bytes used by saved names; kana diacritics modify the preceding character. */
+enum StatusNameByte
+{
+    STATUS_NAME_SPACE = 0x20,
+    STATUS_NAME_HIRAGANA_DELIMITER = 0x7E,
+    STATUS_NAME_DAKUTEN = 0xDE,
+    STATUS_NAME_HANDAKUTEN = 0xDF
+};
 
 /** Checksum-protected 0xC4-byte character statistics. */
 struct StatusCharacterRecord
@@ -1565,7 +168,7 @@ struct StatusCharacterRecord
     /** Selects the clamping rules used by the character stat setters. */
     s16 stat_limit_type;
     s16 encoded_level;
-    s16 unk06;
+    s16 encoded_base_level;
     s32 encoded_flags;
     s32 encoded_experience;
     s32 encoded_base_hp;
@@ -1628,7 +231,7 @@ struct StatusCharacterRecord
             s32 flag_salt = encoded_experience;
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
-                encoded_flags = ((flags ^ 0x7DE3F7E3) | 1) ^ 0x7DE3F7E3;
+                encoded_flags = ((flags ^ STATUS_STAT_WORD_XOR_KEY) | 1) ^ STATUS_STAT_WORD_XOR_KEY;
                 s32 current_key = checksum_salt;
                 flags = encoded_flags;
                 s32 current_experience = encoded_experience;
@@ -1636,7 +239,7 @@ struct StatusCharacterRecord
             }
             return 0;
         }
-        return value ^ 0x7DE3F7E3;
+        return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
     /** @brief Decode maximum HP, marking valid flags when the HP checksum fails. @return Maximum HP, or zero for corruption. */
     u32 get_max_hp()
@@ -1648,7 +251,7 @@ struct StatusCharacterRecord
             s32 flag_salt = encoded_experience;
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
-                encoded_flags = ((flags ^ 0x7DE3F7E3) | 1) ^ 0x7DE3F7E3;
+                encoded_flags = ((flags ^ STATUS_STAT_WORD_XOR_KEY) | 1) ^ STATUS_STAT_WORD_XOR_KEY;
                 s32 current_key = checksum_salt;
                 flags = encoded_flags;
                 s32 current_experience = encoded_experience;
@@ -1656,7 +259,7 @@ struct StatusCharacterRecord
             }
             return 0;
         }
-        return value ^ 0x7DE3F7E3;
+        return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
     /** @brief Decode current MP, marking valid flags when the MP checksum fails. @return Current MP, or zero for corruption. */
     u32 get_mp()
@@ -1668,7 +271,7 @@ struct StatusCharacterRecord
             s32 flag_salt = encoded_experience;
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
-                encoded_flags = ((flags ^ 0x7DE3F7E3) | 1) ^ 0x7DE3F7E3;
+                encoded_flags = ((flags ^ STATUS_STAT_WORD_XOR_KEY) | 1) ^ STATUS_STAT_WORD_XOR_KEY;
                 s32 current_key = checksum_salt;
                 flags = encoded_flags;
                 s32 current_experience = encoded_experience;
@@ -1676,7 +279,7 @@ struct StatusCharacterRecord
             }
             return 0;
         }
-        return value ^ 0x7DE3F7E3;
+        return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
     /** @brief Decode maximum MP, marking valid flags when the MP checksum fails. @return Maximum MP, or zero for corruption. */
     u32 get_max_mp()
@@ -1688,7 +291,7 @@ struct StatusCharacterRecord
             s32 flag_salt = encoded_experience;
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
-                encoded_flags = ((flags ^ 0x7DE3F7E3) | 1) ^ 0x7DE3F7E3;
+                encoded_flags = ((flags ^ STATUS_STAT_WORD_XOR_KEY) | 1) ^ STATUS_STAT_WORD_XOR_KEY;
                 s32 current_key = checksum_salt;
                 flags = encoded_flags;
                 s32 current_experience = encoded_experience;
@@ -1696,16 +299,16 @@ struct StatusCharacterRecord
             }
             return 0;
         }
-        return value ^ 0x7DE3F7E3;
+        return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
     /** @brief Decode the protected level. @return Level, or one for an invalid checksum. */
     s32 get_level() const
     {
-        if (level_checksum != (checksum_salt ^ (encoded_level ^ (unk06 + checksum_salt))))
+        if (level_checksum != (checksum_salt ^ (encoded_level ^ (encoded_base_level + checksum_salt))))
         {
             return 1;
         }
-        return encoded_level ^ 0x7E93;
+        return encoded_level ^ STATUS_STAT_HALFWORD_XOR_KEY;
     }
     /** @brief Decode the protected experience. @return Experience, or zero for an invalid checksum. */
     s32 get_experience() const
@@ -1714,7 +317,7 @@ struct StatusCharacterRecord
         {
             return 0;
         }
-        return encoded_experience ^ 0x7DE3F7E3;
+        return encoded_experience ^ STATUS_STAT_WORD_XOR_KEY;
     }
     /** @brief Decode the protected attack value. @return Attack, or zero for an invalid checksum. */
     s32 get_attack() const
@@ -1723,7 +326,7 @@ struct StatusCharacterRecord
         {
             return 0;
         }
-        return encoded_attack ^ 0x7DE3F7E3;
+        return encoded_attack ^ STATUS_STAT_WORD_XOR_KEY;
     }
     /** @brief Decode the protected defense value. @return Defense, or zero for an invalid checksum. */
     s32 get_defense() const
@@ -1732,7 +335,7 @@ struct StatusCharacterRecord
         {
             return 0;
         }
-        return encoded_defense ^ 0x7DE3F7E3;
+        return encoded_defense ^ STATUS_STAT_WORD_XOR_KEY;
     }
     /** @brief Decode the protected agility value. @return Agility, or zero for an invalid checksum. */
     s32 get_agility() const
@@ -1741,7 +344,7 @@ struct StatusCharacterRecord
         {
             return 0;
         }
-        return encoded_agility ^ 0x7DE3F7E3;
+        return encoded_agility ^ STATUS_STAT_WORD_XOR_KEY;
     }
     /** @brief Decode the protected HIT value. @return HIT, or zero for an invalid checksum. */
     s32 get_hit() const
@@ -1750,7 +353,7 @@ struct StatusCharacterRecord
         {
             return 0;
         }
-        return encoded_hit ^ 0x7DE3F7E3;
+        return encoded_hit ^ STATUS_STAT_WORD_XOR_KEY;
     }
     /** @brief Decode INT after validating the HIT checksum. @return INT, or zero when the HIT checksum is invalid. */
     s32 get_intelligence() const
@@ -1759,8 +362,22 @@ struct StatusCharacterRecord
         {
             return 0;
         }
-        return encoded_intelligence ^ 0x7DE3F7E3;
+        return encoded_intelligence ^ STATUS_STAT_WORD_XOR_KEY;
     }
+};
+
+/** Opaque 0x508-byte table initialized by the Lib experience-table constructor. */
+struct StatusExperienceTable
+{
+    u8 unknown[0x508];
+    /** @brief Initialize the experience table and its encoded table offset. */
+    StatusExperienceTable();
+};
+/** @brief Persistent status flags from save section four. */
+struct StatusFlagsSection
+{
+    u8 unknown[0x22];
+    u8 flags;
 };
 
 /** Checksum-protected 0x114-byte character equipment and skill data. */
@@ -1816,11 +433,11 @@ struct StatusCharacterEquipment
         {
             return 0;
         }
-        if ((encoded_slot_limit ^ 0x7E93) < index)
+        if ((encoded_slot_limit ^ STATUS_STAT_HALFWORD_XOR_KEY) < index)
         {
             return 0;
         }
-        return encoded_equipment_ids[index] ^ 0x7E93;
+        return encoded_equipment_ids[index] ^ STATUS_STAT_HALFWORD_XOR_KEY;
     }
     /** @brief Decode protected SP. @return SP, or zero for an invalid checksum. */
     s32 get_sp() const
@@ -1831,7 +448,7 @@ struct StatusCharacterEquipment
         {
             return 0;
         }
-        return value ^ 0x7E93;
+        return value ^ STATUS_STAT_HALFWORD_XOR_KEY;
     }
     /** @brief Decode protected CP. @return CP, or zero for an invalid checksum. */
     s32 get_cp() const
@@ -1842,49 +459,345 @@ struct StatusCharacterEquipment
         {
             return 0;
         }
-        return value ^ 0x7E93;
+        return value ^ STATUS_STAT_HALFWORD_XOR_KEY;
     }
 };
 
-/** Opaque 0x508-byte table initialized by the Lib experience-table constructor. */
-struct StatusExperienceTable
+/** Saved section containing the ten fixed-width character names. */
+struct StatusNameSection
 {
-    u8 unknown[0x508];
-    /** @brief Initialize the experience table and its encoded table offset. */
-    StatusExperienceTable();
+    u8 unk00[0xC6B0];
+    s8 names[10][24];
 };
+/** Typed display payload and forward link in a status list. */
+struct StatusDisplayNode
+{
+    LibClass178600* value;
+    StatusDisplayNode* next;
+};
+
+/** Saved section flag selecting the nested status display geometry. */
+struct StatusWindowSection
+{
+    u8 unk00[0x18C];
+    u8 enabled;
+};
+
+/** Partial saved section containing variant limits and their checksum. */
+struct StatusVariantSection
+{
+    u8 unk00[0x1A0];
+    u8 values[4];
+    u16 checksum;
+    u16 seed;
+};
+
+/** Resource descriptor with its signed size at offset 0x40. */
+struct StatusAlignedResource
+{
+    u8 unk00[0x40];
+    s32 size;
+};
+/** Partial Field runtime containing the active resource and request code. */
+struct StatusRuntimeResource
+{
+    u8 unk00[0x514];
+    s32 resource;
+    u32 code;
+};
+/** Status resource receiver with its resident vtable at 0x188CC0. */
+struct StatusResourceState : public FieldClass153E30
+{
+    /** @brief Initialize the resource handle, selection, and transition state. */
+    StatusResourceState();
+    /** @brief Destroy the owned record selection and the Field receiver base. */
+    virtual ~StatusResourceState();
+    /** @brief Report the status receiver type. @return Four. */
+    virtual s32 func_001DF3D0();
+    /** @brief Submit this receiver to the resident object queue. */
+    virtual void func_001DD7B0();
+    /** @brief Switch between record and name windows through a timed transition. */
+    virtual void func_001DF360();
+    /** @brief Leave the status receiver unchanged. */
+    virtual void func_001DD410();
+    /** @brief Report the receiver state. @return One. */
+    virtual u8 func_00264110();
+    /** @brief Set the active window. @param value Window pointer to store. */
+    virtual void func_00263C70(void* value);
+    /** @brief Get the active window. @return Stored window pointer. */
+    virtual void* func_00261150();
+    /** @brief Set the text window. @param value Window pointer to store. */
+    virtual void func_00263C80(void* value);
+    /** @brief Get the text window. @return Stored text window pointer. */
+    virtual void* func_00263C90();
+    /** @brief Set the receiver byte. @param value Signed byte to store. */
+    virtual void func_00263CA0(s8 value);
+    /** @brief Get the receiver byte. @return Stored signed byte. */
+    virtual s8 func_00263CB0();
+    /** @brief Get the loaded resource handle. @return Resource handle. */
+    virtual u32 func_00263CC0();
+    /** @brief Report whether window setup finished. @return Setup flag. */
+    virtual u8 func_00261D20();
+    /**
+     * @brief Load the completed status resource and finish receiver setup.
+     * @param buffer Completed resource buffer, or null.
+     * @return Zero without a buffer, otherwise the receiver setup result.
+     */
+    virtual s32 func_001E1820(void* buffer);
+    /**
+     * @brief Create and attach the status windows and record selection.
+     * @return One after setup succeeds, or zero otherwise.
+     */
+    virtual s32 func_00263CD0();
+    /** @brief Release the status resource, queue this receiver, and clear its allocation slots. */
+    virtual void func_slot5c();
+    /** @brief Report the default command result. @return Zero. */
+    virtual s32 func_slot60();
+    /** @brief Report the default command result. @return Zero. */
+    virtual s32 func_slot64();
+    /** @brief Leave the resource state unchanged. */
+    virtual void func_slot68();
+    /** @brief Get the record selection. @return Owned record selection. */
+    virtual FieldRecordSelection* selected_records();
+    /** @brief Default receiver callback with no action. */
+    virtual void func_slot70();
+    /** @brief Default receiver callback with no action. */
+    virtual void func_slot74();
+    /** @brief Default receiver callback with no action. */
+    virtual void func_slot78();
+    /** @brief Default receiver callback returning zero. @return Zero. */
+    virtual s32 func_slot7c();
+    /** @brief Default receiver callback returning zero. @return Zero. */
+    virtual s32 func_slot80();
+    /** @brief Default receiver callback returning zero. @return Zero. */
+    virtual s32 func_slot84();
+    s32 resource;
+    u8 setup_complete : 1;
+    u8 unknown_38 : 7;
+    u8 unknown_39[3];
+    FieldRecordSelection* selection;
+    u16 requested_window;
+    u16 transition_phase;
+    StatusCharacterWindow* character_window;
+};
+
+/** Partial effect with transition value and display mode. */
+struct StatusTransitionEffect
+{
+    u8 unk00[0xC0];
+    s32 value;
+    u8 unkc4[0x2C];
+    u8 mode;
+};
+/** Partial Field context receiver holding the active transition effect. */
+struct StatusTransitionOwner
+{
+    u8 unk00[0x5A4];
+    StatusTransitionEffect* effect;
+};
+extern "C" void* func_0020F230(ResidentContextObject38* state, u32 index, u32 first, u32 second, s32 mode, u32 third, u32 flags, float duration, float x, float y);
+extern "C" s32 func_0022A160(void* object);
+extern "C" void func_004DCEA0(void* object, s32 enabled, s32 other);
+extern "C" void* D_001B6650;
+extern "C" s32 D_001B6694;
+
+struct StatusRuntimeCallbacks;
+
+/** Partial resident runtime view used by this overlay. */
+struct StatusRuntime
+{
+    u8 unk00[0xC];
+    void* menu_controller;
+    StatusRuntimeCallbacks* callbacks;
+    u8 unk14[8];
+    void* model_camera;
+    FieldBufferSlots* slots;
+};
+
+/** Partial resident callback state used by status transitions. */
+struct StatusRuntimeCallbacks
+{
+    u8 unk00[0x14];
+    StatusResourceState* status_receiver;
+    u8 unk18[0x48];
+    u8 input_enabled;
+};
+
+typedef struct StatusWidgetNode
+{
+    void* value;
+    struct StatusWidgetNode* next;
+    /** @brief Release the link without destroying its payload. */
+    ~StatusWidgetNode()
+    {
+    }
+} StatusWidgetNode;
+
+struct StatusWidgetList
+{
+    StatusWidgetNode* head;
+    s32 count;
+    void* methods;
+};
+
+extern StatusRuntime* D_001B643C;
+extern "C" s32 func_002CFE40(void* object, s16 index);
+
+extern "C" void* func_100AC0(s32 size, s32 flags);
+
 /** @brief Apply an allocation to character statistics and equipment. */
 extern "C" s32 func_003F9890(StatusCharacterRecord*, StatusCharacterEquipment*, ItemCreationAllocationRecord*, s32);
 /** @brief Compute the experience remaining for the requested level and optionally return its threshold. */
 extern "C" s32 func_004028C0(StatusExperienceTable*, s32, StatusCharacterRecord*, s32*);
 extern "C" ItemCreationAllocationRecord* D_001B64F8;
+
+/**
+ * @brief Read an assigned battle-skill index when its checksum is valid.
+ * @param record Character equipment containing the battle-skill assignments.
+ * @param index Signed entry index, from zero through five.
+ * @return Decoded entry, or zero for an invalid checksum or index.
+ */
+static inline s32 status_battle_skill_index(StatusCharacterEquipment* record, s32 index)
+{
+    u32 checksum = 0x8D3C43F9;
+    for (s32 entry = 0; entry < 6; entry++)
+    {
+        checksum ^= record->encoded_battle_skill_indices[entry];
+        checksum = checksum * 2 + 0x31;
+    }
+    if (record->battle_skill_indices_checksum != checksum)
+    {
+        return 0;
+    }
+    if (index < 0)
+    {
+        return 0;
+    }
+    if (static_cast<u32>(index) >= 6)
+    {
+        return 0;
+    }
+    return record->encoded_battle_skill_indices[index] ^ STATUS_BATTLE_SKILL_XOR_KEY;
+}
+
+/**
+ * @brief Set a caption rectangle and mark it for refresh.
+ * @param target Caption widget.
+ * @param x Horizontal origin.
+ * @param y Vertical origin.
+ * @param width Caption width.
+ * @param height Caption height.
+ */
+static inline void set_status_record_rectangle(LibObject178750* target, float x, float y, float width, float height)
+{
+    target->unk18.unk00 = x;
+    target->unk18.unk04 = y;
+    target->unk18.unk08 = width;
+    target->unk18.unk0c = height;
+    target->unk3c = 1;
+}
+
+/**
+ * @brief Initialize a resource display.
+ * @param display Resource display to initialize.
+ * @param record Resource record to display.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ */
+static inline void initialize_status_resource(ItemCreationOptionResourceDisplay* display, FieldResourceRecord* record, float x, float y)
+{
+    func_002D6440(display, record, x, y);
+}
+
+/** @brief Set widget coordinates and request refresh. @param widget Display widget. @param x Horizontal coordinate. @param y Vertical coordinate. */
+static inline void set_status_widget_position(LibClass178600* widget, float x, float y)
+{
+    widget->unk18.unk00 = x;
+    widget->unk18.unk04 = y;
+    widget->unk3c = 1;
+}
+
+/** @brief Move each non-null display by the current scroll delta. @param list Display list to move. @param object Window supplying the delta. */
+template <class List>
+static inline void move_status_display_list(List* list, StatusCharacterWindow* object)
+{
+    StatusWidgetNode* node = list->head->next;
+    while (node != 0)
+    {
+        LibClass178600* widget = static_cast<LibClass178600*>(node->value);
+        if (widget != 0)
+        {
+            set_status_widget_position(widget, widget->unk18.unk00,
+                                       widget->unk18.unk04 + object->scroll_delta);
+        }
+        node = node->next;
+    }
+}
+
+/** @brief Set resource display scales and request refresh. @param display Resource display. @param x Horizontal scale. @param y Vertical scale. */
+static inline void set_status_resource_scale(LibClass175110* display, float x, float y)
+{
+    display->unk50.unk34 = y;
+    display->unk50.unk30 = x;
+    display->unk3c = 1;
+}
+
+/** @brief Align a resource descriptor to 128 bytes. @param buffer Raw resource buffer. @return Aligned resource descriptor. */
+static inline StatusAlignedResource* aligned_status_resource(void* buffer)
+{
+    return reinterpret_cast<StatusAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
+}
+
+/** @brief Restore the character window after a selection command. @param object Selection window to detach. */
+static inline void close_status_selection(StatusNameWindow* object)
+{
+    StatusResourceState* target = D_001B643C->callbacks->status_receiver;
+    target->remove_child(object);
+    target->requested_window = STATUS_WINDOW_CHARACTER;
+    target->character_window->func_slot20(0);
+    target->func_00263C70(target->character_window);
+    target->transition_phase = STATUS_TRANSITION_START;
+    D_001B643C->callbacks->input_enabled = 0;
+}
+
+/** @brief Set vertical glyph spacing and request refresh. @param label Text widget. @param value Vertical spacing. */
+static inline void set_label_spacing_y(LibObject178750* label, float value)
+{
+    label->unk8c = value;
+    label->unk3c = 1;
+}
+
 /** @brief Get the current character record. @param selection Current record selection. @return Selected character record. */
 static inline StatusCharacterRecord* status_character(FieldRecordSelection* selection)
 {
     return &reinterpret_cast<StatusCharacterRecord*>(selection->records)[selection->current];
 }
+
 /** @brief Get the signed current record index. @param selection Current record selection. @return Signed record index. */
 static inline s8 status_selected_index(FieldRecordSelection* selection)
 {
     return selection->current;
 }
+
 /** @brief Get the character-record table. @param selection Current record selection. @return Record table. */
 static inline FieldRecord* status_record_table(FieldRecordSelection* selection)
 {
     return selection->records;
 }
+
 /** @brief Get the current character equipment. @param selection Current record selection. @return Selected equipment record. */
 static inline StatusCharacterEquipment* status_equipment(FieldRecordSelection* selection)
 {
     return &static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current];
 }
+
 /** @brief Update a numeric display and mark it dirty. @param widget Numeric display. @param value Display value. */
-static inline void status_set_numeric(void* widget, u32 value)
+static inline void status_set_numeric(LibObject174F20* widget, u32 value)
 {
-    LibObject174F20* number = static_cast<LibObject174F20*>(widget);
-    number->numeric_value = value;
-    number->unk3c = 1;
+    widget->numeric_value = value;
+    widget->unk3c = 1;
 }
+
 /** @brief Find a one-based item allocation. @param index Signed allocation ID. @return Allocation record, or null outside one through three thousand. */
 static inline ItemCreationAllocationRecord* status_allocation(s16 index)
 {
@@ -1896,6 +809,7 @@ static inline ItemCreationAllocationRecord* status_allocation(s16 index)
     }
     return 0;
 }
+
 /** @brief Update an equipment display and mark it dirty. @param widget Equipment display. @param item Display item code. @param modification Item modification number. */
 static inline void status_set_item(LibObject172410* widget, u16 item, u8 modification)
 {
@@ -1903,165 +817,1424 @@ static inline void status_set_item(LibObject172410* widget, u16 item, u8 modific
     widget->unkfe = modification;
     widget->unk3c = 1;
 }
+
+/** @brief Set text spacing and mark the widget dirty. @param widget Text widget. @param spacing Character spacing. */
+static inline void status_set_spacing(LibClass174EF0* widget, float spacing)
+{
+    widget->unk88 = spacing;
+    widget->unk3c = 1;
+}
+
+/** @brief Set a divider color and mark the widget dirty. @param widget Divider widget. @param color Packed color. */
+static inline void status_set_marker_color(ItemCreationClass172870* widget, u32 color)
+{
+    widget->unk50 = color;
+    widget->unk3c = 1;
+}
+
+/** @brief Set the item display flag and mark the widget dirty. @param widget Item widget. @param flag Display flag. */
+static inline void status_set_item_flag(LibObject172410* widget, u8 flag)
+{
+    widget->unkfa = flag;
+    widget->unk3c = 1;
+}
+
+/** @brief Find a stat row position. @param origin First row position. @param row Row index. @return Row position. */
+static inline float status_row_y(float origin, s32 row)
+{
+    return origin + 24.0f * static_cast<float>(row);
+}
+
+/**
+ * @brief Destroy an owned object and clear its pointer.
+ * @param pointer Owned pointer to release and clear.
+ */
+template <class T>
+static inline void status_delete_owned(T*& pointer)
+{
+    if (pointer != 0)
+    {
+        delete pointer;
+        pointer = 0;
+    }
+}
+
+/** @brief Store the inherited window state field. @param value Value to store. */
+void FieldClass15AE70::func_slot24(u8 value)
+{
+    unk0c = value;
+}
+
+/** @brief Read the inherited window state field. @return Stored value. */
+u8 FieldClass15AE70::func_slot28()
+{
+    return unk0c;
+}
+
+/** @brief Store the inherited window state field. @param value Value to store. */
+void FieldClass15AE70::func_slot2c(u8 value)
+{
+    unk08 = value;
+}
+
+/** @brief Read the inherited window state field. @return Stored value. */
+u8 FieldClass15AE70::func_slot30()
+{
+    return unk08;
+}
+
+/** @brief Store the inherited window state field. @param value Value to store. */
+void FieldClass15AE70::func_slot34(u16 value)
+{
+    unk0a = value;
+}
+
+/** @brief Read the inherited window state field. @return Stored value. */
+u16 FieldClass15AE70::func_slot38()
+{
+    return unk0a;
+}
+
+/** @brief Store the inherited window state field. @param value Value to store. */
+void FieldClass15AE70::func_slot48(void* value)
+{
+    unk9c = value;
+}
+
+/** @brief Read the inherited window state field. @return Stored value. */
+void* FieldClass15AE70::func_slot4c()
+{
+    return unk9c;
+}
+
+/** @brief Store the inherited window state field. @param value Value to store. */
+void FieldClass15AE70::func_slot50(u32 value)
+{
+    unk04 = value;
+}
+
+/** @brief Read the inherited window state field. @return Stored value. */
+u32 FieldClass15AE70::func_slot54()
+{
+    return unk04;
+}
+
+/** @brief Read the inherited window container. @return Stored value. */
+LibObject178660* FieldClass15AE70::func_slot58()
+{
+    return unk10;
+}
+
+/** @brief Default window callback with no action. @param text_key Unused message key. */
+void FieldClass15AE70::func_slot60(s32 text_key)
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot64()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot70()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot74()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot78()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot7c()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot80()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot84()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot88()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot8c()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot90()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot94()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot98()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slot9c()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slota0()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slota4()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slota8()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slotac()
+{
+}
+
+/** @brief Default window callback returning zero. @return Zero. */
+s32 FieldClass15AE70::func_slotb8()
+{
+    return 0;
+}
+
+/** @brief Default window callback returning zero. @return Zero. */
+s32 FieldClass15AE70::func_slotbc()
+{
+    return 0;
+}
+
+/** @brief Default window callback returning zero. @return Zero. */
+s32 FieldClass15AE70::func_slotc0()
+{
+    return 0;
+}
+
+/** @brief Default window callback returning zero. @return Zero. */
+s32 FieldClass15AE70::func_slotc4()
+{
+    return 0;
+}
+
+/** @brief Default window callback returning zero. @return Zero. */
+s32 FieldClass15AE70::func_slotc8()
+{
+    return 0;
+}
+
+/** @brief Default window callback returning zero. @return Zero. */
+s32 FieldClass15AE70::func_slotcc()
+{
+    return 0;
+}
+
+/** @brief Default window callback returning zero. @return Zero. */
+s32 FieldClass15AE70::func_slotd0()
+{
+    return 0;
+}
+
+/** @brief Default window callback returning zero. @return Zero. */
+s32 FieldClass15AE70::func_slotd4()
+{
+    return 0;
+}
+
+/** @brief Default window callback returning zero. @return Zero. */
+s32 FieldClass15AE70::func_slotd8()
+{
+    return 0;
+}
+
+/** @brief Default window callback returning zero. @return Zero. */
+s32 FieldClass15AE70::func_slotdc()
+{
+    return 0;
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slote0()
+{
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slote4()
+{
+}
+
+/** @brief Read the inherited window state field. @return Stored value. */
+u8 FieldClass15AE70::func_slote8()
+{
+    return unk0d;
+}
+
+/** @brief Store the inherited window state field. @param value Value to store. */
+void FieldClass15AE70::func_slotec(u8 value)
+{
+    unk0d = value;
+}
+
+/** @brief Default window callback with no action. */
+void FieldClass15AE70::func_slotf0()
+{
+}
+
+/** @brief Get the active window. @return Stored window pointer. */
+void* StatusResourceState::func_00261150()
+{
+    return unk20;
+}
+
+/** @brief Set the active window. @param value Window pointer to store. */
+void StatusResourceState::func_00263C70(void* value)
+{
+    unk20 = value;
+}
+
+void status_initialize_name_maps(StatusNameWindow* object)
+{
+    func_0013A678(object->hiragana_bytes, 0, 90);
+    func_0013A678(object->katakana_bytes, 0, 90);
+    func_0013A678(object->alphanumeric_bytes, 0, 80);
+    StatusGlyphMap90 first = g_status_hiragana_bytes;
+    for (s32 i = 0; i < 90; ++i)
+    {
+        object->hiragana_bytes[i] = first.values[i];
+    }
+    StatusGlyphMap90 second = g_status_katakana_bytes;
+    for (s32 i = 0; i < 90; ++i)
+    {
+        object->katakana_bytes[i] = second.values[i];
+    }
+    StatusGlyphMap80 third = g_status_alphanumeric_bytes;
+    for (s32 i = 0; i < 80; ++i)
+    {
+        object->alphanumeric_bytes[i] = third.values[i];
+    }
+}
+
+void status_append_name_diacritic(StatusNameWindow* object, s16 code)
+{
+    if (object->grid_mode == STATUS_NAME_HIRAGANA)
+    {
+        if ((code >= 15 && code <= 24) || (code >= 40 && code <= 44) || (code >= 60 && code <= 64))
+        {
+            object->name_bytes[object->last_name_byte++] = STATUS_NAME_DAKUTEN;
+        }
+        if (code >= 25 && code <= 29)
+        {
+            object->name_bytes[object->last_name_byte++] = STATUS_NAME_HANDAKUTEN;
+        }
+    }
+    else if (object->grid_mode == STATUS_NAME_KATAKANA)
+    {
+        if ((code >= 15 && code <= 24) || (code >= 40 && code <= 44) || (code >= 60 && code <= 64))
+        {
+            ++object->last_name_byte;
+            object->name_bytes[object->last_name_byte] = STATUS_NAME_DAKUTEN;
+        }
+        if (code >= 25 && code <= 29)
+        {
+            ++object->last_name_byte;
+            object->name_bytes[object->last_name_byte] = STATUS_NAME_HANDAKUTEN;
+        }
+        if (code == 75)
+        {
+            ++object->last_name_byte;
+            object->name_bytes[object->last_name_byte] = STATUS_NAME_DAKUTEN;
+        }
+    }
+}
+
+s32 status_remove_last_name_entry(StatusNameWindow* object)
+{
+    if (object->last_name_byte < 0)
+    {
+        return 3;
+    }
+    u8 removed_hiragana_delimiter = 0;
+    while (1)
+    {
+        u8* entry = &object->name_bytes[object->last_name_byte];
+        if (*entry == STATUS_NAME_HIRAGANA_DELIMITER)
+        {
+            *entry = 0;
+            removed_hiragana_delimiter = 1;
+            object->last_name_byte--;
+            continue;
+        }
+        if (*entry == STATUS_NAME_DAKUTEN)
+        {
+            *entry = 0;
+            object->last_name_byte--;
+            continue;
+        }
+        if (*entry == STATUS_NAME_HANDAKUTEN)
+        {
+            *entry = 0;
+            object->last_name_byte--;
+            continue;
+        }
+        break;
+    }
+    object->name_bytes[object->last_name_byte] = 0;
+    object->last_name_byte--;
+    if (removed_hiragana_delimiter == 1)
+    {
+        if (object->name_bytes[object->last_name_byte] == STATUS_NAME_HIRAGANA_DELIMITER)
+        {
+            object->name_bytes[object->last_name_byte] = 0;
+            object->last_name_byte--;
+        }
+        else
+        {
+            object->last_name_byte++;
+            object->name_bytes[object->last_name_byte] = STATUS_NAME_HIRAGANA_DELIMITER;
+        }
+    }
+    status_refresh_name_markers(object);
+    status_refresh_name_glyphs(object);
+    return 2;
+}
+
+void status_refresh_name_markers(StatusNameWindow* object)
+{
+    object->selected_name_glyph = func_004679B0(object->name_text);
+    for (s32 i = object->first_name_marker; i < object->first_name_marker + 7; ++i)
+    {
+        StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, i));
+        LibClass178600* marker = node->value;
+        marker->unk3f = 0;
+        if (i == object->first_name_marker + object->selected_name_glyph)
+        {
+            marker->unk3f = 1;
+        }
+    }
+    if (object->selected_name_glyph >= 6)
+    {
+        StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, object->first_name_marker + 6));
+        node->value->unk3f = 1;
+    }
+    if (object->selected_name_glyph <= 0)
+    {
+        StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, object->first_name_marker));
+        node->value->unk3f = 1;
+    }
+}
+
+void status_refresh_name_glyphs(StatusNameWindow* object)
+{
+    s32 empty = object->name_bytes[0] == 0;
+    if (empty == 0)
+    {
+        LibObject175140* text = object->name_text;
+        text->unkfc = reinterpret_cast<const char*>(object->name_bytes);
+        text->unk3c = 1;
+        object->name_text->unk3f = 0;
+    }
+    status_decode_name_glyphs(object);
+    for (s32 i = 0; i < 7; ++i)
+    {
+        object->name_glyph_widgets[i]->unk3f = 0;
+    }
+    for (s32 i = 0; i < 7; ++i)
+    {
+        u16 key = object->name_glyph_keys[i];
+        if (key != 0)
+        {
+            u32 source = object->func_slot54();
+            lib_text_set_resource(object->name_glyph_widgets[i], source, key, 0);
+            object->name_glyph_widgets[i]->unk3f = 1;
+        }
+        else
+        {
+            u32 source = object->func_slot54();
+            lib_text_set_resource(object->name_glyph_widgets[i], source, STATUS_TEXT_BLANK, 0);
+            object->name_glyph_widgets[i]->unk3f = 1;
+        }
+    }
+}
+
+void status_decode_name_glyphs(StatusNameWindow* object)
+{
+    for (s32 i = 0; i < 7; ++i)
+    {
+        object->name_glyph_keys[i] = 0;
+    }
+    u16 position = 0;
+    u16 output = 0;
+    u8 alternate = 0;
+    for (;;)
+    {
+        if (position >= 24 || output >= 8)
+        {
+            break;
+        }
+        u8 value = object->name_bytes[position];
+        if (value == 0)
+        {
+            break;
+        }
+        if (value == STATUS_NAME_HIRAGANA_DELIMITER)
+        {
+            alternate = alternate != 1;
+            ++position;
+            continue;
+        }
+        if (value == STATUS_NAME_DAKUTEN)
+        {
+            u16* destination = object->name_glyph_keys + output;
+            u16& previous = destination[-1];
+            if (previous == 0x15E2)
+            {
+                previous += 0x49;
+            }
+            else
+            {
+                previous += 10;
+            }
+        }
+        else if (value == STATUS_NAME_HANDAKUTEN)
+        {
+            object->name_glyph_keys[output - 1] += 20;
+        }
+        else if (value == STATUS_NAME_SPACE)
+        {
+            object->name_glyph_keys[output++] = STATUS_TEXT_BLANK;
+        }
+        else if (alternate == 1)
+        {
+            for (s32 i = 0; i < 90; ++i)
+            {
+                if (value == object->hiragana_bytes[i])
+                {
+                    object->name_glyph_keys[output++] = i + STATUS_TEXT_HIRAGANA_GLYPH_BASE;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            for (s32 i = 0; i < 90; ++i)
+            {
+                if (value == object->katakana_bytes[i])
+                {
+                    object->name_glyph_keys[output++] = i + STATUS_TEXT_KATAKANA_GLYPH_BASE;
+                    break;
+                }
+            }
+            for (s32 i = 0; i < 80; ++i)
+            {
+                if (value == object->alphanumeric_bytes[i])
+                {
+                    object->name_glyph_keys[output++] = i + STATUS_TEXT_ALPHANUMERIC_GLYPH_BASE;
+                    break;
+                }
+            }
+        }
+        ++position;
+    }
+}
+
+void status_append_selected_name_glyph(StatusNameWindow* object, u8 mode)
+{
+    if (object->last_name_byte < 24)
+    {
+        u8 full = func_004679B0(object->name_text) >= 7;
+        if (full == 1)
+        {
+            return;
+        }
+        ++object->last_name_byte;
+        s16 code = object->selected_grid_cell % 11 + 10 * (object->selected_grid_cell / 11) - 1;
+        if (object->grid_mode == STATUS_NAME_HIRAGANA)
+        {
+            if (object->last_name_byte > 0 && object->name_bytes[object->last_name_byte - 1] == STATUS_NAME_HIRAGANA_DELIMITER)
+            {
+                --object->last_name_byte;
+                object->name_bytes[object->last_name_byte++] = object->hiragana_bytes[code];
+                status_append_name_diacritic(object, code);
+                object->name_bytes[object->last_name_byte] = STATUS_NAME_HIRAGANA_DELIMITER;
+            }
+            else
+            {
+                object->name_bytes[object->last_name_byte++] = STATUS_NAME_HIRAGANA_DELIMITER;
+                object->name_bytes[object->last_name_byte++] = object->hiragana_bytes[code];
+                status_append_name_diacritic(object, code);
+                object->name_bytes[object->last_name_byte] = STATUS_NAME_HIRAGANA_DELIMITER;
+            }
+        }
+        else if (object->grid_mode == STATUS_NAME_KATAKANA)
+        {
+            object->name_bytes[object->last_name_byte] = object->katakana_bytes[code];
+            status_append_name_diacritic(object, code);
+        }
+        else
+        {
+            if (code >= 80)
+            {
+                object->name_bytes[object->last_name_byte] = STATUS_NAME_SPACE;
+            }
+            else
+            {
+                object->name_bytes[object->last_name_byte] = object->alphanumeric_bytes[code];
+            }
+        }
+        status_refresh_name_markers(object);
+        status_refresh_name_glyphs(object);
+    }
+}
+
+extern "C" void status_select_alphanumeric_grid(StatusNameWindow* object, u8 mode)
+{
+    object->grid_mode = STATUS_NAME_ALPHANUMERIC;
+    for (s32 i = 0; i < STATUS_NAME_GRID_LABEL_COUNT; ++i)
+    {
+        StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, i));
+        LibClass178600* display = node->value;
+        display->unk3f = 0;
+        switch (object->grid_mode)
+        {
+        case STATUS_NAME_HIRAGANA:
+            switch (i)
+            {
+            case STATUS_NAME_GRID_HIRAGANA_MAIN:
+            case STATUS_NAME_GRID_HIRAGANA_TAIL:
+            case STATUS_NAME_GRID_HIRAGANA_DIACRITICS:
+                display->unk3f = 1;
+                break;
+            }
+            break;
+        case STATUS_NAME_KATAKANA:
+            switch (i)
+            {
+            case STATUS_NAME_GRID_KATAKANA_MAIN:
+                display->unk3f = 1;
+                break;
+            case STATUS_NAME_GRID_KATAKANA_TAIL:
+            case STATUS_NAME_GRID_KATAKANA_SPACE:
+                display->unk3f = 0;
+                break;
+            }
+            break;
+        case STATUS_NAME_ALPHANUMERIC:
+            switch (i)
+            {
+            case STATUS_NAME_GRID_DIGITS_LEFT:
+            case STATUS_NAME_GRID_DIGITS_RIGHT:
+            case STATUS_NAME_GRID_LETTERS_LEFT:
+            case STATUS_NAME_GRID_LETTERS_RIGHT:
+            case STATUS_NAME_GRID_SYMBOLS_LEFT:
+            case STATUS_NAME_GRID_SYMBOLS_RIGHT:
+                display->unk3f = 1;
+                if (object->alphabet_symbol_grid != 0)
+                {
+                    object->alphabet_symbol_grid->unk3f = 1;
+                }
+                break;
+            }
+            break;
+        }
+    }
+}
+
+void StatusNameWindow::func_slot5c()
+{
+    FieldClass153E30* receiver = D_001B643C->callbacks->status_receiver;
+    if (receiver->func_00261150() == this)
+    {
+        if (this->selected_name_glyph < 0)
+        {
+            this->selected_name_glyph = 0;
+        }
+        if (this->selected_name_glyph >= 6)
+        {
+            this->selected_name_glyph = 6;
+        }
+        LibClass178600* name_cursor = this->name_cursor;
+        float cursor_x = this->name_x + 36.0f * this->selected_name_glyph;
+        float cursor_y = this->name_y;
+        name_cursor->unk18.unk00 = cursor_x;
+        name_cursor->unk18.unk04 = cursor_y;
+        name_cursor->unk3c = 1;
+    }
+}
+
+void status_move_name_grid_cursor(StatusNameWindow* object, s32 value)
+{
+    LibClass175030* marker = object->grid_marker;
+    LibMovementState& movement = *marker;
+    if (movement.unk35 != 0)
+    {
+        if (value < 0)
+        {
+            value = 98;
+        }
+        if (value > 98)
+        {
+            value = 0;
+        }
+        s32 row = value / 11;
+        s32 column = value % 11;
+        float x;
+        if (column == 0)
+        {
+            x = object->command_x - 6.0f;
+        }
+        else if (column < 6)
+        {
+            x = (155.0f + 34.0f * column) - 4.0f;
+        }
+        else
+        {
+            x = 48.0f + (155.0f + 34.0f * column);
+        }
+        func_00466E40(&movement, x, 16.0f + (110.0f + 28.0f * row), 1.0f / 15.0f);
+        object->selected_grid_cell = value;
+        func_002CFE40(D_001B643C->callbacks, 0);
+    }
+}
+
+void StatusNameWindow::func_slot74()
+{
+    s32 value = this->selected_grid_cell;
+    s32 quotient = value / 11;
+    s32 remainder = value % 11;
+    if (remainder == 10)
+    {
+        status_move_name_grid_cursor(this, quotient * 11);
+    }
+    else
+    {
+        status_move_name_grid_cursor(this, value + 1);
+    }
+}
+
+void StatusNameWindow::func_slot70()
+{
+    s32 value = this->selected_grid_cell;
+    s32 quotient = value / 11;
+    s32 remainder = value % 11;
+    if (remainder == 0)
+    {
+        status_move_name_grid_cursor(this, quotient * 11 + 10);
+    }
+    else
+    {
+        status_move_name_grid_cursor(this, value - 1);
+    }
+}
+
+void StatusNameWindow::func_slot6c()
+{
+    s32 value = this->selected_grid_cell;
+    if (value / 11 == 8)
+    {
+        status_move_name_grid_cursor(this, value % 11);
+    }
+    else
+    {
+        status_move_name_grid_cursor(this, value + 11);
+    }
+}
+
+void StatusNameWindow::func_slot68()
+{
+    s32 value = this->selected_grid_cell;
+    if (value / 11 == 0)
+    {
+        status_move_name_grid_cursor(this, value % 11 + 88);
+    }
+    else
+    {
+        status_move_name_grid_cursor(this, value - 11);
+    }
+}
+
+void StatusNameWindow::func_slote4()
+{
+    s8* row = this->default_names[this->selection->slots[this->selection->current] - 1];
+    for (s32 i = 0; i < 24; ++i)
+    {
+        this->name_bytes[i] = 0;
+    }
+    for (s32 i = 0; i < 24; ++i)
+    {
+        s8 value = row[i];
+        if (value == 0)
+        {
+            break;
+        }
+        this->name_bytes[i] = value;
+    }
+    this->last_name_byte = 0;
+    s8 last;
+    for (;;)
+    {
+        last = this->last_name_byte;
+        if (this->name_bytes[last] == 0)
+        {
+            break;
+        }
+        this->last_name_byte = last + 1;
+    }
+    if (last > 0)
+    {
+        this->last_name_byte = last - 1;
+    }
+    status_refresh_name_markers(this);
+    status_refresh_name_glyphs(this);
+    func_002CFE40(D_001B643C->callbacks, 1);
+}
+
+void StatusNameWindow::func_slote0()
+{
+    status_move_name_grid_cursor(this, STATUS_NAME_COMMAND_CONFIRM);
+}
+
+s32 StatusNameWindow::func_slotc4()
+{
+    return 0;
+}
+
+s32 StatusNameWindow::func_slotc0()
+{
+    return 0;
+}
+
+s32 StatusNameWindow::func_slotb4()
+{
+    status_remove_last_name_entry(this);
+    return 2;
+}
+
+s32 StatusNameWindow::func_slotb0()
+{
+    u8 result = 0;
+    switch (selected_grid_cell)
+    {
+    case STATUS_NAME_COMMAND_HIRAGANA:
+    case STATUS_NAME_COMMAND_KATAKANA:
+    case STATUS_NAME_COMMAND_ALPHANUMERIC:
+        return 0;
+    case STATUS_NAME_COMMAND_BACKSPACE:
+        result = status_remove_last_name_entry(this);
+        break;
+    case STATUS_NAME_COMMAND_DEFAULT:
+    {
+        s8* row = default_names[selection->slots[selection->current] - 1];
+        for (s32 i = 0; i < 24; ++i)
+        {
+            name_bytes[i] = 0;
+        }
+        for (s32 i = 0; i < 24; ++i)
+        {
+            s8 value = row[i];
+            if (value == 0)
+            {
+                break;
+            }
+            name_bytes[i] = value;
+        }
+        last_name_byte = 0;
+        s8 last;
+        for (;;)
+        {
+            last = last_name_byte;
+            if (name_bytes[last] == 0)
+            {
+                break;
+            }
+            last_name_byte = last + 1;
+        }
+        if (last > 0)
+        {
+            last_name_byte = last - 1;
+        }
+        status_refresh_name_markers(this);
+        status_refresh_name_glyphs(this);
+        break;
+    }
+    case STATUS_NAME_COMMAND_CANCEL:
+        close_status_selection(this);
+        return 2;
+    case STATUS_NAME_COMMAND_UNUSED_ROW_6:
+    case STATUS_NAME_COMMAND_UNUSED_ROW_7:
+        return 0;
+    case STATUS_NAME_COMMAND_CONFIRM:
+    {
+        u8 empty = name_bytes[0] == 0;
+        if (empty == 1)
+        {
+            return 3;
+        }
+        u8 blank = 1;
+        for (s32 i = 0; i < 24; ++i)
+        {
+            u8 value = name_bytes[i];
+            if (value != STATUS_NAME_SPACE && value != 0 && value != STATUS_NAME_HIRAGANA_DELIMITER)
+            {
+                blank = 0;
+            }
+        }
+        if (blank == 0)
+        {
+            s8* destination = reinterpret_cast<s8*>(static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_name);
+            const s8* source = reinterpret_cast<const s8*>(name_bytes);
+            do
+            {
+            } while ((*destination++ = *source++) != 0);
+            StatusNameSection* section = static_cast<StatusNameSection*>(func_101440(func_101290(func_10D8E0()), 4));
+            func_0013A4C0(section->names[selection->slots[selection->current] - 1], name_bytes, 24);
+            close_status_selection(this);
+        }
+        else
+        {
+            return 3;
+        }
+        break;
+    }
+    default:
+        u8 full = func_004679B0(name_text) >= 7;
+        if (full)
+        {
+            return 3;
+        }
+        status_append_selected_name_glyph(this, grid_mode);
+        break;
+    }
+    return result == 0 ? 1 : 2;
+}
+
+s32 StatusNameWindow::func_slotf4(void* associated)
+{
+    selection = D_001B643C->callbacks->status_receiver->selected_records();
+    selected_character_id = selection->slots[selection->current];
+    FieldClass15AE70::func_slot10(reinterpret_cast<u32>(associated), 16.0f, 72.0f, 16);
+    LibClass178630* panel = new (0) LibClass178630;
+    lib_panel_init_rectangle(panel, 0, 0.0f, 110.0f, 608.0f, 268.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
+    for (s32 index = 0; index < STATUS_NAME_GRID_LABEL_COUNT; index++)
+    {
+        LibObject178750* label = new (0) LibObject178750;
+        if (label == 0)
+        {
+            return 0;
+        }
+        switch (index)
+        {
+        case STATUS_NAME_GRID_HIRAGANA_MAIN:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_HIRAGANA_GRID, 0, 184.0f, 118.0f, 0.0f, 0.0f);
+            status_set_spacing(label, 10.0f);
+            set_label_spacing_y(label, 4.0f);
+            break;
+        case STATUS_NAME_GRID_HIRAGANA_TAIL:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_HIRAGANA_GRID_TAIL, 0, 406.0f, 230.0f, 0.0f, 0.0f);
+            status_set_spacing(label, 44.0f);
+            set_label_spacing_y(label, 32.0f);
+            break;
+        case STATUS_NAME_GRID_HIRAGANA_DIACRITICS:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_HIRAGANA_DIACRITICS, 0, 542.0f, 314.0f, 0.0f, 0.0f);
+            break;
+        case STATUS_NAME_GRID_KATAKANA_MAIN:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_KATAKANA_GRID, 0, 184.0f, 118.0f, 0.0f, 0.0f);
+            status_set_spacing(label, 10.0f);
+            set_label_spacing_y(label, 4.0f);
+            label->unk3f = 0;
+            break;
+        case STATUS_NAME_GRID_KATAKANA_TAIL:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_KATAKANA_GRID_TAIL, 0, 406.0f, 230.0f, 0.0f, 0.0f);
+            status_set_spacing(label, 44.0f);
+            set_label_spacing_y(label, 32.0f);
+            label->unk3f = 0;
+            break;
+        case STATUS_NAME_GRID_KATAKANA_SPACE:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_KATAKANA_GRID_SPACE, 0, 406.0f, 314.0f, 0.0f, 0.0f);
+            status_set_spacing(label, 112.0f);
+            label->unk3f = 0;
+            break;
+        case STATUS_NAME_GRID_DIGITS_LEFT:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_DIGIT_GRID_LEFT, 0, 184.0f, 118.0f, 0.0f, 0.0f);
+            status_set_spacing(label, 22.0f);
+            set_label_spacing_y(label, 4.0f);
+            label->unk3f = 0;
+            break;
+        case STATUS_NAME_GRID_DIGITS_RIGHT:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_DIGIT_GRID_RIGHT, 0, 406.0f, 118.0f, 0.0f, 0.0f);
+            status_set_spacing(label, 22.0f);
+            set_label_spacing_y(label, 4.0f);
+            label->unk3f = 0;
+            break;
+        case STATUS_NAME_GRID_LETTERS_LEFT:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_LETTER_GRID_LEFT, 0, 184.0f, 146.0f, 0.0f, 0.0f);
+            status_set_spacing(label, 18.0f);
+            set_label_spacing_y(label, 4.0f);
+            label->unk3f = 0;
+            break;
+        case STATUS_NAME_GRID_LETTERS_RIGHT:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_LETTER_GRID_RIGHT, 0, 406.0f, 146.0f, 0.0f, 0.0f);
+            status_set_spacing(label, 18.0f);
+            set_label_spacing_y(label, 4.0f);
+            label->unk3f = 0;
+            break;
+        case STATUS_NAME_GRID_SYMBOLS_LEFT:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_SYMBOL_GRID_LEFT, 0, 184.0f, 230.0f, 0.0f, 0.0f);
+            status_set_spacing(label, 26.0f);
+            set_label_spacing_y(label, 4.0f);
+            label->unk3f = 0;
+            break;
+        case STATUS_NAME_GRID_SYMBOLS_RIGHT:
+            lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_SYMBOL_GRID_RIGHT, 0, 406.0f, 230.0f, 0.0f, 0.0f);
+            status_set_spacing(label, 26.0f);
+            set_label_spacing_y(label, 4.0f);
+            label->unk3f = 0;
+            break;
+        }
+        lib_container_attach_widget(unk10, label);
+        status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), label);
+        if (0 <= index && index < 6)
+        {
+            label->unk3d = 0;
+        }
+        if (8 <= index && index < STATUS_NAME_GRID_LABEL_COUNT)
+        {
+            label->unk3d = 0;
+        }
+    }
+    alphabet_symbol_grid = new (0) LibObject178750;
+    lib_text_init_resource_rectangle(alphabet_symbol_grid, reinterpret_cast<s32>(associated), STATUS_TEXT_ALPHABET_SYMBOL_GRID, 0, 184.0f, 146.0f, 0.0f, 0.0f);
+    set_label_spacing_y(alphabet_symbol_grid, 4.0f);
+    alphabet_symbol_grid->unk3f = 0;
+    lib_container_attach_widget(unk10, alphabet_symbol_grid);
+    command_x = 32.0f;
+    row_height = 28.0f;
+    glyph_scale = 0.86f;
+    glyph_width = 24.0f * glyph_scale;
+    for (s32 index = 0; index < 6; index++)
+    {
+        command_labels[index] = new (0) LibObject178750;
+        lib_text_init_resource_rectangle(command_labels[index], reinterpret_cast<s32>(associated), index + STATUS_TEXT_HIRAGANA, 1,
+                                         command_x, 9.0f + (110.0f + row_height * index), 0.0f, 0.0f);
+        LibObject178750* label = command_labels[index];
+        label->set_scale(glyph_scale, glyph_scale);
+        lib_container_attach_widget(unk10, command_labels[index]);
+        status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), command_labels[index]);
+        if (0 <= index && index < 3)
+        {
+            command_labels[index]->unk3d = 0;
+        }
+    }
+    command_labels[6] = new (0) LibObject178750;
+    lib_text_init_resource_rectangle(command_labels[6], reinterpret_cast<s32>(associated), STATUS_TEXT_CONFIRM, 1, command_x, 334.0f, 0.0f, 0.0f);
+    command_labels[6]->set_scale(0.9f, 0.9f);
+    lib_container_attach_widget(unk10, command_labels[6]);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), command_labels[6]);
+    panel = new (0) LibClass178630;
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 608.0f, 110.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
+    surname_caption = new (0) LibObject178750;
+    lib_text_init_resource_rectangle(surname_caption, reinterpret_cast<s32>(associated), selection->slots[selection->current] + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0,
+                                     404.0f, 43.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(unk10, surname_caption);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), surname_caption);
+    for (s32 index = 0; index < 7; index++)
+    {
+        LibObject178750* marker = new (0) LibObject178750;
+        lib_text_init_resource_rectangle(marker, reinterpret_cast<s32>(associated), STATUS_TEXT_NAME_UNDERLINE, 0,
+                                         (152.0f + 36.0f * index) - 2.0f, 57.0f, 0.0f, 0.0f);
+        if (first_name_marker == 0)
+        {
+            first_name_marker = unk2c.unk04;
+        }
+        lib_container_attach_widget(unk10, marker);
+        status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), marker);
+        marker->set_color(0x288080);
+        marker->set_scale(1.2f, 1.2f);
+        marker->unk80 = 3.6f;
+        marker->unk3c = 1;
+    }
+    for (s32 index = 0; index < 7; index++)
+    {
+        LibObject178750* marker = new (0) LibObject178750;
+        lib_text_init_resource_rectangle(marker, reinterpret_cast<s32>(associated), STATUS_TEXT_NAME_SHADOW, 0, 152.0f + 36.0f * index, 59.0f, 0.0f, 0.0f);
+        marker->unk80 = 1.8f;
+        marker->unk3c = 1;
+        lib_container_attach_widget(unk10, marker);
+        status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), marker);
+        marker->set_color(0x505050);
+    }
+    name_x = 152.0f;
+    name_y = 43.0f;
+    for (s32 index = 0; index < 7; index++)
+    {
+        name_glyph_widgets[index] = new (0) LibObject178750;
+        lib_text_init_resource_rectangle(name_glyph_widgets[index], reinterpret_cast<s32>(associated), STATUS_TEXT_BLANK, 0, name_x + 36.0f * index, name_y, 0.0f, 0.0f);
+        lib_container_attach_widget(unk10, name_glyph_widgets[index]);
+        status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), name_glyph_widgets[index]);
+        name_glyph_widgets[index]->unk3f = 0;
+    }
+    name_text = new (0) LibObject175140;
+    const char* name = static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_name;
+    name_text->func_00467AD0(name_x, name_y, 0.0f, 0.0f, name, 0);
+    lib_container_attach_widget(unk10, name_text);
+    status_append_name_widget(reinterpret_cast<StatusWidgetList*>(&unk44), name_text);
+    status_set_spacing(name_text, 8.0f);
+    name_cursor = new (0) ItemCreationClass172600;
+    func_0041AD10(static_cast<ItemCreationClass172600*>(name_cursor), name_x + 36.0f * selected_name_glyph, name_y, 24.0f, 24.0f);
+    lib_container_attach_widget(unk10, name_cursor);
+    portrait_resource_slot = selection->slots[selection->current];
+    portrait = new (0) ItemCreationOptionResourceDisplay;
+    void* allocation = func_002D3D80(D_001B643C->slots, portrait_resource_slot);
+    FieldResourceRecord* resource = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->slots, portrait_resource_slot));
+    portrait->unkcc = allocation;
+    portrait->unkd0 = portrait_resource_slot;
+    portrait->func_002D6440(resource, 40.0f, 15.0f);
+    lib_container_attach_widget(unk10, portrait);
+    portrait->unk34 = 3;
+    grid_marker = new (0) LibClass175030;
+    lib_moving_widget_init_position(grid_marker, 0.0f, 0.0f);
+    lib_container_attach_widget(unk10, grid_marker);
+    grid_marker->func_00466E40(command_x - 6.0f, 214.0f, 0.1f);
+    status_select_alphanumeric_grid(this, grid_mode);
+    lib_text_set_resource(surname_caption, func_slot54(), selection->slots[selection->current] + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0);
+    const s8* saved = reinterpret_cast<const s8*>(static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_name);
+    for (s32 index = 0; index < 24; index++)
+    {
+        name_bytes[index] = 0;
+    }
+    for (s32 index = 0; index < 24; index++)
+    {
+        s8 value = saved[index];
+        if (value == 0)
+        {
+            break;
+        }
+        name_bytes[index] = value;
+    }
+    last_name_byte = 0;
+    s8 last;
+    for (;;)
+    {
+        last = last_name_byte;
+        if (name_bytes[last] == 0)
+        {
+            break;
+        }
+        last_name_byte = last + 1;
+    }
+    if (last > 0)
+    {
+        last_name_byte = last - 1;
+    }
+    status_refresh_name_glyphs(this);
+    status_refresh_name_markers(this);
+    return 1;
+}
+
+ItemCreationClass175110::~ItemCreationClass175110()
+{
+}
+
+StatusNameWindow::StatusNameWindow()
+{
+    selection = 0;
+    surname_caption = 0;
+    name_text = 0;
+    name_glyph_widgets[0] = 0;
+    name_glyph_widgets[1] = 0;
+    name_glyph_widgets[2] = 0;
+    name_glyph_widgets[3] = 0;
+    name_glyph_widgets[4] = 0;
+    name_glyph_widgets[5] = 0;
+    name_glyph_widgets[6] = 0;
+    first_name_marker = 0;
+    selected_name_glyph = 0;
+    last_name_byte = 0;
+    for (s32 i = 0; i < 24; ++i)
+    {
+        name_bytes[i] = 0;
+    }
+    name_glyph_keys[0] = 0;
+    name_glyph_keys[1] = 0;
+    name_glyph_keys[2] = 0;
+    name_glyph_keys[3] = 0;
+    name_glyph_keys[4] = 0;
+    name_glyph_keys[5] = 0;
+    name_glyph_keys[6] = 0;
+    status_initialize_name_maps(this);
+    name_cursor = 0;
+    name_x = 0;
+    name_y = 0;
+    selected_character_id = 0;
+    command_x = 0;
+    row_height = 0;
+    glyph_scale = 0;
+    glyph_width = 0;
+    func_0013C948(reinterpret_cast<char*>(default_names[0]), g_status_default_fayt_name);
+    func_0013C948(reinterpret_cast<char*>(default_names[1]), g_status_default_sophia_name);
+    func_0013C948(reinterpret_cast<char*>(default_names[2]), g_status_default_maria_name);
+    func_0013C948(reinterpret_cast<char*>(default_names[3]), g_status_default_cliff_name);
+    func_0013C948(reinterpret_cast<char*>(default_names[4]), g_status_default_nel_name);
+    func_0013C948(reinterpret_cast<char*>(default_names[5]), g_status_default_albel_name);
+    func_0013C948(reinterpret_cast<char*>(default_names[6]), g_status_default_roger_name);
+    func_0013C948(reinterpret_cast<char*>(default_names[7]), g_status_default_peppita_name);
+    func_0013C948(reinterpret_cast<char*>(default_names[8]), g_status_default_adray_name);
+    func_0013C948(reinterpret_cast<char*>(default_names[9]), g_status_default_mirage_name);
+    portrait = 0;
+    portrait_resource_slot = 0;
+    selected_grid_cell = STATUS_NAME_COMMAND_BACKSPACE;
+    grid_mode = STATUS_NAME_ALPHANUMERIC;
+    alphabet_symbol_grid = 0;
+}
+
+void status_update_scroll(StatusCharacterWindow* object)
+{
+    if (object->scroll_active == 0)
+    {
+        return;
+    }
+    if (object->scroll_active == 1)
+    {
+        move_status_display_list(&object->text_widgets, object);
+        move_status_display_list(&object->numeric_widgets, object);
+        move_status_display_list(&object->item_widgets, object);
+        object->scroll_timer += 1.0f;
+        if (object->scroll_timer >= 4.0f)
+        {
+            object->scroll_active = 0;
+        }
+        if (object->scroll_delta >= 0.0f)
+        {
+            object->scroll_position -= object->scroll_extent / 4.0f;
+        }
+        else
+        {
+            object->scroll_position += object->scroll_extent / 4.0f;
+        }
+        LibClass1725D0* marker = object->scroll_marker;
+        marker->unk54 = object->scroll_position;
+        marker->unk3c = 1;
+    }
+}
+
+void status_begin_scroll(StatusCharacterWindow* object, u16 scroll_page)
+{
+    if (object->scroll_active == 0 && (scroll_page != 0 || object->scroll_page != 0) && (scroll_page != 1 || object->scroll_page != 1))
+    {
+        object->scroll_page++;
+        if (object->scroll_page >= 2)
+        {
+            object->scroll_page = 0;
+        }
+        if (scroll_page == 0)
+        {
+            object->scroll_delta = object->scroll_step;
+        }
+        else if (scroll_page == 1)
+        {
+            object->scroll_delta = -object->scroll_step;
+        }
+        if (object->scroll_active == 0)
+        {
+            object->scroll_active = 1;
+            object->scroll_timer = 0.0f;
+        }
+        func_002CFE40(D_001B643C->callbacks, 0);
+    }
+}
+
+void StatusCharacterWindow::func_slot6c()
+{
+    status_begin_scroll(this, 1);
+}
+
+void StatusCharacterWindow::func_slot68()
+{
+    status_begin_scroll(this, 0);
+}
+
 /**
  * @brief Refresh the selected character's name, statistics, equipment, and status captions.
  * @param object Status record window.
  */
-extern "C" void status_refresh_character_display(StatusScrollState* object)
+extern "C" void status_refresh_character_display(StatusCharacterWindow* object)
 {
     FieldRecordSelection* selection = object->selection;
     s8 current = selection->current;
     func_003F9890(&reinterpret_cast<StatusCharacterRecord*>(selection->records)[current],
                  &static_cast<StatusCharacterEquipment*>(selection->unk04)[current], 0, -1);
-    LibObject175140* record = object->record;
+    LibObject175140* record = object->character_name_widget;
     record->unkfc = status_equipment(object->selection)->character_name;
     record->unk3c = 1;
-    status_set_numeric(object->unk108, status_character(object->selection)->get_hp());
-    status_set_numeric(object->unk10c, status_character(object->selection)->get_max_hp());
-    status_set_numeric(object->unk110, status_character(object->selection)->get_mp());
-    status_set_numeric(object->unk114, status_character(object->selection)->get_max_mp());
-    status_set_numeric(object->unk118, status_character(object->selection)->get_level());
-    status_set_numeric(object->unk11c, status_character(object->selection)->get_experience());
+    status_set_numeric(object->hp_value, status_character(object->selection)->get_hp());
+    status_set_numeric(object->max_hp_value, status_character(object->selection)->get_max_hp());
+    status_set_numeric(object->mp_value, status_character(object->selection)->get_mp());
+    status_set_numeric(object->max_mp_value, status_character(object->selection)->get_max_mp());
+    status_set_numeric(object->level_value, status_character(object->selection)->get_level());
+    status_set_numeric(object->experience_value, status_character(object->selection)->get_experience());
     StatusCharacterRecord* character = &reinterpret_cast<StatusCharacterRecord*>(status_record_table(object->selection))[status_selected_index(object->selection)];
     if (character->get_level() < 255)
     {
         s32 total = 0;
         s32 level = character->get_level();
         StatusExperienceTable* experience = new (0) StatusExperienceTable;
-        status_set_numeric(object->unk120, func_004028C0(experience, level + 1, character, &total));
+        status_set_numeric(object->next_level_experience_value, func_004028C0(experience, level + 1, character, &total));
         if (experience != 0)
         {
             delete experience;
         }
-        static_cast<LibObject174F20*>(object->unk120)->unk3f = 1;
-        object->unk138->unk3f = 0;
+        object->next_level_experience_value->unk3f = 1;
+        object->max_level_caption->unk3f = 0;
     }
     else
     {
-        static_cast<LibObject174F20*>(object->unk120)->unk3f = 0;
-        object->unk138->unk3f = 1;
+        object->next_level_experience_value->unk3f = 0;
+        object->max_level_caption->unk3f = 1;
     }
-    status_set_numeric(object->unk124, status_character(object->selection)->get_attack());
-    status_set_numeric(object->unk128, status_character(object->selection)->get_defense());
-    status_set_numeric(object->unk12c, status_character(object->selection)->get_agility());
-    status_set_numeric(object->unk130, status_character(object->selection)->get_hit());
-    status_set_numeric(object->unk134, status_character(object->selection)->get_intelligence());
+    status_set_numeric(object->attack_value, status_character(object->selection)->get_attack());
+    status_set_numeric(object->defense_value, status_character(object->selection)->get_defense());
+    status_set_numeric(object->agility_value, status_character(object->selection)->get_agility());
+    status_set_numeric(object->hit_value, status_character(object->selection)->get_hit());
+    status_set_numeric(object->intelligence_value, status_character(object->selection)->get_intelligence());
     for (s32 index = 0; index < 4; index++)
     {
         s16 identifier = status_equipment(object->selection)->get_allocation_id(index);
         if (identifier == 0)
         {
-            object->first_tail[index]->unk3f = 0;
-            object->second_tail[index]->unk3f = 1;
+            object->equipment_values[index]->unk3f = 0;
+            object->empty_equipment_captions[index]->unk3f = 1;
         }
         else
         {
             ItemCreationAllocationRecord* allocation = status_allocation(identifier);
             if (allocation == 0)
             {
-                object->first_tail[index]->unk3f = 0;
-                object->second_tail[index]->unk3f = 1;
+                object->equipment_values[index]->unk3f = 0;
+                object->empty_equipment_captions[index]->unk3f = 1;
             }
             else
             {
                 u16 item = allocation->definition_index();
                 u8 modification = allocation->modification_number;
-                status_set_item(object->first_tail[index], item + 1, modification);
-                object->first_tail[index]->unk3f = 1;
-                object->second_tail[index]->unk3f = 0;
+                status_set_item(object->equipment_values[index], item + 1, modification);
+                object->equipment_values[index]->unk3f = 1;
+                object->empty_equipment_captions[index]->unk3f = 0;
             }
         }
     }
     object->selected_slot = object->selection->slots[object->selection->current];
-    LibBounds4C69B0* record_bounds = func_00467950(object->record);
-    LibBounds4C69B0* caption_bounds = lib_text_measure_bounds(object->caption);
-    set_status_record_rectangle(object->caption, object->x + record_bounds->unk08, object->y, caption_bounds->unk08, 24.0f);
-    lib_text_set_resource(object->caption, object->func_slot54(), object->selected_slot + 0x13BB, 0);
-    func_0034C500(object);
-    func_0034C640(object);
-    status_set_numeric(object->unk148, status_equipment(object->selection)->get_sp());
-    status_set_numeric(object->unk14c, object->option_total);
-    status_set_numeric(object->unk154, status_equipment(object->selection)->get_cp());
+    LibBounds4C69B0* name_bounds = func_00467950(object->character_name_widget);
+    LibBounds4C69B0* surname_bounds = lib_text_measure_bounds(object->surname_caption);
+    set_status_record_rectangle(object->surname_caption, object->name_x + name_bounds->unk08, object->name_y, surname_bounds->unk08, 24.0f);
+    lib_text_set_resource(object->surname_caption, object->func_slot54(), object->selected_slot + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0);
+    status_refresh_portrait(object);
+    status_refresh_battle_skill_keys(object);
+    status_set_numeric(object->sp_value, status_equipment(object->selection)->get_sp());
+    status_set_numeric(object->assigned_cp_value, object->assigned_cp);
+    status_set_numeric(object->cp_value, status_equipment(object->selection)->get_cp());
     u32 source0 = object->func_slot54();
-    lib_text_set_resource(object->unk188, source0, object->keys[0], 0);
+    lib_text_set_resource(object->short_minor_attack_skill_caption, source0, object->battle_skill_caption_keys[0], 0);
     u32 source1 = object->func_slot54();
-    lib_text_set_resource(object->unk18c, source1, object->keys[1], 0);
+    lib_text_set_resource(object->long_minor_attack_skill_caption, source1, object->battle_skill_caption_keys[1], 0);
     u32 source2 = object->func_slot54();
-    lib_text_set_resource(object->unk190, source2, object->keys[2], 0);
+    lib_text_set_resource(object->short_major_attack_skill_caption, source2, object->battle_skill_caption_keys[2], 0);
     u32 source3 = object->func_slot54();
-    lib_text_set_resource(object->unk194, source3, object->keys[3], 0);
+    lib_text_set_resource(object->long_major_attack_skill_caption, source3, object->battle_skill_caption_keys[3], 0);
     u32 source4 = object->func_slot54();
-    lib_text_set_resource(object->unk17c, source4, object->keys[4], 0);
+    lib_text_set_resource(object->support_skill_1_caption, source4, object->battle_skill_caption_keys[4], 0);
     u32 source5 = object->func_slot54();
-    lib_text_set_resource(object->unk184, source5, object->keys[5], 0);
+    lib_text_set_resource(object->support_skill_2_caption, source5, object->battle_skill_caption_keys[5], 0);
 }
 
-void StatusScrollState::func_slot64()
+void StatusCharacterWindow::func_slot64()
 {
-    LibObject175140* record = this->record;
-    record->unkfc = static_cast<StatusDisplayRecord*>(this->selection->unk04)[this->selection->current].data;
-    record->unk3c = 1;
+    LibObject175140* character_name_widget = this->character_name_widget;
+    character_name_widget->unkfc = static_cast<StatusCharacterEquipment*>(this->selection->unk04)[this->selection->current].character_name;
+    character_name_widget->unk3c = 1;
     this->selected_slot = this->selection->slots[this->selection->current];
-    LibBounds4C69B0* record_bounds = func_00467950(this->record);
+    LibBounds4C69B0* name_bounds = func_00467950(this->character_name_widget);
     u32 source = this->func_slot54();
-    lib_text_set_resource(this->caption, source, this->selected_slot + 0x13BB, 0);
-    LibBounds4C69B0* caption_bounds = lib_text_measure_bounds(this->caption);
-    set_status_record_rectangle(this->caption, this->x + record_bounds->unk08,
-                                this->y, caption_bounds->unk08, 24.0f);
-    this->marker->unk3f = 1;
-    this->other_marker->unk3f = 1;
+    lib_text_set_resource(this->surname_caption, source, this->selected_slot + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0);
+    LibBounds4C69B0* surname_bounds = lib_text_measure_bounds(this->surname_caption);
+    set_status_record_rectangle(this->surname_caption, this->name_x + name_bounds->unk08,
+                                this->name_y, surname_bounds->unk08, 24.0f);
+    this->name_entry_hint->unk3f = 1;
+    this->name_divider->unk3f = 1;
     this->unk10->unkab = 1;
 }
 
 /**
  * @brief Update nested-display cancellation and status-window transitions.
  */
-void StatusScrollState::func_slot5c()
+void StatusCharacterWindow::func_slot5c()
 {
-    if (this->unk1d8 != 0 && func_002FD480(this->unk1d4))
+    if (this->model_cancel_pending != 0 && func_002FD480(this->character_model))
     {
-        if (this->unk1d4 != 0)
+        if (this->character_model != 0)
         {
-            this->unk1d4->func_001DD7B0();
-            this->unk1d4 = 0;
+            this->character_model->func_001DD7B0();
+            this->character_model = 0;
         }
-        if (this->unk1d9 != 0)
+        if (this->model_reload_pending != 0)
         {
-            func_0034C130(this);
-            this->unk1d9 = 0;
+            status_create_character_model(this);
+            this->model_reload_pending = 0;
         }
         else
         {
-            this->display->unk3f = 1;
-            lib_text_set_resource(this->variant_text, this->func_slot54(), 0x13CC, 0);
+            this->portrait->unk3f = 1;
+            lib_text_set_resource(this->color_setup_hint, this->func_slot54(), STATUS_TEXT_COLOR_SETUP_HINT, 0);
         }
-        this->unk1d8 = 0;
+        this->model_cancel_pending = 0;
     }
-    FieldClass153E30* receiver = reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14);
+    FieldClass153E30* receiver = D_001B643C->callbacks->status_receiver;
     if (receiver->func_00261150() != this)
     {
-        if (this->unk1d4 != 0)
+        if (this->character_model != 0)
         {
-            field_cancel_model_request(this->unk1d4);
-            this->unk1d8 = 1;
+            field_cancel_model_request(this->character_model);
+            this->model_cancel_pending = 1;
         }
         return;
     }
-    func_0034AF00(this);
-    if (this->record_active == 1 && this->selection->active == 1)
+    status_update_scroll(this);
+    if (this->character_change_pending == 1 && this->selection->active == 1)
     {
         status_refresh_character_display(this);
-        this->record_active = 0;
+        this->character_change_pending = 0;
     }
-    if (this->unk1da != 0 && this->unk1d4 == 0)
+    if (this->window_transition_pending != 0 && this->character_model == 0)
     {
         this->set_state(1, 0x80);
     }
 }
 
-s32 StatusScrollState::func_slotdc()
+s32 StatusCharacterWindow::func_slotdc()
 {
-    if (record_active == 1)
+    if (character_change_pending == 1)
     {
         return 0;
     }
@@ -2069,20 +2242,20 @@ s32 StatusScrollState::func_slotdc()
     {
         return 0;
     }
-    record_active = 1;
+    character_change_pending = 1;
     selection->active = 0;
     func_0028E2B0(selection, 1);
-    if (unk1d4 != 0)
+    if (character_model != 0)
     {
-        field_cancel_model_request(unk1d4);
-        unk1d8 = 1;
+        field_cancel_model_request(character_model);
+        model_cancel_pending = 1;
     }
     return 4;
 }
 
-s32 StatusScrollState::func_slotd8()
+s32 StatusCharacterWindow::func_slotd8()
 {
-    if (record_active == 1)
+    if (character_change_pending == 1)
     {
         return 0;
     }
@@ -2090,13 +2263,13 @@ s32 StatusScrollState::func_slotd8()
     {
         return 0;
     }
-    record_active = 1;
+    character_change_pending = 1;
     selection->active = 0;
     func_0028E2B0(selection, 0);
-    if (unk1d4 != 0)
+    if (character_model != 0)
     {
-        field_cancel_model_request(unk1d4);
-        unk1d8 = 1;
+        field_cancel_model_request(character_model);
+        model_cancel_pending = 1;
     }
     return 4;
 }
@@ -2105,46 +2278,46 @@ s32 StatusScrollState::func_slotd8()
  * @brief Create and attach the nested status display when needed.
  * @param object Status state containing the optional nested display.
  */
-void func_0034C130(StatusScrollState* object)
+void status_create_character_model(StatusCharacterWindow* object)
 {
-    if (object->unk1d4 == 0)
+    if (object->character_model == 0)
     {
-        object->unk1d4 = new (0) FieldClass15BB90;
+        object->character_model = new (0) FieldClass15BB90;
         FieldRecordSelection* selection = object->selection;
         u16 identifier = selection->slots[selection->current];
-        u16 variant = static_cast<StatusVariantRecord*>(selection->unk04)[selection->current].variant;
+        u16 variant = static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_resource_variant;
         if (variant >= 4)
         {
             variant = 3;
         }
-        field_request_model_resource(object->unk1d4, 0x290 + 4 * (identifier - 1) + (u16)variant);
-        object->unk1d4->unk5b = 1;
-        field_replace_model_camera(object->unk1d4, D_001B643C->unk1c);
-        field_attach_model_display(object->unk1d4);
+        field_request_model_resource(object->character_model, 0x290 + 4 * (identifier - 1) + (u16)variant);
+        object->character_model->unk5b = 1;
+        field_replace_model_camera(object->character_model, D_001B643C->model_camera);
+        field_attach_model_display(object->character_model);
         if (static_cast<StatusWindowSection*>(func_101440(func_101290(func_10D8E0()), 1))->enabled != 0)
         {
-            func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->unk1d4), 0.5235988f, 750.0f, 0.0f, 140.0f, 115.0f);
+            func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->character_model), 0.5235988f, 750.0f, 0.0f, 140.0f, 115.0f);
         }
         else
         {
-            func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->unk1d4), 0.5235988f, 480.0f, 0.0f, 90.0f, 110.0f);
+            func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->character_model), 0.5235988f, 480.0f, 0.0f, 90.0f, 110.0f);
         }
-        D_001B6614->func_004D74F0(object->unk1d4, -1);
+        D_001B6614->func_004D74F0(object->character_model, -1);
     }
 }
 
-s32 StatusScrollState::func_slotb8()
+s32 StatusCharacterWindow::func_slotb8()
 {
-    if (this->variant_text == 0)
+    if (this->color_setup_hint == 0)
     {
         return 0;
     }
-    if (this->unk1d4 != 0)
+    if (this->character_model != 0)
     {
-        field_cancel_model_request(this->unk1d4);
-        this->unk1d8 = 1;
+        field_cancel_model_request(this->character_model);
+        this->model_cancel_pending = 1;
         FieldRecordSelection* selection = this->selection;
-        s32 next = static_cast<StatusVariantRecord*>(selection->unk04)[selection->current].variant + 1;
+        s32 next = static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_resource_variant + 1;
         StatusVariantSection* section = static_cast<StatusVariantSection*>(func_101440(func_101290(func_10D8E0()), 1));
         u16 checksum = section->checksum;
         const u8* begin = section->values;
@@ -2160,50 +2333,50 @@ s32 StatusScrollState::func_slotb8()
         }
         next %= maximum + 1;
         selection = this->selection;
-        static_cast<StatusVariantRecord*>(selection->unk04)[selection->current].variant = next;
-        this->unk1d9 = 1;
+        static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_resource_variant = next;
+        this->model_reload_pending = 1;
         return 1;
     }
-    func_0034C130(this);
-    this->display->unk3f = 0;
-    lib_text_set_resource(this->variant_text, this->func_slot54(), 0x13CD, 0);
+    status_create_character_model(this);
+    this->portrait->unk3f = 0;
+    lib_text_set_resource(this->color_setup_hint, this->func_slot54(), STATUS_TEXT_COLOR_CHANGE_HINT, 0);
     return 1;
 }
 
-s32 StatusScrollState::func_slotb4()
+s32 StatusCharacterWindow::func_slotb4()
 {
-    if (D_001B643C->unk0c == 0)
+    if (D_001B643C->menu_controller == 0)
     {
         return 0;
     }
-    if (this->unk1d4 != 0)
+    if (this->character_model != 0)
     {
-        field_cancel_model_request(this->unk1d4);
-        this->unk1d8 = 1;
+        field_cancel_model_request(this->character_model);
+        this->model_cancel_pending = 1;
     }
-    this->unk1da = 1;
+    this->window_transition_pending = 1;
     return 2;
 }
 
-s32 StatusScrollState::func_slotb0()
+s32 StatusCharacterWindow::func_slotb0()
 {
     this->unk10->unkab = 0;
-    StatusResourceState* target = D_001B643C->unk10->unk14;
+    StatusResourceState* target = D_001B643C->callbacks->status_receiver;
     if (target != 0)
     {
-        target->field_40 = 1;
-        target->field_42 = 1;
-        D_001B643C->unk10->unk60 = 0;
+        target->requested_window = STATUS_WINDOW_NAME;
+        target->transition_phase = STATUS_TRANSITION_START;
+        D_001B643C->callbacks->input_enabled = 0;
     }
-    if (this->unk1d4 != 0)
+    if (this->character_model != 0)
     {
-        field_cancel_model_request(this->unk1d4);
-        this->unk1d8 = 1;
+        field_cancel_model_request(this->character_model);
+        this->model_cancel_pending = 1;
     }
     return 1;
 }
 
-void func_0034C500(StatusScrollState* object)
+void status_refresh_portrait(StatusCharacterWindow* object)
 {
     u16 selected = object->selection->slots[object->selection->current];
     for (s32 index = 0; index < 8; index++)
@@ -2214,7 +2387,7 @@ void func_0034C500(StatusScrollState* object)
         }
     }
     u16 key;
-    if (object->alternate != 0)
+    if (object->alternate_portrait_group != 0)
     {
         key = selected + 14;
     }
@@ -2228,96 +2401,66 @@ void func_0034C500(StatusScrollState* object)
     }
     void* allocation = func_002D3D80(D_001B643C->slots, key & 0xFF);
     FieldResourceRecord* record = func_002D3CC0(D_001B643C->slots, 0);
-    if (object->display != 0)
+    if (object->portrait != 0)
     {
-        set_status_resource_scale(object->display, 1.3f, 1.3f);
+        set_status_resource_scale(object->portrait, 1.3f, 1.3f);
     }
-    LibClass175110* display = object->display;
+    LibClass175110* display = object->portrait;
     if (display != 0 && record != 0)
     {
-        set_status_widget_position(display, object->resource_x, object->resource_y);
-        func_002D5CF0(object->display, allocation, record, static_cast<u8>(key));
+        set_status_widget_position(display, object->portrait_x, object->portrait_y);
+        func_002D5CF0(object->portrait, allocation, record, static_cast<u8>(key));
     }
 }
 
-void func_0034C640(StatusScrollState* object)
+void status_refresh_battle_skill_keys(StatusCharacterWindow* object)
 {
-    s32 kind, value, result_index, remainder;
-    s32 first, second, third, fourth, fifth;
+    s32 skill_id, mastery_points, mastery_level, points_to_next_level;
+    s32 minor_mp_cost, minor_hp_cost, cp_cost, minor_fury_cost, major_damage_scale_minus_one;
     if (object->selection != 0)
     {
-        object->option_total = 0;
+        object->assigned_cp = 0;
         FieldRecordSelection* selection = object->selection;
-        StatusProtectedEntries* record = &static_cast<StatusProtectedEntries*>(selection->unk04)[selection->current];
+        StatusCharacterEquipment* record = &static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current];
         if (record != 0)
         {
             for (s32 index = 0; index < 6; index++)
             {
-                object->keys[index] = 0x822;
-                s32 entry = status_protected_entry(record, index);
+                object->battle_skill_caption_keys[index] = STATUS_TEXT_NONE;
+                s32 entry = status_battle_skill_index(record, index);
                 if (entry > 0)
                 {
                     selection = object->selection;
-                    func_00408850(&static_cast<StatusProtectedEntries*>(selection->unk04)[selection->current], selection->slots[selection->current], entry - 1,
-                                  &kind, &value, &result_index, &remainder);
+                    func_00408850(&static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current], selection->slots[selection->current], entry - 1,
+                                  &skill_id, &mastery_points, &mastery_level, &points_to_next_level);
                     selection = object->selection;
-                    func_004095C0(kind, &selection->records[selection->current], &static_cast<StatusProtectedEntries*>(selection->unk04)[selection->current],
-                                  &first, &second, &third, &fourth, &fifth, 0, 0, 0);
-                    object->option_total += third;
-                    object->keys[index] = kind + 0x18FF;
+                    func_004095C0(skill_id, &selection->records[selection->current], &static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current],
+                                  &minor_mp_cost, &minor_hp_cost, &cp_cost, &minor_fury_cost, &major_damage_scale_minus_one, 0, 0, 0);
+                    object->assigned_cp += cp_cost;
+                    object->battle_skill_caption_keys[index] = skill_id + STATUS_TEXT_BATTLE_SKILL_BASE;
                 }
                 else
                 {
-                    object->keys[index] = 0x822;
+                    object->battle_skill_caption_keys[index] = STATUS_TEXT_NONE;
                 }
             }
         }
     }
 }
 
-/** @brief Persistent status flags from save section four. */
-struct StatusFlagsSection
-{
-    u8 unknown[0x22];
-    u8 flags;
-};
-
-/** @brief Set text spacing and mark the widget dirty. @param widget Text widget. @param spacing Character spacing. */
-static inline void status_set_spacing(LibClass174EF0* widget, float spacing)
-{
-    widget->unk88 = spacing;
-    widget->unk3c = 1;
-}
-/** @brief Set a divider color and mark the widget dirty. @param widget Divider widget. @param color Packed color. */
-static inline void status_set_marker_color(ItemCreationClass172870* widget, u32 color)
-{
-    widget->unk50 = color;
-    widget->unk3c = 1;
-}
-/** @brief Set the item display flag and mark the widget dirty. @param widget Item widget. @param flag Display flag. */
-static inline void status_set_item_flag(LibObject172410* widget, u8 flag)
-{
-    widget->unkfa = flag;
-    widget->unk3c = 1;
-}
-/** @brief Find a stat row position. @param origin First row position. @param row Row index. @return Row position. */
-static inline float status_row_y(float origin, s32 row)
-{
-    return origin + 24.0f * static_cast<float>(row);
-}
 /**
  * @brief Create the selected character's portrait, stat rows, equipment, and scrolling displays.
  * @param associated Full resource source word.
  * @return One on completion, or zero if selection or a stat label is unavailable.
  */
-s32 StatusScrollState::func_slotf4(u32 associated)
+s32 StatusCharacterWindow::func_slotf4(u32 associated)
 {
     StatusFlagsSection* flags = static_cast<StatusFlagsSection*>(func_101440(func_101290(func_10D8E0()), 4));
     if (flags != 0)
     {
-        alternate = (flags->flags & 0x10) != 0;
+        alternate_portrait_group = (flags->flags & 0x10) != 0;
     }
-    selection = D_001B643C->unk10->unk14->selected_records();
+    selection = D_001B643C->callbacks->status_receiver->selected_records();
     if (selection == 0)
     {
         return 0;
@@ -2330,41 +2473,41 @@ s32 StatusScrollState::func_slotf4(u32 associated)
     LibClass178630* panel = new (0) LibClass178630;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 608.0f, 392.0f, 88.0f);
     lib_container_attach_widget(container, panel);
-    x = 12.0f;
-    y = 12.0f;
-    record = new (0) LibObject175140;
-    caption = new (0) LibObject178750;
-    other_marker = new (0) ItemCreationClass172870;
-    record->func_00467AD0(x, y, 0.0f, 0.0f, status_equipment(selection)->character_name, 0);
-    lib_container_attach_widget(unk10, record);
-    func_00350D80(reinterpret_cast<OverlayList*>(&unk44), record);
-    LibBounds4C69B0* bounds = func_00467950(record);
-    lib_text_init_resource_rectangle(caption, associated, selected_slot + 0x13BB, 0, x + bounds->unk08, y, 0.0f, 0.0f);
-    status_set_spacing(caption, -1.0f);
-    lib_container_attach_widget(unk10, caption);
-    lib_text_measure_bounds(caption);
-    float divider_y = 26.0f + y;
-    lib_marker_init_rectangle(other_marker, 12.0f, divider_y, 584.0f, 3.0f);
-    status_set_marker_color(other_marker, 0x888888);
-    lib_container_attach_widget(unk10, other_marker);
+    name_x = 12.0f;
+    name_y = 12.0f;
+    character_name_widget = new (0) LibObject175140;
+    surname_caption = new (0) LibObject178750;
+    name_divider = new (0) ItemCreationClass172870;
+    character_name_widget->func_00467AD0(name_x, name_y, 0.0f, 0.0f, status_equipment(selection)->character_name, 0);
+    lib_container_attach_widget(unk10, character_name_widget);
+    status_append_name_widget(reinterpret_cast<StatusWidgetList*>(&unk44), character_name_widget);
+    LibBounds4C69B0* bounds = func_00467950(character_name_widget);
+    lib_text_init_resource_rectangle(surname_caption, associated, selected_slot + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0, name_x + bounds->unk08, name_y, 0.0f, 0.0f);
+    status_set_spacing(surname_caption, -1.0f);
+    lib_container_attach_widget(unk10, surname_caption);
+    lib_text_measure_bounds(surname_caption);
+    float divider_y = 26.0f + name_y;
+    lib_marker_init_rectangle(name_divider, 12.0f, divider_y, 584.0f, 3.0f);
+    status_set_marker_color(name_divider, 0x888888);
+    lib_container_attach_widget(unk10, name_divider);
     if (selection->count > 1)
     {
         LibObject178750* hint = new (0) LibObject178750;
-        hint->init_resource_rectangle(384.0f, y, 0.0f, 0.0f, associated, 0x13CA, 0);
+        hint->init_resource_rectangle(384.0f, name_y, 0.0f, 0.0f, associated, STATUS_TEXT_MEMBER_HINT, 0);
         lib_container_attach_widget(unk10, hint);
     }
-    marker = new (0) LibObject178750;
-    lib_text_init_resource_rectangle(marker, associated, 0x13CB, 0, 520.0f, y, 0.0f, 0.0f);
-    lib_container_attach_widget(unk10, marker);
+    name_entry_hint = new (0) LibObject178750;
+    lib_text_init_resource_rectangle(name_entry_hint, associated, STATUS_TEXT_NAME_HINT, 0, 520.0f, name_y, 0.0f, 0.0f);
+    lib_container_attach_widget(unk10, name_entry_hint);
     ItemCreationClass1746A0* scissor = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* reset = new (0) ItemCreationClass1746A0;
     lib_scissor_init_rectangle(scissor, 8.0f, 48.0f, 580.0f, 336.0f);
     lib_container_attach_widget(unk10, scissor);
-    resource_x = 316.0f;
-    resource_y = 52.0f;
-    display = new (0) ItemCreationOptionResourceDisplay;
+    portrait_x = 316.0f;
+    portrait_y = 52.0f;
+    portrait = new (0) ItemCreationOptionResourceDisplay;
     u16 resource_key;
-    if (alternate)
+    if (alternate_portrait_group)
     {
         resource_key = selected_slot + 14;
     }
@@ -2376,11 +2519,11 @@ s32 StatusScrollState::func_slotf4(u32 associated)
     {
         resource_key = selected_slot + 14;
     }
-    display->unkcc = func_002D3D80(D_001B643C->slots, resource_key & 0xFF);
-    display->unkd0 = resource_key;
-    display->func_002D6440(func_002D3CC0(D_001B643C->slots, 0), resource_x, resource_y);
-    display->unk34 = 3;
-    lib_container_attach_widget(unk10, display);
+    portrait->unkcc = func_002D3D80(D_001B643C->slots, resource_key & 0xFF);
+    portrait->unkd0 = resource_key;
+    portrait->func_002D6440(func_002D3CC0(D_001B643C->slots, 0), portrait_x, portrait_y);
+    portrait->unk34 = 3;
+    lib_container_attach_widget(unk10, portrait);
     StatusVariantSection* variants = static_cast<StatusVariantSection*>(func_101440(func_101290(func_10D8E0()), 1));
     u8* variant_begin = variants->values;
     u8* variant_end = reinterpret_cast<u8*>(&variants->checksum);
@@ -2395,11 +2538,11 @@ s32 StatusScrollState::func_slotf4(u32 associated)
     }
     if (variant > 0)
     {
-        variant_text = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(variant_text, associated, 0x13CC, 0, 467.0f, 350.0f, 0.0f, 0.0f);
-        lib_container_attach_widget(unk10, variant_text);
+        color_setup_hint = new (0) LibObject178750;
+        lib_text_init_resource_rectangle(color_setup_hint, associated, STATUS_TEXT_COLOR_SETUP_HINT, 0, 467.0f, 350.0f, 0.0f, 0.0f);
+        lib_container_attach_widget(unk10, color_setup_hint);
     }
-    float base_y = resource_y;
+    float base_y = portrait_y;
     for (s32 index = 0; index < 8; index++)
     {
         u16 identifier = selection->slots[static_cast<s16>(index)];
@@ -2408,85 +2551,85 @@ s32 StatusScrollState::func_slotf4(u32 associated)
             resource_slots[index] = identifier;
         }
     }
-    unk108 = new (0) LibObject174F20;
-    unk10c = new (0) LibObject174F20;
-    unk110 = new (0) LibObject174F20;
-    unk114 = new (0) LibObject174F20;
-    unk118 = new (0) LibObject174F20;
-    unk11c = new (0) LibObject174F20;
-    unk120 = new (0) LibObject174F20;
-    unk138 = new (0) LibObject178750;
-    unk124 = new (0) LibObject174F20;
-    unk128 = new (0) LibObject174F20;
-    unk12c = new (0) LibObject174F20;
-    unk130 = new (0) LibObject174F20;
-    unk134 = new (0) LibObject174F20;
-    unk148 = new (0) LibObject174F20;
-    unk14c = new (0) LibObject174F20;
-    unk154 = new (0) LibObject174F20;
-    unk13c = new (0) LibObject178750;
-    unk140 = new (0) LibObject178750;
-    unk144 = new (0) LibObject178750;
-    unk150 = new (0) LibObject178750;
-    unk158 = new (0) LibObject178750;
-    unk15c = new (0) LibObject178750;
-    unk160 = new (0) LibObject178750;
-    unk164 = new (0) LibObject178750;
-    unk168 = new (0) LibObject178750;
-    unk16c = new (0) LibObject178750;
-    unk170 = new (0) LibObject178750;
-    unk174 = new (0) LibObject178750;
-    unk178 = new (0) LibObject178750;
-    unk17c = new (0) LibObject178750;
-    unk180 = new (0) LibObject178750;
-    unk184 = new (0) LibObject178750;
-    unk188 = new (0) LibObject178750;
-    unk18c = new (0) LibObject178750;
-    unk190 = new (0) LibObject178750;
-    unk194 = new (0) LibObject178750;
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk108);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk10c);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk110);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk114);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk118);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk11c);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk120);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk124);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk128);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk12c);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk130);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk134);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk148);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk14c);
-    func_00350F10(reinterpret_cast<OverlayList*>(&second), unk154);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk13c);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk140);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk144);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk150);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk158);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk15c);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk160);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk164);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk168);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk16c);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk170);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk174);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk178);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk17c);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk180);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk184);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk188);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk18c);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk190);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk194);
+    hp_value = new (0) LibObject174F20;
+    max_hp_value = new (0) LibObject174F20;
+    mp_value = new (0) LibObject174F20;
+    max_mp_value = new (0) LibObject174F20;
+    level_value = new (0) LibObject174F20;
+    experience_value = new (0) LibObject174F20;
+    next_level_experience_value = new (0) LibObject174F20;
+    max_level_caption = new (0) LibObject178750;
+    attack_value = new (0) LibObject174F20;
+    defense_value = new (0) LibObject174F20;
+    agility_value = new (0) LibObject174F20;
+    hit_value = new (0) LibObject174F20;
+    intelligence_value = new (0) LibObject174F20;
+    sp_value = new (0) LibObject174F20;
+    assigned_cp_value = new (0) LibObject174F20;
+    cp_value = new (0) LibObject174F20;
+    skills_label = new (0) LibObject178750;
+    sp_label = new (0) LibObject178750;
+    cp_label = new (0) LibObject178750;
+    cp_separator = new (0) LibObject178750;
+    short_minor_attack_button = new (0) LibObject178750;
+    short_minor_attack_label = new (0) LibObject178750;
+    long_minor_attack_button = new (0) LibObject178750;
+    long_minor_attack_label = new (0) LibObject178750;
+    short_major_attack_button = new (0) LibObject178750;
+    short_major_attack_label = new (0) LibObject178750;
+    long_major_attack_button = new (0) LibObject178750;
+    long_major_attack_label = new (0) LibObject178750;
+    support_skill_1_label = new (0) LibObject178750;
+    support_skill_1_caption = new (0) LibObject178750;
+    support_skill_2_label = new (0) LibObject178750;
+    support_skill_2_caption = new (0) LibObject178750;
+    short_minor_attack_skill_caption = new (0) LibObject178750;
+    long_minor_attack_skill_caption = new (0) LibObject178750;
+    short_major_attack_skill_caption = new (0) LibObject178750;
+    long_major_attack_skill_caption = new (0) LibObject178750;
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), hp_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), max_hp_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), mp_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), max_mp_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), level_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), experience_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), next_level_experience_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), attack_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), defense_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), agility_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), hit_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), intelligence_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), sp_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), assigned_cp_value);
+    status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), cp_value);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), skills_label);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), sp_label);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), cp_label);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), cp_separator);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), short_minor_attack_button);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), short_minor_attack_label);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), long_minor_attack_button);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), long_minor_attack_label);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), short_major_attack_button);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), short_major_attack_label);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), long_major_attack_button);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), long_major_attack_label);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), support_skill_1_label);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), support_skill_1_caption);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), support_skill_2_label);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), support_skill_2_caption);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), short_minor_attack_skill_caption);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), long_minor_attack_skill_caption);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), short_major_attack_skill_caption);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), long_major_attack_skill_caption);
     for (s32 index = 0; index <= 4; index++)
     {
         LibObject178750* label = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(label, associated, 0x138D + index, 1, 16.0f, base_y + 24.0f * static_cast<float>(index), 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(label, associated, STATUS_TEXT_HP + index, 1, 16.0f, base_y + 24.0f * static_cast<float>(index), 0.0f, 0.0f);
         label->set_color(0x806080);
         label->set_scale(0.85f, 0.85f);
         lib_container_attach_widget(unk10, label);
-        func_00351120(reinterpret_cast<OverlayList*>(&first), label);
+        status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), label);
     }
     FieldRecordSelection* selected = selection;
     s8 current = selected->current;
@@ -2499,53 +2642,53 @@ s32 StatusScrollState::func_slotf4(u32 associated)
     character = &reinterpret_cast<StatusCharacterRecord*>(status_record_table(selection))[status_selected_index(selection)];
     s32 level = character->get_level();
     s32 experience = character->get_experience();
-    unk108->init_numeric_resource_rectangle(58.0f, base_y, 60.0f, 24.0f, hp, 0, 0);
-    lib_container_attach_widget(unk10, unk108);
-    unk108->set_scale(0.9f, 0.9f);
+    hp_value->init_numeric_resource_rectangle(58.0f, base_y, 60.0f, 24.0f, hp, 0, 0);
+    lib_container_attach_widget(unk10, hp_value);
+    hp_value->set_scale(0.9f, 0.9f);
     float mp_y = 24.0f + base_y;
-    unk110->init_numeric_resource_rectangle(58.0f, mp_y, 60.0f, 24.0f, mp, 0, 0);
-    lib_container_attach_widget(unk10, unk110);
-    unk110->set_scale(0.9f, 0.9f);
-    unk10c->init_numeric_resource_rectangle(142.0f, base_y, 60.0f, 24.0f, maximum_hp, 0, 0);
-    lib_container_attach_widget(unk10, unk10c);
-    unk10c->set_scale(0.9f, 0.9f);
-    unk114->init_numeric_resource_rectangle(142.0f, mp_y, 60.0f, 24.0f, maximum_mp, 0, 0);
-    lib_container_attach_widget(unk10, unk114);
-    unk114->set_scale(0.9f, 0.9f);
-    unk118->init_numeric_resource_rectangle(142.0f, 48.0f + base_y, 60.0f, 24.0f, level, 0, 0);
-    lib_container_attach_widget(unk10, unk118);
-    unk118->set_scale(0.9f, 0.9f);
-    unk11c->init_numeric_resource_rectangle(142.0f, 72.0f + base_y, 60.0f, 24.0f, experience, 0, 0);
-    lib_container_attach_widget(unk10, unk11c);
-    unk11c->set_scale(0.9f, 0.9f);
+    mp_value->init_numeric_resource_rectangle(58.0f, mp_y, 60.0f, 24.0f, mp, 0, 0);
+    lib_container_attach_widget(unk10, mp_value);
+    mp_value->set_scale(0.9f, 0.9f);
+    max_hp_value->init_numeric_resource_rectangle(142.0f, base_y, 60.0f, 24.0f, maximum_hp, 0, 0);
+    lib_container_attach_widget(unk10, max_hp_value);
+    max_hp_value->set_scale(0.9f, 0.9f);
+    max_mp_value->init_numeric_resource_rectangle(142.0f, mp_y, 60.0f, 24.0f, maximum_mp, 0, 0);
+    lib_container_attach_widget(unk10, max_mp_value);
+    max_mp_value->set_scale(0.9f, 0.9f);
+    level_value->init_numeric_resource_rectangle(142.0f, 48.0f + base_y, 60.0f, 24.0f, level, 0, 0);
+    lib_container_attach_widget(unk10, level_value);
+    level_value->set_scale(0.9f, 0.9f);
+    experience_value->init_numeric_resource_rectangle(142.0f, 72.0f + base_y, 60.0f, 24.0f, experience, 0, 0);
+    lib_container_attach_widget(unk10, experience_value);
+    experience_value->set_scale(0.9f, 0.9f);
     character = status_character(selection);
     s32 total = 0;
     level = character->get_level();
     StatusExperienceTable* table = new (0) StatusExperienceTable;
     s32 remaining_experience = func_004028C0(table, level + 1, character, &total);
     float next_y = 96.0f + base_y;
-    unk120->init_numeric_resource_rectangle(142.0f, next_y, 60.0f, 24.0f, remaining_experience, 0, 0);
-    lib_container_attach_widget(unk10, unk120);
-    unk120->set_scale(0.9f, 0.9f);
+    next_level_experience_value->init_numeric_resource_rectangle(142.0f, next_y, 60.0f, 24.0f, remaining_experience, 0, 0);
+    lib_container_attach_widget(unk10, next_level_experience_value);
+    next_level_experience_value->set_scale(0.9f, 0.9f);
     if (table != 0)
     {
         delete table;
     }
-    lib_text_init_resource_rectangle(unk138, associated, 0x1398, 0, 158.0f, next_y, 0.0f, 0.0f);
-    unk138->set_scale(0.9f, 0.9f);
-    unk138->set_color(0x508050);
-    lib_container_attach_widget(unk10, unk138);
-    func_00351120(reinterpret_cast<OverlayList*>(&first), unk138);
+    lib_text_init_resource_rectangle(max_level_caption, associated, STATUS_TEXT_MAX_LEVEL, 0, 158.0f, next_y, 0.0f, 0.0f);
+    max_level_caption->set_scale(0.9f, 0.9f);
+    max_level_caption->set_color(0x508050);
+    lib_container_attach_widget(unk10, max_level_caption);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), max_level_caption);
     for (s32 index = 0; index < 2; index++)
     {
         LibObject178750* separator = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(separator, associated, 0x7E7, 0, 128.0f, base_y + 24.0f * static_cast<float>(index), 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(separator, associated, STATUS_TEXT_SLASH, 0, 128.0f, base_y + 24.0f * static_cast<float>(index), 0.0f, 0.0f);
         separator->set_color(0x806080);
         separator->set_scale(0.85f, 0.85f);
         lib_container_attach_widget(unk10, separator);
-        func_00351120(reinterpret_cast<OverlayList*>(&first), separator);
+        status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), separator);
     }
-    for (s32 key = 0x1393; key <= 0x139C; key++)
+    for (s32 key = STATUS_TEXT_ATTACK; key <= STATUS_TEXT_ACCESSORY_2; key++)
     {
         LibObject178750* label = new (0) LibObject178750;
         if (label == 0)
@@ -2554,163 +2697,163 @@ s32 StatusScrollState::func_slotf4(u32 associated)
         }
         switch (key)
         {
-        case 0x1393:
-        case 0x1394:
-        case 0x1395:
-        case 0x1396:
-        case 0x1397:
-            lib_text_init_resource_rectangle(label, associated, key, 1, 234.0f, base_y + 24.0f * static_cast<float>(key - 0x1393), 0.0f, 0.0f);
+        case STATUS_TEXT_ATTACK:
+        case STATUS_TEXT_DEFENSE:
+        case STATUS_TEXT_AGILITY:
+        case STATUS_TEXT_HIT:
+        case STATUS_TEXT_INTELLIGENCE:
+            lib_text_init_resource_rectangle(label, associated, key, 1, 234.0f, base_y + 24.0f * static_cast<float>(key - STATUS_TEXT_ATTACK), 0.0f, 0.0f);
             label->set_scale(0.85f, 0.85f);
             break;
-        case 0x1399:
-        case 0x139A:
-        case 0x139B:
-        case 0x139C:
-            lib_text_init_resource_rectangle(label, associated, key, 1, 16.0f, 2.0f + (180.0f + 48.0f * static_cast<float>(key - 0x1399)), 0.0f, 0.0f);
+        case STATUS_TEXT_WEAPON:
+        case STATUS_TEXT_ARMOR:
+        case STATUS_TEXT_ACCESSORY_1:
+        case STATUS_TEXT_ACCESSORY_2:
+            lib_text_init_resource_rectangle(label, associated, key, 1, 16.0f, 2.0f + (180.0f + 48.0f * static_cast<float>(key - STATUS_TEXT_WEAPON)), 0.0f, 0.0f);
             label->set_scale(0.75f, 0.75f);
             break;
         }
         label->set_color(0x806080);
         lib_container_attach_widget(unk10, label);
-        func_00351120(reinterpret_cast<OverlayList*>(&first), label);
+        status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), label);
     }
-    unk124->init_numeric_resource_rectangle(294.0f, base_y, 48.0f, 24.0f, status_character(selection)->get_attack(), 0, 0);
-    lib_container_attach_widget(unk10, unk124);
-    unk124->set_scale(0.9f, 0.9f);
+    attack_value->init_numeric_resource_rectangle(294.0f, base_y, 48.0f, 24.0f, status_character(selection)->get_attack(), 0, 0);
+    lib_container_attach_widget(unk10, attack_value);
+    attack_value->set_scale(0.9f, 0.9f);
     s32 defense = status_character(selection)->get_defense();
-    unk128->init_numeric_resource_rectangle(294.0f, status_row_y(base_y, 1), 48.0f, 24.0f, defense, 0, 0);
-    lib_container_attach_widget(unk10, unk128);
-    unk128->set_scale(0.9f, 0.9f);
+    defense_value->init_numeric_resource_rectangle(294.0f, status_row_y(base_y, 1), 48.0f, 24.0f, defense, 0, 0);
+    lib_container_attach_widget(unk10, defense_value);
+    defense_value->set_scale(0.9f, 0.9f);
     s32 agility = status_character(selection)->get_agility();
-    unk12c->init_numeric_resource_rectangle(294.0f, status_row_y(base_y, 2), 48.0f, 24.0f, agility, 0, 0);
-    lib_container_attach_widget(unk10, unk12c);
-    unk12c->set_scale(0.9f, 0.9f);
+    agility_value->init_numeric_resource_rectangle(294.0f, status_row_y(base_y, 2), 48.0f, 24.0f, agility, 0, 0);
+    lib_container_attach_widget(unk10, agility_value);
+    agility_value->set_scale(0.9f, 0.9f);
     s32 hit = status_character(selection)->get_hit();
-    unk130->init_numeric_resource_rectangle(294.0f, status_row_y(base_y, 3), 48.0f, 24.0f, hit, 0, 0);
-    lib_container_attach_widget(unk10, unk130);
-    unk130->set_scale(0.9f, 0.9f);
+    hit_value->init_numeric_resource_rectangle(294.0f, status_row_y(base_y, 3), 48.0f, 24.0f, hit, 0, 0);
+    lib_container_attach_widget(unk10, hit_value);
+    hit_value->set_scale(0.9f, 0.9f);
     s32 intelligence = status_character(selection)->get_intelligence();
-    unk134->init_numeric_resource_rectangle(294.0f, status_row_y(base_y, 4), 48.0f, 24.0f, intelligence, 0, 0);
-    lib_container_attach_widget(unk10, unk134);
-    unk134->set_scale(0.9f, 0.9f);
+    intelligence_value->init_numeric_resource_rectangle(294.0f, status_row_y(base_y, 4), 48.0f, 24.0f, intelligence, 0, 0);
+    lib_container_attach_widget(unk10, intelligence_value);
+    intelligence_value->set_scale(0.9f, 0.9f);
     for (s32 index = 0; index < 4; index++)
     {
-        first_tail[index] = new (0) LibObject172410;
-        second_tail[index] = new (0) LibObject178750;
-        func_00350C70(reinterpret_cast<OverlayList*>(&third), first_tail[index]);
-        func_00351120(reinterpret_cast<OverlayList*>(&first), second_tail[index]);
+        equipment_values[index] = new (0) LibObject172410;
+        empty_equipment_captions[index] = new (0) LibObject178750;
+        status_append_item_widget(reinterpret_cast<StatusWidgetList*>(&item_widgets), equipment_values[index]);
+        status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), empty_equipment_captions[index]);
     }
     for (s32 index = 0; index < 4; index++)
     {
         float item_y = 204.0f + 48.0f * static_cast<float>(index);
-        lib_item_code_init_rectangle(first_tail[index], 32.0f, item_y, 306.000030517578125f, 20.40000152587890625f, 0, 0, 0);
-        first_tail[index]->set_scale(0.85f, 0.85f);
-        status_set_item_flag(first_tail[index], 1);
-        lib_container_attach_widget(unk10, first_tail[index]);
-        lib_text_init_resource_rectangle(second_tail[index], associated, 0x822, 0, 32.0f, item_y, 0.0f, 0.0f);
-        second_tail[index]->set_scale(0.85f, 0.85f);
-        lib_container_attach_widget(unk10, second_tail[index]);
+        lib_item_code_init_rectangle(equipment_values[index], 32.0f, item_y, 306.000030517578125f, 20.40000152587890625f, 0, 0, 0);
+        equipment_values[index]->set_scale(0.85f, 0.85f);
+        status_set_item_flag(equipment_values[index], 1);
+        lib_container_attach_widget(unk10, equipment_values[index]);
+        lib_text_init_resource_rectangle(empty_equipment_captions[index], associated, STATUS_TEXT_NONE, 0, 32.0f, item_y, 0.0f, 0.0f);
+        empty_equipment_captions[index]->set_scale(0.85f, 0.85f);
+        lib_container_attach_widget(unk10, empty_equipment_captions[index]);
     }
-    func_0034C640(this);
+    status_refresh_battle_skill_keys(this);
     float lower_y = 392.0f + base_y;
-    lib_text_init_resource_rectangle(unk13c, associated, 0x139D, 1, 16.0f, lower_y, 0.0f, 0.0f);
-    unk13c->set_color(0x806080);
-    unk13c->set_scale(0.85f, 0.85f);
-    lib_container_attach_widget(unk10, unk13c);
-    lib_text_init_resource_rectangle(unk140, associated, 0x139E, 1, 16.0f, lower_y + 24.0f, 0.0f, 0.0f);
-    unk140->set_color(0x806080);
-    unk140->set_scale(0.85f, 0.85f);
-    lib_container_attach_widget(unk10, unk140);
-    lib_text_init_resource_rectangle(unk144, associated, 0x139F, 1, 16.0f, lower_y + 48.0f, 0.0f, 0.0f);
-    unk144->set_color(0x806080);
-    unk144->set_scale(0.85f, 0.85f);
-    lib_container_attach_widget(unk10, unk144);
-    unk148->init_numeric_resource_rectangle(158.0f, lower_y + 24.0f, 48.0f, 24.0f, 8888, 0, 0);
-    unk148->set_scale(0.9f, 0.9f);
-    lib_container_attach_widget(unk10, unk148);
-    unk14c->init_numeric_resource_rectangle(70.0f, lower_y + 48.0f, 48.0f, 24.0f, 8888, 1, 0);
-    unk14c->set_scale(0.9f, 0.9f);
-    lib_container_attach_widget(unk10, unk14c);
-    unk150->init_resource_rectangle(130.0f, lower_y + 48.0f, 0.0f, 0.0f, associated, 0x7E7, 1);
-    unk150->set_scale(0.85f, 0.85f);
-    lib_container_attach_widget(unk10, unk150);
-    unk154->init_numeric_resource_rectangle(158.0f, lower_y + 48.0f, 48.0f, 24.0f, status_equipment(selection)->get_cp(), 0, 0);
-    unk154->set_scale(0.9f, 0.9f);
-    lib_container_attach_widget(unk10, unk154);
-    lib_text_init_resource_rectangle(unk158, associated, 0x80A, 0, 16.0f, 553.0f, 0.0f, 0.0f);
-    lib_text_init_resource_rectangle(unk15c, associated, 0x13A0, 1, 46.0f, 556.0f, 96.0f, 24.0f);
-    unk188->init_resource_rectangle(124.0f, 556.0f, 0.0f, 0.0f, associated, keys[0], 0);
-    unk158->set_scale(0.8f, 0.8f);
-    lib_container_attach_widget(unk10, unk158);
-    unk15c->set_scale(0.8f, 0.8f);
-    unk15c->set_color(0x806080);
-    unk15c->set_mode(0);
-    unk15c->set_vertical_alignment(1);
-    lib_container_attach_widget(unk10, unk15c);
-    unk188->set_scale(0.9f, 0.9f);
-    status_set_spacing(unk188, -1.0f);
-    lib_container_attach_widget(unk10, unk188);
-    lib_text_init_resource_rectangle(unk160, associated, 0x80A, 0, 16.0f, 591.0f, 0.0f, 0.0f);
-    lib_text_init_resource_rectangle(unk164, associated, 0x13A1, 1, 46.0f, 594.0f, 96.0f, 24.0f);
-    unk18c->init_resource_rectangle(124.0f, 594.0f, 0.0f, 0.0f, associated, keys[1], 0);
-    unk160->set_scale(0.8f, 0.8f);
-    lib_container_attach_widget(unk10, unk160);
-    unk164->set_scale(0.8f, 0.8f);
-    unk164->set_color(0x806080);
-    unk164->set_mode(0);
-    unk164->set_vertical_alignment(1);
-    lib_container_attach_widget(unk10, unk164);
-    unk18c->set_scale(0.9f, 0.9f);
-    status_set_spacing(unk18c, -1.0f);
-    lib_container_attach_widget(unk10, unk18c);
-    lib_text_init_resource_rectangle(unk168, associated, 0x80B, 0, 16.0f, 629.0f, 0.0f, 0.0f);
-    lib_text_init_resource_rectangle(unk16c, associated, 0x13A0, 1, 46.0f, 632.0f, 96.0f, 24.0f);
-    unk190->init_resource_rectangle(124.0f, 632.0f, 0.0f, 0.0f, associated, keys[2], 0);
-    unk168->set_scale(0.8f, 0.8f);
-    lib_container_attach_widget(unk10, unk168);
-    unk16c->set_scale(0.8f, 0.8f);
-    unk16c->set_color(0x806080);
-    unk16c->set_mode(0);
-    unk16c->set_vertical_alignment(1);
-    lib_container_attach_widget(unk10, unk16c);
-    unk190->set_scale(0.9f, 0.9f);
-    status_set_spacing(unk190, -1.0f);
-    lib_container_attach_widget(unk10, unk190);
-    lib_text_init_resource_rectangle(unk170, associated, 0x80B, 0, 16.0f, 667.0f, 0.0f, 0.0f);
-    lib_text_init_resource_rectangle(unk174, associated, 0x13A1, 1, 46.0f, 670.0f, 96.0f, 24.0f);
-    unk194->init_resource_rectangle(124.0f, 670.0f, 0.0f, 0.0f, associated, keys[3], 0);
-    unk170->set_scale(0.8f, 0.8f);
-    lib_container_attach_widget(unk10, unk170);
-    unk174->set_scale(0.8f, 0.8f);
-    unk174->set_color(0x806080);
-    unk174->set_mode(0);
-    unk174->set_vertical_alignment(1);
-    lib_container_attach_widget(unk10, unk174);
-    unk194->set_scale(0.9f, 0.9f);
-    status_set_spacing(unk194, -1.0f);
-    lib_container_attach_widget(unk10, unk194);
-    lib_text_init_resource_rectangle(unk178, associated, 0x13A2, 1, 16.0f, 708.0f, 96.0f, 24.0f);
-    unk178->set_scale(0.8f, 0.8f);
-    unk178->set_color(0x806080);
-    unk178->set_mode(0);
-    unk178->set_vertical_alignment(1);
-    lib_container_attach_widget(unk10, unk178);
-    unk17c->init_resource_rectangle(124.0f, 708.0f, 0.0f, 0.0f, associated, keys[4], 0);
-    unk17c->set_scale(0.9f, 0.9f);
-    lib_container_attach_widget(unk10, unk17c);
-    lib_text_init_resource_rectangle(unk180, associated, 0x13A3, 1, 16.0f, 746.0f, 96.0f, 24.0f);
-    unk180->set_scale(0.8f, 0.8f);
-    unk180->set_color(0x806080);
-    unk180->set_mode(0);
-    unk180->set_vertical_alignment(1);
-    lib_container_attach_widget(unk10, unk180);
-    unk184->init_resource_rectangle(124.0f, 746.0f, 0.0f, 0.0f, associated, keys[5], 0);
-    unk184->set_scale(0.9f, 0.9f);
-    lib_container_attach_widget(unk10, unk184);
+    lib_text_init_resource_rectangle(skills_label, associated, STATUS_TEXT_SKILLS, 1, 16.0f, lower_y, 0.0f, 0.0f);
+    skills_label->set_color(0x806080);
+    skills_label->set_scale(0.85f, 0.85f);
+    lib_container_attach_widget(unk10, skills_label);
+    lib_text_init_resource_rectangle(sp_label, associated, STATUS_TEXT_SP, 1, 16.0f, lower_y + 24.0f, 0.0f, 0.0f);
+    sp_label->set_color(0x806080);
+    sp_label->set_scale(0.85f, 0.85f);
+    lib_container_attach_widget(unk10, sp_label);
+    lib_text_init_resource_rectangle(cp_label, associated, STATUS_TEXT_CP, 1, 16.0f, lower_y + 48.0f, 0.0f, 0.0f);
+    cp_label->set_color(0x806080);
+    cp_label->set_scale(0.85f, 0.85f);
+    lib_container_attach_widget(unk10, cp_label);
+    sp_value->init_numeric_resource_rectangle(158.0f, lower_y + 24.0f, 48.0f, 24.0f, 8888, 0, 0);
+    sp_value->set_scale(0.9f, 0.9f);
+    lib_container_attach_widget(unk10, sp_value);
+    assigned_cp_value->init_numeric_resource_rectangle(70.0f, lower_y + 48.0f, 48.0f, 24.0f, 8888, 1, 0);
+    assigned_cp_value->set_scale(0.9f, 0.9f);
+    lib_container_attach_widget(unk10, assigned_cp_value);
+    cp_separator->init_resource_rectangle(130.0f, lower_y + 48.0f, 0.0f, 0.0f, associated, STATUS_TEXT_SLASH, 1);
+    cp_separator->set_scale(0.85f, 0.85f);
+    lib_container_attach_widget(unk10, cp_separator);
+    cp_value->init_numeric_resource_rectangle(158.0f, lower_y + 48.0f, 48.0f, 24.0f, status_equipment(selection)->get_cp(), 0, 0);
+    cp_value->set_scale(0.9f, 0.9f);
+    lib_container_attach_widget(unk10, cp_value);
+    lib_text_init_resource_rectangle(short_minor_attack_button, associated, STATUS_TEXT_MINOR_ATTACK_BUTTON, 0, 16.0f, 553.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(short_minor_attack_label, associated, STATUS_TEXT_SHORT_RANGE, 1, 46.0f, 556.0f, 96.0f, 24.0f);
+    short_minor_attack_skill_caption->init_resource_rectangle(124.0f, 556.0f, 0.0f, 0.0f, associated, battle_skill_caption_keys[0], 0);
+    short_minor_attack_button->set_scale(0.8f, 0.8f);
+    lib_container_attach_widget(unk10, short_minor_attack_button);
+    short_minor_attack_label->set_scale(0.8f, 0.8f);
+    short_minor_attack_label->set_color(0x806080);
+    short_minor_attack_label->set_mode(0);
+    short_minor_attack_label->set_vertical_alignment(1);
+    lib_container_attach_widget(unk10, short_minor_attack_label);
+    short_minor_attack_skill_caption->set_scale(0.9f, 0.9f);
+    status_set_spacing(short_minor_attack_skill_caption, -1.0f);
+    lib_container_attach_widget(unk10, short_minor_attack_skill_caption);
+    lib_text_init_resource_rectangle(long_minor_attack_button, associated, STATUS_TEXT_MINOR_ATTACK_BUTTON, 0, 16.0f, 591.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(long_minor_attack_label, associated, STATUS_TEXT_LONG_RANGE, 1, 46.0f, 594.0f, 96.0f, 24.0f);
+    long_minor_attack_skill_caption->init_resource_rectangle(124.0f, 594.0f, 0.0f, 0.0f, associated, battle_skill_caption_keys[1], 0);
+    long_minor_attack_button->set_scale(0.8f, 0.8f);
+    lib_container_attach_widget(unk10, long_minor_attack_button);
+    long_minor_attack_label->set_scale(0.8f, 0.8f);
+    long_minor_attack_label->set_color(0x806080);
+    long_minor_attack_label->set_mode(0);
+    long_minor_attack_label->set_vertical_alignment(1);
+    lib_container_attach_widget(unk10, long_minor_attack_label);
+    long_minor_attack_skill_caption->set_scale(0.9f, 0.9f);
+    status_set_spacing(long_minor_attack_skill_caption, -1.0f);
+    lib_container_attach_widget(unk10, long_minor_attack_skill_caption);
+    lib_text_init_resource_rectangle(short_major_attack_button, associated, STATUS_TEXT_MAJOR_ATTACK_BUTTON, 0, 16.0f, 629.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(short_major_attack_label, associated, STATUS_TEXT_SHORT_RANGE, 1, 46.0f, 632.0f, 96.0f, 24.0f);
+    short_major_attack_skill_caption->init_resource_rectangle(124.0f, 632.0f, 0.0f, 0.0f, associated, battle_skill_caption_keys[2], 0);
+    short_major_attack_button->set_scale(0.8f, 0.8f);
+    lib_container_attach_widget(unk10, short_major_attack_button);
+    short_major_attack_label->set_scale(0.8f, 0.8f);
+    short_major_attack_label->set_color(0x806080);
+    short_major_attack_label->set_mode(0);
+    short_major_attack_label->set_vertical_alignment(1);
+    lib_container_attach_widget(unk10, short_major_attack_label);
+    short_major_attack_skill_caption->set_scale(0.9f, 0.9f);
+    status_set_spacing(short_major_attack_skill_caption, -1.0f);
+    lib_container_attach_widget(unk10, short_major_attack_skill_caption);
+    lib_text_init_resource_rectangle(long_major_attack_button, associated, STATUS_TEXT_MAJOR_ATTACK_BUTTON, 0, 16.0f, 667.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(long_major_attack_label, associated, STATUS_TEXT_LONG_RANGE, 1, 46.0f, 670.0f, 96.0f, 24.0f);
+    long_major_attack_skill_caption->init_resource_rectangle(124.0f, 670.0f, 0.0f, 0.0f, associated, battle_skill_caption_keys[3], 0);
+    long_major_attack_button->set_scale(0.8f, 0.8f);
+    lib_container_attach_widget(unk10, long_major_attack_button);
+    long_major_attack_label->set_scale(0.8f, 0.8f);
+    long_major_attack_label->set_color(0x806080);
+    long_major_attack_label->set_mode(0);
+    long_major_attack_label->set_vertical_alignment(1);
+    lib_container_attach_widget(unk10, long_major_attack_label);
+    long_major_attack_skill_caption->set_scale(0.9f, 0.9f);
+    status_set_spacing(long_major_attack_skill_caption, -1.0f);
+    lib_container_attach_widget(unk10, long_major_attack_skill_caption);
+    lib_text_init_resource_rectangle(support_skill_1_label, associated, STATUS_TEXT_SUPPORT_1, 1, 16.0f, 708.0f, 96.0f, 24.0f);
+    support_skill_1_label->set_scale(0.8f, 0.8f);
+    support_skill_1_label->set_color(0x806080);
+    support_skill_1_label->set_mode(0);
+    support_skill_1_label->set_vertical_alignment(1);
+    lib_container_attach_widget(unk10, support_skill_1_label);
+    support_skill_1_caption->init_resource_rectangle(124.0f, 708.0f, 0.0f, 0.0f, associated, battle_skill_caption_keys[4], 0);
+    support_skill_1_caption->set_scale(0.9f, 0.9f);
+    lib_container_attach_widget(unk10, support_skill_1_caption);
+    lib_text_init_resource_rectangle(support_skill_2_label, associated, STATUS_TEXT_SUPPORT_2, 1, 16.0f, 746.0f, 96.0f, 24.0f);
+    support_skill_2_label->set_scale(0.8f, 0.8f);
+    support_skill_2_label->set_color(0x806080);
+    support_skill_2_label->set_mode(0);
+    support_skill_2_label->set_vertical_alignment(1);
+    lib_container_attach_widget(unk10, support_skill_2_label);
+    support_skill_2_caption->init_resource_rectangle(124.0f, 746.0f, 0.0f, 0.0f, associated, battle_skill_caption_keys[5], 0);
+    support_skill_2_caption->set_scale(0.9f, 0.9f);
+    lib_container_attach_widget(unk10, support_skill_2_caption);
     lib_scissor_init_reset(reset, 1);
     lib_container_attach_widget(unk10, reset);
     scroll_marker = new (0) ItemCreationClass1725D0;
-    lib_list_indicator_init(scroll_marker, 588.0f, 8.0f + divider_y, (392.0f - divider_y) - 16.0f, extent, position);
+    lib_list_indicator_init(scroll_marker, 588.0f, 8.0f + divider_y, (392.0f - divider_y) - 16.0f, scroll_extent, scroll_position);
     lib_container_attach_widget(unk10, scroll_marker);
     status_refresh_character_display(this);
     return 1;
@@ -2720,71 +2863,71 @@ LibClass178A70::~LibClass178A70()
 {
 }
 
-void StatusScrollState::func_slot0c()
+void StatusCharacterWindow::func_slot0c()
 {
     container->func_003EF740();
     FieldClass15AE70::func_slot0c();
 }
 
 /** @brief Release the owned display lists and window base. */
-StatusScrollState::~StatusScrollState()
+StatusCharacterWindow::~StatusCharacterWindow()
 {
 }
 
-/** @brief Initialize the record window and its three owned lists. */
-StatusScrollState::StatusScrollState()
+/** @brief Initialize the character window and its three owned widget lists. */
+StatusCharacterWindow::StatusCharacterWindow()
 {
     selection = 0;
-    record_active = 0;
-    record = 0;
-    unk108 = 0;
-    unk10c = 0;
-    unk110 = 0;
-    unk114 = 0;
-    unk118 = 0;
-    unk11c = 0;
-    unk120 = 0;
-    unk124 = 0;
-    unk128 = 0;
-    unk12c = 0;
-    unk130 = 0;
-    unk134 = 0;
-    unk13c = 0;
-    unk140 = 0;
-    unk144 = 0;
-    unk148 = 0;
-    unk14c = 0;
-    unk150 = 0;
-    unk154 = 0;
-    unk158 = 0;
-    unk15c = 0;
-    unk160 = 0;
-    unk164 = 0;
-    unk168 = 0;
-    unk16c = 0;
-    unk170 = 0;
-    unk174 = 0;
-    unk178 = 0;
-    unk17c = 0;
-    unk180 = 0;
-    unk184 = 0;
-    unk188 = 0;
-    unk18c = 0;
-    unk190 = 0;
-    unk194 = 0;
-    variant_text = 0;
-    keys[0] = 0x822;
-    keys[1] = 0x822;
-    keys[2] = 0x822;
-    keys[3] = 0x822;
-    keys[4] = 0x822;
-    keys[5] = 0x822;
-    option_total = 0;
-    caption = 0;
-    other_marker = 0;
+    character_change_pending = 0;
+    character_name_widget = 0;
+    hp_value = 0;
+    max_hp_value = 0;
+    mp_value = 0;
+    max_mp_value = 0;
+    level_value = 0;
+    experience_value = 0;
+    next_level_experience_value = 0;
+    attack_value = 0;
+    defense_value = 0;
+    agility_value = 0;
+    hit_value = 0;
+    intelligence_value = 0;
+    skills_label = 0;
+    sp_label = 0;
+    cp_label = 0;
+    sp_value = 0;
+    assigned_cp_value = 0;
+    cp_separator = 0;
+    cp_value = 0;
+    short_minor_attack_button = 0;
+    short_minor_attack_label = 0;
+    long_minor_attack_button = 0;
+    long_minor_attack_label = 0;
+    short_major_attack_button = 0;
+    short_major_attack_label = 0;
+    long_major_attack_button = 0;
+    long_major_attack_label = 0;
+    support_skill_1_label = 0;
+    support_skill_1_caption = 0;
+    support_skill_2_label = 0;
+    support_skill_2_caption = 0;
+    short_minor_attack_skill_caption = 0;
+    long_minor_attack_skill_caption = 0;
+    short_major_attack_skill_caption = 0;
+    long_major_attack_skill_caption = 0;
+    color_setup_hint = 0;
+    battle_skill_caption_keys[0] = STATUS_TEXT_NONE;
+    battle_skill_caption_keys[1] = STATUS_TEXT_NONE;
+    battle_skill_caption_keys[2] = STATUS_TEXT_NONE;
+    battle_skill_caption_keys[3] = STATUS_TEXT_NONE;
+    battle_skill_caption_keys[4] = STATUS_TEXT_NONE;
+    battle_skill_caption_keys[5] = STATUS_TEXT_NONE;
+    assigned_cp = 0;
+    surname_caption = 0;
+    name_divider = 0;
     selected_slot = 0;
-    x = 0;
-    y = 0;
+    name_x = 0;
+    name_y = 0;
     resource_slots[0] = 0;
     resource_slots[1] = 0;
     resource_slots[2] = 0;
@@ -2793,71 +2936,71 @@ StatusScrollState::StatusScrollState()
     resource_slots[5] = 0;
     resource_slots[6] = 0;
     resource_slots[7] = 0;
-    resource_x = 0;
-    resource_y = 0;
-    display = 0;
-    mode = 0;
-    active = 0;
+    portrait_x = 0;
+    portrait_y = 0;
+    portrait = 0;
+    scroll_page = 0;
+    scroll_active = 0;
     scroll_marker = 0;
-    extent = 50.0f;
-    position = 0;
-    step = 98.0f;
-    alternate = 0;
-    unk1d4 = 0;
-    unk1d8 = 0;
-    unk1d9 = 0;
-    unk1da = 0;
-    first_tail[0] = 0;
-    second_tail[0] = 0;
-    first_tail[1] = 0;
-    second_tail[1] = 0;
-    first_tail[2] = 0;
-    second_tail[2] = 0;
-    first_tail[3] = 0;
-    second_tail[3] = 0;
+    scroll_extent = 50.0f;
+    scroll_position = 0;
+    scroll_step = 98.0f;
+    alternate_portrait_group = 0;
+    character_model = 0;
+    model_cancel_pending = 0;
+    model_reload_pending = 0;
+    window_transition_pending = 0;
+    equipment_values[0] = 0;
+    empty_equipment_captions[0] = 0;
+    equipment_values[1] = 0;
+    empty_equipment_captions[1] = 0;
+    equipment_values[2] = 0;
+    empty_equipment_captions[2] = 0;
+    equipment_values[3] = 0;
+    empty_equipment_captions[3] = 0;
 }
 
 /** @brief Hold the caption until its timer expires, then scroll and wrap it. */
-void StatusTextWindow::func_slot5c()
+void StatusHelpWindow::func_slot5c()
 {
-    StatusTextWindow* object = this;
-    LibObject178750* target = object->target;
+    StatusHelpWindow* object = this;
+    LibObject178750* target = object->help_caption;
     float x = target->unk18.unk00;
     float y = target->unk18.unk04;
-    float z = target->unk18.unk08;
-    float w = target->unk18.unk0c;
-    if (object->state == 0)
+    float width = target->unk18.unk08;
+    float height = target->unk18.unk0c;
+    if (object->scroll_active == 0)
     {
-        status_set_position(target, object->initial_x, y, z, w);
-        object->timer++;
-        if (!((float)object->timer <= 120.0f))
+        set_status_record_rectangle(target, object->initial_text_x, y, width, height);
+        object->hold_timer++;
+        if (!((float)object->hold_timer <= 120.0f))
         {
-            object->timer = 0;
-            object->state = 1;
+            object->hold_timer = 0;
+            object->scroll_active = 1;
         }
         return;
     }
     x -= 108.0f * D_001B6690;
-    if (x < object->base_x - (float)object->distance)
+    if (x < object->clip_x - (float)object->scroll_distance)
     {
-        x = 2.0f + (object->base_x + object->width);
+        x = 2.0f + (object->clip_x + object->clip_width);
     }
-    status_set_position(target, x, y, z, w);
+    set_status_record_rectangle(target, x, y, width, height);
 }
 
 /**
- * @brief Select caption keys 5002 and 5003 and reset the scroll timer.
+ * @brief Select character or name-entry help and reset the scroll timer.
  * @param key Requested caption key.
  */
-void StatusTextWindow::func_slot60(s32 key)
+void StatusHelpWindow::func_slot60(s32 key)
 {
-    StatusTextWindow* object = this;
-    if (key >= 5002 && key < 5004)
+    StatusHelpWindow* object = this;
+    if (key >= STATUS_TEXT_CHARACTER_HELP && key < STATUS_TEXT_NAME_HELP + 1)
     {
-        object->timer = 0;
-        object->state = 0;
-        lib_text_set_resource(object->target, object->func_slot54(), key, 1);
-        object->distance = (s32)lib_text_measure_bounds(object->target)->unk08 + 6;
+        object->hold_timer = 0;
+        object->scroll_active = 0;
+        lib_text_set_resource(object->help_caption, object->func_slot54(), key, 1);
+        object->scroll_distance = (s32)lib_text_measure_bounds(object->help_caption)->unk08 + 6;
     }
 }
 
@@ -2866,46 +3009,46 @@ void StatusTextWindow::func_slot60(s32 key)
  * @param associated Full resource source word.
  * @return One when the text and both frames are present, otherwise zero.
  */
-s32 StatusTextWindow::func_slotf4(u32 associated)
+s32 StatusHelpWindow::func_slotf4(u32 associated)
 {
-    StatusTextWindow* object = this;
+    StatusHelpWindow* object = this;
     object->FieldClass15AE70::func_slot14(associated, 0, 9, 1400, 16.0f, 16.0f, 0.0f);
     LibObject178750* label = new (0) LibObject178750;
-    lib_text_init_resource_rectangle(label, static_cast<s32>(associated), 0x1388, 0, 16.0f, 6.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(label, static_cast<s32>(associated), STATUS_TEXT_HEADING, 0, 16.0f, 6.0f, 0.0f, 0.0f);
     lib_container_attach_widget(object->unk10, label);
-    func_00351120(reinterpret_cast<OverlayList*>(&object->unk2c), label);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&object->unk2c), label);
     LibObject178750* caption = new (0) LibObject178750;
-    lib_text_init_resource_rectangle(caption, static_cast<s32>(associated), 0x13C9, 0, 36.0f, 40.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(caption, static_cast<s32>(associated), STATUS_TEXT_STATUS, 0, 36.0f, 40.0f, 0.0f, 0.0f);
     caption->set_scale(0.65f, 0.65f);
     lib_container_attach_widget(object->unk10, caption);
-    func_00351120(reinterpret_cast<OverlayList*>(&object->unk2c), caption);
-    object->target = new (0) LibObject178750;
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&object->unk2c), caption);
+    object->help_caption = new (0) LibObject178750;
     LibClass1746A0* frame = new (0) LibClass1746A0;
     LibClass1746A0* background = new (0) LibClass1746A0;
-    if (object->target == 0 || frame == 0 || background == 0)
+    if (object->help_caption == 0 || frame == 0 || background == 0)
     {
         return 0;
     }
-    object->label_width = lib_text_measure_bounds(label)->unk08;
-    object->base_x = 18.0f + object->label_width;
+    object->heading_width = lib_text_measure_bounds(label)->unk08;
+    object->clip_x = 18.0f + object->heading_width;
     float frame_padding = 32.0f;
-    object->width = 640.0f - (16.0f + (object->base_x + frame_padding));
-    object->initial_x = 24.0f + object->label_width;
-    lib_scissor_init_rectangle(frame, object->base_x, 0.0f, object->width, 56.0f);
+    object->clip_width = 640.0f - (16.0f + (object->clip_x + frame_padding));
+    object->initial_text_x = 24.0f + object->heading_width;
+    lib_scissor_init_rectangle(frame, object->clip_x, 0.0f, object->clip_width, 56.0f);
     lib_container_attach_widget(object->unk10, frame);
-    func_00351270(reinterpret_cast<OverlayList*>(&object->unk20), frame);
-    lib_text_init_resource_rectangle(object->target, static_cast<s32>(associated), 0x138A, 0, object->initial_x, 6.0f, 0.0f, 0.0f);
-    lib_container_attach_widget(object->unk10, object->target);
-    func_00351120(reinterpret_cast<OverlayList*>(&object->unk2c), object->target);
+    status_append_scissor_widget(reinterpret_cast<StatusWidgetList*>(&object->unk20), frame);
+    lib_text_init_resource_rectangle(object->help_caption, static_cast<s32>(associated), STATUS_TEXT_CHARACTER_HELP, 0, object->initial_text_x, 6.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(object->unk10, object->help_caption);
+    status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&object->unk2c), object->help_caption);
     lib_scissor_init_reset(background, 1);
     lib_container_attach_widget(object->unk10, background);
-    func_00351270(reinterpret_cast<OverlayList*>(&object->unk20), background);
-    object->func_slot60(0x138A);
+    status_append_scissor_widget(reinterpret_cast<StatusWidgetList*>(&object->unk20), background);
+    object->func_slot60(STATUS_TEXT_CHARACTER_HELP);
     return 1;
 }
 
 /** @brief Destroy the caption window base. */
-StatusTextWindow::~StatusTextWindow()
+StatusHelpWindow::~StatusHelpWindow()
 {
 }
 
@@ -2971,43 +3114,43 @@ void StatusResourceState::func_001DD7B0()
 void StatusResourceState::func_001DF360()
 {
     StatusResourceState* object = this;
-    switch (object->field_42)
+    switch (object->transition_phase)
     {
-    case 0:
+    case STATUS_TRANSITION_IDLE:
         break;
-    case 1:
+    case STATUS_TRANSITION_START:
     {
         func_0020F230(D_001B6430->context->unk38, 0, 0, 0x80000000, 0, 0, 0, 10.0f, 0.0f, 0.0f);
         StatusTransitionEffect* effect;
         (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->value = D_001B6694;
         effect->mode = 10;
-        object->field_42 = 2;
+        object->transition_phase = STATUS_TRANSITION_SWITCH_WINDOW;
         break;
     }
-    case 2:
+    case STATUS_TRANSITION_SWITCH_WINDOW:
     {
         if ((u8)func_0022A160(reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect) != 0)
         {
             return;
         }
         func_004DCEA0(D_001B6650, 0, 0);
-        switch (object->field_40)
+        switch (object->requested_window)
         {
-        case 0:
-            static_cast<StatusTextWindow*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(5002);
-            D_001B643C->unk10->unk14->func_00263C70(object->scroll);
-            object->scroll->func_slot64();
-            object->scroll->func_slot18(1, 127);
-            object->scroll->func_slot20(1);
+        case STATUS_WINDOW_CHARACTER:
+            static_cast<StatusHelpWindow*>(D_001B643C->callbacks->status_receiver->func_00263C90())->func_slot60(STATUS_TEXT_CHARACTER_HELP);
+            D_001B643C->callbacks->status_receiver->func_00263C70(object->character_window);
+            object->character_window->func_slot64();
+            object->character_window->func_slot18(1, 127);
+            object->character_window->func_slot20(1);
             break;
-        case 1:
+        case STATUS_WINDOW_NAME:
         {
-            static_cast<StatusTextWindow*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(5003);
-            StatusSelectionWindow* window = new (0) StatusSelectionWindow;
+            static_cast<StatusHelpWindow*>(D_001B643C->callbacks->status_receiver->func_00263C90())->func_slot60(STATUS_TEXT_NAME_HELP);
+            StatusNameWindow* window = new (0) StatusNameWindow;
             window->func_slotf4((void*)object->resource);
-            window->func_slot40(object->scroll);
+            window->func_slot40(object->character_window);
             object->FieldClass153E30::add_child(window);
-            D_001B643C->unk10->unk14->func_00263C70(window);
+            D_001B643C->callbacks->status_receiver->func_00263C70(window);
             break;
         }
         }
@@ -3015,15 +3158,15 @@ void StatusResourceState::func_001DF360()
         StatusTransitionEffect* effect;
         (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->value = D_001B6694;
         effect->mode = 10;
-        object->field_42 = 3;
+        object->transition_phase = STATUS_TRANSITION_FINISH;
         func_004DCEA0(D_001B6650, 1, 0);
         break;
     }
-    case 3:
+    case STATUS_TRANSITION_FINISH:
         if ((u8)func_0022A160(reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect) == 0)
         {
-            object->field_42 = 0;
-            D_001B643C->unk10->unk60 = 1;
+            object->transition_phase = STATUS_TRANSITION_IDLE;
+            D_001B643C->callbacks->input_enabled = 1;
         }
         break;
     }
@@ -3043,14 +3186,14 @@ s32 StatusResourceState::func_00263CD0()
 {
     StatusResourceState* object = this;
     StatusBackgroundWindow* background = new (0) StatusBackgroundWindow;
-    StatusTextWindow* text = new (0) StatusTextWindow;
-    object->scroll = new (0) StatusScrollState;
+    StatusHelpWindow* text = new (0) StatusHelpWindow;
+    object->character_window = new (0) StatusCharacterWindow;
     object->selection = new (0) FieldRecordSelection;
     if ((u8)func_0028E3D0(object->selection) == 0)
     {
         return 0;
     }
-    object->unk20 = object->scroll;
+    object->unk20 = object->character_window;
     background->func_slotf4(object->resource);
     object->FieldClass153E30::add_child(background);
     background->func_slot40(0);
@@ -3058,9 +3201,9 @@ s32 StatusResourceState::func_00263CD0()
     object->FieldClass153E30::add_child(text);
     object->unk24 = text;
     text->func_slot40(background);
-    object->scroll->func_slotf4(object->resource);
-    object->FieldClass153E30::add_child(object->scroll);
-    object->flag_38 = 1;
+    object->character_window->func_slotf4(object->resource);
+    object->FieldClass153E30::add_child(object->character_window);
+    object->setup_complete = 1;
     return 1;
 }
 
@@ -3100,20 +3243,6 @@ u8 StatusResourceState::func_00264110()
     return 1;
 }
 
-/**
- * @brief Destroy an owned object and clear its pointer.
- * @param pointer Owned pointer to release and clear.
- */
-template <class T>
-static inline void status_delete_owned(T*& pointer)
-{
-    if (pointer != 0)
-    {
-        delete pointer;
-        pointer = 0;
-    }
-}
-
 /** @brief Destroy the owned record selection and the Field receiver base. */
 StatusResourceState::~StatusResourceState()
 {
@@ -3127,11 +3256,11 @@ StatusResourceState::~StatusResourceState()
 StatusResourceState::StatusResourceState()
 {
     resource = 0;
-    flag_38 = 0;
+    setup_complete = 0;
     selection = 0;
-    scroll = 0;
-    field_40 = 0;
-    field_42 = 0;
+    character_window = 0;
+    requested_window = STATUS_WINDOW_CHARACTER;
+    transition_phase = STATUS_TRANSITION_IDLE;
 }
 
 /** @brief Leave the status receiver unchanged. */
@@ -3143,7 +3272,7 @@ void ItemCreationClass185050::func_slot0c()
 {
 }
 
-StatusSelectionWindow::~StatusSelectionWindow()
+StatusNameWindow::~StatusNameWindow()
 {
 }
 
@@ -3177,7 +3306,7 @@ void FieldClass15AE70::func_slot5c()
 /** @brief Report whether window setup finished. @return Setup flag. */
 u8 StatusResourceState::func_00261D20()
 {
-    return flag_38;
+    return setup_complete;
 }
 
 /** @brief Get the loaded resource handle. @return Resource handle. */
@@ -3233,37 +3362,43 @@ void StatusResourceState::func_slot68()
 {
 }
 
-void func_00350B10(void* object)
+/** @brief Default receiver callback with no action. */
+void StatusResourceState::func_slot70()
 {
 }
 
-void func_00350B20(void* object)
+/** @brief Default receiver callback with no action. */
+void StatusResourceState::func_slot74()
 {
 }
 
-void func_00350B30(void* object)
+/** @brief Default receiver callback with no action. */
+void StatusResourceState::func_slot78()
 {
 }
 
-s32 func_00350B40(void* object)
+/** @brief Default receiver callback returning zero. @return Zero. */
+s32 StatusResourceState::func_slot7c()
 {
     return 0;
 }
 
-s32 func_00350B50(void* object)
+/** @brief Default receiver callback returning zero. @return Zero. */
+s32 StatusResourceState::func_slot80()
 {
     return 0;
 }
 
-s32 func_00350B60(void* object)
+/** @brief Default receiver callback returning zero. @return Zero. */
+s32 StatusResourceState::func_slot84()
 {
     return 0;
 }
 
 /** @brief Allocate the sentinel and initialize the empty list. */
-StatusList188D70::StatusList188D70()
+StatusItemWidgetList::StatusItemWidgetList()
 {
-    head = new (0) OverlayNode;
+    head = new (0) StatusWidgetNode;
     if (head == 0)
     {
         throw;
@@ -3273,9 +3408,9 @@ StatusList188D70::StatusList188D70()
 }
 
 /** @brief Release the list nodes and sentinel storage. */
-StatusList188D70::~StatusList188D70()
+StatusItemWidgetList::~StatusItemWidgetList()
 {
-    func_00350D00(reinterpret_cast<OverlayList*>(this));
+    status_clear_item_widgets(reinterpret_cast<StatusWidgetList*>(this));
     if (head != 0)
     {
         ::operator delete(head);
@@ -3283,12 +3418,12 @@ StatusList188D70::~StatusList188D70()
     }
 }
 
-void func_00350C70(OverlayList* list, void* value)
+void status_append_item_widget(StatusWidgetList* list, void* value)
 {
-    OverlayNode* node = (OverlayNode*)func_100AC0(8, 0);
+    StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
     if (node != 0)
     {
-        OverlayNode* tail;
+        StatusWidgetNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
@@ -3301,16 +3436,16 @@ void func_00350C70(OverlayList* list, void* value)
     }
 }
 
-void func_00350D00(OverlayList* list)
+void status_clear_item_widgets(StatusWidgetList* list)
 {
-    OverlayNode* node = list->head->next;
+    StatusWidgetNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        OverlayNode* next = node->next;
+        StatusWidgetNode* next = node->next;
         delete node;
         node = next;
     }
@@ -3318,12 +3453,12 @@ void func_00350D00(OverlayList* list)
     list->count = 0;
 }
 
-void func_00350D80(OverlayList* list, void* value)
+void status_append_name_widget(StatusWidgetList* list, void* value)
 {
-    OverlayNode* node = (OverlayNode*)func_100AC0(8, 0);
+    StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
     if (node != 0)
     {
-        OverlayNode* tail;
+        StatusWidgetNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
@@ -3337,9 +3472,9 @@ void func_00350D80(OverlayList* list, void* value)
 }
 
 /** @brief Allocate the sentinel and initialize the empty list. */
-StatusList188D60::StatusList188D60()
+StatusNumericWidgetList::StatusNumericWidgetList()
 {
-    head = new (0) OverlayNode;
+    head = new (0) StatusWidgetNode;
     if (head == 0)
     {
         throw;
@@ -3349,9 +3484,9 @@ StatusList188D60::StatusList188D60()
 }
 
 /** @brief Release the list nodes and sentinel storage. */
-StatusList188D60::~StatusList188D60()
+StatusNumericWidgetList::~StatusNumericWidgetList()
 {
-    func_00350FA0(reinterpret_cast<OverlayList*>(this));
+    status_clear_numeric_widgets(reinterpret_cast<StatusWidgetList*>(this));
     if (head != 0)
     {
         ::operator delete(head);
@@ -3359,12 +3494,12 @@ StatusList188D60::~StatusList188D60()
     }
 }
 
-void func_00350F10(OverlayList* list, void* value)
+void status_append_numeric_widget(StatusWidgetList* list, void* value)
 {
-    OverlayNode* node = (OverlayNode*)func_100AC0(8, 0);
+    StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
     if (node != 0)
     {
-        OverlayNode* tail;
+        StatusWidgetNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
@@ -3377,16 +3512,16 @@ void func_00350F10(OverlayList* list, void* value)
     }
 }
 
-void func_00350FA0(OverlayList* list)
+void status_clear_numeric_widgets(StatusWidgetList* list)
 {
-    OverlayNode* node = list->head->next;
+    StatusWidgetNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        OverlayNode* next = node->next;
+        StatusWidgetNode* next = node->next;
         delete node;
         node = next;
     }
@@ -3395,9 +3530,9 @@ void func_00350FA0(OverlayList* list)
 }
 
 /** @brief Allocate the sentinel and initialize the empty list. */
-StatusList188D50::StatusList188D50()
+StatusTextWidgetList::StatusTextWidgetList()
 {
-    head = new (0) OverlayNode;
+    head = new (0) StatusWidgetNode;
     if (head == 0)
     {
         throw;
@@ -3407,9 +3542,9 @@ StatusList188D50::StatusList188D50()
 }
 
 /** @brief Release the list nodes and sentinel storage. */
-StatusList188D50::~StatusList188D50()
+StatusTextWidgetList::~StatusTextWidgetList()
 {
-    func_003511B0(reinterpret_cast<OverlayList*>(this));
+    status_clear_text_widgets(reinterpret_cast<StatusWidgetList*>(this));
     if (head != 0)
     {
         ::operator delete(head);
@@ -3417,12 +3552,12 @@ StatusList188D50::~StatusList188D50()
     }
 }
 
-void func_00351120(OverlayList* list, void* value)
+void status_append_text_widget(StatusWidgetList* list, void* value)
 {
-    OverlayNode* node = (OverlayNode*)func_100AC0(8, 0);
+    StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
     if (node != 0)
     {
-        OverlayNode* tail;
+        StatusWidgetNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
@@ -3435,16 +3570,16 @@ void func_00351120(OverlayList* list, void* value)
     }
 }
 
-void func_003511B0(OverlayList* list)
+void status_clear_text_widgets(StatusWidgetList* list)
 {
-    OverlayNode* node = list->head->next;
+    StatusWidgetNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        OverlayNode* next = node->next;
+        StatusWidgetNode* next = node->next;
         delete node;
         node = next;
     }
@@ -3452,9 +3587,9 @@ void func_003511B0(OverlayList* list)
     list->count = 0;
 }
 
-void* func_00351230(void* list, s32 count)
+void* status_list_node_at(void* list, s32 count)
 {
-    OverlayNode* node = (*(OverlayNode**)list)->next;
+    StatusWidgetNode* node = (*(StatusWidgetNode**)list)->next;
     s32 i;
 
     for (i = 0; i < count; i++)
@@ -3468,12 +3603,12 @@ void* func_00351230(void* list, s32 count)
     return node;
 }
 
-void func_00351270(OverlayList* list, void* value)
+void status_append_scissor_widget(StatusWidgetList* list, void* value)
 {
-    OverlayNode* node = (OverlayNode*)func_100AC0(8, 0);
+    StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
     if (node != 0)
     {
-        OverlayNode* tail;
+        StatusWidgetNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
