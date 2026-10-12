@@ -230,6 +230,7 @@ __dt__23ItemCreationClass1746A0Fv = 0x00412D50; // type:func absolute:True allow
 func_00462310__23ItemCreationClass1746A0Fv = 0x0044B350; // type:func absolute:True allow_duplicated:True
 lib_text_init_resource_rectangle = 0x004C7FE0; // type:func allow_duplicated:True absolute:True
 init_resource_rectangle__15LibObject178750FffffiiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
+init_resource_rectangle__15LibObject178750FffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 __dt__16FieldClass15AD40Fv = 0x002CD9F0; // type:func absolute:True allow_duplicated:True
 __dt__18ShopSaleItemWindowFv = 0x00351790; // type:func
 func_slot5c__18ShopSaleItemWindowFv = 0x0034A2C0; // type:func

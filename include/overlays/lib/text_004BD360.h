@@ -303,7 +303,7 @@ struct LibObject178750 : public LibClass174EF0
      * @param flag Slot state flag.
      * @return Configuration status.
      */
-    s32 init_resource_rectangle(float x, float y, float width, float height, s32 slot, s32 key, u8 flag);
+    s32 init_resource_rectangle(float x, float y, float width, float height, s32 slot, u32 key, u8 flag);
     LibClass171EA0* unkfc;
     u8 unk100[0x14];
 };

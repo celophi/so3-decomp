@@ -164,6 +164,7 @@ __vt__23ItemCreationClass175030 = 0x00175030; // size:0x34 absolute:True allow_d
 lib_list_indicator_init = 0x0041A930; // type:func absolute:True allow_duplicated:True
 __ct__14LibClass174EF0Fv = 0x00464B10; // type:func absolute:True allow_duplicated:True
 init_resource_rectangle__15LibObject178750FffffiiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
+init_resource_rectangle__15LibObject178750FffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 fptodp = 0x001361C0; // type:func absolute:True allow_duplicated:True
 dpadd = 0x00134D38; // type:func absolute:True allow_duplicated:True
 dptofp = 0x001355C8; // type:func absolute:True allow_duplicated:True
@@ -203,7 +204,7 @@ lib_panel_set_colors = 0x004C5590; // type:func absolute:True allow_duplicated:T
 
 lib_text_measure_bounds = 0x004C69B0; // type:func absolute:True allow_duplicated:True
 lib_object_detach_owner = 0x004D65C0; // type:func absolute:True
-lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True
+lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 lib_release_resource_slot = 0x00465430; // type:func absolute:True
 lib_multiline_text_init_resource_rectangle = 0x00461720; // type:func absolute:True
 lib_numeric_widget_init_rectangle = 0x00464D90; // type:func absolute:True

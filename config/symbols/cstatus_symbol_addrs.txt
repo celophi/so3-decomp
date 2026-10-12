@@ -1,12 +1,12 @@
 D_001B6690 = 0x001B6690; // size:0x4
-func_2642D0 = 0x002642D0; // type:func
+__ct__16FieldClass153E30Fv = 0x002642D0; // type:func absolute:True
 func_4618F0 = 0x004618F0; // type:func allow_duplicated:True
 __dl__FPv = 0x00100B40; // type:func
 func_100AC0 = 0x00100AC0; // type:func allow_duplicated:True
 func_4C48B0 = 0x004C48B0; // type:func allow_duplicated:True
 func_002FD940 = 0x002FD940; // type:func
 D_1889C0 = 0x001889C0; // allow_duplicated:True
-D_188CC0 = 0x00188CC0;
+__vt__19StatusResourceState = 0x00188CC0; // size:0x88 absolute:True
 D_1888B0 = 0x001888B0;
 D_188BC0 = 0x00188BC0; // absolute:True allow_duplicated:True
 D_188AC0 = 0x00188AC0; // absolute:True allow_duplicated:True
@@ -27,9 +27,9 @@ func_004CA020__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True
 func_004C9FF0__14LibClass178A70FPv = 0x004C9FF0; // type:func absolute:True
 func_004C9FC0__14LibClass178A70FPvPv = 0x004C9FC0; // type:func absolute:True
 func_004C9F60__14LibClass178A70FPv = 0x004C9F60; // type:func absolute:True
-D_00351380 = 0x00351380; // size:0x5A
-D_003513E0 = 0x003513E0; // size:0x5A
-D_00351440 = 0x00351440; // size:0x50
+g_status_hiragana_bytes = 0x00351380; // size:0x5A
+g_status_katakana_bytes = 0x003513E0; // size:0x5A absolute:True
+g_status_alphanumeric_bytes = 0x00351440; // size:0x50 absolute:True
 func_10D8E0 = 0x0010D8E0; // type:func absolute:True
 func_101290 = 0x00101290; // type:func absolute:True
 func_101440 = 0x00101440; // type:func absolute:True
@@ -38,25 +38,28 @@ __nw__FUii = 0x00100AC0; // type:func absolute:True allow_duplicated:True
 __ct__16FieldClass15BB90Fv = 0x002FE790; // type:func absolute:True
 
 func_00350B70 = 0x00350B70; // type:func allow_duplicated:True
-__ct__16StatusList188D70Fv = 0x00350B70; // type:func allow_duplicated:True
+__ct__20StatusItemWidgetListFv = 0x00350B70; // type:func allow_duplicated:True
 
 func_00350BF0 = 0x00350BF0; // type:func allow_duplicated:True
-__dt__16StatusList188D70Fv = 0x00350BF0; // type:func allow_duplicated:True
-__vt__16StatusList188D70 = 0x00188D70; // size:0xC absolute:True allow_duplicated:True
+__dt__20StatusItemWidgetListFv = 0x00350BF0; // type:func allow_duplicated:True
+__vt__16StatusList188D70 = 0x00188D70; // absolute:True allow_duplicated:True
+__vt__20StatusItemWidgetList = 0x00188D70; // size:0xC absolute:True allow_duplicated:True
 
 func_00350E10 = 0x00350E10; // type:func allow_duplicated:True
-__ct__16StatusList188D60Fv = 0x00350E10; // type:func allow_duplicated:True
+__ct__23StatusNumericWidgetListFv = 0x00350E10; // type:func allow_duplicated:True
 
 func_00350E90 = 0x00350E90; // type:func allow_duplicated:True
-__dt__16StatusList188D60Fv = 0x00350E90; // type:func allow_duplicated:True
-__vt__16StatusList188D60 = 0x00188D60; // size:0xC absolute:True allow_duplicated:True
+__dt__23StatusNumericWidgetListFv = 0x00350E90; // type:func allow_duplicated:True
+__vt__16StatusList188D60 = 0x00188D60; // absolute:True allow_duplicated:True
+__vt__23StatusNumericWidgetList = 0x00188D60; // size:0xC absolute:True allow_duplicated:True
 
 func_00351020 = 0x00351020; // type:func allow_duplicated:True
-__ct__16StatusList188D50Fv = 0x00351020; // type:func allow_duplicated:True
+__ct__20StatusTextWidgetListFv = 0x00351020; // type:func allow_duplicated:True
 
 func_003510A0 = 0x003510A0; // type:func allow_duplicated:True
-__dt__16StatusList188D50Fv = 0x003510A0; // type:func allow_duplicated:True
-__vt__16StatusList188D50 = 0x00188D50; // size:0xC absolute:True allow_duplicated:True
+__dt__20StatusTextWidgetListFv = 0x003510A0; // type:func allow_duplicated:True
+__vt__16StatusList188D50 = 0x00188D50; // absolute:True allow_duplicated:True
+__vt__20StatusTextWidgetList = 0x00188D50; // size:0xC absolute:True allow_duplicated:True
 
 func_001330D8 = 0x001330D8; // type:func absolute:True allow_duplicated:True
 __throw = 0x001330D8; // type:func absolute:True allow_duplicated:True
@@ -70,122 +73,122 @@ func_slot44__16FieldClass15AE70Fv = 0x00348470; // type:func allow_duplicated:Tr
 func_00348460 = 0x00348460; // type:func allow_duplicated:True
 func_slot40__16FieldClass15AE70FPv = 0x00348460; // type:func allow_duplicated:True
 
-func_slotf0__16FieldClass15AE70Fv = 0x003486D0; // type:func absolute:True allow_duplicated:True
-func_003486D0 = 0x003486D0; // type:func allow_duplicated:True
+func_slotf0__16FieldClass15AE70Fv = 0x003486D0; // type:func allow_duplicated:True
+func_003486D0 = 0x003486D0; // type:func absolute:True allow_duplicated:True
 
-func_slotec__16FieldClass15AE70FUc = 0x003486C0; // type:func absolute:True allow_duplicated:True
-func_003486C0 = 0x003486C0; // type:func allow_duplicated:True
+func_slotec__16FieldClass15AE70FUc = 0x003486C0; // type:func allow_duplicated:True
+func_003486C0 = 0x003486C0; // type:func absolute:True allow_duplicated:True
 
-func_slote8__16FieldClass15AE70Fv = 0x003486B0; // type:func absolute:True allow_duplicated:True
-func_003486B0 = 0x003486B0; // type:func allow_duplicated:True
+func_slote8__16FieldClass15AE70Fv = 0x003486B0; // type:func allow_duplicated:True
+func_003486B0 = 0x003486B0; // type:func absolute:True allow_duplicated:True
 
-func_slote4__16FieldClass15AE70Fv = 0x003486A0; // type:func absolute:True allow_duplicated:True
-func_003486A0 = 0x003486A0; // type:func allow_duplicated:True
+func_slote4__16FieldClass15AE70Fv = 0x003486A0; // type:func allow_duplicated:True
+func_003486A0 = 0x003486A0; // type:func absolute:True allow_duplicated:True
 
-func_slote0__16FieldClass15AE70Fv = 0x00348690; // type:func absolute:True allow_duplicated:True
-func_00348690 = 0x00348690; // type:func allow_duplicated:True
+func_slote0__16FieldClass15AE70Fv = 0x00348690; // type:func allow_duplicated:True
+func_00348690 = 0x00348690; // type:func absolute:True allow_duplicated:True
 
-func_slotdc__16FieldClass15AE70Fv = 0x00348680; // type:func absolute:True allow_duplicated:True
-func_00348680 = 0x00348680; // type:func allow_duplicated:True
+func_slotdc__16FieldClass15AE70Fv = 0x00348680; // type:func allow_duplicated:True
+func_00348680 = 0x00348680; // type:func absolute:True allow_duplicated:True
 
-func_slotd8__16FieldClass15AE70Fv = 0x00348670; // type:func absolute:True allow_duplicated:True
-func_00348670 = 0x00348670; // type:func allow_duplicated:True
+func_slotd8__16FieldClass15AE70Fv = 0x00348670; // type:func allow_duplicated:True
+func_00348670 = 0x00348670; // type:func absolute:True allow_duplicated:True
 
-func_slotd4__16FieldClass15AE70Fv = 0x00348660; // type:func absolute:True allow_duplicated:True
-func_00348660 = 0x00348660; // type:func allow_duplicated:True
+func_slotd4__16FieldClass15AE70Fv = 0x00348660; // type:func allow_duplicated:True
+func_00348660 = 0x00348660; // type:func absolute:True allow_duplicated:True
 
-func_slotd0__16FieldClass15AE70Fv = 0x00348650; // type:func absolute:True allow_duplicated:True
-func_00348650 = 0x00348650; // type:func allow_duplicated:True
+func_slotd0__16FieldClass15AE70Fv = 0x00348650; // type:func allow_duplicated:True
+func_00348650 = 0x00348650; // type:func absolute:True allow_duplicated:True
 
-func_slotcc__16FieldClass15AE70Fv = 0x00348640; // type:func absolute:True allow_duplicated:True
-func_00348640 = 0x00348640; // type:func allow_duplicated:True
+func_slotcc__16FieldClass15AE70Fv = 0x00348640; // type:func allow_duplicated:True
+func_00348640 = 0x00348640; // type:func absolute:True allow_duplicated:True
 
-func_slotc8__16FieldClass15AE70Fv = 0x00348630; // type:func absolute:True allow_duplicated:True
-func_00348630 = 0x00348630; // type:func allow_duplicated:True
+func_slotc8__16FieldClass15AE70Fv = 0x00348630; // type:func allow_duplicated:True
+func_00348630 = 0x00348630; // type:func absolute:True allow_duplicated:True
 
-func_slotc4__16FieldClass15AE70Fv = 0x00348620; // type:func absolute:True allow_duplicated:True
-func_00348620 = 0x00348620; // type:func allow_duplicated:True
+func_slotc4__16FieldClass15AE70Fv = 0x00348620; // type:func allow_duplicated:True
+func_00348620 = 0x00348620; // type:func absolute:True allow_duplicated:True
 
-func_slotc0__16FieldClass15AE70Fv = 0x00348610; // type:func absolute:True allow_duplicated:True
-func_00348610 = 0x00348610; // type:func allow_duplicated:True
+func_slotc0__16FieldClass15AE70Fv = 0x00348610; // type:func allow_duplicated:True
+func_00348610 = 0x00348610; // type:func absolute:True allow_duplicated:True
 
-func_slotbc__16FieldClass15AE70Fv = 0x00348600; // type:func absolute:True allow_duplicated:True
-func_00348600 = 0x00348600; // type:func allow_duplicated:True
+func_slotbc__16FieldClass15AE70Fv = 0x00348600; // type:func allow_duplicated:True
+func_00348600 = 0x00348600; // type:func absolute:True allow_duplicated:True
 
-func_slotb8__16FieldClass15AE70Fv = 0x003485F0; // type:func absolute:True allow_duplicated:True
-func_003485F0 = 0x003485F0; // type:func allow_duplicated:True
+func_slotb8__16FieldClass15AE70Fv = 0x003485F0; // type:func allow_duplicated:True
+func_003485F0 = 0x003485F0; // type:func absolute:True allow_duplicated:True
 
-func_slot9c__16FieldClass15AE70Fv = 0x003485A0; // type:func absolute:True allow_duplicated:True
-func_003485A0 = 0x003485A0; // type:func allow_duplicated:True
+func_slot9c__16FieldClass15AE70Fv = 0x003485A0; // type:func allow_duplicated:True
+func_003485A0 = 0x003485A0; // type:func absolute:True allow_duplicated:True
 
-func_slot98__16FieldClass15AE70Fv = 0x00348590; // type:func absolute:True allow_duplicated:True
-func_00348590 = 0x00348590; // type:func allow_duplicated:True
+func_slot98__16FieldClass15AE70Fv = 0x00348590; // type:func allow_duplicated:True
+func_00348590 = 0x00348590; // type:func absolute:True allow_duplicated:True
 
-func_slot94__16FieldClass15AE70Fv = 0x00348580; // type:func absolute:True allow_duplicated:True
-func_00348580 = 0x00348580; // type:func allow_duplicated:True
+func_slot94__16FieldClass15AE70Fv = 0x00348580; // type:func allow_duplicated:True
+func_00348580 = 0x00348580; // type:func absolute:True allow_duplicated:True
 
-func_slot90__16FieldClass15AE70Fv = 0x00348570; // type:func absolute:True allow_duplicated:True
-func_00348570 = 0x00348570; // type:func allow_duplicated:True
+func_slot90__16FieldClass15AE70Fv = 0x00348570; // type:func allow_duplicated:True
+func_00348570 = 0x00348570; // type:func absolute:True allow_duplicated:True
 
-func_slot8c__16FieldClass15AE70Fv = 0x00348560; // type:func absolute:True allow_duplicated:True
-func_00348560 = 0x00348560; // type:func allow_duplicated:True
+func_slot8c__16FieldClass15AE70Fv = 0x00348560; // type:func allow_duplicated:True
+func_00348560 = 0x00348560; // type:func absolute:True allow_duplicated:True
 
-func_slot88__16FieldClass15AE70Fv = 0x00348550; // type:func absolute:True allow_duplicated:True
-func_00348550 = 0x00348550; // type:func allow_duplicated:True
+func_slot88__16FieldClass15AE70Fv = 0x00348550; // type:func allow_duplicated:True
+func_00348550 = 0x00348550; // type:func absolute:True allow_duplicated:True
 
-func_slot84__16FieldClass15AE70Fv = 0x00348540; // type:func absolute:True allow_duplicated:True
-func_00348540 = 0x00348540; // type:func allow_duplicated:True
+func_slot84__16FieldClass15AE70Fv = 0x00348540; // type:func allow_duplicated:True
+func_00348540 = 0x00348540; // type:func absolute:True allow_duplicated:True
 
-func_slot80__16FieldClass15AE70Fv = 0x00348530; // type:func absolute:True allow_duplicated:True
-func_00348530 = 0x00348530; // type:func allow_duplicated:True
+func_slot80__16FieldClass15AE70Fv = 0x00348530; // type:func allow_duplicated:True
+func_00348530 = 0x00348530; // type:func absolute:True allow_duplicated:True
 
-func_slot7c__16FieldClass15AE70Fv = 0x00348520; // type:func absolute:True allow_duplicated:True
-func_00348520 = 0x00348520; // type:func allow_duplicated:True
+func_slot7c__16FieldClass15AE70Fv = 0x00348520; // type:func allow_duplicated:True
+func_00348520 = 0x00348520; // type:func absolute:True allow_duplicated:True
 
-func_slot78__16FieldClass15AE70Fv = 0x00348510; // type:func absolute:True allow_duplicated:True
-func_00348510 = 0x00348510; // type:func allow_duplicated:True
+func_slot78__16FieldClass15AE70Fv = 0x00348510; // type:func allow_duplicated:True
+func_00348510 = 0x00348510; // type:func absolute:True allow_duplicated:True
 
-func_slot74__16FieldClass15AE70Fv = 0x00348500; // type:func absolute:True allow_duplicated:True
-func_00348500 = 0x00348500; // type:func allow_duplicated:True
+func_slot74__16FieldClass15AE70Fv = 0x00348500; // type:func allow_duplicated:True
+func_00348500 = 0x00348500; // type:func absolute:True allow_duplicated:True
 
-func_slot70__16FieldClass15AE70Fv = 0x003484F0; // type:func absolute:True allow_duplicated:True
-func_003484F0 = 0x003484F0; // type:func allow_duplicated:True
+func_slot70__16FieldClass15AE70Fv = 0x003484F0; // type:func allow_duplicated:True
+func_003484F0 = 0x003484F0; // type:func absolute:True allow_duplicated:True
 
-func_slot60__16FieldClass15AE70Fi = 0x003484D0; // type:func absolute:True allow_duplicated:True
-func_003484D0 = 0x003484D0; // type:func allow_duplicated:True
+func_slot60__16FieldClass15AE70Fi = 0x003484D0; // type:func allow_duplicated:True
+func_003484D0 = 0x003484D0; // type:func absolute:True allow_duplicated:True
 
-func_slot58__16FieldClass15AE70Fv = 0x003484C0; // type:func absolute:True allow_duplicated:True
-func_003484C0 = 0x003484C0; // type:func allow_duplicated:True
+func_slot58__16FieldClass15AE70Fv = 0x003484C0; // type:func allow_duplicated:True
+func_003484C0 = 0x003484C0; // type:func absolute:True allow_duplicated:True
 
-func_slot54__16FieldClass15AE70Fv = 0x003484B0; // type:func absolute:True allow_duplicated:True
-func_003484B0 = 0x003484B0; // type:func allow_duplicated:True
+func_slot54__16FieldClass15AE70Fv = 0x003484B0; // type:func allow_duplicated:True
+func_003484B0 = 0x003484B0; // type:func absolute:True allow_duplicated:True
 
-func_slot50__16FieldClass15AE70FUi = 0x003484A0; // type:func absolute:True allow_duplicated:True
-func_003484A0 = 0x003484A0; // type:func allow_duplicated:True
+func_slot50__16FieldClass15AE70FUi = 0x003484A0; // type:func allow_duplicated:True
+func_003484A0 = 0x003484A0; // type:func absolute:True allow_duplicated:True
 
-func_slot4c__16FieldClass15AE70Fv = 0x00348490; // type:func absolute:True allow_duplicated:True
-func_00348490 = 0x00348490; // type:func allow_duplicated:True
+func_slot4c__16FieldClass15AE70Fv = 0x00348490; // type:func allow_duplicated:True
+func_00348490 = 0x00348490; // type:func absolute:True allow_duplicated:True
 
-func_slot48__16FieldClass15AE70FPv = 0x00348480; // type:func absolute:True allow_duplicated:True
-func_00348480 = 0x00348480; // type:func allow_duplicated:True
+func_slot48__16FieldClass15AE70FPv = 0x00348480; // type:func allow_duplicated:True
+func_00348480 = 0x00348480; // type:func absolute:True allow_duplicated:True
 
-func_slot38__16FieldClass15AE70Fv = 0x00348450; // type:func absolute:True allow_duplicated:True
-func_00348450 = 0x00348450; // type:func allow_duplicated:True
+func_slot38__16FieldClass15AE70Fv = 0x00348450; // type:func allow_duplicated:True
+func_00348450 = 0x00348450; // type:func absolute:True allow_duplicated:True
 
-func_slot34__16FieldClass15AE70FUs = 0x00348440; // type:func absolute:True allow_duplicated:True
-func_00348440 = 0x00348440; // type:func allow_duplicated:True
+func_slot34__16FieldClass15AE70FUs = 0x00348440; // type:func allow_duplicated:True
+func_00348440 = 0x00348440; // type:func absolute:True allow_duplicated:True
 
-func_slot30__16FieldClass15AE70Fv = 0x00348430; // type:func absolute:True allow_duplicated:True
-func_00348430 = 0x00348430; // type:func allow_duplicated:True
+func_slot30__16FieldClass15AE70Fv = 0x00348430; // type:func allow_duplicated:True
+func_00348430 = 0x00348430; // type:func absolute:True allow_duplicated:True
 
-func_slot2c__16FieldClass15AE70FUc = 0x00348420; // type:func absolute:True allow_duplicated:True
-func_00348420 = 0x00348420; // type:func allow_duplicated:True
+func_slot2c__16FieldClass15AE70FUc = 0x00348420; // type:func allow_duplicated:True
+func_00348420 = 0x00348420; // type:func absolute:True allow_duplicated:True
 
-func_slot28__16FieldClass15AE70Fv = 0x00348410; // type:func absolute:True allow_duplicated:True
-func_00348410 = 0x00348410; // type:func allow_duplicated:True
+func_slot28__16FieldClass15AE70Fv = 0x00348410; // type:func allow_duplicated:True
+func_00348410 = 0x00348410; // type:func absolute:True allow_duplicated:True
 
-func_slot24__16FieldClass15AE70FUc = 0x00348400; // type:func absolute:True allow_duplicated:True
-func_00348400 = 0x00348400; // type:func allow_duplicated:True
+func_slot24__16FieldClass15AE70FUc = 0x00348400; // type:func allow_duplicated:True
+func_00348400 = 0x00348400; // type:func absolute:True allow_duplicated:True
 
 func_2CEBE0 = 0x002CEBE0; // type:func allow_duplicated:True
 
@@ -206,57 +209,58 @@ func_slot10__16FieldClass15AE70FUiffi = 0x002CE8D0; // type:func absolute:True a
 func_002CE8D0 = 0x002CE8D0; // type:func allow_duplicated:True absolute:True
 
 func_0034F6F0 = 0x0034F6F0; // type:func allow_duplicated:True
-__dt__17StatusScrollStateFv = 0x0034F6F0; // type:func allow_duplicated:True
+__dt__21StatusCharacterWindowFv = 0x0034F6F0; // type:func allow_duplicated:True
 
 func_0034F6B0 = 0x0034F6B0; // type:func allow_duplicated:True
-func_slot0c__17StatusScrollStateFv = 0x0034F6B0; // type:func allow_duplicated:True
+func_slot0c__21StatusCharacterWindowFv = 0x0034F6B0; // type:func allow_duplicated:True
 
 func_0034BEA0 = 0x0034BEA0; // type:func allow_duplicated:True
-func_slot5c__17StatusScrollStateFv = 0x0034BEA0; // type:func allow_duplicated:True
+func_slot5c__21StatusCharacterWindowFv = 0x0034BEA0; // type:func allow_duplicated:True
 
 func_0034BDA0 = 0x0034BDA0; // type:func allow_duplicated:True
-func_slot64__17StatusScrollStateFv = 0x0034BDA0; // type:func allow_duplicated:True
+func_slot64__21StatusCharacterWindowFv = 0x0034BDA0; // type:func allow_duplicated:True
 
 func_0034B190 = 0x0034B190; // type:func allow_duplicated:True
-func_slot68__17StatusScrollStateFv = 0x0034B190; // type:func allow_duplicated:True
+func_slot68__21StatusCharacterWindowFv = 0x0034B190; // type:func allow_duplicated:True
 
 func_0034B170 = 0x0034B170; // type:func allow_duplicated:True
-func_slot6c__17StatusScrollStateFv = 0x0034B170; // type:func allow_duplicated:True
+func_slot6c__21StatusCharacterWindowFv = 0x0034B170; // type:func allow_duplicated:True
 
 func_0034C480 = 0x0034C480; // type:func allow_duplicated:True
-func_slotb0__17StatusScrollStateFv = 0x0034C480; // type:func allow_duplicated:True
+func_slotb0__21StatusCharacterWindowFv = 0x0034C480; // type:func allow_duplicated:True
 
 func_0034C410 = 0x0034C410; // type:func allow_duplicated:True
-func_slotb4__17StatusScrollStateFv = 0x0034C410; // type:func allow_duplicated:True
+func_slotb4__21StatusCharacterWindowFv = 0x0034C410; // type:func allow_duplicated:True
 
 func_0034C2B0 = 0x0034C2B0; // type:func allow_duplicated:True
-func_slotb8__17StatusScrollStateFv = 0x0034C2B0; // type:func allow_duplicated:True
+func_slotb8__21StatusCharacterWindowFv = 0x0034C2B0; // type:func allow_duplicated:True
 
 func_0034C090 = 0x0034C090; // type:func allow_duplicated:True
-func_slotd8__17StatusScrollStateFv = 0x0034C090; // type:func allow_duplicated:True
+func_slotd8__21StatusCharacterWindowFv = 0x0034C090; // type:func allow_duplicated:True
 
 func_0034C000 = 0x0034C000; // type:func allow_duplicated:True
-func_slotdc__17StatusScrollStateFv = 0x0034C000; // type:func allow_duplicated:True
+func_slotdc__21StatusCharacterWindowFv = 0x0034C000; // type:func allow_duplicated:True
 
 func_0034C870 = 0x0034C870; // type:func allow_duplicated:True
-func_slotf4__17StatusScrollStateFUi = 0x0034C870; // type:func allow_duplicated:True
+func_slotf4__21StatusCharacterWindowFUi = 0x0034C870; // type:func allow_duplicated:True
 
 func_0034F780 = 0x0034F780; // type:func allow_duplicated:True
-__ct__17StatusScrollStateFv = 0x0034F780; // type:func allow_duplicated:True
+__ct__21StatusCharacterWindowFv = 0x0034F780; // type:func allow_duplicated:True
 
-__vt__17StatusScrollState = 0x001889C0; // size:0xF8 absolute:True allow_duplicated:True
+__vt__17StatusScrollState = 0x001889C0; // absolute:True allow_duplicated:True
+__vt__21StatusCharacterWindow = 0x001889C0; // size:0xF8 absolute:True allow_duplicated:True
 
-func_slota0__16FieldClass15AE70Fv = 0x003485B0; // type:func absolute:True allow_duplicated:True
-func_003485B0 = 0x003485B0; // type:func allow_duplicated:True
+func_slota0__16FieldClass15AE70Fv = 0x003485B0; // type:func allow_duplicated:True
+func_003485B0 = 0x003485B0; // type:func absolute:True allow_duplicated:True
 
-func_slota4__16FieldClass15AE70Fv = 0x003485C0; // type:func absolute:True allow_duplicated:True
-func_003485C0 = 0x003485C0; // type:func allow_duplicated:True
+func_slota4__16FieldClass15AE70Fv = 0x003485C0; // type:func allow_duplicated:True
+func_003485C0 = 0x003485C0; // type:func absolute:True allow_duplicated:True
 
-func_slota8__16FieldClass15AE70Fv = 0x003485D0; // type:func absolute:True allow_duplicated:True
-func_003485D0 = 0x003485D0; // type:func allow_duplicated:True
+func_slota8__16FieldClass15AE70Fv = 0x003485D0; // type:func allow_duplicated:True
+func_003485D0 = 0x003485D0; // type:func absolute:True allow_duplicated:True
 
-func_slotac__16FieldClass15AE70Fv = 0x003485E0; // type:func absolute:True allow_duplicated:True
-func_003485E0 = 0x003485E0; // type:func allow_duplicated:True
+func_slotac__16FieldClass15AE70Fv = 0x003485E0; // type:func allow_duplicated:True
+func_003485E0 = 0x003485E0; // type:func absolute:True allow_duplicated:True
 
 func_28E2B0 = 0x0028E2B0; // type:func allow_duplicated:True
 
@@ -294,47 +298,49 @@ func_003EF740__14LibClass178600Fv = 0x004C4860; // type:func absolute:True allow
 func_00413D20__23ItemCreationClass175110Fv = 0x00467750; // type:func absolute:True allow_duplicated:True
 func_00462310__23ItemCreationClass175110Fv = 0x00467670; // type:func absolute:True allow_duplicated:True
 func_0034AD60 = 0x0034AD60; // type:func allow_duplicated:True
-__ct__21StatusSelectionWindowFv = 0x0034AD60; // type:func allow_duplicated:True
+__ct__16StatusNameWindowFv = 0x0034AD60; // type:func allow_duplicated:True
 func_003509C0 = 0x003509C0; // type:func allow_duplicated:True
-__dt__21StatusSelectionWindowFv = 0x003509C0; // type:func allow_duplicated:True
-__vt__21StatusSelectionWindow = 0x001888C0; // size:0xF8 absolute:True allow_duplicated:True
+__dt__16StatusNameWindowFv = 0x003509C0; // type:func allow_duplicated:True
+__vt__21StatusSelectionWindow = 0x001888C0; // absolute:True allow_duplicated:True
+__vt__16StatusNameWindow = 0x001888C0; // size:0xF8 absolute:True allow_duplicated:True
 func_00349390 = 0x00349390; // type:func allow_duplicated:True
-func_slot5c__21StatusSelectionWindowFv = 0x00349390; // type:func allow_duplicated:True
+func_slot5c__16StatusNameWindowFv = 0x00349390; // type:func allow_duplicated:True
 func_00349730 = 0x00349730; // type:func allow_duplicated:True
-func_slot68__21StatusSelectionWindowFv = 0x00349730; // type:func allow_duplicated:True
+func_slot68__16StatusNameWindowFv = 0x00349730; // type:func allow_duplicated:True
 func_003496C0 = 0x003496C0; // type:func allow_duplicated:True
-func_slot6c__21StatusSelectionWindowFv = 0x003496C0; // type:func allow_duplicated:True
+func_slot6c__16StatusNameWindowFv = 0x003496C0; // type:func allow_duplicated:True
 func_00349640 = 0x00349640; // type:func allow_duplicated:True
-func_slot70__21StatusSelectionWindowFv = 0x00349640; // type:func allow_duplicated:True
+func_slot70__16StatusNameWindowFv = 0x00349640; // type:func allow_duplicated:True
 func_003495C0 = 0x003495C0; // type:func allow_duplicated:True
-func_slot74__21StatusSelectionWindowFv = 0x003495C0; // type:func allow_duplicated:True
+func_slot74__16StatusNameWindowFv = 0x003495C0; // type:func allow_duplicated:True
 func_00349900 = 0x00349900; // type:func allow_duplicated:True
-func_slotb0__21StatusSelectionWindowFv = 0x00349900; // type:func allow_duplicated:True
+func_slotb0__16StatusNameWindowFv = 0x00349900; // type:func allow_duplicated:True
 func_003498E0 = 0x003498E0; // type:func allow_duplicated:True
-func_slotb4__21StatusSelectionWindowFv = 0x003498E0; // type:func allow_duplicated:True
+func_slotb4__16StatusNameWindowFv = 0x003498E0; // type:func allow_duplicated:True
 func_003498D0 = 0x003498D0; // type:func allow_duplicated:True
-func_slotc0__21StatusSelectionWindowFv = 0x003498D0; // type:func allow_duplicated:True
+func_slotc0__16StatusNameWindowFv = 0x003498D0; // type:func allow_duplicated:True
 func_003498C0 = 0x003498C0; // type:func allow_duplicated:True
-func_slotc4__21StatusSelectionWindowFv = 0x003498C0; // type:func allow_duplicated:True
+func_slotc4__16StatusNameWindowFv = 0x003498C0; // type:func allow_duplicated:True
 func_003498A0 = 0x003498A0; // type:func allow_duplicated:True
-func_slote0__21StatusSelectionWindowFv = 0x003498A0; // type:func allow_duplicated:True
+func_slote0__16StatusNameWindowFv = 0x003498A0; // type:func allow_duplicated:True
 func_003497A0 = 0x003497A0; // type:func allow_duplicated:True
-func_slote4__21StatusSelectionWindowFv = 0x003497A0; // type:func allow_duplicated:True
+func_slote4__16StatusNameWindowFv = 0x003497A0; // type:func allow_duplicated:True
 func_00349CC0 = 0x00349CC0; // type:func allow_duplicated:True
-func_slotf4__21StatusSelectionWindowFPv = 0x00349CC0; // type:func allow_duplicated:True
-func_slot64__16FieldClass15AE70Fv = 0x003484E0; // type:func absolute:True allow_duplicated:True
-func_003484E0 = 0x003484E0; // type:func allow_duplicated:True
+func_slotf4__16StatusNameWindowFPv = 0x00349CC0; // type:func allow_duplicated:True
+func_slot64__16FieldClass15AE70Fv = 0x003484E0; // type:func allow_duplicated:True
+func_003484E0 = 0x003484E0; // type:func absolute:True allow_duplicated:True
 
 func_slot5c__16FieldClass15AE70Fv = 0x00350A60; // type:func
 func_slot68__16FieldClass15AE70Fv = 0x00350A20; // type:func
 func_slot6c__16FieldClass15AE70Fv = 0x00350A30; // type:func
 func_slotb0__16FieldClass15AE70Fv = 0x00350A40; // type:func
 func_slotb4__16FieldClass15AE70Fv = 0x00350A50; // type:func
-__vt__16StatusTextWindow = 0x00188AC0; // absolute:True size:0xF8 allow_duplicated:True
-__dt__16StatusTextWindowFv = 0x0034FE40; // type:func
-func_slot5c__16StatusTextWindowFv = 0x0034F920; // type:func
-func_slot60__16StatusTextWindowFi = 0x0034FA10; // type:func
-func_slotf4__16StatusTextWindowFUi = 0x0034FAA0; // type:func
+__vt__16StatusTextWindow = 0x00188AC0; // absolute:True allow_duplicated:True
+__vt__16StatusHelpWindow = 0x00188AC0; // absolute:True size:0xF8 allow_duplicated:True
+__dt__16StatusHelpWindowFv = 0x0034FE40; // type:func
+func_slot5c__16StatusHelpWindowFv = 0x0034F920; // type:func
+func_slot60__16StatusHelpWindowFi = 0x0034FA10; // type:func
+func_slotf4__16StatusHelpWindowFUi = 0x0034FAA0; // type:func
 __vt__22StatusBackgroundWindow = 0x00188BC0; // absolute:True size:0xF8 allow_duplicated:True
 __dt__22StatusBackgroundWindowFv = 0x00350100; // type:func
 func_slotf4__22StatusBackgroundWindowFUi = 0x0034FEA0; // type:func
@@ -371,10 +377,12 @@ lib_text_measure_bounds = 0x004C69B0; // type:func absolute:True allow_duplicate
 
 lib_list_indicator_init = 0x0041A930; // type:func absolute:True allow_duplicated:True
 lib_object_detach_owner = 0x004D65C0; // type:func absolute:True
-lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True
+lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
+init_resource_rectangle__15LibObject178750FffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 lib_release_resource_slot = 0x00465430; // type:func absolute:True
 lib_multiline_text_init_resource_rectangle = 0x00461720; // type:func absolute:True
-lib_numeric_widget_init_rectangle = 0x00464D90; // type:func absolute:True
+lib_numeric_widget_init_rectangle = 0x00464D90; // type:func absolute:True allow_duplicated:True
+init_numeric_resource_rectangle__15LibObject174F20FffffUiiUc = 0x00464D90; // type:func absolute:True allow_duplicated:True
 resident_next_random_word = 0x0010CF80; // type:func absolute:True
 lib_scissor_init_reset = 0x0044B510; // type:func absolute:True
 lib_scissor_init_rectangle = 0x0044B570; // type:func absolute:True
@@ -408,3 +416,222 @@ resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplica
 lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True
 
 field_replace_model_camera = 0x002FD220; // type:func absolute:True allow_duplicated:True
+
+status_remove_last_name_entry = 0x00348AE0; // type:func
+
+status_update_window_transition = 0x00350220; // type:func absolute:True allow_duplicated:True
+func_0020F230 = 0x0020F230; // type:func absolute:True
+func_0022A160 = 0x0022A160; // type:func absolute:True
+func_004DCEA0 = 0x004DCEA0; // type:func absolute:True
+D_001B6650 = 0x001B6650; // size:0x4 absolute:True
+D_001B6694 = 0x001B6694; // size:0x4 absolute:True
+
+func_0034AC90 = 0x0034AC90; // type:func allow_duplicated:True
+__dt__23ItemCreationClass185050Fv = 0x0034AC90; // type:func allow_duplicated:True
+__vt__23ItemCreationClass185050 = 0x001888B0; // size:0x10 absolute:True allow_duplicated:True
+__vt__14LibClass178630 = 0x00178630; // size:0x24 absolute:True
+lib_panel_init_rectangle = 0x004C5A80; // type:func absolute:True
+__vt__15LibObject175140 = 0x00175140; // size:0x24 absolute:True
+func_00467AD0__15LibObject175140FffffPCcUc = 0x00467AD0; // type:func absolute:True
+__vt__23ItemCreationClass172600 = 0x00172600; // size:0x24 absolute:True
+func_002D6440__33ItemCreationOptionResourceDisplayFP19FieldResourceRecordff = 0x002D6440; // type:func absolute:True allow_duplicated:True
+__vt__23ItemCreationClass175030 = 0x00175030; // size:0x34 absolute:True
+func_00466E40 = 0x00466E40; // type:func absolute:True allow_duplicated:True
+func_00466E40__23ItemCreationClass185050Ffff = 0x00466E40; // type:func absolute:True allow_duplicated:True
+func_003509B0 = 0x003509B0; // type:func allow_duplicated:True
+func_slot0c__23ItemCreationClass185050Fv = 0x003509B0; // type:func allow_duplicated:True
+
+func_00261150__19StatusResourceStateFv = 0x003486E0; // type:func
+func_00263C70__19StatusResourceStateFPv = 0x003486F0; // type:func
+func_slot5c__19StatusResourceStateFv = 0x00350160; // type:func
+func_001DD7B0__19StatusResourceStateFv = 0x00350200; // type:func
+func_001DF360__19StatusResourceStateFv = 0x00350220; // type:func allow_duplicated:True
+func_00263C90__19StatusResourceStateFv = 0x00350530; // type:func
+func_00263CD0__19StatusResourceStateFv = 0x00350540; // type:func
+func_001E1820__19StatusResourceStateFPv = 0x00350700; // type:func
+func_00264110__19StatusResourceStateFv = 0x003507E0; // type:func
+func_001DD410__19StatusResourceStateFv = 0x003509A0; // type:func
+func_00261D20__19StatusResourceStateFv = 0x00350A70; // type:func
+func_00263CC0__19StatusResourceStateFv = 0x00350A80; // type:func
+func_001DF3D0__19StatusResourceStateFv = 0x00350A90; // type:func
+selected_records__19StatusResourceStateFv = 0x00350AA0; // type:func
+func_00263C80__19StatusResourceStateFPv = 0x00350AB0; // type:func
+func_00263CA0__19StatusResourceStateFSc = 0x00350AC0; // type:func
+func_00263CB0__19StatusResourceStateFv = 0x00350AD0; // type:func
+func_slot60__19StatusResourceStateFv = 0x00350AE0; // type:func
+func_slot64__19StatusResourceStateFv = 0x00350AF0; // type:func
+func_slot68__19StatusResourceStateFv = 0x00350B00; // type:func
+__dt__19StatusResourceStateFv = 0x003507F0; // type:func
+__ct__19StatusResourceStateFv = 0x00350890; // type:func
+__dt__16FieldClass153E30Fv = 0x00264230; // type:func absolute:True
+func_00264080__16FieldClass153E30Fv = 0x00264080; // type:func absolute:True
+func_00263E90__16FieldClass153E30Fv = 0x00263E90; // type:func absolute:True
+func_00263E20__16FieldClass153E30FUi = 0x00263E20; // type:func absolute:True
+
+__ct__21StatusExperienceTableFv = 0x00402990; // type:func absolute:True
+
+func_0034B1B0 = 0x0034B1B0; // type:func absolute:True allow_duplicated:True
+status_refresh_character_display = 0x0034B1B0; // type:func allow_duplicated:True
+status_initialize_character_display = 0x0034C870; // type:func absolute:True allow_duplicated:True
+
+__ct__14LibClass178A70Fv = 0x004CA050; // type:func absolute:True
+__ct__14LibClass174610Fv = 0x0044B2D0; // type:func absolute:True
+lib_container_init = 0x004C6510; // type:func absolute:True
+lib_queue_display_object = 0x00465B20; // type:func absolute:True
+lib_marker_init_rectangle = 0x00421170; // type:func absolute:True
+lib_item_code_init_rectangle = 0x00413F70; // type:func absolute:True
+__vt__15LibObject178660 = 0x00178660; // type:u32 size:0xB4 absolute:True
+__vt__15LibObject174F20 = 0x00174F20; // type:u32 size:0x24 absolute:True
+__vt__15LibObject172410 = 0x00172410; // type:u32 size:0x24 absolute:True
+__vt__23ItemCreationClass172870 = 0x00172870; // type:u32 size:0x24 absolute:True
+__vt__23ItemCreationClass1725D0 = 0x001725D0; // type:u32 size:0x24 absolute:True
+
+status_initialize_name_maps = 0x00348700; // type:func
+func_00348700 = 0x00348700; // type:func absolute:True allow_duplicated:True
+
+status_append_name_diacritic = 0x00348960; // type:func
+func_00348960 = 0x00348960; // type:func absolute:True allow_duplicated:True
+
+status_refresh_name_markers = 0x00348C10; // type:func
+func_00348C10 = 0x00348C10; // type:func absolute:True allow_duplicated:True
+
+status_refresh_name_glyphs = 0x00348D00; // type:func
+func_00348D00 = 0x00348D00; // type:func absolute:True allow_duplicated:True
+
+status_decode_name_glyphs = 0x00348E50; // type:func
+func_00348E50 = 0x00348E50; // type:func absolute:True allow_duplicated:True
+
+status_append_selected_name_glyph = 0x00349070; // type:func
+func_00349070 = 0x00349070; // type:func absolute:True allow_duplicated:True
+
+status_select_alphanumeric_grid = 0x00349260; // type:func
+func_00349260 = 0x00349260; // type:func absolute:True allow_duplicated:True
+
+status_move_name_grid_cursor = 0x00349440; // type:func
+func_00349440 = 0x00349440; // type:func absolute:True allow_duplicated:True
+
+status_update_scroll = 0x0034AF00; // type:func
+func_0034AF00 = 0x0034AF00; // type:func absolute:True allow_duplicated:True
+
+status_begin_scroll = 0x0034B0A0; // type:func
+func_0034B0A0 = 0x0034B0A0; // type:func absolute:True allow_duplicated:True
+
+status_create_character_model = 0x0034C130; // type:func
+func_0034C130 = 0x0034C130; // type:func absolute:True allow_duplicated:True
+
+status_refresh_portrait = 0x0034C500; // type:func
+func_0034C500 = 0x0034C500; // type:func absolute:True allow_duplicated:True
+
+status_refresh_battle_skill_keys = 0x0034C640; // type:func
+func_0034C640 = 0x0034C640; // type:func absolute:True allow_duplicated:True
+
+status_append_item_widget = 0x00350C70; // type:func
+func_00350C70 = 0x00350C70; // type:func absolute:True allow_duplicated:True
+
+status_clear_item_widgets = 0x00350D00; // type:func
+func_00350D00 = 0x00350D00; // type:func absolute:True allow_duplicated:True
+
+status_append_name_widget = 0x00350D80; // type:func
+func_00350D80 = 0x00350D80; // type:func absolute:True allow_duplicated:True
+
+status_append_numeric_widget = 0x00350F10; // type:func
+func_00350F10 = 0x00350F10; // type:func absolute:True allow_duplicated:True
+
+status_clear_numeric_widgets = 0x00350FA0; // type:func
+func_00350FA0 = 0x00350FA0; // type:func absolute:True allow_duplicated:True
+
+status_append_text_widget = 0x00351120; // type:func
+func_00351120 = 0x00351120; // type:func absolute:True allow_duplicated:True
+
+status_clear_text_widgets = 0x003511B0; // type:func
+func_003511B0 = 0x003511B0; // type:func absolute:True allow_duplicated:True
+
+status_list_node_at = 0x00351230; // type:func
+func_00351230 = 0x00351230; // type:func absolute:True allow_duplicated:True
+
+status_append_scissor_widget = 0x00351270; // type:func
+func_00351270 = 0x00351270; // type:func absolute:True allow_duplicated:True
+D_00351380 = 0x00351380; // absolute:True allow_duplicated:True
+D_003513E0 = 0x003513E0; // absolute:True allow_duplicated:True
+D_00351440 = 0x00351440; // absolute:True allow_duplicated:True
+
+g_status_default_fayt_name = 0x00351500; // absolute:True
+D_00351500 = 0x00351500; // absolute:True allow_duplicated:True
+
+g_status_default_sophia_name = 0x00351508; // absolute:True
+D_00351508 = 0x00351508; // absolute:True allow_duplicated:True
+
+g_status_default_maria_name = 0x00351510; // absolute:True
+D_00351510 = 0x00351510; // absolute:True allow_duplicated:True
+
+g_status_default_cliff_name = 0x00351518; // absolute:True
+D_00351518 = 0x00351518; // absolute:True allow_duplicated:True
+
+g_status_default_nel_name = 0x00351520; // absolute:True
+D_00351520 = 0x00351520; // absolute:True allow_duplicated:True
+
+g_status_default_albel_name = 0x00351528; // absolute:True
+D_00351528 = 0x00351528; // absolute:True allow_duplicated:True
+
+g_status_default_roger_name = 0x00351530; // absolute:True
+D_00351530 = 0x00351530; // absolute:True allow_duplicated:True
+
+g_status_default_peppita_name = 0x00351538; // absolute:True
+D_00351538 = 0x00351538; // absolute:True allow_duplicated:True
+
+g_status_default_adray_name = 0x00351540; // absolute:True
+D_00351540 = 0x00351540; // absolute:True allow_duplicated:True
+
+g_status_default_mirage_name = 0x00351548; // absolute:True
+D_00351548 = 0x00351548; // absolute:True allow_duplicated:True
+
+func_slot70__19StatusResourceStateFv = 0x00350B10; // type:func allow_duplicated:True
+func_00350B10 = 0x00350B10; // type:func absolute:True allow_duplicated:True
+func_slot74__19StatusResourceStateFv = 0x00350B20; // type:func allow_duplicated:True
+func_00350B20 = 0x00350B20; // type:func absolute:True allow_duplicated:True
+func_slot78__19StatusResourceStateFv = 0x00350B30; // type:func allow_duplicated:True
+func_00350B30 = 0x00350B30; // type:func absolute:True allow_duplicated:True
+func_slot7c__19StatusResourceStateFv = 0x00350B40; // type:func allow_duplicated:True
+func_00350B40 = 0x00350B40; // type:func absolute:True allow_duplicated:True
+func_slot80__19StatusResourceStateFv = 0x00350B50; // type:func allow_duplicated:True
+func_00350B50 = 0x00350B50; // type:func absolute:True allow_duplicated:True
+func_slot84__19StatusResourceStateFv = 0x00350B60; // type:func allow_duplicated:True
+func_00350B60 = 0x00350B60; // type:func absolute:True allow_duplicated:True
+
+__ct__16StatusList188D70Fv = 0x00350B70; // type:func absolute:True allow_duplicated:True
+__dt__16StatusList188D70Fv = 0x00350BF0; // type:func absolute:True allow_duplicated:True
+__ct__16StatusList188D60Fv = 0x00350E10; // type:func absolute:True allow_duplicated:True
+__dt__16StatusList188D60Fv = 0x00350E90; // type:func absolute:True allow_duplicated:True
+__ct__16StatusList188D50Fv = 0x00351020; // type:func absolute:True allow_duplicated:True
+__dt__16StatusList188D50Fv = 0x003510A0; // type:func absolute:True allow_duplicated:True
+__dt__17StatusScrollStateFv = 0x0034F6F0; // type:func absolute:True allow_duplicated:True
+func_slot0c__17StatusScrollStateFv = 0x0034F6B0; // type:func absolute:True allow_duplicated:True
+func_slot5c__17StatusScrollStateFv = 0x0034BEA0; // type:func absolute:True allow_duplicated:True
+func_slot64__17StatusScrollStateFv = 0x0034BDA0; // type:func absolute:True allow_duplicated:True
+func_slot68__17StatusScrollStateFv = 0x0034B190; // type:func absolute:True allow_duplicated:True
+func_slot6c__17StatusScrollStateFv = 0x0034B170; // type:func absolute:True allow_duplicated:True
+func_slotb0__17StatusScrollStateFv = 0x0034C480; // type:func absolute:True allow_duplicated:True
+func_slotb4__17StatusScrollStateFv = 0x0034C410; // type:func absolute:True allow_duplicated:True
+func_slotb8__17StatusScrollStateFv = 0x0034C2B0; // type:func absolute:True allow_duplicated:True
+func_slotd8__17StatusScrollStateFv = 0x0034C090; // type:func absolute:True allow_duplicated:True
+func_slotdc__17StatusScrollStateFv = 0x0034C000; // type:func absolute:True allow_duplicated:True
+func_slotf4__17StatusScrollStateFUi = 0x0034C870; // type:func absolute:True allow_duplicated:True
+__ct__17StatusScrollStateFv = 0x0034F780; // type:func absolute:True allow_duplicated:True
+__ct__21StatusSelectionWindowFv = 0x0034AD60; // type:func absolute:True allow_duplicated:True
+__dt__21StatusSelectionWindowFv = 0x003509C0; // type:func absolute:True allow_duplicated:True
+func_slot5c__21StatusSelectionWindowFv = 0x00349390; // type:func absolute:True allow_duplicated:True
+func_slot68__21StatusSelectionWindowFv = 0x00349730; // type:func absolute:True allow_duplicated:True
+func_slot6c__21StatusSelectionWindowFv = 0x003496C0; // type:func absolute:True allow_duplicated:True
+func_slot70__21StatusSelectionWindowFv = 0x00349640; // type:func absolute:True allow_duplicated:True
+func_slot74__21StatusSelectionWindowFv = 0x003495C0; // type:func absolute:True allow_duplicated:True
+func_slotb0__21StatusSelectionWindowFv = 0x00349900; // type:func absolute:True allow_duplicated:True
+func_slotb4__21StatusSelectionWindowFv = 0x003498E0; // type:func absolute:True allow_duplicated:True
+func_slotc0__21StatusSelectionWindowFv = 0x003498D0; // type:func absolute:True allow_duplicated:True
+func_slotc4__21StatusSelectionWindowFv = 0x003498C0; // type:func absolute:True allow_duplicated:True
+func_slote0__21StatusSelectionWindowFv = 0x003498A0; // type:func absolute:True allow_duplicated:True
+func_slote4__21StatusSelectionWindowFv = 0x003497A0; // type:func absolute:True allow_duplicated:True
+func_slotf4__21StatusSelectionWindowFPv = 0x00349CC0; // type:func absolute:True allow_duplicated:True
+__dt__16StatusTextWindowFv = 0x0034FE40; // type:func absolute:True allow_duplicated:True
+func_slot5c__16StatusTextWindowFv = 0x0034F920; // type:func absolute:True allow_duplicated:True
+func_slot60__16StatusTextWindowFi = 0x0034FA10; // type:func absolute:True allow_duplicated:True
+func_slotf4__16StatusTextWindowFUi = 0x0034FAA0; // type:func absolute:True allow_duplicated:True

@@ -47,9 +47,10 @@ void func_002D4160(FieldReset2D4160* object);
 /**
  * @brief Return the overlay data area at D_30EC10.
  * @param object Callback receiver; unused.
+ * @param raw_index Resource slot index; unused.
  * @return Address of the overlay data area.
  */
-void* func_002D3EB0(void* object);
+void* func_002D3EB0(void* object, u32 raw_index);
 
 /**
  * @brief Clear attached objects in a circular list.

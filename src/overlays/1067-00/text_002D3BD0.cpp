@@ -173,7 +173,7 @@ u8 func_002D3E40(FieldBufferSlots* object, void* allocation, u8 index)
     return 1;
 }
 
-void* func_002D3EB0(void* object)
+void* func_002D3EB0(void* object, u32 raw_index)
 {
     return D_30EC10;
 }

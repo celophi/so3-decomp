@@ -1,0 +1,30 @@
+rom:0x2740 reloc:MIPS_HI16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x2750 reloc:MIPS_LO16 symbol:__vt__23ItemCreationClass175030 addend:0x24
+rom:0x45F0 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0x45F8 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
+rom:0x4600 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0x4608 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0x46C reloc:MIPS_HI16 symbol:g_status_katakana_bytes
+rom:0x478 reloc:MIPS_LO16 symbol:g_status_katakana_bytes
+rom:0x520 reloc:MIPS_HI16 symbol:g_status_alphanumeric_bytes
+rom:0x52C reloc:MIPS_LO16 symbol:g_status_alphanumeric_bytes
+rom:0x2A90 reloc:MIPS_HI16 symbol:g_status_default_fayt_name
+rom:0x2AA0 reloc:MIPS_LO16 symbol:g_status_default_fayt_name
+rom:0x2ABC reloc:MIPS_HI16 symbol:g_status_default_sophia_name
+rom:0x2AC8 reloc:MIPS_LO16 symbol:g_status_default_sophia_name
+rom:0x2ACC reloc:MIPS_HI16 symbol:g_status_default_maria_name
+rom:0x2AD8 reloc:MIPS_LO16 symbol:g_status_default_maria_name
+rom:0x2ADC reloc:MIPS_HI16 symbol:g_status_default_cliff_name
+rom:0x2AE8 reloc:MIPS_LO16 symbol:g_status_default_cliff_name
+rom:0x2AEC reloc:MIPS_HI16 symbol:g_status_default_nel_name
+rom:0x2AF8 reloc:MIPS_LO16 symbol:g_status_default_nel_name
+rom:0x2AFC reloc:MIPS_HI16 symbol:g_status_default_albel_name
+rom:0x2B08 reloc:MIPS_LO16 symbol:g_status_default_albel_name
+rom:0x2B0C reloc:MIPS_HI16 symbol:g_status_default_roger_name
+rom:0x2B18 reloc:MIPS_LO16 symbol:g_status_default_roger_name
+rom:0x2B1C reloc:MIPS_HI16 symbol:g_status_default_peppita_name
+rom:0x2B28 reloc:MIPS_LO16 symbol:g_status_default_peppita_name
+rom:0x2B2C reloc:MIPS_HI16 symbol:g_status_default_adray_name
+rom:0x2B38 reloc:MIPS_LO16 symbol:g_status_default_adray_name
+rom:0x2B3C reloc:MIPS_HI16 symbol:g_status_default_mirage_name
+rom:0x2B48 reloc:MIPS_LO16 symbol:g_status_default_mirage_name
