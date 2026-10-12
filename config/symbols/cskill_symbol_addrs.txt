@@ -195,8 +195,8 @@ func_00462310__23ItemCreationClass175110Fv = 0x00467670; // type:func absolute:T
 
 func_0034BC40 = 0x0034BC40; // type:func allow_duplicated:True
 func_0034BCB0 = 0x0034BCB0; // type:func allow_duplicated:True
-__ct__18SkillDualSelectionFv = 0x0034BCB0; // type:func allow_duplicated:True
-__dt__18SkillDualSelectionFv = 0x0034BC40; // type:func allow_duplicated:True
+__ct__18SkillDualSelectionFv = 0x0034BCB0; // type:func absolute:True allow_duplicated:True
+__dt__18SkillDualSelectionFv = 0x0034BC40; // type:func absolute:True allow_duplicated:True
 __vt__18SkillDualSelection = 0x00183070; // absolute:True allow_duplicated:True
 func_0034B090 = 0x0034B090; // type:func absolute:True allow_duplicated:True
 func_0034AF90 = 0x0034AF90; // type:func absolute:True allow_duplicated:True
@@ -236,7 +236,7 @@ __dt__24SkillStatusMessageWindowFv = 0x00358070; // type:func allow_duplicated:T
 func_00351A60 = 0x00351A60; // type:func allow_duplicated:True
 __dt__22SkillModeMessageWindowFv = 0x00351A60; // type:func allow_duplicated:True
 func_00349E20 = 0x00349E20; // type:func allow_duplicated:True
-__dt__17SkillTextReceiverFv = 0x00349E20; // type:func allow_duplicated:True
+__dt__17SkillTextReceiverFv = 0x00349E20; // type:func absolute:True allow_duplicated:True
 func_0035AC40 = 0x0035AC40; // type:func allow_duplicated:True
 func_slot5c__19SkillResourceWindowFv = 0x0035AC40; // type:func allow_duplicated:True
 add_child__16FieldClass153E30FPv = 0x00263FD0; // type:func absolute:True allow_duplicated:True
@@ -258,11 +258,11 @@ func_slot68__14Record003538F0Fv = 0x00353DC0; // type:func absolute:True allow_d
 func_slot64__14Record003538F0Fv = 0x00353670; // type:func absolute:True allow_duplicated:True
 func_slot60__14Record003538F0Fi = 0x00359480; // type:func absolute:True allow_duplicated:True
 func_slot5c__14Record003538F0Fv = 0x003538A0; // type:func absolute:True allow_duplicated:True
-func_00354D80 = 0x00354D80; // type:func allow_duplicated:True
+func_00354D80 = 0x00354D80; // type:func absolute:True allow_duplicated:True
 func_003539F0 = 0x003539F0; // type:func absolute:True allow_duplicated:True
 func_00353B40 = 0x00353B40; // type:func absolute:True allow_duplicated:True
 func_00353EE0 = 0x00353EE0; // type:func absolute:True allow_duplicated:True
-func_00354060 = 0x00354060; // type:func allow_duplicated:True
+func_00354060 = 0x00354060; // type:func absolute:True allow_duplicated:True
 func_00353CA0 = 0x00353CA0; // type:func absolute:True allow_duplicated:True
 func_00353DC0 = 0x00353DC0; // type:func absolute:True allow_duplicated:True
 func_00353670 = 0x00353670; // type:func absolute:True allow_duplicated:True
@@ -301,7 +301,7 @@ __ct__18SkillModeSelectionFP15SkillController = 0x00351800; // type:func allow_d
 __dt__18SkillModeSelectionFv = 0x00351790; // type:func allow_duplicated:True
 __vt__18SkillModeSelection = 0x00183170; // size:0xF8 absolute:True allow_duplicated:True
 func_slotd0__18SkillModeSelectionFv = 0x0034DCE0; // type:func absolute:True allow_duplicated:True
-func_slotb4__18SkillModeSelectionFv = 0x0034C550; // type:func absolute:True allow_duplicated:True
+func_slotb4__18SkillModeSelectionFv = 0x0034C550; // type:func allow_duplicated:True
 func_slotb0__18SkillModeSelectionFv = 0x0034C7D0; // type:func absolute:True allow_duplicated:True
 func_slot60__18SkillModeSelectionFi = 0x00359480; // type:func absolute:True allow_duplicated:True
 func_00351490 = 0x00351490; // type:func absolute:True allow_duplicated:True
@@ -309,7 +309,7 @@ func_0034C530 = 0x0034C530; // type:func absolute:True allow_duplicated:True
 func_0034C540 = 0x0034C540; // type:func absolute:True allow_duplicated:True
 func_0034DA70 = 0x0034DA70; // type:func absolute:True allow_duplicated:True
 func_0034DCE0 = 0x0034DCE0; // type:func allow_duplicated:True
-func_0034C550 = 0x0034C550; // type:func allow_duplicated:True
+func_0034C550 = 0x0034C550; // type:func absolute:True allow_duplicated:True
 func_0034C7D0 = 0x0034C7D0; // type:func allow_duplicated:True
 func_0034DF00 = 0x0034DF00; // type:func absolute:True allow_duplicated:True
 func_0034E0B0 = 0x0034E0B0; // type:func absolute:True allow_duplicated:True
@@ -331,6 +331,7 @@ func_003EEBE0__14SkillHpMpGaugeFv = 0x0035D460; // type:func
 func_0011F770 = 0x0011F770; // type:func absolute:True
 lib_text_set_resource = 0x004C6DF0; // type:func absolute:True
 lib_multiline_text_set_resource = 0x0045F690; // type:func absolute:True
+abs = 0x00137250; // type:func absolute:True
 lib_panel_detach = 0x004C4A90; // type:func absolute:True
 
 remove_child__16FieldClass153E30FPv = 0x00263F50; // type:func absolute:True
@@ -393,8 +394,8 @@ __ct__22SkillBattleSetupWindowFP15SkillQueueOwner = 0x00355580; // type:func all
 __ct__22SkillBattleSetupWindowFP15SkillController = 0x00355580; // type:func allow_duplicated:True
 __dt__22SkillBattleSetupWindowFv = 0x00355500; // type:func allow_duplicated:True
 __vt__22SkillBattleSetupWindow = 0x00183470; // size:0xF8 absolute:True allow_duplicated:True
-func_slotf4__22SkillBattleSetupWindowFUi = 0x00354D80; // type:func absolute:True allow_duplicated:True
-func_slotb0__22SkillBattleSetupWindowFv = 0x00354060; // type:func absolute:True allow_duplicated:True
+func_slotf4__22SkillBattleSetupWindowFUi = 0x00354D80; // type:func allow_duplicated:True
+func_slotb0__22SkillBattleSetupWindowFv = 0x00354060; // type:func allow_duplicated:True
 func_slot60__22SkillBattleSetupWindowFi = 0x00359480; // type:func absolute:True allow_duplicated:True
 __ct__20SkillCharacterWindowFP15SkillQueueOwner = 0x00359200; // type:func allow_duplicated:True absolute:True
 __ct__20SkillCharacterWindowFP15SkillController = 0x00359200; // type:func allow_duplicated:True
@@ -409,6 +410,12 @@ __vt__15SkillCostWindow = 0x00182E40; // size:0xF8 absolute:True allow_duplicate
 func_slotf4__15SkillCostWindowFUi = 0x00348D10; // type:func absolute:True allow_duplicated:True
 skill_refresh_costs = 0x00348720; // type:func allow_duplicated:True
 skill_character_mp = 0x00356EE0; // type:func allow_duplicated:True
+func_00356CB0 = 0x00356CB0; // type:func absolute:True allow_duplicated:True
+skill_set_character_mp = 0x00356CB0; // type:func allow_duplicated:True
+func_00363890 = 0x00363890; // type:func absolute:True allow_duplicated:True
+skill_refresh_symbology_character_markers = 0x00363890; // type:func allow_duplicated:True
+func_00362FC0 = 0x00362FC0; // type:func absolute:True allow_duplicated:True
+skill_refresh_symbology_help = 0x00362FC0; // type:func allow_duplicated:True
 skill_character_hp = 0x00357230; // type:func allow_duplicated:True
 skill_add_character_flags = 0x00357350; // type:func allow_duplicated:True
 skill_mask_character_flags = 0x0035FA20; // type:func allow_duplicated:True
@@ -513,21 +520,21 @@ func_slot60__15SkillCostWindowFi = 0x00348CB0; // type:func allow_duplicated:Tru
 
 func_003499B0 = 0x003499B0; // type:func absolute:True allow_duplicated:True
 
-func_slotf4__17SkillTextReceiverFUi = 0x003499B0; // type:func allow_duplicated:True
+func_slotf4__17SkillTextReceiverFUi = 0x003499B0; // type:func absolute:True allow_duplicated:True
 
-func_slot68__18SkillDualSelectionFv = 0x0034B090; // type:func allow_duplicated:True
+func_slot68__18SkillDualSelectionFv = 0x0034B090; // type:func absolute:True allow_duplicated:True
 
-func_slot6c__18SkillDualSelectionFv = 0x0034AF90; // type:func allow_duplicated:True
+func_slot6c__18SkillDualSelectionFv = 0x0034AF90; // type:func absolute:True allow_duplicated:True
 
-func_slot70__18SkillDualSelectionFv = 0x0034AF00; // type:func allow_duplicated:True
+func_slot70__18SkillDualSelectionFv = 0x0034AF00; // type:func absolute:True allow_duplicated:True
 
-func_slotb4__18SkillDualSelectionFv = 0x0034A580; // type:func allow_duplicated:True
+func_slotb4__18SkillDualSelectionFv = 0x0034A580; // type:func absolute:True allow_duplicated:True
 
-func_slotd8__18SkillDualSelectionFv = 0x0034A570; // type:func allow_duplicated:True
+func_slotd8__18SkillDualSelectionFv = 0x0034A570; // type:func absolute:True allow_duplicated:True
 
-func_slotdc__18SkillDualSelectionFv = 0x0034A560; // type:func allow_duplicated:True
+func_slotdc__18SkillDualSelectionFv = 0x0034A560; // type:func absolute:True allow_duplicated:True
 
-func_slotf4__18SkillDualSelectionFUi = 0x0034BA30; // type:func allow_duplicated:True
+func_slotf4__18SkillDualSelectionFUi = 0x0034BA30; // type:func absolute:True allow_duplicated:True
 
 func_slot5c__18SkillModeSelectionFv = 0x0034C320; // type:func allow_duplicated:True
 
@@ -623,7 +630,7 @@ skill_cycle_symbology_character = 0x00363740; // type:func allow_duplicated:True
 
 __vt__19SkillTacticalWindow = 0x00183370; // size:0xF8 allow_duplicated:True
 
-__vt__21SkillFourRowSelection = 0x00183570; // size:0xF8 allow_duplicated:True
+__vt__22SkillStatusSkillWindow = 0x00183570; // size:0xF8 allow_duplicated:True
 
 __vt__15SkillHelpWindow = 0x00183970; // size:0xF8 allow_duplicated:True
 
@@ -679,39 +686,48 @@ func_slotf4__19SkillTacticalWindowFUi = 0x00353040; // type:func allow_duplicate
 
 func_00357E80 = 0x00357E80; // type:func absolute:True allow_duplicated:True
 
-__dt__21SkillFourRowSelectionFv = 0x00357E80; // type:func allow_duplicated:True
+__dt__21SkillFourRowSelectionFv = 0x00357E80; // type:func allow_duplicated:True absolute:True
+__dt__22SkillStatusSkillWindowFv = 0x00357E80; // type:func allow_duplicated:True
 
 func_003556B0 = 0x003556B0; // type:func absolute:True allow_duplicated:True
 
-func_slot5c__21SkillFourRowSelectionFv = 0x003556B0; // type:func allow_duplicated:True
+func_slot5c__21SkillFourRowSelectionFv = 0x003556B0; // type:func allow_duplicated:True absolute:True
+func_slot5c__22SkillStatusSkillWindowFv = 0x003556B0; // type:func allow_duplicated:True
 
 func_00355D90 = 0x00355D90; // type:func absolute:True allow_duplicated:True
 
-func_slot68__21SkillFourRowSelectionFv = 0x00355D90; // type:func allow_duplicated:True
+func_slot68__21SkillFourRowSelectionFv = 0x00355D90; // type:func allow_duplicated:True absolute:True
+func_slot68__22SkillStatusSkillWindowFv = 0x00355D90; // type:func allow_duplicated:True
 
 func_00355CA0 = 0x00355CA0; // type:func absolute:True allow_duplicated:True
 
-func_slot6c__21SkillFourRowSelectionFv = 0x00355CA0; // type:func allow_duplicated:True
+func_slot6c__21SkillFourRowSelectionFv = 0x00355CA0; // type:func allow_duplicated:True absolute:True
+func_slot6c__22SkillStatusSkillWindowFv = 0x00355CA0; // type:func allow_duplicated:True
 
 func_00356220 = 0x00356220; // type:func absolute:True allow_duplicated:True
 
-func_slotb0__21SkillFourRowSelectionFv = 0x00356220; // type:func allow_duplicated:True
+func_slotb0__21SkillFourRowSelectionFv = 0x00356220; // type:func allow_duplicated:True absolute:True
+func_slotb0__22SkillStatusSkillWindowFv = 0x00356220; // type:func allow_duplicated:True
 
 func_00356130 = 0x00356130; // type:func absolute:True allow_duplicated:True
 
-func_slotb4__21SkillFourRowSelectionFv = 0x00356130; // type:func allow_duplicated:True
+func_slotb4__21SkillFourRowSelectionFv = 0x00356130; // type:func allow_duplicated:True absolute:True
+func_slotb4__22SkillStatusSkillWindowFv = 0x00356130; // type:func allow_duplicated:True
 
 func_00355FD0 = 0x00355FD0; // type:func absolute:True allow_duplicated:True
 
-func_slotd8__21SkillFourRowSelectionFv = 0x00355FD0; // type:func allow_duplicated:True
+func_slotd8__21SkillFourRowSelectionFv = 0x00355FD0; // type:func allow_duplicated:True absolute:True
+func_slotd8__22SkillStatusSkillWindowFv = 0x00355FD0; // type:func allow_duplicated:True
 
 func_00355E80 = 0x00355E80; // type:func absolute:True allow_duplicated:True
 
-func_slotdc__21SkillFourRowSelectionFv = 0x00355E80; // type:func allow_duplicated:True
+func_slotdc__21SkillFourRowSelectionFv = 0x00355E80; // type:func allow_duplicated:True absolute:True
+func_slotdc__22SkillStatusSkillWindowFv = 0x00355E80; // type:func allow_duplicated:True
 
 func_00357BF0 = 0x00357BF0; // type:func absolute:True allow_duplicated:True
 
-func_slotf4__21SkillFourRowSelectionFUi = 0x00357BF0; // type:func allow_duplicated:True
+func_slotf4__21SkillFourRowSelectionFUi = 0x00357BF0; // type:func allow_duplicated:True absolute:True
+func_slotf4__22SkillStatusSkillWindowFUi = 0x00357BF0; // type:func allow_duplicated:True
 
 func_0035AB60 = 0x0035AB60; // type:func absolute:True allow_duplicated:True
 
@@ -809,7 +825,8 @@ func_00363AE0 = 0x00363AE0; // type:func absolute:True allow_duplicated:True
 
 func_slotf4__29SkillSymbologyCharacterWindowFUi = 0x00363AE0; // type:func allow_duplicated:True
 
-__ct__21SkillFourRowSelectionFv = 0x00357EE0; // type:func allow_duplicated:True
+__ct__21SkillFourRowSelectionFv = 0x00357EE0; // type:func allow_duplicated:True absolute:True
+__ct__22SkillStatusSkillWindowFv = 0x00357EE0; // type:func allow_duplicated:True
 
 __ct__15SkillHelpWindowFv = 0x0035ABC0; // type:func allow_duplicated:True
 
@@ -1144,3 +1161,107 @@ func_003533E0 = 0x003533E0; // type:func absolute:True allow_duplicated:True
 __ct__19SkillTacticalWindowFv = 0x003533E0; // type:func allow_duplicated:True
 
 __ct__17FieldObject23BE00Fv = 0x0023BE00; // type:func absolute:True allow_duplicated:True
+func_0034B190 = 0x0034B190; // type:func absolute:True allow_duplicated:True
+skill_initialize_damage_conversion_grid = 0x0034B190; // type:func allow_duplicated:True
+func_0034B2C0 = 0x0034B2C0; // type:func absolute:True allow_duplicated:True
+skill_initialize_aura_grid = 0x0034B2C0; // type:func allow_duplicated:True
+func_00352C00 = 0x00352C00; // type:func absolute:True allow_duplicated:True
+skill_refresh_tactical_rows = 0x00352C00; // type:func allow_duplicated:True
+
+func_00349920 = 0x00349920; // type:func absolute:True allow_duplicated:True
+skill_set_tactical_prompt_state = 0x00349920; // type:func allow_duplicated:True
+
+func_slot60__25SkillTacticalPromptWindowFi = 0x00359480; // type:func absolute:True allow_duplicated:True
+__vt__25SkillTacticalPromptWindow = 0x00182F70; // size:0xF8 absolute:True allow_duplicated:True
+__dt__25SkillTacticalPromptWindowFv = 0x00349E20; // type:func allow_duplicated:True
+func_slotf4__25SkillTacticalPromptWindowFUi = 0x003499B0; // type:func allow_duplicated:True
+
+func_00349E80 = 0x00349E80; // type:func absolute:True allow_duplicated:True
+skill_refresh_tactical_detail_help = 0x00349E80; // type:func allow_duplicated:True
+
+func_00349F30 = 0x00349F30; // type:func absolute:True allow_duplicated:True
+skill_select_tactical_detail_mode = 0x00349F30; // type:func allow_duplicated:True
+
+func_003522C0 = 0x003522C0; // type:func absolute:True allow_duplicated:True
+skill_open_tactical_details = 0x003522C0; // type:func allow_duplicated:True
+
+func_0034A130 = 0x0034A130; // type:func absolute:True allow_duplicated:True
+skill_refresh_damage_conversion_rows = 0x0034A130; // type:func allow_duplicated:True
+lib_marker_set_bright_color = 0x00420D20; // type:func absolute:True allow_duplicated:True
+
+__ct__25SkillTacticalDetailWindowFv = 0x0034BCB0; // type:func allow_duplicated:True
+__dt__25SkillTacticalDetailWindowFv = 0x0034BC40; // type:func allow_duplicated:True
+__vt__25SkillTacticalDetailWindow = 0x00183070; // absolute:True allow_duplicated:True
+func_slotb0__25SkillTacticalDetailWindowFv = 0x0034A650; // type:func absolute:True allow_duplicated:True
+func_slot68__25SkillTacticalDetailWindowFv = 0x0034B090; // type:func allow_duplicated:True
+func_slot6c__25SkillTacticalDetailWindowFv = 0x0034AF90; // type:func allow_duplicated:True
+func_slot70__25SkillTacticalDetailWindowFv = 0x0034AF00; // type:func allow_duplicated:True
+func_slotb4__25SkillTacticalDetailWindowFv = 0x0034A580; // type:func allow_duplicated:True
+func_slotd8__25SkillTacticalDetailWindowFv = 0x0034A570; // type:func allow_duplicated:True
+func_slotdc__25SkillTacticalDetailWindowFv = 0x0034A560; // type:func allow_duplicated:True
+func_slotf4__25SkillTacticalDetailWindowFUi = 0x0034BA30; // type:func allow_duplicated:True
+
+func_0034A2B0 = 0x0034A2B0; // type:func absolute:True allow_duplicated:True
+skill_refresh_aura_rows = 0x0034A2B0; // type:func allow_duplicated:True
+func_0034B720 = 0x0034B720; // type:func absolute:True allow_duplicated:True
+skill_initialize_tactical_detail_labels = 0x0034B720; // type:func allow_duplicated:True
+
+func_0034B3F0 = 0x0034B3F0; // type:func absolute:True allow_duplicated:True
+skill_refresh_tactical_detail_choices = 0x0034B3F0; // type:func allow_duplicated:True
+func_0034BEE0 = 0x0034BEE0; // type:func absolute:True allow_duplicated:True
+skill_refresh_selection_rows = 0x0034BEE0; // type:func allow_duplicated:True
+func_0034C110 = 0x0034C110; // type:func absolute:True allow_duplicated:True
+skill_position_selection_rows = 0x0034C110; // type:func allow_duplicated:True
+func_0034C1F0 = 0x0034C1F0; // type:func absolute:True allow_duplicated:True
+skill_refresh_selection_marker = 0x0034C1F0; // type:func allow_duplicated:True
+func_0034E260 = 0x0034E260; // type:func absolute:True allow_duplicated:True
+skill_initialize_selection_grid = 0x0034E260; // type:func allow_duplicated:True
+func_00351360 = 0x00351360; // type:func absolute:True allow_duplicated:True
+skill_set_selection_visibility = 0x00351360; // type:func allow_duplicated:True
+
+func_003534C0 = 0x003534C0; // type:func absolute:True allow_duplicated:True
+skill_refresh_battle_cp_displays = 0x003534C0; // type:func allow_duplicated:True
+
+func_00353570 = 0x00353570; // type:func absolute:True allow_duplicated:True
+skill_set_battle_setup_visibility = 0x00353570; // type:func allow_duplicated:True
+
+func_00353720 = 0x00353720; // type:func absolute:True allow_duplicated:True
+skill_refresh_battle_message = 0x00353720; // type:func allow_duplicated:True
+
+__ct__14LibClass178A70Fv = 0x004CA050; // type:func absolute:True allow_duplicated:True
+__ct__14LibClass174610Fv = 0x0044B2D0; // type:func absolute:True allow_duplicated:True
+__dt__15LibObject178660Fv = 0x004C65E0; // type:func absolute:True allow_duplicated:True
+__vt__15LibObject174F20 = 0x00174F20; // size:0x24 absolute:True allow_duplicated:True
+__vt__15LibObject175140 = 0x00175140; // size:0x24 absolute:True
+__dt__15LibObject175140Fv = 0x004678F0; // type:func absolute:True
+func_00467AD0__15LibObject175140FffffPCcUc = 0x00467AD0; // type:func absolute:True
+__vt__15LibObject178660 = 0x00178660; // size:0xB4 absolute:True allow_duplicated:True
+__vt__21SkillStatusAttachment = 0x00159F20; // size:0xB4 absolute:True allow_duplicated:True
+__vt__16FieldClass15A010 = 0x0015A010; // size:0x24 absolute:True allow_duplicated:True
+initialize__21SkillStatusAttachmentFv = 0x002BFF90; // type:func absolute:True allow_duplicated:True
+lib_queue_display_object = 0x00465B20; // type:func absolute:True allow_duplicated:True
+__dt__21SkillStatusAttachmentFv = 0x002BFE70; // type:func absolute:True allow_duplicated:True
+__dt__16FieldClass15A010Fv = 0x002C0470; // type:func absolute:True allow_duplicated:True
+func_00462310__16FieldClass15A010Fv = 0x002C0390; // type:func absolute:True allow_duplicated:True
+func_44B110 = 0x0044B110; // type:func absolute:True allow_duplicated:True
+set_codes_and_z__14LibClass174610FiUifUiUi = 0x0044B110; // type:func absolute:True allow_duplicated:True
+
+func_003538F0 = 0x003538F0; // type:func absolute:True allow_duplicated:True
+skill_refresh_battle_selection = 0x003538F0; // type:func allow_duplicated:True
+
+func_003580D0 = 0x003580D0; // type:func absolute:True allow_duplicated:True
+skill_refresh_mastery_display = 0x003580D0; // type:func allow_duplicated:True
+
+func_003558B0 = 0x003558B0; // type:func absolute:True allow_duplicated:True
+skill_set_status_skill_visibility = 0x003558B0; // type:func allow_duplicated:True
+
+__vt__15LibObject174D90 = 0x00174D90; // size:0x24 absolute:True
+__dt__15LibObject174D90Fv = 0x004617B0; // type:func absolute:True
+func_00413D20__15LibObject174D90Fv = 0x0045F710; // type:func absolute:True
+func_00462310__15LibObject174D90Fv = 0x0045F6B0; // type:func absolute:True
+
+func_0023B850 = 0x0023B850; // type:func absolute:True allow_duplicated:True
+func_0023B850__16FieldClass153170FP15LibObject178750Ui = 0x0023B850; // type:func absolute:True allow_duplicated:True
+
+func_0023B7E0 = 0x0023B7E0; // type:func absolute:True allow_duplicated:True
+func_0023B7E0__16FieldClass153170FP15LibObject178750 = 0x0023B7E0; // type:func absolute:True allow_duplicated:True

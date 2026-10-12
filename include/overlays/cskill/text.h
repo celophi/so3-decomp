@@ -39,7 +39,7 @@ typedef struct SkillSymbologyHelpWindow SkillSymbologyHelpWindow;
 typedef struct SkillSymbologyCharacterWindow SkillSymbologyCharacterWindow;
 typedef struct SkillOptionsWindow SkillOptionsWindow;
 typedef struct SkillSymbologyWindow SkillSymbologyWindow;
-typedef struct SkillDualSelection SkillDualSelection;
+typedef struct SkillTacticalDetailWindow SkillTacticalDetailWindow;
 typedef struct SkillGridChoice SkillGridChoice;
 typedef struct FieldClass15AE70 FieldClass15AE70;
 typedef struct SkillCharacterStats SkillCharacterStats;
@@ -52,11 +52,11 @@ typedef struct FieldClass153E30 FieldClass153E30;
 typedef struct LibClass171EF0 LibClass171EF0;
 typedef struct LibObject178660 LibObject178660;
 #endif
-typedef struct SkillTextReceiver SkillTextReceiver;
+typedef struct SkillTacticalPromptWindow SkillTacticalPromptWindow;
 typedef struct SkillCostWindow SkillCostWindow;
 typedef struct SkillVector4 SkillVector4;
 typedef struct SkillSecondarySelection SkillSecondarySelection;
-typedef struct SkillFourRowSelection SkillFourRowSelection;
+typedef struct SkillStatusSkillWindow SkillStatusSkillWindow;
 typedef struct SkillModeSelection SkillModeSelection;
 typedef struct SkillBattleSetupWindow SkillBattleSetupWindow;
 typedef struct SkillTacticalWindow SkillTacticalWindow;
@@ -128,10 +128,10 @@ extern "C" {
 void func_00364BF0(SkillPairList184258* list, SkillPairValue value);
 
 /**
- * @brief Switch to the associated selection window for row modes four and five.
+ * @brief Open the selected Anti-Attack Aura or Damage Conversion detail grid.
  * @param object Window containing the mode table and attached display.
  */
-void func_003522C0(SkillTacticalWindow* object);
+void skill_open_tactical_details(SkillTacticalWindow* object);
 
 /**
  * @brief Rebuild the mode query's displayed selection state.
@@ -140,10 +140,10 @@ void func_003522C0(SkillTacticalWindow* object);
 void func_00351BE0(SkillTacticalWindow* record);
 
 /**
- * @brief Update owner and window messages for the selected six-row entry.
- * @param object Six-row window receiver.
+ * @brief Show the selected battle skill's description, or clear it for an empty slot.
+ * @param object Battle setup window.
  */
-void func_00353720(void* object);
+void skill_refresh_battle_message(SkillBattleSetupWindow* object);
 
 /**
  * @brief Update the controller's selected code and associated display state.
@@ -168,12 +168,19 @@ u8 func_003523A0(SkillTacticalWindow* record);
 u32 skill_character_mp(SkillCharacterStats* record);
 
 /**
+ * @brief Clamp and store protected current MP, updating flag bit zero.
+ * @param record Character statistics.
+ * @param value Requested MP.
+ * @return Stored MP, or zero when the MP checksum is invalid.
+ */
+s32 skill_set_character_mp(SkillCharacterStats* record, s32 value);
+
+/**
  * @brief Decode current HP and mark valid flags when its checksum fails.
  * @param record Protected values receiver.
  * @return Decoded value, or zero when its checksum is invalid.
  */
 u32 skill_character_hp(SkillCharacterStats* record);
-
 
 /**
  * @brief Add flag bits when the protected record's checksum is valid.
@@ -197,60 +204,20 @@ u32 skill_mask_character_flags(SkillCharacterStats* record, u32 flags);
  */
 void func_00364B70(SkillPairList184258* record);
 
-/** @brief Update the message for the current selection mode. @param object Window with paired selection grids. */
-void func_00349E80(SkillDualSelection* object);
-/** @brief Set the paired grid mode and update its display flags. @param object Window with paired grids. @param mode Signed mode code. */
-void func_00349F30(SkillDualSelection* object, s16 mode);
-/** @brief Refresh the first selection rows. @param object Window receiver. @param reset Nonzero to reset the grid position. */
-void func_0034A2B0(SkillDualSelection* object, s32 reset);
-/** @brief Refresh the second selection rows. @param object Window receiver. @param reset Nonzero to reset the grid position. */
-void func_0034A130(SkillDualSelection* object, s32 reset);
-
-
-
+/** @brief Show help for the selected tactical detail entry. @param object Tactical detail window. */
+void skill_refresh_tactical_detail_help(SkillTacticalDetailWindow* object);
+/** @brief Select the Aura or Damage Conversion detail grid, or hide both grids. @param object Tactical detail window. @param mode Zero for Aura, one for Damage Conversion, or two to hide both. */
+void skill_select_tactical_detail_mode(SkillTacticalDetailWindow* object, s16 mode);
+/** @brief Refresh Aura labels, the selected-type marker and current cursor. @param object Tactical detail window. @param reset Nonzero to select the saved Aura type. */
+void skill_refresh_aura_rows(SkillTacticalDetailWindow* object, s32 reset);
+/** @brief Refresh Damage Conversion labels, the selected-row marker and current cursor. @param object Tactical detail window. @param reset Nonzero to select the saved conversion direction. */
+void skill_refresh_damage_conversion_rows(SkillTacticalDetailWindow* object, s32 reset);
 
 /**
  * @brief Refresh the selected detail pointer and checksum-protected status values.
  * @param record Selection and status display storage.
  */
 void func_00358200(SkillCharacterWindow* record);
-
-/**
- * @brief Forward the current grid index to the active window's choice callback.
- * @param object Window with a grid selection.
- */
-void func_0035CD50(SkillGridChoice* object);
-
-/**
- * @brief Apply the current grid choice and report the callback status.
- * @param object Window with a grid selection.
- * @return One when the callback returns zero, or two otherwise.
- */
-s32 func_0035CEB0(SkillGridChoice* object);
-
-/**
- * @brief Hide the window lists, restore its associated selection, and queue its callback.
- * @param object Window base receiver.
- * @return Always two.
- */
-s32 func_0035CE30(FieldClass15AE70* object);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * @brief Find a node by walking from the list anchor.
@@ -271,38 +238,38 @@ SkillListNode* func_0035CAE0(SkillList* list, s32 index);
 /**
  * @brief Update paired-list positions and color values using the row spacing.
  * @param record Receiver with the two lists and their base positions.
- * @param offset Vertical offset subtracted from both base positions.
+ * @param scroll_offset Vertical offset subtracted from both base positions.
  */
-void func_0034C110(SkillModeSelection* record, float offset);
+void skill_position_selection_rows(SkillModeSelection* record, float scroll_offset);
 
 /**
  * @brief Update paired-list item visibility and colors for the current selection.
  * @param record Receiver containing paired lists and selection values.
  */
-void func_0034BEE0(SkillModeSelection* record);
+void skill_refresh_selection_rows(SkillModeSelection* record);
 
 /**
- * @brief Refresh the selected item's display receiver and color.
+ * @brief Attach the selection marker to the selected skill and refresh its color.
  * @param record Receiver containing the item list and selection state.
  */
-void func_0034C1F0(SkillModeSelection* record);
+void skill_refresh_selection_marker(SkillModeSelection* record);
 
 /** @brief Advance the mode window animation. @param object Mode window. */
 void func_0034C060(SkillModeSelection* object);
 
 /**
- * @brief Configure the second grid and register its newly allocated display object.
- * @param record Receiver containing the second grid and display owner.
- * @return One after setup, otherwise zero without the second grid.
+ * @brief Initialize the damage-conversion grid and register its cursor.
+ * @param record Window containing the damage-conversion grid.
+ * @return One after setup, or zero when the damage-conversion grid is absent.
  */
-s32 func_0034B190(SkillDualSelection* record);
+s32 skill_initialize_damage_conversion_grid(SkillTacticalDetailWindow* record);
 
 /**
- * @brief Configure the first grid and register its newly allocated display object.
- * @param record Receiver containing the first grid and display owner.
- * @return One after setup, otherwise zero without the first grid.
+ * @brief Initialize the anti-attack aura grid and register its cursor.
+ * @param record Window containing the anti-attack aura grid.
+ * @return One after setup, or zero when the aura grid is absent.
  */
-s32 func_0034B2C0(SkillDualSelection* record);
+s32 skill_initialize_aura_grid(SkillTacticalDetailWindow* record);
 
 /**
  * @brief Configure the selection grid position and register its display state.
@@ -310,7 +277,7 @@ s32 func_0034B2C0(SkillDualSelection* record);
  * @param row_count Number of grid rows; zero leaves the grid unchanged.
  * @return One for zero rows or completed setup, otherwise zero without a display owner.
  */
-s32 func_0034E260(SkillModeSelection* record, s16 row_count);
+s32 skill_initialize_selection_grid(SkillModeSelection* record, s16 row_count);
 
 /** @brief Create the mode window's text and image rows. @param object Mode window. @return Nonzero after creating the rows. */
 s32 func_00351090(SkillModeSelection* object);
@@ -323,15 +290,19 @@ s32 func_00351090(SkillModeSelection* object);
  */
 s32 skill_cycle_symbology_character(SkillSymbologyCharacterWindow* object, s32 forward);
 
+/** @brief Refresh the selected symbol's description, mastery and MP expenditure. @param object Help window. @param selected_index Selected entry index. */
+void skill_refresh_symbology_help(SkillSymbologyHelpWindow* object, s32 selected_index);
+
 /** @brief Refresh party and condition markers for the selected symbology character. @param object Character window. */
-void func_00363890(SkillSymbologyCharacterWindow* object);
+void skill_refresh_symbology_character_markers(SkillSymbologyCharacterWindow* object);
 
 /**
  * @brief Update the status bytes selected by a mode value.
  * @param object Receiver with pointers to status records.
  * @param mode Zero clears all seven records; a positive or negative value selects one of two records.
  */
-void func_00349920(u8* object, s32 mode);
+/** @brief Hide the tactical prompt for zero, select Yes for positive state, or No for negative state. */
+void skill_set_tactical_prompt_state(SkillTacticalPromptWindow* object, s32 state);
 
 /**
  * @brief Append a value to the list.
@@ -423,12 +394,12 @@ void func_003649E0(SkillList* list, void* value);
 SkillPairList184258* func_00364AF0(SkillPairList184258* record, s16 flag);
 
 /**
- * @brief Update six item fields and sum values other than -1.
- * @param owner Record containing the items and values.
- * @param mode Value stored in the first item's byte; zero clears the other item bytes.
- * @return Sum of the six values, with -1 treated as zero, or zero when mode is zero.
+ * @brief Refresh the six equipped CP values and their visibility.
+ * @param owner Battle setup window.
+ * @param mode Nonzero to show CP displays; zero hides them.
+ * @return Equipped CP sum when shown, treating -1 as zero, otherwise zero.
  */
-s32 func_003534C0(SkillBattleSetupWindow* owner, s32 mode);
+s32 skill_refresh_battle_cp_displays(SkillBattleSetupWindow* owner, s32 mode);
 
 /**
  * @brief Set the six-row window's list flags and selection activity.
@@ -436,19 +407,19 @@ s32 func_003534C0(SkillBattleSetupWindow* owner, s32 mode);
  * @param flag Full window flag, whose low byte controls each display.
  * @param active Nonzero to activate the selection grid.
  */
-void func_00353570(SkillBattleSetupWindow* object, u32 flag, s32 active);
+void skill_set_battle_setup_visibility(SkillBattleSetupWindow* object, u32 flag, s32 active);
 
 /** @brief Refresh the selected skill's costs and damage multiplier. @param object Skill cost window. */
 void skill_refresh_costs(FieldClass15AE70* object);
 
 /** @brief Set mode-window display and selection activity. @param object Mode window. @param flag Display flag word. @param active Grid activity value. */
-void func_00351360(SkillModeSelection* object, u32 flag, s32 active);
+void skill_set_selection_visibility(SkillModeSelection* object, u32 flag, s32 active);
 
 /**
  * @brief Color the paired six-row lists and position the selected-row display.
  * @param record Record containing the lists, selection, and display receiver.
  */
-void func_003538F0(SkillBattleSetupWindow* record);
+void skill_refresh_battle_selection(SkillBattleSetupWindow* record);
 
 /**
  * @brief Show the selected slot's icon and copy its record links to the owning controller.
@@ -456,43 +427,38 @@ void func_003538F0(SkillBattleSetupWindow* record);
  */
 void func_00358310(SkillCharacterWindow* object);
 
-/** @brief Refresh the four-row window's record values. @param object Four-row selection window. */
-void func_003559F0(SkillFourRowSelection* object);
+/** @brief Refresh the status-skill levels, next-level SP costs, and maximum-level labels. @param object Status-skill window. */
+void func_003559F0(SkillStatusSkillWindow* object);
 /** @brief Rebuild the six-row status values. @param object Status-row window. @return One on success, or zero on failure. */
 s32 func_00354190(SkillBattleSetupWindow* object);
-/** @brief Rebuild the mode-query rows and description. @param object Mode-query window. */
-void func_00352C00(SkillTacticalWindow* object);
+/** @brief Create battle slot labels, separators, skill names, and slot icons. @param object Battle setup window. @return Row refresh result, or zero on allocation failure. */
+s32 func_003547C0(SkillBattleSetupWindow* object);
+/** @brief Refresh the tactical modes, selected character's row, and associated displays. @param object Tactical selection window. */
+void skill_refresh_tactical_rows(SkillTacticalWindow* object);
 /** @brief Rebuild the mode rows for a signed mode code. @param object Mode-selection window. @param mode Signed mode. @return One on success, or zero on failure. */
 s32 func_00350890(SkillModeSelection* object, s16 mode);
-/** @brief Create the second dual-grid display and row markers. @param object Dual-grid window. @return One after setup, or zero on failure. */
-u8 func_0034B720(SkillDualSelection* object);
+/** @brief Create the Aura and Damage Conversion labels and selection markers. @param object Tactical detail window. @return One after setup, or zero on failure. */
+u8 skill_initialize_tactical_detail_labels(SkillTacticalDetailWindow* object);
 
-/** @brief Rebuild both paired selection grids. @param object Paired selection window. */
-void func_0034B3F0(SkillDualSelection* object);
+/** @brief Rebuild available Aura types and the saved conversion direction. @param object Tactical detail window. */
+void skill_refresh_tactical_detail_choices(SkillTacticalDetailWindow* object);
 
 /**
- * @brief Set the four-row window's display flags and grid activity.
- * @param object Four-row selection window.
+ * @brief Set status-skill display visibility and selection activity.
+ * @param object Status-skill window.
  * @param flag Display flag value.
  * @param active Nonzero to activate the grid.
  */
-void func_003558B0(SkillFourRowSelection* object, u32 flag, s32 active);
+void skill_set_status_skill_visibility(SkillStatusSkillWindow* object, u32 flag, s32 active);
 
 /**
- * @brief Update four item values and status bytes.
- * @param owner Record containing the four item pointers.
- * @param first Value used by the first item and third-item selection.
- * @param second Value used by the second item.
- * @param third Value used by the third item.
+ * @brief Display the selected skill's level, mastery, and remaining progress.
+ * @param owner Character status window.
+ * @param level Skill level, or -1 to hide.
+ * @param mastery Stored mastery value, displayed minus one, or -1 to hide.
+ * @param remaining Progress to the next level, or -1 to hide.
  */
-void func_003580D0(SkillCharacterWindow* owner, s32 first, s32 second, s32 third);
-
-
-/**
- * @brief Apply the selected mode and notify its receiver.
- * @param record Selection and mode storage.
- */
-void func_003522C0(SkillTacticalWindow* record);
+void skill_refresh_mastery_display(SkillCharacterWindow* owner, s32 level, s32 mastery, s32 remaining);
 
 /** @brief Append the character HP and MP gauge geometry. @param drawer Gauge packet drawer. */
 void skill_build_hp_mp_gauge_packet(SkillHpMpGaugeDrawer* drawer);
