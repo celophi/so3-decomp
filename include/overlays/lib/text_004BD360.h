@@ -145,12 +145,12 @@ struct LibProjectionVolume
     float unk58;
 };
 
-/** Partial 0x20-byte list receiver with the actual virtual pointer at 0x10. */
+/** 0x14-byte list receiver with the virtual pointer after its sentinel and count. */
 class LibClass178A70
 {
 public:
     LibClass171E90 unk00;
-    u32 unk0c;
+    u32 node_count;
     /** @brief Initialize the list receiver. */
     LibClass178A70();
     /** @brief Destroy the list receiver. */
@@ -167,7 +167,6 @@ public:
     virtual void func_004C9FC0(void* position, void* node);
     /** @brief Unlink a node and clear its list links. @param node Node to remove. */
     virtual void func_004C9F60(void* node);
-    u8 unk14[0xC];
 };
 
 /** Partial secondary interface identified by MAIN vtable D_171FF0. */

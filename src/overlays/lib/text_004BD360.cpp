@@ -1000,7 +1000,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA020);
 /** @brief Initialize an empty intrusive list whose sentinel links point to itself. */
 LibClass178A70::LibClass178A70()
 {
-    unk0c = 0;
+    node_count = 0;
     unk00.previous = &unk00;
     unk00.next = &unk00;
 }
