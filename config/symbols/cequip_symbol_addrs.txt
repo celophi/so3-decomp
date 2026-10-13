@@ -425,3 +425,8 @@ func_00351660 = 0x00351660; // type:func allow_duplicated:True
 func_slot68__14EquipListStateFv = 0x00351660; // type:func absolute:True allow_duplicated:True
 func_0034AC10 = 0x0034AC10; // type:func allow_duplicated:True
 selected_records__14EquipListStateFv = 0x0034AC10; // type:func absolute:True allow_duplicated:True
+
+remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func absolute:True allow_duplicated:True
+append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
+prepend_node__14LibClass178DD0FPvi = 0x004D7450; // type:func absolute:True allow_duplicated:True
+insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func absolute:True allow_duplicated:True

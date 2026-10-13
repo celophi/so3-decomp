@@ -983,7 +983,7 @@ void* func_001E1100(FieldClass150070* owner, u32 size, s32 mode)
         {
             return result;
         }
-        if (manager->LibClass178DD0::unk0c == 1 || !func_0023AEB0(manager, owner))
+        if (manager->node_count == 1 || !func_0023AEB0(manager, owner))
         {
             break;
         }

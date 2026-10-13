@@ -68,7 +68,7 @@ FieldClass1501A0* func_001E15C0(FieldClass150120* object, s32 key, u8 mode)
         return 0;
     }
     object->unk98->unk20 = static_cast<FieldClass1DD400*>(object);
-    static_cast<FieldClass1530D0*>(D_001B6430->context->unk30)->func_004D74F0(object->unk98, -1);
+    static_cast<FieldClass1530D0*>(D_001B6430->context->unk30)->append_node(object->unk98, -1);
     return object->unk98;
 }
 
@@ -1217,12 +1217,12 @@ void FieldClass1501A0::func_001E0A50(s32 flag)
                 if (state == 12 || state == 7)
                 {
                     FieldClass1530D0* manager = static_cast<FieldClass1530D0*>(D_001B6430->context->unk30);
-                    FieldClass150060* node = (FieldClass150060*)manager->LibClass178DD0::unk00;
+                    FieldClass150060* node = reinterpret_cast<FieldClass150060*>(&manager->sentinel);
                     u8 busy = 0;
                     for (;;)
                     {
                         node = node->unk08;
-                        if ((FieldClass150060*)manager->LibClass178DD0::unk00 == node)
+                        if (reinterpret_cast<FieldClass150060*>(&manager->sentinel) == node)
                         {
                             break;
                         }
@@ -1248,12 +1248,12 @@ void FieldClass1501A0::func_001E0A50(s32 flag)
             else
             {
                 FieldClass1530D0* manager = static_cast<FieldClass1530D0*>(D_001B6430->context->unk30);
-                FieldClass150060* node = (FieldClass150060*)manager->LibClass178DD0::unk00;
+                FieldClass150060* node = reinterpret_cast<FieldClass150060*>(&manager->sentinel);
                 u8 busy = 0;
                 for (;;)
                 {
                     node = node->unk08;
-                    if ((FieldClass150060*)manager->LibClass178DD0::unk00 == node)
+                    if (reinterpret_cast<FieldClass150060*>(&manager->sentinel) == node)
                     {
                         break;
                     }
@@ -1799,7 +1799,7 @@ void* func_001E6B40(FieldClass150070* owner, u32 size, s32 mode)
         {
             return result;
         }
-        if (manager->LibClass178DD0::unk0c == 1 || !func_0023AEB0(manager, owner))
+        if (manager->node_count == 1 || !func_0023AEB0(manager, owner))
         {
             break;
         }

@@ -451,3 +451,27 @@ insert_after__14LibClass178A70FPvPv = 0x004C9FC0; // type:func allow_duplicated:
 prepend__14LibClass178A70FPv = 0x004C9FF0; // type:func allow_duplicated:True
 append__14LibClass178A70FPv = 0x004CA020; // type:func allow_duplicated:True
 unlink__14LibClass178A70FPv = 0x004C9F60; // type:func allow_duplicated:True
+
+__dt__14LibClass178A70Fv = 0x004247F0; // type:func allow_duplicated:True
+
+lib_allocate_drawing_storage = 0x00461860; // type:func allow_duplicated:True
+
+lib_list_allocate_node_buffer = 0x004D66B0; // type:func
+func_004D66B0 = 0x004D66B0; // type:func absolute:True allow_duplicated:True
+
+lib_list_release_node_buffer = 0x004D6660; // type:func
+func_004D6660 = 0x004D6660; // type:func absolute:True allow_duplicated:True
+
+lib_object_set_list_kind = 0x004D6610; // type:func
+func_004D6610 = 0x004D6610; // type:func absolute:True allow_duplicated:True
+lib_list_change_node_kind_counts = 0x004D7380; // type:func
+func_004D7380 = 0x004D7380; // type:func absolute:True allow_duplicated:True
+
+remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func allow_duplicated:True
+append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func allow_duplicated:True
+prepend_node__14LibClass178DD0FPvi = 0x004D7450; // type:func allow_duplicated:True
+insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func allow_duplicated:True
+func_004D72A0 = 0x004D72A0; // type:func absolute:True allow_duplicated:True
+func_004D7450 = 0x004D7450; // type:func absolute:True allow_duplicated:True
+func_004D73B0 = 0x004D73B0; // type:func absolute:True allow_duplicated:True
+func_004D74F0 = 0x004D74F0; // type:func absolute:True allow_duplicated:True

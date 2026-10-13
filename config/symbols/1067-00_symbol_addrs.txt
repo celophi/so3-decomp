@@ -1933,3 +1933,16 @@ lib_animation_bind_state = 0x004BDB50; // type:func allow_duplicated:True
 
 func_004BDD10 = 0x004BDD10; // type:func absolute:True allow_duplicated:True
 lib_animation_release_channels = 0x004BDD10; // type:func allow_duplicated:True
+
+append__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True allow_duplicated:True
+
+prepend__14LibClass178A70FPv = 0x004C9FF0; // type:func absolute:True allow_duplicated:True
+
+insert_after__14LibClass178A70FPvPv = 0x004C9FC0; // type:func absolute:True allow_duplicated:True
+
+unlink__14LibClass178A70FPv = 0x004C9F60; // type:func absolute:True allow_duplicated:True
+
+remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func absolute:True allow_duplicated:True
+append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
+prepend_node__14LibClass178DD0FPvi = 0x004D7450; // type:func absolute:True allow_duplicated:True
+insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func absolute:True allow_duplicated:True

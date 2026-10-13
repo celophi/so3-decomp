@@ -167,7 +167,7 @@ void func_001DD6E0(FieldFlaggedListObject* list)
 
 void FieldClass1502A0::func_001DD730()
 {
-    FieldClass150060* list = (FieldClass150060*)unk00;
+    FieldClass150060* list = reinterpret_cast<FieldClass150060*>(&sentinel);
     FieldClass150060* current;
     FieldClass150060* node = list->unk08;
     for (;;)
@@ -450,34 +450,34 @@ void FieldClass14FE30::func_004D6730()
     {
         return;
     }
-    unk60 = LibClass178DD0::unk0c;
-    unk6c = new(0) void*[unk60];
-    func_004D6AF0(this, unk6c);
+    active_node_count = node_count;
+    active_node_buffer = new(0) void*[active_node_count];
+    func_004D6AF0(this, active_node_buffer);
     bool swapped;
     do
     {
         swapped = false;
-        for (s32 i = 1; i < unk60 - 1; i++)
+        for (s32 i = 1; i < active_node_count - 1; i++)
         {
-            FieldClass150F90* first = static_cast<FieldClass150F90*>(unk6c[i]);
-            FieldClass150F90* second = static_cast<FieldClass150F90*>(unk6c[i + 1]);
+            FieldClass150F90* first = static_cast<FieldClass150F90*>(active_node_buffer[i]);
+            FieldClass150F90* second = static_cast<FieldClass150F90*>(active_node_buffer[i + 1]);
             float first_key = (first->unk78 & 0x400) ? static_cast<FieldClass153330*>(first)->unk464 : first->unk20.y;
             float second_key = (second->unk78 & 0x400) ? static_cast<FieldClass153330*>(second)->unk464 : second->unk20.y;
             if (first_key > second_key)
             {
-                unk6c[i] = second;
+                active_node_buffer[i] = second;
                 swapped = true;
-                unk6c[i + 1] = first;
+                active_node_buffer[i + 1] = first;
             }
         }
     } while (swapped);
-    s32 count = unk60;
+    s32 count = active_node_count;
     FieldClass150F90* focus = static_cast<FieldClass150F90*>(D_001B6430->context->unk08->unkdc);
     if (!focus || (focus && focus->unk90 <= 0.0f))
     {
-        for (unk5c = 0; unk5c < unk60; unk5c++)
+        for (active_node_index = 0; active_node_index < active_node_count; active_node_index++)
         {
-            FieldClass150F90* object = static_cast<FieldClass150F90*>(unk6c[unk5c]);
+            FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[active_node_index]);
             if (object && object->unk0e && !object->test_unk70(0x80000000))
             {
                 func_004D6700(this, object);
@@ -485,7 +485,7 @@ void FieldClass14FE30::func_004D6730()
         }
         for (s32 i = 0; i < count; i++)
         {
-            FieldClass150F90* object = static_cast<FieldClass150F90*>(unk6c[i]);
+            FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[i]);
             if (object && object->unk0e && !object->test_unk70(0x80000000) && (object->unk78 & 0x2))
             {
                 static_cast<FieldClass152430*>(object)->func_001DE3D0();
@@ -493,7 +493,7 @@ void FieldClass14FE30::func_004D6730()
         }
         for (s32 i = 0; i < count; i++)
         {
-            FieldClass150F90* object = static_cast<FieldClass150F90*>(unk6c[i]);
+            FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[i]);
             if (object && object->unk0e && !object->test_unk70(0x80000000) && (object->unk78 & 0x2)
                 && object->func_00204420())
             {
@@ -502,7 +502,7 @@ void FieldClass14FE30::func_004D6730()
         }
         for (s32 i = 0; i < count; i++)
         {
-            FieldClass150F90* object = static_cast<FieldClass150F90*>(unk6c[i]);
+            FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[i]);
             if (object && object->unk0e && !object->test_unk70(0x80000000) && (object->unk78 & 0x2)
                 && object->func_00204420())
             {
@@ -512,14 +512,14 @@ void FieldClass14FE30::func_004D6730()
     }
     for (s32 j = 0; j < count; j++)
     {
-        FieldClass150F90* object = static_cast<FieldClass150F90*>(unk6c[j]);
+        FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[j]);
         if (object && object->unk0e && !object->test_unk70(0x80000000))
         {
             object->func_001DE3B0();
         }
     }
-    delete[] unk6c;
-    unk6c = 0;
+    delete[] active_node_buffer;
+    active_node_buffer = 0;
 }
 
 /** @brief Perform the default actor handler. */

@@ -625,12 +625,12 @@ void FieldClass155640::func_001E0A50(s32 flag)
                 return;
             }
             FieldClass1530D0* owner = static_cast<FieldClass1530D0*>(static_cast<LibClass178DD0*>(unk10));
-            FieldClass150060* link = (FieldClass150060*)owner->unk00;
+            FieldClass150060* link = reinterpret_cast<FieldClass150060*>(&owner->sentinel);
             bool busy = false;
             for (;;)
             {
                 link = link->unk08;
-                if ((FieldClass150060*)owner->unk00 == link)
+                if (reinterpret_cast<FieldClass150060*>(&owner->sentinel) == link)
                 {
                     break;
                 }

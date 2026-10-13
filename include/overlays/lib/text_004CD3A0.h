@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "overlays/lib/text_003E68C0.h"
+#include "overlays/lib/counted_list.h"
 #include "overlays/lib/vector.h"
 
 /** Partial object with a busy flag that something else clears; the rest is unknown. */
@@ -244,86 +245,41 @@ public:
     virtual ~LibClass172000();
 };
 
-/**
- * Partial Lib base class with its vtable pointer at offset 0x10, with vtable D_178DD0 in main data.
- * Its twelve virtual slots are declared in vtable order; slots 5-9 keep opaque parameters
- * until their Lib implementations are reconstructed.
- */
-class LibClass178DD0
+/** Partial list owner with resident vtable at 0x178DD0 and an owned node buffer. */
+class LibClass178DD0 : public LibClass178A70
 {
 public:
-    u8 unk00[0xC];
-    s32 unk0c;
+    enum
+    {
+        DEFAULT_NODE_KIND = -1,
+        NODE_KIND_COUNT = 17
+    };
 
-    /** @brief Construct an empty list. */
+    /** @brief Initialize the list owner, kind counts, and node-buffer state. */
     LibClass178DD0();
-
-    /** @brief Destroy the object. */
+    /** @brief Release the owned node buffer and destroy the list base. */
     virtual ~LibClass178DD0();
 
-    /**
-     * @brief Append a node to the end of the list and increment its count.
-     * @param node Node to link.
-     */
-    virtual void append(void* node);
-
-    /**
-     * @brief Prepend a node to the beginning of the list and increment its count.
-     * @param node Node to link.
-     */
-    virtual void prepend(void* node);
-
-    /**
-     * @brief Link a node after another node and increment the count at offset 0xC.
-     * @param position Node to link after.
-     * @param node Node to link.
-     */
-    virtual void insert_after(void* position, void* node);
-
-    /**
-     * @brief Unlink a node and decrement the nonzero count at offset 0xC.
-     * @param node Node to unlink; the list itself and null are ignored.
-     */
-    virtual void unlink(void* node);
-
-    /**
-     * @brief Lib virtual slot 5.
-     * @param value Opaque argument.
-     */
-    virtual void func_004D72A0(void* value);
+    /** @brief Remove a registered node and clear its pending buffer entries. @param object Node to remove. */
+    virtual void remove_node(void* object);
 
     /** @brief Lib virtual slot 6. */
     virtual void func_004D6730();
 
-    /**
-     * @brief Lib virtual slot 7.
-     * @param a Opaque first argument.
-     * @param b Opaque second argument.
-     */
-    virtual void func_004D74F0(void* object, s32 kind);
+    /** @brief Register and append a node. @param object Node to append. @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind. */
+    virtual void append_node(void* object, s32 kind);
+    /** @brief Register and prepend a node. @param object Node to prepend. @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind. */
+    virtual void prepend_node(void* object, s32 kind);
+    /** @brief Register a node after a list position. @param position Insertion position. @param object Node to insert. @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind. */
+    virtual void insert_node_after(void* position, void* object, s32 kind);
 
     /**
-     * @brief Lib virtual slot 8.
-     * @param a Opaque first argument.
-     * @param b Opaque second argument.
-     */
-    virtual void func_004D7450(void* a, void* b);
-
-    /**
-     * @brief Lib virtual slot 9.
-     * @param a Opaque first argument.
-     * @param b Opaque second argument.
-     * @param c Opaque third argument.
-     */
-    virtual void func_004D73B0(void* a, void* b, void* c);
-
-    /**
-     * @brief Store the attached object pointer at offset 0x70.
-     * @param attached Object pointer to store.
+     * @brief Set the next list in the chain.
+     * @param attached List that follows this list.
      */
     virtual void func_004295B0(void* attached)
     {
-        unk70 = attached;
+        next_list = static_cast<LibClass178DD0*>(attached);
     }
 
     /** @brief Default handler that performs no work. */
@@ -331,14 +287,45 @@ public:
     {
     }
 
-    u8 unk14[0x48];
-    s32 unk5c;
-    s32 unk60;
-    u8 unk64[8];
-    void** unk6c;
-    void* unk70;
-    u8 unk74[4];
+    u32 node_counts_by_kind[NODE_KIND_COUNT];
+    u32 unk58;
+    s32 active_node_index;
+    s32 active_node_count;
+    s32 node_buffer_capacity;
+    void** owned_node_buffer;
+    void** active_node_buffer;
+    LibClass178DD0* next_list;
+    LibClass178DD0* active_buffer_owner;
 };
+
+/**
+ * @brief Allocate the owned node-pointer buffer and store its capacity.
+ * @param owner List that owns the buffer.
+ * @param node_count Number of node pointers to allocate.
+ */
+extern "C" void lib_list_allocate_node_buffer(LibClass178DD0* owner, s32 node_count);
+
+/**
+ * @brief Release the owned node buffer when no node buffer is active.
+ * @param owner List that owns the buffer.
+ * @return One if the buffer was released, or zero while a buffer is active.
+ */
+extern "C" s32 lib_list_release_node_buffer(LibClass178DD0* owner);
+
+/**
+ * @brief Transfer one node count from the node's stored kind to a new kind.
+ * @param owner List whose per-kind counts are updated.
+ * @param node Node supplying the old kind.
+ * @param new_kind Kind whose count is incremented.
+ */
+extern "C" void lib_list_change_node_kind_counts(LibClass178DD0* owner, const LibClass171EA0* node, s32 new_kind);
+
+/**
+ * @brief Update the owner's kind counts, then store the node's list kind.
+ * @param node Node whose list kind is changed.
+ * @param kind Kind passed to the owner; its low halfword is stored in the node.
+ */
+extern "C" void lib_object_set_list_kind(LibClass171EA0* node, s32 kind);
 
 /** 0x98-byte display manager with a list interface and secondary intrusive receiver. */
 class LibClass178F30 : public LibClass178DD0, public LibClass171EA0

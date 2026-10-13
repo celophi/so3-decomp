@@ -637,3 +637,8 @@ func_slot60__16StatusTextWindowFi = 0x0034FA10; // type:func absolute:True allow
 func_slotf4__16StatusTextWindowFUi = 0x0034FAA0; // type:func absolute:True allow_duplicated:True
 
 func_slot88__16FieldClass153E30Fv = 0x00263E80; // type:func absolute:True
+
+remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func absolute:True allow_duplicated:True
+append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
+prepend_node__14LibClass178DD0FPvi = 0x004D7450; // type:func absolute:True allow_duplicated:True
+insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func absolute:True allow_duplicated:True

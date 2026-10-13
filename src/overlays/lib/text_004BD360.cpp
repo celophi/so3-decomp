@@ -50,6 +50,13 @@ struct LibTrigQuotients
     s32 sine_half_turns;
 } __attribute__((aligned(16)));
 
+/** Partial widget view with its retained container owner. */
+struct LibWidgetContainerLink
+{
+    u8 unk00[0x14];
+    LibObject178660* container;
+};
+
 extern "C" LibTrigTable D_50CC80;
 extern "C" LibTrigQuotients D_50CD10;
 extern "C" LibTrigQuotients D_50CD00;
@@ -65,7 +72,6 @@ extern "C" LibScalarTrigQuotient D_50CCD0;
 extern "C" LibScalarTrigQuotient D_50CCE0;
 extern "C" LibScalarTrigQuotient D_50CCC0;
 
-extern "C" s32 func_00461860(LibStorageBlock0C* storage, s32 count);
 
 /** @brief View an aligned matrix row as a vector. @param matrix Destination matrix. @param row Row index. @return Writable row vector. */
 static inline FieldVec4A& matrix_row_vector(LibMatrix44Value& matrix, s32 row)
@@ -626,7 +632,7 @@ extern "C" s32 lib_panel_init_transform(LibClass178630* object, float z)
         ((FieldClass15BA90*)object->unk60)->pending = 1;
         object->unk8c = 0;
     }
-    ((LibClass178DD0*)D_001B661C)->func_004D74F0(object->unk60, -1);
+    ((LibClass178DD0*)D_001B661C)->append_node(object->unk60, -1);
     return 1;
 }
 
@@ -699,7 +705,7 @@ extern "C" s32 lib_panel_init_rectangle(LibClass178630* object, s32 mode, float 
     object->unk18.unk04 = y;
     object->unk18.unk08 = width;
     object->unk18.unk0c = height;
-    if (!func_00461860(&object->unk40, 0x44))
+    if (!lib_allocate_drawing_storage(&object->unk40, 0x44))
     {
         return 0;
     }
@@ -727,11 +733,6 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6120);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6150);
 
-typedef struct LibWidgetContainerLink
-{
-    u8 pad00[0x14];
-    LibObject178660* container;
-} LibWidgetContainerLink;
 
 /**
  * @brief Link the widget into the container and record its owner.
@@ -741,7 +742,7 @@ typedef struct LibWidgetContainerLink
 extern "C" void lib_container_attach_widget(LibObject178660* object, LibClass178600* child)
 {
     object->LibClass178A70::append(child);
-    ((LibWidgetContainerLink*)child)->container = object;
+    reinterpret_cast<LibWidgetContainerLink*>(child)->container = object;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C61D0);
@@ -763,7 +764,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6230);
  */
 extern "C" s32 lib_container_init(LibObject178660* object, s32 code, float x, float y, s32 first, float z, s32 second)
 {
-    if (!func_00461860(&object->unkD0, 12))
+    if (!lib_allocate_drawing_storage(&object->unkD0, 12))
     {
         return 0;
     }

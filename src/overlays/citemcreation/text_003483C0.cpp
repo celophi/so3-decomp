@@ -13500,7 +13500,7 @@ void ItemCreationSelectedDisplayState::func_001DF360()
                 set_window_geometry(resource_window, 0.5235988f, 500.0f, 0.34906584f, 90.0f, 50.0f);
             }
         }
-        D_001B6614->func_004D74F0(resource_window, -1);
+        D_001B6614->append_node(resource_window, -1);
         if (section->unk18c)
         {
             inventor_resource_countdown = 750;

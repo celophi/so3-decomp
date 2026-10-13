@@ -3,6 +3,7 @@
 #include "overlays/lib/matrix_vu0.h"
 #include "overlays/lib/quaternion_vu0.h"
 #include "ee.h"
+#include "main/resident_001001E0.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "sdk/main/libm_guess_0013F3E0.h"
@@ -867,31 +868,61 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6430);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6510);
 
-/** Partial node prefix with its registered list owner at offset 0x10. */
-struct LibOwnedObjectState
-{
-    u8 pad00[0x10];
-    LibClass178DD0* owner;
-};
 /**
  * @brief Remove the object from its owner and clear the owner pointer.
  * @param object Object whose owner receives the removal callback.
  */
 extern "C" void lib_object_detach_owner(void* object)
 {
-    LibOwnedObjectState* state = (LibOwnedObjectState*)object;
-    if (state->owner)
+    LibClass171EA0* node = static_cast<LibClass171EA0*>(object);
+    if (node->owner)
     {
-        state->owner->func_004D72A0(object);
+        node->owner->remove_node(object);
     }
-    state->owner = 0;
+    node->owner = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6610);
+/**
+ * @brief Update the owner's kind counts, then store the node's list kind.
+ * @param node Node whose list kind is changed.
+ * @param kind Kind passed to the owner; its low halfword is stored in the node.
+ */
+extern "C" void lib_object_set_list_kind(LibClass171EA0* node, s32 kind)
+{
+    if (node->owner)
+    {
+        lib_list_change_node_kind_counts(node->owner, node, kind);
+    }
+    node->list_kind = kind;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6660);
+/**
+ * @brief Release the owned node buffer when no node buffer is active.
+ * @param owner List that owns the buffer.
+ * @return One if the buffer was released, or zero while a buffer is active.
+ */
+extern "C" s32 lib_list_release_node_buffer(LibClass178DD0* owner)
+{
+    if (owner->active_node_buffer)
+    {
+        return 0;
+    }
+    delete[] owner->owned_node_buffer;
+    owner->owned_node_buffer = 0;
+    owner->node_buffer_capacity = 0;
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D66B0);
+/**
+ * @brief Allocate the owned node-pointer buffer and store its capacity.
+ * @param owner List that owns the buffer.
+ * @param node_count Number of node pointers to allocate.
+ */
+extern "C" void lib_list_allocate_node_buffer(LibClass178DD0* owner, s32 node_count)
+{
+    owner->owned_node_buffer = new (0) void*[node_count];
+    owner->node_buffer_capacity = node_count;
+}
 
 extern "C" void func_004D66F0(void* object)
 {
@@ -931,19 +962,81 @@ extern "C" void* func_004D6DE0(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6DF0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D72A0);
+/**
+ * @brief Remove a registered node and clear its pending buffer entries.
+ * @param object Node to remove.
+ */
+void LibClass178DD0::remove_node(void* object)
+{
+    LibClass171EA0* node = static_cast<LibClass171EA0*>(object);
+    --node_counts_by_kind[node->list_kind];
+    node->is_listed = 0;
+    node->owner = 0;
+    void** buffer = active_node_buffer;
+    if (buffer)
+    {
+        s32 count = active_node_count;
+        s32 i = active_node_index + 1;
+        for (; i < count; ++i)
+        {
+            if (buffer[i] == object)
+            {
+                buffer[i] = 0;
+            }
+        }
+    }
+    else if (active_buffer_owner)
+    {
+        s32 count = active_buffer_owner->active_node_count;
+        void** owner_buffer = active_buffer_owner->active_node_buffer;
+        s32 i = active_buffer_owner->active_node_index + 1;
+        for (; i < count; ++i)
+        {
+            if (owner_buffer[i] == object)
+            {
+                owner_buffer[i] = 0;
+            }
+        }
+    }
+    LibClass178A70::unlink(object);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D7380);
+/**
+ * @brief Transfer one node count from the node's stored kind to a new kind.
+ * @param owner List whose per-kind counts are updated.
+ * @param node Node supplying the old kind.
+ * @param new_kind Kind whose count is incremented.
+ */
+extern "C" void lib_list_change_node_kind_counts(LibClass178DD0* owner, const LibClass171EA0* node, s32 new_kind)
+{
+    --owner->node_counts_by_kind[node->list_kind];
+    ++owner->node_counts_by_kind[new_kind];
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D73B0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", insert_node_after__14LibClass178DD0FPvPvi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D7450);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", prepend_node__14LibClass178DD0FPvi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D74F0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", append_node__14LibClass178DD0FPvi);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __dt__14LibClass178DD0Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __ct__14LibClass178DD0Fv);
+/** @brief Initialize the inherited list, kind counts, and node-buffer state. */
+LibClass178DD0::LibClass178DD0()
+{
+    for (s32 i = 0; i < NODE_KIND_COUNT; ++i)
+    {
+        node_counts_by_kind[i] = 0;
+    }
+    active_node_buffer = 0;
+    next_list = 0;
+    active_node_count = 0;
+    unk58 = 0;
+    active_node_index = -1;
+    node_buffer_capacity = 0;
+    owned_node_buffer = 0;
+    active_buffer_owner = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D76C0);
 

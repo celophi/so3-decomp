@@ -1077,3 +1077,8 @@ lib_panel_init_transform = 0x004C4AB0; // type:func absolute:True allow_duplicat
 lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True
 
 field_replace_model_camera = 0x002FD220; // type:func absolute:True allow_duplicated:True
+
+remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func absolute:True allow_duplicated:True
+append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
+prepend_node__14LibClass178DD0FPvi = 0x004D7450; // type:func absolute:True allow_duplicated:True
+insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func absolute:True allow_duplicated:True

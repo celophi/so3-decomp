@@ -31,6 +31,14 @@ public:
     u32 dma_address;
 };
 
+/**
+ * @brief Allocate aligned drawing storage for an empty block.
+ * @param storage Storage block to initialize.
+ * @param word_count Number of 64-bit drawing words requested.
+ * @return One on success, or zero if storage exists or allocation fails.
+ */
+extern "C" s32 lib_allocate_drawing_storage(LibStorageBlock0C* storage, s32 word_count);
+
 /** Partial 0xFC-byte drawing widget, with MAIN vtable D_174EF0. */
 struct LibClass174EF0 : public LibClass178600
 {

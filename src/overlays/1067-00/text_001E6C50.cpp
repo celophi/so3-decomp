@@ -507,7 +507,7 @@ s32 FieldClass1502E0::func_001E82B0(s32 key)
     anim->resource_is_borrowed = 1;
     anim->resource_data = (void*)(((u32)data + 0x7F) & ~0x7F);
     func_004BFE10(item->unk14, item->unk1c->unk7c);
-    func_004D74F0(item, -1);
+    append_node(item, -1);
     return 1;
 }
 
@@ -711,7 +711,7 @@ s32 func_001E95B0(s32 flag)
             if (object)
             {
                 object->unk4d_2 = flag;
-                D_001B6614->func_004D74F0(object, -1);
+                D_001B6614->append_node(object, -1);
                 return 1;
             }
         }
@@ -926,11 +926,11 @@ FieldClass150330::FieldClass150330()
 
 void FieldClass1504C0::func_001EA730()
 {
-    FieldClass150060* node = (FieldClass150060*)unk38.unk00;
+    FieldClass150060* node = reinterpret_cast<FieldClass150060*>(&unk38.sentinel);
     for (;;)
     {
         node = node->unk08;
-        if (!node || field_is_list_head(unk38.unk00, node))
+        if (!node || field_is_list_head(&unk38.sentinel, node))
         {
             break;
         }
@@ -996,11 +996,11 @@ void FieldClass1504C0::func_001DF360()
 
 void FieldClass1504C0::func_001EAA10(ResidentPacket* packet)
 {
-    FieldClass150060* node = (FieldClass150060*)unk38.unk00;
+    FieldClass150060* node = reinterpret_cast<FieldClass150060*>(&unk38.sentinel);
     for (;;)
     {
         node = node->unk08;
-        if (!node || (FieldClass150060*)unk38.unk00 == node)
+        if (!node || reinterpret_cast<FieldClass150060*>(&unk38.sentinel) == node)
         {
             break;
         }
@@ -1067,11 +1067,11 @@ void FieldClass1504C0::func_001EAC90(ResidentPacket* packet)
 FieldClass1504C0::~FieldClass1504C0()
 {
     FieldClass150060* current;
-    FieldClass150060* node = ((FieldClass150060*)unk38.unk00)->unk08;
+    FieldClass150060* node = (reinterpret_cast<FieldClass150060*>(&unk38.sentinel))->unk08;
     for (;;)
     {
         current = node;
-        if (!node || (FieldClass150060*)unk38.unk00 == node)
+        if (!node || reinterpret_cast<FieldClass150060*>(&unk38.sentinel) == node)
         {
             break;
         }

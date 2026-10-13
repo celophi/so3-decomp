@@ -81,7 +81,7 @@ class LibClass171EA0 : public LibClass171E90
 {
 public:
     /** @brief Clear the object flags and its owner after initializing the links. */
-    LibClass171EA0() : unk0e(0), unk0f(0), owner(0)
+    LibClass171EA0() : is_listed(0), unk0f(0), owner(0)
     {
     }
     /** @brief Detach from the owner, then destroy the intrusive links. */
@@ -101,8 +101,8 @@ public:
 
     /** @brief Virtual slot 4. */
     virtual void func_003EEBE0();
-    s16 unk0c;
-    u8 unk0e;
+    s16 list_kind;
+    u8 is_listed;
     u8 unk0f;
     LibClass178DD0* owner;
 };

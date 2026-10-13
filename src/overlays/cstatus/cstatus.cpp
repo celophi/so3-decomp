@@ -2302,7 +2302,7 @@ void status_create_character_model(StatusCharacterWindow* object)
         {
             func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->character_model), 0.5235988f, 480.0f, 0.0f, 90.0f, 110.0f);
         }
-        D_001B6614->func_004D74F0(object->character_model, -1);
+        D_001B6614->append_node(object->character_model, -1);
     }
 }
 
