@@ -277,10 +277,10 @@ __dt__14LibClass171E80Fv = 0x003512A0; // type:func
 __dt__14LibClass171E90Fv = 0x003512F0; // type:func
 __vt__14LibClass171E80 = 0x00182318; // size:0xC
 __vt__14LibClass171E90 = 0x00182328; // size:0xC
-func_004CA020__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True
-func_004C9FF0__14LibClass178A70FPv = 0x004C9FF0; // type:func absolute:True
-func_004C9FC0__14LibClass178A70FPvPv = 0x004C9FC0; // type:func absolute:True
-func_004C9F60__14LibClass178A70FPv = 0x004C9F60; // type:func absolute:True
+append__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True
+prepend__14LibClass178A70FPv = 0x004C9FF0; // type:func absolute:True
+insert_after__14LibClass178A70FPvPv = 0x004C9FC0; // type:func absolute:True
+unlink__14LibClass178A70FPv = 0x004C9F60; // type:func absolute:True
 
 __dt__16EquipClass1797B0Fv = 0x00350EA0; // type:func
 __vt__16EquipClass1797B0 = 0x001797B0; // size:0x24 absolute:True

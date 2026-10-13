@@ -262,29 +262,29 @@ public:
     virtual ~LibClass178DD0();
 
     /**
-     * @brief Link a node before the list's first node and increment the count at offset 0xC.
+     * @brief Append a node to the end of the list and increment its count.
      * @param node Node to link.
      */
-    virtual void func_004CA020(void* node);
+    virtual void append(void* node);
 
     /**
-     * @brief Link a node after the list's last node and increment the count at offset 0xC.
+     * @brief Prepend a node to the beginning of the list and increment its count.
      * @param node Node to link.
      */
-    virtual void func_004C9FF0(void* node);
+    virtual void prepend(void* node);
 
     /**
      * @brief Link a node after another node and increment the count at offset 0xC.
      * @param position Node to link after.
      * @param node Node to link.
      */
-    virtual void func_004C9FC0(void* position, void* node);
+    virtual void insert_after(void* position, void* node);
 
     /**
      * @brief Unlink a node and decrement the nonzero count at offset 0xC.
      * @param node Node to unlink; the list itself and null are ignored.
      */
-    virtual void func_004C9F60(void* node);
+    virtual void unlink(void* node);
 
     /**
      * @brief Lib virtual slot 5.

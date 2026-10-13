@@ -1,7 +1,7 @@
-func_004CA020__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True allow_duplicated:True
-func_004C9FF0__14LibClass178A70FPv = 0x004C9FF0; // type:func absolute:True allow_duplicated:True
-func_004C9FC0__14LibClass178A70FPvPv = 0x004C9FC0; // type:func absolute:True allow_duplicated:True
-func_004C9F60__14LibClass178A70FPv = 0x004C9F60; // type:func absolute:True allow_duplicated:True
+append__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True allow_duplicated:True
+prepend__14LibClass178A70FPv = 0x004C9FF0; // type:func absolute:True allow_duplicated:True
+insert_after__14LibClass178A70FPvPv = 0x004C9FC0; // type:func absolute:True allow_duplicated:True
+unlink__14LibClass178A70FPv = 0x004C9F60; // type:func absolute:True allow_duplicated:True
 __vt__14LibClass178A70 = 0x00178A70; // absolute:True allow_duplicated:True
 __dt__14LibClass178A70Fv = 0x003528B0; // type:func
 __ct__14LibClass178A70Fv = 0x004CA050; // absolute:True

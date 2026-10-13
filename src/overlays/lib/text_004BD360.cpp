@@ -732,7 +732,6 @@ typedef struct LibWidgetContainerLink
     u8 pad00[0x14];
     LibObject178660* container;
 } LibWidgetContainerLink;
-extern "C" void func_004CA020(LibObject178660* list, LibClass178600* node);
 
 /**
  * @brief Link the widget into the container and record its owner.
@@ -741,7 +740,7 @@ extern "C" void func_004CA020(LibObject178660* list, LibClass178600* node);
  */
 extern "C" void lib_container_attach_widget(LibObject178660* object, LibClass178600* child)
 {
-    func_004CA020(object, child);
+    object->LibClass178A70::append(child);
     ((LibWidgetContainerLink*)child)->container = object;
 }
 
@@ -989,20 +988,95 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9E80);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9F00);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9F60);
+/**
+ * @brief Detach a node and clear its links, ignoring the list sentinel and null.
+ * @param node Intrusive node to detach.
+ */
+void LibClass178A70::unlink(void* node)
+{
+    LibClass171E90* removed = static_cast<LibClass171E90*>(node);
+    if (removed == &sentinel)
+    {
+        return;
+    }
+    if (removed == 0)
+    {
+        return;
+    }
+    LibClass171E90* previous = removed->previous;
+    LibClass171E90* next = removed->next;
+    if (previous)
+    {
+        previous->next = next;
+    }
+    if (next)
+    {
+        next->previous = previous;
+    }
+    if (node_count != 0)
+    {
+        --node_count;
+    }
+    removed->previous = 0;
+    removed->next = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9FC0);
+/**
+ * @brief Insert a node after a list position and increment the node count.
+ * @param position List position preceding the inserted node.
+ * @param node Intrusive node to insert.
+ */
+void LibClass178A70::insert_after(void* position, void* node)
+{
+    LibClass171E90* after = static_cast<LibClass171E90*>(position);
+    LibClass171E90* inserted = static_cast<LibClass171E90*>(node);
+    LibClass171E90* next = after->next;
+    inserted->previous = after;
+    inserted->next = next;
+    after->next = inserted;
+    if (next)
+    {
+        next->previous = inserted;
+    }
+    ++node_count;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9FF0);
+/**
+ * @brief Prepend a node to the beginning of the list and increment its count.
+ * @param node Intrusive node to prepend.
+ */
+void LibClass178A70::prepend(void* node)
+{
+    LibClass171E90* inserted = static_cast<LibClass171E90*>(node);
+    LibClass171E90* first = sentinel.next;
+    inserted->previous = &sentinel;
+    inserted->next = first;
+    sentinel.next = inserted;
+    first->previous = inserted;
+    ++node_count;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA020);
+/**
+ * @brief Append a node to the end of the list and increment its count.
+ * @param node Intrusive node to append.
+ */
+void LibClass178A70::append(void* node)
+{
+    LibClass171E90* inserted = static_cast<LibClass171E90*>(node);
+    LibClass171E90* last = sentinel.previous;
+    inserted->previous = last;
+    inserted->next = &sentinel;
+    sentinel.previous = inserted;
+    last->next = inserted;
+    ++node_count;
+}
 
 /** @brief Initialize an empty intrusive list whose sentinel links point to itself. */
 LibClass178A70::LibClass178A70()
 {
     node_count = 0;
-    unk00.previous = &unk00;
-    unk00.next = &unk00;
+    sentinel.previous = &sentinel;
+    sentinel.next = &sentinel;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA090);

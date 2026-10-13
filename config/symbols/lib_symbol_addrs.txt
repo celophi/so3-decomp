@@ -446,8 +446,8 @@ func_003EEE60__14LibClass178A90Fv = 0x003EEE60; // type:func absolute:True allow
 __vt__17LibResourceBitset = 0x00177A10; // size:0xC
 __dt__17LibResourceBitsetFv = 0x004A8F80; // type:func allow_duplicated:True
 
-__dt__21LibResourceControllerFv = 0x004AB700; // type:func absolute:True allow_duplicated:True
-func_003EEBC0__21LibResourceControllerFv = 0x004A8FF0; // type:func absolute:True allow_duplicated:True
-func_003EF740__21LibResourceControllerFv = 0x004A91F0; // type:func allow_duplicated:True
-func_003EEBD0__21LibResourceControllerFv = 0x004A9770; // type:func absolute:True allow_duplicated:True
-resident_enqueue_object = 0x0011ED90; // type:func absolute:True allow_duplicated:True
+insert_after__14LibClass178A70FPvPv = 0x004C9FC0; // type:func allow_duplicated:True
+
+prepend__14LibClass178A70FPv = 0x004C9FF0; // type:func allow_duplicated:True
+append__14LibClass178A70FPv = 0x004CA020; // type:func allow_duplicated:True
+unlink__14LibClass178A70FPv = 0x004C9F60; // type:func allow_duplicated:True

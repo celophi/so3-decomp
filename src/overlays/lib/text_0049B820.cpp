@@ -1,8 +1,5 @@
 #include "include_asm.h"
 #include "overlays/lib/text_0049B820.h"
-#include "overlays/lib/text_004BD360.h"
-#include "main/resident_0010A0E0.h"
-#include "main/resident_data.h"
 
 /** Partial word-array owner with its native virtual pointer after the data fields. */
 class LibResourceBitset
@@ -17,20 +14,6 @@ public:
     virtual ~LibResourceBitset();
 };
 
-
-/** Partial resource controller with an intrusive list and a secondary queued-object interface. */
-class LibResourceController : public LibClass178A70, public LibClass171EA0
-{
-public:
-    /** @brief Destroy the resource controller and its interfaces. */
-    virtual ~LibResourceController();
-    /** @brief Report the resource-controller kind. @return Kind eleven. */
-    virtual s32 func_003EEBC0();
-    /** @brief Enqueue the controller's secondary interface for resident processing. */
-    virtual void func_003EF740();
-    /** @brief Process the controller's resource entries. */
-    virtual void func_003EEBD0();
-};
 
 /**
  * @brief Add three components to a copied vector, preserving the fourth.
@@ -375,11 +358,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A90E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9120);
 
-/** @brief Enqueue the controller's secondary object interface for resident processing. */
-void LibResourceController::func_003EF740()
-{
-    resident_enqueue_object(D_001B65F4, static_cast<LibClass171EA0*>(this));
-}
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A91F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9220);
 
