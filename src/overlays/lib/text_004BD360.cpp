@@ -1,7 +1,69 @@
 #include "include_asm.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_0046AE20.h"
+#include "overlays/lib/trig_vu0.h"
+#include "overlays/lib/vector_vu0.h"
+#include "overlays/lib/text_004CD3A0.h"
 #include "main/resident_data.h"
 #include "main/resident_001001E0.h"
+#include "main/resident_00101550.h"
+
+/** Partial state shared by the channel implementations using the word getter. */
+struct LibChannelWordState
+{
+    u8 unk00[0x40];
+    u32 channel_word;
+};
+
+/** Packed sine-series coefficients, reduction constants, and shared sign scratch. */
+struct LibTrigTable
+{
+    float pi;
+    float inverse_pi;
+    float coefficient_3;
+    float coefficient_5;
+    float coefficient_7;
+    float coefficient_9;
+    float sign;
+    union
+    {
+        float angle;
+        float sine_sign;
+        float result;
+    } phase;
+    float half_pi;
+    float inverse_half_pi;
+    float cosine_offset;
+    float scalar_cosine_offset;
+    float coefficient_11;
+    float coefficient_13;
+    float unk38;
+    float unk3c;
+} __attribute__((aligned(16)));
+
+/** Packed quotient lanes written by VU0 range reduction. */
+struct LibTrigQuotients
+{
+    s32 unk00;
+    s32 unk04;
+    s32 cosine_half_turns;
+    s32 sine_half_turns;
+} __attribute__((aligned(16)));
+
+extern "C" LibTrigTable D_50CC80;
+extern "C" LibTrigQuotients D_50CD10;
+extern "C" LibTrigQuotients D_50CD00;
+
+/** Packed scalar quotient lane written by VU0 range reduction. */
+struct LibScalarTrigQuotient
+{
+    u32 unk00[3];
+    s32 half_turns;
+} __attribute__((aligned(16)));
+extern "C" LibScalarTrigQuotient D_50CCF0;
+extern "C" LibScalarTrigQuotient D_50CCD0;
+extern "C" LibScalarTrigQuotient D_50CCE0;
+extern "C" LibScalarTrigQuotient D_50CCC0;
 
 extern "C" s32 func_00461860(LibStorageBlock0C* storage, s32 count);
 
@@ -62,7 +124,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD4B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD4C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD4D0);
+/**
+ * @brief Read the shared word of a native channel implementation.
+ * @param object Channel implementation.
+ * @return Stored channel word.
+ */
+extern "C" u32 lib_channel_read_word(const LibChannelWordState* object)
+{
+    return object->channel_word;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD4E0);
 
@@ -76,21 +146,157 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD970);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD990);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD9D0);
+/**
+ * @brief Replace an animation entry's channel and descriptor when its index is below the entry count.
+ * @param object Animation object.
+ * @param index Entry index; only the upper bound is checked.
+ * @param channel Replacement channel.
+ * @param kind Entry kind.
+ * @param type Entry type.
+ * @param flags Entry flags.
+ */
+extern "C" void lib_animation_set_entry_channel(LibClass178220* object, s32 index, LibClass173180* channel, u8 kind, s16 type, u8 flags)
+{
+    if (index < object->entry_count)
+    {
+        object->entries[index].channel = channel;
+        object->entries[index].kind = kind;
+        object->entries[index].type = type;
+        object->entries[index].flags = flags;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDA30);
+/**
+ * @brief Read and cache an indexed animation channel matching the entry's low flag nibble.
+ * @param object Animation object.
+ * @param index Entry index; the caller supplies a valid array index.
+ * @param nibble Flag value to match against the entry's low nibble.
+ * @return Matching channel, or null.
+ */
+extern "C" LibClass173180* lib_animation_channel_at(LibClass178220* object, s32 index, u8 nibble)
+{
+    if (!object->entries)
+    {
+        return 0;
+    }
+    if (object->entries[index].channel && nibble == (object->entries[index].flags & 0xF))
+    {
+        object->cached_entry = &object->entries[index];
+        return object->cached_entry->channel;
+    }
+    object->cached_entry = 0;
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDAA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDB50);
+/**
+ * @brief Bind populated animation entries whose state names match over up to sixteen characters.
+ * @param object Animation object.
+ * @param target Vector state to bind.
+ * @param name State name to match.
+ */
+extern "C" void lib_animation_bind_state(LibClass178220* object, LibClass178370* target, const char* name)
+{
+    s32 count = object->entry_count;
+    for (s32 index = 0; index < count; index++)
+    {
+        LibAnimationEntry14* entry = &object->entries[index];
+        if (entry->channel && lib_compare_bounded_strings(entry->state_name, name, 16) == 0)
+        {
+            object->entries[index].target = target;
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDC00);
+/**
+ * @brief Clear populated animation entries' targets and mark their bindings incomplete.
+ * @param object Animation object.
+ */
+extern "C" void lib_animation_clear_targets(LibClass178220* object)
+{
+    s32 count = object->entry_count;
+    for (s32 index = 0; index < count; index++)
+    {
+        if (object->entries[index].channel)
+        {
+            object->entries[index].target = 0;
+        }
+    }
+    object->targets_bound = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDC50);
+/**
+ * @brief Clear targets for populated animation entries of the requested kind.
+ * @param object Animation object.
+ * @param kind Entry kind to clear.
+ */
+extern "C" void lib_animation_clear_targets_by_kind(LibClass178220* object, u8 kind)
+{
+    s32 count = object->entry_count;
+    for (s32 index = 0; index < count; index++)
+    {
+        if (object->entries[index].channel && kind == object->entries[index].kind)
+        {
+            object->entries[index].target = 0;
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDCB0);
+/**
+ * @brief Clear populated animation entries referencing a particular target.
+ * @param object Animation object.
+ * @param target Bound target to remove.
+ */
+extern "C" void lib_animation_clear_matching_target(LibClass178220* object, const void* target)
+{
+    s32 count = object->entry_count;
+    for (s32 index = 0; index < count; index++)
+    {
+        if (object->entries[index].channel && object->entries[index].target == target)
+        {
+            object->entries[index].target = 0;
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDD10);
+/**
+ * @brief Delete populated channels and unregister their binding-owner links.
+ * @param object Animation object.
+ */
+extern "C" void lib_animation_release_channels(LibClass178220* object)
+{
+    if (object->entries)
+    {
+        s32 count = object->entry_count;
+        for (s32 index = 0; index < count; index++)
+        {
+            if (object->entries[index].channel)
+            {
+                object->entries[index].channel->func_0042A820();
+                object->entries[index].channel = 0;
+            }
+        }
+        if (object->primary_binding_owner)
+        {
+            lib_animation_register_binding(object->primary_binding_owner, 0, 0);
+            object->primary_binding_owner = 0;
+        }
+        s32 slot;
+        LibAnimationBindingOwner* owner = object->secondary_binding_owner;
+        if (owner)
+        {
+            for (slot = 0; slot < LIB_ANIMATION_BINDING_CAPACITY; slot++)
+            {
+                if (owner->animation_slots[slot] == object)
+                {
+                    owner->animation_slots[slot] = 0;
+                }
+            }
+            object->secondary_binding_owner = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDE00);
 
@@ -100,7 +306,31 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BFDB0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BFE10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C02C0);
+/**
+ * @brief Replace the animation data with a decoded resource buffer.
+ * @param object Animation object.
+ * @param source Resource header to decode.
+ */
+extern "C" void lib_animation_load_resource(LibClass178220* object, ResidentResourceHeader* source)
+{
+    if (object->entries)
+    {
+        lib_animation_release_channels(object);
+        delete[] object->entries;
+    }
+    if (!object->resource_is_borrowed)
+    {
+        delete (u8*)object->resource_data;
+    }
+    object->targets_bound = 0;
+    object->resource_is_borrowed = 0;
+    u8* data = func_00102920(D_001B65EC, source, 0, 0);
+    if (data)
+    {
+        func_001025A0(D_001B65EC, source, data, 0);
+        object->resource_data = data;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0370);
 
@@ -797,29 +1027,298 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CBD20);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC070);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC1A0);
+/**
+ * @brief Compute the VU0 sine and cosine approximations for an angle.
+ * @param output Aligned vector receiving cosine in z and sine in w; x and y retain shared polynomial coefficients.
+ * @param angle Angle in radians.
+ */
+extern "C" void lib_compute_sine_cosine_pair(LibVector4* output, float angle)
+{
+    D_50CC80.phase.angle = angle;
+    vu0_sincos_load(&D_50CC80);
+    vu0_sincos_reduce(&D_50CD10);
+    bool cosine_negative = bool(D_50CD10.cosine_half_turns & 1);
+    bool sine_negative = bool(D_50CD10.sine_half_turns & 1);
+    vu0_sincos_square();
+    float cosine_sign;
+    if (cosine_negative)
+    {
+        cosine_sign = -1.0f;
+    }
+    else
+    {
+        cosine_sign = 1.0f;
+    }
+    D_50CC80.sign = cosine_sign;
+    float sine_sign;
+    if (sine_negative)
+    {
+        sine_sign = -1.0f;
+    }
+    else
+    {
+        sine_sign = 1.0f;
+    }
+    D_50CC80.phase.sine_sign = sine_sign;
+    vu0_sincos_evaluate(&D_50CC80);
+    vu0_sincos_store(output);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC2D0);
+/**
+ * @brief Compute degree-nine VU0 sine and cosine approximations.
+ * @param output Aligned vector receiving cosine in z and sine in w; x and y retain shared polynomial coefficients.
+ * @param angle Angle in radians.
+ */
+extern "C" void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle)
+{
+    D_50CC80.phase.angle = angle;
+    vu0_sincos_load_degree9(&D_50CC80);
+    vu0_sincos_reduce(&D_50CD00);
+    bool cosine_negative = bool(D_50CD00.cosine_half_turns & 1);
+    bool sine_negative = bool(D_50CD00.sine_half_turns & 1);
+    vu0_sincos_square();
+    float cosine_sign;
+    if (cosine_negative)
+    {
+        cosine_sign = -1.0f;
+    }
+    else
+    {
+        cosine_sign = 1.0f;
+    }
+    D_50CC80.sign = cosine_sign;
+    float sine_sign;
+    if (sine_negative)
+    {
+        sine_sign = -1.0f;
+    }
+    else
+    {
+        sine_sign = 1.0f;
+    }
+    D_50CC80.phase.sine_sign = sine_sign;
+    vu0_sincos_evaluate_degree9(&D_50CC80);
+    vu0_sincos_store(output);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC3E0);
+/**
+ * @brief Evaluate the degree-thirteen VU0 cosine approximation.
+ * @param angle Angle in radians.
+ * @return Approximated cosine.
+ */
+extern "C" float lib_cosine(float angle)
+{
+    D_50CC80.phase.angle = angle;
+    vu0_cosine_load(&D_50CC80);
+    vu0_cosine_reduce(&D_50CCF0);
+    bool negative = bool(D_50CCF0.half_turns & 1);
+    vu0_trig_square_scalar();
+    float sign;
+    if (negative)
+    {
+        sign = -1.0f;
+    }
+    else
+    {
+        sign = 1.0f;
+    }
+    D_50CC80.sign = sign;
+    vu0_cosine_begin_evaluate(&D_50CC80);
+    vu0_trig_finish_evaluate(&D_50CC80);
+    return D_50CC80.phase.result;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC4D0);
+/**
+ * @brief Evaluate the degree-nine VU0 cosine approximation.
+ * @param angle Angle in radians.
+ * @return Approximated cosine.
+ */
+extern "C" float lib_cosine_degree9(float angle)
+{
+    D_50CC80.phase.angle = angle;
+    vu0_sincos_load_degree9(&D_50CC80);
+    vu0_cosine_reduce(&D_50CCE0);
+    bool negative = bool(D_50CCE0.half_turns & 1);
+    vu0_trig_square_scalar();
+    float sign;
+    if (negative)
+    {
+        sign = -1.0f;
+    }
+    else
+    {
+        sign = 1.0f;
+    }
+    D_50CC80.sign = sign;
+    vu0_trig_begin_evaluate_degree9(&D_50CC80);
+    vu0_trig_finish_evaluate_degree9(&D_50CC80);
+    return D_50CC80.phase.result;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC5B0);
+/**
+ * @brief Evaluate the degree-thirteen VU0 sine approximation.
+ * @param angle Angle in radians.
+ * @return Approximated sine.
+ */
+extern "C" float lib_sine(float angle)
+{
+    D_50CC80.phase.angle = angle;
+    vu0_sine_load(&D_50CC80);
+    vu0_sine_reduce(&D_50CCD0);
+    bool negative = bool(D_50CCD0.half_turns & 1);
+    vu0_trig_square_scalar();
+    float sign;
+    if (negative)
+    {
+        sign = -1.0f;
+    }
+    else
+    {
+        sign = 1.0f;
+    }
+    D_50CC80.sign = sign;
+    vu0_sine_begin_evaluate(&D_50CC80);
+    vu0_trig_finish_evaluate(&D_50CC80);
+    return D_50CC80.phase.result;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC690);
+/**
+ * @brief Evaluate the degree-nine VU0 sine approximation.
+ * @param angle Angle in radians.
+ * @return Approximated sine.
+ */
+extern "C" float lib_sine_degree9(float angle)
+{
+    D_50CC80.phase.angle = angle;
+    vu0_sine_load_degree9(&D_50CC80);
+    vu0_sine_reduce(&D_50CCC0);
+    bool negative = bool(D_50CCC0.half_turns & 1);
+    vu0_trig_square_scalar();
+    float sign;
+    if (negative)
+    {
+        sign = -1.0f;
+    }
+    else
+    {
+        sign = 1.0f;
+    }
+    D_50CC80.sign = sign;
+    vu0_trig_begin_evaluate_degree9(&D_50CC80);
+    vu0_trig_finish_evaluate_degree9(&D_50CC80);
+    return D_50CC80.phase.result;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC760);
+/**
+ * @brief Compute dot(point - origin, direction) over the xyz components.
+ * @param point Aligned point vector.
+ * @param direction Aligned vector supplying the dot-product coefficients.
+ * @param origin Aligned vector subtracted from point.
+ * @return The xyz dot product.
+ */
+extern "C" float lib_dot_point_offset(const LibVector4* point, const LibVector4* direction, const LibVector4* origin)
+{
+    LibVector4 result;
+    vu0_dot_offset_xyz(&result, point, direction, origin);
+    return result.components[0];
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC7A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC950);
+/**
+ * @brief Build a directional shadow projection onto a plane.
+ * @param output Projection matrix destination.
+ * @param direction Projection direction; its xyz dot product with the plane normal must be nonzero.
+ * @param plane Plane equation coefficients (normal.x, normal.y, normal.z, offset).
+ */
+extern "C" void lib_build_directional_shadow_matrix(LibMatrix44Value* output, const FieldVec4A* direction, const FieldVec4A* plane)
+{
+    float inverse_dot = 1.0f / (direction->x * plane->x + direction->y * plane->y + direction->z * plane->z);
+    float scaled_x = direction->x * inverse_dot;
+    float scaled_y = direction->y * inverse_dot;
+    float scaled_z = direction->z * inverse_dot;
+    FieldVec4A scaled(scaled_x, scaled_y, scaled_z, 0.0f);
+    float dot = scaled.x * plane->x + scaled.y * plane->y + scaled.z * plane->z + scaled.w * plane->w;
+    output->m[0][0] = dot - scaled.x * plane->x;
+    output->m[0][1] = -scaled.x * plane->y;
+    output->m[0][2] = -scaled.x * plane->z;
+    output->m[0][3] = -scaled.x * plane->w;
+    output->m[1][0] = -scaled.y * plane->x;
+    output->m[1][1] = dot - scaled.y * plane->y;
+    output->m[1][2] = -scaled.y * plane->z;
+    output->m[1][3] = -scaled.y * plane->w;
+    output->m[2][0] = -scaled.z * plane->x;
+    output->m[2][1] = -scaled.z * plane->y;
+    output->m[2][2] = dot - scaled.z * plane->z;
+    output->m[2][3] = -scaled.z * plane->w;
+    output->m[3][0] = 0.0f;
+    output->m[3][1] = 0.0f;
+    output->m[3][2] = 0.0f;
+    output->m[3][3] = 1.0f;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCA70);
+/**
+ * @brief Build the homogeneous shadow matrix dot(light, plane) * I - light * plane transpose.
+ * @param output Projection matrix destination.
+ * @param light Homogeneous light vector; w distinguishes a point from a direction.
+ * @param plane Plane equation coefficients (normal.x, normal.y, normal.z, offset).
+ */
+extern "C" void lib_build_projective_shadow_matrix(LibMatrix44Value* output, const FieldVec4A* light, const FieldVec4A* plane)
+{
+    float x_product = light->x * plane->x;
+    float y_product = light->y * plane->y;
+    float z_product = light->z * plane->z;
+    float w_product = light->w * plane->w;
+    float dot = x_product + y_product + z_product + w_product;
+    output->m[0][0] = dot - x_product;
+    output->m[0][1] = -light->x * plane->y;
+    output->m[0][2] = -light->x * plane->z;
+    output->m[0][3] = -light->x * plane->w;
+    output->m[1][0] = -light->y * plane->x;
+    output->m[1][1] = dot - light->y * plane->y;
+    output->m[1][2] = -light->y * plane->z;
+    output->m[1][3] = -light->y * plane->w;
+    output->m[2][0] = -light->z * plane->x;
+    output->m[2][1] = -light->z * plane->y;
+    output->m[2][2] = dot - light->z * plane->z;
+    output->m[2][3] = -light->z * plane->w;
+    output->m[3][0] = -light->w * plane->x;
+    output->m[3][1] = -light->w * plane->y;
+    output->m[3][2] = -light->w * plane->z;
+    output->m[3][3] = dot - light->w * plane->w;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCBE0);
+/**
+ * @brief Compute the inverse-rotated positive z direction of a unit quaternion.
+ * @param quaternion Unit quaternion to evaluate.
+ * @param output Vector receiving the direction in xyz and 1 in w.
+ */
+extern "C" void lib_quaternion_inverse_z_direction(const FieldVec4B* quaternion, FieldVec4A* output)
+{
+    float x = quaternion->x;
+    float y = quaternion->y;
+    output->x = 2.0f * (x * quaternion->z - quaternion->w * y);
+    output->y = 2.0f * (quaternion->y * quaternion->z + quaternion->w * quaternion->x);
+    output->z = 1.0f - 2.0f * (x * x + y * y);
+    output->w = 1.0f;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCC50);
+/**
+ * @brief Build a quaternion from an origin-to-target direction and supplied z rotation.
+ * @param output Four-float quaternion destination.
+ * @param target Target position measured from the origin.
+ * @param z_angle Rotation about z in radians.
+ */
+extern "C" void lib_quaternion_from_direction_xz(float* output, const LibVector4* target, float z_angle)
+{
+    LibVector4 angles;
+    angles.components[0] = 0.0f;
+    angles.components[1] = 0.0f;
+    angles.components[2] = 0.0f;
+    angles.components[3] = 1.0f;
+    lib_direction_angles_xz(&angles, target, z_angle);
+    func_004CE4C0(output, angles.components);
+}
 
 /**
  * @brief Compute the fog mapping offset + reciprocal_scale / z for perspective fog.

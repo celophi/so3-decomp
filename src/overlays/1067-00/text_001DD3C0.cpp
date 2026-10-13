@@ -129,11 +129,11 @@ void func_001DD5E0(FieldClass150060* list)
         FieldClass150F90* object = static_cast<FieldClass150F90*>(link);
         if ((object->unk78 & 0x8) && object->func_00204420())
         {
-            void* table = object->unk7c;
+            LibEntryManager* table = (LibEntryManager*)object->unk7c;
             if (table)
             {
                 s32 count = 0;
-                void* entry = func_00473940(table, 0);
+                void* entry = lib_find_renderable_entry(table, 0);
                 while (entry && count < 0x20)
                 {
                     entries[count++] = entry;

@@ -413,6 +413,65 @@ extern "C" void lib_invalidate_transform_chain(LibClass178EA0* object);
 extern "C" {
 #endif
 
+#ifdef __cplusplus
+/**
+ * @brief Interpolate along the shorter quaternion arc and normalize the result.
+ * @param output Aligned destination quaternion; may alias either input.
+ * @param first First aligned quaternion.
+ * @param second Second aligned quaternion.
+ * @param fraction Interpolation fraction.
+ */
+void func_004CD3A0(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction);
+
+/**
+ * @brief Interpolate along the shorter quaternion arc and normalize the result.
+ * @param output Aligned destination quaternion; may alias either input.
+ * @param first First aligned quaternion.
+ * @param second Second aligned quaternion.
+ * @param fraction Interpolation fraction.
+ */
+void func_004CD630(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction);
+
+/**
+ * @brief Add all four components to a quaternion and return its updated value.
+ * @param first Quaternion to update.
+ * @param second Quaternion components to add.
+ * @return Copy of the updated quaternion.
+ */
+FieldVec4B lib_quaternion_add_assign(FieldVec4B& first, const FieldVec4B& second);
+
+/**
+ * @brief Multiply a quaternion by a second quaternion and return its updated value.
+ * @param first Quaternion to update with first * second.
+ * @param second Right-hand quaternion factor.
+ * @return Copy of the updated quaternion.
+ */
+FieldVec4B lib_quaternion_multiply_assign(FieldVec4B& first, const FieldVec4B& second);
+
+/**
+ * @brief Divide a quaternion's conjugate by its squared norm.
+ * @param quaternion Quaternion to invert.
+ * @return Inverse quaternion.
+ */
+FieldVec4B lib_quaternion_inverse(const FieldVec4B& quaternion);
+
+/**
+ * @brief Replace a position with direction angles toward a target, using the XY plane for heading.
+ * @param value Source position, overwritten with elevation in x, heading in z, and w set to one.
+ * @param target Target position; only x, y, and z are read.
+ * @param y_angle Angle to store in the y component.
+ */
+void lib_direction_angles_xy(LibVector4* value, const LibVector4* target, float y_angle);
+
+/**
+ * @brief Replace a position with direction angles toward a target, using the XZ plane for heading.
+ * @param value Source position, overwritten with elevation in x, heading in y, and w set to one.
+ * @param target Target position; only x, y, and z are read.
+ * @param z_angle Angle to store in the z component.
+ */
+void lib_direction_angles_xz(LibVector4* value, const LibVector4* target, float z_angle);
+#endif
+
 /**
  * @brief Transform a four-float input into an output vector.
  * @param output Destination vector.

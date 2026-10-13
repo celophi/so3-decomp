@@ -597,13 +597,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", __dt__14Lib
 
 void func_001EDE60(FieldVectorState50* state, const FieldQword* input)
 {
-    state->unk50 = 1;
+    state->transform_dirty = 1;
     state->unk20.packed = *input;
 }
 
 void func_001EDE80(FieldVectorState50* state, float x, float y, float z)
 {
-    state->unk50 = 1;
+    state->transform_dirty = 1;
     state->unk20.floats[0] = x;
     state->unk20.floats[1] = y;
     state->unk20.floats[2] = z;
@@ -612,7 +612,7 @@ void func_001EDE80(FieldVectorState50* state, float x, float y, float z)
 
 void func_001EDEA0(FieldVectorState50* state, float x, float y, float z, float w)
 {
-    state->unk50 = 1;
+    state->transform_dirty = 1;
     state->unk30.floats[0] = x;
     state->unk30.floats[1] = y;
     state->unk30.floats[2] = z;
@@ -621,26 +621,26 @@ void func_001EDEA0(FieldVectorState50* state, float x, float y, float z, float w
 
 void func_001EDEC0(FieldVectorState50* state, const FieldQword* input)
 {
-    state->unk50 = 1;
+    state->transform_dirty = 1;
     state->unk30.packed = *input;
 }
 
 void func_001EDEE0(FieldVectorState50* state, const float* input)
 {
-    state->unk50 = 1;
+    state->transform_dirty = 1;
     func_004CE4C0(state->unk30.floats, input);
 }
 
 void func_001EDF10(FieldVectorState50* state, const float* input)
 {
-    state->unk50 = 1;
+    state->transform_dirty = 1;
     func_004CE4C0(state->unk30.floats, input);
 }
 
 void func_001EDF40(FieldVectorState50* state, float x, float y, float z)
 {
     float value[4];
-    state->unk50 = 1;
+    state->transform_dirty = 1;
     value[0] = x;
     value[1] = y;
     value[2] = z;
@@ -650,13 +650,13 @@ void func_001EDF40(FieldVectorState50* state, float x, float y, float z)
 
 void func_001EDF80(FieldVectorState50* state, const FieldQword* input)
 {
-    state->unk50 = 1;
+    state->transform_dirty = 1;
     state->unk40.packed = *input;
 }
 
 void func_001EDFA0(FieldVectorState50* state, float x, float y, float z)
 {
-    state->unk50 = 1;
+    state->transform_dirty = 1;
     state->unk40.floats[0] = x;
     state->unk40.floats[1] = y;
     state->unk40.floats[2] = z;
@@ -854,8 +854,8 @@ FieldClass150590::FieldClass150590(void* owner, FieldVec4A position, FieldVec4A 
     unk90.unk08 = angles.y;
     unk90.unk00 = mask;
     unk90.unk0c = flags;
-    float cosine = func_004CC3E0(0.5f * unk48);
-    FieldVec4B quaternion(0.0f, -func_004CC5B0(0.5f * unk48), 0.0f, cosine);
+    float cosine = lib_cosine(0.5f * unk48);
+    FieldVec4B quaternion(0.0f, -lib_sine(0.5f * unk48), 0.0f, cosine);
     func_004CD8A0(&quaternion);
     unk50 = func_004CE930(quaternion);
 }
@@ -927,8 +927,8 @@ FieldClass150570::FieldClass150570(void* owner, FieldVec4A position, FieldVec4A 
     unk40 = dimensions.x;
     unk44 = dimensions.y;
     unk48 = dimensions.w;
-    float cosine = func_004CC3E0(0.5f * unk48);
-    FieldVec4B quaternion(0.0f, -func_004CC5B0(0.5f * unk48), 0.0f, cosine);
+    float cosine = lib_cosine(0.5f * unk48);
+    FieldVec4B quaternion(0.0f, -lib_sine(0.5f * unk48), 0.0f, cosine);
     func_004CD8A0(&quaternion);
     unk50 = func_004CE930(quaternion);
 }

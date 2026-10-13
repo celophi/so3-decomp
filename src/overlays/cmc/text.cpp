@@ -1517,7 +1517,7 @@ void func_00359020(Overlay0072Object00359000* object, const unsigned __int128* v
  */
 void LibClass171EF0::func_003EEF30(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     func_004CE4C0(unk30.components, value->components);
 }
 
@@ -1527,7 +1527,7 @@ void LibClass171EF0::func_003EEF30(const LibVector4* value)
  */
 void LibClass171EF0::func_003EEF60(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     func_004CE4C0(unk30.components, value->components);
 }
 
@@ -1540,7 +1540,7 @@ void LibClass171EF0::func_003EEF60(const LibVector4* value)
 void LibClass171EF0::func_003EEF90(float x, float y, float z)
 {
     float value[4];
-    unk50 = 1;
+    transform_dirty = 1;
     value[0] = x;
     value[1] = y;
     value[2] = z;

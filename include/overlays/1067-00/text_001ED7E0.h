@@ -280,7 +280,7 @@ typedef struct FieldVectorState50
     FieldVector4 unk20;
     FieldVector4 unk30;
     FieldVector4 unk40;
-    u8 unk50;
+    u8 transform_dirty;
 } FieldVectorState50;
 
 /** Partial receiver with a byte flag at offset 0x60. */

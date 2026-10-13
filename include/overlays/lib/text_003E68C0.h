@@ -216,7 +216,8 @@ public:
     virtual void func_003EEFD0(const LibVector4* value);
     LibVector4 unk30;
     LibVector4 unk40;
-    u8 unk50;
+    /** Nonzero when the transformation matrices need rebuilding. */
+    u8 transform_dirty;
     u8 unk51;
 };
 #endif

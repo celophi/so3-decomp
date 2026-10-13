@@ -318,3 +318,107 @@ lib_invalidate_transform_chain = 0x004DA2C0;
 func_003F4520__14LibClass178EA0CFv = 0x003F4520;
 func_003F4530__14LibClass178EA0CFv = 0x003F4530;
 func_003F4540__14LibClass178EA0CFv = 0x003F4540;
+
+func_004CEA90 = 0x004CEA90; // type:func absolute:True allow_duplicated:True
+lib_quaternion_add_assign = 0x004CEA90; // type:func allow_duplicated:True
+func_004CEAE0 = 0x004CEAE0; // type:func absolute:True allow_duplicated:True
+lib_quaternion_multiply_assign = 0x004CEAE0; // type:func allow_duplicated:True
+func_004CEB20 = 0x004CEB20; // type:func absolute:True allow_duplicated:True
+lib_quaternion_inverse = 0x004CEB20; // type:func allow_duplicated:True
+
+func_004CED40 = 0x004CED40; // type:func absolute:True allow_duplicated:True
+lib_direction_angles_xy = 0x004CED40; // type:func allow_duplicated:True
+func_004CEE30 = 0x004CEE30; // type:func absolute:True allow_duplicated:True
+lib_direction_angles_xz = 0x004CEE30; // type:func allow_duplicated:True
+
+func_004CC1A0 = 0x004CC1A0; // type:func absolute:True allow_duplicated:True
+lib_compute_sine_cosine_pair = 0x004CC1A0; // type:func allow_duplicated:True
+
+func_004CC2D0 = 0x004CC2D0; // type:func absolute:True allow_duplicated:True
+lib_compute_sine_cosine_pair_degree9 = 0x004CC2D0; // type:func allow_duplicated:True
+
+func_004CC3E0 = 0x004CC3E0; // type:func absolute:True allow_duplicated:True
+lib_cosine = 0x004CC3E0; // type:func allow_duplicated:True
+
+func_004CC5B0 = 0x004CC5B0; // type:func absolute:True allow_duplicated:True
+lib_sine = 0x004CC5B0; // type:func allow_duplicated:True
+
+func_004CC4D0 = 0x004CC4D0; // type:func absolute:True allow_duplicated:True
+lib_cosine_degree9 = 0x004CC4D0; // type:func allow_duplicated:True
+
+func_004CC690 = 0x004CC690; // type:func absolute:True allow_duplicated:True
+lib_sine_degree9 = 0x004CC690; // type:func allow_duplicated:True
+
+func_004CC760 = 0x004CC760; // type:func absolute:True allow_duplicated:True
+lib_dot_point_offset = 0x004CC760; // type:func allow_duplicated:True
+
+func_004CCBE0 = 0x004CCBE0; // type:func absolute:True allow_duplicated:True
+lib_quaternion_inverse_z_direction = 0x004CCBE0; // type:func allow_duplicated:True
+
+func_004CCC50 = 0x004CCC50; // type:func absolute:True allow_duplicated:True
+lib_quaternion_from_direction_xz = 0x004CCC50; // type:func allow_duplicated:True
+
+func_004CC950 = 0x004CC950; // type:func absolute:True allow_duplicated:True
+lib_build_directional_shadow_matrix = 0x004CC950; // type:func allow_duplicated:True
+
+func_004CCA70 = 0x004CCA70; // type:func absolute:True allow_duplicated:True
+lib_build_projective_shadow_matrix = 0x004CCA70; // type:func allow_duplicated:True
+
+func_004BD9D0 = 0x004BD9D0; // type:func absolute:True allow_duplicated:True
+lib_animation_set_entry_channel = 0x004BD9D0; // type:func allow_duplicated:True
+
+func_004BD4D0 = 0x004BD4D0; // type:func absolute:True allow_duplicated:True
+lib_channel_read_word = 0x004BD4D0; // type:func allow_duplicated:True
+
+func_004BDA30 = 0x004BDA30; // type:func absolute:True allow_duplicated:True
+lib_animation_channel_at = 0x004BDA30; // type:func allow_duplicated:True
+
+func_004BDB50 = 0x004BDB50; // type:func absolute:True allow_duplicated:True
+lib_animation_bind_state = 0x004BDB50; // type:func allow_duplicated:True
+
+func_004BDC00 = 0x004BDC00; // type:func absolute:True allow_duplicated:True
+lib_animation_clear_targets = 0x004BDC00; // type:func allow_duplicated:True
+
+func_004BDC50 = 0x004BDC50; // type:func absolute:True allow_duplicated:True
+lib_animation_clear_targets_by_kind = 0x004BDC50; // type:func allow_duplicated:True
+
+func_004BDCB0 = 0x004BDCB0; // type:func absolute:True allow_duplicated:True
+lib_animation_clear_matching_target = 0x004BDCB0; // type:func allow_duplicated:True
+
+func_004BDD10 = 0x004BDD10; // type:func absolute:True allow_duplicated:True
+lib_animation_release_channels = 0x004BDD10; // type:func allow_duplicated:True
+
+func_0046BA30 = 0x0046BA30; // type:func absolute:True allow_duplicated:True
+lib_animation_register_binding = 0x0046BA30; // type:func allow_duplicated:True
+
+func_004C02C0 = 0x004C02C0; // type:func absolute:True allow_duplicated:True
+lib_animation_load_resource = 0x004C02C0; // type:func allow_duplicated:True
+
+func_00473250 = 0x00473250; // type:func absolute:True allow_duplicated:True
+lib_find_named_entry_cached = 0x00473250; // type:func allow_duplicated:True
+
+func_004737E0 = 0x004737E0; // type:func absolute:True allow_duplicated:True
+lib_find_light_entry = 0x004737E0; // type:func allow_duplicated:True
+
+func_00473940 = 0x00473940; // type:func absolute:True allow_duplicated:True
+lib_find_renderable_entry = 0x00473940; // type:func allow_duplicated:True
+
+func_004790C0 = 0x004790C0; // type:func absolute:True allow_duplicated:True
+lib_transform_set_dirty = 0x004790C0; // type:func allow_duplicated:True
+
+lib_update_renderable_entries = 0x004723D0; // type:func allow_duplicated:True
+lib_get_entry_data = 0x004723A0; // type:func allow_duplicated:True
+lib_get_entry_child_count = 0x00472200; // type:func allow_duplicated:True
+lib_object_add_flags = 0x00472390; // type:func allow_duplicated:True
+lib_append_entry_handle = 0x004A8CC0; // type:func allow_duplicated:True
+
+__vt__16LibLodController = 0x00177960; // size:0x88
+__ct__16LibLodControllerFv = 0x004A8D80; // type:func allow_duplicated:True
+__dt__16LibLodControllerFv = 0x004A8930; // type:func absolute:True allow_duplicated:True
+func_003EEBC0__16LibLodControllerFv = 0x004A8990; // type:func allow_duplicated:True
+func_003EEBD0__16LibLodControllerFv = 0x004A8B10; // type:func absolute:True allow_duplicated:True
+copy_state__16LibLodControllerFPC16LibLodController = 0x004A89A0; // type:func allow_duplicated:True
+
+func_004DAD90 = 0x004DAD90; // type:func absolute:True allow_duplicated:True
+__ct__14LibClass178EA0Fv = 0x004DAD90; // type:func absolute:True allow_duplicated:True
+apply_position_offset__16LibLodControllerFRC10FieldVec4A = 0x004A8CF0; // type:func allow_duplicated:True

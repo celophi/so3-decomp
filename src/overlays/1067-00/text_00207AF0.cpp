@@ -204,8 +204,8 @@ s32 FieldClass151320::func_00207D40()
     FieldContextMotion2* object = (FieldContextMotion2*)D_001B6430->context->unk14;
     FieldMotion2* channel = &object->motion;
     float angle = func_00142148(channel->unkf4, channel->current);
-    float first = unk20 * func_004CC3E0(angle);
-    float second = unk20 * func_004CC690(angle);
+    float first = unk20 * lib_cosine(angle);
+    float second = unk20 * lib_sine_degree9(angle);
     func_00209BB0(channel, first, unk1c);
     ((FieldClass151460*)channel)->func_00207EE0(second, unk1c);
     object->unk36e = 0;
@@ -1114,9 +1114,9 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibClass178
             do
             {
                 found = true;
-                if (func_004BDAA0(manager, (u32)transform, 0, 0) ||
-                    func_004BDAA0(manager, (u32)transform, 1, 0) ||
-                    func_004BDAA0(manager, (u32)transform, 2, 0))
+                if (func_004BDAA0(manager, transform, 0, 0) ||
+                    func_004BDAA0(manager, transform, 1, 0) ||
+                    func_004BDAA0(manager, transform, 2, 0))
                 {
                     break;
                 }

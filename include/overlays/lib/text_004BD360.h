@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_LIB_TEXT_004BD360_H
 
 #include "types.h"
+#include "overlays/lib/animation_binding.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/lib/text_004CD3A0.h"
@@ -9,6 +10,13 @@
 
 /** Opaque Lib text receiver using the main table D_178750. */
 typedef struct LibObject178750 LibObject178750;
+
+/** Opaque channel implementation with the shared channel word. */
+typedef struct LibChannelWordState LibChannelWordState;
+
+struct ResidentResourceHeader;
+
+
 
 /** Partial widget receiver using the main table D_178630. */
 typedef struct LibClass178630 LibClass178630;
@@ -541,13 +549,13 @@ public:
 /** 20-byte animation entry with a channel, target word and state name. */
 struct LibAnimationEntry14
 {
-    s16 unk00;
-    u8 unk02;
-    u8 unk03;
-    LibClass173180* unk04;
-    void* unk08;
+    s16 type;
+    u8 kind;
+    u8 flags;
+    LibClass173180* channel;
+    void* target;
     u8 unk0c[4];
-    const char* unk10;
+    const char* state_name;
 };
 
 /**
@@ -562,20 +570,23 @@ public:
     LibClass178220();
 
     u8 unk14[0x1C];
-    void* unk30;
+    void* resource_data;
     u8 unk34[4];
-    s32 unk38;
+    s32 entry_count;
     u8 unk3c[4];
-    LibAnimationEntry14* unk40;
+    LibAnimationEntry14* entries;
     u8 unk44[0xC];
-    LibAnimationEntry14* unk50;
-    u8 unk54[0x10];
+    LibAnimationEntry14* cached_entry;
+    u8 unk54[4];
+    LibAnimationBindingOwner* primary_binding_owner;
+    LibAnimationBindingOwner* secondary_binding_owner;
+    u8 unk60[4];
     float unk64;
-    u8 unk68;
+    u8 resource_is_borrowed;
     u8 unk69;
     u8 unk6a;
     u8 unk6b[3];
-    u8 unk6e;
+    u8 targets_bound;
     u8 unk6f;
 };
 
@@ -626,6 +637,47 @@ extern "C" {
 void func_004CBAC0(FieldVec4B* output, const LibMatrix44Value* input);
 
 /**
+ * @brief Evaluate the native three-angle trigonometric approximation and retain its result in VU0 vf13.
+ * @param output Aligned destination for the result, inferred to contain sine values in x, y, and z.
+ * @param x First angle in radians.
+ * @param y Second angle in radians.
+ * @param z Third angle in radians.
+ */
+void func_004CA090(FieldVec4A* output, float x, float y, float z);
+
+/**
+ * @brief Start the native three-angle trigonometric approximation, leaving its result in VU0 vf13.
+ *
+ * The caller must wait for VU0 before consuming the result.
+ * @param x First angle in radians.
+ * @param y Second angle in radians.
+ * @param z Third angle in radians.
+ */
+void func_004CD2C0(float x, float y, float z);
+
+/**
+ * @brief Evaluate the clamped arc-cosine approximation.
+ * @param value Cosine argument.
+ * @return Approximated angle in radians.
+ */
+float func_004CD010(float value);
+
+/**
+ * @brief Compute the VU0 sine and cosine approximations for an angle.
+ * @param output Aligned vector receiving cosine in z and sine in w; x and y retain shared polynomial coefficients.
+ * @param angle Angle in radians.
+ */
+void lib_compute_sine_cosine_pair(LibVector4* output, float angle);
+
+/**
+ * @brief Compute degree-nine VU0 sine and cosine approximations.
+ * @param output Aligned vector receiving cosine in z and sine in w; x and y retain shared polynomial coefficients.
+ * @param angle Angle in radians.
+ */
+void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle);
+
+
+/**
  * @brief Extract a quaternion after mapping each matrix row from (x, y, z) to (x, -z, y).
  * @param source Source matrix.
  * @param output Destination quaternion.
@@ -640,14 +692,14 @@ void func_004CCCF0(const LibMatrix44Value* source, FieldVec4B* output);
 float func_004CCD90(float value);
 
 /**
- * @brief Find an animation channel by key and kind.
+ * @brief Find an animation channel by bound target and kind.
  * @param object Animation object.
- * @param key Entry key.
+ * @param target Bound target to match.
  * @param kind Entry kind.
  * @param flags Low flag bits to match.
  * @return Matching channel, or null.
  */
-LibClass173180* func_004BDAA0(LibClass178220* object, u32 key, u8 kind, u8 flags);
+LibClass173180* func_004BDAA0(LibClass178220* object, const void* target, u8 kind, u8 flags);
 
 /**
  * @brief Prepare a transition between animation objects.
@@ -669,12 +721,12 @@ float func_004BDE00(LibClass178220* object, void* target, LibClass178220* previo
 s32 func_004BF100(LibClass178220* object, void* target, void* optional);
 
 /**
- * @brief Bind a named animation state.
+ * @brief Bind populated animation entries whose state names match over up to sixteen characters.
  * @param object Animation object.
- * @param target Vector state.
- * @param name State name.
+ * @param target Vector state to bind.
+ * @param name State name to match.
  */
-void func_004BDB50(LibClass178220* object, LibClass178370* target, const char* name);
+void lib_animation_bind_state(LibClass178220* object, LibClass178370* target, const char* name);
 
 /**
  * @brief Normalize the vector state delta in place.
@@ -683,24 +735,51 @@ void func_004BDB50(LibClass178220* object, LibClass178370* target, const char* n
 void func_004C2CD0(LibClass178370* object);
 
 /**
- * @brief Look up an indexed animation channel and cache its entry.
+ * @brief Read and cache an indexed animation channel matching the entry's low flag nibble.
  * @param object Animation object.
- * @param index Entry index.
- * @param nibble Entry option nibble.
- * @return Channel, or null when no entry matches.
+ * @param index Entry index; the caller supplies a valid array index.
+ * @param nibble Flag value to match against the entry's low nibble.
+ * @return Matching channel, or null.
  */
-LibClass173180* func_004BDA30(LibClass178220* object, s32 index, u8 nibble);
+LibClass173180* lib_animation_channel_at(LibClass178220* object, s32 index, u8 nibble);
 
 /**
- * @brief Replace an animation entry's channel and descriptor.
+ * @brief Replace an animation entry's channel and descriptor when its index is below the entry count.
  * @param object Animation object.
- * @param index Entry index.
+ * @param index Entry index; only the upper bound is checked.
  * @param channel Replacement channel.
  * @param kind Entry kind.
  * @param type Entry type.
  * @param flags Entry flags.
  */
-void func_004BD9D0(LibClass178220* object, s32 index, LibClass173180* channel, u8 kind, s16 type, u8 flags);
+void lib_animation_set_entry_channel(LibClass178220* object, s32 index, LibClass173180* channel, u8 kind, s16 type, u8 flags);
+
+/**
+ * @brief Clear populated animation entries' targets and mark their bindings incomplete.
+ * @param object Animation object.
+ */
+void lib_animation_clear_targets(LibClass178220* object);
+
+/**
+ * @brief Clear targets for populated animation entries of the requested kind.
+ * @param object Animation object.
+ * @param kind Entry kind to clear.
+ */
+void lib_animation_clear_targets_by_kind(LibClass178220* object, u8 kind);
+
+/**
+ * @brief Clear populated animation entries referencing a particular target.
+ * @param object Animation object.
+ * @param target Bound target to remove.
+ */
+void lib_animation_clear_matching_target(LibClass178220* object, const void* target);
+
+/**
+ * @brief Replace the animation data with a decoded resource buffer.
+ * @param object Animation object.
+ * @param source Resource header to decode.
+ */
+void lib_animation_load_resource(LibClass178220* object, struct ResidentResourceHeader* source);
 #endif
 
 /**
@@ -710,11 +789,13 @@ void func_004BD9D0(LibClass178220* object, s32 index, LibClass173180* channel, u
  */
 LibBounds4C69B0* lib_text_measure_bounds(LibObject178750* object);
 
+#ifdef __cplusplus
 /**
- * @brief Release the data a LibClass178220 builds from its block at offset 0x40.
- * @param object Object to update.
+ * @brief Delete populated channels and unregister their binding-owner links.
+ * @param object Animation object.
  */
-void func_004BDD10(void* object);
+void lib_animation_release_channels(LibClass178220* object);
+#endif
 
 /**
  * @brief Bind a LibClass178220 to a second object.
@@ -725,17 +806,32 @@ void func_004BDD10(void* object);
 s32 func_004BFE10(void* object, void* target);
 
 /**
- * @brief Evaluate a VU0 polynomial approximation of a trigonometric function.
- *
- * Inferred to be the cosine: Field's ring builder uses it for the height of a
- * point measured from the pole.
- * @param angle Angle in radians.
- * @return The approximated value.
+ * @brief Read the shared word of a native channel implementation.
+ * @param object Channel implementation.
+ * @return Stored channel word.
  */
-float func_004CC3E0(float angle);
+u32 lib_channel_read_word(const LibChannelWordState* object);
 
-/** @brief Evaluate the VU0 sine approximation. @param angle Angle in radians. @return Approximated sine. */
-float func_004CC5B0(float angle);
+/**
+ * @brief Evaluate the degree-thirteen VU0 cosine approximation.
+ * @param angle Angle in radians.
+ * @return Approximated cosine.
+ */
+float lib_cosine(float angle);
+
+/**
+ * @brief Evaluate the degree-nine VU0 cosine approximation.
+ * @param angle Angle in radians.
+ * @return Approximated cosine.
+ */
+float lib_cosine_degree9(float angle);
+
+/**
+ * @brief Evaluate the degree-thirteen VU0 sine approximation.
+ * @param angle Angle in radians.
+ * @return Approximated sine.
+ */
+float lib_sine(float angle);
 
 /**
  * @brief Compute the fog mapping offset + reciprocal_scale / z for perspective fog.
@@ -750,13 +846,53 @@ void lib_compute_perspective_fog_coefficients(float* offset, float* reciprocal_s
                                               float near_plane, float far_plane);
 
 /**
- * @brief Evaluate a VU0 polynomial approximation of a trigonometric function.
- *
- * Inferred to be the sine, the partner of func_004CC3E0.
+ * @brief Evaluate the degree-nine VU0 sine approximation.
  * @param angle Angle in radians.
- * @return The approximated value.
+ * @return Approximated sine.
  */
-float func_004CC690(float angle);
+float lib_sine_degree9(float angle);
+
+#ifdef __cplusplus
+/**
+ * @brief Compute dot(point - origin, direction) over the xyz components.
+ * @param point Aligned point vector.
+ * @param direction Aligned vector supplying the dot-product coefficients.
+ * @param origin Aligned vector subtracted from point.
+ * @return The xyz dot product.
+ */
+float lib_dot_point_offset(const LibVector4* point, const LibVector4* direction, const LibVector4* origin);
+
+/**
+ * @brief Compute the inverse-rotated positive z direction of a unit quaternion.
+ * @param quaternion Unit quaternion to evaluate.
+ * @param output Vector receiving the direction in xyz and 1 in w.
+ */
+void lib_quaternion_inverse_z_direction(const FieldVec4B* quaternion, FieldVec4A* output);
+
+/**
+ * @brief Build a quaternion from an origin-to-target direction and supplied z rotation.
+ * @param output Four-float quaternion destination.
+ * @param target Target position measured from the origin.
+ * @param z_angle Rotation about z in radians.
+ */
+void lib_quaternion_from_direction_xz(float* output, const LibVector4* target, float z_angle);
+
+/**
+ * @brief Build a directional shadow projection onto a plane.
+ * @param output Projection matrix destination.
+ * @param direction Projection direction; its xyz dot product with the plane normal must be nonzero.
+ * @param plane Plane equation coefficients (normal.x, normal.y, normal.z, offset).
+ */
+void lib_build_directional_shadow_matrix(LibMatrix44Value* output, const FieldVec4A* direction, const FieldVec4A* plane);
+
+/**
+ * @brief Build the homogeneous shadow matrix dot(light, plane) * I - light * plane transpose.
+ * @param output Projection matrix destination.
+ * @param light Homogeneous light vector; w distinguishes a point from a direction.
+ * @param plane Plane equation coefficients (normal.x, normal.y, normal.z, offset).
+ */
+void lib_build_projective_shadow_matrix(LibMatrix44Value* output, const FieldVec4A* light, const FieldVec4A* plane);
+#endif
 
 #ifdef __cplusplus
 }

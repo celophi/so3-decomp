@@ -257,11 +257,11 @@ public:
 /** Saved 12-byte animation entry descriptor used while its channel is replaced. */
 struct FieldSavedChannelEntry
 {
-    s32 unk00;
-    s16 unk04;
-    u8 unk06;
-    u8 unk07;
-    LibClass173180* unk08;
+    s32 index;
+    s16 type;
+    u8 kind;
+    u8 flags;
+    LibClass173180* channel;
 };
 
 /** Channel pool with a cursor, a fixed entry array and occupancy bits. */

@@ -180,7 +180,7 @@ void LibClass179080::func_003EEBD0()
 {
     unk63 = 0;
     LibClass178EA0::func_003EEBD0();
-    unk50 = 1;
+    transform_dirty = 1;
     if (static_cast<LibClass178F30*>(owner)->current_display == this)
     {
         func_004E24D0();
