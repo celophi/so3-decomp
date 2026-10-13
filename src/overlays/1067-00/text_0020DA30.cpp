@@ -32,7 +32,7 @@ extern "C" void func_0020DA30(FieldClass151640* object, FieldShapeOwner18* shape
         {
             FieldClass151590* node = new (0) FieldClass151590;
             node->func_0020DBC0(shape, (FieldShapeData10*)object->FieldClass1515D0::unk00, index);
-            object->unk178.func_004D74F0(node, -1);
+            object->unk178.append_node(node, -1);
             for (;; index++)
             {
                 records[index].unk0c_4 = 1;
@@ -99,11 +99,11 @@ void FieldClass151640::func_0020BDA0()
  */
 extern "C" void func_0020DE80(FieldClass151640* object)
 {
-    FieldClass151620* node = (FieldClass151620*)&object->FieldClass1502A0::unk00;
+    FieldClass151620* node = reinterpret_cast<FieldClass151620*>(&object->FieldClass1502A0::sentinel);
     for (;;)
     {
         node = static_cast<FieldClass151620*>(node->unk08);
-        if ((FieldClass151620*)&object->FieldClass1502A0::unk00 == node)
+        if (reinterpret_cast<FieldClass151620*>(&object->FieldClass1502A0::sentinel) == node)
         {
             break;
         }
@@ -130,7 +130,7 @@ extern "C" void func_0020DEF0(FieldClass151640* object, LibClass178DD0* source)
         }
         node = node->unk08;
         lib_object_detach_owner(current);
-        object->func_004D74F0(current, -1);
+        object->append_node(current, -1);
     }
 }
 
@@ -142,17 +142,17 @@ extern "C" void func_0020DEF0(FieldClass151640* object, LibClass178DD0* source)
 extern "C" void func_0020DF80(FieldClass151640* object, LibClass178DD0* destination)
 {
     FieldClass150060* current;
-    FieldClass150060* node = ((FieldClass150060*)object->FieldClass1502A0::unk00)->unk08;
+    FieldClass150060* node = (reinterpret_cast<FieldClass150060*>(&object->FieldClass1502A0::sentinel))->unk08;
     for (;;)
     {
         current = node;
-        if (!node || (FieldClass150060*)object->FieldClass1502A0::unk00 == node)
+        if (!node || reinterpret_cast<FieldClass150060*>(&object->FieldClass1502A0::sentinel) == node)
         {
             break;
         }
         node = node->unk08;
         lib_object_detach_owner(current);
-        destination->func_004D74F0(current, -1);
+        destination->append_node(current, -1);
     }
 }
 
@@ -160,11 +160,11 @@ extern "C" void func_0020DF80(FieldClass151640* object, LibClass178DD0* destinat
 void FieldClass151640::func_001DD730()
 {
     FieldClass150060* current;
-    FieldClass150060* node = ((FieldClass150060*)FieldClass1502A0::unk00)->unk08;
+    FieldClass150060* node = (reinterpret_cast<FieldClass150060*>(&this->FieldClass1502A0::sentinel))->unk08;
     for (;;)
     {
         current = node;
-        if (!node || (FieldClass150060*)FieldClass1502A0::unk00 == node)
+        if (!node || reinterpret_cast<FieldClass150060*>(&this->FieldClass1502A0::sentinel) == node)
         {
             break;
         }
@@ -196,7 +196,7 @@ extern "C" void func_0020E090(FieldClass151640* object, FieldClass150070* node)
  */
 extern "C" FieldClass151570* func_0020E0D0(FieldClass151640* object, FieldClass151620* entry)
 {
-    object->func_004D74F0(entry, -1);
+    object->append_node(entry, -1);
     FieldClass151570* attachment = func_0020D5E0(object,
         ((FieldRoot26FF70*)D_001B6430->context->unk08->unkdc)->unkD8->unk8c, &entry->shape);
     if (attachment)

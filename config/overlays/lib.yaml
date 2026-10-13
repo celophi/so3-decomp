@@ -15,6 +15,7 @@ options:
   generated_asm_macros_directory: build/overlays/lib/include
   cache_path: build/overlays/lib/splat.cache
   symbol_addrs_path: [config/symbols/lib_symbol_addrs.txt]
+  reloc_addrs_path: [config/relocations/lib_reloc_addrs.txt]
   undefined_funcs_auto_path: build/overlays/lib/undefined_funcs.ld
   undefined_syms_auto_path: build/overlays/lib/undefined_syms.ld
   create_c_files: true
@@ -60,7 +61,7 @@ segments:
       - [0x82D0, cpp, text_003E68C0]
       - [0x12840, c, text_003F90C0]
       - [0x22D40, cpp, text_004095C0]
-      - [0x331F0, c, text_00419A70]
+      - [0x331F0, cpp, text_00419A70]
       - [0x43280, c, text_00429B00]
       - [0x540A0, c, text_0043A920]
       - [0x64360, cpp, text_0044ABE0]
@@ -68,7 +69,7 @@ segments:
       - [0x845A0, c, text_0046AE20]
       - [0x945A0, c, text_0047AE20]
       - [0xA4A80, c, text_0048B300]
-      - [0xB4FA0, c, text_0049B820]
+      - [0xB4FA0, cpp, text_0049B820]
       - [0xC5030, c, text_004AB8B0]
       - [0xD6AE0, cpp, text_004BD360]
   - name: text_tail

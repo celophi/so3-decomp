@@ -130,12 +130,12 @@ class FieldClass1530D0 : public FieldClass150070, public LibClass178DD0
 public:
     virtual ~FieldClass1530D0();
 
-    /** @brief Append node to the record-loader list (Lib virtual slot 9, position -1). */
+    /** @brief Prepend a node using its default list kind. @param node Node to register. */
     void insert(void* node)
     {
         LibClass178DD0& list = *this;
         void* self = &list;
-        list.func_004D73B0(self, node, (void*)-1);
+        list.insert_node_after(self, node, LibClass178DD0::DEFAULT_NODE_KIND);
     }
 };
 

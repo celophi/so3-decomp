@@ -6,6 +6,13 @@
 #include "main/resident_001001E0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 
+enum
+{
+    DRAWING_STORAGE_ALIGNMENT = 128,
+    DRAWING_STORAGE_PREFIX = 64,
+    DRAWING_STORAGE_DMA_ADDRESS_TAG = 0x30000000
+};
+
 /** Partial text resource fields and the inherited redraw flag. */
 typedef struct LibMultilineResourceState
 {
@@ -231,7 +238,29 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004617B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461830);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461860);
+/**
+ * @brief Allocate aligned drawing storage for an empty block and flush the data cache.
+ * @param storage Storage block to initialize.
+ * @param word_count Number of 64-bit drawing words requested.
+ * @return One on success, or zero if storage exists or allocation fails.
+ */
+extern "C" s32 lib_allocate_drawing_storage(LibStorageBlock0C* storage, s32 word_count)
+{
+    if (storage->allocation != 0)
+    {
+        return 0;
+    }
+    storage->allocation = new (0) u8[word_count * sizeof(u64) + DRAWING_STORAGE_PREFIX + DRAWING_STORAGE_ALIGNMENT];
+    if (storage->allocation == 0)
+    {
+        return 0;
+    }
+    u8* buffer = static_cast<u8*>(storage->allocation) + DRAWING_STORAGE_PREFIX;
+    storage->aligned = reinterpret_cast<void*>((reinterpret_cast<u32>(buffer) + DRAWING_STORAGE_ALIGNMENT - 1) & ~(DRAWING_STORAGE_ALIGNMENT - 1u));
+    storage->dma_address = reinterpret_cast<u32>(storage->aligned) | DRAWING_STORAGE_DMA_ADDRESS_TAG;
+    FlushCache(0);
+    return 1;
+}
 
 /** @brief Free the owned byte array and clear its allocation pointer. */
 LibStorageBlock0C::~LibStorageBlock0C()

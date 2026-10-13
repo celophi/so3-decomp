@@ -9,7 +9,6 @@ typedef struct LibIndexedResourceState
     s32 current;
     s32 selected;
 } LibIndexedResourceState;
-extern "C" s32 func_00461860(LibStorageBlock0C* storage, s32 count);
 extern "C" s32 func_00464EF0(FieldRuntime* runtime, s32 index);
 extern "C" s32 func_00467800(ItemCreationClass174C40* object, s32 resource, s32 first, s32 second, s32 third, s32 fourth, float x, float y);
 
@@ -87,7 +86,7 @@ extern "C" bool lib_scissor_init_reset(ItemCreationClass1746A0* object, s32 code
     object->unk50 = 1;
     object->unk3c = 1;
     bool success;
-    if (!func_00461860(&object->unk40, 6))
+    if (!lib_allocate_drawing_storage(&object->unk40, 6))
     {
         success = false;
     }
@@ -117,7 +116,7 @@ extern "C" bool lib_scissor_init_rectangle(ItemCreationClass1746A0* object, floa
     object->unk50 = 0;
     object->unk3c = 1;
     bool success;
-    if (!func_00461860(&object->unk40, 6))
+    if (!lib_allocate_drawing_storage(&object->unk40, 6))
     {
         success = false;
     }

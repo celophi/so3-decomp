@@ -257,11 +257,11 @@ public:
 /** Saved 12-byte animation entry descriptor used while its channel is replaced. */
 struct FieldSavedChannelEntry
 {
-    s32 unk00;
-    s16 unk04;
-    u8 unk06;
-    u8 unk07;
-    LibClass173180* unk08;
+    s32 index;
+    s16 type;
+    u8 kind;
+    u8 flags;
+    LibClass173180* channel;
 };
 
 /** Channel pool with a cursor, a fixed entry array and occupancy bits. */
@@ -423,7 +423,7 @@ public:
      */
     FieldClass150280* find(s32 key)
     {
-        FieldClass150060* list = (FieldClass150060*)unk00;
+        FieldClass150060* list = reinterpret_cast<FieldClass150060*>(&sentinel);
         FieldClass150060* node = list;
         for (;;)
         {
@@ -966,7 +966,7 @@ public:
     void append_shape(FieldShapeOwner18* owner, FieldShapeRecord20* record)
     {
         FieldClass150330* shape = new(0) FieldClass150330;
-        unk38.func_004D74F0(shape, -1);
+        unk38.append_node(shape, LibClass178DD0::DEFAULT_NODE_KIND);
         shape->unk34 = &unk34->unk08[owner->unk0c].unk04;
         shape->func_001EA2E0(owner, record, 0x8040FF40, unkc4_5);
     }

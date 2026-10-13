@@ -1805,7 +1805,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     {
         func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(item_model), 0.5235988f, 500.0f, 0.34906584f, 90.0f, 50.0f);
     }
-    D_001B6614->func_004D74F0(item_model, -1);
+    D_001B6614->append_node(item_model, -1);
     return 1;
 }
 

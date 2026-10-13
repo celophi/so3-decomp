@@ -13500,7 +13500,7 @@ void ItemCreationSelectedDisplayState::func_001DF360()
                 set_window_geometry(resource_window, 0.5235988f, 500.0f, 0.34906584f, 90.0f, 50.0f);
             }
         }
-        D_001B6614->func_004D74F0(resource_window, -1);
+        D_001B6614->append_node(resource_window, -1);
         if (section->unk18c)
         {
             inventor_resource_countdown = 750;
@@ -14221,7 +14221,7 @@ void LibClass171EA0::func_003EEBE0()
  */
 void LibClass171EF0::func_003EF770(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk20.packed = value->packed;
 }
 
@@ -14231,7 +14231,7 @@ void LibClass171EF0::func_003EF770(const LibVector4* value)
  */
 void LibClass171EF0::func_003EF780(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk20.packed = value->packed;
 }
 
@@ -14243,7 +14243,7 @@ void LibClass171EF0::func_003EF780(const LibVector4* value)
  */
 void LibClass171EF0::func_003EF790(float x, float y, float z)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk20.components[0] = x;
     unk20.components[1] = y;
     unk20.components[2] = z;
@@ -14259,7 +14259,7 @@ void LibClass171EF0::func_003EF790(float x, float y, float z)
  */
 void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk30.components[0] = x;
     unk30.components[1] = y;
     unk30.components[2] = z;
@@ -14272,7 +14272,7 @@ void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
  */
 void LibClass171EF0::func_003EEEF0(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk30.packed = value->packed;
 }
 
@@ -14282,7 +14282,7 @@ void LibClass171EF0::func_003EEEF0(const LibVector4* value)
  */
 void LibClass171EF0::func_003EEF10(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk30.packed = value->packed;
 }
 
@@ -14292,7 +14292,7 @@ void LibClass171EF0::func_003EEF10(const LibVector4* value)
  */
 void LibClass171EF0::func_003EEF30(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     func_004CE4C0(unk30.components, value->components);
 }
 
@@ -14302,7 +14302,7 @@ void LibClass171EF0::func_003EEF30(const LibVector4* value)
  */
 void LibClass171EF0::func_003EEF60(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     func_004CE4C0(unk30.components, value->components);
 }
 
@@ -14315,7 +14315,7 @@ void LibClass171EF0::func_003EEF60(const LibVector4* value)
 void LibClass171EF0::func_003EEF90(float x, float y, float z)
 {
     float value[4];
-    unk50 = 1;
+    transform_dirty = 1;
     value[0] = x;
     value[1] = y;
     value[2] = z;
@@ -14329,7 +14329,7 @@ void LibClass171EF0::func_003EEF90(float x, float y, float z)
  */
 void LibClass171EF0::func_003EEFD0(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk40.packed = value->packed;
 }
 
@@ -14339,7 +14339,7 @@ void LibClass171EF0::func_003EEFD0(const LibVector4* value)
  */
 void LibClass171EF0::func_003EEFF0(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk40.packed = value->packed;
 }
 
@@ -14351,7 +14351,7 @@ void LibClass171EF0::func_003EEFF0(const LibVector4* value)
  */
 void LibClass171EF0::func_003EF010(float x, float y, float z)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk40.components[0] = x;
     unk40.components[1] = y;
     unk40.components[2] = z;

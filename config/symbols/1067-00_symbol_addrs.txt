@@ -12,7 +12,8 @@ func_004728A0 = 0x004728A0; // type:func
 
 // Lib table entry iteration and batch helpers.
 func_00472EB0 = 0x00472EB0; // type:func
-func_00473940 = 0x00473940; // type:func
+func_00473940 = 0x00473940; // type:func absolute:True allow_duplicated:True
+lib_find_renderable_entry = 0x00473940; // type:func absolute:True allow_duplicated:True
 func_004D4010 = 0x004D4010; // type:func
 
 // Resident operator delete(void*), called by deleting destructors.
@@ -125,8 +126,7 @@ func_001DDB30__16FieldClass150120FPv = 0x001E4EF0; // type:func
 func_004336E0 = 0x004336E0; // type:func
 func_00433730 = 0x00433730; // type:func
 // Lib VU0 trigonometric approximations (include/overlays/lib/text_004BD360.h).
-func_004CC3E0 = 0x004CC3E0; // type:func
-func_004CC690 = 0x004CC690; // type:func
+
 
 // FieldClass150220 (inline destructor; kept copy in text_001E6C50) and its
 // subclasses FieldClass1501F0 and FieldClass150250. Slot 8 is pure virtual in
@@ -172,7 +172,6 @@ func_001E78B0__16FieldClass150280FPvbbf = 0x001E78B0; // type:func
 // Lib classes built by FieldClass1502E0::func_001E82B0 (names match lib).
 __ct__14LibClass178220Fv = 0x004C04A0; // type:func
 __ct__14LibClass178370Fv = 0x004C2E60; // type:func
-func_004BDD10 = 0x004BDD10; // type:func
 func_004BFE10 = 0x004BFE10; // type:func
 func_003EF740 = 0x003EF740; // type:func
 func_001E9050__16FieldClass150320Fv = 0x001E9050; // type:func
@@ -432,14 +431,13 @@ func_001E7590__16FieldClass150280Fv = 0x001E7590; // type:func
 func_001E7660__16FieldClass150280Fv = 0x001E7660; // type:func
 func_001E76B0__16FieldClass150280Fff = 0x001E76B0; // type:func
 func_004BF100 = 0x004BF100; // type:func
-func_004BDB50 = 0x004BDB50; // type:func
 func_004B3DE0 = 0x004B3DE0; // type:func
 func_004B43C0 = 0x004B43C0; // type:func
 func_004B46E0 = 0x004B46E0; // type:func
 func_004C2CD0 = 0x004C2CD0; // type:func
 __ct__16FieldClass150320FP14LibClass178220Pvf = 0x001E9180; // type:func
-func_004BDA30 = 0x004BDA30; // type:func
-func_004BD9D0 = 0x004BD9D0; // type:func
+func_004BD9D0 = 0x004BD9D0; // type:func absolute:True allow_duplicated:True
+lib_animation_set_entry_channel = 0x004BD9D0; // type:func absolute:True allow_duplicated:True
 func_13A4C0 = 0x0013A4C0; // type:func allow_duplicated:true
 func_0013A4C0 = 0x0013A4C0; // type:func allow_duplicated:true
 D_001B666C = 0x001B666C;
@@ -515,7 +513,7 @@ __vt__16FieldClass150510 = 0x00150510;
 __vt__16FieldClass150590 = 0x00150590;
 func_00142148 = 0x00142148; // type:func
 __ct__16FieldClass150590FPv10FieldVec4A10FieldVec4A10FieldVec4AUiUiUiUc = 0x001EE420; // type:func
-func_004CC5B0 = 0x004CC5B0; // type:func
+
 func_004CD8A0 = 0x004CD8A0; // type:func
 func_004CE930 = 0x004CE930; // type:func
 __dt__16FieldClass150510Fv = 0x001EF010; // type:func
@@ -615,10 +613,10 @@ __dt__16FieldClass151640Fv = 0x0020E330; // type:func
 func_0020BDA0__16FieldClass151640Fv = 0x0020DE50; // type:func
 func_001DDCD0__16FieldClass151640Fv = 0x0020CE30; // type:func
 func_001DD730__16FieldClass151640Fv = 0x0020E010; // type:func
-func_004CA020__14LibClass178DD0FPv = 0x004CA020; // type:func
-func_004C9FF0__14LibClass178DD0FPv = 0x004C9FF0; // type:func
-func_004C9FC0__14LibClass178DD0FPvPv = 0x004C9FC0; // type:func
-func_004C9F60__14LibClass178DD0FPv = 0x004C9F60; // type:func
+append__14LibClass178DD0FPv = 0x004CA020; // type:func
+prepend__14LibClass178DD0FPv = 0x004C9FF0; // type:func
+insert_after__14LibClass178DD0FPvPv = 0x004C9FC0; // type:func
+unlink__14LibClass178DD0FPv = 0x004C9F60; // type:func
 func_004D72A0__14LibClass178DD0FPv = 0x004D72A0; // type:func
 func_004D6730__14LibClass178DD0Fv = 0x004D6730; // type:func
 func_004D74F0__14LibClass178DD0FPvPv = 0x004D74F0; // type:func absolute:True allow_duplicated:True
@@ -1917,3 +1915,36 @@ func_004D00A0__16FieldClass150990Fv = 0x001E9B70; // type:func absolute:True all
 func_004D00A0__16FieldClass155840Fv = 0x001E9B70; // type:func absolute:True allow_duplicated:True
 func_004D00A0__16FieldClass15B270Fv = 0x001E9B70; // type:func absolute:True allow_duplicated:True
 func_004D0090__16FieldClass15B270Fv = 0x002D66C0; // type:func allow_duplicated:True
+
+func_004CC3E0 = 0x004CC3E0; // type:func absolute:True allow_duplicated:True
+lib_cosine = 0x004CC3E0; // type:func absolute:True allow_duplicated:True
+
+func_004CC5B0 = 0x004CC5B0; // type:func absolute:True allow_duplicated:True
+lib_sine = 0x004CC5B0; // type:func absolute:True allow_duplicated:True
+
+func_004CC690 = 0x004CC690; // type:func absolute:True allow_duplicated:True
+lib_sine_degree9 = 0x004CC690; // type:func absolute:True allow_duplicated:True
+
+func_004BDA30 = 0x004BDA30; // type:func absolute:True allow_duplicated:True
+lib_animation_channel_at = 0x004BDA30; // type:func absolute:True allow_duplicated:True
+
+func_004BDB50 = 0x004BDB50; // type:func absolute:True allow_duplicated:True
+lib_animation_bind_state = 0x004BDB50; // type:func absolute:True allow_duplicated:True
+
+func_004BDD10 = 0x004BDD10; // type:func absolute:True allow_duplicated:True
+lib_animation_release_channels = 0x004BDD10; // type:func absolute:True allow_duplicated:True
+
+append__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True allow_duplicated:True
+
+prepend__14LibClass178A70FPv = 0x004C9FF0; // type:func absolute:True allow_duplicated:True
+
+insert_after__14LibClass178A70FPvPv = 0x004C9FC0; // type:func absolute:True allow_duplicated:True
+
+unlink__14LibClass178A70FPv = 0x004C9F60; // type:func absolute:True allow_duplicated:True
+
+remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func absolute:True allow_duplicated:True
+append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
+prepend_node__14LibClass178DD0FPvi = 0x004D7450; // type:func absolute:True allow_duplicated:True
+insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func absolute:True allow_duplicated:True
+
+lib_list_collect_nodes_by_kind = 0x004D6AF0; // type:func absolute:True allow_duplicated:True

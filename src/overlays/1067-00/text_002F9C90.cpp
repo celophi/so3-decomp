@@ -554,7 +554,7 @@ extern "C" LibClass178F30* D_001B6628;
  */
 extern "C" void field_attach_model_display(FieldStatus14* object)
 {
-    D_001B6628->func_004D74F0(object->display, -1);
+    D_001B6628->append_node(object->display, -1);
     D_001B6628->current_display = object->display;
     object->display_attached = 1;
 }

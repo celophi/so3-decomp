@@ -1,4 +1,42 @@
 #include "include_asm.h"
+#include "overlays/lib/text_0049B820.h"
+
+/** Partial word-array owner with its native virtual pointer after the data fields. */
+class LibResourceBitset
+{
+public:
+    u8 unk00[8];
+    u32* words;
+    u8 words_are_borrowed;
+    u8 unk0d[3];
+
+    /** @brief Release an owned word buffer. */
+    virtual ~LibResourceBitset();
+};
+
+
+/**
+ * @brief Add three components to a copied vector, preserving the fourth.
+ * @param value Vector to copy.
+ * @param offset Components to add.
+ * @return Offset vector with the original fourth component.
+ */
+static inline FieldVec4B lib_lod_add_position_offset(const FieldVec4B& value, const FieldVec4A& offset)
+{
+    FieldVec4B result(value);
+    return result.add(offset);
+}
+
+/**
+ * @brief Forward an aligned vector to the inherited position setter.
+ * @param object Controller receiver.
+ * @param position New position.
+ */
+static inline void lib_lod_set_position(LibLodController* object, const FieldVec4B& position)
+{
+    object->func_003EF770(reinterpret_cast<const LibVector4*>(&position));
+}
+
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049B820);
 
@@ -218,19 +256,80 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A88A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A88B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8930);
+/** @brief Destroy the controller and its inherited transform state. */
+LibLodController::~LibLodController()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8990);
+/**
+ * @brief Return the level-selection controller's kind identifier.
+ * @return Kind nine.
+ */
+s32 LibLodController::func_003EEBC0()
+{
+    return 9;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A89A0);
+/**
+ * @brief Copy level-selection state and inherited transform state.
+ * @param source Source controller.
+ */
+void LibLodController::copy_state(const LibLodController* source)
+{
+    s32 index;
+    position_offset_applied = source->position_offset_applied;
+    object_count = source->object_count;
+    for (index = 0; index < LIB_LOD_LEVEL_CAPACITY; index++)
+    {
+        level_boundaries[index] = source->level_boundaries[index];
+        range_minimums[index] = source->range_minimums[index];
+        range_maximums[index] = source->range_maximums[index];
+    }
+    level_count = source->level_count;
+    active_level = source->active_level;
+    display_manager = source->display_manager;
+    for (index = 0; index < LIB_LOD_OBJECT_CAPACITY; index++)
+    {
+        objects[index] = source->objects[index];
+    }
+    position_offset = source->position_offset;
+    LibClass178EA0::func_004D9F40(source);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8B10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8CC0);
+/**
+ * @brief Append a handle when the collection has fewer than sixty-four entries.
+ * @param collection Destination collection.
+ * @param object Handle to append.
+ */
+void lib_append_entry_handle(LibEntryHandleCollection* collection, void* object)
+{
+    if (collection->object_count < LIB_LOD_OBJECT_CAPACITY)
+    {
+        collection->objects[collection->object_count++] = object;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8CF0);
+/**
+ * @brief Store and apply an offset to the controller's position.
+ * @param offset Position offset.
+ */
+void LibLodController::apply_position_offset(const FieldVec4A& offset)
+{
+    position_offset = offset;
+    lib_lod_set_position(this, lib_lod_add_position_offset(*reinterpret_cast<const FieldVec4B*>(&unk20), offset));
+    position_offset_applied = 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8D80);
+/** @brief Initialize the controller's offset flag, object count, and selected level. */
+LibLodController::LibLodController()
+{
+    unk6c = 6;
+    position_offset_applied = 0;
+    object_count = 0;
+    active_level = -1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8DD0);
 
@@ -240,7 +339,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8E30);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8F10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8F80);
+/** @brief Release the word buffer when it is owned by this object. */
+LibResourceBitset::~LibResourceBitset()
+{
+    if (!words_are_borrowed)
+    {
+        delete[] words;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8FF0);
 

@@ -204,8 +204,8 @@ s32 FieldClass151320::func_00207D40()
     FieldContextMotion2* object = (FieldContextMotion2*)D_001B6430->context->unk14;
     FieldMotion2* channel = &object->motion;
     float angle = func_00142148(channel->unkf4, channel->current);
-    float first = unk20 * func_004CC3E0(angle);
-    float second = unk20 * func_004CC690(angle);
+    float first = unk20 * lib_cosine(angle);
+    float second = unk20 * lib_sine_degree9(angle);
     func_00209BB0(channel, first, unk1c);
     ((FieldClass151460*)channel)->func_00207EE0(second, unk1c);
     object->unk36e = 0;
@@ -1078,7 +1078,7 @@ extern "C" void func_0020D4C0(FieldClass151640* object, FieldShapeOwner18* shape
     node->unk18 = node->unk14 = shape->unk04;
     node->unk1c = shape;
     node->unk30 = *node->unk18->func_004D00A0();
-    object->unk88.func_004D74F0(node, -1);
+    object->unk88.append_node(node, -1);
 }
 
 /** @brief Test the descriptor array's terminal flag. @param shape Descriptor to test. @return Whether the array ends here. */
@@ -1114,9 +1114,9 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibClass178
             do
             {
                 found = true;
-                if (func_004BDAA0(manager, (u32)transform, 0, 0) ||
-                    func_004BDAA0(manager, (u32)transform, 1, 0) ||
-                    func_004BDAA0(manager, (u32)transform, 2, 0))
+                if (func_004BDAA0(manager, transform, 0, 0) ||
+                    func_004BDAA0(manager, transform, 1, 0) ||
+                    func_004BDAA0(manager, transform, 2, 0))
                 {
                     break;
                 }
@@ -1130,7 +1130,7 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibClass178
                 node->unk18 = transform;
                 node->unk1c = shape;
                 node->unk30 = *node->unk18->func_004D00A0();
-                object->unk88.func_004D74F0(node, -1);
+                object->unk88.append_node(node, -1);
             }
         }
         if (shape->unk00)
@@ -1164,7 +1164,7 @@ extern "C" void func_0020D810(FieldClass151640* object, FieldShapeOwner18* shape
                 break;
             }
             node->func_0020DBC0(shape, (FieldShapeData10*)object->FieldClass1515D0::unk00, index);
-            object->unk1f0.func_004D74F0(node, -1);
+            object->unk1f0.append_node(node, -1);
             for (;; index++)
             {
                 records[index].unk0c_4 = 1;

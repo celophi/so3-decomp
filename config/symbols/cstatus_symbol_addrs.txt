@@ -23,10 +23,10 @@ __dt__14LibClass178A70Fv = 0x0034F640; // type:func
 __vt__14LibClass171E80 = 0x00188890; // size:0xC
 __vt__14LibClass171E90 = 0x001888A0; // size:0xC
 __vt__14LibClass178A70 = 0x00178A70; // size:0x1C absolute:True
-func_004CA020__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True
-func_004C9FF0__14LibClass178A70FPv = 0x004C9FF0; // type:func absolute:True
-func_004C9FC0__14LibClass178A70FPvPv = 0x004C9FC0; // type:func absolute:True
-func_004C9F60__14LibClass178A70FPv = 0x004C9F60; // type:func absolute:True
+append__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True
+prepend__14LibClass178A70FPv = 0x004C9FF0; // type:func absolute:True
+insert_after__14LibClass178A70FPvPv = 0x004C9FC0; // type:func absolute:True
+unlink__14LibClass178A70FPv = 0x004C9F60; // type:func absolute:True
 g_status_hiragana_bytes = 0x00351380; // size:0x5A
 g_status_katakana_bytes = 0x003513E0; // size:0x5A absolute:True
 g_status_alphanumeric_bytes = 0x00351440; // size:0x50 absolute:True
@@ -637,3 +637,8 @@ func_slot60__16StatusTextWindowFi = 0x0034FA10; // type:func absolute:True allow
 func_slotf4__16StatusTextWindowFUi = 0x0034FAA0; // type:func absolute:True allow_duplicated:True
 
 func_slot88__16FieldClass153E30Fv = 0x00263E80; // type:func absolute:True
+
+remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func absolute:True allow_duplicated:True
+append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
+prepend_node__14LibClass178DD0FPvi = 0x004D7450; // type:func absolute:True allow_duplicated:True
+insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func absolute:True allow_duplicated:True

@@ -361,7 +361,7 @@ void FieldClass150280::func_001E76B0(float start, float end)
     state->unk70.components[3] = 1.0f;
     state->unk80.packed = 0;
     state->unk80.components[3] = 1.0f;
-    func_004BDB50(unk14, unk18, D_31A7D8);
+    lib_animation_bind_state(unk14, unk18, D_31A7D8);
     func_004B3DE0(unk14, unk18);
     unk2c = start;
     unk50 = 0;
@@ -413,7 +413,7 @@ FieldClass150280::~FieldClass150280()
         }
         if (unk66_3 && unk14)
         {
-            func_004BDD10(unk14);
+            lib_animation_release_channels(unk14);
         }
         unk66_3 = 0;
         if (unk14)
@@ -494,20 +494,20 @@ s32 FieldClass1502E0::func_001E82B0(s32 key)
     item->unk54 = key;
     item->unk1c = owner;
     LibClass178220* anim = item->unk14;
-    if (anim->unk40)
+    if (anim->entries)
     {
-        func_004BDD10(anim);
-        delete[] anim->unk40;
+        lib_animation_release_channels(anim);
+        delete[] anim->entries;
     }
-    anim->unk6e = 0;
-    if (!anim->unk68)
+    anim->targets_bound = 0;
+    if (!anim->resource_is_borrowed)
     {
-        operator delete(anim->unk30);
+        operator delete(anim->resource_data);
     }
-    anim->unk68 = 1;
-    anim->unk30 = (void*)(((u32)data + 0x7F) & ~0x7F);
+    anim->resource_is_borrowed = 1;
+    anim->resource_data = (void*)(((u32)data + 0x7F) & ~0x7F);
     func_004BFE10(item->unk14, item->unk1c->unk7c);
-    func_004D74F0(item, -1);
+    append_node(item, -1);
     return 1;
 }
 
@@ -586,13 +586,13 @@ void FieldClass150320::func_001E9050()
     {
         for (s32 i = 0; i < unk08; i++, entry++)
         {
-            LibClass173180* channel = func_004BDA30(unk00, entry->unk00, 0);
+            LibClass173180* channel = lib_animation_channel_at(unk00, entry->index, 0);
             if (channel)
             {
                 func_001E9390(channel);
                 channel->func_0042A820();
             }
-            func_004BD9D0(unk00, entry->unk00, entry->unk08, entry->unk06, entry->unk04, entry->unk07);
+            lib_animation_set_entry_channel(unk00, entry->index, entry->channel, entry->kind, entry->type, entry->flags);
         }
         delete[] unk04;
         unk04 = 0;
@@ -617,25 +617,25 @@ FieldClass150320::FieldClass150320(LibClass178220* animation, void* owner, float
     FieldSavedChannelEntry* temporary = new(0) FieldSavedChannelEntry[1024];
     FieldSavedChannelEntry* saved = temporary;
     s32 count = 0;
-    s32 total = animation->unk38;
+    s32 total = animation->entry_count;
     for (s32 index = 0; index < total; index++)
     {
-        LibClass173180* original = func_004BDA30(animation, index, 0);
+        LibClass173180* original = lib_animation_channel_at(animation, index, 0);
         LibClass173180* replacement;
-        LibAnimationEntry14* entry = animation->unk50;
-        if (entry && entry->unk00 == 6)
+        LibAnimationEntry14* entry = animation->cached_entry;
+        if (entry && entry->type == 6)
         {
-            saved->unk00 = index;
-            saved->unk04 = entry->unk00;
-            saved->unk06 = entry->unk02;
-            saved->unk07 = entry->unk03;
-            saved->unk08 = original;
+            saved->index = index;
+            saved->type = entry->type;
+            saved->kind = entry->kind;
+            saved->flags = entry->flags;
+            saved->channel = original;
             replacement = func_001E93E0(D_001B666C);
             replacement->func_004C1560(original->func_004C16D0() + 1);
             LibVector4 value;
             original->func_004C16F0(0.0f, &value);
             replacement->func_0042A7C0(&value, 0, 0, 0.0f);
-            func_004BD9D0(animation, index, replacement, 1, 4, entry->unk03);
+            lib_animation_set_entry_channel(animation, index, replacement, 1, 4, entry->flags);
             count++;
             saved++;
             if (count >= 1024)
@@ -711,7 +711,7 @@ s32 func_001E95B0(s32 flag)
             if (object)
             {
                 object->unk4d_2 = flag;
-                D_001B6614->func_004D74F0(object, -1);
+                D_001B6614->append_node(object, -1);
                 return 1;
             }
         }
@@ -817,12 +817,12 @@ void FieldClass150330::func_001E9EA0(float radius)
         {
             ring_start = vertex;
             float pitch = 1.5707964f - 1.0471976f * band;
-            float ring = radius * func_004CC3E0(pitch);
-            float height = radius * func_004CC690(pitch);
+            float ring = radius * lib_cosine(pitch);
+            float height = radius * lib_sine_degree9(pitch);
             for (s32 i = 0; i < 6; i++)
             {
                 float yaw = 1.0471976f * i;
-                unk24[vertex].set(FieldVec4A(ring * func_004CC3E0(yaw), height, ring * func_004CC690(yaw), 1.0f));
+                unk24[vertex].set(FieldVec4A(ring * lib_cosine(yaw), height, ring * lib_sine_degree9(yaw), 1.0f));
                 vertex++;
             }
             switch (band)
@@ -926,11 +926,11 @@ FieldClass150330::FieldClass150330()
 
 void FieldClass1504C0::func_001EA730()
 {
-    FieldClass150060* node = (FieldClass150060*)unk38.unk00;
+    FieldClass150060* node = reinterpret_cast<FieldClass150060*>(&unk38.sentinel);
     for (;;)
     {
         node = node->unk08;
-        if (!node || field_is_list_head(unk38.unk00, node))
+        if (!node || field_is_list_head(&unk38.sentinel, node))
         {
             break;
         }
@@ -996,11 +996,11 @@ void FieldClass1504C0::func_001DF360()
 
 void FieldClass1504C0::func_001EAA10(ResidentPacket* packet)
 {
-    FieldClass150060* node = (FieldClass150060*)unk38.unk00;
+    FieldClass150060* node = reinterpret_cast<FieldClass150060*>(&unk38.sentinel);
     for (;;)
     {
         node = node->unk08;
-        if (!node || (FieldClass150060*)unk38.unk00 == node)
+        if (!node || reinterpret_cast<FieldClass150060*>(&unk38.sentinel) == node)
         {
             break;
         }
@@ -1067,11 +1067,11 @@ void FieldClass1504C0::func_001EAC90(ResidentPacket* packet)
 FieldClass1504C0::~FieldClass1504C0()
 {
     FieldClass150060* current;
-    FieldClass150060* node = ((FieldClass150060*)unk38.unk00)->unk08;
+    FieldClass150060* node = (reinterpret_cast<FieldClass150060*>(&unk38.sentinel))->unk08;
     for (;;)
     {
         current = node;
-        if (!node || (FieldClass150060*)unk38.unk00 == node)
+        if (!node || reinterpret_cast<FieldClass150060*>(&unk38.sentinel) == node)
         {
             break;
         }

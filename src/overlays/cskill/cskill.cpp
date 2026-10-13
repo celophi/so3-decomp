@@ -5498,21 +5498,21 @@ void SkillCoordinateSelector::func_003EEBE0()
 /** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
 void LibClass178A90::func_003EF770(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk20.packed = value->packed;
 }
 
 /** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
 void LibClass178A90::func_003EF780(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk20.packed = value->packed;
 }
 
 /** @brief Set the translation coordinates and mark the transform dirty. @param x Horizontal translation. @param y Vertical translation. @param z Third translation component. */
 void LibClass178A90::func_003EF790(float x, float y, float z)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk20.components[0] = x;
     unk20.components[1] = y;
     unk20.components[2] = z;
@@ -5522,7 +5522,7 @@ void LibClass178A90::func_003EF790(float x, float y, float z)
 /** @brief Set all quaternion components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. @param w Fourth component. */
 void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk30.components[0] = x;
     unk30.components[1] = y;
     unk30.components[2] = z;
@@ -5532,35 +5532,35 @@ void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
 /** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
 void LibClass171EF0::func_003EEEF0(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk30.packed = value->packed;
 }
 
 /** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
 void LibClass171EF0::func_003EEF10(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk30.packed = value->packed;
 }
 
 /** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
 void LibClass171EF0::func_003EEF30(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     func_4CE4C0(&unk30, value);
 }
 
 /** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
 void LibClass171EF0::func_003EEF60(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     func_4CE4C0(&unk30, value);
 }
 
 /** @brief Set the rotation components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. */
 void LibClass171EF0::func_003EEF90(float x, float y, float z)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     LibVector4 value;
     value.components[0] = x;
     value.components[1] = y;
@@ -5572,21 +5572,21 @@ void LibClass171EF0::func_003EEF90(float x, float y, float z)
 /** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
 void LibClass171EF0::func_003EEFD0(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk40.packed = value->packed;
 }
 
 /** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
 void LibClass171EF0::func_003EEFF0(const LibVector4* value)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk40.packed = value->packed;
 }
 
 /** @brief Set the scale coordinates and mark the transform dirty. @param x First scale component. @param y Second scale component. @param z Third scale component. */
 void LibClass171EF0::func_003EF010(float x, float y, float z)
 {
-    unk50 = 1;
+    transform_dirty = 1;
     unk40.components[0] = x;
     unk40.components[1] = y;
     unk40.components[2] = z;

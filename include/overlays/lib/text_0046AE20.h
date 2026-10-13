@@ -2,10 +2,13 @@
 #define SO3_OVERLAYS_LIB_TEXT_0046AE20_H
 
 #include "types.h"
+#include "overlays/lib/animation_binding.h"
 
 typedef struct LibObject1751A0 LibObject1751A0;
 /** Opaque owner of the runtime resource-entry table. */
 typedef struct LibEntryManager LibEntryManager;
+/** Opaque metadata for one resource entry. */
+typedef struct LibEntryMetadata LibEntryMetadata;
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,6 +29,58 @@ void func_0046B3F0(LibObject1751A0* object);
 void* lib_find_camera_entry(LibEntryManager* object, const char* name);
 
 /**
+ * @brief Find a light entry whose metadata passes the state and name filters.
+ * @param manager Runtime entry table and source resource header.
+ * @param name Name to compare, or null or empty to accept any name.
+ * @return The first matching light handle, or null.
+ */
+void* lib_find_light_entry(LibEntryManager* manager, const char* name);
+
+/**
+ * @brief Find a named entry by searching circularly from the last successful index.
+ * @param manager Runtime entry table and source metadata.
+ * @param name Entry name; null returns no entry.
+ * @param checksum Precomputed signed-byte name sum, or zero to calculate it from up to sixteen characters.
+ * @return Matching entry handle, or null.
+ */
+void* lib_find_named_entry_cached(LibEntryManager* manager, const char* name, s32 checksum);
+
+/**
+ * @brief Add bits to the object's flags.
+ * @param object Receiver.
+ * @param flags Flag bits to add.
+ */
+void lib_object_add_flags(void* object, u16 flags);
+
+/**
+ * @brief Read the signed child-entry count for an indexed resource entry.
+ * @param manager Runtime resource-entry manager.
+ * @param index Entry index.
+ * @return Signed child-entry count stored in the entry's metadata.
+ */
+s32 lib_get_entry_child_count(LibEntryManager* manager, s32 index);
+
+/**
+ * @brief Set resource state for eligible renderable entries.
+ * @param manager Runtime resource-entry manager.
+ */
+void func_004724A0(LibEntryManager* manager);
+
+/**
+ * @brief Locate an entry's data after its optional sixteen-byte name.
+ * @param manager Manager supplying the resource format flag.
+ * @param metadata Source entry metadata.
+ * @return Metadata-relative entry data, skipping the name when present.
+ */
+void* lib_get_entry_data(LibEntryManager* manager, LibEntryMetadata* metadata);
+
+/**
+ * @brief Update eligible renderable entries that pass the metadata flag filter.
+ * @param manager Runtime resource-entry manager.
+ */
+void lib_update_renderable_entries(LibEntryManager* manager);
+
+/**
  * @brief Update each active entry of the object's table with a boolean setting and an option flag.
  * @param object Object whose entry table is updated.
  * @param enable Boolean setting forwarded to each entry.
@@ -42,25 +97,37 @@ void func_004728A0(void* object, s32 enable, s32 option);
 void* func_00472EB0(void* object, void* entry);
 
 /**
- * @brief Return the handle of the first table entry that passes the entry state filter and matches name.
- * @param object Object whose entry table is searched.
- * @param name Entry name to match; null or empty matches any entry.
- * @return The entry's handle, or null if there is none.
+ * @brief Find a renderable entry of kind 1 or 8 whose metadata passes the state and name filters.
+ * @param manager Runtime entry table and source resource header.
+ * @param name Name to compare, or null or empty to accept any name.
+ * @return The first matching renderable handle, or null.
  */
-void* func_00473940(void* object, const char* name);
+void* lib_find_renderable_entry(LibEntryManager* manager, const char* name);
 
 /**
  * @brief Find a named table entry.
  * @param object Object whose table is searched.
- * @param name Name to search; null selects an unnamed entry.
+ * @param name Name to search; null selects the first entry with metadata.
  * @return Matching entry handle, or null.
  */
 void* func_00473390(void* object, const char* name);
 
 /** @brief Copy one aligned 16-byte value. @param output Destination value. @param input Source value. */
 void func_00479090(void* output, const void* input);
-/** @brief Store the receiver's byte at offset 0x50. @param object Receiver. @param value Byte to store. */
-void func_004790C0(void* object, u8 value);
+/**
+ * @brief Set the inherited transform dirty flag.
+ * @param object Transform receiver.
+ * @param value Dirty flag to store.
+ */
+void lib_transform_set_dirty(void* object, u8 value);
+
+/**
+ * @brief Set the primary animation link or register a supplemental link in a binding owner.
+ * @param owner Binding owner.
+ * @param animation Animation handle; null clears the primary link when mode is zero.
+ * @param mode Zero selects the primary link; otherwise it is stored for a new supplemental link.
+ */
+void lib_animation_register_binding(LibAnimationBindingOwner* owner, void* animation, s32 mode);
 
 #ifdef __cplusplus
 }

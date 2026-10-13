@@ -1,10 +1,17 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/matrix_vu0.h"
+#include "overlays/lib/quaternion_vu0.h"
+#include "ee.h"
+#include "main/resident_001001E0.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "sdk/main/libm_guess_0013F3E0.h"
 #include "include_asm.h"
+
+extern "C" void func_004D6C20(LibClass178DD0* list, void** items, u32* offsets);
+
+#define HALF_PI 1.57079637050628662109375f
 
 extern "C" LibClass178F30* D_001B6628;
 
@@ -20,7 +27,58 @@ static inline FieldVec4A& matrix_row_vector(LibMatrix44Value& matrix, s32 index)
     return *(FieldVec4A*)matrix.m[index];
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CD3A0);
+/**
+ * @brief Interpolate along the shorter quaternion arc and normalize the result.
+ * @param output Aligned destination quaternion; may alias either input.
+ * @param first First aligned quaternion.
+ * @param second Second aligned quaternion.
+ * @param fraction Interpolation fraction.
+ */
+extern "C" void func_004CD3A0(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction)
+{
+    float linear_threshold = 0.01f;
+    float dot = ((first->x * second->x + first->y * second->y) + first->z * second->z) + first->w * second->w;
+    float full_weight = 1.0f;
+    bool negative;
+    float angle;
+    if (!(dot < 0.0f))
+    {
+        negative = false;
+        angle = func_004CD010(dot);
+    }
+    else
+    {
+        negative = true;
+        angle = func_004CD010(-dot);
+    }
+    if (angle < linear_threshold)
+    {
+        FieldVec4A weights;
+        weights.y = fraction;
+        weights.x = full_weight - fraction;
+        if (negative)
+        {
+            vu0_quaternion_linear_negative(first, second, &weights);
+        }
+        else
+        {
+            vu0_quaternion_linear_positive(first, second, &weights);
+        }
+    }
+    else if (negative)
+    {
+        func_004CD2C0(angle * (full_weight - fraction), angle * fraction, angle);
+        vu0_quaternion_spherical_negative_wait(first, second);
+    }
+    else
+    {
+        func_004CD2C0(angle * (full_weight - fraction), angle * fraction, angle);
+        vu0_quaternion_spherical_positive_wait(first, second);
+    }
+    vu0_quaternion_norm_begin();
+    ee_prefetch(output);
+    vu0_quaternion_norm_finish(output);
+}
 
 /**
  * @brief Convert a quaternion by mapping each matrix row from (x, y, z) to (x, -z, y).
@@ -54,7 +112,57 @@ extern "C" FieldVec4B func_004CD570(const FieldVec4B& quaternion)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CD630);
+/**
+ * @brief Interpolate along the shorter quaternion arc and normalize the result.
+ * @param output Aligned destination quaternion; may alias either input.
+ * @param first First aligned quaternion.
+ * @param second Second aligned quaternion.
+ * @param fraction Interpolation fraction.
+ */
+extern "C" void func_004CD630(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction)
+{
+    float dot = ((first->x * second->x + first->y * second->y) + first->z * second->z) + first->w * second->w;
+    bool negative;
+    float angle;
+    if (!(dot < 0.0f))
+    {
+        negative = false;
+        angle = func_004CD010(dot);
+    }
+    else
+    {
+        negative = true;
+        angle = func_004CD010(-dot);
+    }
+    if (angle < 0.01f)
+    {
+        FieldVec4A weights;
+        weights.y = fraction;
+        weights.x = 1.0f - fraction;
+        if (negative)
+        {
+            vu0_quaternion_linear_negative(first, second, &weights);
+        }
+        else
+        {
+            vu0_quaternion_linear_positive(first, second, &weights);
+        }
+    }
+    else if (negative)
+    {
+        FieldVec4A sines;
+        func_004CA090(&sines, angle * (1.0f - fraction), angle * fraction, angle);
+        vu0_quaternion_spherical_negative(first, second);
+    }
+    else
+    {
+        FieldVec4A sines;
+        func_004CA090(&sines, angle * (1.0f - fraction), angle * fraction, angle);
+        vu0_quaternion_spherical_positive(first, second);
+    }
+    vu0_quaternion_norm_begin();
+    vu0_quaternion_norm_finish(output);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CD810);
 
@@ -114,19 +222,127 @@ extern "C" LibMatrix44Value func_004CE980(const FieldVec4B& quaternion)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CEA90);
+/**
+ * @brief Add all four components to a quaternion and return its updated value.
+ * @param first Quaternion to update.
+ * @param second Quaternion components to add.
+ * @return Copy of the updated quaternion.
+ */
+extern "C" FieldVec4B lib_quaternion_add_assign(FieldVec4B& first, const FieldVec4B& second)
+{
+    first.x = first.x + second.x;
+    first.y = first.y + second.y;
+    first.z = first.z + second.z;
+    first.w = first.w + second.w;
+    return first;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CEAE0);
+/**
+ * @brief Multiply a quaternion by a second quaternion and return its updated value.
+ * @param first Quaternion to update with first * second.
+ * @param second Right-hand quaternion factor.
+ * @return Copy of the updated quaternion.
+ */
+extern "C" FieldVec4B lib_quaternion_multiply_assign(FieldVec4B& first, const FieldVec4B& second)
+{
+    vu0_quaternion_multiply_assign(&first, &second);
+    return first;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CEB20);
+/**
+ * @brief Divide a quaternion's conjugate by its squared norm.
+ * @param quaternion Quaternion to invert.
+ * @return Inverse quaternion.
+ */
+extern "C" FieldVec4B lib_quaternion_inverse(const FieldVec4B& quaternion)
+{
+    FieldVec4B result;
+    float w = quaternion.w;
+    float reciprocal_norm = 1.0f / (((quaternion.x * quaternion.x + quaternion.y * quaternion.y) + quaternion.z * quaternion.z) + w * w);
+    result.w = w * reciprocal_norm;
+    result.x = -quaternion.x * reciprocal_norm;
+    result.y = -quaternion.y * reciprocal_norm;
+    result.z = -quaternion.z * reciprocal_norm;
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CEBA0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CECD0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CED40);
+/**
+ * @brief Replace a position with direction angles toward a target, using the XY plane for heading.
+ * @param value Source position, overwritten with elevation in x, heading in z, and w set to one.
+ * @param target Target position; only x, y, and z are read.
+ * @param y_angle Angle to store in the y component.
+ */
+extern "C" void lib_direction_angles_xy(LibVector4* value, const LibVector4* target, float y_angle)
+{
+    FieldVec4A delta;
+    delta.x = target->components[0] - value->components[0];
+    delta.y = target->components[1] - value->components[1];
+    delta.z = target->components[2] - value->components[2];
+    float x_squared = delta.x * delta.x;
+    float y_squared = delta.y * delta.y;
+    if (x_squared == 0.0f && y_squared == 0.0f)
+    {
+        if (delta.z < 0.0f)
+        {
+            value->components[0] = HALF_PI;
+        }
+        else
+        {
+            value->components[0] = -HALF_PI;
+        }
+        value->components[2] = 0.0f;
+    }
+    else
+    {
+        float horizontal_squared = x_squared + y_squared;
+        float horizontal_distance = __sqrt(horizontal_squared, horizontal_squared);
+        value->components[0] = func_00142148(-delta.z, horizontal_distance);
+        value->components[2] = func_00142148(delta.x, delta.y);
+    }
+    value->components[1] = y_angle;
+    value->components[3] = 1.0f;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CEE30);
+/**
+ * @brief Replace a position with direction angles toward a target, using the XZ plane for heading.
+ * @param value Source position, overwritten with elevation in x, heading in y, and w set to one.
+ * @param target Target position; only x, y, and z are read.
+ * @param z_angle Angle to store in the z component.
+ */
+extern "C" void lib_direction_angles_xz(LibVector4* value, const LibVector4* target, float z_angle)
+{
+    float dx = target->components[0] - value->components[0];
+    float dy = target->components[1] - value->components[1];
+    float dz = target->components[2] - value->components[2];
+    FieldVec4A delta(dx, dy, dz, 0.0f);
+    float x_squared = delta.x * delta.x;
+    float z_squared = delta.z * delta.z;
+    if (x_squared == 0.0f && z_squared == 0.0f)
+    {
+        if (delta.y < 0.0f)
+        {
+            value->components[0] = HALF_PI;
+        }
+        else
+        {
+            value->components[0] = -HALF_PI;
+        }
+        value->components[1] = 0.0f;
+    }
+    else
+    {
+        float horizontal_squared = x_squared + z_squared;
+        float horizontal_distance = __sqrt(horizontal_squared, horizontal_squared);
+        value->components[0] = func_00142148(-delta.y, horizontal_distance);
+        value->components[1] = func_00142148(delta.x, delta.z);
+    }
+    value->components[2] = z_angle;
+    value->components[3] = 1.0f;
+}
 
 /** @brief Invert an orthonormal rotation and its row-vector translation. @param input Source matrix. @param output Destination matrix, distinct from input. */
 extern "C" void func_004CEF20(const LibMatrix44Value* input, LibMatrix44Value* output)
@@ -654,31 +870,61 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6430);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6510);
 
-/** Partial node prefix with its registered list owner at offset 0x10. */
-struct LibOwnedObjectState
-{
-    u8 pad00[0x10];
-    LibClass178DD0* owner;
-};
 /**
  * @brief Remove the object from its owner and clear the owner pointer.
  * @param object Object whose owner receives the removal callback.
  */
 extern "C" void lib_object_detach_owner(void* object)
 {
-    LibOwnedObjectState* state = (LibOwnedObjectState*)object;
-    if (state->owner)
+    LibClass171EA0* node = static_cast<LibClass171EA0*>(object);
+    if (node->owner)
     {
-        state->owner->func_004D72A0(object);
+        node->owner->remove_node(object);
     }
-    state->owner = 0;
+    node->owner = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6610);
+/**
+ * @brief Update the owner's kind counts, then store the node's list kind.
+ * @param node Node whose list kind is changed.
+ * @param kind Kind passed to the owner; its low halfword is stored in the node.
+ */
+extern "C" void lib_object_set_list_kind(LibClass171EA0* node, s32 kind)
+{
+    if (node->owner)
+    {
+        lib_list_change_node_kind_counts(node->owner, node, kind);
+    }
+    node->list_kind = kind;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6660);
+/**
+ * @brief Release the owned node buffer when no node buffer is active.
+ * @param owner List that owns the buffer.
+ * @return One if the buffer was released, or zero while a buffer is active.
+ */
+extern "C" s32 lib_list_release_node_buffer(LibClass178DD0* owner)
+{
+    if (owner->active_node_buffer)
+    {
+        return 0;
+    }
+    delete[] owner->owned_node_buffer;
+    owner->owned_node_buffer = 0;
+    owner->node_buffer_capacity = 0;
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D66B0);
+/**
+ * @brief Allocate the owned node-pointer buffer and store its capacity.
+ * @param owner List that owns the buffer.
+ * @param node_count Number of node pointers to allocate.
+ */
+extern "C" void lib_list_allocate_node_buffer(LibClass178DD0* owner, s32 node_count)
+{
+    owner->owned_node_buffer = new (0) void*[node_count];
+    owner->node_buffer_capacity = node_count;
+}
 
 extern "C" void func_004D66F0(void* object)
 {
@@ -692,7 +938,40 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D68F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D69A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6AF0);
+/**
+ * @brief Collect the list chain's nodes into an array grouped by list kind.
+ * @param list First list whose nodes are collected.
+ * @param items Array with room for every node in the chain.
+ */
+extern "C" void lib_list_collect_nodes_by_kind(LibClass178DD0* list, void** items)
+{
+    u32 offsets[LibClass178DD0::NODE_KIND_COUNT];
+    u32 count = 0;
+    for (s32 kind = 0; kind < LibClass178DD0::NODE_KIND_COUNT; ++kind)
+    {
+        offsets[kind] = count;
+        count += list->node_counts_by_kind[kind];
+    }
+    if (list->next_list)
+    {
+        lib_list_add_chain_kind_offsets(list->next_list, offsets);
+    }
+    LibClass171E90* link = &list->sentinel;
+    for (;;)
+    {
+        link = link->next;
+        if (&list->sentinel == link)
+        {
+            break;
+        }
+        LibClass171EA0* node = reinterpret_cast<LibClass171EA0*>(link);
+        items[offsets[node->list_kind]++] = node;
+    }
+    if (list->next_list)
+    {
+        func_004D6C20(list->next_list, items, offsets);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6C20);
 
@@ -716,21 +995,100 @@ extern "C" void* func_004D6DE0(void* object)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6DF0);
+/**
+ * @brief Add each list's per-kind prefix sums to the chain's kind offsets.
+ * @param list First list whose counts are added.
+ * @param offsets Array of NODE_KIND_COUNT offsets to update.
+ */
+extern "C" inline void lib_list_add_chain_kind_offsets(LibClass178DD0* list, u32* offsets)
+{
+    u32 count = 0;
+    for (s32 kind = 0; kind < LibClass178DD0::NODE_KIND_COUNT; ++kind)
+    {
+        offsets[kind] += count;
+        count += list->node_counts_by_kind[kind];
+    }
+    if (list->next_list)
+    {
+        lib_list_add_chain_kind_offsets(list->next_list, offsets);
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D72A0);
+/**
+ * @brief Remove a registered node and clear its pending buffer entries.
+ * @param object Node to remove.
+ */
+void LibClass178DD0::remove_node(void* object)
+{
+    LibClass171EA0* node = static_cast<LibClass171EA0*>(object);
+    --node_counts_by_kind[node->list_kind];
+    node->is_listed = 0;
+    node->owner = 0;
+    void** buffer = active_node_buffer;
+    if (buffer)
+    {
+        s32 count = active_node_count;
+        s32 i = active_node_index + 1;
+        for (; i < count; ++i)
+        {
+            if (buffer[i] == object)
+            {
+                buffer[i] = 0;
+            }
+        }
+    }
+    else if (active_buffer_owner)
+    {
+        s32 count = active_buffer_owner->active_node_count;
+        void** owner_buffer = active_buffer_owner->active_node_buffer;
+        s32 i = active_buffer_owner->active_node_index + 1;
+        for (; i < count; ++i)
+        {
+            if (owner_buffer[i] == object)
+            {
+                owner_buffer[i] = 0;
+            }
+        }
+    }
+    LibClass178A70::unlink(object);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D7380);
+/**
+ * @brief Transfer one node count from the node's stored kind to a new kind.
+ * @param owner List whose per-kind counts are updated.
+ * @param node Node supplying the old kind.
+ * @param new_kind Kind whose count is incremented.
+ */
+extern "C" void lib_list_change_node_kind_counts(LibClass178DD0* owner, const LibClass171EA0* node, s32 new_kind)
+{
+    --owner->node_counts_by_kind[node->list_kind];
+    ++owner->node_counts_by_kind[new_kind];
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D73B0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", insert_node_after__14LibClass178DD0FPvPvi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D7450);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", prepend_node__14LibClass178DD0FPvi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D74F0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", append_node__14LibClass178DD0FPvi);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __dt__14LibClass178DD0Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __ct__14LibClass178DD0Fv);
+/** @brief Initialize the inherited list, kind counts, and node-buffer state. */
+LibClass178DD0::LibClass178DD0()
+{
+    for (s32 i = 0; i < NODE_KIND_COUNT; ++i)
+    {
+        node_counts_by_kind[i] = 0;
+    }
+    active_node_buffer = 0;
+    next_list = 0;
+    active_node_count = 0;
+    unk58 = 0;
+    active_node_index = -1;
+    node_buffer_capacity = 0;
+    owned_node_buffer = 0;
+    active_buffer_owner = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D76C0);
 
@@ -912,13 +1270,13 @@ void LibClass178EA0::func_004D9F40(const LibClass178EA0* source)
     func_004DA050(this, source->unk200);
     func_00479090(&unk1d0, source->func_003F4520());
     func_004DAB50(this);
-    func_004790C0(this, 1);
+    lib_transform_set_dirty(this, 1);
     func_004DA040(&unk1e0, source->func_003F4530());
     func_004DAB50(this);
-    func_004790C0(this, 1);
+    lib_transform_set_dirty(this, 1);
     func_00479090(&unk1f0, source->func_003F4540());
     func_004DAB50(this);
-    func_004790C0(this, 1);
+    lib_transform_set_dirty(this, 1);
     unk20c = source->unk20c;
     unk208 = source->unk208;
     LibClass178A90::func_004CFFA0(source);
