@@ -327,6 +327,20 @@ extern "C" void lib_list_change_node_kind_counts(LibClass178DD0* owner, const Li
  */
 extern "C" void lib_object_set_list_kind(LibClass171EA0* node, s32 kind);
 
+/**
+ * @brief Collect the list chain's nodes into an array grouped by list kind.
+ * @param list First list whose nodes are collected.
+ * @param items Array with room for every node in the chain.
+ */
+extern "C" void lib_list_collect_nodes_by_kind(LibClass178DD0* list, void** items);
+
+/**
+ * @brief Add each list's per-kind prefix sums to the chain's kind offsets.
+ * @param list First list whose counts are added.
+ * @param offsets Array of NODE_KIND_COUNT offsets to update.
+ */
+extern "C" void lib_list_add_chain_kind_offsets(LibClass178DD0* list, u32* offsets);
+
 /** 0x98-byte display manager with a list interface and secondary intrusive receiver. */
 class LibClass178F30 : public LibClass178DD0, public LibClass171EA0
 {
@@ -490,12 +504,6 @@ s32 lib_compare_bounded_strings(const char* first, const char* second, s32 count
  */
 void func_004D6700(void* list, void* item);
 
-/**
- * @brief Fill an array with the list's items.
- * @param list List whose items are collected.
- * @param items Array that receives the item pointers.
- */
-void func_004D6AF0(void* list, void** items);
 
 /**
  * @brief Release heap storage, choosing between two resident heap release routines by a resident flag.

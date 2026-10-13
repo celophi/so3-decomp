@@ -9,6 +9,8 @@
 #include "sdk/main/libm_guess_0013F3E0.h"
 #include "include_asm.h"
 
+extern "C" void func_004D6C20(LibClass178DD0* list, void** items, u32* offsets);
+
 #define HALF_PI 1.57079637050628662109375f
 
 extern "C" LibClass178F30* D_001B6628;
@@ -936,7 +938,40 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D68F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D69A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6AF0);
+/**
+ * @brief Collect the list chain's nodes into an array grouped by list kind.
+ * @param list First list whose nodes are collected.
+ * @param items Array with room for every node in the chain.
+ */
+extern "C" void lib_list_collect_nodes_by_kind(LibClass178DD0* list, void** items)
+{
+    u32 offsets[LibClass178DD0::NODE_KIND_COUNT];
+    u32 count = 0;
+    for (s32 kind = 0; kind < LibClass178DD0::NODE_KIND_COUNT; ++kind)
+    {
+        offsets[kind] = count;
+        count += list->node_counts_by_kind[kind];
+    }
+    if (list->next_list)
+    {
+        lib_list_add_chain_kind_offsets(list->next_list, offsets);
+    }
+    LibClass171E90* link = &list->sentinel;
+    for (;;)
+    {
+        link = link->next;
+        if (&list->sentinel == link)
+        {
+            break;
+        }
+        LibClass171EA0* node = reinterpret_cast<LibClass171EA0*>(link);
+        items[offsets[node->list_kind]++] = node;
+    }
+    if (list->next_list)
+    {
+        func_004D6C20(list->next_list, items, offsets);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6C20);
 
@@ -960,7 +995,24 @@ extern "C" void* func_004D6DE0(void* object)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6DF0);
+/**
+ * @brief Add each list's per-kind prefix sums to the chain's kind offsets.
+ * @param list First list whose counts are added.
+ * @param offsets Array of NODE_KIND_COUNT offsets to update.
+ */
+extern "C" inline void lib_list_add_chain_kind_offsets(LibClass178DD0* list, u32* offsets)
+{
+    u32 count = 0;
+    for (s32 kind = 0; kind < LibClass178DD0::NODE_KIND_COUNT; ++kind)
+    {
+        offsets[kind] += count;
+        count += list->node_counts_by_kind[kind];
+    }
+    if (list->next_list)
+    {
+        lib_list_add_chain_kind_offsets(list->next_list, offsets);
+    }
+}
 
 /**
  * @brief Remove a registered node and clear its pending buffer entries.

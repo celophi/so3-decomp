@@ -475,3 +475,8 @@ func_004D72A0 = 0x004D72A0; // type:func absolute:True allow_duplicated:True
 func_004D7450 = 0x004D7450; // type:func absolute:True allow_duplicated:True
 func_004D73B0 = 0x004D73B0; // type:func absolute:True allow_duplicated:True
 func_004D74F0 = 0x004D74F0; // type:func absolute:True allow_duplicated:True
+
+lib_list_collect_nodes_by_kind = 0x004D6AF0; // type:func
+func_004D6AF0 = 0x004D6AF0; // type:func absolute:True allow_duplicated:True
+lib_list_add_chain_kind_offsets = 0x004D6DF0; // type:func allow_duplicated:True
+func_004D6DF0 = 0x004D6DF0; // type:func absolute:True allow_duplicated:True

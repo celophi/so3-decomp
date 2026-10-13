@@ -452,7 +452,7 @@ void FieldClass14FE30::func_004D6730()
     }
     active_node_count = node_count;
     active_node_buffer = new(0) void*[active_node_count];
-    func_004D6AF0(this, active_node_buffer);
+    lib_list_collect_nodes_by_kind(this, active_node_buffer);
     bool swapped;
     do
     {

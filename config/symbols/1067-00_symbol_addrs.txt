@@ -437,7 +437,7 @@ func_004B46E0 = 0x004B46E0; // type:func
 func_004C2CD0 = 0x004C2CD0; // type:func
 __ct__16FieldClass150320FP14LibClass178220Pvf = 0x001E9180; // type:func
 func_004BD9D0 = 0x004BD9D0; // type:func absolute:True allow_duplicated:True
-lib_animation_set_entry_channel = 0x004BD9D0; // type:func allow_duplicated:True
+lib_animation_set_entry_channel = 0x004BD9D0; // type:func absolute:True allow_duplicated:True
 func_13A4C0 = 0x0013A4C0; // type:func allow_duplicated:true
 func_0013A4C0 = 0x0013A4C0; // type:func allow_duplicated:true
 D_001B666C = 0x001B666C;
@@ -1917,22 +1917,22 @@ func_004D00A0__16FieldClass15B270Fv = 0x001E9B70; // type:func absolute:True all
 func_004D0090__16FieldClass15B270Fv = 0x002D66C0; // type:func allow_duplicated:True
 
 func_004CC3E0 = 0x004CC3E0; // type:func absolute:True allow_duplicated:True
-lib_cosine = 0x004CC3E0; // type:func allow_duplicated:True
+lib_cosine = 0x004CC3E0; // type:func absolute:True allow_duplicated:True
 
 func_004CC5B0 = 0x004CC5B0; // type:func absolute:True allow_duplicated:True
-lib_sine = 0x004CC5B0; // type:func allow_duplicated:True
+lib_sine = 0x004CC5B0; // type:func absolute:True allow_duplicated:True
 
 func_004CC690 = 0x004CC690; // type:func absolute:True allow_duplicated:True
-lib_sine_degree9 = 0x004CC690; // type:func allow_duplicated:True
+lib_sine_degree9 = 0x004CC690; // type:func absolute:True allow_duplicated:True
 
 func_004BDA30 = 0x004BDA30; // type:func absolute:True allow_duplicated:True
-lib_animation_channel_at = 0x004BDA30; // type:func allow_duplicated:True
+lib_animation_channel_at = 0x004BDA30; // type:func absolute:True allow_duplicated:True
 
 func_004BDB50 = 0x004BDB50; // type:func absolute:True allow_duplicated:True
-lib_animation_bind_state = 0x004BDB50; // type:func allow_duplicated:True
+lib_animation_bind_state = 0x004BDB50; // type:func absolute:True allow_duplicated:True
 
 func_004BDD10 = 0x004BDD10; // type:func absolute:True allow_duplicated:True
-lib_animation_release_channels = 0x004BDD10; // type:func allow_duplicated:True
+lib_animation_release_channels = 0x004BDD10; // type:func absolute:True allow_duplicated:True
 
 append__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True allow_duplicated:True
 
@@ -1946,3 +1946,5 @@ remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func absolute:True allow_
 append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
 prepend_node__14LibClass178DD0FPvi = 0x004D7450; // type:func absolute:True allow_duplicated:True
 insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func absolute:True allow_duplicated:True
+
+lib_list_collect_nodes_by_kind = 0x004D6AF0; // type:func absolute:True allow_duplicated:True
