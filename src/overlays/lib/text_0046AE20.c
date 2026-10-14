@@ -3,6 +3,75 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_0049B820.h"
 
+typedef struct ByteGetterOwnertext_0046AE20
+{
+    u8 unk00[0x4D];
+    u8 unk4d;
+    u8 unk4e[0x8];
+    u8 unk56;
+} ByteGetterOwnertext_0046AE20;
+
+
+
+typedef struct ByteSetterOwnertext_0046AE20
+{
+    u8 unk00[0x4D];
+    u8 unk4d;
+    u8 unk4e;
+    u8 unk4f;
+    u8 unk50[0x4];
+    u8 unk54;
+    u8 unk55;
+    u8 unk56;
+} ByteSetterOwnertext_0046AE20;
+
+
+
+typedef struct WordSetterOwnertext_0046AE20
+{
+    u8 unk00[0x48];
+    u32 unk48;
+    u8 unk4c[0x4];
+    u32 unk50;
+    u8 unk54[0x5C];
+    u32 unkb0;
+    u32 unkb4;
+    u32 unkb8;
+    u32 unkbc;
+} WordSetterOwnertext_0046AE20;
+
+
+
+typedef struct WordGetterOwnertext_0046AE20
+{
+    u8 unk00[0x8];
+    u32 unk08;
+    u32 unk0c;
+    u8 unk10[0x38];
+    u32 unk48;
+    u8 unk4c[0x4];
+    u32 unk50;
+    u8 unk54[0x5C];
+    u32 unkb0;
+    u32 unkb4;
+    u32 unkb8;
+    u32 unkbc;
+} WordGetterOwnertext_0046AE20;
+
+
+typedef struct LibFloatFieldOwner0046AE20
+{
+    u8 unk00[0x28];
+    float unk28;
+    u8 unk2c[4];
+    float unk30;
+    float unk34;
+    float unk38;
+    float unk3c;
+    float unk40;
+    float unk44;
+} LibFloatFieldOwner0046AE20;
+
 /** Partial metadata used to filter and name resource entries. */
 struct LibEntryMetadata
 {
@@ -498,9 +567,19 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00473E20);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00474010);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00478F70);
+/** Return the word at receiver offset 0x8. */
+u32 func_00478F70(const void* object)
+{
+    const WordGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unk08;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00478F80);
+/** Return the word at receiver offset 0xC. */
+u32 func_00478F80(const void* object)
+{
+    const WordGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unk0c;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00478F90);
 
@@ -618,33 +697,93 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479FB0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479FC0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479FD0);
+/** Store the word at receiver offset 0xB8. */
+void func_00479FD0(void* object, u32 value)
+{
+    WordSetterOwnertext_0046AE20* receiver = object;
+    receiver->unkb8 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479FE0);
+/** Return the word at receiver offset 0xB8. */
+u32 func_00479FE0(const void* object)
+{
+    const WordGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unkb8;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479FF0);
+/** Store the word at receiver offset 0xBC. */
+void func_00479FF0(void* object, u32 value)
+{
+    WordSetterOwnertext_0046AE20* receiver = object;
+    receiver->unkbc = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A000);
+/** Return the word at receiver offset 0xBC. */
+u32 func_0047A000(const void* object)
+{
+    const WordGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unkbc;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A010);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A040);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A070);
+/** Store the word at receiver offset 0xB0. */
+void func_0047A070(void* object, u32 value)
+{
+    WordSetterOwnertext_0046AE20* receiver = object;
+    receiver->unkb0 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A080);
+/** Return the word at receiver offset 0xB0. */
+u32 func_0047A080(const void* object)
+{
+    const WordGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unkb0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A090);
+/** Store the word at receiver offset 0xB4. */
+void func_0047A090(void* object, u32 value)
+{
+    WordSetterOwnertext_0046AE20* receiver = object;
+    receiver->unkb4 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A0A0);
+/** Return the word at receiver offset 0xB4. */
+u32 func_0047A0A0(const void* object)
+{
+    const WordGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unkb4;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A0B0);
+/** Store the word at receiver offset 0xB0. */
+void func_0047A0B0(void* object, u32 value)
+{
+    WordSetterOwnertext_0046AE20* receiver = object;
+    receiver->unkb0 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A0C0);
+/** Return the word at receiver offset 0xB0. */
+u32 func_0047A0C0(const void* object)
+{
+    const WordGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unkb0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A0D0);
+/** Store the word at receiver offset 0xB4. */
+void func_0047A0D0(void* object, u32 value)
+{
+    WordSetterOwnertext_0046AE20* receiver = object;
+    receiver->unkb4 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A0E0);
+/** Return the word at receiver offset 0xB4. */
+u32 func_0047A0E0(const void* object)
+{
+    const WordGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unkb4;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A0F0);
 
@@ -658,53 +797,191 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A130);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A540);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A640);
+/**
+ * @brief Store the value at receiver offset 0x28.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A640(void* object, float value)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    receiver->unk28 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A650);
+/**
+ * @brief Store the value at receiver offset 0x30.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A650(void* object, float value)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    receiver->unk30 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A660);
+/** Return the float member at receiver offset 0x30. */
+float func_0047A660(void* object)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    return receiver->unk30;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A670);
+/** Store the byte at receiver offset 0x4D. */
+void func_0047A670(void* object, u8 value)
+{
+    ByteSetterOwnertext_0046AE20* receiver = object;
+    receiver->unk4d = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A680);
+/** Return the unsigned byte at receiver offset 0x4D. */
+u8 func_0047A680(const void* object)
+{
+    const ByteGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unk4d;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A690);
+/**
+ * @brief Store the value at receiver offset 0x34.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A690(void* object, float value)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    receiver->unk34 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A6A0);
+/** Store the byte at receiver offset 0x56. */
+void func_0047A6A0(void* object, u8 value)
+{
+    ByteSetterOwnertext_0046AE20* receiver = object;
+    receiver->unk56 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A6B0);
+/** Return the unsigned byte at receiver offset 0x56. */
+u8 func_0047A6B0(const void* object)
+{
+    const ByteGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unk56;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A6C0);
+/**
+ * @brief Store the value at receiver offset 0x44.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A6C0(void* object, float value)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    receiver->unk44 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A6D0);
+/** Return the float member at receiver offset 0x44. */
+float func_0047A6D0(void* object)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    return receiver->unk44;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A6E0);
+/** Return the float member at receiver offset 0x28. */
+float func_0047A6E0(void* object)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    return receiver->unk28;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A6F0);
+/** Store the word at receiver offset 0x48. */
+void func_0047A6F0(void* object, u32 value)
+{
+    WordSetterOwnertext_0046AE20* receiver = object;
+    receiver->unk48 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A700);
+/** Return the word at receiver offset 0x48. */
+u32 func_0047A700(const void* object)
+{
+    const WordGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unk48;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A710);
+/** Store the byte at receiver offset 0x4F. */
+void func_0047A710(void* object, u8 value)
+{
+    ByteSetterOwnertext_0046AE20* receiver = object;
+    receiver->unk4f = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A720);
+/** Store the byte at receiver offset 0x4E. */
+void func_0047A720(void* object, u8 value)
+{
+    ByteSetterOwnertext_0046AE20* receiver = object;
+    receiver->unk4e = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A730);
+/** Store the word at receiver offset 0x50. */
+void func_0047A730(void* object, u32 value)
+{
+    WordSetterOwnertext_0046AE20* receiver = object;
+    receiver->unk50 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A740);
+/** Return the word at receiver offset 0x50. */
+u32 func_0047A740(const void* object)
+{
+    const WordGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unk50;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A750);
+/** Store the byte at receiver offset 0x55. */
+void func_0047A750(void* object, u8 value)
+{
+    ByteSetterOwnertext_0046AE20* receiver = object;
+    receiver->unk55 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A760);
+/**
+ * @brief Store the value at receiver offset 0x3C.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A760(void* object, float value)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    receiver->unk3c = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A770);
+/** Store the byte at receiver offset 0x54. */
+void func_0047A770(void* object, u8 value)
+{
+    ByteSetterOwnertext_0046AE20* receiver = object;
+    receiver->unk54 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A780);
+/**
+ * @brief Store the value at receiver offset 0x40.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A780(void* object, float value)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    receiver->unk40 = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A790);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A7D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A800);
+/**
+ * @brief Store the value at receiver offset 0x38.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A800(void* object, float value)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    receiver->unk38 = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A810);
 
@@ -718,18 +995,70 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A890);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047ACA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047ADA0);
+/**
+ * @brief Store the value at receiver offset 0x28.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047ADA0(void* object, float value)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    receiver->unk28 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047ADB0);
+/**
+ * @brief Store the value at receiver offset 0x30.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047ADB0(void* object, float value)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    receiver->unk30 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047ADC0);
+/** Return the float member at receiver offset 0x30. */
+float func_0047ADC0(void* object)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    return receiver->unk30;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047ADD0);
+/** Store the byte at receiver offset 0x4D. */
+void func_0047ADD0(void* object, u8 value)
+{
+    ByteSetterOwnertext_0046AE20* receiver = object;
+    receiver->unk4d = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047ADE0);
+/** Return the unsigned byte at receiver offset 0x4D. */
+u8 func_0047ADE0(const void* object)
+{
+    const ByteGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unk4d;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047ADF0);
+/**
+ * @brief Store the value at receiver offset 0x34.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047ADF0(void* object, float value)
+{
+    LibFloatFieldOwner0046AE20* receiver = object;
+    receiver->unk34 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047AE00);
+/** Store the byte at receiver offset 0x56. */
+void func_0047AE00(void* object, u8 value)
+{
+    ByteSetterOwnertext_0046AE20* receiver = object;
+    receiver->unk56 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047AE10);
+/** Return the unsigned byte at receiver offset 0x56. */
+u8 func_0047AE10(const void* object)
+{
+    const ByteGetterOwnertext_0046AE20* receiver = object;
+    return receiver->unk56;
+}

@@ -43,6 +43,10 @@ s32 func_408EA0(void* detail, s32 code, s32 index, s32* kind, s32* value, s32* r
  */
 s32 func_00408850(void* detail, s32 code, s32 index, s32* kind, s32* value, s32* result_index, s32* remainder);
 
+
+/** Store the byte at receiver offset 0xE6. */
+void func_00404560(void* object, u8 value);
+
 #ifdef __cplusplus
 }
 #endif

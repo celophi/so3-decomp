@@ -1,4 +1,32 @@
 #include "include_asm.h"
+#include "main/resident_0011EE70.h"
+
+typedef struct ByteGetterOwnerresident_0011EE70
+{
+    u8 unk00[0x25];
+    u8 unk25;
+} ByteGetterOwnerresident_0011EE70;
+
+
+
+typedef struct WordSetterOwnerresident_0011EE70
+{
+    u8 unk00[0x70];
+    u32 unk70;
+} WordSetterOwnerresident_0011EE70;
+
+
+
+typedef struct WordGetterOwnerresident_0011EE70
+{
+    u32 unk00;
+    u32 unk04;
+    u32 unk08;
+    u32 unk0c;
+    u32 unk10;
+    u32 unk14;
+} WordGetterOwnerresident_0011EE70;
+
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011EE70);
 
@@ -40,7 +68,12 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F940)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F9B0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F9D0);
+/** Return the unsigned byte at receiver offset 0x25. */
+u8 func_0011F9D0(void* object)
+{
+    const ByteGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk25;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F9E0);
 
@@ -70,31 +103,66 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001204B0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120560);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001205A0);
+/** Return the word at receiver offset 0x14. */
+u32 func_001205A0(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk14;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001205B0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001205E0);
+/** Return the word at receiver offset 0x10. */
+u32 func_001205E0(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk10;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001205F0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120630);
+/** Return the word at receiver offset 0xC. */
+u32 func_00120630(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk0c;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120640);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120670);
+/** Return the word at receiver offset 0x8. */
+u32 func_00120670(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk08;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120680);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001206B0);
+/** Return the word at receiver offset 0x4. */
+u32 func_001206B0(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk04;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001206C0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001206F0);
+/** Return the word at receiver offset 0x0. */
+u32 func_001206F0(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk00;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120700);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001207B0);
+/** Store the word at receiver offset 0x70. */
+void func_001207B0(void* object, u32 value)
+{
+    WordSetterOwnerresident_0011EE70* receiver = object;
+    receiver->unk70 = value;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001207C0);
 

@@ -32,6 +32,13 @@ void func_001EA190(void* object);
  */
 void func_001EC6F0(void* object);
 
+/** Return the word at receiver offset 0xD58. */
+u32 func_001E8DD0(const void* object);
+
+
+/** Store the word at receiver offset 0x70. */
+void func_001DE6B0(void* object, u32 value);
+
 #ifdef __cplusplus
 }
 #endif

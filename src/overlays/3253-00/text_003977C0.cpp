@@ -1,4 +1,19 @@
 #include "include_asm.h"
+#include "types.h"
+
+/** Partial receiver containing a word at offset 0x14. */
+struct FieldNonzeroWord14
+{
+    u8 unk00[0x14];
+    u32 unk14;
+};
+
+/** Partial receiver containing a word at offset 0x1C. */
+struct FieldWord1C
+{
+    u8 unk00[0x1C];
+    u32 unk1C;
+};
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_003977C0);
 
@@ -52,9 +67,15 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039AF
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039B280);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039B530);
+extern "C" void* func_0039B530(void* value)
+{
+    return value;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039B540);
+extern "C" void* func_0039B540(void* value)
+{
+    return value;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039B550);
 
@@ -94,7 +115,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039E9
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039EA50);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039EB00);
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+extern "C" s32 func_0039EB00(void* receiver)
+{
+    FieldNonzeroWord14* object = (FieldNonzeroWord14*)receiver;
+    return object->unk14 != 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039EB10);
 
@@ -106,7 +132,11 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039EC
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039EDD0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039F070);
+extern "C" u32 func_0039F070(void* receiver)
+{
+    FieldWord1C* object = (FieldWord1C*)receiver;
+    return object->unk1C;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039F080);
 
@@ -220,7 +250,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_003A66
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_003A6720);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_003A67D0);
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+extern "C" s32 func_003A67D0(void* receiver)
+{
+    FieldNonzeroWord14* object = (FieldNonzeroWord14*)receiver;
+    return object->unk14 != 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_003A67E0);
 

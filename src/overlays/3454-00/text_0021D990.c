@@ -1,4 +1,13 @@
 #include "include_asm.h"
+#include "overlays/3454-00/text_0021D990.h"
+
+typedef struct ByteSetterOwnertext_0021D990
+{
+    u8 unk00[0x3D];
+    u8 unk3d;
+} ByteSetterOwnertext_0021D990;
+
+
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_0021D990);
 
@@ -166,7 +175,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00226C
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00226F00);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00227330);
+/** Store the byte at receiver offset 0x3D. */
+void func_00227330(void* object, u8 value)
+{
+    ByteSetterOwnertext_0021D990* receiver = object;
+    receiver->unk3d = value;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00227340);
 

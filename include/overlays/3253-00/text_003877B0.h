@@ -41,6 +41,26 @@ s32 func_0038E6E0(void* object);
  */
 s32 func_0038E6F0(void* object);
 
+/**
+ * @brief Clear the first 16 bytes of the vector.
+ * @param value Vector to clear.
+ */
+void func_00391120(void* value);
+
+/**
+ * @brief Return whether the receiver's word at offset 0x14 is nonzero.
+ * @param receiver Object containing the word.
+ * @return One when the word is nonzero; otherwise zero.
+ */
+s32 func_00391A70(void* receiver);
+
+/**
+ * @brief Return whether the receiver's word at offset 0x14 is nonzero.
+ * @param receiver Object containing the word.
+ * @return One when the word is nonzero; otherwise zero.
+ */
+s32 func_00395840(void* receiver);
+
 #ifdef __cplusplus
 }
 #endif

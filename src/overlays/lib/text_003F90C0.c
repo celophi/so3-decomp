@@ -1,6 +1,14 @@
 #include "include_asm.h"
 #include "overlays/lib/text_003F90C0.h"
 
+typedef struct ByteSetterOwnertext_003F90C0
+{
+    u8 unk00[0xE6];
+    u8 unke6;
+} ByteSetterOwnertext_003F90C0;
+
+
+
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003F90C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003F92F0);
@@ -97,7 +105,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00402990);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00402B30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00404560);
+/** Store the byte at receiver offset 0xE6. */
+void func_00404560(void* object, u8 value)
+{
+    ByteSetterOwnertext_003F90C0* receiver = object;
+    receiver->unke6 = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00404570);
 

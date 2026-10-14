@@ -25,6 +25,16 @@ void func_00278200(void* object);
  */
 void func_0027AD00(void* object);
 
+
+/** Return the unsigned byte at receiver offset 0xCD3. */
+u8 func_00274150(const void* object);
+
+/** Return the unsigned byte at receiver offset 0xCD2. */
+u8 func_00274160(const void* object);
+
+/** Return the unsigned byte at receiver offset 0xCD6. */
+u8 func_002785A0(const void* object);
+
 #ifdef __cplusplus
 }
 #endif

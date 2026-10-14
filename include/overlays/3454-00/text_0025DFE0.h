@@ -81,6 +81,13 @@ void func_002610E0(void* object);
 void func_002610F0(void* object);
 
 /**
+ * @brief Return the floating-point value 0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00261100(void* object);
+
+/**
  * @brief Return the fixed value 2.
  * @param object Receiver or first argument; unused.
  * @return Always 2.
@@ -238,6 +245,10 @@ void func_0026C720(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_0026C730(void* object);
+
+
+/** Return the unsigned byte at receiver offset 0x794. */
+u8 func_00261A70(const void* object);
 
 #ifdef __cplusplus
 }

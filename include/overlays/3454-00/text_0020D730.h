@@ -147,6 +147,13 @@ void func_00215020(void* object);
  * @param object Receiver or first argument; unused.
  * @return Always 0.
  */
+/**
+ * @brief Return the floating-point value 0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00217940(void* object);
+
 s32 func_00217F40(void* object);
 
 /**
@@ -195,6 +202,13 @@ s32 func_002184B0(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_002184C0(void* object);
+
+/**
+ * @brief Return the floating-point value 0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_002184D0(void* object);
 
 /**
  * @brief Perform no work.
@@ -382,6 +396,88 @@ void func_0021BC40(void* object);
  * @return Always 0.
  */
 s32 func_0021D170(void* object);
+
+/** Return the word at receiver offset 0x30. */
+u32 func_00216ED0(const void* object);
+/** Return the word at receiver offset 0x4. */
+u32 func_00216F70(const void* object);
+/** Return the word at receiver offset 0x20. */
+u32 func_00217420(const void* object);
+/** Return the word at receiver offset 0x4. */
+u32 func_00217650(const void* object);
+/** Return the word at receiver offset 0x10. */
+u32 func_00217910(const void* object);
+/** Return the word at receiver offset 0x4. */
+u32 func_00217980(const void* object);
+/** Return the word at receiver offset 0x40. */
+u32 func_00217F10(const void* object);
+/** Return the word at receiver offset 0x4. */
+u32 func_002181A0(const void* object);
+/** Return the word at receiver offset 0x18. */
+u32 func_00218460(const void* object);
+/** Return the word at receiver offset 0x4. */
+u32 func_00218510(const void* object);
+/** Return the word at receiver offset 0x10. */
+u32 func_0021AE20(const void* object);
+/** Return the word at receiver offset 0x4. */
+u32 func_0021B210(const void* object);
+/** Return the word at receiver offset 0x40. */
+u32 func_0021B410(const void* object);
+/** Return the word at receiver offset 0x4. */
+u32 func_0021B760(const void* object);
+/** Return the word at receiver offset 0x30. */
+u32 func_0021BB50(const void* object);
+/** Return the word at receiver offset 0x4. */
+u32 func_0021BCF0(const void* object);
+
+
+/** Return the signed halfword at receiver offset 0x38. */
+s16 func_00216EE0(const void* object);
+
+/** Return the signed halfword at receiver offset 0x3A. */
+s16 func_00216EF0(const void* object);
+
+/** Return the signed halfword at receiver offset 0x28. */
+s16 func_00217430(const void* object);
+
+/** Return the signed halfword at receiver offset 0x2A. */
+s16 func_00217440(const void* object);
+
+/** Return the signed halfword at receiver offset 0x18. */
+s16 func_00217920(const void* object);
+
+/** Return the signed halfword at receiver offset 0x1A. */
+s16 func_00217930(const void* object);
+
+/** Return the signed halfword at receiver offset 0x48. */
+s16 func_00217F20(const void* object);
+
+/** Return the signed halfword at receiver offset 0x4A. */
+s16 func_00217F30(const void* object);
+
+/** Return the signed halfword at receiver offset 0x20. */
+s16 func_00218470(const void* object);
+
+/** Return the signed halfword at receiver offset 0x22. */
+s16 func_00218480(const void* object);
+
+/** Return the signed halfword at receiver offset 0x18. */
+s16 func_0021AE30(const void* object);
+
+/** Return the signed halfword at receiver offset 0x1A. */
+s16 func_0021AE40(const void* object);
+
+/** Return the signed halfword at receiver offset 0x48. */
+s16 func_0021B420(const void* object);
+
+/** Return the signed halfword at receiver offset 0x4A. */
+s16 func_0021B430(const void* object);
+
+/** Return the signed halfword at receiver offset 0x38. */
+s16 func_0021BB60(const void* object);
+
+/** Return the signed halfword at receiver offset 0x3A. */
+s16 func_0021BB70(const void* object);
 
 #ifdef __cplusplus
 }

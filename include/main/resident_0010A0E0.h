@@ -115,6 +115,21 @@ s32 resident_allocate_request(ResidentRequest112400* receiver, s32 arg1, s32 arg
 /** @brief Check a resident request key and its active state. @param request Resident request receiver. @param key Request key. @return Nonzero when the request state is active. */
 s32 func_00112610(ResidentRequest112400* request, s32 key);
 
+/** Return the word at receiver offset 0x110. */
+u32 func_00115640(const void* object);
+/** Return the word at receiver offset 0x10C. */
+u32 func_00115650(const void* object);
+/** Return the word at receiver offset 0x118. */
+u32 func_00115660(const void* object);
+/** Return the word at receiver offset 0x104. */
+u32 func_00115830(const void* object);
+/** Return the word at receiver offset 0x8. */
+u32 func_0011DF70(const void* object);
+
+
+/** Store the word at receiver offset 0x134. */
+void func_001156B0(void* object, u32 value);
+
 #ifdef __cplusplus
 }
 #endif

@@ -248,6 +248,10 @@ void func_004295C0(void* object);
  */
 void func_00429850(void* object);
 
+
+/** Store the word at receiver offset 0x70. */
+void func_004295B0(void* object, u32 value);
+
 #ifdef __cplusplus
 }
 #endif

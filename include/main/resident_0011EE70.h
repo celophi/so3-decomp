@@ -76,6 +76,23 @@ u8* func_0011F860(ResidentPacket* packet, s32 quadwords);
  */
 u8 func_0011F9D0(void* object);
 
+/** Return the word at receiver offset 0x14. */
+u32 func_001205A0(const void* object);
+/** Return the word at receiver offset 0x10. */
+u32 func_001205E0(const void* object);
+/** Return the word at receiver offset 0xC. */
+u32 func_00120630(const void* object);
+/** Return the word at receiver offset 0x8. */
+u32 func_00120670(const void* object);
+/** Return the word at receiver offset 0x4. */
+u32 func_001206B0(const void* object);
+/** Return the word at receiver offset 0x0. */
+u32 func_001206F0(const void* object);
+
+
+/** Store the word at receiver offset 0x70. */
+void func_001207B0(void* object, u32 value);
+
 #ifdef __cplusplus
 }
 #endif

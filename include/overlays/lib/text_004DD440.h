@@ -253,6 +253,26 @@ s32 func_004E6C70(void* object);
  */
 s32 func_004E7820(void* object);
 
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004E6680(const void* object);
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004E6A80(const void* object);
+
+
+/** Return the signed halfword at receiver offset 0x48. */
+s16 func_004E6400(const void* object);
+
+/** Return the signed halfword at receiver offset 0x4A. */
+s16 func_004E6410(const void* object);
+
+/** Return the signed halfword at receiver offset 0x28. */
+s16 func_004E6860(const void* object);
+
+/** Return the signed halfword at receiver offset 0x2A. */
+s16 func_004E6870(const void* object);
+
 #ifdef __cplusplus
 }
 #endif

@@ -96,6 +96,70 @@ s32 func_004B43C0(LibClass178220* object, float frame, s32 mode);
  */
 s32 func_004B46E0(LibClass178220* object, LibClass178370* target, float frame, s32 mode);
 
+/**
+ * @brief Return the floating-point value 0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_004B0E20(void* object);
+
+/**
+ * @brief Return the floating-point value 0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_004B2A90(void* object);
+
+/** Return the word at receiver offset 0x30. */
+u32 func_004AC910(const void* object);
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004ACAE0(const void* object);
+
+/** Return the word at receiver offset 0x30. */
+u32 func_004B0600(const void* object);
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004B0810(const void* object);
+
+/** Return the word at receiver offset 0x18. */
+u32 func_004B0D60(const void* object);
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004B0F40(const void* object);
+
+/** Return the word at receiver offset 0x10. */
+u32 func_004B2A60(const void* object);
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004B2AD0(const void* object);
+
+
+/** Return the signed halfword at receiver offset 0x38. */
+s16 func_004AC920(const void* object);
+
+/** Return the signed halfword at receiver offset 0x3A. */
+s16 func_004AC930(const void* object);
+
+/** Return the signed halfword at receiver offset 0x38. */
+s16 func_004B0610(const void* object);
+
+/** Return the signed halfword at receiver offset 0x3A. */
+s16 func_004B0620(const void* object);
+
+/** Return the signed halfword at receiver offset 0x20. */
+s16 func_004B0D70(const void* object);
+
+/** Return the signed halfword at receiver offset 0x22. */
+s16 func_004B0D80(const void* object);
+
+/** Return the signed halfword at receiver offset 0x18. */
+s16 func_004B2A70(const void* object);
+
+/** Return the signed halfword at receiver offset 0x1A. */
+s16 func_004B2A80(const void* object);
+
+
 }
 #endif
 

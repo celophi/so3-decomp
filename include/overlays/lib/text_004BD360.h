@@ -906,6 +906,30 @@ void lib_build_directional_shadow_matrix(LibMatrix44Value* output, const FieldVe
 void lib_build_projective_shadow_matrix(LibMatrix44Value* output, const FieldVec4A* light, const FieldVec4A* plane);
 #endif
 
+
+/** Return the word at receiver offset 0x10. */
+u32 func_004BD3E0(const void* object);
+
+/** Return the word at receiver offset 0x20. */
+u32 func_004BD4E0(const void* object);
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004C1720(const void* object);
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004C3DC0(const void* object);
+
+
+/** Return the word at receiver offset 0x10. */
+u32 func_004BD490(const void* object);
+
+
+/** Return the signed halfword at receiver offset 0x18. */
+s16 func_004C3D60(const void* object);
+
+/** Return the signed halfword at receiver offset 0x1A. */
+s16 func_004C3D70(const void* object);
+
 #ifdef __cplusplus
 }
 #endif

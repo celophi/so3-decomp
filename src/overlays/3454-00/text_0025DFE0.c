@@ -1,6 +1,14 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_0025DFE0.h"
 
+typedef struct ByteGetterOwnertext_0025DFE0
+{
+    u8 unk00[0x794];
+    u8 unk794;
+} ByteGetterOwnertext_0025DFE0;
+
+
+
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_0025DFE0);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_0025E7A0);
@@ -122,7 +130,15 @@ void func_002610F0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261100);
+/**
+ * @brief Return the floating-point value 0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00261100(void* object)
+{
+    return 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261110);
 
@@ -187,7 +203,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261A
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261A60);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261A70);
+/** Return the unsigned byte at receiver offset 0x794. */
+u8 func_00261A70(const void* object)
+{
+    const ByteGetterOwnertext_0025DFE0* receiver = object;
+    return receiver->unk794;
+}
 
 s32 func_00261A80(void* object)
 {

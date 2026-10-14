@@ -129,6 +129,175 @@ void lib_transform_set_dirty(void* object, u8 value);
  */
 void lib_animation_register_binding(LibAnimationBindingOwner* owner, void* animation, s32 mode);
 
+
+
+/**
+ * @brief Store the value at receiver offset 0x28.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A640(void* object, float value);
+
+/**
+ * @brief Store the value at receiver offset 0x30.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A650(void* object, float value);
+
+/**
+ * @brief Store the value at receiver offset 0x34.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A690(void* object, float value);
+
+/**
+ * @brief Store the value at receiver offset 0x44.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A6C0(void* object, float value);
+
+/**
+ * @brief Store the value at receiver offset 0x3C.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A760(void* object, float value);
+
+/**
+ * @brief Store the value at receiver offset 0x40.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A780(void* object, float value);
+
+/**
+ * @brief Store the value at receiver offset 0x38.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047A800(void* object, float value);
+
+/**
+ * @brief Store the value at receiver offset 0x28.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047ADA0(void* object, float value);
+
+/**
+ * @brief Store the value at receiver offset 0x30.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047ADB0(void* object, float value);
+
+/**
+ * @brief Store the value at receiver offset 0x34.
+ * @param object Receiver whose float field is updated.
+ * @param value Value to store.
+ */
+void func_0047ADF0(void* object, float value);
+
+
+/** Return the float member at receiver offset 0x30. */
+float func_0047A660(void* object);
+
+/** Return the float member at receiver offset 0x44. */
+float func_0047A6D0(void* object);
+
+/** Return the float member at receiver offset 0x28. */
+float func_0047A6E0(void* object);
+
+/** Return the float member at receiver offset 0x30. */
+float func_0047ADC0(void* object);
+
+/** Return the word at receiver offset 0x8. */
+u32 func_00478F70(const void* object);
+/** Return the word at receiver offset 0xC. */
+u32 func_00478F80(const void* object);
+/** Return the word at receiver offset 0xB8. */
+u32 func_00479FE0(const void* object);
+/** Return the word at receiver offset 0xBC. */
+u32 func_0047A000(const void* object);
+/** Return the word at receiver offset 0xB0. */
+u32 func_0047A080(const void* object);
+/** Return the word at receiver offset 0xB4. */
+u32 func_0047A0A0(const void* object);
+/** Return the word at receiver offset 0xB0. */
+u32 func_0047A0C0(const void* object);
+/** Return the word at receiver offset 0xB4. */
+u32 func_0047A0E0(const void* object);
+/** Return the word at receiver offset 0x48. */
+u32 func_0047A700(const void* object);
+/** Return the word at receiver offset 0x50. */
+u32 func_0047A740(const void* object);
+
+
+/** Store the word at receiver offset 0xB8. */
+void func_00479FD0(void* object, u32 value);
+
+/** Store the word at receiver offset 0xBC. */
+void func_00479FF0(void* object, u32 value);
+
+/** Store the word at receiver offset 0xB0. */
+void func_0047A070(void* object, u32 value);
+
+/** Store the word at receiver offset 0xB4. */
+void func_0047A090(void* object, u32 value);
+
+/** Store the word at receiver offset 0xB0. */
+void func_0047A0B0(void* object, u32 value);
+
+/** Store the word at receiver offset 0xB4. */
+void func_0047A0D0(void* object, u32 value);
+
+/** Store the word at receiver offset 0x48. */
+void func_0047A6F0(void* object, u32 value);
+
+/** Store the word at receiver offset 0x50. */
+void func_0047A730(void* object, u32 value);
+
+
+/** Store the byte at receiver offset 0x4D. */
+void func_0047A670(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x56. */
+void func_0047A6A0(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x4F. */
+void func_0047A710(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x4E. */
+void func_0047A720(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x55. */
+void func_0047A750(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x54. */
+void func_0047A770(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x4D. */
+void func_0047ADD0(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x56. */
+void func_0047AE00(void* object, u8 value);
+
+
+/** Return the unsigned byte at receiver offset 0x4D. */
+u8 func_0047A680(const void* object);
+
+/** Return the unsigned byte at receiver offset 0x56. */
+u8 func_0047A6B0(const void* object);
+
+/** Return the unsigned byte at receiver offset 0x4D. */
+u8 func_0047ADE0(const void* object);
+
+/** Return the unsigned byte at receiver offset 0x56. */
+u8 func_0047AE10(const void* object);
+
 #ifdef __cplusplus
 }
 #endif

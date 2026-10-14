@@ -244,6 +244,13 @@ void* func_0042E9A0(void* object);
  */
 void func_0042EB30(LibTextValueState* state, u32 value);
 
+
+/** Store the word at receiver offset 0x24. */
+void func_00432710(void* object, u32 value);
+
+/** Store the word at receiver offset 0x428. */
+void func_00435190(void* object, u32 value);
+
 #ifdef __cplusplus
 }
 #endif

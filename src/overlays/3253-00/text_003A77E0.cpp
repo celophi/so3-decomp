@@ -1,6 +1,33 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_003A77E0.h"
 
+/** Partial receiver containing a word at offset 0x14. */
+struct FieldNonzeroWord14
+{
+    u8 unk00[0x14];
+    u32 unk14;
+};
+
+/** Partial receiver containing a word at offset 0x1C. */
+struct FieldWord1C
+{
+    u8 unk00[0x1C];
+    u32 unk1C;
+};
+
+/** Partial object containing a word at offset 0x210. */
+struct FieldWord210
+{
+    u8 unk00[0x210];
+    u32 unk210;
+};
+
+/** Receiver whose first field points to the object containing the word. */
+struct FieldObjectWord210
+{
+    FieldWord210* unk00;
+};
+
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003A77E0);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003A7850);
@@ -39,7 +66,11 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003A99
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003A9990);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003A9A60);
+u32 func_003A9A60(void* receiver)
+{
+    FieldObjectWord210* object = (FieldObjectWord210*)receiver;
+    return object->unk00->unk210;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003A9A70);
 
@@ -182,7 +213,11 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003B25
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003B2640);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003B26B0);
+s32 func_003B26B0(void* receiver)
+{
+    FieldNonzeroWord14* object = (FieldNonzeroWord14*)receiver;
+    return object->unk14 != 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003B26C0);
 
@@ -196,7 +231,11 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003B2A
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003B2B30);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003B2C10);
+u32 func_003B2C10(void* receiver)
+{
+    FieldWord1C* object = (FieldWord1C*)receiver;
+    return object->unk1C;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003A77E0", func_003B2C20);
 

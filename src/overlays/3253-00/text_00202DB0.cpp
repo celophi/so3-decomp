@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "types.h"
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00202DB0);
 
@@ -104,7 +105,19 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_0020F9
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_0020FC70);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00210130);
+/** Partial receiver with a flag byte at offset 0x12E. */
+struct FieldByteFlagState12E
+{
+    u8 unk00[0x12E];
+    u8 unk12E;
+};
+
+/** Store one in the receiver's flag byte. */
+extern "C" void func_00210130(void* receiver)
+{
+    FieldByteFlagState12E* object = (FieldByteFlagState12E*)receiver;
+    object->unk12E = 1;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00210140);
 

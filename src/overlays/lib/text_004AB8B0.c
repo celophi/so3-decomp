@@ -1,4 +1,33 @@
 #include "include_asm.h"
+#include "overlays/lib/text_004AB8B0.h"
+
+typedef struct HalfwordGetterOwnertext_004AB8B0
+{
+    u8 unk00[0x18];
+    s16 unk18;
+    s16 unk1a;
+    u8 unk1c[0x4];
+    s16 unk20;
+    s16 unk22;
+    u8 unk24[0x14];
+    s16 unk38;
+    s16 unk3a;
+} HalfwordGetterOwnertext_004AB8B0;
+
+
+
+typedef struct WordGetterOwnertext_004AB8B0
+{
+    u8 unk00[0x4];
+    u32 unk04;
+    u8 unk08[0x8];
+    u32 unk10;
+    u8 unk14[0x4];
+    u32 unk18;
+    u8 unk1c[0x14];
+    u32 unk30;
+} WordGetterOwnertext_004AB8B0;
+
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AB8B0);
 
@@ -60,11 +89,26 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC850);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC8B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC910);
+/** Return the word at receiver offset 0x30. */
+u32 func_004AC910(const void* object)
+{
+    const WordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk30;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC920);
+/** Return the signed halfword at receiver offset 0x38. */
+s16 func_004AC920(const void* object)
+{
+    const HalfwordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk38;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC930);
+/** Return the signed halfword at receiver offset 0x3A. */
+s16 func_004AC930(const void* object)
+{
+    const HalfwordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk3a;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC940);
 
@@ -76,7 +120,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACA00);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACA50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACAE0);
+/** Return the word at receiver offset 0x4. */
+u32 func_004ACAE0(const void* object)
+{
+    const WordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk04;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACAF0);
 
@@ -204,11 +253,26 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0550);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B05A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0600);
+/** Return the word at receiver offset 0x30. */
+u32 func_004B0600(const void* object)
+{
+    const WordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk30;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0610);
+/** Return the signed halfword at receiver offset 0x38. */
+s16 func_004B0610(const void* object)
+{
+    const HalfwordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk38;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0620);
+/** Return the signed halfword at receiver offset 0x3A. */
+s16 func_004B0620(const void* object)
+{
+    const HalfwordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk3a;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0630);
 
@@ -228,7 +292,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0730);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0780);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0810);
+/** Return the word at receiver offset 0x4. */
+u32 func_004B0810(const void* object)
+{
+    const WordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk04;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0820);
 
@@ -248,11 +317,26 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0CA0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0D00);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0D60);
+/** Return the word at receiver offset 0x18. */
+u32 func_004B0D60(const void* object)
+{
+    const WordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk18;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0D70);
+/** Return the signed halfword at receiver offset 0x20. */
+s16 func_004B0D70(const void* object)
+{
+    const HalfwordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk20;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0D80);
+/** Return the signed halfword at receiver offset 0x22. */
+s16 func_004B0D80(const void* object)
+{
+    const HalfwordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk22;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0D90);
 
@@ -264,7 +348,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0DC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0DD0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0E20);
+/**
+ * @brief Return the floating-point value 0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_004B0E20(void* object)
+{
+    return 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0E30);
 
@@ -272,7 +364,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0E80);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0EB0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0F40);
+/** Return the word at receiver offset 0x4. */
+u32 func_004B0F40(const void* object)
+{
+    const WordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk04;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0F50);
 
@@ -372,17 +469,45 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B29A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2A00);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2A60);
+/** Return the word at receiver offset 0x10. */
+u32 func_004B2A60(const void* object)
+{
+    const WordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk10;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2A70);
+/** Return the signed halfword at receiver offset 0x18. */
+s16 func_004B2A70(const void* object)
+{
+    const HalfwordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk18;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2A80);
+/** Return the signed halfword at receiver offset 0x1A. */
+s16 func_004B2A80(const void* object)
+{
+    const HalfwordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk1a;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2A90);
+/**
+ * @brief Return the floating-point value 0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_004B2A90(void* object)
+{
+    return 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2AA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2AD0);
+/** Return the word at receiver offset 0x4. */
+u32 func_004B2AD0(const void* object)
+{
+    const WordGetterOwnertext_004AB8B0* receiver = object;
+    return receiver->unk04;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2AE0);
 

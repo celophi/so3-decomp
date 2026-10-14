@@ -1,6 +1,14 @@
 #include "include_asm.h"
 #include "overlays/lib/text_00419A70.h"
 
+typedef struct WordSetterOwnertext_00419A70
+{
+    u8 unk00[0x70];
+    u32 unk70;
+} WordSetterOwnertext_00419A70;
+
+
+
 /** Partial list indicator rectangle, drawing storage, flags, and scalar pair. */
 struct LibListIndicatorState
 {
@@ -487,7 +495,12 @@ s32 func_004294F0(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429500);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004295B0);
+/** Store the word at receiver offset 0x70. */
+void func_004295B0(void* object, u32 value)
+{
+    WordSetterOwnertext_00419A70* receiver = static_cast<WordSetterOwnertext_00419A70*>(object);
+    receiver->unk70 = value;
+}
 
 void func_004295C0(void* object)
 {

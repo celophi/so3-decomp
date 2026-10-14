@@ -1,6 +1,16 @@
 #include "include_asm.h"
 #include "overlays/lib/text_00429B00.h"
 
+typedef struct WordSetterOwnertext_00429B00
+{
+    u8 unk00[0x24];
+    u32 unk24;
+    u8 unk28[0x400];
+    u32 unk428;
+} WordSetterOwnertext_00429B00;
+
+
+
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00429B00);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00429BF0);
@@ -427,7 +437,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004325A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432660);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432710);
+/** Store the word at receiver offset 0x24. */
+void func_00432710(void* object, u32 value)
+{
+    WordSetterOwnertext_00429B00* receiver = object;
+    receiver->unk24 = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432720);
 
@@ -533,7 +548,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00435110);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00435150);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00435190);
+/** Store the word at receiver offset 0x428. */
+void func_00435190(void* object, u32 value)
+{
+    WordSetterOwnertext_00429B00* receiver = object;
+    receiver->unk428 = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004351A0);
 

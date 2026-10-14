@@ -3,6 +3,31 @@
 #include "overlays/lib/text_0045AD10.h"
 #include "main/resident_data.h"
 #include "overlays/lib/item_allocation.h"
+
+typedef struct ByteSetterOwnertext_004095C0
+{
+    u8 unk00[0x6];
+    u8 unk06;
+    u8 unk07[0x1];
+    u8 unk08;
+    u8 unk09;
+    u8 unk0a[0x28];
+    u8 unk32;
+    u8 unk33;
+    u8 unk34[0x8A0];
+    u8 unk8d4;
+    u8 unk8d5[0x35];
+    u8 unk90a;
+} ByteSetterOwnertext_004095C0;
+
+
+
+typedef struct WordSetterOwnertext_004095C0
+{
+    u32 unk00;
+} WordSetterOwnertext_004095C0;
+
+
 extern "C" ResidentObject1B64F8* D_001B64F8;
 
 /** Opaque 0x50-byte runtime resource slot. */
@@ -98,21 +123,51 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B360);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B3A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B640);
+/** Store the byte at receiver offset 0x33. */
+void func_0040B640(void* object, u8 value)
+{
+    ByteSetterOwnertext_004095C0* receiver = static_cast<ByteSetterOwnertext_004095C0*>(object);
+    receiver->unk33 = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B650);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B660);
+/** Store the byte at receiver offset 0x32. */
+void func_0040B660(void* object, u8 value)
+{
+    ByteSetterOwnertext_004095C0* receiver = static_cast<ByteSetterOwnertext_004095C0*>(object);
+    receiver->unk32 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B670);
+/** Store the byte at receiver offset 0x8. */
+void func_0040B670(void* object, u8 value)
+{
+    ByteSetterOwnertext_004095C0* receiver = static_cast<ByteSetterOwnertext_004095C0*>(object);
+    receiver->unk08 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B680);
+/** Store the byte at receiver offset 0x9. */
+void func_0040B680(void* object, u8 value)
+{
+    ByteSetterOwnertext_004095C0* receiver = static_cast<ByteSetterOwnertext_004095C0*>(object);
+    receiver->unk09 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B690);
+/** Store the word at receiver offset 0x0. */
+void func_0040B690(void* object, u32 value)
+{
+    WordSetterOwnertext_004095C0* receiver = static_cast<WordSetterOwnertext_004095C0*>(object);
+    receiver->unk00 = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B6A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B6B0);
+/** Store the byte at receiver offset 0x6. */
+void func_0040B6B0(void* object, u8 value)
+{
+    ByteSetterOwnertext_004095C0* receiver = static_cast<ByteSetterOwnertext_004095C0*>(object);
+    receiver->unk06 = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B6C0);
 
@@ -263,9 +318,19 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040F940);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040FAE0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040FAF0);
+/** Store the byte at receiver offset 0x8D4. */
+void func_0040FAF0(void* object, u8 value)
+{
+    ByteSetterOwnertext_004095C0* receiver = static_cast<ByteSetterOwnertext_004095C0*>(object);
+    receiver->unk8d4 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040FB00);
+/** Store the byte at receiver offset 0x90A. */
+void func_0040FB00(void* object, u8 value)
+{
+    ByteSetterOwnertext_004095C0* receiver = static_cast<ByteSetterOwnertext_004095C0*>(object);
+    receiver->unk90a = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040FB10);
 
@@ -327,7 +392,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412C10);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412C20);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412C30);
+/**
+ * @brief Return the floating-point value 0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00412C30(void* object)
+{
+    return 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412C40);
 
