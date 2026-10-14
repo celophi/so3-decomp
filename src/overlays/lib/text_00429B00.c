@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/text_00429B00.h"
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00429B00);
 
@@ -20,11 +21,32 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A2E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A340);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A3A0);
+/**
+ * @brief Read the word at offset 0x10 in a sequence state.
+ * @param state Sequence state to read.
+ * @return The stored word.
+ */
+u32 func_0042A3A0(const LibTextSequenceState* state) {
+    return state->unk10;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A3B0);
+/**
+ * @brief Read the signed halfword at offset 0x18 in a sequence state.
+ * @param state Sequence state to read.
+ * @return The stored count.
+ */
+s16 func_0042A3B0(const LibTextSequenceState* state) {
+    return state->unk18;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A3C0);
+/**
+ * @brief Read the signed halfword at offset 0x1A in a sequence state.
+ * @param state Sequence state to read.
+ * @return The stored count.
+ */
+s16 func_0042A3C0(const LibTextSequenceState* state) {
+    return state->unk1A;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A3D0);
 
@@ -34,7 +56,16 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A3F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A400);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A460);
+/**
+ * @brief Clear four consecutive words.
+ * @param words Pointer to the first word to clear.
+ */
+void func_0042A460(u32* words) {
+    words[0] = 0;
+    words[1] = 0;
+    words[2] = 0;
+    words[3] = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A480);
 
@@ -44,7 +75,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A5D0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A620);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A6C0);
+/**
+ * @brief Read the buffer pointer from a sequence state.
+ * @param state Sequence state to read.
+ * @return The stored buffer pointer.
+ */
+void* func_0042A6C0(const LibTextSequenceState* state) {
+    return state->unk04;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A6D0);
 
@@ -52,17 +90,70 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A720);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A770);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A7C0);
+/**
+ * @brief Default append handler for a channel.
+ * @param object Channel object receiving the request.
+ * @param value Channel value.
+ * @param optional1 Optional second component.
+ * @param optional2 Optional third component.
+ * @param key Sort value.
+ * @return Status.
+ */
+s32 func_0042A7C0(void* object, const void* value, const void* optional1, const void* optional2, float key) {
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A7D0);
+/**
+ * @brief Default set handler for a channel.
+ * @param object Channel object receiving the request.
+ * @param index Entry index.
+ * @param key Sort value.
+ * @param value Channel value.
+ * @return Status.
+ */
+s32 func_0042A7D0(void* object, s32 index, float key, const void* value) {
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A7E0);
+/**
+ * @brief Default insert handler for a channel.
+ * @param object Channel object receiving the request.
+ * @param index Entry index.
+ * @param key Sort value.
+ * @param value Channel value.
+ * @return Status.
+ */
+s32 func_0042A7E0(void* object, s32 index, float key, const void* value) {
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A7F0);
+/**
+ * @brief Default channel entry reader.
+ * @param object Channel object receiving the request.
+ * @param index Entry index.
+ * @param key Receives the sort value.
+ * @param value Receives the channel value.
+ * @return Status.
+ */
+s32 func_0042A7F0(void* object, s32 index, float* key, void* value) {
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A800);
+/**
+ * @brief Default channel add handler.
+ * @param object Channel object receiving the request.
+ * @param value Channel value.
+ * @param key Sort value.
+ */
+void func_0042A800(void* object, const void* value, float key) {
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A810);
+/**
+ * @brief Perform no work for the default channel handler.
+ * @param object Channel object receiving the request.
+ */
+void func_0042A810(void* object) {
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A820);
 
@@ -96,29 +187,86 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AA80);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AA90);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AAA0);
+/**
+ * @brief Test whether the word at offset 0x704 is nonzero.
+ * @param object Buffer state to inspect.
+ * @return One if the word is nonzero, otherwise zero.
+ */
+u32 func_0042AAA0(const LibTextBufferState* object) {
+    return object->unk704 != 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AAB0);
+/**
+ * @brief Return the embedded buffer at byte offset 0x79C.
+ * @param object Pointer to the containing object.
+ * @return Pointer to the embedded buffer.
+ */
+u8* func_0042AAB0(LibTextBufferState* object) {
+    return object->unk79C;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AAC0);
+/**
+ * @brief Read the byte at offset 0x794 in a buffer state.
+ * @param object Buffer state to read.
+ * @return The stored byte.
+ */
+u8 func_0042AAC0(const LibTextBufferState* object) {
+    return object->unk794;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AAD0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AAF0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AB20);
+/**
+ * @brief Return the embedded vector at offset 0x570.
+ * @param object Buffer state containing the vector.
+ * @return Pointer to the 16-byte embedded vector.
+ */
+unsigned __int128* func_0042AB20(LibTextBufferState* object) {
+    return &object->unk570;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AB30);
+/**
+ * @brief Store the low byte at 0x210 and set bit 3 at 0x59D.
+ * @param object Buffer state containing the value and flag bytes.
+ * @param value Value whose low byte is stored.
+ */
+void func_0042AB30(LibTextBufferState* object, u32 value) {
+    object->unk210 = value;
+    object->unk59d_3 = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AB50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042ABA0);
+/**
+ * @brief Store a byte at offset 0x210 in a buffer state.
+ * @param object Buffer state to update.
+ * @param value Byte to store.
+ */
+void func_0042ABA0(LibTextBufferState* object, u8 value) {
+    object->unk210 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042ABB0);
+/**
+ * @brief Set the bytes at offsets 0x62 and 0x64 in a buffer state.
+ * @param object Buffer state to update.
+ */
+void func_0042ABB0(LibTextBufferState* object) {
+    object->unk64 = 0;
+    object->unk62 = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042ABC0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042ABE0);
+/**
+ * @brief Copy a 16-byte value to offset 0x820 in a buffer state.
+ * @param object Buffer state to update.
+ * @param value 16-byte aligned source value.
+ */
+void func_0042ABE0(LibTextBufferState* object, const unsigned __int128* value) {
+    object->unk820 = *value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042ABF0);
 
@@ -130,7 +278,13 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AD80);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042ADE0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AE70);
+/**
+ * @brief Copy the byte at offset 0x83C to offset 0x60.
+ * @param object Buffer state to update.
+ */
+void func_0042AE70(LibTextBufferState* object) {
+    object->unk60 = object->unk83C;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AE80);
 
@@ -178,7 +332,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E710);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E860);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E9A0);
+/**
+ * @brief Return the input pointer unchanged.
+ * @param object Pointer to return.
+ * @return The input pointer.
+ */
+void* func_0042E9A0(void* object) {
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E9B0);
 
@@ -188,7 +349,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042EAC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042EB20);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042EB30);
+/**
+ * @brief Store a word at offset 0x14 and mark the state active at 0x0C.
+ * @param state State to update.
+ * @param value Word to store.
+ */
+void func_0042EB30(LibTextValueState* state, u32 value) {
+    state->unk14 = value;
+    state->unk0C = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042EB40);
 

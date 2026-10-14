@@ -107,6 +107,12 @@ s32 lib_list_indicator_init(ItemCreationClass1725D0* object, float x, float y, f
 s32 lib_marker_init_rectangle(ItemCreationClass172870* object, float x, float y, float width, float height);
 
 /**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_0041A530(void* object);
+
+/**
  * @brief Initialize the scalar indicator rectangle and storage.
  * @param object Scalar indicator widget.
  * @param x Horizontal position.
@@ -116,6 +122,131 @@ s32 lib_marker_init_rectangle(ItemCreationClass172870* object, float x, float y,
  * @return One on success, or zero when storage initialization fails.
  */
 s32 func_0041AD10(ItemCreationClass172600* object, float x, float y, float width, float height);
+
+/**
+ * @brief Set the receiver's byte at offset 0x60 to seven.
+ * @param object Receiver to update.
+ */
+void func_0041AD80(void* object);
+
+/**
+ * @brief Set the receiver's byte at offset 0x60 to seven.
+ * @param object Receiver to update.
+ */
+void func_0041F130(void* object);
+
+/**
+ * @brief Set the receiver's byte at offset 0x60 to seven.
+ * @param object Receiver to update.
+ */
+void func_0041F190(void* object);
+
+/**
+ * @brief Set the receiver's byte at offset 0x60 to seven.
+ * @param object Receiver to update.
+ */
+void func_0041F250(void* object);
+
+/**
+ * @brief Return the fixed value 16.
+ * @param object Receiver or first argument; unused.
+ * @return Always 16.
+ */
+s32 func_00421240(void* object);
+
+/**
+ * @brief Store two pointers in the receiver at offsets 0x14 and 0x18.
+ * @param object Receiver to update.
+ * @param first Pointer stored at offset 0x14.
+ * @param second Pointer stored at offset 0x18.
+ */
+void func_004214C0(void* object, void* first, void* second);
+
+/**
+ * @brief Return the fixed value 398.
+ * @param object Receiver or first argument; unused.
+ * @return Always 398.
+ */
+s32 func_004249C0(void* object);
+
+/**
+ * @brief Return the fixed value 230.
+ * @param object Receiver or first argument; unused.
+ * @return Always 230.
+ */
+s32 func_00424A50(void* object);
+
+/**
+ * @brief Set the receiver's byte at offset 0x60 to nine.
+ * @param object Receiver to update.
+ */
+void func_00424A60(void* object);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_00424AD0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00425280(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_004284E0(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_004284F0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00428500(void* object);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_00428DC0(void* object);
+
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_00428E40(void* object);
+
+/**
+ * @brief Return the fixed value 5.
+ * @param object Receiver or first argument; unused.
+ * @return Always 5.
+ */
+s32 func_004294F0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_004295C0(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_00429850(void* object);
 
 #ifdef __cplusplus
 }

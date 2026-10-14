@@ -54,6 +54,13 @@ typedef struct FieldStateTargets
     u8 unk87;
 } FieldStateTargets;
 
+/** Partial receiver with a state byte at offset 0x60. */
+typedef struct FieldByteState60
+{
+    u8 unk00[0x60];
+    u8 unk60;
+} FieldByteState60;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -100,6 +107,12 @@ void func_00318A30(FieldStateTargets* object);
  * @return Always 4.
  */
 s32 func_00316440(void* object);
+
+/**
+ * @brief Set the receiver's byte at offset 0x60 to two.
+ * @param object Receiver to update.
+ */
+void func_003169A0(FieldByteState60* object);
 
 #ifdef __cplusplus
 }

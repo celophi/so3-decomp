@@ -1387,12 +1387,80 @@ float func_00286440(FieldClass156710* object);
 float func_00286450(FieldClass156640* object);
 
 /**
+ * @brief Store the current script word in the field-context state.
+ * @param object Script command receiver.
+ * @param count Number of command operand words; unused.
+ * @return One to advance to the following command.
+ */
+s32 func_00286530(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Apply two script words to the field-context state.
+ * @param object Script command receiver.
+ * @return One to advance to the following command.
+ */
+s32 func_00286460(FieldScriptObject151D40* object);
+
+/**
+ * @brief Compare the resident resource count with the current script word.
+ * @param object Script command receiver.
+ * @return One when the count is unavailable or insufficient, otherwise zero.
+ */
+s32 func_002864A0(FieldScriptObject151D40* object);
+
+/**
+ * @brief Check the field-context attachment and set the receiver value on failure.
+ * @param object Script command receiver.
+ * @param count Number of command operand words; unused.
+ * @return One when the attachment state matches, otherwise zero.
+ */
+s32 func_002865A0(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Release the current field-context attachment.
+ * @param object Script command receiver.
+ * @param count Number of command operand words; unused.
+ * @return One to advance to the following command.
+ */
+s32 func_00286570(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Apply the current script index to the field-context object.
+ * @param object Script command receiver.
+ * @param count Number of command operand words; unused.
+ * @return One to advance to the following command.
+ */
+s32 func_002865F0(FieldScriptObject151D40* object, u32 count);
+
+/**
  * @brief Complete this script command without changing its receiver.
  * @param object Callback receiver.
  * @param count Number of command operand words.
  * @return One to advance to the following command.
  */
 s32 func_00286620(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Consume one script word and invoke the matching node's release handler.
+ * @param object Script command receiver.
+ * @param count Number of command operand words; unused.
+ * @return One to advance to the following command.
+ */
+s32 func_00286630(FieldScriptObject151D40* object, u32 count);
+
+/**
+ * @brief Read two script words and apply them to the field context.
+ * @param object Script command receiver.
+ * @return One to advance to the following command.
+ */
+s32 func_00286920(FieldScriptObject151D40* object);
+
+/**
+ * @brief Read five script words and update the selected field-context entry.
+ * @param object Script command receiver.
+ * @return One to advance to the following command.
+ */
+s32 func_002868B0(FieldScriptObject151D40* object);
 
 /**
  * @brief Complete this script command without changing its receiver.

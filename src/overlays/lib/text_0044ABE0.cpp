@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/lib/text_0044ABE0.h"
+#include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
 
 /** Partial indexed-resource fields at CC and D0. */
@@ -11,6 +12,8 @@ typedef struct LibIndexedResourceState
 } LibIndexedResourceState;
 extern "C" s32 func_00464EF0(FieldRuntime* runtime, s32 index);
 extern "C" s32 func_00467800(ItemCreationClass174C40* object, s32 resource, s32 first, s32 second, s32 third, s32 fourth, float x, float y);
+extern "C" void func_00465A90(void* owner, LibClass174610* object);
+extern "C" ResidentDmaQueue* g_vif1_dma_queue;
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044ABE0);
 
@@ -22,7 +25,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AE70);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AFF0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B100);
+/** @brief Run the default transform state hook. */
+void LibClass174610::func_0044B100(u32 first, u32 second, u32 third)
+{
+}
 
 /**
  * @brief Set transform codes and the third coordinate while preserving x and y.
@@ -48,15 +54,48 @@ void LibClass174610::set_codes_and_z(s32 code, u32 first, float z, u32 second, u
         third = 255 - (code - 13);
     }
     unka9 = third;
-    LibClass171EC0::func_003EF790(unk20.components[0], unk20.components[1], z);
+    float x = unk20.components[0];
+    float y = unk20.components[1];
+    unk20.components[0] = x;
+    unk20.components[1] = y;
+    unk20.components[2] = z;
+    unk20.components[3] = 1.0f;
     unkae = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B190);
+/** @brief Update the vector's x and y components while preserving z. */
+extern "C" void func_0044B190(LibVectorUpdateView* state, float x, float y)
+{
+    float z = state->unk20.z;
+    state->unk20.x = x;
+    state->unk20.y = y;
+    state->unk20.z = z;
+    state->unk20.w = 1.0f;
+    state->unkAE = 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B1C0);
+/** @brief Detach the transform once and mark it released. */
+extern "C" void func_0044B1C0(LibClass174610* object)
+{
+    if (object->unkaf == 0)
+    {
+        if (object->unk94 != 0)
+        {
+            func_00465A90(object->unk94, object);
+        }
+        object->LibClass178A90::func_003EF740();
+        object->unkaf = 1;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B210);
+/** @brief Detach this transform from its owner when attached. */
+extern "C" void func_0044B210(LibClass174610* object)
+{
+    if (object->unk94 != 0)
+    {
+        func_00465A90(object->unk94, object);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B240);
 
@@ -146,19 +185,48 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BF50);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BF60);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C050);
+/** @brief Set the receiver's byte at offset 0x60 to 8. @param object Receiver to update. */
+void func_0044C050(LibObjectByte60* object)
+{
+    object->unk60 = 8;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C060);
+/** @brief Perform no work. @param object Unused receiver. */
+void func_0044C060(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C070);
+extern "C" u8 D_508240[];
+extern "C" void* D_001B663C;
+extern "C" void func_004D92C0(void* object, s32 value);
+extern "C" void func_004D00B0(void* object);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C080);
+/** @brief Return the address of D_508240. @return The data symbol's address. */
+const void* func_0044C070(void)
+{
+    return D_508240;
+}
+
+/** @brief Clear the selected state in the shared lib object. */
+void func_0044C080(void)
+{
+    func_004D92C0(D_001B663C, 1);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C0A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C0F0);
+/** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
+void func_0044C0F0(void* object)
+{
+    func_004D00B0(object);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C110);
+/** @brief Queue the receiver's DMA callback interface. */
+extern "C" s32 func_0044C110(LibClass174610* object)
+{
+    LibClass171FF0* submission = static_cast<LibClass171FF0*>(object);
+    return func_00114100(g_vif1_dma_queue, reinterpret_cast<DmaSubmission*>(submission));
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C140);
 
@@ -166,21 +234,61 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044CE10);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044CF30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D070);
+/** @brief Set the receiver's byte at offset 0x60 to 8. @param object Receiver to update. */
+extern "C" void func_0044D070(LibObjectByte60* object)
+{
+    object->unk60 = 8;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D080);
+extern "C" u8 D_508230[];
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D090);
+/** @brief Return the address of D_508230. @return The data symbol's address. */
+extern "C" const void* func_0044D080(void)
+{
+    return D_508230;
+}
+
+/** @brief Clear the intrusive owner and invoke the base transform release. @param object Transform owner to detach. */
+extern "C" void func_0044D090(LibClass178A90* object)
+{
+    object->owner = 0;
+    object->LibClass178A90::func_003EF740();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D0B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D0C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D0D0);
+/** Partial singleton view for the display pointer at +0x4458. */
+typedef struct LibDisplayManagerView
+{
+    u8 unk00[0x4458];
+    void* current_display;
+} LibDisplayManagerView;
+
+/** Partial display view for the ready byte at +0x9C. */
+typedef struct LibDisplayReadyView
+{
+    u8 unk00[0x9C];
+    u8 ready;
+} LibDisplayReadyView;
+
+/** @brief Update the transform and mark the current display ready. @param object Transform receiver. */
+extern "C" void func_0044D0D0(void* object)
+{
+    static_cast<LibClass178EA0*>(object)->LibClass178EA0::func_003EEBD0();
+    LibDisplayManagerView* manager = static_cast<LibDisplayManagerView*>(D_001B661C);
+    LibDisplayReadyView* display = static_cast<LibDisplayReadyView*>(manager->current_display);
+    display->ready = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D100);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D150);
+/** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
+extern "C" void func_0044D150(void* object)
+{
+    func_004D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D170);
 
@@ -240,7 +348,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451B90);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451C00);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451E20);
+/** @brief Return the fixed value 35. @param object Unused receiver. @return Always 35. */
+extern "C" s32 func_00451E20(void* object)
+{
+    return 35;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451E30);
 
@@ -317,7 +429,10 @@ extern "C" void lib_draw_state_init(LibDrawState64* state)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454060);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004540D0);
+extern "C" s32 func_004540D0(void)
+{
+    return 0x2B;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004540E0);
 
@@ -331,11 +446,17 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454650);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004546D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454730);
+extern "C" s32 func_00454730(void)
+{
+    return 10;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454740);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004547B0);
+extern "C" s32 func_004547B0(void)
+{
+    return 0x2B;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004547C0);
 
@@ -377,7 +498,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456140);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456190);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456200);
+extern "C" s32 func_00456200(void)
+{
+    return 40;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456210);
 
@@ -393,11 +517,17 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004568A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004568E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456940);
+extern "C" s32 func_00456940(void)
+{
+    return 6;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456950);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004569C0);
+extern "C" s32 func_004569C0(void)
+{
+    return 36;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004569D0);
 
@@ -465,6 +595,9 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0045A5D0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0045A770);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0045ABA0);
+extern "C" s32 func_0045ABA0(void)
+{
+    return 9;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0045ABB0);

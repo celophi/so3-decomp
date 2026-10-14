@@ -99,16 +99,6 @@ typedef struct FieldState2BAF0
     u8 unk1e8;
 } FieldState2BAF0;
 
-typedef struct FieldState2B390
-{
-    u8 unk00[0x1E4];
-    u32 unk1e4;
-    u8 unk1e8[2];
-    u8 unk1ea_0_3 : 4;
-    u8 unk1ea_4 : 1;
-    u8 unk1ea_5_7 : 3;
-} FieldState2B390;
-
 typedef struct FieldQword27A9A0
 {
     unsigned __int128 value;
@@ -171,6 +161,7 @@ extern "C" s32 func_433880(void*, s32);
 extern "C" void* func_13A4C0(void* destination, const void* source, u32 size);
 extern "C" void* func_13A678(void* destination, s32 value, u32 size);
 extern "C" u32 func_11C8C0(void* table, s32 index);
+extern "C" void func_1105E0(ResidentRequest112400* requests, void* target);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002764D0);
 
@@ -786,7 +777,23 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027A9
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027AA60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027ABF0);
+/** @brief Release the attached handle and update the state flag selected by bit 5. */
+void func_0027ABF0(FieldObject22E680* object)
+{
+    if (object->unk50 != 0)
+    {
+        func_1105E0(D_001B65F8, object->unk50);
+        object->unk50 = 0;
+    }
+    if (object->unk4c_5 == 0)
+    {
+        object->unk4c_0 = 1;
+    }
+    else
+    {
+        object->unk4c_3 = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027AC70);
 
@@ -850,7 +857,7 @@ extern "C" void func_0027B350(FieldList27B350* object)
     }
 }
 
-void func_0027B390(FieldState2B390* object, u32 value, s32 force)
+void func_0027B390(ResidentContextObject58* object, u32 value, s32 force)
 {
     if (value != object->unk1e4 || force != 0)
     {
@@ -1000,7 +1007,15 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027C2
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027C2A0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027CB20);
+/**
+ * @brief Apply the stored context identifier using the supplied transition value.
+ * @param object Field-context object containing the identifier.
+ * @param value Second transition value.
+ */
+void func_0027CB20(ResidentContextObject58* object, s32 value)
+{
+    func_0027CB50(object, object->unk1bc, 0, value);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027CB50);
 

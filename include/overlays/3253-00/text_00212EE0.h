@@ -5,6 +5,11 @@
 
 union LibVector4;
 struct BattlePointFlagFields20;
+struct BattlePointFlagSlot20;
+struct BattlePointFlagFields30;
+struct BattlePointFlagSlot30;
+struct BattlePointFlagSlot40;
+struct BattlePointFlagFields40;
 struct BattleQuaternionTrackFields;
 struct BattleQuaternionKey;
 struct BattleVectorSlot20;
@@ -79,6 +84,72 @@ float battle_quaternion_key_span(const BattleQuaternionTrackFields* object);
 void battle_set_point_vector_and_flag(BattlePointFlagFields20* object, float x, float y, float z);
 
 /**
+ * @brief Set the receiver's byte at 0x50 and copy a 128-bit value to 0x20.
+ * @param object Receiver.
+ * @param value Value to copy.
+ */
+void func_00218C40(BattlePointFlagSlot20* object, const unsigned __int128* value);
+
+/**
+ * @brief Set the receiver's byte at 0x50 and write four floats at 0x30.
+ * @param object Receiver.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ * @param w Fourth component.
+ */
+void func_00218C80(BattlePointFlagFields30* object, float x, float y, float z, float w);
+
+/**
+ * @brief Set the receiver's byte at 0x50 and pass its vector at 0x30 to the vector helper.
+ * @param object Receiver.
+ */
+void func_00218CE0(BattlePointFlagFields30* object);
+
+/**
+ * @brief Set the receiver's byte at 0x50 and pass its vector at 0x30 to the vector helper.
+ * @param object Receiver.
+ */
+void func_00218D10(BattlePointFlagFields30* object);
+
+/**
+ * @brief Set the receiver's byte at 0x50 and copy a 128-bit value to 0x30.
+ * @param object Receiver.
+ * @param value Value to copy.
+ */
+void func_00218CA0(BattlePointFlagSlot30* object, const unsigned __int128* value);
+
+/**
+ * @brief Set the receiver's byte at 0x50 and copy a 128-bit value to 0x30.
+ * @param object Receiver.
+ * @param value Value to copy.
+ */
+void func_00218CC0(BattlePointFlagSlot30* object, const unsigned __int128* value);
+
+/**
+ * @brief Set the receiver's byte at 0x50 and copy a 128-bit value to 0x40.
+ * @param object Receiver.
+ * @param value Value to copy.
+ */
+void func_00218D80(BattlePointFlagSlot40* object, const unsigned __int128* value);
+
+/**
+ * @brief Set the receiver's byte at 0x50 and copy a 128-bit value to 0x40.
+ * @param object Receiver.
+ * @param value Value to copy.
+ */
+void func_00218DA0(BattlePointFlagSlot40* object, const unsigned __int128* value);
+
+/**
+ * @brief Set the receiver's byte at 0x50 and write three floats at 0x40.
+ * @param object Receiver.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
+void func_00218DC0(BattlePointFlagFields40* object, float x, float y, float z);
+
+/**
  * @brief Test whether a floating-point value is less than zero.
  * @param value Value to test.
  * @return One for a negative value; zero otherwise, including unordered values.
@@ -122,6 +193,12 @@ void func_00218E70(void* object);
  * @return Always 0.
  */
 s32 func_00218E80(void* object);
+
+/**
+ * @brief Return the address of the global object at 0x0051E050.
+ * @return Address of the global object.
+ */
+void* func_00218EB0(void);
 
 /**
  * @brief Perform no work.
@@ -275,6 +352,33 @@ s32 func_0021FBE0(void* object);
 void func_0021FBF0(void* object);
 
 /**
+ * @brief Clear the four words at offsets 0x0, 0x4, 0x8, and 0xC.
+ * @param object Receiver to update.
+ */
+void func_0021FC50(void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x4.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0021FE20(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x18.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_00220150(const void* object);
+
+/**
+ * @brief Read the signed halfword at receiver offset 0x20.
+ * @param object Receiver to inspect.
+ * @return Stored signed value.
+ */
+s32 func_00220160(const void* object);
+
+/**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
  * @return Always 0.
@@ -300,6 +404,27 @@ s32 func_00220190(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_002201A0(void* object);
+
+/**
+ * @brief Return the floating-point value zero.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_002201B0(void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x4.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_002201F0(const void* object);
+
+/**
+ * @brief Return the receiver address.
+ * @param object Receiver to inspect.
+ * @return Receiver address.
+ */
+void* func_00220620(const void* object);
 
 /**
  * @brief Perform no work.
@@ -356,6 +481,13 @@ s32 func_00220B10(void* object);
 s32 func_00220B50(void* object);
 
 /**
+ * @brief Return the receiver address.
+ * @param object Receiver to inspect.
+ * @return Receiver address.
+ */
+void* func_00220C30(const void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -381,6 +513,13 @@ s32 func_00220EF0(void* object);
  * @return Always 0.
  */
 s32 func_00220F30(void* object);
+
+/**
+ * @brief Return the receiver address.
+ * @param object Receiver to inspect.
+ * @return Receiver address.
+ */
+void* func_00221060(const void* object);
 
 /**
  * @brief Perform no work.
@@ -451,6 +590,24 @@ void func_00218B60(BattleVectorSlot20* object, const unsigned __int128* value);
 void battle_set_point_vector(BattleVectorFields20* object, float x, float y, float z);
 
 /**
+ * @brief Clear the halfwords at offsets 0x10 and 0x12 and the words at 0x14 and 0x18.
+ * @param object Receiver to update.
+ */
+void func_0021E580(void* object);
+
+/**
+ * @brief Clear the halfwords at offsets 0x10 and 0x12 and the words at 0x14 and 0x18.
+ * @param object Receiver to update.
+ */
+void func_0021E5E0(void* object);
+
+/**
+ * @brief Clear the halfwords at offsets 0x4 and 0x6 and the words at 0x8 and 0xC.
+ * @param object Receiver to update.
+ */
+void func_0021E640(void* object);
+
+/**
  * @brief Read the receiver's word at offset 0x30.
  * @param object Receiver.
  * @return Stored word.
@@ -465,6 +622,19 @@ u32 func_0021EA60(const BattleGetters38* object);
 s16 func_0021EA70(const BattleGetters38* object);
 
 /**
+ * @brief Clear the four words at offsets 0x0, 0x4, 0x8, and 0xC.
+ * @param object Receiver to update.
+ */
+void func_0021F050(void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x4.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0021F200(const void* object);
+
+/**
  * @brief Read the receiver's word at offset 0x10.
  * @param object Receiver.
  * @return Stored word.
@@ -477,6 +647,20 @@ u32 func_0021F530(const BattleGetters18* object);
  * @return Stored signed halfword.
  */
 s16 func_0021F540(const BattleGetters18* object);
+
+/**
+ * @brief Return the floating-point value zero.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_0021F550(void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x4.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0021F590(const void* object);
 
 /**
  * @brief Read the receiver's word at offset 0x40.
@@ -507,6 +691,26 @@ u32 func_00222BA0(const BattleGetters18* object);
 s16 func_00222BB0(const BattleGetters18* object);
 
 /**
+ * @brief Clear the word at offset 0x48 and initialize the receiver state.
+ * @param object Receiver to update.
+ */
+void func_0021D200(void* object);
+
+/**
+ * @brief Install the method table at offset 0x4C and return the receiver.
+ * @param object Receiver to initialize.
+ * @return The receiver.
+ */
+void* func_0021E450(void* object);
+
+/**
+ * @brief Install the method table at offset 0x1C and return the receiver.
+ * @param object Receiver to initialize.
+ * @return The receiver.
+ */
+void* func_0021E4D0(void* object);
+
+/**
  * @brief Copy the receiver's float at offset 0x4C to an output.
  * @param object Receiver.
  * @param output Destination for the value.
@@ -519,6 +723,19 @@ void func_0021D250(const BattleFloatFields50* object, float* output);
  * @param output Destination for the value.
  */
 void func_0021E410(const BattleFloatFields50* object, float* output);
+
+/**
+ * @brief Clear the four words at offsets 0x0, 0x4, 0x8, and 0xC.
+ * @param object Receiver to update.
+ */
+void func_0021EA80(void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x4.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0021EAF0(const void* object);
 
 /**
  * @brief Read the receiver's word at offset 0x20.

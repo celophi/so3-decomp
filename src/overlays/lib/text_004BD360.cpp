@@ -8,6 +8,35 @@
 #include "main/resident_001001E0.h"
 #include "main/resident_00101550.h"
 
+struct LibVectorField10View
+{
+    u8 pad00[0x10];
+    LibVector4 value10;
+};
+
+struct LibVectorField850View
+{
+    u8 pad00[0x850];
+    LibVector4 value850;
+};
+
+struct LibClearFields10View
+{
+    u8 pad00[0x10];
+    u16 value10;
+    u16 value12;
+    u32 value14;
+    u32 value18;
+};
+
+struct LibStateBytes62View
+{
+    u8 pad00[0x62];
+    u8 value62;
+    u8 value63;
+    u8 value64;
+};
+
 /** Partial state shared by the channel implementations using the word getter. */
 struct LibChannelWordState
 {
@@ -106,13 +135,21 @@ typedef struct LibPanelAssociationState
     LibPanelAssociation* association;
 } LibPanelAssociationState;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD360);
+extern "C" void func_004BD360(void* object, const unsigned __int128* value)
+{
+    LibVectorField10View* state = (LibVectorField10View*)object;
+    state->value10.packed = *value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD370);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD380);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD3C0);
+/** @brief Store a float in an indexed array slot. @param values Float array. @param index Slot index. @param value Value to store. */
+extern "C" void func_004BD3C0(float* values, s32 index, float value)
+{
+    values[index] = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD3D0);
 
@@ -128,7 +165,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD4A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD4B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD4C0);
+extern "C" void* func_004BD4C0(void* object, const unsigned __int128* value)
+{
+    LibVector4* vector = (LibVector4*)object;
+    vector->packed = *value;
+    return object;
+}
 
 /**
  * @brief Read the shared word of a native channel implementation.
@@ -348,7 +390,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0CA0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0F50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1440);
+extern "C" void func_004C1440(void* object)
+{
+    LibClearFields10View* state = (LibClearFields10View*)object;
+    state->value10 = 0;
+    state->value12 = 0;
+    state->value14 = 0;
+    state->value18 = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1460);
 
@@ -768,7 +817,10 @@ extern "C" s32 lib_container_init(LibObject178660* object, s32 code, float x, fl
     {
         return 0;
     }
-    object->LibClass171EC0::func_003EF790(x, y, 0.0f);
+    object->LibClass174610::unk20.components[0] = x;
+    object->LibClass174610::unk20.components[1] = y;
+    object->LibClass174610::unk20.components[2] = 0.0f;
+    object->LibClass174610::unk20.components[3] = 1.0f;
     object->set_codes_and_z(code, first, z, second, 0);
     object->unkE0 = 128.0f;
     return 1;
@@ -931,7 +983,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8440);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8510);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8530);
+extern "C" void func_004C8530(void* object)
+{
+    LibStateBytes62View* state = (LibStateBytes62View*)object;
+    state->value64 = 0;
+    state->value62 = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8540);
 
@@ -949,7 +1006,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8F80);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9010);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C94D0);
+extern "C" void func_004C94D0(void* object, const unsigned __int128* value)
+{
+    LibVectorField850View* state = (LibVectorField850View*)object;
+    state->value850.packed = *value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C94E0);
 

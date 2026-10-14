@@ -10,10 +10,25 @@
 #include "include_asm.h"
 
 extern "C" void func_004D6C20(LibClass178DD0* list, void** items, u32* offsets);
+extern "C" void func_004D00B0(LibClass178A90* object);
 
 #define HALF_PI 1.57079637050628662109375f
 
 extern "C" LibClass178F30* D_001B6628;
+extern "C" ResidentDmaQueue* D_001B660C;
+
+struct LibPointerTableFields50
+{
+    u8 pad00[0x50];
+    void** entries;
+};
+
+struct LibHalfwordToggleFields3E78
+{
+    u8 pad00[0x3E78];
+    s16 unk3E78;
+    s16 unk3E7A;
+};
 
 /** @brief View an aligned matrix row as a vector. @param matrix Source matrix. @param index Row index. @return Read-only row vector. */
 static inline const FieldVec4A& matrix_row_vector(const LibMatrix44Value& matrix, s32 index)
@@ -696,7 +711,11 @@ void LibClass178A90::func_004CFFA0(const LibClass178A90* source)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_003EF740__14LibClass178A90Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0090);
+/** @brief Mark the transform's matrix as ready. @param object Transform owner. */
+extern "C" void func_004D0090(LibClass178A90* object)
+{
+    object->unk61 = 1;
+}
 
 extern "C" const void* func_004D00A0(void* object)
 {
@@ -722,7 +741,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D03D0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0460);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D04A0);
+/**
+ * @brief Forward the transform receiver to its state-update handler.
+ * @param object Transform owner.
+ */
+extern "C" void func_004D04A0(LibClass178A90* object)
+{
+    func_004D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D04C0);
 
@@ -732,7 +758,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0640);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D06E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0720);
+/**
+ * @brief Forward the transform receiver to its state-update handler.
+ * @param object Transform owner.
+ */
+extern "C" void func_004D0720(LibClass178A90* object)
+{
+    func_004D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0740);
 
@@ -790,9 +823,19 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5650);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D56B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5740);
+/** @brief Clear the intrusive owner and invoke the base removal hook. @param object Transform owner to detach. */
+extern "C" void func_004D5740(LibClass178A90* object)
+{
+    object->owner = 0;
+    object->LibClass178A90::func_003EF740();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5760);
+/** @brief Clear the intrusive owner and invoke the base removal hook. @param object Transform owner to detach. */
+extern "C" void func_004D5760(LibClass178A90* object)
+{
+    object->owner = 0;
+    object->LibClass178A90::func_003EF740();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5780);
 
@@ -1118,7 +1161,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8700);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8850);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8870);
+void* func_004D8870(const void* object, s32 index)
+{
+    const LibPointerTableFields50* state = (const LibPointerTableFields50*)object;
+    return state->entries[index];
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8890);
 
@@ -1190,13 +1237,35 @@ extern "C" void func_004D99B0(LibBusyObject* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D99E0);
+/** @brief Clear the object's busy flag. @param object Object to release. */
+extern "C" void func_004D99E0(LibBusyObject* object)
+{
+    object->busy = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D99F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9A80);
+/** @brief Queue the object for DMA after marking it busy and storing its channel. @param object Transfer object implementing the DMA callbacks. @param channel DMA channel selector stored at offset 0x51. @return Queue insertion result. */
+extern "C" s32 func_004D9A80(LibBusyObject* object, u8 channel)
+{
+    object->busy = 1;
+    object->channel = channel;
+    // The queue invokes the submission callbacks through the object's vtable.
+    return func_00114100(D_001B660C, reinterpret_cast<DmaSubmission*>(object));
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9AB0);
+/** @brief Queue the object again when its DMA channel changes. @param object Transfer object implementing the DMA callbacks. @param channel Requested DMA channel. */
+extern "C" void func_004D9AB0(LibBusyObject* object, u8 channel)
+{
+    if (object->channel == channel)
+    {
+        return;
+    }
+
+    object->busy = 1;
+    object->channel = channel;
+    func_00114100(D_001B660C, reinterpret_cast<DmaSubmission*>(object));
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9AF0);
 
@@ -1292,7 +1361,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA050);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA0F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA2B0);
+extern "C" u16 func_004DA2B0(const LibClass178EA0* object)
+{
+    return object->unk20c;
+}
 
 /** @brief Mark each transform in the parent chain dirty. @param object First transform, or null. */
 extern "C" void lib_invalidate_transform_chain(LibClass178EA0* object)
@@ -1362,7 +1434,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB7F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB9E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DBB70);
+void func_004DBB70(void* object)
+{
+    LibHalfwordToggleFields3E78* state = (LibHalfwordToggleFields3E78*)object;
+    state->unk3E78 = 0;
+    state->unk3E7A ^= 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DBB90);
 

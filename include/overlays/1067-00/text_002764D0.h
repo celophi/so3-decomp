@@ -85,7 +85,24 @@ public:
 #endif
 
 typedef struct FieldFlaggedListObject FieldFlaggedListObject;
-typedef struct FieldObject22E680 FieldObject22E680;
+typedef struct FieldObject22E680
+{
+    u8 unk00[0x24];
+    s32 unk24;
+    u8 unk28[0x24];
+    u8 unk4c_0 : 1;
+    u8 unk4c_1 : 1;
+    u8 unk4c_2 : 1;
+    u8 unk4c_3 : 1;
+    u8 unk4c_4 : 1;
+    u8 unk4c_5 : 1;
+    u8 unk4c_6 : 1;
+    u8 unk4c_7 : 1;
+    u8 unk4d[3];
+    void* unk50;
+    u8 unk54[0xC];
+    u8 unk60;
+} FieldObject22E680;
 typedef struct FieldObject155540 FieldObject155540;
 typedef struct FieldObject1557B0 FieldObject1557B0;
 typedef struct FieldFloatState28F00 FieldFloatState28F00;
@@ -95,7 +112,6 @@ typedef struct FieldLookupNode2BF70 FieldLookupNode2BF70;
 typedef struct FieldLookupList2BF70 FieldLookupList2BF70;
 typedef struct FieldFlagState271B0 FieldFlagState271B0;
 typedef struct FieldFlagState2B320 FieldFlagState2B320;
-typedef struct FieldState2B390 FieldState2B390;
 typedef struct FieldState2BAF0 FieldState2BAF0;
 typedef struct FieldQword27A9A0 FieldQword27A9A0;
 typedef struct FieldState27A9A0 FieldState27A9A0;
@@ -256,7 +272,22 @@ void func_0027B320(FieldFlagState2B320* object);
  * @param value Word to store.
  * @param force Also update when the stored word already equals value.
  */
-void func_0027B390(FieldState2B390* object, u32 value, s32 force);
+void func_0027B390(ResidentContextObject58* object, u32 value, s32 force);
+
+/**
+ * @brief Set the context's two signed script values.
+ * @param object Field-context object to update.
+ * @param first First signed value.
+ * @param second Second signed value.
+ */
+void func_0027B3D0(void* object, s32 first, s32 second);
+
+/**
+ * @brief Test the state byte of the receiver's attached object.
+ * @param object Field-context object to inspect.
+ * @return One when the attachment exists and its byte at +0x15 is 5.
+ */
+s32 func_0027B710(ResidentContextObject58* object);
 
 /**
  * @brief Store a word and mark the receiver ready.
@@ -298,6 +329,19 @@ void func_0027C0D0(void* context, s32 id, u32 first, u32 mode, u32 second, u32 t
  * @param extra Additional caller value.
  */
 void func_0027C130(void* context, s32 id, u32 extra);
+
+/**
+ * @brief Release and clear the receiver's attached object.
+ * @param object Receiver holding the attachment.
+ */
+void func_0027B740(ResidentContextObject58* object);
+
+/**
+ * @brief Process an indexed operation on the field-context object.
+ * @param object Field-context object to update.
+ * @param index Operation index.
+ */
+void func_0027B7D0(ResidentContextObject58* object, u32 index);
 
 /**
  * @brief Find a list node by its stored key.
@@ -364,6 +408,13 @@ void func_00278950(void* object);
  * @return Zero when the identifier is unchanged, or one after a change.
  */
 s32 func_0027CB50(void* object, s32 identifier, s32 first, s32 second);
+
+/**
+ * @brief Apply the stored context identifier using the supplied transition value.
+ * @param object Field-context object containing the identifier.
+ * @param value Second transition value.
+ */
+void func_0027CB20(ResidentContextObject58* object, s32 value);
 
 #ifdef __cplusplus
 }

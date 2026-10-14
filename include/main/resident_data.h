@@ -77,13 +77,32 @@ typedef struct ResidentContextFlagsDD
     u8 unk7 : 1;
 } ResidentContextFlagsDD;
 
+/** Partial polymorphic object attached to the field context. */
+typedef struct ResidentContextAttachment
+{
+    void* vtable;
+    u8 unk04[0x11];
+    u8 unk15;
+    u8 unk16[0x1E];
+    u8 unk34;
+} ResidentContextAttachment;
+
 /** Partial object at field context offset 0x58. */
 typedef struct ResidentContextObject58
 {
     u8 unk00[0x1B4];
     s32 unk1b4;
-    u8 unk1b8[0x28];
+    u8 unk1b8[4];
+    s32 unk1bc;
+    u8 unk1c0[8];
+    ResidentContextAttachment* unk1c8;
+    u8 unk1cc[0x14];
     float unk1e0;
+    s32 unk1e4;
+    u8 unk1e8[2];
+    u8 unk1ea_0_3 : 4;
+    u8 unk1ea_4 : 1;
+    u8 unk1ea_5_7 : 3;
 } ResidentContextObject58;
 
 /** Partial object at field context offset 0x64. */
@@ -116,7 +135,7 @@ typedef struct ResidentContext
     u8 unk28[4];
     struct FieldResourceList14* unk2c;
     void* unk30;
-    u8 unk34[4];
+    void* unk34;
     ResidentContextObject38* unk38;
     void* unk3c;
     void* unk40;

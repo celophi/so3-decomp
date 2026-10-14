@@ -5,10 +5,25 @@
 #include "main/resident_0010A0E0.h"
 #include "main/resident_data.h"
 #include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/1067-00/text_00212560.h"
+#include "overlays/1067-00/text_0021DB80.h"
+#include "overlays/1067-00/text_002764D0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_0027D380.h"
 
 extern "C" s32 func_10CC40(s32 lower, s32 upper);
+extern "C" s32 func_112610(ResidentRequest112400* request, s32 key);
+
+/** Partial request state used by the resource-count script handler. */
+typedef struct ResidentRequestCountView
+{
+    u8 unk00[0x38];
+    s32 unk38;
+    u8 unk3c[0x334];
+    u8 unk370;
+    u8 unk371[0x4B];
+    u32 unk3bc;
+} ResidentRequestCountView;
 
 void func_0027E520(FieldHeldObject20* object)
 {
@@ -2265,24 +2280,108 @@ float func_00286450(FieldClass156640* object)
     return 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00286460);
+/**
+ * @brief Apply two script words to the field-context state.
+ * @param object Script command receiver.
+ * @return One to advance to the following command.
+ */
+s32 func_00286460(FieldScriptObject151D40* object)
+{
+    const u32* cursor = object->unk548;
+    object->unk548 = cursor + 1;
+    func_0027B3D0(D_001B6430->context->unk58, *cursor, *object->unk548);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_002864A0);
+/** @brief Compare the resident resource count with the current script word. */
+s32 func_002864A0(FieldScriptObject151D40* object)
+{
+    if (func_112610(D_001B65F8, -1) != 0)
+    {
+        ResidentRequestCountView* request = (ResidentRequestCountView*)D_001B65F8;
+        u32 resource_count = request->unk370 != 0
+                                 ? 1
+                                 : (request->unk38 >= 0 ? request->unk3bc : 0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00286530);
+        if (resource_count < *object->unk548)
+        {
+            object->unk14 = 1.0f;
+            return 0;
+        }
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00286570);
+/**
+ * @brief Store the current script word in the field-context state.
+ * @param object Script command receiver.
+ * @param count Number of command operand words; unused.
+ * @return One to advance to the following command.
+ */
+s32 func_00286530(FieldScriptObject151D40* object, u32 count)
+{
+    func_0027B390(D_001B6430->context->unk58, *object->unk548, 0);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_002865A0);
+/**
+ * @brief Release the current field-context attachment.
+ * @param object Script command receiver.
+ * @param count Number of command operand words; unused.
+ * @return One to advance to the following command.
+ */
+s32 func_00286570(FieldScriptObject151D40* object, u32 count)
+{
+    func_0027B740(D_001B6430->context->unk58);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_002865F0);
+/**
+ * @brief Check the field-context attachment and set the receiver value on failure.
+ * @param object Script command receiver.
+ * @param count Number of command operand words; unused.
+ * @return One when the attachment state matches, otherwise zero.
+ */
+s32 func_002865A0(FieldScriptObject151D40* object, u32 count)
+{
+    if (func_0027B710(D_001B6430->context->unk58) == 0)
+    {
+        object->unk14 = 1.0f;
+        return 0;
+    }
+    return 1;
+}
+
+/**
+ * @brief Apply the current script index to the field-context object.
+ * @param object Script command receiver.
+ * @param count Number of command operand words; unused.
+ * @return One to advance to the following command.
+ */
+s32 func_002865F0(FieldScriptObject151D40* object, u32 count)
+{
+    func_0027B7D0(D_001B6430->context->unk58, *object->unk548);
+    return 1;
+}
 
 s32 func_00286620(FieldScriptObject151D40* object, u32 count)
 {
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00286630);
+/**
+ * @brief Consume one script word and invoke the matching node's release handler.
+ * @param object Script command receiver.
+ * @param count Number of command operand words; unused.
+ * @return One to advance to the following command.
+ */
+s32 func_00286630(FieldScriptObject151D40* object, u32 count)
+{
+    const u32* cursor = object->unk548;
+    object->unk548 = cursor + 1;
+    func_0021F900(D_001B6430->context->unk34, *cursor, 3);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00286670);
 
@@ -2305,9 +2404,42 @@ s32 func_002868A0(FieldScriptObject151D40* object, u32 count)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_002868B0);
+/**
+ * @brief Read five script words and update the selected field-context entry.
+ * @param object Script command receiver.
+ * @return One to advance to the following command.
+ */
+s32 func_002868B0(FieldScriptObject151D40* object)
+{
+    const u32* cursor = object->unk548;
+    object->unk548 = cursor + 1;
+    s32 id = *cursor;
+    cursor = object->unk548;
+    object->unk548 = cursor + 1;
+    u32 first = *cursor;
+    cursor = object->unk548;
+    object->unk548 = cursor + 1;
+    u32 mode = *cursor;
+    cursor = object->unk548;
+    object->unk548 = cursor + 1;
+    u32 second = *cursor;
+    u32 third = *object->unk548;
+    func_0027C0D0(D_001B6430->context->unk58, id, first, mode, second, third);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00286920);
+/**
+ * @brief Read two script words and apply them to the field context.
+ * @param object Script command receiver.
+ * @return One to advance to the following command.
+ */
+s32 func_00286920(FieldScriptObject151D40* object)
+{
+    const u32* cursor = object->unk548;
+    object->unk548 = cursor + 1;
+    func_0027C130(D_001B6430->context->unk58, *cursor, *object->unk548);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00286960);
 

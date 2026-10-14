@@ -22,8 +22,27 @@ public:
 
 typedef struct ResidentContextObject38 ResidentContextObject38;
 
-/** Opaque script receiver using the table at 0x151D40. */
-typedef struct FieldScriptObject151D40 FieldScriptObject151D40;
+/** Header for the script data block whose word at +8 points to its records. */
+typedef struct FieldScriptData217590
+{
+    u8 unk00[8];
+    u32 unk08;
+} FieldScriptData217590;
+
+/** Script command state shared by field callback handlers. */
+typedef struct FieldScriptObject151D40
+{
+    u8 unk00[0x14];
+    float unk14;
+    u8 unk18[0x40C];
+    u32 unk424;
+    u32 unk428[40];
+    unsigned char unk4C8_0 : 1;
+    unsigned char unk4C8_1 : 7;
+    u8 unk4C9[0x7B];
+    FieldScriptData217590* unk544;
+    const u32* unk548;
+} FieldScriptObject151D40;
 typedef struct FieldObject217CE0 FieldObject217CE0;
 
 /** A 16-byte script-resource record with a signed key and opaque payload. */

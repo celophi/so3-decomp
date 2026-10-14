@@ -1033,6 +1033,12 @@ s32 func_002B3440(void* object);
 s32 func_002B3640(void* object);
 
 /**
+ * @brief Set the receiver's byte at offset 0x60 to four.
+ * @param object Receiver to update.
+ */
+void func_002B4510(void* object);
+
+/**
  * @brief Return the fixed value 14.
  * @param object Receiver or first argument; unused.
  * @return Always 14.

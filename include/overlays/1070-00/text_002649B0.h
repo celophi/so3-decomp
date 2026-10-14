@@ -76,6 +76,19 @@ void func_002662C0(void* object);
 s32 func_00267510(void* object);
 
 /**
+ * @brief Clear the receiver word at offset 0x28.
+ * @param object Receiver to update.
+ */
+void func_00267520(void* object);
+
+/**
+ * @brief Return the floating-point value 2500.0.
+ * @param object Receiver to update.
+ * @return 2500.0f.
+ */
+float func_00267530(void* object);
+
+/**
  * @brief Return the fixed value 1.
  * @param object Receiver or first argument; unused.
  * @return Always 1.
@@ -88,6 +101,19 @@ s32 func_00267550(void* object);
  * @return Always 3.
  */
 s32 func_002677E0(void* object);
+
+/**
+ * @brief Clear the receiver word at offset 0x28.
+ * @param object Receiver to update.
+ */
+void func_002677F0(void* object);
+
+/**
+ * @brief Return the floating-point value 2500.0.
+ * @param object Receiver to update.
+ * @return 2500.0f.
+ */
+float func_00267800(void* object);
 
 /**
  * @brief Return the fixed value 1.
@@ -111,6 +137,19 @@ s32 func_002679D0(void* object);
 s32 func_00267AB0(void* object);
 
 /**
+ * @brief Clear the receiver word at offset 0x28.
+ * @param object Receiver to update.
+ */
+void func_00267AC0(void* object);
+
+/**
+ * @brief Return the floating-point value 2500.0.
+ * @param object Receiver to update.
+ * @return 2500.0f.
+ */
+float func_00267AD0(void* object);
+
+/**
  * @brief Return the fixed value 1.
  * @param object Receiver or first argument; unused.
  * @return Always 1.
@@ -131,6 +170,19 @@ void func_00267DF0(void* object);
 s32 func_00267E80(void* object);
 
 /**
+ * @brief Clear the receiver word at offset 0x28.
+ * @param object Receiver to update.
+ */
+void func_00267E90(void* object);
+
+/**
+ * @brief Return the floating-point value 2500.0.
+ * @param object Receiver to update.
+ * @return 2500.0f.
+ */
+float func_00267EA0(void* object);
+
+/**
  * @brief Return the fixed value 1.
  * @param object Receiver or first argument; unused.
  * @return Always 1.
@@ -143,6 +195,19 @@ s32 func_00267EC0(void* object);
  * @return Always 3.
  */
 s32 func_00268110(void* object);
+
+/**
+ * @brief Clear the receiver word at offset 0x28.
+ * @param object Receiver to update.
+ */
+void func_00268120(void* object);
+
+/**
+ * @brief Return the floating-point value 2500.0.
+ * @param object Receiver to update.
+ * @return 2500.0f.
+ */
+float func_00268130(void* object);
 
 /**
  * @brief Return the fixed value 1.
@@ -163,6 +228,13 @@ s32 func_00269630(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00269640(void* object);
+
+/**
+ * @brief Return the floating-point value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return 100.0f.
+ */
+float func_00269650(void* object);
 
 /**
  * @brief Perform no work.
@@ -289,6 +361,13 @@ s32 func_00269780(void* object);
 void func_00269790(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_002697A0(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -327,6 +406,13 @@ s32 func_002697F0(void* object);
 void func_00269800(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00269810(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -344,6 +430,13 @@ s32 func_00269830(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00269840(void* object);
+
+/**
+ * @brief Return the floating-point value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return 100.0f.
+ */
+float func_00269850(void* object);
 
 /**
  * @brief Perform no work.
@@ -470,6 +563,13 @@ s32 func_00269980(void* object);
 void func_00269990(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_002699A0(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -508,6 +608,13 @@ s32 func_002699F0(void* object);
 void func_00269A00(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00269A10(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -525,6 +632,13 @@ s32 func_00269A30(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00269A40(void* object);
+
+/**
+ * @brief Return the floating-point value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return 100.0f.
+ */
+float func_00269A50(void* object);
 
 /**
  * @brief Perform no work.
@@ -651,6 +765,13 @@ s32 func_00269B80(void* object);
 void func_00269B90(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00269BA0(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -689,6 +810,13 @@ s32 func_00269BF0(void* object);
 void func_00269C00(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00269C10(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -706,6 +834,13 @@ s32 func_00269C30(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00269C40(void* object);
+
+/**
+ * @brief Return the floating-point value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return 100.0f.
+ */
+float func_00269C50(void* object);
 
 /**
  * @brief Perform no work.
@@ -832,6 +967,13 @@ s32 func_00269D80(void* object);
 void func_00269D90(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00269DA0(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -870,6 +1012,13 @@ s32 func_00269DF0(void* object);
 void func_00269E00(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00269E10(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -887,6 +1036,13 @@ s32 func_00269E30(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00269E40(void* object);
+
+/**
+ * @brief Return the floating-point value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return 100.0f.
+ */
+float func_00269E50(void* object);
 
 /**
  * @brief Perform no work.
@@ -1013,6 +1169,13 @@ s32 func_00269F80(void* object);
 void func_00269F90(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00269FA0(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -1051,6 +1214,13 @@ s32 func_00269FF0(void* object);
 void func_0026A000(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_0026A010(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -1068,6 +1238,13 @@ s32 func_0026A030(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_0026A040(void* object);
+
+/**
+ * @brief Return the floating-point value 100.0.
+ * @param object Receiver or first argument; unused.
+ * @return 100.0f.
+ */
+float func_0026A050(void* object);
 
 /**
  * @brief Perform no work.
@@ -1194,6 +1371,13 @@ s32 func_0026A180(void* object);
 void func_0026A190(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_0026A1A0(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -1232,10 +1416,46 @@ s32 func_0026A1F0(void* object);
 void func_0026A200(void* object);
 
 /**
+ * @brief Return the floating-point value 0.0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_0026A210(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
 void func_0026A220(void* object);
+
+/**
+ * @brief Return the table entry at an offset of 0x80 bytes per index.
+ * @param object Receiver to inspect.
+ * @param index Table entry index.
+ * @return Address of the selected table entry.
+ */
+void* func_0026A290(const void* object, u32 index);
+
+/**
+ * @brief Read the word at receiver offset 0x1C.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A2C0(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0xC.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A2D0(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x10.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A2E0(const void* object);
 
 /**
  * @brief Return the fixed value 32.
@@ -1245,11 +1465,83 @@ void func_0026A220(void* object);
 s32 func_0026A2F0(void* object);
 
 /**
+ * @brief Test whether the word at receiver offset 0x14 is nonzero.
+ * @param object Receiver to inspect.
+ * @return One when the word is nonzero; otherwise zero.
+ */
+s32 func_0026A300(const void* object);
+
+/**
+ * @brief Return the indexed table entry at 80-byte intervals.
+ * @param object Receiver containing the table base at offset 0x14.
+ * @param index Table entry index.
+ * @return Address of the selected table entry.
+ */
+void* func_0026A3B0(const void* object, u32 index);
+
+/**
+ * @brief Read the word at receiver offset 0x1C.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A3F0(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0xC.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A400(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x10.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A410(const void* object);
+
+/**
  * @brief Return the fixed value 1.
  * @param object Receiver or first argument; unused.
  * @return Always 1.
  */
 s32 func_0026A420(void* object);
+
+/**
+ * @brief Test whether the word at receiver offset 0x14 is nonzero.
+ * @param object Receiver to inspect.
+ * @return One when the word is nonzero; otherwise zero.
+ */
+s32 func_0026A430(const void* object);
+
+/**
+ * @brief Return the indexed table entry at 112-byte intervals.
+ * @param object Receiver containing the table base at offset 0x14.
+ * @param index Table entry index.
+ * @return Address of the selected table entry.
+ */
+void* func_0026A4E0(const void* object, u32 index);
+
+/**
+ * @brief Read the word at receiver offset 0x1C.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A520(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0xC.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A530(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x10.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A540(const void* object);
 
 /**
  * @brief Return the fixed value 32.
@@ -1259,11 +1551,83 @@ s32 func_0026A420(void* object);
 s32 func_0026A550(void* object);
 
 /**
+ * @brief Test whether the word at receiver offset 0x14 is nonzero.
+ * @param object Receiver to inspect.
+ * @return One when the word is nonzero; otherwise zero.
+ */
+s32 func_0026A560(const void* object);
+
+/**
+ * @brief Return the table entry at an offset of 0x80 bytes per index.
+ * @param object Receiver to inspect.
+ * @param index Table entry index.
+ * @return Address of the selected table entry.
+ */
+void* func_0026A610(const void* object, u32 index);
+
+/**
+ * @brief Read the word at receiver offset 0x1C.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A640(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0xC.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A650(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x10.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A660(const void* object);
+
+/**
  * @brief Return the fixed value 32.
  * @param object Receiver or first argument; unused.
  * @return Always 32.
  */
 s32 func_0026A670(void* object);
+
+/**
+ * @brief Test whether the word at receiver offset 0x14 is nonzero.
+ * @param object Receiver to inspect.
+ * @return One when the word is nonzero; otherwise zero.
+ */
+s32 func_0026A680(const void* object);
+
+/**
+ * @brief Return the indexed table entry at 96-byte intervals.
+ * @param object Receiver containing the table base at offset 0x14.
+ * @param index Table entry index.
+ * @return Address of the selected table entry.
+ */
+void* func_0026A730(const void* object, u32 index);
+
+/**
+ * @brief Read the word at receiver offset 0x1C.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A770(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0xC.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A780(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x10.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A790(const void* object);
 
 /**
  * @brief Return the fixed value 1.
@@ -1273,11 +1637,96 @@ s32 func_0026A670(void* object);
 s32 func_0026A7A0(void* object);
 
 /**
+ * @brief Test whether the word at receiver offset 0x14 is nonzero.
+ * @param object Receiver to inspect.
+ * @return One when the word is nonzero; otherwise zero.
+ */
+s32 func_0026A7B0(const void* object);
+
+/**
+ * @brief Return the table entry at an offset of 0x80 bytes per index.
+ * @param object Receiver to inspect.
+ * @param index Table entry index.
+ * @return Address of the selected table entry.
+ */
+void* func_0026A860(const void* object, u32 index);
+
+/**
+ * @brief Read the word at receiver offset 0x1C.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A890(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0xC.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A8A0(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x10.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_0026A8B0(const void* object);
+
+/**
  * @brief Return the fixed value 32.
  * @param object Receiver or first argument; unused.
  * @return Always 32.
  */
 s32 func_0026A8C0(void* object);
+
+/**
+ * @brief Test whether the word at receiver offset 0x14 is nonzero.
+ * @param object Receiver to inspect.
+ * @return One when the word is nonzero; otherwise zero.
+ */
+s32 func_0026A8D0(const void* object);
+
+/**
+ * @brief Return the floating-point value 1.0.
+ * @param object Receiver or first argument; unused.
+ * @return 1.0f.
+ */
+float func_0026D3D0(void* object);
+
+/**
+ * @brief Return the floating-point value 1.0.
+ * @param object Receiver or first argument; unused.
+ * @return 1.0f.
+ */
+float func_0026D3E0(void* object);
+
+/**
+ * @brief Return the floating-point value 1.0.
+ * @param object Receiver or first argument; unused.
+ * @return 1.0f.
+ */
+float func_0026D3F0(void* object);
+
+/**
+ * @brief Return the floating-point value 1.0.
+ * @param object Receiver or first argument; unused.
+ * @return 1.0f.
+ */
+float func_0026D400(void* object);
+
+/**
+ * @brief Return the floating-point value 1.0.
+ * @param object Receiver or first argument; unused.
+ * @return 1.0f.
+ */
+float func_0026D410(void* object);
+
+/**
+ * @brief Return the floating-point value 1.0.
+ * @param object Receiver or first argument; unused.
+ * @return 1.0f.
+ */
+float func_0026D420(void* object);
 
 /**
  * @brief Return the fixed value 1.
@@ -1322,6 +1771,19 @@ s32 func_0026E770(void* object);
 s32 func_0026F460(void* object);
 
 /**
+ * @brief Clear the receiver word at offset 0x28.
+ * @param object Receiver to update.
+ */
+void func_0026F470(void* object);
+
+/**
+ * @brief Return the floating-point value 2500.0.
+ * @param object Receiver or first argument; unused.
+ * @return 2500.0f.
+ */
+float func_0026F480(void* object);
+
+/**
  * @brief Return the fixed value 1.
  * @param object Receiver or first argument; unused.
  * @return Always 1.
@@ -1340,6 +1802,19 @@ void func_0026F690(void* object);
  * @return Always 3.
  */
 s32 func_00274720(void* object);
+
+/**
+ * @brief Clear the receiver word at offset 0x28.
+ * @param object Receiver to update.
+ */
+void func_00274730(void* object);
+
+/**
+ * @brief Return the floating-point value 2500.0.
+ * @param object Receiver or first argument; unused.
+ * @return 2500.0f.
+ */
+float func_00274740(void* object);
 
 /**
  * @brief Return the fixed value 1.

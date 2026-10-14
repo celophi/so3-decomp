@@ -1,6 +1,13 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_002A4F10.h"
 
+/** Partial receiver with a state byte at offset 0x60. */
+typedef struct FieldState602B4510
+{
+    u8 unk00[0x60];
+    u8 unk60;
+} FieldState602B4510;
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A4F10);
 
 void func_002A5010(u8* object, float value)
@@ -832,7 +839,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B43
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B44A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B4510);
+void func_002B4510(void* object)
+{
+    FieldState602B4510* state = (FieldState602B4510*)object;
+    state->unk60 = 4;
+}
 
 s32 func_002B4520(void* object)
 {

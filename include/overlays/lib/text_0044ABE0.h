@@ -6,9 +6,54 @@
 typedef struct LibDrawState64 LibDrawState64;
 typedef struct ItemCreationClass174C40 ItemCreationClass174C40;
 typedef struct LibClass174610 LibClass174610;
+
+/** Partial receiver whose byte at offset 0x60 is set by func_0044C050. */
+typedef struct LibObjectByte60
+{
+    u8 unk00[0x60];
+    u8 unk60;
+} LibObjectByte60;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+/** @brief Set the receiver's byte at offset 0x60 to 8. @param object Receiver to update. */
+void func_0044C050(LibObjectByte60* object);
+/** @brief Set the receiver's byte at offset 0x60 to 8. @param object Receiver to update. */
+void func_0044D070(LibObjectByte60* object);
+/** @brief Return the address of D_508230. @return The data symbol's address. */
+const void* func_0044D080(void);
+/** @brief Update the transform and mark the current display ready. @param object Transform receiver. */
+void func_0044D0D0(void* object);
+/** @brief Return the fixed value 35. @param object Unused receiver. @return Always 35. */
+s32 func_00451E20(void* object);
+/** @brief Return the fixed value 43. @return Always 43. */
+s32 func_004540D0(void);
+/** @brief Return the fixed value 10. @return Always 10. */
+s32 func_00454730(void);
+/** @brief Return the fixed value 43. @return Always 43. */
+s32 func_004547B0(void);
+/** @brief Return the fixed value 40. @return Always 40. */
+s32 func_00456200(void);
+/** @brief Return the fixed value 6. @return Always 6. */
+s32 func_00456940(void);
+/** @brief Return the fixed value 36. @return Always 36. */
+s32 func_004569C0(void);
+/** @brief Return the fixed value 9. @return Always 9. */
+s32 func_0045ABA0(void);
+/** @brief Perform no work. @param object Unused receiver. */
+void func_0044C060(void* object);
+/** @brief Return the address of D_508240. @return The data symbol's address. */
+const void* func_0044C070(void);
+/** @brief Clear the selected state in the shared lib object. */
+void func_0044C080(void);
+/** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
+void func_0044C0F0(void* object);
+/** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
+void func_0044D150(void* object);
+/** @brief Detach the transform once and mark it released. @param object Transform receiver. */
+void func_0044B1C0(LibClass174610* object);
+
 /**
  * @brief Detach the transform receiver from its parent container when attached.
  * @param object Transform receiver to detach.
@@ -93,6 +138,33 @@ struct LibDrawState64
 
 #ifdef __cplusplus
 #include "overlays/lib/text_004BD360.h"
+
+/** @brief Clear the intrusive owner and invoke the base transform release. @param object Transform owner to detach. */
+extern "C" void func_0044D090(LibClass178A90* object);
+
+/** Four scalar components stored in a LibVectorUpdateView. */
+typedef struct LibFloatVector4
+{
+    float x;
+    float y;
+    float z;
+    float w;
+} LibFloatVector4;
+
+/** Partial state updated by func_0044B190; its caller passes the containing object's +0x20 address. */
+typedef struct LibVectorUpdateView
+{
+    u8 unk00[0x20];
+    LibFloatVector4 unk20;
+    u8 unk30[0x7E];
+    u8 unkAE;
+} LibVectorUpdateView;
+
+/** @brief Update x and y, preserve z, set w to one, and mark the state. @param state Partial vector state. @param x Horizontal component. @param y Vertical component. */
+extern "C" void func_0044B190(LibVectorUpdateView* state, float x, float y);
+
+/** @brief Queue the receiver's DMA callback interface. @param object Transform receiver. @return Queue insertion result. */
+extern "C" s32 func_0044C110(LibClass174610* object);
 
 /** Partial Lib class with vtable D_174C20 in main data; its destructor is func_00452F00. */
 class LibClass174C20

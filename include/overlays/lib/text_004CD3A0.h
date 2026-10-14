@@ -12,6 +12,8 @@ typedef struct LibBusyObject
     u8 unk00[0x50];
     /** Nonzero while the object is busy. It changes outside the code that waits on it. */
     volatile u8 busy;
+    /** Channel selector stored with the queued DMA submission. */
+    u8 channel;
 } LibBusyObject;
 
 /** Partial list node; the leading bytes and full object extent are unknown. */
@@ -398,6 +400,8 @@ public:
 
 /** @brief Copy a complete local vector. @param output Destination vector. @param input Source vector. */
 extern "C" void func_004DA040(LibVector4* output, const LibVector4* input);
+/** @brief Return the transform's 16-bit state value. @param object Transform owner. @return Stored state value. */
+extern "C" u16 func_004DA2B0(const LibClass178EA0* object);
 
 /** @brief Extract the transform's translation column. @param object Transform owner. @return Translation coordinates with homogeneous component one. */
 extern "C" FieldVec4B func_004DA6F0(const LibClass178EA0* object);
@@ -504,6 +508,14 @@ s32 lib_compare_bounded_strings(const char* first, const char* second, s32 count
  */
 void func_004D6700(void* list, void* item);
 
+/**
+ * @brief Return an entry from the pointer table at receiver offset 0x50.
+ * @param object Receiver containing the pointer table.
+ * @param index Entry index.
+ * @return Selected table entry.
+ */
+void* func_004D8870(const void* object, s32 index);
+
 
 /**
  * @brief Release heap storage, choosing between two resident heap release routines by a resident flag.
@@ -513,6 +525,12 @@ void func_004D6700(void* list, void* item);
  * @param object Storage to release; null is ignored.
  */
 void func_004DB570(void* object);
+
+/**
+ * @brief Clear the halfword at offset 0x3E78 and toggle bit zero at offset 0x3E7A.
+ * @param object Receiver to update.
+ */
+void func_004DBB70(void* object);
 
 /**
  * @brief Detach the object from the owner stored at offset 0x10, then clear that pointer.
