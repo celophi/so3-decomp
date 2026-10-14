@@ -7,6 +7,9 @@
 extern "C" {
 #endif
 
+/** Return the fixed value 0. */
+s32 func_001DD400(void* object);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
@@ -38,6 +41,9 @@ u32 func_001E8DD0(const void* object);
 
 /** Store the word at receiver offset 0x70. */
 void func_001DE6B0(void* object, u32 value);
+
+/** Set the ready byte and copy one 128-bit value into receiver slot 0. */
+void func_001E0CB0(void* object, const unsigned __int128* value);
 
 #ifdef __cplusplus
 }

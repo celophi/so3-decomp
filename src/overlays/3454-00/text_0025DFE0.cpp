@@ -1,6 +1,23 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_0025DFE0.h"
 
+extern "C" {
+void func_4D00B0(void* object);
+void func_002651E0(void* object);
+typedef struct ConstantByteSetterOwnertext_0025DFE0
+{
+    u8 unk00[0x60];
+    u8 unk60;
+} ConstantByteSetterOwnertext_0025DFE0;
+
+typedef struct WordNonzeroOwnertext_0025DFE0
+{
+    u8 unk00[0x704];
+    u32 unk704;
+} WordNonzeroOwnertext_0025DFE0;
+
+
+
 typedef struct ByteGetterOwnertext_0025DFE0
 {
     u8 unk00[0x794];
@@ -68,19 +85,34 @@ s32 func_00260C00(void* object)
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260C10);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260C40);
+void* func_00260C40(void* object)
+{
+    return (u8*)object + 0x570;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260C50);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260C70);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260CC0);
+void* func_00260CC0(void* object)
+{
+    return (u8*)object + 0x90;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260CD0);
+void* func_00260CD0(void* object)
+{
+    return (u8*)object + 0x1D0;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260CE0);
+void* func_00260CE0(void* object)
+{
+    return (u8*)object + 0x1E0;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260CF0);
+void* func_00260CF0(void* object)
+{
+    return (u8*)object + 0x1F0;
+}
 
 s32 func_00260D00(void* object)
 {
@@ -199,14 +231,21 @@ s32 func_00261A40(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261A50);
+s32 func_00261A50(void* receiver)
+{
+    WordNonzeroOwnertext_0025DFE0* object = (WordNonzeroOwnertext_0025DFE0*)receiver;
+    return object->unk704 != 0;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261A60);
+void* func_00261A60(void* object)
+{
+    return (u8*)object + 0x79C;
+}
 
 /** Return the unsigned byte at receiver offset 0x794. */
 u8 func_00261A70(const void* object)
 {
-    const ByteGetterOwnertext_0025DFE0* receiver = object;
+    const ByteGetterOwnertext_0025DFE0* receiver = (const ByteGetterOwnertext_0025DFE0*)object;
     return receiver->unk794;
 }
 
@@ -217,19 +256,40 @@ s32 func_00261A80(void* object)
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261A90);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261B00);
+void* func_00261B00(void* object, void* value)
+{
+    return value;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261B10);
+void* func_00261B10(void* object, void* value)
+{
+    return value;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261B20);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261BB0);
+/** Store 0x6 at receiver offset 0x60. */
+void func_00261BB0(void* object)
+{
+    ConstantByteSetterOwnertext_0025DFE0* receiver = (ConstantByteSetterOwnertext_0025DFE0*)object;
+    receiver->unk60 = 0x6;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261BC0);
+/** Store 0xA at receiver offset 0x60. */
+void func_00261BC0(void* object)
+{
+    ConstantByteSetterOwnertext_0025DFE0* receiver = (ConstantByteSetterOwnertext_0025DFE0*)object;
+    receiver->unk60 = 0xA;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261BD0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261C60);
+/** Store 0x9 at receiver offset 0x60. */
+void func_00261C60(void* object)
+{
+    ConstantByteSetterOwnertext_0025DFE0* receiver = (ConstantByteSetterOwnertext_0025DFE0*)object;
+    receiver->unk60 = 0x9;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261C70);
 
@@ -244,7 +304,12 @@ s32 func_00261D90(void* object)
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261DA0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261E30);
+/** Store 0x6 at receiver offset 0x60. */
+void func_00261E30(void* object)
+{
+    ConstantByteSetterOwnertext_0025DFE0* receiver = (ConstantByteSetterOwnertext_0025DFE0*)object;
+    receiver->unk60 = 0x6;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261E40);
 
@@ -281,17 +346,37 @@ s32 func_00261FB0(void* object)
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261FC0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00262050);
+/** Store 0x9 at receiver offset 0x60. */
+void func_00262050(void* object)
+{
+    ConstantByteSetterOwnertext_0025DFE0* receiver = (ConstantByteSetterOwnertext_0025DFE0*)object;
+    receiver->unk60 = 0x9;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00262060);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_002620F0);
+/** Store 0x6 at receiver offset 0x60. */
+void func_002620F0(void* object)
+{
+    ConstantByteSetterOwnertext_0025DFE0* receiver = (ConstantByteSetterOwnertext_0025DFE0*)object;
+    receiver->unk60 = 0x6;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00262100);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00262190);
+/** Store 0x9 at receiver offset 0x60. */
+void func_00262190(void* object)
+{
+    ConstantByteSetterOwnertext_0025DFE0* receiver = (ConstantByteSetterOwnertext_0025DFE0*)object;
+    receiver->unk60 = 0x9;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_002621A0);
+/** Store 0x7 at receiver offset 0x60. */
+void func_002621A0(void* object)
+{
+    ConstantByteSetterOwnertext_0025DFE0* receiver = (ConstantByteSetterOwnertext_0025DFE0*)object;
+    receiver->unk60 = 0x7;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_002621B0);
 
@@ -522,7 +607,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_002689
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_002689C0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00268A70);
+void func_00268A70(void* object)
+{
+    func_002651E0(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00268A90);
 
@@ -532,7 +620,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00268B
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00268FB0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00268FF0);
+void func_00268FF0(void* object)
+{
+    func_4D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00269010);
 
@@ -608,7 +699,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_0026D3
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_0026D6A0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_0026D6F0);
+void func_0026D6F0(void* object)
+{
+    func_4D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_0026D710);
 
@@ -617,3 +711,5 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_0026D7
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_0026DD20);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_0026DE60);
+
+}

@@ -13,6 +13,9 @@ extern "C" {
  */
 void func_001F3540(void* object);
 
+/** Forward the receiver to func_4EABF0. */
+void func_00201700(void* object);
+
 /**
  * @brief Store a word at receiver offset 0x0C and return the receiver.
  * @param receiver Object containing the field.

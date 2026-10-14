@@ -62,7 +62,7 @@ segments:
       - [0x12840, c, text_003F90C0]
       - [0x22D40, cpp, text_004095C0]
       - [0x331F0, cpp, text_00419A70]
-      - [0x43280, c, text_00429B00]
+      - [0x43280, cpp, text_00429B00]
       - [0x540A0, c, text_0043A920]
       - [0x64360, cpp, text_0044ABE0]
       - [0x74490, cpp, text_0045AD10]
@@ -70,7 +70,7 @@ segments:
       - [0x945A0, c, text_0047AE20]
       - [0xA4A80, c, text_0048B300]
       - [0xB4FA0, cpp, text_0049B820]
-      - [0xC5030, c, text_004AB8B0]
+      - [0xC5030, cpp, text_004AB8B0]
       - [0xD6AE0, cpp, text_004BD360]
   - name: text_tail
     type: code

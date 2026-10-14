@@ -7,6 +7,16 @@
 extern "C" {
 #endif
 
+/** Forward the receiver to func_002AE610. */
+void func_0026FB30(void* object);
+
+/** Forward the receiver to func_002AB490 and return its result. */
+s32 func_002775D0(void* object);
+s32 func_0027D880(void* object);
+
+/** Perform no work. */
+void func_0026FB50(void* object);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.

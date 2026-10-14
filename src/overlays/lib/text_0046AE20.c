@@ -3,6 +3,14 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_0049B820.h"
 
+typedef struct HalfwordSetterOwnertext_0046AE20
+{
+    u8 unk00[0x6C];
+    u16 unk6c;
+} HalfwordSetterOwnertext_0046AE20;
+
+
+
 typedef struct ByteGetterOwnertext_0046AE20
 {
     u8 unk00[0x4D];
@@ -138,6 +146,21 @@ typedef struct LibObjectFlags6A
 } LibObjectFlags6A;
 
 
+typedef struct ByteSourceStateOwnertext_0046AE20 { u8 pad00[0x57]; u8 state57; u8 pad58[0x48]; const u8* sourceA0; u32 valueA4; } ByteSourceStateOwnertext_0046AE20;
+typedef struct TwoWordClearArgStateOwnertext_0046AE20 { u8 pad00[0x57]; u8 state57; u8 pad58[0x48]; void* unkA0; void* unkA4; } TwoWordClearArgStateOwnertext_0046AE20;
+typedef struct FourQuadwordCopyTargetOwnertext_0046AE20
+{
+    u8 pad00[0x2C];
+    u32 unk2C;
+    u8 pad30[0x30];
+    unsigned __int128 values60[4];
+} FourQuadwordCopyTargetOwnertext_0046AE20;
+typedef struct FourQuadwordCopySourceOwnertext_0046AE20
+{
+    u8 pad00[0x150];
+    unsigned __int128 values150[4];
+} FourQuadwordCopySourceOwnertext_0046AE20;
+
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046AE20);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B0D0);
@@ -206,7 +229,10 @@ void lib_animation_register_binding(LibAnimationBindingOwner* owner, void* anima
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046BAC0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046C080);
+void* func_0046C080(void* value)
+{
+    return value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046C090);
 
@@ -270,7 +296,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00471480);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004720F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00472100);
+/** Store the low halfword at receiver offset 0x6C. */
+void func_00472100(void* object, u32 value)
+{
+    HalfwordSetterOwnertext_0046AE20* receiver = object;
+    receiver->unk6c = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00472110);
 
@@ -611,7 +642,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004790D0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004790E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479100);
+void* func_00479100(void* object)
+{
+    return (u8*)object + 0x830;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479110);
 
@@ -639,7 +673,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479640);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004796A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479700);
+s32 func_00479700(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479710);
 
@@ -647,29 +684,44 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479760);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004797E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479840);
+s32 func_00479840(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479850);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004798D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479950);
+s32 func_00479950(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479960);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004799E0);
+s32 func_004799E0(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004799F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479A70);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479AF0);
+s32 func_00479AF0(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479B00);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479B80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479C00);
+s32 func_00479C00(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479C10);
 
@@ -681,11 +733,17 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479D30);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479D50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479DD0);
+s32 func_00479DD0(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479DE0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479E60);
+s32 func_00479E60(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479E70);
 
@@ -693,9 +751,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479EF0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479F50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479FB0);
+void func_00479FB0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479FC0);
+s32 func_00479FC0(void* object)
+{
+    return 1;
+}
 
 /** Store the word at receiver offset 0xB8. */
 void func_00479FD0(void* object, u32 value)
@@ -785,13 +848,25 @@ u32 func_0047A0E0(const void* object)
     return receiver->unkb4;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A0F0);
+s32 func_0047A0F0(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A100);
+s32 func_0047A100(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A110);
+s32 func_0047A110(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A120);
+s32 func_0047A120(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A130);
 
@@ -968,9 +1043,35 @@ void func_0047A780(void* object, float value)
     receiver->unk40 = value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A790);
+void func_0047A790(void* object, const u8* source, u32 value)
+{
+    ByteSourceStateOwnertext_0046AE20* receiver = object;
+    receiver->sourceA0 = source;
+    receiver->valueA4 = value;
+    if (*receiver->sourceA0 == 1)
+    {
+        receiver->state57 = 1;
+    }
+    else
+    {
+        receiver->state57 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A7D0);
+void func_0047A7D0(void* object, s32 enabled)
+{
+    TwoWordClearArgStateOwnertext_0046AE20* receiver = object;
+    receiver->unkA0 = 0;
+    receiver->unkA4 = 0;
+    if (enabled)
+    {
+        receiver->state57 = 1;
+    }
+    else
+    {
+        receiver->state57 = 0;
+    }
+}
 
 /**
  * @brief Store the value at receiver offset 0x38.
@@ -983,11 +1084,25 @@ void func_0047A800(void* object, float value)
     receiver->unk38 = value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A810);
+void func_0047A810(void* object, const void* source)
+{
+    FourQuadwordCopyTargetOwnertext_0046AE20* receiver = object;
+    const FourQuadwordCopySourceOwnertext_0046AE20* values = source;
+    receiver->unk2C = 0;
+    receiver->values60[0] = values->values150[0];
+    receiver->values60[1] = values->values150[1];
+    receiver->values60[2] = values->values150[2];
+    receiver->values60[3] = values->values150[3];
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A840);
+void func_0047A840(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A850);
+s32 func_0047A850(void* object)
+{
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A860);
 

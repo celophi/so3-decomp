@@ -15,10 +15,21 @@ typedef struct WordGetterOwnertext_001DD3C0
     u32 unkd58;
 } WordGetterOwnertext_001DD3C0;
 
+/** Partial receiver with three aligned quadword slots and a ready byte at 0x50. */
+typedef struct QuadwordSetterOwnertext_001DD3C0
+{
+    u8 unk00[0x20];
+    unsigned __int128 slots[3];
+    u8 ready;
+} QuadwordSetterOwnertext_001DD3C0;
+
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001DD3C0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001DD400);
+s32 func_001DD400(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001DD410);
 
@@ -87,7 +98,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E0B
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E0C40);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E0CB0);
+void func_001E0CB0(void* object, const unsigned __int128* value)
+{
+    QuadwordSetterOwnertext_001DD3C0* receiver = object;
+    receiver->ready = 1;
+    receiver->slots[0] = *value;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E0CD0);
 

@@ -10,7 +10,10 @@ typedef struct ResidentEntryTable
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_00101260);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_00101270);
+void* func_00101270(void* value)
+{
+    return value;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_00101280);
 
@@ -24,9 +27,15 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_001012A0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_001012B0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_001012C0);
+void* func_001012C0(void* object)
+{
+    return (u8*)object + 0x17C0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_001012D0);
+void* func_001012D0(void* object)
+{
+    return (u8*)object + 0x1480;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_001012E0);
 

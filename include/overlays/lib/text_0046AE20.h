@@ -298,9 +298,74 @@ u8 func_0047ADE0(const void* object);
 /** Return the unsigned byte at receiver offset 0x56. */
 u8 func_0047AE10(const void* object);
 
+
+/** Store the low halfword at receiver offset 0x6C. */
+void func_00472100(void* object, u32 value);
+
+/** Return the fixed integer value 1. */
+s32 func_00479FC0(void* object);
+
+/** Return the fixed integer value 1. */
+s32 func_0047A850(void* object);
+
+/** Return the fixed value 0. */
+s32 func_00479700(void* object);
+
+/** Return the fixed value 0. */
+s32 func_00479840(void* object);
+
+/** Return the fixed value 0. */
+s32 func_00479950(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004799E0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_00479AF0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_00479C00(void* object);
+
+/** Return the fixed value 0. */
+s32 func_00479DD0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_00479E60(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047A0F0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047A100(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047A110(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047A120(void* object);
+
+void func_00479FB0(void* object);
+void func_0047A840(void* object);
+
+/** Return the first pointer argument unchanged. */
+void* func_0046C080(void* value);
+
 #ifdef __cplusplus
+/** Store a byte source and word, then set state 0x57 from the source byte. */
+void func_0047A790(void* object, const u8* source, u32 value);
+
+/** Clear two pointer fields and set the byte at receiver offset 0x57 from enabled. */
+void func_0047A7D0(void* object, s32 enabled);
+
+/** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
+void func_0047A810(void* object, const void* source);
+
 }
 #endif
+
+/** Return the receiver address at byte offset 0x830. */
+void* func_00479100(void* object);
+
 
 #ifdef __cplusplus
 /** Partial Lib class with vtable D_175320 in main data; its destructor is func_004792A0. */

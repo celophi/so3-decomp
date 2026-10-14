@@ -1,6 +1,9 @@
 #include "include_asm.h"
+#include "main/resident_00101550.h"
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00101550);
+void func_00101550(void* object)
+{
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00101560);
 
@@ -18,7 +21,9 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102920)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102A40);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102A90);
+void func_00102A90(void* object)
+{
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102AA0);
 
@@ -66,13 +71,20 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104680)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001046E0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104730);
+s32 func_00104730(void* object)
+{
+    return 3;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104740);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104770);
+void func_00104770(void* object)
+{
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104780);
+void func_00104780(void* object)
+{
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104790);
 

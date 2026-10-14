@@ -4,6 +4,16 @@
 #include "main/resident_data.h"
 #include "overlays/lib/item_allocation.h"
 
+typedef struct HalfwordSetterOwnertext_004095C0
+{
+    u8 unk00[0x2];
+    u16 unk02;
+    u8 unk04[0x2C];
+    u16 unk30;
+} HalfwordSetterOwnertext_004095C0;
+
+
+
 typedef struct ByteSetterOwnertext_004095C0
 {
     u8 unk00[0x6];
@@ -130,7 +140,12 @@ void func_0040B640(void* object, u8 value)
     receiver->unk33 = value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B650);
+/** Store the low halfword at receiver offset 0x30. */
+void func_0040B650(void* object, u32 value)
+{
+    HalfwordSetterOwnertext_004095C0* receiver = static_cast<HalfwordSetterOwnertext_004095C0*>(object);
+    receiver->unk30 = value;
+}
 
 /** Store the byte at receiver offset 0x32. */
 void func_0040B660(void* object, u8 value)
@@ -169,7 +184,12 @@ void func_0040B6B0(void* object, u8 value)
     receiver->unk06 = value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B6C0);
+/** Store the low halfword at receiver offset 0x2. */
+void func_0040B6C0(void* object, u32 value)
+{
+    HalfwordSetterOwnertext_004095C0* receiver = static_cast<HalfwordSetterOwnertext_004095C0*>(object);
+    receiver->unk02 = value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B6D0);
 
@@ -286,7 +306,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D930);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040DD20);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040E3A0);
+s32 func_0040E3A0(void* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040E3B0);
 
@@ -360,9 +383,13 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411D50);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411DD0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411E10);
+void func_00411E10(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411E20);
+void func_00411E20(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411E30);
 
@@ -386,11 +413,17 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412B10);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412BA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412C00);
+void func_00412C00(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412C10);
+void func_00412C10(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412C20);
+void func_00412C20(void* object)
+{
+}
 
 /**
  * @brief Return the floating-point value 0.
@@ -402,7 +435,9 @@ float func_00412C30(void* object)
     return 0.0f;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412C40);
+void func_00412C40(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412C50);
 
@@ -448,7 +483,9 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413C00);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413CC0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413D20__14LibClass178600Fv);
+void LibClass178600::func_00413D20()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413D30);
 
@@ -548,13 +585,19 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414FF0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415010);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415030);
+s32 func_00415030(void* object)
+{
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415040);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004151F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004152B0);
+s32 func_004152B0(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004152C0);
 
@@ -626,6 +669,9 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00419330);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004193E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004194F0);
+s32 func_004194F0(void* object)
+{
+    return 12;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00419500);

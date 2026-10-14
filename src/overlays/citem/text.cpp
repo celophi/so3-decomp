@@ -12,6 +12,9 @@
 #include "main/resident_00101260.h"
 #include "main/resident_0011EE70.h"
 
+extern "C" {
+void func_4D00B0(void* object);
+FieldRecordSelection* func_0028E4D0(FieldRecordSelection* selection);
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/1067-00/text_002D3BD0.h"
 #include "overlays/1067-00/text_002D5260.h"
@@ -591,7 +594,7 @@ static inline struct LibClass171FF0* transform_notification(Record00349250* obje
  */
 static inline FieldNode23D310* allocate_coordinate_node(void)
 {
-    FieldNode23D310* node = func_00100AC0(sizeof(FieldNode23D310), 0);
+    FieldNode23D310* node = (FieldNode23D310*)func_00100AC0(sizeof(FieldNode23D310), 0);
 
     if (node != 0)
     {
@@ -904,7 +907,7 @@ s32 item_initialize_choice_window(ItemRecord* object, u32 associated)
     func_0023CE60((FieldObject23CE80*)object->grid, 80.0f, 0.0f);
     object->grid->unkF2 = 0;
     func_0023CF50((FieldObject23CEB0*)object->grid, 1, 265.0f, 302.0f);
-    object->grid->unkAD = 0;
+    ((u8*)object->grid)[0xAD] = 0;
     func_003544C0(&object->grids, object->grid);
     if (object->grid->unk114 != 0)
     {
@@ -934,7 +937,10 @@ s32 func_00349190(Record00349190* record, s32 arg1, s32 arg2, void* arg3, float 
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003491F0);
+void func_003491F0(void* object)
+{
+    func_4D00B0(object);
+}
 
 void item_submit_transform_packet(Record00349250* object)
 {
@@ -1020,18 +1026,14 @@ INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034AE60);
  */
 static inline s32 item_selection_control_is_clear(FieldObject23B1D0* selection)
 {
-    if (selection->flag75)
-    {
-        return 0;
-    }
-    return 1;
+    return ((u32)selection->flag75 > 0) ^ 1;
 }
 
 void item_select_previous_entry(Record0034B770* owner)
 {
     FieldObject23B1D0* selection = owner->selection;
     s32 index;
-    if (item_selection_control_is_clear(selection))
+    if (item_selection_control_is_clear(selection) != 0)
     {
         return;
     }
@@ -1047,7 +1049,7 @@ void item_select_next_entry(Record0034B770* owner)
 {
     FieldObject23B1D0* selection = owner->selection;
     s32 index;
-    if (item_selection_control_is_clear(selection))
+    if (item_selection_control_is_clear(selection) != 0)
     {
         return;
     }
@@ -1063,7 +1065,7 @@ void item_select_second_row(Record0034B770* owner)
 {
     FieldObject23B1D0* selection = owner->selection;
     s32 index;
-    if (item_selection_control_is_clear(selection))
+    if (item_selection_control_is_clear(selection) != 0)
     {
         return;
     }
@@ -1088,7 +1090,7 @@ void item_select_first_row(Record0034B770* owner)
 {
     FieldObject23B1D0* selection = owner->selection;
     s32 index;
-    if (item_selection_control_is_clear(selection))
+    if (item_selection_control_is_clear(selection) != 0)
     {
         return;
     }
@@ -1165,7 +1167,7 @@ void item_list_select_previous_entry(Record0034E7E0* owner)
 {
     FieldObject23B1D0* selection = owner->selection;
     s32 index;
-    if (item_selection_control_is_clear(selection))
+    if (item_selection_control_is_clear(selection) != 0)
     {
         return;
     }
@@ -1181,7 +1183,7 @@ void item_list_select_next_entry(Record0034E7E0* owner)
 {
     FieldObject23B1D0* selection = owner->selection;
     s32 index;
-    if (item_selection_control_is_clear(selection))
+    if (item_selection_control_is_clear(selection) != 0)
     {
         return;
     }
@@ -1197,7 +1199,7 @@ void item_list_select_second_row(Record0034E7E0* owner)
 {
     FieldObject23B1D0* selection = owner->selection;
     s32 index;
-    if (item_selection_control_is_clear(selection))
+    if (item_selection_control_is_clear(selection) != 0)
     {
         return;
     }
@@ -1222,7 +1224,7 @@ void item_list_select_first_row(Record0034E7E0* owner)
 {
     FieldObject23B1D0* selection = owner->selection;
     s32 index;
-    if (item_selection_control_is_clear(selection))
+    if (item_selection_control_is_clear(selection) != 0)
     {
         return;
     }
@@ -1425,7 +1427,7 @@ Record00350C20* func_00350C20(Record00350C20* record, s16 flag)
         record->unke8 = D_1848A4;
         if (record->unk174 != 0)
         {
-            lib_panel_detach(record->unk174);
+            lib_panel_detach((LibClass178630*)record->unk174);
         }
         func_2CD9F0(record, 0);
         if (flag > 0)
@@ -1500,7 +1502,7 @@ s32 func_00351E40(const ItemListNode* left, const ItemListNode* right)
     const ItemSortRecord* second = (const ItemSortRecord*)right->value;
     const ItemSortDefinition* first_definition = &D_001B64F0[first->table_index];
     const ItemSortDefinition* second_definition = &D_001B64F0[second->table_index];
-    return (first_definition->sort_key_bits & 0x3FF) - (second_definition->sort_key_bits & 0x3FF);
+    return first_definition->sort_order - second_definition->sort_order;
 }
 
 s32 item_initialize_panel(Record00351F50* object, u32 associated)
@@ -1772,10 +1774,7 @@ s32 func_00353CF0(void* object)
     return 0;
 }
 
-s32 func_00353D00(float value)
-{
-    return value < 0.0f;
-}
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353D00);
 
 u8* func_00353D20(void)
 {
@@ -2193,3 +2192,5 @@ INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B80);
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B90);
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354BA0);
+
+}

@@ -1,4 +1,9 @@
 #include "include_asm.h"
+#include "types.h"
+
+
+extern "C" {
+void func_0024CC40(void* object, s32 value);
 #include "overlays/1067-00/text_0024C4B0.h"
 
 /** Partial receiver with status bytes at offsets 0x331-0x334. */
@@ -29,7 +34,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024CA
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024CB40);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024CC10);
+void func_0024CC10(void* object)
+{
+    func_0024CC40(object, 1);
+}
 
 s32 func_0024CC30(FieldObject153590* object)
 {
@@ -83,3 +91,5 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024DA
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024DA50);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024C4B0", func_0024DC50);
+
+}

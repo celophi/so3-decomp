@@ -22,6 +22,15 @@ void* resident_get_entry_table(void* object);
  */
 u32 resident_find_entry(void* table, s32 key);
 
+/** Return the first pointer argument unchanged. */
+void* func_00101270(void* value);
+
+/** Return the receiver address at byte offset 0x17C0. */
+void* func_001012C0(void* object);
+
+/** Return the receiver address at byte offset 0x1480. */
+void* func_001012D0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

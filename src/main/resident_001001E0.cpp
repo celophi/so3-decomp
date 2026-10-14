@@ -11,7 +11,9 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100A40)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100A50);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100AB0);
+void func_00100AB0(void* object)
+{
+}
 
 /** @brief Allocate through the selected heap or the default new allocator. @param size Byte count. @param unused Ignored second argument. @return Allocated memory. */
 void* func_00100AC0(u32 size, s32 unused)

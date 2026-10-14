@@ -1,4 +1,11 @@
 #include "include_asm.h"
+#include "overlays/3253-00/text_00253650.h"
+
+typedef struct ByteClearOwnertext_00253650
+{
+    u8 unk00[0x64A];
+    u8 unk64a;
+} ByteClearOwnertext_00253650;
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00253650", func_00253650);
 
@@ -114,7 +121,11 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00253650", func_0025F7
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00253650", func_0025F880);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00253650", func_0025F920);
+void func_0025F920(void* object)
+{
+    ByteClearOwnertext_00253650* receiver = static_cast<ByteClearOwnertext_00253650*>(object);
+    receiver->unk64a = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00253650", func_0025F930);
 

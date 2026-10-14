@@ -1837,6 +1837,51 @@ void func_002E3950(FieldPointerValueState2C* object, const u8* source, u32 value
 s32 func_002E5260(FieldConditionalFloat14* object);
 
 #ifdef __cplusplus
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_002D68C0(void* object, u8 mode);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_002D9960(void* object, u8 mode);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_002D99C0(void* object, u8 mode);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_002D9A20(void* object, u8 mode);
+
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_002D6920(void* object, u8 mode);
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_002D9D70(void* object, u8 mode);
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_002DA4C0(void* object, u8 mode);
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_002DA940(void* object, u8 mode);
+
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002D6ED0(void* object, float key);
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002D7AD0(void* object, float key);
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002D82E0(void* object, float key);
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002D8880(void* object, float key);
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002D9EF0(void* object, float key);
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002DAED0(void* object, float key);
+
+
 }
 #endif
 

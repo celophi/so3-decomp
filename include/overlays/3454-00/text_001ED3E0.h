@@ -7,6 +7,12 @@
 extern "C" {
 #endif
 
+/** Forward the receiver to func_001F30E0. */
+void func_001F3300(void* object);
+
+/** Forward the receiver to func_4D00B0. */
+void func_001F8510(void* object);
+
 typedef struct DescriptorF2520
 {
     u8 unk00[6];

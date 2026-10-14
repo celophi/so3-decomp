@@ -156,6 +156,32 @@ void func_0040FAF0(void* object, u8 value);
 /** Store the byte at receiver offset 0x90A. */
 void func_0040FB00(void* object, u8 value);
 
+
+/** Store the low halfword at receiver offset 0x30. */
+void func_0040B650(void* object, u32 value);
+
+/** Store the low halfword at receiver offset 0x2. */
+void func_0040B6C0(void* object, u32 value);
+
+/** Return the fixed integer value 4. */
+s32 func_0040E3A0(void* object);
+
+/** Return the fixed integer value 1. */
+s32 func_00415030(void* object);
+
+/** Return the fixed integer value 12. */
+s32 func_004194F0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004152B0(void* object);
+
+void func_00411E10(void* object);
+void func_00411E20(void* object);
+void func_00412C00(void* object);
+void func_00412C10(void* object);
+void func_00412C20(void* object);
+void func_00412C40(void* object);
+
 #ifdef __cplusplus
 }
 #endif

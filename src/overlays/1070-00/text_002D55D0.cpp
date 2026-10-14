@@ -78,6 +78,109 @@ extern "C" void* D_001B6620;
 extern "C" void func_121E80(void* owner, void* object);
 
 
+typedef struct PackedModePair
+{
+    u8 lowMode : 4;
+    u8 highMode : 4;
+    u8 hasModeFour : 1;
+    u8 unk01_1_7 : 7;
+} PackedModePair;
+
+typedef struct PackedModesOwner
+{
+    u8 unk00[0x22];
+    PackedModePair at22;
+    u8 unk24[0x1E];
+    PackedModePair at42;
+    u8 unk44[0xE];
+    PackedModePair at52;
+} PackedModesOwner;
+
+typedef struct FloatKeyScanEntry_text_002D55D0_08
+{
+    float key00;
+    u8 unk04[0x4];
+} FloatKeyScanEntry_text_002D55D0_08;
+
+typedef struct FloatKeyScanOwner_text_002D55D0_08
+{
+    u8 unk00[0x4];
+    FloatKeyScanEntry_text_002D55D0_08* entries;
+    u8 unk08[0x10];
+    s16 count18;
+    u8 unk1a[0xE];
+    s16 count28;
+    u8 unk2a[0xE];
+    s16 count38;
+    u8 unk3a[0xE];
+    s16 count48;
+} FloatKeyScanOwner_text_002D55D0_08;
+
+typedef struct FloatKeyScanEntry_text_002D55D0_10
+{
+    float key00;
+    u8 unk04[0x8];
+    float key0c;
+} FloatKeyScanEntry_text_002D55D0_10;
+
+typedef struct FloatKeyScanOwner_text_002D55D0_10
+{
+    u8 unk00[0x4];
+    FloatKeyScanEntry_text_002D55D0_10* entries;
+    u8 unk08[0x10];
+    s16 count18;
+    u8 unk1a[0xE];
+    s16 count28;
+    u8 unk2a[0xE];
+    s16 count38;
+    u8 unk3a[0xE];
+    s16 count48;
+} FloatKeyScanOwner_text_002D55D0_10;
+
+typedef struct FloatKeyScanEntry_text_002D55D0_20
+{
+    float key00;
+    u8 unk04[0x8];
+    float key0c;
+    u8 unk10[0x10];
+} FloatKeyScanEntry_text_002D55D0_20;
+
+typedef struct FloatKeyScanOwner_text_002D55D0_20
+{
+    u8 unk00[0x4];
+    FloatKeyScanEntry_text_002D55D0_20* entries;
+    u8 unk08[0x10];
+    s16 count18;
+    u8 unk1a[0xE];
+    s16 count28;
+    u8 unk2a[0xE];
+    s16 count38;
+    u8 unk3a[0xE];
+    s16 count48;
+} FloatKeyScanOwner_text_002D55D0_20;
+
+typedef struct FloatKeyScanEntry_text_002D55D0_30
+{
+    float key00;
+    u8 unk04[0x8];
+    float key0c;
+    u8 unk10[0x20];
+} FloatKeyScanEntry_text_002D55D0_30;
+
+typedef struct FloatKeyScanOwner_text_002D55D0_30
+{
+    u8 unk00[0x4];
+    FloatKeyScanEntry_text_002D55D0_30* entries;
+    u8 unk08[0x10];
+    s16 count18;
+    u8 unk1a[0xE];
+    s16 count28;
+    u8 unk2a[0xE];
+    s16 count38;
+    u8 unk3a[0xE];
+    s16 count48;
+} FloatKeyScanOwner_text_002D55D0_30;
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D55D0);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D5620);
@@ -208,9 +311,21 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D67
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D6810);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D68C0);
+/** Set the low packed mode at 0x42 and record whether either mode equals four. */
+void func_002D68C0(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at42.lowMode = mode;
+    receiver->at42.hasModeFour = receiver->at42.lowMode == 4 || receiver->at42.highMode == 4;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D6920);
+/** Set the high packed mode at 0x42 and record whether either mode equals four. */
+void func_002D6920(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at42.highMode = mode;
+    receiver->at42.hasModeFour = receiver->at42.lowMode == 4 || receiver->at42.highMode == 4;
+}
 
 u32 func_002D6980(const FieldWordAt30* object)
 {
@@ -282,7 +397,22 @@ s16 func_002D6EC0(const FieldSequenceState20* object)
     return object->state.unk08;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D6ED0);
+/** Find a key in the receiver's fixed-size entry array. */
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002D6ED0(void* object, float key)
+{
+    FloatKeyScanOwner_text_002D55D0_10* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_10*>(object);
+    s16 count = receiver->count28;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == receiver->entries[index].key0c)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void func_002D6F20(FieldWords002D6F20* object)
 {
@@ -447,7 +577,22 @@ void func_002D7AC0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D7AD0);
+/** Find a key in the receiver's fixed-size entry array. */
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002D7AD0(void* object, float key)
+{
+    FloatKeyScanOwner_text_002D55D0_30* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_30*>(object);
+    s16 count = receiver->count48;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == receiver->entries[index].key0c)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void func_002D7B20(FieldWords002D7B20* object)
 {
@@ -519,7 +664,22 @@ float func_002D8290(const FieldFloatValueSequence18* object)
     return last->value - object->entries[0].value;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D82E0);
+/** Find a key in the receiver's fixed-size entry array. */
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002D82E0(void* object, float key)
+{
+    FloatKeyScanOwner_text_002D55D0_08* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_08*>(object);
+    s16 count = receiver->count18;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == receiver->entries[index].key00)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 /**
  * @brief Invoke the receiver's callback at vtable offset 0x70.
@@ -667,7 +827,22 @@ float func_002D8830(const FieldFloatValueSequence38* object)
     return last->value - object->entries[0].value;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D8880);
+/** Find a key in the receiver's fixed-size entry array. */
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002D8880(void* object, float key)
+{
+    FloatKeyScanOwner_text_002D55D0_20* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_20*>(object);
+    s16 count = receiver->count38;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == receiver->entries[index].key00)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 /**
  * @brief Invoke the receiver's callback at vtable offset 0x70.
@@ -779,11 +954,29 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D95
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D9900);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D9960);
+/** Set the low packed mode at 0x22 and record whether either mode equals four. */
+void func_002D9960(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at22.lowMode = mode;
+    receiver->at22.hasModeFour = receiver->at22.lowMode == 4 || receiver->at22.highMode == 4;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D99C0);
+/** Set the low packed mode at 0x42 and record whether either mode equals four. */
+void func_002D99C0(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at42.lowMode = mode;
+    receiver->at42.hasModeFour = receiver->at42.lowMode == 4 || receiver->at42.highMode == 4;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D9A20);
+/** Set the low packed mode at 0x52 and record whether either mode equals four. */
+void func_002D9A20(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at52.lowMode = mode;
+    receiver->at52.hasModeFour = receiver->at52.lowMode == 4 || receiver->at52.highMode == 4;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D9A80);
 
@@ -807,7 +1000,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D9C
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D9D20);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D9D70);
+/** Set the high packed mode at 0x52 and record whether either mode equals four. */
+void func_002D9D70(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at52.highMode = mode;
+    receiver->at52.hasModeFour = receiver->at52.lowMode == 4 || receiver->at52.highMode == 4;
+}
 
 s32 func_002D9DD0(const FieldSequenceState40* object)
 {
@@ -874,7 +1073,22 @@ void func_002D9EC0(void* object)
     ((FieldCallbackDispatch70*)object)->slot70();
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002D9EF0);
+/** Find a key in the receiver's fixed-size entry array. */
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002D9EF0(void* object, float key)
+{
+    FloatKeyScanOwner_text_002D55D0_30* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_30*>(object);
+    s16 count = receiver->count48;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == receiver->entries[index].key00)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void func_002D9F40(FieldWords002D9F40* object)
 {
@@ -914,7 +1128,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002DA3
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002DA3F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002DA4C0);
+/** Set the high packed mode at 0x42 and record whether either mode equals four. */
+void func_002DA4C0(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at42.highMode = mode;
+    receiver->at42.hasModeFour = receiver->at42.lowMode == 4 || receiver->at42.highMode == 4;
+}
 
 u32 func_002DA520(const FieldWordAt30* object)
 {
@@ -1038,7 +1258,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002DA8
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002DA8E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002DA940);
+/** Set the high packed mode at 0x22 and record whether either mode equals four. */
+void func_002DA940(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at22.highMode = mode;
+    receiver->at22.hasModeFour = receiver->at22.lowMode == 4 || receiver->at22.highMode == 4;
+}
 
 s32 func_002DA9A0(const FieldWordAt10* object)
 {
@@ -1152,7 +1378,22 @@ float func_002DAE80(const FieldFloatValueSequence38* object)
     return last->value - object->entries[0].value;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002DAED0);
+/** Find a key in the receiver's fixed-size entry array. */
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002DAED0(void* object, float key)
+{
+    FloatKeyScanOwner_text_002D55D0_20* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_20*>(object);
+    s16 count = receiver->count38;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == receiver->entries[index].key00)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void func_002DAF20(FieldFloatSequenceState44* object, s32 count, FieldFloatValueEntry32* entries)
 {

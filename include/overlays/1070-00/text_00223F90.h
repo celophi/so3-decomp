@@ -664,6 +664,10 @@ s32 func_002304F0(void* object);
 s32 func_00230500(void* object);
 
 #ifdef __cplusplus
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002241D0(void* object, float key);
+
+
 }
 #endif
 

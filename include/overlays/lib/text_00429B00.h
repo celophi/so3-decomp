@@ -251,7 +251,68 @@ void func_00432710(void* object, u32 value);
 /** Store the word at receiver offset 0x428. */
 void func_00435190(void* object, u32 value);
 
+/** Return the fixed integer value 128. */
+s32 func_0042AA30(void* object);
+
+/** Return the fixed integer value 256. */
+s32 func_0042C5B0(void* object);
+
+/** Return the fixed integer value 34. */
+s32 func_0042D9A0(void* object);
+
+/** Return the fixed integer value 3. */
+s32 func_0042EB20(void* object);
+
+/** Return the fixed integer value 4. */
+s32 func_00431720(void* object);
+
+/** Return the fixed integer value 6. */
+s32 func_00434F20(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0042A3D0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0042A3E0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0042A3F0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0042AA20(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0042AA40(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0042AA50(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0042AA80(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0042AA90(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0042EB40(void* object);
+
+void func_0042A8E0(void* object);
+void func_00434E20(void* object);
+
+/** Return the receiver address at byte offset 0x230. */
+void* func_00434F10(void* object);
+
+
 #ifdef __cplusplus
+/** Return the second pointer argument unchanged. */
+void* func_0042AA60(void* object, void* value);
+/** Return the second pointer argument unchanged. */
+void* func_0042AA70(void* object, void* value);
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_0042A340(void* object, u8 mode);
+
+
 }
 #endif
 

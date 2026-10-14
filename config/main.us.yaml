@@ -58,7 +58,7 @@ segments:
       - [0x1BD0, c, main/resident_00101550]
       - [0xA700, c, main/func_0010A080]
       - [0xA730, c, main/func_0010A0B0]
-      - [0xA760, c, main/resident_0010A0E0]
+      - [0xA760, cpp, main/resident_0010A0E0]
       - [0x1F478, pad, resident_queue_end_align]
       - [0x1F480, c, main/func_0011EE00]
       - [0x1F4F0, c, main/resident_0011EE70]

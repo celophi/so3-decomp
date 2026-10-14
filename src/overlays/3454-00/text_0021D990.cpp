@@ -1,6 +1,8 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_0021D990.h"
 
+extern "C" {
+void func_4D00B0(void* object);
 typedef struct ByteSetterOwnertext_0021D990
 {
     u8 unk00[0x3D];
@@ -178,13 +180,16 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00226F
 /** Store the byte at receiver offset 0x3D. */
 void func_00227330(void* object, u8 value)
 {
-    ByteSetterOwnertext_0021D990* receiver = object;
+    ByteSetterOwnertext_0021D990* receiver = (ByteSetterOwnertext_0021D990*)object;
     receiver->unk3d = value;
 }
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00227340);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00227360);
+const float* func_00227360(const void* object)
+{
+    return (const float*)((const u8*)object + 0x20);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00227370);
 
@@ -222,7 +227,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_002287
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_002288E0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00228A90);
+void func_00228A90(void* object)
+{
+    func_4D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00228AB0);
 
@@ -287,3 +295,5 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_0022D7
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_0022D890);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_0022D940);
+
+}

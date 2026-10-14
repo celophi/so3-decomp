@@ -168,6 +168,28 @@ u8 func_002B1170(const void* object);
 /** Return the signed halfword at receiver offset 0x18. */
 s16 func_002B1080(const void* object);
 
+
+/** Store the byte constant at receiver offset 0x10D. */
+void func_002B08F0(void* object);
+
+/** Store the byte constant at receiver offset 0x10D. */
+void func_002B0900(void* object);
+
+/** Store the byte constant at receiver offset 0x10D. */
+void func_002B0910(void* object);
+
+/** Store the byte constant at receiver offset 0x60. */
+void func_002B0E10(void* object);
+
+/** Store the byte constant at receiver offset 0x60. */
+void func_002B0F30(void* object);
+
+/** Store the byte constant at receiver offset 0x4A3. */
+void func_002B0F40(void* object);
+
+/** Store the byte constant at receiver offset 0x4. */
+void func_002B0FE0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

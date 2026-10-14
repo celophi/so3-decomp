@@ -7,6 +7,9 @@
 extern "C" {
 #endif
 
+/** Forward the receiver and return the result from func_002B08B0. */
+s32 func_0027F170(void* object);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.

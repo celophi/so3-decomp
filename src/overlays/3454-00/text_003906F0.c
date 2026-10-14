@@ -1,6 +1,12 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_003906F0.h"
 
+typedef struct WordNonzeroOwnertext_003906F0
+{
+    u8 unk00[0x14];
+    u32 unk14;
+} WordNonzeroOwnertext_003906F0;
+
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_003906F0);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_003907D0);
@@ -93,7 +99,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_00394B
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_00394C00);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_00394C70);
+float func_00394C70(void* object)
+{
+    return 1.0f;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_00394C80);
 
@@ -279,7 +288,11 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_00397E
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_00397F10);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_00397FC0);
+s32 func_00397FC0(void* receiver)
+{
+    WordNonzeroOwnertext_003906F0* object = receiver;
+    return object->unk14 != 0;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_00397FD0);
 
@@ -369,11 +382,18 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_0039BF
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_0039BFE0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_0039BFF0);
+s32 func_0039BFF0(void* receiver)
+{
+    WordNonzeroOwnertext_003906F0* object = receiver;
+    return object->unk14 != 0;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_0039C000);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_0039C0D0);
+void* func_0039C0D0(void* value)
+{
+    return value;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_0039C0E0);
 

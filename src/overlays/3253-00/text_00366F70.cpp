@@ -1,4 +1,8 @@
 #include "include_asm.h"
+#include "types.h"
+
+extern "C" u32 func_4A0B70(u32 value, const void* data);
+extern "C" const u8 D_3E8480[];
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_00366F70);
 
@@ -334,7 +338,17 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_003755
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_00375690);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_00375790);
+extern "C" void func_00375790(void* object)
+{
+    struct NestedWordResultOwnertext_00366F70
+    {
+        u8 unk00[0x50];
+        u32 unk50;
+        u8 unk54[0x3FC];
+        u32 unk450;
+    }* receiver = static_cast<struct NestedWordResultOwnertext_00366F70*>(object);
+    receiver->unk450 = func_4A0B70(receiver->unk50, D_3E8480);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_003757D0);
 

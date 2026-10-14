@@ -209,6 +209,21 @@ u32 func_00224030(const void* object)
     return *(const u32*)((const u8*)object + 0x04);
 }
 
+typedef struct FloatKeyScanEntry_text_00223F90_10
+{
+    float key00;
+    u8 unk04[0x8];
+    float key0c;
+} FloatKeyScanEntry_text_00223F90_10;
+
+typedef struct FloatKeyScanOwner_text_00223F90_10
+{
+    u8 unk00[0x4];
+    FloatKeyScanEntry_text_00223F90_10* entries;
+    u8 unk08[0x18];
+    s16 count20;
+} FloatKeyScanOwner_text_00223F90_10;
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_00224040);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_00224090);
@@ -226,7 +241,22 @@ float func_00224180(const FieldFloatValueSequence20* object)
     return last->unk00 - object->entries[0].unk00;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00223F90", func_002241D0);
+/** Find a key in the receiver's fixed-size entry array. */
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002241D0(void* object, float key)
+{
+    FloatKeyScanOwner_text_00223F90_10* receiver = static_cast<FloatKeyScanOwner_text_00223F90_10*>(object);
+    s16 count = receiver->count20;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == receiver->entries[index].key00)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void func_00224220(FieldFloatSequenceState2C* object, s32 count, FieldFloatValueEntry16* entries)
 {

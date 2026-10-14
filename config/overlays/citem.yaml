@@ -53,6 +53,6 @@ segments:
     start: 0x40
     vram: 0x3483c0
     subsegments:
-      - [0x40, c, text]
+      - [0x40, cpp, text]
   - [0xc880, bin, data]
   - [0xca00]

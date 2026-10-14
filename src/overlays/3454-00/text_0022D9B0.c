@@ -1,4 +1,13 @@
 #include "include_asm.h"
+#include "overlays/3454-00/text_0022D9B0.h"
+
+typedef struct HalfwordSetterOwnertext_0022D9B0
+{
+    u8 unk00[0x6C];
+    u16 unk6c;
+} HalfwordSetterOwnertext_0022D9B0;
+
+
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_0022D9B0);
 
@@ -18,7 +27,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_0022E9
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_0022EB00);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_0022ECA0);
+/** Store the low halfword at receiver offset 0x6C. */
+void func_0022ECA0(void* object, u32 value)
+{
+    HalfwordSetterOwnertext_0022D9B0* receiver = object;
+    receiver->unk6c = value;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_0022ECB0);
 

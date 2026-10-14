@@ -61,6 +61,12 @@ s32 func_00391A70(void* receiver);
  */
 s32 func_00395840(void* receiver);
 
+/** Return the floating-point value 1.0f. */
+float func_0038E490(void* object);
+
+/** Return the first pointer argument unchanged. */
+void* func_00395920(void* value);
+
 #ifdef __cplusplus
 }
 #endif

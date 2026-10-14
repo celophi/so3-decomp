@@ -2,6 +2,9 @@
 #include "types.h"
 #include "overlays/3253-00/text_002C5F00.h"
 
+extern "C" u32 func_4A0B70(u32 value, const void* data);
+extern "C" const u8 D_3E2B38[];
+
 /** Packed four-component value initialized to the identity quaternion. */
 union BattleQuaternionView
 {
@@ -161,7 +164,19 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CA1
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CA2F0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CA3A0);
+extern "C" void func_002CA3A0(void* object)
+{
+    struct NestedWordResultOwnertext_002C5F00
+    {
+        u8 unk00[0x50];
+        u32 unk50;
+        u8 unk54[0x3DC];
+        u32 unk430;
+        u8 unk434[0x30];
+        u32 unk464;
+    }* receiver = static_cast<struct NestedWordResultOwnertext_002C5F00*>(object);
+    receiver->unk464 = func_4A0B70(receiver->unk50, D_3E2B38);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CA3E0);
 
@@ -171,7 +186,18 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CB2
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CB4A0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CB4F0);
+extern "C" void func_002CB4F0(void* object)
+{
+    struct NestedWordResultOwnertext_002C5F00
+    {
+        u8 unk00[0x50];
+        u32 unk50;
+        u8 unk54[0x1CC];
+        u32 unk220;
+        u32 unk224;
+    }* receiver = static_cast<struct NestedWordResultOwnertext_002C5F00*>(object);
+    receiver->unk224 = func_4A0B70(receiver->unk50, D_3E2B38);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CB530);
 

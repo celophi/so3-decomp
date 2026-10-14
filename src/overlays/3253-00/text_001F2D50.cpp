@@ -1,6 +1,8 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_001F2D50.h"
 
+extern "C" void func_4EABF0(void* object);
+
 /** Partial receiver with a word at offset 0x0C. */
 struct FieldWordAt0C
 {
@@ -213,7 +215,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001F2D50", func_002016
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001F2D50", func_002016C0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001F2D50", func_00201700);
+void func_00201700(void* object)
+{
+    func_4EABF0(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_001F2D50", func_00201720);
 

@@ -45,6 +45,22 @@ typedef struct CitemCoordinate2
 } CitemCoordinate2;
 
 /** Four float components stored on a 16-byte boundary. */
+#ifdef __cplusplus
+class Vector4
+{
+public:
+    Vector4& operator=(const Vector4& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+        return *this;
+    }
+
+    float x;
+    float y;
+    float z;
+    float w;
+} __attribute__((aligned(16)));
+#else
 typedef struct Vector4
 {
     float x;
@@ -52,6 +68,7 @@ typedef struct Vector4
     float z;
     float w;
 } __attribute__((aligned(16))) Vector4;
+#endif
 
 #ifdef __cplusplus
 extern "C" {

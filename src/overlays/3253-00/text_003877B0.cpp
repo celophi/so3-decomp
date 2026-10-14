@@ -1,6 +1,9 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_003877B0.h"
 
+extern "C" u32 func_4A0820(u32 value, const void* data);
+extern "C" const u8 D_3E8F28[];
+
 /** Partial object with a word at offset 0x14. */
 struct FieldNonzeroWord14
 {
@@ -18,7 +21,17 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_003877
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_00387960);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_00387AB0);
+extern "C" void func_00387AB0(void* object)
+{
+    struct NestedWordResultOwnertext_003877B0
+    {
+        u8 unk00[0x50];
+        u32 unk50;
+        u8 unk54[0x430];
+        u32 unk484;
+    }* receiver = static_cast<struct NestedWordResultOwnertext_003877B0*>(object);
+    receiver->unk484 = func_4A0820(receiver->unk50, D_3E8F28);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_00387AF0);
 
@@ -118,7 +131,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_0038E3
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_0038E420);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_0038E490);
+float func_0038E490(void* object)
+{
+    return 1.0f;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_0038E4A0);
 
@@ -410,7 +426,10 @@ s32 func_00395840(void* receiver)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_00395850);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_00395920);
+void* func_00395920(void* value)
+{
+    return value;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_00395930);
 

@@ -1,6 +1,9 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_0026E060.h"
 
+extern "C" {
+void func_002AE610(void* object);
+s32 func_002AB490(void* object);
 typedef struct ByteGetterOwnertext_0026E060
 {
     u8 unk00[0xCD2];
@@ -38,9 +41,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0026F9
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0026FA20);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0026FB30);
+void func_0026FB30(void* object)
+{
+    func_002AE610(object);
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0026FB50);
+void func_0026FB50(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0026FB60);
 
@@ -149,14 +157,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_00273E
 /** Return the unsigned byte at receiver offset 0xCD3. */
 u8 func_00274150(const void* object)
 {
-    const ByteGetterOwnertext_0026E060* receiver = object;
+    const ByteGetterOwnertext_0026E060* receiver = (const ByteGetterOwnertext_0026E060*)object;
     return receiver->unkcd3;
 }
 
 /** Return the unsigned byte at receiver offset 0xCD2. */
 u8 func_00274160(const void* object)
 {
-    const ByteGetterOwnertext_0026E060* receiver = object;
+    const ByteGetterOwnertext_0026E060* receiver = (const ByteGetterOwnertext_0026E060*)object;
     return receiver->unkcd2;
 }
 
@@ -206,7 +214,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_002773
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_002773B0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_002775D0);
+s32 func_002775D0(void* object)
+{
+    return func_002AB490(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_002775F0);
 
@@ -243,7 +254,7 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_002783
 /** Return the unsigned byte at receiver offset 0xCD6. */
 u8 func_002785A0(const void* object)
 {
-    const ByteGetterOwnertext_0026E060* receiver = object;
+    const ByteGetterOwnertext_0026E060* receiver = (const ByteGetterOwnertext_0026E060*)object;
     return receiver->unkcd6;
 }
 
@@ -345,7 +356,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0027D7
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0027D820);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0027D880);
+s32 func_0027D880(void* object)
+{
+    return func_002AB490(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0027D8A0);
 
@@ -356,3 +370,5 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0027D9
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0027DCE0);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0026E060", func_0027DDF0);
+
+}

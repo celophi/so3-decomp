@@ -78,7 +78,78 @@ void func_004A2370(void* object);
  */
 s32 func_004A29D0(void* object);
 
+/** Return the floating-point value 1.0f. */
+float func_004A2200(void* object);
+
+/** Return the floating-point value 1.0f. */
+float func_004A2210(void* object);
+
+/** Return the floating-point value 1.0f. */
+float func_004A2220(void* object);
+
+/** Return the floating-point value 1.0f. */
+float func_004A2230(void* object);
+
+/** Return the floating-point value 1.0f. */
+float func_004A2240(void* object);
+
+/** Return the floating-point value 1.0f. */
+float func_004A2250(void* object);
+
+/** Return the floating-point value 1.0f. */
+float func_004A2260(void* object);
+
+/** Return the floating-point value 1.0f. */
+float func_004A22B0(void* object);
+
+/** Return the fixed integer value 1. */
+s32 func_004A08B0(void* object);
+
+/** Return the fixed integer value 13. */
+s32 func_004A88A0(void* object);
+
+/** Return the fixed integer value 11. */
+s32 func_004A8FF0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004A0C50(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004A0C70(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004A87F0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004A8800(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004A8DD0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004AA410(void* object);
+
+void func_004A08A0(void* object);
+void func_004A0C40(void* object);
+void func_004A0C60(void* object);
+void func_004A6D00(void* object);
+void func_004A6D10(void* object);
+void func_004A9220(void* object);
+void func_004A9230(void* object);
+
+/** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
+void func_004A06B0(void* object, const void* source);
+
+/** Queue the receiver's DMA submission object and return its queue result. */
+s32 func_004A4570(void* object);
+
+/** Forward the receiver to func_004D00B0. */
+void func_004A4550(void* object);
+
 #ifdef __cplusplus
+/** Return the second pointer argument unchanged. */
+void* func_004A59C0(void* object, void* value);
+
 }
 #endif
 

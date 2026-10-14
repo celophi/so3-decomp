@@ -79,7 +79,7 @@ segments:
       - [0x5DE50, cpp, text_0023B1D0]
       - [0x60010, c, text_0023D390]
       - [0x60910, cpp, text_0023DC90]
-      - [0x6F130, c, text_0024C4B0]
+      - [0x6F130, cpp, text_0024C4B0]
       - [0x70B00, cpp, text_0024DE80]
       - [0x76E70, c, text_002541F0]
       - [0x78150, c, text_002554D0]

@@ -668,7 +668,235 @@ u8 func_0047DB90(const void* object);
 /** Return the unsigned byte at receiver offset 0x56. */
 u8 func_0047DBC0(const void* object);
 
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+s32 func_0047DDE0(void* receiver);
+
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+s32 func_0047DED0(void* receiver);
+
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+s32 func_0047DFC0(void* receiver);
+
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+s32 func_0047E0B0(void* receiver);
+
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+s32 func_0047E190(void* receiver);
+
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+s32 func_0047E280(void* receiver);
+
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+s32 func_0047E370(void* receiver);
+
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+s32 func_0047E460(void* receiver);
+
+/** Return the fixed integer value 1. */
+s32 func_0047AFF0(void* object);
+
+/** Return the fixed integer value 1. */
+s32 func_0047B790(void* object);
+
+/** Return the fixed integer value 1. */
+s32 func_0047BF30(void* object);
+
+/** Return the fixed integer value 1. */
+s32 func_0047C6C0(void* object);
+
+/** Return the fixed integer value 1. */
+s32 func_0047CE60(void* object);
+
+/** Return the fixed integer value 1. */
+s32 func_0047D600(void* object);
+
+/** Return the fixed integer value 31. */
+s32 func_0047DDD0(void* object);
+
+/** Return the fixed integer value 47. */
+s32 func_0047DEC0(void* object);
+
+/** Return the fixed integer value 15. */
+s32 func_0047DFB0(void* object);
+
+/** Return the fixed integer value 39. */
+s32 func_0047E0A0(void* object);
+
+/** Return the fixed integer value 7. */
+s32 func_0047E180(void* object);
+
+/** Return the fixed integer value 35. */
+s32 func_0047E270(void* object);
+
+/** Return the fixed integer value 3. */
+s32 func_0047E360(void* object);
+
+/** Return the fixed integer value 33. */
+s32 func_0047E450(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047AF80(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047AFA0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047B720(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047B740(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047BEC0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047BEE0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047C650(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047C670(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047CDF0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047CE10(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047D590(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047D5B0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047DD30(void* object);
+
+/** Return the fixed value 0. */
+s32 func_0047DD50(void* object);
+
+void func_0047AF70(void* object);
+void func_0047AF90(void* object);
+void func_0047AFE0(void* object);
+void func_0047B710(void* object);
+void func_0047B730(void* object);
+void func_0047B780(void* object);
+void func_0047BEB0(void* object);
+void func_0047BED0(void* object);
+void func_0047BF20(void* object);
+void func_0047C640(void* object);
+void func_0047C660(void* object);
+void func_0047C6B0(void* object);
+void func_0047CDE0(void* object);
+void func_0047CE00(void* object);
+void func_0047CE50(void* object);
+void func_0047D580(void* object);
+void func_0047D5A0(void* object);
+void func_0047D5F0(void* object);
+void func_0047DD20(void* object);
+void func_0047DD40(void* object);
+
 #ifdef __cplusplus
+/** Store a byte source and word, then set state 0x57 from the source byte. */
+void func_0047AEF0(void* object, const u8* source, u32 value);
+
+/** Store a byte source and word, then set state 0x57 from the source byte. */
+void func_0047B690(void* object, const u8* source, u32 value);
+
+/** Store a byte source and word, then set state 0x57 from the source byte. */
+void func_0047BE30(void* object, const u8* source, u32 value);
+
+/** Store a byte source and word, then set state 0x57 from the source byte. */
+void func_0047C5C0(void* object, const u8* source, u32 value);
+
+/** Store a byte source and word, then set state 0x57 from the source byte. */
+void func_0047CD60(void* object, const u8* source, u32 value);
+
+/** Store a byte source and word, then set state 0x57 from the source byte. */
+void func_0047D500(void* object, const u8* source, u32 value);
+
+/** Store a byte source and word, then set state 0x57 from the source byte. */
+void func_0047DCA0(void* object, const u8* source, u32 value);
+
+/** Clear two pointer fields and set the byte at receiver offset 0x57 from enabled. */
+void func_0047AF30(void* object, s32 enabled);
+
+/** Clear two pointer fields and set the byte at receiver offset 0x57 from enabled. */
+void func_0047B6D0(void* object, s32 enabled);
+
+/** Clear two pointer fields and set the byte at receiver offset 0x57 from enabled. */
+void func_0047BE70(void* object, s32 enabled);
+
+/** Clear two pointer fields and set the byte at receiver offset 0x57 from enabled. */
+void func_0047C600(void* object, s32 enabled);
+
+/** Clear two pointer fields and set the byte at receiver offset 0x57 from enabled. */
+void func_0047CDA0(void* object, s32 enabled);
+
+/** Clear two pointer fields and set the byte at receiver offset 0x57 from enabled. */
+void func_0047D540(void* object, s32 enabled);
+
+/** Clear two pointer fields and set the byte at receiver offset 0x57 from enabled. */
+void func_0047DCE0(void* object, s32 enabled);
+
+/** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
+void func_0047AFB0(void* object, const void* source);
+
+/** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
+void func_0047B750(void* object, const void* source);
+
+/** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
+void func_0047BEF0(void* object, const void* source);
+
+/** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
+void func_0047C680(void* object, const void* source);
+
+/** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
+void func_0047CE20(void* object, const void* source);
+
+/** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
+void func_0047D5C0(void* object, const void* source);
+
+/** Return the 64-byte table entry at row * (count - 1) + column. */
+void* func_0047DD80(void* object, s32 row, s32 column);
+
+/** Return the 64-byte table entry at row * (count - 1) + column. */
+void* func_0047DE70(void* object, s32 row, s32 column);
+
+/** Return the 64-byte table entry at row * (count - 1) + column. */
+void* func_0047DF60(void* object, s32 row, s32 column);
+
+/** Return the 64-byte table entry at row * (count - 1) + column. */
+void* func_0047E050(void* object, s32 row, s32 column);
+
+/** Return the 64-byte table entry at row * (count - 1) + column. */
+void* func_0047E130(void* object, s32 row, s32 column);
+
+/** Return the 64-byte table entry at row * (count - 1) + column. */
+void* func_0047E220(void* object, s32 row, s32 column);
+
+/** Return the 64-byte table entry at row * (count - 1) + column. */
+void* func_0047E310(void* object, s32 row, s32 column);
+
+/** Return the 64-byte table entry at row * (count - 1) + column. */
+void* func_0047E400(void* object, s32 row, s32 column);
+
+/** Return the table address at base + index * 320. */
+void* func_0047DD60(void* object, s32 index);
+
+/** Return the table address at base + index * 288. */
+void* func_0047DE50(void* object, s32 index);
+
+/** Return the table address at base + index * 144. */
+void* func_0047E200(void* object, s32 index);
+
+/** Return the table address at base + index * 96. */
+void* func_0047E2F0(void* object, s32 index);
+
+/** Return the table address at base + index * 96. */
+void* func_0047E3E0(void* object, s32 index);
+
 }
 #endif
 

@@ -1,4 +1,13 @@
 #include "include_asm.h"
+#include "overlays/3253-00/text_00316AE0.h"
+
+typedef struct ConstantByteSetterOwnertext_00316AE0
+{
+    u8 unk00[0x2C0];
+    u8 unk2c0;
+} ConstantByteSetterOwnertext_00316AE0;
+
+
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00316AE0", func_00316AE0);
 
@@ -148,7 +157,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00316AE0", func_003207
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00316AE0", func_00320890);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00316AE0", func_003208F0);
+/** Store 0x1 at receiver offset 0x2C0. */
+void func_003208F0(void* object)
+{
+    ConstantByteSetterOwnertext_00316AE0* receiver = static_cast<ConstantByteSetterOwnertext_00316AE0*>(object);
+    receiver->unk2c0 = 0x1;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00316AE0", func_00320900);
 

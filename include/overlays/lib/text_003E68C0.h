@@ -310,4 +310,10 @@ public:
 };
 #endif
 
+#ifdef __cplusplus
+/** Forward the receiver to func_004D00B0. */
+extern "C" void func_003F2550(LibClass178A90* object);
+#endif
+
+
 #endif

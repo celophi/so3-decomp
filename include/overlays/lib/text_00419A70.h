@@ -252,7 +252,27 @@ void func_00429850(void* object);
 /** Store the word at receiver offset 0x70. */
 void func_004295B0(void* object, u32 value);
 
+
+/** Forward the receiver to func_004D00B0. */
+void func_0041AE30(void* object);
+
+/** Forward the receiver to func_004D00B0. */
+void func_0041D210(void* object);
+
+/** Forward the receiver to func_004D00B0. */
+void func_0041E8C0(void* object);
+
+/** Forward the receiver to func_004D00B0. */
+void func_0041F300(void* object);
+
+/** Forward the receiver to func_004D00B0. */
+void func_00423970(void* object);
+
 #ifdef __cplusplus
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_004297F0(void* object, u8 mode);
+
+
 }
 #endif
 

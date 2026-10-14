@@ -917,6 +917,52 @@ void func_003CBE90(u8* object, u32 first, u32 second);
  */
 void func_003CBEA0(u8* object);
 
+
+/** Store the byte constant at receiver offset 0x528. */
+void func_003CB390(void* object);
+
+/** Store two arguments and set the byte at receiver offset 0x50 from source[0] == 1. */
+void func_003CFE40(void* object, u8* first, void* second);
+
+/** Store two arguments and set the byte at receiver offset 0x50 from source[0] == 1. */
+void func_003D0560(void* object, u8* first, void* second);
+
+/** Store two arguments and set the byte at receiver offset 0x50 from source[0] == 1. */
+void func_003D0C80(void* object, u8* first, void* second);
+
+/** Store two arguments and set the byte at receiver offset 0x50 from source[0] == 1. */
+void func_003D1360(void* object, u8* first, void* second);
+
+/** Clear two words and set the byte at receiver offset 0x50 from enabled. */
+void func_003CFE60(void* object, s32 enabled);
+
+/** Clear two words and set the byte at receiver offset 0x50 from enabled. */
+void func_003D0580(void* object, s32 enabled);
+
+/** Clear two words and set the byte at receiver offset 0x50 from enabled. */
+void func_003D0CA0(void* object, s32 enabled);
+
+/** Clear two words and set the byte at receiver offset 0x50 from enabled. */
+void func_003D1380(void* object, s32 enabled);
+
+/** Set the indexed record presence bit and store its word value. */
+void func_003C8240(void* object, s32 index, u32 value);
+
+/** Set the indexed record presence bit and store its word value. */
+void func_003C8270(void* object, s32 index, u32 value);
+
+/** Set the indexed record presence bit and store its word value. */
+void func_003C82A0(void* object, s32 index, u32 value);
+
+/** Set the indexed record presence bit and store its word value. */
+void func_003C82D0(void* object, s32 index, u32 value);
+
+/** Set the indexed record presence bit and store its float pair. */
+void func_003C8300(void* object, s32 index, float first, float second);
+
+/** Set presence bit 0x20 on the indexed record. */
+void func_003C8330(void* object, s32 index);
+
 #ifdef __cplusplus
 }
 #endif
