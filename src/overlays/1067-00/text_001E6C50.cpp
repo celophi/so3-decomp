@@ -1050,6 +1050,10 @@ void FieldClass1504C0::func_001EAA10(ResidentPacket* packet)
     }
 }
 
+inline FieldClass150490::~FieldClass150490()
+{
+}
+
 void FieldClass1504C0::func_001EAC90(ResidentPacket* packet)
 {
     if (unk30 == 0 || !unkc4_1)

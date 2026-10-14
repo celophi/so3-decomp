@@ -1,4 +1,10 @@
 #include "include_asm.h"
+#include "overlays/3454-00/text_00340310.h"
+#include "overlays/3454-00/text_0027E060.h"
+
+extern "C" {
+
+#include "include_asm.h"
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_00340310);
 
@@ -206,7 +212,11 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_0034C6
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_0034C830);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_0034C9C0);
+void func_0034C9C0(Obj27E060* object, u8 first_code, u8 second_code)
+{
+    func_0028BDB0(object, first_code, second_code);
+}
+
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_0034C9E0);
 
@@ -277,3 +287,5 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_0034FE
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_00350030);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_00350230);
+
+}

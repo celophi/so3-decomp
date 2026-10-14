@@ -4,7 +4,6 @@
 #include "overlays/1070-00/text_00284BF0.h"
 
 extern "C" void func_001FCE00(void);
-extern "C" void func_001E2C60(void);
 extern "C" void func_002074B0(void* receiver, void* child);
 extern "C" void func_0020E850(void* receiver, void* child);
 extern "C" s32 func_0020AA00(void* object, s32 value, s32 flags, s32 parameter);
@@ -380,10 +379,7 @@ void func_00206BE0(void* object)
 {
 }
 
-void func_00206BF0(void)
-{
-    func_001E2C60();
-}
+INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206BF0);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206C10);
 

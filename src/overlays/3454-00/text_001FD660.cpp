@@ -1,4 +1,14 @@
 #include "include_asm.h"
+#include "overlays/3454-00/text_001FD660.h"
+
+extern "C" {
+typedef struct ConstantByteSetterOwnertext_001FD660
+{
+    u8 unk00[0x12E];
+    u8 unk12e;
+} ConstantByteSetterOwnertext_001FD660;
+
+
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_001FD660);
 
@@ -28,7 +38,8 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_001FEF
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_001FF030);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_001FF090);
+void func_4D00B0(void* object);
+void func_001FF090(void* object) { func_4D00B0(object); }
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_001FF0B0);
 
@@ -36,7 +47,7 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_001FF0
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_001FF150);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_001FF1C0);
+void func_001FF1C0(void* object) { func_4D00B0(object); }
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_001FF1E0);
 
@@ -92,7 +103,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_002087
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_002089F0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_00208EA0);
+/** Store 0x1 at receiver offset 0x12E. */
+void func_00208EA0(void* object)
+{
+    ConstantByteSetterOwnertext_001FD660* receiver = (ConstantByteSetterOwnertext_001FD660*)object;
+    receiver->unk12e = 0x1;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_00208EB0);
 
@@ -115,3 +131,5 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_0020C9
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_0020CBC0);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001FD660", func_0020D4E0);
+
+}

@@ -1,4 +1,7 @@
 #include "include_asm.h"
+#include "types.h"
+
+extern "C" void func_0030ED50(void* object, s32 value);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003069E0", func_003069E0);
 
@@ -100,11 +103,20 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003069E0", func_0030EB
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003069E0", func_0030ED50);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003069E0", func_0030F060);
+extern "C" void func_0030F060(void* object)
+{
+    func_0030ED50(object, 2);
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003069E0", func_0030F080);
+extern "C" void func_0030F080(void* object)
+{
+    func_0030ED50(object, 1);
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003069E0", func_0030F0A0);
+extern "C" void func_0030F0A0(void* object)
+{
+    func_0030ED50(object, 0);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003069E0", func_0030F0C0);
 

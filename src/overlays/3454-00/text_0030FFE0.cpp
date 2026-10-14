@@ -1,4 +1,9 @@
 #include "include_asm.h"
+#include "types.h"
+
+
+extern "C" {
+void func_0031DD20(void* object, s32 value);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0030FFE0", func_0030FFE0);
 
@@ -154,11 +159,20 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0030FFE0", func_0031DB
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0030FFE0", func_0031DD20);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0030FFE0", func_0031DF30);
+void func_0031DF30(void* object)
+{
+    func_0031DD20(object, 2);
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0030FFE0", func_0031DF50);
+void func_0031DF50(void* object)
+{
+    func_0031DD20(object, 1);
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0030FFE0", func_0031DF70);
+void func_0031DF70(void* object)
+{
+    func_0031DD20(object, 0);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0030FFE0", func_0031DF90);
 
@@ -189,3 +203,5 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0030FFE0", func_0031F9
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0030FFE0", func_0031FA20);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0030FFE0", func_0031FF80);
+
+}

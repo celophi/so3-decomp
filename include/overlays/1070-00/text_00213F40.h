@@ -681,6 +681,14 @@ s32 func_002179B0(const FieldKeyList18* object, s32 key);
  * @return True when a collected receiver reports the observed condition.
  */
 bool func_0021AB20(FieldReceiver21AB20* object, void* excluded);
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_00223ED0(void* object, u8 mode);
+
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_00223F30(void* object, u8 mode);
+
+
 }
 #endif
 

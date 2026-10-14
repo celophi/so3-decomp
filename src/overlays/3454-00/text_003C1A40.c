@@ -1,6 +1,49 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_003C1A40.h"
 
+typedef struct ConstantByteSetterOwnertext_003C1A40
+{
+    u8 unk00[0x528];
+    u8 unk528;
+} ConstantByteSetterOwnertext_003C1A40;
+
+typedef struct SourceByteStateSetterOwnertext_003C1A40
+{
+    u8 unk00[0x48];
+    u8* unk48;
+    void* unk4C;
+    u8 unk50;
+} SourceByteStateSetterOwnertext_003C1A40;
+
+typedef struct TwoWordClearArgStateOwnertext_003C1A40
+{
+    u8 unk00[0x48];
+    u32 unk48;
+    u32 unk4C;
+    u8 unk50;
+} TwoWordClearArgStateOwnertext_003C1A40;
+
+typedef struct IndexedRecordOwnertext_003C1A40
+{
+    float first;
+    float second;
+    u32 value08;
+    u32 value0C;
+    u32 value10;
+    u32 value14;
+    u8 pad18[0xC];
+    u8 flags24;
+    u8 pad25[3];
+} IndexedRecordOwnertext_003C1A40;
+
+typedef struct IndexedRecordTableOwnertext_003C1A40
+{
+    u8 pad00[0x460];
+    IndexedRecordOwnertext_003C1A40 records[1];
+} IndexedRecordTableOwnertext_003C1A40;
+
+
+
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C1A40);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C1B60);
@@ -75,17 +118,53 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C81
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C8150);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C8240);
+void func_003C8240(void* object, s32 index, u32 value)
+{
+    IndexedRecordTableOwnertext_003C1A40* table = object;
+    IndexedRecordOwnertext_003C1A40* record = &table->records[index];
+    record->flags24 |= 0x10;
+    record->value14 = value;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C8270);
+void func_003C8270(void* object, s32 index, u32 value)
+{
+    IndexedRecordTableOwnertext_003C1A40* table = object;
+    IndexedRecordOwnertext_003C1A40* record = &table->records[index];
+    record->flags24 |= 0x08;
+    record->value10 = value;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C82A0);
+void func_003C82A0(void* object, s32 index, u32 value)
+{
+    IndexedRecordTableOwnertext_003C1A40* table = object;
+    IndexedRecordOwnertext_003C1A40* record = &table->records[index];
+    record->flags24 |= 0x04;
+    record->value0C = value;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C82D0);
+void func_003C82D0(void* object, s32 index, u32 value)
+{
+    IndexedRecordTableOwnertext_003C1A40* table = object;
+    IndexedRecordOwnertext_003C1A40* record = &table->records[index];
+    record->flags24 |= 0x02;
+    record->value08 = value;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C8300);
+void func_003C8300(void* object, s32 index, float first, float second)
+{
+    IndexedRecordTableOwnertext_003C1A40* table = object;
+    IndexedRecordOwnertext_003C1A40* record = &table->records[index];
+    record->flags24 |= 0x01;
+    record->first = first;
+    record->second = second;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C8330);
+void func_003C8330(void* object, s32 index)
+{
+    IndexedRecordTableOwnertext_003C1A40* table = object;
+    IndexedRecordOwnertext_003C1A40* record = &table->records[index];
+    record->flags24 |= 0x20;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C8350);
 
@@ -283,7 +362,12 @@ s32 func_003CB380(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CB390);
+/** Store 0x1 at receiver offset 0x528. */
+void func_003CB390(void* object)
+{
+    ConstantByteSetterOwnertext_003C1A40* receiver = object;
+    receiver->unk528 = 0x1;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CB3A0);
 
@@ -429,27 +513,103 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CF6
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CF770);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CFE40);
+void func_003CFE40(void* object, u8* first, void* second)
+{
+    SourceByteStateSetterOwnertext_003C1A40* receiver = object;
+    receiver->unk48 = first;
+    receiver->unk4C = second;
+    receiver->unk50 = receiver->unk48[0] == 1;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CFE60);
+void func_003CFE60(void* object, s32 enabled)
+{
+    TwoWordClearArgStateOwnertext_003C1A40* receiver = object;
+    receiver->unk48 = 0;
+    receiver->unk4C = 0;
+    if (enabled)
+    {
+        receiver->unk50 = 1;
+    }
+    else
+    {
+        receiver->unk50 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CFE90);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003D0560);
+void func_003D0560(void* object, u8* first, void* second)
+{
+    SourceByteStateSetterOwnertext_003C1A40* receiver = object;
+    receiver->unk48 = first;
+    receiver->unk4C = second;
+    receiver->unk50 = receiver->unk48[0] == 1;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003D0580);
+void func_003D0580(void* object, s32 enabled)
+{
+    TwoWordClearArgStateOwnertext_003C1A40* receiver = object;
+    receiver->unk48 = 0;
+    receiver->unk4C = 0;
+    if (enabled)
+    {
+        receiver->unk50 = 1;
+    }
+    else
+    {
+        receiver->unk50 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003D05B0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003D0C80);
+void func_003D0C80(void* object, u8* first, void* second)
+{
+    SourceByteStateSetterOwnertext_003C1A40* receiver = object;
+    receiver->unk48 = first;
+    receiver->unk4C = second;
+    receiver->unk50 = receiver->unk48[0] == 1;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003D0CA0);
+void func_003D0CA0(void* object, s32 enabled)
+{
+    TwoWordClearArgStateOwnertext_003C1A40* receiver = object;
+    receiver->unk48 = 0;
+    receiver->unk4C = 0;
+    if (enabled)
+    {
+        receiver->unk50 = 1;
+    }
+    else
+    {
+        receiver->unk50 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003D0CD0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003D1360);
+void func_003D1360(void* object, u8* first, void* second)
+{
+    SourceByteStateSetterOwnertext_003C1A40* receiver = object;
+    receiver->unk48 = first;
+    receiver->unk4C = second;
+    receiver->unk50 = receiver->unk48[0] == 1;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003D1380);
+void func_003D1380(void* object, s32 enabled)
+{
+    TwoWordClearArgStateOwnertext_003C1A40* receiver = object;
+    receiver->unk48 = 0;
+    receiver->unk4C = 0;
+    if (enabled)
+    {
+        receiver->unk50 = 1;
+    }
+    else
+    {
+        receiver->unk50 = 0;
+    }
+}
 
 s32 func_003D13B0(void* object)
 {

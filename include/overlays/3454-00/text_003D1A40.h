@@ -7,6 +7,9 @@
 extern "C" {
 #endif
 
+/** Forward the receiver to func_4D00B0. */
+void func_003DB530(void* object);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
@@ -1369,6 +1372,13 @@ u8* func_003D4B20(u8* object, s32 row, s32 column);
  * @return One if the word is nonzero, otherwise zero.
  */
 s32 func_003D4410(u8* object);
+
+
+/** Store the byte constant at receiver offset 0x60. */
+void func_003DB1A0(void* object);
+
+/** Store the byte constant at receiver offset 0x60. */
+void func_003DC050(void* object);
 
 #ifdef __cplusplus
 }

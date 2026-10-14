@@ -1,5 +1,9 @@
 #include "include_asm.h"
+#include "overlays/3454-00/text_0023D9F0.h"
+#include "types.h"
 
+extern "C" {
+s32 func_00243E90(void* object, void* entry, s32 type, s32 flags);
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_0023D9F0);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_0023DAE0);
@@ -58,7 +62,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_00243D
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_00243E00);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_00243E70);
+s32 func_00243E70(void* object, void* entry, s32 type, s32 flags)
+{
+    return func_00243E90(object, entry, type, flags);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_00243E90);
 
@@ -167,3 +174,5 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_0024D4
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_0024D7A0);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_0024D940);
+
+}

@@ -693,6 +693,28 @@ void func_001E2C30(void* object);
 void func_001E2C50(void* object);
 
 /**
+ * @brief Apply the receiver's optional child callback to the source child when processing is ready.
+ * @param receiver Receiver with the callback and value at offset 0x80.
+ * @param source Input containing an optional child pointer at offset 0xA8.
+ * @return One when processing succeeds or the source child is absent; otherwise zero.
+ */
+s32 func_001E2C60(void* receiver, void* source);
+
+/**
+ * @brief Allocate and initialize the receiver's child object, reporting allocation failure.
+ * @param receiver Receiver whose child pointer is stored at offset 0xA8.
+ * @return One when the child is created; otherwise zero.
+ */
+s32 func_001E2F30(void* receiver);
+
+/**
+ * @brief Initialize the receiver's callback state, float defaults, and flag.
+ * @param receiver State object to initialize.
+ * @return The receiver.
+ */
+void* func_001E3030(void* receiver);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -703,6 +725,30 @@ void func_001E2D20(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_001E2D30(void* object);
+
+/**
+ * @brief Process the receiver and invoke virtual slot 0x48 when its child is absent and the flag is set.
+ * @param object Receiver containing the child pointer and state flag.
+ */
+void func_001E2D40(void* object);
+
+/**
+ * @brief Update the receiver and invoke its optional child callback at virtual slot 0x10.
+ * @param object Receiver containing the child pointer at offset 0xA8.
+ */
+void func_001E2D90(void* object);
+
+/**
+ * @brief Clear the receiver state, notify its optional child through slot 0x08, and clear the child pointer.
+ * @param object Receiver containing the child pointer and state flag.
+ */
+void func_001E2E30(void* object);
+
+/**
+ * @brief Process the receiver's optional child after checking its callback state.
+ * @param receiver Receiver with the child pointer, input values, and output fields.
+ */
+void func_001E2E80(void* receiver);
 
 /**
  * @brief Perform no work.

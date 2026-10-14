@@ -6,6 +6,8 @@
 #include "main/resident_001001E0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 
+extern "C" void func_004D00B0(void* object);
+
 enum
 {
     DRAWING_STORAGE_ALIGNMENT = 128,
@@ -124,17 +126,29 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F5A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F5E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F600);
+void func_0045F600(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F610);
+void func_0045F610(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F620);
+void func_0045F620(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F630);
+void func_0045F630(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F640);
+void func_0045F640(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F650);
+void func_0045F650(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F660);
 
@@ -272,23 +286,41 @@ LibStorageBlock0C::~LibStorageBlock0C()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461960);
+void func_00461960(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461970);
+void func_00461970(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461980);
+void func_00461980(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461990);
+void func_00461990(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004619A0);
+void func_004619A0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004619B0);
+void func_004619B0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004619C0);
+void func_004619C0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004619D0);
+void func_004619D0(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004619E0);
+void func_004619E0(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004619F0);
 
@@ -320,7 +352,9 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004622F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462300);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462310__14LibClass178600Fv);
+void LibClass178600::func_00462310()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462320);
 
@@ -468,7 +502,10 @@ extern "C" s32 lib_numeric_widget_init_rectangle(LibObject174F20* object, u32 va
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464E30);
+s32 func_00464E30(void* object)
+{
+    return 3;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464E40);
 
@@ -686,7 +723,9 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465E00);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465F20);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004662A0);
+void func_004662A0(void* object)
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004662B0);
 
@@ -743,7 +782,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004673B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004673C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467480);
+/** Forward the receiver to func_004D00B0. */
+void func_00467480(void* object)
+{
+    func_004D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004674A0);
 
@@ -781,9 +824,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004680B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468230);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468360);
+s32 func_00468360(void* object)
+{
+    return 7;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468370);
+s32 func_00468370(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468380);
 
@@ -809,7 +858,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00469970);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046A3B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046A3F0);
+/** Forward the receiver to func_004D00B0. */
+void func_0046A3F0(void* object)
+{
+    func_004D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046A410);
 

@@ -7,6 +7,12 @@
 extern "C" {
 #endif
 
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+s32 func_00397FC0(void* receiver);
+
+/** Return whether the receiver's word at offset 0x14 is nonzero. */
+s32 func_0039BFF0(void* receiver);
+
 /**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
@@ -40,6 +46,12 @@ s32 func_00394EB0(void* object);
  * @return Always 1.
  */
 s32 func_00394EC0(void* object);
+
+/** Return the floating-point value 1.0f. */
+float func_00394C70(void* object);
+
+/** Return the first pointer argument unchanged. */
+void* func_0039C0D0(void* value);
 
 #ifdef __cplusplus
 }

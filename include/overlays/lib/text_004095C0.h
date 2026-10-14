@@ -123,6 +123,65 @@ u16 func_0040D930(const ItemCreationAllocationRecord* record, u32 index);
 u8 func_004095C0(s32 code, FieldRecord* entry, void* detail, s32* first, s32* second, s32* third, s32* fourth, s32* fifth, s32* sixth, s32* seventh,
                  s32* eighth);
 
+/**
+ * @brief Return the floating-point value 0.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00412C30(void* object);
+
+
+/** Store the word at receiver offset 0x0. */
+void func_0040B690(void* object, u32 value);
+
+
+/** Store the byte at receiver offset 0x33. */
+void func_0040B640(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x32. */
+void func_0040B660(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x8. */
+void func_0040B670(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x9. */
+void func_0040B680(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x6. */
+void func_0040B6B0(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x8D4. */
+void func_0040FAF0(void* object, u8 value);
+
+/** Store the byte at receiver offset 0x90A. */
+void func_0040FB00(void* object, u8 value);
+
+
+/** Store the low halfword at receiver offset 0x30. */
+void func_0040B650(void* object, u32 value);
+
+/** Store the low halfword at receiver offset 0x2. */
+void func_0040B6C0(void* object, u32 value);
+
+/** Return the fixed integer value 4. */
+s32 func_0040E3A0(void* object);
+
+/** Return the fixed integer value 1. */
+s32 func_00415030(void* object);
+
+/** Return the fixed integer value 12. */
+s32 func_004194F0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004152B0(void* object);
+
+void func_00411E10(void* object);
+void func_00411E20(void* object);
+void func_00412C00(void* object);
+void func_00412C10(void* object);
+void func_00412C20(void* object);
+void func_00412C40(void* object);
+
 #ifdef __cplusplus
 }
 #endif

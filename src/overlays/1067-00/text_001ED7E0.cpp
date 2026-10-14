@@ -723,8 +723,9 @@ void func_001EE230(FieldFloat4At20* state, float x, float y, float z)
     state->unk20[3] = 1.0f;
 }
 
-// Kept copy of FieldClass150490's inline empty func_001EAC90; emitted once this unit's users are compiled.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001EAC90__16FieldClass150490FP14ResidentPacket);
+void FieldClass150490::func_001EAC90(ResidentPacket* packet)
+{
+}
 
 s32 func_001EE260(void* object)
 {

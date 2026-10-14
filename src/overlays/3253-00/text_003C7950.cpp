@@ -1,6 +1,9 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_003C7950.h"
 
+extern "C" void func_4EABF0(void* object);
+extern "C" void func_4D7EB0(void* object);
+
 void func_003C7950(BattlePairedWords* object, u32 first, u32 second)
 {
     object->unkB0 = first;
@@ -1772,7 +1775,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003C7950", func_003D6B
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003C7950", func_003D6C40);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003C7950", func_003D6CA0);
+void func_003D6CA0(void* object)
+{
+    func_4D7EB0(object);
+}
 
 void func_003D6CC0(BattleState60* object)
 {
@@ -1785,7 +1791,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003C7950", func_003D6F
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003C7950", func_003D6FF0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003C7950", func_003D7050);
+void func_003D7050(void* object)
+{
+    func_4EABF0(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003C7950", func_003D7070);
 

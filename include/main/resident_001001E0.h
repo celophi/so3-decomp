@@ -55,6 +55,8 @@ struct FieldRuntimeRoot;
  */
 void func_001011B0(struct FieldRuntimeRoot* root, void* destination, s32 type, u32 size);
 
+void func_00100AB0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

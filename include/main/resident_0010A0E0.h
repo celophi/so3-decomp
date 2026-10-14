@@ -41,6 +41,9 @@ typedef struct DmaSubmission DmaSubmission;
 extern "C" {
 #endif
 
+s32 func_0011CC00(void* object, void* entry, void* descriptor);
+void func_0011D060(void* object, void* entry, void* descriptor);
+
 /**
  * @brief Queue a DMA submission and start processing if the channel is idle.
  * @param queue Resident queue for the DMA channel.
@@ -114,6 +117,31 @@ s32 resident_allocate_request(ResidentRequest112400* receiver, s32 arg1, s32 arg
 
 /** @brief Check a resident request key and its active state. @param request Resident request receiver. @param key Request key. @return Nonzero when the request state is active. */
 s32 func_00112610(ResidentRequest112400* request, s32 key);
+
+/** Return the word at receiver offset 0x110. */
+u32 func_00115640(const void* object);
+/** Return the word at receiver offset 0x10C. */
+u32 func_00115650(const void* object);
+/** Return the word at receiver offset 0x118. */
+u32 func_00115660(const void* object);
+/** Return the word at receiver offset 0x104. */
+u32 func_00115830(const void* object);
+/** Return the word at receiver offset 0x8. */
+u32 func_0011DF70(const void* object);
+
+
+/** Store the word at receiver offset 0x134. */
+void func_001156B0(void* object, u32 value);
+
+
+/** Store the byte constant at receiver offset 0x1012. */
+void func_001140F0(void* object);
+
+void func_0010EE50(void* object);
+void func_00113180(void* object);
+void func_00113EA0(void* object);
+void func_00114450(void* object);
+void func_0011C6B0(void* object);
 
 #ifdef __cplusplus
 }

@@ -901,17 +901,13 @@ class FieldClass150490 : public FieldClass150460
 {
 public:
     /** @brief Destroy the object. */
-    virtual ~FieldClass150490()
-    {
-    }
+    virtual ~FieldClass150490();
 
     /**
      * @brief Add the object's GS register writes to a packet; this class adds none.
      * @param packet Packet to append to.
      */
-    virtual void func_001EAC90(ResidentPacket* packet)
-    {
-    }
+    virtual void func_001EAC90(ResidentPacket* packet);
 };
 
 /**

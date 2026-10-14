@@ -1,6 +1,8 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_00285100.h"
 
+extern "C" s32 func_002B08B0(void* object);
+
 struct BattleObject2E0B
 {
     u8 pad[0x2DC8];
@@ -35,7 +37,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_002851
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_00285220);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_00285280);
+s32 func_00285280(void* object)
+{
+    return func_002B08B0(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_002852A0);
 

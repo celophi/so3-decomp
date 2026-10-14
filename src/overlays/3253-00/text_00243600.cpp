@@ -30,7 +30,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_002459
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_002459C0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_00245A80);
+extern "C" void func_4D45F0(void);
+
+extern "C" void func_00245A80(void)
+{
+    func_4D45F0();
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_00245AA0);
 

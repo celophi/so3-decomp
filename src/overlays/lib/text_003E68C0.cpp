@@ -273,7 +273,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F1330);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F2510);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F2550);
+/** Forward the receiver to func_004D00B0. */
+void func_003F2550(LibClass178A90* object)
+{
+    func_004D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F2570);
 

@@ -1,9 +1,35 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_001DD3C0.h"
 
+typedef struct WordSetterOwnertext_001DD3C0
+{
+    u8 unk00[0x70];
+    u32 unk70;
+} WordSetterOwnertext_001DD3C0;
+
+
+
+typedef struct WordGetterOwnertext_001DD3C0
+{
+    u8 unk00[0xD58];
+    u32 unkd58;
+} WordGetterOwnertext_001DD3C0;
+
+/** Partial receiver with three aligned quadword slots and a ready byte at 0x50. */
+typedef struct QuadwordSetterOwnertext_001DD3C0
+{
+    u8 unk00[0x20];
+    unsigned __int128 slots[3];
+    u8 ready;
+} QuadwordSetterOwnertext_001DD3C0;
+
+
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001DD3C0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001DD400);
+s32 func_001DD400(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001DD410);
 
@@ -35,7 +61,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001DE5
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001DE650);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001DE6B0);
+/** Store the word at receiver offset 0x70. */
+void func_001DE6B0(void* object, u32 value)
+{
+    WordSetterOwnertext_001DD3C0* receiver = object;
+    receiver->unk70 = value;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001DE6C0);
 
@@ -67,7 +98,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E0B
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E0C40);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E0CB0);
+void func_001E0CB0(void* object, const unsigned __int128* value)
+{
+    QuadwordSetterOwnertext_001DD3C0* receiver = object;
+    receiver->ready = 1;
+    receiver->slots[0] = *value;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E0CD0);
 
@@ -221,7 +257,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7E
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7F00);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E8DD0);
+/** Return the word at receiver offset 0xD58. */
+u32 func_001E8DD0(const void* object)
+{
+    const WordGetterOwnertext_001DD3C0* receiver = object;
+    return receiver->unkd58;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E8DE0);
 

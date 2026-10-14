@@ -136,6 +136,48 @@ s32 lib_panel_init_transform(LibClass178630* object, float z);
 s32 lib_panel_init_rectangle(LibClass178630* object, s32 mode, float x, float y, float width, float height, float extra);
 /** @brief Set the four packed panel colors. @param object Panel widget. @param colors Four packed colors. */
 void lib_panel_set_colors(LibClass178630* object, const LibWidgetColors4C5590* colors);
+/** Return the fixed integer value 11. */
+s32 func_004C8370(void* object);
+
+/** Return the fixed integer value 1. */
+s32 func_004C8380(void* object);
+
+/** Return the fixed integer value 67. */
+s32 func_004C96D0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004C16E0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004C26E0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004C2720(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004C2760(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004C3AC0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004C3AD0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004C3D80(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004C4020(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004C4060(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004C40A0(void* object);
+
+/** Return the fixed value 0. */
+s32 func_004C8360(void* object);
+
 #ifdef __cplusplus
 }
 #endif
@@ -906,7 +948,85 @@ void lib_build_directional_shadow_matrix(LibMatrix44Value* output, const FieldVe
 void lib_build_projective_shadow_matrix(LibMatrix44Value* output, const FieldVec4A* light, const FieldVec4A* plane);
 #endif
 
+
+/** Return the word at receiver offset 0x10. */
+u32 func_004BD3E0(const void* object);
+
+/** Return the word at receiver offset 0x20. */
+u32 func_004BD4E0(const void* object);
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004C1720(const void* object);
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004C3DC0(const void* object);
+
+
+/** Return the word at receiver offset 0x10. */
+u32 func_004BD490(const void* object);
+
+
+/** Return the signed halfword at receiver offset 0x18. */
+s16 func_004C3D60(const void* object);
+
+/** Return the signed halfword at receiver offset 0x1A. */
+s16 func_004C3D70(const void* object);
+
+/** Return the signed halfword at receiver offset 0x18. */
+s16 func_004C16C0(const void* object);
+
+/** Return the signed halfword at receiver offset 0x1A. */
+s16 func_004C16D0(const void* object);
+
+/** Return the receiver address at byte offset 0x10. */
+const void* func_004BD370(const void* object);
+
+/** Return the receiver address at byte offset 0x570. */
+const void* func_004BD3D0(const void* object);
+
+/** Return the receiver address at byte offset 0x40. */
+const void* func_004BD4A0(const void* object);
+
+/** Return the receiver address at byte offset 0x20. */
+const void* func_004BD4B0(const void* object);
+
+/** Forward the receiver to func_004A4570 and return its queue result. */
+s32 func_004C8510(void* object);
+
+
 #ifdef __cplusplus
+void func_004C26A0(void* object);
+void func_004C3AE0(void* object);
+void func_004C3AF0(void* object);
+void func_004C3FE0(void* object);
+
+void func_004C4500(void* object);
+void func_004C4510(void* object);
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_004C1600(void* object, u8 mode);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_004C3CA0(void* object, u8 mode);
+
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_004C1660(void* object, u8 mode);
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_004C3D00(void* object, u8 mode);
+
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_004C2620(void* object, float key);
+
+/** Return the key span between the first and last entries. */
+float func_004C25D0(void* object);
+float func_004C3F10(void* object);
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_004C3F60(void* object, float key);
+
+
 }
 #endif
 

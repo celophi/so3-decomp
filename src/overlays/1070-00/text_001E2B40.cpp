@@ -8,8 +8,19 @@ extern "C" void func_46E730(void* object, void* value, s32 enabled);
 extern "C" void func_002F4250(void* object);
 extern "C" void func_002F4580(void* object);
 extern "C" void func_4E8EE0(void* object, ...);
+extern "C" void func_001FCCA0(void* object);
+extern "C" s32 func_001FCF10(void);
+extern "C" void func_001FD9E0(void* object);
+extern "C" void func_001FE050(void);
+extern "C" void func_001FDE00(void* object);
+extern "C" void* __nw__FUiiPCc(u32 size, s32 line, const char* file);
+extern "C" void* func_001E4EB0(void* object);
+extern "C" void func_115C20(s32 error, const char* file, s32 code, s32 arg3, s32 arg4, s32 arg5,
+                             s32 arg6);
 
 extern "C" u8 D_51E050[];
+extern "C" char D_334380[];
+extern "C" char D_16AAD0[];
 extern "C" float D_001B66B4;
 extern "C" void* D_001B661C;
 extern "C" void func_120ED0(void* object);
@@ -17,6 +28,9 @@ extern "C" void* D_001B6620;
 extern "C" void func_121E80(void* owner, void* object);
 extern "C" void func_43AC90(void* object);
 extern "C" void func_001EEA50(void* object);
+extern "C" void func_46E760(void* object, s32 value);
+extern "C" void func_46E860(void* object, s32 value);
+extern "C" void func_001E4A50(void* object);
 
 /** Partial callback interface with a virtual method at offset 0x5C. */
 class FieldCallbackDispatch5C
@@ -39,11 +53,28 @@ public:
     virtual void slot40();
     virtual void slot44();
     virtual void slot48();
-    virtual void slot4c();
+    virtual s32 slot4c();
     virtual void slot50();
     virtual void slot54();
     virtual void slot58();
     virtual void callback();
+};
+
+/** Secondary callback interface with a vtable following three leading words. */
+class FieldSecondaryCallback08
+{
+public:
+    u32 unk00;
+    u32 unk04;
+    u32 unk08;
+    virtual void slot08(s32 value);
+    virtual void slot0c();
+    virtual void slot10();
+    virtual void slot14(void* value);
+    virtual void slot18();
+    virtual void slot1c(void* value);
+    u32 unk10;
+    void* unk14;
 };
 
 /** Minimal observed prefix containing the byte fields accessed here. */
@@ -69,6 +100,70 @@ struct FieldConditionalProcessorA8
     void* unka8;
     u8 unkac[4];
     u32 unkb0;
+};
+
+/** Partial receiver with a child callback at 0xA8 and a value at 0x80. */
+struct FieldProcessingReceiver2C60
+{
+    u8 unk00[0x80];
+    void* unk80;
+    u8 unk84[0x24];
+    FieldSecondaryCallback08* unka8;
+};
+
+/** Partial input containing the optional child callback at 0xA8. */
+struct FieldProcessingSourceA8
+{
+    u8 unk00[0xA8];
+    void* unka8;
+};
+
+/** Partial receiver holding its allocated child pointer at offset 0xA8. */
+struct FieldOwnedChildA8
+{
+    u8 unk00[0xA8];
+    void* unka8;
+};
+
+/** Partial initialization state with its vtable, flag, and float fields. */
+struct FieldInitializationState3030
+{
+    void* vtable;
+    u8 unk04[0x74];
+    u32 unk78;
+    u8 unk7c[0x24];
+    float unkA0;
+    float unkA4;
+    void* unka8;
+    u32 unkac;
+    u32 unkb0;
+};
+
+/** Receiver fields read while processing its optional child. */
+struct FieldProcessingReceiver2E80
+{
+    u8 unk00[0x4C];
+    u8 unk4c;
+    u8 unk4d[0x2F];
+    s32 unk7c;
+    void* unk80;
+    u8 unk84[0x1C];
+    float unkA0;
+    float unkA4;
+    FieldSecondaryCallback08* unka8;
+    u8 unkac[4];
+    s32 unkb0;
+};
+
+/** Child values copied or updated during receiver processing. */
+struct FieldProcessingChild2E80
+{
+    u8 unk00[0x14];
+    void* unk14;
+    u8 unk18[0x3C];
+    float unk54;
+    u8 unk58[0x14];
+    float unk6C;
 };
 
 
@@ -215,7 +310,27 @@ void func_001E2C50(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2C60);
+s32 func_001E2C60(void* receiver, void* source)
+{
+    FieldProcessingReceiver2C60* object = (FieldProcessingReceiver2C60*)receiver;
+    FieldProcessingSourceA8* input = (FieldProcessingSourceA8*)source;
+    if (func_001FCF10() == 0)
+    {
+        return 0;
+    }
+    void* child = input->unka8;
+    if (child != 0)
+    {
+        if (((FieldCallbackDispatch5C*)object)->slot4c() == 0)
+        {
+            return 0;
+        }
+        object->unka8->unk14 = object->unk80;
+        object->unka8->slot14(child);
+        object->unka8->slot1c(object->unk80);
+    }
+    return 1;
+}
 
 void func_001E2D20(void* object)
 {
@@ -225,9 +340,25 @@ void func_001E2D30(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2D40);
+void func_001E2D40(void* receiver)
+{
+    FieldConditionalProcessorA8* object = (FieldConditionalProcessorA8*)receiver;
+    func_001FCCA0(object);
+    if (object->unkb0 != 0 && object->unka8 == 0)
+    {
+        ((FieldCallbackDispatch5C*)object)->slot48();
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2D90);
+void func_001E2D90(void* receiver)
+{
+    FieldConditionalProcessorA8* object = (FieldConditionalProcessorA8*)receiver;
+    func_001FDE00(object);
+    if (object->unka8 != 0)
+    {
+        ((FieldSecondaryCallback08*)object->unka8)->slot10();
+    }
+}
 
 void func_001E2DD0(void* object)
 {
@@ -247,20 +378,71 @@ void func_001E2E00(void* receiver, void* value, s32 enabled)
     }
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2E30);
+void func_001E2E30(void* receiver)
+{
+    FieldConditionalProcessorA8* object = (FieldConditionalProcessorA8*)receiver;
+    func_001FD9E0(object);
+    object->unkb0 = 0;
+    if (object->unka8 != 0)
+    {
+        ((FieldSecondaryCallback08*)object->unka8)->slot08(1);
+    }
+    object->unka8 = 0;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2E80);
+void func_001E2E80(void* receiver)
+{
+    FieldProcessingReceiver2E80* object = (FieldProcessingReceiver2E80*)receiver;
+    if (((FieldCallbackDispatch5C*)object)->slot4c() != 0)
+    {
+        FieldProcessingChild2E80* child = (FieldProcessingChild2E80*)object->unka8;
+        ((FieldSecondaryCallback08*)child)->slot1c(object->unk80);
+        func_46E860(child, object->unkb0);
+        func_46E760(child, object->unk7c);
+        func_001E4A50(child);
+        child->unk14 = object->unk80;
+        object->unkA4 = 2.0f * child->unk54;
+        object->unkA0 = child->unk6C;
+    }
+}
 
 void func_001E2F20(FieldWordStateD4* object, u32 value)
 {
     object->unkd4 = value;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2F30);
+s32 func_001E2F30(void* receiver)
+{
+    FieldOwnedChildA8* object = (FieldOwnedChildA8*)receiver;
+    void* child = __nw__FUiiPCc(0x150, 0x2B, D_334380);
+    if (child != 0)
+    {
+        child = func_001E4EB0(child);
+    }
+    object->unka8 = child;
+    if (object->unka8 == 0)
+    {
+        func_115C20(0x2E, D_334380, 0xA081, 0, 0, 0, 0);
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2FC0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E3030);
+void* func_001E3030(void* receiver)
+{
+    FieldInitializationState3030* object = (FieldInitializationState3030*)receiver;
+    func_001FE050();
+    object->vtable = D_16AAD0;
+    object->unkac = 0;
+    object->unkb0 = 0;
+    object->unka8 = 0;
+    object->unkA0 = 50.0f;
+    object->unkA4 = 180.0f;
+    object->unk78 |= 1;
+    return object;
+}
 
 s32 func_001E3090(void* object)
 {

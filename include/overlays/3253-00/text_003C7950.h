@@ -43,6 +43,9 @@ struct BattleState60
 extern "C" {
 #endif
 
+/** Forward the receiver to func_4EABF0. */
+void func_003D7050(void* object);
+
 /**
  * @brief Return the fixed value 1.
  * @param object Receiver or first argument; unused.
@@ -2177,6 +2180,9 @@ void func_003CCE30(BattleLinkState* object, s32 flag);
  * @param object Receiver to update.
  */
 void func_003D6CC0(BattleState60* object);
+
+/** Forward the receiver to func_4D7EB0. */
+void func_003D6CA0(void* object);
 
 #ifdef __cplusplus
 }

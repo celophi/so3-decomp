@@ -1,6 +1,16 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_002750F0.h"
 
+extern "C" s32 func_002B08B0(void* object);
+
+typedef struct ByteGetterOwnertext_002750F0
+{
+    u8 unk00[0xCE6];
+    u8 unkce6;
+} ByteGetterOwnertext_002750F0;
+
+
+
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_002750F0);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_002751A0);
@@ -187,7 +197,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027E8
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027EF60);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027F170);
+s32 func_0027F170(void* object)
+{
+    return func_002B08B0(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027F190);
 
@@ -221,7 +234,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027FF
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027FF80);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_00280180);
+/** Return the unsigned byte at receiver offset 0xCE6. */
+u8 func_00280180(const void* object)
+{
+    const ByteGetterOwnertext_002750F0* receiver = static_cast<const ByteGetterOwnertext_002750F0*>(object);
+    return receiver->unkce6;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_00280190);
 

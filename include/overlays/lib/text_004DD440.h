@@ -253,7 +253,78 @@ s32 func_004E6C70(void* object);
  */
 s32 func_004E7820(void* object);
 
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004E6680(const void* object);
+
+/** Return the word at receiver offset 0x4. */
+u32 func_004E6A80(const void* object);
+
+
+/** Return the signed halfword at receiver offset 0x48. */
+s16 func_004E6400(const void* object);
+
+/** Return the signed halfword at receiver offset 0x4A. */
+s16 func_004E6410(const void* object);
+
+/** Return the signed halfword at receiver offset 0x28. */
+s16 func_004E6860(const void* object);
+
+/** Return the signed halfword at receiver offset 0x2A. */
+s16 func_004E6870(const void* object);
+
+
+/** Store the byte constant at receiver offset 0x60. */
+void func_004E2EE0(void* object);
+
+/** Clear the byte at receiver offset 0xCB. */
+void func_004E97A0(void* object);
+
+/** Clear the word at receiver offset 0x114. */
+void func_004E13D0(void* object);
+
+/** Return the address of the global at 0x50CD80. */
+const void* func_004E0FB0(void);
+
 #ifdef __cplusplus
+/** Return the first pointer argument unchanged. */
+void* func_004E6D30(void* value);
+/** Return the first pointer argument unchanged. */
+void* func_004E6DF0(void* value);
+
+/** Clear four consecutive words at the start of the receiver. */
+void func_004E64B0(void* object);
+
+/** Clear four consecutive words at the start of the receiver. */
+void func_004E68D0(void* object);
+
+/** Forward the receiver to func_004D00B0. */
+void func_004E2F00(void* object);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_004E6340(void* object, u8 mode);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_004E67A0(void* object, u8 mode);
+
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_004E63A0(void* object, u8 mode);
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_004E6800(void* object, u8 mode);
+
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_004E6460(void* object, float key);
+
+/** Return the key span between the first and last entries. */
+float func_004E68F0(void* object);
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_004E6880(void* object, float key);
+
+
 }
 #endif
 

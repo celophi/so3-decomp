@@ -1,6 +1,16 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_003D1A40.h"
 
+extern "C" {
+void func_4D00B0(void* object);
+typedef struct ConstantByteSetterOwnertext_003D1A40
+{
+    u8 unk00[0x60];
+    u8 unk60;
+} ConstantByteSetterOwnertext_003D1A40;
+
+
+
 void func_003D1A40(void* object)
 {
 }
@@ -1190,7 +1200,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DB1
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DB180);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DB1A0);
+/** Store 0x9 at receiver offset 0x60. */
+void func_003DB1A0(void* object)
+{
+    ConstantByteSetterOwnertext_003D1A40* receiver = (ConstantByteSetterOwnertext_003D1A40*)object;
+    receiver->unk60 = 0x9;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DB1B0);
 
@@ -1198,7 +1213,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DB4
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DB4D0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DB530);
+void func_003DB530(void* object)
+{
+    func_4D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DB550);
 
@@ -1210,6 +1228,13 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DBD
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DBEC0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DC050);
+/** Store 0xA at receiver offset 0x60. */
+void func_003DC050(void* object)
+{
+    ConstantByteSetterOwnertext_003D1A40* receiver = (ConstantByteSetterOwnertext_003D1A40*)object;
+    receiver->unk60 = 0xA;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DC060);
+
+}

@@ -1,6 +1,37 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_00222EE0.h"
 
+extern "C" void func_4EABF0(void* object);
+
+typedef struct HalfwordGetterOwnertext_00222EE0
+{
+    u8 unk00[0x38];
+    s16 unk38;
+    u8 unk3a[0xE];
+    s16 unk48;
+} HalfwordGetterOwnertext_00222EE0;
+
+
+
+typedef struct ByteSetterOwnertext_00222EE0
+{
+    u8 unk00[0x41];
+    u8 unk41;
+} ByteSetterOwnertext_00222EE0;
+
+
+
+typedef struct WordGetterOwnertext_00222EE0
+{
+    u8 unk00[0x4];
+    u32 unk04;
+    u8 unk08[0x28];
+    u32 unk30;
+    u8 unk34[0xC];
+    u32 unk40;
+} WordGetterOwnertext_00222EE0;
+
+
 /** First four words of the receiver cleared by func_00223320. */
 typedef struct BattleFourWords10
 {
@@ -10,9 +41,68 @@ typedef struct BattleFourWords10
     u32 unk0c;
 } BattleFourWords10;
 
+typedef struct FourWordClearOwnertext_00222EE0 { u32 words[4]; } FourWordClearOwnertext_00222EE0;
+
+typedef struct PackedModePair
+{
+    u8 lowMode : 4;
+    u8 highMode : 4;
+    u8 hasModeFour : 1;
+    u8 unk01_1_7 : 7;
+} PackedModePair;
+
+typedef struct PackedModesOwner
+{
+    u8 unk00[0x42];
+    PackedModePair at42;
+    u8 unk44[0xE];
+    PackedModePair at52;
+} PackedModesOwner;
+
+typedef struct FloatKeyScanEntry_text_00222EE0_20
+{
+    float key00;
+    u8 unk04[0x8];
+    float key0c;
+    u8 unk10[0x10];
+} FloatKeyScanEntry_text_00222EE0_20;
+
+typedef struct FloatKeyScanOwner_text_00222EE0_20
+{
+    u8 unk00[0x4];
+    FloatKeyScanEntry_text_00222EE0_20* entries;
+    u8 unk08[0x30];
+    s16 count38;
+    u8 unk3a[0xE];
+    s16 count48;
+} FloatKeyScanOwner_text_00222EE0_20;
+
+typedef struct FloatKeyScanEntry_text_00222EE0_30
+{
+    float key00;
+    u8 unk04[0x8];
+    float key0c;
+    u8 unk10[0x20];
+} FloatKeyScanEntry_text_00222EE0_30;
+
+typedef struct FloatKeyScanOwner_text_00222EE0_30
+{
+    u8 unk00[0x4];
+    FloatKeyScanEntry_text_00222EE0_30* entries;
+    u8 unk08[0x30];
+    s16 count38;
+    u8 unk3a[0xE];
+    s16 count48;
+} FloatKeyScanOwner_text_00222EE0_30;
+
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00222EE0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00222F80);
+/** Return the word at receiver offset 0x4. */
+u32 func_00222F80(const void* object)
+{
+    const WordGetterOwnertext_00222EE0* receiver = static_cast<const WordGetterOwnertext_00222EE0*>(object);
+    return receiver->unk04;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00222F90);
 
@@ -20,11 +110,27 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002230
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223100);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223150);
+/** Set the high packed mode at 0x52 and record whether either mode equals four. */
+void func_00223150(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at52.highMode = mode;
+    receiver->at52.hasModeFour = receiver->at52.lowMode == 4 || receiver->at52.highMode == 4;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002231B0);
+/** Return the word at receiver offset 0x40. */
+u32 func_002231B0(const void* object)
+{
+    const WordGetterOwnertext_00222EE0* receiver = static_cast<const WordGetterOwnertext_00222EE0*>(object);
+    return receiver->unk40;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002231C0);
+/** Return the signed halfword at receiver offset 0x48. */
+s16 func_002231C0(const void* object)
+{
+    const HalfwordGetterOwnertext_00222EE0* receiver = static_cast<const HalfwordGetterOwnertext_00222EE0*>(object);
+    return receiver->unk48;
+}
 
 s32 func_002231D0(void* object)
 {
@@ -53,7 +159,22 @@ void func_00223290(void* object)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002232A0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002232D0);
+/** Find a key in the receiver's fixed-size entry array. */
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_002232D0(void* object, float key)
+{
+    FloatKeyScanOwner_text_00222EE0_30* receiver = static_cast<FloatKeyScanOwner_text_00222EE0_30*>(object);
+    s16 count = receiver->count48;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == receiver->entries[index].key00)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void func_00223320(void* object)
 {
@@ -72,7 +193,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002234
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223450);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002234F0);
+/** Return the word at receiver offset 0x4. */
+u32 func_002234F0(const void* object)
+{
+    const WordGetterOwnertext_00222EE0* receiver = static_cast<const WordGetterOwnertext_00222EE0*>(object);
+    return receiver->unk04;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223500);
 
@@ -82,11 +208,27 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002237
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002237D0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002238A0);
+/** Set the high packed mode at 0x42 and record whether either mode equals four. */
+void func_002238A0(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at42.highMode = mode;
+    receiver->at42.hasModeFour = receiver->at42.lowMode == 4 || receiver->at42.highMode == 4;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223900);
+/** Return the word at receiver offset 0x30. */
+u32 func_00223900(const void* object)
+{
+    const WordGetterOwnertext_00222EE0* receiver = static_cast<const WordGetterOwnertext_00222EE0*>(object);
+    return receiver->unk30;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223910);
+/** Return the signed halfword at receiver offset 0x38. */
+s16 func_00223910(const void* object)
+{
+    const HalfwordGetterOwnertext_00222EE0* receiver = static_cast<const HalfwordGetterOwnertext_00222EE0*>(object);
+    return receiver->unk38;
+}
 
 s32 func_00223920(void* object)
 {
@@ -115,11 +257,23 @@ void func_002239E0(void* object)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002239F0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223A20);
+void func_00223A20(void* object)
+{
+    FourWordClearOwnertext_00222EE0* receiver = (FourWordClearOwnertext_00222EE0*)object;
+    receiver->words[0] = 0;
+    receiver->words[1] = 0;
+    receiver->words[2] = 0;
+    receiver->words[3] = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223A40);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223A90);
+/** Return the word at receiver offset 0x4. */
+u32 func_00223A90(const void* object)
+{
+    const WordGetterOwnertext_00222EE0* receiver = static_cast<const WordGetterOwnertext_00222EE0*>(object);
+    return receiver->unk04;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223AA0);
 
@@ -145,15 +299,50 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223E
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223EF0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223F50);
+/** Return the key span between the first and last entries. */
+float func_00223F50(void* object)
+{
+    const FloatKeyScanOwner_text_00222EE0_20* receiver = static_cast<const FloatKeyScanOwner_text_00222EE0_20*>(object);
+    s32 count = receiver->count38;
+    if (count < 2)
+    {
+        return 0.0f;
+    }
+    const FloatKeyScanEntry_text_00222EE0_20* entries = receiver->entries;
+    const FloatKeyScanEntry_text_00222EE0_20* lastEntry = entries + --count;
+    float first = entries[0].key00;
+    float last = lastEntry->key00;
+    return last - first;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223FA0);
+/** Find a key in the receiver's fixed-size entry array. */
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_00223FA0(void* object, float key)
+{
+    FloatKeyScanOwner_text_00222EE0_20* receiver = static_cast<FloatKeyScanOwner_text_00222EE0_20*>(object);
+    s16 count = receiver->count38;
+    s32 index;
+    for (index = 0; index < count; index++)
+    {
+        if (key == receiver->entries[index].key00)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223FF0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00224040);
+void* func_00224040(void* value)
+{
+    return value;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00224050);
+void* func_00224050(void* value)
+{
+    return value;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00224060);
 
@@ -349,11 +538,19 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_0022D8
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_0022DBC0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_0022E000);
+/** Store the byte at receiver offset 0x41. */
+void func_0022E000(void* object, u8 value)
+{
+    ByteSetterOwnertext_00222EE0* receiver = static_cast<ByteSetterOwnertext_00222EE0*>(object);
+    receiver->unk41 = value;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_0022E010);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_0022E030);
+const float* func_0022E030(const void* object)
+{
+    return (const float*)((const u8*)object + 0x20);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_0022E040);
 
@@ -391,7 +588,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_0022F4
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_0022F5B0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_0022F760);
+void func_0022F760(void* object)
+{
+    func_4EABF0(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_0022F780);
 

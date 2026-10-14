@@ -120,6 +120,14 @@ u8* func_00102920(ResidentDecodeObject* decoder, ResidentResourceHeader* source,
  */
 ResidentResourceHeader* func_00102A40(ResidentDecodeObject* decoder, ResidentResourceHeader* source, s32 index);
 
+/** Return the fixed integer value 3. */
+s32 func_00104730(void* object);
+
+void func_00101550(void* object);
+void func_00102A90(void* object);
+void func_00104770(void* object);
+void func_00104780(void* object);
+
 #ifdef __cplusplus
 }
 #endif

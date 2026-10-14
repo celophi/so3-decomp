@@ -472,6 +472,39 @@ s32 func_0045F5A0(void* object, void* other);
  */
 s32 func_0045EBD0(void* first, void* second);
 
+/** Return the fixed integer value 3. */
+s32 func_00464E30(void* object);
+
+/** Return the fixed integer value 7. */
+s32 func_00468360(void* object);
+
+/** Return the fixed value 0. */
+s32 func_00468370(void* object);
+
+void func_0045F600(void* object);
+void func_0045F610(void* object);
+void func_0045F620(void* object);
+void func_0045F630(void* object);
+void func_0045F640(void* object);
+void func_0045F650(void* object);
+void func_00461960(void* object);
+void func_00461970(void* object);
+void func_00461980(void* object);
+void func_00461990(void* object);
+void func_004619A0(void* object);
+void func_004619B0(void* object);
+void func_004619C0(void* object);
+void func_004619D0(void* object);
+void func_004619E0(void* object);
+void func_004662A0(void* object);
+
+
+/** Forward the receiver to func_004D00B0. */
+void func_00467480(void* object);
+
+/** Forward the receiver to func_004D00B0. */
+void func_0046A3F0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

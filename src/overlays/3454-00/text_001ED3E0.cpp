@@ -1,6 +1,11 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_001ED3E0.h"
 
+extern "C" {
+
+void* func_001F30E0(void* object);
+void func_4D00B0(void* object);
+
 typedef struct StateEntryF5E10
 {
     u8 unk00[4];
@@ -72,7 +77,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F30
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F30E0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F3300);
+void func_001F3300(void* object)
+{
+    func_001F30E0(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F3320);
 
@@ -284,7 +292,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F81
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F84D0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F8510);
+void func_001F8510(void* object)
+{
+    func_4D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F8530);
 
@@ -327,3 +338,5 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001FBB
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001FBCC0);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001FBD50);
+
+}

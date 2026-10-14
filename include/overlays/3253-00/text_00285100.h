@@ -26,6 +26,9 @@ void func_0028E2A0(BattleObject2E0B* object, u8 current, u8 previous);
  */
 void func_00292930(BattleObject2F26* object, u8 current, u8 previous);
 
+/** Forward the receiver and return the result from func_002B08B0. */
+s32 func_00285280(void* object);
+
 #ifdef __cplusplus
 }
 #endif

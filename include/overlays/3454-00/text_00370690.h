@@ -7,6 +7,13 @@
 extern "C" {
 #endif
 
+/** Forward the receiver to the corresponding shared animation helper. */
+void func_00370920(void* object);
+void func_00370940(void* object);
+void func_003730D0(void* object);
+void func_003730F0(void* object);
+void func_00373110(void* object);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.

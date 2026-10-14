@@ -1,4 +1,8 @@
 #include "include_asm.h"
+#include "overlays/3253-00/text_00202DB0.h"
+#include "types.h"
+
+extern "C" void func_4EABF0(void* object);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00202DB0);
 
@@ -42,7 +46,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00206E
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00206F80);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00206FE0);
+void func_00206FE0(void* object)
+{
+    func_4EABF0(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00207000);
 
@@ -50,7 +57,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_002070
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_002070A0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00207110);
+void func_00207110(void* object)
+{
+    func_4EABF0(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00207130);
 
@@ -104,7 +114,19 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_0020F9
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_0020FC70);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00210130);
+/** Partial receiver with a flag byte at offset 0x12E. */
+struct FieldByteFlagState12E
+{
+    u8 unk00[0x12E];
+    u8 unk12E;
+};
+
+/** Store one in the receiver's flag byte. */
+extern "C" void func_00210130(void* receiver)
+{
+    FieldByteFlagState12E* object = (FieldByteFlagState12E*)receiver;
+    object->unk12E = 1;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00202DB0", func_00210140);
 

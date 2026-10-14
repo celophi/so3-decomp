@@ -1,4 +1,46 @@
 #include "include_asm.h"
+#include "main/resident_0011EE70.h"
+
+extern u8 D_50CD30[];
+
+typedef struct ByteGetterOwnerresident_0011EE70
+{
+    u8 unk00[0x25];
+    u8 unk25;
+} ByteGetterOwnerresident_0011EE70;
+
+typedef struct ByteClearOwnerresident_0011EE70
+{
+    u8 unk00[0x60];
+    u8 unk60;
+} ByteClearOwnerresident_0011EE70;
+
+
+
+typedef struct WordSetterOwnerresident_0011EE70
+{
+    u8 unk00[0x70];
+    u32 unk70;
+} WordSetterOwnerresident_0011EE70;
+
+
+
+typedef struct WordGetterOwnerresident_0011EE70
+{
+    u32 unk00;
+    u32 unk04;
+    u32 unk08;
+    u32 unk0c;
+    u32 unk10;
+    u32 unk14;
+} WordGetterOwnerresident_0011EE70;
+
+
+typedef struct FlagQuadwordOwnerresident_0011EE70 { u8 unk00[0x20]; unsigned __int128 slots[3]; u8 ready; } FlagQuadwordOwnerresident_0011EE70;
+
+typedef struct FlagFloatQuadOwnerresident_0011EE70 { u8 pad00[0x30]; float values[4]; u8 pad40[0x10]; u8 flag50; } FlagFloatQuadOwnerresident_0011EE70;
+
+typedef struct FlagFloatTripleOwnerresident_0011EE70 { u8 pad00[0x40]; float values[3]; u8 pad4C[4]; u8 flag50; } FlagFloatTripleOwnerresident_0011EE70;
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011EE70);
 
@@ -40,7 +82,12 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F940)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F9B0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F9D0);
+/** Return the unsigned byte at receiver offset 0x25. */
+u8 func_0011F9D0(void* object)
+{
+    const ByteGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk25;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F9E0);
 
@@ -70,35 +117,75 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001204B0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120560);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001205A0);
+/** Return the word at receiver offset 0x14. */
+u32 func_001205A0(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk14;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001205B0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001205E0);
+/** Return the word at receiver offset 0x10. */
+u32 func_001205E0(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk10;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001205F0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120630);
+/** Return the word at receiver offset 0xC. */
+u32 func_00120630(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk0c;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120640);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120670);
+/** Return the word at receiver offset 0x8. */
+u32 func_00120670(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk08;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120680);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001206B0);
+/** Return the word at receiver offset 0x4. */
+u32 func_001206B0(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk04;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001206C0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001206F0);
+/** Return the word at receiver offset 0x0. */
+u32 func_001206F0(const void* object)
+{
+    const WordGetterOwnerresident_0011EE70* receiver = object;
+    return receiver->unk00;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120700);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001207B0);
+/** Store the word at receiver offset 0x70. */
+void func_001207B0(void* object, u32 value)
+{
+    WordSetterOwnerresident_0011EE70* receiver = object;
+    receiver->unk70 = value;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001207C0);
+void func_001207C0(void* object)
+{
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001207D0);
+s32 func_001207D0(void* object)
+{
+    return 9;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001207E0);
 
@@ -112,9 +199,19 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120A70)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120BF0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120EB0);
+void func_00120EB0(void* object, const unsigned __int128* value)
+{
+    FlagQuadwordOwnerresident_0011EE70* receiver = object;
+    receiver->ready = 1;
+    receiver->slots[1] = *value;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120ED0);
+void func_00120ED0(void* object, const unsigned __int128* value)
+{
+    FlagQuadwordOwnerresident_0011EE70* receiver = object;
+    receiver->ready = 1;
+    receiver->slots[0] = *value;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120EF0);
 
@@ -132,39 +229,91 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121490)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121520);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121570);
+s32 func_00121570(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121580);
+void* func_00121580(void* object)
+{
+    return (u8*)object + 0x90;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121590);
+void* func_00121590(void* object)
+{
+    return (u8*)object + 0x1D0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001215A0);
+void* func_001215A0(void* object)
+{
+    return (u8*)object + 0x1E0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001215B0);
+void* func_001215B0(void* object)
+{
+    return (u8*)object + 0x1F0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001215C0);
+void func_001215C0(void* object)
+{
+    ByteClearOwnerresident_0011EE70* receiver = object;
+    receiver->unk60 = 0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001215D0);
+void func_001215D0(void* object)
+{
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001215E0);
+s32 func_001215E0(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001215F0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121610);
+const void* func_00121610(void)
+{
+    return D_50CD30;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121620);
+void func_00121620(void* object)
+{
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121630);
+s32 func_00121630(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121640);
+void func_00121640(void* object)
+{
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121650);
+void func_00121650(void* object, const unsigned __int128* value)
+{
+    FlagQuadwordOwnerresident_0011EE70* receiver = object;
+    receiver->ready = 1;
+    receiver->slots[0] = *value;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121670);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121690);
+void func_00121690(void* object, float x, float y, float z, float w)
+{
+    FlagFloatQuadOwnerresident_0011EE70* receiver = object;
+    receiver->flag50 = 1;
+    receiver->values[0] = x;
+    receiver->values[1] = y;
+    receiver->values[2] = z;
+    receiver->values[3] = w;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001216B0);
+void func_001216B0(void* object, const unsigned __int128* value)
+{
+    FlagQuadwordOwnerresident_0011EE70* receiver = object;
+    receiver->ready = 1;
+    receiver->slots[1] = *value;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001216D0);
 
@@ -172,13 +321,33 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121700)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121730);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121770);
+void func_00121770(void* object, const unsigned __int128* value)
+{
+    FlagQuadwordOwnerresident_0011EE70* receiver = object;
+    receiver->ready = 1;
+    receiver->slots[2] = *value;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121790);
+void func_00121790(void* object, const unsigned __int128* value)
+{
+    FlagQuadwordOwnerresident_0011EE70* receiver = object;
+    receiver->ready = 1;
+    receiver->slots[2] = *value;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001217B0);
+void func_001217B0(void* object, float x, float y, float z)
+{
+    FlagFloatTripleOwnerresident_0011EE70* receiver = object;
+    receiver->flag50 = 1;
+    receiver->values[0] = x;
+    receiver->values[1] = y;
+    receiver->values[2] = z;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001217D0);
+s32 func_001217D0(void* object)
+{
+    return 0;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001217E0);
 
@@ -194,12 +363,21 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121840)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121850);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121860);
+s32 func_00121860(void* object)
+{
+    return -1;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121870);
+void func_00121870(void* object)
+{
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121880);
+void func_00121880(void* object)
+{
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121890);
+void func_00121890(void* object)
+{
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001218A0);

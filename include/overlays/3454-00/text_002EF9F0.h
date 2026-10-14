@@ -37,6 +37,10 @@ void func_002F4E30(void* object);
  */
 void func_002F4E40(void* object);
 
+
+/** Store the byte constant at receiver offset 0x39D. */
+void func_002F41D0(void* object);
+
 #ifdef __cplusplus
 }
 #endif

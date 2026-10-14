@@ -113,6 +113,10 @@ s32 func_0029D590(void* object);
  */
 void func_0029D5A0(void* object);
 
+
+/** Store the byte constant at receiver offset 0x2E. */
+void func_00294150(void* object);
+
 #ifdef __cplusplus
 }
 #endif

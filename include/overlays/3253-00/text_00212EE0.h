@@ -25,6 +25,12 @@ struct BattleStateByte60;
 extern "C" {
 #endif
 
+/** Forward to the no-argument reset routine. */
+void func_0021C9F0(void);
+
+/** Forward to the no-argument reset routine. */
+void func_0021CB90(void);
+
 /**
  * @brief Clear all four vector components.
  * @param vector Vector to clear.
@@ -818,6 +824,66 @@ void func_002198E0(BattleStateByte60* object);
 void func_002198F0(BattleStateByte60* object);
 
 #ifdef __cplusplus
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_0021E9A0(void* object, u8 mode);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_0021EF20(void* object, u8 mode);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_0021F470(void* object, u8 mode);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_0021FAE0(void* object, u8 mode);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_00220090(void* object, u8 mode);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_00222730(void* object, u8 mode);
+
+/** Set the low packed mode at its target field and record whether either mode equals four. */
+void func_00222790(void* object, u8 mode);
+
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_0021EA00(void* object, u8 mode);
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_0021EF80(void* object, u8 mode);
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_0021F4D0(void* object, u8 mode);
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_0021FB40(void* object, u8 mode);
+
+/** Set the high packed mode at its target field and record whether either mode equals four. */
+void func_002200F0(void* object, u8 mode);
+
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_0021F000(void* object, float key);
+
+/** Return the key span between the first and last entries. */
+float func_0021F070(void* object);
+float func_002203E0(void* object);
+float func_00220800(void* object);
+float func_00220DA0(void* object);
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_0021FC00(void* object, float key);
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_00220430(void* object, float key);
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_00220850(void* object, float key);
+
+/** Find a key in the receiver's fixed-size entry array. */
+s32 func_00220DF0(void* object, float key);
+
+
 }
 #endif
 

@@ -1,6 +1,16 @@
 #include "include_asm.h"
 #include "overlays/lib/text_00419A70.h"
 
+extern "C" void func_004D00B0(void* object);
+
+typedef struct WordSetterOwnertext_00419A70
+{
+    u8 unk00[0x70];
+    u32 unk70;
+} WordSetterOwnertext_00419A70;
+
+
+
 /** Partial list indicator rectangle, drawing storage, flags, and scalar pair. */
 struct LibListIndicatorState
 {
@@ -53,6 +63,20 @@ typedef struct LibReceiverPointerPair14
     void* unk14;
     void* unk18;
 } LibReceiverPointerPair14;
+
+typedef struct PackedModePair
+{
+    u8 lowMode : 4;
+    u8 highMode : 4;
+    u8 hasModeFour : 1;
+    u8 unk01_1_7 : 7;
+} PackedModePair;
+
+typedef struct PackedModesOwner
+{
+    u8 unk00[0x22];
+    PackedModePair at22;
+} PackedModesOwner;
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00419A70);
 
@@ -131,7 +155,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041ADC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041ADE0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041AE30);
+/** Forward the receiver to func_004D00B0. */
+void func_0041AE30(void* object)
+{
+    func_004D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041AE50);
 
@@ -143,7 +171,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D0A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D1C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D210);
+/** Forward the receiver to func_004D00B0. */
+void func_0041D210(void* object)
+{
+    func_004D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D230);
 
@@ -155,7 +187,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E760);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E880);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E8C0);
+/** Forward the receiver to func_004D00B0. */
+void func_0041E8C0(void* object)
+{
+    func_004D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E8E0);
 
@@ -206,7 +242,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F290);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F2B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F300);
+/** Forward the receiver to func_004D00B0. */
+void func_0041F300(void* object)
+{
+    func_004D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F320);
 
@@ -295,7 +335,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00422F70);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00423930);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00423970);
+/** Forward the receiver to func_004D00B0. */
+void func_00423970(void* object)
+{
+    func_004D00B0(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00423990);
 
@@ -487,7 +531,12 @@ s32 func_004294F0(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429500);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004295B0);
+/** Store the word at receiver offset 0x70. */
+void func_004295B0(void* object, u32 value)
+{
+    WordSetterOwnertext_00419A70* receiver = static_cast<WordSetterOwnertext_00419A70*>(object);
+    receiver->unk70 = value;
+}
 
 void func_004295C0(void* object)
 {
@@ -513,7 +562,13 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429730);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429790);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004297F0);
+/** Set the low packed mode at 0x22 and record whether either mode equals four. */
+void func_004297F0(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at22.lowMode = mode;
+    receiver->at22.hasModeFour = receiver->at22.lowMode == 4 || receiver->at22.highMode == 4;
+}
 
 void func_00429850(void* object)
 {

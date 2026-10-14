@@ -82,6 +82,20 @@ struct FieldInitializedState3C
 };
 
 
+typedef struct PackedModePair
+{
+    u8 lowMode : 4;
+    u8 highMode : 4;
+    u8 hasModeFour : 1;
+    u8 unk01_1_7 : 7;
+} PackedModePair;
+
+typedef struct PackedModesOwner
+{
+    u8 unk00[0x2A];
+    PackedModePair at2a;
+} PackedModesOwner;
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00213F40);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214030);
@@ -1021,6 +1035,18 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223D
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223E00);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223ED0);
+/** Set the low packed mode at 0x2A and record whether either mode equals four. */
+void func_00223ED0(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at2a.lowMode = mode;
+    receiver->at2a.hasModeFour = receiver->at2a.lowMode == 4 || receiver->at2a.highMode == 4;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223F30);
+/** Set the high packed mode at 0x2A and record whether either mode equals four. */
+void func_00223F30(void* object, u8 mode)
+{
+    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
+    receiver->at2a.highMode = mode;
+    receiver->at2a.hasModeFour = receiver->at2a.lowMode == 4 || receiver->at2a.highMode == 4;
+}

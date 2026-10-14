@@ -7,6 +7,9 @@
 extern "C" {
 #endif
 
+/** Forward the receiver and return the result from func_002B08B0. */
+s32 func_0027F170(void* object);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
@@ -24,6 +27,10 @@ void func_0027FDE0(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_002825E0(void* object);
+
+
+/** Return the unsigned byte at receiver offset 0xCE6. */
+u8 func_00280180(const void* object);
 
 #ifdef __cplusplus
 }
