@@ -41,6 +41,23 @@ typedef struct FieldScaleMask296670
     const u64* unk08;
 } FieldScaleMask296670;
 
+/** Partial receiver initialized by func_002B47D0. */
+typedef struct FieldResetState24
+{
+    u32 unk00;
+    u32 unk04;
+    u32 unk08;
+    u16 unk0c;
+    u16 unk0e;
+    u16 unk10;
+    u8 unk12[2];
+    u32 unk14;
+    u32 unk18;
+    u32 unk1c;
+    u32 unk20;
+    void* unk24;
+} FieldResetState24;
+
 #ifdef __cplusplus
 class FieldVector1FAD90;
 
@@ -188,6 +205,77 @@ public:
 
 #ifdef __cplusplus
 extern "C" {
+
+/** @brief Copy two words to the receiver, then pass them to its callback. */
+void func_002B0950(void* object, const void* source);
+
+/** @brief Copy two words to the receiver, then pass them to its callback. */
+void func_002B0990(void* object, const void* source);
+
+/** @brief Copy two words to the receiver, then pass them to its callback. */
+void func_002B09D0(void* object, const void* source);
+
+/**
+ * @brief Copy two words to the receiver, then pass them to its callback.
+ * @param object Receiver with words at offsets 0x0C and 0x10.
+ * @param source Source of the words to copy.
+ */
+void func_002B0A10(void* object, const void* source);
+
+/**
+ * @brief Copy two words to the receiver, then pass them to its callback.
+ * @param object Receiver with words at offsets 0x0C and 0x10.
+ * @param source Source of the words to copy.
+ */
+void func_002B26C0(void* object, const void* source);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_002B2710(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_002B3410(void* object);
+
+/** @brief Forward the receiver and shared owner to the common helper. */
+void func_002B4540(void* object);
+
+/**
+ * @brief Initialize the observed state fields and return the receiver.
+ * @param object Receiver to initialize.
+ * @return object.
+ */
+FieldResetState24* func_002B47D0(FieldResetState24* object);
+
+/**
+ * @brief Set bit zero of the child halfword at offset 0x6C when present.
+ * @param object Receiver containing the child pointer at offset 0x1B4.
+ */
+void func_002B3800(void* object);
+
+/**
+ * @brief Clear bit zero of the child halfword at offset 0x6C when present.
+ * @param object Receiver containing the child pointer at offset 0x1B4.
+ */
+void func_002B3820(void* object);
+
+/**
+ * @brief Clear destination word 0x2C and copy four 128-bit values from offset 0x150.
+ * @param destination Receiver whose four values are updated.
+ * @param source Object containing the source values.
+ */
+void func_002A5220(void* destination, const void* source);
+
+/**
+ * @brief Clear destination word 0x2C and copy four 128-bit values from offset 0x150.
+ * @param destination Receiver whose four values are updated.
+ * @param source Object containing the source values.
+ */
+void func_002B0920(void* destination, const void* source);
 #endif
 
 /**
@@ -443,6 +531,22 @@ void func_002A5140(u8* object, u8 value);
  * @param value Value to write.
  */
 void func_002A5150(u8* object, float value);
+
+/**
+ * @brief Save the input pointer and value, then set the state byte if input begins with one.
+ * @param object Particle state receiver.
+ * @param input Input bytes whose first byte controls state byte 0x57.
+ * @param value Value saved at receiver offset 0xA4.
+ */
+void func_002A5160(void* object, const u8* input, u32 value);
+
+/**
+ * @brief Save the input pointer and value, then set state byte 0x57 if input begins with one.
+ * @param object Particle state receiver.
+ * @param input Input bytes whose first byte controls the state byte.
+ * @param value Value saved at receiver offset 0xA4.
+ */
+void func_002A83D0(void* object, const u8* input, u32 value);
 
 /**
  * @brief Write the float field at offset 0x38.
@@ -835,6 +939,14 @@ u8* func_002A8760(u8* object, s32 index);
 u8* func_002A8850(u8* object, s32 index);
 
 /**
+ * @brief Return the element subobject at offset 0x30 from a 96-byte-stride entry.
+ * @param object Object holding the entry pointer at offset 0x14.
+ * @param index Entry index.
+ * @return Address of the selected subobject, or null when its computed address is null.
+ */
+u8* func_002A7D40(u8* object, s32 index);
+
+/**
  * @brief Return an entry address from row and column indices.
  * @param object Object holding the row width and entry pointer.
  * @param row Row index.
@@ -1068,6 +1180,13 @@ void func_002B4570(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_002B4810(void* object);
+
+/**
+ * @brief Clear four output state bytes, then update the output block from the receiver.
+ * @param object Receiver used to update the output.
+ * @param output Output block whose bytes at 0x130 through 0x133 are cleared.
+ */
+void func_002B0A80(void* object, void* output);
 
 #ifdef __cplusplus
 }

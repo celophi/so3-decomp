@@ -82,9 +82,45 @@ typedef struct FieldKeyedFlagOwnerD8
     FieldListNode unkdc;
 } FieldKeyedFlagOwnerD8;
 
+
+
 #ifdef __cplusplus
 extern "C" {
+
+
+/**
+ * @brief Forward the receiver's interface at offset 0x20 to the shared helper.
+ * @param object Receiver containing the secondary interface.
+ */
+void func_0025C580(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_00255430(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_00257130(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_0025C360(void* object);
+
 #endif
+
+/**
+ * @brief Find the first list element with the supplied key and return its word at offset 0x14.
+ * @param object Receiver containing the non-null list owner.
+ * @param key Key to find.
+ * @return The stored word, or zero when the key is absent.
+ */
+u32 func_00259E70(const FieldKeyedFlagOwnerD8* object, u32 key);
 
 /**
  * @brief Test whether the receiver's word at offset 0x0C is nonzero.
@@ -92,6 +128,13 @@ extern "C" {
  * @return True when the observed word is nonzero.
  */
 bool func_00261FC0(const void* object);
+
+/**
+ * @brief Return the pointer stored at offset 0x88.
+ * @param object Receiver containing the pointer.
+ * @return The stored pointer.
+ */
+void* func_00261FD0(const FieldKeyedFloatState98* object);
 
 /**
  * @brief Write the two float outputs when the input does not compare less than or equal to zero.
@@ -297,6 +340,7 @@ s32 func_0025C390(void* object);
  * @return Always 3.
  */
 s32 func_00261490(void* object);
+
 
 #ifdef __cplusplus
 }

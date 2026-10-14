@@ -83,6 +83,24 @@ typedef struct FieldFlagListElement
     u8 unk4c_5_7 : 3;
 } FieldFlagListElement;
 
+/** Partial list element initialized with a self-relative pointer at 0x50. */
+typedef struct FieldInitializedListElement
+{
+    FieldFlagListElement base;
+    void* unk50;
+    u8 unk54[0x0C];
+    u8 unk60;
+} FieldInitializedListElement;
+
+/** Partial source containing the helper argument at offset 0x1BC. */
+typedef struct FieldSource1BC
+{
+    u8 unk00[0x1BC];
+    s32 unk1bc;
+} FieldSource1BC;
+
+
+
 /** Partial list element with an additional flag byte at offset 0x6D. */
 typedef struct FieldFlagElement6D
 {
@@ -341,6 +359,7 @@ typedef struct FieldVectorProduct560
     unsigned __int128 unk580;
 } FieldVectorProduct560;
 
+
 #ifdef __cplusplus
 /**
  * @brief Consume the queue update flag and advance past flagged records.
@@ -380,6 +399,61 @@ static inline void advance_record_queue(Queue* object)
 }
 
 extern "C" {
+
+/**
+ * @brief Store a supplied word unless it is the sentinel, then update the child.
+ * @param object Receiver containing the value and optional child pointer.
+ * @param value Word to store unless it equals -1.
+ */
+void func_002075F0(void* object, s32 value);
+
+/**
+ * @brief Store a non-sentinel word and update the receiver's optional child.
+ * @param object Receiver containing the word and child pointer.
+ * @param value Word to store unless it equals -1.
+ */
+void func_0020EA40(void* object, s32 value);
+
+/**
+ * @brief Call the helper with the second argument and flag one when the shared owner exists.
+ * @param unused First callback argument, not read.
+ * @param value Value passed to the helper.
+ */
+void func_0020D3E0(void* unused, void* value);
+
+/**
+ * @brief Detach the receiver and pass it to the shared processor.
+ * @param object Object to detach and process.
+ */
+void func_00204550(void* object);
+
+/**
+ * @brief Run the receiver detachment helper, then process the receiver with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+void func_00203690(void* object);
+
+/**
+ * @brief Run the receiver detachment helper, then process the receiver with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+void func_00205BE0(void* object);
+
+/**
+ * @brief Call the receiver's virtual callback with the value one when non-null.
+ * @param object Optional callback receiver.
+ */
+void func_0020B410(void* object);
+
+/**
+ * @brief Call the shared no-argument helper at 0x001FCE00.
+ */
+void func_00203750(void);
+
+/**
+ * @brief Call the shared no-argument helper at 0x001E2C60.
+ */
+void func_00206BF0(void);
 
 /**
  * @brief Retry a value request up to eight times while the owner allows it.
@@ -500,6 +574,7 @@ void func_00209FA0(FieldContext58* object, u32 key, u32 value38, u32 value44, u3
  * @param source 16-byte aligned vector data to copy.
  */
 void func_0020CBF0(FieldVectorProduct560* object, const unsigned __int128* source);
+
 
 /**
  * @brief Multiply all four components of two aligned vectors.
@@ -688,6 +763,20 @@ FieldFlagListElement* func_00209E40(FieldContext58* object, u32 key);
  */
 s32 func_00203900(void* object);
 
+
+/**
+ * @brief Clear the output value supplied as the seventh argument.
+ * @param arg1 Unused argument.
+ * @param arg2 Unused argument.
+ * @param arg3 Unused argument.
+ * @param arg4 Unused argument.
+ * @param arg5 Unused argument.
+ * @param arg6 Unused argument.
+ * @param output Value to clear.
+ * @return Always 0.
+ */
+s32 func_00203910(void* arg1, void* arg2, void* arg3, void* arg4, void* arg5, void* arg6, s32* output);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
@@ -741,12 +830,35 @@ void func_00206BE0(void* object);
  */
 s32 func_0020B400(void* object);
 
+
+/**
+ * @brief Initialize the list element's self-relative pointer and state fields.
+ * @param object List element to initialize.
+ */
+void func_0020B1A0(FieldInitializedListElement* object);
+
+/**
+ * @brief Forward the stored pointer and supplied value to the state helper.
+ * @param object Source containing the stored helper argument.
+ * @param value Value passed to the helper.
+ * @return The helper result.
+ */
+s32 func_0020A9D0(const FieldSource1BC* object, s32 value);
+
+
 /**
  * @brief Return the fixed value 2.
  * @param object Receiver or first argument; unused.
  * @return Always 2.
  */
 s32 func_0020C480(void* object);
+
+/**
+ * @brief Return the address at receiver offset 0x120.
+ * @param object Receiver base address.
+ * @return Address of the subobject at offset 0x120.
+ */
+void* func_00206AA0(void* object);
 
 #ifdef __cplusplus
 }

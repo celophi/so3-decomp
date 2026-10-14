@@ -1,5 +1,86 @@
 #include "include_asm.h"
+#include "overlays/1070-00/text_00202FB0.h"
 #include "overlays/1070-00/text_00213F40.h"
+
+extern "C" void func_43AC40(void* object);
+extern "C" void func_459DB0(void* object);
+extern "C" void func_459960(void* object);
+extern "C" void func_4781A0(void* object);
+extern "C" void func_0027D300(void* object, u32 value, u8 old_flags);
+extern "C" void* D_001B6620;
+extern "C" u8 D_17B8A0[];
+extern "C" void func_121E80(void* owner, void* object);
+
+/** Partial callback interface with a virtual method at offset 0x54. */
+class FieldCallbackDispatch54
+{
+public:
+    virtual void slot08();
+    virtual void slot0c();
+    virtual void slot10();
+    virtual void slot14();
+    virtual void slot18();
+    virtual void slot1c();
+    virtual void slot20();
+    virtual void slot24();
+    virtual void slot28();
+    virtual void slot2c();
+    virtual void slot30();
+    virtual void slot34();
+    virtual void slot38();
+    virtual void slot3c();
+    virtual void slot40();
+    virtual void slot44();
+    virtual void slot48();
+    virtual void slot4c();
+    virtual void slot50();
+    virtual void callback();
+};
+
+/** Partial callback interface with a method at vtable offset 0x10. */
+class FieldCallbackDispatch10
+{
+public:
+    virtual void slot08();
+    virtual void slot0c();
+    virtual void callback();
+};
+
+/** Partial callback interface with a three-output method at offset 0x34. */
+class FieldCallbackOutputs34
+{
+public:
+    virtual void slot08();
+    virtual void slot0c();
+    virtual void slot10();
+    virtual void slot14();
+    virtual void slot18();
+    virtual void slot1c();
+    virtual void slot20();
+    virtual void slot24();
+    virtual void slot28();
+    virtual void slot2c();
+    virtual void slot30();
+    virtual void callback(float value, u32* first, u32* second, u32* third);
+};
+
+/** Partial receiver with a float at 0x78 and a word at 0x0C. */
+struct FieldFloatWordState78
+{
+    u8 unk00[0x0C];
+    u32 unk0c;
+    u8 unk10[0x68];
+    float unk78;
+};
+
+/** Partial receiver initialized by func_00215CC0. */
+struct FieldInitializedState3C
+{
+    void* vtable;
+    u8 unk04[0x38];
+    u8 unk3c;
+};
+
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00213F40);
 
@@ -144,7 +225,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002155
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002155D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002156B0);
+void func_002156B0(void* object)
+{
+    func_43AC40((u8*)object + 0x20);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002156D0);
 
@@ -152,7 +236,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002157
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00215840);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00215CC0);
+/** Initialize the receiver's table pointer and state byte after its helper. */
+void* func_00215CC0(void* object)
+{
+    FieldInitializedState3C* state = (FieldInitializedState3C*)object;
+    func_4781A0(object);
+    state->vtable = D_17B8A0;
+    state->unk3c = 13;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00215D00);
 
@@ -184,7 +276,11 @@ s32 func_00215FE0(void* object)
     return 3;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00215FF0);
+void func_00215FF0(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216020);
 
@@ -206,7 +302,10 @@ void func_00216180(void* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216190);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002161F0);
+void func_002161F0(FieldFlagAt1C* object)
+{
+    object->unk1c_0 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216210);
 
@@ -242,9 +341,17 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002169
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002169B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216A20);
+void func_00216A20(void* object)
+{
+    func_459DB0((u8*)object + 0x5A4);
+    func_459960(object);
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216A50);
+void func_00216A50(FieldFlagMirrorAt20* object)
+{
+    object->unk20_2 = 0;
+    object->unk20_0 = object->unk20_1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216A90);
 
@@ -277,7 +384,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216D
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216E60);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216F00);
+void func_00216F00(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216F30);
 
@@ -295,7 +406,23 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002178
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002178F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002179B0);
+s32 func_002179B0(const FieldKeyList18* object, s32 key)
+{
+    const FieldKeyNode6E* node = &object->sentinel;
+    for (;;)
+    {
+        node = node->next;
+        if (&object->sentinel == node)
+        {
+            break;
+        }
+        if (node->key6e == (u16)key)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00217A00);
 
@@ -324,7 +451,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002188
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00218910);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00218AE0);
+void func_00218AE0(FieldWordTriplet14* object, u32 value18, u32 value14, u32 value1c)
+{
+    object->unk14 = value14;
+    object->unk18 = value18;
+    object->unk1c = value1c;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00218AF0);
 
@@ -356,7 +488,26 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002195
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00219550);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00219560);
+struct FieldFlagAt69F
+{
+    u8 pad00[0x69F];
+    u8 unk69f_0 : 1;
+    u8 unk69f_1 : 1;
+    u8 unk69f_2 : 1;
+    u8 unk69f_3 : 5;
+};
+
+/**
+ * @brief Set bit 2 at receiver offset 0x69F, then pass the old byte to the helper.
+ * @param object Receiver whose flag byte is updated.
+ * @param value Second value forwarded to the helper.
+ */
+extern "C" void func_00219560(FieldFlagAt69F* object, u32 value)
+{
+    u8 old_flags = *(u8*)((u8*)object + 0x69F);
+    object->unk69f_2 = 1;
+    func_0027D300(object, value, old_flags);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00219590);
 
@@ -425,7 +576,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021A7
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021A880);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021A930);
+/**
+ * @brief Invoke the receiver's callback at vtable offset 0x54.
+ * @param object Receiver with the callback dispatch table at offset zero.
+ */
+void func_0021A930(void* object)
+{
+    ((FieldCallbackDispatch54*)object)->callback();
+}
 
 s32 func_0021A960(void* object)
 {
@@ -450,7 +608,20 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021AD
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021AE40);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021AF10);
+/**
+ * @brief Return the word predicate when the float is nonpositive, otherwise one.
+ * @param object Receiver with the word at 0x0C and float at 0x78.
+ * @return The selected zero-or-one result.
+ */
+s32 func_0021AF10(const void* receiver)
+{
+    const FieldFloatWordState78* object = (const FieldFloatWordState78*)receiver;
+    if (object->unk78 > 0.0f)
+    {
+        return 1;
+    }
+    return object->unk0c != 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021AF40);
 
@@ -484,7 +655,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021CA
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021CB60);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021CBD0);
+void func_0021CBD0(void* object)
+{
+    FieldByteFlags34* state = (FieldByteFlags34*)object;
+    state->unk34_0 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021CBF0);
 
@@ -492,7 +667,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021CC
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021CDA0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021CDB0);
+/**
+ * @brief Detach the receiver, then process it with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+extern "C" void func_0021CDB0(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021CDE0);
 
@@ -555,7 +738,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EC
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EE10);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021EEE0);
+/**
+ * @brief Detach the receiver, then process it through the shared owner.
+ * @param object Receiver to detach and process.
+ */
+extern "C" void func_0021EEE0(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 void func_0021EF10(FieldValueOwner34* object, s32 value)
 {
@@ -584,7 +775,15 @@ s32 func_00221620(void* object)
     return 3;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00221630);
+/**
+ * @brief Detach the receiver, then process it through the shared owner.
+ * @param object Receiver to detach and process.
+ */
+void func_00221630(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 s32 func_00221660(void* object)
 {
@@ -597,7 +796,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00221A
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00221AC0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00221C30);
+/**
+ * @brief Detach the receiver, then process it through the shared owner.
+ * @param object Receiver to detach and process.
+ */
+void func_00221C30(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00221C60);
 
@@ -636,7 +843,39 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002228
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002228F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00222D20);
+/** Partial receiver containing the source and destination vectors. */
+struct FieldVectorInitState
+{
+    u8 unk00[0x20];
+    unsigned __int128 unk20;
+    u8 unk30[0x140];
+    unsigned __int128 unk170;
+    u8 unk180[0x10];
+    unsigned __int128 unk190;
+};
+
+/** Vector view used to initialize the destination with an identity vector. */
+union FieldVectorConstant
+{
+    unsigned __int128 raw;
+    float components[4];
+};
+
+/**
+ * @brief Copy the source vector and initialize the destination vector.
+ * @param object Receiver containing vectors at offsets 0x20, 0x170, and 0x190.
+ */
+void func_00222D20(void* object)
+{
+    FieldVectorInitState* state = (FieldVectorInitState*)object;
+    state->unk170 = state->unk20;
+    FieldVectorConstant identity;
+    identity.components[0] = 0.0f;
+    identity.components[1] = 0.0f;
+    identity.components[2] = 0.0f;
+    identity.components[3] = 1.0f;
+    state->unk190 = identity.raw;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00222D50);
 
@@ -650,7 +889,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002234
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002234A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223580);
+void func_00223580(void* unused, void* object)
+{
+    func_4D7EB0(object);
+    ((FieldCallbackDispatch10*)object)->callback();
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002235C0);
 
@@ -672,7 +915,13 @@ void func_002239B0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002239C0);
+void func_002239C0(void* object)
+{
+    if (object != 0)
+    {
+        ((FieldUnaryCallback*)object)->callback(1);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002239F0);
 
@@ -704,7 +953,11 @@ void func_00223A90(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223AA0);
+void func_00223AA0(void* object)
+{
+    *(u32*)((u8*)object + 0x4C) = 0;
+    func_00223D70(object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223AC0);
 
@@ -714,7 +967,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223B
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223BE0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223C40);
+/**
+ * @brief Call the receiver's output callback with zero and one local word.
+ * @param object Receiver with the output callback at vtable offset 0x34.
+ */
+void func_00223C40(void* object)
+{
+    u32 result = 0;
+    ((FieldCallbackOutputs34*)object)->callback(0.0f, &result, &result, &result);
+}
 
 void func_00223C80(const void* object, float* value)
 {
@@ -722,7 +983,37 @@ void func_00223C80(const void* object, float* value)
     *value = state->value50;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223C90);
+/** Record with an observed float at offset 4 and a 16-byte stride. */
+struct FieldFloatRecord4
+{
+    u32 unk00;
+    float value04;
+    u32 unk08;
+    u32 unk0c;
+};
+
+/** Receiver prefix with a record pointer at +4 and signed index at +0x20. */
+struct FieldIndexedFloatState
+{
+    u8 pad00[4];
+    const FieldFloatRecord4* records;
+    u8 pad08[0x18];
+    s16 index;
+};
+
+/**
+ * @brief Store the indexed record's float relative to the first record.
+ * @param object Receiver containing the record pointer and signed index.
+ * @param result Destination for the difference when the record pointer exists.
+ */
+extern "C" void func_00223C90(const FieldIndexedFloatState* object, float* result)
+{
+    const FieldFloatRecord4* records = object->records;
+    if (records != 0)
+    {
+        *result = records[object->index - 1].value04 - records[0].value04;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223CC0);
 

@@ -46,9 +46,81 @@ typedef struct FieldFloat4C
     float unk4c;
 } FieldFloat4C;
 
+
 #ifdef __cplusplus
 extern "C" {
+
 #endif
+
+/**
+ * @brief Invoke the callback at offset 0x10 on the receiver's field at 0x4C.
+ * @param object Receiver containing the callback interface at offset 0x4C.
+ */
+void func_002CB7A0(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_002CE640(void* object);
+
+/**
+ * @brief Initialize the receiver's constructor state and return it.
+ * @param object Object to initialize.
+ * @return The receiver.
+ */
+void* func_002CCB60(void* object);
+
+/** @brief Pass the shared state object to its reset helper. */
+void func_002D1C50(void);
+
+
+/**
+ * @brief Call the shared no-argument helper at 0x004815A0.
+ */
+void func_002D4E00(void);
+
+/**
+ * @brief Clear the receiver state, then update it through the shared context.
+ * @param object Receiver to update.
+ */
+void func_002D4E80(void* object);
+
+/**
+ * @brief Reset receiver state, then update it through the shared context.
+ * @param object Receiver to update.
+ */
+void func_002D4F30(void* object);
+
+/**
+ * @brief Call the shared no-argument helper at 0x00481620.
+ */
+void func_002D4EB0(void);
+
+/**
+ * @brief Copy the vector at offset 0xA0 to the supplied destination.
+ * @param object Receiver containing the source vector.
+ * @param result Destination for the copied vector.
+ */
+void func_002D5500(const void* object, void* result);
+
+/**
+ * @brief Copy the two source vectors at offsets 0x290 and 0x2A0 to 0x8F0 and 0x900.
+ * @param object Receiver containing the source and destination vectors.
+ */
+void func_002CB620(void* object);
+
+/**
+ * @brief Call the helper on the receiver's subobject at 0x184 with range 0..4.
+ * @param object Receiver containing the subobject.
+ */
+void func_002D1B70(void* object);
+
+/**
+ * @brief Clear the receiver word at offset 0x48, then update the receiver.
+ * @param object Receiver to clear and update.
+ */
+void func_002D5520(void* object);
 
 /**
  * @brief Initialize and append a record while the next index is below the limit.
@@ -160,6 +232,27 @@ s32 func_002D3180(const FieldBitCountState* object);
 s32 func_002D36F0(const FieldBitCountState* object);
 
 /**
+ * @brief Initialize the receiver's base state, install its primary vtable, and return it.
+ * @param object Receiver to initialize.
+ * @return The receiver.
+ */
+void* func_002D40E0(void* object);
+
+/**
+ * @brief Initialize the receiver's base state, install its primary vtable, and return it.
+ * @param object Receiver to initialize.
+ * @return The receiver.
+ */
+void* func_002D4670(void* object);
+
+/**
+ * @brief Initialize the receiver's base state, install its primary vtable, and return it.
+ * @param object Receiver to initialize.
+ * @return The receiver.
+ */
+void* func_002D4C20(void* object);
+
+/**
  * @brief Count the set bits below the stored signed bit limit.
  * @param object Receiver containing the bit limit and packed words.
  * @return The number of set bits, or zero for a nonpositive limit.
@@ -227,6 +320,12 @@ void func_002CC6D0(unsigned __int128* vector);
  * @param result Destination for the difference; unchanged if the array is absent.
  */
 void func_002D5540(void* object, float* result);
+
+/**
+ * @brief Run the receiver's two cleanup operations in order.
+ * @param object Receiver to clean up.
+ */
+void func_002CEEB0(void* object);
 
 #ifdef __cplusplus
 }

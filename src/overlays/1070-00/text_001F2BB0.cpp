@@ -1,7 +1,66 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_001F2BB0.h"
+#include "overlays/1070-00/text_00284BF0.h"
+
+extern "C" void func_43ACC0(void* object);
+extern "C" void func_002E63F0(void* first, void* second, s32 value);
+extern "C" void func_001F8420(void* object, s32 value);
+extern "C" void __dl__FPv(void* object);
+extern "C" void* D_001B6620;
+extern "C" FieldContextRef* D_001B64B0;
+extern "C" void func_121E80(void* owner, void* object);
+extern "C" void func_001FEC40(FieldFloatTransitions70* object, float target, float duration);
+
+/** Partial callback interface with a method at offset 0x1C. */
+class FieldCallbackDispatch1C
+{
+public:
+    virtual void slot08();
+    virtual void slot0c();
+    virtual void slot10();
+    virtual void slot14();
+    virtual void slot18();
+    virtual void callback(u32 first, u32 second);
+};
 
 #define FIELD_USE_SAVED_FLOAT_TARGET 3.402823466e38f
+
+/** Partial target whose state byte is set before deletion. */
+struct FieldDeleteTarget5F4
+{
+    u8 unk00[0x5F4];
+    u8 state;
+};
+
+/** Partial owner containing the target pointer at offset four. */
+struct FieldDeleteOwner04
+{
+    u32 unk00;
+    FieldDeleteTarget5F4* target;
+};
+
+/** Partial transition state showing the observed cached source/destination pairs. */
+struct FieldFloatTransitionCopyState
+{
+    u8 unk00[0x94];
+    float source94;
+    u8 unk98[4];
+    float destination9c;
+    u8 unka0[0x10];
+    float sourceB0;
+    u8 unkb4[4];
+    float destinationB8;
+    u8 unkbc[0xC];
+    float sourceC8;
+    u8 unkcc[4];
+    float destinationD0;
+    u8 unkd4[0x1C];
+    unsigned __int128 sourceF0;
+    unsigned __int128 destination100;
+    u8 unk110[0x20];
+    unsigned __int128 source130;
+    unsigned __int128 destination140;
+};
 
 /** Minimal observed prefix containing the accessed value. */
 struct FieldUnsignedByteRead3C
@@ -31,6 +90,14 @@ struct FieldNullableWordOwnerD4
 {
     u8 unk00[0xD4];
     FieldWordTarget74* unkD4;
+};
+
+/** Partial receiver containing the two float inputs at offsets 0x1C and 0x20. */
+struct FieldFloatPair1C
+{
+    u8 unk00[0x1C];
+    float first;
+    float second;
 };
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F2BB0);
@@ -113,17 +180,35 @@ void func_001F77D0(const void* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F7800);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F7980);
+/**
+ * @brief Call the receiver's callback with 0xFF and 0x80, then return two.
+ * @param object Receiver with the callback dispatch table at offset zero.
+ * @return Two after the callback.
+ */
+s32 func_001F7980(void* object)
+{
+    ((FieldCallbackDispatch1C*)object)->callback(0xFF, 0x80);
+    return 2;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F79B0);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F7EB0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F83C0);
+void func_001F83C0(void* first, void* second)
+{
+    func_002E63F0(first, second, 0x7F);
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F83E0);
+void func_001F83E0(void* object)
+{
+    func_001F8420(object, 1);
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F8400);
+void func_001F8400(void* object)
+{
+    func_001F8420(object, 0);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001F8420);
 
@@ -307,7 +392,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FAB
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FAB60);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FAC00);
+void func_001FAC00(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FAC30);
 
@@ -315,9 +404,33 @@ FieldVector1FAD90::FieldVector1FAD90()
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FADA0);
+/**
+ * @brief Initialize the shared float transition from the receiver's pair.
+ * @param object Receiver containing the target and duration floats.
+ * @return One after initializing the transition.
+ */
+extern "C" s32 func_001FADA0(const FieldFloatPair1C* object)
+{
+    func_001FE6D0(
+        (FieldFloatTransitions70*)((u8*)D_001B64B0->context->unk14 + 0x30),
+        object->first,
+        object->second);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FADE0);
+/**
+ * @brief Initialize a shared float transition from the receiver's reversed pair.
+ * @param object Receiver containing duration and target floats.
+ * @return One after initializing the transition.
+ */
+extern "C" s32 func_001FADE0(const FieldFloatPair1C* object)
+{
+    func_001FEBE0(
+        (FieldFloatTransitions70*)((u8*)D_001B64B0->context->unk14 + 0x30),
+        object->second,
+        object->first);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FAE20);
 
@@ -331,7 +444,19 @@ void func_001FAFC0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FAFD0);
+/**
+ * @brief Initialize the shared float transition through the alternate helper.
+ * @param object Receiver containing duration and target floats.
+ * @return One after initializing the transition.
+ */
+extern "C" s32 func_001FAFD0(const FieldFloatPair1C* object)
+{
+    func_001FEC40(
+        (FieldFloatTransitions70*)((u8*)D_001B64B0->context->unk14 + 0x30),
+        object->second,
+        object->first);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FB010);
 
@@ -375,7 +500,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FBC
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FBD30);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FBDC0);
+void func_001FBDC0(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 s32 func_001FBDF0(void* object)
 {
@@ -388,7 +517,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FC6
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FC7A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FC8E0);
+void func_001FC8E0(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FC910);
 
@@ -478,7 +611,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FE8
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FE900);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FEA80);
+void func_001FEA80(void* receiver)
+{
+    FieldFloatTransitionCopyState* object = (FieldFloatTransitionCopyState*)receiver;
+    object->destinationB8 = object->sourceB0;
+    object->destination9c = object->source94;
+    object->destinationD0 = object->sourceC8;
+    object->destination100 = object->sourceF0;
+    object->destination140 = object->source130;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FEAB0);
 
@@ -567,13 +708,19 @@ void func_002010C0(void* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_002010D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_00201180);
+void func_00201180(void* object)
+{
+    func_43ACC0((u8*)object + 0x20);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_002011A0);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_002011F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_00201320);
+void func_00201320(void* object)
+{
+    func_43ACC0((u8*)object + 0x20);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_00201340);
 
@@ -581,7 +728,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_002015
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_00201700);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_00201760);
+void func_00201760(void* object)
+{
+    FieldDeleteTarget5F4* target = ((FieldDeleteOwner04*)object)->target;
+    target->state = 5;
+    __dl__FPv(object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_00201790);
 

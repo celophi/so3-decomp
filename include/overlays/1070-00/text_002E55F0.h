@@ -13,6 +13,13 @@ typedef struct FieldByteFlags70
     u8 unk70_3_7 : 5;
 } FieldByteFlags70;
 
+/** Partial receiver exposing the word cleared by func_002E9E80. */
+typedef struct FieldWordState20
+{
+    u8 unk00[0x20];
+    u32 unk20;
+} FieldWordState20;
+
 /** Partial reset prefix with an opaque word and four halfwords. */
 typedef struct FieldResetState40
 {
@@ -95,6 +102,7 @@ typedef struct FieldFlagOwner4C
     FieldFlagTarget4D* unk4c;
 } FieldFlagOwner4C;
 
+
 /** Partial receiver containing two pointers and halfword and byte state. */
 typedef struct FieldResetStateCC
 {
@@ -148,6 +156,20 @@ typedef struct FieldResourceRecord
     u32 next_offset;
 } FieldResourceRecord;
 
+/** Partial target exposing the byte written by func_002E63D0. */
+typedef struct FieldByteTargetCB
+{
+    u8 unk00[0xCB];
+    u8 unkCB;
+} FieldByteTargetCB;
+
+/** Partial receiver containing an optional target at offset 0x10. */
+typedef struct FieldByteTargetOwner10
+{
+    u8 unk00[0x10];
+    FieldByteTargetCB* unk10;
+} FieldByteTargetOwner10;
+
 #ifdef __cplusplus
 /** Partial receiver of kind 0x4000 with primary vtable at 0x176230. */
 class FieldClass176230 : public LibReceiver4DD1F0
@@ -163,7 +185,89 @@ public:
 
 #ifdef __cplusplus
 extern "C" {
+
+/**
+ * @brief Refresh the shared context's object at offset 0x44.
+ * @return One after the update call.
+ */
+s32 func_002E55F0(void);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_002E9590(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_002EBA40(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_002ECBE0(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_002F2290(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_002F34B0(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_002F43C0(void* object);
+
+/**
+ * @brief Notify entries whose key matches the supplied value.
+ * @param list Circular list sentinel.
+ * @param key Value compared with each entry's key at offset 0x44.
+ */
+void func_002EC930(void* list, u32 key);
+
 #endif
+
+
+/**
+ * @brief Call the shared no-argument helper at 0x001FDB60.
+ */
+/** @brief Initialize the receiver, update it, then invoke its slot 0x10 callback. */
+void func_002E9AF0(void* object);
+
+void func_002E9B30(void);
+
+/**
+ * @brief Store the supplied byte and flag word, update the status byte from flag bit 3, and return 1.
+ * @param object Receiver to update.
+ * @param value Byte stored at offset 0x18.
+ * @param flags Value stored at offset 0x1A and tested for bit 3.
+ * @return Always 1.
+ */
+s32 func_002E9550(void* object, u8 value, s32 flags);
+
+/**
+ * @brief Set byte 0x40 to one, then call the shared helper.
+ * @param object Receiver whose byte is set.
+ */
+void func_002EE2B0(void* object);
+
+/**
+ * @brief When enabled, call the helper on the receiver subobject at 0x30.
+ * @param object Receiver containing the helper subobject.
+ * @param enabled Nonzero selects the helper call.
+ */
+void func_002E7E70(void* object, s32 enabled);
+
 
 /**
  * @brief Set bit zero of the receiver's flag byte at offset 0x28.
@@ -222,6 +326,19 @@ void* func_002EBA90(const FieldBufferSlots* object, s32 index);
  * @param fourth Halfword stored at offset 0x1C.
  */
 void func_002E62E0(FieldFloatResetState* object, u8 first, u8 second, u16 third, u16 fourth);
+
+/**
+ * @brief Store a byte in the optional target at receiver offset 0x10.
+ * @param object Receiver containing the optional target.
+ * @param value Byte stored at target offset 0xCB.
+ */
+void func_002E63D0(FieldByteTargetOwner10* object, u8 value);
+
+/**
+ * @brief Clear the receiver word at offset 0x20.
+ * @param object Receiver to update.
+ */
+void func_002E9E80(FieldWordState20* object);
 
 /**
  * @brief Set bit four of the target flag byte when the target is present.
@@ -349,11 +466,35 @@ s32 func_002EBA30(void* object);
 void func_002EBA70(void* object);
 
 /**
+ * @brief Process the receiver's attached state, then clear its three trailing words.
+ * @param object Receiver to update.
+ */
+void func_002EBFC0(void* object);
+
+/**
+ * @brief Return the address of the data symbol at 0x00329170.
+ * @return Address of the data symbol.
+ */
+void* func_002EBD10(void);
+
+/**
  * @brief Return the fixed value 9.
  * @param object Receiver or first argument; unused.
  * @return Always 9.
  */
 s32 func_002ECBD0(void* object);
+
+/**
+ * @brief Set the receiver byte at offset 0x28 to one.
+ * @param object Receiver to update.
+ */
+void func_002ECF10(void* object);
+
+/**
+ * @brief Set the receiver byte at offset 0x40 to one.
+ * @param object Receiver to update.
+ */
+void func_002EDBA0(void* object);
 
 /**
  * @brief Perform no work.
@@ -386,11 +527,24 @@ void func_002F0080(void* object);
 void func_002F0090(void* object);
 
 /**
+ * @brief Return floating-point zero.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_002F00A0(void* object);
+
+/**
  * @brief Return the fixed value 5.
  * @param object Receiver or first argument; unused.
  * @return Always 5.
  */
 s32 func_002F02C0(void* object);
+
+/**
+ * @brief Set the receiver byte at offset 0x60 to nine.
+ * @param object Receiver to update.
+ */
+void func_002F02D0(void* object);
 
 /**
  * @brief Return the fixed value 4.

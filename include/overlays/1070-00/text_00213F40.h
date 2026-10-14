@@ -45,6 +45,27 @@ typedef struct FieldFloatState30
     float unk30;
 } FieldFloatState30;
 
+
+
+/** Circular-list node with a key halfword at offset 0x6E. */
+typedef struct FieldKeyNode6E
+{
+    u8 unk00[8];
+    struct FieldKeyNode6E* next;
+    u8 unk0c[0x62];
+    u16 key6e;
+} FieldKeyNode6E;
+
+/** Receiver with a circular-list sentinel at offset 0x18. */
+typedef struct FieldKeyList18
+{
+    u8 unk00[0x18];
+    FieldKeyNode6E sentinel;
+} FieldKeyList18;
+
+
+
+
 /** Partial target containing a value and its update byte. */
 typedef struct FieldValueState100
 {
@@ -147,6 +168,35 @@ typedef struct FieldEntry1C
 #endif
 } FieldEntry1C;
 
+/** Partial receiver with writable words at offsets 0x14, 0x18, and 0x1C. */
+typedef struct FieldWordTriplet14
+{
+    u8 unk00[0x14];
+    u32 unk14;
+    u32 unk18;
+    u32 unk1c;
+} FieldWordTriplet14;
+
+/** Partial receiver with the flag byte at offset 0x1C. */
+typedef struct FieldFlagAt1C
+{
+    u8 unk00[0x1C];
+    u8 unk1c_0 : 1;
+    u8 unk1c_1_7 : 7;
+} FieldFlagAt1C;
+
+/** Partial receiver with the bit fields updated by func_00216A50. */
+typedef struct FieldFlagMirrorAt20
+{
+    u8 unk00[0x20];
+    u8 unk20_0 : 1;
+    u8 unk20_1 : 1;
+    u8 unk20_2 : 1;
+    u8 unk20_3_7 : 5;
+} FieldFlagMirrorAt20;
+
+
+
 /** One 16-byte interpolation entry with three observed float fields. */
 typedef struct FieldCurveEntry
 {
@@ -165,6 +215,48 @@ typedef struct FieldFloatCurve
 
 #ifdef __cplusplus
 extern "C" {
+
+
+/**
+ * @brief Invoke the receiver's callback at vtable offset 0x54.
+ * @param object Receiver with the callback dispatch table at offset zero.
+ */
+void func_0021A930(void* object);
+
+/**
+ * @brief Return the word predicate when the float is nonpositive, otherwise one.
+ * @param object Receiver with the word at 0x0C and float at 0x78.
+ * @return The selected zero-or-one result.
+ */
+s32 func_0021AF10(const void* object);
+
+/**
+ * @brief Call the receiver's output callback with zero and one local word.
+ * @param object Receiver with the output callback at vtable offset 0x34.
+ */
+void func_00223C40(void* object);
+
+/**
+ * @brief Initialize the receiver's table pointer and state byte.
+ * @param object Receiver to initialize.
+ * @return The receiver.
+ */
+void* func_00215CC0(void* object);
+
+/**
+ * @brief Run the receiver detachment helper, then process the receiver with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+void func_00215FF0(void* object);
+
+/**
+ * @brief Run the receiver detachment helper, then process the receiver with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+void func_00216F00(void* object);
+
+/** @brief Detach the second argument, then invoke its virtual method at offset 0x10. */
+void func_00223580(void* unused, void* object);
 #endif
 
 /**
@@ -201,6 +293,7 @@ s16 func_0021EC60(const FieldTraversalRecord* record);
  * @return The stored value multiplied by 0.0625.
  */
 float func_00214DA0(const FieldFloatState30* object);
+
 
 /**
  * @brief Update the optional target value and set its update byte.
@@ -266,6 +359,13 @@ s32 func_00214AA0(const FieldCheckedState7C* object);
 s32 func_00214C70(const FieldCheckedState7C* object);
 
 /**
+ * @brief Forward the receiver's secondary interface to its external operation.
+ * @param object Receiver whose secondary interface starts at offset 0x20.
+ */
+void func_002156B0(void* object);
+
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -277,6 +377,25 @@ void func_00215EB0(void* object);
  * @return Always 1.
  */
 s32 func_00215EC0(void* object);
+
+/**
+ * @brief Set bit zero in the receiver's byte at offset 0x34.
+ * @param object Receiver to update.
+ */
+void func_0021CBD0(void* object);
+
+
+/**
+ * @brief Clear the receiver's word at offset 0x4C, then run its reset routine.
+ * @param object Receiver to reset.
+ */
+void func_00223AA0(void* object);
+
+/**
+ * @brief Reset the receiver's state fields.
+ * @param object Receiver to reset.
+ */
+void func_00223D70(void* object);
 
 /**
  * @brief Return the fixed value 3.
@@ -302,6 +421,31 @@ void func_00216100(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00216180(void* object);
+
+/**
+ * @brief Clear bit zero in the receiver's byte at offset 0x1C.
+ * @param object Receiver to update.
+ */
+void func_002161F0(FieldFlagAt1C* object);
+
+/**
+ * @brief Clear bit two and copy bit one into bit zero of the receiver byte at 0x20.
+ * @param object Receiver to update.
+ */
+void func_00216A50(FieldFlagMirrorAt20* object);
+
+/**
+ * @brief Call the helper on the subobject at 0x5A4, then update the receiver.
+ * @param object Receiver to update.
+ */
+void func_00216A20(void* object);
+
+
+/**
+ * @brief Call the receiver's virtual callback with the value one when non-null.
+ * @param object Optional callback receiver.
+ */
+void func_002239C0(void* object);
 
 /**
  * @brief Perform no work.
@@ -468,11 +612,36 @@ void func_00223A80(void* object);
 void func_00223A90(void* object);
 
 /**
+ * @brief Copy the source vector and initialize the destination vector.
+ * @param object Receiver containing vectors at offsets 0x20, 0x170, and 0x190.
+ */
+void func_00222D20(void* object);
+
+/**
+ * @brief Detach the receiver, then process it through the shared owner.
+ * @param object Receiver to detach and process.
+ */
+void func_0021EEE0(void* object);
+
+/**
+ * @brief Detach the receiver, then process it through the shared owner.
+ * @param object Receiver to detach and process.
+ */
+void func_00221630(void* object);
+
+/**
+ * @brief Detach the receiver, then process it through the shared owner.
+ * @param object Receiver to detach and process.
+ */
+void func_00221C30(void* object);
+
+/**
  * @brief Copy the receiver's float at offset 0x50 to the output pointer.
  * @param object Receiver.
  * @param value Destination for the float.
  */
 void func_00223C80(const void* object, float* value);
+
 
 /**
  * @brief Evaluate the interpolation curve at the supplied position.
@@ -482,7 +651,29 @@ void func_00223C80(const void* object, float* value);
  */
 float func_002166F0(const FieldFloatCurve* curve, float position);
 
+/**
+ * @brief Store three words at receiver offsets 0x14, 0x18, and 0x1C.
+ * @param object Receiver to update.
+ * @param value18 Value for offset 0x18.
+ * @param value14 Value for offset 0x14.
+ * @param value1c Value for offset 0x1C.
+ */
+void func_00218AE0(FieldWordTriplet14* object, u32 value18, u32 value14, u32 value1c);
+
+
+
+
 #ifdef __cplusplus
+/**
+ * @brief Check whether the circular list contains the supplied key.
+ * @param object Receiver whose list is inspected.
+ * @param key Key to search for.
+ * @return 1 when the key is present, otherwise 0.
+ */
+s32 func_002179B0(const FieldKeyList18* object, s32 key);
+
+
+
 /**
  * @brief Check collected receivers, excluding the supplied object.
  * @param object Receiver containing the collection state.

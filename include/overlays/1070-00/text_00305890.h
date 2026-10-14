@@ -18,6 +18,24 @@ typedef struct FieldTwoSlotState
     s32 unk80;
 } FieldTwoSlotState;
 
+/** Partial receiver configured by func_00305A50. */
+typedef struct FieldFloatState20
+{
+    u8 unk00[0x20];
+    float unk20;
+    float unk24;
+    float unk28;
+    float unk2c;
+    u8 unk30[0x14];
+    u8 unk44;
+    u8 unk45[0xDF];
+    float unk124;
+    float unk128;
+    u8 unk12c[0x1C];
+    u8 unk148;
+} FieldFloatState20;
+
+
 /** Partial receiver with an embedded list, its count, and adjacent state values. */
 typedef struct FieldHalfwordByteState105A
 {
@@ -38,6 +56,33 @@ typedef struct FieldByte121E FieldByte121E;
 
 #ifdef __cplusplus
 extern "C" {
+
+/** @brief Read the nested status byte through the shared state root. */
+u8 func_0030F690(void);
+
+/**
+ * @brief Store a value in the receiver and shared update state.
+ * @param object Receiver to update.
+ * @param value Word copied into the receiver and shared state.
+ * @return Always 1.
+ */
+s32 func_003081C0(void* object, u32 value);
+
+
+/**
+ * @brief Call the helper on the object at offset 0x180 with range 0..0x80.
+ * @param object Receiver containing the helper object.
+ */
+void func_0030B080(void* object);
+
+/**
+ * @brief Initialize the receiver's float state from two supplied values.
+ * @param object Receiver to update.
+ * @param first Value stored and offset by 52.0 for the derived field.
+ * @param second Value stored in the paired fields.
+ */
+void func_00305A50(FieldFloatState20* object, float first, float second);
+
 #endif
 
 /**
@@ -156,6 +201,13 @@ void func_00305C30(void* object);
  * @return Always 4.
  */
 s32 func_0030A180(void* object);
+
+/**
+ * @brief Return the address at offset 0xFF8 from the supplied pointer.
+ * @param object Input pointer.
+ * @return The adjusted pointer.
+ */
+void* func_0030C120(void* object);
 
 /**
  * @brief Perform no work.

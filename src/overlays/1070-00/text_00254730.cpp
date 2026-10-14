@@ -1,6 +1,23 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_00254730.h"
 
+extern "C" void func_43ACC0(void* object);
+extern "C" void func_4DB530(void* context, u32 first, u32 second);
+extern "C" void func_4EABF0(void* object);
+extern "C" void* D_001B6668;
+extern "C" void func_121E80(void* owner, void* object);
+extern "C" void* D_001B6620;
+
+/** Partial callback interface with a method at vtable offset 0x10. */
+class FieldCallbackDispatch10
+{
+public:
+    virtual void slot00();
+    virtual void slot04();
+    virtual void callback();
+};
+
+
 /** Minimal observed prefix containing the predicate word at offset 0x0C. */
 struct FieldWordPredicate0C
 {
@@ -130,6 +147,16 @@ typedef struct FieldKeyedStateElementE4
     s8 unkfd;
 } FieldKeyedStateElementE4;
 
+/** Partial keyed list element containing the word returned by the lookup. */
+struct FieldKeyedWordElement28
+{
+    FieldListNode link;
+    u8 unk0c[8];
+    u32 unk14;
+    u8 unk18[0x10];
+    u32 unk28;
+};
+
 /** Partial record with a relative next offset and a trailing word discriminator. */
 typedef struct FieldRelativeRecord18
 {
@@ -173,7 +200,15 @@ s32 func_00255420(void* object)
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00255430);
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_00255430(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00255460);
 
@@ -244,7 +279,15 @@ s32 func_00257120(void* object)
     return 9;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00257130);
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_00257130(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00257160);
 
@@ -364,7 +407,27 @@ s32 func_00259E20(const FieldKeyedFlagOwnerD8* object, u32 key)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00259E70);
+u32 func_00259E70(const FieldKeyedFlagOwnerD8* object, u32 key)
+{
+    FieldListNode* node;
+    FieldKeyedFlagList14* list = object->unkd8;
+    FieldListNode* sentinel = &list->unk14;
+    node = sentinel;
+    for (;;)
+    {
+        node = node->next;
+        if (node == 0 || sentinel == node)
+        {
+            break;
+        }
+        const FieldKeyedWordElement28* element = (const FieldKeyedWordElement28*)node;
+        if (key == element->unk28)
+        {
+            return element->unk14;
+        }
+    }
+    return 0;
+}
 
 void func_00259EC0(FieldKeyedFlagOwnerD8* object, u32 key, s32 value)
 {
@@ -479,11 +542,27 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025C0
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025C1E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025C290);
+/**
+ * @brief Initialize the object, then invoke its callback at vtable offset 0x10.
+ * @param object Receiver to initialize and dispatch.
+ */
+extern "C" void func_0025C290(FieldCallbackDispatch10* object)
+{
+    func_4D7EB0(object);
+    object->callback();
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025C2D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025C360);
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_0025C360(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 s32 func_0025C390(void* object)
 {
@@ -502,7 +581,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025C3
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025C4C0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025C580);
+void func_0025C580(void* object)
+{
+    func_43ACC0((u8*)object + 0x20);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025C5A0);
 
@@ -518,7 +600,27 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025DD
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025E7F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025E9A0);
+/** Lookup values read from the receiver's referenced state. */
+struct FieldLookupState11C
+{
+    u8 unk00[0x11C];
+    struct
+    {
+        u8 unk00[0x24];
+        u32 first;
+        u32 second;
+    }* values;
+};
+
+/**
+ * @brief Register the receiver's lookup state and refresh the receiver.
+ * @param object Receiver containing the lookup state at offset 0x11C.
+ */
+extern "C" void func_0025E9A0(FieldLookupState11C* object)
+{
+    func_4DB530(D_001B6668, object->values->first, object->values->second);
+    func_4EABF0(object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_0025E9E0);
 
@@ -597,7 +699,10 @@ bool func_00261FC0(const void* object)
     return state->unk0c != 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00261FD0);
+void* func_00261FD0(const FieldKeyedFloatState98* object)
+{
+    return object->unk88;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00261FE0);
 

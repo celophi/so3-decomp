@@ -25,9 +25,117 @@ typedef struct FieldFloatResetState1C
     float unk2c;
 } FieldFloatResetState1C;
 
+/** Partial receiver holding a byte source, a word, and a derived state byte. */
+typedef struct FieldByteSourceState
+{
+    u8 unk00[0x2C];
+    const u8* source;
+    u32 unk30;
+    u8 unk34;
+} FieldByteSourceState;
+
+/** One 16-byte entry whose first component is used by the sequence range helper. */
+typedef struct FieldFloatValueEntry16
+{
+    float unk00;
+    u8 unk04[0xC];
+} FieldFloatValueEntry16;
+
+/** Partial receiver with a float-entry pointer at 0x4 and signed count at 0x20. */
+typedef struct FieldFloatValueSequence20
+{
+    u8 unk00[4];
+    FieldFloatValueEntry16* entries;
+    u8 unk08[0x18];
+    s16 count;
+} FieldFloatValueSequence20;
+
+/** Partial sequence receiver with cached range, counts, and mode state. */
+typedef struct FieldFloatSequenceState2C
+{
+    u8 unk00[4];
+    FieldFloatValueEntry16* entries;
+    u8 unk08[0x14];
+    float range1c;
+    s16 count20;
+    s16 count22;
+    u8 unk24[7];
+    u8 flags2b_0 : 1;
+    u8 flags2b_1 : 1;
+    u8 flags2b_2_7 : 6;
+} FieldFloatSequenceState2C;
+
 #ifdef __cplusplus
 extern "C" {
+
+/**
+ * @brief Advance the receiver's word cursor and pass its values to a helper.
+ * @param object Receiver containing the cursor at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_00233B40(void* object);
+
+/**
+ * @brief Copy two words to the receiver, then pass them to its callback.
+ * @param object Receiver with words at offsets 0x0C and 0x10.
+ * @param source Source of the words to copy.
+ */
+void func_0022FD50(void* object, const void* source);
+
 #endif
+
+/**
+ * @brief Invoke the receiver's callback at vtable offset 0x64.
+ * @param object Receiver with the callback dispatch table at offset zero.
+ */
+void func_00224CE0(void* object);
+
+/**
+ * @brief Invoke the receiver's callback at vtable offset 0x68.
+ * @param object Receiver with the callback dispatch table at offset zero.
+ */
+void func_00224D10(void* object);
+
+/**
+ * @brief Invoke the receiver's callback at vtable offset 0x6C.
+ * @param object Receiver with the callback dispatch table at offset zero.
+ */
+void func_00224D40(void* object);
+
+/**
+ * @brief Invoke the receiver's callback at vtable offset 0x70.
+ * @param object Receiver with the callback dispatch table at offset zero.
+ */
+void func_00224D70(void* object);
+
+/**
+ * @brief Set the receiver's float at 0x5C to one and call its vtable slot 0x34.
+ * @param object Receiver with the initialized field and callback table.
+ */
+void func_00228A00(void* object);
+
+/**
+ * @brief Store the receiver's virtual float result in the supplied output.
+ * @param object Receiver with the float callback at vtable offset 0x7C.
+ * @param output Destination for the returned float.
+ */
+void func_00224000(void* object, float* output);
+
+/** @brief Forward the receiver and shared owner to the common helper. */
+void func_00224E00(void* object);
+
+/** @brief Forward the receiver and shared owner to the common helper. */
+void func_00227BC0(void* object);
+
+/** @brief Pass the shared context's offset-0x58 object to its helper. */
+void func_00230570(void);
+
+/**
+ * @brief Return whether the shared context's status helper reports false.
+ * @return One when the helper returns zero; otherwise zero.
+ */
+s32 func_00230680(void);
+
 
 /**
  * @brief Set the four vector components.
@@ -39,6 +147,22 @@ extern "C" {
  * @return The destination vector.
  */
 FieldVector* func_00229DF0(FieldVector* vector, float x, float y, float z, float w);
+
+/**
+ * @brief Return the range between the first and last values when at least two entries exist.
+ * @param object Sequence to inspect.
+ * @return Last first-component value minus the first, or zero for fewer than two entries.
+ */
+float func_00224180(const FieldFloatValueSequence20* object);
+
+/**
+ * @brief Initialize a sequence state's data pointer, counts, mode, and range.
+ * @param object State to update.
+ * @param count Number of entries.
+ * @param entries Float values stored at the start of each 16-byte entry.
+ */
+void func_00224220(FieldFloatSequenceState2C* object, s32 count, FieldFloatValueEntry16* entries);
+
 
 /**
  * @brief Set the word at offset 0x30 and its adjacent state byte.
@@ -126,11 +250,31 @@ u32 func_00224030(const void* object);
  */
 s32 func_00224DF0(void* object);
 
+
 /**
  * @brief Set the receiver's byte at offset 0x48 to one.
  * @param object Receiver.
  */
 void func_00228020(void* object);
+
+/**
+ * @brief Detach the receiver, then process it through the shared owner.
+ * @param object Receiver to detach and process.
+ */
+void func_00228480(void* object);
+
+/**
+ * @brief Detach the receiver, then process it through the shared owner.
+ * @param object Receiver to detach and process.
+ */
+void func_00231920(void* object);
+
+/**
+ * @brief Initialize the receiver's base state, set its secondary vtable, and return it.
+ * @param object Receiver to initialize.
+ * @return The receiver.
+ */
+void* func_00231BA0(void* object);
 
 /**
  * @brief Return the fixed value 14.
@@ -221,6 +365,14 @@ s32 func_0022F160(void* object);
  * @return Address at +0x620, or null when the word at +0x618 is zero.
  */
 void* func_0022F170(const void* object);
+
+/**
+ * @brief Store the source and word, and set the state byte when the first source byte is one.
+ * @param object Receiver to update.
+ * @param source Non-null source of the state byte.
+ * @param value Word to store.
+ */
+void func_0022FA30(FieldByteSourceState* object, const u8* source, u32 value);
 
 /**
  * @brief Return the fixed value 0.
@@ -482,6 +634,20 @@ s32 func_0022FD40(const void* object);
  * @return 1.0f.
  */
 float func_002303D0(void* object);
+
+/**
+ * @brief Return the shared floating-point value.
+ * @param object Receiver or first argument; unused.
+ * @return The value at D_001B66B4.
+ */
+float func_00230440(void* object);
+
+/**
+ * @brief Test whether the shared context word at offset 0x50 is nonzero.
+ * @param object Receiver or first argument; unused.
+ * @return One when the context word is nonzero; otherwise zero.
+ */
+s32 func_002304D0(void* object);
 
 /**
  * @brief Return the fixed value 1.

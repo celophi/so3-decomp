@@ -1,8 +1,25 @@
 D_001B66B4 = 0x001B66B4; // type:f32 size:0x4 absolute:True
+D_001B6668 = 0x001B6668; // size:0x4 absolute:True
 D_001B64B0 = 0x001B64B0; // size:0x4 absolute:True
+D_001B64E4 = 0x001B64E4; // size:0x4 absolute:True
 D_001B6614 = 0x001B6614; // size:0x4 absolute:True
 D_001B64CC = 0x001B64CC; // type:u8 size:0x1 absolute:True
 D_001B66BC = 0x001B66BC; // type:f32 size:0x4 absolute:True
+D_001B65CC = 0x001B65CC; // type:u32 size:0x4 absolute:True
+D_001B6568 = 0x001B6568; // type:u8 size:0x1 absolute:True
+D_001B64BC = 0x001B64BC; // size:0x4 absolute:True
+D_001B661C = 0x001B661C; // size:0x4 absolute:True
+D_001B6620 = 0x001B6620; // size:0x4 absolute:True
+D_17B8A0 = 0x0017B8A0; // size:0x4 absolute:True
+D_178930 = 0x00178930; // size:0x4 absolute:True
+D_171680 = 0x00171680; // size:0x4 absolute:True
+D_16C380 = 0x0016C380; // size:0x4 absolute:True
+D_17C610 = 0x0017C610; // size:0x4 absolute:True
+D_001B663C = 0x001B663C; // size:0x4 absolute:True
+D_001B66A0 = 0x001B66A0; // size:0x4 absolute:True
+D_001B6694 = 0x001B6694; // size:0x4 absolute:True
+D_001B667C = 0x001B667C; // size:0x4 absolute:True
+D_001B65B4 = 0x001B65B4; // size:0x4 absolute:True
 
 // Primary destructor and vtable identities of the particle receiver family.
 __vt__16FieldClass172870 = 0x00172870; // absolute:True
@@ -151,3 +168,5 @@ __ct__16FieldClass1738E0Fv = 0x002A8700; // type:func
 __ct__16FieldClass1739B0Fv = 0x002A8610; // type:func
 __ct__16FieldClass173A80Fv = 0x002A8520; // type:func
 __ct__16FieldClass1736B0Fv = 0x002B0760; // type:func
+D_171690 = 0x00171690; // size:0x4 absolute:True
+D_1752C0 = 0x001752C0; // size:0x4 absolute:True

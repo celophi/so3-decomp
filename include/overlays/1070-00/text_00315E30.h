@@ -61,9 +61,71 @@ typedef struct FieldByteState60
     u8 unk60;
 } FieldByteState60;
 
+/** Partial receiver containing a byte state at offset 0x45. */
+typedef struct FieldByteState45
+{
+    u8 unk00[0x45];
+    u8 unk45;
+} FieldByteState45;
+
+/** Partial receiver containing a signed halfword at offset 0x14. */
+typedef struct FieldSignedHalfAt14
+{
+    u8 unk00[0x14];
+    s16 unk14;
+} FieldSignedHalfAt14;
+
+/** Partial receiver with two float values at 0x20 and an initialized byte at 0x44. */
+typedef struct FieldFloatPairState20
+{
+    u8 unk00[0x20];
+    float first;
+    float second;
+    u8 unk28[0x1C];
+    u8 initialized;
+} FieldFloatPairState20;
+
 #ifdef __cplusplus
 extern "C" {
+
+/**
+ * @brief Invoke the receiver's callback while its fourth mark byte is clear.
+ * @param object Receiver containing the mark bytes and callback vtable.
+ */
+void func_00316BF0(FieldMarkedObjectSlots* object);
+
 #endif
+
+/**
+ * @brief Call the shared no-argument helper at 0x004EABF0.
+ */
+void func_00316A00(void);
+
+/**
+ * @brief Call the shared no-argument helper at 0x003189D0.
+ */
+void func_00317FB0(void);
+
+/**
+ * @brief Call the shared no-argument helper at 0x003189D0.
+ */
+void func_00319150(void);
+
+/**
+ * @brief Call the shared no-argument helper at 0x003189D0.
+ */
+void func_00319B60(void);
+
+/**
+ * @brief Set the state byte and five adjacent floating-point values.
+ * @param object Receiver to update.
+ * @param first Value written at offset 0x64.
+ * @param second Value written at offset 0x68.
+ * @param third Value written at offset 0x6C.
+ * @param fourth Value written at offset 0x70.
+ * @param fifth Value written at offset 0x74.
+ */
+void func_0031A780(void* object, float first, float second, float third, float fourth, float fifth);
 
 /**
  * @brief Mark the first object slot whose pointer equals the target.
@@ -113,6 +175,29 @@ s32 func_00316440(void* object);
  * @param object Receiver to update.
  */
 void func_003169A0(FieldByteState60* object);
+
+/**
+ * @brief Store a byte value at receiver offset 0x45.
+ * @param object Receiver to update.
+ * @param unused Unused second argument.
+ * @param value Byte value to store.
+ */
+void func_0031A6D0(FieldByteState45* object, void* unused, u8 value);
+
+/**
+ * @brief Check whether the signed halfword at offset 0x14 is zero.
+ * @param object Receiver containing the halfword.
+ * @return One when zero; otherwise zero.
+ */
+s32 func_0031AA60(const FieldSignedHalfAt14* object);
+
+/**
+ * @brief Store two float values and mark the receiver initialized.
+ * @param object Receiver to update.
+ * @param first First value to store.
+ * @param second Second value to store.
+ */
+void func_0031A5F0(FieldFloatPairState20* object, float first, float second);
 
 #ifdef __cplusplus
 }

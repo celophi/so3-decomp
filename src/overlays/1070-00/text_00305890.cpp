@@ -1,6 +1,49 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_00305890.h"
 
+extern "C" void func_137F40(void* object, s32 start, s32 size);
+extern "C" void func_4781A0(void* object);
+extern "C" void* D_001B64BC;
+extern "C" u8 D_178930[];
+
+struct FieldStatus140
+{
+    u8 unk00[0x140];
+    u8 unk140;
+};
+
+struct FieldStatusRoot64BC
+{
+    u8 unk00[0x20];
+    FieldStatus140* unk20;
+};
+
+struct FieldUpdateObject14
+{
+    u8 unk00[0x14];
+    u32 unk14;
+    u8 unk18[0x30];
+    s32 unk48;
+    u8 unk4c[0x24];
+    u8 unk70;
+};
+
+struct FieldSharedUpdateState514
+{
+    u8 unk00[0x514];
+    u32 unk514;
+    u32 unk518;
+};
+
+extern "C" FieldSharedUpdateState514* D_001B65B4;
+
+/** Partial receiver containing the object passed to func_137F40 at offset 0x180. */
+struct FieldHelperObjectAt180
+{
+    u8 unk00[0x180];
+    void* object;
+};
+
 struct FieldSharedStatus149
 {
     u8 unk00[0x45];
@@ -35,7 +78,17 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003058
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003059F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00305A50);
+void func_00305A50(FieldFloatState20* object, float first, float second)
+{
+    object->unk20 = first;
+    object->unk24 = second;
+    object->unk28 = 40.0f;
+    object->unk2c = 0.0f;
+    object->unk44 = 1;
+    object->unk124 = 52.0f + first;
+    object->unk128 = second;
+    object->unk148 = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00305A90);
 
@@ -70,7 +123,27 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00306B
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00307780);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003077E0);
+/** Receiver fields initialized by func_003077E0. */
+struct FieldInitializedState3C077E0
+{
+    void* vtable;
+    u8 unk04[0x38];
+    u8 state;
+};
+
+/**
+ * @brief Initialize the receiver's vtable and state after its helper.
+ * @param object Receiver to initialize.
+ * @return The initialized receiver.
+ */
+extern "C" void* func_003077E0(void* object)
+{
+    FieldInitializedState3C077E0* state = (FieldInitializedState3C077E0*)object;
+    func_4781A0(object);
+    state->vtable = D_178930;
+    state->state = 15;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00307820);
 
@@ -80,7 +153,17 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003079
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_00308000);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003081C0);
+s32 func_003081C0(void* receiver, u32 value)
+{
+    FieldUpdateObject14* object = (FieldUpdateObject14*)receiver;
+    object->unk14 = value;
+    FieldSharedUpdateState514* state = D_001B65B4;
+    state->unk514 = object->unk14;
+    state->unk518 = 1;
+    object->unk48 = -1;
+    object->unk70 = 0;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003081F0);
 
@@ -184,7 +267,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030AE
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030AFA0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030B080);
+void func_0030B080(void* object)
+{
+    FieldHelperObjectAt180* state = (FieldHelperObjectAt180*)object;
+    func_137F40(state->object, 0, 0x80);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030B0B0);
 
@@ -229,7 +316,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BF
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030BF80);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030C120);
+void* func_0030C120(void* object)
+{
+    return (u8*)object + 0xFF8;
+}
 
 void func_0030C130(FieldHalfwordByteState105A* object, s16 value)
 {
@@ -282,7 +372,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030F2
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030F520);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030F690);
+u8 func_0030F690(void)
+{
+    return ((FieldStatusRoot64BC*)D_001B64BC)->unk20->unk140;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_0030F6A0);
 

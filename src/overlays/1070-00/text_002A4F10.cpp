@@ -1,12 +1,91 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_002A4F10.h"
 
+/** Partial callback interface with a method at offset 0x58. */
+class FieldCallbackDispatch58
+{
+public:
+    virtual void slot08();
+    virtual void slot0c();
+    virtual void slot10();
+    virtual void slot14();
+    virtual void slot18();
+    virtual void slot1c();
+    virtual void slot20();
+    virtual void slot24();
+    virtual void slot28();
+    virtual void slot2c();
+    virtual void slot30();
+    virtual void slot34();
+    virtual void slot38();
+    virtual void slot3c();
+    virtual void slot40();
+    virtual void slot44();
+    virtual void slot48();
+    virtual void slot4c();
+    virtual void slot50();
+    virtual void slot54();
+    virtual void callback(u32 first, u32 second);
+};
+
+extern "C" void func_002B0EE0(void* object, void* output);
+extern "C" u8 D_173E50[];
+extern "C" void* D_001B6620;
+extern "C" void func_121E80(void* owner, void* object);
+
 /** Partial receiver with a state byte at offset 0x60. */
 typedef struct FieldState602B4510
 {
     u8 unk00[0x60];
     u8 unk60;
 } FieldState602B4510;
+
+/** Partial state object with bit zero of a halfword at offset 0x6C. */
+struct FieldFlagWord6C
+{
+    u8 unk00[0x6C];
+    u16 unk6c;
+};
+
+/** Partial receiver containing a pointer to the state object at offset 0x1B4. */
+struct FieldChildState1B4
+{
+    u8 unk00[0x1B4];
+    FieldFlagWord6C* child;
+};
+
+/** Four 128-bit values beginning at source offset 0x150. */
+struct FieldVectorCopySource150
+{
+    u8 unk00[0x150];
+    unsigned __int128 values[4];
+};
+
+/** Four 128-bit destination values beginning at offset 0x60. */
+struct FieldVectorCopyDestination60
+{
+    u8 unk00[0x2C];
+    u32 unk2c;
+    u8 unk30[0x30];
+    unsigned __int128 values[4];
+};
+
+/** Partial output block with four reset bytes beginning at offset 0x130. */
+struct FieldParticleOutput130
+{
+    u8 unk00[0x130];
+    u8 state[4];
+};
+
+/** Partial particle state with an input pointer and value at offsets 0xA0/0xA4. */
+struct FieldParticleInputA0
+{
+    u8 unk00[0x57];
+    u8 unk57;
+    u8 unk58[0x48];
+    const u8* unka0;
+    u32 unka4;
+};
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A4F10);
 
@@ -115,7 +194,20 @@ void func_002A5150(u8* object, float value)
     *(float*)(object + 0x40) = value;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A5160);
+void func_002A5160(void* receiver, const u8* input, u32 value)
+{
+	FieldParticleInputA0* object = (FieldParticleInputA0*)receiver;
+    object->unka0 = input;
+    object->unka4 = value;
+    if (*object->unka0 == 1)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
 void func_002A51A0(u8* object, u32 enabled)
 {
@@ -154,7 +246,16 @@ s32 func_002A5210(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A5220);
+void func_002A5220(void* destination, const void* source)
+{
+    FieldVectorCopyDestination60* output = (FieldVectorCopyDestination60*)destination;
+    const FieldVectorCopySource150* input = (const FieldVectorCopySource150*)source;
+    output->unk2c = 0;
+    output->values[0] = input->values[0];
+    output->values[1] = input->values[1];
+    output->values[2] = input->values[2];
+    output->values[3] = input->values[3];
+}
 
 void func_002A5250(void* object)
 {
@@ -167,7 +268,15 @@ s32 func_002A7D30(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A7D40);
+u8* func_002A7D40(u8* object, s32 index)
+{
+    u8* entry = *(u8**)(object + 0x14) + index * 96;
+    if (entry != 0)
+    {
+        entry += 0x30;
+    }
+    return entry;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A7D70);
 
@@ -278,7 +387,20 @@ void func_002A83C0(u8* object, float value)
     *(float*)(object + 0x40) = value;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A83D0);
+void func_002A83D0(void* receiver, const u8* input, u32 value)
+{
+    FieldParticleInputA0* object = (FieldParticleInputA0*)receiver;
+    object->unka0 = input;
+    object->unka4 = value;
+    if (*object->unka0 == 1)
+    {
+        object->unk57 = 1;
+    }
+    else
+    {
+        object->unk57 = 0;
+    }
+}
 
 void func_002A8410(u8* object, u32 enabled)
 {
@@ -602,19 +724,64 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B07
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B0850);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B0920);
+void func_002B0920(void* destination, const void* source)
+{
+    FieldVectorCopyDestination60* output = (FieldVectorCopyDestination60*)destination;
+    const FieldVectorCopySource150* input = (const FieldVectorCopySource150*)source;
+    output->unk2c = 0;
+    output->values[0] = input->values[0];
+    output->values[1] = input->values[1];
+    output->values[2] = input->values[2];
+    output->values[3] = input->values[3];
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B0950);
+void func_002B0950(void* object, const void* source)
+{
+    u32* destinationWords = (u32*)object;
+    const u32* sourceWords = (const u32*)source;
+    destinationWords[3] = sourceWords[3];
+    destinationWords[4] = sourceWords[4];
+    ((FieldCallbackDispatch58*)object)->callback(destinationWords[3], destinationWords[4]);
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B0990);
+void func_002B0990(void* object, const void* source)
+{
+    u32* destinationWords = (u32*)object;
+    const u32* sourceWords = (const u32*)source;
+    destinationWords[3] = sourceWords[3];
+    destinationWords[4] = sourceWords[4];
+    ((FieldCallbackDispatch58*)object)->callback(destinationWords[3], destinationWords[4]);
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B09D0);
+void func_002B09D0(void* object, const void* source)
+{
+    u32* destinationWords = (u32*)object;
+    const u32* sourceWords = (const u32*)source;
+    destinationWords[3] = sourceWords[3];
+    destinationWords[4] = sourceWords[4];
+    ((FieldCallbackDispatch58*)object)->callback(destinationWords[3], destinationWords[4]);
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B0A10);
+void func_002B0A10(void* object, const void* source)
+{
+    u32* destinationWords = (u32*)object;
+    const u32* sourceWords = (const u32*)source;
+    destinationWords[3] = sourceWords[3];
+    destinationWords[4] = sourceWords[4];
+    ((FieldCallbackDispatch58*)object)->callback(destinationWords[3], destinationWords[4]);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B0A50);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B0A80);
+void func_002B0A80(void* object, void* output)
+{
+    FieldParticleOutput130* state = (FieldParticleOutput130*)output;
+    state->state[0] = 0;
+    state->state[2] = 0;
+    state->state[1] = 0;
+    state->state[3] = 0;
+    func_002B0EE0(object, output);
+}
 
 void func_002B0AB0(void* object)
 {
@@ -689,14 +856,29 @@ float func_002B26B0(void* object)
     return 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B26C0);
+void func_002B26C0(void* object, const void* source)
+{
+    u32* destinationWords = (u32*)object;
+    const u32* sourceWords = (const u32*)source;
+    destinationWords[3] = sourceWords[3];
+    destinationWords[4] = sourceWords[4];
+    ((FieldCallbackDispatch58*)object)->callback(destinationWords[3], destinationWords[4]);
+}
 
 float func_002B2700(void* object)
 {
     return 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B2710);
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_002B2710(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B2740);
 
@@ -803,7 +985,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B33
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B33A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B3410);
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_002B3410(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 s32 func_002B3440(void* object)
 {
@@ -825,9 +1015,23 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B36
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B3710);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B3800);
+extern "C" void func_002B3800(void* receiver)
+{
+    FieldChildState1B4* object = (FieldChildState1B4*)receiver;
+    if (object->child != 0)
+    {
+        object->child->unk6c |= 1;
+    }
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B3820);
+extern "C" void func_002B3820(void* receiver)
+{
+    FieldChildState1B4* object = (FieldChildState1B4*)receiver;
+    if (object->child != 0)
+    {
+        object->child->unk6c &= 0xFFFE;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B3840);
 
@@ -854,7 +1058,10 @@ void func_002B4530(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B4540);
+void func_002B4540(void* object)
+{
+    func_121E80(D_001B6620, object);
+}
 
 void func_002B4560(void* object)
 {
@@ -872,7 +1079,22 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B46
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B4740);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B47D0);
+FieldResetState24* func_002B47D0(FieldResetState24* object)
+{
+    object->unk24 = D_173E50;
+    object->unk00 = 0;
+    FieldResetState24* result = object;
+    object->unk14 = 0;
+    object->unk18 = 0;
+    object->unk1c = 0;
+    object->unk20 = 0;
+    object->unk10 = 0;
+    object->unk0e = 0;
+    object->unk0c = 0;
+    object->unk04 = 0;
+    object->unk08 = 0;
+    return result;
+}
 
 void func_002B4810(void* object)
 {

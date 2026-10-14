@@ -21,6 +21,13 @@ public:
     virtual void func_slot0c(void* value);
 };
 
+/** Interface exposing the unary callback at vtable offset 0x08. */
+class FieldUnaryCallback
+{
+public:
+    virtual void callback(s32 value);
+};
+
 /** Partial destruction interface of the primary polymorphic ancestor. */
 class FieldClass16AB70
 {
@@ -260,6 +267,28 @@ typedef struct FieldDimensionState
     u16 unk10c;
 } FieldDimensionState;
 
+/** Partial receiver containing the float and state fields updated by func_001ED5D0. */
+typedef struct FieldDimensionUpdateState
+{
+    u8 unk00[0xAE];
+    u8 unkae;
+    u8 unkaf[0x11];
+    float unkc0;
+    float unkc4;
+    u8 unkc8[0x1D];
+    u8 unke5;
+    u8 unke6[0x0A];
+    u8 unkf0;
+    u8 unkf1;
+    u8 unkf2[2];
+    float unkf4;
+    float unkf8;
+    float unkfc;
+    float unk100;
+    u8 unk104[8];
+    u16 unk10c;
+} FieldDimensionUpdateState;
+
 /** Partial receiver whose state byte is at offset 0xAD. */
 typedef struct FieldByteStateAD
 {
@@ -300,6 +329,52 @@ typedef struct FieldKeyedFlagElement28
 extern "C" {
 #endif
 
+
+/**
+ * @brief Invoke the receiver's callback at vtable offset 0x5C.
+ * @param object Receiver with the callback dispatch table at offset zero.
+ */
+void func_001EE7D0(void* object);
+
+/**
+ * @brief Initialize the receiver's child at 0x14 when enabled.
+ * @param object Receiver containing the child storage.
+ * @param enabled Whether the child should be initialized.
+ * @return One when initialized, otherwise zero.
+ */
+s32 func_001EE530(void* object, s32 enabled);
+
+/**
+ * @brief Call the shared helper with value one.
+ * @param object Receiver passed to the helper.
+ */
+void func_001E5050(void* object);
+
+/**
+ * @brief Call the shared helper with value one.
+ * @param object Receiver passed to the helper.
+ */
+void func_001F1500(void* object);
+
+/**
+ * @brief Call the shared helper with value zero.
+ * @param object Receiver passed to the helper.
+ */
+void func_001F1520(void* object);
+
+/**
+ * @brief Return whether the shared helper returns a nonzero value.
+ * @return One for a nonzero result, otherwise zero.
+ */
+s32 func_001E2DE0(void);
+
+/**
+ * @brief Return whether the supplied float is below zero.
+ * @param value Value to compare with zero.
+ * @return One for a negative value, otherwise zero.
+ */
+bool func_001EDA30(float value);
+
 /**
  * @brief Clear the eight observed word slots.
  * @param object Non-null receiver containing the writable slots.
@@ -313,6 +388,12 @@ void func_001E7600(void* object, s32 value);
  * @param source Aligned value loaded after the byte is stored.
  */
 void func_001E79A0(FieldCopy79A0* object, const unsigned __int128* source);
+
+/** Set the state byte and update the subobject at offset 0x30. */
+void func_001E79C0(FieldCopy79A0* object);
+
+/** Set the state byte and update the subobject at offset 0x30. */
+void func_001E79F0(FieldCopy79A0* object);
 
 /**
  * @brief Set the byte at 0x50 to one and copy an aligned 16-byte value to 0x40.
@@ -530,6 +611,15 @@ void func_001ED590(FieldDimensionState* object, float first, float second);
 void func_001ED5A0(FieldDimensionState* object, s32 first, s32 second);
 
 /**
+ * @brief Update two float pairs and set their associated state bytes.
+ * @param object Receiver to update.
+ * @param first Value stored at offsets 0xF4 and 0xC0.
+ * @param second Value stored at offsets 0xF8 and 0xC4.
+ */
+s32 func_001ED5D0(FieldDimensionUpdateState* object, float first, float second);
+
+
+/**
  * @brief Set the state byte at offset 0xAD.
  * @param object Receiver to update.
  * @param value Byte to store.
@@ -621,6 +711,15 @@ void func_001E2D30(void* object);
 void func_001E2DD0(void* object);
 
 /**
+ * @brief Conditionally process the receiver's child pointer using the supplied value and flag.
+ * @param object Receiver containing the child pointer and update flag.
+ * @param value Value passed through to the processor.
+ * @param enabled Value reduced to a boolean for the processor.
+ */
+void func_001E2E00(void* object, void* value, s32 enabled);
+
+
+/**
  * @brief Return the fixed value 3.
  * @param object Receiver or first argument; unused.
  * @return Always 3.
@@ -647,10 +746,40 @@ void func_001E4440(void* object);
 s32 func_001E4450(void* object);
 
 /**
+ * @brief Call the receiver's virtual callback with the value one when non-null.
+ * @param object Optional callback receiver.
+ */
+void func_001E4460(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
 void func_001E4490(void* object);
+
+/**
+ * @brief Run the receiver detachment helper, then process the receiver with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+void func_001EC4D0(void* object);
+
+/**
+ * @brief Run the receiver detachment helper, then process the receiver with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+void func_001E30A0(void* object);
+
+/**
+ * @brief Run the receiver detachment helper, then process the receiver with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+void func_001E7490(void* object);
+
+/**
+ * @brief Run the receiver detachment helper, then process the receiver with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+void func_001EB5B0(void* object);
 
 /**
  * @brief Perform no work.
@@ -780,6 +909,12 @@ s32 func_001EB5A0(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_001EB5E0(void* object);
+
+/**
+ * @brief Run the receiver's two update helpers in order.
+ * @param object Receiver to update.
+ */
+void func_001EAD20(void* object);
 
 /**
  * @brief Perform no work.
@@ -985,6 +1120,7 @@ void func_001EE3D0(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_001EE490(void* object);
+
 
 /**
  * @brief Store the low byte of the supplied bits.
@@ -1305,6 +1441,41 @@ void func_001EF040(void* object);
  * @param value Bits whose low byte is stored.
  */
 void func_001F00D0(void* object, u32 value);
+
+/**
+ * @brief Return the second pointer argument unchanged.
+ * @param object First argument; unused.
+ * @param value Pointer to return.
+ * @return The second argument.
+ */
+void* func_001E96D0(void* object, void* value);
+
+/**
+ * @brief Return the second pointer argument unchanged.
+ * @param object First argument; unused.
+ * @param value Pointer to return.
+ * @return The second argument.
+ */
+void* func_001E96E0(void* object, void* value);
+
+/**
+ * @brief Return the shared floating-point value.
+ * @param object Receiver or first argument; unused.
+ * @return The value at D_001B66B4.
+ */
+float func_001E6D30(void* object);
+
+/**
+ * @brief Pass the shared configuration object to the initialization helper.
+ */
+void func_001EDCE0(void);
+
+/** @brief Forward the receiver and shared owner to the common helper. */
+void func_001E5DA0(void* object);
+
+/** @brief Forward the receiver and shared owner to the common helper. */
+void func_001E6D40(void* object);
+
 
 #ifdef __cplusplus
 }
