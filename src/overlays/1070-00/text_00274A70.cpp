@@ -1,5 +1,26 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_00274A70.h"
+#include "overlays/1070-00/text_00284BF0.h"
+#include "overlays/1070-00/text_001E2B40.h"
+
+extern "C" void func_001E8430(void* object);
+extern "C" void func_121E80(void* owner, void* object);
+extern "C" FieldContextRef* D_001B64B0;
+extern "C" void* D_001B6620;
+extern "C" u32 D_001B65CC;
+
+struct FieldPointerAt540Local
+{
+    u8 unk00[0x540];
+    const u32* unk540;
+};
+
+/** Partial receiver containing the optional child pointer at offset 0x548. */
+struct FieldOptionalChild548
+{
+    u8 unk00[0x548];
+    void* unk548;
+};
 
 struct FieldIndexedTable75780
 {
@@ -13,6 +34,33 @@ struct FieldIndexedList75760
 {
     u8 unk00[0x14];
     void* table;
+};
+
+/** Partial callback interface with a method at offset 0x58. */
+class FieldCallbackDispatch58Local
+{
+public:
+    virtual void slot08();
+    virtual void slot0c();
+    virtual void slot10();
+    virtual void slot14();
+    virtual void slot18();
+    virtual void slot1c();
+    virtual void slot20();
+    virtual void slot24();
+    virtual void slot28();
+    virtual void slot2c();
+    virtual void slot30();
+    virtual void slot34();
+    virtual void slot38();
+    virtual void slot3c();
+    virtual void slot40();
+    virtual void slot44();
+    virtual void slot48();
+    virtual void slot4c();
+    virtual void slot50();
+    virtual void slot54();
+    virtual void callback(u32 first, u32 second);
 };
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00274A70);
@@ -223,7 +271,14 @@ s32 func_002757E0(const void* object)
     return *value != 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_002757F0);
+void func_002757F0(void* object, const void* source)
+{
+    u32* destinationWords = (u32*)object;
+    const u32* sourceWords = (const u32*)source;
+    destinationWords[3] = sourceWords[3];
+    destinationWords[4] = sourceWords[4];
+    ((FieldCallbackDispatch58Local*)object)->callback(destinationWords[3], destinationWords[4]);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00275830);
 
@@ -245,7 +300,15 @@ s32 func_00276020(void* object)
     return 9;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00276030);
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_00276030(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00276060);
 
@@ -280,7 +343,14 @@ void func_00276FE0(FieldCappedByte4A4* object, s8 value)
     object->unk4a5_0 = 1;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00277020);
+void func_00277020(void* receiver)
+{
+    FieldOptionalChild548* object = (FieldOptionalChild548*)receiver;
+    if (object->unk548 != 0)
+    {
+        func_001E8430(object->unk548);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00277050);
 
@@ -379,7 +449,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_0027D9
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_0027DAB0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_0027DB50);
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_0027DB50(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_0027DB80);
 
@@ -409,7 +487,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_0027E7
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_0027E880);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_0027EA30);
+s32 func_0027EA30(void* receiver)
+{
+    FieldPointerAt540Local* object = (FieldPointerAt540Local*)receiver;
+    D_001B65CC = *object->unk540;
+    D_001B64B0->context->unkd4 = *object->unk540;
+    return 1;
+}
 
 s32 func_0027EA60(void* object)
 {

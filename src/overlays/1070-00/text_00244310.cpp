@@ -1,5 +1,20 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_00244310.h"
+#include "overlays/1070-00/text_002E55F0.h"
+#include "overlays/1070-00/text_001E2B40.h"
+
+extern "C" void func_4F87D0(void);
+extern "C" void func_0025A770(void* target, u16 value);
+extern "C" void func_00259EC0(void* target, u32 key, s32 value);
+extern "C" s32 func_0025C620(void* object);
+extern "C" FieldContextRef* D_001B64B0;
+extern "C" u32 D_001B65CC;
+extern "C" u8 D_001B64CC;
+extern "C" u8 D_001B6568;
+extern "C" void* D_001B6620;
+extern "C" void func_121E80(void* owner, void* object);
+
+
 
 s32 func_00244310(void* object)
 {
@@ -456,7 +471,11 @@ s32 func_002448B0(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_002448C0);
+s32 func_002448C0(const FieldPointerAt540* object)
+{
+    D_001B65CC = *object->unk540;
+    return 1;
+}
 
 s32 func_002448E0(void* object)
 {
@@ -966,7 +985,23 @@ FieldKeyedListElement18* func_002492E0(FieldContext38* object, u32 key)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_00249320);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_00249490);
+void func_00249490(FieldByteTargets548* object, u8 value)
+{
+    for (s32 i = 0; i < 16; i++)
+    {
+        FieldByteTargetCD* target = object->targets[i];
+        if (target != 0)
+        {
+            target->unkcd = value;
+        }
+    }
+
+    FieldByteTargetCD* target = object->targets[16];
+    if (target != 0)
+    {
+        target->unkcd = value;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_002494D0);
 
@@ -978,14 +1013,26 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_002498
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_002498A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_00249930);
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_00249930(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 s32 func_00249960(void* object)
 {
     return 9;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_00249970);
+s32 func_00249970(const FieldPointerAt540* object)
+{
+    D_001B6568 = (*object->unk540 & 1) != 0;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_00249990);
 
@@ -995,7 +1042,16 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_00249C
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_00249FB0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024A1F0);
+/**
+ * @brief Notify matching entries in the shared context list.
+ * @param object Receiver containing the source key pointer at 0x540.
+ * @return Always one.
+ */
+s32 func_0024A1F0(const FieldPointerAt540* object)
+{
+    func_002EC930(D_001B64B0->context->unk68, *object->unk540);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024A220);
 
@@ -1023,7 +1079,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024B0
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024B100);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024B3E0);
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_0024B3E0(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024B410);
 
@@ -1031,9 +1095,17 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024B5
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024B730);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024B9A0);
+void func_0024B9A0(void)
+{
+    func_4F87D0();
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024B9C0);
+void func_0024B9C0(FieldLinkState41* object, FieldLinkTarget44* target)
+{
+    object->unk41_0 = 1;
+    object->target = target;
+    object->target->unk44 = object->unk3c;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024B9F0);
 
@@ -1045,11 +1117,36 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024C0
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024C0D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024C130);
+/**
+ * @brief Advance the receiver's word cursor and update the shared keyed flag.
+ * @param object Receiver containing the cursor at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_0024C130(void* object)
+{
+    u32** cursor = (u32**)((u8*)object + 0x540);
+    u32* current = *cursor;
+    *cursor = current + 1;
+    u32 key = current[0];
+    s32 value = (*cursor)[0];
+    void* target = *(void**)((u8*)D_001B64B0->context->unk08 + 0xDC);
+    func_00259EC0(target, key, value);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024C180);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024C1D0);
+/**
+ * @brief Pass the receiver's source halfword to the shared context helper.
+ * @param object Receiver with a pointer to the source halfword at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_0024C1D0(void* object)
+{
+    u16 value = **(u16**)((u8*)object + 0x540);
+    func_0025A770(D_001B64B0->context->unk08->unkdc, value);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024C210);
 
@@ -1122,7 +1219,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024D9
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024DA00);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024DA60);
+s32 func_0024DA60(FieldConditionalFlag591* object)
+{
+    object->unk591_1 = object->unk428 != 0;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024DA90);
 
@@ -1137,7 +1238,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024DD
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024DE70);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024DED0);
+s32 func_0024DED0(const FieldConditionalFlag591* object)
+{
+    D_001B64CC = (object->unk428 & 1) != 0;
+    return 1;
+}
 
 s32 func_0024DEF0(void* object)
 {
@@ -1183,7 +1288,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024F0
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024F070);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024F480);
+void func_0024F480(void* object)
+{
+    if (object != 0)
+    {
+        ((FieldUnaryCallback*)object)->callback(1);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024F4B0);
 
@@ -1191,7 +1302,27 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024F5
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024F630);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024F760);
+/** Partial receiver containing an optional object pointer at offset 0xE0. */
+struct FieldPointerAtE0
+{
+    u8 pad00[0xE0];
+    void* unkE0;
+};
+
+/**
+ * @brief Return the helper result for the optional pointer at offset 0xE0.
+ * @param object Receiver containing the optional pointer.
+ * @return Zero when the pointer is null, otherwise the helper result.
+ */
+extern "C" s32 func_0024F760(void* object)
+{
+    FieldPointerAtE0* state = (FieldPointerAtE0*)object;
+    if (state->unkE0 == 0)
+    {
+        return 0;
+    }
+    return func_0025C620(state->unkE0);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024F790);
 
@@ -1201,7 +1332,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024F9
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024FA90);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024FB90);
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_0024FB90(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00244310", func_0024FBC0);
 

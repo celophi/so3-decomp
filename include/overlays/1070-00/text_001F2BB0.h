@@ -138,6 +138,69 @@ typedef struct FieldFloatTransitions70
 
 #ifdef __cplusplus
 extern "C" {
+
+/**
+ * @brief Call the receiver's callback with 0xFF and 0x80, then return two.
+ * @param object Receiver with the callback dispatch table at offset zero.
+ * @return Two after the callback.
+ */
+s32 func_001F7980(void* object);
+
+/**
+ * @brief Run the receiver detachment helper, then process the receiver with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+void func_001FAC00(void* object);
+
+/**
+ * @brief Run the receiver detachment helper, then process the receiver with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+void func_001FBDC0(void* object);
+
+/**
+ * @brief Run the receiver detachment helper, then process the receiver with the shared owner.
+ * @param object Receiver passed to both helpers.
+ */
+void func_001FC8E0(void* object);
+
+/**
+ * @brief Forward the receiver's interface at offset 0x20 to the shared helper.
+ * @param object Receiver containing the secondary interface.
+ */
+void func_00201180(void* object);
+
+/**
+ * @brief Forward the receiver's interface at offset 0x20 to the shared helper.
+ * @param object Receiver containing the secondary interface.
+ */
+void func_00201320(void* object);
+
+/**
+ * @brief Set the target's state byte to five, then delete the owner.
+ * @param object Owner containing the target pointer at offset four.
+ */
+void func_00201760(void* object);
+
+/**
+ * @brief Call the helper with the supplied arguments and a value of 0x7F.
+ * @param first First helper argument.
+ * @param second Second helper argument.
+ */
+void func_001F83C0(void* first, void* second);
+
+/**
+ * @brief Call the shared helper with value one.
+ * @param object Receiver passed to the helper.
+ */
+void func_001F83E0(void* object);
+
+/**
+ * @brief Call the shared helper with value zero.
+ * @param object Receiver passed to the helper.
+ */
+void func_001F8400(void* object);
+
 #endif
 
 /**
@@ -200,6 +263,12 @@ void func_001FEB00(FieldFloatTransitions70* object, float target, float duration
  * @param duration Transition duration; zero leaves the difference unscaled.
  */
 void func_001FEB70(FieldFloatTransitions70* object, float target, float duration);
+
+/**
+ * @brief Copy five transition values into their cached destination fields.
+ * @param object Transition state to update.
+ */
+void func_001FEA80(void* object);
 
 /**
  * @brief Initialize a float transition or apply its endpoint immediately.

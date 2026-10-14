@@ -1,6 +1,18 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_00315E30.h"
 
+extern "C" void func_4EABF0(void);
+extern "C" void func_003189D0(void);
+
+/** Partial callback interface with a method at offset 0x10. */
+class FieldCallbackDispatch10
+{
+public:
+    virtual void slot00();
+    virtual void slot04();
+    virtual void callback();
+};
+
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00315E30);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003160A0);
@@ -45,13 +57,26 @@ void func_003169A0(FieldByteState60* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003169B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316A00);
+void func_00316A00(void)
+{
+    func_4EABF0();
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316A20);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316A50);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316BF0);
+/**
+ * @brief Invoke the receiver's callback while its fourth mark byte is clear.
+ * @param object Receiver containing the mark bytes and callback vtable.
+ */
+void func_00316BF0(FieldMarkedObjectSlots* object)
+{
+    if (*(u32*)((u8*)object + 0x9C) == 0)
+    {
+        ((FieldCallbackDispatch10*)object)->callback();
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00316C30);
 
@@ -104,7 +129,10 @@ u16 func_00317CD0(const FieldHalfwordBuckets* object, u8 category, u16 index)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00317D20);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00317FB0);
+void func_00317FB0(void)
+{
+    func_003189D0();
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00317FD0);
 
@@ -156,7 +184,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00318C
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00319060);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00319150);
+void func_00319150(void)
+{
+    func_003189D0();
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00319170);
 
@@ -168,7 +199,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003198
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00319A10);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00319B60);
+void func_00319B60(void)
+{
+    func_003189D0();
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_00319B80);
 
@@ -182,17 +216,34 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031A3
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031A4C0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031A5F0);
+void func_0031A5F0(FieldFloatPairState20* object, float first, float second)
+{
+    object->first = first;
+    object->second = second;
+    object->initialized = 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031A610);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031A6D0);
+void func_0031A6D0(FieldByteState45* object, void* unused, u8 value)
+{
+    object->unk45 = value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031A6E0);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031A770);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031A780);
+void func_0031A780(void* object, float first, float second, float third, float fourth, float fifth)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x5C] = 1;
+    *(float*)(bytes + 0x64) = first;
+    *(float*)(bytes + 0x68) = second;
+    *(float*)(bytes + 0x6C) = third;
+    *(float*)(bytes + 0x70) = fourth;
+    *(float*)(bytes + 0x74) = fifth;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031A7A0);
 
@@ -200,7 +251,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031A7
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031A8C0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031AA60);
+s32 func_0031AA60(const FieldSignedHalfAt14* object)
+{
+    return object->unk14 == 0;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_0031AA70);
 

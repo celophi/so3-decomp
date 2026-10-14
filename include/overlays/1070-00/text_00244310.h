@@ -3,6 +3,42 @@
 
 #include "overlays/1070-00/text_00284BF0.h"
 
+/** Partial target receiving the word copied by the linkage setter. */
+typedef struct FieldLinkTarget44
+{
+    u8 unk00[0x44];
+    u32 unk44;
+} FieldLinkTarget44;
+
+/** Partial receiver containing a target pointer, copied word, and flag byte. */
+typedef struct FieldLinkState41
+{
+    u8 unk00[0x38];
+    FieldLinkTarget44* target;
+    u32 unk3c;
+    u8 unk40;
+    u8 unk41_0 : 1;
+    u8 unk41_1_7 : 7;
+} FieldLinkState41;
+
+/** Partial receiver whose word determines bit one of its flag byte. */
+typedef struct FieldConditionalFlag591
+{
+    u8 unk00[0x428];
+    u32 unk428;
+    u8 unk42c[0x165];
+    u8 unk591_0 : 1;
+    u8 unk591_1 : 1;
+    u8 unk591_2_7 : 6;
+} FieldConditionalFlag591;
+
+/** Partial receiver with the source word pointer at offset 0x540. */
+typedef struct FieldPointerAt540
+{
+    u8 unk00[0x540];
+    const u32* unk540;
+} FieldPointerAt540;
+
 /** Partial circular-list element with a numeric key at offset 0x18. */
 typedef struct FieldKeyedListElement18
 {
@@ -10,6 +46,20 @@ typedef struct FieldKeyedListElement18
     u8 unk0c[0xC];
     u32 unk18;
 } FieldKeyedListElement18;
+
+/** Target whose observed byte is at offset 0xCD. */
+typedef struct FieldByteTargetCD
+{
+    u8 unk00[0xCD];
+    u8 unkcd;
+} FieldByteTargetCD;
+
+/** Partial receiver containing seventeen optional byte targets beginning at offset 0x548. */
+typedef struct FieldByteTargets548
+{
+    u8 unk00[0x548];
+    FieldByteTargetCD* targets[17];
+} FieldByteTargets548;
 
 #ifdef __cplusplus
 /** Partial Lib receiver built by the out-of-line constructor at 0x4DD1F0. */
@@ -144,7 +194,55 @@ public:
 
 #ifdef __cplusplus
 extern "C" {
+
+/**
+ * @brief Advance the receiver's word cursor and update the shared keyed flag.
+ * @param object Receiver containing the cursor at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_0024C130(void* object);
+
+/**
+ * @brief Advance the receiver cursor and pass its word and byte to shared state.
+ * @param object Receiver containing the cursor at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_0024C180(void* object);
+
+/**
+ * @brief Pass the receiver's source halfword to the shared context helper.
+ * @param object Receiver with a pointer to the source halfword at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_0024C1D0(void* object);
+
+/**
+ * @brief Store a byte in each non-null target in the receiver's seventeen slots.
+ * @param object Receiver containing the target slots.
+ * @param value Byte to store at each target's offset 0xCD.
+ */
+void func_00249490(FieldByteTargets548* object, u8 value);
+
+/**
+ * @brief Call the shared no-argument helper at 0x004F87D0.
+ */
+void func_0024B9A0(void);
+
 #endif
+
+/**
+ * @brief Set the linkage flag, store the target, and copy the receiver's word to it.
+ * @param object Receiver to update.
+ * @param target Non-null target receiving the word.
+ */
+void func_0024B9C0(FieldLinkState41* object, FieldLinkTarget44* target);
+
+/**
+ * @brief Set flag bit one according to whether the receiver's word is nonzero.
+ * @param object Receiver to update.
+ * @return Always one.
+ */
+s32 func_0024DA60(FieldConditionalFlag591* object);
 
 /**
  * @brief Find the first circular-list element with the requested numeric key.
@@ -790,6 +888,13 @@ s32 func_002448A0(void* object);
  * @return Always 1.
  */
 s32 func_002448B0(void* object);
+
+/**
+ * @brief Store the next source word in the shared Field word.
+ * @param object Receiver containing the source word pointer.
+ * @return Always one.
+ */
+s32 func_002448C0(const FieldPointerAt540* object);
 
 /**
  * @brief Return the fixed value 1.
@@ -1464,6 +1569,12 @@ s32 func_00244EC0(void* object);
 s32 func_00249960(void* object);
 
 /**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_00249930(void* object);
+
+/**
  * @brief Return the fixed value 4.
  * @param object Receiver or first argument; unused.
  * @return Always 4.
@@ -1498,11 +1609,53 @@ s32 func_0024CFA0(void* object);
 s32 func_0024DBD0(void* object);
 
 /**
+ * @brief Store bit zero from the receiver's word at 0x428 in shared state.
+ * @param object Receiver containing the source word.
+ * @return Always 1.
+ */
+s32 func_0024DED0(const FieldConditionalFlag591* object);
+
+/**
+ * @brief Store whether the pointed-to word has bit zero set in shared state.
+ * @param object Receiver containing the source word pointer at 0x540.
+ * @return Always 1.
+ */
+s32 func_00249970(const FieldPointerAt540* object);
+
+/**
+ * @brief Notify matching entries in the shared context list using the receiver's key.
+ * @param object Receiver containing the source key pointer at 0x540.
+ * @return Always 1.
+ */
+s32 func_0024A1F0(const FieldPointerAt540* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_0024B3E0(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_0024FB90(void* object);
+
+
+
+/**
+ * @brief Call the receiver's virtual callback with the value one when non-null.
+ * @param object Optional callback receiver.
+ */
+void func_0024F480(void* object);
+
+/**
  * @brief Return the fixed value 1.
  * @param object Receiver or first argument; unused.
  * @return Always 1.
  */
 s32 func_0024DEF0(void* object);
+
 
 /**
  * @brief Return the fixed value 1.

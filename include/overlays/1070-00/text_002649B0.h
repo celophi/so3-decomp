@@ -2,6 +2,43 @@
 #define SO3_OVERLAYS_1070_00_TEXT_002649B0_H
 
 #include "overlays/1070-00/text_00254730.h"
+#include "overlays/lib/vector.h"
+
+/** Partial value copied by func_00270000. */
+typedef struct FieldCopyValue14
+{
+    u32 unk00;
+    u32 unk04;
+    u32 unk08;
+    s16 unk0c;
+    u8 unk0e;
+    u8 unk0f;
+    u32 unk10;
+} FieldCopyValue14;
+
+/** Partial receiver holding a byte source, a word, and a derived state byte. */
+typedef struct FieldSourceFlag34
+{
+    u8 unk00[0x2C];
+    const u8* source;
+    u32 unk30;
+    u8 unk34;
+} FieldSourceFlag34;
+
+/** Table entry with an observed stride of 64 bytes; its fields remain unknown. */
+typedef struct FieldTableEntry40
+{
+    u8 unk00[0x40];
+} FieldTableEntry40;
+
+/** Partial receiver containing the indexing word and table base. */
+typedef struct FieldIndexedRows40
+{
+    u8 unk00[0x10];
+    s32 unk10;
+    u8 unk14[0xC];
+    FieldTableEntry40* table;
+} FieldIndexedRows40;
 
 /** Partial receiver containing a scalar interpolation state. */
 typedef struct FieldFloatTransition330
@@ -37,9 +74,229 @@ typedef struct FieldPackedKeySource
     u32 unk14;
 } FieldPackedKeySource;
 
+/** Partial receiver containing the low state flag at offset 0x20. */
+typedef struct FieldFlagAt20
+{
+    u8 unk00[0x20];
+    u8 unk20_0 : 1;
+    u8 unk20_1 : 1;
+    u8 unk20_2 : 1;
+    u8 unk20_3_7 : 5;
+} FieldFlagAt20;
+
+/** Partial destination containing the vector written at offset 0x220. */
+typedef struct FieldVectorStoreTarget220
+{
+    u8 unk00[0x220];
+    FieldVec4B value;
+} FieldVectorStoreTarget220;
+
+/** Partial receiver containing a source vector and the destination pointer at 0x300. */
+typedef struct FieldVectorAssignmentState300
+{
+    u8 unk00[0x50];
+    FieldVec4A value;
+    u8 unk60[0x2A0];
+    FieldVectorStoreTarget220* target;
+} FieldVectorAssignmentState300;
+
 #ifdef __cplusplus
 extern "C" {
+
+/**
+ * @brief Copy the receiver's float into its optional vector target and refresh it.
+ * @param object Receiver with a target pointer at offset 0x300 and a float at 0x330.
+ */
+void func_00273FB0(void* object);
+
+/**
+ * @brief Pass the receiver's first source word and shared context to the helper.
+ * @param object Receiver with the source pointer at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_0026D5C0(void* object);
+
+/**
+ * @brief Advance the receiver's word cursor and pass two values to the helper.
+ * @param object Receiver containing the cursor at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_0026D430(void* object);
+
+/**
+ * @brief Advance the receiver's word cursor and pass its value to shared state.
+ * @param object Receiver containing the cursor at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_0026D600(void* object);
+
+/**
+ * @brief Advance the receiver cursor four times and pass five words to shared state.
+ * @param object Receiver containing the word cursor at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_0026D9E0(void* object);
+
+
+/**
+ * @brief Advance the receiver's word cursor and update shared context.
+ * @param object Receiver containing the cursor at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_0026DA50(void* object);
+
+/**
+ * @brief Copy two words to the receiver, then pass them to its callback.
+ * @param object Receiver with words at offsets 0x0C and 0x10.
+ * @param source Source of the words to copy.
+ */
+void func_0026A310(void* object, const void* source);
+
+/**
+ * @brief Copy two words to the receiver, then pass them to its callback.
+ * @param object Receiver with words at offsets 0x0C and 0x10.
+ * @param source Source of the words to copy.
+ */
+void func_0026A440(void* object, const void* source);
+
+/**
+ * @brief Copy two words to the receiver, then pass them to its callback.
+ * @param object Receiver with words at offsets 0x0C and 0x10.
+ * @param source Source of the words to copy.
+ */
+void func_0026A570(void* object, const void* source);
+
+/**
+ * @brief Copy two words to the receiver, then pass them to its callback.
+ * @param object Receiver with words at offsets 0x0C and 0x10.
+ * @param source Source of the words to copy.
+ */
+void func_0026A690(void* object, const void* source);
+
+/**
+ * @brief Copy two words to the receiver, then pass them to its callback.
+ * @param object Receiver with words at offsets 0x0C and 0x10.
+ * @param source Source of the words to copy.
+ */
+void func_0026A7C0(void* object, const void* source);
+
+/**
+ * @brief Copy two words to the receiver, then pass them to its callback.
+ * @param object Receiver with words at offsets 0x0C and 0x10.
+ * @param source Source of the words to copy.
+ */
+void func_0026A8E0(void* object, const void* source);
+
+/**
+ * @brief Pass the receiver's source word and shared context to its helper.
+ * @param object Receiver with a pointer to the source word at offset 0x540.
+ * @return One after the helper call.
+ */
+s32 func_0026D500(void* object);
+
+
+/**
+ * @brief Pass the receiver's value at offset 0x74 to its callback at 0x20.
+ * @param object Receiver with the callback value at offset 0x74.
+ */
+void func_002719E0(void* object);
+
+/** @brief Pass the shared context's offset-0x58 object to its helper. */
+s32 func_0026D540(void);
+
+/**
+ * @brief Copy the observed fields from source to destination.
+ * @param destination Value to update.
+ * @param source Value supplying the copied fields.
+ * @return destination.
+ */
+FieldCopyValue14* func_00270000(FieldCopyValue14* destination, const FieldCopyValue14* source);
+
+/**
+ * @brief Copy the 128-bit value at source offset 0x210, then call the helper.
+ * @param destination Receiver whose value is updated.
+ * @param source Receiver supplying the value.
+ */
+void func_00267470(void* destination, const void* source);
 #endif
+
+/**
+ * @brief Store the source and word, and set the state byte when the first source byte is one.
+ * @param object Receiver to update.
+ * @param source Non-null source of the state byte.
+ * @param value Word to store.
+ */
+void func_002688F0(FieldSourceFlag34* object, const u8* source, u32 value);
+
+/**
+ * @brief Store the source and word, and set the state byte when the first source byte is one.
+ * @param object Receiver to update.
+ * @param source Non-null source of the state byte.
+ * @param value Word to store.
+ */
+void func_00268F70(FieldSourceFlag34* object, const u8* source, u32 value);
+
+/**
+ * @brief Store the source and word, and set the state byte when the first source byte is one.
+ * @param object Receiver to update.
+ * @param source Non-null source of the state byte.
+ * @param value Word to store.
+ */
+void func_002695F0(FieldSourceFlag34* object, const u8* source, u32 value);
+
+/**
+ * @brief Select an entry from the indexed table.
+ * @param object Receiver containing the indexing word and table base.
+ * @param index First index.
+ * @param entry_index Index within the selected row.
+ * @return Entry at index times (the stored indexing word minus one), plus entry_index.
+ */
+FieldTableEntry40* func_0026A2A0(const FieldIndexedRows40* object, s32 index, s32 entry_index);
+
+/**
+ * @brief Select an entry from the indexed table.
+ * @param object Receiver containing the indexing word and table base.
+ * @param index First index.
+ * @param entry_index Index within the selected row.
+ * @return Entry at index times (the stored indexing word minus one), plus entry_index.
+ */
+FieldTableEntry40* func_0026A3D0(const FieldIndexedRows40* object, s32 index, s32 entry_index);
+
+/**
+ * @brief Select an entry from the indexed table.
+ * @param object Receiver containing the indexing word and table base.
+ * @param index First index.
+ * @param entry_index Index within the selected row.
+ * @return Entry at index times (the stored indexing word minus one), plus entry_index.
+ */
+FieldTableEntry40* func_0026A500(const FieldIndexedRows40* object, s32 index, s32 entry_index);
+
+/**
+ * @brief Select an entry from the indexed table.
+ * @param object Receiver containing the indexing word and table base.
+ * @param index First index.
+ * @param entry_index Index within the selected row.
+ * @return Entry at index times (the stored indexing word minus one), plus entry_index.
+ */
+FieldTableEntry40* func_0026A620(const FieldIndexedRows40* object, s32 index, s32 entry_index);
+
+/**
+ * @brief Select an entry from the indexed table.
+ * @param object Receiver containing the indexing word and table base.
+ * @param index First index.
+ * @param entry_index Index within the selected row.
+ * @return Entry at index times (the stored indexing word minus one), plus entry_index.
+ */
+FieldTableEntry40* func_0026A750(const FieldIndexedRows40* object, s32 index, s32 entry_index);
+
+/**
+ * @brief Select an entry from the indexed table.
+ * @param object Receiver containing the indexing word and table base.
+ * @param index First index.
+ * @param entry_index Index within the selected row.
+ * @return Entry at index times (the stored indexing word minus one), plus entry_index.
+ */
+FieldTableEntry40* func_0026A870(const FieldIndexedRows40* object, s32 index, s32 entry_index);
 
 /**
  * @brief Combine the owner key with the halfword and word key fragments.
@@ -55,6 +312,12 @@ u32 func_0026F810(FieldPackedKeySource* object);
 void func_0026FB50(FieldKeyedFloatOwner3A0* object);
 
 /**
+ * @brief Update and release the receiver's attached state.
+ * @param object Receiver whose attached state is processed.
+ */
+void func_0026FEB0(void* object);
+
+/**
  * @brief Set a scalar immediately or configure its linear transition.
  * @param object Receiver containing the scalar transition state.
  * @param value Target scalar value.
@@ -67,6 +330,30 @@ void func_00273EA0(FieldFloatTransition330* object, float value, float duration)
  * @param object Receiver or first argument; unused.
  */
 void func_002662C0(void* object);
+
+/**
+ * @brief Forward the receiver to its state updater.
+ * @param object Receiver to update.
+ */
+void func_00265D00(void* object);
+
+/**
+ * @brief Update the receiver's callback state.
+ * @param object Receiver whose state is updated.
+ */
+void func_0026F6A0(void* object);
+
+/**
+ * @brief Copy the receiver's vector at offset 0x50 into its target at offset 0x220.
+ * @param object Receiver containing the source vector and target pointer.
+ */
+void func_00273E80(FieldVectorAssignmentState300* object);
+
+/**
+ * @brief Update the receiver and test state bit two.
+ * @param object Receiver containing the state byte.
+ */
+void func_002668D0(FieldFlagAt20* object);
 
 /**
  * @brief Return the fixed value 3.

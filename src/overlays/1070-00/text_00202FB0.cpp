@@ -1,6 +1,41 @@
 #include "include_asm.h"
 #include "vu0.h"
 #include "overlays/1070-00/text_00202FB0.h"
+#include "overlays/1070-00/text_00284BF0.h"
+
+extern "C" void func_001FCE00(void);
+extern "C" void func_001E2C60(void);
+extern "C" void func_002074B0(void* receiver, void* child);
+extern "C" void func_0020E850(void* receiver, void* child);
+extern "C" s32 func_0020AA00(void* object, s32 value, s32 flags, s32 parameter);
+extern "C" void* D_001B64E4;
+extern "C" void func_00265A70(void* owner, void* value, s32 enabled);
+extern "C" void* D_001B6620;
+extern "C" FieldContextRef* D_001B64B0;
+extern "C" void func_121E80(void* owner, void* object);
+extern "C" void func_00206880(void* object);
+extern "C" void func_002B3010(void* context, u32 value);
+extern "C" void func_002C84A0(void* object);
+extern "C" void func_4F0EF0(void);
+
+/** Partial receiver with an optional child pointer at offset 0x300. */
+struct FieldOptionalChild300
+{
+    u8 unk00[0x88];
+    s32 unk88;
+    u8 unk8c[0x274];
+    void* unk300;
+};
+
+/** Partial receiver with a child pointer at 0x80 and word at 0x88. */
+struct FieldOptionalChild80
+{
+    u8 unk00[0x80];
+    void* unk80;
+    u32 unk84;
+    s32 unk88;
+};
+
 
 /** Partial list element with a word key at offset 0x54. */
 typedef struct FieldKeyListElement54
@@ -71,17 +106,34 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002034
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002035B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00203690);
+void func_00203690(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002036C0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00203750);
+void func_00203750(void)
+{
+    func_001FCE00();
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00203770);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00203810);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00203850);
+/**
+ * @brief Run the shared update when either receiver flag is set.
+ * @param object Receiver with the two flags at offset 0x590.
+ */
+extern "C" void func_00203850(FieldBytePairOwner* object)
+{
+    u8 flags = object->unk590_0 | object->unk590_1;
+    if (flags == 0) {
+        func_002C84A0(object);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00203890);
 
@@ -90,7 +142,11 @@ s32 func_00203900(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00203910);
+s32 func_00203910(void* arg1, void* arg2, void* arg3, void* arg4, void* arg5, void* arg6, s32* output)
+{
+    *output = 0;
+    return 0;
+}
 
 /**
  * @brief Clear bit six of the receiver's flag word at offset 0x204.
@@ -175,7 +231,11 @@ void func_00204480(FieldRecordQueue* object)
     object->unk32 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00204550);
+void func_00204550(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00204580);
 
@@ -183,7 +243,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002048
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00204AD0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00205090);
+/**
+ * @brief Initialize the receiver and update its shared context value.
+ * @param object Receiver containing the value at offset 0x3C.
+ */
+extern "C" void func_00205090(void* object)
+{
+    func_00206880(object);
+    func_002B3010(D_001B64B0->context->unk2c, *(u32*)((u8*)object + 0x3C));
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002050D0);
 
@@ -248,7 +316,11 @@ s32 func_00205BD0(void* object)
     return 3;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00205BE0);
+void func_00205BE0(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00205C10);
 
@@ -277,11 +349,24 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206A
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206A90);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206AA0);
+void* func_00206AA0(void* object)
+{
+    return (u8*)object + 0x120;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206AB0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206B70);
+/**
+ * @brief Copy the shared vector, set the receiver's float limit, and update it.
+ * @param object Receiver whose vector and limit fields are updated.
+ */
+extern "C" void func_00206B70(void* object)
+{
+    unsigned __int128* vector = (unsigned __int128*)((u8*)D_001B64B0->context->unk14 + 0x250);
+    *(unsigned __int128*)((u8*)object + 0x120) = *vector;
+    *(float*)((u8*)object + 0x12C) = 100000.0f;
+    func_4F0EF0();
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206BB0);
 
@@ -295,7 +380,10 @@ void func_00206BE0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206BF0);
+void func_00206BF0(void)
+{
+    func_001E2C60();
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00206C10);
 
@@ -330,7 +418,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002073
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002074B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002075F0);
+/** Store a supplied word unless it is the sentinel, then update the child. */
+void func_002075F0(void* object, s32 value)
+{
+    FieldOptionalChild300* state = (FieldOptionalChild300*)object;
+    if (value != -1)
+    {
+        state->unk88 = value;
+    }
+    if (state->unk300 != 0)
+    {
+        func_002074B0(object, state->unk300);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00207630);
 
@@ -641,7 +741,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020A0
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020A170);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020A9D0);
+s32 func_0020A9D0(const FieldSource1BC* object, s32 value)
+{
+    return func_0020AA00((void*)object, object->unk1bc, 0, value);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020AA00);
 
@@ -655,7 +758,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020AF
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020B120);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020B1A0);
+void func_0020B1A0(FieldInitializedListElement* object)
+{
+    object->unk50 = &object->unk60;
+    object->base.unk4c_2 = 0;
+    object->base.unk24 = -3;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020B1D0);
 
@@ -666,7 +774,13 @@ s32 func_0020B400(void* object)
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020B410);
+void func_0020B410(void* object)
+{
+    if (object != 0)
+    {
+        ((FieldUnaryCallback*)object)->callback(1);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020B440);
 
@@ -767,7 +881,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020D2
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020D390);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020D3E0);
+void func_0020D3E0(void* unused, void* value)
+{
+    if (D_001B64E4 != 0)
+    {
+        func_00265A70(D_001B64E4, value, 1);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020D410);
 
@@ -828,7 +948,19 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020E6
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020E850);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020EA40);
+/** Store a non-sentinel word and update the receiver's optional child. */
+void func_0020EA40(void* object, s32 value)
+{
+    FieldOptionalChild80* state = (FieldOptionalChild80*)object;
+    if (value != -1)
+    {
+        state->unk88 = value;
+    }
+    if (state->unk80 != 0)
+    {
+        func_0020E850(object, state->unk80);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020EA80);
 

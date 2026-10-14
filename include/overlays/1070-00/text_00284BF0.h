@@ -3,6 +3,7 @@
 
 #include "types.h"
 
+
 /** Partial list node; the leading bytes and full object extent are unknown. */
 typedef struct FieldListNode
 {
@@ -64,9 +65,11 @@ typedef struct FieldContext38
     FieldListNode unk4c4;
     u8 unk4d0[0xC8];
     FieldSlotObject* unk598[8];
-    u8 unk5b8[8];
+    void* unk5b8;
+    u8 unk5bc[4];
     void* unk5c0;
     void* unk5c4;
+    u32 unk5c8;
 } FieldContext38;
 
 /** Partial object reached through context field 0x18. */
@@ -231,12 +234,23 @@ typedef struct FieldContext
     FieldContext38* unk38;
     void* unk3c;
     void* unk40;
-    u8 unk44[8];
+    void* unk44;
+    u8 unk48[4];
     void* unk4c;
-    u8 unk50[4];
+    u32 unk50;
     void* unk54;
     FieldContext58* unk58;
-    u8 unk5c[0x80];
+    u8 unk5c[0xC];
+    /** Circular list sentinel traversed by func_002EC930. */
+    void* unk68;
+    u8 unk6c[0x38];
+    u16 unka4;
+    u16 unka6;
+    u8 unka8[0x8];
+    u16 unkb0;
+    u8 unkb2[0x22];
+    u32 unkd4;
+    u8 unkd8[4];
     u8 unkdc_0 : 1;
     u8 unkdc_1 : 1;
     u8 unkdc_2_7 : 6;
@@ -274,7 +288,10 @@ typedef struct FieldTargetValues
 {
     u8 unk00[0x1FC];
     u32 unk1fc;
-    u8 unk200[0x37C];
+    u8 unk200[0x1AC];
+    u32 unk3ac;
+    u32 unk3b0;
+    u8 unk3b4[0x1C8];
     u32 unk57c;
     u32 unk580;
 } FieldTargetValues;
@@ -286,6 +303,7 @@ typedef struct FieldTargetLink
     FieldTargetValues* unk7c;
 } FieldTargetLink;
 
+
 /** Partial receiver containing a target link and a word value. */
 typedef struct FieldValueSource
 {
@@ -295,14 +313,47 @@ typedef struct FieldValueSource
     u32 unk1c;
 } FieldValueSource;
 
+/** Partial receiver containing a target link and byte value at offset 0x1C. */
+typedef struct FieldByteValueSource10
+{
+    u8 unk00[0x10];
+    FieldTargetLink* unk10;
+    u8 unk14[8];
+    u8 unk1c;
+} FieldByteValueSource10;
+
+/** Partial receiver containing a target link and two float values. */
+typedef struct FieldTwoFloatValueSource
+{
+    u8 unk00[0x10];
+    FieldTargetLink* unk10;
+    u8 unk14[8];
+    float unk1c;
+    float unk20;
+} FieldTwoFloatValueSource;
+
 /** Partial receiver with a word and a pointer to a source word. */
 typedef struct FieldWordSource540
 {
     u8 unk00[0x18];
     u32 unk18;
-    u8 unk1c[0x524];
+    s32 count1c;
+    u32 values20[0x100];
+    u32 unk420;
+    u32 unk424;
+    u8 unk428[0x114];
+    u8 unk53c[4];
     const u32* unk540;
 } FieldWordSource540;
+
+/** Partial receiver that converts the unsigned source word at 0x540 into its float at 0x14. */
+typedef struct FieldUnsignedFloatSource540
+{
+    u8 unk00[0x14];
+    float unk14;
+    u8 unk18[0x528];
+    const u32* unk540;
+} FieldUnsignedFloatSource540;
 
 /** Partial target with a floating-point field at offset 0x78. */
 typedef struct FieldFloatTarget78
@@ -319,6 +370,7 @@ typedef struct FieldFloatSource10
     u8 unk14[8];
     float unk1c;
 } FieldFloatSource10;
+
 
 /** Partial word array beginning at offset 0x24. */
 typedef struct FieldIndexedWords24
@@ -345,6 +397,87 @@ extern "C" {
 #endif
 
 /**
+ * @brief Store the helper result in the receiver's word at offset 0x424.
+ * @param object Receiver containing the output word.
+ * @return One after the helper call.
+ */
+s32 func_0028E900(void* object);
+
+/**
+ * @brief Pass four receiver words and the shared context to the helper.
+ * @param object Receiver containing the words at offsets 0x1C through 0x28.
+ * @return One after the helper call.
+ */
+s32 func_00290520(const void* object);
+
+
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_00286230(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_00289D10(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_0028FA00(void* object);
+
+/**
+ * @brief Call the shared no-argument helper at 0x004EA1E0.
+ */
+void func_00289440(void);
+
+/**
+ * @brief Copy four 128-bit values from the source to the destination.
+ * @param destination Destination for the four values.
+ * @param source Source of the four values.
+ * @return The destination pointer.
+ */
+void* func_00289410(void* destination, const void* source);
+
+/**
+ * @brief Copy four vectors to an intermediate destination, then to the receiver.
+ * @param destination Final destination for the vectors.
+ * @param intermediate Destination copied from source before the final copy.
+ * @param source Source of the four vectors.
+ * @return The final destination pointer.
+ */
+void* func_002893D0(void* destination, void* intermediate, const void* source);
+
+/**
+ * @brief Forward the receiver's object at offset 0xC0 to the helper.
+ * @param object Receiver containing the object pointer.
+ */
+void func_002898B0(void* object);
+
+/**
+ * @brief Forward the receiver's object at offset 0xC0 to the helper.
+ * @param object Receiver containing the object pointer.
+ */
+void func_002898F0(void* object);
+
+/**
+ * @brief Copy the word at source offset 0x210, then call the shared helper.
+ * @param destination Receiver whose word is updated.
+ * @param source Receiver supplying the word.
+ */
+void func_00286210(void* destination, const void* source);
+
+/**
+ * @brief Return the 64-bit table value at the supplied index.
+ * @param index Zero-based table index.
+ */
+u64 func_002893B0(s32 index);
+
+/**
  * @brief Compute the observed signed product-based amount with fixed additive terms.
  * @param first First signed factor; intermediate products and sums must be representable.
  * @param second Second signed factor.
@@ -359,6 +492,34 @@ s32 func_0028A250(s32 first, s32 second);
  * @return Always zero.
  */
 s32 func_0028F860(FieldWordSource540* object);
+
+/**
+ * @brief Read two stream words into the receiver's reverse-indexed buffer.
+ * @param object Receiver containing the count, output buffer, and stream pointer.
+ */
+s32 func_0028F630(FieldWordSource540* object);
+
+/**
+ * @brief Copy the linked source word when enabled and report whether it was skipped.
+ * @param object Receiver containing the enable word and source pointer.
+ * @return Zero when the word was copied, otherwise one.
+ */
+s32 func_0028F880(FieldWordSource540* object);
+
+/**
+ * @brief Convert the pointed-to unsigned word to float and store it at offset 0x14.
+ * @param object Receiver containing the source pointer and destination field.
+ * @return Always one.
+ */
+s32 func_0028F980(FieldUnsignedFloatSource540* object);
+
+/**
+ * @brief Apply three source float values to the linked target.
+ * @param object Receiver containing the target link and three values.
+ * @return Always 1.
+ */
+s32 func_00291530(const void* object);
+
 
 /**
  * @brief Copy a floating-point value into the linked target.
@@ -390,6 +551,13 @@ void func_002880B0(unsigned __int128* destination, const unsigned __int128* sour
 void func_0028E440(FieldFlag2F0* object);
 
 /**
+ * @brief Return the byte stored at offset 0x2F0.
+ * @param object Receiver containing the byte.
+ * @return The stored byte value.
+ */
+u8 func_0028E520(const FieldFlag2F0* object);
+
+/**
  * @brief Copy the receiver's word into the linked target at offset 0x580.
  * @param object Receiver containing the link and word.
  * @return Always 1.
@@ -402,6 +570,29 @@ s32 func_00290450(const FieldValueSource* object);
  * @return Always 1.
  */
 s32 func_00290470(const FieldValueSource* object);
+
+/**
+ * @brief Initialize the linked target and report success.
+ * @param object Receiver containing the target link.
+ * @return Always 1.
+ */
+s32 func_00290490(const FieldValueSource* object);
+
+/**
+ * @brief Update the linked target value, using its default when the source is -1.
+ * @param object Receiver containing the target link and requested value.
+ * @return Always 1.
+ */
+s32 func_00290D70(const FieldValueSource* object);
+
+/**
+ * @brief Set the flag at offset 0x591 and the float at offset 0x14 to one.
+ * @param object Receiver to update.
+ * @return Always 0.
+ */
+s32 func_0028F9C0(void* object);
+
+
 
 /**
  * @brief Copy the receiver's word into the linked target at offset 0x1FC.
@@ -784,6 +975,13 @@ u8 func_002886A0(const FieldReceiver78* object);
 void func_00288820(FieldReceiver78* object, s32 value);
 
 /**
+ * @brief Call the status helper with the receiver's leading pointer and normalize its result.
+ * @param object Receiver containing the pointer passed to the helper.
+ * @return One when the helper returns a nonzero value, otherwise zero.
+ */
+s32 func_0028B040(void* object);
+
+/**
  * @brief Set the state word at offset 0x0C.
  * @param object Allocated state object.
  * @param value Word to store.
@@ -860,6 +1058,141 @@ s32 func_0028B4E0(void* object);
  * @return Always 3.
  */
 s32 func_0028F9F0(void* object);
+
+
+/**
+ * @brief Configure the linked target's float transition.
+ * @param object Source containing a target link, value, and duration.
+ * @return Always 1.
+ */
+s32 func_00290C60(const FieldTwoFloatValueSource* object);
+
+/**
+ * @brief Forward the source word to the linked target's state helper.
+ * @param object Source containing the linked target and word value.
+ * @return Always 1.
+ */
+s32 func_00290010(const FieldValueSource* object);
+
+/**
+ * @brief Forward the source word to the linked target's state helper.
+ * @param object Source containing the linked target and word value.
+ * @return Always 1.
+ */
+s32 func_002902B0(const FieldValueSource* object);
+
+/**
+ * @brief Forward the source float to the linked target's state helper.
+ * @param object Source containing the linked target and float value.
+ * @return Always 1.
+ */
+s32 func_0028FFA0(const FieldTwoFloatValueSource* object);
+
+/**
+ * @brief Forward the linked target and source word to its helper.
+ * @param object Receiver containing the target link and word value.
+ * @return Always 1.
+ */
+/**
+ * @brief Initialize the receiver with the FieldClass16AB70 vtable.
+ * @param object Object to initialize.
+ * @return The initialized object pointer.
+ */
+void* func_00288250(void* object);
+
+/**
+ * @brief Initialize the receiver's base state and set its derived vtable.
+ * @param object Object to initialize.
+ * @return The initialized object pointer.
+ */
+void* func_00288210(void* object);
+
+/**
+ * @brief Initialize the receiver and install its shared value pointer.
+ * @param object Receiver to initialize.
+ * @return The receiver.
+ */
+void* func_0028A210(void* object);
+
+/**
+ * @brief Initialize the receiver fields and run its no-argument helper.
+ * @param object Object to initialize.
+ * @return The receiver.
+ */
+void* func_0028B110(void* object);
+
+/**
+ * @brief Forward the context target and two receiver values to its helper.
+ * @param object Receiver containing the nested value and second helper word.
+ * @return One after the helper call.
+ */
+s32 func_00291560(void* object);
+
+/**
+ * @brief Forward the context target and two receiver values to its helper.
+ * @param object Receiver containing the nested value and second helper word.
+ * @return One after the helper call.
+ */
+s32 func_00291610(void* object);
+
+/**
+ * @brief Initialize the receiver with the FieldClass16AB60 vtable.
+ * @param object Object to initialize.
+ * @return The initialized object pointer.
+ */
+void* func_0028B380(void* object);
+s32 func_0028FF70(const FieldValueSource* object);
+
+/**
+ * @brief Forward the linked target and source byte to its helper.
+ * @param object Receiver containing the target link and byte value.
+ * @return Always 1.
+ */
+s32 func_002902E0(const FieldByteValueSource10* object);
+
+/**
+ * @brief Forward the source float to the linked target's state helper.
+ * @param object Source containing the linked target and float value.
+ * @return Always 1.
+ */
+s32 func_00292070(const FieldTwoFloatValueSource* object);
+
+/**
+ * @brief Return the shared floating-point value.
+ * @param object Receiver or first argument; unused.
+ * @return The value at D_001B66B4.
+ */
+float func_00289670(void* object);
+
+/**
+ * @brief Test whether the shared context's nested state word is nonzero.
+ * @param object Receiver or first argument; unused.
+ * @return Nonzero when the word at context-0x38 offset 0x5C8 is set.
+ */
+s32 func_0028E3C0(void* object);
+
+/**
+ * @brief Copy the source word's low halfword into shared context state.
+ * @param object Source containing the word pointer at offset 0x540.
+ * @return Always 1.
+ */
+s32 func_00233D50(const FieldWordSource540* object);
+
+/**
+ * @brief Copy the source word's low halfword into shared context offset 0xA4.
+ * @param object Source containing the word pointer at offset 0x540.
+ * @return Always 1.
+ */
+s32 func_00233D70(const FieldWordSource540* object);
+
+/**
+ * @brief Copy the source word's low halfword into shared context offset 0xA6.
+ * @param object Source containing the word pointer at offset 0x540.
+ * @return Always 1.
+ */
+s32 func_00233EA0(const FieldWordSource540* object);
+
+
 
 #ifdef __cplusplus
 }

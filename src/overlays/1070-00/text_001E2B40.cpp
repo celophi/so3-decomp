@@ -1,7 +1,50 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_001E2B40.h"
 
+extern "C" void func_001E5080(void* object, s32 value);
+extern "C" void func_001F1380(void* object, s32 value);
+extern "C" s32 func_001FD640(void);
+extern "C" void func_46E730(void* object, void* value, s32 enabled);
+extern "C" void func_002F4250(void* object);
+extern "C" void func_002F4580(void* object);
+extern "C" void func_4E8EE0(void* object, ...);
+
 extern "C" u8 D_51E050[];
+extern "C" float D_001B66B4;
+extern "C" void* D_001B661C;
+extern "C" void func_120ED0(void* object);
+extern "C" void* D_001B6620;
+extern "C" void func_121E80(void* owner, void* object);
+extern "C" void func_43AC90(void* object);
+extern "C" void func_001EEA50(void* object);
+
+/** Partial callback interface with a virtual method at offset 0x5C. */
+class FieldCallbackDispatch5C
+{
+public:
+    virtual void slot08();
+    virtual void slot0c();
+    virtual void slot10();
+    virtual void slot14();
+    virtual void slot18();
+    virtual void slot1c();
+    virtual void slot20();
+    virtual void slot24();
+    virtual void slot28();
+    virtual void slot2c();
+    virtual void slot30();
+    virtual void slot34();
+    virtual void slot38();
+    virtual void slot3c();
+    virtual void slot40();
+    virtual void slot44();
+    virtual void slot48();
+    virtual void slot4c();
+    virtual void slot50();
+    virtual void slot54();
+    virtual void slot58();
+    virtual void callback();
+};
 
 /** Minimal observed prefix containing the byte fields accessed here. */
 struct FieldByteClear60
@@ -18,6 +61,16 @@ struct FieldByteCopyA8
     u8 unk61[0x47];
     u8 unka8;
 };
+
+/** Partial receiver with a child pointer and update flag at offsets 0xA8/0xB0. */
+struct FieldConditionalProcessorA8
+{
+    u8 unk00[0xA8];
+    void* unka8;
+    u8 unkac[4];
+    u32 unkb0;
+};
+
 
 /** Observed signed input halfwords and the stored result bits. */
 struct FieldHalfwordUpdate114
@@ -180,9 +233,19 @@ void func_001E2DD0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2DE0);
+s32 func_001E2DE0(void)
+{
+    return func_001FD640() != 0;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2E00);
+void func_001E2E00(void* receiver, void* value, s32 enabled)
+{
+    FieldConditionalProcessorA8* object = (FieldConditionalProcessorA8*)receiver;
+    if (object->unkb0 != 0)
+    {
+        func_46E730(object->unka8, value, enabled != 0);
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E2E30);
 
@@ -204,7 +267,11 @@ s32 func_001E3090(void* object)
     return 3;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E30A0);
+void func_001E30A0(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 void func_001E30D0(void* object)
 {
@@ -242,7 +309,13 @@ s32 func_001E4450(void* object)
     return 3;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E4460);
+void func_001E4460(void* object)
+{
+    if (object != 0)
+    {
+        ((FieldUnaryCallback*)object)->callback(1);
+    }
+}
 
 void func_001E4490(void* object)
 {
@@ -325,7 +398,10 @@ void func_001E5040(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E5050);
+void func_001E5050(void* object)
+{
+    func_001E5080(object, 1);
+}
 
 s32 func_001E5070(void* object)
 {
@@ -367,7 +443,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E5C
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E5D10);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E5DA0);
+void func_001E5DA0(void* object)
+{
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E5DC0);
 
@@ -395,9 +474,15 @@ s32 func_001E6D20(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E6D30);
+float func_001E6D30(void* object)
+{
+    return D_001B66B4;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E6D40);
+void func_001E6D40(void* object)
+{
+    func_121E80(D_001B6620, object);
+}
 
 void func_001E6D60(FieldWordState70* object, u32 value)
 {
@@ -442,7 +527,11 @@ s32 func_001E7480(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7490);
+void func_001E7490(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E74C0);
 
@@ -573,11 +662,53 @@ void func_001E79A0(FieldCopy79A0* object, const unsigned __int128* source)
     object->unk30 = *source;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E79C0);
+void func_001E79C0(FieldCopy79A0* object)
+{
+    object->unk50 = 1;
+    func_4E8EE0(&object->unk30);
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E79F0);
+void func_001E79F0(FieldCopy79A0* object)
+{
+    object->unk50 = 1;
+    func_4E8EE0(&object->unk30);
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E7A20);
+/** Receiver fields initialized by func_001E7A20. */
+struct FieldVectorInit7A20
+{
+    u8 unk00[0x30];
+    u8 value[0x10];
+    u8 unk40[0x10];
+    u8 state;
+};
+
+struct FieldVectorValue7A20
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+/**
+ * @brief Set the vector state and initialize its value.
+ * @param object Receiver containing the vector and state fields.
+ * @param x First vector component.
+ * @param y Second vector component.
+ * @param z Third vector component.
+ */
+extern "C" void func_001E7A20(FieldVectorInit7A20* object, float x, float y,
+                               float z)
+{
+    object->state = 1;
+    FieldVectorValue7A20 value;
+    value.x = x;
+    value.w = 1.0f;
+    value.y = y;
+    value.z = z;
+    func_4E8EE0(&object->value, &value);
+}
 
 void func_001E7A60(FieldCopy7A60* object, const unsigned __int128* source)
 {
@@ -633,9 +764,15 @@ s32 func_001E96C0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E96D0);
+void* func_001E96D0(void* object, void* value)
+{
+    return value;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E96E0);
+void* func_001E96E0(void* object, void* value)
+{
+    return value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E96F0);
 
@@ -684,7 +821,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EA9
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EAA80);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EAD20);
+void func_001EAD20(void* object)
+{
+    func_002F4250(object);
+    func_002F4580(object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EAD50);
 
@@ -703,7 +844,11 @@ s32 func_001EB5A0(void* object)
     return 16;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EB5B0);
+void func_001EB5B0(void* object)
+{
+    func_4D7EB0(object);
+    func_121E80(D_001B6620, object);
+}
 
 void func_001EB5E0(void* object)
 {
@@ -758,7 +903,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EC3
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EC3F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EC4D0);
+void func_001EC4D0(void* object)
+{
+    func_43AC90(object);
+    func_121E80(D_001B6620, object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EC500);
 
@@ -812,12 +961,22 @@ void func_001ED5A0(FieldDimensionState* object, s32 first, s32 second)
     object->unk10c = object->unkf0 * object->unkf1 - 1;
 }
 
+
 void func_001ED5C0(FieldByteStateAD* object, u8 value)
 {
     object->unkad = value;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED5D0);
+s32 func_001ED5D0(FieldDimensionUpdateState* object, float first, float second)
+{
+    object->unkf4 = first;
+    object->unkf8 = second;
+    object->unkc0 = object->unkf4;
+    object->unkc4 = second;
+    object->unke5 = 1;
+    object->unkae = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED600);
 
@@ -847,7 +1006,10 @@ s32 func_001EDA20(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDA30);
+bool func_001EDA30(float value)
+{
+    return value < 0.0f;
+}
 
 extern "C" void* func_001EDA50(void)
 {
@@ -936,7 +1098,10 @@ void func_001EDC20(FieldTimeState* object, u32 seconds)
     }
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDCE0);
+void func_001EDCE0(void)
+{
+    func_120ED0(D_001B661C);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDD00);
 
@@ -1076,7 +1241,21 @@ void func_001EE490(void* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE4A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE530);
+/**
+ * @brief Initialize the receiver's child at 0x14 when enabled.
+ * @param object Receiver containing the child storage.
+ * @param enabled Whether the child should be initialized.
+ * @return One when initialized, otherwise zero.
+ */
+s32 func_001EE530(void* object, s32 enabled)
+{
+    if (enabled == 0)
+    {
+        return 0;
+    }
+    func_001EEA50((u8*)object + 0x14);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE570);
 
@@ -1084,7 +1263,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE5
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE670);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE7D0);
+/**
+ * @brief Invoke the receiver's callback at vtable offset 0x5C.
+ * @param object Receiver with the callback dispatch table at offset zero.
+ */
+void func_001EE7D0(void* object)
+{
+    ((FieldCallbackDispatch5C*)object)->callback();
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE800);
 
@@ -1430,9 +1616,15 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001F12
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001F1380);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001F1500);
+void func_001F1500(void* object)
+{
+    func_001F1380(object, 1);
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001F1520);
+void func_001F1520(void* object)
+{
+    func_001F1380(object, 0);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001F1540);
 

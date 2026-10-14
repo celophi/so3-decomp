@@ -3,6 +3,7 @@
 
 #include "types.h"
 
+
 /** Partial receiver whose word value is at offset 0x18. */
 typedef struct FieldWordState18
 {
@@ -49,8 +50,25 @@ typedef struct FieldCappedByte4A4
     u8 unk4a5_1_7 : 7;
 } FieldCappedByte4A4;
 
+
 #ifdef __cplusplus
 extern "C" {
+
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_00276030(void* object);
+
+/**
+ * @brief Initialize the receiver, then pass it to the shared owner.
+ * @param object Receiver to initialize and process.
+ */
+void func_0027DB50(void* object);
+
+/** @brief Copy the receiver's pointed-to word into shared context state. */
+s32 func_0027EA30(void* object);
 #endif
 
 /**
@@ -66,6 +84,12 @@ void func_00281CE0(FieldWordState18* object, u32 value);
  * @param value Float value to store.
  */
 void func_00276D80(FieldFloatOwner540* object, float value);
+
+/**
+ * @brief Release the optional child pointer at receiver offset 0x548.
+ * @param object Receiver containing the child pointer.
+ */
+void func_00277020(void* object);
 
 /**
  * @brief Read the object pointer through the optional linked record.
@@ -348,6 +372,9 @@ s32 func_002757D0(void* object);
  */
 s32 func_002757E0(const void* object);
 
+/** @brief Copy two words to the receiver, then pass them to its callback. */
+void func_002757F0(void* object, const void* source);
+
 /**
  * @brief Return the floating-point value one.
  * @param object Receiver or first argument; unused.
@@ -374,6 +401,7 @@ void func_0027D2F0(void* object);
  * @return Always 1.
  */
 s32 func_0027EA60(void* object);
+
 
 #ifdef __cplusplus
 }
