@@ -1,14 +1,97 @@
 #include "include_asm.h"
+#include "types.h"
+#include "overlays/3253-00/text_002C5F00.h"
+
+/** Packed four-component value initialized to the identity quaternion. */
+union BattleQuaternionView
+{
+    unsigned __int128 packed;
+    u32 components[4];
+};
+
+struct BattleHalfword6EView
+{
+    u8 pad00[0x6E];
+    u16 value;
+};
+
+struct BattleVector4View
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+struct BattleObject5FA0View
+{
+    void* methods;
+    u8 pad04[0x20C];
+    u32 value210;
+    u32 value214;
+};
+
+struct BattleObject67A0View
+{
+    void* methods;
+    u8 pad04[0x2A4];
+    void* handler;
+    u8 pad2AC[0xA4];
+    float value350;
+    u8 pad354[0x19];
+    u8 flag36D;
+    u8 pad36E[0xF2];
+    u32 value460;
+    u32 value464;
+    u32 value468;
+    u8 pad46C[0x44];
+    u8 flag4B0;
+    u8 flag4B1;
+};
+
+struct BattleObject7760View
+{
+    u8 pad00[0x5BC];
+    u8 flags;
+};
+
+extern "C" void func_4DD1F0(void* object);
+extern "C" u32 D_17C610[];
+extern "C" void func_003AE200(void* object);
+extern "C" u32 D_15B600[];
+extern "C" u32 D_15B624[];
+extern "C" u8 func_003C3B80(void* object);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C5F00);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C5F60);
+extern "C" void func_002C5F60(BattleQuaternionView* value)
+{
+    value->packed = 0;
+    value->components[3] = 0x3F800000;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C5F70);
+extern "C" void func_002C5F70(BattleHalfword6EView* object, u16 value)
+{
+    object->value = value;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C5F80);
+extern "C" BattleVector4View* func_002C5F80(BattleVector4View* value, float component)
+{
+    value->x = component;
+    value->y = component;
+    value->z = component;
+    value->w = component;
+    return value;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C5FA0);
+extern "C" BattleObject5FA0View* func_002C5FA0(BattleObject5FA0View* object)
+{
+    func_4DD1F0(object);
+    object->methods = D_17C610;
+    object->value210 = 0;
+    object->value214 = 0;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C5FE0);
 
@@ -16,7 +99,20 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C62
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C66B0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C67A0);
+extern "C" BattleObject67A0View* func_002C67A0(BattleObject67A0View* object)
+{
+    func_003AE200(object);
+    object->methods = D_15B600;
+    object->handler = D_15B624;
+    object->flag36D = 0;
+    object->flag4B0 = 0;
+    object->flag4B1 = 0;
+    object->value460 = 0;
+    object->value464 = 0;
+    object->value468 = 0;
+    object->value350 = 20.0f;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C6800);
 
@@ -28,7 +124,16 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C75
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C7630);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C7760);
+extern "C" s32 func_002C7760(BattleObject7760View* object)
+{
+    if (func_003C3B80(object) == 0)
+    {
+        return 0;
+    }
+
+    object->flags |= 0x80;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C77B0);
 
@@ -74,7 +179,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CBD
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CBEA0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CBED0);
+void func_002CBED0(void* object)
+{
+    ((u8*)object)[0x391] = 1;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002CBEE0);
 

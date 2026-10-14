@@ -251,7 +251,9 @@ typedef struct FieldDimensionState
     u8 unk00[0xF0];
     u8 unkf0;
     u8 unkf1;
-    u8 unkf2[10];
+    u8 unkf2[2];
+    float unkf4;
+    float unkf8;
     float unkfc;
     float unk100;
     u8 unk104[8];
@@ -512,6 +514,14 @@ void func_001ED200(void* object);
 void func_001ED580(FieldDimensionState* object, float first, float second);
 
 /**
+ * @brief Set the adjacent floating-point values at offsets 0xF4 and 0xF8.
+ * @param object Receiver to update.
+ * @param first Value for offset 0xF4.
+ * @param second Value for offset 0xF8.
+ */
+void func_001ED590(FieldDimensionState* object, float first, float second);
+
+/**
  * @brief Store two byte dimensions and their product minus one.
  * @param object Receiver to update.
  * @param first Value whose low byte supplies the first dimension.
@@ -676,6 +686,13 @@ s32 func_001E6D20(void* object);
 void func_001E6D70(void* object);
 
 /**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
+s32 func_001E73D0(void* object);
+
+/**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
  * @return Always 0.
@@ -778,6 +795,12 @@ void func_001EDA10(void* object);
 s32 func_001EDA20(void* object);
 
 /**
+ * @brief Return the address of the global object at 0x0051E050.
+ * @return Address of the global object.
+ */
+void* func_001EDA50(void);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -876,7 +899,41 @@ s32 func_001EE200(void* object);
  * @param object Receiver or first argument; unused.
  * @return Always 0.
  */
+s32 func_001EE210(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_001EE220(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_001EE230(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 func_001EE240(void* object);
+
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
+void func_001EE250(void* object);
+
+/**
+ * @brief Return the fixed value 0.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_001EE260(void* object);
 
 /**
  * @brief Perform no work.

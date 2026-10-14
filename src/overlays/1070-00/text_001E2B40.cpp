@@ -1,6 +1,8 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_001E2B40.h"
 
+extern "C" u8 D_51E050[];
+
 /** Minimal observed prefix containing the byte fields accessed here. */
 struct FieldByteClear60
 {
@@ -426,7 +428,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E71
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E72D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E73D0);
+extern "C" s32 func_001E73D0(void* object)
+{
+    return 4;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001E73E0);
 
@@ -794,7 +799,11 @@ void func_001ED580(FieldDimensionState* object, float first, float second)
     object->unk100 = second;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001ED590);
+void func_001ED590(FieldDimensionState* object, float first, float second)
+{
+    object->unkf4 = first;
+    object->unkf8 = second;
+}
 
 void func_001ED5A0(FieldDimensionState* object, s32 first, s32 second)
 {
@@ -840,7 +849,10 @@ s32 func_001EDA20(void* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDA30);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDA50);
+extern "C" void* func_001EDA50(void)
+{
+    return D_51E050;
+}
 
 void func_001EDA60(void* object)
 {
@@ -992,20 +1004,34 @@ s32 func_001EE200(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE210);
+extern "C" s32 func_001EE210(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE220);
+extern "C" s32 func_001EE220(void* object)
+{
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE230);
+extern "C" s32 func_001EE230(void* object)
+{
+    return 0;
+}
 
 s32 func_001EE240(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE250);
+extern "C" void func_001EE250(void* object)
+{
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EE260);
+extern "C" s32 func_001EE260(void* object)
+{
+    return 0;
+}
 
 void func_001EE270(void* object)
 {

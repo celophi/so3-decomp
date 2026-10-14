@@ -1,6 +1,15 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_00222EE0.h"
 
+/** First four words of the receiver cleared by func_00223320. */
+typedef struct BattleFourWords10
+{
+    u32 unk00;
+    u32 unk04;
+    u32 unk08;
+    u32 unk0c;
+} BattleFourWords10;
+
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00222EE0);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00222F80);
@@ -46,7 +55,14 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002232
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_002232D0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223320);
+void func_00223320(void* object)
+{
+    BattleFourWords10* state = (BattleFourWords10*)object;
+    state->unk00 = 0;
+    state->unk04 = 0;
+    state->unk08 = 0;
+    state->unk0c = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00222EE0", func_00223340);
 

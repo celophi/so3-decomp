@@ -1,25 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002180F0.h"
 
-typedef struct FieldScriptData217590
-{
-    u8 unk00[8];
-    u32 unk08;
-} FieldScriptData217590;
-
-struct FieldScriptObject151D40
-{
-    u8 unk00[0x424];
-    u32 unk424;
-    u32 unk428[40];
-    unsigned char unk4C8_0 : 1;
-    unsigned char unk4C8_1 : 7;
-    u8 unk4C9[0x7B];
-    FieldScriptData217590* unk544;
-    const u32* unk548;
-};
-
-
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002180F0", func_002180F0);
 
 s32 func_00218190(FieldScriptObject151D40* object, u32 count)

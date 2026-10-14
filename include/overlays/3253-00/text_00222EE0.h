@@ -35,6 +35,12 @@ s32 func_00223250(void* object);
 void func_00223290(void* object);
 
 /**
+ * @brief Clear the first four words of the receiver.
+ * @param object Receiver whose words at offsets 0 through 0x0C are cleared.
+ */
+void func_00223320(void* object);
+
+/**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
  * @return Always 0.

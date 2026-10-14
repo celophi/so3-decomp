@@ -168,6 +168,20 @@ float func_002DB030(void* object);
 float func_002DBA30(void* object);
 
 /**
+ * @brief Return floating-point zero.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_002DBB80(void* object);
+
+/**
+ * @brief Return floating-point zero.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_002DBBF0(void* object);
+
+/**
  * @brief Return the fixed floating-point value 1.0.
  * @param object Receiver or first argument; unused.
  * @return Always 1.0.
@@ -187,6 +201,27 @@ float func_002E2E90(void* object);
  * @return Always 100.0.
  */
 float func_002E39B0(void* object);
+
+/**
+ * @brief Return floating-point zero.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_002E3B00(void* object);
+
+/**
+ * @brief Return floating-point zero.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_002E3B70(void* object);
+
+/**
+ * @brief Return the floating-point value one.
+ * @param object Receiver or first argument; unused.
+ * @return Always 1.0.
+ */
+float func_002E43B0(void* object);
 
 /**
  * @brief Return the indexed address of a 0xA0-byte entry.
@@ -236,6 +271,48 @@ void func_002D6DF0(FieldSequenceState20* object, u8 mode);
 void func_002D6E50(FieldSequenceState20* object, u8 mode);
 
 /**
+ * @brief Read the word at offset 0x20 from the receiver.
+ * @param object Receiver containing the sequence state.
+ * @return The word at offset 0x20.
+ */
+s32 func_002D6EB0(const FieldSequenceState20* object);
+
+/**
+ * @brief Read the signed halfword at offset 0x28 from the receiver.
+ * @param object Receiver containing the sequence state.
+ * @return The signed halfword at offset 0x28.
+ */
+s16 func_002D6EC0(const FieldSequenceState20* object);
+
+/**
+ * @brief Read the pointer at offset 0x04 from the receiver.
+ * @param object Receiver containing the sequence state.
+ * @return The pointer at offset 0x04.
+ */
+void* func_002D70D0(const FieldSequenceState10* object);
+
+/**
+ * @brief Read the word at offset 0x10 from the receiver.
+ * @param object Receiver containing the sequence state.
+ * @return The word at offset 0x10.
+ */
+s32 func_002D7400(const FieldSequenceState10* object);
+
+/**
+ * @brief Read the signed halfword at offset 0x18 from the receiver.
+ * @param object Receiver containing the sequence state.
+ * @return The signed halfword at offset 0x18.
+ */
+s16 func_002D7410(const FieldSequenceState10* object);
+
+/**
+ * @brief Return floating-point zero.
+ * @param object Receiver or first argument; unused.
+ * @return Always 0.0.
+ */
+float func_002D7420(void* object);
+
+/**
  * @brief Reset the sequence fields and set both modes to one.
  * @param object Receiver containing the sequence state.
  */
@@ -274,6 +351,20 @@ void func_002D79B0(FieldSequenceState40* object, u8 mode);
  * @param mode Mode value; only its low four bits are stored.
  */
 void func_002D7A10(FieldSequenceState40* object, u8 mode);
+
+/**
+ * @brief Read the word at offset 0x40 from the receiver.
+ * @param object Receiver containing the sequence state.
+ * @return The word at offset 0x40.
+ */
+s32 func_002D7A70(const FieldSequenceState40* object);
+
+/**
+ * @brief Read the signed halfword at offset 0x48 from the receiver.
+ * @param object Receiver containing the sequence state.
+ * @return The signed halfword at offset 0x48.
+ */
+s16 func_002D7A80(const FieldSequenceState40* object);
 
 /**
  * @brief Return the fixed value 0.

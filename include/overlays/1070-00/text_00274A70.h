@@ -108,6 +108,13 @@ s32 func_00275500(void* object);
 void func_00275510(void* object);
 
 /**
+ * @brief Return the floating-point value 100.
+ * @param object Receiver or first argument; unused.
+ * @return 100.0f.
+ */
+float func_00275520(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -232,6 +239,13 @@ s32 func_00275650(void* object);
 void func_00275660(void* object);
 
 /**
+ * @brief Return the floating-point value zero.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_00275670(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -270,10 +284,55 @@ s32 func_002756C0(void* object);
 void func_002756D0(void* object);
 
 /**
+ * @brief Return the floating-point value zero.
+ * @param object Receiver or first argument; unused.
+ * @return 0.0f.
+ */
+float func_002756E0(void* object);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
 void func_002756F0(void* object);
+
+/**
+ * @brief Return the indexed table entry at 112-byte intervals.
+ * @param object Receiver containing the table base at offset 0x14.
+ * @param index Entry index.
+ * @return Address of the selected entry.
+ */
+void* func_00275760(const void* object, s32 index);
+
+/**
+ * @brief Return a row entry from the indexed table.
+ * @param object Receiver containing the row count and table base.
+ * @param index Row index.
+ * @param row Entry index within the row.
+ * @return Address of the selected table entry.
+ */
+void* func_00275780(const void* object, s32 index, s32 row);
+
+/**
+ * @brief Read the word at receiver offset 0x1C.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_002757A0(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x0C.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_002757B0(const void* object);
+
+/**
+ * @brief Read the word at receiver offset 0x10.
+ * @param object Receiver to inspect.
+ * @return Stored word.
+ */
+u32 func_002757C0(const void* object);
 
 /**
  * @brief Return the fixed value 1.
@@ -281,6 +340,20 @@ void func_002756F0(void* object);
  * @return Always 1.
  */
 s32 func_002757D0(void* object);
+
+/**
+ * @brief Test whether the word at receiver offset 0x14 is nonzero.
+ * @param object Receiver to inspect.
+ * @return One when the word is nonzero; otherwise zero.
+ */
+s32 func_002757E0(const void* object);
+
+/**
+ * @brief Return the floating-point value one.
+ * @param object Receiver or first argument; unused.
+ * @return 1.0f.
+ */
+float func_00275F80(void* object);
 
 /**
  * @brief Return the fixed value 9.

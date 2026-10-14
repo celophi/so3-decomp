@@ -2,6 +2,10 @@
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/3253-00/text_00212EE0.h"
 
+extern "C" u8 D_51E050[];
+extern "C" u8 D_158910[];
+extern "C" u8 D_158900[];
+
 /** A packed quaternion key: signed Q15 vector components followed by a signed key value. */
 struct BattleQuaternionKey
 {
@@ -55,6 +59,53 @@ struct BattlePointFlagFields20
     u8 flag50;
 };
 
+/** Point value stored as one native 128-bit slot, with its presence byte. */
+struct BattlePointFlagSlot20
+{
+    u8 pad00[0x20];
+    unsigned __int128 value20;
+    u8 pad30[0x20];
+    u8 flag50;
+};
+
+struct BattlePointFlagFields30
+{
+    u8 pad00[0x30];
+    float x;
+    float y;
+    float z;
+    float w;
+    u8 pad40[0x10];
+    u8 flag50;
+};
+
+struct BattlePointFlagSlot30
+{
+    u8 pad00[0x30];
+    unsigned __int128 value30;
+    u8 pad40[0x10];
+    u8 flag50;
+};
+
+struct BattlePointFlagSlot40
+{
+    u8 pad00[0x40];
+    unsigned __int128 value40;
+    u8 flag50;
+};
+
+struct BattlePointFlagFields40
+{
+    u8 pad00[0x40];
+    float x;
+    float y;
+    float z;
+    u8 pad4C[4];
+    u8 flag50;
+};
+
+extern "C" void func_4E8EE0(void* vector);
+
 struct BattleVectorSlot20
 {
     u8 pad[0x20];
@@ -102,6 +153,50 @@ struct BattleFloatFields50
     float unk50;
 };
 
+struct BattleEntryClear1CView
+{
+    u8 pad00[0x10];
+    u16 unk10;
+    u16 unk12;
+    u32 unk14;
+    u32 unk18;
+};
+
+struct BattleWordClearView
+{
+    u32 unk00;
+    u32 unk04;
+    u32 unk08;
+    u32 unk0c;
+};
+
+struct BattleResetWord48View
+{
+    u8 pad00[0x48];
+    u32 unk48;
+};
+
+struct BattleMethodTable4CView
+{
+    u8 pad00[0x4C];
+    const void* methods;
+};
+
+struct BattleMethodTable1CView
+{
+    u8 pad00[0x1C];
+    const void* methods;
+};
+
+struct BattleHalfwordWordClearView
+{
+    u8 pad00[4];
+    u16 unk04;
+    u16 unk06;
+    u32 unk08;
+    u32 unk0c;
+};
+
 struct BattleGetters28
 {
     u8 pad[0x20];
@@ -115,6 +210,8 @@ struct BattleStateByte60
     u8 pad[0x60];
     u8 unk60;
 };
+
+extern "C" void func_0021F310(void* object);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00212EE0);
 
@@ -179,7 +276,11 @@ void func_00218C30(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218C40);
+extern "C" void func_00218C40(BattlePointFlagSlot20* object, const unsigned __int128* value)
+{
+    object->flag50 = 1;
+    object->value20 = *value;
+}
 
 void battle_set_point_vector_and_flag(BattlePointFlagFields20* object, float x, float y, float z)
 {
@@ -190,23 +291,60 @@ void battle_set_point_vector_and_flag(BattlePointFlagFields20* object, float x, 
     object->w = 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218C80);
+extern "C" void func_00218C80(BattlePointFlagFields30* object, float x, float y, float z, float w)
+{
+    object->flag50 = 1;
+    object->x = x;
+    object->y = y;
+    object->z = z;
+    object->w = w;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218CA0);
+extern "C" void func_00218CA0(BattlePointFlagSlot30* object, const unsigned __int128* value)
+{
+    object->flag50 = 1;
+    object->value30 = *value;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218CC0);
+extern "C" void func_00218CC0(BattlePointFlagSlot30* object, const unsigned __int128* value)
+{
+    object->flag50 = 1;
+    object->value30 = *value;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218CE0);
+void func_00218CE0(BattlePointFlagFields30* object)
+{
+    object->flag50 = 1;
+    func_4E8EE0(&object->x);
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218D10);
+void func_00218D10(BattlePointFlagFields30* object)
+{
+    object->flag50 = 1;
+    func_4E8EE0(&object->x);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218D40);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218D80);
+extern "C" void func_00218D80(BattlePointFlagSlot40* object, const unsigned __int128* value)
+{
+    object->flag50 = 1;
+    object->value40 = *value;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218DA0);
+extern "C" void func_00218DA0(BattlePointFlagSlot40* object, const unsigned __int128* value)
+{
+    object->flag50 = 1;
+    object->value40 = *value;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218DC0);
+extern "C" void func_00218DC0(BattlePointFlagFields40* object, float x, float y, float z)
+{
+    object->flag50 = 1;
+    object->x = x;
+    object->y = y;
+    object->z = z;
+}
 
 void func_00218DE0(void* object)
 {
@@ -247,7 +385,10 @@ s32 battle_float_is_negative(float value)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218EB0);
+void* func_00218EB0(void)
+{
+    return D_51E050;
+}
 
 void func_00218EC0(void* object)
 {
@@ -529,7 +670,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D1
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D1E0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D200);
+void func_0021D200(void* object)
+{
+    BattleResetWord48View* state = (BattleResetWord48View*)object;
+    state->unk48 = 0;
+    func_0021F310(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D220);
 
@@ -595,25 +741,56 @@ void func_0021E410(const BattleFloatFields50* object, float* output)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E420);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E450);
+void* func_0021E450(void* object)
+{
+    BattleMethodTable4CView* state = (BattleMethodTable4CView*)object;
+    state->methods = D_158910;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E470);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E4D0);
+void* func_0021E4D0(void* object)
+{
+    BattleMethodTable1CView* state = (BattleMethodTable1CView*)object;
+    state->methods = D_158900;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E4F0);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E540);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E580);
+void func_0021E580(void* object)
+{
+    BattleEntryClear1CView* state = (BattleEntryClear1CView*)object;
+    state->unk10 = 0;
+    state->unk12 = 0;
+    state->unk14 = 0;
+    state->unk18 = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E5A0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E5E0);
+void func_0021E5E0(void* object)
+{
+    BattleEntryClear1CView* state = (BattleEntryClear1CView*)object;
+    state->unk10 = 0;
+    state->unk12 = 0;
+    state->unk14 = 0;
+    state->unk18 = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E600);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E640);
+void func_0021E640(void* object)
+{
+    BattleHalfwordWordClearView* state = (BattleHalfwordWordClearView*)object;
+    state->unk04 = 0;
+    state->unk06 = 0;
+    state->unk08 = 0;
+    state->unk0c = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E660);
 
@@ -641,11 +818,21 @@ s16 func_0021EA70(const BattleGetters38* object)
     return object->unk38;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021EA80);
+void func_0021EA80(void* object)
+{
+    BattleWordClearView* state = (BattleWordClearView*)object;
+    state->unk00 = 0;
+    state->unk04 = 0;
+    state->unk08 = 0;
+    state->unk0c = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021EAA0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021EAF0);
+u32 func_0021EAF0(const void* object)
+{
+    return *(const u32*)((const u8*)object + 0x04);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021EB00);
 
@@ -675,7 +862,14 @@ s16 func_0021EFF0(const BattleGetters28* object)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021F000);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021F050);
+void func_0021F050(void* object)
+{
+    BattleWordClearView* state = (BattleWordClearView*)object;
+    state->unk00 = 0;
+    state->unk04 = 0;
+    state->unk08 = 0;
+    state->unk0c = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021F070);
 
@@ -685,7 +879,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021F1
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021F170);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021F200);
+u32 func_0021F200(const void* object)
+{
+    return *(const u32*)((const u8*)object + 0x04);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021F210);
 
@@ -709,11 +906,17 @@ s16 func_0021F540(const BattleGetters18* object)
     return object->unk18;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021F550);
+float func_0021F550(void* object)
+{
+    return 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021F560);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021F590);
+u32 func_0021F590(const void* object)
+{
+    return *(const u32*)((const u8*)object + 0x04);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021F5A0);
 
@@ -766,7 +969,14 @@ void func_0021FBF0(void* object)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021FC00);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021FC50);
+void func_0021FC50(void* object)
+{
+    BattleWordClearView* state = (BattleWordClearView*)object;
+    state->unk00 = 0;
+    state->unk04 = 0;
+    state->unk08 = 0;
+    state->unk0c = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021FC70);
 
@@ -776,7 +986,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021FD
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021FD80);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021FE20);
+u32 func_0021FE20(const void* object)
+{
+    return *(const u32*)((const u8*)object + 0x04);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021FE30);
 
@@ -790,9 +1003,15 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_002200
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_002200F0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00220150);
+u32 func_00220150(const void* object)
+{
+    return *(const u32*)((const u8*)object + 0x18);
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00220160);
+s32 func_00220160(const void* object)
+{
+    return *(const s16*)((const u8*)object + 0x20);
+}
 
 s32 func_00220170(void* object)
 {
@@ -813,11 +1032,17 @@ void func_002201A0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_002201B0);
+float func_002201B0(void* object)
+{
+    return 0.0f;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_002201C0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_002201F0);
+u32 func_002201F0(const void* object)
+{
+    return *(const u32*)((const u8*)object + 0x04);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00220200);
 
@@ -839,7 +1064,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_002204
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00220540);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00220620);
+void* func_00220620(const void* object)
+{
+    return (void*)object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00220630);
 
@@ -913,7 +1141,10 @@ s32 func_00220B50(void* object)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00220B60);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00220C30);
+void* func_00220C30(const void* object)
+{
+    return (void*)object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00220C40);
 
@@ -956,7 +1187,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00220F
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00220F90);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00221060);
+void* func_00221060(const void* object)
+{
+    return (void*)object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00221070);
 

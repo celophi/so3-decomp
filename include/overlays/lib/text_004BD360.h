@@ -33,6 +33,42 @@ typedef struct LibObject178660 LibObject178660;
 #ifdef __cplusplus
 extern "C" {
 #endif
+/** @brief Store a float in an indexed array slot. @param values Float array. @param index Slot index. @param value Value to store. */
+void func_004BD3C0(float* values, s32 index, float value);
+
+/**
+ * @brief Copy a vector into the receiver's field at offset 0x10.
+ * @param object Receiver to update.
+ * @param value Source vector.
+ */
+void func_004BD360(void* object, const unsigned __int128* value);
+
+/**
+ * @brief Copy a vector to the destination and return the destination.
+ * @param object Destination vector.
+ * @param value Source vector.
+ * @return The destination vector.
+ */
+void* func_004BD4C0(void* object, const unsigned __int128* value);
+
+/**
+ * @brief Clear the halfwords at +0x10/+0x12 and words at +0x14/+0x18.
+ * @param object Receiver to update.
+ */
+void func_004C1440(void* object);
+
+/**
+ * @brief Set the byte at +0x64 to zero and the byte at +0x62 to one.
+ * @param object Receiver to update.
+ */
+void func_004C8530(void* object);
+
+/**
+ * @brief Copy a vector into the receiver's field at offset 0x850.
+ * @param object Receiver to update.
+ * @param value Source vector.
+ */
+void func_004C94D0(void* object, const unsigned __int128* value);
 /** Native panel table stored in MAIN; its contents remain opaque here. */
 extern u8 D_178630[];
 /** Native text-widget table stored in MAIN; its contents remain opaque here. */
@@ -146,7 +182,7 @@ struct LibProjectionVolume
     float unk58;
 };
 
-/** Partial secondary interface identified by MAIN vtable D_171FF0. */
+/** Two-callback DMA interface identified by MAIN vtable D_171FF0. */
 class LibClass171FF0
 {
 public:
@@ -196,7 +232,7 @@ public:
      * @param third Second byte value.
      */
     void set_codes_and_z(s32 code, u32 first, float z, u32 second, u32 third);
-    u32 unk94;
+    void* unk94;
     u8 unk98[8];
     s32 unka0;
     u32 unka4;

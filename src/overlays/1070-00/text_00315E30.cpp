@@ -38,7 +38,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003168
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003168F0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003169A0);
+void func_003169A0(FieldByteState60* object)
+{
+    object->unk60 = 2;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00315E30", func_003169B0);
 

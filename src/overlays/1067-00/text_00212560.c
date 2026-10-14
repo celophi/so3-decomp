@@ -2,12 +2,6 @@
 #include "overlays/1067-00/field_runtime.h"
 #include "overlays/1067-00/text_00212560.h"
 
-typedef struct FieldScriptData217590
-{
-    u8 unk00[8];
-    u32 unk08;
-} FieldScriptData217590;
-
 typedef struct FieldAttached217CE0
 {
     u8 unk00[0xCD];
@@ -19,18 +13,6 @@ struct FieldObject217CE0
     u8 unk00[0x554];
     FieldAttached217CE0* slots[16];
     FieldAttached217CE0* special;
-};
-
-struct FieldScriptObject151D40
-{
-    u8 unk00[0x424];
-    u32 unk424;
-    u32 unk428[40];
-    unsigned char unk4C8_0 : 1;
-    unsigned char unk4C8_1 : 7;
-    u8 unk4C9[0x7B];
-    FieldScriptData217590* unk544;
-    const u32* unk548;
 };
 
 extern u32 D_001B65B4;

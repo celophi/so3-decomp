@@ -112,6 +112,9 @@ s32 resident_enqueue_object(ResidentObjectQueue* queue, void* object);
  */
 s32 resident_allocate_request(ResidentRequest112400* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
 
+/** @brief Check a resident request key and its active state. @param request Resident request receiver. @param key Request key. @return Nonzero when the request state is active. */
+s32 func_00112610(ResidentRequest112400* request, s32 key);
+
 #ifdef __cplusplus
 }
 #endif

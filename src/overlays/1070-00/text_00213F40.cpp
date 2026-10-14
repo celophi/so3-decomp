@@ -301,7 +301,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00217A
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00217AE0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00217CC0);
+void* func_00217CC0(void* object)
+{
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00217CD0);
 
@@ -367,7 +370,33 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002196
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002196E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00219810);
+struct FieldVectorState19810
+{
+    u8 pad00[0x20];
+    unsigned __int128 value20;
+    u8 pad30[0x620];
+    unsigned __int128 value650;
+    u8 pad660[0x20];
+    float value680;
+    u8 pad684[4];
+    float value688;
+    float value68C;
+};
+
+struct FieldFloatState50
+{
+    u8 pad00[0x50];
+    float value50;
+};
+
+void func_00219810(void* object, float x, float y, float z)
+{
+    FieldVectorState19810* state = (FieldVectorState19810*)object;
+    state->value650 = state->value20;
+    state->value680 = x;
+    state->value688 = y;
+    state->value68C = z;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00219830);
 
@@ -377,7 +406,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021A2
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021A3D0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021A460);
+void* func_0021A460(void* object)
+{
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021A470);
 
@@ -470,7 +502,10 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021D2
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021D3A0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021D710);
+void* func_0021D710(void* object)
+{
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021D720);
 
@@ -681,7 +716,11 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223B
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223C40);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223C80);
+void func_00223C80(const void* object, float* value)
+{
+    const FieldFloatState50* state = (const FieldFloatState50*)object;
+    *value = state->value50;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00223C90);
 

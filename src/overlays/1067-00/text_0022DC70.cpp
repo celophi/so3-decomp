@@ -171,20 +171,6 @@ struct FieldObject233470
     float unk214;
 };
 
-struct FieldObject22E680
-{
-    u8 unk00[0x24];
-    s32 unk24;
-    u8 unk28[0x24];
-    u8 unk4c_0_2 : 3;
-    u8 unk4c_3 : 1;
-    u8 unk4c_4_7 : 4;
-    u8 unk4d[3];
-    void* unk50;
-    u8 unk54[0xC];
-    u8 unk60;
-};
-
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022DC70);
 
 s32 func_0022DD50(FieldObject22DD50* object)

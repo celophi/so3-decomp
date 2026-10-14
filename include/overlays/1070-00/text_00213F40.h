@@ -355,6 +355,16 @@ void func_00216CB0(void* object);
 void func_00219670(void* object);
 
 /**
+ * @brief Copy the receiver's 128-bit value from offset 0x20 to 0x650 and store three floats
+ *        at offsets 0x680, 0x688, and 0x68C.
+ * @param object Receiver.
+ * @param x First float.
+ * @param y Second float.
+ * @param z Third float.
+ */
+void func_00219810(void* object, float x, float y, float z);
+
+/**
  * @brief Return the fixed value 12.
  * @param object Receiver or first argument; unused.
  * @return Always 12.
@@ -368,6 +378,27 @@ s32 func_0021A960(void* object);
  * @return 1 if the word was passed on and cleared, otherwise 0.
  */
 s32 func_0021A970(FieldEntry1C* entry);
+
+/**
+ * @brief Return the receiver address.
+ * @param object Receiver to return.
+ * @return The receiver address.
+ */
+void* func_00217CC0(void* object);
+
+/**
+ * @brief Return the receiver address.
+ * @param object Receiver to return.
+ * @return The receiver address.
+ */
+void* func_0021A460(void* object);
+
+/**
+ * @brief Return the receiver address.
+ * @param object Receiver to return.
+ * @return The receiver address.
+ */
+void* func_0021D710(void* object);
 
 /**
  * @brief Return the fixed value 3.
@@ -435,6 +466,13 @@ void func_00223A80(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00223A90(void* object);
+
+/**
+ * @brief Copy the receiver's float at offset 0x50 to the output pointer.
+ * @param object Receiver.
+ * @param value Destination for the float.
+ */
+void func_00223C80(const void* object, float* value);
 
 /**
  * @brief Evaluate the interpolation curve at the supplied position.
