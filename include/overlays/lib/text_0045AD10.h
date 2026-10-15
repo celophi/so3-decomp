@@ -4,6 +4,10 @@
 #include "types.h"
 #include "overlays/lib/ui_object.h"
 
+typedef struct N54Owner64_0045AD10 N54Owner64_0045AD10;
+
+struct FieldShapeRecord20;
+
 typedef struct LibClass174EF0 LibClass174EF0;
 typedef struct LibObject174D90 LibObject174D90;
 typedef struct LibObject174F20 LibObject174F20;
@@ -265,6 +269,7 @@ typedef struct LibShapeTestResult1C
 
 #ifdef __cplusplus
 extern "C" {
+void func_0046A3B0(void* receiver);
 #endif
 
 /**
@@ -454,6 +459,21 @@ void lib_release_resource_slot(void* manager, s32 index);
  */
 s32 func_0045BD20(void* object, void* arg0, void* arg1);
 
+/** Run the two argument shape test on the referenced descriptor at offset 0x30. */
+s32 func_0045D030(void* object, void* query);
+
+/** Run the four argument shape test on the referenced descriptor at offset 0x30. */
+s32 func_0045D590(void* object, s32 arg0, s32 arg1, float value);
+
+/** Run the five argument shape test on the referenced descriptor at offset 0x30. */
+s32 func_0045DA90(void* object, s32 arg0, s32 arg1, s32 arg2, float value);
+
+/** Current shape record selected by a shape test. */
+extern struct FieldShapeRecord20* D_001B656C;
+
+s32 func_0045D140(void* shape, s32 arg0, s32 arg1, float value);
+s32 func_0045D5C0(void* shape, s32 arg0, s32 arg1, s32 arg2, float value);
+
 /**
  * @brief Run func_0045EBD0 on the objects referenced by the first words of two objects.
  *
@@ -505,8 +525,15 @@ void func_00467480(void* object);
 /** Forward the receiver to func_004D00B0. */
 void func_0046A3F0(void* object);
 
+/** Set the active byte and notify the embedded receiver. */
+void func_004674A0(N54Owner64_0045AD10* object);
+
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+extern "C" s32 func_0046A410(void* object);
 #endif
 
 #endif

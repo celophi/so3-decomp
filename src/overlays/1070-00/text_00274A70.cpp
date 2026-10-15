@@ -65,7 +65,16 @@ public:
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00274A70);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00274DB0);
+extern "C" void func_00237FF0(void* object);
+
+void func_00274DB0(FieldUpdateComplete20* object)
+{
+    func_00237FF0(object);
+    if (object->unk20_2)
+    {
+        return;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00274DE0);
 

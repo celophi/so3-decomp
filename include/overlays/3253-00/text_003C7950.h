@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+typedef struct N50Owner98_003C7950 N50Owner98_003C7950;
+
 /** Partial Battle record-array interface with fields at offsets 0x0C-0x20. */
 struct BattleArrayAccess
 {
@@ -2183,6 +2185,9 @@ void func_003D6CC0(BattleState60* object);
 
 /** Forward the receiver to func_4D7EB0. */
 void func_003D6CA0(void* object);
+
+/** Set the active flag and forward the optional child pointer. */
+void func_003D7070(N50Owner98_003C7950* object);
 
 #ifdef __cplusplus
 }

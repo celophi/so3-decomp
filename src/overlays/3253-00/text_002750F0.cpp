@@ -2,6 +2,9 @@
 #include "overlays/3253-00/text_002750F0.h"
 
 extern "C" s32 func_002B08B0(void* object);
+extern "C" s32 func_002983E0(void* object);
+extern "C" s32 func_002A4B00(void* object);
+extern "C" void func_002A5B60(void* object, s32 value);
 
 typedef struct ByteGetterOwnertext_002750F0
 {
@@ -214,7 +217,13 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027F5
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027F650);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027F7B0);
+void func_0027F7B0(void* object)
+{
+    if (func_002983E0(object))
+    {
+        func_002A5B60(object, 0);
+    }
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027F7F0);
 
@@ -224,7 +233,13 @@ void func_0027FDE0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027FDF0);
+void func_0027FDF0(void* object)
+{
+    if (func_002A4B00(object))
+    {
+        func_002A5B60(object, 0);
+    }
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002750F0", func_0027FE30);
 

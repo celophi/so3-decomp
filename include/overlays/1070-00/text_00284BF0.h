@@ -313,6 +313,28 @@ typedef struct FieldValueSource
     u32 unk1c;
 } FieldValueSource;
 
+/** Partial target with the word flags tested by the three state callbacks. */
+typedef struct FieldFlagTarget204
+{
+    u8 unk00[0x204];
+    u32 flags;
+} FieldFlagTarget204;
+
+/** Partial callback handle with a float result and target pointer. */
+typedef struct FieldFlagHandle78
+{
+    u8 unk00[0x78];
+    float value;
+    FieldFlagTarget204* target;
+} FieldFlagHandle78;
+
+/** Partial callback receiver with its handle pointer at offset 0x10. */
+typedef struct FieldFlagCallback10
+{
+    u8 unk00[0x10];
+    FieldFlagHandle78* handle;
+} FieldFlagCallback10;
+
 /** Partial receiver containing a target link and byte value at offset 0x1C. */
 typedef struct FieldByteValueSource10
 {
@@ -585,6 +607,11 @@ s32 func_00290490(const FieldValueSource* object);
  */
 s32 func_00290D70(const FieldValueSource* object);
 
+/** Set the callback value when target flag 0x400 is present. */
+s32 func_00291370(FieldFlagCallback10* object);
+/** Set the callback value when target flag 0x100 is present. */
+s32 func_002914F0(FieldFlagCallback10* object);
+
 /**
  * @brief Set the flag at offset 0x591 and the float at offset 0x14 to one.
  * @param object Receiver to update.
@@ -600,6 +627,9 @@ s32 func_0028F9C0(void* object);
  * @return Always 1.
  */
 s32 func_00291890(const FieldValueSource* object);
+
+/** Set the callback value when target flag 0x1 is present. */
+s32 func_00292480(FieldFlagCallback10* object);
 
 /**
  * @brief Test whether a list traversal has reached its sentinel.

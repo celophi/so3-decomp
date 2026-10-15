@@ -369,6 +369,7 @@ typedef struct FieldFloatSequenceState44
 
 #ifdef __cplusplus
 extern "C" {
+void* func_002DC2B0(void* receiver);
 
 /**
  * @brief Copy two words to the receiver, then pass them to its callback.

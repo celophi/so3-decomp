@@ -1,5 +1,7 @@
 #include "include_asm.h"
 #include "types.h"
+#include "overlays/3253-00/text_00285100.h"
+#include "overlays/3253-00/text_003069E0.h"
 
 extern "C" void func_0030ED50(void* object, s32 value);
 
@@ -146,7 +148,18 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003069E0", func_00310A
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003069E0", func_00310B30);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003069E0", func_00311020);
+struct N53Flags54B_003069E0 { u8 pad[0x54B]; u8 first; u8 second; };
+
+void func_00311020(BattleObject2F26* object, u8 current, u8 previous)
+{
+    if (previous == 0xD)
+    {
+        N53Flags54B_003069E0* state = (N53Flags54B_003069E0*)object;
+        state->first = 1;
+        state->second = 1;
+    }
+    func_00292930(object, current, previous);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003069E0", func_00311060);
 

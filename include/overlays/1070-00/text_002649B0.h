@@ -102,6 +102,7 @@ typedef struct FieldVectorAssignmentState300
 
 #ifdef __cplusplus
 extern "C" {
+void* func_0026D230(void* receiver);
 
 /**
  * @brief Copy the receiver's float into its optional vector target and refresh it.
@@ -354,6 +355,8 @@ void func_00273E80(FieldVectorAssignmentState300* object);
  * @param object Receiver containing the state byte.
  */
 void func_002668D0(FieldFlagAt20* object);
+void func_00265B90(FieldFlagAt20* object);
+void func_00267340(FieldFlagAt20* object);
 
 /**
  * @brief Return the fixed value 3.

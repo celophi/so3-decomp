@@ -55,7 +55,11 @@ typedef struct LibLodController LibEntryHandleCollection;
 
 #ifdef __cplusplus
 extern "C" {
+void func_004A4510(void* receiver);
 #endif
+
+/** Return the mapped entry after the indexed 0x140-byte record. */
+void* func_004A08C0(const void* object, s32 index);
 
 /**
  * @brief Append a handle when the collection has fewer than sixty-four entries.
@@ -142,6 +146,9 @@ void func_004A06B0(void* object, const void* source);
 
 /** Queue the receiver's DMA submission object and return its queue result. */
 s32 func_004A4570(void* object);
+
+/** Submit the object's embedded payload at offset 0x14 when the object is present. */
+void func_004A91F0(void* object);
 
 /** Forward the receiver to func_004D00B0. */
 void func_004A4550(void* object);

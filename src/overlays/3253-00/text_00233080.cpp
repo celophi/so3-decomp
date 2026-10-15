@@ -1,6 +1,9 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_00233080.h"
 
+extern "C" void func_494D80(void* object);
+extern "C" u8 D_179B40[];
+
 typedef struct ByteGetterOwnertext_00233080
 {
     u8 unk00[0xCE2];
@@ -48,7 +51,14 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00233080", func_00235F
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00233080", func_00235FF0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00233080", func_00236090);
+extern "C" void* func_00236090(void* object)
+{
+    func_494D80(object);
+    *(void**)object = D_179B40;
+    *(u32*)((u8*)object + 0x44) = 0;
+    *((u8*)object + 0x3C) = 4;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00233080", func_002360D0);
 
@@ -96,7 +106,14 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00233080", func_0023A2
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00233080", func_0023A300);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00233080", func_0023A380);
+extern "C" void func_0023A380(void* object)
+{
+    u8* bytes = (u8*)object;
+    if (bytes[0x14] == 0)
+    {
+        bytes[0x16] = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00233080", func_0023A3A0);
 

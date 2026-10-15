@@ -1,6 +1,8 @@
 #ifndef SO3_OVERLAYS_BOOT_TEXT_001ED4E0_H
 #define SO3_OVERLAYS_BOOT_TEXT_001ED4E0_H
 
+typedef struct N50OwnerC4_001ED4E0 N50OwnerC4_001ED4E0;
+
 #include "types.h"
 
 /** @brief A 48-byte record containing its observed scalar key at offset 0x0C. */
@@ -263,6 +265,20 @@ typedef struct BootScalarRangeFE50
 extern "C" {
 #endif
 
+/** Install the record's pointer at offset 0x1C, reset it, and return it. */
+void* func_001F0620(void* object);
+/** Install the record's pointer at offset 0x1C, reset it, and return it. */
+void* func_001F0680(void* object);
+/** Install the record's pointer at offset 0x10, reset it, and return it. */
+void* func_001F06E0(void* object);
+
+/** Initialize the receiver and install its primary vtable. */
+void* func_001EE080(void* object);
+/** Initialize the receiver and install its primary vtable. */
+void* func_001EE580(void* object);
+/** Initialize the receiver and install its primary vtable. */
+void* func_001EEAA0(void* object);
+
 /**
  * @brief Copy an indexed entry's key and values to the requested outputs.
  * @param object Record-array receiver.
@@ -369,6 +385,7 @@ float func_001F1010(BootState1F0D60* object, float key);
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
 void func_001F10C0(BootState1F0D60* object);
+void func_001EEDF0(BootState1F0D60* object);
 
 /**
  * @brief Release owned record-array storage and clear the array pointer.
@@ -417,6 +434,7 @@ void func_001F16F0(BootState1F1580* object);
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
 void func_001F1DD0(BootState1F1AD0* object);
+void func_001EEEA0(BootState1F1AD0* object);
 
 /**
  * @brief Release owned array storage and clear the array pointer.
@@ -1550,6 +1568,23 @@ void func_001F0480(void* object, float* result);
  * @param result Destination for the difference; unchanged if the array is absent.
  */
 void func_001EFD80(void* object, float* result);
+
+/**
+ * @brief Clear the byte at offset 0x64 and run the cleanup helper.
+ * @param object Object containing the byte.
+ */
+void func_001F8A40(void* object);
+
+/** Set the active flag and forward the optional child pointer. */
+void func_001F8A60(N50OwnerC4_001ED4E0* object);
+
+/** Clear the vector at offset 0xB0 and update the associated state. */
+void func_001EEED0(void* object);
+/** Clear the vector at offset 0x90 and update the associated state. */
+void func_001EFEA0(void* object);
+
+/** Initialize the object, vtable, and first word, then return it. */
+void* func_001F05E0(void* receiver);
 
 #ifdef __cplusplus
 }

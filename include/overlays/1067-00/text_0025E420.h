@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+s32 func_0025E840(void* object, const void* value, float* zero_output, float* small_output);
+
 
 typedef struct FieldObject153CB0 FieldObject153CB0;
 

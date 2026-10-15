@@ -1,4 +1,14 @@
 #include "include_asm.h"
+#include "overlays/3253-00/text_00243600.h"
+
+extern "C" void func_459DB0(void* object);
+extern "C" void func_459960(void* object);
+
+struct BattleByte92
+{
+    u8 unk00[0x92];
+    u8 unk92;
+};
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_00243600);
 
@@ -77,7 +87,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_0024A8
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_0024A8F0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_0024A960);
+extern "C" s32 func_0024A960(void* receiver, void* arg1, s32 arg2, s32 arg3)
+{
+    BattleByte92* object = (BattleByte92*)receiver;
+    object->unk92 = 0;
+    return func_0024A980(receiver, arg1, arg2, arg3);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_0024A980);
 
@@ -85,7 +100,11 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_0024AB
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_0024ABF0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_0024AD60);
+void func_0024AD60(void* object)
+{
+    func_459DB0((u8*)object + 0x5A4);
+    func_459960(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00243600", func_0024AD90);
 

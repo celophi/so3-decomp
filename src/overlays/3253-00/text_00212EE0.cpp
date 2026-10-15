@@ -1,6 +1,10 @@
 #include "include_asm.h"
 #include "overlays/lib/text_003E68C0.h"
+#include "overlays/lib/vector.h"
 #include "overlays/3253-00/text_00212EE0.h"
+
+typedef struct N66Vector4Source { float x; float y; float z; float w; } N66Vector4Source;
+
 
 extern "C" void func_4815A0(void);
 extern "C" void func_481620(void);
@@ -8,6 +12,33 @@ extern "C" void func_481620(void);
 extern "C" u8 D_51E050[];
 extern "C" u8 D_158910[];
 extern "C" u8 D_158900[];
+extern "C" u8 D_17BB30[];
+extern "C" u8 D_17ACD0[];
+extern "C" u8 D_179540[];
+extern "C" void func_002206A0(void);
+extern "C" void func_002210E0(void);
+extern "C" void func_00221150(void);
+extern "C" void func_0021EE40(void* object);
+extern "C" void func_0021FA00(void* object);
+extern "C" u8 D_1588F0[];
+extern "C" u8 D_1588E0[];
+extern "C" u8 D_1588D0[];
+extern "C" u8 D_158920[];
+
+struct N59Receiver0_00212EE0
+{
+    u32 unk00;
+    u8 pad04[0xC];
+    void* vtable;
+};
+
+struct BattleWrapperPointerSlots
+{
+    u8 pad00[0x10];
+    void* field10;
+    u8 pad14[8];
+    void* field1C;
+};
 
 /** A packed quaternion key: signed Q15 vector components followed by a signed key value. */
 struct BattleQuaternionKey
@@ -107,7 +138,7 @@ struct BattlePointFlagFields40
     u8 flag50;
 };
 
-extern "C" void func_4E8EE0(void* vector);
+extern "C" void func_4E8EE0(void* vector, ...);
 
 struct BattleVectorSlot20
 {
@@ -139,6 +170,35 @@ struct BattleGetters18
     u32 unk10;
     u8 pad14[4];
     s16 unk18;
+};
+
+struct BattleFloatSpanEntry8
+{
+    u32 unk00;
+    float value;
+};
+
+struct BattleFloatSpanEntry16
+{
+    u32 unk00;
+    float value;
+    u8 unk08[8];
+};
+
+struct BattleFloatSpanView18
+{
+    u8 pad00[4];
+    BattleFloatSpanEntry8* entries;
+    u8 pad08[0x10];
+    s16 index;
+};
+
+struct BattleFloatSpanView20
+{
+    u8 pad00[4];
+    BattleFloatSpanEntry16* entries;
+    u8 pad08[0x18];
+    s16 index;
 };
 
 struct BattleGetters48
@@ -449,7 +509,16 @@ void func_00218D10(BattlePointFlagFields30* object)
     func_4E8EE0(&object->x);
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00218D40);
+void func_00218D40(u8* object, float x, float y, float z)
+{
+    N66Vector4Source value;
+    object[0x50] = 1;
+    value.x = x;
+    value.y = y;
+    value.z = z;
+    value.w = 1.0f;
+    func_4E8EE0(object + 0x30, &value.x);
+}
 
 extern "C" void func_00218D80(BattlePointFlagSlot40* object, const unsigned __int128* value)
 {
@@ -578,7 +647,17 @@ void func_00219270(BattleStateByte60* object)
     object->unk60 = 0;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_00219280);
+/** Build a four-word stack value and return its address. */
+void* func_00219280(void)
+{
+    s32 stack[4];
+    stack[0] = 0;
+    stack[3] = 0x7149F2CA;
+    stack[1] = 0;
+    s32* result = stack;
+    stack[2] = 0;
+    return result;
+}
 
 void func_002192B0(BattleStateByte60* object)
 {
@@ -715,7 +794,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021B9
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021BC70);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021BCD0);
+void* func_0021BCD0(void* object)
+{
+    func_002206A0();
+    *(void**)object = D_17BB30;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021BD10);
 
@@ -725,7 +809,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021BF
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021C200);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021C260);
+void* func_0021C260(void* object)
+{
+    func_002210E0();
+    *(void**)object = D_17ACD0;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021C2A0);
 
@@ -735,7 +824,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021C4
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021C7B0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021C810);
+void* func_0021C810(void* object)
+{
+    func_00221150();
+    *(void**)object = D_179540;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021C850);
 
@@ -793,13 +887,22 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021CB
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021CC10);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021CC40);
+struct ResetVector90_00212EE0 { u8 pad[0x90]; FieldVec4B value; };
+
+void func_0021CC40(void* object)
+{
+    ((ResetVector90_00212EE0*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    func_0021EE40(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021CC80);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D170);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D1E0);
+extern "C" void func_0021D1E0(const void* object, FieldVec4B* output)
+{
+    *output = *(const FieldVec4A*)((const u8*)object + 0xA0);
+}
 
 void func_0021D200(void* object)
 {
@@ -808,7 +911,15 @@ void func_0021D200(void* object)
     func_0021F310(object);
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D220);
+void func_0021D220(const void* object, float* output)
+{
+    const BattleFloatSpanView18* receiver = (const BattleFloatSpanView18*)object;
+    BattleFloatSpanEntry8* entries = receiver->entries;
+    if (entries != 0)
+    {
+        *output = entries[receiver->index - 1].value - entries[0].value;
+    }
+}
 
 void func_0021D250(const BattleFloatFields50* object, float* output)
 {
@@ -821,7 +932,14 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D2
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D300);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D380);
+void* func_0021D380(void* receiver)
+{
+    N59Receiver0_00212EE0* object = (N59Receiver0_00212EE0*)receiver;
+    func_0021E600(receiver);
+    object->vtable = D_158920;
+    object->unk00 = 0;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D3C0);
 
@@ -829,7 +947,13 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D4
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D4F0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D570);
+struct ResetVectorB0_00212EE0 { u8 pad[0xB0]; FieldVec4B value; };
+
+void func_0021D570(void* object)
+{
+    ((ResetVectorB0_00212EE0*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    func_0021FA00(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021D5B0);
 
@@ -849,7 +973,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E0
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E150);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E190);
+extern "C" void func_0021E190(const void* object, FieldVec4B* output)
+{
+    *output = *(const FieldVec4A*)((const u8*)object + 0xC0);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E1B0);
 
@@ -875,7 +1002,15 @@ void func_0021E410(const BattleFloatFields50* object, float* output)
     *output = object->unk50;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E420);
+void func_0021E420(const void* object, float* output)
+{
+    const BattleFloatSpanView20* receiver = (const BattleFloatSpanView20*)object;
+    BattleFloatSpanEntry16* entries = receiver->entries;
+    if (entries != 0)
+    {
+        *output = entries[receiver->index - 1].value - entries[0].value;
+    }
+}
 
 void* func_0021E450(void* object)
 {
@@ -895,7 +1030,12 @@ void* func_0021E4D0(void* object)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E4F0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E540);
+void* func_0021E540(void* object)
+{
+    ((BattleWrapperPointerSlots*)object)->field1C = D_1588F0;
+    func_0021E580(object);
+    return object;
+}
 
 void func_0021E580(void* object)
 {
@@ -906,7 +1046,12 @@ void func_0021E580(void* object)
     state->unk18 = 0;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E5A0);
+void* func_0021E5A0(void* object)
+{
+    ((BattleWrapperPointerSlots*)object)->field1C = D_1588E0;
+    func_0021E5E0(object);
+    return object;
+}
 
 void func_0021E5E0(void* object)
 {
@@ -917,7 +1062,12 @@ void func_0021E5E0(void* object)
     state->unk18 = 0;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00212EE0", func_0021E600);
+void* func_0021E600(void* object)
+{
+    ((BattleWrapperPointerSlots*)object)->field10 = D_1588D0;
+    func_0021E640(object);
+    return object;
+}
 
 void func_0021E640(void* object)
 {

@@ -5,6 +5,7 @@
 
 #ifdef __cplusplus
 extern "C" {
+void func_001F84D0(u8* object);
 #endif
 
 /** Forward the receiver to func_001F30E0. */

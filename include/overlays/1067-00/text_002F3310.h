@@ -43,6 +43,9 @@ extern "C" {
  */
 void func_002F9760(FieldByte60F3310* object);
 
+/** Submit the object's embedded payload at offset 0x90 when the object is present. */
+void func_002F97E0(void* object);
+
 
 #ifdef __cplusplus
 /**

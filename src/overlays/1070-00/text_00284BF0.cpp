@@ -1036,11 +1036,38 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_00290D
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_00290E20);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_00291370);
+static inline s32 field_has_flag_n56(FieldFlagTarget204* target, u32 mask)
+{
+    if (target->flags & mask)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+s32 func_00291370(FieldFlagCallback10* object)
+{
+    FieldFlagHandle78* handle = object->handle;
+    if (field_has_flag_n56(handle->target, 0x400))
+    {
+        handle->value = 1.0f;
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_002913B0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_002914F0);
+s32 func_002914F0(FieldFlagCallback10* object)
+{
+    FieldFlagHandle78* handle = object->handle;
+    if (field_has_flag_n56(handle->target, 0x100))
+    {
+        handle->value = 1.0f;
+        return 0;
+    }
+    return 1;
+}
 
 s32 func_00291530(const void* receiver)
 {
@@ -1111,7 +1138,16 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_002921
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_00292230);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_00292480);
+s32 func_00292480(FieldFlagCallback10* object)
+{
+    FieldFlagHandle78* handle = object->handle;
+    if (field_has_flag_n56(handle->target, 0x1))
+    {
+        handle->value = 1.0f;
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_002924C0);
 

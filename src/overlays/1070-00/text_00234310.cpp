@@ -2,6 +2,9 @@
 #include "overlays/1070-00/text_00234310.h"
 #include "overlays/1070-00/text_00284BF0.h"
 
+extern "C" void func_494D80(void* object);
+extern "C" u8 D_178C60[];
+extern "C" u8 D_1799E0[];
 extern "C" void func_00234930(void* object);
 extern "C" FieldContextRef* D_001B64B0;
 extern "C" void* D_001B6620;
@@ -561,9 +564,23 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_00239D
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_00239E30);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_00239E90);
+extern "C" void* func_00239E90(void* object)
+{
+    func_494D80(object);
+    *(void**)object = D_178C60;
+    *(u32*)((u8*)object + 0x44) = 0;
+    *((u8*)object + 0x3C) = 6;
+    return object;
+}
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_00239ED0);
+extern "C" void* func_00239ED0(void* object)
+{
+    func_494D80(object);
+    *(void**)object = D_1799E0;
+    *(u32*)((u8*)object + 0x44) = 0;
+    *((u8*)object + 0x3C) = 5;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_00239F10);
 

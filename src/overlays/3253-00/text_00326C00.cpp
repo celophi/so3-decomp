@@ -1,4 +1,9 @@
 #include "include_asm.h"
+#include "overlays/3253-00/text_00326C00.h"
+
+extern "C" void func_003AF250(void* object);
+
+struct N53Flags54B_00326C00 { u8 pad[0x54B]; u8 first; u8 second; };
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_00326C00);
 
@@ -18,7 +23,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_003280
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_00328190);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_00328240);
+extern "C" void func_00328240(void* object)
+{
+    u8* receiver = static_cast<u8*>(object);
+    func_003AF250(receiver + 0x290);
+    receiver[0x391] = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_00328270);
 
@@ -140,7 +150,16 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_0032EC
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_0032EE80);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_0032F070);
+void func_0032F070(BattleObject2F26* object, u8 current, u8 previous)
+{
+    if (previous == 0xD)
+    {
+        N53Flags54B_00326C00* state = (N53Flags54B_00326C00*)object;
+        state->first = 1;
+        state->second = 1;
+    }
+    func_00292930(object, current, previous);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_0032F0B0);
 
@@ -220,7 +239,16 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_003336
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_00333680);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_00333720);
+void func_00333720(BattleObject2F26* object, u8 current, u8 previous)
+{
+    if (previous == 0xD)
+    {
+        N53Flags54B_00326C00* state = (N53Flags54B_00326C00*)object;
+        state->first = 1;
+        state->second = 1;
+    }
+    func_00292930(object, current, previous);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_00333760);
 
@@ -270,7 +298,20 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_00335F
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_00336310);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_00336590);
+typedef struct BattleResetWrapperState00336590
+{
+    u8 unk00[0x2FA4];
+    u32 unk2FA4;
+    u32 unk2FA8;
+} BattleResetWrapperState00336590;
+
+void func_00336590(BattleObject2F26* object, u8 current, u8 previous)
+{
+    BattleResetWrapperState00336590* receiver = (BattleResetWrapperState00336590*)object;
+    receiver->unk2FA8 = 0;
+    receiver->unk2FA4 = 0;
+    func_00292930(object, current, previous);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00326C00", func_003365B0);
 

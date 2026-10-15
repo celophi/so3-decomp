@@ -63,6 +63,9 @@ void func_002B3690(BattleObject1F8* object, u32 value);
  */
 void func_002B3B60(BattleParent23* object);
 
+/** Return the selected child's byte at offset 0x204, or zero when absent. */
+s32 func_002B3B90(BattleParent23* object);
+
 /**
  * @brief Store a byte in the selected child at offset 0x209 when a child is present.
  * @param object Battle object containing the selected child.
@@ -82,6 +85,9 @@ void func_002B3BF0(BattleParent23* object);
  * @param value Value to store.
  */
 void func_002B3CD0(BattleParent23* object, u8 value);
+
+/** Return the selected child's byte at offset 0x206, or zero when absent. */
+s32 func_002B3D40(BattleParent23* object);
 
 /**
  * @brief Store a float in the selected child at offset 0x90 when a child is present.
@@ -152,6 +158,18 @@ void func_002B59C0(void* object);
  * @return Always 4.
  */
 s32 func_002B59D0(void* object);
+
+/**
+ * @brief Pass the pointer at offset 4 to the field counter.
+ * @param receiver Object containing the pointer.
+ */
+void func_002B59E0(void* receiver);
+
+/**
+ * @brief Pass the pointer at offset 4 to the field validator.
+ * @param receiver Object containing the pointer.
+ */
+void func_002B5A00(void* receiver);
 
 /**
  * @brief Perform no work.

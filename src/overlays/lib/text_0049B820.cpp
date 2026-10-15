@@ -1,7 +1,11 @@
 #include "include_asm.h"
 #include "overlays/lib/text_0049B820.h"
+#include "overlays/lib/text_004DD440.h"
+#include "main/resident_0010A0E0.h"
 
 extern "C" void func_004D00B0(void* object);
+extern "C" void func_0011ED90(void* queue, void* submission);
+extern "C" void* D_001B65F4;
 
 /** Partial word-array owner with its native virtual pointer after the data fields. */
 class LibResourceBitset
@@ -125,7 +129,28 @@ s32 func_004A08B0(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A08C0);
+typedef struct MappedEntry004A08C0
+{
+    u8 unk00[0x140];
+} MappedEntry004A08C0;
+
+typedef struct MappedOwner004A08C0
+{
+    u8 unk00[0x14];
+    MappedEntry004A08C0* entries;
+} MappedOwner004A08C0;
+
+extern "C" void* func_004A08C0(const void* object, s32 index)
+{
+    const MappedOwner004A08C0* owner = (const MappedOwner004A08C0*)object;
+    MappedEntry004A08C0* item = &owner->entries[index];
+    void* result = item;
+    if (item != 0)
+    {
+        result = (u8*)item + 0x140;
+    }
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A08F0);
 
@@ -257,7 +282,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A42A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A43C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A4510);
+void func_004A4510(void* receiver)
+{
+    u8* object = (u8*)receiver;
+    *(u8*)(object + 0x64) = 1;
+    *(volatile u32*)0x10009020 = 0;
+    *(volatile u32*)0x10009030 = *(u32*)(object + 0x710);
+    *(volatile u32*)0x1000E010 = 2;
+    *(volatile u32*)0x10009000 = 0x105;
+}
 
 /** Forward the receiver to func_004D00B0. */
 void func_004A4550(void* object)
@@ -265,7 +298,16 @@ void func_004A4550(void* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A4570);
+/** Queue the DMA submission embedded at offset 0x640 when present. */
+s32 func_004A4570(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x640);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A45A0);
 
@@ -447,7 +489,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A90E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9120);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A91F0);
+extern "C" void func_004A91F0(void* object)
+{
+    u8* submission = static_cast<u8*>(object);
+    if (object != 0)
+    {
+        submission += 0x14;
+    }
+    func_0011ED90(D_001B65F4, submission);
+}
 
 void func_004A9220(void* object)
 {

@@ -1,6 +1,10 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_0029F140.h"
 
+extern "C" {
+
+extern void func_002AF060(void* object, float value, void* first, void* second);
+
 struct ObjAAAA0
 {
     u8 unk00[0x590];
@@ -27,6 +31,13 @@ struct ObjAE810
 {
     u8 unk00[0x1F8];
     void* unk1F8;
+};
+
+struct SelectedChildParent23
+{
+    void* children[8];
+    u8 pad20[3];
+    u8 selector;
 };
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_0029F140);
@@ -256,7 +267,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AE5
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AE610);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AE780);
+void func_002AE780(void* object, float value, void* first, void* second)
+{
+    func_002AF060((u8*)object + 0x1F0, value, first, second);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AE7A0);
 
@@ -275,7 +289,16 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AEC
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AED00);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AED30);
+s32 func_002AED30(void* object)
+{
+    SelectedChildParent23* parent = static_cast<SelectedChildParent23*>(object);
+    u8* child = static_cast<u8*>(parent->children[parent->selector]);
+    if (child == 0)
+    {
+        return 0;
+    }
+    return child[0x204];
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AED60);
 
@@ -289,7 +312,16 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AEE
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AEEA0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AEEE0);
+s32 func_002AEEE0(void* object)
+{
+    SelectedChildParent23* parent = static_cast<SelectedChildParent23*>(object);
+    u8* child = static_cast<u8*>(parent->children[parent->selector]);
+    if (child == 0)
+    {
+        return 0;
+    }
+    return child[0x206];
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AEF10);
 
@@ -304,3 +336,4 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AF0
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AF060);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0029F140", func_002AF0F0);
+}

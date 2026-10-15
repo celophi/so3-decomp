@@ -4,6 +4,7 @@
 #include "types.h"
 struct FieldClass151510;
 struct FieldVec4B;
+typedef struct N50OwnerC4_1067 N50OwnerC4_1067;
 #ifdef __cplusplus
 #include "overlays/1067-00/text_002DBC50.h"
 #endif
@@ -237,6 +238,9 @@ s32 func_00224CD0(void* object);
  * @return Always 3.
  */
 s32 func_00229240(void* object);
+
+/** Set the active flag and forward the optional child pointer. */
+void func_0022A2D0(N50OwnerC4_1067* object);
 
 #ifdef __cplusplus
 }

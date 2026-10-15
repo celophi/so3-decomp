@@ -2,6 +2,9 @@
 #include "overlays/3253-00/text_00285100.h"
 
 extern "C" s32 func_002B08B0(void* object);
+extern "C" s32 func_002983E0(void* object);
+extern "C" s32 func_002A4B00(void* object);
+extern "C" void func_002A5B60(void* object, s32 value);
 
 struct BattleObject2E0B
 {
@@ -33,7 +36,13 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_002851
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_00285190);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_002851E0);
+void func_002851E0(void* object)
+{
+    if (func_002A4B00(object))
+    {
+        func_002A5B60(object, 0);
+    }
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_00285220);
 
@@ -56,7 +65,13 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_00285A
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_00285C50);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_00285DE0);
+void func_00285DE0(void* object)
+{
+    if (func_002983E0(object))
+    {
+        func_002A5B60(object, 0);
+    }
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00285100", func_00285E20);
 

@@ -7,6 +7,9 @@
 #include "main/resident_0010A0E0.h"
 #include "main/resident_data.h"
 
+extern "C" void func_4486A0(void* object);
+extern "C" void func_448250(FieldState634* object);
+
 
 /** @brief Destroy the derived shape storage and release its owned base buffer. */
 FieldClass154D20::~FieldClass154D20()
@@ -114,7 +117,11 @@ void FieldClass154EF0::func_slot28()
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272B50);
+void func_00272B50(void* object)
+{
+    func_4486A0((u8*)object + 0x5A4);
+    func_448250((FieldState634*)object);
+}
 
 void FieldClass154EF0::func_slot2c()
 {

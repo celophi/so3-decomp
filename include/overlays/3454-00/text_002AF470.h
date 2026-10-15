@@ -5,7 +5,18 @@
 
 #ifdef __cplusplus
 extern "C" {
+void func_002B3BE0(u8* object, void* context);
+void func_002B0EF0(u8* receiver, void* value1, void* value2, void* value3);
+/** Set the output values when the input float is positive. */
+s32 func_002B0AF0(void* object, const void* value, float* zero_output, float* small_output);
 #endif
+
+/** Call the object cleanup helper, then clear the byte at receiver offset 0x570. */
+void func_002B3D20(void* receiver);
+/** Initialize the object and store the resolved field value at offset 0x2F0C. */
+void func_002B5490(void* receiver);
+/** Initialize the object and store the resolved field value at offset 0x2F24. */
+void func_002BAB10(void* receiver);
 
 /**
  * @brief Perform no work.
@@ -19,6 +30,38 @@ void func_002B0880(void* object);
  * @return Always 4.
  */
 s32 func_002B0890(void* object);
+
+/**
+ * @brief Pass the pointer at offset 4 to the field counter.
+ * @param receiver Object containing the pointer.
+ */
+void func_002B08A0(void* receiver);
+
+/**
+ * @brief Pass the pointer at offset 4 to the field validator.
+ * @param receiver Object containing the pointer.
+ */
+void func_002B08C0(void* receiver);
+
+/**
+ * @brief Count the set entries for the supplied object.
+ * @param object Input object.
+ * @return Number of set entries.
+ */
+s32 func_002B1380(void* object);
+
+/**
+ * @brief Validate the supplied field object.
+ * @param object Input object.
+ * @return Validation result.
+ */
+s32 func_002B1300(void* object);
+
+/**
+ * @brief Resolve the nested word value and store the result.
+ * @param object Object containing the input and result fields.
+ */
+void func_002BDF20(void* object);
 
 /**
  * @brief Perform no work.

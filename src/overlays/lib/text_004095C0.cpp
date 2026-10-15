@@ -381,7 +381,23 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411CC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411D50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411DD0);
+extern "C" void* func_00411DD0(void* object, s32 count)
+{
+    void* node;
+    s32 traversed;
+    node = *(void**)(*(u8**)object + 4);
+    traversed = 0;
+    while (traversed < count)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = *(void**)((u8*)node + 4);
+        traversed += 1;
+    }
+    return node;
+}
 
 void func_00411E10(void* object)
 {
@@ -391,7 +407,11 @@ void func_00411E20(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411E30);
+extern "C" void func_00411E30(void* object)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x60] = bytes[0xA8];
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411E40);
 

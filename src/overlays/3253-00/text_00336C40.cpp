@@ -2,6 +2,8 @@
 #include "overlays/3253-00/text_00285100.h"
 #include "overlays/3253-00/text_00336C40.h"
 
+extern "C" void func_00286130(void* object);
+
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_00336C40);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_00336CC0);
@@ -100,7 +102,18 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_0033DC
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_0033DD00);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_0033DD80);
+struct N53Flags54B_00336C40 { u8 pad[0x54B]; u8 first; u8 second; };
+
+void func_0033DD80(BattleObject2F26* object, u8 current, u8 previous)
+{
+    if (previous == 0xD)
+    {
+        N53Flags54B_00336C40* state = (N53Flags54B_00336C40*)object;
+        state->first = 1;
+        state->second = 1;
+    }
+    func_00292930(object, current, previous);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_0033DDC0);
 
@@ -118,7 +131,15 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_0033E5
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_0033EA20);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_0033EB10);
+struct FloatField2FA4_00336C40 { u8 pad[0x2FA4]; float value; };
+
+void func_0033EB10(void* object)
+{
+    if (((FloatField2FA4_00336C40*)object)->value == 0.0f)
+    {
+        func_00286130(object);
+    }
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_0033EB50);
 
@@ -189,7 +210,16 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_003420
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_003420F0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_00342200);
+void func_00342200(BattleObject2F26* object, u8 current, u8 previous)
+{
+    if (previous == 0xD)
+    {
+        N53Flags54B_00336C40* state = (N53Flags54B_00336C40*)object;
+        state->first = 1;
+        state->second = 1;
+    }
+    func_00292930(object, current, previous);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00336C40", func_00342240);
 

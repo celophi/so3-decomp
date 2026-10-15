@@ -5,13 +5,39 @@
 
 #ifdef __cplusplus
 extern "C" {
+void func_002117B0(u8* object, float x, float y, float z);
 #endif
+
+/** Install the record's pointer at offset 0x1C, reset it, and return it. */
+void* func_00216A70(void* object);
+/** Install the record's pointer at offset 0x1C, reset it, and return it. */
+void* func_00216AD0(void* object);
+/** Install the record's pointer at offset 0x10, reset it, and return it. */
+void* func_00216B30(void* object);
+
+/** Initialize the receiver and install its primary vtable. */
+void* func_00214320(void* object);
+/** Initialize the receiver and install its primary vtable. */
+void* func_00214820(void* object);
+/** Initialize the receiver and install its primary vtable. */
+void* func_00214D40(void* object);
+
+/** Mark the transform as changed and copy a four-float value into it. */
+void func_00211750(void* object, const float* input);
+/** Mark the transform as changed and copy a four-float value into it. */
+void func_00211780(void* object, const float* input);
 
 /** Forward the receiver to the shared animation helper. */
 void func_00214F20(void* object);
 
 /** Forward the receiver and interpolation key, returning the interpolated value. */
 float func_002150C0(void* object, float key);
+
+/** Write the difference between the selected 8-byte entry value and the first value. */
+void func_00215750(const void* object, float* output);
+
+/** Write the difference between the selected 16-byte entry value and the first value. */
+void func_00216950(const void* object, float* output);
 
 /**
  * @brief Perform no work.
@@ -50,6 +76,13 @@ void func_00211950(void* object);
  * @return Always 0.
  */
 s32 func_00211960(void* object);
+
+/**
+ * @brief Test whether a floating-point value is less than zero.
+ * @param value Value to test.
+ * @return One when negative, zero otherwise.
+ */
+s32 func_00211970(float value);
 
 /** Clear the byte at receiver offset 0x60. */
 void func_00211940(void* object);
@@ -498,6 +531,9 @@ void func_00211DD0(void* object);
 /** Clear the byte at receiver offset 0x60. */
 void func_00211DE0(void* object);
 
+/** Build and return a pointer to the four-word stack value. */
+void* func_00211DF0(void);
+
 /** Store the byte constant at receiver offset 0x60. */
 void func_00211E20(void* object);
 
@@ -654,7 +690,10 @@ void func_0021B3B0(void* object, u8 mode);
 void func_0021BAF0(void* object, u8 mode);
 
 
-/** Find a key in the receiver's fixed-size entry array. */
+/** Clear the vector at offset 0x90 and update the associated state. */
+void func_00215170(void* object);
+/** Clear the vector at offset 0xB0 and update the associated state. */
+void func_00215AA0(void* object);
 s32 func_00217F80(void* object, float key);
 
 /** Find a key in the receiver's fixed-size entry array. */
@@ -672,6 +711,8 @@ s32 func_0021B540(void* object, float key);
 /** Find a key in the receiver's fixed-size entry array. */
 s32 func_0021C200(void* object, float key);
 
+/** Initialize the object, vtable, and first word, then return it. */
+void* func_002158B0(void* receiver);
 
 }
 #endif

@@ -1,6 +1,12 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002E1870.h"
 #include "overlays/1067-00/field_runtime.h"
+#include "overlays/1067-00/text_002CD390.h"
+
+extern "C" {
+
+extern void func_002F30A0(FieldCountedList* list, void* value);
+
 
 /** Partial attached state with two status words. */
 typedef struct FieldAttached148
@@ -220,7 +226,10 @@ u8 func_002EED90(const FieldObject2EDFD0* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EEDA0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002EEE00);
+void func_002EEE00(FieldObject2EDFD0* object, void* value)
+{
+    func_002F30A0((FieldCountedList*)((u8*)object + 0x104C), value);
+}
 
 void func_002EEE20(FieldObject2EDFD0* object, s16 value, u8 flag)
 {
@@ -288,3 +297,4 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002F0E
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002F11F0);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002F17F0);
+}

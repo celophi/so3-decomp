@@ -317,6 +317,15 @@ s32 func_003C7170(void* object);
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
+/** Recompute the receiver's scale at offset 0x70 after its update. */
+void func_003C6A20(void* object);
+
+/** Recompute the receiver's scale at offset 0x60 after its update. */
+void func_003C6AC0(void* object);
+
+/** Recompute the receiver's scale at offset 0x60 after its update. */
+void func_003C6B60(void* object);
+
 void func_003C7180(void* object);
 
 /**

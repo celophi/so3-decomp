@@ -321,6 +321,9 @@ void func_002CC6D0(unsigned __int128* vector);
  */
 void func_002D5540(void* object, float* result);
 
+/** Clear the vector at offset 0x90 and update the associated state. */
+void func_002D4F60(void* object);
+
 /**
  * @brief Run the receiver's two cleanup operations in order.
  * @param object Receiver to clean up.

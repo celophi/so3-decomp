@@ -2,6 +2,10 @@
 #include "overlays/1070-00/text_00234310.h"
 #include "overlays/1070-00/text_002649B0.h"
 
+extern "C" void* __vt__16FieldClass16AB70;
+extern "C" u8 D_16CF78[];
+extern "C" u8 D_16D0B0[];
+extern "C" u8 D_1708B0[];
 extern "C" void func_4DC5C0(void);
 extern "C" FieldContextRef* D_001B64B0;
 extern "C" void func_00209330(void* object);
@@ -89,7 +93,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_002658
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00265A70);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00265B90);
+void func_00265B90(FieldFlagAt20* object)
+{
+    func_00237FF0(object);
+    if (object->unk20_2)
+    {
+        return;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00265BC0);
 
@@ -129,7 +140,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00266A
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00266E40);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00267340);
+void func_00267340(FieldFlagAt20* object)
+{
+    func_00237FF0(object);
+    if (object->unk20_2)
+    {
+        return;
+    }
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00267370);
 
@@ -1508,7 +1526,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026CB
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026CCD0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026D230);
+extern "C" void* func_0026D230(void* receiver)
+{
+    *(void**)receiver = &__vt__16FieldClass16AB70;
+    *(void**)receiver = D_16CF78;
+    *(void**)receiver = D_16D0B0;
+    *(void**)receiver = D_1708B0;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026D270);
 

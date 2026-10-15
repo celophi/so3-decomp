@@ -2290,6 +2290,9 @@ void func_002BC260(void* object);
  */
 void func_002BC270(void* object);
 
+/** Run the two ordered receiver update helpers. */
+void func_002B1B90(void* object);
+
 #ifdef __cplusplus
 }
 #endif

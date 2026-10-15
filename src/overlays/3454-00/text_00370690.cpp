@@ -1,6 +1,7 @@
 #include "include_asm.h"
 #include "types.h"
 
+extern "C" void func_003776F0(void* first, void* second, void* third, void* fourth, u32 flags);
 extern "C" void func_0035D2B0(void* object, s32 value);
 
 extern "C" void func_00338840(void* object, s32 value);
@@ -11,8 +12,12 @@ extern "C" void func_0032E520(void* object, s32 value);
 #include "overlays/3454-00/text_00370690.h"
 
 extern "C" {
+void func_0027E740(void* object);
+void func_0027EAF0(void* object);
+s32 func_0027E420(void);
 void func_00318860(void* object);
 void func_003527E0(void* object);
+void func_003B41F0(void* object);
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00370690);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00370710);
@@ -41,7 +46,16 @@ void func_00370A40(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00370A50);
+void func_00370A50(void* object)
+{
+    u8* state = static_cast<u8*>(object);
+    if (*(u32*)(state + 0x284) == 0)
+    {
+        func_003B41F0(state + 0xD0);
+        state[0x1DD] = 0;
+        (*(u32*)(state + 0x284))++;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00370A90);
 
@@ -121,11 +135,32 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003717
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003717E0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00371850);
+struct FloatField6A8_00370690 { u8 pad[0x6A8]; float value; };
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00371890);
+void func_00371850(void* object)
+{
+    if (((FloatField6A8_00370690*)object)->value == 0.0f)
+    {
+        func_0027EAF0(object);
+    }
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003718D0);
+void func_00371890(void* object)
+{
+    if (((FloatField6A8_00370690*)object)->value == 0.0f)
+    {
+        func_0027E740(object);
+    }
+}
+
+s32 func_003718D0(void* object)
+{
+    if (((FloatField6A8_00370690*)object)->value != 0.0f)
+    {
+        return 0;
+    }
+    return func_0027E420();
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00371910);
 
@@ -173,11 +208,24 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00371F
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00372050);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003720C0);
+void func_003720C0(void* object)
+{
+    if (((FloatField6A8_00370690*)object)->value == 0.0f)
+    {
+        func_0027EAF0(object);
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00372100);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00372150);
+s32 func_00372150(void* object)
+{
+    if (((FloatField6A8_00370690*)object)->value != 0.0f)
+    {
+        return 0;
+    }
+    return func_0027E420();
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00372190);
 
@@ -205,11 +253,30 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003726
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003726C0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00372730);
+void func_00372730(void* object)
+{
+    if (((FloatField6A8_00370690*)object)->value == 0.0f)
+    {
+        func_0027EAF0(object);
+    }
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00372770);
+void func_00372770(void* object)
+{
+    if (((FloatField6A8_00370690*)object)->value == 0.0f)
+    {
+        func_0027E740(object);
+    }
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003727B0);
+s32 func_003727B0(void* object)
+{
+    if (((FloatField6A8_00370690*)object)->value != 0.0f)
+    {
+        return 0;
+    }
+    return func_0027E420();
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003727F0);
 
@@ -308,11 +375,24 @@ extern "C" void func_00373810(void* object)
     func_0035D2B0(object, 1);
 }
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00373830);
+void func_00373830(void* object)
+{
+    if (((FloatField6A8_00370690*)object)->value == 0.0f)
+    {
+        func_0027EAF0(object);
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00373870);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003738D0);
+s32 func_003738D0(void* object)
+{
+    if (((FloatField6A8_00370690*)object)->value != 0.0f)
+    {
+        return 0;
+    }
+    return func_0027E420();
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00373910);
 
@@ -536,7 +616,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003751
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00375240);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00375280);
+void func_00375280(u8* receiver, void* value1, void* value2, void* value3)
+{
+    u8* adjusted = receiver;
+    if (adjusted != 0) {
+        adjusted = adjusted + 0xD0;
+    }
+    func_003776F0(receiver + 0x220, adjusted, value1, value2, 1);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003752C0);
 

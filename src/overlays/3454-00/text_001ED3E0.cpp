@@ -290,7 +290,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F78
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F81B0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001ED3E0", func_001F84D0);
+void func_001F84D0(u8* object)
+{
+    object[0x64] = 1;
+    *(volatile u32*)0x10009020 = *(u32*)(object + 0x9C);
+    *(volatile u32*)0x10009010 = *(u32*)(object + 0xA0);
+    *(volatile u32*)0x1000E010 = 2;
+    *(volatile u32*)0x10009000 = 0x101;
+}
 
 void func_001F8510(void* object)
 {

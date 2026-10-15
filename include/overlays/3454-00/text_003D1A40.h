@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+typedef struct N50Owner98_003D1A40 N50Owner98_003D1A40;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1379,6 +1381,9 @@ void func_003DB1A0(void* object);
 
 /** Store the byte constant at receiver offset 0x60. */
 void func_003DC050(void* object);
+
+/** Set the active flag and forward the optional child pointer. */
+void func_003DB550(N50Owner98_003D1A40* object);
 
 #ifdef __cplusplus
 }

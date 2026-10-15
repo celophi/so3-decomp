@@ -23,7 +23,22 @@ struct BattleStateByte60;
 
 #ifdef __cplusplus
 extern "C" {
+void func_00218D40(u8* object, float x, float y, float z);
 #endif
+
+/** Install the record's pointer at offset 0x1C, reset it, and return it. */
+void* func_0021E540(void* object);
+/** Install the record's pointer at offset 0x1C, reset it, and return it. */
+void* func_0021E5A0(void* object);
+/** Install the record's pointer at offset 0x10, reset it, and return it. */
+void* func_0021E600(void* object);
+
+/** Initialize the receiver and install its primary vtable. */
+void* func_0021BCD0(void* object);
+/** Initialize the receiver and install its primary vtable. */
+void* func_0021C260(void* object);
+/** Initialize the receiver and install its primary vtable. */
+void* func_0021C810(void* object);
 
 /** Forward to the no-argument reset routine. */
 void func_0021C9F0(void);
@@ -271,6 +286,9 @@ s32 func_00219250(void* object);
  * @return Always 0.
  */
 s32 func_00219260(void* object);
+
+/** Build and return a pointer to the four-word stack value. */
+void* func_00219280(void);
 
 /**
  * @brief Perform no work.
@@ -862,11 +880,21 @@ void func_0021FB40(void* object, u8 mode);
 void func_002200F0(void* object, u8 mode);
 
 
-/** Find a key in the receiver's fixed-size entry array. */
+/** Clear the vector at offset 0x90 and update the associated state. */
+void func_0021CC40(void* object);
+/** Clear the vector at offset 0xB0 and update the associated state. */
+void func_0021D570(void* object);
+s32 func_0021FC00(void* object, float key);
 s32 func_0021F000(void* object, float key);
 
 /** Return the key span between the first and last entries. */
 float func_0021F070(void* object);
+
+/** Write the difference between the selected 8-byte entry value and the first value. */
+void func_0021D220(const void* object, float* output);
+
+/** Write the difference between the selected 16-byte entry value and the first value. */
+void func_0021E420(const void* object, float* output);
 float func_002203E0(void* object);
 float func_00220800(void* object);
 float func_00220DA0(void* object);
@@ -883,6 +911,8 @@ s32 func_00220850(void* object, float key);
 /** Find a key in the receiver's fixed-size entry array. */
 s32 func_00220DF0(void* object, float key);
 
+/** Initialize the object, vtable, and first word, then return it. */
+void* func_0021D380(void* receiver);
 
 }
 #endif

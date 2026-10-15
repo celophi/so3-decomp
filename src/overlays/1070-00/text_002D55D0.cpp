@@ -3,6 +3,10 @@
 #include "overlays/lib/vector.h"
 #include "overlays/1070-00/text_001E2B40.h"
 
+extern "C" void* __vt__16FieldClass16AB70;
+extern "C" u8 D_16CF78[];
+extern "C" u8 D_16D0B0[];
+extern "C" u8 D_1755D0[];
 extern "C" u8 D_1752C0[];
 
 /** Partial callback interface with a method at offset 0x58. */
@@ -1656,7 +1660,14 @@ void func_002DBD00(void* object, const void* source)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002DBD40);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002DC2B0);
+extern "C" void* func_002DC2B0(void* receiver)
+{
+    *(void**)receiver = &__vt__16FieldClass16AB70;
+    *(void**)receiver = D_16CF78;
+    *(void**)receiver = D_16D0B0;
+    *(void**)receiver = D_1755D0;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002D55D0", func_002DC2F0);
 

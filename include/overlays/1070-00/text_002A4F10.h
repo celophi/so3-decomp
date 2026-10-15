@@ -205,6 +205,9 @@ public:
 
 #ifdef __cplusplus
 extern "C" {
+void* func_002A8E50(void* receiver);
+
+void func_002B0A50(void* object, void* cell, void* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
 
 /** @brief Copy two words to the receiver, then pass them to its callback. */
 void func_002B0950(void* object, const void* source);

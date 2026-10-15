@@ -5,7 +5,16 @@
 
 #ifdef __cplusplus
 extern "C" {
+void* func_0047F130(void* receiver);
+void* func_0047EA30(void* receiver);
 #endif
+
+/** Return the mapped entry at the indexed 0x90-byte record's offset 0x60. */
+void* func_0047C6D0(const void* object, s32 index);
+/** Return the mapped entry after the indexed 0x60-byte record. */
+void* func_0047CE70(const void* object, s32 index);
+/** Return the mapped entry at the indexed 0x60-byte record's offset 0x30. */
+void* func_0047D610(const void* object, s32 index);
 
 /**
  * @brief Store the value at receiver offset 0x44.

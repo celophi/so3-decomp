@@ -4,6 +4,8 @@
 
 extern "C" {
 s32 func_00243E90(void* object, void* entry, s32 type, s32 flags);
+void func_4486A0(void* object);
+void func_448250(void* object);
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_0023D9F0);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_0023DAE0);
@@ -73,7 +75,11 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_002440
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_002440D0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_00244210);
+void func_00244210(void* object)
+{
+    func_4486A0((u8*)object + 0x5A4);
+    func_448250(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_00244240);
 

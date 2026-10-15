@@ -5,7 +5,22 @@
 
 #ifdef __cplusplus
 extern "C" {
+void func_002B60A0(u8* receiver, void* value1, void* value2, void* value3);
 #endif
+
+/**
+ * @brief Count the set entries for the supplied object.
+ * @param object Input object.
+ * @return Number of set entries.
+ */
+s32 func_002B6600(void* object);
+
+/**
+ * @brief Validate the supplied field object.
+ * @param object Input object.
+ * @return Validation result.
+ */
+s32 func_002B6580(void* object);
 
 /**
  * @brief Return the fixed value 4.

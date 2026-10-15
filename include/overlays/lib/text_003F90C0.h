@@ -7,6 +7,27 @@
 extern "C" {
 #endif
 
+/** Validate the checksum for the record fields beginning at 0x4C. */
+s32 func_003FF740(const void* object);
+
+/** Validate the checksum for the record fields beginning at 0x58. */
+s32 func_003FF8F0(const void* object);
+/** Validate the checksum for the record fields beginning at 0x40. */
+s32 func_003FFAC0(const void* object);
+/** Validate the checksum for the record fields beginning at 0x34. */
+s32 func_003FFE50(const void* object);
+
+/** Validate the checksum for the record fields beginning at zero. */
+s32 func_003FEFA0(const void* object);
+/** Validate the checksum for the record fields beginning at six. */
+s32 func_003FF0C0(const void* object);
+/** Validate the checksum for the record fields beginning at 0x76. */
+s32 func_003FF210(const void* object);
+/** Validate the checksum for the record fields beginning at 0x70. */
+s32 func_003FF3A0(const void* object);
+/** Validate the checksum for the record fields beginning at 0x7C. */
+s32 func_003FF500(const void* object);
+
 /**
  * @brief Read the selected pair of scaled byte values from the Lib table.
  * @param index Signed table row, defaulting to zero outside zero through nine.

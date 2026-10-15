@@ -1,4 +1,5 @@
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/matrix_vu0.h"
 #include "overlays/lib/quaternion_vu0.h"
@@ -8,9 +9,17 @@
 #include "overlays/lib/text_0046AE20.h"
 #include "sdk/main/libm_guess_0013F3E0.h"
 #include "include_asm.h"
+#include "overlays/lib/text_004DD440.h"
+#include "main/resident_0010A0E0.h"
 
 extern "C" void func_004D6C20(LibClass178DD0* list, void** items, u32* offsets);
 extern "C" void func_004D00B0(LibClass178A90* object);
+
+struct LibFieldPointer634
+{
+    u8 unk00[0x634];
+    void* unk634;
+};
 
 #define HALF_PI 1.57079637050628662109375f
 
@@ -750,7 +759,16 @@ extern "C" void func_004D04A0(LibClass178A90* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D04C0);
+/** Queue the DMA submission embedded at offset 0x90 when present. */
+s32 func_004D04C0(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x90);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D04F0);
 
@@ -767,7 +785,16 @@ extern "C" void func_004D0720(LibClass178A90* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0740);
+/** Queue the DMA submission embedded at offset 0x90 when present. */
+s32 func_004D0740(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x90);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0770);
 
@@ -901,7 +928,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6020);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6040);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6230);
+extern "C" void func_004D6230(void* receiver, u32 arg1, u32 arg2)
+{
+    LibFieldPointer634* object = (LibFieldPointer634*)receiver;
+    func_00448A10(object->unk634, arg1, arg2);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6250);
 

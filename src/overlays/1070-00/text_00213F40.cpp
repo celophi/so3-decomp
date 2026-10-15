@@ -2,6 +2,10 @@
 #include "overlays/1070-00/text_00202FB0.h"
 #include "overlays/1070-00/text_00213F40.h"
 
+extern "C" void* __vt__16FieldClass16AB70;
+extern "C" u8 D_16CF78[];
+extern "C" u8 D_16D0B0[];
+extern "C" u8 D_16D0A0[];
 extern "C" void func_43AC40(void* object);
 extern "C" void func_459DB0(void* object);
 extern "C" void func_459960(void* object);
@@ -388,7 +392,14 @@ void func_00216CB0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216CC0);
+extern "C" void* func_00216CC0(void* receiver)
+{
+    *(void**)receiver = &__vt__16FieldClass16AB70;
+    *(void**)receiver = D_16CF78;
+    *(void**)receiver = D_16D0B0;
+    *(void**)receiver = D_16D0A0;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00216D00);
 

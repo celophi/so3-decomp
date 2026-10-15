@@ -602,7 +602,13 @@ void func_002D4F30(void* object)
     func_002D7E50(D_001B6694, object);
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D4F60);
+struct ResetVector90_002C55D0 { u8 pad[0x90]; FieldVec4B value; };
+
+void func_002D4F60(void* object)
+{
+    ((ResetVector90_002C55D0*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    func_002D6D10((FieldSequenceState20*)object);
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002D4FA0);
 

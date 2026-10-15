@@ -10,6 +10,8 @@ extern "C" {
 
 /** Store the word at receiver offset 0x2FDC. */
 void func_0033BBC0(void* object, u32 value);
+/** Call the nested update helper and set two receiver state bytes. */
+void func_003368B0(void* object);
 
 #ifdef __cplusplus
 }

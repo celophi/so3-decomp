@@ -2,6 +2,7 @@
 #include "main/resident_0010A0E0.h"
 
 extern "C" {
+void func_00118880(void* object);
 typedef struct ConstantByteSetterOwnerresident_0010A0E0
 {
     u8 unk00[0x1012];
@@ -687,7 +688,10 @@ void func_001156B0(void* object, u32 value)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001156C0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115810);
+void func_00115810(void* object)
+{
+    func_00118880((u8*)object + 0xEC);
+}
 
 /** Return the word at receiver offset 0x104. */
 u32 func_00115830(const void* object)
@@ -804,11 +808,23 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DF90)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DFB0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DFF0);
+u16 func_0011DFF0(const void* object, s32 index)
+{
+    const u16* values = (const u16*)((const u8*)object + 0x26C);
+    return values[index];
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E000);
+u16 func_0011E000(const void* object, s32 index)
+{
+    const u16* values = (const u16*)((const u8*)object + 0x268);
+    return values[index];
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E010);
+u16 func_0011E010(const void* object, s32 index)
+{
+    const u16* values = (const u16*)((const u8*)object + 0x260);
+    return values[index];
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E020);
 

@@ -186,6 +186,9 @@ public:
 #ifdef __cplusplus
 extern "C" {
 
+/** Initialize the receiver and select state 3. */
+void* func_002EF540(void* object);
+
 /**
  * @brief Refresh the shared context's object at offset 0x44.
  * @return One after the update call.

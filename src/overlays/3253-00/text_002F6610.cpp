@@ -1,6 +1,13 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_002F6610.h"
 
+extern "C" void func_003AED70(void* object, void* value);
+extern "C" void func_003C3CA0(void* object);
+extern "C" void func_003C3FC0(...);
+extern "C" void func_003C46B0(void* object);
+extern "C" void func_003C4940(...);
+
+
 typedef struct ConstantByteSetterOwnertext_002F6610
 {
     u8 unk00[0x391];
@@ -112,23 +119,53 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FCE
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FCF70);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FD060);
+/** Run the paired update helpers in order. */
+void func_002FD060(void* object)
+{
+    func_003C3FC0();
+    func_003C3CA0(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FD090);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FD0E0);
+void func_002FD0E0(u8* object, void* unused, void* value)
+{
+    func_003AED70(object + 0x290, value);
+    func_003C3FC0(object);
+    func_003C3CA0(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FD120);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FD210);
+/** Run the paired update helpers in order. */
+void func_002FD210(void* object)
+{
+    func_003C4940();
+    func_003C46B0(object);
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FD240);
+void func_002FD240(u8* object, void* unused, void* value)
+{
+    func_003AED70(object + 0xD0, value);
+    func_003C4940(object);
+    func_003C46B0(object);
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FD280);
+void func_002FD280(u8* object, void* unused, void* value)
+{
+    func_003AED70(object + 0xD0, value);
+    func_003C4940(object);
+    func_003C46B0(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FD2C0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FD3B0);
+void func_002FD3B0(u8* object, void* unused, void* value)
+{
+    func_003AED70(object + 0x290, value);
+    func_003C3FC0(object);
+    func_003C3CA0(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002F6610", func_002FD3F0);
 

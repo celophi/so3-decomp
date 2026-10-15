@@ -53,8 +53,12 @@ segments:
     vram: 0x1dd3c0
     subsegments:
       - [0x40, c, text_001DD3C0]
+      - [0x3310, cpp, text_001E0690]
+      - [0x3370, c, text_001E06F0]
       - [0x10160, cpp, text_001ED4E0]
       - [0x21D20, c, text_001FF0A0]
+      - [0x22660, cpp, text_001FF9E0]
+      - [0x27D50, c, text_002050D0]
       # Linker padding: the data section starts on a 128-byte boundary.
       - [0x27D60, pad, text_end_align]
   - [0x27d80, bin, data]

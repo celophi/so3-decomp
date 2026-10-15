@@ -1,6 +1,9 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002F3310.h"
 
+extern "C" void func_114100(void* queue, void* submission);
+extern "C" void* D_001B6610;
+
 /** Partial receiver with a byte at offset 0x60. */
 struct FieldByte60F3310
 {
@@ -116,7 +119,15 @@ extern "C" void func_002F97C0(void* object)
     func_4D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F97E0);
+extern "C" void func_002F97E0(void* object)
+{
+    u8* submission = static_cast<u8*>(object);
+    if (object != 0)
+    {
+        submission += 0x90;
+    }
+    func_114100(D_001B6610, submission);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F9810);
 

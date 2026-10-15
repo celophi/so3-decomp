@@ -14,6 +14,13 @@ typedef struct LibEntryMetadata LibEntryMetadata;
 extern "C" {
 #endif
 
+void func_0047A010(void* object, void* cell, void* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
+
+/** Return the mapped entry at the indexed 0x120-byte record's offset 0xF0. */
+void* func_0047A860(const void* object, s32 index);
+/** Clear four state bytes before updating the row through the owner. */
+void func_0047A040(void* object, u8* state, void* row);
+
 /**
  * @brief Release the grid reference held by the linked Lib object.
  * @param object Linked object holding the grid.
@@ -365,6 +372,9 @@ void func_0047A810(void* object, const void* source);
 
 /** Return the receiver address at byte offset 0x830. */
 void* func_00479100(void* object);
+
+/** Store a byte at 0x59C and set bit 0 of the byte at 0x59D. */
+void func_00479160(void* object, u8 value);
 
 
 #ifdef __cplusplus

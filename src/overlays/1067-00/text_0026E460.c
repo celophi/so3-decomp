@@ -29,11 +29,43 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026E460", func_0026EA
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026E460", func_0026EA90);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026E460", func_0026EB20);
+void* func_0026EB20(void* object, s32 count)
+{
+    void* node;
+    s32 traversed;
+    node = *(void**)(*(u8**)object + 4);
+    traversed = 0;
+    while (traversed < count)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = *(void**)((u8*)node + 4);
+        traversed += 1;
+    }
+    return node;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026E460", func_0026EB60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026E460", func_0026EBF0);
+void* func_0026EBF0(void* object, s32 count)
+{
+    void* node;
+    s32 traversed;
+    node = *(void**)(*(u8**)object + 4);
+    traversed = 0;
+    while (traversed < count)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = *(void**)((u8*)node + 4);
+        traversed += 1;
+    }
+    return node;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026E460", func_0026EC30);
 

@@ -1,5 +1,7 @@
 #include "include_asm.h"
 #include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/text_004DD440.h"
+#include "main/resident_0010A0E0.h"
 
 extern "C" void func_004D00B0(void* object);
 
@@ -90,7 +92,16 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A0F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A130);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A170);
+/** Queue the DMA submission embedded at offset 0x90 when present. */
+s32 func_0041A170(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x90);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A1A0);
 
@@ -149,9 +160,24 @@ void func_0041AD80(void* object)
     ((LibReceiverByte60*)object)->unk60 = 7;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041AD90);
+/** Build a four-word stack value and return its address. */
+void* func_0041AD90(void)
+{
+    s32 stack[4];
+    stack[0] = 0;
+    stack[3] = 0x7149F2CA;
+    stack[1] = 0;
+    s32* result = stack;
+    stack[2] = 0;
+    return result;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041ADC0);
+/** @brief Clear the intrusive owner and call the transform release hook. */
+extern "C" void func_0041ADC0(LibClass178A90* object)
+{
+    object->owner = 0;
+    object->LibClass178A90::func_003EF740();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041ADE0);
 
@@ -161,7 +187,16 @@ void func_0041AE30(void* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041AE50);
+/** Queue the DMA submission embedded at offset 0x90 when present. */
+s32 func_0041AE50(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x90);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041AE80);
 
@@ -177,7 +212,16 @@ void func_0041D210(void* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D230);
+/** Queue the DMA submission embedded at offset 0x90 when present. */
+s32 func_0041D230(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x90);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D260);
 
@@ -185,7 +229,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E640);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E760);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E880);
+void func_0041E880(u8* object)
+{
+    object[0x64] = 1;
+    *(volatile u32*)0x10009020 = *(u32*)(object + 0x9C);
+    *(volatile u32*)0x10009010 = *(u32*)(object + 0xA0);
+    *(volatile u32*)0x1000E010 = 2;
+    *(volatile u32*)0x10009000 = 0x101;
+}
 
 /** Forward the receiver to func_004D00B0. */
 void func_0041E8C0(void* object)
@@ -193,7 +244,16 @@ void func_0041E8C0(void* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E8E0);
+/** Queue the DMA submission embedded at offset 0x90 when present. */
+s32 func_0041E8E0(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x90);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E910);
 
@@ -206,18 +266,48 @@ void func_0041F130(void* object)
     ((LibReceiverByte60*)object)->unk60 = 7;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F140);
+/** Build a four-word stack value and return its address. */
+void* func_0041F140(void)
+{
+    s32 stack[4];
+    stack[0] = 0;
+    stack[3] = 0x7149F2CA;
+    stack[1] = 0;
+    s32* result = stack;
+    stack[2] = 0;
+    return result;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F170);
+/** @brief Clear the intrusive owner and call the transform release hook. */
+extern "C" void func_0041F170(LibClass178A90* object)
+{
+    object->owner = 0;
+    object->LibClass178A90::func_003EF740();
+}
 
 void func_0041F190(void* object)
 {
     ((LibReceiverByte60*)object)->unk60 = 7;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F1A0);
+/** Build a four-word stack value and return its address. */
+void* func_0041F1A0(void)
+{
+    s32 stack[4];
+    stack[0] = 0;
+    stack[3] = 0x7149F2CA;
+    stack[1] = 0;
+    s32* result = stack;
+    stack[2] = 0;
+    return result;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F1D0);
+/** @brief Clear the intrusive owner and call the transform release hook. */
+extern "C" void func_0041F1D0(LibClass178A90* object)
+{
+    object->owner = 0;
+    object->LibClass178A90::func_003EF740();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F1F0);
 
@@ -236,9 +326,24 @@ void func_0041F250(void* object)
     ((LibReceiverByte60*)object)->unk60 = 7;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F260);
+/** Build a four-word stack value and return its address. */
+void* func_0041F260(void)
+{
+    s32 stack[4];
+    stack[0] = 0;
+    stack[3] = 0x7149F2CA;
+    stack[1] = 0;
+    s32* result = stack;
+    stack[2] = 0;
+    return result;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F290);
+/** @brief Clear the intrusive owner and call the transform release hook. */
+extern "C" void func_0041F290(LibClass178A90* object)
+{
+    object->owner = 0;
+    object->LibClass178A90::func_003EF740();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F2B0);
 
@@ -248,7 +353,16 @@ void func_0041F300(void* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F320);
+/** Queue the DMA submission embedded at offset 0x90 when present. */
+s32 func_0041F320(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x90);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F350);
 
@@ -333,7 +447,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00422850);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00422F70);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00423930);
+void func_00423930(u8* object)
+{
+    object[0x64] = 1;
+    *(volatile u32*)0x10009020 = *(u32*)(object + 0x234);
+    *(volatile u32*)0x10009010 = *(u32*)(object + 0x238);
+    *(volatile u32*)0x1000E010 = 2;
+    *(volatile u32*)0x10009000 = 0x101;
+}
 
 /** Forward the receiver to func_004D00B0. */
 void func_00423970(void* object)
@@ -341,7 +462,16 @@ void func_00423970(void* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00423990);
+/** Queue the DMA submission embedded at offset 0x210 when present. */
+s32 func_00423990(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x210);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004239C0);
 
@@ -383,7 +513,17 @@ void func_00424A60(void* object)
     ((LibReceiverByte60*)object)->unk60 = 9;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424A70);
+/** Build a four-word stack value and return its address. */
+void* func_00424A70(void)
+{
+    s32 stack[4];
+    stack[0] = 0;
+    stack[3] = 0x7149F2CA;
+    stack[1] = 0;
+    s32* result = stack;
+    stack[2] = 0;
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424AA0);
 
@@ -456,7 +596,23 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00426C20);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428390);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004284A0);
+struct SmallConditionalInput04
+{
+    u8 unk00[4];
+    float unk04;
+};
+
+extern "C" s32 func_004284A0(void* object, const void* value, float* zero_output, float* small_output)
+{
+    const SmallConditionalInput04* state = (const SmallConditionalInput04*)value;
+    if (!(state->unk04 <= 0.0f))
+    {
+        *zero_output = 0.0f;
+        *small_output = 0.05f;
+        return 1;
+    }
+    return 0;
+}
 
 s32 func_004284E0(void* object)
 {

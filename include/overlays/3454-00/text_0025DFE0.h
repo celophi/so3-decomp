@@ -5,7 +5,11 @@
 
 #ifdef __cplusplus
 extern "C" {
+void func_00268FB0(void* receiver);
 #endif
+
+/** Install the record's pointer at offset 0x200, reset it, and return it. */
+void* func_002634F0(void* object);
 
 /** Forward the receiver to its one-call target. */
 void func_00268A70(void* object);
@@ -289,6 +293,9 @@ void* func_00261B00(void* object, void* value);
 /** Return the receiver address at byte offset 0x570. */
 void* func_00260C40(void* object);
 
+/** Store a byte at 0x210 and set bit 3 of the byte at 0x59D. */
+void func_00260C50(void* object, u8 value);
+
 /** Return the receiver address at byte offset 0x90. */
 void* func_00260CC0(void* object);
 
@@ -308,6 +315,12 @@ void* func_00261A60(void* object);
 #ifdef __cplusplus
 /** Return the second pointer argument unchanged. */
 void* func_00261B10(void* object, void* value);
+
+/** Run the preparation helper, then update the receiver. */
+void func_00260ED0(void* object);
+
+/** Initialize the object, vtable, and word at offset 0x78, then return it. */
+void* func_002650C0(void* receiver);
 
 }
 #endif

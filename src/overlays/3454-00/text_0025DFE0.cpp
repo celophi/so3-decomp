@@ -1,6 +1,29 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_0025DFE0.h"
 
+extern "C" u8 D_15EF20[];
+extern "C" void func_00263400(void* object);
+
+struct WrapperPointer200
+{
+    u8 pad00[0x200];
+    void* field200;
+};
+
+extern "C" void func_43B6A0(void);
+extern "C" void func_4D0020(void* object);
+extern "C" void func_4D7620(void* object);
+extern "C" u8 D_15BE00[];
+
+struct N59Receiver78_0025DFE0
+{
+    u8 pad00[0x10];
+    void* vtable;
+    u8 pad14[0x64];
+    u32 unk78;
+};
+
+
 extern "C" {
 void func_4D00B0(void* object);
 void func_002651E0(void* object);
@@ -23,6 +46,16 @@ typedef struct ByteGetterOwnertext_0025DFE0
     u8 unk00[0x794];
     u8 unk794;
 } ByteGetterOwnertext_0025DFE0;
+
+typedef struct ByteFlagState210text_0025DFE0
+{
+    u8 unk00[0x210];
+    u8 unk210;
+    u8 unk211[0x38C];
+    u8 unk59d_0_2 : 3;
+    u8 unk59d_3 : 1;
+    u8 unk59d_4_7 : 4;
+} ByteFlagState210text_0025DFE0;
 
 
 
@@ -90,7 +123,12 @@ void* func_00260C40(void* object)
     return (u8*)object + 0x570;
 }
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260C50);
+void func_00260C50(void* object, u8 value)
+{
+    ByteFlagState210text_0025DFE0* receiver = (ByteFlagState210text_0025DFE0*)object;
+    receiver->unk210 = value;
+    receiver->unk59d_3 = 1;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260C70);
 
@@ -134,7 +172,12 @@ s32 func_00260EC0(void* object)
     return 6;
 }
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260ED0);
+/** Run the paired update helpers in order. */
+void func_00260ED0(void* object)
+{
+    func_43B6A0();
+    func_4D0020(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00260F00);
 
@@ -146,7 +189,11 @@ void func_00261010(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261020);
+void func_00261020(void* object)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x60] = bytes[0xA8];
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261030);
 
@@ -295,7 +342,11 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261C
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261CA0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00261D80);
+void func_00261D80(void* object)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x60] = bytes[0x125];
+}
 
 s32 func_00261D90(void* object)
 {
@@ -482,7 +533,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_002632
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00263400);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_002634F0);
+void* func_002634F0(void* object)
+{
+    ((WrapperPointer200*)object)->field200 = D_15EF20;
+    func_00263400(object);
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00263530);
 
@@ -532,7 +588,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_002650
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00265080);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_002650C0);
+void* func_002650C0(void* receiver)
+{
+    N59Receiver78_0025DFE0* object = (N59Receiver78_0025DFE0*)receiver;
+    func_4D7620(receiver);
+    object->vtable = D_15BE00;
+    object->unk78 = 0;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00265100);
 
@@ -618,7 +681,15 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00268B
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00268B60);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0025DFE0", func_00268FB0);
+void func_00268FB0(void* receiver)
+{
+    u8* object = (u8*)receiver;
+    *(u8*)(object + 0x64) = 1;
+    *(volatile u32*)0x10009020 = 0;
+    *(volatile u32*)0x10009030 = *(u32*)(object + 0x110);
+    *(volatile u32*)0x1000E010 = 2;
+    *(volatile u32*)0x10009000 = 0x105;
+}
 
 void func_00268FF0(void* object)
 {

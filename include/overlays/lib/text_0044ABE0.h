@@ -16,6 +16,7 @@ typedef struct LibObjectByte60
 
 #ifdef __cplusplus
 extern "C" {
+void* func_004568A0(void* receiver);
 #endif
 /** @brief Set the receiver's byte at offset 0x60 to 8. @param object Receiver to update. */
 void func_0044C050(LibObjectByte60* object);

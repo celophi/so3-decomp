@@ -615,6 +615,14 @@ void func_004D5820(void* object);
 s32 func_004D5D70(void* object);
 
 /**
+ * @brief Pass the pointer at offset 0x634 and the remaining arguments to a helper.
+ * @param receiver Object containing the pointer.
+ * @param arg1 First value passed to the helper.
+ * @param arg2 Second value passed to the helper.
+ */
+void func_004D6230(void* receiver, u32 arg1, u32 arg2);
+
+/**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
@@ -635,6 +643,11 @@ s32 func_004DAFD0(void* object);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+extern "C" s32 func_004D04C0(void* object);
+extern "C" s32 func_004D0740(void* object);
 #endif
 
 #endif

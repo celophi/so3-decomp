@@ -5,8 +5,11 @@
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_001001E0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
+#include "overlays/lib/text_004DD440.h"
+#include "main/resident_0010A0E0.h"
 
 extern "C" void func_004D00B0(void* object);
+extern "C" void func_00461830(void* embedded, void* adjusted);
 
 enum
 {
@@ -70,7 +73,13 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045B740);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045B920);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045BD20);
+/** Select the referenced shape record and test its descriptor. */
+s32 func_0045BD20(void* object, void* arg0, void* arg1)
+{
+    void* descriptor = *(void**)object;
+    D_001B656C = (struct FieldShapeRecord20*)*(void**)((u8*)descriptor + 0xC);
+    return func_0045B920((u8*)descriptor + 0x30, arg0, arg1);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045BD50);
 
@@ -92,17 +101,35 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045CB40);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045CBE0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045D030);
+/** Select the referenced shape record and run the two argument test. */
+s32 func_0045D030(void* object, void* query)
+{
+    void* descriptor = *(void**)object;
+    D_001B656C = (struct FieldShapeRecord20*)*(void**)((u8*)descriptor + 0xC);
+    return func_0045CBE0((u8*)descriptor + 0x30, query);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045D060);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045D140);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045D590);
+/** Select the referenced shape record and run the four argument test. */
+s32 func_0045D590(void* object, s32 arg0, s32 arg1, float value)
+{
+    void* descriptor = *(void**)object;
+    D_001B656C = (struct FieldShapeRecord20*)*(void**)((u8*)descriptor + 0xC);
+    return func_0045D140((u8*)descriptor + 0x30, arg0, arg1, value);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045D5C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045DA90);
+/** Select the referenced shape record and run the five argument test. */
+s32 func_0045DA90(void* object, s32 arg0, s32 arg1, s32 arg2, float value)
+{
+    void* descriptor = *(void**)object;
+    D_001B656C = (struct FieldShapeRecord20*)*(void**)((u8*)descriptor + 0xC);
+    return func_0045D5C0((u8*)descriptor + 0x30, arg0, arg1, arg2, value);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045DAC0);
 
@@ -788,7 +815,18 @@ void func_00467480(void* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004674A0);
+struct N54Owner64_0045AD10 { u8 pad00[0x64]; u8 active; };
+
+void func_004674A0(N54Owner64_0045AD10* object)
+{
+    object->active = 1;
+    void* adjusted = object;
+    if (object != 0)
+    {
+        adjusted = (u8*)adjusted + 0x90;
+    }
+    func_00461830((u8*)object + 0xB0, adjusted);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004674E0);
 
@@ -856,7 +894,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00469180);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00469970);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046A3B0);
+void func_0046A3B0(void* receiver)
+{
+    u8* object = (u8*)receiver;
+    *(u8*)(object + 0x64) = 1;
+    *(volatile u32*)0x10009020 = 0;
+    *(volatile u32*)0x10009030 = *(u32*)(object + 0x610);
+    *(volatile u32*)0x1000E010 = 2;
+    *(volatile u32*)0x10009000 = 0x105;
+}
 
 /** Forward the receiver to func_004D00B0. */
 void func_0046A3F0(void* object)
@@ -864,7 +910,16 @@ void func_0046A3F0(void* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046A410);
+/** Queue the DMA submission embedded at offset 0x5a0 when present. */
+s32 func_0046A410(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x5a0);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046A440);
 

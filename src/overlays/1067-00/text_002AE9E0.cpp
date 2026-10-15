@@ -7,6 +7,10 @@
 #include "overlays/1067-00/text_001DED80.h"
 #include "overlays/1067-00/text_0029E9E0.h"
 
+extern "C" void func_002B1880(void* object);
+extern "C" void func_002B2550(void);
+
+
 /** Partial fixed pool of tracks with a bitmap of used slots. */
 template <class T>
 struct FieldTrackPool
@@ -386,7 +390,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B16
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B1880);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B1B90);
+/** Run the paired update helpers in order. */
+void func_002B1B90(void* object)
+{
+    func_002B2550();
+    func_002B1880(object);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B1BC0);
 

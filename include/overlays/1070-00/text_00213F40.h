@@ -215,6 +215,7 @@ typedef struct FieldFloatCurve
 
 #ifdef __cplusplus
 extern "C" {
+void* func_00216CC0(void* receiver);
 
 
 /**

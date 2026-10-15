@@ -4,6 +4,17 @@
 extern u32 func_003AA650(void* item);
 extern void func_003AA760(void* item);
 extern void func_0039B180(u8* object);
+extern u8 D_15EDA0[];
+extern u8 D_16EB10[];
+
+typedef struct FieldArgumentStore12
+{
+    u32 unk00;
+    u32 unk04;
+    u8 unk08;
+    u8 pad09[3];
+    void* unk0c;
+} FieldArgumentStore12;
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003A1210", func_003A1210);
 
@@ -68,7 +79,16 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003A1210", func_003A4A
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003A1210", func_003A4B50);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003A1210", func_003A4C10);
+void* func_003A4C10(void* arg0)
+{
+    FieldArgumentStore12* object = (FieldArgumentStore12*)arg0;
+    object->unk0c = D_15EDA0;
+    object->unk00 = 0;
+    object->unk04 = 0;
+    object->unk08 = 0;
+    object->unk0c = D_16EB10;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003A1210", func_003A4C40);
 
