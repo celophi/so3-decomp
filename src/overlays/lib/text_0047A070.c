@@ -199,9 +199,9 @@ s32 func_0047A120(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A130);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047A070", func_0047A130);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A540);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047A070", func_0047A540);
 
 /**
  * @brief Store the value at receiver offset 0x28.
@@ -458,9 +458,9 @@ void* func_0047A860(const void* object, s32 index)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047A890);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047A070", func_0047A890);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0047ACA0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047A070", func_0047ACA0);
 
 /**
  * @brief Store the value at receiver offset 0x28.

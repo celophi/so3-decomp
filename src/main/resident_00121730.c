@@ -86,19 +86,19 @@ s32 func_001217D0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001217E0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_001217E0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121800);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121800);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121810);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121810);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121820);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121820);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121830);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121830);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121840);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121840);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121850);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121850);
 
 s32 func_00121860(void* object)
 {
@@ -117,4 +117,4 @@ void func_00121890(void* object)
 {
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001218A0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_001218A0);
