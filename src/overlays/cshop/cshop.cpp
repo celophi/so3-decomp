@@ -13,6 +13,7 @@
 #include "overlays/1067-00/text_002D5260.h"
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/item_allocation.h"
+#include "overlays/lib/text_0045AD10.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_001E1590.h"
@@ -23,7 +24,7 @@
 #define SHOP_ITEM_NAME_HEIGHT 21.599998f
 #define SHOP_ITEM_NAME_SCALE 0.9f
 
-extern "C" u8 func_28E3D0(void* object);
+extern "C" s32 field_record_selection_load(FieldRecordSelection* selection);
 
 enum ShopMessage
 {
@@ -226,10 +227,12 @@ static inline void clear_shop_runtime_flag(u32 mask)
 static inline ItemCreationCategoryRecord* shop_item_record(ShopInventoryState* inventory, u16 item_code)
 {
     u8 valid = item_code > 0 && item_code < 751;
+
     if (valid)
     {
         return &inventory->item_records[item_code - 1];
     }
+
     return 0;
 }
 
@@ -322,137 +325,137 @@ LibObject178660* FieldClass15AE70::func_slot58()
     return unk10;
 }
 
-void func_00348530(void* object)
+void FieldClass15AE70::func_slot5c()
 {
 }
 
-void func_00348540(void* object)
+void FieldClass15AE70::func_slot60(s32 text_key)
 {
 }
 
-void func_00348550(void* object)
+void FieldClass15AE70::func_slot64()
 {
 }
 
-void func_00348560(void* object)
+void FieldClass15AE70::func_slot68()
 {
 }
 
-void func_00348570(void* object)
+void FieldClass15AE70::func_slot6c()
 {
 }
 
-void func_00348580(void* object)
+void FieldClass15AE70::func_slot78()
 {
 }
 
-void func_00348590(void* object)
+void FieldClass15AE70::func_slot7c()
 {
 }
 
-void func_003485A0(void* object)
+void FieldClass15AE70::func_slot80()
 {
 }
 
-void func_003485B0(void* object)
+void FieldClass15AE70::func_slot84()
 {
 }
 
-void func_003485C0(void* object)
+void FieldClass15AE70::func_slot88()
 {
 }
 
-void func_003485D0(void* object)
+void FieldClass15AE70::func_slot8c()
 {
 }
 
-void func_003485E0(void* object)
+void FieldClass15AE70::func_slot90()
 {
 }
 
-void func_003485F0(void* object)
+void FieldClass15AE70::func_slot94()
 {
 }
 
-void func_00348600(void* object)
+void FieldClass15AE70::func_slot98()
 {
 }
 
-void func_00348610(void* object)
+void FieldClass15AE70::func_slot9c()
 {
 }
 
-void func_00348620(void* object)
+void FieldClass15AE70::func_slota0()
 {
 }
 
-void func_00348630(void* object)
+void FieldClass15AE70::func_slota4()
 {
 }
 
-void func_00348640(void* object)
+void FieldClass15AE70::func_slota8()
 {
 }
 
-void func_00348650(void* object)
+void FieldClass15AE70::func_slotac()
 {
 }
 
-s32 func_00348660(void* object)
-{
-    return 0;
-}
-
-s32 func_00348670(void* object)
+u8 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
-s32 func_00348680(void* object)
+u8 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
 
-s32 func_00348690(void* object)
+s32 FieldClass15AE70::func_slotc0()
 {
     return 0;
 }
 
-s32 func_003486A0(void* object)
+s32 FieldClass15AE70::func_slotc4()
 {
     return 0;
 }
 
-s32 func_003486B0(void* object)
+s32 FieldClass15AE70::func_slotc8()
 {
     return 0;
 }
 
-s32 func_003486C0(void* object)
+s32 FieldClass15AE70::func_slotcc()
 {
     return 0;
 }
 
-s32 func_003486D0(void* object)
+s32 FieldClass15AE70::func_slotd0()
 {
     return 0;
 }
 
-s32 func_003486E0(void* object)
+s32 FieldClass15AE70::func_slotd4()
 {
     return 0;
 }
 
-s32 func_003486F0(void* object)
+s32 FieldClass15AE70::func_slotd8()
 {
     return 0;
 }
 
-void func_00348700(void* object)
+s32 FieldClass15AE70::func_slotdc()
+{
+    return 0;
+}
+
+void FieldClass15AE70::func_slote0()
 {
 }
 
-void func_00348710(void* object)
+void FieldClass15AE70::func_slote4()
 {
 }
 
@@ -468,7 +471,7 @@ void FieldClass15AE70::func_slotec(u8 value)
     unk0d = value;
 }
 
-void func_00348740(void* object)
+void FieldClass15AE70::func_slotf0()
 {
 }
 
@@ -478,10 +481,12 @@ void ShopSellAllConfirmWindow::func_slot74()
     {
         return;
     }
+
     if (choice->process_direction(2) == 1)
     {
         return;
     }
+
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -500,10 +505,12 @@ void ShopSellAllConfirmWindow::func_slot70()
     {
         return;
     }
+
     if (choice->process_direction(3) == 1)
     {
         return;
     }
+
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -524,19 +531,21 @@ void ShopSellAllConfirmWindow::func_slot70()
 s32 shop_cancel_sell_all_confirmation(void* receiver)
 {
     FieldClass15AE70* confirmation_window = static_cast<FieldClass15AE70*>(receiver);
+
     if (confirmation_window->func_slot28())
     {
         return 0;
     }
+
     ShopState* state = D_001B643C->callbacks->shop;
     state->remove_child(confirmation_window);
     state->func_00263C70(confirmation_window->func_slot44());
     return 2;
 }
 
-void shop_set_active_window(ShopState* object, void* value)
+void ShopState::func_00263C70(void* value)
 {
-    object->unk20 = value;
+    unk20 = value;
 }
 
 /**
@@ -546,21 +555,26 @@ void shop_set_active_window(ShopState* object, void* value)
 u8 ShopSellAllConfirmWindow::func_slotb0()
 {
     ItemCreationAllocationRecord* unequipped_allocations[100];
+
     if (func_slot28())
     {
         return 0;
     }
+
     if (choice != 0 && choice->unk114 != 0)
     {
         return func_slotb4();
     }
+
     ShopState* state = D_001B643C->callbacks->shop;
     ShopTransaction* transaction = &state->transaction;
     s32 allocation_count = lib_collect_unequipped_allocations(D_001B64F8, unequipped_allocations, state->selected_item);
+
     for (s32 i = 0; i < allocation_count; i++)
     {
         shop_sell_item(transaction, lib_allocation_get_identifier(unequipped_allocations[i]));
     }
+
     resident_allocate_request(D_001B65F8, 6, 0, 0, 127, 64, 0);
     shop_refresh_sale_item_range(static_cast<ShopSaleItemWindow*>(func_slot44()));
     state->remove_child(this);
@@ -608,6 +622,7 @@ s32 ShopSellAllConfirmWindow::func_slotf4(u32 associated)
     choice->unkF2 = 0;
     choice->func_0023CF50(1, 222.0f, 302.0f);
     shop_append_choice(&unk74, choice);
+
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -618,6 +633,7 @@ s32 ShopSellAllConfirmWindow::func_slotf4(u32 associated)
         yes_label->set_color(0x288080);
         no_label->set_color(0x808080);
     }
+
     return 1;
 }
 
@@ -627,10 +643,12 @@ void ShopSellConfirmWindow::func_slot74()
     {
         return;
     }
+
     if (choice->process_direction(2) == 1)
     {
         return;
     }
+
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -649,10 +667,12 @@ void ShopSellConfirmWindow::func_slot70()
     {
         return;
     }
+
     if (choice->process_direction(3) == 1)
     {
         return;
     }
+
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -673,10 +693,12 @@ void ShopSellConfirmWindow::func_slot70()
 s32 shop_cancel_sell_confirmation(void* receiver)
 {
     FieldClass15AE70* confirmation_window = static_cast<FieldClass15AE70*>(receiver);
+
     if (confirmation_window->func_slot28())
     {
         return 0;
     }
+
     ShopState* state = D_001B643C->callbacks->shop;
     state->remove_child(confirmation_window);
     state->func_00263C70(confirmation_window->func_slot44());
@@ -690,20 +712,24 @@ s32 shop_cancel_sell_confirmation(void* receiver)
 u8 ShopSellConfirmWindow::func_slotb0()
 {
     ItemCreationAllocationRecord* records[100];
+
     if (func_slot28())
     {
         return 0;
     }
+
     if (choice != 0 && choice->unk114 != 0)
     {
         return func_slotb4();
     }
+
     ShopState* state = D_001B643C->callbacks->shop;
     shop_sell_item(&state->transaction, lib_allocation_get_identifier(state->selected_allocation));
     resident_allocate_request(D_001B65F8, 6, 0, 0, 127, 64, 0);
     shop_refresh_sale_item_range(static_cast<ShopSaleItemWindow*>(func_slot44()));
     state->remove_child(this);
     state->selected_allocation = 0;
+
     if (lib_collect_unequipped_allocations(D_001B64F8, records, state->selected_item) == 0)
     {
         state->remove_child(func_slot44());
@@ -713,6 +739,7 @@ u8 ShopSellConfirmWindow::func_slotb0()
     {
         state->func_00263C70(func_slot44());
     }
+
     return 1;
 }
 
@@ -754,6 +781,7 @@ s32 ShopSellConfirmWindow::func_slotf4(u32 associated)
     choice->unkF2 = 0;
     choice->func_0023CF50(1, 212.0f, 302.0f);
     shop_append_choice(&unk74, choice);
+
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -764,6 +792,7 @@ s32 ShopSellConfirmWindow::func_slotf4(u32 associated)
         yes_label->set_color(0x288080);
         no_label->set_color(0x808080);
     }
+
     return 1;
 }
 
@@ -774,9 +803,9 @@ void ShopBuyConfirmWindow::func_slot5c()
     D_001B643C->callbacks->shop->func_00261150();
 }
 
-void* shop_get_active_window(ShopState* object)
+void* ShopState::func_00261150()
 {
-    return object->unk20;
+    return unk20;
 }
 
 void ShopBuyConfirmWindow::func_slot74()
@@ -785,10 +814,12 @@ void ShopBuyConfirmWindow::func_slot74()
     {
         return;
     }
+
     if (choice->process_direction(2) == 1)
     {
         return;
     }
+
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -807,10 +838,12 @@ void ShopBuyConfirmWindow::func_slot70()
     {
         return;
     }
+
     if (choice->process_direction(3) == 1)
     {
         return;
     }
+
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -831,10 +864,12 @@ void ShopBuyConfirmWindow::func_slot70()
 s32 shop_cancel_buy_confirmation(void* receiver)
 {
     FieldClass15AE70* confirmation_window = static_cast<FieldClass15AE70*>(receiver);
+
     if (confirmation_window->func_slot28())
     {
         return 0;
     }
+
     ShopState* state = D_001B643C->callbacks->shop;
     state->remove_child(confirmation_window);
     state->func_00263C70(confirmation_window->func_slot44());
@@ -851,10 +886,12 @@ u8 ShopBuyConfirmWindow::func_slotb0()
     {
         return 0;
     }
+
     if (choice != 0 && choice->unk114 != 0)
     {
         return func_slotb4();
     }
+
     ShopState* state = D_001B643C->callbacks->shop;
     shop_complete_purchase(&state->transaction);
     resident_allocate_request(D_001B65F8, 6, 0, 0, 127, 64, 0);
@@ -904,6 +941,7 @@ s32 ShopBuyConfirmWindow::func_slotf4(u32 associated)
     choice->func_0023CF50(0, 232.0f, 302.0f);
     choice->unkad = 0;
     shop_append_choice(&unk74, choice);
+
     if (choice->unk114 != 0)
     {
         yes_label->set_color(0x808080);
@@ -914,6 +952,7 @@ s32 ShopBuyConfirmWindow::func_slotf4(u32 associated)
         yes_label->set_color(0x288080);
         no_label->set_color(0x808080);
     }
+
     return 1;
 }
 
@@ -932,13 +971,16 @@ void ShopSaleItemWindow::func_slot10c(u32 value, u32 selected)
     sale_prices[2]->unk3f = value;
     item_names[3]->unk3f = value;
     sale_prices[3]->unk3f = value;
+
     if (panel != 0)
     {
         panel->unk3f = 1;
     }
+
     if (FieldClass15AE60::unk04 != 0)
     {
         FieldClass15AE60::unk04->unk3f = selected;
+
         if (selected != 0)
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
@@ -952,6 +994,7 @@ void ShopSaleItemWindow::func_slot10c(u32 value, u32 selected)
             selection_cursor->unk3c = 1;
         }
     }
+
     if (FieldClass15AE60::unk00 != 0)
     {
         FieldClass15AE60::unk00->unk3f = selected;
@@ -979,6 +1022,7 @@ s32 shop_return_to_sell_list(void* object)
 s32 shop_open_sell_all_confirmation(void* receiver)
 {
     ShopState* state = D_001B643C->callbacks->shop;
+
     if (state->selected_allocation != 0)
     {
         ShopSellAllConfirmWindow* confirmation_window = new (0) ShopSellAllConfirmWindow;
@@ -987,12 +1031,13 @@ s32 shop_open_sell_all_confirmation(void* receiver)
         state->add_child(confirmation_window);
         state->func_00263C70(confirmation_window);
     }
+
     return 1;
 }
 
-s32 shop_get_resource_slot(ShopState* object)
+u32 ShopState::func_00263CC0()
 {
-    return object->resource_slot;
+    return resource_slot;
 }
 
 /**
@@ -1003,6 +1048,7 @@ s32 shop_get_resource_slot(ShopState* object)
 s32 shop_open_sell_confirmation(void* receiver)
 {
     ShopState* state = D_001B643C->callbacks->shop;
+
     if (state->selected_allocation != 0)
     {
         ShopSellConfirmWindow* confirmation_window = new (0) ShopSellConfirmWindow;
@@ -1011,6 +1057,7 @@ s32 shop_open_sell_confirmation(void* receiver)
         state->add_child(confirmation_window);
         state->func_00263C70(confirmation_window);
     }
+
     return 1;
 }
 
@@ -1020,6 +1067,7 @@ s32 shop_open_sell_confirmation(void* receiver)
 void ShopSaleItemWindow::func_slot5c()
 {
     ItemCreationAllocationRecord* unequipped_allocations[100];
+
     if (D_001B643C->callbacks->shop->func_00261150() == this)
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
@@ -1033,16 +1081,20 @@ void ShopSaleItemWindow::func_slot5c()
         selection_cursor->unk3c = 1;
         return;
     }
+
     FieldClass15AD40::func_slot5c();
     ShopState* state = D_001B643C->callbacks->shop;
     s32 allocation_count = lib_collect_unequipped_allocations(D_001B64F8, unequipped_allocations, state->selected_item);
     s32 selected_allocation_index = FieldClass15AE60::unk24;
+
     if (allocation_count != 0 && selected_allocation_index >= 0)
     {
         s32 factor_count = 0;
+
         for (s32 i = 0; i < 8; i++)
         {
             u16 factor_id = func_0040D930(unequipped_allocations[selected_allocation_index], i);
+
             if (factor_id != SHOP_FACTOR_NONE && factor_id != SHOP_FACTOR_NOTHING)
             {
                 LibObject172440* factor_display = factors[factor_count];
@@ -1052,10 +1104,12 @@ void ShopSaleItemWindow::func_slot5c()
                 factor_count++;
             }
         }
+
         for (; factor_count < 8; factor_count++)
         {
             factors[factor_count]->unk3f = 0;
         }
+
         state->selected_allocation = unequipped_allocations[selected_allocation_index];
         LibObject172410* item_name = item_names[FieldClass15AE60::unk28];
         set_selection_marker(item_name, item_name->unk94);
@@ -1075,6 +1129,7 @@ void ShopSaleItemWindow::set_scroll_position(float scroll_offset)
 {
     s32 row = 0;
     float row_y = scroll_offset + 16.0f;
+
     do
     {
         LibClass178600* item_name = this->item_names[row];
@@ -1098,11 +1153,14 @@ void ShopSaleItemWindow::refresh_rows(s32 offset)
     ShopState* state = D_001B643C->callbacks->shop;
     ShopTransaction* transaction = &state->transaction;
     s32 item_code = state->selected_item;
+
     for (s32 i = 99; i >= 0; i--)
     {
         unequipped_allocations[i] = 0;
     }
+
     this->FieldClass15AE60::unk88 = lib_collect_unequipped_allocations(D_001B64F8, unequipped_allocations, item_code);
+
     for (s32 i = 0; i < 5; i++)
     {
         if (unequipped_allocations[offset + i] == 0)
@@ -1137,28 +1195,36 @@ void shop_refresh_sale_item_range(ShopSaleItemWindow* object)
     object->FieldClass15AE60::unk88 = lib_collect_unequipped_allocations(D_001B64F8, unequipped_allocations, state->selected_item);
     s32 allocation_count = object->FieldClass15AE60::unk88;
     s32 visible_rows = allocation_count;
+
     if (visible_rows >= 4)
     {
         visible_rows = 4;
     }
+
     s32 first_allocation = object->FieldClass15AE60::unk22;
+
     if (allocation_count < first_allocation + 4)
     {
         first_allocation = allocation_count - 4;
     }
+
     if (first_allocation < 0)
     {
         first_allocation = 0;
     }
+
     s32 selected_row = object->FieldClass15AE60::unk28;
+
     if (selected_row >= visible_rows)
     {
         selected_row = visible_rows - 1;
     }
+
     if (selected_row < 0)
     {
         selected_row = 0;
     }
+
     func_002CE420(&static_cast<FieldClass15AE60&>(*object), 1, visible_rows, 378, 28);
     object->FieldClass15AE60::configure_selection(object->FieldClass15AE60::unk88, first_allocation, selected_row);
 }
@@ -1208,6 +1274,7 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
     lib_container_attach_widget(FieldClass15AE70::unk10, panel);
     lib_scissor_init_rectangle(clip_region, 16.0f, 16.0f, 560.0f, 110.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, clip_region);
+
     for (s32 row = 0; row < 5; row++)
     {
         item_names[row] = new (0) LibObject172410;
@@ -1221,6 +1288,7 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
         sale_prices[row]->init_numeric_resource_rectangle(490.0f, 12.0f + 30.0f * row, 28.0f, 24.0f, 0, 0, 1);
         lib_container_attach_widget(FieldClass15AE70::unk10, sale_prices[row]);
     }
+
     lib_scissor_init_reset(reset_clip, 1);
     lib_container_attach_widget(FieldClass15AE70::unk10, reset_clip);
     factor_separator = new (0) ItemCreationClass172870;
@@ -1232,6 +1300,7 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
     FieldRuntime* runtime = D_001B657C;
     runtime->factor_resource_slot = static_cast<s32>(associated);
     runtime->factor_base_key = SHOP_MSG_FACTORS + 1;
+
     for (s32 factor_index = 0; factor_index < 8; factor_index++)
     {
         factors[factor_index] = new (0) LibObject172440;
@@ -1243,6 +1312,7 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
         factors[factor_index]->unk3f = 0;
         lib_container_attach_widget(FieldClass15AE70::unk10, factors[factor_index]);
     }
+
     LibObject178750* sell_all_help = new (0) LibObject178750;
     sell_all_help->init_resource_rectangle(435.0f, 270.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_SELL_ALL_HELP, 0);
     lib_container_attach_widget(FieldClass15AE70::unk10, sell_all_help);
@@ -1294,13 +1364,16 @@ void ShopSellListWindow::func_slot10c(u32 value, u32 selected)
     item_counts[3]->unk3f = value;
     item_names[4]->unk3f = value;
     item_counts[4]->unk3f = value;
+
     if (panel != 0)
     {
         panel->unk3f = 1;
     }
+
     if (FieldClass15AE60::unk04 != 0)
     {
         FieldClass15AE60::unk04->unk3f = selected;
+
         if (selected != 0)
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
@@ -1314,6 +1387,7 @@ void ShopSellListWindow::func_slot10c(u32 value, u32 selected)
             selection_cursor->unk3c = 1;
         }
     }
+
     if (FieldClass15AE60::unk00 != 0)
     {
         FieldClass15AE60::unk00->unk3f = selected;
@@ -1360,6 +1434,7 @@ s32 shop_cancel_sell(void* object)
 u8 ShopSellListWindow::func_slotb0()
 {
     ShopState* state = D_001B643C->callbacks->shop;
+
     if (FieldClass15AE60::unk88 != 0)
     {
         ShopSaleItemWindow* window = new (0) ShopSaleItemWindow;
@@ -1371,6 +1446,7 @@ u8 ShopSellListWindow::func_slotb0()
     {
         return 3;
     }
+
     return 1;
 }
 
@@ -1390,8 +1466,10 @@ void ShopSellListWindow::func_slot5c()
         selection_cursor->unk3c = 1;
         return;
     }
+
     FieldClass15AD40::func_slot5c();
     ShopState* state = D_001B643C->callbacks->shop;
+
     if (FieldClass15AE60::unk88 != 0)
     {
         state->selected_item = item_codes[FieldClass15AE60::unk24];
@@ -1413,6 +1491,7 @@ void ShopSellListWindow::set_scroll_position(float scroll_offset)
 {
     s32 row = 0;
     float row_y = scroll_offset + 16.0f;
+
     do
     {
         LibClass178600* item_name = this->item_names[row];
@@ -1437,18 +1516,22 @@ void ShopSellListWindow::refresh_rows(s32 offset)
         this->item_names[i]->unk3d = 0;
         this->item_counts[i]->unk3d = 0;
         s32 item_code = this->item_codes[offset + i];
+
         if (item_code != 0)
         {
             u16 item_identifier = item_code;
             ItemCreationCategoryRecord* item_record = shop_item_record(D_001B64F8, item_identifier);
+
             if (item_record != 0)
             {
                 u8 player_invented = item_record->flags & SHOP_ITEM_PLAYER_INVENTED;
                 u32 color = 0x808080;
+
                 if (player_invented)
                 {
                     color = 0x805050;
                 }
+
                 LibObject172410* item_name = this->item_names[i];
                 item_name->unkfc = item_identifier;
                 item_name->unkfe = 0;
@@ -1493,18 +1576,23 @@ void shop_refresh_sell_list(void* receiver, u8 reset_selection)
     object->FieldClass15AE60::unk88 = 0;
     ShopState* state = D_001B643C->callbacks->shop;
     s32 item_count = 0;
+
     for (s32 item_code = 1; item_code <= 750; item_code++)
     {
         ItemCreationCategoryRecord* item_record = shop_item_record(D_001B64F8, item_code);
+
         if (item_record == 0)
         {
             continue;
         }
+
         ItemCreationCategoryDefinition* definition = shop_definition(item_record);
+
         if (definition->unsellable || item_record->inventory_count == 0)
         {
             continue;
         }
+
         if (state->category == SHOP_CATEGORY_ALL)
         {
             object->item_codes[item_count++] = item_code;
@@ -1512,42 +1600,53 @@ void shop_refresh_sell_list(void* receiver, u8 reset_selection)
         else
         {
             u8 item_category = shop_definition_category(definition);
+
             if (item_category == state->category)
             {
                 object->item_codes[item_count++] = item_code;
             }
         }
     }
+
     object->FieldClass15AE60::unk88 = item_count;
+
     for (; item_count < 750; item_count++)
     {
         object->item_codes[item_count] = 0;
     }
+
     item_count = object->FieldClass15AE60::unk88;
     s32 visible_rows = item_count >= 5 ? 5 : item_count;
     s32 first_item = object->FieldClass15AE60::unk22;
+
     if (item_count < first_item + 5)
     {
         first_item = item_count - 5;
     }
+
     if (first_item < 0)
     {
         first_item = 0;
     }
+
     s32 selected_row = object->FieldClass15AE60::unk28;
+
     if (selected_row >= visible_rows)
     {
         selected_row = visible_rows - 1;
     }
+
     if (selected_row < 0)
     {
         selected_row = 0;
     }
+
     if (reset_selection)
     {
         selected_row = 0;
         first_item = 0;
     }
+
     func_002CE420(&static_cast<FieldClass15AE60&>(*object), 1, visible_rows, 378, 28);
     object->FieldClass15AE60::configure_selection(object->FieldClass15AE60::unk88, first_item, selected_row);
 }
@@ -1568,6 +1667,7 @@ s32 ShopSellListWindow::func_slot104(u32 associated)
     lib_container_attach_widget(FieldClass15AE70::unk10, panel);
     lib_scissor_init_rectangle(clip_region, 16.0f, 16.0f, 580.0f, 140.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, clip_region);
+
     for (s32 row = 0; row < 6; row++)
     {
         item_names[row] = new (0) LibObject172410;
@@ -1581,6 +1681,7 @@ s32 ShopSellListWindow::func_slot104(u32 associated)
         item_counts[row]->init_numeric_resource_rectangle(544.0f, 12.0f + 30.0f * row, 28.0f, 24.0f, 0, 0, 1);
         lib_container_attach_widget(FieldClass15AE70::unk10, item_counts[row]);
     }
+
     lib_scissor_init_reset(reset_clip, 1);
     lib_container_attach_widget(FieldClass15AE70::unk10, reset_clip);
     FieldClass15AE60::unk34 = 28.0f;
@@ -1612,6 +1713,7 @@ void ShopItemDetailWindow::func_slot5c()
             item_model->func_001DD7B0();
             item_model = 0;
         }
+
         field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->callbacks), this);
         shop_set_mode(D_001B643C->callbacks->shop, SHOP_MODE_BUY);
         closing = 0;
@@ -1629,6 +1731,7 @@ u8 ShopItemDetailWindow::func_slotb4()
         field_cancel_model_request(item_model);
         closing = 1;
     }
+
     return 2;
 }
 
@@ -1761,6 +1864,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     FieldRuntime* runtime = D_001B657C;
     runtime->factor_resource_slot = static_cast<s32>(associated);
     runtime->factor_base_key = SHOP_MSG_FACTORS + 1;
+
     for (s32 i = 0; i < 8; i++)
     {
         factors[i] = new (0) LibObject172440;
@@ -1772,10 +1876,13 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
         factors[i]->unk3f = 0;
         lib_container_attach_widget(detail_container, factors[i]);
     }
+
     s32 factor_count = 0;
+
     for (s32 i = 0; i < 8; i++)
     {
         u16 factor_id = func_0040D930(&preview_allocation, i);
+
         if (factor_id != SHOP_FACTOR_NONE && factor_id != SHOP_FACTOR_NOTHING)
         {
             LibObject172440* factor_display = factors[factor_count];
@@ -1785,6 +1892,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
             factor_count++;
         }
     }
+
     ShopFooterPositions positions = D_00351F80;
     LibObject178750* footer = new (0) LibObject178750;
     footer->init_resource_rectangle(12.0f, positions.values[4] - 8.0f, 560.0f, 24.0f, static_cast<s32>(associated), SHOP_MSG_BACK_HELP, 0);
@@ -1797,6 +1905,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     item_model->unk5b = 1;
     field_replace_model_camera(item_model, D_001B643C->field_camera);
     field_attach_model_display(item_model);
+
     if (reinterpret_cast<ShopDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen != 0)
     {
         func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(item_model), 0.5235988f, 600.0f, 0.34906584f, 120.0f, 35.0f);
@@ -1805,6 +1914,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     {
         func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(item_model), 0.5235988f, 500.0f, 0.34906584f, 90.0f, 50.0f);
     }
+
     D_001B6614->append_node(item_model, -1);
     return 1;
 }
@@ -1856,6 +1966,7 @@ void ShopBuyListWindow::func_slot10c(u32 value, u32 selected)
 {
     s32 i = 0;
     value &= 0xFF;
+
     for (; i < 5; i++)
     {
         item_names[i]->unk3f = value;
@@ -1865,13 +1976,16 @@ void ShopBuyListWindow::func_slot10c(u32 value, u32 selected)
         separator_labels[i]->unk3f = value;
         buy_limit_displays[i]->unk3f = value;
     }
+
     if (panel != 0)
     {
         panel->unk3f = 1;
     }
+
     if (FieldClass15AE60::unk04 != 0)
     {
         FieldClass15AE60::unk04->unk3f = selected;
+
         if (selected != 0)
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
@@ -1885,6 +1999,7 @@ void ShopBuyListWindow::func_slot10c(u32 value, u32 selected)
             selection_cursor->unk3c = 1;
         }
     }
+
     if (FieldClass15AE60::unk00 != 0)
     {
         FieldClass15AE60::unk00->unk3f = selected;
@@ -1895,6 +2010,7 @@ void ShopBuyListWindow::func_slot74()
 {
     ShopState* state = D_001B643C->callbacks->shop;
     ShopTransaction* transaction = &state->transaction;
+
     if (shop_increase_quantity(transaction, shop_get_category_item(transaction, state->category, FieldClass15AE60::unk24)))
     {
         resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
@@ -1911,6 +2027,7 @@ void ShopBuyListWindow::func_slot70()
 {
     ShopState* state = D_001B643C->callbacks->shop;
     ShopTransaction* transaction = &state->transaction;
+
     if (shop_decrease_quantity(transaction, shop_get_category_item(transaction, state->category, FieldClass15AE60::unk24)))
     {
         resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
@@ -1984,6 +2101,7 @@ s32 shop_cancel_purchase(void* object)
 s32 shop_open_buy_confirmation(void* receiver)
 {
     ShopState* state = D_001B643C->callbacks->shop;
+
     if ((u16)(state->transaction.pending_unsellable_count + state->transaction.pending_sellable_count))
     {
         ShopBuyConfirmWindow* confirmation_window = new (0) ShopBuyConfirmWindow;
@@ -1996,6 +2114,7 @@ s32 shop_open_buy_confirmation(void* receiver)
     {
         return 3;
     }
+
     return 1;
 }
 
@@ -2015,14 +2134,17 @@ void ShopBuyListWindow::func_slot5c()
         selection_cursor->unk3c = 1;
         return;
     }
+
     FieldClass15AD40::func_slot5c();
     ShopState* state = D_001B643C->callbacks->shop;
     state->selected_item = shop_get_category_item(&state->transaction, state->category, FieldClass15AE60::unk24);
+
     if (FieldClass15AE60::unk24 >= 0)
     {
         LibObject172410* item_name = item_names[FieldClass15AE60::unk28];
         set_selection_marker(item_name, item_name->unk94);
     }
+
     if (error_sound_timer >= 0)
     {
         error_sound_timer--;
@@ -2041,6 +2163,7 @@ static inline s32 shop_category_item_count(ShopTransaction* transaction, u8 cate
     {
         return transaction->category_items[category].count;
     }
+
     return 0;
 }
 
@@ -2059,28 +2182,35 @@ void shop_refresh_buy_list(void* receiver, u8 reset_selection)
     s32 item_count = object->FieldClass15AE60::unk88;
     s32 visible_rows = item_count >= 5 ? 5 : item_count;
     s32 first_item = object->FieldClass15AE60::unk22;
+
     if (item_count < first_item + 5)
     {
         first_item = item_count - 5;
     }
+
     if (first_item < 0)
     {
         first_item = 0;
     }
+
     s32 selected_row = object->FieldClass15AE60::unk28;
+
     if (selected_row >= visible_rows)
     {
         selected_row = visible_rows - 1;
     }
+
     if (selected_row < 0)
     {
         selected_row = 0;
     }
+
     if (reset_selection)
     {
         selected_row = 0;
         first_item = 0;
     }
+
     func_002CE420(&static_cast<FieldClass15AE60&>(*object), 1, visible_rows, 378, 28);
     object->FieldClass15AE60::configure_selection(object->FieldClass15AE60::unk88, first_item, selected_row);
 }
@@ -2091,9 +2221,9 @@ void shop_refresh_buy_list(void* receiver, u8 reset_selection)
  */
 void ShopBuyListWindow::set_scroll_position(float scroll_offset)
 {
-    s32 row = 0;
     float row_y = scroll_offset + 16.0f;
-    do
+
+    for (s32 row = 0; row < 6; row++)
     {
         LibClass178600* row_widget = this->item_names[row];
         row_widget->unk18.unk04 = row_y;
@@ -2114,8 +2244,7 @@ void ShopBuyListWindow::set_scroll_position(float scroll_offset)
         row_widget->unk18.unk04 = row_y;
         row_widget->unk3c = 1;
         row_y += 28.0f;
-        row++;
-    } while (row < 6);
+    }
 }
 
 /**
@@ -2128,6 +2257,7 @@ static inline u8 shop_purchase_quantity(ShopTransaction* transaction, s32 code)
 {
     u8 result;
     u8 valid = code >= 1 && code < 751;
+
     if (valid)
     {
         result = transaction->purchase_quantities[code - 1];
@@ -2136,6 +2266,7 @@ static inline u8 shop_purchase_quantity(ShopTransaction* transaction, s32 code)
     {
         result = 0;
     }
+
     return result;
 }
 
@@ -2147,6 +2278,7 @@ void ShopBuyListWindow::refresh_rows(s32 offset)
 {
     ShopState* state = D_001B643C->callbacks->shop;
     ShopTransaction* transaction = &state->transaction;
+
     for (s32 i = 0; i < 6; i++)
     {
         this->item_names[i]->unk3d = 0;
@@ -2155,18 +2287,22 @@ void ShopBuyListWindow::refresh_rows(s32 offset)
         this->multiply_labels[i]->unk3d = 0;
         this->separator_labels[i]->unk3d = 0;
         this->buy_limit_displays[i]->unk3d = 0;
+
         if (offset + i < shop_category_item_count(transaction, state->category))
         {
             s32 item_code = shop_get_category_item(transaction, state->category, offset + i);
             ItemCreationCategoryRecord* item_record = shop_item_record(D_001B64F8, item_code);
+
             if (item_record != 0)
             {
                 u8 player_invented = item_record->flags & SHOP_ITEM_PLAYER_INVENTED;
                 u32 color = 0x808080;
+
                 if (player_invented)
                 {
                     color = 0x808050;
                 }
+
                 LibObject172410* item_name = this->item_names[i];
                 item_name->unkfc = item_code;
                 item_name->unkfe = 0;
@@ -2202,6 +2338,7 @@ s32 ShopBuyListWindow::func_slot104(u32 associated)
     lib_container_attach_widget(FieldClass15AE70::unk10, panel);
     lib_scissor_init_rectangle(clip_region, 16.0f, 16.0f, 580.0f, 140.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, clip_region);
+
     for (s32 row = 0; row < 6; row++)
     {
         item_names[row] = new (0) LibObject172410;
@@ -2228,6 +2365,7 @@ s32 ShopBuyListWindow::func_slot104(u32 associated)
         buy_limit_displays[row]->init_numeric_resource_rectangle(544.0f, row_y, 28.0f, 24.0f, 0, 0, 1);
         lib_container_attach_widget(FieldClass15AE70::unk10, buy_limit_displays[row]);
     }
+
     lib_scissor_init_reset(reset_clip, 1);
     lib_container_attach_widget(FieldClass15AE70::unk10, reset_clip);
     FieldClass15AE60::unk34 = 28.0f;
@@ -2259,6 +2397,7 @@ ShopBuyListWindow::ShopBuyListWindow()
         quantity_displays[i] = 0;
         buy_limit_displays[i] = 0;
     }
+
     error_sound_timer = 0;
     FieldClass15AD40();
 }
@@ -2276,6 +2415,7 @@ void shop_update_fol(ShopValueDisplay* object)
     ItemCreationAllocationRecord* allocation = state->selected_allocation;
     u16 checksum = saved_record->checksum;
     const u8* end = (const u8*)&saved_record->checksum;
+
     if (checksum != func_00457470(saved_record->checksum_seed, (u8*)saved_record + 0x26, end - ((const u8*)saved_record + 0x26)))
     {
         current_fol = 0;
@@ -2284,15 +2424,18 @@ void shop_update_fol(ShopValueDisplay* object)
     {
         current_fol = saved_record->encoded_fol ^ 0x7CE3C7F7;
     }
+
     if (allocation != 0)
     {
         s32 sale_price = shop_get_sale_price(transaction, lib_allocation_get_identifier(allocation));
         s32 remaining_fol = current_fol + sale_price;
         set_shop_number(object->transaction_total, sale_price);
+
         if (remaining_fol > 99999999)
         {
             remaining_fol = 99999999;
         }
+
         set_shop_number(object->remaining_fol, remaining_fol);
     }
     else
@@ -2300,12 +2443,15 @@ void shop_update_fol(ShopValueDisplay* object)
         s32 purchase_total = transaction->purchase_total;
         s32 remaining_fol = current_fol - purchase_total;
         set_shop_number(object->transaction_total, purchase_total);
+
         if (remaining_fol < 0)
         {
             remaining_fol = 0;
         }
+
         set_shop_number(object->remaining_fol, remaining_fol);
     }
+
     set_shop_number(object->current_fol, current_fol);
 }
 
@@ -2315,6 +2461,7 @@ s32 ShopFolWindow::func_slotf4(u32 associated)
     {
         return 0;
     }
+
     FieldClass15AE70::func_slot14(associated, 0, 9, 2000, 16.0f, 428.0f, 0.0f);
     LibClass178630* panel = new (0) LibClass178630;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 608.0f, 40.0f, 88.0f);
@@ -2346,6 +2493,7 @@ void ShopActionWindow::func_slot74()
     {
         return;
     }
+
     if (choice->process_direction(2) == 1)
     {
         return;
@@ -2358,6 +2506,7 @@ void ShopActionWindow::func_slot70()
     {
         return;
     }
+
     if (choice->process_direction(3) == 1)
     {
         return;
@@ -2367,10 +2516,12 @@ void ShopActionWindow::func_slot70()
 s32 shop_cancel_action(void* receiver)
 {
     FieldClass15AE70* object = static_cast<FieldClass15AE70*>(receiver);
+
     if (object->func_slot28())
     {
         return 0;
     }
+
     object->set_state(255, 128);
     return 2;
 }
@@ -2378,10 +2529,12 @@ s32 shop_cancel_action(void* receiver)
 s32 shop_select_action(void* receiver)
 {
     ShopActionWindow* object = static_cast<ShopActionWindow*>(receiver);
+
     if (object->func_slot28())
     {
         return 0;
     }
+
     shop_set_mode(D_001B643C->callbacks->shop, object->choice->unk114 != 0 ? SHOP_MODE_SELL : SHOP_MODE_BUY);
     return 1;
 }
@@ -2402,6 +2555,7 @@ static inline void set_shop_choice_opacity(FieldObject23CEA0* choice, float opac
 void ShopActionWindow::func_slot5c()
 {
     ShopState* state = D_001B643C->callbacks->shop;
+
     if (state->func_00261150() == this)
     {
         set_shop_choice_opacity(choice, SHOP_CURSOR_FOCUSED_OPACITY);
@@ -2410,10 +2564,13 @@ void ShopActionWindow::func_slot5c()
     {
         set_shop_choice_opacity(choice, SHOP_CURSOR_UNFOCUSED_OPACITY);
     }
+
     state->selected_action = choice->unk114;
+
     if (choice != 0)
     {
         s16 selected_action = choice->unk114;
+
         if (buy_label != 0)
         {
             if (selected_action == 0)
@@ -2425,6 +2582,7 @@ void ShopActionWindow::func_slot5c()
                 buy_label->set_color(0x808080);
             }
         }
+
         if (sell_label != 0)
         {
             if (selected_action == 1)
@@ -2437,6 +2595,7 @@ void ShopActionWindow::func_slot5c()
             }
         }
     }
+
     lib_text_set_resource(category_label, state->func_00263CC0(), state->category + SHOP_MSG_WEAPONS, 0);
 }
 
@@ -2491,6 +2650,7 @@ ItemCreationClass175110::~ItemCreationClass175110()
 void ShopDescriptionWindow::func_slot5c()
 {
     ShopState* state = D_001B643C->callbacks->shop;
+
     if (state->selected_item >= 0)
     {
         if (show_parameters != 0)
@@ -2507,6 +2667,7 @@ void ShopDescriptionWindow::func_slot5c()
             set_shop_number(parameter_values[2], D_001B64F0[preview_allocation.definition_index()].defense);
             set_shop_number(parameter_values[3], D_001B64F0[preview_allocation.definition_index()].agility);
             set_shop_number(parameter_values[4], D_001B64F0[preview_allocation.definition_index()].intelligence);
+
             for (s32 parameter_index = 0; parameter_index < 5; parameter_index++)
             {
                 parameter_labels[parameter_index]->unk3f = 1;
@@ -2517,6 +2678,7 @@ void ShopDescriptionWindow::func_slot5c()
         else
         {
             s32 item_description_key = state->selected_item + SHOP_MSG_LIST_DESCRIPTIONS;
+
             if (item_description_key != description_key)
             {
                 help_text->unk3f = 0;
@@ -2527,14 +2689,17 @@ void ShopDescriptionWindow::func_slot5c()
                 description_text->unk84 = 0.8f;
                 description_text->unk3c = 1;
             }
+
             for (s32 parameter_index = 0; parameter_index < 5; parameter_index++)
             {
                 parameter_labels[parameter_index]->unk3f = 0;
                 parameter_separators[parameter_index]->unk3f = 0;
                 parameter_values[parameter_index]->unk3f = 0;
             }
+
             parameters_heading->unk3f = 0;
         }
+
         switch_hint->unk3f = 1;
     }
     else
@@ -2543,6 +2708,7 @@ void ShopDescriptionWindow::func_slot5c()
         description->unk3f = 0;
         switch_hint->unk3f = 0;
         parameters_heading->unk3f = 0;
+
         for (s32 parameter_index = 0; parameter_index < 5; parameter_index++)
         {
             parameter_labels[parameter_index]->unk3f = 0;
@@ -2563,6 +2729,7 @@ s32 ShopDescriptionWindow::func_slotf4(u32 associated)
     {
         return 0;
     }
+
     FieldClass15AE70::func_slot14(associated, 0, 9, 1800, 220.0f, 80.0f, 0.0f);
     unk10->set_codes_and_z(0, 9, 0.0f, 1800, 100);
     LibClass178630* panel = new (0) LibClass178630;
@@ -2585,6 +2752,7 @@ s32 ShopDescriptionWindow::func_slotf4(u32 associated)
     parameters_heading->set_scale(0.75f, 0.75f);
     lib_container_attach_widget(unk10, parameters_heading);
     parameters_heading->unk3f = 0;
+
     for (s32 parameter_index = 0; parameter_index < 5; parameter_index++)
     {
         parameter_labels[parameter_index] = new (0) LibObject178750;
@@ -2606,6 +2774,7 @@ s32 ShopDescriptionWindow::func_slotf4(u32 associated)
         lib_container_attach_widget(unk10, parameter_values[parameter_index]);
         parameter_values[parameter_index]->unk3f = 0;
     }
+
     switch_hint = new (0) LibObject178750;
     switch_hint->init_resource_rectangle(285.0f, 104.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_SWITCH_HELP, 0);
     lib_container_attach_widget(unk10, switch_hint);
@@ -2619,7 +2788,7 @@ struct ShopCharacterRecord
     /** Selects the clamping rules used by the character stat setters. */
     s16 stat_limit_type;
     s16 encoded_level;
-    s16 unk06;
+    s16 encoded_base_level;
     s32 encoded_flags;
     s32 encoded_experience;
     s32 encoded_base_hp;
@@ -2738,6 +2907,7 @@ static inline s32 shop_character_attack(const ShopCharacterRecord& character)
     {
         return 0;
     }
+
     return character.encoded_attack ^ 0x7DE3F7E3;
 }
 
@@ -2752,6 +2922,7 @@ static inline s32 shop_character_defense(const ShopCharacterRecord& character)
     {
         return 0;
     }
+
     return character.encoded_defense ^ 0x7DE3F7E3;
 }
 
@@ -2779,14 +2950,17 @@ static inline s16 shop_equipment_allocation_id(const ShopCharacterEquipment* equ
     {
         return 0;
     }
+
     if (equipment_slot < 0)
     {
         return 0;
     }
+
     if (equipment_slot > (equipment->encoded_slot_limit ^ 0x7E93))
     {
         return 0;
     }
+
     return equipment->encoded_equipment_ids[equipment_slot] ^ 0x7E93;
 }
 
@@ -2799,10 +2973,12 @@ static inline ItemCreationAllocationRecord* shop_allocation_record(s16 index)
 {
     ShopInventoryState* base = D_001B64F8;
     u8 valid = index >= 1 && index <= 3000;
+
     if (valid)
     {
         return &base->allocations[index - 1];
     }
+
     return 0;
 }
 
@@ -2840,10 +3016,12 @@ static inline void reset_shop_allocation(ItemCreationAllocationRecord* record, c
 {
     *(unsigned __int128*)record = 0;
     record->checksum_shift = resident_next_random_word() & 3;
+
     if (key != 0)
     {
         record->checksum_shift = *key;
     }
+
     record->checksum = shop_allocation_checksum(record, record->checksum_shift);
 }
 
@@ -2876,12 +3054,14 @@ static inline FieldRecordSelection* shop_record_selection(ShopState* state)
 static inline u16 shop_allocation_definition_index(const ItemCreationAllocationRecord& record)
 {
     u16 definition_index = record.definition_factors.bits.definition_index;
+
     if (record.checksum !=
         (u16)((0x83CF << record.checksum_shift) ^ ((record.factors_567.halves[0] + (*(u16*)&record + record.factors_234.halves[0])) ^
                                                (record.definition_factors.halves[1] + (record.factors_234.halves[1] + record.factors_567.halves[1])))))
     {
         return 0;
     }
+
     return definition_index;
 }
 
@@ -2891,36 +3071,46 @@ static inline u16 shop_allocation_definition_index(const ItemCreationAllocationR
 void ShopEquipmentPreviewWindow::func_slot5c()
 {
     ShopState* state = D_001B643C->callbacks->shop;
+
     for (s32 i = 0; i < 8; i++)
     {
         ItemCreationOptionResourceDisplay* character_display = character_displays[i];
+
         if (character_display != 0)
         {
             set_shop_character_brightness(character_display, 128.0f);
         }
+
         comparison_labels[i]->unk3f = 0;
     }
+
     pulse_level += pulse_step;
+
     if (pulse_level > 18)
     {
         pulse_step = -1;
     }
+
     if (pulse_level < 0)
     {
         pulse_step = 1;
     }
+
     if (state->selected_item >= 0)
     {
         const ItemCreationCategoryRecord* item_record = shop_item_record(D_001B64F8, state->selected_item);
+
         if (shop_definition_category(shop_definition(item_record)) != SHOP_CATEGORY_WEAPONS &&
             shop_definition_category(shop_definition(item_record)) != SHOP_CATEGORY_ARMOR &&
             shop_definition_category(shop_definition(item_record)) != SHOP_CATEGORY_ACCESSORIES)
         {
             return;
         }
+
         ItemCreationAllocationRecord preview_allocation __attribute__((aligned(16)));
         reset_shop_allocation(&preview_allocation, 0);
         initialize_shop_allocation(&preview_allocation, item_record);
+
         for (s32 i = 0; i < 8; i++)
         {
             bool already_equipped;
@@ -2929,21 +3119,27 @@ void ShopEquipmentPreviewWindow::func_slot5c()
             FieldRecord* character_record = &selection->records[static_cast<s16>(i)];
             s8 character_slot = selection->slots[static_cast<s16>(i)];
             const ShopCharacterEquipment* equipment = &static_cast<const ShopCharacterEquipment*>(selection->unk04)[static_cast<s16>(i)];
+
             if (character_slot <= 0)
             {
                 continue;
             }
+
             s32 equipment_bit = 1 << (character_slot - 1);
             u16 equipment_mask = shop_definition(item_record)->equipment_mask;
+
             if (equipment_mask & equipment_bit)
             {
                 already_equipped = false;
+
                 for (equipment_slot = 0; equipment_slot < 4; equipment_slot++)
                 {
                     s16 allocation_id = shop_equipment_allocation_id(equipment, equipment_slot);
+
                     if (allocation_id > 0)
                     {
                         ItemCreationAllocationRecord* equipped_allocation = shop_allocation_record(allocation_id);
+
                         if (equipped_allocation != 0 &&
                             static_cast<u16>(equipped_allocation->definition_index() + 1) ==
                                 static_cast<u16>(shop_allocation_definition_index(preview_allocation) + 1))
@@ -2953,6 +3149,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
                         }
                     }
                 }
+
                 if (already_equipped)
                 {
                     lib_text_set_resource(comparison_labels[i], state->func_00263CC0(), SHOP_MSG_EQUIPPED, 0);
@@ -2967,14 +3164,17 @@ void ShopEquipmentPreviewWindow::func_slot5c()
                 comparison_labels[i]->unk3f = 0;
                 continue;
             }
+
             const ShopCharacterRecord* character = reinterpret_cast<const ShopCharacterRecord*>(character_record);
             ShopCharacterRecord character_copy = *character;
             ShopCharacterEquipment equipment_copy = *equipment;
+
             switch (shop_definition_category(shop_definition(item_record)))
             {
             case SHOP_CATEGORY_WEAPONS:
                 func_003F9890(&character_copy, &equipment_copy, &preview_allocation, 0);
                 comparison_labels[i]->unk3f = 1;
+
                 if (shop_character_attack(character_copy) > shop_character_attack(*character))
                 {
                     lib_text_set_resource(comparison_labels[i], state->func_00263CC0(), SHOP_MSG_STAT_INCREASE, 0);
@@ -2993,10 +3193,12 @@ void ShopEquipmentPreviewWindow::func_slot5c()
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
                 }
+
                 break;
             case SHOP_CATEGORY_ARMOR:
                 func_003F9890(&character_copy, &equipment_copy, &preview_allocation, 1);
                 comparison_labels[i]->unk3f = 1;
+
                 if (shop_character_defense(character_copy) > shop_character_defense(*character))
                 {
                     lib_text_set_resource(comparison_labels[i], state->func_00263CC0(), SHOP_MSG_STAT_INCREASE, 0);
@@ -3015,6 +3217,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
                 }
+
                 break;
             case SHOP_CATEGORY_ACCESSORIES:
                 comparison_labels[i]->unk3f = 0;
@@ -3035,6 +3238,7 @@ s32 ShopEquipmentPreviewWindow::func_slotf4(u32 associated)
     {
         return 0;
     }
+
     pulse_level = 0;
     pulse_step = 1;
     FieldClass15AE70::func_slot14(associated, 0, 9, 2000, 16.0f, 68.0f, 0.0f);
@@ -3047,6 +3251,7 @@ s32 ShopEquipmentPreviewWindow::func_slotf4(u32 associated)
     s32 character_resource_slot;
     u16 column;
     u16 row;
+
     for (s32 i = 0; i < 8; i++)
     {
         selection = &state->selection;
@@ -3055,6 +3260,7 @@ s32 ShopEquipmentPreviewWindow::func_slotf4(u32 associated)
         FieldRecord* unused_record = &selection->records[static_cast<s16>(i)];
         column = i % 4;
         row = i / 4;
+
         if (character_resource_slot != 0)
         {
             character_displays[i] = new (0) ItemCreationOptionResourceDisplay;
@@ -3074,6 +3280,7 @@ s32 ShopEquipmentPreviewWindow::func_slotf4(u32 associated)
         {
             character_displays[i] = 0;
         }
+
         comparison_labels[i] = new (0) LibObject178750;
         comparison_labels[i]->init_resource_rectangle(20.0f + 50.0f * column, 43.0f + (12.0f + 68.0f * row), 0.0f, 0.0f,
                                            static_cast<s32>(associated), SHOP_MSG_EQUIPPED, 0);
@@ -3084,6 +3291,7 @@ s32 ShopEquipmentPreviewWindow::func_slotf4(u32 associated)
         comparison_labels[i]->unk3f = 0;
         lib_container_attach_widget(unk10, comparison_labels[i]);
     }
+
     return 1;
 }
 
@@ -3109,15 +3317,18 @@ void shop_update_help_text(ShopScrollingWindow* object)
 {
     ShopState* state = D_001B643C->callbacks->shop;
     object->help_text->unk3d = 1;
+
     if (object->help_action != state->selected_action)
     {
         object->func_slot60(state->selected_action);
     }
+
     LibObject178750* help_text = object->help_text;
     float text_x = help_text->unk18.unk00;
     float text_y = help_text->unk18.unk04;
     float display_width = help_text->unk18.unk08;
     float display_height = help_text->unk18.unk0c;
+
     if (object->scrolling == 0)
     {
         help_text->unk18.unk00 = object->help_start_x;
@@ -3126,19 +3337,24 @@ void shop_update_help_text(ShopScrollingWindow* object)
         help_text->unk18.unk0c = display_height;
         help_text->unk3c = 1;
         object->scroll_timer++;
+
         if (!(static_cast<float>(object->scroll_timer) <= 120.0f))
         {
             object->scroll_timer = 0;
             object->scrolling = 1;
         }
+
         return;
     }
+
     float clip_left = object->help_clip_left;
     text_x -= 108.0f * D_001B6690;
+
     if (text_x < clip_left - static_cast<float>(object->help_text_width))
     {
         text_x = 2.0f + (clip_left + object->help_clip_width);
     }
+
     help_text->unk18.unk00 = text_x;
     help_text->unk18.unk04 = text_y;
     help_text->unk18.unk08 = display_width;
@@ -3158,10 +3374,12 @@ s32 ShopHelpWindow::func_slotf4(u32 associated)
     LibObject178750* title_text = new (0) LibObject178750;
     LibClass1746A0* clip_region = new (0) LibClass1746A0;
     LibClass1746A0* reset_clip = new (0) LibClass1746A0;
+
     if (help_text == 0 || clip_region == 0 || reset_clip == 0)
     {
         return 0;
     }
+
     LibObject178750* shop_name = new (0) LibObject178750;
     shop_name->init_resource_rectangle(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), D_001B643C->callbacks->shop->shop_id + SHOP_MSG_SHOP_NAMES, 0);
     lib_container_attach_widget(unk10, shop_name);
@@ -3229,64 +3447,81 @@ void shop_change_category(ShopState* object, s32 direction)
     case SHOP_MODE_BUY:
     {
         s32 attempts = 0;
+
         for (;;)
         {
             object->category += direction;
+
             if (object->category < 0)
             {
                 object->category = SHOP_CATEGORY_ALL;
             }
+
             if (object->category >= 8)
             {
                 object->category = 0;
             }
+
             if (attempts >= 9)
             {
                 break;
             }
+
             if (shop_category_item_count(&object->transaction, object->category) != 0)
             {
                 break;
             }
+
             attempts++;
         }
+
         break;
     }
     case SHOP_MODE_SELL:
     {
         s32 attempts = 0;
+
         for (;;)
         {
             object->category += direction;
+
             if (object->category < 0)
             {
                 object->category = SHOP_CATEGORY_ALL;
             }
+
             if (object->category >= 8)
             {
                 object->category = 0;
             }
+
             if (attempts > 8)
             {
                 object->category = SHOP_CATEGORY_ALL;
                 break;
             }
+
             s32 item_code;
+
             for (item_code = 1; item_code <= 750; item_code++)
             {
                 ItemCreationCategoryRecord* item_record = shop_item_record(D_001B64F8, item_code);
+
                 if (item_record != 0 && item_record->inventory_count != 0 &&
                     (object->category == SHOP_CATEGORY_ALL || object->category == shop_definition_category(&D_001B64F0[item_record->catalog_index])))
                 {
                     break;
                 }
             }
+
             if (item_code <= 750)
             {
                 break;
             }
+
             attempts++;
         }
+
         break;
     }
     default:
@@ -3304,6 +3539,7 @@ void shop_set_mode(ShopState* object, u32 mode)
 {
     s32 previous_mode = object->mode;
     object->mode = mode;
+
     switch (object->mode)
     {
     case SHOP_MODE_ACTION:
@@ -3341,22 +3577,27 @@ void shop_set_id(ShopState* object, u16 shop_id)
 {
     object->shop_id = shop_id;
     s32 discount_percent = 0;
+
     if (shop_runtime_flag(SHOP_DISCOUNT_10_PERCENT))
     {
         discount_percent = 10;
     }
+
     if (shop_runtime_flag(SHOP_DISCOUNT_20_PERCENT))
     {
         discount_percent = 20;
     }
+
     if (shop_runtime_flag(SHOP_DISCOUNT_30_PERCENT))
     {
         discount_percent = 30;
     }
+
     if (shop_runtime_flags()->invincibility_timer > 0)
     {
         discount_percent = 100;
     }
+
     shop_init_transaction(&object->transaction, object->shop_id, discount_percent);
 }
 
@@ -3364,22 +3605,23 @@ void shop_set_id(ShopState* object, u16 shop_id)
  * @brief Release the shop resources and controller, then clear the discount flags.
  * @param object Shop controller.
  */
-void shop_release_resources(ShopState* object)
+void ShopState::func_slot5c()
 {
-    if (object->resource_slot != 0)
+    if (resource_slot != 0)
     {
-        lib_release_resource_slot(D_001B657C, object->resource_slot);
+        lib_release_resource_slot(D_001B657C, resource_slot);
     }
-    lib_object_detach_owner(object);
-    object->func_001DD7B0();
+
+    lib_object_detach_owner(this);
+    func_001DD7B0();
     clear_shop_runtime_flag(SHOP_DISCOUNT_10_PERCENT);
     clear_shop_runtime_flag(SHOP_DISCOUNT_20_PERCENT);
     clear_shop_runtime_flag(SHOP_DISCOUNT_30_PERCENT);
 }
 
-void shop_queue_object(void* object)
+void ShopState::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 /**
@@ -3387,40 +3629,39 @@ void shop_queue_object(void* object)
  * @param receiver Shop controller.
  * @return Always one.
  */
-s32 shop_create_windows(void* receiver)
+s32 ShopState::func_00263CD0()
 {
-    ShopState* object = static_cast<ShopState*>(receiver);
     ShopBackgroundWindow* background_window = new (0) ShopBackgroundWindow;
     ShopHelpWindow* help_window = new (0) ShopHelpWindow;
-    object->equipment_window = new (0) ShopEquipmentPreviewWindow;
-    object->description_window = new (0) ShopDescriptionWindow;
-    object->action_window = new (0) ShopActionWindow;
-    object->buy_window = new (0) ShopBuyListWindow;
-    object->sell_window = new (0) ShopSellListWindow;
-    object->fol_window = new (0) ShopFolWindow;
-    background_window->func_slotf4(object->resource_slot);
-    object->FieldClass153E30::add_child(background_window);
-    help_window->func_slotf4(object->resource_slot);
-    object->FieldClass153E30::add_child(help_window);
-    object->unk24 = help_window;
+    equipment_window = new (0) ShopEquipmentPreviewWindow;
+    description_window = new (0) ShopDescriptionWindow;
+    action_window = new (0) ShopActionWindow;
+    buy_window = new (0) ShopBuyListWindow;
+    sell_window = new (0) ShopSellListWindow;
+    fol_window = new (0) ShopFolWindow;
+    background_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(background_window);
+    help_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(help_window);
+    unk24 = help_window;
     help_window->func_slot40(background_window);
-    object->equipment_window->func_slotf4(object->resource_slot);
-    object->FieldClass153E30::add_child(object->equipment_window);
-    object->description_window->func_slotf4(object->resource_slot);
-    object->FieldClass153E30::add_child(object->description_window);
-    object->action_window->func_slotf4(object->resource_slot);
-    object->FieldClass153E30::add_child(object->action_window);
-    object->buy_window->func_slot104(object->resource_slot);
-    object->FieldClass153E30::add_child(object->buy_window);
-    object->buy_window->func_slot20(0);
-    object->sell_window->func_slot104(object->resource_slot);
-    object->FieldClass153E30::add_child(object->sell_window);
-    object->sell_window->func_slot20(0);
-    object->fol_window->func_slotf4(object->resource_slot);
-    object->FieldClass153E30::add_child(object->fol_window);
-    object->unk20 = object->action_window;
-    object->windows_initialized = 1;
-    shop_set_mode(object, SHOP_MODE_ACTION);
+    equipment_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(equipment_window);
+    description_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(description_window);
+    action_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(action_window);
+    buy_window->func_slot104(resource_slot);
+    FieldClass153E30::add_child(buy_window);
+    buy_window->func_slot20(0);
+    sell_window->func_slot104(resource_slot);
+    FieldClass153E30::add_child(sell_window);
+    sell_window->func_slot20(0);
+    fol_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(fol_window);
+    unk20 = action_window;
+    windows_initialized = 1;
+    shop_set_mode(this, SHOP_MODE_ACTION);
     return 1;
 }
 
@@ -3435,29 +3676,31 @@ static inline ShopAlignedResource* aligned_shop_resource(void* buffer)
  * @param buffer Completed resource buffer, aligned to 128 bytes before use.
  * @return Controller setup result, or zero when the buffer is null.
  */
-s32 shop_register_resource(void* receiver, void* buffer)
+s32 ShopState::func_001E1820(void* buffer)
 {
-    ShopState* object = static_cast<ShopState*>(receiver);
     if (buffer == 0)
     {
         return 0;
     }
+
     ShopAlignedResource* resource = aligned_shop_resource(buffer);
     s32 allocation_size = resource->byte_count + 0x80;
     void* previous_heap = resident_get_allocation_heap();
     void* resource_heap = D_001B6430->context->unk70;
     void* heap_probe = resident_heap_allocate(resource_heap, allocation_size);
+
     if (heap_probe != 0)
     {
         resident_heap_release(heap_probe);
         resident_exchange_allocation_heap(resource_heap);
     }
-    object->resource_slot = lib_load_resource_slot(D_001B657C, resource);
+
+    resource_slot = lib_load_resource_slot(D_001B657C, resource);
     resident_exchange_allocation_heap(previous_heap);
     FieldRuntime* runtime = D_001B657C;
-    runtime->item_name_resource_slot = object->resource_slot;
+    runtime->item_name_resource_slot = resource_slot;
     runtime->item_name_base_key = SHOP_MSG_ITEM_NAMES + 1;
-    return object->func_00263CD0();
+    return func_00263CD0();
 }
 
 /**
@@ -3465,9 +3708,9 @@ s32 shop_register_resource(void* receiver, void* buffer)
  * @param object Shop controller.
  * @return One when both selection tables are present, or zero otherwise.
  */
-s32 shop_init_record_selection(ShopState* object)
+u8 ShopState::func_00264110()
 {
-    return func_28E3D0(&object->selection) != 0;
+    return static_cast<u8>(field_record_selection_load(&selection)) != 0;
 }
 
 /** @brief Initialize the shop controller and its record selection. */
@@ -3489,15 +3732,15 @@ ShopState::ShopState()
     category = SHOP_CATEGORY_ALL;
 }
 
-void func_003516A0(void* object)
+void ShopState::func_001DF360()
 {
 }
 
-void func_003516B0(void* object)
+void ShopState::func_001DD410()
 {
 }
 
-void func_003516C0(void* object)
+void ItemCreationClass185050::func_slot0c()
 {
 }
 
@@ -3513,11 +3756,11 @@ ShopSaleItemWindow::~ShopSaleItemWindow()
 {
 }
 
-void func_00351800(void* object)
+void FieldClass15AE70::func_slot70()
 {
 }
 
-void func_00351810(void* object)
+void FieldClass15AE70::func_slot74()
 {
 }
 
@@ -3525,7 +3768,7 @@ ShopSellListWindow::~ShopSellListWindow()
 {
 }
 
-s32 func_00351890(void* object)
+u8 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
@@ -3538,7 +3781,7 @@ ShopFolWindow::~ShopFolWindow()
 {
 }
 
-s32 func_00351970(void* object)
+u8 FieldClass15AE70::func_slotb4()
 {
     return 0;
 }
@@ -3568,78 +3811,78 @@ ShopState::~ShopState()
 {
 }
 
-u8 shop_windows_initialized(ShopState* object)
+u8 ShopState::func_00261D20()
 {
-    return object->windows_initialized;
+    return windows_initialized;
 }
 
-s32 func_00351BE0(void* object)
+s32 ShopState::func_001DF3D0()
 {
     return 4;
 }
 
-void shop_set_help_window(ShopState* object, void* value)
+void ShopState::func_00263C80(void* value)
 {
-    object->unk24 = value;
+    unk24 = value;
 }
 
-void* shop_get_help_window(ShopState* object)
+void* ShopState::func_00263C90()
 {
-    return object->unk24;
+    return unk24;
 }
 
-void func_00351C10(ShopState* object, s8 value)
+void ShopState::func_00263CA0(s8 value)
 {
-    object->unk28 = value;
+    unk28 = value;
 }
 
-s8 func_00351C20(ShopState* object)
+s8 ShopState::func_00263CB0()
 {
-    return object->unk28;
+    return unk28;
 }
 
-s32 func_00351C30(void* object)
-{
-    return 0;
-}
-
-s32 func_00351C40(void* object)
+s32 ShopState::func_slot60()
 {
     return 0;
 }
 
-void func_00351C50(void* object)
-{
-}
-
-s32 func_00351C60(void* object)
+s32 ShopState::func_slot64()
 {
     return 0;
 }
 
-void func_00351C70(void* object)
+void ShopState::func_slot68()
 {
 }
 
-void func_00351C80(void* object)
-{
-}
-
-void func_00351C90(void* object)
-{
-}
-
-s32 func_00351CA0(void* object)
+FieldRecordSelection* ShopState::selected_records()
 {
     return 0;
 }
 
-s32 func_00351CB0(void* object)
+void ShopState::func_slot70()
+{
+}
+
+void ShopState::func_slot74()
+{
+}
+
+void ShopState::func_slot78()
+{
+}
+
+s32 ShopState::func_slot7c()
 {
     return 0;
 }
 
-s32 func_00351CC0(void* object)
+s32 ShopState::func_slot80()
+{
+    return 0;
+}
+
+s32 ShopState::func_slot84()
 {
     return 0;
 }
@@ -3652,15 +3895,18 @@ s32 func_00351CC0(void* object)
 void shop_append_choice(FieldCountedList* list, void* value)
 {
     FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
+
     if (node != 0)
     {
         node->unk00 = value;
         node->unk04 = 0;
         FieldListNode* tail = list->unk00;
+
         while (tail->unk04 != 0)
         {
             tail = tail->unk04;
         }
+
         tail->unk04 = node;
         list->unk04++;
     }
@@ -3674,15 +3920,18 @@ void shop_append_choice(FieldCountedList* list, void* value)
 void shop_append_text(FieldCountedList* list, void* value)
 {
     FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
+
     if (node != 0)
     {
         node->unk00 = value;
         node->unk04 = 0;
         FieldListNode* tail = list->unk00;
+
         while (tail->unk04 != 0)
         {
             tail = tail->unk04;
         }
+
         tail->unk04 = node;
         list->unk04++;
     }
@@ -3696,15 +3945,18 @@ void shop_append_text(FieldCountedList* list, void* value)
 void shop_append_frame(FieldCountedList* list, void* value)
 {
     FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
+
     if (node != 0)
     {
         node->unk00 = value;
         node->unk04 = 0;
         FieldListNode* tail = list->unk00;
+
         while (tail->unk04 != 0)
         {
             tail = tail->unk04;
         }
+
         tail->unk04 = node;
         list->unk04++;
     }
@@ -3718,15 +3970,18 @@ void shop_append_frame(FieldCountedList* list, void* value)
 void shop_append_panel(FieldCountedList* list, void* value)
 {
     FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
+
     if (node != 0)
     {
         node->unk00 = value;
         node->unk04 = 0;
         FieldListNode* tail = list->unk00;
+
         while (tail->unk04 != 0)
         {
             tail = tail->unk04;
         }
+
         tail->unk04 = node;
         list->unk04++;
     }

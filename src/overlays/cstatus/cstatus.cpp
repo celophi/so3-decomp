@@ -1,9 +1,12 @@
 #include "overlays/cstatus/text.h"
 #include "main/resident_data.h"
 #include "main/resident_001001E0.h"
+#include "main/resident_00101260.h"
 #include "main/resident_0010A0E0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libc_guess_0013C948.h"
+
+extern "C" void field_record_selection_advance(FieldRecordSelection* selection, s32 forward);
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_0028E240.h"
 #include "overlays/1067-00/text_002F9C90.h"
@@ -225,10 +228,12 @@ struct StatusCharacterRecord
     u32 get_hp()
     {
         u32 value = encoded_hp;
+
         if (hp_checksum != ((encoded_base_hp + encoded_max_hp) ^ encoded_hp ^ checksum_salt))
         {
             u32 flags = encoded_flags;
             s32 flag_salt = encoded_experience;
+
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
                 encoded_flags = ((flags ^ STATUS_STAT_WORD_XOR_KEY) | 1) ^ STATUS_STAT_WORD_XOR_KEY;
@@ -237,18 +242,23 @@ struct StatusCharacterRecord
                 s32 current_experience = encoded_experience;
                 flags_experience_checksum = current_key ^ (current_experience ^ (flags + current_key));
             }
+
             return 0;
         }
+
         return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode maximum HP, marking valid flags when the HP checksum fails. @return Maximum HP, or zero for corruption. */
     u32 get_max_hp()
     {
         u32 value = encoded_max_hp;
+
         if (hp_checksum != ((encoded_base_hp + encoded_max_hp) ^ encoded_hp ^ checksum_salt))
         {
             u32 flags = encoded_flags;
             s32 flag_salt = encoded_experience;
+
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
                 encoded_flags = ((flags ^ STATUS_STAT_WORD_XOR_KEY) | 1) ^ STATUS_STAT_WORD_XOR_KEY;
@@ -257,18 +267,23 @@ struct StatusCharacterRecord
                 s32 current_experience = encoded_experience;
                 flags_experience_checksum = current_key ^ (current_experience ^ (flags + current_key));
             }
+
             return 0;
         }
+
         return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode current MP, marking valid flags when the MP checksum fails. @return Current MP, or zero for corruption. */
     u32 get_mp()
     {
         u32 value = encoded_mp;
+
         if (mp_checksum != ((encoded_base_mp + encoded_max_mp) ^ encoded_mp ^ checksum_salt))
         {
             u32 flags = encoded_flags;
             s32 flag_salt = encoded_experience;
+
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
                 encoded_flags = ((flags ^ STATUS_STAT_WORD_XOR_KEY) | 1) ^ STATUS_STAT_WORD_XOR_KEY;
@@ -277,18 +292,23 @@ struct StatusCharacterRecord
                 s32 current_experience = encoded_experience;
                 flags_experience_checksum = current_key ^ (current_experience ^ (flags + current_key));
             }
+
             return 0;
         }
+
         return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode maximum MP, marking valid flags when the MP checksum fails. @return Maximum MP, or zero for corruption. */
     u32 get_max_mp()
     {
         u32 value = encoded_max_mp;
+
         if (mp_checksum != ((encoded_base_mp + encoded_max_mp) ^ encoded_mp ^ checksum_salt))
         {
             u32 flags = encoded_flags;
             s32 flag_salt = encoded_experience;
+
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
                 encoded_flags = ((flags ^ STATUS_STAT_WORD_XOR_KEY) | 1) ^ STATUS_STAT_WORD_XOR_KEY;
@@ -297,10 +317,13 @@ struct StatusCharacterRecord
                 s32 current_experience = encoded_experience;
                 flags_experience_checksum = current_key ^ (current_experience ^ (flags + current_key));
             }
+
             return 0;
         }
+
         return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode the protected level. @return Level, or one for an invalid checksum. */
     s32 get_level() const
     {
@@ -308,8 +331,10 @@ struct StatusCharacterRecord
         {
             return 1;
         }
+
         return encoded_level ^ STATUS_STAT_HALFWORD_XOR_KEY;
     }
+
     /** @brief Decode the protected experience. @return Experience, or zero for an invalid checksum. */
     s32 get_experience() const
     {
@@ -317,8 +342,10 @@ struct StatusCharacterRecord
         {
             return 0;
         }
+
         return encoded_experience ^ STATUS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode the protected attack value. @return Attack, or zero for an invalid checksum. */
     s32 get_attack() const
     {
@@ -326,8 +353,10 @@ struct StatusCharacterRecord
         {
             return 0;
         }
+
         return encoded_attack ^ STATUS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode the protected defense value. @return Defense, or zero for an invalid checksum. */
     s32 get_defense() const
     {
@@ -335,8 +364,10 @@ struct StatusCharacterRecord
         {
             return 0;
         }
+
         return encoded_defense ^ STATUS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode the protected agility value. @return Agility, or zero for an invalid checksum. */
     s32 get_agility() const
     {
@@ -344,8 +375,10 @@ struct StatusCharacterRecord
         {
             return 0;
         }
+
         return encoded_agility ^ STATUS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode the protected HIT value. @return HIT, or zero for an invalid checksum. */
     s32 get_hit() const
     {
@@ -353,8 +386,10 @@ struct StatusCharacterRecord
         {
             return 0;
         }
+
         return encoded_hit ^ STATUS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode INT after validating the HIT checksum. @return INT, or zero when the HIT checksum is invalid. */
     s32 get_intelligence() const
     {
@@ -362,6 +397,7 @@ struct StatusCharacterRecord
         {
             return 0;
         }
+
         return encoded_intelligence ^ STATUS_STAT_WORD_XOR_KEY;
     }
 };
@@ -429,36 +465,45 @@ struct StatusCharacterEquipment
         {
             return 0;
         }
+
         if (index < 0)
         {
             return 0;
         }
+
         if ((encoded_slot_limit ^ STATUS_STAT_HALFWORD_XOR_KEY) < index)
         {
             return 0;
         }
+
         return encoded_equipment_ids[index] ^ STATUS_STAT_HALFWORD_XOR_KEY;
     }
+
     /** @brief Decode protected SP. @return SP, or zero for an invalid checksum. */
     s32 get_sp() const
     {
         s32 salt = checksum_salt;
         s16 value = encoded_sp;
+
         if (sp_cp_checksum != (salt ^ (value ^ (encoded_cp + salt))))
         {
             return 0;
         }
+
         return value ^ STATUS_STAT_HALFWORD_XOR_KEY;
     }
+
     /** @brief Decode protected CP. @return CP, or zero for an invalid checksum. */
     s32 get_cp() const
     {
         s32 salt = checksum_salt;
         s16 value = encoded_cp;
+
         if (sp_cp_checksum != (salt ^ (encoded_sp ^ (value + salt))))
         {
             return 0;
         }
+
         return value ^ STATUS_STAT_HALFWORD_XOR_KEY;
     }
 };
@@ -660,23 +705,28 @@ extern "C" ItemCreationAllocationRecord* D_001B64F8;
 static inline s32 status_battle_skill_index(StatusCharacterEquipment* record, s32 index)
 {
     u32 checksum = 0x8D3C43F9;
+
     for (s32 entry = 0; entry < 6; entry++)
     {
         checksum ^= record->encoded_battle_skill_indices[entry];
         checksum = checksum * 2 + 0x31;
     }
+
     if (record->battle_skill_indices_checksum != checksum)
     {
         return 0;
     }
+
     if (index < 0)
     {
         return 0;
     }
+
     if (static_cast<u32>(index) >= 6)
     {
         return 0;
     }
+
     return record->encoded_battle_skill_indices[index] ^ STATUS_BATTLE_SKILL_XOR_KEY;
 }
 
@@ -722,14 +772,17 @@ template <class List>
 static inline void move_status_display_list(List* list, StatusCharacterWindow* object)
 {
     StatusWidgetNode* node = list->head->next;
+
     while (node != 0)
     {
         LibClass178600* widget = static_cast<LibClass178600*>(node->value);
+
         if (widget != 0)
         {
             set_status_widget_position(widget, widget->unk18.unk00,
                                        widget->unk18.unk04 + object->scroll_delta);
         }
+
         node = node->next;
     }
 }
@@ -803,10 +856,12 @@ static inline ItemCreationAllocationRecord* status_allocation(s16 index)
 {
     ItemCreationAllocationRecord* base = D_001B64F8;
     u8 valid = index >= 1 && index <= 3000;
+
     if (valid)
     {
         return &base[index - 1];
     }
+
     return 0;
 }
 
@@ -1120,16 +1175,21 @@ void status_initialize_name_maps(StatusNameWindow* object)
     func_0013A678(object->katakana_bytes, 0, 90);
     func_0013A678(object->alphanumeric_bytes, 0, 80);
     StatusGlyphMap90 first = g_status_hiragana_bytes;
+
     for (s32 i = 0; i < 90; ++i)
     {
         object->hiragana_bytes[i] = first.values[i];
     }
+
     StatusGlyphMap90 second = g_status_katakana_bytes;
+
     for (s32 i = 0; i < 90; ++i)
     {
         object->katakana_bytes[i] = second.values[i];
     }
+
     StatusGlyphMap80 third = g_status_alphanumeric_bytes;
+
     for (s32 i = 0; i < 80; ++i)
     {
         object->alphanumeric_bytes[i] = third.values[i];
@@ -1144,6 +1204,7 @@ void status_append_name_diacritic(StatusNameWindow* object, s16 code)
         {
             object->name_bytes[object->last_name_byte++] = STATUS_NAME_DAKUTEN;
         }
+
         if (code >= 25 && code <= 29)
         {
             object->name_bytes[object->last_name_byte++] = STATUS_NAME_HANDAKUTEN;
@@ -1156,11 +1217,13 @@ void status_append_name_diacritic(StatusNameWindow* object, s16 code)
             ++object->last_name_byte;
             object->name_bytes[object->last_name_byte] = STATUS_NAME_DAKUTEN;
         }
+
         if (code >= 25 && code <= 29)
         {
             ++object->last_name_byte;
             object->name_bytes[object->last_name_byte] = STATUS_NAME_HANDAKUTEN;
         }
+
         if (code == 75)
         {
             ++object->last_name_byte;
@@ -1175,10 +1238,13 @@ s32 status_remove_last_name_entry(StatusNameWindow* object)
     {
         return 3;
     }
+
     u8 removed_hiragana_delimiter = 0;
-    while (1)
+
+    for (;;)
     {
         u8* entry = &object->name_bytes[object->last_name_byte];
+
         if (*entry == STATUS_NAME_HIRAGANA_DELIMITER)
         {
             *entry = 0;
@@ -1186,22 +1252,27 @@ s32 status_remove_last_name_entry(StatusNameWindow* object)
             object->last_name_byte--;
             continue;
         }
+
         if (*entry == STATUS_NAME_DAKUTEN)
         {
             *entry = 0;
             object->last_name_byte--;
             continue;
         }
+
         if (*entry == STATUS_NAME_HANDAKUTEN)
         {
             *entry = 0;
             object->last_name_byte--;
             continue;
         }
+
         break;
     }
+
     object->name_bytes[object->last_name_byte] = 0;
     object->last_name_byte--;
+
     if (removed_hiragana_delimiter == 1)
     {
         if (object->name_bytes[object->last_name_byte] == STATUS_NAME_HIRAGANA_DELIMITER)
@@ -1215,6 +1286,7 @@ s32 status_remove_last_name_entry(StatusNameWindow* object)
             object->name_bytes[object->last_name_byte] = STATUS_NAME_HIRAGANA_DELIMITER;
         }
     }
+
     status_refresh_name_markers(object);
     status_refresh_name_glyphs(object);
     return 2;
@@ -1223,21 +1295,25 @@ s32 status_remove_last_name_entry(StatusNameWindow* object)
 void status_refresh_name_markers(StatusNameWindow* object)
 {
     object->selected_name_glyph = func_004679B0(object->name_text);
+
     for (s32 i = object->first_name_marker; i < object->first_name_marker + 7; ++i)
     {
         StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, i));
         LibClass178600* marker = node->value;
         marker->unk3f = 0;
+
         if (i == object->first_name_marker + object->selected_name_glyph)
         {
             marker->unk3f = 1;
         }
     }
+
     if (object->selected_name_glyph >= 6)
     {
         StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, object->first_name_marker + 6));
         node->value->unk3f = 1;
     }
+
     if (object->selected_name_glyph <= 0)
     {
         StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, object->first_name_marker));
@@ -1248,6 +1324,7 @@ void status_refresh_name_markers(StatusNameWindow* object)
 void status_refresh_name_glyphs(StatusNameWindow* object)
 {
     s32 empty = object->name_bytes[0] == 0;
+
     if (empty == 0)
     {
         LibObject175140* text = object->name_text;
@@ -1255,14 +1332,18 @@ void status_refresh_name_glyphs(StatusNameWindow* object)
         text->unk3c = 1;
         object->name_text->unk3f = 0;
     }
+
     status_decode_name_glyphs(object);
+
     for (s32 i = 0; i < 7; ++i)
     {
         object->name_glyph_widgets[i]->unk3f = 0;
     }
+
     for (s32 i = 0; i < 7; ++i)
     {
         u16 key = object->name_glyph_keys[i];
+
         if (key != 0)
         {
             u32 source = object->func_slot54();
@@ -1284,30 +1365,37 @@ void status_decode_name_glyphs(StatusNameWindow* object)
     {
         object->name_glyph_keys[i] = 0;
     }
+
     u16 position = 0;
     u16 output = 0;
     u8 alternate = 0;
+
     for (;;)
     {
         if (position >= 24 || output >= 8)
         {
             break;
         }
+
         u8 value = object->name_bytes[position];
+
         if (value == 0)
         {
             break;
         }
+
         if (value == STATUS_NAME_HIRAGANA_DELIMITER)
         {
             alternate = alternate != 1;
             ++position;
             continue;
         }
+
         if (value == STATUS_NAME_DAKUTEN)
         {
             u16* destination = object->name_glyph_keys + output;
             u16& previous = destination[-1];
+
             if (previous == 0x15E2)
             {
                 previous += 0x49;
@@ -1346,6 +1434,7 @@ void status_decode_name_glyphs(StatusNameWindow* object)
                     break;
                 }
             }
+
             for (s32 i = 0; i < 80; ++i)
             {
                 if (value == object->alphanumeric_bytes[i])
@@ -1355,6 +1444,7 @@ void status_decode_name_glyphs(StatusNameWindow* object)
                 }
             }
         }
+
         ++position;
     }
 }
@@ -1364,12 +1454,15 @@ void status_append_selected_name_glyph(StatusNameWindow* object, u8 mode)
     if (object->last_name_byte < 24)
     {
         u8 full = func_004679B0(object->name_text) >= 7;
+
         if (full == 1)
         {
             return;
         }
+
         ++object->last_name_byte;
         s16 code = object->selected_grid_cell % 11 + 10 * (object->selected_grid_cell / 11) - 1;
+
         if (object->grid_mode == STATUS_NAME_HIRAGANA)
         {
             if (object->last_name_byte > 0 && object->name_bytes[object->last_name_byte - 1] == STATUS_NAME_HIRAGANA_DELIMITER)
@@ -1403,6 +1496,7 @@ void status_append_selected_name_glyph(StatusNameWindow* object, u8 mode)
                 object->name_bytes[object->last_name_byte] = object->alphanumeric_bytes[code];
             }
         }
+
         status_refresh_name_markers(object);
         status_refresh_name_glyphs(object);
     }
@@ -1411,11 +1505,13 @@ void status_append_selected_name_glyph(StatusNameWindow* object, u8 mode)
 extern "C" void status_select_alphanumeric_grid(StatusNameWindow* object, u8 mode)
 {
     object->grid_mode = STATUS_NAME_ALPHANUMERIC;
+
     for (s32 i = 0; i < STATUS_NAME_GRID_LABEL_COUNT; ++i)
     {
         StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, i));
         LibClass178600* display = node->value;
         display->unk3f = 0;
+
         switch (object->grid_mode)
         {
         case STATUS_NAME_HIRAGANA:
@@ -1427,6 +1523,7 @@ extern "C" void status_select_alphanumeric_grid(StatusNameWindow* object, u8 mod
                 display->unk3f = 1;
                 break;
             }
+
             break;
         case STATUS_NAME_KATAKANA:
             switch (i)
@@ -1439,6 +1536,7 @@ extern "C" void status_select_alphanumeric_grid(StatusNameWindow* object, u8 mod
                 display->unk3f = 0;
                 break;
             }
+
             break;
         case STATUS_NAME_ALPHANUMERIC:
             switch (i)
@@ -1450,12 +1548,15 @@ extern "C" void status_select_alphanumeric_grid(StatusNameWindow* object, u8 mod
             case STATUS_NAME_GRID_SYMBOLS_LEFT:
             case STATUS_NAME_GRID_SYMBOLS_RIGHT:
                 display->unk3f = 1;
+
                 if (object->alphabet_symbol_grid != 0)
                 {
                     object->alphabet_symbol_grid->unk3f = 1;
                 }
+
                 break;
             }
+
             break;
         }
     }
@@ -1464,16 +1565,19 @@ extern "C" void status_select_alphanumeric_grid(StatusNameWindow* object, u8 mod
 void StatusNameWindow::func_slot5c()
 {
     FieldClass153E30* receiver = D_001B643C->callbacks->status_receiver;
+
     if (receiver->func_00261150() == this)
     {
         if (this->selected_name_glyph < 0)
         {
             this->selected_name_glyph = 0;
         }
+
         if (this->selected_name_glyph >= 6)
         {
             this->selected_name_glyph = 6;
         }
+
         LibClass178600* name_cursor = this->name_cursor;
         float cursor_x = this->name_x + 36.0f * this->selected_name_glyph;
         float cursor_y = this->name_y;
@@ -1487,19 +1591,23 @@ void status_move_name_grid_cursor(StatusNameWindow* object, s32 value)
 {
     LibClass175030* marker = object->grid_marker;
     LibMovementState& movement = *marker;
+
     if (movement.unk35 != 0)
     {
         if (value < 0)
         {
             value = 98;
         }
+
         if (value > 98)
         {
             value = 0;
         }
+
         s32 row = value / 11;
         s32 column = value % 11;
         float x;
+
         if (column == 0)
         {
             x = object->command_x - 6.0f;
@@ -1512,6 +1620,7 @@ void status_move_name_grid_cursor(StatusNameWindow* object, s32 value)
         {
             x = 48.0f + (155.0f + 34.0f * column);
         }
+
         func_00466E40(&movement, x, 16.0f + (110.0f + 28.0f * row), 1.0f / 15.0f);
         object->selected_grid_cell = value;
         func_002CFE40(D_001B643C->callbacks, 0);
@@ -1523,6 +1632,7 @@ void StatusNameWindow::func_slot74()
     s32 value = this->selected_grid_cell;
     s32 quotient = value / 11;
     s32 remainder = value % 11;
+
     if (remainder == 10)
     {
         status_move_name_grid_cursor(this, quotient * 11);
@@ -1538,6 +1648,7 @@ void StatusNameWindow::func_slot70()
     s32 value = this->selected_grid_cell;
     s32 quotient = value / 11;
     s32 remainder = value % 11;
+
     if (remainder == 0)
     {
         status_move_name_grid_cursor(this, quotient * 11 + 10);
@@ -1551,6 +1662,7 @@ void StatusNameWindow::func_slot70()
 void StatusNameWindow::func_slot6c()
 {
     s32 value = this->selected_grid_cell;
+
     if (value / 11 == 8)
     {
         status_move_name_grid_cursor(this, value % 11);
@@ -1564,6 +1676,7 @@ void StatusNameWindow::func_slot6c()
 void StatusNameWindow::func_slot68()
 {
     s32 value = this->selected_grid_cell;
+
     if (value / 11 == 0)
     {
         status_move_name_grid_cursor(this, value % 11 + 88);
@@ -1577,34 +1690,44 @@ void StatusNameWindow::func_slot68()
 void StatusNameWindow::func_slote4()
 {
     s8* row = this->default_names[this->selection->slots[this->selection->current] - 1];
+
     for (s32 i = 0; i < 24; ++i)
     {
         this->name_bytes[i] = 0;
     }
+
     for (s32 i = 0; i < 24; ++i)
     {
         s8 value = row[i];
+
         if (value == 0)
         {
             break;
         }
+
         this->name_bytes[i] = value;
     }
+
     this->last_name_byte = 0;
     s8 last;
+
     for (;;)
     {
         last = this->last_name_byte;
+
         if (this->name_bytes[last] == 0)
         {
             break;
         }
+
         this->last_name_byte = last + 1;
     }
+
     if (last > 0)
     {
         this->last_name_byte = last - 1;
     }
+
     status_refresh_name_markers(this);
     status_refresh_name_glyphs(this);
     func_002CFE40(D_001B643C->callbacks, 1);
@@ -1634,6 +1757,7 @@ u8 StatusNameWindow::func_slotb4()
 u8 StatusNameWindow::func_slotb0()
 {
     u8 result = 0;
+
     switch (selected_grid_cell)
     {
     case STATUS_NAME_COMMAND_HIRAGANA:
@@ -1646,34 +1770,44 @@ u8 StatusNameWindow::func_slotb0()
     case STATUS_NAME_COMMAND_DEFAULT:
     {
         s8* row = default_names[selection->slots[selection->current] - 1];
+
         for (s32 i = 0; i < 24; ++i)
         {
             name_bytes[i] = 0;
         }
+
         for (s32 i = 0; i < 24; ++i)
         {
             s8 value = row[i];
+
             if (value == 0)
             {
                 break;
             }
+
             name_bytes[i] = value;
         }
+
         last_name_byte = 0;
         s8 last;
+
         for (;;)
         {
             last = last_name_byte;
+
             if (name_bytes[last] == 0)
             {
                 break;
             }
+
             last_name_byte = last + 1;
         }
+
         if (last > 0)
         {
             last_name_byte = last - 1;
         }
+
         status_refresh_name_markers(this);
         status_refresh_name_glyphs(this);
         break;
@@ -1687,27 +1821,34 @@ u8 StatusNameWindow::func_slotb0()
     case STATUS_NAME_COMMAND_CONFIRM:
     {
         u8 empty = name_bytes[0] == 0;
+
         if (empty == 1)
         {
             return 3;
         }
+
         u8 blank = 1;
+
         for (s32 i = 0; i < 24; ++i)
         {
             u8 value = name_bytes[i];
+
             if (value != STATUS_NAME_SPACE && value != 0 && value != STATUS_NAME_HIRAGANA_DELIMITER)
             {
                 blank = 0;
             }
         }
+
         if (blank == 0)
         {
             s8* destination = reinterpret_cast<s8*>(static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_name);
             const s8* source = reinterpret_cast<const s8*>(name_bytes);
+
             do
             {
             } while ((*destination++ = *source++) != 0);
-            StatusNameSection* section = static_cast<StatusNameSection*>(func_101440(func_101290(func_10D8E0()), 4));
+            StatusNameSection* section = reinterpret_cast<StatusNameSection*>(
+                resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4));
             func_0013A4C0(section->names[selection->slots[selection->current] - 1], name_bytes, 24);
             close_status_selection(this);
         }
@@ -1715,18 +1856,23 @@ u8 StatusNameWindow::func_slotb0()
         {
             return 3;
         }
+
         break;
     }
     default:
         u8 full = func_004679B0(name_text) >= 7;
+
         if (full)
         {
             return 3;
         }
+
         status_append_selected_name_glyph(this, grid_mode);
         break;
     }
+
     u8 status;
+
     if (result == 0)
     {
         status = 1;
@@ -1735,6 +1881,7 @@ u8 StatusNameWindow::func_slotb0()
     {
         status = 2;
     }
+
     return status;
 }
 
@@ -1746,13 +1893,16 @@ s32 StatusNameWindow::func_slotf4(void* associated)
     LibClass178630* panel = new (0) LibClass178630;
     lib_panel_init_rectangle(panel, 0, 0.0f, 110.0f, 608.0f, 268.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
+
     for (s32 index = 0; index < STATUS_NAME_GRID_LABEL_COUNT; index++)
     {
         LibObject178750* label = new (0) LibObject178750;
+
         if (label == 0)
         {
             return 0;
         }
+
         switch (index)
         {
         case STATUS_NAME_GRID_HIRAGANA_MAIN:
@@ -1822,17 +1972,21 @@ s32 StatusNameWindow::func_slotf4(void* associated)
             label->unk3f = 0;
             break;
         }
+
         lib_container_attach_widget(unk10, label);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), label);
+
         if (0 <= index && index < 6)
         {
             label->unk3d = 0;
         }
+
         if (8 <= index && index < STATUS_NAME_GRID_LABEL_COUNT)
         {
             label->unk3d = 0;
         }
     }
+
     alphabet_symbol_grid = new (0) LibObject178750;
     lib_text_init_resource_rectangle(alphabet_symbol_grid, reinterpret_cast<s32>(associated), STATUS_TEXT_ALPHABET_SYMBOL_GRID, 0, 184.0f, 146.0f, 0.0f, 0.0f);
     set_label_spacing_y(alphabet_symbol_grid, 4.0f);
@@ -1842,6 +1996,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
     row_height = 28.0f;
     glyph_scale = 0.86f;
     glyph_width = 24.0f * glyph_scale;
+
     for (s32 index = 0; index < 6; index++)
     {
         command_labels[index] = new (0) LibObject178750;
@@ -1851,11 +2006,13 @@ s32 StatusNameWindow::func_slotf4(void* associated)
         label->set_scale(glyph_scale, glyph_scale);
         lib_container_attach_widget(unk10, command_labels[index]);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), command_labels[index]);
+
         if (0 <= index && index < 3)
         {
             command_labels[index]->unk3d = 0;
         }
     }
+
     command_labels[6] = new (0) LibObject178750;
     lib_text_init_resource_rectangle(command_labels[6], reinterpret_cast<s32>(associated), STATUS_TEXT_CONFIRM, 1, command_x, 334.0f, 0.0f, 0.0f);
     command_labels[6]->set_scale(0.9f, 0.9f);
@@ -1869,6 +2026,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
                                      404.0f, 43.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, surname_caption);
     status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), surname_caption);
+
     for (s32 index = 0; index < 7; index++)
     {
         LibObject178750* marker = new (0) LibObject178750;
@@ -1878,6 +2036,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
         {
             first_name_marker = unk2c.unk04;
         }
+
         lib_container_attach_widget(unk10, marker);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), marker);
         marker->set_color(0x288080);
@@ -1885,6 +2044,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
         marker->unk80 = 3.6f;
         marker->unk3c = 1;
     }
+
     for (s32 index = 0; index < 7; index++)
     {
         LibObject178750* marker = new (0) LibObject178750;
@@ -1895,8 +2055,10 @@ s32 StatusNameWindow::func_slotf4(void* associated)
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), marker);
         marker->set_color(0x505050);
     }
+
     name_x = 152.0f;
     name_y = 43.0f;
+
     for (s32 index = 0; index < 7; index++)
     {
         name_glyph_widgets[index] = new (0) LibObject178750;
@@ -1905,6 +2067,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), name_glyph_widgets[index]);
         name_glyph_widgets[index]->unk3f = 0;
     }
+
     name_text = new (0) LibObject175140;
     const char* name = static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_name;
     name_text->func_00467AD0(name_x, name_y, 0.0f, 0.0f, name, 0);
@@ -1930,34 +2093,44 @@ s32 StatusNameWindow::func_slotf4(void* associated)
     status_select_alphanumeric_grid(this, grid_mode);
     lib_text_set_resource(surname_caption, func_slot54(), selection->slots[selection->current] + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0);
     const s8* saved = reinterpret_cast<const s8*>(static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_name);
+
     for (s32 index = 0; index < 24; index++)
     {
         name_bytes[index] = 0;
     }
+
     for (s32 index = 0; index < 24; index++)
     {
         s8 value = saved[index];
+
         if (value == 0)
         {
             break;
         }
+
         name_bytes[index] = value;
     }
+
     last_name_byte = 0;
     s8 last;
+
     for (;;)
     {
         last = last_name_byte;
+
         if (name_bytes[last] == 0)
         {
             break;
         }
+
         last_name_byte = last + 1;
     }
+
     if (last > 0)
     {
         last_name_byte = last - 1;
     }
+
     status_refresh_name_glyphs(this);
     status_refresh_name_markers(this);
     return 1;
@@ -1982,10 +2155,12 @@ StatusNameWindow::StatusNameWindow()
     first_name_marker = 0;
     selected_name_glyph = 0;
     last_name_byte = 0;
+
     for (s32 i = 0; i < 24; ++i)
     {
         name_bytes[i] = 0;
     }
+
     name_glyph_keys[0] = 0;
     name_glyph_keys[1] = 0;
     name_glyph_keys[2] = 0;
@@ -2025,16 +2200,19 @@ void status_update_scroll(StatusCharacterWindow* object)
     {
         return;
     }
+
     if (object->scroll_active == 1)
     {
         move_status_display_list(&object->text_widgets, object);
         move_status_display_list(&object->numeric_widgets, object);
         move_status_display_list(&object->item_widgets, object);
         object->scroll_timer += 1.0f;
+
         if (object->scroll_timer >= 4.0f)
         {
             object->scroll_active = 0;
         }
+
         if (object->scroll_delta >= 0.0f)
         {
             object->scroll_position -= object->scroll_extent / 4.0f;
@@ -2043,6 +2221,7 @@ void status_update_scroll(StatusCharacterWindow* object)
         {
             object->scroll_position += object->scroll_extent / 4.0f;
         }
+
         LibClass1725D0* marker = object->scroll_marker;
         marker->unk54 = object->scroll_position;
         marker->unk3c = 1;
@@ -2054,10 +2233,12 @@ void status_begin_scroll(StatusCharacterWindow* object, u16 scroll_page)
     if (object->scroll_active == 0 && (scroll_page != 0 || object->scroll_page != 0) && (scroll_page != 1 || object->scroll_page != 1))
     {
         object->scroll_page++;
+
         if (object->scroll_page >= 2)
         {
             object->scroll_page = 0;
         }
+
         if (scroll_page == 0)
         {
             object->scroll_delta = object->scroll_step;
@@ -2066,11 +2247,13 @@ void status_begin_scroll(StatusCharacterWindow* object, u16 scroll_page)
         {
             object->scroll_delta = -object->scroll_step;
         }
+
         if (object->scroll_active == 0)
         {
             object->scroll_active = 1;
             object->scroll_timer = 0.0f;
         }
+
         func_002CFE40(D_001B643C->callbacks, 0);
     }
 }
@@ -2105,16 +2288,19 @@ extern "C" void status_refresh_character_display(StatusCharacterWindow* object)
     status_set_numeric(object->level_value, status_character(object->selection)->get_level());
     status_set_numeric(object->experience_value, status_character(object->selection)->get_experience());
     StatusCharacterRecord* character = &reinterpret_cast<StatusCharacterRecord*>(status_record_table(object->selection))[status_selected_index(object->selection)];
+
     if (character->get_level() < 255)
     {
         s32 total = 0;
         s32 level = character->get_level();
         StatusExperienceTable* experience = new (0) StatusExperienceTable;
         status_set_numeric(object->next_level_experience_value, func_004028C0(experience, level + 1, character, &total));
+
         if (experience != 0)
         {
             delete experience;
         }
+
         object->next_level_experience_value->unk3f = 1;
         object->max_level_caption->unk3f = 0;
     }
@@ -2123,14 +2309,17 @@ extern "C" void status_refresh_character_display(StatusCharacterWindow* object)
         object->next_level_experience_value->unk3f = 0;
         object->max_level_caption->unk3f = 1;
     }
+
     status_set_numeric(object->attack_value, status_character(object->selection)->get_attack());
     status_set_numeric(object->defense_value, status_character(object->selection)->get_defense());
     status_set_numeric(object->agility_value, status_character(object->selection)->get_agility());
     status_set_numeric(object->hit_value, status_character(object->selection)->get_hit());
     status_set_numeric(object->intelligence_value, status_character(object->selection)->get_intelligence());
+
     for (s32 index = 0; index < 4; index++)
     {
         s16 identifier = status_equipment(object->selection)->get_allocation_id(index);
+
         if (identifier == 0)
         {
             object->equipment_values[index]->unk3f = 0;
@@ -2139,6 +2328,7 @@ extern "C" void status_refresh_character_display(StatusCharacterWindow* object)
         else
         {
             ItemCreationAllocationRecord* allocation = status_allocation(identifier);
+
             if (allocation == 0)
             {
                 object->equipment_values[index]->unk3f = 0;
@@ -2154,6 +2344,7 @@ extern "C" void status_refresh_character_display(StatusCharacterWindow* object)
             }
         }
     }
+
     object->selected_slot = object->selection->slots[object->selection->current];
     LibBounds4C69B0* name_bounds = func_00467950(object->character_name_widget);
     LibBounds4C69B0* surname_bounds = lib_text_measure_bounds(object->surname_caption);
@@ -2207,6 +2398,7 @@ void StatusCharacterWindow::func_slot5c()
             this->character_model->func_001DD7B0();
             this->character_model = 0;
         }
+
         if (this->model_reload_pending != 0)
         {
             status_create_character_model(this);
@@ -2217,9 +2409,12 @@ void StatusCharacterWindow::func_slot5c()
             this->portrait->unk3f = 1;
             lib_text_set_resource(this->color_setup_hint, this->func_slot54(), STATUS_TEXT_COLOR_SETUP_HINT, 0);
         }
+
         this->model_cancel_pending = 0;
     }
+
     FieldClass153E30* receiver = D_001B643C->callbacks->status_receiver;
+
     if (receiver->func_00261150() != this)
     {
         if (this->character_model != 0)
@@ -2227,14 +2422,18 @@ void StatusCharacterWindow::func_slot5c()
             field_cancel_model_request(this->character_model);
             this->model_cancel_pending = 1;
         }
+
         return;
     }
+
     status_update_scroll(this);
+
     if (this->character_change_pending == 1 && this->selection->active == 1)
     {
         status_refresh_character_display(this);
         this->character_change_pending = 0;
     }
+
     if (this->window_transition_pending != 0 && this->character_model == 0)
     {
         this->set_state(1, 0x80);
@@ -2247,18 +2446,22 @@ s32 StatusCharacterWindow::func_slotdc()
     {
         return 0;
     }
+
     if (selection->count < 2)
     {
         return 0;
     }
+
     character_change_pending = 1;
     selection->active = 0;
-    func_0028E2B0(selection, 1);
+    field_record_selection_advance(selection, 1);
+
     if (character_model != 0)
     {
         field_cancel_model_request(character_model);
         model_cancel_pending = 1;
     }
+
     return 4;
 }
 
@@ -2268,18 +2471,22 @@ s32 StatusCharacterWindow::func_slotd8()
     {
         return 0;
     }
+
     if (selection->count < 2)
     {
         return 0;
     }
+
     character_change_pending = 1;
     selection->active = 0;
-    func_0028E2B0(selection, 0);
+    field_record_selection_advance(selection, 0);
+
     if (character_model != 0)
     {
         field_cancel_model_request(character_model);
         model_cancel_pending = 1;
     }
+
     return 4;
 }
 
@@ -2295,15 +2502,19 @@ void status_create_character_model(StatusCharacterWindow* object)
         FieldRecordSelection* selection = object->selection;
         u16 identifier = selection->slots[selection->current];
         u16 variant = static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_resource_variant;
+
         if (variant >= 4)
         {
             variant = 3;
         }
+
         field_request_model_resource(object->character_model, 0x290 + 4 * (identifier - 1) + (u16)variant);
         object->character_model->unk5b = 1;
         field_replace_model_camera(object->character_model, D_001B643C->model_camera);
         field_attach_model_display(object->character_model);
-        if (static_cast<StatusWindowSection*>(func_101440(func_101290(func_10D8E0()), 1))->enabled != 0)
+
+        if (reinterpret_cast<StatusWindowSection*>(
+                resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->enabled != 0)
         {
             func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->character_model), 0.5235988f, 750.0f, 0.0f, 140.0f, 115.0f);
         }
@@ -2311,6 +2522,7 @@ void status_create_character_model(StatusCharacterWindow* object)
         {
             func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->character_model), 0.5235988f, 480.0f, 0.0f, 90.0f, 110.0f);
         }
+
         D_001B6614->append_node(object->character_model, -1);
     }
 }
@@ -2321,17 +2533,20 @@ u8 StatusCharacterWindow::func_slotb8()
     {
         return 0;
     }
+
     if (this->character_model != 0)
     {
         field_cancel_model_request(this->character_model);
         this->model_cancel_pending = 1;
         FieldRecordSelection* selection = this->selection;
         s32 next = static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_resource_variant + 1;
-        StatusVariantSection* section = static_cast<StatusVariantSection*>(func_101440(func_101290(func_10D8E0()), 1));
+        StatusVariantSection* section = reinterpret_cast<StatusVariantSection*>(
+            resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1));
         u16 checksum = section->checksum;
         const u8* begin = section->values;
         const u8* end = reinterpret_cast<const u8*>(&section->checksum);
         u8 maximum;
+
         if (checksum != func_00457470(section->seed, begin, end - begin))
         {
             maximum = 0;
@@ -2340,12 +2555,14 @@ u8 StatusCharacterWindow::func_slotb8()
         {
             maximum = section->values[3];
         }
+
         next %= maximum + 1;
         selection = this->selection;
         static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_resource_variant = next;
         this->model_reload_pending = 1;
         return 1;
     }
+
     status_create_character_model(this);
     this->portrait->unk3f = 0;
     lib_text_set_resource(this->color_setup_hint, this->func_slot54(), STATUS_TEXT_COLOR_CHANGE_HINT, 0);
@@ -2358,11 +2575,13 @@ u8 StatusCharacterWindow::func_slotb4()
     {
         return 0;
     }
+
     if (this->character_model != 0)
     {
         field_cancel_model_request(this->character_model);
         this->model_cancel_pending = 1;
     }
+
     this->window_transition_pending = 1;
     return 2;
 }
@@ -2371,23 +2590,27 @@ u8 StatusCharacterWindow::func_slotb0()
 {
     this->unk10->unkab = 0;
     StatusResourceState* target = D_001B643C->callbacks->status_receiver;
+
     if (target != 0)
     {
         target->requested_window = STATUS_WINDOW_NAME;
         target->transition_phase = STATUS_TRANSITION_START;
         D_001B643C->callbacks->input_enabled = 0;
     }
+
     if (this->character_model != 0)
     {
         field_cancel_model_request(this->character_model);
         this->model_cancel_pending = 1;
     }
+
     return 1;
 }
 
 void status_refresh_portrait(StatusCharacterWindow* object)
 {
     u16 selected = object->selection->slots[object->selection->current];
+
     for (s32 index = 0; index < 8; index++)
     {
         if (selected == object->resource_slots[index])
@@ -2395,7 +2618,9 @@ void status_refresh_portrait(StatusCharacterWindow* object)
             break;
         }
     }
+
     u16 key;
+
     if (object->alternate_portrait_group != 0)
     {
         key = selected + 14;
@@ -2408,13 +2633,17 @@ void status_refresh_portrait(StatusCharacterWindow* object)
     {
         key = selected + 14;
     }
+
     void* allocation = func_002D3D80(D_001B643C->slots, key & 0xFF);
     FieldResourceRecord* record = func_002D3CC0(D_001B643C->slots, 0);
+
     if (object->portrait != 0)
     {
         set_status_resource_scale(object->portrait, 1.3f, 1.3f);
     }
+
     LibClass175110* display = object->portrait;
+
     if (display != 0 && record != 0)
     {
         set_status_widget_position(display, object->portrait_x, object->portrait_y);
@@ -2426,17 +2655,20 @@ void status_refresh_battle_skill_keys(StatusCharacterWindow* object)
 {
     s32 skill_id, mastery_points, mastery_level, points_to_next_level;
     s32 minor_mp_cost, minor_hp_cost, cp_cost, minor_fury_cost, major_damage_scale_minus_one;
+
     if (object->selection != 0)
     {
         object->assigned_cp = 0;
         FieldRecordSelection* selection = object->selection;
         StatusCharacterEquipment* record = &static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current];
+
         if (record != 0)
         {
             for (s32 index = 0; index < 6; index++)
             {
                 object->battle_skill_caption_keys[index] = STATUS_TEXT_NONE;
                 s32 entry = status_battle_skill_index(record, index);
+
                 if (entry > 0)
                 {
                     selection = object->selection;
@@ -2464,16 +2696,20 @@ void status_refresh_battle_skill_keys(StatusCharacterWindow* object)
  */
 s32 StatusCharacterWindow::func_slotf4(u32 associated)
 {
-    StatusFlagsSection* flags = static_cast<StatusFlagsSection*>(func_101440(func_101290(func_10D8E0()), 4));
+    StatusFlagsSection* flags = reinterpret_cast<StatusFlagsSection*>(
+        resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4));
     if (flags != 0)
     {
         alternate_portrait_group = (flags->flags & 0x10) != 0;
     }
+
     selection = D_001B643C->callbacks->status_receiver->selected_records();
+
     if (selection == 0)
     {
         return 0;
     }
+
     selected_slot = selection->slots[selection->current];
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 14);
     container = new (0) LibObject178660;
@@ -2499,12 +2735,14 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     lib_marker_init_rectangle(name_divider, 12.0f, divider_y, 584.0f, 3.0f);
     status_set_marker_color(name_divider, 0x888888);
     lib_container_attach_widget(unk10, name_divider);
+
     if (selection->count > 1)
     {
         LibObject178750* hint = new (0) LibObject178750;
         hint->init_resource_rectangle(384.0f, name_y, 0.0f, 0.0f, associated, STATUS_TEXT_MEMBER_HINT, 0);
         lib_container_attach_widget(unk10, hint);
     }
+
     name_entry_hint = new (0) LibObject178750;
     lib_text_init_resource_rectangle(name_entry_hint, associated, STATUS_TEXT_NAME_HINT, 0, 520.0f, name_y, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, name_entry_hint);
@@ -2516,6 +2754,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     portrait_y = 52.0f;
     portrait = new (0) ItemCreationOptionResourceDisplay;
     u16 resource_key;
+
     if (alternate_portrait_group)
     {
         resource_key = selected_slot + 14;
@@ -2528,15 +2767,18 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     {
         resource_key = selected_slot + 14;
     }
+
     portrait->unkcc = func_002D3D80(D_001B643C->slots, resource_key & 0xFF);
     portrait->unkd0 = resource_key;
     portrait->func_002D6440(func_002D3CC0(D_001B643C->slots, 0), portrait_x, portrait_y);
     portrait->unk34 = 3;
     lib_container_attach_widget(unk10, portrait);
-    StatusVariantSection* variants = static_cast<StatusVariantSection*>(func_101440(func_101290(func_10D8E0()), 1));
+    StatusVariantSection* variants = reinterpret_cast<StatusVariantSection*>(
+        resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1));
     u8* variant_begin = variants->values;
     u8* variant_end = reinterpret_cast<u8*>(&variants->checksum);
     u8 variant;
+
     if (variants->checksum != func_00457470(variants->seed, variant_begin, variant_end - variant_begin))
     {
         variant = 0;
@@ -2545,21 +2787,26 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     {
         variant = variants->values[3];
     }
+
     if (variant > 0)
     {
         color_setup_hint = new (0) LibObject178750;
         lib_text_init_resource_rectangle(color_setup_hint, associated, STATUS_TEXT_COLOR_SETUP_HINT, 0, 467.0f, 350.0f, 0.0f, 0.0f);
         lib_container_attach_widget(unk10, color_setup_hint);
     }
+
     float base_y = portrait_y;
+
     for (s32 index = 0; index < 8; index++)
     {
         u16 identifier = selection->slots[static_cast<s16>(index)];
+
         if (identifier != 0)
         {
             resource_slots[index] = identifier;
         }
     }
+
     hp_value = new (0) LibObject174F20;
     max_hp_value = new (0) LibObject174F20;
     mp_value = new (0) LibObject174F20;
@@ -2631,6 +2878,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), long_minor_attack_skill_caption);
     status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), short_major_attack_skill_caption);
     status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), long_major_attack_skill_caption);
+
     for (s32 index = 0; index <= 4; index++)
     {
         LibObject178750* label = new (0) LibObject178750;
@@ -2640,6 +2888,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
         lib_container_attach_widget(unk10, label);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), label);
     }
+
     FieldRecordSelection* selected = selection;
     s8 current = selected->current;
     StatusCharacterRecord* character = &reinterpret_cast<StatusCharacterRecord*>(selected->records)[current];
@@ -2679,15 +2928,18 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     next_level_experience_value->init_numeric_resource_rectangle(142.0f, next_y, 60.0f, 24.0f, remaining_experience, 0, 0);
     lib_container_attach_widget(unk10, next_level_experience_value);
     next_level_experience_value->set_scale(0.9f, 0.9f);
+
     if (table != 0)
     {
         delete table;
     }
+
     lib_text_init_resource_rectangle(max_level_caption, associated, STATUS_TEXT_MAX_LEVEL, 0, 158.0f, next_y, 0.0f, 0.0f);
     max_level_caption->set_scale(0.9f, 0.9f);
     max_level_caption->set_color(0x508050);
     lib_container_attach_widget(unk10, max_level_caption);
     status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), max_level_caption);
+
     for (s32 index = 0; index < 2; index++)
     {
         LibObject178750* separator = new (0) LibObject178750;
@@ -2697,13 +2949,16 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
         lib_container_attach_widget(unk10, separator);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), separator);
     }
+
     for (s32 key = STATUS_TEXT_ATTACK; key <= STATUS_TEXT_ACCESSORY_2; key++)
     {
         LibObject178750* label = new (0) LibObject178750;
+
         if (label == 0)
         {
             return 0;
         }
+
         switch (key)
         {
         case STATUS_TEXT_ATTACK:
@@ -2722,10 +2977,12 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
             label->set_scale(0.75f, 0.75f);
             break;
         }
+
         label->set_color(0x806080);
         lib_container_attach_widget(unk10, label);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), label);
     }
+
     attack_value->init_numeric_resource_rectangle(294.0f, base_y, 48.0f, 24.0f, status_character(selection)->get_attack(), 0, 0);
     lib_container_attach_widget(unk10, attack_value);
     attack_value->set_scale(0.9f, 0.9f);
@@ -2745,6 +3002,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     intelligence_value->init_numeric_resource_rectangle(294.0f, status_row_y(base_y, 4), 48.0f, 24.0f, intelligence, 0, 0);
     lib_container_attach_widget(unk10, intelligence_value);
     intelligence_value->set_scale(0.9f, 0.9f);
+
     for (s32 index = 0; index < 4; index++)
     {
         equipment_values[index] = new (0) LibObject172410;
@@ -2752,6 +3010,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
         status_append_item_widget(reinterpret_cast<StatusWidgetList*>(&item_widgets), equipment_values[index]);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), empty_equipment_captions[index]);
     }
+
     for (s32 index = 0; index < 4; index++)
     {
         float item_y = 204.0f + 48.0f * static_cast<float>(index);
@@ -2763,6 +3022,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
         empty_equipment_captions[index]->set_scale(0.85f, 0.85f);
         lib_container_attach_widget(unk10, empty_equipment_captions[index]);
     }
+
     status_refresh_battle_skill_keys(this);
     float lower_y = 392.0f + base_y;
     lib_text_init_resource_rectangle(skills_label, associated, STATUS_TEXT_SKILLS, 1, 16.0f, lower_y, 0.0f, 0.0f);
@@ -2978,22 +3238,28 @@ void StatusHelpWindow::func_slot5c()
     float y = target->unk18.unk04;
     float width = target->unk18.unk08;
     float height = target->unk18.unk0c;
+
     if (object->scroll_active == 0)
     {
         set_status_record_rectangle(target, object->initial_text_x, y, width, height);
         object->hold_timer++;
+
         if (!((float)object->hold_timer <= 120.0f))
         {
             object->hold_timer = 0;
             object->scroll_active = 1;
         }
+
         return;
     }
+
     x -= 108.0f * D_001B6690;
+
     if (x < object->clip_x - (float)object->scroll_distance)
     {
         x = 2.0f + (object->clip_x + object->clip_width);
     }
+
     set_status_record_rectangle(target, x, y, width, height);
 }
 
@@ -3004,6 +3270,7 @@ void StatusHelpWindow::func_slot5c()
 void StatusHelpWindow::func_slot60(s32 key)
 {
     StatusHelpWindow* object = this;
+
     if (key >= STATUS_TEXT_CHARACTER_HELP && key < STATUS_TEXT_NAME_HELP + 1)
     {
         object->hold_timer = 0;
@@ -3034,10 +3301,12 @@ s32 StatusHelpWindow::func_slotf4(u32 associated)
     object->help_caption = new (0) LibObject178750;
     LibClass1746A0* frame = new (0) LibClass1746A0;
     LibClass1746A0* background = new (0) LibClass1746A0;
+
     if (object->help_caption == 0 || frame == 0 || background == 0)
     {
         return 0;
     }
+
     object->heading_width = lib_text_measure_bounds(label)->unk08;
     object->clip_x = 18.0f + object->heading_width;
     float frame_padding = 32.0f;
@@ -3098,17 +3367,21 @@ StatusBackgroundWindow::~StatusBackgroundWindow()
 void StatusResourceState::func_slot5c()
 {
     StatusResourceState* object = this;
+
     if (object->resource != 0)
     {
         lib_release_resource_slot(D_001B657C, object->resource);
     }
+
     lib_object_detach_owner(object);
     object->func_001DD7B0();
     FieldBufferSlots* slots = D_001B643C->slots;
+
     for (s32 index = 15; index <= 22; index++)
     {
         func_002D3DC0(slots, (u8)index);
     }
+
     func_002D3DC0(slots, 59);
     func_002D3DC0(slots, 60);
 }
@@ -3123,6 +3396,7 @@ void StatusResourceState::func_001DD7B0()
 void StatusResourceState::func_001DF360()
 {
     StatusResourceState* object = this;
+
     switch (object->transition_phase)
     {
     case STATUS_TRANSITION_IDLE:
@@ -3142,7 +3416,9 @@ void StatusResourceState::func_001DF360()
         {
             return;
         }
+
         func_004DCEA0(D_001B6650, 0, 0);
+
         switch (object->requested_window)
         {
         case STATUS_WINDOW_CHARACTER:
@@ -3163,6 +3439,7 @@ void StatusResourceState::func_001DF360()
             break;
         }
         }
+
         func_0020F230(D_001B6430->context->unk38, 0, 0x80000000, 0, 0, 0, 0, 10.0f, 0.0f, 0.0f);
         StatusTransitionEffect* effect;
         (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->value = D_001B6694;
@@ -3177,6 +3454,7 @@ void StatusResourceState::func_001DF360()
             object->transition_phase = STATUS_TRANSITION_IDLE;
             D_001B643C->callbacks->input_enabled = 1;
         }
+
         break;
     }
 }
@@ -3198,10 +3476,12 @@ s32 StatusResourceState::func_00263CD0()
     StatusHelpWindow* text = new (0) StatusHelpWindow;
     object->character_window = new (0) StatusCharacterWindow;
     object->selection = new (0) FieldRecordSelection;
+
     if ((u8)func_0028E3D0(object->selection) == 0)
     {
         return 0;
     }
+
     object->unk20 = object->character_window;
     background->func_slotf4(object->resource);
     object->FieldClass153E30::add_child(background);
@@ -3224,20 +3504,24 @@ s32 StatusResourceState::func_00263CD0()
 s32 StatusResourceState::func_001E1820(void* buffer)
 {
     StatusResourceState* object = this;
+
     if (buffer == 0)
     {
         return 0;
     }
+
     StatusAlignedResource* aligned = aligned_status_resource(buffer);
     s32 size = aligned->size + 0x80;
     void* saved_heap = resident_get_allocation_heap();
     void* heap = D_001B6430->context->unk70;
     void* memory = resident_heap_allocate(heap, size);
+
     if (memory != 0)
     {
         resident_heap_release(memory);
         resident_exchange_allocation_heap(heap);
     }
+
     object->resource = lib_load_resource_slot(D_001B657C, aligned);
     resident_exchange_allocation_heap(saved_heap);
     StatusRuntimeResource* runtime = reinterpret_cast<StatusRuntimeResource*>(D_001B657C);
@@ -3408,10 +3692,12 @@ s32 StatusResourceState::func_slot84()
 StatusItemWidgetList::StatusItemWidgetList()
 {
     head = new (0) StatusWidgetNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -3420,6 +3706,7 @@ StatusItemWidgetList::StatusItemWidgetList()
 StatusItemWidgetList::~StatusItemWidgetList()
 {
     status_clear_item_widgets(reinterpret_cast<StatusWidgetList*>(this));
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -3430,16 +3717,19 @@ StatusItemWidgetList::~StatusItemWidgetList()
 void status_append_item_widget(StatusWidgetList* list, void* value)
 {
     StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
+
     if (node != 0)
     {
         StatusWidgetNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -3448,16 +3738,19 @@ void status_append_item_widget(StatusWidgetList* list, void* value)
 void status_clear_item_widgets(StatusWidgetList* list)
 {
     StatusWidgetNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         StatusWidgetNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -3465,16 +3758,19 @@ void status_clear_item_widgets(StatusWidgetList* list)
 void status_append_name_widget(StatusWidgetList* list, void* value)
 {
     StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
+
     if (node != 0)
     {
         StatusWidgetNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -3484,10 +3780,12 @@ void status_append_name_widget(StatusWidgetList* list, void* value)
 StatusNumericWidgetList::StatusNumericWidgetList()
 {
     head = new (0) StatusWidgetNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -3496,6 +3794,7 @@ StatusNumericWidgetList::StatusNumericWidgetList()
 StatusNumericWidgetList::~StatusNumericWidgetList()
 {
     status_clear_numeric_widgets(reinterpret_cast<StatusWidgetList*>(this));
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -3506,16 +3805,19 @@ StatusNumericWidgetList::~StatusNumericWidgetList()
 void status_append_numeric_widget(StatusWidgetList* list, void* value)
 {
     StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
+
     if (node != 0)
     {
         StatusWidgetNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -3524,16 +3826,19 @@ void status_append_numeric_widget(StatusWidgetList* list, void* value)
 void status_clear_numeric_widgets(StatusWidgetList* list)
 {
     StatusWidgetNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         StatusWidgetNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -3542,10 +3847,12 @@ void status_clear_numeric_widgets(StatusWidgetList* list)
 StatusTextWidgetList::StatusTextWidgetList()
 {
     head = new (0) StatusWidgetNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -3554,6 +3861,7 @@ StatusTextWidgetList::StatusTextWidgetList()
 StatusTextWidgetList::~StatusTextWidgetList()
 {
     status_clear_text_widgets(reinterpret_cast<StatusWidgetList*>(this));
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -3564,16 +3872,19 @@ StatusTextWidgetList::~StatusTextWidgetList()
 void status_append_text_widget(StatusWidgetList* list, void* value)
 {
     StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
+
     if (node != 0)
     {
         StatusWidgetNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -3582,16 +3893,19 @@ void status_append_text_widget(StatusWidgetList* list, void* value)
 void status_clear_text_widgets(StatusWidgetList* list)
 {
     StatusWidgetNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         StatusWidgetNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -3607,24 +3921,29 @@ void* status_list_node_at(void* list, s32 count)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
 void status_append_scissor_widget(StatusWidgetList* list, void* value)
 {
     StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
+
     if (node != 0)
     {
         StatusWidgetNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
