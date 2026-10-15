@@ -1,7 +1,8 @@
-#ifndef SO3_OVERLAYS_CTACTICS_TEXT_H
-#define SO3_OVERLAYS_CTACTICS_TEXT_H
+#ifndef SO3_OVERLAYS_CTACTICS_CTACTICS_H
+#define SO3_OVERLAYS_CTACTICS_CTACTICS_H
 
 #include "types.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 #ifdef __cplusplus
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_001E1590.h"
@@ -21,6 +22,14 @@ typedef struct TacticsDualSelectionOwner TacticsDualSelectionOwner;
 
 typedef struct TacticsPresetPosition
 {
+#ifdef __cplusplus
+    /** @brief Initialize both coordinate components to zero. */
+    TacticsPresetPosition()
+    {
+        y = 0.0f;
+        x = 0.0f;
+    }
+#endif
     float x;
     float y;
 } TacticsPresetPosition;
@@ -45,6 +54,11 @@ public:
     virtual void func_slot0c();
 };
 
+/** @brief Release the receiver's owned storage. */
+inline TacticsStorage18B010::~TacticsStorage18B010()
+{
+}
+
 /** Known native State prefix through its owned selection pointer at offset 3C. */
 struct TacticsState18B820 : public FieldClass153E30
 {
@@ -66,6 +80,9 @@ struct TacticsState18B820 : public FieldClass153E30
 
     /** @brief Release the loaded resource, detach the State, and dispatch its release handler. */
     virtual void func_slot5c();
+
+    /** @brief Initialize the State's windows for its resource mode. @return One on success, otherwise zero. */
+    virtual s32 func_00263CD0();
 
     s32 resource_slot;
     u8 windows_initialized : 1;
@@ -90,6 +107,18 @@ struct TacticsWindow18B720 : public FieldClass15AE70
 /** Native 0xC4-byte scrolling window with its text widget and movement bounds. */
 struct TacticsWindow18B620 : public FieldClass15AE70
 {
+    /** @brief Clear the scrolling text state and movement bounds. */
+    TacticsWindow18B620()
+    {
+        text = 0;
+        distance = 0;
+        state = 0;
+        timer = 0;
+        unkb4 = 0.0f;
+        initial_x = 0.0f;
+        base_x = 0.0f;
+        width = 0.0f;
+    }
     /** @brief Destroy the scrolling window. */
     virtual ~TacticsWindow18B620();
     /** @brief Hold the text position, then scroll and wrap it after the timer expires. */
@@ -162,6 +191,22 @@ struct TacticsWindow18B020 : public FieldClass15AE70
 /** Native 0xD4-byte tactics window with three resource entries and an icon grid. */
 struct TacticsWindow18B120 : public FieldClass15AE70
 {
+    /** @brief Clear the window's resources, saved entries, and grid origin. */
+    TacticsWindow18B120()
+    {
+        resource = 0;
+        grid = 0;
+        cursor = 0;
+        indicator = 0;
+        entry_count = 0;
+        base_x = 0.0f;
+        base_y = 0.0f;
+        selected = 0;
+        func_0013A678(entries, 0, sizeof(entries));
+        grid_entries[0] = 0;
+        grid_entries[1] = 0;
+        grid_entries[2] = 0;
+    }
     /** @brief Destroy the window base. */
     virtual ~TacticsWindow18B120();
     /** @brief Move to the preceding grid entry and update the icon highlight. */
@@ -241,6 +286,17 @@ struct TacticsWindow18B220 : public FieldClass15AE70
 /** Native 0xC8-byte tactics window containing the coordinate selector. */
 struct TacticsWindow18B520 : public FieldClass15AE70
 {
+    /** @brief Clear the resource links, coordinate selection, and preset position. */
+    TacticsWindow18B520()
+    {
+        unka8 = 0;
+        unkac = 0;
+        selection = 0;
+        selected = -1;
+        func_0013A678(enabled, 0, sizeof(enabled));
+        position.x = 0.0f;
+        position.y = 0.0f;
+    }
     /** @brief Destroy the coordinate-selection window. */
     virtual ~TacticsWindow18B520();
     /** @brief Restore the selection movement or visibility state. */
@@ -283,7 +339,8 @@ struct TacticsWindow18B520 : public FieldClass15AE70
     struct FieldObject23B1D0* selection;
     s16 selected;
     u8 enabled[8];
-    u8 unkbe[0xA];
+    u8 unkbe[2];
+    TacticsPresetPosition position;
 };
 
 /** Native 0xF8-byte tactics grid window with its text displays and cursor. */
@@ -1104,6 +1161,12 @@ TacticsListNode* func_003519A0(TacticsList* list, s32 index);
  * @return The node, or null if the list ends before the index.
  */
 TacticsListNode* func_00351BF0(TacticsList* list, s32 index);
+
+/**
+ * @brief Update the parent window's resource displays and indicator position.
+ * @param object Parent window to refresh.
+ */
+void func_0034A200(TacticsWindow18B220* object);
 
 /**
  * @brief Select the resource code in the parent and refresh its label.
