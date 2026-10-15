@@ -1016,13 +1016,13 @@ void FieldClass15AE70::func_slotac()
 }
 
 /** @brief Default window callback returning zero. @return Zero. */
-s32 FieldClass15AE70::func_slotb8()
+u8 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
 /** @brief Default window callback returning zero. @return Zero. */
-s32 FieldClass15AE70::func_slotbc()
+u8 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
@@ -1625,13 +1625,13 @@ s32 StatusNameWindow::func_slotc0()
     return 0;
 }
 
-s32 StatusNameWindow::func_slotb4()
+u8 StatusNameWindow::func_slotb4()
 {
     status_remove_last_name_entry(this);
     return 2;
 }
 
-s32 StatusNameWindow::func_slotb0()
+u8 StatusNameWindow::func_slotb0()
 {
     u8 result = 0;
     switch (selected_grid_cell)
@@ -1726,7 +1726,16 @@ s32 StatusNameWindow::func_slotb0()
         status_append_selected_name_glyph(this, grid_mode);
         break;
     }
-    return result == 0 ? 1 : 2;
+    u8 status;
+    if (result == 0)
+    {
+        status = 1;
+    }
+    else
+    {
+        status = 2;
+    }
+    return status;
 }
 
 s32 StatusNameWindow::func_slotf4(void* associated)
@@ -2306,7 +2315,7 @@ void status_create_character_model(StatusCharacterWindow* object)
     }
 }
 
-s32 StatusCharacterWindow::func_slotb8()
+u8 StatusCharacterWindow::func_slotb8()
 {
     if (this->color_setup_hint == 0)
     {
@@ -2343,7 +2352,7 @@ s32 StatusCharacterWindow::func_slotb8()
     return 1;
 }
 
-s32 StatusCharacterWindow::func_slotb4()
+u8 StatusCharacterWindow::func_slotb4()
 {
     if (D_001B643C->menu_controller == 0)
     {
@@ -2358,7 +2367,7 @@ s32 StatusCharacterWindow::func_slotb4()
     return 2;
 }
 
-s32 StatusCharacterWindow::func_slotb0()
+u8 StatusCharacterWindow::func_slotb0()
 {
     this->unk10->unkab = 0;
     StatusResourceState* target = D_001B643C->callbacks->status_receiver;
@@ -3287,13 +3296,13 @@ void FieldClass15AE70::func_slot6c()
 }
 
 /** @brief Report the default window callback result. @return Zero. */
-s32 FieldClass15AE70::func_slotb0()
+u8 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
 /** @brief Report the default window callback result. @return Zero. */
-s32 FieldClass15AE70::func_slotb4()
+u8 FieldClass15AE70::func_slotb4()
 {
     return 0;
 }

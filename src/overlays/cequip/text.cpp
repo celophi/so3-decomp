@@ -550,7 +550,7 @@ void EquipClass182220::func_slot68()
     }
 }
 
-s32 EquipClass182220::func_slotb4()
+u8 EquipClass182220::func_slotb4()
 {
     FieldClass15AE70::func_slot18(0, 0x7F);
     EquipListState* state = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14);
@@ -569,7 +569,7 @@ void func_003488C0(void* object, void* value)
     static_cast<EquipListState*>(object)->unk20 = value;
 }
 
-s32 EquipClass182220::func_slotb0()
+u8 EquipClass182220::func_slotb0()
 {
     unkac = unka8->unk114;
     u8 result = 0;
@@ -581,7 +581,16 @@ s32 EquipClass182220::func_slotb0()
     {
         result = func_slotb4();
     }
-    return result == 0 ? 1 : 2;
+    u8 status;
+    if (result == 0)
+    {
+        status = 1;
+    }
+    else
+    {
+        status = 2;
+    }
+    return status;
 }
 
 s32 EquipClass182220::func_slot10(u32 associated, float x, float y, s32 code)
@@ -804,7 +813,7 @@ s32 func_00349690(void* object)
     return 1;
 }
 
-s32 EquipClass182550::func_slotb4()
+u8 EquipClass182550::func_slotb4()
 {
     unk188->remove_child(this);
     FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
@@ -815,7 +824,7 @@ s32 EquipClass182550::func_slotb4()
     return 2;
 }
 
-s32 EquipClass182550::func_slotb0()
+u8 EquipClass182550::func_slotb0()
 {
     ItemCreationAllocationRecord* records[100];
     if (FieldClass15AE60::unk88 == 0)
@@ -1046,7 +1055,7 @@ s32 func_0034A460(void* object)
     return 1;
 }
 
-s32 EquipClass182670::func_slotb4()
+u8 EquipClass182670::func_slotb4()
 {
     func_slot10c(0, 0);
     FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(func_slot44());
@@ -1064,7 +1073,7 @@ s32 EquipClass182670::func_slotb4()
     return 2;
 }
 
-s32 EquipClass182670::func_slotb0()
+u8 EquipClass182670::func_slotb0()
 {
     if (FieldClass15AE60::unk88 == 0)
     {
@@ -1519,7 +1528,7 @@ void EquipClass182990::func_slot68()
     }
 }
 
-s32 EquipClass182990::func_slotb0()
+u8 EquipClass182990::func_slotb0()
 {
     s32 category = static_cast<u16>(func_0023B3A0(equipment_slot_selector));
     if (unkc0 < category)
@@ -1568,7 +1577,7 @@ s32 EquipClass182990::func_slotb0()
     return 1;
 }
 
-s32 EquipClass182990::func_slotb4()
+u8 EquipClass182990::func_slotb4()
 {
     if (D_001B643C->unk0c == 0)
     {
@@ -1612,7 +1621,7 @@ void EquipClass182990::func_slot64()
     selector->LibClass178600::unk3c = 1;
 }
 
-s32 EquipClass182990::func_slotb8()
+u8 EquipClass182990::func_slotb8()
 {
     EquipClass182C90* associated = static_cast<EquipClass182C90*>(func_slot44());
     if (associated->unkbc != 0)
@@ -1648,7 +1657,7 @@ s32 EquipClass182990::func_slotb8()
     return 1;
 }
 
-s32 EquipClass182990::func_slotbc()
+u8 EquipClass182990::func_slotbc()
 {
     EquipClass182B90* target = unka8->unk54;
     target->unkf0 = !target->unkf0;

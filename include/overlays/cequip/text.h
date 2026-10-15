@@ -132,9 +132,9 @@ struct EquipClass182220 : public FieldClass15AE70
     /** @brief Refresh icon colors while this window is selected. */
     virtual void func_slot5c();
     /** @brief Activate the selected icon or set the empty-selection state. @return One to stay, or two after cancellation. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Hide this window and restore the associated State window. @return Two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Forward direction zero to the selection grid and test its result. */
     virtual void func_slot68();
     /** @brief Forward direction one to the selection grid and test its result. */
@@ -342,13 +342,13 @@ struct EquipClass182990 : public FieldClass15AE70
     /** @brief Cycle the selector forward and rebuild the associated category list. */
     virtual void func_slot6c();
     /** @brief Activate a supported category and restore its associated list window. @return One on activation, or three for an unsupported category. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Activate the alternate selection window. @return Selection result. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Apply the selected record action and refresh category displays. @return One. */
-    virtual s32 func_slotb8();
+    virtual u8 func_slotb8();
     /** @brief Toggle the owning State display flag. @return One. */
-    virtual s32 func_slotbc();
+    virtual u8 func_slotbc();
     /** @brief Cycle to the previous record and rebuild its displays. @return Four after cycling, or zero when unavailable. */
     virtual s32 func_slotd8();
     /** @brief Cycle to the next record and rebuild its displays. @return Four after cycling, or zero when unavailable. */
@@ -383,13 +383,13 @@ struct EquipClass182550 : public FieldClass15AD40
     /** @brief Run the equipment list update hook. */
     virtual void func_slot5c();
     /** @brief Activate the selected record and restore the category window. @return One on success, or three when no record is selectable. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the associated window and clear the detail display. @return Two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Return the empty equipment selection result. @return Zero. */
-    virtual s32 func_slotb8();
+    virtual u8 func_slotb8();
     /** @brief Toggle the linked display flag. @return One. */
-    virtual s32 func_slotbc();
+    virtual u8 func_slotbc();
     /** @brief Refresh the visible equipment rows. @param start First record index. */
     virtual void refresh_rows(s32 start);
     /** @brief Set the visible equipment row positions. @param start Base row position. */
@@ -419,10 +419,10 @@ struct EquipClass182670 : public FieldClass15AD40
     /** @brief Update the selected category, row highlight, and detail window. */
     virtual void func_slot5c();
     /** @brief Activate the category list or create the selected record window. @return Selection result. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the associated window and hide the alternate window. @return Two. */
-    virtual s32 func_slotb4();
-    virtual s32 func_slotbc();
+    virtual u8 func_slotb4();
+    virtual u8 func_slotbc();
     /** @brief Refresh category names, availability counts, and selection colors. @param start First category row. */
     virtual void refresh_rows(s32 start);
     /** @brief Position all three displays in each row. @param start Base row position. */

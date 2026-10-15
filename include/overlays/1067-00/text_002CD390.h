@@ -314,10 +314,10 @@ public:
     virtual void func_slota4();
     virtual void func_slota8();
     virtual void func_slotac();
-    virtual s32 func_slotb0();
-    virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
+    virtual u8 func_slotb0();
+    virtual u8 func_slotb4();
+    virtual u8 func_slotb8();
+    virtual u8 func_slotbc();
     virtual s32 func_slotc0();
     virtual s32 func_slotc4();
     virtual s32 func_slotc8();

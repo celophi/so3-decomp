@@ -29,6 +29,12 @@ typedef struct TacticsPresetPosition
         y = 0.0f;
         x = 0.0f;
     }
+    /** @brief Initialize a coordinate pair. @param px Horizontal value. @param py Vertical value. */
+    TacticsPresetPosition(float px, float py)
+    {
+        x = px;
+        y = py;
+    }
 #endif
     float x;
     float y;
@@ -46,7 +52,24 @@ class TacticsStorage18B010
 public:
     LibStorageBlock0C storage;
     u8 unk0c[4];
-    u8 unk10[0x28];
+    float unk10;
+    float unk14;
+    float unk18;
+    float unk1c;
+    float unk20;
+    float unk24;
+    u8 unk28[0x10];
+
+    /** @brief Clear the three movement coordinate pairs. */
+    TacticsStorage18B010()
+    {
+        unk14 = 0.0f;
+        unk10 = 0.0f;
+        unk1c = 0.0f;
+        unk18 = 0.0f;
+        unk24 = 0.0f;
+        unk20 = 0.0f;
+    }
 
     /** @brief Release the receiver's owned storage. */
     virtual ~TacticsStorage18B010();
@@ -111,13 +134,13 @@ struct TacticsWindow18B620 : public FieldClass15AE70
     TacticsWindow18B620()
     {
         text = 0;
-        distance = 0;
-        state = 0;
-        timer = 0;
-        unkb4 = 0.0f;
-        initial_x = 0.0f;
-        base_x = 0.0f;
-        width = 0.0f;
+        scroll_span = 0;
+        scroll_phase = 0;
+        initial_pause_frames = 0;
+        label_right_edge = 0.0f;
+        initial_text_x = 0.0f;
+        clip_x = 0.0f;
+        clip_width = 0.0f;
     }
     /** @brief Destroy the scrolling window. */
     virtual ~TacticsWindow18B620();
@@ -137,13 +160,13 @@ struct TacticsWindow18B620 : public FieldClass15AE70
     virtual s32 func_slotf4(void* associated);
 
     LibObject178750* text;
-    s32 distance;
-    s16 timer;
-    u8 state;
-    float unkb4;
-    float initial_x;
-    float base_x;
-    float width;
+    s32 scroll_span;
+    s16 initial_pause_frames;
+    u8 scroll_phase;
+    float label_right_edge;
+    float initial_text_x;
+    float clip_x;
+    float clip_width;
 };
 
 /** Native 0xB0-byte tactics child window containing a grid and its saved selection. */
@@ -157,16 +180,16 @@ struct TacticsWindow18B020 : public FieldClass15AE70
     }
     /** @brief Destroy the child window's base. */
     virtual ~TacticsWindow18B020();
-    /** @brief Dispatch the active State's window update. */
+    /** @brief Compare the State's active window with this window; neither outcome has further work. */
     virtual void func_slot5c();
     /** @brief Move to the preceding grid entry and update its text highlight. */
     virtual void func_slot68();
     /** @brief Move to the following grid entry and update its text highlight. */
     virtual void func_slot6c();
     /** @brief Apply the grid action for the selected entry. @return Window action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Close the child and restore its associated window. @return Two after closing. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
      * @brief Initialize the child window's grid and text displays.
      * @param associated Full resource source word.
@@ -188,24 +211,24 @@ struct TacticsWindow18B020 : public FieldClass15AE70
     u8 unkae[2];
 };
 
-/** Native 0xD4-byte tactics window with three resource entries and an icon grid. */
+/** Native 0xD4-byte tactics window with three character IDs and an icon grid. */
 struct TacticsWindow18B120 : public FieldClass15AE70
 {
-    /** @brief Clear the window's resources, saved entries, and grid origin. */
+    /** @brief Clear the record selection, saved character IDs, and grid origin. */
     TacticsWindow18B120()
     {
-        resource = 0;
+        record_selection = 0;
         grid = 0;
         cursor = 0;
         indicator = 0;
-        entry_count = 0;
+        icon_count = 0;
         base_x = 0.0f;
         base_y = 0.0f;
         selected = 0;
-        func_0013A678(entries, 0, sizeof(entries));
-        grid_entries[0] = 0;
-        grid_entries[1] = 0;
-        grid_entries[2] = 0;
+        func_0013A678(character_ids, 0, sizeof(character_ids));
+        icon_indices_by_slot[0] = 0;
+        icon_indices_by_slot[1] = 0;
+        icon_indices_by_slot[2] = 0;
     }
     /** @brief Destroy the window base. */
     virtual ~TacticsWindow18B120();
@@ -214,12 +237,12 @@ struct TacticsWindow18B120 : public FieldClass15AE70
     /** @brief Move to the following grid entry and update the icon highlight. */
     virtual void func_slot6c();
     /**
-     * @brief Save the chosen resource code and update the parent label.
-     * @return One after the selected resource code is applied.
+     * @brief Save the chosen character ID and update the parent label.
+     * @return One after the selected character ID is applied.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the associated window. @return Window action status. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
      * @brief Initialize the resource icons, grid, marker, and indicator.
      * @param associated Full resource source word forwarded to the base and title.
@@ -227,20 +250,20 @@ struct TacticsWindow18B120 : public FieldClass15AE70
      */
     virtual s32 func_slotf4(u32 associated);
 
-    FieldRecordSelection* resource;
+    FieldRecordSelection* record_selection;
     struct FieldObject23CEA0* grid;
     struct FieldObject23BE00* cursor;
     struct ItemCreationClass172600* indicator;
     s16 selected;
-    u8 entry_count;
-    u8 entries[3];
+    u8 icon_count;
+    u8 character_ids[3];
     u8 unkbe[2];
     float base_x;
     float base_y;
-    s32 grid_entries[3];
+    s32 icon_indices_by_slot[3];
 };
 
-/** Native 0xDC-byte parent window containing a grid, resource codes, and its label. */
+/** Native 0xDC-byte parent window containing a grid, character IDs, and their label. */
 struct TacticsWindow18B220 : public FieldClass15AE70
 {
     /** @brief Clear the display pointers and restore the resident grid selection. */
@@ -249,19 +272,19 @@ struct TacticsWindow18B220 : public FieldClass15AE70
     virtual ~TacticsWindow18B220();
     /** @brief Restore the grid and resource widget movement flags. */
     virtual void func_slot64();
-    /** @brief Move to the preceding grid entry. */
+    /** @brief Move to the preceding grid entry and update its title, cursor, and indicators. */
     virtual void func_slot68();
-    /** @brief Move to the following grid entry. */
+    /** @brief Move to the following grid entry and update its title, cursor, and indicators. */
     virtual void func_slot6c();
     /** @brief Save the enabled grid selection. @return Window action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Open the selection child for an enabled grid, or update control-mode flags.
      * @return Two after the action, or zero for a disabled grid or an absent runtime or child.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Restore and activate the resource icon child. @return One after activation. */
-    virtual s32 func_slotb8();
+    virtual u8 func_slotb8();
     /**
      * @brief Initialize the grid and resource displays.
      * @param associated Full resource source word forwarded to the base and title.
@@ -274,9 +297,9 @@ struct TacticsWindow18B220 : public FieldClass15AE70
     class ItemCreationClass174C40* resource_widget;
     struct FieldObject23CEA0* grid;
     struct FieldObject23BE00* cursor;
-    FieldRecordSelection* resource;
-    struct ItemCreationOptionResourceDisplay* options[3];
-    u8 entries[3];
+    FieldRecordSelection* record_selection;
+    struct ItemCreationOptionResourceDisplay* character_displays[3];
+    u8 character_ids[3];
     u8 selected;
     float base_x;
     float base_y;
@@ -289,13 +312,13 @@ struct TacticsWindow18B520 : public FieldClass15AE70
     /** @brief Clear the resource links, coordinate selection, and preset position. */
     TacticsWindow18B520()
     {
-        unka8 = 0;
-        unkac = 0;
+        character_records = 0;
+        entry_records = 0;
         selection = 0;
         selected = -1;
-        func_0013A678(enabled, 0, sizeof(enabled));
-        position.x = 0.0f;
-        position.y = 0.0f;
+        func_0013A678(record_enabled, 0, sizeof(record_enabled));
+        preset_position.x = 0.0f;
+        preset_position.y = 0.0f;
     }
     /** @brief Destroy the coordinate-selection window. */
     virtual ~TacticsWindow18B520();
@@ -313,34 +336,34 @@ struct TacticsWindow18B520 : public FieldClass15AE70
      * @brief Open the grid window for the selected enabled record and remember its current entry.
      * @return One after opening the grid window, or three for a disabled record.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Open a child window, or update the window flags for the resident control mode.
      * @return Two after the action, or zero when the runtime or child allocation is absent.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
-     * @brief Initialize the coordinate window and its resource displays.
-     * @param associated Associated context forwarded to the base initializer.
-     * @return One on success; otherwise zero.
+     * @brief Initialize the coordinate selector, row displays, and resource bindings.
+     * @param associated Resource source word forwarded to the base and text displays.
+     * @return One on success, or zero when records or required displays are absent.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
 
     /**
      * @brief Find the text key for a resource record's saved grid entry.
-     * @param kind Signed record kind selecting the key range.
+     * @param character_id Signed character ID selecting the key range.
      * @param record_index Record index in the resident entry table.
      * @return Text key for the record's saved entry.
      */
-    u32 get_record_text_key(s16 kind, s32 record_index);
+    u32 get_record_text_key(s16 character_id, s32 record_index);
 
-    void* unka8;
-    void* unkac;
+    void* character_records;
+    void* entry_records;
     struct FieldObject23B1D0* selection;
     s16 selected;
-    u8 enabled[8];
+    u8 record_enabled[8];
     u8 unkbe[2];
-    TacticsPresetPosition position;
+    TacticsPresetPosition preset_position;
 };
 
 /** Native 0xF8-byte tactics grid window with its text displays and cursor. */
@@ -360,9 +383,9 @@ struct TacticsWindow18B420 : public FieldClass15AE70
      * @brief Save the selected grid entry, update its parent display, and restore the parent window.
      * @return One after the selected entry is applied.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Close the grid window. @return Window action status. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
      * @brief Initialize the grid and its resource displays.
      * @param associated Full resource source word.
@@ -378,18 +401,18 @@ struct TacticsWindow18B420 : public FieldClass15AE70
      */
     s32 set_grid_record(s16 record_index, u8 initial_entry);
 
-    void* unka8;
-    void* unkac;
+    void* character_records;
+    void* entry_records;
     struct FieldObject23CEA0* grid;
     s16 selected;
     u8 unkb6[2];
     LibObject178750* text[6];
     u8 unkd0[4];
-    struct ItemCreationClass172600* unkd4;
+    struct ItemCreationClass172600* selection_indicator;
     struct FieldObject23BE00* cursor;
     s32 keys[6];
-    s16 unkf4;
-    u8 unkf6;
+    s16 character_id;
+    u8 selected_entry;
 };
 
 /** Sentinel list owning its nodes and recording their count. */
@@ -439,7 +462,7 @@ struct TacticsWindow18B320 : public FieldClass15AE70
     TacticsWindow18B320();
     /** @brief Release both binary buffers, then destroy the lists and base window. */
     virtual ~TacticsWindow18B320();
-    /** @brief Refresh the active selector and associated text. */
+    /** @brief Refresh the eight resource rows after a record change while this window is active. */
     virtual void func_slot5c();
     /** @brief Move the chosen selector to its preceding entry. */
     virtual void func_slot68();
@@ -450,43 +473,43 @@ struct TacticsWindow18B320 : public FieldClass15AE70
     /** @brief Map the chosen selector's first three entries to entries three, five, and six. */
     virtual void func_slot74();
     /** @brief Apply the chosen selector's entry. @return Selection action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Return to the first selector, update control-mode flags, or open its child window.
      * @return Two after the action, or zero when the runtime or child allocation is absent.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
-     * @brief Initialize the selectors, their buffers, and the resource displays.
-     * @param associated Associated context forwarded to the base initializer.
-     * @return One on success; otherwise zero.
+     * @brief Initialize the paired selectors and their eight resource rows.
+     * @param associated Resource source forwarded to the base and text displays.
+     * @return One on success, otherwise zero when records or required displays are absent.
      */
     virtual s32 func_slotf4(void* associated);
 
-    void* unka8;
-    void* unkac;
-    u8* bufferc4;
-    u8* buffer114;
-    struct FieldObject23B1D0* first;
-    struct FieldObject23B1D0* second;
+    void* character_records;
+    void* entry_records;
+    u8* character_record_buffer;
+    u8* entry_record_buffer;
+    struct FieldObject23B1D0* first_selector;
+    struct FieldObject23B1D0* second_selector;
     u8 use_second;
-    u8 unkc1;
-    s16 unkc2;
-    s16 unkc4;
+    u8 refresh_pending;
+    s16 source_record_index;
+    s16 destination_record_index;
     u8 unkc6[2];
-    TacticsList18B8C0 unkc8;
-    TacticsList18B8D0 unkd4;
-    TacticsList18B8C0 unke0;
-    TacticsList18B8C0 unkec;
-    TacticsList18B8D0 unkf8;
-    TacticsList18B8C0 unk104;
-    TacticsList18B8D0 unk110;
-    TacticsList18B8D0 unk11c;
-    TacticsList18B8C0 unk128;
-    TacticsList18B8D0 unk134;
+    TacticsList18B8C0 level_label_list;
+    TacticsList18B8D0 level_value_list;
+    TacticsList18B8C0 hp_label_list;
+    TacticsList18B8C0 mp_label_list;
+    TacticsList18B8D0 hp_value_list;
+    TacticsList18B8C0 hp_separator_text_list;
+    TacticsList18B8D0 max_hp_value_list;
+    TacticsList18B8D0 mp_value_list;
+    TacticsList18B8C0 mp_separator_text_list;
+    TacticsList18B8D0 max_mp_value_list;
     TacticsList18B8E0 unk140;
-    s16 unk14c[8];
-    u8 unk15c[0x20];
+    s16 row_character_ids[8];
+    struct ItemCreationOptionResourceDisplay* resource_displays[8];
 };
 #endif
 
@@ -499,129 +522,105 @@ extern "C" {
  * @param list Sentinel list receiving the new node.
  * @param value Value pointer stored without transferring ownership.
  */
-void func_003515A0(FieldCountedList* list, void* value);
+void append_cursor_widget_node(FieldCountedList* list, void* value);
 
 /**
  * @brief Append an unowned value pointer to the counted list.
  * @param list Sentinel list receiving the new node.
  * @param value Value pointer stored without transferring ownership.
  */
-void func_00351630(FieldCountedList* list, void* value);
+void append_grid_widget_node(FieldCountedList* list, void* value);
 
 /**
  * @brief Append an unowned value pointer to the counted list.
  * @param list Sentinel list receiving the new node.
  * @param value Value pointer stored without transferring ownership.
  */
-void func_003516C0(FieldCountedList* list, void* value);
+void append_icon_widget_node(FieldCountedList* list, void* value);
 
 /**
  * @brief Append an unowned value pointer to the counted list.
  * @param list Sentinel list receiving the new node.
  * @param value Value pointer stored without transferring ownership.
  */
-void func_00351890(FieldCountedList* list, void* value);
+void append_stat_value_node(FieldCountedList* list, void* value);
 
 /**
  * @brief Append an unowned value pointer to the counted list.
  * @param list Sentinel list receiving the new node.
  * @param value Value pointer stored without transferring ownership.
  */
-void func_00351AE0(FieldCountedList* list, void* value);
+void append_text_widget_node(FieldCountedList* list, void* value);
 
 /**
  * @brief Append an unowned value pointer to the counted list.
  * @param list Sentinel list receiving the new node.
  * @param value Value pointer stored without transferring ownership.
  */
-void func_00351C30(FieldCountedList* list, void* value);
+void append_clip_widget_node(FieldCountedList* list, void* value);
 
 /**
  * @brief Append an unowned value pointer to the counted list.
  * @param list Sentinel list receiving the new node.
  * @param value Value pointer stored without transferring ownership.
  */
-void func_00351CC0(FieldCountedList* list, void* value);
+void append_panel_widget_node(FieldCountedList* list, void* value);
 
 /**
  * @brief Append a coordinate pair to the owned list.
  * @param list Sentinel list receiving the new node.
  * @param value Coordinate pair copied into the new node.
  */
-void func_00351E50(TacticsList18B8B0* list, TacticsPresetPosition value);
+void append_coordinate_pair(TacticsList18B8B0* list, TacticsPresetPosition value);
 
 /**
  * @brief Release all value nodes, preserving the sentinel.
  * @param list List whose nodes and element count are cleared.
  */
-void func_00351520(TacticsList18B8E0* list);
+void clear_character_name_widget_list(TacticsList18B8E0* list);
 
 /**
  * @brief Release all value nodes, preserving the sentinel.
  * @param list List whose nodes and element count are cleared.
  */
-void func_00351920(TacticsList18B8D0* list);
+void clear_stat_value_list(TacticsList18B8D0* list);
 
 /**
  * @brief Release all value nodes, preserving the sentinel.
  * @param list List whose nodes and element count are cleared.
  */
-void func_00351B70(TacticsList18B8C0* list);
+void clear_text_widget_list(TacticsList18B8C0* list);
 
 /**
  * @brief Release all value nodes, preserving the sentinel.
  * @param list List whose nodes and element count are cleared.
  */
-void func_00351DD0(TacticsList18B8B0* list);
+void clear_coordinate_widget_list(TacticsList18B8B0* list);
 
 /**
  * @brief Save the enabled grid selection and copy its node position to the display.
  * @param object Tactics receiver holding the grid, node list, and display target.
  * @return Zero when the grid's control byte is clear; otherwise one.
  */
-u8 func_00349B40(TacticsGridOwner* object);
+u8 save_grid_selection_to_display(TacticsGridOwner* object);
 
 /**
  * @brief Color up to six list displays and place the cursor for the selected grid entry.
  * @param object Tactics receiver holding the display list, grid, and cursor.
  */
-void func_0034DD10(TacticsWindow18B420* object);
+void refresh_grid_list_selection(TacticsWindow18B420* object);
 
 /**
  * @brief Place the present indicators using the selected grid row's coordinate pairs.
  * @param object Tactics receiver holding the grid, indicators, and base coordinates.
  */
-void func_00349EB0(TacticsGridOwner* object);
-
-/**
- * @brief Advance the chosen selector one entry, wrapping after its eighth entry.
- * @param object Tactics receiver containing two selectors and the selector choice byte.
- */
-void func_0034AFB0(TacticsDualSelectionOwner* object);
-
-/**
- * @brief Move the chosen selector back one entry, wrapping to its eighth entry.
- * @param object Tactics receiver containing two selectors and the selector choice byte.
- */
-void func_0034B020(TacticsDualSelectionOwner* object);
-
-/**
- * @brief Map the chosen selector's first three entries to entries three, five, and six.
- * @param object Tactics receiver containing two selectors and the selector choice byte.
- */
-void func_0034B080(TacticsDualSelectionOwner* object);
-
-/**
- * @brief Map the chosen selector's last five entries back to its first three.
- * @param object Tactics receiver containing two selectors and the selector choice byte.
- */
-void func_0034B120(TacticsDualSelectionOwner* object);
+void position_grid_indicators(TacticsGridOwner* object);
 
 /**
  * @brief Enqueue the receiver for deferred processing.
  * @param object Receiver to append to the resident object queue.
  */
-void func_00350790(void* object);
+void enqueue_resident_object(void* object);
 
 /**
  * @brief Select a preset display position, clearing it for an invalid index.
@@ -629,7 +628,7 @@ void func_00350790(void* object);
  * @param index Zero-based preset index.
  * @return The receiver's updated position pair.
  */
-TacticsPresetPosition* func_0034F190(TacticsPresetOwner* object, s32 index);
+TacticsPresetPosition* set_preset_position_from_index(TacticsPresetOwner* object, s32 index);
 
 typedef struct TacticsListNode
 {
@@ -647,496 +646,146 @@ typedef struct TacticsList
 } TacticsList;
 
 /**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00348400(void* object);
-
-/**
  * @brief Mark each icon active and color the selected one differently.
  * @param object Holder of the icon list.
  * @param selected Index of the icon to color differently.
  */
-void func_00348410(void* object, s16 selected);
+void color_icon_list_selection(void* object, s16 selected);
 
 /**
  * @brief Return the field at byte offset 0x20.
  * @param object Object containing the field.
  * @return The field value.
  */
-u32 func_003484C0(void* object);
+u32 get_field_word_20(void* object);
 
 /**
  * @brief Store the field at byte offset 0x20.
  * @param object Object containing the field.
  * @param value Value to store.
  */
-void func_00348630(void* object, u32 value);
-
-/**
- * @brief Return the field at byte offset 0x9C.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 func_003499A0(void* object);
-
-/**
- * @brief Return the field at byte offset 0x4.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 func_00349B30(void* object);
-
-/**
- * @brief Set the fields of two optional linked objects.
- * @param object Object containing the linked fields.
- */
-void func_00349E70(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0034DCF0(void* object);
+void set_field_word_20(void* object, u32 value);
 
 /**
  * @brief Return the field at byte offset 0x24.
  * @param object Object containing the field.
  * @return The field value.
  */
-u32 func_0034DD00(void* object);
+u32 get_field_word_24(void* object);
 
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
-void func_003507B0(void* object);
-
-/**
- * @brief Store the field at byte offset 0x9C.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00350D10(void* object, u32 value);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351020(void* object);
-
-/**
- * @brief Return the fixed value 3.
- * @param object Receiver or first argument; unused.
- * @return Always 3.
- */
-s32 func_00351030(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351040(void* object);
-
-/**
- * @brief Store the field at byte offset 0xC.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00351050(void* object, u8 value);
-
-/**
- * @brief Return the field at byte offset 0xC.
- * @param object Object containing the field.
- * @return The field value.
- */
-u8 func_00351060(void* object);
-
-/**
- * @brief Store the field at byte offset 0x8.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00351070(void* object, u8 value);
-
-/**
- * @brief Return the field at byte offset 0x8.
- * @param object Object containing the field.
- * @return The field value.
- */
-u8 func_00351080(void* object);
-
-/**
- * @brief Store the field at byte offset 0xA.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_00351090(void* object, u16 value);
-
-/**
- * @brief Return the field at byte offset 0xA.
- * @param object Object containing the field.
- * @return The field value.
- */
-u16 func_003510A0(void* object);
-
-/**
- * @brief Store the field at byte offset 0x4.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_003510B0(void* object, u32 value);
-
-/**
- * @brief Return the field at byte offset 0x10.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 func_003510C0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003510D0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003510E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003510F0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351100(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351110(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351120(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351130(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351140(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351150(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351160(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351170(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351180(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351190(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003511A0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003511B0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003511C0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003511D0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003511E0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003511F0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351200(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351210(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351220(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351230(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351240(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351250(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351260(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351270(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351280(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351290(void* object);
-
-/**
- * @brief Return the field at byte offset 0xD.
- * @param object Object containing the field.
- * @return The field value.
- */
-u8 func_003512A0(void* object);
-
-/**
- * @brief Store the field at byte offset 0xD.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void func_003512B0(void* object, u8 value);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003512C0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003512D0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003512E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003512F0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351300(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351310(void* object);
+void tactics_callback_noop(void* object);
 
 /**
  * @brief Return bit zero of the byte at offset 0x38.
  * @param object Object containing the field.
  * @return The field value.
  */
-u32 func_00351320(void* object);
+u32 read_mode_flag_bit(void* object);
 
 /**
  * @brief Return the field at byte offset 0x34.
  * @param object Object containing the field.
  * @return The field value.
  */
-u32 func_00351330(void* object);
+u32 read_word_at_34(void* object);
 
 /**
  * @brief Return the fixed value 4.
  * @param object Receiver or first argument; unused.
  * @return Always 4.
  */
-s32 func_00351340(void* object);
+s32 return_constant_four(void* object);
 
 /**
  * @brief Store the field at byte offset 0x24.
  * @param object Object containing the field.
  * @param value Value to store.
  */
-void func_00351350(void* object, u32 value);
+void write_word_at_24(void* object, u32 value);
 
 /**
  * @brief Store the field at byte offset 0x28.
  * @param object Object containing the field.
  * @param value Value to store.
  */
-void func_00351360(void* object, u8 value);
+void write_byte_at_28(void* object, u8 value);
 
 /**
  * @brief Return the field at byte offset 0x28.
  * @param object Object containing the field.
  * @return The field value.
  */
-s8 func_00351370(void* object);
+s8 read_signed_byte_at_28(void* object);
 
 /**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_00351380(void* object);
+s32 return_zero_callback_6(void* object);
 
 /**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_00351390(void* object);
+s32 return_zero_callback_1(void* object);
 
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
-void func_003513A0(void* object);
+void noop_callback_1(void* object);
 
 /**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_003513B0(void* object);
+s32 return_zero_callback_2(void* object);
 
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
-void func_003513C0(void* object);
+void noop_callback_2(void* object);
 
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
-void func_003513D0(void* object);
+void noop_callback_3(void* object);
 
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
-void func_003513E0(void* object);
+void noop_callback_4(void* object);
 
 /**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_003513F0(void* object);
+s32 return_zero_callback_3(void* object);
 
 /**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_00351400(void* object);
+s32 return_zero_callback_4(void* object);
 
 /**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_00351410(void* object);
+s32 return_zero_callback_5(void* object);
 
 /**
  * @brief Return the node at an index in a linked list.
@@ -1144,7 +793,7 @@ s32 func_00351410(void* object);
  * @param index Zero-based node index.
  * @return The node, or null if the list ends before the index.
  */
-TacticsListNode* func_00351750(TacticsList* list, s32 index);
+TacticsListNode* get_widget_node_at_index(TacticsList* list, s32 index);
 
 /**
  * @brief Return the node at an index in a linked list.
@@ -1152,7 +801,7 @@ TacticsListNode* func_00351750(TacticsList* list, s32 index);
  * @param index Zero-based node index.
  * @return The node, or null if the list ends before the index.
  */
-TacticsListNode* func_003519A0(TacticsList* list, s32 index);
+TacticsListNode* get_stat_value_node(TacticsList* list, s32 index);
 
 /**
  * @brief Return the node at an index in a linked list.
@@ -1160,20 +809,20 @@ TacticsListNode* func_003519A0(TacticsList* list, s32 index);
  * @param index Zero-based node index.
  * @return The node, or null if the list ends before the index.
  */
-TacticsListNode* func_00351BF0(TacticsList* list, s32 index);
+TacticsListNode* get_text_widget_node(TacticsList* list, s32 index);
 
 /**
- * @brief Update the parent window's resource displays and indicator position.
+ * @brief Update the parent window's indicators, grid title, highlight, and selection indicator.
  * @param object Parent window to refresh.
  */
-void func_0034A200(TacticsWindow18B220* object);
+void refresh_parent_selection_display(TacticsWindow18B220* object);
 
 /**
- * @brief Select the resource code in the parent and refresh its label.
+ * @brief Select the character ID in the parent and point its label at the matching record's text.
  * @param object Parent window produced by the paired window factory.
- * @param entry Full resource code word tested before conversion to a byte.
+ * @param character_id Full character code; zero selects code 1.
  */
-void func_0034A120(TacticsWindow18B220* object, u32 entry);
+void set_parent_character_id(TacticsWindow18B220* object, u32 character_id);
 
 #ifdef __cplusplus
 }
