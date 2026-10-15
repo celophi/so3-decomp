@@ -259,7 +259,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00404A70);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00404BA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00404CA0);
+s32 func_00404CA0(void* object, s32 value)
+{
+    ((u8*)object)[0x3B] = (u8)value ^ 0x77;
+    return value;
+}
 
 s32 func_00404CC0(void* object, s32 value)
 {

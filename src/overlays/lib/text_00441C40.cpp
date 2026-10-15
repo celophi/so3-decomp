@@ -169,6 +169,12 @@ typedef struct FourQuadwordCopySourceOwnertext_0043A920
     unsigned __int128 values150[4];
 } FourQuadwordCopySourceOwnertext_0043A920;
 
+typedef struct FieldVec4CopySource_00441C40
+{
+    u8 unk00[0x80];
+    FieldVec4A unk80;
+} FieldVec4CopySource_00441C40;
+
 typedef struct TwoIndexTableEntryOwnertext_0043A920
 {
     u8 data[0x40];
@@ -615,7 +621,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448C30);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448C80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448CD0);
+void func_00448CD0(const void* object, void* result)
+{
+    const FieldVec4CopySource_00441C40* source = (const FieldVec4CopySource_00441C40*)object;
+    *(FieldVec4B*)result = source->unk80;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448CF0);
 

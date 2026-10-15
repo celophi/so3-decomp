@@ -264,6 +264,13 @@ void func_00429850(void* object);
 /** Store the word at receiver offset 0x70. */
 void func_004295B0(void* object, u32 value);
 
+/**
+ * @brief Zero the 16-byte output argument.
+ * @param unused Unused first argument.
+ * @param output Address to clear.
+ */
+void func_004296B0(void* unused, void* output);
+
 
 /** Forward the receiver to func_004D00B0. */
 void func_0041AE30(void* object);

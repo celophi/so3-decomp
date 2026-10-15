@@ -198,6 +198,9 @@ s32 func_004E2EF0(void* object);
  */
 s32 func_004E44E0(void* object);
 
+/** @brief Toggle bit zero of the word at receiver offset 0x14. @param object Receiver containing the word. */
+void func_004E44F0(void* object);
+
 /**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.

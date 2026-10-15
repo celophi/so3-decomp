@@ -32,6 +32,9 @@ s32 func_003738D0(void* object);
 /** Initialize the receiver's child object when its counter is zero. */
 void func_00370A50(void* object);
 
+/** Set the receiver word at offset 0x2F9C to one. */
+void func_00373DC0(void* object);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.

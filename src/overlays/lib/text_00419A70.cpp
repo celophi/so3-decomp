@@ -710,7 +710,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429650);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429680);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004296B0);
+void func_004296B0(void* unused, void* output)
+{
+    *(unsigned __int128*)output = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004296C0);
 

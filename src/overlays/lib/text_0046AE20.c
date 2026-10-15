@@ -671,7 +671,18 @@ void func_00479160(void* object, u8 value)
     receiver->unk59d_0 = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479180);
+typedef struct LibByte790Counter
+{
+    u8 unk00[0x790];
+    u8 unk790;
+} LibByte790Counter;
+
+/** Increment the byte at receiver offset 0x790. */
+void func_00479180(void* object)
+{
+    LibByte790Counter* receiver = (LibByte790Counter*)object;
+    receiver->unk790 = (u8)(receiver->unk790 + 1);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479190);
 

@@ -376,6 +376,15 @@ void* func_00479100(void* object);
 /** Store a byte at 0x59C and set bit 0 of the byte at 0x59D. */
 void func_00479160(void* object, u8 value);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+/** @brief Increment the byte at receiver offset 0x790. @param object Receiver containing the counter byte. */
+void func_00479180(void* object);
+#ifdef __cplusplus
+}
+#endif
+
 
 #ifdef __cplusplus
 /** Partial Lib class with vtable D_175320 in main data; its destructor is func_004792A0. */

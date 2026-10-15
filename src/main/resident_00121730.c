@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "main/resident_00121730.h"
 #include "main/resident_0011EE70.h"
 
 typedef struct N66Vector4Source { float x; float y; float z; float w; } N66Vector4Source;
@@ -86,19 +87,44 @@ s32 func_001217D0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_001217E0);
+void* func_001217E0(void* object)
+{
+    if (((u8*)object)[0x2C0] != 0)
+    {
+        return (u8*)object + 0x238;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121800);
+s32 func_00121800(void* object)
+{
+    return func_001217D0((u8*)object - 0x210);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121810);
+void* func_00121810(void* object)
+{
+    return func_001217E0((u8*)object - 0x210);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121820);
+void* func_00121820(void* object)
+{
+    return func_001213B0((u8*)object - 0x210);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121830);
+void func_00121830(void* object)
+{
+    func_00120BF0((u8*)object - 0x78);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121840);
+s32 func_00121840(void* object)
+{
+    return func_001207D0((u8*)object - 0x78);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00121730", func_00121850);
+void* func_00121850(void* object)
+{
+    return func_00120700((u8*)object - 0x78);
+}
 
 s32 func_00121860(void* object)
 {

@@ -16,9 +16,9 @@ void func_002B60A0(u8* receiver, void* value1, void* value2, void* value3);
 s32 func_002B6600(void* object);
 
 /**
- * @brief Validate the supplied field object.
- * @param object Input object.
- * @return Validation result.
+ * @brief Return one when the receiver's virtual list contains a non-null entry.
+ * @param object Receiver with a virtual list getter.
+ * @return One if a list entry is non-null; otherwise zero.
  */
 s32 func_002B6580(void* object);
 
@@ -34,6 +34,38 @@ s32 func_002B5C80(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_002B5C90(void* object);
+
+/**
+ * @brief Initialize a non-null receiver's vtable chain and activate it for a positive value.
+ * @param receiver Object to initialize.
+ * @param value Signed value controlling activation.
+ * @return The receiver pointer.
+ */
+void* func_002B5CE0(void* receiver, s16 value);
+
+/**
+ * @brief Initialize a non-null receiver's vtable chain and activate it for a positive value.
+ * @param receiver Object to initialize.
+ * @param value Signed value controlling activation.
+ * @return The receiver pointer.
+ */
+void* func_002B5D80(void* receiver, s16 value);
+
+/**
+ * @brief Initialize a non-null receiver's vtable chain and activate it for a positive value.
+ * @param receiver Object to initialize.
+ * @param value Signed value controlling activation.
+ * @return The receiver pointer.
+ */
+void* func_002B6100(void* receiver, s16 value);
+
+/**
+ * @brief Initialize a non-null receiver's vtable chain and activate it for a positive value.
+ * @param receiver Object to initialize.
+ * @param value Signed value controlling activation.
+ * @return The receiver pointer.
+ */
+void* func_002B6270(void* receiver, s16 value);
 
 /**
  * @brief Set two output values when the input field at offset 4 is positive.
@@ -64,6 +96,14 @@ float func_002B5E10(void* receiver);
  * @param receiver Object containing both words.
  */
 void func_002B5F20(void* receiver);
+
+/**
+ * @brief Initialize the receiver's vtable chain and activate it when the signed value is positive.
+ * @param receiver Object to initialize.
+ * @param value Signed value controlling activation.
+ * @return The receiver pointer.
+ */
+void* func_002B5F30(void* receiver, s16 value);
 
 /**
  * @brief Set the receiver byte at offset 0x60 to eight.
@@ -275,6 +315,15 @@ void func_002BB740(void* receiver);
  */
 void* func_002BB780(void* receiver, s16 value);
 
+/** Initialize the receiver's fields to their default sentinel values. */
+void* func_002BB7E0(void* receiver);
+
+/**
+ * @brief Initialize three receiver fields using resource data from its word at offset 0x50.
+ * @param receiver Object containing the resource word and result fields.
+ */
+void func_002BCCB0(void* receiver);
+
 /**
  * @brief Reset the receiver through a helper and set byte 0x5BE to one.
  * @param receiver Object to reset.
@@ -299,6 +348,78 @@ s32 func_002C42B0(void* receiver);
  * @param receiver Object containing the input and result words.
  */
 void func_002C2030(void* receiver);
+
+/**
+ * @brief Update the receiver's embedded float state when the global helper allows it.
+ * @param receiver Object containing the embedded state.
+ * @return One when the helper allows the update; otherwise zero.
+ */
+s32 func_002C0A40(void* receiver);
+
+/**
+ * @brief Initialize the receiver's vtable chain and clear or release its embedded object.
+ * @param receiver Object to initialize.
+ * @param value Signed value controlling activation.
+ * @return The receiver pointer.
+ */
+void* func_002C0AE0(void* receiver, s16 value);
+
+/**
+ * @brief Initialize the receiver and its embedded object, then activate it for a positive value.
+ * @param receiver Object to initialize.
+ * @param value Signed value controlling activation.
+ * @return The receiver pointer.
+ */
+void* func_002BC470(void* receiver, s16 value);
+
+/**
+ * @brief Initialize the receiver and its embedded object, then activate it for a positive value.
+ * @param receiver Object to initialize.
+ * @param value Signed value controlling activation.
+ * @return The receiver pointer.
+ */
+void* func_002BDF20(void* receiver, s16 value);
+
+/**
+ * @brief Initialize the receiver and its embedded object, then activate it for a positive value.
+ * @param receiver Object to initialize.
+ * @param value Signed value controlling activation.
+ * @return The receiver pointer.
+ */
+void* func_002B68C0(void* receiver, s16 value);
+
+/**
+ * @brief Initialize the receiver's vtable and selected fields.
+ * @param receiver Object whose fields are initialized.
+ * @return The receiver pointer.
+ */
+void* func_002BFCD0(void* receiver);
+
+/**
+ * @brief Initialize the receiver's vtable chain and activate it for a positive signed value.
+ * @param receiver Object to initialize.
+ * @param value Signed value controlling activation.
+ * @return The receiver pointer.
+ */
+void* func_002C3FE0(void* receiver, s16 value);
+
+/**
+ * @brief Initialize the receiver's vtable chain, release its embedded object, and activate it when requested.
+ * @param receiver Object to initialize.
+ * @param value Signed value controlling activation.
+ * @return The receiver pointer.
+ */
+void* func_002B5FD0(void* receiver, s16 value);
+
+/** Initialize a non-null receiver and activate it when the signed value is positive. */
+void* func_002C2070(void* receiver, s16 value);
+
+/**
+ * @brief Set the receiver's vtable and initialize its sentinel fields.
+ * @param receiver Object to initialize.
+ * @return The receiver pointer.
+ */
+void* func_002C20D0(void* receiver);
 
 /**
  * @brief Resolve the receiver word at offset 0x50 with a global data object and store the result at 0x450.

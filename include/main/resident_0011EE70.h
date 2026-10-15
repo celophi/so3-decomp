@@ -22,8 +22,35 @@ typedef struct ResidentPacket
 
 #ifdef __cplusplus
 extern "C" {
-void func_00121730(u8* object, float x, float y, float z);
 #endif
+
+/**
+ * @brief Initialize a resident object and return it.
+ * @param object Object to update.
+ * @return The same object.
+ */
+void* func_0011EED0(void* object);
+
+/**
+ * @brief Initialize selected status bytes when the byte at 0x25 is clear.
+ * @param object Object containing the status bytes.
+ */
+void func_0011FFD0(void* object);
+
+/**
+ * @brief Store three components and set the fourth to 1.0 at offset 0x20.
+ * @param object Object containing the vector and flag.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
+void func_00121670(void* object, float x, float y, float z);
+
+/**
+ * @brief Move the set state from byte 0x25 to byte 0x24 when set.
+ * @param object Object containing the state bytes.
+ */
+void func_0011F9B0(void* object);
 
 /** Mark the transform as changed and copy a four-float value into it. */
 void func_001216D0(u8* object, const float* input);
@@ -88,6 +115,9 @@ void func_001215C0(void* object);
 /** Return the address of the shared global at 0x50CD30. */
 const void* func_00121610(void);
 
+/** Store a resident data pointer in the shared global. */
+void func_00120360(const void* value);
+
 /** Return the word at receiver offset 0x14. */
 u32 func_001205A0(const void* object);
 /** Return the word at receiver offset 0x10. */
@@ -117,11 +147,16 @@ s32 func_001206C0(void* object, s32 value);
 /** Store the word at receiver offset 0x70. */
 void func_001207B0(void* object, u32 value);
 
+/** Store a byte at offset 0x2C4 and a word at offset 0x2B8. */
+void func_00120A50(void* object, u8 flag, u32 value);
+/** Store a byte at offset 0x2C3 and a word at offset 0x2B4. */
+void func_00120A60(void* object, u8 flag, u32 value);
+
 /** Return the fixed integer value 9. */
 s32 func_001207D0(void* object);
-
-/** Return the fixed integer value -1. */
-s32 func_00121860(void* object);
+void* func_00120700(void* object);
+void* func_001213B0(void* object);
+void func_00120BF0(void* object);
 
 /** Return the fixed value 0. */
 s32 func_00121570(void* object);
@@ -135,16 +170,10 @@ s32 func_001215F0(float value);
 /** Return the fixed value 0. */
 s32 func_00121630(void* object);
 
-/** Return the fixed value 0. */
-s32 func_001217D0(void* object);
-
 void func_001207C0(void* object);
 void func_001215D0(void* object);
 void func_00121620(void* object);
 void func_00121640(void* object);
-void func_00121870(void* object);
-void func_00121880(void* object);
-void func_00121890(void* object);
 
 /** Return the receiver address at byte offset 0x90. */
 void* func_00121580(void* object);
@@ -170,19 +199,9 @@ void func_00121650(void* object, const unsigned __int128* value);
 /** Set the ready flag and copy a 128-bit value into the receiver. */
 void func_001216B0(void* object, const unsigned __int128* value);
 
-/** Set the ready flag and copy a 128-bit value into the receiver. */
-void func_00121770(void* object, const unsigned __int128* value);
-
-/** Set the ready flag and copy a 128-bit value into the receiver. */
-void func_00121790(void* object, const unsigned __int128* value);
-
-
 #ifdef __cplusplus
 /** Set the receiver flag and store four float values. */
 void func_00121690(void* object, float x, float y, float z, float w);
-
-/** Set a receiver flag and store three float values. */
-void func_001217B0(void* object, float x, float y, float z);
 
 }
 #endif

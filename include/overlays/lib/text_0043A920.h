@@ -33,6 +33,9 @@ void* func_0044A410(void);
  */
 void* func_00448A10(void* object, u32 arg1, u32 arg2);
 
+/** Copy the vector at receiver offset 0x80 to the result. */
+void func_00448CD0(const void* object, void* result);
+
 /**
  * @brief Store the value at receiver offset 0x28.
  * @param object Receiver whose float field is updated.
@@ -408,6 +411,15 @@ void func_0043ADE0(void* object, const unsigned __int128* value);
 
 /** Set the receiver flag and copy two 128-bit values to offsets 0x3A0 and 0x3B0. */
 void func_0043A9C0(void* object, const unsigned __int128* first, const unsigned __int128* second);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+/** @brief Set byte 0x490 and store a float at receiver offset 0x43C. @param object Receiver to update. @param value Float value to store. */
+void func_0043A9B0(void* object, float value);
+#ifdef __cplusplus
+}
+#endif
 
 /** Set the receiver flag and copy two 128-bit values to offsets 0x3A0 and 0x3B0. */
 void func_0043A9E0(void* object, const unsigned __int128* first, const unsigned __int128* second);

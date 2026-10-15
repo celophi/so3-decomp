@@ -248,7 +248,21 @@ void func_0043A990(void* object, float first, float second)
     *(float*)(bytes + 0x440) = second;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043A920", func_0043A9B0);
+typedef struct LibFloat43CByte490
+{
+    u8 unk00[0x43C];
+    float unk43C;
+    u8 unk440[0x50];
+    u8 unk490;
+} LibFloat43CByte490;
+
+/** Set the byte at receiver offset 0x490 and store the float at offset 0x43C. */
+void func_0043A9B0(void* object, float value)
+{
+    LibFloat43CByte490* receiver = (LibFloat43CByte490*)object;
+    receiver->unk490 = 1;
+    receiver->unk43C = value;
+}
 
 void func_0043A9C0(void* object, const unsigned __int128* first, const unsigned __int128* second)
 {

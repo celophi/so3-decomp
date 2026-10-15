@@ -569,7 +569,18 @@ s32 func_004E44E0(void* object)
     return 16;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E44F0);
+typedef struct LibToggleWord14
+{
+    u8 unk00[0x14];
+    u32 unk14;
+} LibToggleWord14;
+
+/** Toggle bit zero of the word at receiver offset 0x14. */
+void func_004E44F0(void* object)
+{
+    LibToggleWord14* receiver = (LibToggleWord14*)object;
+    receiver->unk14 ^= 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4500);
 

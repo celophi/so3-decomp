@@ -3,11 +3,15 @@
 #include "main/resident_0010A0E0.h"
 
 extern void* D_001B6400;
+extern u8 D_001B6420;
 extern "C" void* __nw__FUi(u32 size);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_001001E0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100A40);
+void func_00100A40(u8 value)
+{
+    D_001B6420 = value;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100A50);
 

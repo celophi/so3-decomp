@@ -131,14 +131,29 @@ void func_00104780(void* object);
 /**
  * @brief Pass the pointer at offset 0x90 to the resident helper.
  * @param receiver Object containing the pointer.
+ * @param argument Input pointer forwarded to the resident helper.
  */
-void func_00107D90(void* receiver);
+void func_00107D90(void* receiver, void* argument);
 
 /**
  * @brief Pass the pointer at offset 0x90 to the alternate resident helper.
  * @param receiver Object containing the pointer.
+ * @param argument Input pointer forwarded to the resident helper.
  */
-void func_00107DB0(void* receiver);
+void func_00107DB0(void* receiver, void* argument);
+
+/**
+ * @brief Run the resident helper with an object and four word arguments.
+ * @param object Input object.
+ * @param arg1 First input word.
+ * @param arg2 Second input word.
+ * @param arg3 Third input word.
+ * @param arg4 Fourth input word.
+ */
+void func_00108C40(void* object, u32 arg1, u32 arg2, u32 arg3, u32 arg4);
+
+/** Run the resident object helper with four word arguments. */
+s32 func_00107B10(void* object, u32 arg1, u32 arg2, u32 arg3, u32 arg4);
 
 /**
  * @brief Pass the pointer at offset 0x100 to the resident helper.
@@ -146,11 +161,27 @@ void func_00107DB0(void* receiver);
  */
 void func_00109F20(void* receiver);
 
-/** @brief Run the resident helper on the supplied object. @param object Input object. */
-void func_0010A080(void* object);
+/** Return the signed byte at receiver offset 0xBC. */
+s8 func_00109FD0(const void* object);
 
-/** @brief Run the alternate resident helper on the supplied object. @param object Input object. */
-void func_0010A0B0(void* object);
+/**
+ * @brief Set the receiver flag when the input value is positive.
+ * @param object Receiver whose field at offset 0xB0 is set.
+ * @param value Input value to check and return.
+ * @return The positive input value, or zero.
+ */
+s32 func_0010A080(void* object, const s32* value);
+
+/** @brief Apply the resident helper to the supplied object and flag. @param object Helper receiver. @param flag Helper flag. */
+void func_001071A0(void* object, s32 flag);
+
+/**
+ * @brief Set two receiver flags when the input value is positive.
+ * @param object Receiver whose fields at offsets 0xAC and 0x110 are set.
+ * @param value Input value to check and return.
+ * @return The positive input value, or zero.
+ */
+s32 func_0010A0B0(void* object, const s32* value);
 
 /** @brief Process the supplied resident object. @param object Input object. */
 void func_00109510(void* object);
