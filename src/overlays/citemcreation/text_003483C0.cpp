@@ -9694,7 +9694,286 @@ void AssignedInventorGrid::func_slot68()
     func_slota0();
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00362BA0);
+/**
+ * @brief Create the three development-line rows: frames, labels, inventor slots and markers.
+ * @param associated Associated source passed to the Field setup and the labels.
+ * @return Zero without a selection state, otherwise one.
+ */
+s32 AssignedInventorGrid::func_slotf4(u32 associated)
+{
+    if (this->unka8 == 0)
+    {
+        return 0;
+    }
+
+    this->unk1f1 = this->unka8->line_count;
+    FieldClass15AE70::func_slot14(associated, 0, 9, 2000, 16.0f, 234.0f, 0.0f);
+    LibWidgetColors4C5590 colors = {0};
+    colors.values[0] = 0xBCA4B4;
+    colors.values[1] = 0xBCA4B4;
+    colors.values[2] = 0x574C52;
+    colors.values[3] = 0x574C52;
+    float rows[3] = {0};
+    float y = shifted_position(0.0f, shifted_position(rows[0], 2.0f));
+
+    for (s32 slot = 0; slot < 12; slot += 4)
+    {
+        s32 row = slot / 4;
+        rows[row] = shifted_position(shifted_position(0.0f, 76.0f * row), 3.6f * row);
+        this->unk160[slot] = new (0) FieldClass15B200(this->unk10, 1);
+        func_002D5290(this->unk160[slot], 0xBC, 0x18, &colors, 0.0f, rows[row], 226.0f, 76.0f);
+        LibClass178600* border = this->unk160[slot]->unk30;
+
+        if (border)
+        {
+            border->unk28 = 40.0f;
+            border->unk3c = 1;
+        }
+
+        {
+            FieldClass15B200* frame = new (0) FieldClass15B200(this->unk10, 1);
+            FieldClass15B200*& entry = this->unk160[slot + 1];
+            entry = frame;
+            func_002D5290(entry, 0xBC, 0x18, &colors, 226.0f, rows[row], 72.0f, 76.0f);
+            LibClass178600* border = entry->unk30;
+
+            if (border)
+            {
+                border->unk28 = 40.0f;
+                border->unk3c = 1;
+            }
+        }
+
+        {
+            FieldClass15B200* frame = new (0) FieldClass15B200(this->unk10, 1);
+            FieldClass15B200*& entry = this->unk160[slot + 2];
+            entry = frame;
+            func_002D5290(entry, 0xBC, 0x18, &colors, 298.0f, rows[row], 192.0f, 76.0f);
+            LibClass178600* border = entry->unk30;
+
+            if (border)
+            {
+                border->unk28 = 40.0f;
+                border->unk3c = 1;
+            }
+        }
+
+        {
+            FieldClass15B200* frame = new (0) FieldClass15B200(this->unk10, 1);
+            FieldClass15B200*& entry = this->unk160[slot + 3];
+            entry = frame;
+            func_002D5290(entry, 0xBC, 0x18, &colors, 490.0f, rows[row], 118.0f, 76.0f);
+            LibClass178600* border = entry->unk30;
+
+            if (border)
+            {
+                border->unk28 = 40.0f;
+                border->unk3c = 1;
+            }
+        }
+    }
+
+    for (s32 row = 0; row < 3; row++)
+    {
+        this->unk194[row] = new (0) LibObject178750;
+        this->unk1a0[row] = new (0) LibObject178750;
+        this->unk1ac[row] = new (0) LibObject174F20;
+        this->unk1b8[row] = new (0) LibObject178750;
+        this->unk1c4[row] = new (0) LibObject178750;
+        this->unk1d0[row] = new (0) LibObject178750;
+        this->unk1dc[row] = new (0) LibObject178750;
+        this->unk194[row]->init_resource_rectangle(234.0f, 28.0f + rows[row], 0.0f, 0.0f, (s32)associated, 0x15FDD, 0);
+        this->unk1a0[row]->init_resource_rectangle(306.0f, 28.0f + rows[row], 0.0f, 0.0f, (s32)associated, 0x15FDD, 0);
+        lib_numeric_widget_init_rectangle(this->unk1ac[row], 0, (s32)associated, 0, 486.0f, 28.0f + rows[row], 112.0f, 24.0f);
+        this->unk1b8[row]->init_resource_rectangle(8.0f, rows[row] - 6.0f, 0.0f, 0.0f, (s32)associated, row + 0x15FD7, 1);
+        this->unk1c4[row]->init_resource_rectangle(234.0f, rows[row] - 6.0f, 0.0f, 0.0f, (s32)associated, 0x15FDA, 1);
+        this->unk1d0[row]->init_resource_rectangle(306.0f, rows[row] - 6.0f, 0.0f, 0.0f, (s32)associated, 0x15FDB, 1);
+        this->unk1dc[row]->init_resource_rectangle(498.0f, rows[row] - 6.0f, 0.0f, 0.0f, (s32)associated, 0x15FDC, 1);
+        this->unk1ac[row]->set_mode(2);
+        this->unk1b8[row]->set_scale(0.75f, 0.75f);
+        this->unk1c4[row]->set_scale(0.75f, 0.75f);
+        this->unk1d0[row]->set_scale(0.75f, 0.75f);
+        this->unk1dc[row]->set_scale(0.75f, 0.75f);
+        this->unk1b8[row]->set_color(0x1E8CFF);
+        this->unk1c4[row]->set_color(0x1E8CFF);
+        this->unk1d0[row]->set_color(0x1E8CFF);
+        this->unk1dc[row]->set_color(0x1E8CFF);
+
+        if (row >= this->unk1f1)
+        {
+            this->unk194[row]->set_color(0x808080);
+            this->unk1a0[row]->set_color(0x808080);
+            this->unk1ac[row]->set_color(0x808080);
+        }
+
+        lib_container_attach_widget(this->unk10, this->unk194[row]);
+        lib_container_attach_widget(this->unk10, this->unk1a0[row]);
+        lib_container_attach_widget(this->unk10, this->unk1ac[row]);
+        lib_container_attach_widget(this->unk10, this->unk1b8[row]);
+        lib_container_attach_widget(this->unk10, this->unk1c4[row]);
+        lib_container_attach_widget(this->unk10, this->unk1d0[row]);
+        lib_container_attach_widget(this->unk10, this->unk1dc[row]);
+    }
+
+    void* allocation = func_002D3D80(D_001B643C->unk20, 0);
+    FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 45);
+
+    for (s32 index = 0; index < 9; index++)
+    {
+        if (index != 0 && index % 3 == 0)
+        {
+            y = shifted_position(0.0f, shifted_position(2.0f, rows[index / 3]));
+        }
+
+        ItemCreationOptionResourceDisplay* image = new (0) ItemCreationOptionResourceDisplay;
+        image->unkcc = allocation;
+        image->unkd0 = 0;
+        image->func_002D6440(record, 6.0f + 72.0f * (index % 3), y);
+        image->unk50.unk34 = 2.0f;
+        image->unk50.unk30 = 2.0f;
+        image->unk3c = 1;
+        image->unk34 = 3;
+        lib_container_attach_widget(this->unk10, image);
+        this->unkb8[index] = image;
+    }
+
+    for (s32 row = 0; row < 3; row++)
+    {
+        float bottom;
+        float top = shifted_position(0.0f, shifted_position(2.0f, rows[row]));
+        bottom = shifted_position(top, 37.0f);
+
+        for (s32 column = 0; column < 4; column++)
+        {
+            ItemCreationOptionResourceDisplay* image = new (0) ItemCreationOptionResourceDisplay;
+            image->unkcc = allocation;
+            image->unkd0 = 0;
+
+            switch (column)
+            {
+            case 0:
+                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 83), 230.0f, top);
+                break;
+            case 1:
+                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 84), 230.0f, bottom);
+                break;
+            case 2:
+                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 85), 259.0f, top);
+                break;
+            case 3:
+                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 86), 259.0f, bottom);
+                break;
+            }
+
+            image->unk50.unk34 = 2.0f;
+            image->unk50.unk30 = 2.0f;
+            image->unk3c = 1;
+            image->unk34 = 3;
+            lib_container_attach_widget(this->unk10, image);
+            this->unkdc[column + row * 4] = image;
+        }
+    }
+
+    for (s32 row = 0; row < 3; row++)
+    {
+        float bottom;
+        float top = shifted_position(0.0f, shifted_position(2.0f, rows[row]));
+        bottom = shifted_position(top, 37.0f);
+
+        for (s32 column = 0; column < 4; column++)
+        {
+            ItemCreationOptionResourceDisplay* image = new (0) ItemCreationOptionResourceDisplay;
+            image->unkcc = allocation;
+            image->unkd0 = 0;
+
+            switch (column)
+            {
+            case 0:
+                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 83), 302.0f, top);
+                break;
+            case 1:
+                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 84), 302.0f, bottom);
+                break;
+            case 2:
+                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 85), 450.0f, top);
+                break;
+            case 3:
+                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 86), 450.0f, bottom);
+                break;
+            }
+
+            image->unk50.unk34 = 2.0f;
+            image->unk50.unk30 = 2.0f;
+            image->unk3c = 1;
+            image->unk34 = 3;
+            lib_container_attach_widget(this->unk10, image);
+            this->unk10c[column + row * 4] = image;
+        }
+    }
+
+    float first_y = y = shifted_position(4.0f, shifted_position(0.0f, shifted_position(rows[0], 2.0f)));
+    this->unk190 = 0;
+    u8 kind;
+    void* data;
+
+    for (s32 index = 0; index < 9; index++)
+    {
+        u8 code = this->unka8->assigned_inventor_option_codes[(u16)index];
+        FieldResourceRecord* resource;
+
+        if (code == 0)
+        {
+            data = func_002D3D80(D_001B643C->unk20, 0);
+            resource = func_002D3CC0(D_001B643C->unk20, 32);
+            kind = 0;
+        }
+        else
+        {
+            kind = (u8)inventor_resource_index(code);
+            data = func_002D3D80(D_001B643C->unk20, kind);
+            resource = func_002D3CC0(D_001B643C->unk20, 81);
+            this->unk190++;
+        }
+
+        if (index != 0 && index % 3 == 0)
+        {
+            y = shifted_position(4.0f, shifted_position(0.0f, shifted_position(2.0f, rows[index / 3])));
+        }
+
+        ItemCreationOptionResourceDisplay* image = new (0) ItemCreationOptionResourceDisplay;
+        image->unkcc = data;
+        image->unkd0 = kind;
+        image->func_002D6440(resource, 10.0f + 72.0f * (index % 3), y);
+        image->unk50.unk34 = 1.0f;
+        image->unk50.unk30 = 1.0f;
+        image->unk3c = 1;
+        lib_container_attach_widget(this->unk10, image);
+        image->unk34 = 3;
+        this->unk13c[index] = image;
+    }
+
+    this->unkac = new (0) FieldObject23CEA0;
+    this->unkac->func_0023CE80(5, this->unk1f1);
+    this->unkac->func_0023CE60(72.0f, 79.6f);
+    this->unkac->unkF2 = 2;
+    this->unkac->unk119 = 1;
+    float marker_y = 36.0f + (234.0f + first_y);
+    this->unkac->func_0023CF50(0, 34.0f, marker_y - 24.0f);
+    func_0036F040(&this->unk74, this->unkac);
+    func_0023CEA0(this->unkac, 0);
+    this->unkb0 = new (0) FieldObject23CEA0;
+    this->unkb0->func_0023CE80(5, this->unk1f1);
+    this->unkb0->func_0023CE60(72.0f, 79.6f);
+    this->unkb0->unkF2 = 2;
+    this->unkb0->unk119 = 1;
+    this->unkb0->func_0023CF50(0, 34.0f, marker_y - 8.0f);
+    func_0036F040(&this->unk74, this->unkb0);
+    func_0023CEA0(this->unkb0, 0);
+    this->unkb4 = this->unkac;
+    func_003614B0(this);
+    func_00361220(this);
+    return 1;
+}
 
 void func_00363D20(AssignedInventorGrid* object)
 {
