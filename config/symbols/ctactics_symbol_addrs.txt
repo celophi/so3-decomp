@@ -249,8 +249,7 @@ func_0034B120 = 0x0034B120; // type:func allow_duplicated:True
 func_slot74__19TacticsWindow18B320Fv = 0x0034B080; // type:func absolute:True allow_duplicated:True
 func_0034B080 = 0x0034B080; // type:func allow_duplicated:True
 func_slot5c__19TacticsWindow18B320Fv = 0x0034BA40; // type:func
-func_slotb0__19TacticsWindow18B320Fv = 0x0034B390; // type:func absolute:True allow_duplicated:True
-func_0034B390 = 0x0034B390; // type:func allow_duplicated:True
+func_slotb0__19TacticsWindow18B320Fv = 0x0034B390; // type:func
 func_slotb4__19TacticsWindow18B320Fv = 0x0034B1E0; // type:func
 func_slotf4__19TacticsWindow18B320FPv = 0x0034C120; // type:func
 

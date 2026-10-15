@@ -260,15 +260,12 @@ struct TacticsGridResourceRecord
     /** @brief Decode the protected flags. @return Flags, or five for an invalid checksum. */
     u32 get_flags() const
     {
-        u32 key = checksum_salt;
-        u32 flags = encoded_flags;
-        u32 checksum = flags_experience_checksum;
         u32 experience = encoded_experience;
-        if (checksum != (key ^ (experience ^ (flags + key))))
+        if (flags_experience_checksum != (checksum_salt ^ (experience ^ (encoded_flags + checksum_salt))))
         {
             return 5;
         }
-        return flags ^ TACTICS_STAT_WORD_XOR_KEY;
+        return encoded_flags ^ TACTICS_STAT_WORD_XOR_KEY;
     }
 };
 
@@ -488,6 +485,8 @@ static inline void set_resource_scale(ItemCreationOptionResourceDisplay* object,
 static inline bool initialize_selector_records(TacticsWindow18B320* object);
 
 static inline s32 record_kind(TacticsGridResourceRecord* record);
+
+static inline u8 character_record_empty(const TacticsGridResourceRecord* record);
 
 /**
  * @brief Report whether the grid's control byte is clear.
@@ -733,6 +732,16 @@ static inline bool initialize_selector_records(TacticsWindow18B320* object)
 static inline s32 record_kind(TacticsGridResourceRecord* record)
 {
     return record->kind;
+}
+
+/**
+ * @brief Test whether a character slot holds no character.
+ * @param record Character record.
+ * @return Nonzero when the record kind is zero.
+ */
+static inline u8 character_record_empty(const TacticsGridResourceRecord* record)
+{
+    return !record->kind;
 }
 
 void func_00348400(void* object)
@@ -1795,7 +1804,176 @@ u8 TacticsWindow18B320::func_slotb4()
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034B390);
+/**
+ * @brief Confirm a swap between the two selected character slots, or start choosing the second slot.
+ * @return One when the selection continues, three when the swap is refused or rolled back.
+ */
+u8 TacticsWindow18B320::func_slotb0()
+{
+    u8 result = 1;
+    if (use_second == 1)
+    {
+        u8 allowed = 0;
+        s16 remaining = 0;
+        unkc4 = second->selected;
+        s16 source = unkc2;
+        for (s32 i = 0; i < 4; i++)
+        {
+            if (i != source && i != unkc4)
+            {
+                TacticsGridResourceRecord* record = &static_cast<TacticsGridResourceRecord*>(unka8)[i];
+                s32 kind = record->kind;
+                s32 status = record->unk02;
+                if (status == 0 && kind != 0)
+                {
+                    remaining++;
+                }
+            }
+        }
+        if (remaining)
+        {
+            allowed = 1;
+        }
+        else
+        {
+            if (source < 4 && unkc4 < 4)
+            {
+                allowed = 1;
+            }
+            TacticsGridResourceRecord* records = static_cast<TacticsGridResourceRecord*>(unka8);
+            TacticsGridResourceRecord* first_record = &records[unkc2];
+            TacticsGridResourceRecord* second_record = &records[unkc4];
+            s32 first_status = first_record->unk02;
+            s32 first_kind = first_record->kind;
+            s32 second_status = second_record->unk02;
+            s32 second_kind = second_record->kind;
+            if (first_status == 0 && first_kind != 0 && second_status == 0 && second_kind != 0)
+            {
+                allowed = 1;
+            }
+        }
+        if (allowed == 1)
+        {
+            if (source != unkc4)
+            {
+                func_0013A678(bufferc4, 0, sizeof(TacticsGridResourceRecord));
+                func_0013A678(buffer114, 0, sizeof(TacticsEntryResourceRecord));
+                func_0013A4C0(bufferc4, &static_cast<TacticsGridResourceRecord*>(unka8)[unkc2], sizeof(TacticsGridResourceRecord));
+                func_0013A4C0(buffer114, &static_cast<TacticsEntryResourceRecord*>(unkac)[unkc2], sizeof(TacticsEntryResourceRecord));
+                func_0013A4C0(&static_cast<TacticsGridResourceRecord*>(unka8)[unkc2], &static_cast<TacticsGridResourceRecord*>(unka8)[unkc4], sizeof(TacticsGridResourceRecord));
+                func_0013A4C0(&static_cast<TacticsEntryResourceRecord*>(unkac)[unkc2], &static_cast<TacticsEntryResourceRecord*>(unkac)[unkc4], sizeof(TacticsEntryResourceRecord));
+                func_0013A4C0(&static_cast<TacticsGridResourceRecord*>(unka8)[unkc4], bufferc4, sizeof(TacticsGridResourceRecord));
+                func_0013A4C0(&static_cast<TacticsEntryResourceRecord*>(unkac)[unkc4], buffer114, sizeof(TacticsEntryResourceRecord));
+                u8 rejected = 0;
+                u8 invalid[4] = {0};
+                for (s32 i = 0; i < 4; i++)
+                {
+                    s32 status = static_cast<TacticsGridResourceRecord*>(unka8)[i].unk02;
+                    s32 kind = static_cast<TacticsGridResourceRecord*>(unka8)[i].kind;
+                    if (status == 0 && kind != 0)
+                    {
+                        u32 flags = static_cast<TacticsGridResourceRecord*>(unka8)[i].get_flags();
+                        if (flags & 5)
+                        {
+                            invalid[i] = 1;
+                        }
+                        else
+                        {
+                            invalid[i] = 0;
+                        }
+                    }
+                    else
+                    {
+                        invalid[i] = 1;
+                    }
+                }
+                if (invalid[0] == 1 && invalid[1] == 1 && invalid[2] == 1)
+                {
+                    rejected = 1;
+                }
+                if (rejected)
+                {
+                    func_0013A678(bufferc4, 0, sizeof(TacticsGridResourceRecord));
+                    func_0013A678(buffer114, 0, sizeof(TacticsEntryResourceRecord));
+                    func_0013A4C0(bufferc4, &static_cast<TacticsGridResourceRecord*>(unka8)[unkc2], sizeof(TacticsGridResourceRecord));
+                    func_0013A4C0(buffer114, &static_cast<TacticsEntryResourceRecord*>(unkac)[unkc2], sizeof(TacticsEntryResourceRecord));
+                    func_0013A4C0(&static_cast<TacticsGridResourceRecord*>(unka8)[unkc2], &static_cast<TacticsGridResourceRecord*>(unka8)[unkc4], sizeof(TacticsGridResourceRecord));
+                    func_0013A4C0(&static_cast<TacticsEntryResourceRecord*>(unkac)[unkc2], &static_cast<TacticsEntryResourceRecord*>(unkac)[unkc4], sizeof(TacticsEntryResourceRecord));
+                    func_0013A4C0(&static_cast<TacticsGridResourceRecord*>(unka8)[unkc4], bufferc4, sizeof(TacticsGridResourceRecord));
+                    func_0013A4C0(&static_cast<TacticsEntryResourceRecord*>(unkac)[unkc4], buffer114, sizeof(TacticsEntryResourceRecord));
+                    result = 3;
+                }
+                else
+                {
+                    reinterpret_cast<TacticsRuntimeControl*>(D_001B643C->runtime)->unk6e = 1;
+                    unkc1 = 1;
+                }
+                s32 i;
+                TacticsSavedGridSelection* saved = D_001B643C->state;
+                for (i = 0; i < 3; i++)
+                {
+                    if (saved->selected_resource_code == static_cast<TacticsGridResourceRecord*>(unka8)[i].kind)
+                    {
+                        break;
+                    }
+                }
+                if (i == 3)
+                {
+                    for (s32 j = 0; j < 3; j++)
+                    {
+                        if (!character_record_empty(&static_cast<TacticsGridResourceRecord*>(unka8)[j]))
+                        {
+                            D_001B643C->state->selected_resource_code = static_cast<TacticsGridResourceRecord*>(unka8)[j].kind;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            result = 3;
+        }
+        LibClass175030* second_target = reinterpret_cast<LibClass175030*>(second);
+        second_target->unk10 = -128.0f;
+        second_target->unk14 = -128.0f;
+        second_target->unk35 = 1;
+        second_target->unk3c = 1;
+        reinterpret_cast<LibClass175030*>(second)->unk3f = 0;
+        LibClass175030* first_target = reinterpret_cast<LibClass175030*>(first);
+        first_target->unk30 = 128.0f;
+        first_target->unk3c = 1;
+        use_second = 0;
+        unkc2 = -1;
+        unkc4 = -1;
+    }
+    else
+    {
+        LibClass175030* second_target = reinterpret_cast<LibClass175030*>(second);
+        LibClass175030* first_target = reinterpret_cast<LibClass175030*>(first);
+        const float& x = first_target->unk10;
+        float y = first_target->unk14;
+        second_target->unk10 = x;
+        second_target->unk14 = y;
+        second_target->unk35 = 1;
+        second_target->unk3c = 1;
+        s32 index = (s32)(24.0f + x);
+        s32 direct = 1;
+        if (!first_target->unk14)
+        {
+            direct = 0;
+        }
+        func_0023B1D0(second, index, direct);
+        reinterpret_cast<LibClass175030*>(second)->unk3f = 1;
+        unkc2 = first->selected;
+        func_0023B1D0(second, unkc2, 1);
+        first_target = reinterpret_cast<LibClass175030*>(first);
+        first_target->unk30 = 64.0f;
+        first_target->unk3c = 1;
+        use_second = 1;
+    }
+    return result;
+}
 
 /** @brief Refresh the eight resource rows after a record change while this window is active. */
 void TacticsWindow18B320::func_slot5c()
