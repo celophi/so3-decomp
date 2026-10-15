@@ -76,6 +76,9 @@ void func_002B08E0(void* object);
  */
 s32 func_002B0920(void* object);
 
+/** @brief Copy the word at receiver offset 0x178 to offset 0x14. @param object Receiver containing both words. */
+void func_002B0930(void* object);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.

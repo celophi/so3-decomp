@@ -1,8 +1,20 @@
 #include "include_asm.h"
 #include "main/resident_0010A0E0.h"
+#include "main/resident_00101550.h"
 
 extern "C" {
 void func_00118880(void* object);
+void func_00114E00(void* value);
+s32 iWakeupThread(s32 thread_id);
+s32 StartThread(s32 thread_id, void* argument);
+s32 SleepThread(void);
+s32 func_00135320(double left, double right);
+s32 func_00115000(void* object, s32 mode, s32 size);
+typedef struct ResidentFloatQuadDA30
+{
+    float values[4];
+} ResidentFloatQuadDA30;
+extern const ResidentFloatQuadDA30 D_00144260;
 typedef struct ConstantByteSetterOwnerresident_0010A0E0
 {
     u8 unk00[0x1012];
@@ -32,9 +44,106 @@ typedef struct WordGetterOwnerresident_0010A0E0
     u32 unk118;
 } WordGetterOwnerresident_0010A0E0;
 
+typedef struct ResidentPairSetter112D70
+{
+    u8 unk00[0x10];
+    u32 unk10;
+    void* unk14;
+} ResidentPairSetter112D70;
+
+typedef struct ResidentTwoByteClear15420
+{
+    u8 unk00[0x6C];
+    u8 unk6C;
+    u8 unk6D[0xD3];
+    u8 unk140;
+} ResidentTwoByteClear15420;
+
+typedef struct ResidentThreadHandle114DD0
+{
+    u8 pad00[0x8];
+    s32 unk08;
+} ResidentThreadHandle114DD0;
+
+typedef struct ResidentHalfwordSetter14560
+{
+    u8 pad00[0x10];
+    s16 unk10;
+} ResidentHalfwordSetter14560;
+
+typedef struct ResidentThreadStartContext14EB0
+{
+    u8 pad00[0x8];
+    s32 unk08;
+} ResidentThreadStartContext14EB0;
+
+typedef struct ResidentWordExchange10
+{
+    u8 unk00[0x10];
+    u32 unk10;
+} ResidentWordExchange10;
+
+typedef struct ResidentWordAndFlag2F9
+{
+    u8 unk00[0x8];
+    u32 unk08;
+    u8 unk0c[0x2ED];
+    u8 unk2F9;
+} ResidentWordAndFlag2F9;
+
+typedef struct ResidentDistanceRequestEA70
+{
+    u8 unk00[0x1390];
+    void* target;
+    float value;
+    float distance_squared;
+} ResidentDistanceRequestEA70;
+
+typedef struct ResidentSixWordSetter152C0
+{
+    u8 unk00[0x15C];
+    u32 unk15C;
+    u32 unk160;
+    u32 unk164;
+    u32 unk168;
+    u32 unk16C;
+    u32 unk170;
+} ResidentSixWordSetter152C0;
+
+typedef struct ResidentFloatCopyTargetEAA0
+{
+    u8 pad00[0x139C];
+    float values[4];
+} ResidentFloatCopyTargetEAA0;
+
+typedef struct ResidentByteAndWordResetB730
+{
+    u8 pad00[0x78];
+    u8 unk78[4];
+    u32 unk7C;
+    u32 unk80;
+    u32 unk84;
+} ResidentByteAndWordResetB730;
+
+typedef struct ResidentByteStoreAndHelperDA70
+{
+    void* unk00;
+    u8 pad04[0x44C];
+    u8 unk450;
+} ResidentByteStoreAndHelperDA70;
+
+typedef struct ResidentManagerEF50
+{
+    void* unk00;
+    u8 pad04[0x14];
+    void* unk18[7];
+    u32 unk34;
+} ResidentManagerEF50;
+
 
 extern u8 D_001B6880[];
 extern s32 D_001B640C;
+extern ResidentManagerEF50* D_001B6410;
 extern u32 D_001CF8E0[56];
 
 /** Heap block header and owner prefix used by allocation and release. */
@@ -94,7 +203,17 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010B510)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010B600);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010B730);
+/** Clear bytes at 0x78-0x7B and copy the word at 0x84 to offsets 0x7C and 0x80. */
+void func_0010B730(void* object)
+{
+    ResidentByteAndWordResetB730* receiver = (ResidentByteAndWordResetB730*)object;
+    receiver->unk78[0] = 0;
+    receiver->unk78[1] = 0;
+    receiver->unk78[2] = 0;
+    receiver->unk78[3] = 0;
+    receiver->unk7C = receiver->unk84;
+    receiver->unk80 = receiver->unk84;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010B760);
 
@@ -180,9 +299,24 @@ void* resident_get_runtime_owner(void)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010D8F0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010DA30);
+/** Copy the default resident float quad into the receiver's float fields. */
+void func_0010DA30(void* object)
+{
+    ResidentFloatQuadDA30 values = D_00144260;
+    ResidentFloatCopyTargetEAA0* receiver = (ResidentFloatCopyTargetEAA0*)object;
+    receiver->values[0] = values.values[0];
+    receiver->values[1] = values.values[1];
+    receiver->values[2] = values.values[2];
+    receiver->values[3] = values.values[3];
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010DA70);
+/** Store the low byte at offset 0x450, then run the resident helper on the pointer at offset 0. */
+void func_0010DA70(void* object, u32 value)
+{
+    ResidentByteStoreAndHelperDA70* receiver = (ResidentByteStoreAndHelperDA70*)object;
+    receiver->unk450 = value;
+    func_00108C40(receiver->unk00, 0, 0, 0, value & 0xFF);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010DAA0);
 
@@ -196,7 +330,14 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010DEF0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010DF70);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010DFC0);
+/**
+ * @brief Forward the manager's first pointer and the argument to func_00107D90.
+ * @param argument Value forwarded as the helper's second argument.
+ */
+void func_0010DFC0(void* argument)
+{
+    func_00107D90(D_001B6410->unk00, argument);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010DFF0);
 
@@ -210,11 +351,30 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010E310)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010E4B0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EA70);
+void func_0010EA70(ResidentRequest112400* request, void* target, float value, float distance)
+{
+    ResidentDistanceRequestEA70* receiver = (ResidentDistanceRequestEA70*)request;
+    receiver->target = target;
+    receiver->value = value;
+    receiver->distance_squared = distance * distance;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EA90);
+/** Store the float at receiver offset 0x139C for index. */
+void func_0010EA90(void* object, s32 index, float value)
+{
+    float* values = (float*)object;
+    values[index + 0x4E7] = value;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EAA0);
+/** Copy four floats to receiver offsets 0x139C, 0x13A0, 0x13A4, and 0x13A8. */
+void func_0010EAA0(void* object, const float* values)
+{
+    ResidentFloatCopyTargetEAA0* receiver = (ResidentFloatCopyTargetEAA0*)object;
+    receiver->values[0] = values[0];
+    receiver->values[1] = values[1];
+    receiver->values[2] = values[2];
+    receiver->values[3] = values[3];
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EAD0);
 
@@ -222,7 +382,14 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EB90)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EC00);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010ECF0);
+/** Run the helper on the object's pointer when it is non-null. */
+void func_0010ECF0(void* object)
+{
+    void* value = *(void**)object;
+    if (value != 0) {
+        func_001071A0(value, 0);
+    }
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010ED20);
 
@@ -234,11 +401,22 @@ void func_0010EE50(void* object)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EE60);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EF50);
+/** Append the pointer at object offset zero to the resident manager array. */
+void func_0010EF50(const void* object)
+{
+    ResidentManagerEF50* manager = D_001B6410;
+    void* pointer = *(void**)object;
+    u32 index = manager->unk34;
+    manager->unk34 = index + 1;
+    manager->unk18[index] = pointer;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EF80);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EFD0);
+s32 func_0010EFD0(void* object)
+{
+    return func_00107B10(*(void**)object, 0, 0, 0, 1) != 0;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010F000);
 
@@ -424,7 +602,12 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001126D0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112990);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112D70);
+void func_00112D70(void* object, u32 value, void* pointer)
+{
+    ResidentPairSetter112D70* receiver = (ResidentPairSetter112D70*)object;
+    receiver->unk10 = value;
+    receiver->unk14 = pointer;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112D80);
 
@@ -575,7 +758,23 @@ void func_00113EA0(void* object)
 {
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00113EB0);
+typedef struct ResidentPolledFlag13EB0
+{
+    u8 pad00[0x1011];
+    volatile u8 flag;
+} ResidentPolledFlag13EB0;
+
+/** Return the state byte or wait for it to clear when requested. */
+u32 func_00113EB0(void* object, s32 wait)
+{
+    ResidentPolledFlag13EB0* state = (ResidentPolledFlag13EB0*)object;
+    if (wait != 0) {
+        return state->flag;
+    }
+    while (state->flag != 0) {
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00113EF0);
 
@@ -594,11 +793,20 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001142C0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114330);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001143E0);
+s32 func_001143E0(double left, double right)
+{
+    return func_00135320(left, right) > 0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114400);
+s32 func_00114400(double left, double right)
+{
+    return func_00135320(left, right) < 0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114420);
+s32 func_00114420(double left, double right)
+{
+    return func_00135320(left, right) == 0;
+}
 
 void func_00114450(void* object)
 {
@@ -606,7 +814,12 @@ void func_00114450(void* object)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114460);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114560);
+s32 func_00114560(void* object, s16 value, s32 size)
+{
+    ResidentHalfwordSetter14560* receiver = (ResidentHalfwordSetter14560*)object;
+    receiver->unk10 = value;
+    return func_00115000(object, 50, size);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114580);
 
@@ -624,13 +837,27 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114A00)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114BD0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114DD0);
+/** Return whether waking the resident thread succeeds. */
+s32 func_00114DD0(const void* object)
+{
+    const ResidentThreadHandle114DD0* receiver = (const ResidentThreadHandle114DD0*)object;
+    return iWakeupThread(receiver->unk08) >= 0;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114E00);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114E80);
+/** Return whether the resident thread sleep request succeeds. */
+s32 func_00114E80(void)
+{
+    return SleepThread() >= 0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114EB0);
+/** Return whether the resident thread starts successfully. */
+s32 func_00114EB0(void* object)
+{
+    ResidentThreadStartContext14EB0* receiver = (ResidentThreadStartContext14EB0*)object;
+    return StartThread(receiver->unk08, object) >= 0;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114EE0);
 
@@ -644,13 +871,29 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001151B0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115270);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001152C0);
+/** Store six words at receiver offsets 0x15C through 0x170. */
+void func_001152C0(void* object, u32 arg1, u32 arg2, u32 arg3,
+                   u32 arg4, u32 arg5, u32 arg6)
+{
+    ResidentSixWordSetter152C0* receiver = (ResidentSixWordSetter152C0*)object;
+    receiver->unk15C = arg1;
+    receiver->unk168 = arg2;
+    receiver->unk160 = arg3;
+    receiver->unk16C = arg4;
+    receiver->unk164 = arg5;
+    receiver->unk170 = arg6;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001152E0);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115310);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115420);
+void func_00115420(void* object)
+{
+    ResidentTwoByteClear15420* receiver = (ResidentTwoByteClear15420*)object;
+    receiver->unk140 = 0;
+    receiver->unk6C = 0;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115430);
 
@@ -702,7 +945,18 @@ u32 func_00115830(const void* object)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115840);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001158A0);
+/** Sum each entry value when its resident flag word is nonzero. */
+u32 func_001158A0(const void* object)
+{
+    const u8* entry = (const u8*)object;
+    u32 total = 0;
+    for (s32 index = 0; index < 0x1800; index++, entry += sizeof(u32)) {
+        if (*(const u32*)(entry + 0xC17C) != 0) {
+            total += *(const u32*)(entry + 0x617C);
+        }
+    }
+    return total;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001158E0);
 
@@ -710,7 +964,10 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118880)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118A70);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118B80);
+void func_00118B80(void* object, void* value)
+{
+    func_00114E00(value);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118BA0);
 
@@ -742,11 +999,21 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C6C0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C6E0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C7C0);
+/** Return bit 0 of the word at receiver offset 0xCC. */
+s32 func_0011C7C0(const void* object)
+{
+    const u32* values = (const u32*)object;
+    return (values[0x33] & 1) != 0;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C7D0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C8C0);
+/** Return the descriptor's low 24-bit size value in bytes for key. */
+u32 func_0011C8C0(struct ResidentObject1B65E4* object, s32 key)
+{
+    const u32* values = (const u32*)((const u8*)object + 0x617C);
+    return (values[key] & 0x00FFFFFF) << 11;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C8E0);
 
@@ -789,11 +1056,24 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DE00)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DEE0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DF00);
+/** Return and clear the word at receiver offset 0x10. */
+u32 func_0011DF00(void* object)
+{
+    ResidentWordExchange10* receiver = (ResidentWordExchange10*)object;
+    u32 value = receiver->unk10;
+    receiver->unk10 = 0;
+    return value;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DF10);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DF60);
+/** Store the word at receiver offset 0x8 and clear its byte at offset 0x2F9. */
+void func_0011DF60(void* object, u32 value)
+{
+    ResidentWordAndFlag2F9* receiver = (ResidentWordAndFlag2F9*)object;
+    receiver->unk08 = value;
+    receiver->unk2F9 = 0;
+}
 
 /** Return the word at receiver offset 0x8. */
 u32 func_0011DF70(const void* object)
@@ -802,9 +1082,21 @@ u32 func_0011DF70(const void* object)
     return receiver->unk08;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DF80);
+/** Clear the word at receiver offset 0x8 and its byte at offset 0x2F9. */
+void func_0011DF80(void* object)
+{
+    ResidentWordAndFlag2F9* receiver = (ResidentWordAndFlag2F9*)object;
+    receiver->unk08 = 0;
+    receiver->unk2F9 = 0;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DF90);
+/** Clear the halfwords at receiver offsets 0x268 and 0x26C for index. */
+void func_0011DF90(void* object, s32 index)
+{
+    u16* values = (u16*)object;
+    values[index + 0x134] = 0;
+    values[index + 0x136] = 0;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DFB0);
 

@@ -416,7 +416,16 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00373C
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00373D50);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00373DC0);
+typedef struct Func00373DC0Object
+{
+    u8 unk00[0x2F9C];
+    u32 unk2F9C;
+} Func00373DC0Object;
+
+void func_00373DC0(void* object)
+{
+    ((Func00373DC0Object*)object)->unk2F9C = 1;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00373DD0);
 

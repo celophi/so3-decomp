@@ -45,6 +45,15 @@ s32 func_0011CC00(void* object, void* entry, void* descriptor);
 void func_0011D060(void* object, void* entry, void* descriptor);
 
 /**
+ * @brief Forward the manager's first pointer and the argument to func_00107D90.
+ * @param argument Value forwarded as the helper's second argument.
+ */
+void func_0010DFC0(void* argument);
+
+/** Run the resident helper on the object's pointer when it is non-null. */
+void func_0010ECF0(void* object);
+
+/**
  * @brief Queue a DMA submission and start processing if the channel is idle.
  * @param queue Resident queue for the DMA channel.
  * @param submission Transfer callbacks to enqueue.
@@ -63,6 +72,14 @@ void* resident_heap_allocate(void* heap, s32 size);
 /** @brief Return a block to the resident heap. @param memory Allocated block. */
 void resident_heap_release(void* memory);
 
+/** Clear bytes at 0x78-0x7B and copy the word at 0x84 to offsets 0x7C and 0x80. */
+void func_0010B730(void* object);
+
+/** Copy the default resident float quad into the receiver's float fields. */
+void func_0010DA30(void* object);
+/** Store the low byte at offset 0x450, then run the resident helper on the pointer at offset 0. */
+void func_0010DA70(void* object, u32 value);
+
 /**
  * @brief Store a request target, float value, and squared distance value.
  * @param request Resident request receiver.
@@ -71,6 +88,24 @@ void resident_heap_release(void* memory);
  * @param distance Value to square and store.
  */
 void func_0010EA70(ResidentRequest112400* request, void* target, float value, float distance);
+/** Store the float at receiver offset 0x139C for index. */
+void func_0010EA90(void* object, s32 index, float value);
+/** Copy four floats to receiver offsets 0x139C, 0x13A0, 0x13A4, and 0x13A8. */
+void func_0010EAA0(void* object, const float* values);
+/** Append the pointer at object offset zero to the resident manager array. */
+void func_0010EF50(const void* object);
+/** Run the resident helper on the pointer at offset zero with its final flag set. */
+s32 func_0010EFD0(void* object);
+
+/** Return whether the resident double comparison reports left greater than right. */
+s32 func_001143E0(double left, double right);
+/** Return whether the resident double comparison reports left less than right. */
+s32 func_00114400(double left, double right);
+/** Return whether the resident double comparison reports the values equal. */
+s32 func_00114420(double left, double right);
+
+/** Store a halfword at offset 0x10, then request resident processing with mode 50. */
+s32 func_00114560(void* object, s16 value, s32 size);
 
 /**
  * @brief Advance the resident random sequence and return its next word.
@@ -126,8 +161,18 @@ u32 func_00115650(const void* object);
 u32 func_00115660(const void* object);
 /** Return the word at receiver offset 0x104. */
 u32 func_00115830(const void* object);
+/** Sum each of 0x1800 entry values whose resident flag word is nonzero. */
+u32 func_001158A0(const void* object);
+/** Return and clear the word at receiver offset 0x10. */
+u32 func_0011DF00(void* object);
+/** Store the word at receiver offset 0x8 and clear its byte at offset 0x2F9. */
+void func_0011DF60(void* object, u32 value);
 /** Return the word at receiver offset 0x8. */
 u32 func_0011DF70(const void* object);
+/** Clear the word at receiver offset 0x8 and its byte at offset 0x2F9. */
+void func_0011DF80(void* object);
+/** Clear the halfwords at receiver offsets 0x268 and 0x26C for index. */
+void func_0011DF90(void* object, s32 index);
 
 
 /** Store the word at receiver offset 0x134. */
@@ -138,10 +183,47 @@ void func_001156B0(void* object, u32 value);
 void func_001140F0(void* object);
 
 void func_0010EE50(void* object);
+
+/**
+ * @brief Store a word and pointer at receiver offsets 0x10 and 0x14.
+ * @param object Receiver to update.
+ * @param value Word stored at offset 0x10.
+ * @param pointer Pointer stored at offset 0x14.
+ */
+void func_00112D70(void* object, u32 value, void* pointer);
+
 void func_00113180(void* object);
 void func_00113EA0(void* object);
+
+/**
+ * @brief Return the state byte or wait for it to clear when requested.
+ * @param object State receiver whose byte is at offset 0x1011.
+ * @param wait Nonzero returns the current byte; zero waits until it is clear.
+ * @return Current state byte when waiting is disabled, otherwise zero.
+ */
+u32 func_00113EB0(void* object, s32 wait);
 void func_00114450(void* object);
+
+/** Return whether waking the resident thread succeeds. */
+s32 func_00114DD0(const void* object);
+/** Return whether the resident thread sleep request succeeds. */
+s32 func_00114E80(void);
+/** Return whether the resident thread starts successfully. */
+s32 func_00114EB0(void* object);
+
+/** Store six words at receiver offsets 0x15C through 0x170. */
+void func_001152C0(void* object, u32 arg1, u32 arg2, u32 arg3,
+                   u32 arg4, u32 arg5, u32 arg6);
+
+/** Clear the receiver's bytes at offsets 0x140 and 0x6C. */
+void func_00115420(void* object);
+
+/** Call func_00114E00 with the second argument. */
+void func_00118B80(void* object, void* value);
+
 void func_0011C6B0(void* object);
+/** Return bit 0 of the word at receiver offset 0xCC. */
+s32 func_0011C7C0(const void* object);
 
 #ifdef __cplusplus
 }

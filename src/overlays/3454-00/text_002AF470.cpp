@@ -183,7 +183,20 @@ s32 func_002B0920(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002AF470", func_002B0930);
+struct N57Word14And178
+{
+    u8 unk00[0x14];
+    u32 unk14;
+    u8 unk18[0x160];
+    u32 unk178;
+};
+
+/** Copy the word at receiver offset 0x178 to offset 0x14. */
+void func_002B0930(void* object)
+{
+    N57Word14And178* receiver = (N57Word14And178*)object;
+    receiver->unk14 = receiver->unk178;
+}
 
 void func_002B0940(void* object)
 {

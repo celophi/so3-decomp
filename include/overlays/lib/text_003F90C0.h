@@ -68,6 +68,9 @@ s32 func_00408850(void* detail, s32 code, s32 index, s32* kind, s32* value, s32*
 /** Store the byte at receiver offset 0xE6. */
 void func_00404560(void* object, u8 value);
 
+/** Store the low byte of value XOR 0x77 at receiver offset 0x3B and return value. */
+s32 func_00404CA0(void* object, s32 value);
+
 #ifdef __cplusplus
 }
 #endif

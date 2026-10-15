@@ -137,6 +137,9 @@ float func_00412C30(void* object);
 /** Store the word at receiver offset 0x0. */
 void func_0040B690(void* object, u32 value);
 
+/** @brief Check whether the byte at receiver offset 0x6 is at least 0x1D. @param object Receiver containing the byte. @return One when the byte is at least 0x1D; otherwise zero. */
+s32 func_0040B6A0(void* object);
+
 
 /** Store the byte at receiver offset 0x33. */
 void func_0040B640(void* object, u8 value);

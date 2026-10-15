@@ -175,7 +175,12 @@ void func_0040B690(void* object, u32 value)
     receiver->unk00 = value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B6A0);
+/** Return whether the byte at receiver offset 0x6 is at least 0x1D. */
+s32 func_0040B6A0(void* object)
+{
+    ByteSetterOwnertext_004095C0* receiver = static_cast<ByteSetterOwnertext_004095C0*>(object);
+    return (receiver->unk06 < 0x1D) ^ 1;
+}
 
 /** Store the byte at receiver offset 0x6. */
 void func_0040B6B0(void* object, u8 value)

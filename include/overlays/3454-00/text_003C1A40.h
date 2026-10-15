@@ -7,6 +7,21 @@
 extern "C" {
 #endif
 
+/** Return the pointer at receiver offset 0x50 plus 0x60 bytes. */
+void* func_003CA620(void* object);
+
+/** Return the float at offset 0x4C from the pointer at receiver offset 0x50. */
+float func_003CA630(void* object);
+
+/** Return the float at offset 0x2C from receiver offset 0x50, scaled by 1/128. */
+float func_003CA700(void* object);
+
+/** Return the pointer at receiver offset 0x50 plus 0x20 bytes. */
+void* func_003CAA00(void* object);
+
+/** Return the float at offset 0x57C from the pointer at receiver offset 0x50. */
+float func_003CAA10(void* object);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.

@@ -13,6 +13,12 @@ struct ResidentPointer100
     void* unk100;
 };
 
+struct ResidentSignedByteBC
+{
+    u8 unk00[0xBC];
+    s8 unkBC;
+};
+
 void func_00101550(void* object)
 {
 }
@@ -162,16 +168,16 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107B10)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107B60);
 
-void func_00107D90(void* receiver)
+void func_00107D90(void* receiver, void* value)
 {
     ResidentPointer90* object = (ResidentPointer90*)receiver;
-    func_0010A080(object->unk90);
+    func_0010A080(object->unk90, (const s32*)value);
 }
 
-void func_00107DB0(void* receiver)
+void func_00107DB0(void* receiver, void* argument)
 {
     ResidentPointer90* object = (ResidentPointer90*)receiver;
-    func_0010A0B0(object->unk90);
+    func_0010A0B0(object->unk90, (const s32*)argument);
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107DD0);
@@ -220,7 +226,11 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109F40)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109FB0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109FD0);
+s8 func_00109FD0(const void* object)
+{
+    const ResidentSignedByteBC* receiver = (const ResidentSignedByteBC*)object;
+    return receiver->unkBC;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109FE0);
 

@@ -23,6 +23,9 @@ void* operator new[](u32 size, s32 unused);
 extern "C" {
 #endif
 
+/** Store a byte in the global at address 0x001B6420. */
+void func_00100A40(u8 value);
+
 /**
  * @brief Allocate memory from the current heap, or from the default allocator when none is set.
  * @param size Number of bytes to allocate.

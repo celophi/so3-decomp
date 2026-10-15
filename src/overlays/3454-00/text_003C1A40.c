@@ -244,15 +244,44 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CA4
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CA540);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CA620);
+typedef struct Func003CA620Object
+{
+    char unk00[0x50];
+    void* unk50;
+} Func003CA620Object;
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CA630);
+void* func_003CA620(void* object)
+{
+    return (char*)((Func003CA620Object*)object)->unk50 + 0x60;
+}
+
+typedef struct Func003CA630Target
+{
+    char unk00[0x4C];
+    float unk4C;
+} Func003CA630Target;
+
+float func_003CA630(void* object)
+{
+    Func003CA630Target* target = (Func003CA630Target*)((Func003CA620Object*)object)->unk50;
+    return target->unk4C;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CA640);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CA6D0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CA700);
+typedef struct Func003CA700Target
+{
+    char unk00[0x2C];
+    float unk2C;
+} Func003CA700Target;
+
+float func_003CA700(void* object)
+{
+    Func003CA700Target* target = (Func003CA700Target*)((Func003CA620Object*)object)->unk50;
+    return 0.0078125f * target->unk2C;
+}
 
 void func_003CA720(void* object)
 {
@@ -266,9 +295,22 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CA7
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CA970);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CAA00);
+void* func_003CAA00(void* object)
+{
+    return (char*)((Func003CA620Object*)object)->unk50 + 0x20;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CAA10);
+typedef struct Func003CAA10Target
+{
+    char unk00[0x57C];
+    float unk57C;
+} Func003CAA10Target;
+
+float func_003CAA10(void* object)
+{
+    Func003CAA10Target* target = (Func003CAA10Target*)((Func003CA620Object*)object)->unk50;
+    return target->unk57C;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CAA20);
 

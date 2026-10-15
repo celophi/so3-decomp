@@ -5,21 +5,68 @@ extern "C" void func_0036ABF0(void* first, void* second, void* third, void* four
 extern "C" void func_00298370(void* object);
 extern "C" void func_002A6040(void);
 extern "C" void func_002A6780(void);
+extern "C" void func_002B3270(void* object);
 extern "C" void func_002825F0(void* object, s32 value);
 extern "C" void func_002B3BC0(void* object, u8 value);
 extern "C" void func_002B8FB0(void* receiver, s32 value);
 extern "C" u8 func_003ADF00(void* object);
 extern "C" u8 func_003C3B80(void* object);
+extern "C" float func_4E70B0(float value);
+extern "C" void func_4D7EB0(void* object);
+extern "C" void func_003B09E0(void* object, s32 value);
+extern "C" void func_003B0E50(void* object, s32 value);
+extern "C" void func_002B39A0(void* object, s32 value);
+extern "C" void func_100D60(void* object);
+extern "C" void func_0026D7A0(void* object, s32 value);
+extern "C" void func_100CB0(void* object);
+extern "C" void func_00272990(void* object);
+extern "C" void func_0026F920(void* object, s32 value);
 extern "C" u32 func_4A1120(u32 value, const void* data);
 extern "C" const u8 D_3E27A8[];
 extern "C" const u8 D_3E22A8[];
 extern "C" const u8 D_3E26F8[];
+extern "C" const u8 D_3E2388[];
+extern "C" const u8 D_3E2398[];
+extern "C" const u8 D_3E23B0[];
+extern "C" const u8 D_15A5C0[];
+extern "C" const u8 D_15A5E0[];
+extern "C" const u8 D_15B3B0[];
+extern "C" const u8 D_15B3D4[];
+extern "C" const u8 D_15B250[];
+extern "C" const u8 D_15B274[];
+extern "C" const u8 D_169320[];
+extern "C" const u8 D_169344[];
+extern "C" const u8 D_169EF0[];
+extern "C" const u8 D_169F14[];
+extern "C" const u8 D_15B520[];
+extern "C" const u8 D_15B544[];
+extern "C" const u8 D_15A6F0[];
+extern "C" const u8 D_15A710[];
+extern "C" const u8 D_15A71C[];
+extern "C" const u8 D_15A734[];
+extern "C" const u8 D_15A8C0[];
+extern "C" const u8 D_15A8E4[];
+extern "C" const u8 D_15A920[];
+extern "C" const u8 D_15A940[];
+extern "C" const u8 D_15A964[];
+extern "C" const u8 D_15A9A0[];
+extern "C" const u8 D_15A3E0[];
+extern "C" const u8 D_15B060[];
+extern "C" const u8 D_15B084[];
+extern "C" const u8 D_15B380[];
+extern "C" const u8 D_15AC00[];
+extern "C" const u8 D_15ACC0[];
+extern "C" const u8 D_157610[];
+extern "C" const u8 D_157600[];
+extern "C" const u8 D_1575F0[];
 extern "C" const u8 D_15B140[];
+extern "C" const u8 D_15B410[];
 extern "C" u32 func_4A0B70(u32 value, const void* data);
 extern "C" const u8 D_3E28A8[];
 extern "C" float func_4E1F10(s32 value);
 extern "C" void func_003C37C0(void* object, s32 value);
 extern "C" void func_100D60(void* object);
+extern "C" void func_002826F0(void);
 
 struct FieldValue194
 {
@@ -60,14 +107,76 @@ s32 func_002B5CA0(void* object, const void* value, float* result0, float* result
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B5CE0);
+struct FieldVtableB5CE0
+{
+    const void* vtable;
+};
+
+void* func_002B5CE0(void* receiver, s16 value)
+{
+    FieldVtableB5CE0* object = (FieldVtableB5CE0*)receiver;
+
+    if (receiver != 0)
+    {
+        object->vtable = D_15A5C0;
+        if (receiver != 0)
+        {
+            object->vtable = D_157610;
+            func_4D7EB0(receiver);
+            if (receiver != 0)
+            {
+                object->vtable = D_157600;
+                if (receiver != 0)
+                {
+                    object->vtable = D_1575F0;
+                }
+            }
+        }
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
 s32 func_002B5D70(void* object)
 {
     return 14;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B5D80);
+struct FieldVtableB5D80
+{
+    const void* vtable;
+};
+
+void* func_002B5D80(void* receiver, s16 value)
+{
+    FieldVtableB5D80* object = (FieldVtableB5D80*)receiver;
+
+    if (receiver != 0)
+    {
+        object->vtable = D_15A5E0;
+        if (receiver != 0)
+        {
+            object->vtable = D_157610;
+            func_4D7EB0(receiver);
+            if (receiver != 0)
+            {
+                object->vtable = D_157600;
+                if (receiver != 0)
+                {
+                    object->vtable = D_1575F0;
+                }
+            }
+        }
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
 float func_002B5E10(void* receiver)
 {
@@ -97,7 +206,34 @@ void func_002B5F20(void* receiver)
     object->unk14 = object->unk338;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B5F30);
+struct FieldB5F30
+{
+    const void* vtable;
+    u8 unk04[0xCC];
+    const void* unkD0;
+    const void* unkD4;
+    u8 unkD8[0x1EC];
+    const void* unk2C4;
+};
+
+void* func_002B5F30(void* receiver, s16 value)
+{
+    FieldB5F30* object = (FieldB5F30*)receiver;
+
+    if (receiver != 0)
+    {
+        object->vtable = D_15A6F0;
+        object->unkD0 = D_15A710;
+        object->unkD4 = D_15A71C;
+        object->unk2C4 = D_15A734;
+        func_0026D7A0(receiver, 0);
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
 struct FieldByte60
 {
@@ -111,7 +247,46 @@ void func_002B5FC0(void* receiver)
     object->unk60 = 8;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B5FD0);
+struct FieldB5FD0
+{
+    const void* vtable;
+    u8 unk04[0x2A4];
+    const void* unk2A8;
+    u8 unk2AC[0x1C0];
+    const void* unk46C;
+    u8 unk470[0x68];
+    void* unk4D8;
+};
+
+void* func_002B5FD0(void* receiver, s16 value)
+{
+    FieldB5FD0* object = (FieldB5FD0*)receiver;
+
+    if (receiver != 0)
+    {
+        object->vtable = D_15A8C0;
+        object->unk2A8 = D_15A8E4;
+        object->unk46C = D_15A920;
+        if (receiver != 0)
+        {
+            object->vtable = D_15A940;
+            object->unk2A8 = D_15A964;
+            object->unk46C = D_15A9A0;
+            if (object->unk4D8 != 0)
+            {
+                func_100CB0(object->unk4D8);
+                object->unk4D8 = 0;
+            }
+            func_00272990(receiver);
+            func_0026F920(receiver, 0);
+        }
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
 void func_002B60A0(u8* receiver, void* value1, void* value2, void* value3)
 {
@@ -140,7 +315,33 @@ void func_002B60F0(void* receiver)
     object->unk493 = 1;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B6100);
+void* func_002B6100(void* receiver, s16 value)
+{
+    FieldVtableB5D80* object = (FieldVtableB5D80*)receiver;
+
+    if (receiver != 0)
+    {
+        object->vtable = D_15AC00;
+        if (receiver != 0)
+        {
+            object->vtable = D_157610;
+            func_4D7EB0(receiver);
+            if (receiver != 0)
+            {
+                object->vtable = D_157600;
+                if (receiver != 0)
+                {
+                    object->vtable = D_1575F0;
+                }
+            }
+        }
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B6190);
 
@@ -161,7 +362,33 @@ void func_002B6260(void* receiver)
     object->unk04 = 1;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B6270);
+void* func_002B6270(void* receiver, s16 value)
+{
+    FieldVtableB5D80* object = (FieldVtableB5D80*)receiver;
+
+    if (receiver != 0)
+    {
+        object->vtable = D_15ACC0;
+        if (receiver != 0)
+        {
+            object->vtable = D_157610;
+            func_4D7EB0(receiver);
+            if (receiver != 0)
+            {
+                object->vtable = D_157600;
+                if (receiver != 0)
+                {
+                    object->vtable = D_1575F0;
+                }
+            }
+        }
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
 struct FieldSignedHalfword18
 {
@@ -318,9 +545,81 @@ s32 func_002B6440(void* object)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B6450);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B6580);
+struct FieldListResult
+{
+    u32 unk00;
+    s32 count;
+    u64* values;
+};
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B6600);
+struct FieldListReceiver
+{
+    virtual void slot00() = 0;
+    virtual void slot04() = 0;
+    virtual void slot08() = 0;
+    virtual void slot0C() = 0;
+    virtual void slot10() = 0;
+    virtual void slot14() = 0;
+    virtual void slot18() = 0;
+    virtual void slot1C() = 0;
+    virtual void slot20() = 0;
+    virtual void slot24() = 0;
+    virtual FieldListResult* getList() = 0;
+};
+
+s32 func_002B6580(void* receiver)
+{
+    FieldListReceiver* object = (FieldListReceiver*)receiver;
+    FieldListResult* list = object->getList();
+
+    if (list != 0)
+    {
+        s32 count = list->count;
+        u64* values = list->values;
+        s32 i = 0;
+
+        while (i < count)
+        {
+            if (*values != 0)
+            {
+                return 1;
+            }
+            i++;
+            values++;
+        }
+    }
+    return 0;
+}
+
+struct FieldBitsetResult
+{
+    s32 count;
+    u32 unk04;
+    u64* words;
+};
+
+s32 func_002B6600(void* receiver)
+{
+    FieldListReceiver* object = (FieldListReceiver*)receiver;
+    FieldBitsetResult* list = (FieldBitsetResult*)object->getList();
+
+    if (list == 0)
+    {
+        return 0;
+    }
+    s32 count = list->count;
+    s32 set_count = 0;
+    u32 index = 0;
+    while ((s32)index < count)
+    {
+        if ((list->words[index >> 6] >> (index & 0x3F)) & 1)
+        {
+            set_count++;
+        }
+        index++;
+    }
+    return set_count;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B6690);
 
@@ -364,7 +663,35 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B68
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B68B0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B68C0);
+struct FieldVtableSubobject290
+{
+    const void* vtable;
+    u8 unk04[0x2A4];
+    const void* unk2A8;
+};
+
+void* func_002B68C0(void* receiver, s16 value)
+{
+    FieldVtableSubobject290* object = (FieldVtableSubobject290*)receiver;
+
+    if (receiver != 0)
+    {
+        object->vtable = D_15B060;
+        object->unk2A8 = D_15B084;
+        if (receiver != 0)
+        {
+            object->vtable = D_169320;
+            object->unk2A8 = D_169344;
+            func_003B0E50((u8*)receiver + 0x290, 0);
+            func_002B39A0(receiver, 0);
+        }
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B6960);
 
@@ -521,7 +848,38 @@ void* func_002BB780(void* receiver, s16 value)
     return receiver;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BB7E0);
+void* func_002BB7E0(void* receiver)
+{
+    u8* object = (u8*)receiver;
+
+    func_002826F0();
+    *(const void**)object = D_15B140;
+    *(u32*)(object + 0x2EA0) = 0;
+    *(s16*)(object + 0x2EA4) = -1;
+    *(s16*)(object + 0x2EA6) = -1;
+    *(s32*)(object + 0x2EA8) = -1;
+    *(u32*)(object + 0x2EAC) = 0;
+    *(s16*)(object + 0x2EB0) = -1;
+    *(s16*)(object + 0x2EB2) = -1;
+    *(s32*)(object + 0x2EB4) = -1;
+    *(u32*)(object + 0x2EB8) = 0;
+    *(s16*)(object + 0x2EBC) = -1;
+    *(s16*)(object + 0x2EBE) = -1;
+    *(s32*)(object + 0x2EC0) = -1;
+    *(u32*)(object + 0x2EC4) = 0;
+    *(s16*)(object + 0x2EC8) = -1;
+    *(s16*)(object + 0x2ECA) = -1;
+    *(s32*)(object + 0x2ECC) = -1;
+    *(u32*)(object + 0x2ED0) = 0;
+    *(u32*)(object + 0x2EF0) = 0;
+    *(s32*)(object + 0x2EF8) = -1;
+    *(u32*)(object + 0x2F00) = 0;
+    *(u32*)(object + 0x2F04) = 0;
+    *(s16*)(object + 0x2F28) = 0;
+    *(float*)(object + 0x66C) = 1.0f;
+    object[0x2F2A] = 0;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BB880);
 
@@ -531,13 +889,55 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BC1
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BC240);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BC470);
+void* func_002BC470(void* receiver, s16 value)
+{
+    FieldVtableSubobject290* object = (FieldVtableSubobject290*)receiver;
+
+    if (receiver != 0)
+    {
+        object->vtable = D_15B250;
+        object->unk2A8 = D_15B274;
+        if (receiver != 0)
+        {
+            object->vtable = D_169320;
+            object->unk2A8 = D_169344;
+            func_003B0E50((u8*)receiver + 0x290, 0);
+            func_002B39A0(receiver, 0);
+        }
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BC510);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BC610);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BCCB0);
+struct FieldWords50And5D0
+{
+    u8 unk00[0x50];
+    u32 unk50;
+    u8 unk54[0x57C];
+    u32 unk5D0;
+    u32 unk5D4;
+    u8 unk5D8[8];
+    u32 unk5E0;
+};
+
+void func_002BCCB0(void* receiver)
+{
+    FieldWords50And5D0* object = (FieldWords50And5D0*)receiver;
+    u32 resource;
+
+    func_002B3270(receiver);
+    resource = object->unk50;
+    object->unk5E0 = func_4A0B70(resource, D_3E2388);
+    object->unk5D0 = func_4A1120(resource, D_3E2398);
+    object->unk5D4 = func_4A1120(resource, D_3E23B0);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BCD20);
 
@@ -545,7 +945,28 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BD1
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BD230);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BDF20);
+void* func_002BDF20(void* receiver, s16 value)
+{
+    FieldVtableSubobject290* object = (FieldVtableSubobject290*)receiver;
+
+    if (receiver != 0)
+    {
+        object->vtable = D_169EF0;
+        object->unk2A8 = D_169F14;
+        if (receiver != 0)
+        {
+            object->vtable = D_169320;
+            object->unk2A8 = D_169344;
+            func_003B0E50((u8*)receiver + 0x290, 0);
+            func_002B39A0(receiver, 0);
+        }
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BDFC0);
 
@@ -563,15 +984,162 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BF0
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BFB30);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BFCD0);
+struct FieldInitializerBFCD0
+{
+    const void* vtable;
+    u32 unk04;
+    u32 unk08;
+    u8 unk0C[2];
+    u8 unk0E;
+    u8 unk0F;
+    u32 unk10;
+    s32 unk14;
+    s32 unk18;
+    u32 unk1C;
+    u32 unk20;
+    u8 unk24[0x10];
+    u32 unk34;
+    u8 unk38[4];
+    u32 unk3C;
+    u8 unk40[4];
+    u32 unk44;
+    u8 unk48[4];
+    u32 unk4C;
+    u8 unk50[4];
+    u32 unk54;
+    u8 unk58[4];
+    u32 unk5C;
+    u8 unk60[4];
+    u32 unk64;
+    u8 unk68[4];
+    u32 unk6C;
+    u32 unk70;
+    u32 unk74;
+    u32 unk78;
+    u8 unk7C[0x10];
+    u32 unk8C;
+    u8 unk90;
+    u8 unk91;
+};
+
+void* func_002BFCD0(void* receiver)
+{
+    FieldInitializerBFCD0* object = (FieldInitializerBFCD0*)receiver;
+
+    object->vtable = D_1575F0;
+    object->vtable = D_157600;
+    object->unk04 = 0;
+    object->unk08 = 0;
+    object->vtable = D_157610;
+    object->unk0E = 0;
+    object->unk0F = 0;
+    object->unk10 = 0;
+    object->vtable = D_15A3E0;
+    object->unk14 = -1;
+    object->unk18 = -1;
+    object->unk1C = 0;
+    object->unk20 = 0;
+    object->vtable = D_15B380;
+    object->unk34 = 0;
+    object->unk3C = 0;
+    object->unk44 = 0;
+    object->unk4C = 0;
+    object->unk54 = 0;
+    object->unk5C = 0;
+    object->unk64 = 0;
+    object->unk6C = 0;
+    object->unk70 = 0;
+    object->unk74 = 0;
+    object->unk78 = 0;
+    object->unk8C = 0;
+    object->unk90 = 0;
+    object->unk91 = 0;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BFD80);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002BFDD0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002C0A40);
+struct FieldC0A40
+{
+    u8 unk00[0x60];
+    unsigned __int128 unk60;
+    u8 unk70[0x414];
+    float unk484;
+    float unk488;
+};
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002C0AE0);
+union FieldC0A40State
+{
+    unsigned __int128 packed;
+    float values[4];
+};
+
+s32 func_002C0A40(void* receiver)
+{
+    FieldC0A40* object = (FieldC0A40*)receiver;
+    FieldC0A40State state;
+    float* value;
+    float increment;
+
+    if (func_003ADF00(receiver) == 0)
+    {
+        return 0;
+    }
+    state.packed = object->unk60;
+    value = &state.values[1];
+    object->unk484 = *value;
+    increment = func_4E70B0(object->unk488);
+    *value = increment * 10.0f + *value;
+    object->unk60 = state.packed;
+    func_003B09E0((u8*)receiver + 0x290, 1);
+    return 1;
+}
+
+struct FieldReleaseObject
+{
+    virtual void slot08() = 0;
+    virtual void slot0C() = 0;
+    virtual void release() = 0;
+};
+
+struct FieldC0AE0
+{
+    const void* vtable;
+    u8 unk04[0x2A4];
+    const void* unk2A8;
+    u8 unk2AC[0x1CC];
+    FieldReleaseObject* unk478;
+};
+
+void* func_002C0AE0(void* receiver, s16 value)
+{
+    FieldC0AE0* object = (FieldC0AE0*)receiver;
+
+    if (receiver != 0)
+    {
+        object->vtable = D_15B3B0;
+        object->unk2A8 = D_15B3D4;
+        if (object->unk478 != 0)
+        {
+            object->unk478->release();
+            object->unk478 = 0;
+        }
+        if (receiver != 0)
+        {
+            object->vtable = D_169320;
+            object->unk2A8 = D_169344;
+            func_003B0E50((u8*)receiver + 0x290, 0);
+            func_002B39A0(receiver, 0);
+        }
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002C0BA0);
 
@@ -606,9 +1174,70 @@ void func_002C2030(void* receiver)
     object->unk2F04 = func_4A0B70(object->unk50, D_3E26F8);
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002C2070);
+void* func_002C2070(void* receiver, s16 value)
+{
+    if (receiver != 0)
+    {
+        FieldVtable* object = (FieldVtable*)receiver;
+        object->vtable = D_15B410;
+        func_002825F0(receiver, 0);
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002C20D0);
+struct FieldInitializer2EA0
+{
+    const void* vtable;
+    u8 unk04[0x2E9C];
+    u32 unk2EA0;
+    s16 unk2EA4;
+    s16 unk2EA6;
+    s32 unk2EA8;
+    u32 unk2EAC;
+    s16 unk2EB0;
+    s16 unk2EB2;
+    s32 unk2EB4;
+    u32 unk2EB8;
+    s16 unk2EBC;
+    s16 unk2EBE;
+    s32 unk2EC0;
+    u32 unk2EC4;
+    s16 unk2EC8;
+    s16 unk2ECA;
+    s32 unk2ECC;
+    u8 unk2ED0[0x3C];
+    u8 unk2F0C;
+};
+
+void* func_002C20D0(void* receiver)
+{
+    FieldInitializer2EA0* object = (FieldInitializer2EA0*)receiver;
+
+    func_002826F0();
+    object->vtable = D_15B410;
+    object->unk2EA0 = 0;
+    object->unk2EA4 = -1;
+    object->unk2EA6 = -1;
+    object->unk2EA8 = -1;
+    object->unk2EAC = 0;
+    object->unk2EB0 = -1;
+    object->unk2EB2 = -1;
+    object->unk2EB4 = -1;
+    object->unk2EB8 = 0;
+    object->unk2EBC = -1;
+    object->unk2EBE = -1;
+    object->unk2EC0 = -1;
+    object->unk2EC4 = 0;
+    object->unk2EC8 = -1;
+    object->unk2ECA = -1;
+    object->unk2ECC = -1;
+    object->unk2F0C = 0;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002C2150);
 
@@ -620,7 +1249,33 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002C26
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002C2720);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002C3FE0);
+void* func_002C3FE0(void* receiver, s16 value)
+{
+    FieldVtableSubobject290* object = (FieldVtableSubobject290*)receiver;
+
+    if (receiver != 0)
+    {
+        object->vtable = D_15B520;
+        object->unk2A8 = D_15B544;
+        if (receiver != 0)
+        {
+            object->vtable = D_169EF0;
+            object->unk2A8 = D_169F14;
+            if (receiver != 0)
+            {
+                object->vtable = D_169320;
+                object->unk2A8 = D_169344;
+                func_003B0E50((u8*)receiver + 0x290, 0);
+                func_002B39A0(receiver, 0);
+            }
+        }
+        if (value > 0)
+        {
+            func_100D60(receiver);
+        }
+    }
+    return receiver;
+}
 
 struct FieldByte5BE
 {

@@ -8,6 +8,17 @@ extern "C" {
 #endif
 
 /**
+ * @brief Accept the allocator lock request without locking.
+ * @param lock Allocator lock context.
+ */
+void __malloc_lock_guess(void* lock);
+/**
+ * @brief Accept the allocator unlock request without unlocking.
+ * @param lock Allocator lock context.
+ */
+void __malloc_unlock_guess(void* lock);
+
+/**
  * @brief Copy bytes between memory ranges.
  * @param destination Destination range.
  * @param source Source range.
