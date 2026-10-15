@@ -8315,7 +8315,167 @@ u8 InventionPolicyWindow::func_slotb4()
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0035F2D0);
+/**
+ * @brief Handle the confirmed invention choice.
+ * @return Zero for a missing or inactive selector, three when a dialog or the grid takes over, otherwise one.
+ */
+u8 InventionPolicyWindow::func_slotb0()
+{
+    u16 selected;
+    s32 key;
+    u8* skill_ids;
+    ItemCreationAllocationRecord* records[99];
+    s32 label;
+
+    if (this->unkcc == 0)
+    {
+        return 0;
+    }
+
+    bool inactive = !this->unkcc->ItemCreationClass185050::unk35;
+
+    if (inactive)
+    {
+        return 0;
+    }
+
+    selected = this->unkcc->func_0023B3A0();
+    u8 group = this->unka8->unk1f0;
+    this->func_slot20(0);
+    this->unkcc->func_0023B310();
+
+    if (this->unkcc != 0)
+    {
+        for (label = 0; label < 2; label++)
+        {
+            LibObject178750* text = this->unkb4[label];
+
+            if (label == 0)
+            {
+                text->set_color(0x288080);
+                this->unkd0->func_0023B7E0(text);
+            }
+            else
+            {
+                text->set_color(0x808080);
+            }
+        }
+    }
+
+    switch (this->unkd4)
+    {
+    case 0:
+        if (selected == 0)
+        {
+            if (this->unka8 != 0)
+            {
+                this->selection_state->line_item_ids[group][0] = 0;
+                this->selection_state->line_item_ids[group][1] = 0;
+                this->selection_state->line_plan_modes[(u8)group] = 1;
+                item_creation_rebuild_line_target(this->selection_state, group);
+                FieldObject23CEA0* marker = this->unka8->unkb4;
+                marker->FieldClass151C50::unk30 = 128.0f;
+                marker->unkae = 1;
+                D_001B643C->unk10->unk14->func_00263C70(this->unka8);
+            }
+        }
+        else if (this->unkdc != 0)
+        {
+            AssignedInventorGrid* parent = this->unka8;
+
+            if (parent->unkac != 0)
+            {
+                parent->unkac->unkad = 0;
+            }
+
+            if (parent->unkb0 != 0)
+            {
+                parent->unkb0->unkad = 0;
+            }
+
+            ItemCreationSelectedDisplayState* state = this->selection_state;
+            skill_ids = state->line_skill_ids;
+
+            if (skill_ids[this->unkac] == 0)
+            {
+                if (this->unka8->unkb4 != 0)
+                {
+                    this->unka8->unkb4->unkad = 1;
+                }
+
+                D_001B643C->unk10->unk14->func_00263C70(this->unka8);
+                return 3;
+            }
+
+            s32 slot = state->selected_line_index;
+            u8 category = skill_ids[(u16)slot];
+            key = 0;
+
+            switch (category)
+            {
+            case 1:
+                key = 20;
+                break;
+            case 2:
+                key = 23;
+                break;
+            case 3:
+                key = 36;
+                break;
+            case 4:
+                key = 37;
+                break;
+            case 5:
+                key = 33;
+                break;
+            case 6:
+                key = 30;
+                break;
+            case 7:
+                key = 31;
+                break;
+            }
+
+            s32 available = lib_collect_unequipped_allocations(D_001B64F8, records, (u16)key);
+            s32 index;
+            ItemCreationSelectedDisplayState* current = this->selection_state;
+            u8 line_count = current->line_count;
+
+            for (index = 0; index < line_count; index++)
+            {
+                if (index != slot && category == current->line_skill_ids[(u16)index] && current->line_plan_modes[(u16)index] >= 2)
+                {
+                    available--;
+                }
+            }
+
+            if (available <= 0)
+            {
+                MissingMaterialsDialog* popup = new (0) MissingMaterialsDialog;
+                popup->func_slotf4(this->selection_state->func_00263CC0());
+                popup->func_slot40(this->unka8);
+                this->selection_state->add_child(popup);
+                this->selection_state->func_00263C70(popup);
+                return 3;
+            }
+
+            current->saved_first_plan_item_id = current->line_item_ids[(u8)slot][0];
+            current->saved_second_plan_item_id = current->line_item_ids[(u8)slot][1];
+            current->line_item_ids[(u8)slot][1] = 0;
+            current->line_item_ids[(u8)slot][0] = 0;
+            func_0035D7C0(this->unkdc, 2);
+            D_001B643C->unk10->unk14->func_00263C70(this->unkdc);
+            this->unkdc->func_slot20(1);
+            this->unke0->func_slot20(1);
+        }
+
+        break;
+    case 1:
+        break;
+    }
+
+    return 1;
+}
 
 /** @brief Move the selector and refresh the choice colors and target marker. */
 void InventionPolicyWindow::func_slot6c()
