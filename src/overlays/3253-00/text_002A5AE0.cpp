@@ -1,10 +1,19 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_002A5AE0.h"
+#include "overlays/3253-00/text_002B5B00.h"
+
+extern "C" void func_002B3F20(void* object);
 
 struct BattleFloat714
 {
     u8 pad[0x714];
     float value;
+};
+
+struct FieldPointer04
+{
+    u32 unk00;
+    void* unk04;
 };
 
 struct BattleFloat704
@@ -54,7 +63,9 @@ struct BattleChild20B
     float unk90;
     u8 pad94[0x204 - 0x94];
     u8 unk204;
-    u8 pad205[3];
+    u8 pad205;
+    u8 unk206;
+    u8 pad207;
     u8 unk208;
     u8 unk209;
     u8 pad20A;
@@ -265,7 +276,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B33
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B3490);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B3600);
+extern "C" void func_002B3600(void* object)
+{
+    func_002B3F20((u8*)object + 0x1F0);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B3620);
 
@@ -291,7 +305,15 @@ void func_002B3B60(BattleParent23* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B3B90);
+s32 func_002B3B90(BattleParent23* object)
+{
+    BattleChild20B* child = object->children[object->selector];
+    if (child == 0)
+    {
+        return 0;
+    }
+    return child->unk204;
+}
 
 void func_002B3BC0(BattleParent23* object, u8 value)
 {
@@ -326,7 +348,15 @@ void func_002B3CD0(BattleParent23* object, u8 value)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B3D00);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B3D40);
+s32 func_002B3D40(BattleParent23* object)
+{
+    BattleChild20B* child = object->children[object->selector];
+    if (child == 0)
+    {
+        return 0;
+    }
+    return child->unk206;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B3D70);
 
@@ -404,9 +434,17 @@ s32 func_002B59D0(void* object)
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B59E0);
+void func_002B59E0(void* receiver)
+{
+    FieldPointer04* object = (FieldPointer04*)receiver;
+    func_002B6600(object->unk04);
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B5A00);
+void func_002B5A00(void* receiver)
+{
+    FieldPointer04* object = (FieldPointer04*)receiver;
+    func_002B6580(object->unk04);
+}
 
 void func_002B5A20(void* object)
 {

@@ -12,6 +12,23 @@ struct BattleVectorSlot50;
 extern "C" {
 #endif
 
+/** Validate the checksum for the record fields beginning at 0x4C. */
+s32 func_001EAEF0(const void* object);
+
+/** Validate the checksum for the record fields beginning at 0x58. */
+s32 func_001EEDF0(const void* object);
+/** Validate the checksum for the record fields beginning at 0x40. */
+s32 func_001EEEA0(const void* object);
+/** Validate the checksum for the record fields beginning at 0x34. */
+s32 func_001EEEE0(const void* object);
+
+/** Validate the checksum for the record fields beginning at 0x70. */
+s32 func_001EEFA0(const void* object);
+/** Validate the checksum for the record fields beginning at 0x7C. */
+s32 func_001EF120(const void* object);
+/** Validate the checksum for the record fields beginning at 0x76. */
+s32 func_001EF190(const void* object);
+
 /**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.

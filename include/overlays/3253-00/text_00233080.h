@@ -7,6 +7,9 @@
 extern "C" {
 #endif
 
+/** Initialize the receiver from the shared base, then select state 4. */
+void* func_00236090(void* object);
+
 
 /** Return the unsigned byte at receiver offset 0xCE2. */
 u8 func_0023B250(const void* object);

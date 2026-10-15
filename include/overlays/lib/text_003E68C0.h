@@ -4,6 +4,12 @@
 #include "types.h"
 
 #ifdef __cplusplus
+extern "C" void func_003EF030(u8* object);
+#endif
+
+typedef struct N50Owner94_003E68C0 N50Owner94_003E68C0;
+
+#ifdef __cplusplus
 class LibClass178A90;
 class LibClass171EC0;
 class LibClass171EF0;
@@ -42,6 +48,10 @@ extern "C" void* func_003F3EF0(void* object);
 extern "C" void func_003F3F00(void* object, u32 value);
 /** @brief Copy the byte at offset 0xB4 to offset 0x60. @param object Receiver to update. */
 extern "C" void func_003EEDE0(void* object);
+/** Build and return a pointer to the four-word stack value. */
+extern "C" void* func_003EEDF0(void);
+/** Build and return a pointer to the four-word stack value. */
+extern "C" void* func_003F4570(void);
 /** @brief Clear the receiver's first two words and return the receiver. @param object Receiver. @return The receiver. */
 extern "C" void* func_003F42A0(void* object);
 
@@ -315,5 +325,11 @@ public:
 extern "C" void func_003F2550(LibClass178A90* object);
 #endif
 
+
+#ifdef __cplusplus
+extern "C" s32 func_003EF090(void* object);
+extern "C" s32 func_003F2570(void* object);
+extern "C" void func_003EFAF0(N50Owner94_003E68C0* object);
+#endif
 
 #endif

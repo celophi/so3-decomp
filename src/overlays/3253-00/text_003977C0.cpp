@@ -1,5 +1,17 @@
 #include "include_asm.h"
-#include "types.h"
+#include "overlays/3253-00/text_003977C0.h"
+
+extern "C" u8 D_15A410[];
+extern "C" u8 D_1688D0[];
+
+struct FieldArgumentStore12
+{
+    u32 unk00;
+    u32 unk04;
+    u8 unk08;
+    u8 pad09[3];
+    void* unk0c;
+};
 
 /** Partial receiver containing a word at offset 0x14. */
 struct FieldNonzeroWord14
@@ -126,7 +138,16 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039EB
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039EBE0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039ECA0);
+void* func_0039ECA0(void* arg0)
+{
+    FieldArgumentStore12* object = (FieldArgumentStore12*)arg0;
+    object->unk0c = D_15A410;
+    object->unk00 = 0;
+    object->unk04 = 0;
+    object->unk08 = 0;
+    object->unk0c = D_1688D0;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_0039ECD0);
 
@@ -210,7 +231,19 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_003A54
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_003A5510);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_003A5650);
+u32 func_003A5650(const u8* object)
+{
+    u32 flags = 0;
+    if (object[0x3C] != 0)
+    {
+        flags |= 1;
+    }
+    if (object[0x3D] != 0)
+    {
+        flags |= 4;
+    }
+    return flags;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_003A5680);
 

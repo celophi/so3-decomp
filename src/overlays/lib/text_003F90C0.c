@@ -7,6 +7,60 @@ typedef struct ByteSetterOwnertext_003F90C0
     u8 unke6;
 } ByteSetterOwnertext_003F90C0;
 
+typedef struct LibChecksumState
+{
+    s16 unk00;
+    s16 unk02;
+    s16 unk04;
+    s16 unk06;
+    s16 unk08;
+    s16 unk0A;
+    u8 pad0C[0x64];
+    s16 unk70;
+    s16 unk72;
+    s16 unk74;
+    s16 unk76;
+    s16 unk78;
+    s16 unk7A;
+    s16 unk7C;
+    s16 unk7E;
+    s16 unk80;
+    u8 pad82[0x22];
+    u32 checksumA4;
+    u32 checksumA8;
+    u32 checksumAC;
+    u32 checksumB0;
+    u8 padB4[0x34];
+    u32 checksumE8;
+    u32 checksumEC;
+    u8 padF0[0x1C];
+    u32 checksum10C;
+} LibChecksumState;
+
+typedef struct LibCheckedWordState
+{
+    u8 pad00[0x34];
+    u32 unk34;
+    u32 unk38;
+    u32 unk3c;
+    u32 unk40;
+    u32 unk44;
+    u32 unk48;
+    u32 unk4c;
+    u32 unk50;
+    u32 unk54;
+    u32 unk58;
+    u32 unk5c;
+    u32 unk60;
+    u8 pad64[0x30];
+    u32 unk94;
+    u32 unk98;
+    u32 unk9c;
+    u32 unka0;
+    u8 pada4[4];
+    u32 unka8;
+} LibCheckedWordState;
+
 
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003F90C0);
@@ -31,49 +85,121 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003F9890);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FEEF0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FEFA0);
+/** Validate the checksum for the record fields beginning at zero. */
+s32 func_003FEFA0(const void* object)
+{
+    const LibChecksumState* state = (const LibChecksumState*)object;
+    if (state->checksumE8 != (state->checksum10C ^ (state->unk04 ^ (state->unk00 + state->unk02))))
+    {
+        return 0;
+    }
+    return state->unk04 ^ 0x7E93;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FEFE0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF010);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF0C0);
+/** Validate the checksum for the record fields beginning at six. */
+s32 func_003FF0C0(const void* object)
+{
+    const LibChecksumState* state = (const LibChecksumState*)object;
+    if (state->checksumEC != (state->checksum10C ^ (state->unk0A ^ (state->unk06 + state->unk08))))
+    {
+        return 0;
+    }
+    return state->unk0A ^ 0x7E93;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF100);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF130);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF210);
+/** Validate the checksum for the record fields beginning at 0x76. */
+s32 func_003FF210(const void* object)
+{
+    const LibChecksumState* state = (const LibChecksumState*)object;
+    if (state->checksumB0 != (state->checksumA8 ^ (state->unk7A ^ (state->unk76 + state->unk78))))
+    {
+        return 0;
+    }
+    return state->unk7A ^ 0x7E93;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF250);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF2C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF3A0);
+/** Validate the checksum for the record fields beginning at 0x70. */
+s32 func_003FF3A0(const void* object)
+{
+    const LibChecksumState* state = (const LibChecksumState*)object;
+    if (state->checksumA4 != (state->checksumA8 ^ (state->unk74 ^ (state->unk70 + state->unk72))))
+    {
+        return 0;
+    }
+    return state->unk74 ^ 0x7E93;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF3E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF450);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF500);
+/** Validate the checksum for the record fields beginning at 0x7C. */
+s32 func_003FF500(const void* object)
+{
+    const LibChecksumState* state = (const LibChecksumState*)object;
+    if (state->checksumAC != (state->checksumA8 ^ (state->unk80 ^ (state->unk7C + state->unk7E))))
+    {
+        return 0;
+    }
+    return state->unk80 ^ 0x7E93;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF540);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF570);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF740);
+s32 func_003FF740(const void* object)
+{
+    const LibCheckedWordState* state = (const LibCheckedWordState*)object;
+    u32 check = state->unka8 ^ (state->unk54 ^ (state->unk4c + state->unk50));
+    if (state->unk9c != check)
+    {
+        return 0;
+    }
+    return state->unk50 ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF780);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF7F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF8F0);
+s32 func_003FF8F0(const void* object)
+{
+    const LibCheckedWordState* state = (const LibCheckedWordState*)object;
+    u32 check = state->unka8 ^ (state->unk60 ^ (state->unk58 + state->unk5c));
+    if (state->unka0 != check)
+    {
+        return 0;
+    }
+    return state->unk60 ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF930);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FF9A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FFAC0);
+s32 func_003FFAC0(const void* object)
+{
+    const LibCheckedWordState* state = (const LibCheckedWordState*)object;
+    u32 check = state->unka8 ^ (state->unk48 ^ (state->unk40 + state->unk44));
+    if (state->unk98 != check)
+    {
+        return 0;
+    }
+    return state->unk48 ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FFB00);
 
@@ -85,7 +211,16 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FFCE0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FFD50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FFE50);
+s32 func_003FFE50(const void* object)
+{
+    const LibCheckedWordState* state = (const LibCheckedWordState*)object;
+    u32 check = state->unka8 ^ (state->unk3c ^ (state->unk34 + state->unk38));
+    if (state->unk94 != check)
+    {
+        return 0;
+    }
+    return state->unk3c ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FFE90);
 
@@ -126,11 +261,26 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00404BA0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00404CA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00404CC0);
+s32 func_00404CC0(void* object, s32 value)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x3A] = value;
+    return value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00404CD0);
+s32 func_00404CD0(void* object, s32 value)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x39] = value;
+    return value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00404CE0);
+s32 func_00404CE0(void* object, s32 value)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x38] = value;
+    return value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00404CF0);
 
@@ -210,9 +360,19 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_004075A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00407640);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_004076B0);
+s16 func_004076B0(void* object, s16 value)
+{
+    s16* fields = (s16*)object;
+    fields[1] = value;
+    return fields[1];
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_004076C0);
+s16 func_004076C0(void* object, s16 value)
+{
+    s16* fields = (s16*)object;
+    fields[0] = value;
+    return fields[0];
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_004076D0);
 

@@ -7,6 +7,11 @@
 extern "C" {
 #endif
 
+/** @brief Follow count list links from the object's first node. @return The node reached, or null if traversal ends early. */
+void* func_0026EB20(void* object, s32 count);
+/** @brief Follow count list links from the object's first node. @return The node reached, or null if traversal ends early. */
+void* func_0026EBF0(void* object, s32 count);
+
 /**
  * @brief Step a list iterator and return its next object.
  * @param list List and iterator state.

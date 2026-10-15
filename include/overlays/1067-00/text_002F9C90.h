@@ -268,6 +268,9 @@ u8 func_002FC730(s16 identifier);
  */
 u8 func_002FC880(s16 identifier);
 
+/** Submit the object's embedded payload at offset 0x90 when the object is present. */
+void func_002FED50(void* object);
+
 #ifdef __cplusplus
 }
 #endif

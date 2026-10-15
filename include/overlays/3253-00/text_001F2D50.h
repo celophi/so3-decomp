@@ -5,6 +5,7 @@
 
 #ifdef __cplusplus
 extern "C" {
+void func_002016C0(u8* object);
 #endif
 
 /**

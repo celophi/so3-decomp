@@ -1,6 +1,8 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_00330240.h"
 
+extern void func_003B41F0(void* object);
+
 typedef struct WordSetterOwnertext_00330240
 {
     u8 unk00[0x2FDC];
@@ -95,7 +97,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00330240", func_003367
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00330240", func_00336800);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00330240", func_003368B0);
+void func_003368B0(void* object)
+{
+    func_003B41F0((u8*)object + 0x290);
+    ((u8*)object)[0x39D] = 0;
+    ((u8*)object)[0x4FC] = 1;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00330240", func_003368F0);
 

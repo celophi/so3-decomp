@@ -9,6 +9,8 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/vector.h"
 
+typedef struct N54Owner84_004BD360 N54Owner84_004BD360;
+
 /** Opaque Lib text receiver using the main table D_178750. */
 typedef struct LibObject178750 LibObject178750;
 
@@ -32,6 +34,7 @@ typedef struct LibObject178660 LibObject178660;
 
 #ifdef __cplusplus
 extern "C" {
+void* func_004C9930(void* receiver);
 #endif
 /** @brief Store a float in an indexed array slot. @param values Float array. @param index Slot index. @param value Value to store. */
 void func_004BD3C0(float* values, s32 index, float value);
@@ -1016,7 +1019,10 @@ void func_004C1660(void* object, u8 mode);
 void func_004C3D00(void* object, u8 mode);
 
 
-/** Find a key in the receiver's fixed-size entry array. */
+/** Clear the vector at offset 0xB0 and update the associated state. */
+void func_004C2B30(void* object);
+/** Clear the vector at offset 0x90 and update the associated state. */
+void func_004C2B70(void* object);
 s32 func_004C2620(void* object, float key);
 
 /** Return the key span between the first and last entries. */
@@ -1025,6 +1031,9 @@ float func_004C3F10(void* object);
 
 /** Find a key in the receiver's fixed-size entry array. */
 s32 func_004C3F60(void* object, float key);
+
+/** Set the active byte and notify the embedded receiver. */
+void func_004C61F0(N54Owner84_004BD360* object);
 
 
 }

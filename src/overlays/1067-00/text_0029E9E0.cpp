@@ -2107,9 +2107,25 @@ void func_002AD920(FieldClass158D00* object, const FieldClass158D00* other)
     object->resize(object->unk0C, object->unk10);
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD960);
+void func_002AD960(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8)
+{
+    u8* state = (u8*)cell;
+    state[0x130] = 0;
+    state[0x132] = 0;
+    state[0x131] = 0;
+    state[0x133] = 0;
+    func_002AD9E0(object, cell, row, index, extra4, extra5, extra6, extra7, extra8);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD990);
+void func_002AD990(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, const FieldVector4* source)
+{
+    u8* state = (u8*)cell;
+    state[0x130] = 0;
+    state[0x132] = 0;
+    state[0x131] = 0;
+    state[0x133] = 0;
+    func_002ADDF0(object, cell, row, index, source);
+}
 
 void func_002AD9C0(void* object)
 {

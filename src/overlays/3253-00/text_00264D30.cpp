@@ -1,6 +1,25 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_00264D30.h"
 
+extern "C" u8 D_15A5B0[];
+extern "C" void func_00269FB0(void* object);
+extern "C" void func_4D9140(void* object);
+extern "C" u8 D_157590[];
+
+struct N59Receiver78_00264D30
+{
+    u8 pad00[0x10];
+    void* vtable;
+    u8 pad14[0x64];
+    u32 unk78;
+};
+
+struct WrapperPointer1FC
+{
+    u8 pad00[0x1FC];
+    void* field1FC;
+};
+
 struct BattleValueField67680
 {
     u8 pad00[0x0C];
@@ -25,6 +44,16 @@ struct BattleOptionalField67970
 {
     u8 pad00[0x618];
     u32 present;
+};
+
+struct BattleByteFlagState210
+{
+    u8 unk00[0x210];
+    u8 unk210;
+    u8 unk211[0x38C];
+    u8 unk59d_0_2 : 3;
+    u8 unk59d_3 : 1;
+    u8 unk59d_4_7 : 4;
 };
 
 extern "C" void func_0026C550(void* object);
@@ -95,7 +124,12 @@ s32 func_002678A0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002678B0);
+void func_002678B0(void* object, u8 value)
+{
+    BattleByteFlagState210* receiver = (BattleByteFlagState210*)object;
+    receiver->unk210 = value;
+    receiver->unk59d_3 = 1;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002678D0);
 
@@ -488,7 +522,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00269E
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00269FB0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026A0A0);
+void* func_0026A0A0(void* object)
+{
+    ((WrapperPointer1FC*)object)->field1FC = D_15A5B0;
+    func_00269FB0(object);
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026A0E0);
 
@@ -542,7 +581,14 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026B9
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026B950);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026B990);
+void* func_0026B990(void* receiver)
+{
+    N59Receiver78_00264D30* object = (N59Receiver78_00264D30*)receiver;
+    func_4D9140(receiver);
+    object->vtable = D_157590;
+    object->unk78 = 0;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_0026B9D0);
 
@@ -626,7 +672,15 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_002700
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00270530);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00264D30", func_00270580);
+void func_00270580(void* receiver)
+{
+    u8* object = (u8*)receiver;
+    *(u8*)(object + 0x64) = 1;
+    *(volatile u32*)0x10009020 = 0;
+    *(volatile u32*)0x10009030 = *(u32*)(object + 0x110);
+    *(volatile u32*)0x1000E010 = 2;
+    *(volatile u32*)0x10009000 = 0x105;
+}
 
 void func_002705C0(void* object)
 {

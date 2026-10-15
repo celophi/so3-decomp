@@ -1,3 +1,6 @@
 #include "include_asm.h"
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/func_00101250", func_00101250);
+void* func_00101250(void* object)
+{
+    return (char*)object + 0x15A24;
+}

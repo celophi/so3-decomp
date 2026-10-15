@@ -1,6 +1,8 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_001E2B40.h"
 
+extern "C" void func_494D80(void* object);
+extern "C" u8 D_179B40[];
 extern "C" void func_001E5080(void* object, s32 value);
 extern "C" void func_001F1380(void* object, s32 value);
 extern "C" s32 func_001FD640(void);
@@ -1749,7 +1751,14 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EF7
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EF8E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EF980);
+extern "C" void* func_001EF980(void* object)
+{
+    func_494D80(object);
+    *(void**)object = D_179B40;
+    *(u32*)((u8*)object + 0x44) = 0;
+    *((u8*)object + 0x3C) = 4;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EF9C0);
 

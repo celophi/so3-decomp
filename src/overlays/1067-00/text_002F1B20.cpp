@@ -114,7 +114,23 @@ extern "C" void func_002F31D0(FieldCountedList* list)
     list->unk04 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F3250);
+extern "C" void* func_002F3250(void* object, s32 count)
+{
+    void* node;
+    s32 traversed;
+    node = *(void**)(*(u8**)object + 4);
+    traversed = 0;
+    while (traversed < count)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+        node = *(void**)((u8*)node + 4);
+        traversed += 1;
+    }
+    return node;
+}
 
 /**
  * @brief Remove the first value from the list.

@@ -1,8 +1,14 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_0021D990.h"
 
+extern "C" void func_4C4960(void* object);
+extern "C" u8 D_172870[];
+extern "C" u8 D_172600[];
+extern "C" u8 D_172410[];
+extern "C" void func_464B10(void* object);
 extern "C" {
 void func_4D00B0(void* object);
+void func_461830(void* embedded, void* adjusted);
 typedef struct ByteSetterOwnertext_0021D990
 {
     u8 unk00[0x3D];
@@ -141,7 +147,13 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_002262
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_002262D0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_002264B0);
+void* func_002264B0(void* receiver)
+{
+    func_464B10(receiver);
+    *(void**)receiver = D_172410;
+    ((u8*)receiver)[0x38] = 15;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_002264F0);
 
@@ -151,7 +163,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_002265
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00226610);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00226670);
+extern "C" void* func_00226670(void* object)
+{
+    func_4C4960(object);
+    *(void**)object = D_172870;
+    *(u32*)((u8*)object + 0x40) = 0;
+    *((u8*)object + 0x38) = 6;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_002266B0);
 
@@ -165,7 +184,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_002268
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_002268B0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00226900);
+extern "C" void* func_00226900(void* object)
+{
+    func_4C4960(object);
+    *(void**)object = D_172600;
+    *(u32*)((u8*)object + 0x40) = 0;
+    *((u8*)object + 0x38) = 5;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00226940);
 
@@ -232,7 +258,18 @@ void func_00228A90(void* object)
     func_4D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00228AB0);
+struct N54Owner64_0021D990 { u8 pad00[0x64]; u8 active; };
+
+void func_00228AB0(N54Owner64_0021D990* object)
+{
+    object->active = 1;
+    void* adjusted = object;
+    if (object != 0)
+    {
+        adjusted = (u8*)adjusted + 0x90;
+    }
+    func_461830((u8*)object + 0xB0, adjusted);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0021D990", func_00228AF0);
 

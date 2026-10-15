@@ -1734,9 +1734,17 @@ void func_00353BD0(TransformRecord* record, const Vector4* value)
     record->unk30 = *value;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353BF0);
+void func_00353BF0(TransformRecord* record, const Vector4* input)
+{
+    record->unk50 = 1;
+    func_4CE4C0(&record->unk30, input);
+}
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353C20);
+void func_00353C20(TransformRecord* record, const Vector4* input)
+{
+    record->unk50 = 1;
+    func_4CE4C0(&record->unk30, input);
+}
 
 void func_00353C50(TransformRecord* record, float x, float y, float z)
 {
@@ -1774,7 +1782,15 @@ s32 func_00353CF0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353D00);
+s32 func_00353D00(float value)
+{
+    s32 result = 1;
+    if (!(value < 0.0f))
+    {
+        result = 0;
+    }
+    return result;
+}
 
 u8* func_00353D20(void)
 {

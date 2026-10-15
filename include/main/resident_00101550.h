@@ -128,6 +128,33 @@ void func_00102A90(void* object);
 void func_00104770(void* object);
 void func_00104780(void* object);
 
+/**
+ * @brief Pass the pointer at offset 0x90 to the resident helper.
+ * @param receiver Object containing the pointer.
+ */
+void func_00107D90(void* receiver);
+
+/**
+ * @brief Pass the pointer at offset 0x90 to the alternate resident helper.
+ * @param receiver Object containing the pointer.
+ */
+void func_00107DB0(void* receiver);
+
+/**
+ * @brief Pass the pointer at offset 0x100 to the resident helper.
+ * @param receiver Object containing the pointer.
+ */
+void func_00109F20(void* receiver);
+
+/** @brief Run the resident helper on the supplied object. @param object Input object. */
+void func_0010A080(void* object);
+
+/** @brief Run the alternate resident helper on the supplied object. @param object Input object. */
+void func_0010A0B0(void* object);
+
+/** @brief Process the supplied resident object. @param object Input object. */
+void func_00109510(void* object);
+
 #ifdef __cplusplus
 }
 #endif

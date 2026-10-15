@@ -423,6 +423,10 @@ Record00353A50* func_00353A50(Record00353A50* record, s16 flag);
  * @param z Third component.
  */
 void func_00353C50(TransformRecord* record, float x, float y, float z);
+/** Mark the transform as changed and copy a four-float value into it. */
+void func_00353BF0(TransformRecord* record, const Vector4* input);
+/** Mark the transform as changed and copy a four-float value into it. */
+void func_00353C20(TransformRecord* record, const Vector4* input);
 
 /**
  * @brief Copy a four-component value to the field at 0x20.

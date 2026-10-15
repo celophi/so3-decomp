@@ -1,11 +1,67 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_002EF9F0.h"
 
+extern void func_003C86F0(void* object);
+extern void func_003B3DF0(void* object);
+extern void func_003C8A10(void);
+extern void func_003C90D0(void* object);
+extern void func_003C9360(void);
+extern void func_002AE3F0(void* object);
+extern u32 func_473390(u32 value, const void* data);
+extern u32 func_473940(u32 value, const void* data);
+extern const u8 D_3E1008[];
+extern const u8 D_3E1018[];
+extern const u8 D_3E1048[];
+
+typedef struct N57Owner600text_002EF9F0
+{
+    u8 unk00[0x50];
+    u32 unk50;
+    u8 unk54[0x5AC];
+    u32 unk600;
+} N57Owner600text_002EF9F0;
+
+typedef struct N57Owner460text_002EF9F0
+{
+    u8 unk00[0x50];
+    u32 unk50;
+    u8 unk54[0x40C];
+    u32 unk460;
+} N57Owner460text_002EF9F0;
+
+
 typedef struct ConstantByteSetterOwnertext_002EF9F0
 {
     u8 unk00[0x39D];
     u8 unk39d;
 } ConstantByteSetterOwnertext_002EF9F0;
+
+typedef struct ConditionalByteUpdate2FE0text_002EF9F0
+{
+    u8 unk00[0xB88];
+    u32 comparison;
+    u8 unkB8C[0x2454];
+    u8 matchFlag;
+    u8 updateFlag;
+} ConditionalByteUpdate2FE0text_002EF9F0;
+
+typedef struct ConditionalByteUpdate3010text_002EF9F0
+{
+    u8 unk00[0xB88];
+    u32 comparison;
+    u8 unkB8C[0x2484];
+    u8 matchFlag;
+    u8 updateFlag;
+} ConditionalByteUpdate3010text_002EF9F0;
+
+typedef struct ConditionalByteUpdate3020text_002EF9F0
+{
+    u8 unk00[0xB88];
+    u32 comparison;
+    u8 unkB8C[0x2494];
+    u8 matchFlag;
+    u8 updateFlag;
+} ConditionalByteUpdate3020text_002EF9F0;
 
 
 
@@ -15,7 +71,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002EFB
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002EFD20);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002EFE00);
+void func_002EFE00(void* receiver)
+{
+    N57Owner600text_002EF9F0* object = (N57Owner600text_002EF9F0*)receiver;
+    func_002AE3F0(receiver);
+    object->unk600 = func_473390(object->unk50, D_3E1008);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002EFE40);
 
@@ -25,7 +86,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F00
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F0510);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F09B0);
+void func_002F09B0(void* receiver)
+{
+    N57Owner600text_002EF9F0* object = (N57Owner600text_002EF9F0*)receiver;
+    func_002AE3F0(receiver);
+    object->unk600 = func_473940(object->unk50, D_3E1018);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F09F0);
 
@@ -37,7 +103,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F13
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F1420);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F18C0);
+void func_002F18C0(void* receiver)
+{
+    N57Owner460text_002EF9F0* object = (N57Owner460text_002EF9F0*)receiver;
+    func_002AE3F0(receiver);
+    object->unk460 = func_473390(object->unk50, D_3E1048);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F1900);
 
@@ -112,7 +183,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F43
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F4470);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F44B0);
+/** Run the paired update helpers in order. */
+void func_002F44B0(void* object)
+{
+    func_003C8A10();
+    func_003C86F0(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F44E0);
 
@@ -122,7 +198,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F45
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F4640);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F4680);
+/** Run the paired update helpers in order. */
+void func_002F4680(void* object)
+{
+    func_003C9360();
+    func_003C90D0(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F46B0);
 
@@ -178,7 +259,11 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F52
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F5390);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F5480);
+void func_002F5480(void* object)
+{
+    func_003B3DF0((u8*)object + 0x290);
+    func_003C86F0(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F54B0);
 
@@ -452,7 +537,15 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F6D
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F6DB0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F6F20);
+void func_002F6F20(void* object, u32 value)
+{
+    ConditionalByteUpdate2FE0text_002EF9F0* receiver = object;
+    receiver->updateFlag = 1;
+    if (value == receiver->comparison)
+    {
+        receiver->matchFlag = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002F6F40);
 
@@ -534,7 +627,15 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002FD1
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002FD180);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002FD1D0);
+void func_002FD1D0(void* object, u32 value)
+{
+    ConditionalByteUpdate3010text_002EF9F0* receiver = object;
+    receiver->updateFlag = 1;
+    if (value == receiver->comparison)
+    {
+        receiver->matchFlag = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002FD1F0);
 
@@ -562,7 +663,15 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002FF1
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002FF2C0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002FF350);
+void func_002FF350(void* object, u32 value)
+{
+    ConditionalByteUpdate3020text_002EF9F0* receiver = object;
+    receiver->updateFlag = 1;
+    if (value == receiver->comparison)
+    {
+        receiver->matchFlag = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002EF9F0", func_002FF370);
 

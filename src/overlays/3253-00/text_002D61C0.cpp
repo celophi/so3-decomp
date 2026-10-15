@@ -1,7 +1,16 @@
 #include "include_asm.h"
-#include "types.h"
+#include "overlays/3253-00/text_002D61C0.h"
+
+extern "C" void func_003AF250(void* object);
+
+extern "C" void func_00280800(void);
+extern "C" void func_00280840(void);
+extern "C" void func_002E4240(void* object);
+
 
 extern "C" u32 func_4A0B70(u32 value, const void* data);
+extern "C" s32 func_003ADF00(void* object, s32 arg2, s32 arg3);
+extern "C" void func_00298370(void* object);
 extern "C" const u8 D_3E3390[];
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002D61C0);
@@ -112,7 +121,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002DDB
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002DDC80);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002DE7D0);
+extern "C" void func_002DE7D0(void* object)
+{
+    u8* receiver = static_cast<u8*>(object);
+    func_003AF250(receiver + 0x290);
+    receiver[0x391] = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002DE800);
 
@@ -142,7 +156,10 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E1F
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E1FB0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E2170);
+extern "C" s32 func_002E2170(void* object, s32 arg2, s32 arg3)
+{
+    return (u8)func_003ADF00(object, arg2, arg3) != 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E21A0);
 
@@ -168,9 +185,19 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E41
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E4240);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E4360);
+/** Run the paired update helpers in order. */
+void func_002E4360(void* object)
+{
+    func_00280800();
+    func_002E4240(object);
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E4390);
+/** Run the paired update helpers in order. */
+void func_002E4390(void* object)
+{
+    func_00280840();
+    func_002E4240(object);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E43C0);
 
@@ -180,7 +207,18 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E4A
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E4B40);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E4CF0);
+struct FieldByte2F68
+{
+    u8 unk00[0x2F68];
+    u8 value;
+};
+
+extern "C" void func_002E4CF0(void* receiver)
+{
+    FieldByte2F68* object = (FieldByte2F68*)receiver;
+    func_00298370(receiver);
+    object->value = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002E4D20);
 

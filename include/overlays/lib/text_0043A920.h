@@ -3,9 +3,35 @@
 
 #include "types.h"
 
+void func_00441BE0(void* object, void* cell, void* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
+
+/** Return the mapped array entry after its 0x30-byte prefix, or null. */
+void* func_0043D240(const void* object, s32 index);
+/** Clear four state bytes before updating the row through the owner. */
 #ifdef __cplusplus
 extern "C" {
 #endif
+void func_00441C10(void* object, u8* state, void* row);
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+void* func_0043DF70(void* receiver);
+#endif
+
+/** Build and return a pointer to the four-word stack value. */
+void* func_0044A410(void);
+
+/**
+ * @brief Process the supplied object with two additional values.
+ * @param object Input object.
+ * @param arg1 First additional value.
+ * @param arg2 Second additional value.
+ * @return Processing result.
+ */
+void* func_00448A10(void* object, u32 arg1, u32 arg2);
 
 /**
  * @brief Store the value at receiver offset 0x28.
@@ -455,7 +481,8 @@ void func_00448E20(void* object, u8 mode);
 void func_00449EE0(void* object, u8 mode);
 
 
-/** Find a key in the receiver's fixed-size entry array. */
+/** Clear the vector at offset 0x70 and update the associated state. */
+void func_00449AF0(void* object);
 s32 func_00449FB0(void* object, float key);
 
 

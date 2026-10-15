@@ -8,14 +8,20 @@ typedef struct ResidentEntryTable
     s32 keys[16];
 } ResidentEntryTable;
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_00101260);
+void* func_00101260(void* object)
+{
+    return (u8*)object + 0x13A10;
+}
 
 void* func_00101270(void* value)
 {
     return value;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_00101280);
+void* func_00101280(void* object)
+{
+    return (u8*)object + 0x15A5C;
+}
 
 /** @brief Locate the resident entry table. @param object Table owner. @return Embedded entry table. */
 void* resident_get_entry_table(void* object)
@@ -23,9 +29,15 @@ void* resident_get_entry_table(void* object)
     return (u8*)object + 0x13990;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_001012A0);
+void* func_001012A0(void* object)
+{
+    return (u8*)object + 0x1398D;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_001012B0);
+void* func_001012B0(void* object)
+{
+    return (u8*)object + 0x1398C;
+}
 
 void* func_001012C0(void* object)
 {

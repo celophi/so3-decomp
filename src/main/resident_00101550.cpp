@@ -1,6 +1,18 @@
 #include "include_asm.h"
 #include "main/resident_00101550.h"
 
+struct ResidentPointer90
+{
+    u8 unk00[0x90];
+    void* unk90;
+};
+
+struct ResidentPointer100
+{
+    u8 unk00[0x100];
+    void* unk100;
+};
+
 void func_00101550(void* object)
 {
 }
@@ -150,9 +162,17 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107B10)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107B60);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107D90);
+void func_00107D90(void* receiver)
+{
+    ResidentPointer90* object = (ResidentPointer90*)receiver;
+    func_0010A080(object->unk90);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107DB0);
+void func_00107DB0(void* receiver)
+{
+    ResidentPointer90* object = (ResidentPointer90*)receiver;
+    func_0010A0B0(object->unk90);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107DD0);
 
@@ -190,7 +210,11 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109CB0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109D50);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109F20);
+void func_00109F20(void* receiver)
+{
+    ResidentPointer100* object = (ResidentPointer100*)receiver;
+    func_00109510(object->unk100);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109F40);
 

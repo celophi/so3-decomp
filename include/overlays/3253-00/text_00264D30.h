@@ -5,7 +5,11 @@
 
 #ifdef __cplusplus
 extern "C" {
+void func_00270580(void* receiver);
 #endif
+
+/** Install the record's pointer at offset 0x1FC, reset it, and return it. */
+void* func_0026A0A0(void* object);
 
 /**
  * @brief Return the fixed value 3.
@@ -48,6 +52,9 @@ s32 func_00267890(void* object);
  * @return Always 0.
  */
 s32 func_002678A0(void* object);
+
+/** Store a byte at 0x210 and set bit 3 of the byte at 0x59D. */
+void func_002678B0(void* object, u8 value);
 
 /**
  * @brief Return the receiver address at offset 0x90.
@@ -416,6 +423,9 @@ void func_00273A80(void* object);
  * @param object Receiver.
  */
 void func_00274AC0(void* object);
+
+/** Initialize the object, vtable, and word at offset 0x78, then return it. */
+void* func_0026B990(void* receiver);
 
 #ifdef __cplusplus
 }

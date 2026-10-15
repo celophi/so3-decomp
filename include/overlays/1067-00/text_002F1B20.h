@@ -66,6 +66,9 @@ typedef struct FieldStateTargets
 extern "C" {
 #endif
 
+/** @brief Follow count list links from the object's first node. @return The node reached, or null if traversal ends early. */
+void* func_002F3250(void* object, s32 count);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.

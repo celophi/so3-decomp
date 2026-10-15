@@ -1,17 +1,24 @@
 #include "include_asm.h"
 
+extern "C" void func_44B240(void* object, const void* matrix, void* context);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002554D0", func_002554D0);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002554D0", func_002555B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002554D0", func_00255660);
+extern "C" void func_00255660(void* object, const void* matrix, void* context)
+{
+    func_44B240((char*)object + 0x20, matrix, context);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002554D0", func_00255680);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002554D0", func_002556D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002554D0", func_00255800);
+extern "C" void func_00255800(void* object, const void* matrix, void* context)
+{
+    func_44B240((char*)object + 0x20, matrix, context);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002554D0", func_00255820);
 

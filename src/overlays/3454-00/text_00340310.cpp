@@ -3,6 +3,8 @@
 #include "overlays/3454-00/text_0027E060.h"
 
 extern "C" {
+void func_0027E740(void* object);
+
 
 #include "include_asm.h"
 
@@ -84,7 +86,20 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_003443
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_00344740);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_003449B0);
+typedef struct WrapperState003449B0
+{
+    u8 unk00[0x2F94];
+    u32 unk2F94;
+    u32 unk2F98;
+} WrapperState003449B0;
+
+void func_003449B0(Obj27E060* object, u8 current, u8 previous)
+{
+    WrapperState003449B0* receiver = (WrapperState003449B0*)object;
+    receiver->unk2F98 = 0;
+    receiver->unk2F94 = 0;
+    func_0028BDB0(object, current, previous);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_003449D0);
 
@@ -206,7 +221,15 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_0034C1
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_0034C4F0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_0034C5E0);
+struct FloatField2F94_00340310 { u8 pad[0x2F94]; float value; };
+
+void func_0034C5E0(void* object)
+{
+    if (((FloatField2F94_00340310*)object)->value == 0.0f)
+    {
+        func_0027E740(object);
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00340310", func_0034C620);
 

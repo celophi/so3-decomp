@@ -210,6 +210,11 @@ typedef struct BootInputStatus9670
 extern "C" {
 #endif
 
+/** Mark the transform as changed and copy a four-float value into it. */
+void func_001E0690(u8* object, const float* input);
+/** Mark the transform as changed and copy a four-float value into it. */
+void func_001E06C0(u8* object, const float* input);
+
 /**
  * @brief Refresh input samples and update retained mode values when enabled.
  * @param object Receiver containing the input samples and mode-update gate.

@@ -1,6 +1,7 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_002B5B00.h"
 
+extern "C" void func_0036ABF0(void* first, void* second, void* third, void* fourth, u32 flags);
 extern "C" void func_00298370(void* object);
 extern "C" void func_002A6040(void);
 extern "C" void func_002A6780(void);
@@ -112,7 +113,14 @@ void func_002B5FC0(void* receiver)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B5FD0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002B5B00", func_002B60A0);
+void func_002B60A0(u8* receiver, void* value1, void* value2, void* value3)
+{
+    u8* adjusted = receiver;
+    if (adjusted != 0) {
+        adjusted = adjusted + 0x290;
+    }
+    func_0036ABF0(receiver + 0x450, adjusted, value1, value2, 1);
+}
 
 void func_002B60E0(void* receiver)
 {

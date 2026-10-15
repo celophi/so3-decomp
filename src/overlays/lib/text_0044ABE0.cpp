@@ -3,6 +3,8 @@
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
 
+extern "C" u8 D_00174D30[];
+extern "C" void func_004A8F10(void* object);
 /** Partial indexed-resource fields at CC and D0. */
 typedef struct LibIndexedResourceState
 {
@@ -513,7 +515,13 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456690);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456850);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004568A0);
+void* func_004568A0(void* receiver)
+{
+    func_004A8F10(receiver);
+    *(void**)receiver = D_00174D30;
+    ((u8*)receiver)[0xE] = 2;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004568E0);
 

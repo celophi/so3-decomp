@@ -1,4 +1,19 @@
 #include "include_asm.h"
+#include "overlays/3454-00/text_002DF7D0.h"
+
+extern void func_002EB1B0(void* object, void* context);
+extern void func_003B41F0(void* object);
+extern void func_002AE3F0(void* object);
+extern u32 func_473390(u32 value, const void* data);
+extern const u8 D_3E0DA8[];
+
+typedef struct N57Owner510text_002DF7D0
+{
+    u8 unk00[0x50];
+    u32 unk50;
+    u8 unk54[0x4BC];
+    u32 unk510;
+} N57Owner510text_002DF7D0;
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002DF7D0", func_002DF7D0);
 
@@ -18,9 +33,19 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002DF7D0", func_002E0C
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002DF7D0", func_002E0CF0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002DF7D0", func_002E1590);
+void func_002E1590(void* object)
+{
+    func_003B41F0((u8*)object + 0x290);
+    ((u8*)object)[0x39D] = 0;
+    ((u8*)object)[0x4FC] = 1;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002DF7D0", func_002E15D0);
+void func_002E15D0(void* receiver)
+{
+    N57Owner510text_002DF7D0* object = (N57Owner510text_002DF7D0*)receiver;
+    func_002AE3F0(receiver);
+    object->unk510 = func_473390(object->unk50, D_3E0DA8);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002DF7D0", func_002E1610);
 
@@ -170,7 +195,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002DF7D0", func_002EDF
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002DF7D0", func_002EE020);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002DF7D0", func_002EE150);
+void func_002EE150(u8* object, void* context)
+{
+    if (object[0xCD1] != 0) {
+        if (object[0xCDF] == 0x7B) {
+            func_002EB1B0(object, context);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002DF7D0", func_002EE190);
 

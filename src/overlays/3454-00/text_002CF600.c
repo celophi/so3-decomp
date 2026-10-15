@@ -1,4 +1,26 @@
 #include "include_asm.h"
+#include "overlays/3454-00/text_002CF600.h"
+
+extern void func_002DF130(void* object, void* context);
+extern void func_00278EF0(void);
+extern void func_00278F30(void);
+extern void func_002D6DB0(void* object);
+extern void func_003B41F0(void* object);
+extern void func_002AE3F0(void* object);
+extern u32 func_473390(u32 value, const void* data);
+extern const u8 D_3E0B60[];
+
+typedef struct N57Owner600text_002CF600
+{
+    u8 unk00[0x50];
+    u32 unk50;
+    u8 unk54[0x5AC];
+    u32 unk600;
+} N57Owner600text_002CF600;
+
+
+extern s32 func_003B31B0(void* object, s32 arg2, s32 arg3);
+extern void func_002919A0(void* object);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002CF600);
 
@@ -46,7 +68,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D1D
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D1E70);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D25E0);
+void func_002D25E0(void* object)
+{
+    func_003B41F0((u8*)object + 0x290);
+    ((u8*)object)[0x39D] = 0;
+    ((u8*)object)[0x4FC] = 1;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D2620);
 
@@ -76,7 +103,10 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D4F
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D5020);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D51E0);
+s32 func_002D51E0(void* object, s32 arg2, s32 arg3)
+{
+    return (u8)func_003B31B0(object, arg2, arg3) != 0;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D5210);
 
@@ -102,9 +132,19 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D6D
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D6DB0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D6ED0);
+/** Run the paired update helpers in order. */
+void func_002D6ED0(void* object)
+{
+    func_00278EF0();
+    func_002D6DB0(object);
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D6F00);
+/** Run the paired update helpers in order. */
+void func_002D6F00(void* object)
+{
+    func_00278F30();
+    func_002D6DB0(object);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D6F30);
 
@@ -114,7 +154,18 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D74
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D7540);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D76F0);
+typedef struct FieldByte2F88
+{
+    u8 unk00[0x2F88];
+    u8 value;
+} FieldByte2F88;
+
+void func_002D76F0(void* receiver)
+{
+    FieldByte2F88* object = receiver;
+    func_002919A0(receiver);
+    object->value = 0;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002D7720);
 
@@ -184,7 +235,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002DBF
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002DC080);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002DC4E0);
+void func_002DC4E0(void* receiver)
+{
+    N57Owner600text_002CF600* object = (N57Owner600text_002CF600*)receiver;
+    func_002AE3F0(receiver);
+    object->unk600 = func_473390(object->unk50, D_3E0B60);
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002DC520);
 
@@ -224,7 +280,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002DEB
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002DEC60);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002DEE60);
+void func_002DEE60(u8* object, void* context)
+{
+    if (object[0xCD1] != 0) {
+        if (object[0xCDF] == 0x36) {
+            func_002DF130(object, context);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002DEEA0);
 

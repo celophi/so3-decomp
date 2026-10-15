@@ -1,4 +1,28 @@
 #include "include_asm.h"
+#include "overlays/3253-00/text_002E6540.h"
+
+extern "C" void func_002EDC10(void* object, void* context);
+extern "C" void func_003AF250(void* object);
+extern "C" void func_002B3270(void* object);
+extern "C" u32 func_4A0B70(u32 value, const void* data);
+extern "C" const u8 D_3E3600[];
+extern "C" const u8 D_3E42F8[];
+
+struct N57Owner5D0
+{
+    u8 unk00[0x50];
+    u32 unk50;
+    u8 unk54[0x57C];
+    u32 unk5d0;
+};
+
+struct N57Owner500
+{
+    u8 unk00[0x50];
+    u32 unk50;
+    u8 unk54[0x4AC];
+    u32 unk500;
+};
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002E6540);
 
@@ -36,7 +60,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002EA2
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002EA340);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002EA900);
+void func_002EA900(void* receiver)
+{
+    N57Owner5D0* object = (N57Owner5D0*)receiver;
+    func_002B3270(receiver);
+    object->unk5d0 = func_4A0B70(object->unk50, D_3E3600);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002EA940);
 
@@ -68,7 +97,14 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002ED5
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002ED690);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002ED890);
+void func_002ED890(u8* object, void* context)
+{
+    if (object[0xCE1] != 0) {
+        if (object[0xCEE] == 0x36) {
+            func_002EDC10(object, context);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002ED8D0);
 
@@ -104,9 +140,19 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002EFF
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002F0040);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002F0A00);
+extern "C" void func_002F0A00(void* object)
+{
+    u8* receiver = static_cast<u8*>(object);
+    func_003AF250(receiver + 0x290);
+    receiver[0x391] = 0;
+}
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002F0A30);
+void func_002F0A30(void* receiver)
+{
+    N57Owner500* object = (N57Owner500*)receiver;
+    func_002B3270(receiver);
+    object->unk500 = func_4A0B70(object->unk50, D_3E42F8);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002E6540", func_002F0A70);
 

@@ -329,6 +329,8 @@ typedef struct FieldKeyedFlagElement28
 extern "C" {
 #endif
 
+/** Initialize the receiver from the shared base, then select state 4. */
+void* func_001EF980(void* object);
 
 /**
  * @brief Invoke the receiver's callback at vtable offset 0x5C.

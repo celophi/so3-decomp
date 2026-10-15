@@ -1,7 +1,9 @@
 #include "include_asm.h"
-#include "types.h"
+#include "overlays/3253-00/text_00366F70.h"
 
+extern "C" void func_0036ABF0(void* first, void* second, void* third, void* fourth, u32 flags);
 extern "C" u32 func_4A0B70(u32 value, const void* data);
+extern "C" s32 func_003ADF00(void* object, s32 arg2, s32 arg3);
 extern "C" const u8 D_3E8480[];
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_00366F70);
@@ -210,7 +212,14 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_003684
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_00368570);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_003685B0);
+void func_003685B0(u8* receiver, void* value1, void* value2, void* value3)
+{
+    u8* adjusted = receiver;
+    if (adjusted != 0) {
+        adjusted = adjusted + 0xD0;
+    }
+    func_0036ABF0(receiver + 0x210, adjusted, value1, value2, 1);
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_003685F0);
 
@@ -352,7 +361,10 @@ extern "C" void func_00375790(void* object)
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_003757D0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_00375930);
+extern "C" s32 func_00375930(void* object, s32 arg2, s32 arg3)
+{
+    return (u8)func_003ADF00(object, arg2, arg3) != 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00366F70", func_00375960);
 

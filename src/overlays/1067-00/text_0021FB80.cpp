@@ -6,6 +6,7 @@
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/1067-00/field_packet.h"
 
+extern "C" void func_11F770(void* owner, void* object);
 
 
 
@@ -432,7 +433,18 @@ extern "C" void func_0022A1C0(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022A1E0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022A2D0);
+struct N50OwnerC4_1067 { u8 pad00[0x64]; u8 active; u8 pad65[0x5F]; void* owner; };
+
+void func_0022A2D0(N50OwnerC4_1067* object)
+{
+    object->active = 1;
+    void* adjusted = object;
+    if (object != 0)
+    {
+        adjusted = (u8*)adjusted + 0x90;
+    }
+    func_11F770(object->owner, adjusted);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022A310);
 

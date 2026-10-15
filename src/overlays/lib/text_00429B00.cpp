@@ -1,8 +1,12 @@
 #include "include_asm.h"
 #include "overlays/lib/text_00429B00.h"
+#include "overlays/lib/text_004CD3A0.h"
 #include "sdk/main/libc_guess_00137290.h"
 
 extern "C" {
+
+void func_004486A0(void* object);
+void func_00448250(void* object);
 
 typedef struct WordSetterOwnertext_00429B00
 {
@@ -214,7 +218,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A8F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A920);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AA00);
+/** @brief Clear the intrusive owner and call the transform release hook. */
+void func_0042AA00(LibClass178A90* object)
+{
+    object->owner = 0;
+    object->LibClass178A90::func_003EF740();
+}
 
 s32 func_0042AA20(void* object)
 {
@@ -547,7 +556,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433480);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433580);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433650);
+void func_00433650(void* object)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x60] = bytes[0x94];
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433660);
 
@@ -617,7 +630,11 @@ s32 func_00434F20(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00434F30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00434FA0);
+void func_00434FA0(void* object)
+{
+    func_004486A0((u8*)object + 0x5A4);
+    func_00448250(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00434FD0);
 

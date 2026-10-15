@@ -50,6 +50,16 @@ typedef struct FieldCappedByte4A4
     u8 unk4a5_1_7 : 7;
 } FieldCappedByte4A4;
 
+/** Partial receiver containing the update-complete bit at offset 0x20. */
+typedef struct FieldUpdateComplete20
+{
+    u8 unk00[0x20];
+    u8 unk20_0 : 1;
+    u8 unk20_1 : 1;
+    u8 unk20_2 : 1;
+    u8 unk20_3_7 : 5;
+} FieldUpdateComplete20;
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,6 +87,9 @@ s32 func_0027EA30(void* object);
  * @param value Word to store.
  */
 void func_00281CE0(FieldWordState18* object, u32 value);
+
+/** Run the shared update, then inspect the receiver's completion bit. */
+void func_00274DB0(FieldUpdateComplete20* object);
 
 /**
  * @brief Set the receiver float and mirror it to the linked target when present.

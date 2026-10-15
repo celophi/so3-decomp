@@ -77,6 +77,8 @@ typedef ItemCreationClass172600 LibClass172600;
 typedef ItemCreationClass1725D0 LibClass1725D0;
 typedef ItemCreationClass172870 LibClass172870;
 extern "C" {
+void func_00423930(u8* object);
+void func_0041E880(u8* object);
 #else
 typedef struct ItemCreationClass172600 ItemCreationClass172600;
 typedef struct ItemCreationClass1725D0 ItemCreationClass1725D0;
@@ -129,6 +131,9 @@ s32 func_0041AD10(ItemCreationClass172600* object, float x, float y, float width
  */
 void func_0041AD80(void* object);
 
+/** @brief Clear the intrusive owner and call the transform release hook. @param object Transform owner to detach. */
+void func_0041ADC0(LibClass178A90* object);
+
 /**
  * @brief Set the receiver's byte at offset 0x60 to seven.
  * @param object Receiver to update.
@@ -140,6 +145,13 @@ void func_0041F130(void* object);
  * @param object Receiver to update.
  */
 void func_0041F190(void* object);
+
+/** @brief Clear the intrusive owner and call the transform release hook. @param object Transform owner to detach. */
+void func_0041F170(LibClass178A90* object);
+/** @brief Clear the intrusive owner and call the transform release hook. @param object Transform owner to detach. */
+void func_0041F1D0(LibClass178A90* object);
+/** @brief Clear the intrusive owner and call the transform release hook. @param object Transform owner to detach. */
+void func_0041F290(LibClass178A90* object);
 
 /**
  * @brief Set the receiver's byte at offset 0x60 to seven.
@@ -268,12 +280,34 @@ void func_0041F300(void* object);
 /** Forward the receiver to func_004D00B0. */
 void func_00423970(void* object);
 
+/** Build and return a pointer to the four-word stack value. */
+void* func_0041AD90(void);
+/** Build and return a pointer to the four-word stack value. */
+void* func_0041F140(void);
+/** Build and return a pointer to the four-word stack value. */
+void* func_0041F1A0(void);
+/** Build and return a pointer to the four-word stack value. */
+void* func_0041F260(void);
+/** Build and return a pointer to the four-word stack value. */
+void* func_00424A70(void);
+
 #ifdef __cplusplus
 /** Set the low packed mode at its target field and record whether either mode equals four. */
 void func_004297F0(void* object, u8 mode);
 
 
 }
+#endif
+
+#ifdef __cplusplus
+extern "C" s32 func_0041A170(void* object);
+extern "C" s32 func_0041AE50(void* object);
+extern "C" s32 func_0041D230(void* object);
+extern "C" s32 func_0041E8E0(void* object);
+extern "C" s32 func_0041F320(void* object);
+extern "C" s32 func_00423990(void* object);
+/** Set the output values when the input float is positive. */
+extern "C" s32 func_004284A0(void* object, const void* value, float* zero_output, float* small_output);
 #endif
 
 #endif

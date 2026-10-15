@@ -1,7 +1,9 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_003770D0.h"
 
+extern "C" void func_003AD020(void* object);
 extern "C" u32 func_4A0FC0(u32 value, const void* data);
+extern "C" void func_003AF250(void* object);
 extern "C" const u8 D_3E8618[];
 
 typedef struct ConstantByteSetterOwnertext_003770D0
@@ -82,7 +84,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003770D0", func_0037B7
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003770D0", func_0037C060);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003770D0", func_0037C150);
+extern "C" void func_0037C150(void* object)
+{
+    u8* receiver = static_cast<u8*>(object);
+    func_003AF250(receiver + 0xD0);
+    receiver[0x1D1] = 0;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003770D0", func_0037C180);
 
@@ -127,7 +134,13 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003770D0", func_0037F2
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003770D0", func_0037F6D0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003770D0", func_0037F820);
+void func_0037F820(void* object)
+{
+    func_003AD020(object);
+    if (((u8*)object)[0x391] != 0) {
+        ((u8*)object)[0xEB] = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003770D0", func_0037F860);
 

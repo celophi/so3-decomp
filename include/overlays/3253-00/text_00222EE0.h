@@ -3,8 +3,15 @@
 
 #include "types.h"
 
+typedef struct N54Owner64_00222EE0 N54Owner64_00222EE0;
+
 #ifdef __cplusplus
 extern "C" {
+void* func_0022D170(void* receiver);
+/** Initialize the receiver and select state 6. */
+void* func_0022D330(void* object);
+/** Initialize the receiver and select state 5. */
+void* func_0022D5C0(void* object);
 #endif
 
 /** Forward the receiver to func_4EABF0. */
@@ -134,6 +141,9 @@ float func_00223F50(void* object);
 
 /** Find a key in the receiver's fixed-size entry array. */
 s32 func_00223FA0(void* object, float key);
+
+/** Set the active byte and notify the embedded receiver. */
+void func_0022F780(N54Owner64_00222EE0* object);
 
 
 }

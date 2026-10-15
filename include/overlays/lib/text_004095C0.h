@@ -70,6 +70,9 @@ typedef ItemCreationCategoryDefinition LibCategoryDefinition;
 extern "C" {
 #endif
 
+/** @brief Follow count list links from the object's first node. @return The node reached, or null if traversal ends early. */
+void* func_00411DD0(void* object, s32 count);
+
 /** Resident category catalog. */
 extern ItemCreationCategoryDefinition* D_001B64F0;
 

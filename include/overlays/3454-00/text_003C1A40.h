@@ -933,6 +933,15 @@ void func_003D0C80(void* object, u8* first, void* second);
 /** Store two arguments and set the byte at receiver offset 0x50 from source[0] == 1. */
 void func_003D1360(void* object, u8* first, void* second);
 
+/** Recompute the receiver's scale at offset 0x70 after its update. */
+void func_003CB000(void* object);
+
+/** Recompute the receiver's scale at offset 0x60 after its update. */
+void func_003CB0A0(void* object);
+
+/** Recompute the receiver's scale at offset 0x60 after its update. */
+void func_003CB140(void* object);
+
 /** Clear two words and set the byte at receiver offset 0x50 from enabled. */
 void func_003CFE60(void* object, s32 enabled);
 

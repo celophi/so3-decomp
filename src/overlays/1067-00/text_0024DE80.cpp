@@ -23,6 +23,7 @@ struct FieldObject11CValues
 extern void* D_001B663C;
 extern "C" void func_4D9250(void* target, u32 first, u32 second);
 extern "C" void func_4D00B0(void* object);
+extern "C" void func_44B240(void* object, const void* matrix, void* context);
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024DE80);
@@ -63,7 +64,10 @@ void func_0024E650(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E660);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E720);
+extern "C" void func_0024E720(void* object, const void* matrix, void* context)
+{
+    func_44B240((u8*)object + 0x20, matrix, context);
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E740);
 

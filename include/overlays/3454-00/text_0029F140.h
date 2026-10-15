@@ -86,11 +86,26 @@ void func_002AAB10(ObjAAAA0* object, float value);
 void func_002AE500(ObjAE500* object);
 
 /**
+ * @brief Forward the object's adjustment inputs to the embedded state at offset 0x1F0.
+ * @param object Object containing the embedded state.
+ * @param value Floating-point input forwarded to the state update.
+ * @param first First opaque pointer input.
+ * @param second Second opaque pointer input.
+ */
+void func_002AE780(void* object, float value, void* first, void* second);
+
+/**
  * @brief Store a pointer in the object's field.
  * @param object Object containing the pointer field.
  * @param value Pointer to store.
  */
 void func_002AE810(ObjAE810* object, void* value);
+
+/** Return the selected child's byte at offset 0x204, or zero when absent. */
+s32 func_002AED30(void* object);
+
+/** Return the selected child's byte at offset 0x206, or zero when absent. */
+s32 func_002AEEE0(void* object);
 
 #ifdef __cplusplus
 }

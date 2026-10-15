@@ -22,7 +22,13 @@ typedef struct ResidentPacket
 
 #ifdef __cplusplus
 extern "C" {
+void func_00121730(u8* object, float x, float y, float z);
 #endif
+
+/** Mark the transform as changed and copy a four-float value into it. */
+void func_001216D0(u8* object, const float* input);
+/** Mark the transform as changed and copy a four-float value into it. */
+void func_00121700(u8* object, const float* input);
 
 /**
  * @brief Append a GIF A+D write of one GS register when the packet has room.
@@ -95,6 +101,18 @@ u32 func_001206B0(const void* object);
 /** Return the word at receiver offset 0x0. */
 u32 func_001206F0(const void* object);
 
+/** Clamp the value to [0, 100], store it at offset 0x10, and return it. */
+s32 func_001205B0(void* object, s32 value);
+
+/** Clamp the value to [0, 255], store it at offset 0x8, and return it. */
+s32 func_00120640(void* object, s32 value);
+
+/** Clamp the value to [0, 999], store it at offset 0x4, and return it. */
+s32 func_00120680(void* object, s32 value);
+
+/** Clamp the value to [0, 9999], store it at offset 0, and return it. */
+s32 func_001206C0(void* object, s32 value);
+
 
 /** Store the word at receiver offset 0x70. */
 void func_001207B0(void* object, u32 value);
@@ -110,6 +128,9 @@ s32 func_00121570(void* object);
 
 /** Return the fixed value 0. */
 s32 func_001215E0(void* object);
+
+/** Test whether a floating-point value is negative. */
+s32 func_001215F0(float value);
 
 /** Return the fixed value 0. */
 s32 func_00121630(void* object);

@@ -53,6 +53,25 @@ public:
 
 extern "C" {
 
+void func_004AD380(void* object);
+void func_004B1890(void* object);
+void func_004B2580(void* object);
+
+/** Clear receiver state at 0x58 and 0x50, then run the shared reset helper. */
+void func_004ACFF0(void* object);
+/** Reset receiver state at 0xB0 and 0xB4, then run the shared reset helper. */
+void func_004B1800(void* object);
+void func_004B04C0(void* object);
+void func_004AC770(void* object);
+
+/** Forward two float values, passing the second through a stack address. */
+void func_004B24A0(void* object, float value1, float value2);
+void func_004B2500(void* object, float value1, float value2);
+void func_004B3A70(void* object, float value1, float value2);
+void func_004B2EB0(void* object, const float* value2, float value1);
+void func_004B3120(void* object, const float* value2, float value1);
+void func_004B3C30(void* object, const float* value2, float value1);
+
 /** Copy the float at receiver offset 0x54 to the output. */
 void func_004AD2B0(const void* object, float* value);
 
@@ -64,6 +83,12 @@ void func_004B1820(const void* object, float* value);
 
 /** Copy the float at receiver offset 0x4C to the output. */
 void func_004B2750(const void* object, float* value);
+
+/** Write the difference between the selected 16-byte entry value and the first value. */
+void func_004AFF70(const void* object, float* output);
+
+/** Write the difference between the selected 8-byte entry value and the first value. */
+void func_004B2720(const void* object, float* output);
 
 /**
  * @brief Evaluate four interpolation coefficients over their cached key range.

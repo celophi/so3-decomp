@@ -1,6 +1,9 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_0022D9B0.h"
 
+extern void func_4C4960(void* object);
+extern u8 D_1746A0[];
+
 typedef struct HalfwordSetterOwnertext_0022D9B0
 {
     u8 unk00[0x6C];
@@ -42,7 +45,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_0022EF
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_0022EFC0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_0022F060);
+void* func_0022F060(void* object)
+{
+    func_4C4960(object);
+    *(void**)object = D_1746A0;
+    *(u32*)((u8*)object + 0x40) = 0;
+    *((u8*)object + 0x38) = 4;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_0022F0A0);
 
@@ -96,7 +106,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_002338
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_00233A30);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_00233AB0);
+void func_00233AB0(void* object)
+{
+    u8* bytes = (u8*)object;
+    if (bytes[0x14] == 0)
+    {
+        bytes[0x16] = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_00233AD0);
 

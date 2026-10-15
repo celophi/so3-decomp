@@ -1,6 +1,11 @@
 #include "include_asm.h"
 #include "overlays/lib/text_0047AE20.h"
 
+extern void* __vt__14LibClass171E80;
+extern u8 D_00173A28[];
+extern u8 D_00173F48[];
+extern u8 D_00177188[];
+extern u8 D_00174228[];
 typedef struct WordNonzeroOwnertext_0047AE20
 {
     u8 unk00[0x14];
@@ -1049,7 +1054,20 @@ s32 func_0047C6C0(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047C6D0);
+typedef struct MappedEntry0047C6D0 { u8 unk00[0x90]; } MappedEntry0047C6D0;
+typedef struct MappedOwner0047C6D0 { u8 unk00[0x14]; MappedEntry0047C6D0* entries; } MappedOwner0047C6D0;
+
+void* func_0047C6D0(const void* object, s32 index)
+{
+    const MappedOwner0047C6D0* owner = (const MappedOwner0047C6D0*)object;
+    MappedEntry0047C6D0* item = &owner->entries[index];
+    void* result = item;
+    if (item != 0)
+    {
+        result = (u8*)item + 0x60;
+    }
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047C700);
 
@@ -1305,7 +1323,20 @@ s32 func_0047CE60(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047CE70);
+typedef struct MappedEntry0047CE70 { u8 unk00[0x60]; } MappedEntry0047CE70;
+typedef struct MappedOwner0047CE70 { u8 unk00[0x14]; MappedEntry0047CE70* entries; } MappedOwner0047CE70;
+
+void* func_0047CE70(const void* object, s32 index)
+{
+    const MappedOwner0047CE70* owner = (const MappedOwner0047CE70*)object;
+    MappedEntry0047CE70* item = &owner->entries[index];
+    void* result = item;
+    if (item != 0)
+    {
+        result = (u8*)item + 0x60;
+    }
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047CEA0);
 
@@ -1561,7 +1592,20 @@ s32 func_0047D600(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047D610);
+typedef struct MappedEntry0047D610 { u8 unk00[0x60]; } MappedEntry0047D610;
+typedef struct MappedOwner0047D610 { u8 unk00[0x14]; MappedEntry0047D610* entries; } MappedOwner0047D610;
+
+void* func_0047D610(const void* object, s32 index)
+{
+    const MappedOwner0047D610* owner = (const MappedOwner0047D610*)object;
+    MappedEntry0047D610* item = &owner->entries[index];
+    void* result = item;
+    if (item != 0)
+    {
+        result = (u8*)item + 0x30;
+    }
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047D640);
 
@@ -2155,7 +2199,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047E470);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047E4D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047EA30);
+void* func_0047EA30(void* receiver)
+{
+    *(void**)receiver = &__vt__14LibClass171E80;
+    *(void**)receiver = D_00173A28;
+    *(void**)receiver = D_00173F48;
+    *(void**)receiver = D_00177188;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047EA70);
 
@@ -2163,7 +2214,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047EAF0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047EBD0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047F130);
+void* func_0047F130(void* receiver)
+{
+    *(void**)receiver = &__vt__14LibClass171E80;
+    *(void**)receiver = D_00173A28;
+    *(void**)receiver = D_00173F48;
+    *(void**)receiver = D_00174228;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047F170);
 

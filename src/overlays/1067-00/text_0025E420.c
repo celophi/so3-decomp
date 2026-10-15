@@ -10,7 +10,23 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025E5
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025E7D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025E840);
+struct SmallConditionalInput04
+{
+    u8 unk00[4];
+    float unk04;
+};
+
+s32 func_0025E840(void* object, const void* value, float* zero_output, float* small_output)
+{
+    const struct SmallConditionalInput04* state = (const struct SmallConditionalInput04*)value;
+    if (!(state->unk04 <= 0.0f))
+    {
+        *zero_output = 0.0f;
+        *small_output = 0.05f;
+        return 1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025E880);
 

@@ -1,6 +1,12 @@
 #include "include_asm.h"
 #include "overlays/1070-00/text_002A4F10.h"
 
+extern "C" void* __vt__16FieldClass16AB70;
+extern "C" u8 D_16CF78[];
+extern "C" u8 D_16D0B0[];
+extern "C" u8 D_1737F8[];
+extern "C" void func_002B0AD0(void* object, void* cell, void* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
+
 /** Partial callback interface with a method at offset 0x58. */
 class FieldCallbackDispatch58
 {
@@ -634,7 +640,14 @@ s32 func_002A88D0(u8* object)
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A88E0);
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A8E50);
+extern "C" void* func_002A8E50(void* receiver)
+{
+    *(void**)receiver = &__vt__16FieldClass16AB70;
+    *(void**)receiver = D_16CF78;
+    *(void**)receiver = D_16D0B0;
+    *(void**)receiver = D_1737F8;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002A8E90);
 
@@ -771,7 +784,15 @@ void func_002B0A10(void* object, const void* source)
     ((FieldCallbackDispatch58*)object)->callback(destinationWords[3], destinationWords[4]);
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B0A50);
+void func_002B0A50(void* object, void* cell, void* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8)
+{
+    u8* state = (u8*)cell;
+    state[0x130] = 0;
+    state[0x132] = 0;
+    state[0x131] = 0;
+    state[0x133] = 0;
+    func_002B0AD0(object, cell, row, index, extra4, extra5, extra6, extra7, extra8);
+}
 
 void func_002B0A80(void* object, void* output)
 {

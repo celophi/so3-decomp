@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+void func_00244210(void* object);
+
 /** Forward the object and three arguments to func_00243E90. */
 s32 func_00243E70(void* object, void* entry, s32 type, s32 flags);
 

@@ -5,6 +5,10 @@
 
 #ifdef __cplusplus
 extern "C" {
+void func_002FD3B0(u8* object, void* unused, void* value);
+void func_002FD280(u8* object, void* unused, void* value);
+void func_002FD240(u8* object, void* unused, void* value);
+void func_002FD0E0(u8* object, void* unused, void* value);
 #endif
 
 /**
@@ -40,6 +44,10 @@ void func_002FD9A0(void* object);
 
 /** Store the byte constant at receiver offset 0x391. */
 void func_002FCE20(void* object);
+
+/** Run the paired update helpers in order. */
+void func_002FD060(void* object);
+void func_002FD210(void* object);
 
 #ifdef __cplusplus
 }

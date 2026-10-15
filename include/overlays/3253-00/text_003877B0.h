@@ -5,7 +5,11 @@
 
 #ifdef __cplusplus
 extern "C" {
+void func_0038AA70(void* object);
 #endif
+
+/** Return bits 0 and 2 when the byte fields at offsets 0x38 and 0x39 are set. */
+u32 func_00393BA0(const u8* object);
 
 /**
  * @brief Return the fixed value 0.
@@ -55,11 +59,25 @@ void func_00391120(void* value);
 s32 func_00391A70(void* receiver);
 
 /**
+ * @brief Initialize the record's leading fields and pointer at offset 0x0C.
+ * @param arg0 Record to initialize.
+ * @return The initialized record.
+ */
+void* func_00391C10(void* arg0);
+
+/**
  * @brief Return whether the receiver's word at offset 0x14 is nonzero.
  * @param receiver Object containing the word.
  * @return One when the word is nonzero; otherwise zero.
  */
 s32 func_00395840(void* receiver);
+
+/**
+ * @brief Initialize the record's leading fields and pointer at offset 0x0C.
+ * @param arg0 Record to initialize.
+ * @return The initialized record.
+ */
+void* func_00395AE0(void* arg0);
 
 /** Return the floating-point value 1.0f. */
 float func_0038E490(void* object);

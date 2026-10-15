@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/vector.h"
 #include "overlays/boot/text_001ED4E0.h"
 #include "overlays/boot/text_001DD3C0.h"
 
@@ -6,7 +7,33 @@ extern "C" {
 
 extern u8 D_171B98[];
 extern u8 D_171B88[];
-extern void func_001F8A40(void* object);
+extern void func_4D00B0(void* object);
+extern u8 D_177BE0[];
+extern u8 D_174440[];
+extern u8 D_1730F0[];
+extern u8 D_171B20[];
+extern u8 D_171B10[];
+extern u8 D_171B00[];
+extern u8 D_171B30[];
+void func_11F510(void* owner, void* object);
+void func_001F3160(void);
+void func_001F2370(void);
+void func_001F23E0(void);
+
+typedef struct WrapperPointerSlots
+{
+    u8 pad00[0x10];
+    void* field10;
+    u8 pad14[8];
+    void* field1C;
+} WrapperPointerSlots;
+
+typedef struct N59Receiver0_boot
+{
+    u32 unk00;
+    u8 pad04[0xC];
+    void* vtable;
+} N59Receiver0_boot;
 
 typedef struct FieldF32At050
 {
@@ -25,6 +52,12 @@ typedef struct FieldU8At060
     u8 pad[0x60];
     u8 value;
 } FieldU8At060;
+
+typedef struct FieldU8At064
+{
+    u8 pad[0x64];
+    u8 value;
+} FieldU8At064;
 
 typedef struct FieldU32At004
 {
@@ -144,7 +177,12 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EDD60)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EE020);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EE080);
+void* func_001EE080(void* object)
+{
+    func_001F3160();
+    *(void**)object = D_177BE0;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EE0C0);
 
@@ -152,7 +190,12 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EE250)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EE520);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EE580);
+void* func_001EE580(void* object)
+{
+    func_001F2370();
+    *(void**)object = D_174440;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EE5C0);
 
@@ -160,7 +203,12 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EE760)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EEA40);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EEAA0);
+void* func_001EEAA0(void* object)
+{
+    func_001F23E0();
+    *(void**)object = D_1730F0;
+    return object;
+}
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EEAE0);
 
@@ -209,7 +257,14 @@ void func_001EED80(void* object)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EED90);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EEDF0);
+extern "C" void* D_001B6674;
+extern "C" void func_001F2320(void* owner, void* object);
+
+void func_001EEDF0(BootState1F0D60* object)
+{
+    func_001F10C0(object);
+    func_001F2320(D_001B6674, object);
+}
 
 float func_4B16C0(void* object, float key);
 
@@ -220,9 +275,22 @@ float func_001EEE20(void* object, float key)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EEE40);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EEEA0);
+extern "C" void* D_001B6668;
+extern "C" void func_001F22D0(void* owner, void* object);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EEED0);
+void func_001EEEA0(BootState1F1AD0* object)
+{
+    func_001F1DD0(object);
+    func_001F22D0(D_001B6668, object);
+}
+
+struct ResetVectorB0_001ED4E0 { u8 pad[0xB0]; FieldVec4B value; };
+
+void func_001EEED0(void* object)
+{
+    ((ResetVectorB0_001ED4E0*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    func_001F0C80((BootState1F0D60*)object);
+}
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EEF10);
 
@@ -242,7 +310,10 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EF9D0)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EFAB0);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EFAF0);
+extern "C" void func_001EFAF0(const void* object, FieldVec4B* output)
+{
+    *output = *(const FieldVec4A*)((const u8*)object + 0xC0);
+}
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EFB10);
 
@@ -308,13 +379,22 @@ void func_001EFE50(BootScalarRangeFE50* object, const float* first,
     }
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EFEA0);
+struct ResetVector90_001ED4E0 { u8 pad[0x90]; FieldVec4B value; };
+
+void func_001EFEA0(void* object)
+{
+    ((ResetVector90_001ED4E0*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    func_001F19F0((BootState1F1AD0*)object);
+}
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EFEE0);
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F03D0);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F0440);
+extern "C" void func_001F0440(const void* object, FieldVec4B* output)
+{
+    *output = *(const FieldVec4A*)((const u8*)object + 0xA0);
+}
 
 void func_001F0460(BootState1F1FC0* object)
 {
@@ -343,9 +423,21 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F0510)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F0560);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F05E0);
+void* func_001F05E0(void* receiver)
+{
+    N59Receiver0_boot* object = (N59Receiver0_boot*)receiver;
+    func_001F06E0(receiver);
+    object->vtable = D_171B30;
+    object->unk00 = 0;
+    return receiver;
+}
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F0620);
+void* func_001F0620(void* object)
+{
+    ((WrapperPointerSlots*)object)->field1C = D_171B20;
+    func_001F0660(object);
+    return object;
+}
 
 void func_001F0660(void* object)
 {
@@ -355,7 +447,12 @@ void func_001F0660(void* object)
     *(u32*)((u8*)object + 0x18) = 0;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F0680);
+void* func_001F0680(void* object)
+{
+    ((WrapperPointerSlots*)object)->field1C = D_171B10;
+    func_001F06C0(object);
+    return object;
+}
 
 void func_001F06C0(void* object)
 {
@@ -365,7 +462,12 @@ void func_001F06C0(void* object)
     *(u32*)((u8*)object + 0x18) = 0;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F06E0);
+void* func_001F06E0(void* object)
+{
+    ((WrapperPointerSlots*)object)->field10 = D_171B00;
+    func_001F0720(object);
+    return object;
+}
 
 void func_001F0720(void* object)
 {
@@ -2150,9 +2252,24 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F8920)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F8980);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F8A40);
+void func_001F8A40(void* object)
+{
+    ((FieldU8At064*)object)->value = 0;
+    func_4D00B0(object);
+}
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F8A60);
+struct N50OwnerC4_001ED4E0 { u8 pad00[0x64]; u8 active; u8 pad65[0x5F]; void* owner; };
+
+void func_001F8A60(N50OwnerC4_001ED4E0* object)
+{
+    object->active = 1;
+    void* adjusted = object;
+    if (object != 0)
+    {
+        adjusted = (u8*)adjusted + 0x90;
+    }
+    func_11F510(object->owner, adjusted);
+}
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F8AA0);
 

@@ -1,6 +1,19 @@
 #include "include_asm.h"
 #include "overlays/3454-00/text_003C1A40.h"
 
+extern void func_003B06B0(void* object);
+
+typedef struct FloatScaleStateView
+{
+    u8 pad00[0x28];
+    float unk28;
+    float unk2C;
+    u8 pad30[0x30];
+    float unk60;
+    u8 pad64[0x0C];
+    float unk70;
+} FloatScaleStateView;
+
 typedef struct ConstantByteSetterOwnertext_003C1A40
 {
     u8 unk00[0x528];
@@ -208,7 +221,14 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C9A
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C9DF0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C9E60);
+void func_003C9E60(void* object)
+{
+    u8* bytes = (u8*)object;
+    if (bytes[0x36C] == 0)
+    {
+        bytes[0x36C] = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C9E80);
 
@@ -317,15 +337,30 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CAF
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CAFA0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CB000);
+void func_003CB000(void* object)
+{
+    FloatScaleStateView* state = (FloatScaleStateView*)object;
+    func_003B06B0(object);
+    state->unk70 = 1.0f / state->unk60 * state->unk28;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CB040);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CB0A0);
+void func_003CB0A0(void* object)
+{
+    FloatScaleStateView* state = (FloatScaleStateView*)object;
+    func_003B06B0(object);
+    state->unk60 = 1.0f / state->unk2C * state->unk28;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CB0E0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003CB140);
+void func_003CB140(void* object)
+{
+    FloatScaleStateView* state = (FloatScaleStateView*)object;
+    func_003B06B0(object);
+    state->unk60 = 1.0f / state->unk2C * state->unk28;
+}
 
 void func_003CB180(void* object)
 {

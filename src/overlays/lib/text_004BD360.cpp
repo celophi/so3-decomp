@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/vector.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/trig_vu0.h"
@@ -8,6 +9,13 @@
 #include "main/resident_data.h"
 #include "main/resident_001001E0.h"
 #include "main/resident_00101550.h"
+
+extern "C" u8 D_00174C90[];
+extern "C" void func_004A8F10(void* object);
+extern "C" void func_004D00B0(void* object);
+extern "C" void func_004C2BB0(void* object);
+extern "C" void func_004C2C40(void* object);
+extern "C" void func_00461830(void* embedded, void* adjusted);
 
 typedef struct HalfwordGetterOwnertext_004BD360
 {
@@ -628,9 +636,21 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2A10);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2AA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2B30);
+struct ResetVectorB0_004BD360 { u8 pad[0xB0]; FieldVec4B value; };
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2B70);
+void func_004C2B30(void* object)
+{
+    ((ResetVectorB0_004BD360*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    func_004C2BB0(object);
+}
+
+struct ResetVector90_004BD360 { u8 pad[0x90]; FieldVec4B value; };
+
+void func_004C2B70(void* object)
+{
+    ((ResetVector90_004BD360*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    func_004C2C40(object);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2BB0);
 
@@ -1023,9 +1043,23 @@ extern "C" void lib_container_attach_widget(LibObject178660* object, LibClass178
     reinterpret_cast<LibWidgetContainerLink*>(child)->container = object;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C61D0);
+extern "C" void func_004C61D0(void* object)
+{
+    func_004D00B0((u8*)object + 0x20);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C61F0);
+struct N54Owner84_004BD360 { u8 pad00[0x84]; u8 active; };
+
+void func_004C61F0(N54Owner84_004BD360* object)
+{
+    object->active = 1;
+    void* adjusted = object;
+    if (object != 0)
+    {
+        adjusted = (u8*)adjusted + 0xB0;
+    }
+    func_00461830((u8*)object + 0xD0, adjusted);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6230);
 
@@ -1274,7 +1308,13 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9840);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C98E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9930);
+void* func_004C9930(void* receiver)
+{
+    func_004A8F10(receiver);
+    *(void**)receiver = D_00174C90;
+    ((u8*)receiver)[0xE] = 1;
+    return receiver;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9970);
 

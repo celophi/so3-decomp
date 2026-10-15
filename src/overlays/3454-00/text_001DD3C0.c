@@ -23,6 +23,49 @@ typedef struct QuadwordSetterOwnertext_001DD3C0
     u8 ready;
 } QuadwordSetterOwnertext_001DD3C0;
 
+typedef struct BattleChecksumState
+{
+    u8 pad00[0x70];
+    s16 unk70;
+    s16 unk72;
+    s16 unk74;
+    s16 unk76;
+    s16 unk78;
+    s16 unk7A;
+    s16 unk7C;
+    s16 unk7E;
+    s16 unk80;
+    u8 pad82[0x22];
+    u32 checksumA4;
+    u32 checksumA8;
+    u32 checksumAC;
+    u32 checksumB0;
+} BattleChecksumState;
+
+typedef struct BattleCheckedWordState
+{
+    u8 pad00[0x34];
+    u32 unk34;
+    u32 unk38;
+    u32 unk3c;
+    u32 unk40;
+    u32 unk44;
+    u32 unk48;
+    u32 unk4c;
+    u32 unk50;
+    u32 unk54;
+    u32 unk58;
+    u32 unk5c;
+    u32 unk60;
+    u8 pad64[0x30];
+    u32 unk94;
+    u32 unk98;
+    u32 unk9c;
+    u32 unka0;
+    u8 pada4[4];
+    u32 unka8;
+} BattleCheckedWordState;
+
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001DD3C0);
 
@@ -165,7 +208,16 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E38
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E39D0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E3BA0);
+s32 func_001E3BA0(const void* object)
+{
+    const BattleCheckedWordState* state = (const BattleCheckedWordState*)object;
+    u32 check = state->unka8 ^ (state->unk54 ^ (state->unk4c + state->unk50));
+    if (state->unk9c != check)
+    {
+        return 0;
+    }
+    return state->unk50 ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E3BE0);
 
@@ -221,9 +273,19 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E57
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E5890);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E5900);
+s16 func_001E5900(void* object, s16 value)
+{
+    s16* fields = (s16*)object;
+    fields[1] = value;
+    return fields[1];
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E5910);
+s16 func_001E5910(void* object, s16 value)
+{
+    s16* fields = (s16*)object;
+    fields[0] = value;
+    return fields[0];
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E5920);
 
@@ -233,27 +295,81 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7A
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7AB0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7B20);
+s32 func_001E7B20(const void* object)
+{
+    const BattleCheckedWordState* state = (const BattleCheckedWordState*)object;
+    u32 check = state->unka8 ^ (state->unk60 ^ (state->unk58 + state->unk5c));
+    if (state->unka0 != check)
+    {
+        return 0;
+    }
+    return state->unk60 ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7B60);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7BD0);
+s32 func_001E7BD0(const void* object)
+{
+    const BattleCheckedWordState* state = (const BattleCheckedWordState*)object;
+    u32 check = state->unka8 ^ (state->unk48 ^ (state->unk40 + state->unk44));
+    if (state->unk98 != check)
+    {
+        return 0;
+    }
+    return state->unk48 ^ 0x7DE3F7E3;
+}
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7C10);
+s32 func_001E7C10(const void* object)
+{
+    const BattleCheckedWordState* state = (const BattleCheckedWordState*)object;
+    u32 check = state->unka8 ^ (state->unk3c ^ (state->unk34 + state->unk38));
+    if (state->unk94 != check)
+    {
+        return 0;
+    }
+    return state->unk3c ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7C50);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7CD0);
+/** Validate the checksum for the record fields beginning at 0x70. */
+s32 func_001E7CD0(const void* object)
+{
+    const BattleChecksumState* state = (const BattleChecksumState*)object;
+    if (state->checksumA4 != (state->checksumA8 ^ (state->unk74 ^ (state->unk70 + state->unk72))))
+    {
+        return 0;
+    }
+    return state->unk74 ^ 0x7E93;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7D10);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7DB0);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7E50);
+/** Validate the checksum for the record fields beginning at 0x7C. */
+s32 func_001E7E50(const void* object)
+{
+    const BattleChecksumState* state = (const BattleChecksumState*)object;
+    if (state->checksumAC != (state->checksumA8 ^ (state->unk80 ^ (state->unk7C + state->unk7E))))
+    {
+        return 0;
+    }
+    return state->unk80 ^ 0x7E93;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7E90);
 
-INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7EC0);
+/** Validate the checksum for the record fields beginning at 0x76. */
+s32 func_001E7EC0(const void* object)
+{
+    const BattleChecksumState* state = (const BattleChecksumState*)object;
+    if (state->checksumB0 != (state->checksumA8 ^ (state->unk7A ^ (state->unk76 + state->unk78))))
+    {
+        return 0;
+    }
+    return state->unk7A ^ 0x7E93;
+}
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7F00);
 

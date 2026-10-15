@@ -2,6 +2,9 @@
 #define SO3_OVERLAYS_LIB_TEXT_004DD440_H
 
 #include "types.h"
+
+typedef struct N50Owner114_004DD440 N50Owner114_004DD440;
+typedef struct N50OwnerBC_004DD440 N50OwnerBC_004DD440;
 #include "main/resident_0010A0E0.h"
 #include "sdk/main/libdma_0012B2C8.h"
 
@@ -172,6 +175,9 @@ extern "C" {
 /** Resident VIF1 DMA queue initialized by the Lib runtime. */
 extern ResidentDmaQueue* g_vif1_dma_queue;
 
+void func_004E59A0(void* object);
+void func_004E5B00(void* object);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
@@ -286,6 +292,11 @@ void func_004E13D0(void* object);
 /** Return the address of the global at 0x50CD80. */
 const void* func_004E0FB0(void);
 
+/** Set the active flag and forward the optional child pointer. */
+void func_004E1040(N50Owner114_004DD440* object);
+/** Set the active flag and forward the optional child pointer. */
+void func_004E2F20(N50OwnerBC_004DD440* object);
+
 #ifdef __cplusplus
 /** Return the first pointer argument unchanged. */
 void* func_004E6D30(void* value);
@@ -323,6 +334,21 @@ float func_004E68F0(void* object);
 
 /** Find a key in the receiver's fixed-size entry array. */
 s32 func_004E6880(void* object, float key);
+
+/**
+ * @brief Clear the byte at offset 0x64 and run the cleanup helper.
+ * @param object Object containing the byte.
+ */
+void func_004E1020(void* object);
+
+void* func_004E4590(void* object);
+void* func_004E4650(void* object);
+void* func_004E4710(void* object);
+void* func_004E47D0(void* object);
+void* func_004E4890(void* object);
+void* func_004E4950(void* object);
+void* func_004E4A10(void* object);
+void* func_004E4AD0(void* object);
 
 
 }

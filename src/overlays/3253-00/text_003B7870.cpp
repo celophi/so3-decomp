@@ -1,6 +1,19 @@
 #include "include_asm.h"
 #include "overlays/3253-00/text_003B7870.h"
 
+extern "C" void func_003AAF50(void* object);
+
+struct FloatScaleStateView
+{
+    u8 pad00[0x28];
+    float unk28;
+    float unk2C;
+    u8 pad30[0x30];
+    float unk60;
+    u8 pad64[0x0C];
+    float unk70;
+};
+
 /** Partial nested state reached through the receiver's +0x50 pointer. */
 struct BattleNestedStateView
 {
@@ -518,15 +531,30 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C69
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C69C0);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6A20);
+void func_003C6A20(void* object)
+{
+    FloatScaleStateView* state = (FloatScaleStateView*)object;
+    func_003AAF50(object);
+    state->unk70 = 1.0f / state->unk60 * state->unk28;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6A60);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6AC0);
+void func_003C6AC0(void* object)
+{
+    FloatScaleStateView* state = (FloatScaleStateView*)object;
+    func_003AAF50(object);
+    state->unk60 = 1.0f / state->unk2C * state->unk28;
+}
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6B00);
 
-INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6B60);
+void func_003C6B60(void* object)
+{
+    FloatScaleStateView* state = (FloatScaleStateView*)object;
+    func_003AAF50(object);
+    state->unk60 = 1.0f / state->unk2C * state->unk28;
+}
 
 void func_003C6BA0(void* object)
 {

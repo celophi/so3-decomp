@@ -7,6 +7,23 @@
 extern "C" {
 #endif
 
+/** Validate the checksum for the record fields beginning at 0x4C. */
+s32 func_001E3BA0(const void* object);
+
+/** Validate the checksum for the record fields beginning at 0x58. */
+s32 func_001E7B20(const void* object);
+/** Validate the checksum for the record fields beginning at 0x40. */
+s32 func_001E7BD0(const void* object);
+/** Validate the checksum for the record fields beginning at 0x34. */
+s32 func_001E7C10(const void* object);
+
+/** Validate the checksum for the record fields beginning at 0x70. */
+s32 func_001E7CD0(const void* object);
+/** Validate the checksum for the record fields beginning at 0x7C. */
+s32 func_001E7E50(const void* object);
+/** Validate the checksum for the record fields beginning at 0x76. */
+s32 func_001E7EC0(const void* object);
+
 /** Return the fixed value 0. */
 s32 func_001DD400(void* object);
 

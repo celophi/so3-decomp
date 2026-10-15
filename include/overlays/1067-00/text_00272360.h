@@ -14,6 +14,9 @@ extern "C" {
  */
 void func_002723E0(FieldClass1514F8* object);
 
+/** Release the auxiliary state at 0x5A4, then clean up the receiver. */
+void func_00272B50(void* object);
+
 /**
  * @brief Append a pair of components to the owner's vector array.
  * @param object Component-curve owner.

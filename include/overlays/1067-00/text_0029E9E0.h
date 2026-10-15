@@ -1699,6 +1699,10 @@ void func_002A5310(FieldClass158720* object, FieldClass158A78* cell, FieldClass1
  * @param source Vector copied to each element, or null to use the cell's.
  */
 void func_002ADDF0(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, const FieldVector4* source);
+void func_002AD9E0(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
+void func_002AD960(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
+/** Clear four state bytes on the cell, then update its row through the owner. */
+void func_002AD990(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, const FieldVector4* source);
 
 #ifdef __cplusplus
 }

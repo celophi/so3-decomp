@@ -2,8 +2,11 @@
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_004DD440.h"
+#include "main/resident_0010A0E0.h"
 
 extern "C" LibVector4 D_50CD30;
+extern "C" void func_0011F770(void* owner, void* object);
 extern "C" void func_004D00B0(LibClass178A90* object);
 
 struct LibStateByteB4View
@@ -50,7 +53,17 @@ extern "C" void func_003EEDE0(void* object)
     state->state60 = state->stateB4;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEDF0);
+/** Build a four-word stack value and return its address. */
+void* func_003EEDF0(void)
+{
+    s32 stack[4];
+    stack[0] = 0;
+    stack[3] = 0x7149F2CA;
+    stack[1] = 0;
+    s32* result = stack;
+    stack[2] = 0;
+    return result;
+}
 
 /** @brief Return the default output-handler result. @param output Unused output object. @return Zero. */
 s32 LibClass178A90::func_003EEE20(void* output)
@@ -174,7 +187,14 @@ void LibClass171EF0::func_003EF010(float x, float y, float z)
     unk40.components[2] = z;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF030);
+void func_003EF030(u8* object)
+{
+    object[0x64] = 1;
+    *(volatile u32*)0x10009020 = *(u32*)(object + 0x9C);
+    *(volatile u32*)0x10009010 = *(u32*)(object + 0xA0);
+    *(volatile u32*)0x1000E010 = 2;
+    *(volatile u32*)0x10009000 = 0x101;
+}
 
 /** @brief Forward the transform receiver to its state-update handler. @param object Transform owner. */
 extern "C" void func_003EF070(LibClass178A90* object)
@@ -182,7 +202,16 @@ extern "C" void func_003EF070(LibClass178A90* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF090);
+/** Queue the DMA submission embedded at offset 0x90 when present. */
+s32 func_003EF090(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x90);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF0C0);
 
@@ -255,7 +284,18 @@ const LibVector4* LibClass178A90::func_003EFAA0()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EFAB0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EFAF0);
+struct N50Owner94_003E68C0 { u8 pad00[0x64]; u8 active; u8 pad65[0x2F]; void* owner; };
+
+void func_003EFAF0(N50Owner94_003E68C0* object)
+{
+    object->active = 1;
+    void* adjusted = object;
+    if (object != 0)
+    {
+        adjusted = (u8*)adjusted + 0x90;
+    }
+    func_0011F770(object->owner, adjusted);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EFB30);
 
@@ -279,7 +319,16 @@ void func_003F2550(LibClass178A90* object)
     func_004D00B0(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F2570);
+/** Queue the DMA submission embedded at offset 0x90 when present. */
+s32 func_003F2570(void* object)
+{
+    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    if (object != 0)
+    {
+        submission = (DmaSubmission*)((u8*)submission + 0x90);
+    }
+    return func_00114100(g_vif1_dma_queue, submission);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F25A0);
 
@@ -412,7 +461,17 @@ extern "C" void func_003F4560(LibClass178A90* object)
     object->unk60 = 7;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4570);
+/** Build a four-word stack value and return its address. */
+void* func_003F4570(void)
+{
+    s32 stack[4];
+    stack[0] = 0;
+    stack[3] = 0x7149F2CA;
+    stack[1] = 0;
+    s32* result = stack;
+    stack[2] = 0;
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F45A0);
 

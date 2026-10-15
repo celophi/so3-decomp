@@ -29,6 +29,13 @@ void* func_003A1970(void* object);
 s32 func_003A4A70(u8* object);
 
 /**
+ * @brief Initialize the record's leading fields and pointer at offset 0x0C.
+ * @param arg0 Record to initialize.
+ * @return The initialized record.
+ */
+void* func_003A4C10(void* arg0);
+
+/**
  * @brief Read the word at offset 0x1C.
  * @param object Object containing the word.
  * @return The stored word.

@@ -45,6 +45,13 @@ u8 func_00274160(const void* object);
 /** Return the unsigned byte at receiver offset 0xCD6. */
 u8 func_002785A0(const void* object);
 
+/** Clear the selected state when the 0x291A40 check succeeds. */
+void func_00277C10(void* object);
+/** Clear the selected state when the 0x29F6A0 check succeeds. */
+void func_00278210(void* object);
+/** Clear the selected state when the 0x29F6A0 check succeeds. */
+void func_0027D7E0(void* object);
+
 #ifdef __cplusplus
 }
 #endif
