@@ -77,6 +77,15 @@ segments:
           - {function: func_0034FA70, offset: 0x40, size: 0x34}
         linker_section_order: .rodata
       - [0x273B4, rodatabin, rodata_0036F734]
+      - start: 0x273D0
+        type: .rodata
+        name: text_003483C0
+        linker_section: .rodata.0036F750
+        rodata_anchors:
+          - {function: func_slot11c__21InventoryItemTypeListFUsUc, offset: 0x0, size: 0x18}
+        linker_section_order: .rodata
+      - [0x273E8, pad, rodata_pad_0036F768]
+      - [0x273F0, rodatabin, rodata_0036F770]
       - start: 0x27440
         type: .rodata
         name: text_003483C0

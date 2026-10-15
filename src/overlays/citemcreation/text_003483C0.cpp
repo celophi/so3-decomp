@@ -7782,7 +7782,142 @@ u8 func_0035CAD0(InventoryItemTypeList* object, const ItemCreationCategoryRecord
     return result;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0035CD00);
+/**
+ * @brief Collect the unequipped allocation records of an item type.
+ * @param category Item-type record, or null.
+ * @param records Receives the allocation records.
+ * @param identifier Receives the one-based item-type identifier, or zero without a record.
+ * @return Number of records collected.
+ */
+static inline s32 item_type_allocations(ItemCreationCategoryRecord* category, ItemCreationAllocationRecord** records, u16& identifier)
+{
+    identifier = 0;
+    s32 count = 0;
+    if (category != 0)
+    {
+        u16 id = category->catalog_index + 1;
+        identifier = id;
+        count = lib_collect_unequipped_allocations(D_001B64F8->records, records, id);
+    }
+    return count;
+}
+
+/**
+ * @brief Clamp a list length to the visible row count.
+ * @param total List length.
+ * @param rows Visible rows.
+ * @return Rows to show.
+ */
+static inline s32 displayed_rows(s32 total, s32 rows)
+{
+    return total >= rows ? rows : total;
+}
+
+/**
+ * @brief Rebuild the item-type list for a category mode.
+ * @param reset Nonzero to return to the top of the list.
+ * @param mode Item category mode, zero through five.
+ */
+void InventoryItemTypeList::func_slot11c(u16 reset, u8 mode)
+{
+    ItemCreationAllocationRecord* records[99];
+    ItemCreationCategoryRecord* category;
+    s32 total;
+    s32 rows;
+    s32 displayed;
+    s32 selected;
+    s32 start;
+    func_0036EEF0(&this->unk1a8);
+    for (s32 index = 0; index < 24; index++)
+    {
+        this->unk1b8[index] = 0;
+    }
+
+    this->unk88 = 0;
+    this->unk1a4 = mode;
+    switch (this->unk1a4)
+    {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    {
+        ItemCreationListNode* node = this->unk1a8.unk00;
+        for (s32 index = 1; index <= 750; index++)
+        {
+            category = item_type_record(index);
+            if (category != 0)
+            {
+                u16 category_index = category->catalog_index;
+                if ((u8)D_001B64F0[category_index].category == this->unk1a4 && category->inventory_count != 0)
+                {
+                    u16 identifier;
+                    s32 count = item_type_allocations(category, records, identifier);
+                    for (s32 record_index = 0; record_index < count; record_index++)
+                    {
+                        if (records[record_index]->new_item)
+                        {
+                            this->unk1b8[identifier / 32] |= 1 << (identifier % 32);
+                            break;
+                        }
+                    }
+
+                    if (func_0035CAD0(this, category) == 0)
+                    {
+                        func_0036EE40(&this->unk1a8, node, reinterpret_cast<void* const*>(&category));
+                        node = node->unk04;
+                    }
+                    else
+                    {
+                        func_0036EDB0(&this->unk1a8, category);
+                    }
+
+                    this->unk88++;
+                }
+            }
+        }
+        break;
+    }
+    default:
+        return;
+    }
+
+    rows = this->unk218;
+    total = this->unk88;
+    displayed = displayed_rows(total, rows);
+    start = static_cast<s16>(this->FieldStateCE420::unk22);
+    if (total < start + rows)
+    {
+        start = total - rows;
+    }
+
+    if (start < 0)
+    {
+        start = 0;
+    }
+
+    selected = this->FieldStateCE420::unk28;
+    if (selected >= displayed)
+    {
+        selected = displayed - 1;
+    }
+
+    if (selected < 0)
+    {
+        selected = 0;
+    }
+
+    if (reset)
+    {
+        selected = 0;
+        start = 0;
+    }
+
+    func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, displayed, 0x17A, 28);
+    FieldClass15AE60::configure_selection(FieldClass15AE60::unk88, start, selected);
+}
 
 /** @brief Refresh the item-type list's selection cursor. */
 void InventoryItemTypeList::func_slot5c()
