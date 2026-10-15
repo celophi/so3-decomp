@@ -400,10 +400,60 @@ struct ShopState : FieldClass153E30
 {
     /** @brief Initialize the shop controller and its record selection. */
     ShopState();
-    /** @brief Initialize the selected records. @return Nonzero when selection links are present. */
-    virtual u8 func_00264110();
     /** @brief Destroy the record selection and Field controller base. */
     virtual ~ShopState();
+    /** @brief Report the shop receiver type. @return Four. */
+    virtual s32 func_001DF3D0();
+    /** @brief Queue the shop receiver for resident processing. */
+    virtual void func_001DD7B0();
+    /** @brief Default shop receiver handler. */
+    virtual void func_001DF360();
+    /** @brief Default shop receiver handler. */
+    virtual void func_001DD410();
+    /** @brief Initialize the selected records. @return Nonzero when selection links are present. */
+    virtual u8 func_00264110();
+    /** @brief Store the active window at offset 0x20. */
+    virtual void func_00263C70(void* value);
+    /** @brief Return the active window at offset 0x20. */
+    virtual void* func_00261150();
+    /** @brief Store the help window at offset 0x24. */
+    virtual void func_00263C80(void* value);
+    /** @brief Return the help window at offset 0x24. */
+    virtual void* func_00263C90();
+    /** @brief Store the byte at offset 0x28. */
+    virtual void func_00263CA0(s8 value);
+    /** @brief Return the signed byte at offset 0x28. */
+    virtual s8 func_00263CB0();
+    /** @brief Return the item-name resource slot. */
+    virtual u32 func_00263CC0();
+    /** @brief Return the shop window initialization flag. */
+    virtual u8 func_00261D20();
+    /** @brief Register the completed resource buffer and initialize the shop. */
+    virtual s32 func_001E1820(void* buffer);
+    /** @brief Create and attach the shop windows. */
+    virtual s32 func_00263CD0();
+    /** @brief Release shop resources and clear the discount flags. */
+    virtual void func_slot5c();
+    /** @brief Default shop receiver hook; returns zero. */
+    virtual s32 func_slot60();
+    /** @brief Default shop receiver hook; returns zero. */
+    virtual s32 func_slot64();
+    /** @brief Default shop receiver hook. */
+    virtual void func_slot68();
+    /** @brief Return the shop record selection. */
+    virtual FieldRecordSelection* selected_records();
+    /** @brief Default shop receiver hook. */
+    virtual void func_slot70();
+    /** @brief Default shop receiver hook. */
+    virtual void func_slot74();
+    /** @brief Default shop receiver hook. */
+    virtual void func_slot78();
+    /** @brief Default shop receiver hook; returns zero. */
+    virtual s32 func_slot7c();
+    /** @brief Default shop receiver hook; returns zero. */
+    virtual s32 func_slot80();
+    /** @brief Default shop receiver hook; returns zero. */
+    virtual s32 func_slot84();
     s32 resource_slot;
     u8 windows_initialized;
     u8 unk39[3];
@@ -519,403 +569,6 @@ extern "C"
     void shop_update_fol(ShopValueDisplay* object);
 
     /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348530(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348540(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348550(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348560(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348570(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348580(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348590(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_003485A0(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_003485B0(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_003485C0(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_003485D0(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_003485E0(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_003485F0(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348600(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348610(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348620(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348630(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348640(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348650(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00348660(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00348670(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00348680(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00348690(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_003486A0(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_003486B0(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_003486C0(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_003486D0(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_003486E0(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_003486F0(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348700(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348710(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00348740(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_003516A0(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_003516B0(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_003516C0(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00351800(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00351810(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00351890(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00351970(void* object);
-
-    /**
-     * @brief Return the fixed value 4.
-     * @param object Receiver or first argument; unused.
-     * @return Always 4.
-     */
-    s32 func_00351BE0(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00351C30(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00351C40(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00351C50(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00351C60(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00351C70(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00351C80(void* object);
-
-    /**
-     * @brief Perform no work.
-     * @param object Receiver or first argument; unused.
-     */
-    void func_00351C90(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00351CA0(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00351CB0(void* object);
-
-    /**
-     * @brief Return the fixed value 0.
-     * @param object Receiver or first argument; unused.
-     * @return Always 0.
-     */
-    s32 func_00351CC0(void* object);
-
-    /**
-     * @brief Store the active shop window.
-     * @param object Shop controller.
-     * @param value Active window pointer to store.
-     */
-    void shop_set_active_window(ShopState* object, void* value);
-
-    /**
-     * @brief Return the active shop window.
-     * @param object Shop controller.
-     * @return Active window pointer.
-     */
-    void* shop_get_active_window(ShopState* object);
-
-    /**
-     * @brief Return the shop item-name resource slot.
-     * @param object Shop controller.
-     * @return Resource slot.
-     */
-    s32 shop_get_resource_slot(ShopState* object);
-
-    /**
-     * @brief Report whether the shop windows have been initialized.
-     * @param object Shop controller.
-     * @return Window initialization flag.
-     */
-    u8 shop_windows_initialized(ShopState* object);
-
-    /**
-     * @brief Store the shop help window.
-     * @param object Shop controller.
-     * @param value Help window pointer to store.
-     */
-    void shop_set_help_window(ShopState* object, void* value);
-
-    /**
-     * @brief Return the shop help window.
-     * @param object Shop controller.
-     * @return Help window pointer.
-     */
-    void* shop_get_help_window(ShopState* object);
-
-    /**
-     * @brief Set field at offset 0x28.
-     * @param object Object containing the field.
-     * @param value Value to store.
-     */
-    void func_00351C10(ShopState* object, s8 value);
-
-    /**
-     * @brief Get field at offset 0x28.
-     * @param object Object containing the field.
-     * @return Field value.
-     */
-    s8 func_00351C20(ShopState* object);
-
-    /**
-     * @brief Create and attach the shop state windows.
-     * @param receiver Current shop state.
-     * @return Always one.
-     */
-    s32 shop_create_windows(void* receiver);
-
-    /**
-     * @brief Register a completed resource buffer and finish the receiver setup.
-     * @param receiver Current shop state.
-     * @param buffer Completed resource buffer.
-     * @return Setup result, or zero for a missing buffer.
-     */
-    s32 shop_register_resource(void* receiver, void* buffer);
-
-    /**
-     * @brief Initialize the shop record selection from the resident tables.
-     * @param object Shop controller.
-     * @return Nonzero when both selection tables are present.
-     */
-    s32 shop_init_record_selection(ShopState* object);
-
-    /**
      * @brief Select the next item category and refresh the sell list.
      * @param object Receiver to refresh.
      * @return Always 1.
@@ -997,18 +650,6 @@ extern "C"
      * @param reset Nonzero to move the scroll offset and cursor back to the first row.
      */
     void shop_refresh_buy_list(void* object, u8 reset);
-
-    /**
-     * @brief Release the shop state resources and clear its runtime flags.
-     * @param object Shop state to release.
-     */
-    void shop_release_resources(ShopState* object);
-
-    /**
-     * @brief Enqueue the receiver for resident processing.
-     * @param object Receiver to enqueue.
-     */
-    void shop_queue_object(void* object);
 
     /**
      * @brief Append a value after the list's sentinel node.

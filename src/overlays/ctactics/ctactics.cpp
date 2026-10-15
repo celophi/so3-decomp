@@ -77,6 +77,7 @@ struct TacticsMovement175030 : public LibClass178600, public TacticsStorage18B01
     {
         unk38 = 9;
     }
+
     /** @brief Update the widget movement state. */
     virtual void func_00413D20();
     /** @brief Draw the moving widget. */
@@ -93,6 +94,7 @@ struct TacticsWidget18AFD0 : public TacticsMovement175030
     {
         selected = -1;
     }
+
     /** @brief Report widget kind three. @return Always three. */
     virtual s32 func_003EEBC0();
     /** @brief Perform no refresh work. */
@@ -159,23 +161,60 @@ struct TacticsGridResourceRecord
     s32 encoded_base_mp;
     s32 encoded_max_mp;
     s32 encoded_mp;
-    u8 unk28[0x5C];
+    float unk28;
+    /** Fury is stored at sixteen times its displayed amount. */
+    float scaled_max_fury;
+    float scaled_fury;
+    s32 encoded_base_attack;
+    s32 encoded_effective_attack;
+    s32 encoded_attack;
+    s32 encoded_base_defense;
+    s32 encoded_effective_defense;
+    s32 encoded_defense;
+    s32 encoded_base_agility;
+    s32 encoded_effective_agility;
+    s32 encoded_agility;
+    s32 encoded_base_hit;
+    s32 encoded_effective_hit;
+    s32 encoded_hit;
+    /** The resident INT helpers validate these values through the HIT checksum. */
+    s32 encoded_base_intelligence;
+    s32 encoded_effective_intelligence;
+    s32 encoded_intelligence;
+    s16 encoded_base_knockback_power;
+    s16 encoded_effective_knockback_power;
+    s16 encoded_knockback_power;
+    s16 encoded_base_knockback_resistance;
+    s16 encoded_effective_knockback_resistance;
+    s16 encoded_knockback_resistance;
+    s16 encoded_base_critical_rate;
+    s16 encoded_effective_critical_rate;
+    s16 encoded_critical_rate;
     s32 level_checksum;
     s32 flags_experience_checksum;
     s32 hp_checksum;
     s32 mp_checksum;
-    u8 unk94[0x14];
+    s32 attack_checksum;
+    s32 defense_checksum;
+    s32 agility_checksum;
+    s32 hit_checksum;
+    s32 knockback_power_checksum;
     s32 checksum_salt;
-    u8 unkac[0x18];
+    s32 critical_rate_checksum;
+    s32 knockback_resistance_checksum;
+    s32 unkb4[3];
+    s32 unkc0;
 
     /** @brief Decode current HP, marking valid flags when the HP checksum fails. @return Current HP, or zero for corruption. */
     u32 get_hp()
     {
         u32 value = encoded_hp;
+
         if (hp_checksum != ((encoded_base_hp + encoded_max_hp) ^ encoded_hp ^ checksum_salt))
         {
             u32 flags = encoded_flags;
             s32 flag_salt = encoded_experience;
+
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
                 encoded_flags = ((flags ^ TACTICS_STAT_WORD_XOR_KEY) | 1) ^ TACTICS_STAT_WORD_XOR_KEY;
@@ -184,18 +223,23 @@ struct TacticsGridResourceRecord
                 s32 current_experience = encoded_experience;
                 flags_experience_checksum = current_key ^ (current_experience ^ (flags + current_key));
             }
+
             return 0;
         }
+
         return value ^ TACTICS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode maximum HP, marking valid flags when the HP checksum fails. @return Maximum HP, or zero for corruption. */
     u32 get_max_hp()
     {
         u32 value = encoded_max_hp;
+
         if (hp_checksum != ((encoded_base_hp + encoded_max_hp) ^ encoded_hp ^ checksum_salt))
         {
             u32 flags = encoded_flags;
             s32 flag_salt = encoded_experience;
+
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
                 encoded_flags = ((flags ^ TACTICS_STAT_WORD_XOR_KEY) | 1) ^ TACTICS_STAT_WORD_XOR_KEY;
@@ -204,18 +248,23 @@ struct TacticsGridResourceRecord
                 s32 current_experience = encoded_experience;
                 flags_experience_checksum = current_key ^ (current_experience ^ (flags + current_key));
             }
+
             return 0;
         }
+
         return value ^ TACTICS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode current MP, marking valid flags when the MP checksum fails. @return Current MP, or zero for corruption. */
     u32 get_mp()
     {
         u32 value = encoded_mp;
+
         if (mp_checksum != ((encoded_base_mp + encoded_max_mp) ^ encoded_mp ^ checksum_salt))
         {
             u32 flags = encoded_flags;
             s32 flag_salt = encoded_experience;
+
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
                 encoded_flags = ((flags ^ TACTICS_STAT_WORD_XOR_KEY) | 1) ^ TACTICS_STAT_WORD_XOR_KEY;
@@ -224,18 +273,23 @@ struct TacticsGridResourceRecord
                 s32 current_experience = encoded_experience;
                 flags_experience_checksum = current_key ^ (current_experience ^ (flags + current_key));
             }
+
             return 0;
         }
+
         return value ^ TACTICS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode maximum MP, marking valid flags when the MP checksum fails. @return Maximum MP, or zero for corruption. */
     u32 get_max_mp()
     {
         u32 value = encoded_max_mp;
+
         if (mp_checksum != ((encoded_base_mp + encoded_max_mp) ^ encoded_mp ^ checksum_salt))
         {
             u32 flags = encoded_flags;
             s32 flag_salt = encoded_experience;
+
             if (flags_experience_checksum == ((flags + checksum_salt) ^ flag_salt ^ checksum_salt))
             {
                 encoded_flags = ((flags ^ TACTICS_STAT_WORD_XOR_KEY) | 1) ^ TACTICS_STAT_WORD_XOR_KEY;
@@ -244,10 +298,13 @@ struct TacticsGridResourceRecord
                 s32 current_experience = encoded_experience;
                 flags_experience_checksum = current_key ^ (current_experience ^ (flags + current_key));
             }
+
             return 0;
         }
+
         return value ^ TACTICS_STAT_WORD_XOR_KEY;
     }
+
     /** @brief Decode the protected level. @return Level, or one for an invalid checksum. */
     s32 get_level() const
     {
@@ -255,16 +312,20 @@ struct TacticsGridResourceRecord
         {
             return 1;
         }
+
         return encoded_level ^ TACTICS_STAT_HALFWORD_XOR_KEY;
     }
+
     /** @brief Decode the protected flags. @return Flags, or five for an invalid checksum. */
     u32 get_flags() const
     {
         u32 experience = encoded_experience;
+
         if (flags_experience_checksum != (checksum_salt ^ (experience ^ (encoded_flags + checksum_salt))))
         {
             return 5;
         }
+
         return encoded_flags ^ TACTICS_STAT_WORD_XOR_KEY;
     }
 };
@@ -499,6 +560,7 @@ static inline u8 tactics_grid_empty(FieldObject23CEA0* grid)
     {
         return 0;
     }
+
     return 1;
 }
 
@@ -513,6 +575,7 @@ static inline bool tactics_selection_inactive(FieldObject23B1D0* selection)
     {
         return false;
     }
+
     return true;
 }
 
@@ -591,6 +654,7 @@ static inline bool icon_resource_empty(FieldRecordSelection* resource, s16 index
     {
         return false;
     }
+
     return true;
 }
 
@@ -622,23 +686,23 @@ static inline void refresh_grid_entry(TacticsWindow18B220* object, s16 selected_
     s32 selected = selected_entry;
     s32 index = 0;
     FieldListNode* node = object->unk2c.unk00->unk04;
-    if (node != 0)
+
+    while (node != 0)
     {
-        do
+        LibObject178750* text = static_cast<LibObject178750*>(node->unk00);
+
+        if (index == selected)
         {
-            LibObject178750* text = static_cast<LibObject178750*>(node->unk00);
-            if (index == selected)
-            {
-                text->set_color(0x288080);
-                func_0023B9B0(object->cursor, selected, lib_text_measure_bounds(text)->unk08);
-            }
-            else
-            {
-                text->set_color(0x808080);
-            }
-            node = node->unk04;
-            index++;
-        } while (node != 0);
+            text->set_color(0x288080);
+            func_0023B9B0(object->cursor, selected, lib_text_measure_bounds(text)->unk08);
+        }
+        else
+        {
+            text->set_color(0x808080);
+        }
+
+        node = node->unk04;
+        index++;
     }
 }
 
@@ -653,6 +717,7 @@ static inline bool resource_code_empty(u8 code)
     {
         return false;
     }
+
     return true;
 }
 
@@ -678,6 +743,7 @@ static inline bool coordinate_records_ready(TacticsWindow18B520* object)
     {
         return false;
     }
+
     return true;
 }
 
@@ -715,10 +781,12 @@ static inline bool initialize_selector_records(TacticsWindow18B320* object)
     object->entry_records = D_001B643C->entry_records;
     object->character_record_buffer = reinterpret_cast<u8*>(new (0) TacticsGridResourceRecord);
     object->entry_record_buffer = reinterpret_cast<u8*>(new (0) TacticsEntryResourceRecord);
+
     if (object->character_records == 0 || object->entry_records == 0 || object->character_record_buffer == 0 || object->entry_record_buffer == 0)
     {
         return false;
     }
+
     func_0013A678(object->character_record_buffer, 0, sizeof(TacticsGridResourceRecord));
     func_0013A678(object->entry_record_buffer, 0, sizeof(TacticsEntryResourceRecord));
     return true;
@@ -752,24 +820,24 @@ void color_icon_list_selection(void* object, s16 selected)
 {
     s32 index = 0;
     TacticsIconNode* node = ((TacticsIconOwner*)object)->list->next;
-    if (node != 0)
+
+    while (node != 0)
     {
-        do
+        TacticsIcon* icon = node->icon;
+
+        if (index == selected)
         {
-            TacticsIcon* icon = node->icon;
-            if (index == selected)
-            {
-                icon->color = 0x288080;
-                icon->active = 1;
-            }
-            else
-            {
-                icon->color = 0x808080;
-                icon->active = 1;
-            }
-            node = node->next;
-            index++;
-        } while (node != 0);
+            icon->color = 0x288080;
+            icon->active = 1;
+        }
+        else
+        {
+            icon->color = 0x808080;
+            icon->active = 1;
+        }
+
+        node = node->next;
+        index++;
     }
 }
 
@@ -834,6 +902,7 @@ u8 TacticsWindow18B020::func_slotb0()
 {
     selected = grid->unk114;
     u8 result = 0;
+
     if (selected == 0)
     {
         if (reinterpret_cast<TacticsRuntimeControl*>(D_001B643C->runtime)->character_state_refresh_pending != 0)
@@ -842,13 +911,16 @@ u8 TacticsWindow18B020::func_slotb0()
             reinterpret_cast<TacticsFieldContext1516A0*>(context)->func_0020E590();
             reinterpret_cast<TacticsRuntimeControl*>(D_001B643C->runtime)->character_state_refresh_pending = 0;
         }
+
         set_state(0xFF, 0x80);
     }
     else
     {
         result = func_slotb4();
     }
+
     u8 status;
+
     if (result == 0)
     {
         status = 1;
@@ -857,6 +929,7 @@ u8 TacticsWindow18B020::func_slotb0()
     {
         status = 2;
     }
+
     return status;
 }
 
@@ -888,10 +961,12 @@ s32 TacticsWindow18B020::func_slotf4(u32 associated, float x, float y,
     LibObject178750* heading = new (0) LibObject178750;
     LibObject178750* notice = new (0) LibObject178750;
     grid = new (0) FieldObject23CEA0;
+
     if (first == 0 || second == 0 || heading == 0 || grid == 0)
     {
         return 0;
     }
+
     lib_text_init_resource_rectangle(first, associated, 0x7E8, 0, 110.0f, 132.0f, 0.0f, 0.0f);
     lib_text_init_resource_rectangle(second, associated, 0x7E9, 0, 110.0f, 168.0f, 0.0f, 0.0f);
     lib_text_init_resource_rectangle(heading, associated, text_key, 0, 24.0f, 64.0f, 0.0f, 0.0f);
@@ -929,23 +1004,23 @@ void TacticsWindow18B120::func_slot6c()
             s32 selected_entry = grid->unk114;
             s32 index = 0;
             FieldListNode* node = unk44.unk00->unk04;
-            if (node != 0)
+
+            while (node != 0)
             {
-                do
+                LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+
+                if (index == selected_entry)
                 {
-                    LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
-                    if (index == selected_entry)
-                    {
-                        icon->set_color(0x288080);
-                        func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
-                    }
-                    else
-                    {
-                        icon->set_color(0x808080);
-                    }
-                    node = node->unk04;
-                    index++;
-                } while (node != 0);
+                    icon->set_color(0x288080);
+                    func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
+                }
+                else
+                {
+                    icon->set_color(0x808080);
+                }
+
+                node = node->unk04;
+                index++;
             }
         }
     }
@@ -961,23 +1036,23 @@ void TacticsWindow18B120::func_slot68()
             s32 selected_entry = grid->unk114;
             s32 index = 0;
             FieldListNode* node = unk44.unk00->unk04;
-            if (node != 0)
+
+            while (node != 0)
             {
-                do
+                LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+
+                if (index == selected_entry)
                 {
-                    LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
-                    if (index == selected_entry)
-                    {
-                        icon->set_color(0x288080);
-                        func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
-                    }
-                    else
-                    {
-                        icon->set_color(0x808080);
-                    }
-                    node = node->unk04;
-                    index++;
-                } while (node != 0);
+                    icon->set_color(0x288080);
+                    func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
+                }
+                else
+                {
+                    icon->set_color(0x808080);
+                }
+
+                node = node->unk04;
+                index++;
             }
         }
     }
@@ -990,6 +1065,7 @@ void TacticsWindow18B120::func_slot68()
 u8 TacticsWindow18B120::func_slotb4()
 {
     FieldObject23CEA0* selected_grid = grid;
+
     if (selected_grid != 0)
     {
         selected_grid->index = icon_indices_by_slot[selected];
@@ -997,27 +1073,29 @@ u8 TacticsWindow18B120::func_slotb4()
         func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(grid));
         grid->unkad = 0;
     }
+
     s32 selected_entry = icon_indices_by_slot[selected];
     s32 index = 0;
     FieldListNode* node = unk44.unk00->unk04;
-    if (node != 0)
+
+    while (node != 0)
     {
-        do
+        LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+
+        if (index == selected_entry)
         {
-            LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
-            if (index == selected_entry)
-            {
-                icon->set_color(0x288080);
-                func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
-            }
-            else
-            {
-                icon->set_color(0x808080);
-            }
-            node = node->unk04;
-            index++;
-        } while (node != 0);
+            icon->set_color(0x288080);
+            func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
+        }
+        else
+        {
+            icon->set_color(0x808080);
+        }
+
+        node = node->unk04;
+        index++;
     }
+
     func_slot20(0);
     FieldClass15AE70* parent = static_cast<FieldClass15AE70*>(func_slot44());
     parent->func_slot64();
@@ -1038,11 +1116,14 @@ u8 TacticsWindow18B120::func_slotb0()
             selected = index;
         }
     }
+
     D_001B643C->state->selected_character_id = character_ids[icon_indices_by_slot[selected]];
+
     if (icon_display(this, icon_indices_by_slot[selected]) != 0)
     {
         position_icon_indicator(this);
     }
+
     set_parent_character_id(static_cast<TacticsWindow18B220*>(func_slot44()), character_ids[icon_indices_by_slot[selected]]);
     return 1;
 }
@@ -1056,18 +1137,22 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 200.0f, 136.0f, 8);
     LibClass178630* panel = new (0) LibClass178630;
+
     if (panel == 0)
     {
         return 0;
     }
+
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 232.0f, 148.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     append_panel_widget_node(&unk14, panel);
     LibClass178630* title_panel = new (0) LibClass178630;
+
     if (title_panel == 0)
     {
         return 0;
     }
+
     lib_panel_init_rectangle(title_panel, 1, 0.0f, 0.0f, 232.0f, 40.0f, 88.0f);
     LibWidgetColors4C5590 colors = D_00352010;
     lib_panel_set_colors(title_panel, &colors);
@@ -1076,19 +1161,23 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
     LibObject178750* title = new (0) LibObject178750;
     lib_text_init_resource_rectangle(title, associated, 0x272A, 1, 42.0f, 8.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, title);
+
     if (record_selection == 0)
     {
         return 0;
     }
+
     selected = -1;
     u8 character_id;
     s32 icon_index = 0;
     u8 saved_character_id = D_001B643C->state->selected_character_id;
     icon_count = 0;
+
     for (s32 index = 0; index < 3; index++)
     {
         icon_indices_by_slot[index] = 0;
         character_id = static_cast<u8>(record_selection->slots[static_cast<s16>(index)]);
+
         if (character_id != 0)
         {
             LibObject175140* icon = new (0) LibObject175140;
@@ -1101,12 +1190,14 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
             icon_indices_by_slot[index] = icon_index;
             icon_index++;
             character_ids[icon_count++] = character_id;
+
             if (saved_character_id == character_id)
             {
                 selected = index;
             }
         }
     }
+
     if (selected == -1)
     {
         for (s32 index = 0; index < 3; index++)
@@ -1115,14 +1206,17 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
             {
                 continue;
             }
+
             selected = index;
             break;
         }
     }
+
     if (selected == -1)
     {
         selected = 0;
     }
+
     base_x = 224.0f;
     base_y = 184.0f;
     grid = new (0) FieldObject23CEA0;
@@ -1145,28 +1239,30 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
     s32 selected_entry = icon_indices_by_slot[selected];
     s32 index = 0;
     FieldListNode* node = unk44.unk00->unk04;
-    if (node != 0)
+
+    while (node != 0)
     {
-        do
+        LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+
+        if (index == selected_entry)
         {
-            LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
-            if (index == selected_entry)
-            {
-                icon->set_color(0x288080);
-                func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
-            }
-            else
-            {
-                icon->set_color(0x808080);
-            }
-            node = node->unk04;
-            index++;
-        } while (node != 0);
+            icon->set_color(0x288080);
+            func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
+        }
+        else
+        {
+            icon->set_color(0x808080);
+        }
+
+        node = node->unk04;
+        index++;
     }
+
     if (icon_display(this, icon_indices_by_slot[selected]) != 0)
     {
         position_icon_indicator(this);
     }
+
     return 1;
 }
 
@@ -1182,19 +1278,24 @@ TacticsWindow18B120::~TacticsWindow18B120()
 u8 TacticsWindow18B220::func_slotb8()
 {
     ItemCreationClass174C40* widget = resource_widget;
+
     if (widget != 0)
     {
         widget->unkd0 = 0x32;
         widget->unk3c = 1;
     }
+
     FieldObject23CEA0* parent_grid = grid;
+
     if (parent_grid != 0)
     {
         parent_grid->FieldClass151C50::unk30 = 64.0f;
         parent_grid->unkae = 1;
     }
+
     TacticsWindow18B120* child = static_cast<TacticsWindow18B120*>(func_slot4c());
     FieldObject23CEA0* selected_grid = child->grid;
+
     if (selected_grid != 0)
     {
         selected_grid->index = child->icon_indices_by_slot[child->selected];
@@ -1202,27 +1303,29 @@ u8 TacticsWindow18B220::func_slotb8()
         func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(child->grid));
         child->grid->unkad = 1;
     }
+
     s32 selected_entry = child->icon_indices_by_slot[child->selected];
     s32 index = 0;
     FieldListNode* node = child->unk44.unk00->unk04;
-    if (node != 0)
+
+    while (node != 0)
     {
-        do
+        LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+
+        if (index == selected_entry)
         {
-            LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
-            if (index == selected_entry)
-            {
-                icon->set_color(0x288080);
-                func_0023B9B0(child->cursor, selected_entry, func_00467950(icon)->unk08);
-            }
-            else
-            {
-                icon->set_color(0x808080);
-            }
-            node = node->unk04;
-            index++;
-        } while (node != 0);
+            icon->set_color(0x288080);
+            func_0023B9B0(child->cursor, selected_entry, func_00467950(icon)->unk08);
+        }
+        else
+        {
+            icon->set_color(0x808080);
+        }
+
+        node = node->unk04;
+        index++;
     }
+
     child->func_slot20(1);
     D_001B643C->callbacks->state->func_00263C70(child);
     return 1;
@@ -1243,12 +1346,16 @@ u8 TacticsWindow18B220::func_slotb4()
     {
         return 0;
     }
+
     FieldClass153E00* runtime = D_001B643C->runtime;
+
     if (!runtime)
     {
         return 0;
     }
+
     u8 control_mode = runtime->unk2d != 0;
+
     if (control_mode == 1)
     {
         set_state(1, 0x80);
@@ -1256,15 +1363,18 @@ u8 TacticsWindow18B220::func_slotb4()
     else
     {
         TacticsWindow18B020* child = new (0) TacticsWindow18B020;
+
         if (!child)
         {
             return 0;
         }
+
         child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, 0x29CF);
         child->func_slot40(this);
         D_001B643C->callbacks->state->add_child(child);
         D_001B643C->callbacks->state->func_00263C70(child);
     }
+
     return 2;
 }
 
@@ -1284,6 +1394,7 @@ u8 save_grid_selection_to_display(TacticsGridOwner* object)
     {
         return 0;
     }
+
     object->selected = object->grid->unk114;
     D_001B643C->state->selected_record_index = object->selected;
     TacticsPosition* position =
@@ -1300,6 +1411,7 @@ void TacticsWindow18B220::func_slot6c()
     if (grid->process_direction(1) != 1)
     {
         position_grid_indicators(reinterpret_cast<TacticsGridOwner*>(this));
+
         if (grid != 0)
         {
             s32 selected_entry = grid->unk114;
@@ -1314,6 +1426,7 @@ void TacticsWindow18B220::func_slot68()
     if (grid->process_direction(0) != 1)
     {
         position_grid_indicators(reinterpret_cast<TacticsGridOwner*>(this));
+
         if (grid != 0)
         {
             s32 selected_entry = grid->unk114;
@@ -1328,6 +1441,7 @@ void TacticsWindow18B220::func_slot64()
     void* second;
 
     first = grid;
+
     if (first != 0)
     {
         *(float*)((u8*)first + 0xE0) = 128.0f;
@@ -1335,6 +1449,7 @@ void TacticsWindow18B220::func_slot64()
     }
 
     second = resource_widget;
+
     if (second != 0)
     {
         *(u32*)((u8*)second + 0xD0) = 0x22;
@@ -1353,6 +1468,7 @@ void position_grid_indicators(TacticsGridOwner* object)
         float first = 0.0f;
         float second = 0.0f;
         s16 index = object->grid->unk114;
+
         if (object->indicators[0] != 0)
         {
             func_00408600(index, 0, &first, &second);
@@ -1362,6 +1478,7 @@ void position_grid_indicators(TacticsGridOwner* object)
             tactics_set_xy(object->indicators[0], -14.400001f + (object->base_x + first),
                 -16.0f + (object->base_y + second));
         }
+
         if (object->indicators[1] != 0)
         {
             func_00408600(index, 1, &first, &second);
@@ -1371,6 +1488,7 @@ void position_grid_indicators(TacticsGridOwner* object)
             tactics_set_xy(object->indicators[1], -14.400001f + (object->base_x + first),
                 -16.0f + (object->base_y + second));
         }
+
         if (object->indicators[2] != 0)
         {
             func_00408600(index, 2, &first, &second);
@@ -1393,6 +1511,7 @@ void set_parent_character_id(TacticsWindow18B220* object, u32 character_id)
     s32 code = static_cast<u8>(character_id ? character_id : 1);
     u8 selected = 0;
     s32 index;
+
     for (index = 0; index < 3; index++)
     {
         if (object->character_ids[index] == code)
@@ -1400,11 +1519,13 @@ void set_parent_character_id(TacticsWindow18B220* object, u32 character_id)
             selected = index;
         }
     }
+
     if (selected == 0)
     {
         for (index = 0; index < 3; index++)
         {
             u8 slot_code = object->character_ids[index];
+
             if (!resource_code_empty(slot_code))
             {
                 selected = index;
@@ -1413,6 +1534,7 @@ void set_parent_character_id(TacticsWindow18B220* object, u32 character_id)
             }
         }
     }
+
     LibObject175140* label = object->label;
     label->unkfc =
         static_cast<TacticsEntryResourceRecord*>(object->record_selection->unk04)[static_cast<s16>(selected)].saved_name;
@@ -1426,11 +1548,13 @@ void set_parent_character_id(TacticsWindow18B220* object, u32 character_id)
 void refresh_parent_selection_display(TacticsWindow18B220* object)
 {
     position_grid_indicators(reinterpret_cast<TacticsGridOwner*>(object));
+
     if (object->grid != 0)
     {
         s32 selected_entry = object->grid->unk114;
         refresh_grid_entry(object, selected_entry);
     }
+
     TacticsGridOwner* owner = reinterpret_cast<TacticsGridOwner*>(object);
     TacticsPosition* position =
         &((TacticsPositionTarget*)get_text_widget_node(&owner->nodes, owner->selected)->value)->position;
@@ -1450,23 +1574,29 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
     {
         return 0;
     }
+
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 9);
     LibClass178630* panel = new (0) LibClass178630;
+
     if (panel == 0)
     {
         return 0;
     }
+
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 288.0f, 392.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     append_panel_widget_node(&unk14, panel);
     LibClass178630* resource_panel = new (0) LibClass178630;
+
     if (resource_panel == 0)
     {
         return 0;
     }
+
     lib_panel_init_rectangle(resource_panel, 1, 240.0f, 0.0f, 368.0f, 108.0f, 88.0f);
     lib_container_attach_widget(unk10, resource_panel);
     append_panel_widget_node(&unk14, resource_panel);
+
     for (s32 index = 0; index < 10; index++)
     {
         LibObject178750* display = new (0) LibObject178750;
@@ -1475,6 +1605,7 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
         lib_container_attach_widget(unk10, display);
         append_text_widget_node(&unk2c, display);
     }
+
     title = new (0) LibObject178750;
     lib_text_init_resource_rectangle(title, associated, 0x2A62, 0, 256.0f, 16.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, title);
@@ -1504,14 +1635,17 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
     u8 saved_entry = D_001B643C->state->selected_character_id;
     u16 resource_index = 0;
     func_0013A678(character_ids, 0, 3);
+
     for (s32 index = 0; index < 3; index++)
     {
         character_ids[index] = record_selection->slots[static_cast<s16>(index)];
+
         if (character_ids[index] == saved_entry)
         {
             resource_index = index;
         }
     }
+
     base_x = 320.0f;
     base_y = 132.0f;
     float heading_y = base_y - 24.0f;
@@ -1533,19 +1667,24 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
     display->unk50.unk30 = 2.5f;
     display->unk3c = 1;
     lib_container_attach_widget(unk10, display);
+
     if (character_ids[0] != 0)
     {
         character_displays[0] = new (0) ItemCreationOptionResourceDisplay;
     }
+
     if (character_ids[1] != 0)
     {
         character_displays[1] = new (0) ItemCreationOptionResourceDisplay;
     }
+
     if (character_ids[2] != 0)
     {
         character_displays[2] = new (0) ItemCreationOptionResourceDisplay;
     }
+
     FieldResourceRecord* default_record = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->resources, 0));
+
     if (character_displays[2] != 0)
     {
         character_displays[2]->unkcc = func_002D3D80(D_001B643C->resources, character_ids[2]);
@@ -1554,6 +1693,7 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
         set_resource_display_scale(character_displays[2], 0.4f);
         lib_container_attach_widget(unk10, character_displays[2]);
     }
+
     if (character_displays[1] != 0)
     {
         character_displays[1]->unkcc = func_002D3D80(D_001B643C->resources, character_ids[1]);
@@ -1562,6 +1702,7 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
         set_resource_display_scale(character_displays[1], 0.4f);
         lib_container_attach_widget(unk10, character_displays[1]);
     }
+
     if (character_displays[0] != 0)
     {
         character_displays[0]->unkcc = func_002D3D80(D_001B643C->resources, character_ids[0]);
@@ -1570,12 +1711,15 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
         set_resource_display_scale(character_displays[0], 0.4f);
         lib_container_attach_widget(unk10, character_displays[0]);
     }
+
     s32 selected_entry = selected;
     s32 index = 0;
     FieldListNode* node = unk2c.unk00->unk04;
+
     while (node != 0)
     {
         LibObject178750* text = static_cast<LibObject178750*>(node->unk00);
+
         if (index == selected_entry)
         {
             text->set_color(0x288080);
@@ -1585,9 +1729,11 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
         {
             text->set_color(0x808080);
         }
+
         node = node->unk04;
         index++;
     }
+
     refresh_parent_selection_display(this);
     return 1;
 }
@@ -1627,6 +1773,7 @@ TacticsWindow18B220::TacticsWindow18B220()
 void TacticsWindow18B320::func_slot6c()
 {
     FieldObject23B1D0* selection;
+
     if (this->use_second)
     {
         selection = this->second_selector;
@@ -1635,15 +1782,19 @@ void TacticsWindow18B320::func_slot6c()
     {
         selection = this->first_selector;
     }
+
     if (tactics_selection_inactive(selection))
     {
         return;
     }
+
     s32 index = selection->selected + 1;
+
     if (index >= 8)
     {
         index = 0;
     }
+
     func_0023B1D0(selection, index, 0);
 }
 
@@ -1654,6 +1805,7 @@ void TacticsWindow18B320::func_slot6c()
 void TacticsWindow18B320::func_slot68()
 {
     FieldObject23B1D0* selection;
+
     if (this->use_second)
     {
         selection = this->second_selector;
@@ -1662,15 +1814,19 @@ void TacticsWindow18B320::func_slot68()
     {
         selection = this->first_selector;
     }
+
     if (tactics_selection_inactive(selection))
     {
         return;
     }
+
     s32 index = selection->selected - 1;
+
     if (index < 0)
     {
         index = 7;
     }
+
     func_0023B1D0(selection, index, 0);
 }
 
@@ -1681,6 +1837,7 @@ void TacticsWindow18B320::func_slot68()
 void TacticsWindow18B320::func_slot74()
 {
     FieldObject23B1D0* selection;
+
     if (this->use_second)
     {
         selection = this->second_selector;
@@ -1689,11 +1846,14 @@ void TacticsWindow18B320::func_slot74()
     {
         selection = this->first_selector;
     }
+
     if (tactics_selection_inactive(selection))
     {
         return;
     }
+
     s32 index = selection->selected;
+
     switch (index)
     {
         case 0:
@@ -1708,6 +1868,7 @@ void TacticsWindow18B320::func_slot74()
         default:
             return;
     }
+
     func_0023B1D0(selection, index, 0);
 }
 
@@ -1718,6 +1879,7 @@ void TacticsWindow18B320::func_slot74()
 void TacticsWindow18B320::func_slot70()
 {
     FieldObject23B1D0* selection;
+
     if (this->use_second)
     {
         selection = this->second_selector;
@@ -1726,11 +1888,14 @@ void TacticsWindow18B320::func_slot70()
     {
         selection = this->first_selector;
     }
+
     if (tactics_selection_inactive(selection))
     {
         return;
     }
+
     s32 index = selection->selected;
+
     switch (index)
     {
         case 3:
@@ -1751,6 +1916,7 @@ void TacticsWindow18B320::func_slot70()
         default:
             return;
     }
+
     func_0023B1D0(selection, index, 0);
 }
 
@@ -1776,12 +1942,16 @@ u8 TacticsWindow18B320::func_slotb4()
         destination_record_index = -1;
         return 2;
     }
+
     FieldClass153E00* runtime = D_001B643C->runtime;
+
     if (!runtime)
     {
         return 0;
     }
+
     u8 control_mode = runtime->unk2d != 0;
+
     if (control_mode == 1)
     {
         set_state(1, 0x80);
@@ -1789,10 +1959,12 @@ u8 TacticsWindow18B320::func_slotb4()
     else
     {
         TacticsWindow18B020* child = new (0) TacticsWindow18B020;
+
         if (!child)
         {
             return 0;
         }
+
         child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, 0x29CE);
         child->func_slot40(this);
         LibClass175030* first_target = reinterpret_cast<LibClass175030*>(first_selector);
@@ -1801,6 +1973,7 @@ u8 TacticsWindow18B320::func_slotb4()
         D_001B643C->callbacks->state->add_child(child);
         D_001B643C->callbacks->state->func_00263C70(child);
     }
+
     return 2;
 }
 
@@ -1811,12 +1984,14 @@ u8 TacticsWindow18B320::func_slotb4()
 u8 TacticsWindow18B320::func_slotb0()
 {
     u8 result = 1;
+
     if (use_second == 1)
     {
         u8 allowed = 0;
         s16 remaining = 0;
         destination_record_index = second_selector->selected;
         s16 source = source_record_index;
+
         for (s32 i = 0; i < 4; i++)
         {
             if (i != source && i != destination_record_index)
@@ -1824,12 +1999,14 @@ u8 TacticsWindow18B320::func_slotb0()
                 TacticsGridResourceRecord* record = &static_cast<TacticsGridResourceRecord*>(character_records)[i];
                 s32 character_id = record->character_id;
                 s32 stat_limit_type = record->stat_limit_type;
+
                 if (stat_limit_type == 0 && character_id != 0)
                 {
                     remaining++;
                 }
             }
         }
+
         if (remaining)
         {
             allowed = 1;
@@ -1840,6 +2017,7 @@ u8 TacticsWindow18B320::func_slotb0()
             {
                 allowed = 1;
             }
+
             TacticsGridResourceRecord* records = static_cast<TacticsGridResourceRecord*>(character_records);
             TacticsGridResourceRecord* first_record = &records[source_record_index];
             TacticsGridResourceRecord* second_record = &records[destination_record_index];
@@ -1847,11 +2025,13 @@ u8 TacticsWindow18B320::func_slotb0()
             s32 first_character_id = first_record->character_id;
             s32 second_stat_limit_type = second_record->stat_limit_type;
             s32 second_character_id = second_record->character_id;
+
             if (first_stat_limit_type == 0 && first_character_id != 0 && second_stat_limit_type == 0 && second_character_id != 0)
             {
                 allowed = 1;
             }
         }
+
         if (allowed == 1)
         {
             if (source != destination_record_index)
@@ -1866,13 +2046,16 @@ u8 TacticsWindow18B320::func_slotb0()
                 func_0013A4C0(&static_cast<TacticsEntryResourceRecord*>(entry_records)[destination_record_index], entry_record_buffer, sizeof(TacticsEntryResourceRecord));
                 u8 rejected = 0;
                 u8 invalid[4] = {0};
+
                 for (s32 i = 0; i < 4; i++)
                 {
                     s32 stat_limit_type = static_cast<TacticsGridResourceRecord*>(character_records)[i].stat_limit_type;
                     s32 character_id = static_cast<TacticsGridResourceRecord*>(character_records)[i].character_id;
+
                     if (stat_limit_type == 0 && character_id != 0)
                     {
                         u32 flags = static_cast<TacticsGridResourceRecord*>(character_records)[i].get_flags();
+
                         if (flags & 5)
                         {
                             invalid[i] = 1;
@@ -1887,10 +2070,12 @@ u8 TacticsWindow18B320::func_slotb0()
                         invalid[i] = 1;
                     }
                 }
+
                 if (invalid[0] == 1 && invalid[1] == 1 && invalid[2] == 1)
                 {
                     rejected = 1;
                 }
+
                 if (rejected)
                 {
                     func_0013A678(character_record_buffer, 0, sizeof(TacticsGridResourceRecord));
@@ -1908,8 +2093,10 @@ u8 TacticsWindow18B320::func_slotb0()
                     reinterpret_cast<TacticsRuntimeControl*>(D_001B643C->runtime)->character_state_refresh_pending = 1;
                     refresh_pending = 1;
                 }
+
                 s32 i;
                 TacticsSavedGridSelection* saved = D_001B643C->state;
+
                 for (i = 0; i < 3; i++)
                 {
                     if (saved->selected_character_id == static_cast<TacticsGridResourceRecord*>(character_records)[i].character_id)
@@ -1917,6 +2104,7 @@ u8 TacticsWindow18B320::func_slotb0()
                         break;
                     }
                 }
+
                 if (i == 3)
                 {
                     for (s32 j = 0; j < 3; j++)
@@ -1934,6 +2122,7 @@ u8 TacticsWindow18B320::func_slotb0()
         {
             result = 3;
         }
+
         LibClass175030* second_target = reinterpret_cast<LibClass175030*>(second_selector);
         second_target->unk10 = -128.0f;
         second_target->unk14 = -128.0f;
@@ -1959,10 +2148,12 @@ u8 TacticsWindow18B320::func_slotb0()
         second_target->unk3c = 1;
         s32 index = (s32)(24.0f + x);
         s32 direct = 1;
+
         if (!first_target->unk14)
         {
             direct = 0;
         }
+
         func_0023B1D0(second_selector, index, direct);
         reinterpret_cast<LibClass175030*>(second_selector)->unk3f = 1;
         source_record_index = first_selector->selected;
@@ -1972,6 +2163,7 @@ u8 TacticsWindow18B320::func_slotb0()
         first_target->unk3c = 1;
         use_second = 1;
     }
+
     return result;
 }
 
@@ -1988,6 +2180,7 @@ void TacticsWindow18B320::func_slot5c()
         row_character_ids[5] = 0;
         row_character_ids[6] = 0;
         row_character_ids[7] = 0;
+
         for (s32 i = 0; i < 8; i++)
         {
             LibObject175140* character_name = static_cast<LibObject175140*>(get_widget_node_at_index(
@@ -2015,6 +2208,7 @@ void TacticsWindow18B320::func_slot5c()
             LibObject174F20* max_mp_value = static_cast<LibObject174F20*>(get_stat_value_node(
                 reinterpret_cast<TacticsList*>(&max_mp_value_list), i)->value);
             s32 character_id = static_cast<TacticsGridResourceRecord*>(character_records)[i].character_id;
+
             if (static_cast<TacticsGridResourceRecord*>(character_records)[i].stat_limit_type == 0 && character_id != 0)
             {
                 character_name->unkfc = static_cast<TacticsEntryResourceRecord*>(entry_records)[i].saved_name;
@@ -2043,6 +2237,7 @@ void TacticsWindow18B320::func_slot5c()
                 max_mp_value->unk3f = 1;
                 void* allocation;
                 FieldResourceRecord* record;
+
                 if (static_cast<TacticsGridResourceRecord*>(character_records)[i].get_flags() & 5)
                 {
                     allocation = func_002D3D80(D_001B643C->resources, static_cast<u8>(character_id + 0x30));
@@ -2055,6 +2250,7 @@ void TacticsWindow18B320::func_slot5c()
                     record = func_002D3CC0(D_001B643C->resources, 4);
                     character_name->set_color(0x808080);
                 }
+
                 func_002D5CF0(resource_displays[i], allocation, record, static_cast<u8>(character_id));
                 resource_displays[i]->unk3f = 1;
                 row_character_ids[i] = character_id;
@@ -2076,6 +2272,7 @@ void TacticsWindow18B320::func_slot5c()
                 resource_displays[i]->unk3f = 0;
                 row_character_ids[i] = 0;
             }
+
             if (i >= 3)
             {
                 hp_separator->unk3f = 0;
@@ -2084,6 +2281,7 @@ void TacticsWindow18B320::func_slot5c()
                 max_mp_value->unk3f = 0;
             }
         }
+
         refresh_pending = 0;
     }
 }
@@ -2096,10 +2294,12 @@ void TacticsWindow18B320::func_slot5c()
 s32 TacticsWindow18B320::func_slotf4(void* associated)
 {
     s32 source = reinterpret_cast<s32>(associated);
+
     if (initialize_selector_records(this) == false)
     {
         return 0;
     }
+
     FieldClass15AE70::func_slot10(source, 16.0f, 96.0f, 8);
     first_selector = reinterpret_cast<FieldObject23B1D0*>(new (0) TacticsWidget18AFD0);
     second_selector = reinterpret_cast<FieldObject23B1D0*>(new (0) TacticsWidget18AFD0);
@@ -2107,13 +2307,16 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
     lib_moving_widget_init_position(reinterpret_cast<LibClass175030*>(second_selector), 0.0f, 0.0f);
     lib_container_attach_widget(unk10, reinterpret_cast<TacticsWidget18AFD0*>(first_selector));
     lib_container_attach_widget(unk10, reinterpret_cast<TacticsWidget18AFD0*>(second_selector));
+
     for (s32 index = 0; index < 8; index++)
     {
         LibClass178630* panel = new (0) LibClass178630;
+
         if (panel == 0)
         {
             return 0;
         }
+
         float height;
         float label_y;
         float column_x;
@@ -2127,6 +2330,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
         float third_y;
         float numeric_offset;
         float width;
+
         if (index < 3)
         {
             height = 120.0f;
@@ -2139,6 +2343,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
             width = 304.0f;
             lib_panel_init_rectangle(panel, 1, width, 72.0f * (index - 3), width, 72.0f, 88.0f);
         }
+
         append_panel_widget_node(&unk14, panel);
         lib_container_attach_widget(unk10, panel);
         LibObject175140* character_name_label = new (0) LibObject175140;
@@ -2154,12 +2359,15 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
         LibObject178750* mp_separator = new (0) LibObject178750;
         LibObject174F20* max_mp_value = new (0) LibObject174F20;
         resource_displays[index] = new (0) ItemCreationOptionResourceDisplay;
+
         if (character_name_label == 0 || empty_marker == 0)
         {
             return 0;
         }
+
         empty_marker->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, source, 0x2720, 0);
         s32 row;
+
         if (index < 3)
         {
             column_x = 0.0f;
@@ -2170,6 +2378,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
             row = index - 3;
             column_x = width;
         }
+
         if (index < 3)
         {
             label_x = 108.0f + column_x;
@@ -2200,6 +2409,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
             third_y = first_y;
             empty_marker->set_scale(0.8f, 0.8f);
         }
+
         character_name_label->func_00467AD0(label_x, label_y, 0.0f, 0.0f, D_00352080, 0);
         character_name_label->set_scale(0.8f, 0.8f);
         set_widget_rectangle(empty_marker, column_x, empty_y, width, 24.0f);
@@ -2207,6 +2417,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
         level_label->init_resource_rectangle(first_x, first_y, 0.0f, 0.0f, source, 0x2725, 0);
         level_label->set_scale(0.8f, 0.8f);
         level_label->set_color(0x806080);
+
         if (index < 3)
         {
             level_value->init_numeric_resource_rectangle(32.0f + first_x, first_y, 42.0f, 24.0f, 0, 0, 0);
@@ -2215,11 +2426,13 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
         {
             level_value->init_numeric_resource_rectangle(17.0f + first_x, first_y, 42.0f, 24.0f, 0, 0, 0);
         }
+
         level_value->set_scale(0.8f, 0.8f);
         hp_label->init_resource_rectangle(second_x, second_y, 0.0f, 0.0f, source, 0x2726, 0);
         hp_label->set_scale(0.8f, 0.8f);
         hp_label->set_color(0x806080);
         float value_width;
+
         if (index < 3)
         {
             value_width = 56.0f;
@@ -2230,6 +2443,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
             value_width = 56.0f;
             current_hp_value->init_numeric_resource_rectangle(19.0f + second_x, second_y, value_width, 24.0f, 0, 0, 0);
         }
+
         current_hp_value->set_scale(0.8f, 0.8f);
         hp_separator->init_resource_rectangle(98.0f + second_x, second_y, 0.0f, 0.0f, source, 0x2728, 0);
         hp_separator->set_scale(0.8f, 0.8f);
@@ -2238,6 +2452,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
         mp_label->init_resource_rectangle(third_x, third_y, 0.0f, 0.0f, source, 0x2727, 0);
         mp_label->set_scale(0.8f, 0.8f);
         mp_label->set_color(0x806080);
+
         if (index < 3)
         {
             current_mp_value->init_numeric_resource_rectangle(numeric_offset + third_x, third_y, value_width, 24.0f, 0, 0, 0);
@@ -2246,12 +2461,14 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
         {
             current_mp_value->init_numeric_resource_rectangle(20.0f + third_x, third_y, value_width, 24.0f, 0, 0, 0);
         }
+
         current_mp_value->set_scale(0.8f, 0.8f);
         mp_separator->init_resource_rectangle(98.0f + third_x, third_y, 0.0f, 0.0f, source, 0x2728, 0);
         mp_separator->set_scale(0.8f, 0.8f);
         max_mp_value->init_numeric_resource_rectangle(106.0f + third_x, third_y, value_width, 24.0f, 0, 0, 0);
         max_mp_value->set_scale(0.8f, 0.8f);
         s32 character_id = record_character_id(&static_cast<TacticsGridResourceRecord*>(character_records)[index]);
+
         if (static_cast<TacticsGridResourceRecord*>(character_records)[index].stat_limit_type == 0 && character_id != 0)
         {
             character_name_label->unkfc = static_cast<TacticsEntryResourceRecord*>(entry_records)[index].saved_name;
@@ -2280,6 +2497,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
             max_mp_value->unk3f = 1;
             void* allocation;
             FieldResourceRecord* record;
+
             if (static_cast<TacticsGridResourceRecord*>(character_records)[index].get_flags() & 5)
             {
                 allocation = func_002D3D80(D_001B643C->resources, static_cast<u8>(character_id + 0x30));
@@ -2292,8 +2510,10 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
                 record = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->resources, 0));
                 character_name_label->set_color(0x808080);
             }
+
             resource_displays[index]->unkcc = allocation;
             resource_displays[index]->unkd0 = character_id;
+
             if (index < 3)
             {
                 func_002D6440(resource_displays[index], record, 20.0f + column_x, 8.0f + label_y);
@@ -2303,6 +2523,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
                 func_002D6440(resource_displays[index], record, 15.0f + column_x, label_y - 5.0f);
                 set_resource_scale(resource_displays[index], 0.68f);
             }
+
             row_character_ids[index] = character_id;
         }
         else
@@ -2323,6 +2544,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
             FieldResourceRecord* record = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->resources, 0));
             resource_displays[index]->unkcc = allocation;
             resource_displays[index]->unkd0 = character_id;
+
             if (index < 3)
             {
                 func_002D6440(resource_displays[index], record, 20.0f + column_x, 8.0f + label_y);
@@ -2332,8 +2554,10 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
                 func_002D6440(resource_displays[index], record, 15.0f + column_x, label_y - 5.0f);
                 set_resource_scale(resource_displays[index], 0.68f);
             }
+
             resource_displays[index]->unk3f = 0;
         }
+
         if (index < 3)
         {
             append_position(reinterpret_cast<TacticsWidget18AFD0*>(first_selector), 20.0f + column_x, 38.0f + label_y);
@@ -2348,6 +2572,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
             append_position(reinterpret_cast<TacticsWidget18AFD0*>(first_selector), 20.0f + column_x, 18.0f + label_y);
             append_position(reinterpret_cast<TacticsWidget18AFD0*>(second_selector), 20.0f + column_x, 18.0f + label_y);
         }
+
         lib_container_attach_widget(unk10, character_name_label);
         append_icon_widget_node(&unk44, character_name_label);
         lib_container_attach_widget(unk10, empty_marker);
@@ -2374,12 +2599,15 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
         append_stat_value_node(reinterpret_cast<FieldCountedList*>(&max_mp_value_list), max_mp_value);
         lib_container_attach_widget(unk10, resource_displays[index]);
     }
+
     LibObject178750* first_title = new (0) LibObject178750;
     LibObject178750* second_title = new (0) LibObject178750;
+
     if (first_title == 0 || second_title == 0)
     {
         return 0;
     }
+
     first_title->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, source, 0x2721, 1);
     set_widget_rectangle(first_title, 16.0f, -20.0f, 304.0f, 16.0f);
     first_title->set_mode(0);
@@ -2410,6 +2638,7 @@ TacticsWindow18B320::~TacticsWindow18B320()
     {
         delete_owned(character_record_buffer);
     }
+
     if (entry_record_buffer != 0)
     {
         delete_owned(entry_record_buffer);
@@ -2446,11 +2675,14 @@ void TacticsWindow18B420::func_slot5c()
     {
         return;
     }
+
     s16 index = grid->unk114;
+
     if (index == selected)
     {
         return;
     }
+
     if (character_id == 2 || character_id == 9)
     {
         static_cast<FieldClass15AE70*>(D_001B643C->callbacks->state->func_00263C90())->func_slot60(index + 0x29D7);
@@ -2459,6 +2691,7 @@ void TacticsWindow18B420::func_slot5c()
     {
         static_cast<FieldClass15AE70*>(D_001B643C->callbacks->state->func_00263C90())->func_slot60(index + 0x29D1);
     }
+
     selected = index;
 }
 
@@ -2480,13 +2713,16 @@ void refresh_grid_list_selection(TacticsWindow18B420* object)
     s16 selected = object->grid->unk114;
     s32 index = 0;
     FieldListNode* node = object->unk2c.unk00->unk04;
+
     while (node != 0)
     {
         if (index >= 6)
         {
             break;
         }
+
         LibObject178750* display = static_cast<LibObject178750*>(node->unk00);
+
         if (index == selected)
         {
             display->unk94 = 0x288080;
@@ -2499,6 +2735,7 @@ void refresh_grid_list_selection(TacticsWindow18B420* object)
             display->unk94 = 0x808080;
             display->unk3c = 1;
         }
+
         node = node->unk04;
         index++;
     }
@@ -2510,6 +2747,7 @@ void TacticsWindow18B420::func_slot6c()
     {
         return;
     }
+
     refresh_grid_list_selection(this);
 }
 
@@ -2519,6 +2757,7 @@ void TacticsWindow18B420::func_slot68()
     {
         return;
     }
+
     refresh_grid_list_selection(this);
 }
 
@@ -2551,6 +2790,7 @@ u8 TacticsWindow18B420::func_slotb0()
     TacticsGridResourceRecord* records = static_cast<TacticsGridResourceRecord*>(parent->character_records);
     s16 record_index = parent->selected;
     s16 character_id;
+
     if (records)
     {
         character_id = records[record_index].character_id;
@@ -2559,6 +2799,7 @@ u8 TacticsWindow18B420::func_slotb0()
     {
         character_id = 0;
     }
+
     u32 key = parent->get_record_text_key(character_id, record_index);
     lib_text_set_resource(display, parent->func_slot54(), key, 0);
     cursor->unk3f = 0;
@@ -2583,6 +2824,7 @@ s32 TacticsWindow18B420::set_grid_record(s16 record_index, u8 initial_entry)
     character_id = static_cast<TacticsGridResourceRecord*>(character_records)[record_index].character_id;
     selected_entry = initial_entry;
     s32 first_key;
+
     switch (character_id)
     {
         case 1:
@@ -2619,6 +2861,7 @@ s32 TacticsWindow18B420::set_grid_record(s16 record_index, u8 initial_entry)
             first_key = 0x29CC;
             break;
     }
+
     if (first_key == 0x29CC)
     {
         keys[0] = 0x29CC;
@@ -2637,12 +2880,14 @@ s32 TacticsWindow18B420::set_grid_record(s16 record_index, u8 initial_entry)
             lib_text_set_resource(display, func_slot54(), keys[index], 0);
         }
     }
+
     for (s32 index = 0; index < 6; index++)
     {
         LibObject178750* display = grid_display(this, index);
         display->unk94 = 0x808080;
         display->unk3c = 1;
     }
+
     LibUiRect16* rectangle = &grid_display(this, selected_entry)->unk18;
     LibBounds4C69B0* bounds = lib_text_measure_bounds(grid_display(this, selected_entry));
     FieldObject23CEA0* selection = grid;
@@ -2666,10 +2911,12 @@ s32 TacticsWindow18B420::func_slotf4(u32 associated)
 {
     character_records = D_001B643C->character_records;
     entry_records = D_001B643C->entry_records;
+
     if (character_records == 0 || entry_records == 0)
     {
         return 0;
     }
+
     FieldClass15AE70::func_slot10(associated, 138.0f, 148.0f, 7);
     LibClass178630* panel = new (0) LibClass178630;
     text[0] = new (0) LibObject178750;
@@ -2683,11 +2930,13 @@ s32 TacticsWindow18B420::func_slotf4(u32 associated)
     LibObject178750* title = new (0) LibObject178750;
     selection_indicator = new (0) ItemCreationClass172600;
     cursor = new (0) FieldObject23BE00;
+
     if (panel == 0 || text[0] == 0 || text[1] == 0 || text[2] == 0 ||
         text[3] == 0 || text[4] == 0 || text[5] == 0 || grid == 0)
     {
         return 0;
     }
+
     LibWidgetColors4C5590 colors = D_00352000;
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 364.0f, 256.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
@@ -2772,6 +3021,7 @@ void TacticsWindow18B520::func_slot64()
 {
     s16 state = selected;
     LibClass175030* target;
+
     if (state == 3 || state == 4)
     {
         LibClass175030* state_target = reinterpret_cast<LibClass175030*>(selection);
@@ -2788,41 +3038,52 @@ void TacticsWindow18B520::func_slot64()
 void TacticsWindow18B520::func_slot6c()
 {
     FieldObject23B1D0* selection = this->selection;
+
     if (tactics_selection_inactive(selection))
     {
         return;
     }
+
     s32 index = selection->selected + 1;
+
     if (index >= 8)
     {
         index = 0;
     }
+
     func_0023B1D0(selection, index, 0);
 }
 
 void TacticsWindow18B520::func_slot68()
 {
     FieldObject23B1D0* selection = this->selection;
+
     if (tactics_selection_inactive(selection))
     {
         return;
     }
+
     s32 index = selection->selected - 1;
+
     if (index < 0)
     {
         index = 7;
     }
+
     func_0023B1D0(selection, index, 0);
 }
 
 void TacticsWindow18B520::func_slot74()
 {
     FieldObject23B1D0* selection = this->selection;
+
     if (tactics_selection_inactive(selection))
     {
         return;
     }
+
     s32 index = selection->selected;
+
     switch (index)
     {
         case 0:
@@ -2837,17 +3098,21 @@ void TacticsWindow18B520::func_slot74()
         default:
             return;
     }
+
     func_0023B1D0(selection, index, 0);
 }
 
 void TacticsWindow18B520::func_slot70()
 {
     FieldObject23B1D0* selection = this->selection;
+
     if (tactics_selection_inactive(selection))
     {
         return;
     }
+
     s32 index = selection->selected;
+
     switch (index)
     {
         case 3:
@@ -2868,6 +3133,7 @@ void TacticsWindow18B520::func_slot70()
         default:
             return;
     }
+
     func_0023B1D0(selection, index, 0);
 }
 
@@ -2878,11 +3144,14 @@ void TacticsWindow18B520::func_slot70()
 u8 TacticsWindow18B520::func_slotb4()
 {
     FieldClass153E00* runtime = D_001B643C->runtime;
+
     if (!runtime)
     {
         return 0;
     }
+
     u8 control_mode = runtime->unk2d != 0;
+
     if (control_mode == 1)
     {
         set_state(1, 0x80);
@@ -2890,15 +3159,18 @@ u8 TacticsWindow18B520::func_slotb4()
     else
     {
         TacticsWindow18B020* child = new (0) TacticsWindow18B020;
+
         if (!child)
         {
             return 0;
         }
+
         child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, 0x29CD);
         child->func_slot40(this);
         D_001B643C->callbacks->state->add_child(child);
         D_001B643C->callbacks->state->func_00263C70(child);
     }
+
     return 2;
 }
 
@@ -2909,11 +3181,13 @@ u8 TacticsWindow18B520::func_slotb4()
 u8 TacticsWindow18B520::func_slotb0()
 {
     selected = selection->selected;
+
     if (record_enabled[selected])
     {
         TacticsEntryResourceRecord* record = &static_cast<TacticsEntryResourceRecord*>(entry_records)[selected];
         u8 initial_entry = record->selected_entry;
         record->previous_entry = initial_entry;
+
         if (selected == 3 || selected == 4)
         {
             reinterpret_cast<LibClass175030*>(selection)->unk3f = 0;
@@ -2924,6 +3198,7 @@ u8 TacticsWindow18B520::func_slotb0()
             target->unk30 = 64.0f;
             target->unk3c = 1;
         }
+
         TacticsWindow18B420* child = static_cast<TacticsWindow18B420*>(func_slot44());
         child->set_grid_record(selected, initial_entry);
         child->cursor->unk3f = 1;
@@ -2936,6 +3211,7 @@ u8 TacticsWindow18B520::func_slotb0()
     {
         return 3;
     }
+
     return 1;
 }
 
@@ -2948,6 +3224,7 @@ u8 TacticsWindow18B520::func_slotb0()
 u32 TacticsWindow18B520::get_record_text_key(s16 character_id, s32 record_index)
 {
     u32 first_key;
+
     switch (character_id)
     {
         case 1:
@@ -2984,6 +3261,7 @@ u32 TacticsWindow18B520::get_record_text_key(s16 character_id, s32 record_index)
             first_key = 0x29CC;
             break;
     }
+
     return first_key + static_cast<TacticsEntryResourceRecord*>(entry_records)[record_index].selected_entry;
 }
 
@@ -3034,6 +3312,7 @@ TacticsPresetPosition* set_preset_position_from_index(TacticsPresetOwner* object
         object->preset_position.y = 0.0f;
         break;
     }
+
     return &object->preset_position;
 }
 
@@ -3046,32 +3325,39 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
 {
     character_records = D_001B643C->character_records;
     entry_records = D_001B643C->entry_records;
+
     if (coordinate_records_ready(this) == false)
     {
         return 0;
     }
+
     u32 source = associated;
     FieldClass15AE70::func_slot10(source, 16.0f, 96.0f, 8);
     selection = reinterpret_cast<FieldObject23B1D0*>(new (0) TacticsWidget18AFD0);
     lib_moving_widget_init_position(reinterpret_cast<LibClass175030*>(selection), 0.0f, 0.0f);
     lib_container_attach_widget(unk10, reinterpret_cast<TacticsWidget18AFD0*>(selection));
+
     for (s32 index = 0; index < 8; index++)
     {
         LibObject178750* text = new (0) LibObject178750;
         lib_container_attach_widget(unk10, text);
         append_text_widget_node(&unk2c, text);
     }
+
     for (s32 index = 0; index < 8; index++)
     {
         LibClass178630* panel = new (0) LibClass178630;
+
         if (panel == 0)
         {
             return 0;
         }
+
         float height;
         float column_x;
         float row_y;
         float width;
+
         if (index < 3)
         {
             height = 120.0f;
@@ -3084,15 +3370,19 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
             width = 304.0f;
             lib_panel_init_rectangle(panel, 1, width, 72.0f * (index - 3), width, 72.0f, 88.0f);
         }
+
         append_panel_widget_node(&unk14, panel);
         lib_container_attach_widget(unk10, panel);
         LibObject175140* label = new (0) LibObject175140;
         LibObject178750* empty = new (0) LibObject178750;
+
         if (label == 0 || empty == 0)
         {
             return 0;
         }
+
         lib_text_init_resource_rectangle(empty, source, 0x2720, 0, 16.0f, 16.0f, 0.0f, 0.0f);
+
         if (index < 3)
         {
             row_y = height * index;
@@ -3108,10 +3398,12 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
             column_x = 304.0f;
             empty->set_scale(0.8f, 0.8f);
         }
+
         empty->set_mode(1);
         label->set_scale(0.82f, 0.82f);
         LibObject178750* text = static_cast<LibObject178750*>(get_text_widget_node(reinterpret_cast<TacticsList*>(&unk2c), index)->value);
         s32 character_id = static_cast<TacticsGridResourceRecord*>(character_records)[index].character_id;
+
         if (static_cast<TacticsGridResourceRecord*>(character_records)[index].stat_limit_type == 0 && character_id != 0)
         {
             label->unkfc = static_cast<TacticsEntryResourceRecord*>(entry_records)[index].saved_name;
@@ -3124,6 +3416,7 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
             FieldResourceRecord* record = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->resources, 0));
             display->unkcc = allocation;
             display->unkd0 = character_id;
+
             if (index < 3)
             {
                 func_002D6440(display, record, 18.0f + column_x, 16.0f + row_y);
@@ -3135,6 +3428,7 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
                 display->unk50.unk30 = 0.68f;
                 display->unk3c = 1;
             }
+
             lib_container_attach_widget(unk10, display);
             u32 text_key = get_record_text_key(character_id, index);
             TacticsPresetPosition* preset = set_preset_position_from_index(reinterpret_cast<TacticsPresetOwner*>(this), index);
@@ -3150,6 +3444,7 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
             label->unk3f = 0;
             empty->unk3f = 1;
         }
+
         if (index < 3)
         {
             append_position(reinterpret_cast<TacticsWidget18AFD0*>(selection), 18.0f + column_x, 52.0f + row_y);
@@ -3158,17 +3453,21 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
         {
             append_position(reinterpret_cast<TacticsWidget18AFD0*>(selection), 18.0f + column_x, 36.0f + row_y);
         }
+
         append_icon_widget_node(&unk44, label);
         lib_container_attach_widget(unk10, label);
         append_text_widget_node(&unk2c, empty);
         lib_container_attach_widget(unk10, empty);
     }
+
     LibObject178750* first_title = new (0) LibObject178750;
     LibObject178750* second_title = new (0) LibObject178750;
+
     if (first_title == 0 || second_title == 0)
     {
         return 0;
     }
+
     lib_text_init_resource_rectangle(first_title, source, 0x2721, 1, 16.0f, 16.0f, 0.0f, 0.0f);
     set_widget_rectangle(first_title, 16.0f, -20.0f, 304.0f, 16.0f);
     first_title->set_mode(0);
@@ -3207,22 +3506,28 @@ void TacticsWindow18B620::func_slot5c()
     float y = target->unk18.unk04;
     float z = target->unk18.unk08;
     float w = target->unk18.unk0c;
+
     if (scroll_phase == 0)
     {
         set_text_position(target, initial_text_x, y, z, w);
         initial_pause_frames++;
+
         if (!((float)initial_pause_frames <= 120.0f))
         {
             initial_pause_frames = 0;
             scroll_phase = 1;
         }
+
         return;
     }
+
     x -= 108.0f * D_001B6690;
+
     if (x < clip_x - (float)scroll_span)
     {
         x = 2.0f + (clip_x + clip_width);
     }
+
     set_text_position(target, x, y, z, w);
 }
 
@@ -3241,6 +3546,7 @@ s32 TacticsWindow18B620::func_slotf4(void* associated)
     lib_text_init_resource_rectangle(heading, resource_source, 0x2710, 0, 16.0f, 10.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, heading);
     append_text_widget_node(&unk2c, heading);
+
     switch (D_001B643C->callbacks->tactics_mode_flags & 0xF)
     {
     case 1:
@@ -3259,6 +3565,7 @@ s32 TacticsWindow18B620::func_slotf4(void* associated)
         lib_text_init_resource_rectangle(hint, resource_source, 0x2724, 0, 36.0f, 40.0f, 0.0f, 0.0f);
         break;
     }
+
     lib_container_attach_widget(unk10, label);
     append_text_widget_node(&unk2c, label);
     hint->set_scale(0.65f, 0.65f);
@@ -3267,10 +3574,12 @@ s32 TacticsWindow18B620::func_slotf4(void* associated)
     text = new (0) LibObject178750;
     ItemCreationClass1746A0* clip = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* reset_clip = new (0) ItemCreationClass1746A0;
+
     if (text == 0 || clip == 0 || reset_clip == 0)
     {
         return 0;
     }
+
     label_right_edge = 80.0f + lib_text_measure_bounds(label)->unk08;
     clip_x = 18.0f + label_right_edge;
     clip_width = 640.0f - (16.0f + shifted_position(clip_x, 32.0f));
@@ -3284,6 +3593,7 @@ s32 TacticsWindow18B620::func_slotf4(void* associated)
     lib_scissor_init_reset(reset_clip, 1);
     lib_container_attach_widget(unk10, reset_clip);
     append_clip_widget_node(&unk20, reset_clip);
+
     switch (D_001B643C->callbacks->tactics_mode_flags & 0xF)
     {
     case 1:
@@ -3296,6 +3606,7 @@ s32 TacticsWindow18B620::func_slotf4(void* associated)
         func_slot60(0x271A);
         break;
     }
+
     return 1;
 }
 
@@ -3335,6 +3646,7 @@ void TacticsState18B820::func_slot5c()
     {
         lib_release_resource_slot(D_001B657C, resource_slot);
     }
+
     lib_object_detach_owner(this);
     func_001DD7B0();
 }
@@ -3360,10 +3672,12 @@ s32 TacticsState18B820::func_00263CD0()
 {
     TacticsWindow18B720* background = new (0) TacticsWindow18B720;
     TacticsWindow18B620* scrolling = new (0) TacticsWindow18B620;
+
     if (background == 0 || scrolling == 0)
     {
         return 0;
     }
+
     background->func_slotf4(resource_slot);
     FieldClass153E30::add_child(background);
     background->func_slot40(0);
@@ -3371,16 +3685,19 @@ s32 TacticsState18B820::func_00263CD0()
     FieldClass153E30::add_child(scrolling);
     unk24 = scrolling;
     scrolling->func_slot40(background);
+
     switch (D_001B643C->callbacks->tactics_mode_flags & 0xF)
     {
     case 1:
     {
         TacticsWindow18B520* coordinate = new (0) TacticsWindow18B520;
         TacticsWindow18B420* child = new (0) TacticsWindow18B420;
+
         if (coordinate == 0 || child == 0)
         {
             return 0;
         }
+
         unk20 = coordinate;
         coordinate->func_slotf4(resource_slot);
         FieldClass153E30::add_child(coordinate);
@@ -3394,10 +3711,12 @@ s32 TacticsState18B820::func_00263CD0()
     case 2:
     {
         TacticsWindow18B320* window = new (0) TacticsWindow18B320;
+
         if (window == 0)
         {
             return 0;
         }
+
         unk20 = window;
         window->func_slotf4(reinterpret_cast<void*>(resource_slot));
         FieldClass153E30::add_child(window);
@@ -3408,10 +3727,12 @@ s32 TacticsState18B820::func_00263CD0()
     {
         TacticsWindow18B220* window = new (0) TacticsWindow18B220;
         TacticsWindow18B120* child = new (0) TacticsWindow18B120;
+
         if (window == 0 || child == 0)
         {
             return 0;
         }
+
         window->record_selection = selection;
         window->func_slotf4(resource_slot);
         FieldClass153E30::add_child(window);
@@ -3422,6 +3743,7 @@ s32 TacticsState18B820::func_00263CD0()
         FieldClass153E30::add_child(child);
         child->func_slot40(window);
         FieldObject23CEA0* grid = child->grid;
+
         if (grid != 0)
         {
             grid->index = child->icon_indices_by_slot[child->selected];
@@ -3429,32 +3751,35 @@ s32 TacticsState18B820::func_00263CD0()
             func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(child->grid));
             child->grid->unkad = 0;
         }
+
         s32 selected_entry = child->icon_indices_by_slot[child->selected];
         s32 index = 0;
         FieldListNode* node = child->unk44.unk00->unk04;
-        if (node != 0)
+
+        while (node != 0)
         {
-            do
+            LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+
+            if (index == selected_entry)
             {
-                LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
-                if (index == selected_entry)
-                {
-                    icon->set_color(0x288080);
-                    func_0023B9B0(child->cursor, selected_entry, func_00467950(icon)->unk08);
-                }
-                else
-                {
-                    icon->set_color(0x808080);
-                }
-                node = node->unk04;
-                index++;
-            } while (node != 0);
+                icon->set_color(0x288080);
+                func_0023B9B0(child->cursor, selected_entry, func_00467950(icon)->unk08);
+            }
+            else
+            {
+                icon->set_color(0x808080);
+            }
+
+            node = node->unk04;
+            index++;
         }
+
         child->func_slot20(0);
         unk20 = window;
         break;
     }
     }
+
     windows_initialized = 1;
     return 1;
 }
@@ -3470,16 +3795,19 @@ s32 TacticsState18B820::func_001E1820(void* buffer)
     {
         return 0;
     }
+
     TacticsAlignedResource* aligned = aligned_resource(buffer);
     s32 size = aligned->unk40 + 0x80;
     void* saved_heap = resident_get_allocation_heap();
     void* heap = D_001B6430->context->unk70;
     void* memory = resident_heap_allocate(heap, size);
+
     if (memory != 0)
     {
         resident_heap_release(memory);
         resident_exchange_allocation_heap(heap);
     }
+
     resource_slot = lib_load_resource_slot(D_001B657C, aligned);
     resident_exchange_allocation_heap(saved_heap);
     return func_00263CD0();
@@ -3489,10 +3817,12 @@ u8 TacticsState18B820::func_00264110()
 {
     selection = new (0) FieldRecordSelection;
     u8 result = func_0028E3D0(selection);
+
     if (selection == 0 || result == 0)
     {
         return 0;
     }
+
     return 1;
 }
 
@@ -3812,10 +4142,12 @@ s32 return_zero_callback_5(void* object)
 TacticsList18B8E0::TacticsList18B8E0()
 {
     head = new (0) TacticsListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -3823,6 +4155,7 @@ TacticsList18B8E0::TacticsList18B8E0()
 TacticsList18B8E0::~TacticsList18B8E0()
 {
     clear_character_name_widget_list(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -3833,16 +4166,19 @@ TacticsList18B8E0::~TacticsList18B8E0()
 void clear_character_name_widget_list(TacticsList18B8E0* list)
 {
     TacticsListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         TacticsListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -3850,66 +4186,84 @@ void clear_character_name_widget_list(TacticsList18B8E0* list)
 void append_cursor_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
-    if (node != 0)
+
+    if (node == 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        FieldListNode* cursor = list->unk00;
-        while (cursor->unk04 != 0)
-        {
-            cursor = cursor->unk04;
-        }
-        cursor->unk04 = node;
-        list->unk04++;
+        return;
     }
+
+    node->unk00 = value;
+    node->unk04 = 0;
+    FieldListNode* cursor = list->unk00;
+
+    while (cursor->unk04 != 0)
+    {
+        cursor = cursor->unk04;
+    }
+
+    cursor->unk04 = node;
+    list->unk04++;
 }
 
 void append_grid_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
-    if (node != 0)
+
+    if (node == 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        FieldListNode* cursor = list->unk00;
-        while (cursor->unk04 != 0)
-        {
-            cursor = cursor->unk04;
-        }
-        cursor->unk04 = node;
-        list->unk04++;
+        return;
     }
+
+    node->unk00 = value;
+    node->unk04 = 0;
+    FieldListNode* cursor = list->unk00;
+
+    while (cursor->unk04 != 0)
+    {
+        cursor = cursor->unk04;
+    }
+
+    cursor->unk04 = node;
+    list->unk04++;
 }
 
 void append_icon_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
-    if (node != 0)
+
+    if (node == 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        FieldListNode* cursor = list->unk00;
-        while (cursor->unk04 != 0)
-        {
-            cursor = cursor->unk04;
-        }
-        cursor->unk04 = node;
-        list->unk04++;
+        return;
     }
+
+    node->unk00 = value;
+    node->unk04 = 0;
+    FieldListNode* cursor = list->unk00;
+
+    while (cursor->unk04 != 0)
+    {
+        cursor = cursor->unk04;
+    }
+
+    cursor->unk04 = node;
+    list->unk04++;
 }
 
 TacticsListNode* get_widget_node_at_index(TacticsList* list, s32 index)
 {
     TacticsListNode* node = list->head->next;
     s32 i;
+
     for (i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
@@ -3917,10 +4271,12 @@ TacticsListNode* get_widget_node_at_index(TacticsList* list, s32 index)
 TacticsList18B8D0::TacticsList18B8D0()
 {
     head = new (0) TacticsListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -3928,6 +4284,7 @@ TacticsList18B8D0::TacticsList18B8D0()
 TacticsList18B8D0::~TacticsList18B8D0()
 {
     clear_stat_value_list(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -3938,33 +4295,41 @@ TacticsList18B8D0::~TacticsList18B8D0()
 void append_stat_value_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
-    if (node != 0)
+
+    if (node == 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        FieldListNode* cursor = list->unk00;
-        while (cursor->unk04 != 0)
-        {
-            cursor = cursor->unk04;
-        }
-        cursor->unk04 = node;
-        list->unk04++;
+        return;
     }
+
+    node->unk00 = value;
+    node->unk04 = 0;
+    FieldListNode* cursor = list->unk00;
+
+    while (cursor->unk04 != 0)
+    {
+        cursor = cursor->unk04;
+    }
+
+    cursor->unk04 = node;
+    list->unk04++;
 }
 
 void clear_stat_value_list(TacticsList18B8D0* list)
 {
     TacticsListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         TacticsListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -3973,14 +4338,17 @@ TacticsListNode* get_stat_value_node(TacticsList* list, s32 index)
 {
     TacticsListNode* node = list->head->next;
     s32 i;
+
     for (i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
@@ -3988,10 +4356,12 @@ TacticsListNode* get_stat_value_node(TacticsList* list, s32 index)
 TacticsList18B8C0::TacticsList18B8C0()
 {
     head = new (0) TacticsListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -3999,6 +4369,7 @@ TacticsList18B8C0::TacticsList18B8C0()
 TacticsList18B8C0::~TacticsList18B8C0()
 {
     clear_text_widget_list(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -4009,33 +4380,41 @@ TacticsList18B8C0::~TacticsList18B8C0()
 void append_text_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
-    if (node != 0)
+
+    if (node == 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        FieldListNode* cursor = list->unk00;
-        while (cursor->unk04 != 0)
-        {
-            cursor = cursor->unk04;
-        }
-        cursor->unk04 = node;
-        list->unk04++;
+        return;
     }
+
+    node->unk00 = value;
+    node->unk04 = 0;
+    FieldListNode* cursor = list->unk00;
+
+    while (cursor->unk04 != 0)
+    {
+        cursor = cursor->unk04;
+    }
+
+    cursor->unk04 = node;
+    list->unk04++;
 }
 
 void clear_text_widget_list(TacticsList18B8C0* list)
 {
     TacticsListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         TacticsListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -4044,14 +4423,17 @@ TacticsListNode* get_text_widget_node(TacticsList* list, s32 index)
 {
     TacticsListNode* node = list->head->next;
     s32 i;
+
     for (i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
@@ -4059,40 +4441,51 @@ TacticsListNode* get_text_widget_node(TacticsList* list, s32 index)
 void append_clip_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
-    if (node != 0)
+
+    if (node == 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        FieldListNode* cursor = list->unk00;
-        while (cursor->unk04 != 0)
-        {
-            cursor = cursor->unk04;
-        }
-        cursor->unk04 = node;
-        list->unk04++;
+        return;
     }
+
+    node->unk00 = value;
+    node->unk04 = 0;
+    FieldListNode* cursor = list->unk00;
+
+    while (cursor->unk04 != 0)
+    {
+        cursor = cursor->unk04;
+    }
+
+    cursor->unk04 = node;
+    list->unk04++;
 }
 
 void append_panel_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
-    if (node != 0)
+
+    if (node == 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        FieldListNode* cursor = list->unk00;
-        while (cursor->unk04 != 0)
-        {
-            cursor = cursor->unk04;
-        }
-        cursor->unk04 = node;
-        list->unk04++;
+        return;
     }
+
+    node->unk00 = value;
+    node->unk04 = 0;
+    FieldListNode* cursor = list->unk00;
+
+    while (cursor->unk04 != 0)
+    {
+        cursor = cursor->unk04;
+    }
+
+    cursor->unk04 = node;
+    list->unk04++;
 }
 
 TacticsList18B8B0::~TacticsList18B8B0()
 {
     clear_coordinate_widget_list(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -4103,16 +4496,19 @@ TacticsList18B8B0::~TacticsList18B8B0()
 void clear_coordinate_widget_list(TacticsList18B8B0* list)
 {
     TacticsCoordinateNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         TacticsCoordinateNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -4120,28 +4516,35 @@ void clear_coordinate_widget_list(TacticsList18B8B0* list)
 void append_coordinate_pair(TacticsList18B8B0* list, TacticsPresetPosition value)
 {
     TacticsCoordinateNode* node = new (0) TacticsCoordinateNode;
-    if (node != 0)
+
+    if (node == 0)
     {
-        node->x = value.x;
-        node->y = value.y;
-        node->next = 0;
-        TacticsCoordinateNode* cursor = list->head;
-        while (cursor->next != 0)
-        {
-            cursor = cursor->next;
-        }
-        cursor->next = node;
-        list->count++;
+        return;
     }
+
+    node->x = value.x;
+    node->y = value.y;
+    node->next = 0;
+    TacticsCoordinateNode* cursor = list->head;
+
+    while (cursor->next != 0)
+    {
+        cursor = cursor->next;
+    }
+
+    cursor->next = node;
+    list->count++;
 }
 
 TacticsList18B8B0::TacticsList18B8B0()
 {
     head = new (0) TacticsCoordinateNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
