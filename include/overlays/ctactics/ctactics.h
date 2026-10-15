@@ -134,13 +134,13 @@ struct TacticsWindow18B620 : public FieldClass15AE70
     TacticsWindow18B620()
     {
         text = 0;
-        distance = 0;
-        state = 0;
-        timer = 0;
-        unkb4 = 0.0f;
-        initial_x = 0.0f;
-        base_x = 0.0f;
-        width = 0.0f;
+        scroll_span = 0;
+        scroll_phase = 0;
+        initial_pause_frames = 0;
+        label_right_edge = 0.0f;
+        initial_text_x = 0.0f;
+        clip_x = 0.0f;
+        clip_width = 0.0f;
     }
     /** @brief Destroy the scrolling window. */
     virtual ~TacticsWindow18B620();
@@ -160,13 +160,13 @@ struct TacticsWindow18B620 : public FieldClass15AE70
     virtual s32 func_slotf4(void* associated);
 
     LibObject178750* text;
-    s32 distance;
-    s16 timer;
-    u8 state;
-    float unkb4;
-    float initial_x;
-    float base_x;
-    float width;
+    s32 scroll_span;
+    s16 initial_pause_frames;
+    u8 scroll_phase;
+    float label_right_edge;
+    float initial_text_x;
+    float clip_x;
+    float clip_width;
 };
 
 /** Native 0xB0-byte tactics child window containing a grid and its saved selection. */
@@ -211,24 +211,24 @@ struct TacticsWindow18B020 : public FieldClass15AE70
     u8 unkae[2];
 };
 
-/** Native 0xD4-byte tactics window with three resource entries and an icon grid. */
+/** Native 0xD4-byte tactics window with three character IDs and an icon grid. */
 struct TacticsWindow18B120 : public FieldClass15AE70
 {
-    /** @brief Clear the window's resources, saved entries, and grid origin. */
+    /** @brief Clear the record selection, saved character IDs, and grid origin. */
     TacticsWindow18B120()
     {
-        resource = 0;
+        record_selection = 0;
         grid = 0;
         cursor = 0;
         indicator = 0;
-        entry_count = 0;
+        icon_count = 0;
         base_x = 0.0f;
         base_y = 0.0f;
         selected = 0;
-        func_0013A678(entries, 0, sizeof(entries));
-        grid_entries[0] = 0;
-        grid_entries[1] = 0;
-        grid_entries[2] = 0;
+        func_0013A678(character_ids, 0, sizeof(character_ids));
+        icon_indices_by_slot[0] = 0;
+        icon_indices_by_slot[1] = 0;
+        icon_indices_by_slot[2] = 0;
     }
     /** @brief Destroy the window base. */
     virtual ~TacticsWindow18B120();
@@ -237,8 +237,8 @@ struct TacticsWindow18B120 : public FieldClass15AE70
     /** @brief Move to the following grid entry and update the icon highlight. */
     virtual void func_slot6c();
     /**
-     * @brief Save the chosen resource code and update the parent label.
-     * @return One after the selected resource code is applied.
+     * @brief Save the chosen character ID and update the parent label.
+     * @return One after the selected character ID is applied.
      */
     virtual u8 func_slotb0();
     /** @brief Restore the associated window. @return Window action status. */
@@ -250,20 +250,20 @@ struct TacticsWindow18B120 : public FieldClass15AE70
      */
     virtual s32 func_slotf4(u32 associated);
 
-    FieldRecordSelection* resource;
+    FieldRecordSelection* record_selection;
     struct FieldObject23CEA0* grid;
     struct FieldObject23BE00* cursor;
     struct ItemCreationClass172600* indicator;
     s16 selected;
-    u8 entry_count;
-    u8 entries[3];
+    u8 icon_count;
+    u8 character_ids[3];
     u8 unkbe[2];
     float base_x;
     float base_y;
-    s32 grid_entries[3];
+    s32 icon_indices_by_slot[3];
 };
 
-/** Native 0xDC-byte parent window containing a grid, resource codes, and its label. */
+/** Native 0xDC-byte parent window containing a grid, character IDs, and their label. */
 struct TacticsWindow18B220 : public FieldClass15AE70
 {
     /** @brief Clear the display pointers and restore the resident grid selection. */
@@ -297,9 +297,9 @@ struct TacticsWindow18B220 : public FieldClass15AE70
     class ItemCreationClass174C40* resource_widget;
     struct FieldObject23CEA0* grid;
     struct FieldObject23BE00* cursor;
-    FieldRecordSelection* resource;
-    struct ItemCreationOptionResourceDisplay* options[3];
-    u8 entries[3];
+    FieldRecordSelection* record_selection;
+    struct ItemCreationOptionResourceDisplay* character_displays[3];
+    u8 character_ids[3];
     u8 selected;
     float base_x;
     float base_y;
@@ -312,13 +312,13 @@ struct TacticsWindow18B520 : public FieldClass15AE70
     /** @brief Clear the resource links, coordinate selection, and preset position. */
     TacticsWindow18B520()
     {
-        unka8 = 0;
-        unkac = 0;
+        character_records = 0;
+        entry_records = 0;
         selection = 0;
         selected = -1;
-        func_0013A678(enabled, 0, sizeof(enabled));
-        position.x = 0.0f;
-        position.y = 0.0f;
+        func_0013A678(record_enabled, 0, sizeof(record_enabled));
+        preset_position.x = 0.0f;
+        preset_position.y = 0.0f;
     }
     /** @brief Destroy the coordinate-selection window. */
     virtual ~TacticsWindow18B520();
@@ -351,19 +351,19 @@ struct TacticsWindow18B520 : public FieldClass15AE70
 
     /**
      * @brief Find the text key for a resource record's saved grid entry.
-     * @param kind Signed record kind selecting the key range.
+     * @param character_id Signed character ID selecting the key range.
      * @param record_index Record index in the resident entry table.
      * @return Text key for the record's saved entry.
      */
-    u32 get_record_text_key(s16 kind, s32 record_index);
+    u32 get_record_text_key(s16 character_id, s32 record_index);
 
-    void* unka8;
-    void* unkac;
+    void* character_records;
+    void* entry_records;
     struct FieldObject23B1D0* selection;
     s16 selected;
-    u8 enabled[8];
+    u8 record_enabled[8];
     u8 unkbe[2];
-    TacticsPresetPosition position;
+    TacticsPresetPosition preset_position;
 };
 
 /** Native 0xF8-byte tactics grid window with its text displays and cursor. */
@@ -401,18 +401,18 @@ struct TacticsWindow18B420 : public FieldClass15AE70
      */
     s32 set_grid_record(s16 record_index, u8 initial_entry);
 
-    void* unka8;
-    void* unkac;
+    void* character_records;
+    void* entry_records;
     struct FieldObject23CEA0* grid;
     s16 selected;
     u8 unkb6[2];
     LibObject178750* text[6];
     u8 unkd0[4];
-    struct ItemCreationClass172600* unkd4;
+    struct ItemCreationClass172600* selection_indicator;
     struct FieldObject23BE00* cursor;
     s32 keys[6];
-    s16 unkf4;
-    u8 unkf6;
+    s16 character_id;
+    u8 selected_entry;
 };
 
 /** Sentinel list owning its nodes and recording their count. */
@@ -486,29 +486,29 @@ struct TacticsWindow18B320 : public FieldClass15AE70
      */
     virtual s32 func_slotf4(void* associated);
 
-    void* unka8;
-    void* unkac;
-    u8* bufferc4;
-    u8* buffer114;
-    struct FieldObject23B1D0* first;
-    struct FieldObject23B1D0* second;
+    void* character_records;
+    void* entry_records;
+    u8* character_record_buffer;
+    u8* entry_record_buffer;
+    struct FieldObject23B1D0* first_selector;
+    struct FieldObject23B1D0* second_selector;
     u8 use_second;
-    u8 unkc1;
-    s16 unkc2;
-    s16 unkc4;
+    u8 refresh_pending;
+    s16 source_record_index;
+    s16 destination_record_index;
     u8 unkc6[2];
-    TacticsList18B8C0 unkc8;
-    TacticsList18B8D0 unkd4;
-    TacticsList18B8C0 unke0;
-    TacticsList18B8C0 unkec;
-    TacticsList18B8D0 unkf8;
-    TacticsList18B8C0 unk104;
-    TacticsList18B8D0 unk110;
-    TacticsList18B8D0 unk11c;
-    TacticsList18B8C0 unk128;
-    TacticsList18B8D0 unk134;
+    TacticsList18B8C0 level_label_list;
+    TacticsList18B8D0 level_value_list;
+    TacticsList18B8C0 hp_label_list;
+    TacticsList18B8C0 mp_label_list;
+    TacticsList18B8D0 hp_value_list;
+    TacticsList18B8C0 hp_separator_text_list;
+    TacticsList18B8D0 max_hp_value_list;
+    TacticsList18B8D0 mp_value_list;
+    TacticsList18B8C0 mp_separator_text_list;
+    TacticsList18B8D0 max_mp_value_list;
     TacticsList18B8E0 unk140;
-    s16 unk14c[8];
+    s16 row_character_ids[8];
     struct ItemCreationOptionResourceDisplay* resource_displays[8];
 };
 #endif
@@ -1192,11 +1192,11 @@ TacticsListNode* func_00351BF0(TacticsList* list, s32 index);
 void func_0034A200(TacticsWindow18B220* object);
 
 /**
- * @brief Select the resource code in the parent and point its label at the matching record's text.
+ * @brief Select the character ID in the parent and point its label at the matching record's text.
  * @param object Parent window produced by the paired window factory.
- * @param entry Full resource code word; zero selects code 1.
+ * @param character_id Full character code; zero selects code 1.
  */
-void func_0034A120(TacticsWindow18B220* object, u32 entry);
+void func_0034A120(TacticsWindow18B220* object, u32 character_id);
 
 #ifdef __cplusplus
 }
