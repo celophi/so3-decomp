@@ -39,11 +39,11 @@ struct ShopSaleItemWindow : public FieldClass15AD40
     /** @brief Show the selected item instance and its factors. */
     virtual void func_slot5c();
     /** @brief Open confirmation for selling the selected instance. @return Action result. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Return to the sell list. @return Transition result. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Open confirmation for selling all instances. @return Action result. */
-    virtual s32 func_slotbc();
+    virtual u8 func_slotbc();
     /** @brief Refresh the visible record displays. @param start First record index. */
     virtual void refresh_rows(s32 start);
     /** @brief Position the visible record displays. @param start Base vertical coordinate. */
@@ -76,11 +76,11 @@ struct ShopSellListWindow : public FieldClass15AD40
     /** @brief Update the current catalog selection and its highlight. */
     virtual void func_slot5c();
     /** @brief Open the selected item's instances. @return Action result. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Return to the action window. @return Transition result. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Toggle the description and base-parameter views. @return Always one. */
-    virtual s32 func_slotbc();
+    virtual u8 func_slotbc();
     /** @brief Select the previous item category. @return Always one. */
     virtual s32 func_slotc8();
     /** @brief Select the next item category. @return Always one. */
@@ -116,13 +116,13 @@ struct ShopBuyListWindow : public FieldClass15AD40
     /** @brief Increase the selected purchase quantity and refresh its row. */
     virtual void func_slot74();
     /** @brief Open purchase confirmation. @return Action result. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Clear purchase quantities and return to the action window. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Open details for the selected item. @return Always one. */
-    virtual s32 func_slotb8();
+    virtual u8 func_slotb8();
     /** @brief Toggle the description and base-parameter views. @return Always one. */
-    virtual s32 func_slotbc();
+    virtual u8 func_slotbc();
     /** @brief Select the previous item category. @return Always one. */
     virtual s32 func_slotc8();
     /** @brief Select the next item category. @return Always one. */
@@ -147,7 +147,7 @@ struct ShopItemDetailWindow : public FieldClass15AE70
     /** @brief Close the detail window after its item model finishes closing. */
     virtual void func_slot5c();
     /** @brief Request cancellation of the attached status window when present. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
     /** @brief Initialize the item detail window. */
@@ -198,9 +198,9 @@ struct ShopActionWindow : public FieldClass15AE70
     /** @brief Move the choice grid in direction 2 unless the window state byte is set. */
     virtual void func_slot74();
     /** @brief Enter the selected buy or sell mode. @return Zero while locked, otherwise one. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Request the shop window transition. @return Zero while locked, otherwise two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* choice;
@@ -321,9 +321,9 @@ struct ShopSellAllConfirmWindow : public FieldClass15AE70
     /** @brief Update the choice with action code two. */
     virtual void func_slot74();
     /** @brief Run the selected action. @return Action result. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Return to the associated window. @return Transition result. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* choice;
@@ -350,9 +350,9 @@ struct ShopBuyConfirmWindow : public FieldClass15AE70
     /** @brief Update the choice with action code two. */
     virtual void func_slot74();
     /** @brief Run the selected action. @return Action result. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Return to the associated window. @return Transition result. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* choice;
@@ -377,9 +377,9 @@ struct ShopSellConfirmWindow : public FieldClass15AE70
     /** @brief Update the choice with action code two. */
     virtual void func_slot74();
     /** @brief Run the selected action. @return Action result. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Return to the associated window. @return Transition result. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* choice;

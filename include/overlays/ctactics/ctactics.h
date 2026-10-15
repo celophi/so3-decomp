@@ -29,6 +29,12 @@ typedef struct TacticsPresetPosition
         y = 0.0f;
         x = 0.0f;
     }
+    /** @brief Initialize a coordinate pair. @param px Horizontal value. @param py Vertical value. */
+    TacticsPresetPosition(float px, float py)
+    {
+        x = px;
+        y = py;
+    }
 #endif
     float x;
     float y;
@@ -46,7 +52,24 @@ class TacticsStorage18B010
 public:
     LibStorageBlock0C storage;
     u8 unk0c[4];
-    u8 unk10[0x28];
+    float unk10;
+    float unk14;
+    float unk18;
+    float unk1c;
+    float unk20;
+    float unk24;
+    u8 unk28[0x10];
+
+    /** @brief Clear the three movement coordinate pairs. */
+    TacticsStorage18B010()
+    {
+        unk14 = 0.0f;
+        unk10 = 0.0f;
+        unk1c = 0.0f;
+        unk18 = 0.0f;
+        unk24 = 0.0f;
+        unk20 = 0.0f;
+    }
 
     /** @brief Release the receiver's owned storage. */
     virtual ~TacticsStorage18B010();
@@ -157,16 +180,16 @@ struct TacticsWindow18B020 : public FieldClass15AE70
     }
     /** @brief Destroy the child window's base. */
     virtual ~TacticsWindow18B020();
-    /** @brief Dispatch the active State's window update. */
+    /** @brief Compare the State's active window with this window; neither outcome has further work. */
     virtual void func_slot5c();
     /** @brief Move to the preceding grid entry and update its text highlight. */
     virtual void func_slot68();
     /** @brief Move to the following grid entry and update its text highlight. */
     virtual void func_slot6c();
     /** @brief Apply the grid action for the selected entry. @return Window action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Close the child and restore its associated window. @return Two after closing. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
      * @brief Initialize the child window's grid and text displays.
      * @param associated Full resource source word.
@@ -217,9 +240,9 @@ struct TacticsWindow18B120 : public FieldClass15AE70
      * @brief Save the chosen resource code and update the parent label.
      * @return One after the selected resource code is applied.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the associated window. @return Window action status. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
      * @brief Initialize the resource icons, grid, marker, and indicator.
      * @param associated Full resource source word forwarded to the base and title.
@@ -249,19 +272,19 @@ struct TacticsWindow18B220 : public FieldClass15AE70
     virtual ~TacticsWindow18B220();
     /** @brief Restore the grid and resource widget movement flags. */
     virtual void func_slot64();
-    /** @brief Move to the preceding grid entry. */
+    /** @brief Move to the preceding grid entry and update its title, cursor, and indicators. */
     virtual void func_slot68();
-    /** @brief Move to the following grid entry. */
+    /** @brief Move to the following grid entry and update its title, cursor, and indicators. */
     virtual void func_slot6c();
     /** @brief Save the enabled grid selection. @return Window action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Open the selection child for an enabled grid, or update control-mode flags.
      * @return Two after the action, or zero for a disabled grid or an absent runtime or child.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Restore and activate the resource icon child. @return One after activation. */
-    virtual s32 func_slotb8();
+    virtual u8 func_slotb8();
     /**
      * @brief Initialize the grid and resource displays.
      * @param associated Full resource source word forwarded to the base and title.
@@ -313,18 +336,18 @@ struct TacticsWindow18B520 : public FieldClass15AE70
      * @brief Open the grid window for the selected enabled record and remember its current entry.
      * @return One after opening the grid window, or three for a disabled record.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Open a child window, or update the window flags for the resident control mode.
      * @return Two after the action, or zero when the runtime or child allocation is absent.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
-     * @brief Initialize the coordinate window and its resource displays.
-     * @param associated Associated context forwarded to the base initializer.
-     * @return One on success; otherwise zero.
+     * @brief Initialize the coordinate selector, row displays, and resource bindings.
+     * @param associated Resource source word forwarded to the base and text displays.
+     * @return One on success, or zero when records or required displays are absent.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
 
     /**
      * @brief Find the text key for a resource record's saved grid entry.
@@ -360,9 +383,9 @@ struct TacticsWindow18B420 : public FieldClass15AE70
      * @brief Save the selected grid entry, update its parent display, and restore the parent window.
      * @return One after the selected entry is applied.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Close the grid window. @return Window action status. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
      * @brief Initialize the grid and its resource displays.
      * @param associated Full resource source word.
@@ -439,7 +462,7 @@ struct TacticsWindow18B320 : public FieldClass15AE70
     TacticsWindow18B320();
     /** @brief Release both binary buffers, then destroy the lists and base window. */
     virtual ~TacticsWindow18B320();
-    /** @brief Refresh the active selector and associated text. */
+    /** @brief Refresh the eight resource rows after a record change while this window is active. */
     virtual void func_slot5c();
     /** @brief Move the chosen selector to its preceding entry. */
     virtual void func_slot68();
@@ -450,16 +473,16 @@ struct TacticsWindow18B320 : public FieldClass15AE70
     /** @brief Map the chosen selector's first three entries to entries three, five, and six. */
     virtual void func_slot74();
     /** @brief Apply the chosen selector's entry. @return Selection action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Return to the first selector, update control-mode flags, or open its child window.
      * @return Two after the action, or zero when the runtime or child allocation is absent.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
-     * @brief Initialize the selectors, their buffers, and the resource displays.
-     * @param associated Associated context forwarded to the base initializer.
-     * @return One on success; otherwise zero.
+     * @brief Initialize the paired selectors and their eight resource rows.
+     * @param associated Resource source forwarded to the base and text displays.
+     * @return One on success, otherwise zero when records or required displays are absent.
      */
     virtual s32 func_slotf4(void* associated);
 
@@ -486,7 +509,7 @@ struct TacticsWindow18B320 : public FieldClass15AE70
     TacticsList18B8D0 unk134;
     TacticsList18B8E0 unk140;
     s16 unk14c[8];
-    u8 unk15c[0x20];
+    struct ItemCreationOptionResourceDisplay* resource_displays[8];
 };
 #endif
 
@@ -1163,15 +1186,15 @@ TacticsListNode* func_003519A0(TacticsList* list, s32 index);
 TacticsListNode* func_00351BF0(TacticsList* list, s32 index);
 
 /**
- * @brief Update the parent window's resource displays and indicator position.
+ * @brief Update the parent window's indicators, grid title, highlight, and selection indicator.
  * @param object Parent window to refresh.
  */
 void func_0034A200(TacticsWindow18B220* object);
 
 /**
- * @brief Select the resource code in the parent and refresh its label.
+ * @brief Select the resource code in the parent and point its label at the matching record's text.
  * @param object Parent window produced by the paired window factory.
- * @param entry Full resource code word tested before conversion to a byte.
+ * @param entry Full resource code word; zero selects code 1.
  */
 void func_0034A120(TacticsWindow18B220* object, u32 entry);
 

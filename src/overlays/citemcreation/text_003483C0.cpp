@@ -635,13 +635,13 @@ void FieldClass15AE70::func_slotac()
 }
 
 /** @brief Perform the default window action at slot 0xB8. @return Zero. */
-s32 FieldClass15AE70::func_slotb8()
+u8 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
 /** @brief Perform the default window action at slot 0xBC. @return Zero. */
-s32 FieldClass15AE70::func_slotbc()
+u8 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
@@ -736,7 +736,7 @@ void ItemCreationSelectedDisplayState::func_00263C70(void* value)
  * @brief Restore the parent window and switch the active Field receiver.
  * @return Two for returning.
  */
-s32 WorkshopFullDialog::func_slotb4()
+u8 WorkshopFullDialog::func_slotb4()
 {
     func_slot20(0);
     WorkshopSelectionWindow* parent = static_cast<WorkshopSelectionWindow*>(func_slot44());
@@ -749,7 +749,7 @@ s32 WorkshopFullDialog::func_slotb4()
  * @brief Restore the parent window and switch the active Field receiver.
  * @return One for confirmation.
  */
-s32 WorkshopFullDialog::func_slotb0()
+u8 WorkshopFullDialog::func_slotb0()
 {
     func_slot20(0);
     WorkshopSelectionWindow* parent = static_cast<WorkshopSelectionWindow*>(func_slot44());
@@ -877,7 +877,7 @@ void AssignInventorDialog::func_slot70()
  * @brief Reset this window and restore its associated Field receiver.
  * @return Always two.
  */
-s32 AssignInventorDialog::func_slotb4()
+u8 AssignInventorDialog::func_slotb4()
 {
     func_00348B60(this, 0);
     WorkshopSelectionWindow* parent = static_cast<WorkshopSelectionWindow*>(func_slot44());
@@ -904,7 +904,7 @@ static inline void store_inventor_location_code(ItemCreationSelectedDisplayState
  * @brief Apply the chosen option code or return to the associated window.
  * @return Zero without a grid, one after applying the code, or the return callback result.
  */
-s32 AssignInventorDialog::func_slotb0()
+u8 AssignInventorDialog::func_slotb0()
 {
     if (unka8 == 0)
     {
@@ -1161,7 +1161,7 @@ void WorkshopInventorStrip::func_slot70()
  * @brief Reset the grid and restore its associated window.
  * @return Zero without an associated window, or one after restoring it.
  */
-s32 WorkshopInventorStrip::func_slotb4()
+u8 WorkshopInventorStrip::func_slotb4()
 {
     func_0034A1E0(this, 0);
     WorkshopSelectionWindow* parent = static_cast<WorkshopSelectionWindow*>(func_slot44());
@@ -1379,7 +1379,7 @@ void func_0034A7A0(WorkshopSelectionWindow* object, u8 selected)
  * @brief Activate the workshop inventor strip and its talent display.
  * @return Always one.
  */
-s32 WorkshopSelectionWindow::func_slotbc()
+u8 WorkshopSelectionWindow::func_slotbc()
 {
     func_0034A670(this, 0);
     WorkshopInventorStrip* alternate = static_cast<WorkshopInventorStrip*>(this->func_slot4c());
@@ -1403,7 +1403,7 @@ static inline void set_display_opacity(LibClass175030* display, float opacity)
  * @brief Confirm inventor assignment or show the workshop-full warning.
  * @return Zero without required windows, three for a full workshop, or one when requesting confirmation.
  */
-s32 WorkshopSelectionWindow::func_slotb0()
+u8 WorkshopSelectionWindow::func_slotb0()
 {
     WorkshopInventorStrip* alternate = static_cast<WorkshopInventorStrip*>(this->func_slot4c());
     if (alternate == 0)
@@ -1861,7 +1861,7 @@ void DestinationInventorStrip::func_slotf8(s32 direction)
  * @brief Reset the option and restore its associated selection display.
  * @return Always two.
  */
-s32 DestinationInventorStrip::func_slotb4()
+u8 DestinationInventorStrip::func_slotb4()
 {
     if (unkc4 != 0)
     {
@@ -1902,7 +1902,7 @@ s32 DestinationInventorStrip::func_slotb4()
  * @brief Select the active view and apply its selected option.
  * @return Always one.
  */
-s32 DestinationInventorStrip::func_slotb0()
+u8 DestinationInventorStrip::func_slotb0()
 {
     if (unkcc != 0)
     {
@@ -2014,7 +2014,7 @@ static inline void set_transfer_position(LibClass175030* display, float x, float
  * @brief Reset the option and restore its associated selection display.
  * @return Always two.
  */
-s32 SourceInventorStrip::func_slotb4()
+u8 SourceInventorStrip::func_slotb4()
 {
     if (unkc4 != 0)
     {
@@ -2059,7 +2059,7 @@ s32 SourceInventorStrip::func_slotb4()
  * @brief Apply the selected option and refresh its associated window.
  * @return Always one.
  */
-s32 SourceInventorStrip::func_slotb0()
+u8 SourceInventorStrip::func_slotb0()
 {
     if (unkcc != 0)
     {
@@ -2216,7 +2216,7 @@ void TransferInventorStrip::func_slot70()
  * @brief Clear the selected option and restore the active view.
  * @return Always two.
  */
-s32 TransferInventorStrip::func_slotb4()
+u8 TransferInventorStrip::func_slotb4()
 {
     if (unkc4 != 0)
     {
@@ -2237,7 +2237,7 @@ s32 TransferInventorStrip::func_slotb4()
  * @brief Select the active view and apply its selected option.
  * @return Always one.
  */
-s32 TransferInventorStrip::func_slotb0()
+u8 TransferInventorStrip::func_slotb0()
 {
     if (unkcc != 0)
     {
@@ -2645,7 +2645,7 @@ void InventorTransferWindow::func_slot68()
  * @brief Reset the option transfer or return to the primary option window.
  * @return Zero without a selection state, or two otherwise.
  */
-s32 InventorTransferWindow::func_slotb4()
+u8 InventorTransferWindow::func_slotb4()
 {
     ItemCreationSelectedDisplayState* state = selection_state;
     if (state == 0)
@@ -2699,7 +2699,7 @@ s32 InventorTransferWindow::func_slotb4()
  * @brief Apply the selected option and enable the corresponding option window.
  * @return Zero without a state, three for an unchanged alternate selection, or one otherwise.
  */
-s32 InventorTransferWindow::func_slotb0()
+u8 InventorTransferWindow::func_slotb0()
 {
     if (selection_state == 0)
     {
@@ -2889,7 +2889,7 @@ static inline bool any_line_not_stopped(const ItemCreationSelectedDisplayState* 
  * @brief Restore the associated window and dispatch the result state.
  * @return Always one.
  */
-s32 InadequateLineDialog::func_slotb4()
+u8 InadequateLineDialog::func_slotb4()
 {
     func_slot20(0);
     void* associated = func_slot44();
@@ -2933,7 +2933,7 @@ u32 func_0034FF60(ItemCreationSelectedDisplayState* object)
  * @brief Restore the associated window and dispatch the result state.
  * @return Always one.
  */
-s32 InadequateLineDialog::func_slotb0()
+u8 InadequateLineDialog::func_slotb0()
 {
     func_slot20(0);
     void* associated = func_slot44();
@@ -3003,7 +3003,7 @@ DevelopmentControlPanel::~DevelopmentControlPanel()
 }
 
 /** @brief Restore the third action row and associated resource window. @return Always two. */
-s32 AbortDevelopmentDialog::func_slotb4()
+u8 AbortDevelopmentDialog::func_slotb4()
 {
     func_slot20(0);
     if (choice_selector != 0)
@@ -3085,7 +3085,7 @@ static inline void set_line_skill_id(ItemCreationSelectedDisplayState* state, u8
  * @brief Apply the selected abort choice.
  * @return Callback result selected by the current action.
  */
-s32 AbortDevelopmentDialog::func_slotb0()
+u8 AbortDevelopmentDialog::func_slotb0()
 {
     if (choice_selector == 0)
     {
@@ -4392,7 +4392,7 @@ void func_00352DE0(ItemDetailsWindow* object)
  * @brief Restore the selected item views and open the result window when ready.
  * @return Zero after opening the result window, otherwise one.
  */
-s32 ItemDetailsWindow::func_slotb0()
+u8 ItemDetailsWindow::func_slotb0()
 {
     func_slot20(0);
     unke8->unkab = 0;
@@ -4573,7 +4573,7 @@ ItemDetailsWindow::ItemDetailsWindow(ItemCreationSelectedDisplayState* object)
 }
 
 /** @brief Close the popup and restore its associated window marker. @return Always one. */
-s32 MissingMaterialsDialog::func_slotb0()
+u8 MissingMaterialsDialog::func_slotb0()
 {
     D_001B643C->unk10->unk14->remove_child(this);
     AssignedInventorGrid* parent = static_cast<AssignedInventorGrid*>(func_slot44());
@@ -4618,7 +4618,7 @@ s32 MissingMaterialsDialog::func_slotf4(u32 associated)
  * @brief Return to the associated window.
  * @return Always one.
  */
-s32 InsufficientFolDialog::func_slotb0()
+u8 InsufficientFolDialog::func_slotb0()
 {
     D_001B643C->unk10->unk14->remove_child(this);
     AssignedInventorGrid* parent = static_cast<AssignedInventorGrid*>(func_slot44());
@@ -4676,7 +4676,7 @@ static inline void clear_line_item_ids(ItemCreationSelectedDisplayState* state, 
  * @brief Restore the resource window and reset completed result groups.
  * @return Always one.
  */
-s32 DevelopmentCompleteDialog::func_slotb0()
+u8 DevelopmentCompleteDialog::func_slotb0()
 {
     ItemCreationSelectedDisplayState* state = static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14);
     state->remove_child(this);
@@ -4727,7 +4727,7 @@ s32 DevelopmentCompleteDialog::func_slotb0()
  * @brief Restore the selected display and open the result window when ready.
  * @return Zero after opening the result window, otherwise one.
  */
-s32 LineFailureDialog::func_slotb0()
+u8 LineFailureDialog::func_slotb0()
 {
     ItemCreationSelectedDisplayState* state = static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14);
     state->remove_child(this);
@@ -4756,7 +4756,7 @@ s32 LineFailureDialog::func_slotb0()
  * @brief Refresh and restore the selected item window and its display flag.
  * @return Always one.
  */
-s32 InventionSuccessDialog::func_slotb0()
+u8 InventionSuccessDialog::func_slotb0()
 {
     ItemCreationSelectedDisplayState* state = static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14);
     state->remove_child(this);
@@ -4821,7 +4821,7 @@ void ItemSubmissionDialog::func_slot68()
 }
 
 /** @brief Restore the two display colors and associated resource window. @return Always two. */
-s32 ItemSubmissionDialog::func_slotb4()
+u8 ItemSubmissionDialog::func_slotb4()
 {
     func_slot20(0);
     choice_selector->func_0023B280(1);
@@ -4860,7 +4860,7 @@ s32 ItemSubmissionDialog::func_slotb4()
 }
 
 /** @brief Apply the selected action or restore the resource window. @return Action status. */
-s32 ItemSubmissionDialog::func_slotb0()
+u8 ItemSubmissionDialog::func_slotb0()
 {
     if (choice_selector == 0)
     {
@@ -5021,7 +5021,7 @@ void func_00356160(ItemCreationNineResourceView* object)
  * @brief Restore the resource marker and reopen its option window.
  * @return Zero when inactive, otherwise one.
  */
-s32 ItemCreationClass186770::func_slotb8()
+u8 ItemCreationClass186770::func_slotb8()
 {
     if (unka8->development_processing_enabled == 0)
     {
@@ -5054,7 +5054,7 @@ s32 ItemCreationClass186770::func_slotb8()
  * @brief Open the two-option window for the selected resource group.
  * @return Action status.
  */
-s32 ItemCreationClass186770::func_slotb0()
+u8 ItemCreationClass186770::func_slotb0()
 {
     if (unk110 == 0)
     {
@@ -5108,7 +5108,7 @@ s32 ItemCreationClass186770::func_slotb0()
  * @brief Restore the marker and reopen the associated window.
  * @return Zero when inactive, otherwise two.
  */
-s32 ItemCreationClass186770::func_slotb4()
+u8 ItemCreationClass186770::func_slotb4()
 {
     if (unka8->development_processing_enabled == 0)
     {
@@ -5913,7 +5913,7 @@ ItemCreationClass186770::ItemCreationClass186770()
     unk1bc = 0;
 }
 
-s32 StartInventingDialog::func_slotb4()
+u8 StartInventingDialog::func_slotb4()
 {
     AssignedInventorGrid* parent = static_cast<AssignedInventorGrid*>(func_slot44());
     if (parent != 0)
@@ -5935,7 +5935,7 @@ s32 StartInventingDialog::func_slotb4()
     return 2;
 }
 
-s32 StartInventingDialog::func_slotb0()
+u8 StartInventingDialog::func_slotb0()
 {
     FieldClass153130* selector = choice_selector;
     if (selector->func_0023B3A0() == 0)
@@ -6900,7 +6900,7 @@ void InventoryItemInstanceList::func_slot10c(u32 value, u32 alternate)
     }
 }
 
-s32 InventoryItemInstanceList::func_slotb8()
+u8 InventoryItemInstanceList::func_slotb8()
 {
     ItemCreationAllocationRecord* records[99];
     ItemCreationSelectedDisplayState* state =
@@ -6975,7 +6975,7 @@ static inline void close_inventory_item_list(ItemCreationSelectedDisplayState* s
     state->inventor_resource_countdown = 0;
 }
 
-s32 InventoryItemInstanceList::func_slotb4()
+u8 InventoryItemInstanceList::func_slotb4()
 {
     ItemCreationSelectedDisplayState* state =
         static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14);
@@ -7013,7 +7013,7 @@ s32 InventoryItemInstanceList::func_slotb4()
  * @brief Apply the selected category record and restore its parent display.
  * @return Zero while preview is active, three for an unavailable selection, or one for a valid selection.
  */
-s32 InventoryItemInstanceList::func_slotb0()
+u8 InventoryItemInstanceList::func_slotb0()
 {
     ItemCreationAllocationRecord* records[99];
     if (preview_mode != 0)
@@ -7516,7 +7516,7 @@ void InventoryItemTypeList::func_slot10c(u32 value, u32 alternate)
 }
 
 /** @brief Return to the item-group window or restore its parent selection. @return Always two. */
-s32 InventoryItemTypeList::func_slotb4()
+u8 InventoryItemTypeList::func_slotb4()
 {
     func_slot10c(0, 0);
     PlanItemGroupWindow* mode = static_cast<PlanItemGroupWindow*>(func_slot44());
@@ -7575,7 +7575,7 @@ static inline ItemCreationCategoryRecord* selected_item_type_record(InventoryIte
     return static_cast<ItemCreationCategoryRecord*>(func_0036EF70(&self->unk1a8, self->unk24)->unk00);
 }
 /** @brief Open the selected item type's instance list. @return One on activation, three on rejection, or zero when unavailable. */
-s32 InventoryItemTypeList::func_slotb0()
+u8 InventoryItemTypeList::func_slotb0()
 {
     if (unk88 == 0)
     {
@@ -7974,7 +7974,7 @@ void PlanItemGroupWindow::func_slot64()
  * @brief Restore the prior item pair and return to the parent window.
  * @return Always two.
  */
-s32 PlanItemGroupWindow::func_slotb4()
+u8 PlanItemGroupWindow::func_slotb4()
 {
     if (unk14c == 1)
     {
@@ -8019,7 +8019,7 @@ s32 PlanItemGroupWindow::func_slotb4()
  * @brief Open the related list while the selection widget is active.
  * @return Zero for a missing or inactive selector; one after opening the list.
  */
-s32 PlanItemGroupWindow::func_slotb0()
+u8 PlanItemGroupWindow::func_slotb0()
 {
     FieldClass153130* selector = unkac;
     if (selector == 0)
@@ -8141,7 +8141,7 @@ PlanItemGroupWindow::PlanItemGroupWindow(ItemCreationSelectedDisplayState* state
  * @brief Reset the choice displays and return to the parent when enabled.
  * @return Always two.
  */
-s32 InventionPolicyWindow::func_slotb4()
+u8 InventionPolicyWindow::func_slotb4()
 {
     func_slot20(0);
     unkcc->func_0023B310();
@@ -8400,7 +8400,7 @@ extern "C" void item_creation_update_skill_labels(CreationSkillWindow* object, u
  * @brief Reset the skill selection and handle the current return mode.
  * @return Always two.
  */
-s32 CreationSkillWindow::func_slotb4()
+u8 CreationSkillWindow::func_slotb4()
 {
     func_slot20(0);
     skill_selector->func_0023B310();
@@ -8879,7 +8879,7 @@ void func_003614B0(AssignedInventorGrid* object)
 }
 
 /** @brief Apply the selected three-component item. @return Action status. */
-s32 AssignedInventorGrid::func_slotbc()
+u8 AssignedInventorGrid::func_slotbc()
 {
     if (unk214 == 0)
     {
@@ -8997,7 +8997,7 @@ s32 AssignedInventorGrid::func_slotbc()
 }
 
 /** @brief Toggle information for the selected inventor. @return One when available, or zero for a non-inventor cell or missing state. */
-s32 AssignedInventorGrid::func_slotb8()
+u8 AssignedInventorGrid::func_slotb8()
 {
     u8 active;
     if (unka8 == 0)
@@ -9025,7 +9025,7 @@ s32 AssignedInventorGrid::func_slotb8()
 }
 
 /** @brief Restore the active selection window or leave item selection. @return Two when handled; zero when inactive. */
-s32 AssignedInventorGrid::func_slotb4()
+u8 AssignedInventorGrid::func_slotb4()
 {
     ItemCreationSelectedDisplayState* state = unka8;
     if (state == 0)
@@ -9175,7 +9175,7 @@ static inline u16 assigned_selection_skill_mask(AssignedInventorGrid* object)
 }
 
 /** @brief Open the selected line's skill or policy window, or start swapping an inventor. @return Zero when inactive, one when handled, or three when unavailable. */
-s32 AssignedInventorGrid::func_slotb0()
+u8 AssignedInventorGrid::func_slotb0()
 {
     ItemCreationSelectedDisplayState* state = this->unka8;
     if (state == 0)
@@ -9759,7 +9759,7 @@ static inline void highlight_current_row(AvailableInventorGrid* object)
 }
 
 /** @brief Restore the fourteen-slot selection window or leave item selection. @return Two when handled, zero when inactive. */
-s32 AvailableInventorGrid::func_slotb4()
+u8 AvailableInventorGrid::func_slotb4()
 {
     ItemCreationSelectedDisplayState* state = unka8;
     if (state == 0)
@@ -9910,7 +9910,7 @@ static inline void apply_selected_index(ItemCreationSelectedDisplayState* state,
 }
 
 /** @brief Toggle information for the selected available inventor. @return One when state is attached, zero otherwise. */
-s32 AvailableInventorGrid::func_slotb8()
+u8 AvailableInventorGrid::func_slotb8()
 {
     u8 flag;
     if (unkac == 0)
@@ -10479,7 +10479,7 @@ void WorkshopExpansionWindow::func_slot68()
  * @brief Disable and reset the panel selection, then return to its associated parent.
  * @return Always two.
  */
-s32 WorkshopExpansionWindow::func_slotb4()
+u8 WorkshopExpansionWindow::func_slotb4()
 {
     if (unkdc != 0)
     {
@@ -11384,7 +11384,7 @@ void ItemCreationMainMenu::func_slot68()
 }
 
 /** @brief Restore the prior display. @return Zero while blocked, otherwise two. */
-s32 ItemCreationMainMenu::func_slotb4()
+u8 ItemCreationMainMenu::func_slotb4()
 {
     if (func_slot28())
     {
@@ -11398,7 +11398,7 @@ s32 ItemCreationMainMenu::func_slotb4()
  * @brief Confirm the selected choice and open its related window or record action.
  * @return Zero while blocked or for an unknown choice, three for an unavailable third choice, otherwise one.
  */
-s32 ItemCreationMainMenu::func_slotb0()
+u8 ItemCreationMainMenu::func_slotb0()
 {
     if (func_slot28())
     {
@@ -14456,13 +14456,13 @@ void FieldClass15AE70::func_slot74()
 }
 
 /** @brief Perform the default window action. @return Zero. */
-s32 FieldClass15AE70::func_slotb0()
+u8 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
 /** @brief Perform the default alternate window action. @return Zero. */
-s32 FieldClass15AE70::func_slotb4()
+u8 FieldClass15AE70::func_slotb4()
 {
     return 0;
 }

@@ -96,9 +96,9 @@ struct ConfigOptions : public FieldClass15AE70
     /** @brief Apply option control mask 0x20. */
     virtual void func_slotac();
     /** @brief Handle virtual slot 0xB0. @return Handler result. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Handle virtual slot 0xB4. @return Handler result. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the option displays. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
     void* unka8;

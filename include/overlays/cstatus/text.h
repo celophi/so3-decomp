@@ -120,11 +120,11 @@ struct StatusCharacterWindow : public FieldClass15AE70
     /** @brief Select the following status display page. */
     virtual void func_slot6c();
     /** @brief Open the character name editor. @return Handler result. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Close the character window. @return Handler result. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Cycle the selected character's model variant. @return Handler result. */
-    virtual s32 func_slotb8();
+    virtual u8 func_slotb8();
     /** @brief Select the preceding character. @return Handler result. */
     virtual s32 func_slotd8();
     /** @brief Select the following character. @return Handler result. */
@@ -227,9 +227,9 @@ struct StatusNameWindow : public FieldClass15AE70
     /** @brief Move the selection to the following column. */
     virtual void func_slot74();
     /** @brief Handle the current selection command. @return Handler result. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Delete the last name entry. @return Handler result. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Return the default command result. @return Zero. */
     virtual s32 func_slotc0();
     /** @brief Return the default command result. @return Zero. */

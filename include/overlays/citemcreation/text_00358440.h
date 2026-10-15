@@ -46,11 +46,11 @@ public:
     virtual void func_slot68();
     /** @brief Perform no work for the window hook at slot 0x6C. */
     virtual void func_slot6c();
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the category display or its parent. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Toggle the selected item preview. @return Always zero. */
-    virtual s32 func_slotb8();
+    virtual u8 func_slotb8();
     /**
      * @brief Create the category list and item preview displays.
      * @param associated Full resource source word.
@@ -119,11 +119,11 @@ public:
     /** @brief Move the selector forward and refresh its two display colors and target. */
     virtual void func_slot6c();
     /** @brief Apply the selected values. @return Always one. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the selection display. @return Always two. */
-    virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
+    virtual u8 func_slotb4();
+    virtual u8 func_slotb8();
+    virtual u8 func_slotbc();
     virtual s32 func_slotc0();
     virtual s32 func_slotc4();
     virtual s32 func_slotc8();
@@ -162,10 +162,10 @@ public:
     InventorInformationWindow();
     /** @brief Destroy the window through Field's window base. */
     virtual ~InventorInformationWindow();
-    virtual s32 func_slotb0();
-    virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
+    virtual u8 func_slotb0();
+    virtual u8 func_slotb4();
+    virtual u8 func_slotb8();
+    virtual u8 func_slotbc();
     virtual s32 func_slotc0();
     virtual s32 func_slotc4();
     virtual s32 func_slotc8();
@@ -224,11 +224,11 @@ public:
     /** Destroy the window through Field's window base. */
     virtual ~ItemCreationControlHelp();
     /** @brief Run the default window action. @return Always one. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Run the default alternate action. @return Always zero. */
-    virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
+    virtual u8 func_slotb4();
+    virtual u8 func_slotb8();
+    virtual u8 func_slotbc();
     virtual s32 func_slotc0();
     virtual s32 func_slotc4();
     virtual s32 func_slotc8();
@@ -347,9 +347,9 @@ public:
     /** @brief Move the selector in the second direction and refresh its labels. */
     virtual void func_slot6c();
     /** @brief Confirm the current choice. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the prior display. @return Action status. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the choice labels and field selection widgets. @param associated Full resource source word. @return Always one. */
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
@@ -372,9 +372,9 @@ public:
     /** @brief Refresh the item-type list's selection cursor. */
     virtual void func_slot5c();
     /** @brief Open the selected item type's instance list. @return One on activation, three on rejection, or zero when unavailable. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Return to the item-group window or restore its parent selection. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the item-type list widgets and initialize its selection. @param associated Full resource source word. @return Always one. */
     virtual s32 func_slot104(u32 associated);
     /** @brief Refresh twelve item-type rows beginning at the list index. @param start First record index. */
@@ -416,9 +416,9 @@ public:
     /** @brief Refresh the next mode selection. */
     virtual void func_slot6c();
     /** @brief Open the related list. @return Zero for an inactive selector; otherwise one. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the prior item pair and parent window. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the mode display widgets. @param associated Full resource source word. @return Setup status. */
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* unka8;
@@ -456,11 +456,11 @@ public:
     /** @brief Move to the next invention choice and refresh its text and marker. */
     virtual void func_slot6c();
     /** @brief Handle the confirmed invention choice. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** Destroy the window through Field's window base. */
     virtual ~InventionPolicyWindow();
     /** @brief Reset the choices and return to the parent when enabled. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
      * @brief Create the two choice displays and their selection widgets.
      * @param associated Full resource source word.
@@ -499,9 +499,9 @@ public:
     /** @brief Refresh the option display for the second selection direction. */
     virtual void func_slot68();
     /** @brief Confirm the selected creation skill. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Reset the skill selection and handle the return mode. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
      * @brief Create the eight creation-skill labels and their selection widgets.
      * @param associated Full resource source word.
@@ -574,9 +574,9 @@ public:
     /** Call the virtual at 0xac. */
     virtual void func_slot74();
     /** @brief Toggle information for the selected inventor. @return One when available, or zero for a non-inventor cell or missing state. */
-    virtual s32 func_slotb8();
+    virtual u8 func_slotb8();
     /** @brief Restore the active selection or leave item selection. @return Two when handled; zero when inactive. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Move the marker left or wrap within its row. */
     virtual void func_slota8();
     /** @brief Move the marker right or wrap within its row. */
@@ -586,9 +586,9 @@ public:
     /** @brief Move the marker down or enter the related window. */
     virtual void func_slota4();
     /** @brief Open the selected line's skill or policy window, or begin an inventor swap. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Apply the three selected components. @return Action status. */
-    virtual s32 func_slotbc();
+    virtual u8 func_slotbc();
     /** @brief Create the selection displays. @param associated Full resource source word. @return Initialization status. */
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* unka8;
@@ -642,9 +642,9 @@ public:
     /** @brief Empty callback. */
     virtual void func_slot74();
     /** @brief Handle the callback at native slot 0xb0. @return Callback result. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Handle the callback at native slot 0xb4. @return Callback result. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Construct the panel widgets. @param associated Full resource source word. @return One on success, zero without an active state. */
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* unka8;
@@ -717,7 +717,7 @@ public:
         unk128 = 0;
     }
     /** @brief Toggle information for the selected available inventor. @return One when a state is attached, zero otherwise. */
-    virtual s32 func_slotb8();
+    virtual u8 func_slotb8();
     /** @brief Release the resource and destroy the window through its Field base. */
     virtual ~AvailableInventorGrid();
     /** Empty callback at native slot 0x5c. */
@@ -734,8 +734,8 @@ public:
     virtual void func_slota4();
     virtual void func_slota8();
     virtual void func_slotac();
-    virtual s32 func_slotb0();
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb0();
+    virtual u8 func_slotb4();
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* unka8;
     FieldObject23CEA0* unkac;

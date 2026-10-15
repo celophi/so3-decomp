@@ -543,7 +543,7 @@ void shop_set_active_window(ShopState* object, void* value)
  * @brief Sell all unequipped instances of the selected item and return to the list.
  * @return Zero while locked, the alternate action result, or one after applying the choice.
  */
-s32 ShopSellAllConfirmWindow::func_slotb0()
+u8 ShopSellAllConfirmWindow::func_slotb0()
 {
     ItemCreationAllocationRecord* unequipped_allocations[100];
     if (func_slot28())
@@ -687,7 +687,7 @@ s32 shop_cancel_sell_confirmation(void* receiver)
  * @brief Apply the selected record and update the remaining choices.
  * @return Zero while locked, the alternate action result, or one after applying the choice.
  */
-s32 ShopSellConfirmWindow::func_slotb0()
+u8 ShopSellConfirmWindow::func_slotb0()
 {
     ItemCreationAllocationRecord* records[100];
     if (func_slot28())
@@ -845,7 +845,7 @@ s32 shop_cancel_buy_confirmation(void* receiver)
  * @brief Complete the purchase and refresh the buy list.
  * @return Zero while locked, the alternate action result, or one after applying the choice.
  */
-s32 ShopBuyConfirmWindow::func_slotb0()
+u8 ShopBuyConfirmWindow::func_slotb0()
 {
     if (func_slot28())
     {
@@ -1357,7 +1357,7 @@ s32 shop_cancel_sell(void* object)
     return 2;
 }
 
-s32 ShopSellListWindow::func_slotb0()
+u8 ShopSellListWindow::func_slotb0()
 {
     ShopState* state = D_001B643C->callbacks->shop;
     if (FieldClass15AE60::unk88 != 0)
@@ -1622,7 +1622,7 @@ void ShopItemDetailWindow::func_slot5c()
  * @brief Request cancellation of the attached status window when present.
  * @return Always two.
  */
-s32 ShopItemDetailWindow::func_slotb4()
+u8 ShopItemDetailWindow::func_slotb4()
 {
     if (item_model != 0)
     {

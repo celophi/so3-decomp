@@ -456,13 +456,13 @@ void FieldClass15AE70::func_slotac()
 }
 
 /** @brief Return the default result for the window hook at slot 0xB8. @return Zero. */
-s32 FieldClass15AE70::func_slotb8()
+u8 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
 /** @brief Return the default result for the window hook at slot 0xBC. @return Zero. */
-s32 FieldClass15AE70::func_slotbc()
+u8 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
@@ -551,13 +551,13 @@ public:
     /** @brief Destroy the window. */
     virtual ~FieldClass153ED0();
     /** @brief Restore the parent window and hide this window. @return One. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the parent window and hide this window. @return Two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
 };
 
 /** @brief Restore the parent window and hide this window. @return Two. */
-s32 FieldClass153ED0::func_slotb4()
+u8 FieldClass153ED0::func_slotb4()
 {
     FieldClass15AE70* parent = static_cast<FieldClass15AE70*>(func_slot44());
     if (parent != 0)
@@ -570,7 +570,7 @@ s32 FieldClass153ED0::func_slotb4()
 }
 
 /** @brief Restore the parent window and hide this window. @return One. */
-s32 FieldClass153ED0::func_slotb0()
+u8 FieldClass153ED0::func_slotb0()
 {
     FieldClass15AE70* parent = static_cast<FieldClass15AE70*>(func_slot44());
     if (parent != 0)
@@ -875,13 +875,13 @@ void func_0026E390(void* object)
 }
 
 /** @brief Return the default result for the window hook at slot 0xB0. @return Zero. */
-s32 FieldClass15AE70::func_slotb0()
+u8 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
 /** @brief Return the default result for the window hook at slot 0xB4. @return Zero. */
-s32 FieldClass15AE70::func_slotb4()
+u8 FieldClass15AE70::func_slotb4()
 {
     return 0;
 }

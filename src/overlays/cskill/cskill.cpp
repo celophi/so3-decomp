@@ -343,9 +343,9 @@ struct SkillTacticalDetailWindow : public FieldClass15AE70
     /** @brief Cancel the active grid. */
     virtual void func_slot70();
     /** @brief Process the active grid selection. @return Selection event code. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the associated window. @return Two after restoring the window, or three when absent. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Leave the grid selection unchanged. @return Zero. */
     virtual s32 func_slotd8();
     /** @brief Leave the grid selection unchanged. @return Zero. */
@@ -392,9 +392,9 @@ struct SkillModeSelection : public FieldClass15AE70
     /** @brief Move the mode selection in direction one. */
     virtual void func_slot6c();
     /** @brief Process the selected mode entry. @return Mode selection event code. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Cancel skill selection and restore battle setup focus. @return Zero when inactive, otherwise two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Move to the preceding page of mode entries. @return Zero after processing. */
     virtual s32 func_slotd0();
     /** @brief Move to the following page of mode entries. @return Zero after processing. */
@@ -464,9 +464,9 @@ struct SkillGridChoice : public FieldClass15AE70
     /** @brief Move the choice grid in direction one. */
     virtual void func_slot6c();
     /** @brief Process the current choice. @return Choice event code. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Cancel the choice window. @return Two after queuing cancellation. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Handle the current grid choice. @param selected Selected grid index. */
     virtual void func_slotf4(s16 selected);
     FieldObject23CEA0* selection;
@@ -502,9 +502,9 @@ struct SkillSecondarySelection : FieldClass15AE70
     /** @brief Move the selection in direction one. */
     virtual void func_slot6c();
     /** @brief Process the selected window. @return Selection event code. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Open the grid choice. @return Selection event code. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Cycle the status record in direction zero. @return Selection event code. */
     virtual s32 func_slotd8();
     /** @brief Cycle the status record in direction one. @return Selection event code. */
@@ -543,12 +543,12 @@ struct SkillStatusSkillWindow : public FieldClass15AE70
      */
     virtual void func_slot6c();
     /** @brief Process the selected entry. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Reset the four row colors and return to the associated window.
      * @return Two after switching windows, or zero while the grid is inactive.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Retreat the selected record through the active controller. @return Byte event code zero or four. */
     virtual s32 func_slotd8();
     /** @brief Advance the selected record through the active controller. @return Byte event code zero or four. */
@@ -735,9 +735,9 @@ struct SkillOptionsWindow : public FieldClass15AE70
     /** @brief Move the selector to the following entry. */
     virtual void func_slot74();
     /** @brief Apply the selected options. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the associated window. @return Two after cancellation. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the option displays. @param associated Full resource source word. @return Setup status. */
     virtual s32 func_slotf4(u32 associated);
     FieldRecordSelection* records;
@@ -799,14 +799,14 @@ typedef struct SkillTacticalWindow : public FieldClass15AE70
      * @brief Apply an eligible selected mode and hide its status displays.
      * @return Zero when inactive or ineligible, three when unavailable, or one after applying the mode.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Save the mode-query choice, clear its pending state, and restore the associated window. @return Zero while inactive, or two after completing the transition. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
      * @brief Store the cursor for the selected slot and apply its mode.
      * @return Zero when inactive or empty, three when the mode reports three, or one otherwise.
      */
-    virtual s32 func_slotbc();
+    virtual u8 func_slotbc();
     /** @brief Save the mode-query choice and retreat to the preceding record. @return Event code zero or four. */
     virtual s32 func_slotd8();
     /** @brief Save the mode-query choice and advance the selected record. @return Event code zero or four. */
@@ -891,14 +891,14 @@ typedef struct SkillSymbologyWindow : public FieldClass15AE70
      * @brief Validate the selected entry and open its options window.
      * @return Zero while inactive, three for a rejected entry, or one after opening its options.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Open a grid-choice window or mark the receiver when its source is busy.
      * @return Two after opening or marking the source, otherwise zero without a loader or allocation.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Refresh the selection display. */
-    virtual s32 func_slotbc();
+    virtual u8 func_slotbc();
     /**
      * @brief Move the paired display lists toward scroll position zero.
      * @return Zero.
@@ -957,9 +957,9 @@ typedef struct SkillBattleSetupWindow : public FieldClass15AE70
     /** @brief Move the row selection in direction one. */
     virtual void func_slot6c();
     /** @brief Open skill selection for the current battle slot. @return Selection event one. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the associated window. @return Two after restoring the window. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Cycle the status record in direction zero. @return Record-change event code. */
     virtual s32 func_slotd8();
     /** @brief Cycle the status record in direction one. @return Record-change event code. */
@@ -1923,25 +1923,25 @@ void FieldClass15AE70::func_slotac()
 }
 
 /** @brief Return the default window action result. @return Zero. */
-s32 FieldClass15AE70::func_slotb0()
+u8 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
 /** @brief Return the default window action result. @return Zero. */
-s32 FieldClass15AE70::func_slotb4()
+u8 FieldClass15AE70::func_slotb4()
 {
     return 0;
 }
 
 /** @brief Return the default window action result. @return Zero. */
-s32 FieldClass15AE70::func_slotb8()
+u8 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
 /** @brief Return the default window action result. @return Zero. */
-s32 FieldClass15AE70::func_slotbc()
+u8 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
@@ -2412,7 +2412,7 @@ s32 SkillTacticalDetailWindow::func_slotd8()
     return 0;
 }
 
-s32 SkillTacticalDetailWindow::func_slotb4()
+u8 SkillTacticalDetailWindow::func_slotb4()
 {
     FieldClass15AE70* window = static_cast<FieldClass15AE70*>(this->func_slot44());
     if (window == 0)
@@ -3009,7 +3009,7 @@ static inline void clear_selection_rows(SkillModeSelection* window)
 }
 
 /** @brief Cancel skill selection and restore the battle setup window. @return Zero when inactive, otherwise event two. */
-s32 SkillModeSelection::func_slotb4()
+u8 SkillModeSelection::func_slotb4()
 {
     u8 inactive = !this->selection->unk35;
     if (inactive == 1)
@@ -3529,7 +3529,7 @@ s32 SkillTacticalWindow::func_slotd8()
     return cycle_status_record(status, 0);
 }
 
-s32 SkillTacticalWindow::func_slotb4()
+u8 SkillTacticalWindow::func_slotb4()
 {
     u8 inactive = !this->selection->unk35;
     if (inactive == 1)
@@ -3565,7 +3565,7 @@ s32 SkillTacticalWindow::func_slotb4()
     return 2;
 }
 
-s32 SkillTacticalWindow::func_slotbc()
+u8 SkillTacticalWindow::func_slotbc()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->unk35;
@@ -3585,7 +3585,7 @@ s32 SkillTacticalWindow::func_slotbc()
     return 1;
 }
 
-s32 SkillTacticalWindow::func_slotb0()
+u8 SkillTacticalWindow::func_slotb0()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->unk35;
@@ -4004,7 +4004,7 @@ void SkillBattleSetupWindow::func_slot68()
     }
 }
 
-s32 SkillBattleSetupWindow::func_slotb4()
+u8 SkillBattleSetupWindow::func_slotb4()
 {
     u8 inactive = !this->selection->unk35;
     if (inactive == 1)
@@ -4045,7 +4045,7 @@ s32 SkillBattleSetupWindow::func_slotb4()
 }
 
 /** @brief Open skill selection for the current battle slot and hide character navigation. @return Selection event one. */
-s32 SkillBattleSetupWindow::func_slotb0()
+u8 SkillBattleSetupWindow::func_slotb0()
 {
     if (this->attachment != 0)
     {
@@ -4366,7 +4366,7 @@ s32 SkillStatusSkillWindow::func_slotd8()
     return cycle_status_record(status, 0);
 }
 
-s32 SkillStatusSkillWindow::func_slotb4()
+u8 SkillStatusSkillWindow::func_slotb4()
 {
     u8 inactive = !this->selection->unk35;
     if (inactive == 1)
@@ -4732,7 +4732,7 @@ s32 SkillSecondarySelection::func_slotd8()
     return cycle_status_record(this->status, 0);
 }
 
-s32 SkillSecondarySelection::func_slotb4()
+u8 SkillSecondarySelection::func_slotb4()
 {
     FieldSlotRecordOwner1C* loader = D_001B643C->loader;
     if (loader == 0)
@@ -4759,7 +4759,7 @@ s32 SkillSecondarySelection::func_slotb4()
     return 2;
 }
 
-s32 SkillSecondarySelection::func_slotb0()
+u8 SkillSecondarySelection::func_slotb0()
 {
     u8 inactive = !this->selection->unk35;
     if (inactive == 1)
@@ -6027,7 +6027,7 @@ INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0035CDB0);
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0035CDF0);
 
-s32 SkillGridChoice::func_slotb4()
+u8 SkillGridChoice::func_slotb4()
 {
     func_002CE530(this, 0, 0x7F);
     FieldClass153E30* controller = D_001B643C->callbacks->controller;
@@ -6036,7 +6036,7 @@ s32 SkillGridChoice::func_slotb4()
     return 2;
 }
 
-s32 SkillGridChoice::func_slotb0()
+u8 SkillGridChoice::func_slotb0()
 {
     u8 result = 0;
     this->selected = this->selection->unk114;
@@ -6048,7 +6048,16 @@ s32 SkillGridChoice::func_slotb0()
     {
         result = this->func_slotb4();
     }
-    return result == 0 ? 1 : 2;
+    u8 status;
+    if (result == 0)
+    {
+        status = 1;
+    }
+    else
+    {
+        status = 2;
+    }
+    return status;
 }
 
 s32 SkillGridChoice::func_slot10(u32 associated, float x, float y, s32 code)
@@ -6324,7 +6333,7 @@ void SkillOptionsWindow::func_slot68()
  * @brief Cancel the options window and restore its associated window.
  * @return Two after restoring the prior window.
  */
-s32 SkillOptionsWindow::func_slotb4()
+u8 SkillOptionsWindow::func_slotb4()
 {
     this->child->unk3f = 0;
     this->unk10->LibClass174610::unkab = 0;
@@ -6658,7 +6667,7 @@ void SkillSymbologyWindow::func_slot64()
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_slotbc__20SkillSymbologyWindowFv);
 
-s32 SkillSymbologyWindow::func_slotb4()
+u8 SkillSymbologyWindow::func_slotb4()
 {
     FieldSlotRecordOwner1C* loader = D_001B643C->loader;
     if (loader == 0)
@@ -6689,7 +6698,7 @@ s32 SkillSymbologyWindow::func_slotb4()
  * @brief Open target selection for an available restorative spell.
  * @return Zero when inactive, three when unavailable, or one after opening target selection.
  */
-s32 SkillSymbologyWindow::func_slotb0()
+u8 SkillSymbologyWindow::func_slotb0()
 {
     u8 inactive = !this->selection->FieldClass151C50::unk35;
     if (inactive == 1)

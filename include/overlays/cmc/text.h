@@ -97,9 +97,9 @@ class CmcClass189110 : public FieldClass15AE70
 {
 public:
     /** @brief Run the selection action. @return Window action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Request the controller action and hide the nested display. @return Two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Destroy the window. */
     virtual ~CmcClass189110();
     /** @brief Move the child selector backward. */
@@ -230,12 +230,12 @@ public:
      * @brief Restore the parent window, queue this window, and set the alternate window text key.
      * @return One.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Run the window action and return status one.
      * @return One.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     u8 unka8[8];
 };
 
@@ -249,12 +249,12 @@ public:
      * @brief Restore the parent window, queue this window, and set the alternate window text key.
      * @return One.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Run the window action and return status one.
      * @return One.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
 };
 
 /** Partial 0xA8-byte window interface, with MAIN vtable at 0x189F20. */
@@ -267,12 +267,12 @@ public:
      * @brief Restore the parent window, queue this window, and set the alternate window text key.
      * @return One.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Run the window action and return status one.
      * @return One.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
 };
 
 /** Partial 0xA8-byte window interface, with MAIN vtable at 0x18A020. */
@@ -285,12 +285,12 @@ public:
      * @brief Restore the parent window, queue this window, and set the alternate window text key.
      * @return One.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Run the window action and return status one.
      * @return One.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
 };
 
 /** Partial 0xB0-byte window interface, with MAIN vtable at 0x18A120. */
@@ -298,14 +298,14 @@ class CmcClass18A120 : public FieldClass15AE70
 {
 public:
     /** @brief Handle the window action. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Destroy the window. */
     virtual ~CmcClass18A120();
     /**
      * @brief Run the window action and return status one.
      * @return One.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     u8 unka8[8];
 };
 
@@ -319,12 +319,12 @@ public:
      * @brief Restore the parent window, queue this window, and set the alternate window text key.
      * @return One.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Run the window action and return status one.
      * @return One.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
 };
 
 /** Partial 0xB0-byte window interface, with MAIN vtable at 0x18A320. */
@@ -332,14 +332,14 @@ class CmcClass18A320 : public FieldClass15AE70
 {
 public:
     /** @brief Handle the window action. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Destroy the window. */
     virtual ~CmcClass18A320();
     /**
      * @brief Run the window action when its guard byte is clear.
      * @return Zero when guarded, otherwise one after running the action.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     void* unka8;
     u8 unkac;
     u8 unkad[3];
@@ -350,14 +350,14 @@ class CmcClass18A620 : public FieldClass15AE70
 {
 public:
     /** @brief Handle the window action. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Destroy the window. */
     virtual ~CmcClass18A620();
     /**
      * @brief Run the window action and return status one.
      * @return One.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
 };
 
 /** Partial 0xB0-byte window interface, with MAIN vtable at 0x18A820. */
@@ -365,14 +365,14 @@ class CmcClass18A820 : public FieldClass15AE70
 {
 public:
     /** @brief Handle the window action. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Destroy the window. */
     virtual ~CmcClass18A820();
     /**
      * @brief Run the window action and return status one.
      * @return One.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     u8 unka8[8];
 };
 
@@ -409,7 +409,7 @@ class CmcClass18AB20 : public FieldClass15AE70
 {
 public:
     /** @brief Handle the window action. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Destroy the window. */
     virtual ~CmcClass18AB20();
     /**
@@ -444,7 +444,7 @@ public:
      * @brief Set the window control byte to one and return status two.
      * @return Two.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     u8 unka8[0x14];
     FieldObject23B950* target_display;
 };

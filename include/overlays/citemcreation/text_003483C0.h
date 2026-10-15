@@ -30,11 +30,11 @@ typedef struct ItemCreationClass186770
     /** @brief Destroy the resource window and its Field base. */
     virtual ~ItemCreationClass186770();
     /** @brief Open the selected resource group. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Reopen the associated window. @return Action status. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Reopen the option window. @return Action status. */
-    virtual s32 func_slotb8();
+    virtual u8 func_slotb8();
     /** @brief Refresh the active resource window. */
     virtual void func_slot5c();
     /** @brief Move the resource column in direction zero. */
@@ -141,14 +141,14 @@ public:
      * @brief Select the active view and apply its selected option.
      * @return Always one.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Transfer the selected inventor into its workshop strip and refresh the markers. */
     virtual void func_slot5c();
     /**
      * @brief Clear the selected option and restore the active view.
      * @return Always two.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     virtual s32 func_slotf4(u32 associated);
     /**
      * @brief Dispatch a grid direction and refresh the selected option markers.
@@ -175,9 +175,9 @@ public:
     /** @brief Destroy the option window and its base. */
     virtual ~DestinationInventorStrip();
     /** @brief Apply the selected option and refresh its associated window. @return Always one. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Reset the option and restore its associated selection display. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
      * @brief Set up the option window and recover its associated display.
      * @param associated Full resource source word.
@@ -198,9 +198,9 @@ public:
     /** @brief Destroy the option window and its base. */
     virtual ~SourceInventorStrip();
     /** @brief Apply the selected option and refresh its associated window. @return Always one. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Reset the option and restore its associated selection display. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /**
      * @brief Set up the option window and recover its associated display.
      * @param associated Full resource source word.
@@ -231,9 +231,9 @@ public:
     /** @brief Forward direction 1 to the window. */
     virtual void func_slot68();
     /** @brief Confirm inventor assignment or show the workshop-full warning. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Activate the workshop inventor strip and its talent display. @return Always one. */
-    virtual s32 func_slotbc();
+    virtual u8 func_slotbc();
     /** @brief Move the selection and refresh the associated detail windows. @param direction Direction code. */
     virtual void func_slotf8(u16 direction);
     /** @brief Create the workshop selector, facility labels and assignment controls. @param associated Full resource source word. @return Creation status. */
@@ -258,12 +258,12 @@ public:
      * @brief Apply the selected option and enable the corresponding option window.
      * @return Zero without a state, three for an unchanged alternate selection, or one otherwise.
      */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /**
      * @brief Reset the option transfer or return to the primary option window.
      * @return Zero without a selection state, or two otherwise.
      */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Initialize the selection window and its display pointers. */
     InventorTransferWindow();
     /** @brief Destroy the selection window through its base. */
@@ -311,9 +311,9 @@ public:
     /** @brief Destroy the window through its Field base. */
     virtual ~WorkshopFullDialog();
     /** @brief Restore the parent after confirming. @return One. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the parent after returning. @return Two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Build the window displays. @param associated Full resource source word. @return One. */
     virtual s32 func_slotf4(u32 associated);
 };
@@ -329,9 +329,9 @@ public:
     /** @brief Destroy the window through its Field base. */
     virtual ~AssignInventorDialog();
     /** @brief Restore the associated window. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Apply the current option. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Create the option displays. @param associated Full resource source word. @return Setup status. */
     virtual s32 func_slotf4(u32 associated);
     /** @brief Move the selection in direction three. */
@@ -398,9 +398,9 @@ public:
     /** @brief Move the grid in direction three and refresh the alternate display. */
     virtual void func_slot70();
     /** @brief Perform the default action. @return Always zero. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Return to the associated window. @return Zero without an associated window, or one after restoring it. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the row displays and selection grid. @param associated Full resource source word. @return Setup status. */
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
@@ -456,9 +456,9 @@ public:
     /** @brief Create the window controls. @param associated Full resource source word. @return Setup status. */
     virtual s32 func_slotf4(u32 associated);
     /** @brief Restore the associated window and dispatch the result state. @return One. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the associated window and dispatch the alternate result action. @return One. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     ItemCreationSelectedDisplayState* selection_state;
     u8 line_index;
     u8 unkad[3];
@@ -476,9 +476,9 @@ public:
     /** @brief Destroy the Field window base. */
     virtual ~InsufficientFolDialog();
     /** @brief Return to the associated window. @return Always one. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Handle the alternate action. @return Action status. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create and attach the window display. @param associated Full resource source word. @return Always one. */
     virtual s32 func_slotf4(u32 associated);
 };
@@ -494,11 +494,11 @@ public:
     /** @brief Destroy the window through its Field base. */
     virtual ~DevelopmentCompleteDialog();
     /** @brief Handle the window action. @return Handler status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Run the default alternate action. @return Always zero. */
-    virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
+    virtual u8 func_slotb4();
+    virtual u8 func_slotb8();
+    virtual u8 func_slotbc();
     virtual s32 func_slotc0();
     virtual s32 func_slotc4();
     virtual s32 func_slotc8();
@@ -536,11 +536,11 @@ public:
     /** @brief Destroy the window through its Field base. */
     virtual ~ItemDetailsWindow();
     /** @brief Handle the window action. @return Handler status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Run the default alternate action. @return Always zero. */
-    virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
+    virtual u8 func_slotb4();
+    virtual u8 func_slotb8();
+    virtual u8 func_slotbc();
     virtual s32 func_slotc0();
     virtual s32 func_slotc4();
     virtual s32 func_slotc8();
@@ -590,11 +590,11 @@ public:
     /** @brief Destroy the window through its Field base. */
     virtual ~LineFailureDialog();
     /** @brief Handle the window action. @return Handler status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Run the default alternate action. @return Always zero. */
-    virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
+    virtual u8 func_slotb4();
+    virtual u8 func_slotb8();
+    virtual u8 func_slotbc();
     virtual s32 func_slotc0();
     virtual s32 func_slotc4();
     virtual s32 func_slotc8();
@@ -624,11 +624,11 @@ public:
     /** @brief Destroy the window through its Field base. */
     virtual ~InventionSuccessDialog();
     /** @brief Handle the window action. @return Handler status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Run the default alternate action. @return Always zero. */
-    virtual s32 func_slotb4();
-    virtual s32 func_slotb8();
-    virtual s32 func_slotbc();
+    virtual u8 func_slotb4();
+    virtual u8 func_slotb8();
+    virtual u8 func_slotbc();
     virtual s32 func_slotc0();
     virtual s32 func_slotc4();
     virtual s32 func_slotc8();
@@ -681,9 +681,9 @@ public:
     /** @brief Advance the dialog choices and refresh their colors and target. */
     virtual void func_slot6c();
     /** @brief Apply the selected abort choice. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the third row and associated resource window. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the abort confirmation and its three choices. @param associated Full resource source word. @return Always one. */
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
@@ -746,9 +746,9 @@ public:
     /** @brief Advance the dialog choices and refresh their colors and target. */
     virtual void func_slot6c();
     /** @brief Apply the selected action. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Restore the associated resource window. @return Always two. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Create the item-submission prompt and its Yes/No choices. @param associated Full resource source word. @return Always one. */
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
@@ -860,9 +860,9 @@ public:
     /** @brief Destroy the Field window base. */
     virtual ~MissingMaterialsDialog();
     /** @brief Handle the return action. @return Action status. */
-    virtual s32 func_slotb0();
+    virtual u8 func_slotb0();
     /** @brief Handle the alternate action. @return Action status. */
-    virtual s32 func_slotb4();
+    virtual u8 func_slotb4();
     /** @brief Set up the window. @param associated Full resource source word. @return Setup status. */
     virtual s32 func_slotf4(u32 associated);
 };

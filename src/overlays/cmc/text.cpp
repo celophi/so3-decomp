@@ -416,7 +416,7 @@ void CmcClass189110::func_slot68()
  * @brief Request the controller action, hide this window's nested display, and return status two.
  * @return Two.
  */
-s32 CmcClass189110::func_slotb4()
+u8 CmcClass189110::func_slotb4()
 {
     CmcClass18AF20* controller = unka8;
     if (controller != 0)
@@ -854,7 +854,7 @@ inline LibObject174F20::~LibObject174F20()
  * @brief Run the window action and return status one.
  * @return One.
  */
-s32 CmcClass189920::func_slotb4()
+u8 CmcClass189920::func_slotb4()
 {
     func_slotb0();
     return 1;
@@ -864,7 +864,7 @@ s32 CmcClass189920::func_slotb4()
  * @brief Restore the parent window, queue this window, and set the alternate window text key.
  * @return One.
  */
-s32 CmcClass189920::func_slotb0()
+u8 CmcClass189920::func_slotb0()
 {
     FieldClass15AE70::func_slot18(0, 0x7F);
     FieldClass153E30* callbacks = D_001B643C->unk10->unk14;
@@ -883,7 +883,7 @@ INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_0034DED0);
  * @brief Run the window action and return status one.
  * @return One.
  */
-s32 CmcClass189A20::func_slotb4()
+u8 CmcClass189A20::func_slotb4()
 {
     func_slotb0();
     return 1;
@@ -893,7 +893,7 @@ s32 CmcClass189A20::func_slotb4()
  * @brief Restore the parent window, queue this window, and set the alternate window text key.
  * @return One.
  */
-s32 CmcClass189A20::func_slotb0()
+u8 CmcClass189A20::func_slotb0()
 {
     func_slot18(0, 0x7F);
     FieldClass153E30* callbacks = D_001B643C->unk10->unk14;
@@ -966,7 +966,7 @@ INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_00350B60);
  * @brief Run the window action and return status one.
  * @return One.
  */
-s32 CmcClass189F20::func_slotb4()
+u8 CmcClass189F20::func_slotb4()
 {
     func_slotb0();
     return 1;
@@ -976,7 +976,7 @@ s32 CmcClass189F20::func_slotb4()
  * @brief Restore the parent window, queue this window, and set the alternate window text key.
  * @return One.
  */
-s32 CmcClass189F20::func_slotb0()
+u8 CmcClass189F20::func_slotb0()
 {
     static_cast<FieldClass15AE70*>(func_slot44())->func_slot18(1, 0x7F);
     FieldClass153E30* callbacks = D_001B643C->unk10->unk14;
@@ -995,7 +995,7 @@ INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_00350E40);
  * @brief Run the window action and return status one.
  * @return One.
  */
-s32 CmcClass18A020::func_slotb4()
+u8 CmcClass18A020::func_slotb4()
 {
     func_slotb0();
     return 1;
@@ -1005,7 +1005,7 @@ s32 CmcClass18A020::func_slotb4()
  * @brief Restore the parent window, queue this window, and set the alternate window text key.
  * @return One.
  */
-s32 CmcClass18A020::func_slotb0()
+u8 CmcClass18A020::func_slotb0()
 {
     static_cast<FieldClass15AE70*>(func_slot44())->func_slot18(1, 0x7F);
     FieldClass153E30* callbacks = D_001B643C->unk10->unk14;
@@ -1024,7 +1024,7 @@ INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_00351130);
  * @brief Run the window action and return status one.
  * @return One.
  */
-s32 CmcClass18A120::func_slotb4()
+u8 CmcClass18A120::func_slotb4()
 {
     func_slotb0();
     return 1;
@@ -1043,7 +1043,7 @@ CmcClass18A120::~CmcClass18A120()
  * @brief Run the window action and return status one.
  * @return One.
  */
-s32 CmcClass18A220::func_slotb4()
+u8 CmcClass18A220::func_slotb4()
 {
     func_slotb0();
     return 1;
@@ -1053,7 +1053,7 @@ s32 CmcClass18A220::func_slotb4()
  * @brief Restore the parent window, queue this window, and set the alternate window text key.
  * @return One.
  */
-s32 CmcClass18A220::func_slotb0()
+u8 CmcClass18A220::func_slotb0()
 {
     static_cast<FieldClass15AE70*>(func_slot44())->func_slot18(1, 0x7F);
     FieldClass153E30* callbacks = D_001B643C->unk10->unk14;
@@ -1076,7 +1076,7 @@ INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_00351C60);
  * @brief Run the window action when its guard byte is clear.
  * @return Zero when guarded, otherwise one after running the action.
  */
-s32 CmcClass18A320::func_slotb4()
+u8 CmcClass18A320::func_slotb4()
 {
     if (unkac != 0)
     {
@@ -1126,7 +1126,7 @@ INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_003537D0);
  * @brief Run the window action and return status one.
  * @return One.
  */
-s32 CmcClass18A620::func_slotb4()
+u8 CmcClass18A620::func_slotb4()
 {
     func_slotb0();
     return 1;
@@ -1157,7 +1157,7 @@ void func_003540E0(void* object)
  * @brief Run the window action and return status one.
  * @return One.
  */
-s32 CmcClass18A820::func_slotb4()
+u8 CmcClass18A820::func_slotb4()
 {
     func_slotb0();
     return 1;
@@ -1251,7 +1251,7 @@ INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_003564C0);
  * @brief Set the window control byte to one and return status two.
  * @return Two.
  */
-s32 CmcClass18AC20::func_slotb4()
+u8 CmcClass18AC20::func_slotb4()
 {
     func_slot24(1);
     return 2;
