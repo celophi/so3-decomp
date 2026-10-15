@@ -30,6 +30,7 @@ options:
   gp_value: 0x1bdff0
   symbol_addrs_path:
     - config/symbols/ctactics_symbol_addrs.txt
+  reloc_addrs_path: [config/relocations/ctactics_reloc_addrs.txt]
   global_vram_start: 0x100000
   global_vram_end: 0x507A00
   # MWLDPS2 rejects the sized <function>.NON_MATCHING symbol splat's nonmatching
@@ -55,6 +56,7 @@ segments:
     subsegments:
       - [0x40, pad, text_start]
       - [0x80, cpp, ctactics]
+      - [0x9C20, pad, text_end]
       - [0x9C80, databin, data]
       - start: 0x9D10
         type: .rodata

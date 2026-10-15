@@ -1,18 +1,108 @@
 #include "include_asm.h"
-#include "overlays/ctactics/text.h"
+#include "overlays/ctactics/ctactics.h"
 #include "main/resident_data.h"
 #include "main/resident_001001E0.h"
 #include "main/resident_0010A0E0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/1067-00/text_0028E240.h"
+#include "overlays/1067-00/text_00212560.h"
 #include "overlays/1067-00/text_002607B0.h"
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_002D5260.h"
+#include "overlays/1067-00/text_002D3BD0.h"
 #include "overlays/1067-00/text_0023B1D0.h"
+#include "overlays/1067-00/text_002CEAF0.h"
 #include "overlays/1067-00/grid_marker.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_003F90C0.h"
 #include "overlays/lib/scalar_indicator_inlines.h"
+
+/** Partial primary interface of the resident field context; later methods and secondary tables are omitted. */
+struct TacticsFieldContext1516A0 : public FieldClass151D40
+{
+    /**
+     * @brief Resolve the display coordinates for a keyed field object.
+     * @param x Receives the horizontal coordinate.
+     * @param y Receives the vertical coordinate.
+     * @param key Field object key.
+     * @param width Horizontal extent used for clipping.
+     * @param height Vertical extent used for clipping.
+     */
+    virtual void func_0020E9B0(float* x, float* y, s32 key, float width, float height);
+    /**
+     * @brief Forward a scalar update to the keyed field object.
+     * @param value Full control word.
+     * @param key Field object key.
+     * @param amount Scalar update value.
+     */
+    virtual void func_0020E940(s32 value, s32 key, float amount);
+    /**
+     * @brief Queue a field control request with an optional keyed attachment.
+     * @param first First request word.
+     * @param second Second request word.
+     * @param third Third request word.
+     * @param fourth Fourth request word.
+     * @param key Attachment key, or -1.
+     * @param enabled Nonzero to attach the keyed object.
+     * @return Request slot, or -1 on failure.
+     */
+    virtual s32 func_0020E860(s32 first, s32 second, s32 third, s32 fourth, s32 key, u32 enabled);
+    /**
+     * @brief Clear a queued field request and optionally release attached objects.
+     * @param index Request slot, or -1 for every slot.
+     * @param release Nonzero to release attached objects.
+     */
+    virtual void func_0020E7D0(s8 index, u32 release);
+    /** @brief Query a request's status. @param index Request slot. @return Request status, or -1 for a negative slot. */
+    virtual s32 func_0020E790(s8 index);
+    /** @brief Query a request's flags. @param index Request slot. @return Flag status, or -1 for a negative slot. */
+    virtual s32 func_0020E750(s8 index);
+    /** @brief Test whether resident field work has completed. @return One when no work remains, otherwise zero. */
+    virtual s32 func_0020E670();
+    /** @brief Refresh resident character state and its attached field display. */
+    virtual void func_0020E590();
+};
+
+/** Kind-9 movement widget with its storage base at offset 0x40. */
+struct TacticsMovement175030 : public LibClass178600, public TacticsStorage18B010
+{
+    /** @brief Destroy the movement storage and widget base. */
+    virtual ~TacticsMovement175030();
+    /** @brief Update the widget movement state. */
+    virtual void func_00413D20();
+    /** @brief Draw the moving widget. */
+    virtual void func_00462310();
+};
+
+/** Coordinate widget owning its sentinel list and selected entry. */
+struct TacticsWidget18AFD0 : public TacticsMovement175030
+{
+    /** @brief Destroy the coordinate list and movement bases. */
+    virtual ~TacticsWidget18AFD0();
+    /** @brief Report widget kind three. @return Always three. */
+    virtual s32 func_003EEBC0();
+    /** @brief Perform no refresh work. */
+    virtual void func_003EEBD0();
+    /** @brief Perform no widget update work. */
+    virtual void func_003EEBE0();
+
+    TacticsList18B8B0 nodes;
+    s32 selected;
+};
+
+/**
+ * @brief Delete an owned object and clear its pointer.
+ * @param object Owned pointer to release, or null.
+ */
+template <class T>
+static inline void delete_owned(T*& object)
+{
+    if (object != 0)
+    {
+        delete object;
+        object = 0;
+    }
+}
 
 /**
  * @brief Clear the grid window's selection state and resource keys.
@@ -33,7 +123,8 @@ static inline void clear_grid_state(TacticsWindow18B420* object)
 /** Resident entry record with its saved grid entry at offset 0x38 and stride 0x114. */
 struct TacticsEntryResourceRecord
 {
-    u8 unk00[0x38];
+    u8 unk00[0x20];
+    char text20[0x18];
     u8 selected_entry;
     u8 previous_entry;
     u8 unk3a[0xDA];
@@ -73,6 +164,18 @@ static inline void set_widget_rectangle(LibClass178600* object, float x, float y
     object->unk18.unk04 = y;
     object->unk18.unk08 = width;
     object->unk18.unk0c = height;
+    object->unk3c = 1;
+}
+
+/**
+ * @brief Set both resource-display scales and request a refresh.
+ * @param object Resource display to update.
+ * @param scale Horizontal and vertical drawing scale.
+ */
+static inline void set_resource_display_scale(ItemCreationOptionResourceDisplay* object, float scale)
+{
+    object->unk50.unk34 = scale;
+    object->unk50.unk30 = scale;
     object->unk3c = 1;
 }
 
@@ -162,6 +265,13 @@ struct TacticsDualSelectionOwner
     u8 use_second;
 };
 
+/** Partial associated window containing its movement target. */
+struct TacticsAssociatedMovementRef
+{
+    u8 unk00[0xB8];
+    LibClass175030* movement;
+};
+
 /** Partial tactics receiver holding a grid selection and the corresponding display list. */
 struct TacticsGridOwner
 {
@@ -187,11 +297,20 @@ typedef struct TacticsSavedGridSelection
     u8 selected_resource_code;
 } TacticsSavedGridSelection;
 
+/** Partial runtime control state with its pending refresh byte. */
+struct TacticsRuntimeControl
+{
+    u8 unk00[0x6E];
+    u8 unk6e;
+};
+
 /** Partial callback directory containing its active native State. */
 struct TacticsRuntimeCallbacks
 {
     u8 unk00[0x14];
     FieldClass153E30* state;
+    u8 unk18[2];
+    u16 unk1a;
 };
 
 /** Partial resident reference used by the tactics selection callbacks. */
@@ -395,14 +514,51 @@ void TacticsWindow18B020::func_slot68()
     }
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00348590);
+/**
+ * @brief Close the child window and restore the associated window's movement.
+ * @return Two after restoring the associated window and queuing removal.
+ */
+s32 TacticsWindow18B020::func_slotb4()
+{
+    FieldClass15AE70::func_slot18(0, 0x7F);
+    LibClass175030* movement = static_cast<TacticsAssociatedMovementRef*>(func_slot44())->movement;
+    movement->unk30 = 128.0f;
+    movement->unk3c = 1;
+    FieldClass153E30* state = D_001B643C->callbacks->state;
+    state->func_00263C70(func_slot44());
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->callbacks), this);
+    return 2;
+}
 
 void func_00348630(void* object, u32 value)
 {
     *(u32*)((u8*)object + 0x20) = value;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00348650);
+/**
+ * @brief Apply the first grid entry or close the child, refreshing pending field state.
+ * @return Two when closing succeeds; otherwise one.
+ */
+s32 TacticsWindow18B020::func_slotb0()
+{
+    selected = grid->unk114;
+    u8 result = 0;
+    if (selected == 0)
+    {
+        if (reinterpret_cast<TacticsRuntimeControl*>(D_001B643C->runtime)->unk6e != 0)
+        {
+            ResidentContextObject38* context = D_001B6430->context->unk38;
+            reinterpret_cast<TacticsFieldContext1516A0*>(context)->func_0020E590();
+            reinterpret_cast<TacticsRuntimeControl*>(D_001B643C->runtime)->unk6e = 0;
+        }
+        set_state(0xFF, 0x80);
+    }
+    else
+    {
+        result = func_slotb4();
+    }
+    return result == 0 ? 1 : 2;
+}
 
 /**
  * @brief Create the child window's two-entry grid, panels, and text displays.
@@ -907,7 +1063,158 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034A120);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034A200);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034A350);
+/**
+ * @brief Create the parent window's grid, resource widgets, and selected-entry label.
+ * @param associated Full resource source word forwarded to the base and text widgets.
+ * @return One after initialization, or zero when the resource selection or a panel is absent.
+ */
+s32 TacticsWindow18B220::func_slotf4(u32 associated)
+{
+    if (resource == 0)
+    {
+        return 0;
+    }
+    FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 9);
+    LibClass178630* panel = new (0) LibClass178630;
+    if (panel == 0)
+    {
+        return 0;
+    }
+    lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 288.0f, 392.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
+    func_00351CC0(&unk14, panel);
+    LibClass178630* resource_panel = new (0) LibClass178630;
+    if (resource_panel == 0)
+    {
+        return 0;
+    }
+    lib_panel_init_rectangle(resource_panel, 1, 240.0f, 0.0f, 368.0f, 108.0f, 88.0f);
+    lib_container_attach_widget(unk10, resource_panel);
+    func_00351CC0(&unk14, resource_panel);
+    for (s32 index = 0; index < 10; index++)
+    {
+        LibObject178750* display = new (0) LibObject178750;
+        lib_text_init_resource_rectangle(display, associated, 0x2A30 + index, 0,
+            24.0f, 24.0f + 28.0f * index, 0.0f, 0.0f);
+        lib_container_attach_widget(unk10, display);
+        func_00351AE0(&unk2c, display);
+    }
+    title = new (0) LibObject178750;
+    lib_text_init_resource_rectangle(title, associated, 0x2A62, 0, 256.0f, 16.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(unk10, title);
+    grid = new (0) FieldObject23CEA0;
+    grid->func_0023CE80(1, 10);
+    grid->func_0023CE60(0.0f, 28.0f);
+    grid->unkF2 = 0;
+    grid->func_0023CF50(selected, 32.0f, 96.0f);
+    FieldObject23CEA0* selection = grid;
+    selection->index = selected;
+    func_0023CB30(selection);
+    func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(grid));
+    func_00351630(&unk74, grid);
+    cursor = new (0) FieldObject23BE00;
+    cursor->func_0023BB20(24.0f, 24.0f, 120.0f, 1.0f, grid, 0x288080);
+    lib_container_attach_widget(unk10, cursor);
+    func_003515A0(&unk8c, cursor);
+    indicator = new (0) ItemCreationClass172600;
+    func_0041AD10(indicator, 24.0f, 24.0f, 144.0f, 24.0f);
+    lib_container_attach_widget(unk10, indicator);
+    resource_widget = new (0) ItemCreationClass174C40;
+    lib_indexed_resource_init(resource_widget, 0x22, 32.0f, 348.0f);
+    lib_container_attach_widget(unk10, resource_widget);
+    LibObject178750* resource_heading = new (0) LibObject178750;
+    lib_text_init_resource_rectangle(resource_heading, associated, 0x2729, 0, 72.0f, 352.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(unk10, resource_heading);
+    u8 saved_entry = D_001B643C->state->selected_resource_code;
+    u16 resource_index = 0;
+    func_0013A678(entries, 0, 3);
+    for (s32 index = 0; index < 3; index++)
+    {
+        entries[index] = resource->slots[static_cast<s16>(index)];
+        if (entries[index] == saved_entry)
+        {
+            resource_index = index;
+        }
+    }
+    base_x = 320.0f;
+    base_y = 132.0f;
+    float heading_y = base_y - 24.0f;
+    LibObject178750* selected_heading = new (0) LibObject178750;
+    selected_heading->init_resource_rectangle(322.0f, heading_y, 0.0f, 0.0f, associated, 0x272B, 1);
+    selected_heading->set_color(0x288080);
+    lib_container_attach_widget(unk10, selected_heading);
+    label = new (0) LibObject175140;
+    label->func_00467AD0(434.0f, heading_y, 0.0f, 0.0f,
+        static_cast<TacticsEntryResourceRecord*>(resource->unk04)[static_cast<s16>(resource_index)].text20, 0);
+    lib_container_attach_widget(unk10, label);
+    ItemCreationOptionResourceDisplay* display = new (0) ItemCreationOptionResourceDisplay;
+    void* allocation = func_002D3D80(D_001B643C->resources, 0);
+    FieldResourceRecord* record = func_002D3CC0(D_001B643C->resources, 8);
+    display->unkcc = allocation;
+    display->unkd0 = 0;
+    func_002D6440(display, record, base_x, base_y);
+    display->unk50.unk34 = 2.5f;
+    display->unk50.unk30 = 2.5f;
+    display->unk3c = 1;
+    lib_container_attach_widget(unk10, display);
+    if (entries[0] != 0)
+    {
+        options[0] = new (0) ItemCreationOptionResourceDisplay;
+    }
+    if (entries[1] != 0)
+    {
+        options[1] = new (0) ItemCreationOptionResourceDisplay;
+    }
+    if (entries[2] != 0)
+    {
+        options[2] = new (0) ItemCreationOptionResourceDisplay;
+    }
+    FieldResourceRecord* default_record = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->resources, 0));
+    if (options[2] != 0)
+    {
+        options[2]->unkcc = func_002D3D80(D_001B643C->resources, entries[2]);
+        options[2]->unkd0 = entries[2];
+        func_002D6440(options[2], default_record, base_x, base_y);
+        set_resource_display_scale(options[2], 0.4f);
+        lib_container_attach_widget(unk10, options[2]);
+    }
+    if (options[1] != 0)
+    {
+        options[1]->unkcc = func_002D3D80(D_001B643C->resources, entries[1]);
+        options[1]->unkd0 = entries[1];
+        func_002D6440(options[1], default_record, base_x, base_y);
+        set_resource_display_scale(options[1], 0.4f);
+        lib_container_attach_widget(unk10, options[1]);
+    }
+    if (options[0] != 0)
+    {
+        options[0]->unkcc = func_002D3D80(D_001B643C->resources, entries[0]);
+        options[0]->unkd0 = entries[0];
+        func_002D6440(options[0], default_record, base_x, base_y);
+        set_resource_display_scale(options[0], 0.4f);
+        lib_container_attach_widget(unk10, options[0]);
+    }
+    s32 selected_entry = selected;
+    s32 index = 0;
+    FieldListNode* node = unk2c.unk00->unk04;
+    while (node != 0)
+    {
+        LibObject178750* text = static_cast<LibObject178750*>(node->unk00);
+        if (index == selected_entry)
+        {
+            text->set_color(0x288080);
+            func_0023B9B0(cursor, static_cast<s16>(selected_entry), lib_text_measure_bounds(text)->unk08);
+        }
+        else
+        {
+            text->set_color(0x808080);
+        }
+        node = node->unk04;
+        index++;
+    }
+    func_0034A200(this);
+    return 1;
+}
 
 ItemCreationClass175110::~ItemCreationClass175110()
 {
@@ -1127,14 +1434,23 @@ INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034BA40);
 
 INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034C120);
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_0034D900);
-
-/** @brief Release the receiver's owned storage. */
-TacticsStorage18B010::~TacticsStorage18B010()
+/** @brief Destroy the movement storage and widget base. */
+inline TacticsMovement175030::~TacticsMovement175030()
 {
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", __dt__19TacticsWindow18B320Fv);
+/** @brief Release both binary buffers, then destroy the lists and base window. */
+TacticsWindow18B320::~TacticsWindow18B320()
+{
+    if (bufferc4 != 0)
+    {
+        delete_owned(bufferc4);
+    }
+    if (buffer114 != 0)
+    {
+        delete_owned(buffer114);
+    }
+}
 
 /** @brief Construct the owned lists and clear the window control fields. */
 TacticsWindow18B320::TacticsWindow18B320()
@@ -1855,7 +2171,112 @@ void func_003507B0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_003507C0);
+/**
+ * @brief Initialize the State's windows and their resource-mode associations.
+ * @return One after setup, or zero when a required window allocation fails.
+ */
+s32 TacticsState18B820::func_00263CD0()
+{
+    TacticsWindow18B720* background = new (0) TacticsWindow18B720;
+    TacticsWindow18B620* scrolling = new (0) TacticsWindow18B620;
+    if (background == 0 || scrolling == 0)
+    {
+        return 0;
+    }
+    background->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(background);
+    background->func_slot40(0);
+    scrolling->func_slotf4(reinterpret_cast<void*>(resource_slot));
+    FieldClass153E30::add_child(scrolling);
+    unk24 = scrolling;
+    scrolling->func_slot40(background);
+    switch (D_001B643C->callbacks->unk1a & 0xF)
+    {
+    case 1:
+    {
+        TacticsWindow18B520* coordinate = new (0) TacticsWindow18B520;
+        TacticsWindow18B420* child = new (0) TacticsWindow18B420;
+        if (coordinate == 0 || child == 0)
+        {
+            return 0;
+        }
+        unk20 = coordinate;
+        coordinate->func_slotf4(reinterpret_cast<void*>(resource_slot));
+        FieldClass153E30::add_child(coordinate);
+        coordinate->func_slot40(child);
+        child->func_slotf4(resource_slot);
+        FieldClass153E30::add_child(child);
+        child->func_slot40(coordinate);
+        child->func_slot18(0, 0x7F);
+        break;
+    }
+    case 2:
+    {
+        TacticsWindow18B320* window = new (0) TacticsWindow18B320;
+        if (window == 0)
+        {
+            return 0;
+        }
+        unk20 = window;
+        window->func_slotf4(reinterpret_cast<void*>(resource_slot));
+        FieldClass153E30::add_child(window);
+        window->func_slot40(scrolling);
+        break;
+    }
+    case 4:
+    {
+        TacticsWindow18B220* window = new (0) TacticsWindow18B220;
+        TacticsWindow18B120* child = new (0) TacticsWindow18B120;
+        if (window == 0 || child == 0)
+        {
+            return 0;
+        }
+        window->resource = selection;
+        window->func_slotf4(resource_slot);
+        FieldClass153E30::add_child(window);
+        window->func_slot40(scrolling);
+        window->func_slot48(child);
+        child->resource = selection;
+        child->func_slotf4(resource_slot);
+        FieldClass153E30::add_child(child);
+        child->func_slot40(window);
+        FieldObject23CEA0* grid = child->grid;
+        if (grid != 0)
+        {
+            grid->index = child->grid_entries[child->selected];
+            func_0023CB30(grid);
+            func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(child->grid));
+            child->grid->unkad = 0;
+        }
+        s32 selected_entry = child->grid_entries[child->selected];
+        s32 index = 0;
+        FieldListNode* node = child->unk44.unk00->unk04;
+        if (node != 0)
+        {
+            do
+            {
+                LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+                if (index == selected_entry)
+                {
+                    icon->set_color(0x288080);
+                    func_0023B9B0(child->cursor, selected_entry, func_00467950(icon)->unk08);
+                }
+                else
+                {
+                    icon->set_color(0x808080);
+                }
+                node = node->unk04;
+                index++;
+            } while (node != 0);
+        }
+        child->func_slot20(0);
+        unk20 = window;
+        break;
+    }
+    }
+    windows_initialized = 1;
+    return 1;
+}
 
 void func_00350D10(void* object, u32 value)
 {
@@ -1894,7 +2315,14 @@ u8 TacticsState18B820::func_00264110()
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00350E60);
+/** @brief Release the owned record selection and destroy the State base. */
+TacticsState18B820::~TacticsState18B820()
+{
+    if (selection != 0)
+    {
+        delete_owned(selection);
+    }
+}
 
 /** @brief Clear the resource slot, window initialization flag, and selection pointer. */
 TacticsState18B820::TacticsState18B820()
@@ -1904,7 +2332,10 @@ TacticsState18B820::TacticsState18B820()
     selection = 0;
 }
 
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00350F60);
+/** @brief Destroy the coordinate list and movement bases. */
+TacticsWidget18AFD0::~TacticsWidget18AFD0()
+{
+}
 
 void func_00351020(void* object)
 {
@@ -2533,5 +2964,3 @@ TacticsList18B8B0::TacticsList18B8B0()
     head->next = 0;
     count = 0;
 }
-
-INCLUDE_ASM("build/overlays/ctactics/asm/nonmatchings/ctactics", func_00351F90);
