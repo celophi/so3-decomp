@@ -628,17 +628,17 @@ func_slotb4__18SkillOptionsWindowFv = 0x0035E470; // type:func allow_duplicated:
 
 skill_cycle_symbology_character = 0x00363740; // type:func allow_duplicated:True
 
-__vt__19SkillTacticalWindow = 0x00183370; // size:0xF8 allow_duplicated:True
+__vt__19SkillTacticalWindow = 0x00183370; // size:0xF8 absolute:True allow_duplicated:True
 
-__vt__22SkillStatusSkillWindow = 0x00183570; // size:0xF8 allow_duplicated:True
+__vt__22SkillStatusSkillWindow = 0x00183570; // size:0xF8 absolute:True allow_duplicated:True
 
-__vt__15SkillHelpWindow = 0x00183970; // size:0xF8 allow_duplicated:True
+__vt__15SkillHelpWindow = 0x00183970; // size:0xF8 absolute:True allow_duplicated:True
 
-__vt__20SkillSymbologyWindow = 0x00183F60; // size:0xF8 allow_duplicated:True
+__vt__20SkillSymbologyWindow = 0x00183F60; // size:0xF8 absolute:True allow_duplicated:True
 
-__vt__24SkillSymbologyHelpWindow = 0x00184060; // size:0xF8 allow_duplicated:True
+__vt__24SkillSymbologyHelpWindow = 0x00184060; // size:0xF8 absolute:True allow_duplicated:True
 
-__vt__29SkillSymbologyCharacterWindow = 0x00184160; // size:0xF8 allow_duplicated:True
+__vt__29SkillSymbologyCharacterWindow = 0x00184160; // size:0xF8 absolute:True allow_duplicated:True
 
 func_00353380 = 0x00353380; // type:func absolute:True allow_duplicated:True
 

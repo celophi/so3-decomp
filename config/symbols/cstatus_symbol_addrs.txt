@@ -36,7 +36,7 @@ func_101440 = 0x00101440; // type:func absolute:True
 resident_get_runtime_owner = 0x0010D8E0; // type:func absolute:True allow_duplicated:True
 resident_get_entry_table = 0x00101290; // type:func absolute:True allow_duplicated:True
 resident_find_entry = 0x00101440; // type:func absolute:True allow_duplicated:True
-field_record_selection_advance = 0x0028E2B0; // type:func allow_duplicated:True
+field_record_selection_advance = 0x0028E2B0; // type:func absolute:True allow_duplicated:True
 
 __nw__FUii = 0x00100AC0; // type:func absolute:True allow_duplicated:True
 __ct__16FieldClass15BB90Fv = 0x002FE790; // type:func absolute:True
