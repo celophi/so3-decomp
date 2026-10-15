@@ -56,7 +56,7 @@ segments:
     subsegments:
       - [0x40, pad, text_start]
       - [0x80, cpp, ctactics]
-      - [0x9C18, pad, text_end]
+      - [0x9C20, pad, text_end]
       - [0x9C80, databin, data]
       - start: 0x9D10
         type: .rodata
