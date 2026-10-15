@@ -79,7 +79,7 @@ segments:
         name: ctactics
         linker_section: .rodata.003520F0
         rodata_anchors:
-          - {function: func_0034F190, offset: 0x0, size: 0x20}
+          - {function: set_preset_position_from_index, offset: 0x0, size: 0x20}
         linker_section_order: .rodata
       - [0x9D90, rodatabin, rodata_00352110]
   - [0x9e00]
