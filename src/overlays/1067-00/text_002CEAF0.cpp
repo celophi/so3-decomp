@@ -60,80 +60,80 @@ FieldClass15AE70::FieldClass15AE70()
 
 FieldClass15B008::FieldClass15B008()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15B008::~FieldClass15B008()
 {
     func_002CEDA0(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002CEDA0(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 FieldClass15AFF8::FieldClass15AFF8()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15AFF8::~FieldClass15AFF8()
 {
     func_002CEF20(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002CEF20(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 /**
@@ -144,58 +144,58 @@ extern "C" void func_002CEF20(FieldCountedList* list)
  */
 extern "C" s32 func_002CEFA0(FieldCountedList* list, void** value)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node != 0)
     {
-        *value = node->unk00;
+        *value = node->value;
     }
     else
     {
         return 0;
     }
-    list->unk00->unk04 = node->unk04;
+    list->head->next = node->next;
     delete node;
-    list->unk04--;
+    list->count--;
     return 1;
 }
 
 FieldClass15AFE8::FieldClass15AFE8()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15AFE8::~FieldClass15AFE8()
 {
     func_002CF110(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002CF110(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 /**
@@ -206,331 +206,331 @@ extern "C" void func_002CF110(FieldCountedList* list)
  */
 extern "C" s32 func_002CF190(FieldCountedList* list, void** value)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node != 0)
     {
-        *value = node->unk00;
+        *value = node->value;
     }
     else
     {
         return 0;
     }
-    list->unk00->unk04 = node->unk04;
+    list->head->next = node->next;
     delete node;
-    list->unk04--;
+    list->count--;
     return 1;
 }
 
 FieldClass15AFD8::FieldClass15AFD8()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15AFD8::~FieldClass15AFD8()
 {
     func_002CF300(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002CF300(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 FieldClass15AFC8::FieldClass15AFC8()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15AFC8::~FieldClass15AFC8()
 {
     func_002CF480(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002CF480(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 FieldClass15AFB8::FieldClass15AFB8()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15AFB8::~FieldClass15AFB8()
 {
     func_002CF600(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002CF600(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 FieldClass15AFA8::FieldClass15AFA8()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15AFA8::~FieldClass15AFA8()
 {
     func_002CF780(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002CF780(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 FieldClass15AF98::FieldClass15AF98()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15AF98::~FieldClass15AF98()
 {
     func_002CF900(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002CF900(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 FieldClass15AF88::FieldClass15AF88()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15AF88::~FieldClass15AF88()
 {
     func_002CFA80(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002CFA80(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 FieldClass15AF78::FieldClass15AF78()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15AF78::~FieldClass15AF78()
 {
     func_002CFC00(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002CFC00(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 FieldClass15AF68::FieldClass15AF68()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15AF68::~FieldClass15AF68()
 {
     func_002CFD80(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002CFD80(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 /**

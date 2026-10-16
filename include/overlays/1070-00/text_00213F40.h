@@ -311,6 +311,14 @@ void func_0021EF10(FieldValueOwner34* object, s32 value);
 s32 func_002140E0(const FieldCheckedState00* object);
 
 /**
+ * @brief Clamp a value to 0..9999 through the biased range the receiver stores.
+ * @param object Receiver the value belongs to (unused).
+ * @param value Value to clamp.
+ * @return value limited to 0..9999.
+ */
+s32 func_00214120(FieldCheckedState00* object, s32 value);
+
+/**
  * @brief Validate the first halfword group and decode its stored value.
  * @param object Receiver to inspect.
  * @return The decoded value, or zero when the check does not match.

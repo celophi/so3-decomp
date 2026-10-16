@@ -19,13 +19,13 @@ typedef FieldListNode ItemCreationListNode;
 typedef FieldCountedList ItemCreationCountedList;
 
 #ifdef __cplusplus
-/** @brief Counted display list owning its sentinel and nodes. */
+/** @brief Counted display list owning its head and value nodes. */
 class ItemCreationClass187A60 : public ItemCreationCountedList
 {
 public:
-    /** @brief Allocate the sentinel node and initialize the list count. */
+    /** @brief Allocate the head node and initialize the list count. */
     ItemCreationClass187A60();
-    /** @brief Release the list nodes and sentinel. */
+    /** @brief Release the list nodes and head node. */
     virtual ~ItemCreationClass187A60();
 };
 #endif
@@ -315,13 +315,13 @@ void item_creation_select_inventor_for_swap(ItemCreationSelectedDisplayState* ob
 void item_creation_rebuild_line_target(ItemCreationSelectedDisplayState* object, u8 line_index);
 
 /**
- * @brief Allocate a node and append its value to the sentinel-based list.
- * @param object List containing a valid sentinel node.
+ * @brief Append a value to the list.
+ * @param object List containing a valid head node.
  * @param value Value to append; may be null.
  */
 void func_0036F270(ItemCreationCountedList* object, void* value);
 
-/** @brief Release every data node while retaining the list sentinel. @param object List to clear. */
+/** @brief Release every data node while retaining the list head node. @param object List to clear. */
 void func_0036EEF0(ItemCreationCountedList* object);
 
 /**
@@ -549,36 +549,36 @@ s32 func_0036ECA0(void* object);
 float func_0036E7B0(void* object);
 
 /**
- * @brief Append a value to the sentinel list and increase its node count.
- * @param object List containing the sentinel and stored count.
+ * @brief Append a value to the list and increase its node count.
+ * @param object List containing the head node and stored count.
  * @param value Value stored in the appended node.
  */
 void func_0036F1A0(ItemCreationCountedList* object, void* value);
 
 /**
- * @brief Append a value to the sentinel list and increase its node count.
- * @param object List containing the sentinel and stored count.
+ * @brief Append a value to the list and increase its node count.
+ * @param object List containing the head node and stored count.
  * @param value Value stored in the appended node.
  */
 void func_0036F040(ItemCreationCountedList* object, void* value);
 
 /**
- * @brief Append a value to the sentinel list and increase its node count.
- * @param object List containing the sentinel and stored count.
+ * @brief Append a value to the list and increase its node count.
+ * @param object List containing the head node and stored count.
  * @param value Value stored in the appended node.
  */
 void func_0036EFB0(ItemCreationCountedList* object, void* value);
 
 /**
- * @brief Append a record pointer to the sentinel list and increase its node count.
- * @param object List containing the sentinel and stored count.
+ * @brief Append a record pointer to the list and increase its node count.
+ * @param object List containing the head node and stored count.
  * @param record Record pointer stored in the appended node.
  */
 void func_0036EDB0(ItemCreationCountedList* object, void* record);
 
 /**
  * @brief Insert a record pointer after a node, or append it when no node is supplied.
- * @param object List containing the sentinel and stored count.
+ * @param object List containing the head node and stored count.
  * @param after Node to insert after, or null to append.
  * @param record Pointer to the record pointer copied into the new node.
  */
@@ -593,8 +593,8 @@ void func_0036EE40(ItemCreationCountedList* object, ItemCreationListNode* after,
 ItemCreationListNode* func_0036EF70(ItemCreationCountedList* object, s32 index);
 
 /**
- * @brief Append a value to the sentinel list and increase its node count.
- * @param object List containing the sentinel and stored count.
+ * @brief Append a value to the list and increase its node count.
+ * @param object List containing the head node and stored count.
  * @param value Value stored in the appended node.
  */
 void func_0036F0D0(ItemCreationCountedList* object, void* value);
@@ -608,8 +608,8 @@ void func_0036F0D0(ItemCreationCountedList* object, void* value);
 ItemCreationListNode* func_0036F160(ItemCreationCountedList* object, s32 index);
 
 /**
- * @brief Find a display node after the list sentinel.
- * @param object Counted display list with an initialized sentinel.
+ * @brief Find a display node after the list head node.
+ * @param object Counted display list with an initialized head node.
  * @param index Zero-based node index; negative values also select the first node.
  * @return Reached node, or null if the chain ends early.
  */

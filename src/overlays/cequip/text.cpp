@@ -496,12 +496,12 @@ void func_003486D0(void* object)
 void EquipClass182220::func_slotf4(s16 selected)
 {
     s32 index = 0;
-    FieldListNode* node = unk2c.unk00->unk04;
+    FieldListNode* node = unk2c.head->next;
     if (node != 0)
     {
         do
         {
-            LibClass174EF0* icon = static_cast<LibClass174EF0*>(node->unk00);
+            LibClass174EF0* icon = static_cast<LibClass174EF0*>(node->value);
             if (index == selected)
             {
                 icon->set_color(0x288080);
@@ -510,7 +510,7 @@ void EquipClass182220::func_slotf4(s16 selected)
             {
                 icon->set_color(0x808080);
             }
-            node = node->unk04;
+            node = node->next;
             index++;
         } while (node != 0);
     }
@@ -1944,11 +1944,11 @@ s32 EquipClass182C90::func_slotf4(u32 associated)
         lib_container_attach_widget(unk10, unkbc);
         lib_container_attach_widget(unk10, unkc0);
     }
-    FieldListNode* node = unk2c.unk00->unk04;
+    FieldListNode* node = unk2c.head->next;
     while (node != 0)
     {
-        static_cast<LibObject178750*>(node->unk00)->set_scale(0.9f, 0.9f);
-        node = node->unk04;
+        static_cast<LibObject178750*>(node->value)->set_scale(0.9f, 0.9f);
+        node = node->next;
     }
     for (s32 index = 0; index < 8; index++)
     {
@@ -2764,15 +2764,15 @@ void func_00351B70(FieldCountedList* list, void* value)
     node = new (0) FieldListNode;
     if (node != 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        cursor = list->unk00;
-        while (cursor->unk04 != 0)
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
         {
-            cursor = cursor->unk04;
+            cursor = cursor->next;
         }
-        cursor->unk04 = node;
-        list->unk04++;
+        cursor->next = node;
+        list->count++;
     }
 }
 
@@ -2783,15 +2783,15 @@ void func_00351C00(FieldCountedList* list, void* value)
     node = new (0) FieldListNode;
     if (node != 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        cursor = list->unk00;
-        while (cursor->unk04 != 0)
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
         {
-            cursor = cursor->unk04;
+            cursor = cursor->next;
         }
-        cursor->unk04 = node;
-        list->unk04++;
+        cursor->next = node;
+        list->count++;
     }
 }
 
@@ -2802,15 +2802,15 @@ void func_00351C90(FieldCountedList* list, void* value)
     node = new (0) FieldListNode;
     if (node != 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        cursor = list->unk00;
-        while (cursor->unk04 != 0)
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
         {
-            cursor = cursor->unk04;
+            cursor = cursor->next;
         }
-        cursor->unk04 = node;
-        list->unk04++;
+        cursor->next = node;
+        list->count++;
     }
 }
 
@@ -2821,15 +2821,15 @@ void func_00351D20(FieldCountedList* list, void* value)
     node = new (0) FieldListNode;
     if (node != 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        cursor = list->unk00;
-        while (cursor->unk04 != 0)
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
         {
-            cursor = cursor->unk04;
+            cursor = cursor->next;
         }
-        cursor->unk04 = node;
-        list->unk04++;
+        cursor->next = node;
+        list->count++;
     }
 }
 
@@ -2840,15 +2840,15 @@ void func_00351DB0(FieldCountedList* list, void* value)
     node = new (0) FieldListNode;
     if (node != 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        cursor = list->unk00;
-        while (cursor->unk04 != 0)
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
         {
-            cursor = cursor->unk04;
+            cursor = cursor->next;
         }
-        cursor->unk04 = node;
-        list->unk04++;
+        cursor->next = node;
+        list->count++;
     }
 }
 
@@ -2859,15 +2859,15 @@ void func_00351E40(FieldCountedList* list, void* value)
     node = new (0) FieldListNode;
     if (node != 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        cursor = list->unk00;
-        while (cursor->unk04 != 0)
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+        while (cursor->next != 0)
         {
-            cursor = cursor->unk04;
+            cursor = cursor->next;
         }
-        cursor->unk04 = node;
-        list->unk04++;
+        cursor->next = node;
+        list->count++;
     }
 }
 

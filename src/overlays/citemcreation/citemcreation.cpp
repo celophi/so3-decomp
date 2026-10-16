@@ -4,10 +4,11 @@
 #include "main/resident_0010A0E0.h"
 #include "main/resident_data.h"
 #include "include_asm.h"
+#include "clamp.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/text_004095C0.h"
-#include "overlays/citemcreation/text_003483C0.h"
+#include "overlays/citemcreation/citemcreation.h"
 #include "overlays/citemcreation/text_00358440.h"
 #include "overlays/citemcreation/text_003684D0.h"
 #include "overlays/1067-00/text_0023B1D0.h"
@@ -3014,7 +3015,7 @@ u8 AbortDevelopmentDialog::func_slotb4()
             for (s32 index = 0; index < 3; index++)
             {
                 LibObject178750* display = static_cast<LibObject178750*>(
-                    func_0036F230(&unk2c, index)->unk00);
+                    func_0036F230(&unk2c, index)->value);
                 if (index == 2)
                 {
                     display->set_color(ITEM_CREATION_COLOR_SELECTED);
@@ -3103,7 +3104,7 @@ u8 AbortDevelopmentDialog::func_slotb0()
                 for (s32 index = 0; index < 3; index++)
                 {
                     LibObject178750* display = static_cast<LibObject178750*>(
-                        func_0036F230(&unk2c, index)->unk00);
+                        func_0036F230(&unk2c, index)->value);
                     if (index == 2)
                     {
                         display->set_color(ITEM_CREATION_COLOR_SELECTED);
@@ -3182,7 +3183,7 @@ u8 AbortDevelopmentDialog::func_slotb0()
                     for (s32 index = 0; index < 3; index++)
                     {
                         LibObject178750* display = static_cast<LibObject178750*>(
-                            func_0036F230(&unk2c, index)->unk00);
+                            func_0036F230(&unk2c, index)->value);
                         if (index == 2)
                         {
                             display->set_color(ITEM_CREATION_COLOR_SELECTED);
@@ -3246,7 +3247,7 @@ void AbortDevelopmentDialog::func_slot6c()
             s32 index;
             for (index = 0; index < 3; index++)
             {
-                LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->unk00);
+                LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->value);
                 if (index == selected)
                 {
                     display->set_color(ITEM_CREATION_COLOR_SELECTED);
@@ -3272,7 +3273,7 @@ void AbortDevelopmentDialog::func_slot68()
             s32 index;
             for (index = 0; index < 3; index++)
             {
-                LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->unk00);
+                LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->value);
                 if (index == selected)
                 {
                     display->set_color(ITEM_CREATION_COLOR_SELECTED);
@@ -3500,7 +3501,7 @@ s32 AbortDevelopmentDialog::func_slotf4(u32 associated)
     choice_selector = new (0) FieldClass153130;
     choice_selector->func_0023B530(1, 3, 1, 2, 1, 164.0f, 94.0f, 0.0f, 30.0f);
     lib_container_attach_widget(unk10, choice_selector);
-    LibObject178750* target = static_cast<LibObject178750*>(func_0036F230(&unk2c, 2)->unk00);
+    LibObject178750* target = static_cast<LibObject178750*>(func_0036F230(&unk2c, 2)->value);
     selection_marker = new (0) FieldClass153170;
     selection_marker->func_0023B850(target, ITEM_CREATION_COLOR_SELECTED);
     lib_container_attach_widget(unk10, selection_marker);
@@ -3510,7 +3511,7 @@ s32 AbortDevelopmentDialog::func_slotf4(u32 associated)
         for (s32 index = 0; index < 3; index++)
         {
             LibObject178750* display = static_cast<LibObject178750*>(
-                func_0036F230(&unk2c, index)->unk00);
+                func_0036F230(&unk2c, index)->value);
             if (index == 2)
             {
                 display->set_color(ITEM_CREATION_COLOR_SELECTED);
@@ -3791,7 +3792,7 @@ void func_003527C0(LibClass174610* object, u16 value)
     object->unk6c = value;
 }
 
-/** @brief Destroy the list sentinel and list receiver. */
+/** @brief Destroy the list head node and list receiver. */
 LibClass178A70::~LibClass178A70()
 {
 }
@@ -4779,7 +4780,7 @@ void ItemSubmissionDialog::func_slot6c()
             s32 index;
             for (index = 0; index < 2; index++)
             {
-                LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->unk00);
+                LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->value);
                 if (index == selected)
                 {
                     display->set_color(ITEM_CREATION_COLOR_SELECTED);
@@ -4805,7 +4806,7 @@ void ItemSubmissionDialog::func_slot68()
             s32 index;
             for (index = 0; index < 2; index++)
             {
-                LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->unk00);
+                LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->value);
                 if (index == selected)
                 {
                     display->set_color(ITEM_CREATION_COLOR_SELECTED);
@@ -4831,7 +4832,7 @@ u8 ItemSubmissionDialog::func_slotb4()
         for (index = 0; index < 2; index++)
         {
             LibObject178750* display = static_cast<LibObject178750*>(
-                func_0036F230(&unk2c, index)->unk00);
+                func_0036F230(&unk2c, index)->value);
             if (index == 1)
             {
                 display->set_color(0x288080);
@@ -4878,7 +4879,7 @@ u8 ItemSubmissionDialog::func_slotb0()
                 for (index = 0; index < 2; index++)
                 {
                     LibObject178750* display = static_cast<LibObject178750*>(
-                        func_0036F230(&unk2c, index)->unk00);
+                        func_0036F230(&unk2c, index)->value);
                     if (index == 1)
                     {
                         display->set_color(0x288080);
@@ -4958,7 +4959,7 @@ s32 ItemSubmissionDialog::func_slotf4(u32 associated)
     choice_selector = new (0) FieldClass153130;
     choice_selector->func_0023B530(1, 2, 1, 1, 1, 172.0f, 92.0f, 0.0f, 28.0f);
     lib_container_attach_widget(unk10, choice_selector);
-    LibObject178750* target = static_cast<LibObject178750*>(func_0036F230(&unk2c, 1)->unk00);
+    LibObject178750* target = static_cast<LibObject178750*>(func_0036F230(&unk2c, 1)->value);
     selection_marker = new (0) FieldClass153170;
     selection_marker->func_0023B850(target, 0x288080);
     lib_container_attach_widget(unk10, selection_marker);
@@ -4967,7 +4968,7 @@ s32 ItemSubmissionDialog::func_slotf4(u32 associated)
         s32 index;
         for (index = 0; index < 2; index++)
         {
-            LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->unk00);
+            LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->value);
             if (index == 1)
             {
                 display->set_color(0x288080);
@@ -7572,7 +7573,7 @@ u8 InventoryItemTypeList::func_slotb4()
  */
 static inline ItemCreationCategoryRecord* selected_item_type_record(InventoryItemTypeList* self)
 {
-    return static_cast<ItemCreationCategoryRecord*>(func_0036EF70(&self->unk1a8, self->unk24)->unk00);
+    return static_cast<ItemCreationCategoryRecord*>(func_0036EF70(&self->unk1a8, self->unk24)->value);
 }
 /** @brief Open the selected item type's instance list. @return One on activation, three on rejection, or zero when unavailable. */
 u8 InventoryItemTypeList::func_slotb0()
@@ -7663,7 +7664,7 @@ void InventoryItemTypeList::refresh_rows(s32 start)
             {
                 s32 identifier;
                 s32 key;
-                ItemCreationCategoryRecord* record = static_cast<ItemCreationCategoryRecord*>(node->unk00);
+                ItemCreationCategoryRecord* record = static_cast<ItemCreationCategoryRecord*>(node->value);
                 if (record != 0)
                 {
                     identifier = static_cast<u16>(record->catalog_index + 1);
@@ -7692,7 +7693,7 @@ void InventoryItemTypeList::refresh_rows(s32 start)
                     unk168[index]->unk3d = 1;
                     unk138[index]->unk3d = 1;
                 }
-                node = node->unk04;
+                node = node->next;
             }
             else
             {
@@ -7844,7 +7845,7 @@ void InventoryItemTypeList::func_slot11c(u16 reset, u8 mode)
     case 4:
     case 5:
     {
-        ItemCreationListNode* node = this->unk1a8.unk00;
+        ItemCreationListNode* node = this->unk1a8.head;
         for (s32 index = 1; index <= 750; index++)
         {
             category = item_type_record(index);
@@ -7867,7 +7868,7 @@ void InventoryItemTypeList::func_slot11c(u16 reset, u8 mode)
                     if (func_0035CAD0(this, category) == 0)
                     {
                         func_0036EE40(&this->unk1a8, node, reinterpret_cast<void* const*>(&category));
-                        node = node->unk04;
+                        node = node->next;
                     }
                     else
                     {
@@ -8120,7 +8121,7 @@ static inline void highlight_first(PlanItemGroupWindow* object)
     {
         for (s32 index = 0; index < object->unkb4; index++)
         {
-            LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&object->unk2c, index)->unk00);
+            LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&object->unk2c, index)->value);
             if (index == 0)
             {
                 display->set_color(0x288080);
@@ -8198,7 +8199,7 @@ extern "C" void func_0035D7C0(PlanItemGroupWindow* object, u8 mode)
         {
             D_001B643C->unk0c->unk9a = 1;
         }
-        LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&object->unk2c, 0)->unk00);
+        LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&object->unk2c, 0)->value);
         display->set_color(0x288080);
         object->unkb0->func_0023B7E0(display);
         ItemCreationAllocationRecord* records[99];
@@ -8449,7 +8450,7 @@ void PlanItemGroupWindow::func_slot6c()
             for (index = 0; index < unkb4; index++)
             {
                 ItemCreationListNode* node = func_0036F230(&unk2c, index);
-                LibObject178750* display = static_cast<LibObject178750*>(node->unk00);
+                LibObject178750* display = static_cast<LibObject178750*>(node->value);
                 if (index == selected)
                 {
                     display->set_color(0x288080);
@@ -8480,7 +8481,7 @@ void PlanItemGroupWindow::func_slot68()
             for (index = 0; index < unkb4; index++)
             {
                 ItemCreationListNode* node = func_0036F230(&unk2c, index);
-                LibObject178750* display = static_cast<LibObject178750*>(node->unk00);
+                LibObject178750* display = static_cast<LibObject178750*>(node->value);
                 if (index == selected)
                 {
                     display->set_color(0x288080);
@@ -8585,7 +8586,7 @@ s32 PlanItemGroupWindow::func_slotf4(u32 associated)
     SelectorCursor cursor = SELECTOR_CURSOR_FIRST;
     unkac->func_0023B530(columns, (u8)unkb4, 1, cursor, 1, unkfc[3], 86.0f, 0.0f, 26.0f);
     lib_container_attach_widget(unk10, unkac);
-    LibObject178750* first = static_cast<LibObject178750*>(func_0036F230(&unk2c, 0)->unk00);
+    LibObject178750* first = static_cast<LibObject178750*>(func_0036F230(&unk2c, 0)->value);
     unkb0 = new (0) FieldClass153170;
     unkb0->func_0023B850(first, 0x288080);
     lib_container_attach_widget(unk10, unkb0);
@@ -8593,7 +8594,7 @@ s32 PlanItemGroupWindow::func_slotf4(u32 associated)
     {
         for (s32 index = 0; index < unkb4; index++)
         {
-            LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->unk00);
+            LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->value);
             if (index == 0)
             {
                 display->set_color(0x288080);
@@ -9084,7 +9085,126 @@ u8 CreationSkillWindow::func_slotb4()
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_003600E0);
+// The plan mode is stored in a byte; the comparison constant is a full-width enum.
+#pragma enumsalwaysint off
+/** Plan mode of a creation line, as stored in its byte. */
+enum PlanMode
+{
+    PLAN_MODE_NONE,
+    PLAN_MODE_FIXED
+};
+#pragma enumsalwaysint reset
+
+/** Plan mode value the selection compares against. */
+enum PlanModeValue
+{
+    PLAN_MODE_VALUE_FIXED = 1
+};
+
+u8 CreationSkillWindow::func_slotb0()
+{
+    FieldClass153130* selector = skill_selector;
+    if (selector == 0)
+    {
+        return 0;
+    }
+    bool inactive = !selector->ItemCreationClass185050::unk35;
+    if (inactive)
+    {
+        return 0;
+    }
+    u8 group;
+    u16 selected = selector->func_0023B3A0();
+    s32 option = selected + 1;
+    if (selection_state->workshop_skill_enabled[(u8)option - 1] == 0)
+    {
+        return 3;
+    }
+    if ((selectable_skill_mask & (1 << selected)) == 0)
+    {
+        return 3;
+    }
+    func_slot20(0);
+    skill_selector->func_0023B310();
+    item_creation_update_skill_labels(this, 0);
+    PlanModeValue fixed = PLAN_MODE_VALUE_FIXED;
+    switch (unkdc)
+    {
+    case 0:
+        if (unkac != 0)
+        {
+            group = unkac->unk1f0;
+            if (option == 8)
+            {
+                ItemCreationAllocationRecord* records[99];
+                s32 count = lib_collect_unequipped_allocations(D_001B64F8->records, records, 32);
+                s32 index;
+                u8 groups = selection_state->line_count;
+                for (index = 0; index < groups; index++)
+                {
+                    if (index != (u8)group && selection_state->line_skill_ids[(u16)index] == 8 && selection_state->line_plan_modes[(u16)index] == 3)
+                    {
+                        count--;
+                    }
+                }
+                AssignedInventorGrid* parent = unkac;
+                if (parent->unkac != 0)
+                {
+                    parent->unkac->unkad = 0;
+                }
+                if (parent->unkb0 != 0)
+                {
+                    parent->unkb0->unkad = 0;
+                }
+                if (count <= 0)
+                {
+                    MissingMaterialsDialog* popup = new (0) MissingMaterialsDialog;
+                    popup->func_slotf4(selection_state->func_00263CC0());
+                    popup->func_slot40(unkac);
+                    selection_state->add_child(popup);
+                    selection_state->func_00263C70(popup);
+                    return 3;
+                }
+                ItemCreationSelectedDisplayState* state = selection_state;
+                state->saved_first_plan_item_id = state->line_item_ids[(u8)group][0];
+                state->saved_second_plan_item_id = state->line_item_ids[(u8)group][1];
+                state->line_item_ids[(u8)group][1] = 0;
+                state->line_item_ids[(u8)group][0] = 0;
+                func_0035D7C0(unke0, 0);
+                unke0->func_slot20(1);
+                unke4->func_slot20(1);
+                return 1;
+            }
+            ItemCreationSelectedDisplayState* state = selection_state;
+            if (state != 0)
+            {
+                s32 line = (u8)group;
+                PlanMode status = (PlanMode)state->line_plan_modes[line];
+                u8* entry = state->line_skill_ids;
+                entry += (u8)group;
+                if (*entry != option)
+                {
+                    *entry = option;
+                    selection_state->line_item_ids[line][0] = 0;
+                    selection_state->line_item_ids[line][1] = 0;
+                    if (status != fixed)
+                    {
+                        selection_state->line_plan_modes[line] = 0;
+                    }
+                }
+            }
+            item_creation_rebuild_line_target(selection_state, group);
+            FieldObject23CEA0* marker = unkac->unkb4;
+            marker->FieldClass151C50::unk30 = 128.0f;
+            marker->unkae = 1;
+            D_001B643C->unk10->unk14->func_00263C70(unkac);
+        }
+        break;
+    case 1:
+        break;
+    }
+    return 1;
+}
 
 /**
  * @brief Refresh the creation-skill display after selection movement.
@@ -11445,7 +11565,131 @@ u8 WorkshopExpansionWindow::func_slotb4()
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_00365BF0);
+u8 WorkshopExpansionWindow::func_slotb0()
+{
+    u8 rejected;
+    ItemCreationSelectedDisplayState* selected;
+    FieldObject23CEA0* selector = this->unkdc;
+    s16 index;
+    u8 code;
+    s32 value;
+    u32 cost;
+
+    if (selector == 0)
+    {
+        return 0;
+    }
+    selected = this->unka8;
+    if (selected == 0)
+    {
+        return 0;
+    }
+    index = selector->unk114;
+    code = 0;
+    rejected = 0;
+    if (this->unk10c != index)
+    {
+        code = this->unkd0[index];
+        rejected = selected->workshop_skill_enabled[code - 1];
+    }
+    else
+    {
+        if (selected->line_count < 3)
+        {
+            rejected = false;
+        }
+        else
+        {
+            rejected = true;
+        }
+    }
+    if (rejected == 0)
+    {
+        ResidentCheckedRecord* record = D_001B643C->unk00;
+        s32 checksum = record->checksum;
+        const u8* end = (const u8*)&record->checksum;
+        if (checksum != (u16)func_00457470(record->checksum_seed, (u8*)record + 0x26, end - ((const u8*)record + 0x26)))
+        {
+            value = 0;
+        }
+        else
+        {
+            value = record->encoded_fol ^ 0x7CE3C7F7;
+        }
+        if (this->unk10c != index)
+        {
+            cost = this->facility_costs[code - 1];
+        }
+        else
+        {
+            cost = this->additional_line_costs[this->unk10d];
+        }
+        if (cost <= (u32)value)
+        {
+            value -= cost;
+            ResidentCheckedRecord* stored = D_001B643C->unk00;
+            const u8* stored_end = (const u8*)&stored->checksum;
+            s32 stored_checksum = stored->checksum;
+            if (stored_checksum == (u16)func_00457470(stored->checksum_seed, (u8*)stored + 0x26, stored_end - ((const u8*)stored + 0x26)))
+            {
+                value += 40597;
+                value = clamp(value, 40597, 100040596);
+                value -= 40597;
+                stored->encoded_fol = value ^ 0x7CE3C7F7;
+                stored->checksum_seed = resident_next_random_word();
+                stored_end = (const u8*)&stored->checksum;
+                stored->checksum = func_00457470(stored->checksum_seed, &stored->unk08[0x1E], stored_end - &stored->unk08[0x1E]);
+            }
+            if (this->unk10c != index)
+            {
+                ItemCreationSelectedDisplayState* state = this->unka8;
+                if (state->workshop != 0)
+                {
+                    state->workshop->facility_mask |= (u16)(1 << (code - 1));
+                }
+                state->workshop_skill_enabled[code - 1] = 1;
+            }
+            else
+            {
+                ItemCreationSelectedDisplayState* state = this->unka8;
+                ItemCreationRuntimeData* runtime = D_001B64F8;
+                if (runtime != 0)
+                {
+                    u8 entry = state->unk12e[0];
+                    u8 valid = entry > 0 && entry < 13;
+                    ItemCreationWorkshopRecord* workshop;
+                    if (valid != 0)
+                    {
+                        workshop = &runtime->workshops[entry - 1];
+                    }
+                    else
+                    {
+                        workshop = 0;
+                    }
+                    if (workshop->line_count < 3)
+                    {
+                        workshop->line_count++;
+                    }
+                    state->line_count = state->workshop->line_count;
+                }
+            }
+            item_creation_refresh_team_and_transfer_windows(this->unka8, 1);
+            func_00369EB0(this->unka8);
+            func_00366050(this);
+        }
+        else
+        {
+            return 3;
+        }
+    }
+    else
+    {
+        func_00366050(this);
+        return 3;
+    }
+    return 1;
+}
+
 
 /**
  * @brief Refresh the panel grid selection and selected entry.
@@ -11457,10 +11701,10 @@ extern "C" void func_00365F20(WorkshopExpansionWindow* object)
     {
         s16 selected = object->unkdc->unk114;
         s32 index = 0;
-        ItemCreationListNode* node = object->unk2c.unk00->unk04;
+        ItemCreationListNode* node = object->unk2c.head->next;
         while (node)
         {
-            LibObject178750* widget = static_cast<LibObject178750*>(node->unk00);
+            LibObject178750* widget = static_cast<LibObject178750*>(node->value);
             if (index == selected)
             {
                 object->unke0->func_0023B9B0(lib_text_measure_bounds(widget)->unk08, (s16)index);
@@ -11478,7 +11722,7 @@ extern "C" void func_00365F20(WorkshopExpansionWindow* object)
                 widget->unk94 = 0x808080;
                 widget->unk3c = 1;
             }
-            node = node->unk04;
+            node = node->next;
             ++index;
         }
     }
@@ -11508,7 +11752,7 @@ void func_00366050(WorkshopExpansionWindow* object)
                     if (index != object->unk10c)
                     {
                         ItemCreationListNode* node = func_0036F160(&object->unk38, index);
-                        LibObject174F20* other = static_cast<LibObject174F20*>(node->unk00);
+                        LibObject174F20* other = static_cast<LibObject174F20*>(node->value);
                         if (other != 0)
                         {
                             if (object->unka8->workshop_skill_enabled[object->unkd0[index] - 1] == 0)
@@ -12036,7 +12280,7 @@ s32 WorkshopFacilitiesWindow::func_slotf4(u32 associated)
         for (s32 skill_index = 0; skill_index < 8; skill_index++)
         {
             ItemCreationListNode* node = func_0036F230(&unk2c, skill_index);
-            LibObject178750* skill_label = static_cast<LibObject178750*>(node->unk00);
+            LibObject178750* skill_label = static_cast<LibObject178750*>(node->value);
             if (skill_label)
             {
                 if (selection_state->workshop_skill_enabled[(u8)(skill_index + 1) - 1])
@@ -12101,10 +12345,10 @@ extern "C" void func_00368370(ItemCreationMainMenu* object)
     {
         s16 selected = object->choice_selector->unk114;
         s32 index = 0;
-        ItemCreationListNode* node = object->unk2c.unk00->unk04;
+        ItemCreationListNode* node = object->unk2c.head->next;
         while (node)
         {
-            LibObject178750* widget = static_cast<LibObject178750*>(node->unk00);
+            LibObject178750* widget = static_cast<LibObject178750*>(node->value);
             if (index == selected)
             {
                 object->selection_marker->func_0023B9B0(lib_text_measure_bounds(widget)->unk08, (s16)index);
@@ -12134,7 +12378,7 @@ extern "C" void func_00368370(ItemCreationMainMenu* object)
                     widget->unk3c = 1;
                 }
             }
-            node = node->unk04;
+            node = node->next;
             ++index;
         }
     }
@@ -12426,7 +12670,7 @@ s32 ItemCreationMainMenu::func_slotf4(u32 associated)
     else
     {
         ItemCreationListNode* node = func_0036F230(&unk2c, 2);
-        LibObject178750* text = static_cast<LibObject178750*>(node->unk00);
+        LibObject178750* text = static_cast<LibObject178750*>(node->value);
         if (text != 0)
         {
             text->unk94 = 0x505050;
@@ -13418,7 +13662,7 @@ void item_creation_refresh_team_and_transfer_windows(ItemCreationSelectedDisplay
                 for (index = 0; index < 8; index++)
                 {
                     ItemCreationListNode* node = func_0036F230(&display->unk2c, index);
-                    LibObject178750* label = static_cast<LibObject178750*>(node->unk00);
+                    LibObject178750* label = static_cast<LibObject178750*>(node->value);
                     if (label != 0)
                     {
                         u8 skill_id = index + 1;
@@ -13993,7 +14237,7 @@ extern "C" void func_0036B360(ItemCreationSelectedDisplayState* object, u32 enab
             for (s32 index = 0; index < 2; index++)
             {
                 LibObject178750* display = static_cast<LibObject178750*>(
-                    func_0036F230(&colors->unk2c, index)->unk00);
+                    func_0036F230(&colors->unk2c, index)->value);
                 if (index == 1)
                 {
                     display->set_color(ITEM_CREATION_COLOR_SELECTED);
@@ -15691,32 +15935,32 @@ s32 func_0036ECA0(void* object)
     return 0;
 }
 
-/** @brief Allocate the sentinel node and initialize the list count. */
+/** @brief Allocate the head node and initialize the list count. */
 ItemCreationClass187A60::ItemCreationClass187A60()
 {
-    unk00 = new (0) ItemCreationListNode;
-    if (unk00 == 0)
+    head = new (0) ItemCreationListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
-/** @brief Release the list nodes and its sentinel. */
+/** @brief Release the list nodes and its head node. */
 ItemCreationClass187A60::~ItemCreationClass187A60()
 {
     func_0036EEF0(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
 /**
- * @brief Append a record to the sentinel-based list.
- * @param object List containing a valid sentinel.
+ * @brief Append a record to the list.
+ * @param object List containing a valid head node.
  * @param record Record stored by the new node.
  */
 void func_0036EDB0(ItemCreationCountedList* object, void* record)
@@ -15725,90 +15969,90 @@ void func_0036EDB0(ItemCreationCountedList* object, void* record)
     if (node != 0)
     {
         ItemCreationListNode* tail;
-        node->unk00 = record;
-        node->unk04 = 0;
-        tail = object->unk00;
-        while (tail->unk04)
+        node->value = record;
+        node->next = 0;
+        tail = object->head;
+        while (tail->next)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
-        tail->unk04 = node;
-        object->unk04++;
+        tail->next = node;
+        object->count++;
     }
 }
 
 /**
  * @brief Insert a record pointer after a node, or append it when no node is supplied.
- * @param object List containing a valid sentinel.
+ * @param object List containing a valid head node.
  * @param after Node to insert after, or null to append.
  * @param record Pointer to the record pointer stored by the new node.
  */
 void func_0036EE40(ItemCreationCountedList* object, ItemCreationListNode* after, void* const* record)
 {
     ItemCreationListNode* node = new (0) ItemCreationListNode;
-    node->unk00 = *record;
+    node->value = *record;
     if (after != 0)
     {
-        node->unk04 = after->unk04;
-        after->unk04 = node;
+        node->next = after->next;
+        after->next = node;
     }
     else
     {
-        ItemCreationListNode* tail = object->unk00;
-        while (tail->unk04)
+        ItemCreationListNode* tail = object->head;
+        while (tail->next)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
-        tail->unk04 = node;
-        node->unk04 = 0;
+        tail->next = node;
+        node->next = 0;
     }
-    object->unk04++;
+    object->count++;
 }
 
 /**
- * @brief Release the nodes after the list sentinel and clear the count.
+ * @brief Release the nodes after the list head node and clear the count.
  * @param object Counted list whose linked nodes are owned allocations.
  */
 extern "C" void func_0036EEF0(ItemCreationCountedList* object)
 {
-    ItemCreationListNode* node = object->unk00->unk04;
+    ItemCreationListNode* node = object->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        ItemCreationListNode* next = node->unk04;
+        ItemCreationListNode* next = node->next;
         delete node;
         node = next;
     }
-    object->unk00->unk04 = 0;
-    object->unk04 = 0;
+    object->head->next = 0;
+    object->count = 0;
 }
 
 /**
  * @brief Find the data node at a list index.
- * @param object List containing a valid sentinel.
+ * @param object List containing a valid head node.
  * @param index Data-node index; nonpositive values select the first node.
  * @return Selected node, or null when the list ends first.
  */
 ItemCreationListNode* func_0036EF70(ItemCreationCountedList* object, s32 index)
 {
-    ItemCreationListNode* node = object->unk00->unk04;
+    ItemCreationListNode* node = object->head->next;
     for (s32 current = 0; current < index; current++)
     {
         if (node == 0)
         {
             return 0;
         }
-        node = node->unk04;
+        node = node->next;
     }
     return node;
 }
 
 /**
- * @brief Append a value to the sentinel-based list.
- * @param object List containing a valid sentinel.
+ * @brief Append a value to the list with a head node.
+ * @param object List containing a valid head node.
  * @param value Value stored by the new node.
  */
 void func_0036EFB0(ItemCreationCountedList* object, void* value)
@@ -15817,21 +16061,21 @@ void func_0036EFB0(ItemCreationCountedList* object, void* value)
     if (node != 0)
     {
         ItemCreationListNode* tail;
-        node->unk00 = value;
-        node->unk04 = 0;
-        tail = object->unk00;
-        while (tail->unk04)
+        node->value = value;
+        node->next = 0;
+        tail = object->head;
+        while (tail->next)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
-        tail->unk04 = node;
-        object->unk04++;
+        tail->next = node;
+        object->count++;
     }
 }
 
 /**
- * @brief Append a value to the sentinel-based list.
- * @param object List containing a valid sentinel.
+ * @brief Append a value to the list with a head node.
+ * @param object List containing a valid head node.
  * @param value Value stored by the new node.
  */
 void func_0036F040(ItemCreationCountedList* object, void* value)
@@ -15840,21 +16084,21 @@ void func_0036F040(ItemCreationCountedList* object, void* value)
     if (node != 0)
     {
         ItemCreationListNode* tail;
-        node->unk00 = value;
-        node->unk04 = 0;
-        tail = object->unk00;
-        while (tail->unk04)
+        node->value = value;
+        node->next = 0;
+        tail = object->head;
+        while (tail->next)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
-        tail->unk04 = node;
-        object->unk04++;
+        tail->next = node;
+        object->count++;
     }
 }
 
 /**
- * @brief Append a value to the sentinel-based list.
- * @param object List containing a valid sentinel.
+ * @brief Append a value to the list with a head node.
+ * @param object List containing a valid head node.
  * @param value Value stored by the new node.
  */
 void func_0036F0D0(ItemCreationCountedList* object, void* value)
@@ -15863,41 +16107,41 @@ void func_0036F0D0(ItemCreationCountedList* object, void* value)
     if (node != 0)
     {
         ItemCreationListNode* tail;
-        node->unk00 = value;
-        node->unk04 = 0;
-        tail = object->unk00;
-        while (tail->unk04)
+        node->value = value;
+        node->next = 0;
+        tail = object->head;
+        while (tail->next)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
-        tail->unk04 = node;
-        object->unk04++;
+        tail->next = node;
+        object->count++;
     }
 }
 
 /**
  * @brief Find the data node at a list index.
- * @param object List containing a valid sentinel.
+ * @param object List containing a valid head node.
  * @param index Data-node index; nonpositive values select the first node.
  * @return Selected node, or null when the list ends first.
  */
 ItemCreationListNode* func_0036F160(ItemCreationCountedList* object, s32 index)
 {
-    ItemCreationListNode* node = object->unk00->unk04;
+    ItemCreationListNode* node = object->head->next;
     for (s32 current = 0; current < index; current++)
     {
         if (node == 0)
         {
             return 0;
         }
-        node = node->unk04;
+        node = node->next;
     }
     return node;
 }
 
 /**
- * @brief Append a value to the sentinel-based list.
- * @param object List containing a valid sentinel.
+ * @brief Append a value to the list with a head node.
+ * @param object List containing a valid head node.
  * @param value Value stored by the new node.
  */
 void func_0036F1A0(ItemCreationCountedList* object, void* value)
@@ -15906,41 +16150,41 @@ void func_0036F1A0(ItemCreationCountedList* object, void* value)
     if (node != 0)
     {
         ItemCreationListNode* tail;
-        node->unk00 = value;
-        node->unk04 = 0;
-        tail = object->unk00;
-        while (tail->unk04)
+        node->value = value;
+        node->next = 0;
+        tail = object->head;
+        while (tail->next)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
-        tail->unk04 = node;
-        object->unk04++;
+        tail->next = node;
+        object->count++;
     }
 }
 
 /**
  * @brief Find the data node at a list index.
- * @param object List containing a valid sentinel.
+ * @param object List containing a valid head node.
  * @param index Data-node index; nonpositive values select the first node.
  * @return Selected node, or null when the list ends first.
  */
 ItemCreationListNode* func_0036F230(FieldCountedList* object, s32 index)
 {
-    ItemCreationListNode* node = object->unk00->unk04;
+    ItemCreationListNode* node = object->head->next;
     for (s32 current = 0; current < index; current++)
     {
         if (node == 0)
         {
             return 0;
         }
-        node = node->unk04;
+        node = node->next;
     }
     return node;
 }
 
 /**
- * @brief Append a value to the sentinel-based list.
- * @param object List containing a valid sentinel.
+ * @brief Append a value to the list with a head node.
+ * @param object List containing a valid head node.
  * @param value Value stored by the new node.
  */
 void func_0036F270(ItemCreationCountedList* object, void* value)
@@ -15949,14 +16193,14 @@ void func_0036F270(ItemCreationCountedList* object, void* value)
     if (node != 0)
     {
         ItemCreationListNode* tail;
-        node->unk00 = value;
-        node->unk04 = 0;
-        tail = object->unk00;
-        while (tail->unk04)
+        node->value = value;
+        node->next = 0;
+        tail = object->head;
+        while (tail->next)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
-        tail->unk04 = node;
-        object->unk04++;
+        tail->next = node;
+        object->count++;
     }
 }

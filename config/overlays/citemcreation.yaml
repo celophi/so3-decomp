@@ -54,15 +54,15 @@ segments:
     vram: 0x3483c0
     subsegments:
       - [0x40, pad, text_start]
-      - [0x80, cpp, text_003483C0]
+      - [0x80, cpp, citemcreation]
       - [0x27040, pad, text_end]
       - [0x27080, databin, data]
-      - [0x27260, .data, text_003483C0]
+      - [0x27260, .data, citemcreation]
       - [0x27274, pad, data_pad_0036F5F4]
       - [0x27280, databin, data_0036F600]
       - start: 0x27300
         type: .rodata
-        name: text_003483C0
+        name: citemcreation
         linker_section: .rodata.0036F680
         rodata_anchors:
           - {function: func_slotf4__22PendingInventorSummaryFUi, offset: 0x0, size: 0x38}
@@ -70,7 +70,7 @@ segments:
       - [0x27338, pad, rodata_pad_0036F6B8]
       - start: 0x27340
         type: .rodata
-        name: text_003483C0
+        name: citemcreation
         linker_section: .rodata.0036F6C0
         rodata_anchors:
           - {function: func_00349DE0, offset: 0x0, size: 0x38}
@@ -79,7 +79,7 @@ segments:
       - [0x273B4, rodatabin, rodata_0036F734]
       - start: 0x273D0
         type: .rodata
-        name: text_003483C0
+        name: citemcreation
         linker_section: .rodata.0036F750
         rodata_anchors:
           - {function: func_slot11c__21InventoryItemTypeListFUsUc, offset: 0x0, size: 0x18}
@@ -87,7 +87,7 @@ segments:
       - [0x273E8, pad, rodata_pad_0036F768]
       - start: 0x273F0
         type: .rodata
-        name: text_003483C0
+        name: citemcreation
         linker_section: .rodata.0036F770
         rodata_anchors:
           - {function: func_0035D7C0, offset: 0x0, size: 0x24}
@@ -95,14 +95,14 @@ segments:
       - [0x27414, pad, rodata_pad_0036F794]
       - start: 0x27420
         type: .rodata
-        name: text_003483C0
+        name: citemcreation
         linker_section: .rodata.0036F7A0
         rodata_anchors:
           - {function: func_slotb0__21InventionPolicyWindowFv, offset: 0x0, size: 0x20}
         linker_section_order: .rodata
       - start: 0x27440
         type: .rodata
-        name: text_003483C0
+        name: citemcreation
         linker_section: .rodata.0036F7C0
         rodata_anchors:
           - {function: item_creation_update_skill_labels, offset: 0x0, size: 0x24}
@@ -112,7 +112,7 @@ segments:
       - [0x274E4, rodatabin, rodata_0036F864]
       - start: 0x274F0
         type: .rodata
-        name: text_003483C0
+        name: citemcreation
         linker_section: .rodata.0036F870
         rodata_anchors:
           - {function: item_creation_initialize_expansion_costs, offset: 0x0, size: 0x34}

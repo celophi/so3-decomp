@@ -43,7 +43,7 @@
       "flags": ["-inline", "level=5"]
     },
     {
-      "source": "src/overlays/citemcreation/text_003483C0.cpp",
+      "source": "src/overlays/citemcreation/citemcreation.cpp",
       "flags": ["-O4,p"]
     },
     {

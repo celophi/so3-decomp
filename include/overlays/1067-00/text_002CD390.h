@@ -47,11 +47,11 @@ typedef struct FieldStateCE420
 } FieldStateCE420;
 typedef struct FieldObjectCE8D0 FieldObjectCE8D0;
 
-/** Sentinel node containing an opaque display payload and the next link. */
+/** Head or value node in a linked list of opaque display payloads. */
 typedef struct FieldListNode
 {
-    void* unk00;
-    struct FieldListNode* unk04;
+    void* value;
+    struct FieldListNode* next;
 #ifdef __cplusplus
 
     /** @brief Release the link without destroying its payload. */
@@ -61,11 +61,11 @@ typedef struct FieldListNode
 #endif
 } FieldListNode;
 
-/** Sentinel-based display list with its stored node count. */
+/** Linked display list with its head node and value count. */
 typedef struct FieldCountedList
 {
-    FieldListNode* unk00;
-    s32 unk04;
+    FieldListNode* head;
+    s32 count;
 } FieldCountedList;
 
 #ifdef __cplusplus
@@ -73,9 +73,9 @@ typedef struct FieldCountedList
 class FieldClass153EC0 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass153EC0();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass153EC0();
 };
 
@@ -83,9 +83,9 @@ public:
 class FieldClass154BA0 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass154BA0();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass154BA0();
 };
 
@@ -93,9 +93,9 @@ public:
 class FieldClass15AF68 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AF68();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AF68();
 };
 
@@ -103,9 +103,9 @@ public:
 class FieldClass15AF78 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AF78();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AF78();
 };
 
@@ -113,9 +113,9 @@ public:
 class FieldClass15AF88 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AF88();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AF88();
 };
 
@@ -123,9 +123,9 @@ public:
 class FieldClass15AF98 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AF98();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AF98();
 };
 
@@ -133,9 +133,9 @@ public:
 class FieldClass15AFA8 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFA8();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFA8();
 };
 
@@ -143,9 +143,9 @@ public:
 class FieldClass15AFB8 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFB8();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFB8();
 };
 
@@ -153,9 +153,9 @@ public:
 class FieldClass15AFC8 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFC8();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFC8();
 };
 
@@ -163,9 +163,9 @@ public:
 class FieldClass15AFD8 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFD8();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFD8();
 };
 
@@ -173,9 +173,9 @@ public:
 class FieldClass15AFE8 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFE8();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFE8();
 };
 
@@ -183,9 +183,9 @@ public:
 class FieldClass15AFF8 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFF8();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFF8();
 };
 
@@ -193,9 +193,9 @@ public:
 class FieldClass15B008 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15B008();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15B008();
 };
 
@@ -203,9 +203,9 @@ public:
 class FieldClass15B9F8 : public FieldCountedList
 {
 public:
-    /** @brief Allocate the sentinel and initialize the empty list. */
+    /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15B9F8();
-    /** @brief Release the list nodes and sentinel storage. */
+    /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15B9F8();
 };
 

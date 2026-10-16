@@ -10,7 +10,7 @@ and the ones that need extra options are a dictionary:
 
     - start: 0x27300
       type: .rodata
-      name: text_003483C0
+      name: citemcreation
       linker_section: .rodata.0036F680
 
 The helpers here read either shape, so the rest of the build doesn't have to care.

@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "clamp.h"
 #include "overlays/1070-00/text_00202FB0.h"
 #include "overlays/1070-00/text_00213F40.h"
 
@@ -114,7 +115,13 @@ s32 func_002140E0(const FieldCheckedState00* object)
     return object->unk0a ^ 0x7E93;
 }
 
-INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214120);
+s32 func_00214120(FieldCheckedState00* object, s32 value)
+{
+    value += 32113;
+    value = clamp(value, 32113, 42112);
+    value -= 32113;
+    return value;
+}
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214150);
 

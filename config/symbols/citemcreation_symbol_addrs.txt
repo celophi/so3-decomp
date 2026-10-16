@@ -761,7 +761,7 @@ func_00365AC0 = 0x00365AC0; // type:func allow_duplicated:True
 func_slot68__23WorkshopExpansionWindowFv = 0x00365AC0; // type:func allow_duplicated:True
 func_slot70__23WorkshopExpansionWindowFv = 0x0036E820; // type:func absolute:True allow_duplicated:True
 func_slot74__23WorkshopExpansionWindowFv = 0x0036E830; // type:func absolute:True allow_duplicated:True
-func_slotb0__23WorkshopExpansionWindowFv = 0x00365BF0; // type:func absolute:True allow_duplicated:True
+func_slotb0__23WorkshopExpansionWindowFv = 0x00365BF0; // type:func allow_duplicated:True
 func_slotf4__23WorkshopExpansionWindowFUi = 0x003661F0; // type:func allow_duplicated:True
 func_0034AB20 = 0x0034AB20; // type:func allow_duplicated:True
 func_slotf8__23WorkshopSelectionWindowFUs = 0x0034AB20; // type:func allow_duplicated:True
@@ -985,8 +985,7 @@ func_slot0c__23ItemCreationClass185050Fv = 0x0036E800; // type:func allow_duplic
 
 func_slotb0__20InadequateLineDialogFv = 0x0034FF70; // type:func allow_duplicated:True
 func_slotb4__20InadequateLineDialogFv = 0x0034FE00; // type:func allow_duplicated:True
-func_slotb0__19CreationSkillWindowFv = 0x003600E0; // type:func absolute:True allow_duplicated:True
-func_003600E0 = 0x003600E0; // type:func allow_duplicated:True
+func_slotb0__19CreationSkillWindowFv = 0x003600E0; // type:func allow_duplicated:True
 func_slot5c__20AssignedInventorGridFv = 0x003608C0; // type:func allow_duplicated:True
 func_003608C0 = 0x003608C0; // type:func absolute:True allow_duplicated:True
 

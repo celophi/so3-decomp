@@ -40,10 +40,10 @@ typedef struct TacticsPresetPosition
     float y;
 } TacticsPresetPosition;
 
-typedef struct TacticsList18B8E0 TacticsList18B8E0;
-typedef struct TacticsList18B8D0 TacticsList18B8D0;
-typedef struct TacticsList18B8C0 TacticsList18B8C0;
-typedef struct TacticsList18B8B0 TacticsList18B8B0;
+typedef struct TacticsCharacterNameWidgetList TacticsCharacterNameWidgetList;
+typedef struct TacticsStatValueWidgetList TacticsStatValueWidgetList;
+typedef struct TacticsTextWidgetList TacticsTextWidgetList;
+typedef struct TacticsCoordinatePositionList TacticsCoordinatePositionList;
 
 #ifdef __cplusplus
 /** Native storage receiver with its dispatch pointer after the scalar state. */
@@ -83,29 +83,29 @@ inline TacticsStorage18B010::~TacticsStorage18B010()
 }
 
 /** Known native State prefix through its owned selection pointer at offset 3C. */
-struct TacticsState18B820 : public FieldClass153E30
+struct TacticsResourceMenuState : public FieldClass153E30
 {
     /** @brief Clear the resource slot, window initialization flag, and selection pointer. */
-    TacticsState18B820();
+    TacticsResourceMenuState();
     /** @brief Destroy the State; its complete virtual tail remains unresolved. */
-    virtual ~TacticsState18B820();
+    virtual ~TacticsResourceMenuState();
     /**
      * @brief Allocate and initialize the State's record selection.
      * @return One when a selection exists and initialization succeeds; otherwise zero.
      */
-    virtual u8 func_00264110();
+    virtual u8 initialize_record_selection();
     /**
      * @brief Load the completed aligned resource using the State's heap context.
      * @param buffer Completed resource buffer, or null to report failure.
      * @return Zero for a null buffer; otherwise the virtual completion result.
      */
-    virtual s32 func_001E1820(void* buffer);
+    virtual s32 load_resource_and_initialize_windows(void* buffer);
 
     /** @brief Release the loaded resource, detach the State, and dispatch its release handler. */
     virtual void func_slot5c();
 
     /** @brief Initialize the State's windows for its resource mode. @return One on success, otherwise zero. */
-    virtual s32 func_00263CD0();
+    virtual s32 initialize_mode_windows();
 
     s32 resource_slot;
     u8 windows_initialized : 1;
@@ -415,45 +415,45 @@ struct TacticsWindow18B420 : public FieldClass15AE70
     u8 selected_entry;
 };
 
-/** Sentinel list owning its nodes and recording their count. */
-struct TacticsList18B8E0
+/** Linked list with an empty head node, owned value nodes, and a count. */
+struct TacticsCharacterNameWidgetList
 {
     struct TacticsListNode* head;
     u32 count;
-    /** @brief Initialize an empty list and allocate its sentinel. */
-    TacticsList18B8E0();
-    /** @brief Release list nodes and the sentinel. */
-    virtual ~TacticsList18B8E0();
+    /** @brief Create the head node and start with an empty list. */
+    TacticsCharacterNameWidgetList();
+    /** @brief Release the value nodes and the head node. */
+    virtual ~TacticsCharacterNameWidgetList();
 };
-/** Sentinel list owning its nodes and recording their count. */
-struct TacticsList18B8D0
+/** Linked list with an empty head node, owned value nodes, and a count. */
+struct TacticsStatValueWidgetList
 {
     struct TacticsListNode* head;
     u32 count;
-    /** @brief Initialize an empty list and allocate its sentinel. */
-    TacticsList18B8D0();
-    /** @brief Release list nodes and the sentinel. */
-    virtual ~TacticsList18B8D0();
+    /** @brief Create the head node and start with an empty list. */
+    TacticsStatValueWidgetList();
+    /** @brief Release the value nodes and the head node. */
+    virtual ~TacticsStatValueWidgetList();
 };
-/** Sentinel list owning its nodes and recording their count. */
-struct TacticsList18B8C0
+/** Linked list with an empty head node, owned value nodes, and a count. */
+struct TacticsTextWidgetList
 {
     struct TacticsListNode* head;
     u32 count;
-    /** @brief Initialize an empty list and allocate its sentinel. */
-    TacticsList18B8C0();
-    /** @brief Release list nodes and the sentinel. */
-    virtual ~TacticsList18B8C0();
+    /** @brief Create the head node and start with an empty list. */
+    TacticsTextWidgetList();
+    /** @brief Release the value nodes and the head node. */
+    virtual ~TacticsTextWidgetList();
 };
-/** Sentinel list owning its nodes and recording their count. */
-struct TacticsList18B8B0
+/** Linked list with an empty head node, owned value nodes, and a count. */
+struct TacticsCoordinatePositionList
 {
     struct TacticsCoordinateNode* head;
     u32 count;
-    /** @brief Initialize an empty list and allocate its sentinel. */
-    TacticsList18B8B0();
-    /** @brief Release list nodes and the sentinel. */
-    virtual ~TacticsList18B8B0();
+    /** @brief Create the head node and start with an empty list. */
+    TacticsCoordinatePositionList();
+    /** @brief Release the value nodes and the head node. */
+    virtual ~TacticsCoordinatePositionList();
 };
 /** Native 0x17C-byte tactics window owning two binary buffers and eleven lists. */
 struct TacticsWindow18B320 : public FieldClass15AE70
@@ -497,17 +497,17 @@ struct TacticsWindow18B320 : public FieldClass15AE70
     s16 source_record_index;
     s16 destination_record_index;
     u8 unkc6[2];
-    TacticsList18B8C0 level_label_list;
-    TacticsList18B8D0 level_value_list;
-    TacticsList18B8C0 hp_label_list;
-    TacticsList18B8C0 mp_label_list;
-    TacticsList18B8D0 hp_value_list;
-    TacticsList18B8C0 hp_separator_text_list;
-    TacticsList18B8D0 max_hp_value_list;
-    TacticsList18B8D0 mp_value_list;
-    TacticsList18B8C0 mp_separator_text_list;
-    TacticsList18B8D0 max_mp_value_list;
-    TacticsList18B8E0 unk140;
+    TacticsTextWidgetList level_label_list;
+    TacticsStatValueWidgetList level_value_list;
+    TacticsTextWidgetList hp_label_list;
+    TacticsTextWidgetList mp_label_list;
+    TacticsStatValueWidgetList hp_value_list;
+    TacticsTextWidgetList hp_separator_text_list;
+    TacticsStatValueWidgetList max_hp_value_list;
+    TacticsStatValueWidgetList mp_value_list;
+    TacticsTextWidgetList mp_separator_text_list;
+    TacticsStatValueWidgetList max_mp_value_list;
+    TacticsCharacterNameWidgetList unk140;
     s16 row_character_ids[8];
     struct ItemCreationOptionResourceDisplay* resource_displays[8];
 };
@@ -518,84 +518,84 @@ extern "C" {
 #endif
 
 /**
- * @brief Append an unowned value pointer to the counted list.
- * @param list Sentinel list receiving the new node.
- * @param value Value pointer stored without transferring ownership.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
 void append_cursor_widget_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append an unowned value pointer to the counted list.
- * @param list Sentinel list receiving the new node.
- * @param value Value pointer stored without transferring ownership.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
 void append_grid_widget_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append an unowned value pointer to the counted list.
- * @param list Sentinel list receiving the new node.
- * @param value Value pointer stored without transferring ownership.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
 void append_icon_widget_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append an unowned value pointer to the counted list.
- * @param list Sentinel list receiving the new node.
- * @param value Value pointer stored without transferring ownership.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
 void append_stat_value_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append an unowned value pointer to the counted list.
- * @param list Sentinel list receiving the new node.
- * @param value Value pointer stored without transferring ownership.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
 void append_text_widget_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append an unowned value pointer to the counted list.
- * @param list Sentinel list receiving the new node.
- * @param value Value pointer stored without transferring ownership.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
 void append_clip_widget_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append an unowned value pointer to the counted list.
- * @param list Sentinel list receiving the new node.
- * @param value Value pointer stored without transferring ownership.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
 void append_panel_widget_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append a coordinate pair to the owned list.
- * @param list Sentinel list receiving the new node.
- * @param value Coordinate pair copied into the new node.
+ * @brief Copy `value.x` and `value.y` into a new node at the end of the list.
+ * @param list List to append to.
+ * @param value Coordinate pair to copy.
  */
-void append_coordinate_pair(TacticsList18B8B0* list, TacticsPresetPosition value);
+void append_coordinate_pair(TacticsCoordinatePositionList* list, TacticsPresetPosition value);
 
 /**
- * @brief Release all value nodes, preserving the sentinel.
- * @param list List whose nodes and element count are cleared.
+ * @brief Delete every node after the head node and set the count to zero.
+ * @param list List to clear. The head node stays allocated.
  */
-void clear_character_name_widget_list(TacticsList18B8E0* list);
+void clear_character_name_widget_list(TacticsCharacterNameWidgetList* list);
 
 /**
- * @brief Release all value nodes, preserving the sentinel.
- * @param list List whose nodes and element count are cleared.
+ * @brief Delete every node after the head node and set the count to zero.
+ * @param list List to clear. The head node stays allocated.
  */
-void clear_stat_value_list(TacticsList18B8D0* list);
+void clear_stat_value_list(TacticsStatValueWidgetList* list);
 
 /**
- * @brief Release all value nodes, preserving the sentinel.
- * @param list List whose nodes and element count are cleared.
+ * @brief Delete every node after the head node and set the count to zero.
+ * @param list List to clear. The head node stays allocated.
  */
-void clear_text_widget_list(TacticsList18B8C0* list);
+void clear_text_widget_list(TacticsTextWidgetList* list);
 
 /**
- * @brief Release all value nodes, preserving the sentinel.
- * @param list List whose nodes and element count are cleared.
+ * @brief Delete every coordinate node after the head node and set the count to zero.
+ * @param list List to clear. The head node stays allocated.
  */
-void clear_coordinate_widget_list(TacticsList18B8B0* list);
+void clear_coordinate_widget_list(TacticsCoordinatePositionList* list);
 
 /**
  * @brief Save the enabled grid selection and copy its node position to the display.
@@ -788,26 +788,26 @@ s32 return_zero_callback_4(void* object);
 s32 return_zero_callback_5(void* object);
 
 /**
- * @brief Return the node at an index in a linked list.
- * @param list List containing the nodes.
- * @param index Zero-based node index.
- * @return The node, or null if the list ends before the index.
+ * @brief Return the node at `index`. Index zero is the first node after the head node.
+ * @param list List to search.
+ * @param index Zero-based index among the value nodes.
+ * @return The node at that index, or null if the list ends first.
  */
 TacticsListNode* get_widget_node_at_index(TacticsList* list, s32 index);
 
 /**
- * @brief Return the node at an index in a linked list.
- * @param list List containing the nodes.
- * @param index Zero-based node index.
- * @return The node, or null if the list ends before the index.
+ * @brief Return the node at `index`. Index zero is the first node after the head node.
+ * @param list List to search.
+ * @param index Zero-based index among the value nodes.
+ * @return The node at that index, or null if the list ends first.
  */
 TacticsListNode* get_stat_value_node(TacticsList* list, s32 index);
 
 /**
- * @brief Return the node at an index in a linked list.
- * @param list List containing the nodes.
- * @param index Zero-based node index.
- * @return The node, or null if the list ends before the index.
+ * @brief Return the node at `index`. Index zero is the first node after the head node.
+ * @param list List to search.
+ * @param index Zero-based index among the value nodes.
+ * @return The node at that index, or null if the list ends first.
  */
 TacticsListNode* get_text_widget_node(TacticsList* list, s32 index);
 

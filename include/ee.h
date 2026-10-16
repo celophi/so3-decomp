@@ -1,10 +1,10 @@
 #ifndef SO3_EE_H
 #define SO3_EE_H
 
+#include "types.h"
+
 /*
- * EE single-instruction helpers. The compiler has no intrinsic for either
- * instruction, so the game must have written them inline. See
- * docs/coding-standards.md, "Exception: two EE instruction helpers".
+ * EE single-instruction helpers the game wrote inline.
  */
 
 /**
@@ -36,6 +36,42 @@ static inline float ee_max(float left, float right)
 static inline void ee_prefetch(const void* address)
 {
     asm __volatile__("pref 0, 0(%0)" : : "r"(address));
+}
+
+/*
+ * My guess is the game wanted branchless selects that weren't at the mercy of
+ * bad branch prediction, and the compiler only sometimes turns a ?: into
+ * movn/movz on its own. Being volatile also stops the compiler's later cleanup
+ * in the same block, which is why the target keeps an `andi 0xFF` after each
+ * later compare. TODO: come back to this if a better explanation turns up.
+ */
+
+/**
+ * @brief Return replacement if condition is non-zero, otherwise value (one movn).
+ * @param value Value kept when condition is zero.
+ * @param replacement Value used when condition is non-zero.
+ * @param condition Selector.
+ * @return The selected value.
+ * @see https://decomp.me/scratch/e8lkP
+ */
+static inline s32 ee_movn(s32 value, s32 replacement, s32 condition)
+{
+    asm __volatile__("movn %0, %1, %2" : "+r"(value) : "r"(replacement), "r"(condition));
+    return value;
+}
+
+/**
+ * @brief Return replacement if condition is zero, otherwise value (one movz).
+ * @param value Value kept when condition is non-zero.
+ * @param replacement Value used when condition is zero.
+ * @param condition Selector.
+ * @return The selected value.
+ * @see https://decomp.me/scratch/e8lkP
+ */
+static inline s32 ee_movz(s32 value, s32 replacement, s32 condition)
+{
+    asm __volatile__("movz %0, %1, %2" : "+r"(value) : "r"(replacement), "r"(condition));
+    return value;
 }
 
 #endif
