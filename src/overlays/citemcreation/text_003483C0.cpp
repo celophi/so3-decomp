@@ -13195,7 +13195,167 @@ void item_creation_save_workshop_lines(ItemCreationSelectedDisplayState* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0036AAA0);
+/**
+ * @brief Find a saved development line of a workshop.
+ * @param workshop Workshop record.
+ * @param line_index Line index, zero through two.
+ * @return Line record.
+ */
+static inline ItemCreationLineRecord* workshop_line(ItemCreationWorkshopRecord* workshop, u8 line_index)
+{
+    return &workshop->lines[line_index];
+}
+
+/**
+ * @brief Restore saved workshop teams and rebuild the available-inventor list.
+ * @param object Selection state containing the current workshop and inventor assignments.
+ */
+void item_creation_restore_workshop_assignments(ItemCreationSelectedDisplayState* object)
+{
+    s32 index;
+    u16 count;
+    s32 group;
+    s32 code;
+    s32 position;
+
+    if (object->unk40 != 0 && object->record_selection != 0 && object->workshop_id != 0)
+    {
+        for (index = 0; index < 14; index++)
+        {
+            object->available_inventor_option_codes[index] = 0;
+        }
+
+        for (index = 0; index < 9; index++)
+        {
+            object->assigned_inventor_option_codes[index] = 0;
+        }
+
+        count = 0;
+
+        for (index = 0; index < 8; index++)
+        {
+            u32 value = (u16)object->record_selection->slots[(s16)index];
+
+            if (value != 0)
+            {
+                object->available_inventor_option_codes[count++] = (u16)value + 59;
+            }
+        }
+
+        for (code = 32; code <= 59; code++)
+        {
+            s32 value = object->unk40->unk188[code];
+
+            if (value > 1)
+            {
+                if (value == workshop_location_code(object->workshop_id))
+                {
+                    object->available_inventor_option_codes[count++] = code;
+                }
+            }
+        }
+
+        object->facility_mask = object->workshop->facility_mask;
+
+        for (group = 0; group < object->workshop->line_count; group++)
+        {
+            ItemCreationLineRecord* entry = workshop_line(object->workshop, group);
+
+            if (entry != 0)
+            {
+                bool valid = true;
+                bool populated = false;
+
+                for (s32 slot = 0; slot < 3; slot++)
+                {
+                    u8 value = inventor_option_code_from_id(entry->inventors[slot]);
+
+                    if (value != 0)
+                    {
+                        s32 found;
+
+                        for (found = 0; found < 14; found++)
+                        {
+                            if (object->available_inventor_option_codes[found] == value)
+                            {
+                                break;
+                            }
+                        }
+
+                        if (found == 14)
+                        {
+                            valid = false;
+                        }
+
+                        populated = true;
+                    }
+                }
+
+                if (valid && populated)
+                {
+                    for (s32 slot = 0; slot < 3; slot++)
+                    {
+                        u8 value = inventor_option_code_from_id(entry->inventors[slot]);
+                        s32 found;
+                        object->assigned_inventor_option_codes[group * 3 + slot] = value;
+
+                        for (found = 0; found < 14; found++)
+                        {
+                            if (object->available_inventor_option_codes[found] == value)
+                            {
+                                object->available_inventor_option_codes[found] = 0;
+                                break;
+                            }
+                        }
+                    }
+
+                    object->line_skill_ids[group] = entry->skill_id;
+                    object->line_plan_modes[group] = 0;
+
+                    if (object->line_skill_ids[group] == 8)
+                    {
+                        object->line_skill_ids[group] = 0;
+                    }
+
+                    item_creation_rebuild_line_target(object, (u8)group);
+                }
+            }
+        }
+
+        for (position = 0; position < 14;)
+        {
+            if (object->available_inventor_option_codes[position] == 0)
+            {
+                s32 shift;
+                s32 next;
+
+                for (shift = position; shift < 13; shift++)
+                {
+                    object->available_inventor_option_codes[shift] = object->available_inventor_option_codes[shift + 1];
+                }
+
+                object->available_inventor_option_codes[13] = 0;
+
+                for (next = position; next < 14; next++)
+                {
+                    if (object->available_inventor_option_codes[next] != 0)
+                    {
+                        break;
+                    }
+                }
+
+                if (next == 14)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                position++;
+            }
+        }
+    }
+}
 
 /**
  * @brief Restore installed workshop skills and enable appraisal.
