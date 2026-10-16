@@ -1997,11 +1997,11 @@ func_00298B20 = 0x00298B20; // type:func allow_duplicated:True
 field_set_secondary_emission_scale = 0x00298B30; // type:func size:0x8 allow_duplicated:True
 func_00298B30 = 0x00298B30; // type:func allow_duplicated:True
 
+func_002ADEF0 = 0x002ADEF0; // type:func absolute:True allow_duplicated:True
 field_emit_primary_entries = 0x002ADEF0; // type:func size:0x180 allow_duplicated:True
-func_002ADEF0 = 0x002ADEF0; // type:func allow_duplicated:True
 
+func_002AE070 = 0x002AE070; // type:func absolute:True allow_duplicated:True
 field_emit_secondary_entries = 0x002AE070; // type:func size:0x1CC allow_duplicated:True
-func_002AE070 = 0x002AE070; // type:func allow_duplicated:True
 
 emit_entries__14LibClass173990FiPC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4 = 0x00435840; // type:func absolute:True allow_duplicated:True
 func_00435840 = 0x00435840; // type:func absolute:True allow_duplicated:True
@@ -2113,9 +2113,11 @@ field_adjust_time_step = 0x002B16A0; // type:func size:0x1D4
 __vt__16FieldClass150C10 = 0x00150C10; // size:0x18
 field_set_update_callback = 0x002B1600; // type:func size:0x50
 func_0011DF10 = 0x0011DF10; // type:func absolute:True
-func_0011F770 = 0x0011F770; // type:func absolute:True
+func_11F770 = 0x0011F770; // type:func absolute:True allow_duplicated:True
+func_0011F770 = 0x0011F770; // type:func absolute:True allow_duplicated:True
 func_0011ECD0 = 0x0011ECD0; // type:func absolute:True
-resident_get_runtime_owner = 0x0010D8E0; // type:func absolute:True
+func_10D8E0 = 0x0010D8E0; // type:func absolute:True allow_duplicated:True
+resident_get_runtime_owner = 0x0010D8E0; // type:func absolute:True allow_duplicated:True
 func_0011DF00 = 0x0011DF00; // type:func absolute:True
 func_001010D0 = 0x001010D0; // type:func absolute:True
 field_run_update_loop = 0x002B1880; // type:func size:0x304
@@ -2123,9 +2125,12 @@ field_initialize_and_run = 0x002B1B90; // type:func size:0x2C
 func_001DF3D0__16FieldClass158FF0Fv = 0x002B0B20; // type:func size:0x8
 func_001DF360__16FieldClass158FF0Fv = 0x002B0B30; // type:func size:0x88
 field_run_shutdown_stage = 0x002B1BC0; // type:func size:0x900
-resident_get_entry_table = 0x00101290; // type:func absolute:True
-resident_find_entry = 0x00101440; // type:func absolute:True
-func_001012D0 = 0x001012D0; // type:func absolute:True
+func_101290 = 0x00101290; // type:func absolute:True allow_duplicated:True
+resident_get_entry_table = 0x00101290; // type:func absolute:True allow_duplicated:True
+func_101440 = 0x00101440; // type:func absolute:True allow_duplicated:True
+resident_find_entry = 0x00101440; // type:func absolute:True allow_duplicated:True
+func_1012D0 = 0x001012D0; // type:func absolute:True allow_duplicated:True
+func_001012D0 = 0x001012D0; // type:func absolute:True allow_duplicated:True
 __dt__14LibBufferOwnerFv = 0x003F5FA0; // type:func size:0x60 absolute:True
 
 func_00428B90 = 0x00428B90; // type:func absolute:True
@@ -2144,7 +2149,8 @@ func_001106B0 = 0x001106B0; // type:func absolute:True
 
 func_00101480 = 0x00101480; // type:func absolute:True
 
-func_00457470 = 0x00457470; // type:func absolute:True
+func_457470 = 0x00457470; // type:func absolute:True allow_duplicated:True
+func_00457470 = 0x00457470; // type:func absolute:True allow_duplicated:True
 
 field_set_checked_fol = 0x002B3EA0; // type:func size:0xC0
 field_clear_flags_5000 = 0x002B3F60; // type:func size:0x24
@@ -2270,7 +2276,7 @@ func_001E0A50__16FieldClass154C70Fi = 0x002717E0; // type:func absolute:True all
 func_001E07A0__16FieldClass154C70Fv = 0x00271750; // type:func absolute:True allow_duplicated:True
 func_001F98E0__16FieldClass154C70Fv = 0x00271B50; // type:func absolute:True allow_duplicated:True
 __dt__15FieldInputStateFv = 0x00224C40; // type:func allow_duplicated:True
-__vt__15FieldInputState = 0x001523F0; // size:0x1C allow_duplicated:True
+__vt__15FieldInputState = 0x001523F0; // size:0x1C absolute:True allow_duplicated:True
 clear__15FieldInputStateFi = 0x00224E50; // type:func allow_duplicated:True
 func_001DF3D0__15FieldInputStateFv = 0x00224CD0; // type:func allow_duplicated:True
 func_001DD7B0__15FieldInputStateFv = 0x00224CE0; // type:func allow_duplicated:True
@@ -2585,3 +2591,11 @@ func_002B4060 = 0x002B4060; // type:func absolute:True allow_duplicated:True
 field_append_loaded_resource = 0x002B4060; // type:func size:0x140 allow_duplicated:True
 func_00271E60 = 0x00271E60; // type:func absolute:True allow_duplicated:True
 field_append_file_request = 0x00271E60; // type:func size:0x15C allow_duplicated:True
+
+// Keyed field context entries.
+func_0026F690 = 0x0026F690; // type:func absolute:True allow_duplicated:True
+field_context_test_entry_flag = 0x0026F690; // type:func size:0x50 allow_duplicated:True
+func_0026F6E0 = 0x0026F6E0; // type:func absolute:True allow_duplicated:True
+field_context_get_entry_value = 0x0026F6E0; // type:func size:0x50 allow_duplicated:True
+func_0026F730 = 0x0026F730; // type:func absolute:True allow_duplicated:True
+field_context_apply_entry_value = 0x0026F730; // type:func size:0x4C allow_duplicated:True

@@ -5,6 +5,7 @@
 #include "overlays/1067-00/text_0021FB80.h"
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/1067-00/field_packet.h"
+#include "overlays/1067-00/text_0026EE10.h"
 
 extern "C" void func_11F770(void* owner, void* object);
 
@@ -16,18 +17,11 @@ typedef struct FieldContextIndex228E0
     s32 index;
 } FieldContextIndex228E0;
 
-typedef struct FieldRecord228E0
-{
-    u8 bytes[0x14];
-} FieldRecord228E0;
-
 struct FieldObject228E0
 {
     u8 unk00[0x5C8];
     u8 state;
 };
-
-extern FieldRecord228E0 D_303CB0[];
 
 struct FieldObject224E50
 {
@@ -168,11 +162,16 @@ void func_002227F0(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00222840);
 
+/**
+ * @brief Select the initial state from the current resource's auxiliary file offset.
+ * @param object Object whose state is set to one for a zero offset, or nine otherwise.
+ */
 void func_002228E0(FieldObject228E0* object)
 {
     FieldContextIndex228E0* context = (FieldContextIndex228E0*)D_001B6430->context->unk08;
-    u8* record = D_303CB0[context->index].bytes;
-    if (record[0x11] == 0)
+    FieldResourceDescriptor* resource = &D_303CB0[context->index];
+
+    if (resource->auxiliary_file_offset == 0)
     {
         object->state = 1;
     }

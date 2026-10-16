@@ -3,6 +3,25 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_0020DA30.h"
+
+/** Resource sizes, base file key, and auxiliary file offset for a field selection. */
+typedef struct FieldResourceDescriptor
+{
+    u32 byte_count;
+
+    u32 unk04;
+
+    u32 unk08;
+
+    s16 file_key;
+
+    u8 unk0e[3];
+
+    u8 auxiliary_file_offset;
+
+    u8 unk12[2];
+} FieldResourceDescriptor;
+
 #ifdef __cplusplus
 #include "overlays/1067-00/text_00202240.h"
 #include "overlays/lib/text_004BD360.h"
@@ -72,6 +91,8 @@ typedef struct FieldState271750 FieldState271750;
 extern "C" {
 #endif
 
+extern FieldResourceDescriptor D_303CB0[];
+
 /** @brief Return the type value for the D_154BB0 callback table. */
 s32 func_0026EED0(const void* object);
 /** @brief Return the type value for the D_154BF0 callback table. */
@@ -127,12 +148,12 @@ void func_00272290(FieldFlag272290* object);
 typedef struct FieldRoot26FF70 FieldRoot26FF70;
 
 /**
- * @brief Test the active bit of a context entry selected by key.
+ * @brief Test flag bit 0 of the first context entry with the supplied key.
  * @param context Context containing entries.
  * @param key Entry key.
- * @return One when the selected entry has its active bit set, otherwise zero.
+ * @return Flag bit 0, or zero when no entry has the key.
  */
-s32 func_0026F690(void* context, u32 key);
+s32 field_context_test_entry_flag(void* context, u32 key);
 
 /**
  * @brief Find a context entry by key and return its value pointer.
@@ -140,15 +161,15 @@ s32 func_0026F690(void* context, u32 key);
  * @param key Entry key.
  * @return Value of the selected entry, or null when no entry has the key.
  */
-void* func_0026F6E0(void* context, u32 key);
+void* field_context_get_entry_value(void* context, u32 key);
 
 /**
- * @brief Find a context entry by key and apply the supplied word.
+ * @brief Reset the first entry with the supplied key and apply an integer value.
  * @param context Context containing entries.
  * @param key Entry key.
- * @param value Word to apply.
+ * @param value Signed integer converted to float by the entry update.
  */
-void func_0026F730(void* context, u32 key, u32 value);
+void field_context_apply_entry_value(void* context, u32 key, s32 value);
 
 /**
  * @brief Find a context entry by halfword key and process it.
@@ -224,7 +245,7 @@ public:
     /** @brief Clear the retained resource selection and reset the loader. */
     FieldClass154C70()
     {
-        unk48 = 0;
+        resource_index = 0;
 
         unk40 = 0;
 
@@ -250,15 +271,16 @@ public:
 
     u32 unk40;
 
-    u8 unk44;
+    /** Zero compares auxiliary file offsets, one loads the file, and two skips it. */
+    u8 auxiliary_policy;
 
-    u8 unk45_0 : 1;
+    u8 load_auxiliary : 1;
 
     u8 unk45_1_7 : 7;
 
     u8 unk46[2];
 
-    s32 unk48;
+    s32 resource_index;
 };
 #endif
 

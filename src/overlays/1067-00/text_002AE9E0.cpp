@@ -77,20 +77,6 @@ struct FieldDisplayState6624
     void* unk360;
 };
 
-/** Resource byte count and file key selected by the retained resource index. */
-struct FieldResourceDescriptor
-{
-    u32 byte_count;
-
-    u32 unk04;
-
-    u32 unk08;
-
-    s16 file_key;
-
-    u8 unk0e[6];
-};
-
 extern "C"
 {
     extern char g_field_default_name_fayt[];
@@ -283,8 +269,6 @@ extern "C"
     extern u8 D_3E6880[];
 
     extern char g_field_default_camera_name[];
-
-    extern FieldResourceDescriptor D_303CB0[];
 
 }
 
@@ -2246,8 +2230,8 @@ extern "C" void field_initialize_context(ResidentContext* context)
             }
 
             loader->unk20 = static_cast<FieldClass1DD400*>(reinterpret_cast<FieldClass153CD0*>(context->unk08));
-            loader->unk48 = saved->resource_index;
-            loader->unk45_0 = 1;
+            loader->resource_index = saved->resource_index;
+            loader->load_auxiliary = 1;
 
             if (added != 0)
             {

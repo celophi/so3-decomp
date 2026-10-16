@@ -83,95 +83,117 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026F4
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026F670);
 
 /** Keyed context entry linked from the context's entry list. */
-struct FieldContextEntry26F690
+struct FieldKeyedContextEntry
 {
     u8 unk00[8];
-    FieldContextEntry26F690* next;
+
+    FieldKeyedContextEntry* next;
+
     u8 unk0c[8];
+
     void* value;
+
     u8 unk18[0x10];
+
     u32 key;
+
     u8 flags;
 };
 
 /** Context entry list whose sentinel entry starts at offset 0x14. */
-struct FieldContextList26F690
+struct FieldKeyedContextList
 {
     u8 unk00[0x14];
-    FieldContextEntry26F690 head;
+
+    FieldKeyedContextEntry head;
 };
 
 /** Partial context holding its entry list. */
-struct FieldContext26F690
+struct FieldKeyedContext
 {
     u8 unk00[0xD8];
-    FieldContextList26F690* list;
+
+    FieldKeyedContextList* list;
 };
 
-s32 func_0026F690(void* context, u32 key)
+/**
+ * @brief Test flag bit 0 of the first context entry with the supplied key.
+ * @param context Context containing the keyed entry list.
+ * @param key Entry key.
+ * @return Flag bit 0, or zero when no entry has the key.
+ */
+s32 field_context_test_entry_flag(void* context, u32 key)
 {
-    FieldContextEntry26F690* entry;
-    FieldContextEntry26F690* head = &static_cast<FieldContext26F690*>(context)->list->head;
-    entry = head;
-    while (1)
+    FieldKeyedContextEntry* entry;
+    FieldKeyedContextEntry* head = &static_cast<FieldKeyedContext*>(context)->list->head;
+
+    for (entry = head; ; )
     {
         entry = entry->next;
-        if (entry == 0)
+
+        if (entry == 0 || head == entry)
         {
             break;
         }
-        if (head == entry)
-        {
-            break;
-        }
+
         if (key == entry->key)
         {
             return entry->flags & 1;
         }
     }
+
     return 0;
 }
 
-void* func_0026F6E0(void* context, u32 key)
+/**
+ * @brief Return the value pointer of the first context entry with the supplied key.
+ * @param context Context containing the keyed entry list.
+ * @param key Entry key.
+ * @return Stored pointer, or null when no entry has the key.
+ */
+void* field_context_get_entry_value(void* context, u32 key)
 {
-    FieldContextEntry26F690* entry;
-    FieldContextEntry26F690* head = &static_cast<FieldContext26F690*>(context)->list->head;
-    entry = head;
-    while (1)
+    FieldKeyedContextEntry* entry;
+    FieldKeyedContextEntry* head = &static_cast<FieldKeyedContext*>(context)->list->head;
+
+    for (entry = head; ; )
     {
         entry = entry->next;
-        if (entry == 0)
+
+        if (entry == 0 || head == entry)
         {
             break;
         }
-        if (head == entry)
-        {
-            break;
-        }
+
         if (key == entry->key)
         {
             return entry->value;
         }
     }
+
     return 0;
 }
 
-void func_0026F730(void* context, u32 key, u32 value)
+/**
+ * @brief Reset the first entry with the supplied key and apply an integer value.
+ * @param context Context containing the keyed entry list.
+ * @param key Entry key.
+ * @param value Signed integer converted to float by the entry update.
+ */
+void field_context_apply_entry_value(void* context, u32 key, s32 value)
 {
-    FieldContextEntry26F690* entry;
-    FieldContextEntry26F690* head = &static_cast<FieldContext26F690*>(context)->list->head;
-    entry = head;
-    while (1)
+    FieldKeyedContextEntry* entry;
+    FieldKeyedContextEntry* head = &static_cast<FieldKeyedContext*>(context)->list->head;
+
+    for (entry = head; ; )
     {
         entry = entry->next;
-        if (entry == 0)
+
+        if (entry == 0 || head == entry)
         {
             break;
         }
-        if (head == entry)
-        {
-            break;
-        }
+
         if (key == entry->key)
         {
             func_002077B0(reinterpret_cast<FieldState2C*>(entry), value);

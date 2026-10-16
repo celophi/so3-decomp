@@ -480,7 +480,7 @@ extern "C" s32 func_001FCBD0(FieldScriptCursorU32* cursor)
 
 extern "C" s32 func_001FCC20(FieldScriptCursorF14* cursor)
 {
-    if (func_0026F690(D_001B6430->context->unk08->current_object, *cursor->current))
+    if (field_context_test_entry_flag(D_001B6430->context->unk08->current_object, *cursor->current))
     {
         cursor->value = 1.0f;
         return 0;
@@ -493,7 +493,7 @@ extern "C" s32 func_001FCC80(FieldScriptCursorU32* cursor)
     u32* arg = cursor->current;
     cursor->current = arg + 1;
     u32 key = *arg;
-    func_0026F730(D_001B6430->context->unk08->current_object, key, *cursor->current);
+    field_context_apply_entry_value(D_001B6430->context->unk08->current_object, key, *cursor->current);
     return 1;
 }
 

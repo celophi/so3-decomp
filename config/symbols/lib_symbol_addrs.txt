@@ -504,6 +504,7 @@ func_0043BC40 = 0x0043BC40; // type:func absolute:True allow_duplicated:True
 
 __vt__14LibClass173990 = 0x00173990; // size:0x98 absolute:True allow_duplicated:True
 
+D_00173A28 = 0x00173A28; // absolute:True allow_duplicated:True
 __vt__14LibClass173A28 = 0x00173A28; // size:0xC absolute:True allow_duplicated:True
 
 func_003EEBC0__14LibClass173990Fv = 0x00434F20; // type:func absolute:True allow_duplicated:True
