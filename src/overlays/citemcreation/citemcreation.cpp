@@ -11638,7 +11638,7 @@ u8 WorkshopExpansionWindow::func_slotb0()
                 stored->encoded_fol = value ^ 0x7CE3C7F7;
                 stored->checksum_seed = resident_next_random_word();
                 stored_end = (const u8*)&stored->checksum;
-                stored->checksum = func_00457470(stored->checksum_seed, &stored->unk08[0x1E], stored_end - &stored->unk08[0x1E]);
+                stored->checksum = func_00457470(stored->checksum_seed, stored->unk26, stored_end - stored->unk26);
             }
             if (this->unk10c != index)
             {

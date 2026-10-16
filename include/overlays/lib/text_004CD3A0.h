@@ -418,6 +418,41 @@ extern "C" void lib_invalidate_transform_chain(LibClass178EA0* object);
 extern "C" {
 #endif
 
+/** @brief Start the Lib frame packet. */
+void func_4D8AC0(void);
+
+/**
+ * @brief Prepare the Lib rendering state for an update.
+ * @param object Lib rendering state.
+ */
+void func_4D4BE0(void* object);
+
+/**
+ * @brief Append packet drawer data at the supplied coordinates.
+ * @param object Packet drawer.
+ * @param x First coordinate.
+ * @param y Second coordinate.
+ */
+void func_4D76C0(void* object, u16 x, u16 y);
+
+/**
+ * @brief Select the display buffer and wait for its field.
+ * @param object Display state.
+ * @param frame Render iteration.
+ * @return Selected display field.
+ */
+u32 func_4DCFF0(void* object, s32 frame);
+
+#ifdef __cplusplus
+/**
+ * @brief Configure display-buffer flags.
+ * @param object Display state.
+ * @param enabled Enable the buffer flag.
+ * @param other Select the additional flag.
+ */
+void func_4DCEA0(void* object, bool enabled, bool other);
+#endif
+
 #ifdef __cplusplus
 /**
  * @brief Interpolate along the shorter quaternion arc and normalize the result.
@@ -648,6 +683,39 @@ s32 func_004DAFD0(void* object);
 #ifdef __cplusplus
 extern "C" s32 func_004D04C0(void* object);
 extern "C" s32 func_004D0740(void* object);
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct FieldPacketQueue;
+
+/** Wait for or finish the packet queue according to the flag. */
+void func_004DBEE0(struct FieldPacketQueue* queue, s32 flag);
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+
+/** Temporary object-node buffer. */
+class LibClass178B10 : public LibClass171EA0
+{
+public:
+    LibClass178B10(s32 count);
+
+    virtual ~LibClass178B10();
+
+    void** objects;
+
+    s32 count;
+
+    u32 unk1c;
+
+    u8 unk20[4];
+};
 #endif
 
 #endif

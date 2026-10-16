@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"

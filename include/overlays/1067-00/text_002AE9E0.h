@@ -4,9 +4,54 @@
 #include "types.h"
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/1067-00/field_packet.h"
+
+struct ResidentContext;
+
+struct ResidentCheckedRecord;
+
+struct FieldRuntimeValues;
+
+struct FieldClass150C10;
+
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001DED80.h"
+#include "overlays/1067-00/field_class_1553b0.h"
+#include "overlays/1067-00/field_vector4.h"
+#include "overlays/1067-00/text_0026EE10.h"
 #include "overlays/lib/text_004BD360.h"
+
+/** Retained field list whose native allocation is 0x7C bytes. */
+class FieldClass159010 : public FieldClass1502A0
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    static void* operator new(u32 size);
+
+    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object)
+    {
+        func_004DB570(object);
+    }
+
+    /** @brief Construct the inherited list. */
+    FieldClass159010()
+    {
+    }
+
+    /** @brief Release the listed objects and destroy the inherited list. */
+    virtual ~FieldClass159010();
+
+    u8 unk78[4];
+};
+
+
+template<class T> struct FieldTrackPool;
+
+class FieldClass157AF0;
+
+class FieldClass157E30;
+
+class FieldClass158170;
 #endif
 
 /** Shared sequence fields with signed counters, halfword indices, and packed modes. */
@@ -27,6 +72,138 @@ typedef struct FieldSequenceTail
     u8 unk13_2 : 1;
     u8 unk13_3_7 : 5;
 } FieldSequenceTail;
+
+/** Partial state for a delayed, time-limited scalar update. */
+typedef struct FieldTimedValueState
+{
+    float delay_remaining;
+
+    float update_remaining;
+
+    float value_step;
+
+    u8 updating : 1;
+
+    u8 unk0C_1_7 : 7;
+} FieldTimedValueState;
+
+#ifdef __cplusplus
+/** 0xB8-byte owner of 32 object slots, with native table 0x158EA0. */
+class FieldClass158EA0 : public FieldClass150070
+{
+public:
+    static void* operator new(u32 size);
+
+    enum
+    {
+        SLOT_COUNT = 32
+    };
+
+    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object)
+    {
+        func_004DB570(object);
+    }
+
+    /** @brief Clear all object slots and pending-removal flags. */
+    FieldClass158EA0();
+
+    /** @brief Release every stored object. */
+    virtual ~FieldClass158EA0();
+
+    /** @brief Release objects marked for removal. */
+    virtual void func_001DF360();
+
+    u8 unk14[4];
+
+    LibClass171EA0* objects[SLOT_COUNT];
+
+    u8 pending_removal[SLOT_COUNT];
+};
+
+/** Four vertices retained for a fixed interval, then faded from base_alpha. */
+struct FieldTimedQuad
+{
+    /** @brief Start the quad's hold interval at 120 time units. */
+    FieldTimedQuad()
+    {
+        hold_remaining = 120.0f;
+    }
+
+    FieldVector4 vertices[4];
+
+    float hold_remaining;
+
+    u8 base_alpha;
+
+    u8 side : 1;
+
+    u8 unk45_1_7 : 7;
+};
+
+class LibClass174CF0;
+
+/** Controller owning up to 100 timed quads, with native table 0x158EC0. */
+class FieldClass158EC0 : public FieldClass1553B0
+{
+public:
+    enum
+    {
+        RECORD_COUNT = 100
+    };
+
+    /** @brief Initialize the quad pool and unset its rendering resources. */
+    FieldClass158EC0();
+
+    /** @brief Release the quad records. */
+    virtual ~FieldClass158EC0();
+
+    /** @brief Release resources, detach the controller and queue it for release. */
+    virtual void func_001DD7B0();
+
+    /** @brief Advance the quad lifetimes and render surviving records. */
+    virtual void func_001DF360();
+
+    /** @brief Release the quad records and rendering resources. */
+    virtual void func_00272220();
+
+    /** @brief Set the low flag bit on the attached object. */
+    virtual void func_00272130();
+
+    /** @brief Clear the low flag bit on the attached object. */
+    virtual void func_002721A0();
+
+    /**
+     * @brief Accept any source for quad generation.
+     * @param actor Actor supplying the vertices.
+     * @param source Source record associated with the actor.
+     * @return Always one.
+     */
+    virtual s32 accepts_source(const void* actor, const void* source);
+
+    /**
+     * @brief Add a timed quad in the first free record slot.
+     * @param vertices Four aligned vertices to copy.
+     * @param side Low bit selects the quad's texture orientation.
+     * @param alpha Initial alpha for the hold and fade intervals.
+     */
+    void add_quad(const FieldVector4* vertices, u8 side, u8 alpha);
+
+    FieldTimedQuad* records[RECORD_COUNT];
+
+    LibClass174CF0* renderer;
+
+    LibClass171EA0* attached_object;
+
+    s32 texture_index;
+
+    s32 record_count;
+
+    u8 renderer_external : 1;
+
+    u8 unk1C0_1_7 : 7;
+};
+#endif
 
 #ifdef __cplusplus
 /** Partial object with vtable D_159950 in main data; its vtable pointer follows its data at offset 0x1C. */
@@ -111,6 +288,22 @@ public:
 #endif
 
 #ifdef __cplusplus
+/** Shutdown sequence that runs one cleanup stage on each object-list update. */
+class FieldClass158FF0 : public FieldClass150070
+{
+public:
+    /** @brief Destroy the shutdown sequence. */
+    virtual ~FieldClass158FF0();
+
+    /** @brief Report the sequence kind. @return Nine. */
+    virtual s32 func_001DF3D0();
+
+    /** @brief Advance shutdown and request loop exit after the fourth update. */
+    virtual void func_001DF360();
+
+    s8 stage;
+};
+
 /** Partial Field object with vtable D_159050 in main data. */
 class FieldClass159050 : public FieldClass150070
 {
@@ -1644,6 +1837,199 @@ public:
 extern "C" {
 #endif
 
+
+#ifdef __cplusplus
+
+/** Release every track and the pool's owned storage. */
+void func_002B4620(FieldTrackPool<FieldClass177F70>* pool);
+
+/** Release every track and the pool's owned storage. */
+void func_002B4C50(FieldTrackPool<FieldClass159390>* pool);
+
+/** Release every track and the pool's owned storage. */
+void func_002B51F0(FieldTrackPool<FieldClass177EE0>* pool);
+
+/** Release every track and the pool's owned storage. */
+void func_002B56D0(FieldTrackPool<FieldClass177C70>* pool);
+
+/** Release every track and the pool's owned storage. */
+void func_002B5C80(FieldTrackPool<FieldClass159130>* pool);
+
+/** Release every track and the pool's owned storage. */
+void func_002B6180(FieldTrackPool<FieldClass177BE0>* pool);
+
+/** Release every track and the pool's owned storage. */
+void func_002B6680(FieldTrackPool<FieldClass174440>* pool);
+
+/** Release every track and the pool's owned storage. */
+void func_002B6BA0(FieldTrackPool<FieldClass1730F0>* pool);
+
+#endif
+
+/**
+ * @brief Store clamped Fol and refresh its checksum when the saved record is valid.
+ * @param record Checked resident record.
+ * @param fol Fol value to store, limited to zero through 99,999,999.
+ */
+void field_set_checked_fol(struct ResidentCheckedRecord* record, s32 fol);
+
+/**
+ * @brief Clear the 32 runtime flags addressed by script keys starting at 0x5000.
+ * @param values Runtime resource section containing the flags.
+ */
+void field_clear_flags_5000(struct FieldRuntimeValues* values);
+
+/**
+ * @brief Run field rendering and object updates until an exit is requested.
+ * @param context Field context retaining update, display, and timing state.
+ */
+void field_run_update_loop(struct ResidentContext* context);
+
+/**
+ * @brief Initialize the field context and load its field state.
+ * @param context Field context to initialize.
+ */
+void field_initialize_context(struct ResidentContext* context);
+
+/**
+ * @brief Run the selected field shutdown stage.
+ * @param context Field context.
+ * @param stage Shutdown stage.
+ */
+void field_run_shutdown_stage(struct ResidentContext* context, s32 stage);
+
+/**
+ * @brief Release the current update callback and retain its replacement.
+ * @param context Field context owning the callback.
+ * @param callback Replacement callback, or null.
+ */
+void field_set_update_callback(struct ResidentContext* context, struct FieldClass150C10* callback);
+
+/**
+ * @brief Recalculate the scaled field increments and the runtime update rate.
+ * @param context Field context retaining the step and its multiplier.
+ * @param step New unscaled increment; ordered values at or below zero retain the current one.
+ */
+void field_update_time_step(struct ResidentContext* context, float step);
+
+/**
+ * @brief Adjust the update interval after an overrun and retain it briefly.
+ * @param context Field context and timing state.
+ * @param overrun Positive overrun measure; nonpositive values advance or release the hold.
+ */
+void field_adjust_time_step(struct ResidentContext* context, s32 overrun);
+
+#ifdef __cplusplus
+/**
+ * @brief Update a scalar after a delay and report when its update timer expires.
+ * @param state Timers, increment, and active-update flag.
+ * @param value Scalar receiving the saved increment on each active call.
+ * @return True when the active-update timer has expired.
+ */
+bool field_update_timed_value(FieldTimedValueState* state, float* value);
+
+/**
+ * @brief Detach and release every occupied object slot.
+ * @param owner Slot owner.
+ */
+void field_clear_object_slots(FieldClass158EA0* owner);
+
+/**
+ * @brief Register every occupied object slot with the Lib object list.
+ * @param owner Slot owner.
+ */
+void field_register_object_slots(FieldClass158EA0* owner);
+
+/**
+ * @brief Detach every occupied object slot from its current owner.
+ * @param owner Slot owner.
+ */
+void field_detach_object_slots(FieldClass158EA0* owner);
+
+/**
+ * @brief Mark the first slot containing an object for deferred release.
+ * @param owner Slot owner.
+ * @param object Object to mark.
+ */
+void field_request_object_slot_removal(FieldClass158EA0* owner, LibClass171EA0* object);
+
+/**
+ * @brief Store and register an object in the first vacant slot.
+ * @param owner Slot owner.
+ * @param object Object to store and register.
+ * @return True if a vacant slot was found; false when all slots are occupied.
+ */
+bool field_add_object_slot(FieldClass158EA0* owner, LibClass171EA0* object);
+#endif
+
+#ifdef __cplusplus
+/**
+ * @brief Emit entries through the primary linked emitter.
+ * @param object Grid owning the emission settings.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+void field_emit_primary_entries_157af0(FieldClass157AF0* object, const LibVector4* position, const LibVector4* first_offset, const LibVector4* second_offset,
+                                       const LibVector4* color_scale);
+
+/**
+ * @brief Emit entries through the secondary linked emitter.
+ * @param object Grid owning the emission settings.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set. Its fourth component receives the grid value after emission.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+void field_emit_secondary_entries_157af0(FieldClass157AF0* object, const LibVector4* position, LibVector4* first_offset, const LibVector4* second_offset,
+                                         const LibVector4* color_scale);
+
+/**
+ * @brief Emit entries through the primary linked emitter.
+ * @param object Grid owning the emission settings.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+void field_emit_primary_entries_157e30(FieldClass157E30* object, const LibVector4* position, const LibVector4* first_offset, const LibVector4* second_offset,
+                                       const LibVector4* color_scale);
+
+/**
+ * @brief Emit entries through the secondary linked emitter.
+ * @param object Grid owning the emission settings.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set. Its fourth component receives the grid value after emission.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+void field_emit_secondary_entries_157e30(FieldClass157E30* object, const LibVector4* position, LibVector4* first_offset, const LibVector4* second_offset,
+                                         const LibVector4* color_scale);
+
+/**
+ * @brief Emit entries through the primary linked emitter.
+ * @param object Grid owning the emission settings.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+void field_emit_primary_entries_158170(FieldClass158170* object, const LibVector4* position, const LibVector4* first_offset, const LibVector4* second_offset,
+                                       const LibVector4* color_scale);
+
+/**
+ * @brief Emit entries through the secondary linked emitter.
+ * @param object Grid owning the emission settings.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set. Its fourth component receives the grid value after emission.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+void field_emit_secondary_entries_158170(FieldClass158170* object, const LibVector4* position, LibVector4* first_offset, const LibVector4* second_offset,
+                                         const LibVector4* color_scale);
+#endif
+
 /**
  * @brief Store four in the receiver's byte at offset 0x60.
  * @param object Receiver containing the byte.
@@ -1956,13 +2342,6 @@ void* func_002B9080(FieldSequenceState40* object);
 /**
  * @brief Report this object's type value.
  * @param object Callback receiver.
- * @return Always 9.
- */
-s32 func_002B0B20(FieldClass150070* object);
-
-/**
- * @brief Report this object's type value.
- * @param object Callback receiver.
  * @return Always 14.
  */
 s32 func_002B4030(FieldClass150070* object);
@@ -2075,13 +2454,6 @@ void* func_002BC010(FieldSequenceState10* object);
  */
 s32 func_002BC220(FieldClass150070* object);
 #endif
-
-/**
- * @brief Return the fixed value 1.
- * @param object Receiver or first argument; unused.
- * @return Always 1.
- */
-s32 func_002AFBD0(void* object);
 
 /**
  * @brief Return the fixed value 0.
@@ -2290,11 +2662,99 @@ void func_002BC260(void* object);
  */
 void func_002BC270(void* object);
 
-/** Run the two ordered receiver update helpers. */
-void func_002B1B90(void* object);
+/**
+ * @brief Initialize the field context and run its update loop.
+ * @param context Field context to initialize and run.
+ */
+void field_initialize_and_run(struct ResidentContext* context);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+class FieldClass154C70;
+
+extern "C"
+{
+    s32 func_002B0D80(ResidentContext* context, s32 flag, u32 address);
+
+    /**
+     * @brief Append an already loaded resource when a request slot remains.
+     * @param loader Resource loader.
+     * @param buffer_address Address of the existing resource buffer.
+     * @param kind Resource kind stored in the request.
+     * @param release_buffer Low bit selects whether to free the buffer when releasing the request.
+     */
+    void field_append_loaded_resource(FieldClass154C70* loader, u32 buffer_address, u8 kind, u32 release_buffer);
+}
+#endif
+
+#ifdef __cplusplus
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+extern "C" s32 func_002B41A0(FieldTrackPool<FieldClass177F70>* pool, s32 count);
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+extern "C" s32 func_002B5390(FieldTrackPool<FieldClass177C70>* pool, s32 count);
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+extern "C" s32 func_002B6310(FieldTrackPool<FieldClass174440>* pool, s32 count);
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+extern "C" s32 func_002B47C0(FieldTrackPool<FieldClass159390>* pool, s32 count);
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+extern "C" s32 func_002B4DF0(FieldTrackPool<FieldClass177EE0>* pool, s32 count);
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+extern "C" s32 func_002B5870(FieldTrackPool<FieldClass159130>* pool, s32 count);
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+extern "C" s32 func_002B5E20(FieldTrackPool<FieldClass177BE0>* pool, s32 count);
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+extern "C" s32 func_002B6820(FieldTrackPool<FieldClass1730F0>* pool, s32 count);
+
 #endif
 
 #endif

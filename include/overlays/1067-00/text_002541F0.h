@@ -33,4 +33,36 @@ s32 func_00254BD0(void);
 }
 #endif
 
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001DD3C0.h"
+
+/** Camera controller retained by the field context. */
+class FieldClass1537C0 : public FieldClass150070, public FieldClass1DD400
+{
+public:
+    FieldClass1537C0();
+    virtual ~FieldClass1537C0();
+
+    u8 unk18[8];
+    float unk20;
+    u8 unk24[0x10];
+    u32 unk34;
+    u8 unk38[4];
+    u32 unk3c;
+    u8 unk40[0x11];
+    u8 unk51_0 : 1;
+    u8 unk51_1 : 1;
+    u8 unk51_2 : 1;
+    u8 unk51_3_7 : 5;
+    u8 unk52[2];
+};
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+    u32 func_00254230(void* object, s32 first, s32 second, float third);
+}
+#endif
+
 #endif

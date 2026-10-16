@@ -1102,7 +1102,7 @@ u32 func_00217920(FieldScriptObject151D40* object, s32 key)
         return (values->unk04[index / 8] & (1 << (index % 8))) != 0;
     case 0x5000:
         index = key & 0xFFF;
-        return (values->unk184[index / 8] & (1 << (index % 8))) != 0;
+        return (values->flags_5000[index / 8] & (1 << (index % 8))) != 0;
     default:
         return 0;
     }
@@ -1131,7 +1131,7 @@ void func_00217CE0(FieldObject217CE0* object, u8 value)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217D20);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217DB0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", __dt__16FieldClass151D40Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217F00);
 

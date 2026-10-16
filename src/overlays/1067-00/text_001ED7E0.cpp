@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/vector_inlines.h"
 #include "overlays/1067-00/text_001E6C50.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "sdk/main/libc_0013C6D0.h"
@@ -474,6 +475,11 @@ extern "C" FieldLateIndexedObject* D_507CD0[];
 extern "C" void func_4289B0(FieldLateIndexedObject*);
 extern "C" void func_428C80(FieldLateIndexedObject*);
 
+/** @brief Initialize the inherited resource loader. */
+inline FieldClass150750::FieldClass150750()
+{
+}
+
 /** @brief Destroy the inherited resource-loader state. */
 inline FieldClass150750::~FieldClass150750()
 {
@@ -505,11 +511,11 @@ static inline bool field_actor_commands_pending()
 }
 
 /**
- * @brief Read the record size, rounding it to 128 bytes unless a record flag exempts it.
+ * @brief Read the buffer address, aligning it to 128 bytes unless a record flag exempts it.
  * @param record Resource record.
- * @return Request size in bytes.
+ * @return Buffer address.
  */
-static inline u32 field_record_size(FieldRecord20* record)
+static inline u32 field_record_buffer_address(FieldRecord20* record)
 {
     if (record->flag8 || record->flag162)
     {
@@ -2656,7 +2662,7 @@ extern "C" s32 func_001F7EE0(FieldScriptCursorU32* cursor)
  */
 extern "C" s32 func_001F80E0(FieldScriptCursorU32* cursor)
 {
-    FieldResidentTimer90* state = (FieldResidentTimer90*)D_001B6430->context->unk08->unkdc;
+    FieldResidentTimer90* state = (FieldResidentTimer90*)D_001B6430->context->unk08->current_object;
     if (state && state->unk90 <= 0.0f)
     {
         u32 key = *cursor->current++;
@@ -2680,7 +2686,7 @@ extern "C" s32 func_001F80E0(FieldScriptCursorU32* cursor)
  */
 extern "C" s32 func_001F8230(FieldScriptCursorU32* cursor)
 {
-    FieldClass150F90* focus = (FieldClass150F90*)D_001B6430->context->unk08->unkdc;
+    FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
     if (!focus || !focus->func_00204420())
     {
         cursor->unk14 = 1.0f;
@@ -2717,7 +2723,7 @@ extern "C" s32 func_001F8230(FieldScriptCursorU32* cursor)
  */
 extern "C" s32 func_001F83A0(FieldScriptCursorU32* cursor, u32 count)
 {
-    FieldClass150F90* focus = (FieldClass150F90*)D_001B6430->context->unk08->unkdc;
+    FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
     if (focus && focus->unk90 <= 0.0f)
     {
         u32 key = *cursor->current++;
@@ -2887,18 +2893,18 @@ void FieldClass1507A0::func_001DD7B0()
     resident_enqueue_object(D_001B65F4, this);
 }
 
-/** @brief Start the request for the current record when its size is nonzero. */
+/** @brief Start the request for the current record when its buffer address is nonzero. */
 void FieldClass150700::func_001F8CB0()
 {
     FieldClass152210* record = &unk1c[unk2e];
-    if (record->rounded_unk04())
+    if (record->buffer_address())
     {
         FieldClass1DD400* owner = this;
         u32 first = record->unk00;
-        func_00103E70(D_001B65E8, record->unk0c, record->rounded_unk04(), 0x80000000, unk28, owner, first, 0, 1);
+        func_00103E70(D_001B65E8, record->unk0c, record->buffer_address(), 0x80000000, unk28, owner, first, 0, 1);
         u32 word = record->unk00;
-        u32 size = record->rounded_unk04();
-        record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+        u32 buffer_address = record->buffer_address();
+        record->unk10 = func_00103640(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0);
         unk15 = 1;
         unk30_1 = 0;
     }
@@ -2931,8 +2937,8 @@ s32 FieldClass150700::func_001DF640()
             if (!record->flag8)
             {
                 u32 word = record->unk0;
-                u32 size = field_record_size(record);
-                func_00103B20(D_001B65E8, record->indexC, size, 0x80000000, word, 0);
+                u32 buffer_address = field_record_buffer_address(record);
+                func_00103B20(D_001B65E8, record->indexC, buffer_address, 0x80000000, word, 0);
             }
         }
         unk15 = 7;
@@ -2987,8 +2993,8 @@ s32 FieldClass150700::func_001E07A0()
             if (!record->unk08_0)
             {
                 u32 word = record->unk00;
-                u32 size = record->rounded_unk04();
-                func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+                u32 buffer_address = record->buffer_address();
+                func_00103B20(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0);
             }
         }
         unk15 = 10;
@@ -3006,7 +3012,7 @@ s32 FieldClass150700::func_001E07A0()
         for (s32 i = 0; i < unk2d; i++)
         {
             FieldClass152210* record = records + i;
-            if (record->rounded_unk04())
+            if (record->buffer_address())
             {
                 result = 1;
                 break;
@@ -3026,7 +3032,7 @@ s32 FieldClass150700::func_001E07A0()
         for (s32 i = 0; i < unk2d; i++)
         {
             FieldClass152210* record = records + i;
-            if (record->rounded_unk04())
+            if (record->buffer_address())
             {
                 result = 2;
                 break;
@@ -3062,8 +3068,8 @@ void FieldClass150700::func_001E0A50(s32 flag)
             {
                 FieldClass152210* record = &unk1c[i];
                 u32 word = record->unk00;
-                u32 size = record->rounded_unk04();
-                func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+                u32 buffer_address = record->buffer_address();
+                func_00103B20(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0);
             }
             unk15 = 9;
         }
@@ -3071,8 +3077,8 @@ void FieldClass150700::func_001E0A50(s32 flag)
         {
             FieldClass152210* record = &unk1c[unk2e];
             u32 word = record->unk00;
-            u32 size = record->rounded_unk04();
-            if (!func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0) && !field_records_blocked())
+            u32 buffer_address = record->buffer_address();
+            if (!func_00103640(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0) && !field_records_blocked())
             {
                 func_001DDB30(0);
             }
@@ -3092,8 +3098,8 @@ void FieldClass150700::func_001E0A50(s32 flag)
         {
             FieldClass152210* record = &records[i];
             u32 word = record->unk00;
-            u32 size = record->rounded_unk04();
-            record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+            u32 buffer_address = record->buffer_address();
+            record->unk10 = func_00103640(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0);
             if (record->unk10)
             {
                 done = false;
@@ -3121,8 +3127,8 @@ void FieldClass150700::func_001E0A50(s32 flag)
         for (s32 i = 0; i < unk2d; i++, record++)
         {
             u32 word = record->unk00;
-            u32 size = record->rounded_unk04();
-            record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+            u32 buffer_address = record->buffer_address();
+            record->unk10 = func_00103640(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0);
             if (record->unk10)
             {
                 done = false;
@@ -3157,8 +3163,8 @@ void FieldClass150700::func_001F98E0()
         }
         FieldClass152210* record = &unk1c[unk2e];
         u32 word = record->unk00;
-        u32 size = record->rounded_unk04();
-        if (func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0))
+        u32 buffer_address = record->buffer_address();
+        if (func_00103640(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0))
         {
             return;
         }

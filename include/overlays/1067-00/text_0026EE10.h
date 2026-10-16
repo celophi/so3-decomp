@@ -3,8 +3,62 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_0020DA30.h"
+
+/** Resource sizes, base file key, and auxiliary file offset for a field selection. */
+typedef struct FieldResourceDescriptor
+{
+    u32 byte_count;
+
+    u32 unk04;
+
+    u32 unk08;
+
+    s16 file_key;
+
+    u8 unk0e[3];
+
+    u8 auxiliary_file_offset;
+
+    u8 unk12[2];
+} FieldResourceDescriptor;
+
 #ifdef __cplusplus
 #include "overlays/1067-00/text_00202240.h"
+#include "overlays/lib/text_004BD360.h"
+
+/** 0x90-byte field list with its secondary list base at offset 0x14. */
+class FieldClass154CC0 : public FieldClass150070, public FieldClass1502A0
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    static void* operator new(u32 size);
+
+    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object)
+    {
+        func_004DB570(object);
+    }
+
+    /** @brief Initialize the inherited node and list. */
+    FieldClass154CC0()
+    {
+    }
+
+    /** @brief Destroy both list bases. */
+    virtual ~FieldClass154CC0();
+
+    /** @brief Report the fixed list kind. @return Three. */
+    virtual s32 func_001DF3D0();
+
+    /** @brief Detach this node and queue it for release. */
+    virtual void func_001DD7B0();
+
+    /** @brief Advance the list's objects when their update conditions hold. */
+    virtual void func_001DF360();
+
+    u8 unk8c[4];
+};
+
 #endif
 
 struct LibClass178220;
@@ -37,22 +91,18 @@ typedef struct FieldState271750 FieldState271750;
 extern "C" {
 #endif
 
+extern FieldResourceDescriptor D_303CB0[];
+
 /** @brief Return the type value for the D_154BB0 callback table. */
 s32 func_0026EED0(const void* object);
 /** @brief Return the type value for the D_154BF0 callback table. */
 s32 func_002716B0(const void* object);
-/** @brief Destroy the field object and its embedded list base. */
-void* func_00271FC0(void* object, s32 flags);
-/** @brief Return the type value for the embedded-list field object. */
-s32 func_00272080(const void* object);
 /** @brief Default callback for the embedded-list field object. */
 void func_00272130(void* object);
 /** @brief Default callback for the embedded-list field object. */
 void func_002721A0(void* object);
 /** @brief Default callback for the embedded-list field object. */
 void func_00272220(void* object);
-/** @brief Destroy the owner after adjusting from the embedded base at offset 0x14. */
-void* func_00272350(void* object, s32 flags);
 
 
 /**
@@ -84,12 +134,6 @@ void func_00270EB0(FieldState270EE0* object, u32 flags);
 void func_00270EE0(FieldState270EE0* object, u32 value, u32 flags);
 
 /**
- * @brief Detach and queue the receiver.
- * @param object Receiver to detach and queue.
- */
-void func_00272090(void* object);
-
-/**
  * @brief Set state 10 when the receiver reports category 1.
  * @param object Receiver to inspect and update.
  */
@@ -104,12 +148,12 @@ void func_00272290(FieldFlag272290* object);
 typedef struct FieldRoot26FF70 FieldRoot26FF70;
 
 /**
- * @brief Test the active bit of a context entry selected by key.
+ * @brief Test flag bit 0 of the first context entry with the supplied key.
  * @param context Context containing entries.
  * @param key Entry key.
- * @return One when the selected entry has its active bit set, otherwise zero.
+ * @return Flag bit 0, or zero when no entry has the key.
  */
-s32 func_0026F690(void* context, u32 key);
+s32 field_context_test_entry_flag(void* context, u32 key);
 
 /**
  * @brief Find a context entry by key and return its value pointer.
@@ -117,15 +161,15 @@ s32 func_0026F690(void* context, u32 key);
  * @param key Entry key.
  * @return Value of the selected entry, or null when no entry has the key.
  */
-void* func_0026F6E0(void* context, u32 key);
+void* field_context_get_entry_value(void* context, u32 key);
 
 /**
- * @brief Find a context entry by key and apply the supplied word.
+ * @brief Reset the first entry with the supplied key and apply an integer value.
  * @param context Context containing entries.
  * @param key Entry key.
- * @param value Word to apply.
+ * @param value Signed integer converted to float by the entry update.
  */
-void func_0026F730(void* context, u32 key, u32 value);
+void field_context_apply_entry_value(void* context, u32 key, s32 value);
 
 /**
  * @brief Find a context entry by halfword key and process it.
@@ -189,6 +233,70 @@ public:
     u8 unka0[0x38];
     FieldClass150070* unkd8;
 };
+#endif
+
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001ED7E0.h"
+
+/** Field resource loader that restores retained requests. */
+class FieldClass154C70 : public FieldClass150750
+{
+public:
+    /** @brief Clear the retained resource selection and reset the loader. */
+    FieldClass154C70()
+    {
+        resource_index = 0;
+
+        unk40 = 0;
+
+        unk14 = 1;
+
+        func_001F2DE0();
+    }
+
+    /** @brief Notify the context callback and finish the loader requests. */
+    void finish_requests();
+
+    virtual ~FieldClass154C70();
+
+    virtual void func_001E0A50(s32 request);
+
+    virtual s32 func_001E07A0();
+
+    virtual void func_001F98E0();
+
+    virtual void func_001F2DE0();
+
+    u8 unk34[0xC];
+
+    u32 unk40;
+
+    /** Zero compares auxiliary file offsets, one loads the file, and two skips it. */
+    u8 auxiliary_policy;
+
+    u8 load_auxiliary : 1;
+
+    u8 unk45_1_7 : 7;
+
+    u8 unk46[2];
+
+    s32 resource_index;
+};
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+    /**
+     * @brief Append a file-backed resource request when a slot remains.
+     * @param loader Resource loader.
+     * @param file_key File key used to look up the resource size.
+     * @param kind Resource kind stored in the request.
+     * @return Appended request, or null when the request array is full.
+     */
+    FieldClass152210* field_append_file_request(FieldClass154C70* loader, s32 file_key, s32 kind);
+
+}
 #endif
 
 #endif

@@ -305,6 +305,12 @@ class FieldClass159E10 : public FieldClass1553B0
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass159E10();
+
+    /** @brief Update the controller. */
+    virtual void func_001DF360();
+
+    /** @brief Clear the controller's state bit. */
+    virtual void func_00272290();
 };
 
 FieldClass159E10::~FieldClass159E10()

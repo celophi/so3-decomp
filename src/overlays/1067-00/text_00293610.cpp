@@ -435,39 +435,74 @@ float func_00298A90(FieldObject158860* object)
     return object->unk28;
 }
 
-void func_00298AA0(FieldObject158860* object, FieldObject158860Link48* value)
+/**
+ * @brief Set the grid's primary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
+ */
+void field_set_primary_emitter(FieldObject158860* object, LibClass173990* value)
 {
-    object->unk48 = value;
+    object->primary_emitter = value;
 }
 
-FieldObject158860Link48* func_00298AB0(FieldObject158860* object)
+/**
+ * @brief Return the grid's primary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
+ */
+LibClass173990* field_primary_emitter(FieldObject158860* object)
 {
-    return object->unk48;
+    return object->primary_emitter;
 }
 
-void func_00298AC0(FieldObject158860* object, u8 value)
+/**
+ * @brief Set the entry count for primary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
+ */
+void field_set_primary_emission_count(FieldObject158860* object, u8 value)
 {
-    object->unk4F = value;
+    object->primary_emission_count = value;
 }
 
-void func_00298AD0(FieldObject158860* object, u8 value)
+/**
+ * @brief Select the vectors supplied to primary emission.
+ * @param object Grid to update.
+ * @param value Bits selecting position, first offset, second offset and color.
+ */
+void field_set_primary_emission_flags(FieldObject158860* object, u8 value)
 {
-    object->unk4E = value;
+    object->primary_emission_flags = value;
 }
 
-void func_00298AE0(FieldObject158860* object, FieldObject158860Link50* value)
+/**
+ * @brief Set the grid's secondary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
+ */
+void field_set_secondary_emitter(FieldObject158860* object, LibClass173990* value)
 {
-    object->unk50 = value;
+    object->secondary_emitter = value;
 }
 
-FieldObject158860Link50* func_00298AF0(FieldObject158860* object)
+/**
+ * @brief Return the grid's secondary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
+ */
+LibClass173990* field_secondary_emitter(FieldObject158860* object)
 {
-    return object->unk50;
+    return object->secondary_emitter;
 }
 
-void func_00298B00(FieldObject158860* object, u8 value)
+/**
+ * @brief Set the entry count for secondary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
+ */
+void field_set_secondary_emission_count(FieldObject158860* object, u8 value)
 {
-    object->unk55 = value;
+    object->secondary_emission_count = value;
 }
 
 void func_00298B10(FieldObject158860* object, float value)
@@ -475,41 +510,64 @@ void func_00298B10(FieldObject158860* object, float value)
     object->unk3C = value;
 }
 
-void func_00298B20(FieldObject158860* object, u8 value)
+/**
+ * @brief Select the vectors supplied to secondary emission.
+ * @param object Grid to update.
+ * @param value Bits selecting position, first offset, second offset and color.
+ */
+void field_set_secondary_emission_flags(FieldObject158860* object, u8 value)
 {
-    object->unk54 = value;
+    object->secondary_emission_flags = value;
 }
 
-void func_00298B30(FieldObject158860* object, float value)
+/**
+ * @brief Set the scale applied to the first secondary-emission offset.
+ * @param object Grid to update.
+ * @param value Offset scale.
+ */
+void field_set_secondary_emission_scale(FieldObject158860* object, float value)
 {
-    object->unk40 = value;
+    object->secondary_emission_scale = value;
 }
 
-void func_00298B40(FieldObject158860* object, u8* header, FieldResourceRecord273720* records)
+/**
+ * @brief Bind a frame resource, skipping playback when it contains one frame.
+ * @param object Grid to update.
+ * @param header Frame resource header.
+ * @param records Frame records containing duration values.
+ */
+void field_bind_grid_frame_resource(FieldObject158860* object, FieldResourceHeader273720* header, FieldResourceRecord273720* records)
 {
-    object->unkA0 = header;
-    object->unkA4 = records;
-    if (*object->unkA0 == 1)
+    object->frame_header = header;
+    object->frame_records = records;
+
+    if (object->frame_header->frame_count == 1)
     {
-        object->unk57 = 1;
+        object->skip_frame_playback = 1;
     }
     else
     {
-        object->unk57 = 0;
+        object->skip_frame_playback = 0;
     }
 }
 
-void func_00298B80(FieldObject158860* object, s32 enabled)
+/**
+ * @brief Clear the frame resource bindings and select whether playback is skipped.
+ * @param object Grid to update.
+ * @param skip_playback Nonzero to skip frame playback.
+ */
+void field_clear_grid_frame_resource(FieldObject158860* object, s32 skip_playback)
 {
-    object->unkA0 = 0;
-    object->unkA4 = 0;
-    if (enabled)
+    object->frame_header = 0;
+    object->frame_records = 0;
+
+    if (skip_playback)
     {
-        object->unk57 = 1;
+        object->skip_frame_playback = 1;
     }
     else
     {
-        object->unk57 = 0;
+        object->skip_frame_playback = 0;
     }
 }
 
@@ -521,10 +579,10 @@ void func_00298BB0(FieldObject158860* object, float value)
 void func_00298BC0(FieldObject157AF0* object, const FieldVectorSource150* source)
 {
     object->unk2C = 0;
-    object->unk60 = source->unk150;
-    object->unk70 = source->unk160;
-    object->unk80 = source->unk170;
-    object->unk90 = source->unk180;
+    object->transform_rows[0] = source->unk150;
+    object->transform_rows[1] = source->unk160;
+    object->transform_rows[2] = source->unk170;
+    object->transform_rows[3] = source->unk180;
 }
 
 void func_00298BF0(FieldObject157AF0* object)
@@ -562,7 +620,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00293610", func_0029B7
  */
 extern "C" void func_0029BB20(FieldClass157AF0* object, FieldClass158A18* cell, FieldClass154E60* row, s32 index, const FieldVector4* source)
 {
-    if (object->unk50 != 0)
+    if (object->secondary_emitter != 0)
     {
         cell->unk3C = object->unk3C;
     }
@@ -655,39 +713,74 @@ float func_0029BCC0(const FieldObject157AF0* object)
     return object->unk28;
 }
 
-void func_0029BCD0(FieldObject157AF0* object, FieldLinkedObject157AF0* value)
+/**
+ * @brief Set the grid's primary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
+ */
+void field_set_primary_emitter_157af0(FieldObject157AF0* object, LibClass173990* value)
 {
-    object->unk48 = value;
+    object->primary_emitter = value;
 }
 
-FieldLinkedObject157AF0* func_0029BCE0(const FieldObject157AF0* object)
+/**
+ * @brief Return the grid's primary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
+ */
+LibClass173990* field_primary_emitter_157af0(const FieldObject157AF0* object)
 {
-    return object->unk48;
+    return object->primary_emitter;
 }
 
-void func_0029BCF0(FieldObject157AF0* object, u8 value)
+/**
+ * @brief Set the number of entries generated by primary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
+ */
+void field_set_primary_emission_count_157af0(FieldObject157AF0* object, u8 value)
 {
-    object->unk4F = value;
+    object->primary_emission_count = value;
 }
 
-void func_0029BD00(FieldObject157AF0* object, u8 value)
+/**
+ * @brief Set the optional inputs supplied to primary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
+ */
+void field_set_primary_emission_flags_157af0(FieldObject157AF0* object, u8 value)
 {
-    object->unk4E = value;
+    object->primary_emission_flags = value;
 }
 
-void func_0029BD10(FieldObject157AF0* object, FieldLinkedObject157AF0* value)
+/**
+ * @brief Set the grid's secondary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
+ */
+void field_set_secondary_emitter_157af0(FieldObject157AF0* object, LibClass173990* value)
 {
-    object->unk50 = value;
+    object->secondary_emitter = value;
 }
 
-FieldLinkedObject157AF0* func_0029BD20(const FieldObject157AF0* object)
+/**
+ * @brief Return the grid's secondary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
+ */
+LibClass173990* field_secondary_emitter_157af0(const FieldObject157AF0* object)
 {
-    return object->unk50;
+    return object->secondary_emitter;
 }
 
-void func_0029BD30(FieldObject157AF0* object, u8 value)
+/**
+ * @brief Set the number of entries generated by secondary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
+ */
+void field_set_secondary_emission_count_157af0(FieldObject157AF0* object, u8 value)
 {
-    object->unk55 = value;
+    object->secondary_emission_count = value;
 }
 
 void func_0029BD40(FieldObject157AF0* object, float value)
@@ -695,14 +788,24 @@ void func_0029BD40(FieldObject157AF0* object, float value)
     object->unk3C = value;
 }
 
-void func_0029BD50(FieldObject157AF0* object, u8 value)
+/**
+ * @brief Set the optional inputs supplied to secondary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
+ */
+void field_set_secondary_emission_flags_157af0(FieldObject157AF0* object, u8 value)
 {
-    object->unk54 = value;
+    object->secondary_emission_flags = value;
 }
 
-void func_0029BD60(FieldObject157AF0* object, float value)
+/**
+ * @brief Set the scale applied to the first secondary-emission offset.
+ * @param object Grid to update.
+ * @param value Offset scale.
+ */
+void field_set_secondary_emission_scale_157af0(FieldObject157AF0* object, float value)
 {
-    object->unk40 = value;
+    object->secondary_emission_scale = value;
 }
 
 void func_0029BD70(FieldObject157AF0* object, u8* header, FieldResourceRecord273720* records)
@@ -759,10 +862,10 @@ FieldObject175370* func_0029BE20(FieldObject157AF0* object)
 void func_0029BE30(FieldObject157BC0* object, const FieldVectorSource150* source)
 {
     object->unk2C = 0;
-    object->unk60 = source->unk150;
-    object->unk70 = source->unk160;
-    object->unk80 = source->unk170;
-    object->unk90 = source->unk180;
+    object->transform_rows[0] = source->unk150;
+    object->transform_rows[1] = source->unk160;
+    object->transform_rows[2] = source->unk170;
+    object->transform_rows[3] = source->unk180;
 }
 
 void func_0029BE60(void* object)

@@ -66,9 +66,7 @@ class FieldVec4B
 {
 public:
     /** @brief Leave the components uninitialized. */
-    FieldVec4B()
-    {
-    }
+    inline FieldVec4B();
 
     /**
      * @brief Copy all four components.

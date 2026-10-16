@@ -206,4 +206,28 @@ void func_00121690(void* object, float x, float y, float z, float w);
 }
 #endif
 
+#ifdef __cplusplus
+#include "main/resident_00101550.h"
+
+/** Resident field resource owner. */
+class ResidentClass14FC90 : public ResidentClass14FA40
+{
+public:
+    ResidentClass14FC90();
+
+    virtual ~ResidentClass14FC90();
+
+    u8 unk14[0x138];
+};
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+    s32 func_00120370(ResidentClass14FC90* object);
+
+    u32 func_001200C0(ResidentClass14FC90* object, s32 value);
+}
+#endif
+
 #endif

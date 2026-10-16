@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_001ED7E0.h"
+#include "overlays/1067-00/grid_frame.h"
 #ifdef __cplusplus
 #include "overlays/1067-00/field_class_154D40.h"
 #endif
@@ -30,13 +31,25 @@ typedef struct FieldFlagOwner273720
     FieldFlagTarget273720* unk60[2];
 } FieldFlagOwner273720;
 
-/** Partial resource descriptor with its leading mode byte. */
+/** Leading frame count and end behavior of a grid frame resource. */
 typedef struct FieldResourceHeader273720
 {
-    u8 unk00;
+    u8 frame_count;
+
+    u8 unk01[2];
+
+    u8 loop_mode;
 } FieldResourceHeader273720;
 
-typedef struct FieldResourceRecord273720 FieldResourceRecord273720;
+/** Complete 0x50-byte frame record with its duration measured in frames. */
+typedef struct FieldResourceRecord273720
+{
+    u8 unk00[0xC];
+
+    float duration_frames;
+
+    u8 unk10[0x40];
+} FieldResourceRecord273720;
 
 /** Partial receiver storing a resource descriptor and records. */
 typedef struct FieldResourceOwner273720
@@ -51,7 +64,14 @@ typedef struct FieldResourceOwner273720
 typedef struct FieldObject154E60
 {
     void* vtable;
-    u8 unk04[0x3C];
+
+    u8 unk04[0xC];
+
+    FieldVector4 unk10;
+
+    FieldVector4 unk20;
+
+    FieldGridFrameVector unk30;
 } FieldObject154E60;
 typedef struct FieldBitset154E80 FieldBitset154E80;
 

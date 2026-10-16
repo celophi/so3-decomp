@@ -62,4 +62,56 @@ s32 func_0020E4F0(void* object);
 }
 #endif
 
+#ifdef __cplusplus
+#include "overlays/1067-00/text_00212560.h"
+
+/** Character-name provider for field message and display code. */
+class FieldCharacterNames
+{
+public:
+    /** @brief Get a stored character name. @param index One-based character slot. @return Stored name. */
+    virtual char* get_character_name(s32 index) = 0;
+};
+
+/** Partial field script object exposing context callbacks and character-name lookup. */
+class FieldClass1516A0 : public FieldClass151D40, public FieldCharacterNames
+{
+public:
+    FieldClass1516A0();
+
+    virtual ~FieldClass1516A0();
+
+    virtual void resolve_field_object_display_position(float* first, float* second, s32 identifier, float x, float z);
+
+    virtual void set_field_object_value(s32 event, s32 identifier, float value);
+
+    virtual s32 queue_field_request(s32 first, s32 second, s32 third, s32 fourth, s32 identifier, u32 flag);
+
+    virtual void clear_field_requests(s8 index, u32 release);
+
+    virtual s32 get_field_request_progress(s8 index);
+
+    virtual s32 get_field_request_state(s8 index);
+
+    virtual s32 has_no_pending_field_work();
+
+    virtual void refresh_field_character_state();
+
+    virtual void func_0020E560();
+
+    virtual s32 func_0020E4C0();
+
+    virtual char* get_character_name(s32 index);
+
+    u8 unk5a4[0x6C];
+};
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+    void func_0020F230(FieldClass1516A0* object, u32 first, u32 second, u32 third, s8 mode, u32 fifth, u32 sixth, float x, float y, float z);
+}
+#endif
+
 #endif

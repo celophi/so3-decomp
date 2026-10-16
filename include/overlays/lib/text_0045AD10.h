@@ -251,6 +251,16 @@ struct LibObject172440 : public LibClass174EF0
 
 #endif
 
+#ifdef __cplusplus
+/** Partial native runtime interface with resident vtable at 0x174F50. */
+class LibClass174F50 : public LibClass171EA0
+{
+public:
+    /** @brief Release the runtime's retained objects and storage. */
+    virtual ~LibClass174F50();
+};
+#endif
+
 typedef struct FieldRuntime FieldRuntime;
 typedef struct LibClass178A90 LibClass178A90;
 
@@ -534,6 +544,13 @@ void func_004674A0(N54Owner64_0045AD10* object);
 
 #ifdef __cplusplus
 extern "C" s32 func_0046A410(void* object);
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+    void func_0045F5E0();
+}
 #endif
 
 #endif

@@ -169,4 +169,11 @@ void func_002D3C10(void* object);
 }
 #endif
 
+#ifdef __cplusplus
+extern "C"
+{
+    s32 func_002D4B30(s32 resource_index, s32 flag);
+}
+#endif
+
 #endif

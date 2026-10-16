@@ -51,4 +51,24 @@ void func_002D9F80(FieldState2D9F80* object);
 }
 #endif
 
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001DD3C0.h"
+
+/** Retained field attachment with a context callback. */
+class FieldClass15B800 : public FieldClass150070, public FieldClass1DD400
+{
+public:
+    static void* operator new(u32 size);
+
+    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+
+    FieldClass15B800();
+
+    virtual ~FieldClass15B800();
+
+    u8 unk18[0x5C];
+};
+#endif
+
 #endif

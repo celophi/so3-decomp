@@ -177,11 +177,6 @@ void func_0022B440(FieldObject2B440* object);
  */
 void func_00224CE0(void* object);
 
-/**
- * @brief Clear eight receiver words from offsets 0x14 through 0x30.
- * @param object Receiver to reset.
- */
-void func_00224E50(FieldObject224E50* object);
 
 /**
  * @brief Copy a 17-byte operand record and select the resident receiver.
@@ -394,16 +389,57 @@ public:
     void* unk3c4;
 };
 
-/** Partial Field object with vtable D_152410 in main data and an owned child at offset 0x300. */
+/** Field input object with eight transient control words. */
+class FieldInputState : public FieldClass150070
+{
+public:
+    /** @brief Initialize the inherited input node. */
+    FieldInputState()
+    {
+    }
+
+    /** @brief Destroy the inherited input node. */
+    virtual ~FieldInputState();
+
+    virtual s32 func_001DF3D0();
+
+    virtual void func_001DD7B0();
+
+    virtual void func_001DF360();
+
+    /** @brief Clear transient button masks. @param unused Unused reset argument. */
+    void clear(s32 unused);
+
+    u32 button_masks[8];
+
+    s32 axes[4];
+};
+
+/** Field context owner with an owned child and an initial position. */
 class FieldClass152410 : public FieldClass150070
 {
 public:
+    static void* operator new(u32 size);
+
+    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+
+    FieldClass152410();
+
     /** @brief Destroy the object. */
     virtual ~FieldClass152410();
     /** @brief Detach and delete the child, then detach this object and queue it for release. */
     virtual void func_001DD7B0();
-    u8 unk14[0x2EC];
+
+    u8 unk14[0x2C];
+
+    FieldVec4A unk40;
+
+    u8 unk50[0x2B0];
+
     FieldClass150070* unk300;
+
+    u8 unk304[0x7C];
 };
 
 /** 0x300-byte actor whose scalar track is retained at offset 0x144. */
@@ -619,6 +655,10 @@ public:
 class FieldClass152350 : public FieldClass152F00
 {
 public:
+    static void* operator new(u32 size);
+
+    FieldClass152350();
+
     /** @brief Destroy the object. */
     virtual ~FieldClass152350();
 
@@ -628,7 +668,16 @@ public:
     u8 unk6d2_0_3 : 4;
     u8 unk6d2_4 : 1;
     u8 unk6d2_5_7 : 3;
+
+    u8 unk6d3[0xD];
 };
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+    u32 func_002263B0(FieldClass152410* object);
+}
 #endif
 
 #endif

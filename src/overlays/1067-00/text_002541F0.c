@@ -37,6 +37,6 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002541F0", func_00254C
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002541F0", func_00255270);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002541F0", func_00255350);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002541F0", __ct__16FieldClass1537C0Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002541F0", func_002554C0);

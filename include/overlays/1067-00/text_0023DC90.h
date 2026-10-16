@@ -158,4 +158,31 @@ s32 func_00249280(FieldObject1533E0* object);
 }
 #endif
 
+#ifdef __cplusplus
+#include "overlays/lib/text_004DD440.h"
+
+/** Transform list used by the field context. */
+class FieldClass1534B0 : public LibClass178FC0
+{
+public:
+    /** @brief Initialize the transform list and its packet buffer. */
+    FieldClass1534B0()
+    {
+        unk6c = 0x4100;
+
+        func_004E13D0();
+
+        func_004E10B0(0x1000);
+    }
+
+    virtual ~FieldClass1534B0();
+
+    virtual void func_003EEBD0();
+
+    virtual const LibVector4* func_003EFAA0();
+
+    LibVector4 unk120;
+};
+#endif
+
 #endif

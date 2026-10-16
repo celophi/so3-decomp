@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/camera_vu0.h"
 #include "sdk/main/libm_guess_0013F3E0.h"

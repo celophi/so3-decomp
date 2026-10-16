@@ -11,8 +11,12 @@ typedef struct FieldRuntimeSections FieldRuntimeSections;
 typedef struct FieldRuntimeValues
 {
     u8 unk00[4];
+
     u8 unk04[0x180];
-    u8 unk184[4];
+
+    /** Packed flag bank selected by script keys 0x5000 through 0x501F. */
+    u8 flags_5000[4];
+
     u32 unk188[];
 } FieldRuntimeValues;
 

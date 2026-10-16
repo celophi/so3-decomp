@@ -4,6 +4,7 @@
 #include "overlays/1067-00/text_00293610.h"
 #include "overlays/1067-00/text_00273720.h"
 #include "overlays/1067-00/field_class_154D40.h"
+#include "overlays/lib/emission.h"
 
 typedef struct FieldLinkedObject157F00 FieldLinkedObject157F00;
 
@@ -11,30 +12,49 @@ typedef struct FieldLinkedObject157F00 FieldLinkedObject157F00;
 typedef struct FieldObject157F00
 {
     u8 unk00[0x28];
+
     float unk28;
+
     s32 unk2C;
+
     float unk30;
+
     float unk34;
+
     float unk38;
+
     float unk3C;
-    float unk40;
+
+    float secondary_emission_scale;
+
     float unk44;
-    FieldLinkedObject157F00* unk48;
+
+    LibClass173990* primary_emitter;
+
     u8 unk4C;
+
     u8 unk4D;
-    u8 unk4E;
-    u8 unk4F;
-    FieldLinkedObject157F00* unk50;
-    u8 unk54;
-    u8 unk55;
+
+    u8 primary_emission_flags;
+
+    u8 primary_emission_count;
+
+    LibClass173990* secondary_emitter;
+
+    u8 secondary_emission_flags;
+
+    u8 secondary_emission_count;
+
     u8 unk56;
+
     u8 unk57;
+
     u8 unk58[8];
-    FieldVector4 unk60;
-    FieldVector4 unk70;
-    FieldVector4 unk80;
-    FieldVector4 unk90;
+
+    FieldVector4 transform_rows[4];
+
     u8* unkA0;
+
     FieldResourceRecord273720* unkA4;
 } FieldObject157F00;
 
@@ -98,7 +118,7 @@ public:
     }
 };
 
-/** Partial FieldClass158A28 with vtable D_158A08 in main data; it adds no fields. */
+/** Complete 0x140-byte grid element base with vtable D_158A08 in main data. */
 class FieldClass158A08 : public FieldClass158A28
 {
 public:
@@ -111,6 +131,18 @@ public:
     virtual ~FieldClass158A08()
     {
     }
+
+    u8 unk40[0xF0];
+
+    u8 unk130;
+
+    u8 unk131;
+
+    u8 unk132;
+
+    u8 unk133;
+
+    u8 unk134[0xC];
 };
 
 /** Complete 0x90-byte grid element with vtable D_158A58 in main data. */
@@ -156,7 +188,7 @@ public:
 };
 
 /** Complete 0x170-byte grid element with vtable D_1589F8 in main data. */
-class FieldClass1589F8 : public FieldClass158A08
+class FieldClass1589F8 : public FieldClass158A08, public FieldGridFrameMotion
 {
 public:
     /** @brief Construct the object. */
@@ -164,8 +196,6 @@ public:
 
     /** @brief Destroy the object. */
     virtual ~FieldClass1589F8();
-
-    u8 unk40[0x130];
 };
 
 /** Complete 0x60-byte grid element with vtable D_158A78 in main data. */
@@ -222,30 +252,48 @@ public:
     }
 
     float unk28;
+
     s32 unk2C;
+
     float unk30;
+
     float unk34;
+
     float unk38;
+
     float unk3C;
-    float unk40;
+
+    float secondary_emission_scale;
+
     float unk44;
-    FieldLinkedObject157F00* unk48;
+
+    LibClass173990* primary_emitter;
+
     u8 unk4C;
+
     u8 unk4D;
-    u8 unk4E;
-    u8 unk4F;
-    FieldLinkedObject157F00* unk50;
-    u8 unk54;
-    u8 unk55;
+
+    u8 primary_emission_flags;
+
+    u8 primary_emission_count;
+
+    LibClass173990* secondary_emitter;
+
+    u8 secondary_emission_flags;
+
+    u8 secondary_emission_count;
+
     u8 unk56;
-    u8 unk57;
+
+    u8 skip_frame_playback;
+
     u8 unk58[8];
-    FieldVector4 unk60;
-    FieldVector4 unk70;
-    FieldVector4 unk80;
-    FieldVector4 unk90;
-    u8* unkA0;
-    FieldResourceRecord273720* unkA4;
+
+    FieldVector4 transform_rows[4];
+
+    FieldResourceHeader273720* frame_header;
+
+    FieldResourceRecord273720* frame_records;
 };
 
 /** Partial FieldClass158860 with vtable D_158930 in main data; it owns two arrays unless they are borrowed. */
@@ -340,29 +388,47 @@ public:
     }
 
     float unk28;
+
     s32 unk2C;
+
     float unk30;
+
     float unk34;
+
     float unk38;
+
     float unk3C;
-    float unk40;
+
+    float secondary_emission_scale;
+
     float unk44;
-    FieldLinkedObject157F00* unk48;
+
+    LibClass173990* primary_emitter;
+
     u8 unk4C;
+
     u8 unk4D;
-    u8 unk4E;
-    u8 unk4F;
-    FieldLinkedObject157F00* unk50;
-    u8 unk54;
-    u8 unk55;
+
+    u8 primary_emission_flags;
+
+    u8 primary_emission_count;
+
+    LibClass173990* secondary_emitter;
+
+    u8 secondary_emission_flags;
+
+    u8 secondary_emission_count;
+
     u8 unk56;
+
     u8 unk57;
+
     u8 unk58[8];
-    FieldVector4 unk60;
-    FieldVector4 unk70;
-    FieldVector4 unk80;
-    FieldVector4 unk90;
+
+    FieldVector4 transform_rows[4];
+
     u8* unkA0;
+
     FieldResourceRecord273720* unkA4;
 };
 
@@ -376,29 +442,47 @@ public:
     }
 
     float unk28;
+
     s32 unk2C;
+
     float unk30;
+
     float unk34;
+
     float unk38;
+
     float unk3C;
-    float unk40;
+
+    float secondary_emission_scale;
+
     float unk44;
-    FieldLinkedObject157F00* unk48;
+
+    LibClass173990* primary_emitter;
+
     u8 unk4C;
+
     u8 unk4D;
-    u8 unk4E;
-    u8 unk4F;
-    FieldLinkedObject157F00* unk50;
-    u8 unk54;
-    u8 unk55;
+
+    u8 primary_emission_flags;
+
+    u8 primary_emission_count;
+
+    LibClass173990* secondary_emitter;
+
+    u8 secondary_emission_flags;
+
+    u8 secondary_emission_count;
+
     u8 unk56;
+
     u8 unk57;
+
     u8 unk58[8];
-    FieldVector4 unk60;
-    FieldVector4 unk70;
-    FieldVector4 unk80;
-    FieldVector4 unk90;
+
+    FieldVector4 transform_rows[4];
+
     u8* unkA0;
+
     FieldResourceRecord273720* unkA4;
 };
 
@@ -412,29 +496,47 @@ public:
     }
 
     float unk28;
+
     s32 unk2C;
+
     float unk30;
+
     float unk34;
+
     float unk38;
+
     float unk3C;
-    float unk40;
+
+    float secondary_emission_scale;
+
     float unk44;
-    FieldLinkedObject157F00* unk48;
+
+    LibClass173990* primary_emitter;
+
     u8 unk4C;
+
     u8 unk4D;
-    u8 unk4E;
-    u8 unk4F;
-    FieldLinkedObject157F00* unk50;
-    u8 unk54;
-    u8 unk55;
+
+    u8 primary_emission_flags;
+
+    u8 primary_emission_count;
+
+    LibClass173990* secondary_emitter;
+
+    u8 secondary_emission_flags;
+
+    u8 secondary_emission_count;
+
     u8 unk56;
+
     u8 unk57;
+
     u8 unk58[8];
-    FieldVector4 unk60;
-    FieldVector4 unk70;
-    FieldVector4 unk80;
-    FieldVector4 unk90;
+
+    FieldVector4 transform_rows[4];
+
     u8* unkA0;
+
     FieldResourceRecord273720* unkA4;
 };
 
@@ -746,53 +848,53 @@ float func_0029EFC0(FieldObject157BC0* object);
 float func_0029EFD0(FieldObject157BC0* object);
 
 /**
- * @brief Store the linked object at offset 0x48.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the grid's primary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
  */
-void func_0029EFE0(FieldObject157BC0* object, FieldLinkedObject157BC0* value);
+void field_set_primary_emitter_157e30(FieldObject157BC0* object, LibClass173990* value);
 
 /**
- * @brief Read the linked object at offset 0x48.
- * @param object Object to inspect.
- * @return Stored value.
+ * @brief Return the grid's primary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
  */
-FieldLinkedObject157BC0* func_0029EFF0(FieldObject157BC0* object);
+LibClass173990* field_primary_emitter_157e30(FieldObject157BC0* object);
 
 /**
- * @brief Store the byte state at offset 0x4F.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the number of entries generated by primary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
  */
-void func_0029F000(FieldObject157BC0* object, u8 value);
+void field_set_primary_emission_count_157e30(FieldObject157BC0* object, u8 value);
 
 /**
- * @brief Store the byte state at offset 0x4E.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the optional inputs supplied to primary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
  */
-void func_0029F010(FieldObject157BC0* object, u8 value);
+void field_set_primary_emission_flags_157e30(FieldObject157BC0* object, u8 value);
 
 /**
- * @brief Store the linked object at offset 0x50.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the grid's secondary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
  */
-void func_0029F020(FieldObject157BC0* object, FieldLinkedObject157BC0* value);
+void field_set_secondary_emitter_157e30(FieldObject157BC0* object, LibClass173990* value);
 
 /**
- * @brief Read the linked object at offset 0x50.
- * @param object Object to inspect.
- * @return Stored value.
+ * @brief Return the grid's secondary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
  */
-FieldLinkedObject157BC0* func_0029F030(FieldObject157BC0* object);
+LibClass173990* field_secondary_emitter_157e30(FieldObject157BC0* object);
 
 /**
- * @brief Store the byte state at offset 0x55.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the number of entries generated by secondary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
  */
-void func_0029F040(FieldObject157BC0* object, u8 value);
+void field_set_secondary_emission_count_157e30(FieldObject157BC0* object, u8 value);
 
 /**
  * @brief Store the floating-point value at offset 0x3C.
@@ -802,18 +904,18 @@ void func_0029F040(FieldObject157BC0* object, u8 value);
 void func_0029F050(FieldObject157BC0* object, float value);
 
 /**
- * @brief Store the byte state at offset 0x54.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the optional inputs supplied to secondary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
  */
-void func_0029F060(FieldObject157BC0* object, u8 value);
+void field_set_secondary_emission_flags_157e30(FieldObject157BC0* object, u8 value);
 
 /**
- * @brief Store the floating-point value at offset 0x40.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the scale applied to the first secondary-emission offset.
+ * @param object Grid to update.
+ * @param value Offset scale.
  */
-void func_0029F070(FieldObject157BC0* object, float value);
+void field_set_secondary_emission_scale_157e30(FieldObject157BC0* object, float value);
 
 /**
  * @brief Store the floating-point value at offset 0x38.
@@ -900,53 +1002,53 @@ float func_002A2230(FieldObject157F00* object);
 float func_002A2240(FieldObject157F00* object);
 
 /**
- * @brief Store the linked object at offset 0x48.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the grid's primary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
  */
-void func_002A2250(FieldObject157F00* object, FieldLinkedObject157F00* value);
+void field_set_primary_emitter_158170(FieldObject157F00* object, LibClass173990* value);
 
 /**
- * @brief Read the linked object at offset 0x48.
- * @param object Object to inspect.
- * @return Stored value.
+ * @brief Return the grid's primary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
  */
-FieldLinkedObject157F00* func_002A2260(FieldObject157F00* object);
+LibClass173990* field_primary_emitter_158170(FieldObject157F00* object);
 
 /**
- * @brief Store the byte state at offset 0x4F.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the number of entries generated by primary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
  */
-void func_002A2270(FieldObject157F00* object, u8 value);
+void field_set_primary_emission_count_158170(FieldObject157F00* object, u8 value);
 
 /**
- * @brief Store the byte state at offset 0x4E.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the optional inputs supplied to primary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
  */
-void func_002A2280(FieldObject157F00* object, u8 value);
+void field_set_primary_emission_flags_158170(FieldObject157F00* object, u8 value);
 
 /**
- * @brief Store the linked object at offset 0x50.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the grid's secondary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
  */
-void func_002A2290(FieldObject157F00* object, FieldLinkedObject157F00* value);
+void field_set_secondary_emitter_158170(FieldObject157F00* object, LibClass173990* value);
 
 /**
- * @brief Read the linked object at offset 0x50.
- * @param object Object to inspect.
- * @return Stored value.
+ * @brief Return the grid's secondary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
  */
-FieldLinkedObject157F00* func_002A22A0(FieldObject157F00* object);
+LibClass173990* field_secondary_emitter_158170(FieldObject157F00* object);
 
 /**
- * @brief Store the byte state at offset 0x55.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the number of entries generated by secondary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
  */
-void func_002A22B0(FieldObject157F00* object, u8 value);
+void field_set_secondary_emission_count_158170(FieldObject157F00* object, u8 value);
 
 /**
  * @brief Store the floating-point value at offset 0x3C.
@@ -956,18 +1058,18 @@ void func_002A22B0(FieldObject157F00* object, u8 value);
 void func_002A22C0(FieldObject157F00* object, float value);
 
 /**
- * @brief Store the byte state at offset 0x54.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the optional inputs supplied to secondary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
  */
-void func_002A22D0(FieldObject157F00* object, u8 value);
+void field_set_secondary_emission_flags_158170(FieldObject157F00* object, u8 value);
 
 /**
- * @brief Store the floating-point value at offset 0x40.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the scale applied to the first secondary-emission offset.
+ * @param object Grid to update.
+ * @param value Offset scale.
  */
-void func_002A22E0(FieldObject157F00* object, float value);
+void field_set_secondary_emission_scale_158170(FieldObject157F00* object, float value);
 
 /**
  * @brief Enable the default callback predicate for this receiver.
@@ -1661,6 +1763,22 @@ void func_002A9810(FieldClass157AF0* object, const FieldClass157AF0* other);
 void func_002AD760(FieldClass158860* object, const FieldClass158860* other);
 
 /**
+ * @brief Position a secondary row using optional linear and angular steps.
+ * @param object Grid owning the row.
+ * @param cell Cell supplying the initial position and secondary vector.
+ * @param row First secondary element of the row.
+ * @param index Nonzero to initialize each stepped element's first auxiliary value.
+ * @param position_step Displacement subtracted per element, or null to copy the cell position.
+ * @param angle_pair Initial two angles in radians, or null for linear stepping only.
+ * @param axis_radii Initial per-axis radii used with the two angles.
+ * @param angle_step Change subtracted from the two angles per element.
+ * @param radius_step Change subtracted from the three radii per element.
+ */
+void field_position_secondary_row_157e30(FieldClass157E30* object, FieldClass158A38* cell, FieldClass154E60* row, s32 index,
+                                         const FieldVector4* position_step, const FieldVector4* angle_pair, const FieldVector4* axis_radii,
+                                         const FieldVector4* angle_step, const FieldVector4* radius_step);
+
+/**
  * @brief Fill a row of secondary elements from a cell (or an explicit vector).
  * @param object Grid owning the row.
  * @param cell Cell whose vectors are copied.
@@ -1671,6 +1789,22 @@ void func_002AD760(FieldClass158860* object, const FieldClass158860* other);
 void func_0029EE30(FieldClass157E30* object, FieldClass158A38* cell, FieldClass154E60* row, s32 index, const FieldVector4* source);
 
 /**
+ * @brief Position a secondary row using optional linear and angular steps.
+ * @param object Grid owning the row.
+ * @param cell Cell supplying the initial position and secondary vector.
+ * @param row First secondary element of the row.
+ * @param index Nonzero to initialize each stepped element's first auxiliary value.
+ * @param position_step Displacement subtracted per element, or null to copy the cell position.
+ * @param angle_pair Initial two angles in radians, or null for linear stepping only.
+ * @param axis_radii Initial per-axis radii used with the two angles.
+ * @param angle_step Change subtracted from the two angles per element.
+ * @param radius_step Change subtracted from the three radii per element.
+ */
+void field_position_secondary_row_158170(FieldClass158170* object, FieldClass158A58* cell, FieldClass154E60* row, s32 index,
+                                         const FieldVector4* position_step, const FieldVector4* angle_pair, const FieldVector4* axis_radii,
+                                         const FieldVector4* angle_step, const FieldVector4* radius_step);
+
+/**
  * @brief Fill a row of secondary elements from a cell (or an explicit vector).
  * @param object Grid owning the row.
  * @param cell Cell whose vectors are copied.
@@ -1679,6 +1813,22 @@ void func_0029EE30(FieldClass157E30* object, FieldClass158A38* cell, FieldClass1
  * @param source Vector copied to each element, or null to use the cell's.
  */
 void func_002A20A0(FieldClass158170* object, FieldClass158A58* cell, FieldClass154E60* row, s32 index, const FieldVector4* source);
+
+/**
+ * @brief Position a secondary row using optional linear and angular steps.
+ * @param object Grid owning the row.
+ * @param cell Cell supplying the initial position and secondary vector.
+ * @param row First secondary element of the row.
+ * @param index Nonzero to initialize each stepped element's first auxiliary value.
+ * @param position_step Displacement subtracted per element, or null to copy the cell position.
+ * @param angle_pair Initial two angles in radians, or null for linear stepping only.
+ * @param axis_radii Initial per-axis radii used with the two angles.
+ * @param angle_step Change subtracted from the two angles per element.
+ * @param radius_step Change subtracted from the three radii per element.
+ */
+void field_position_secondary_row_158720(FieldClass158720* object, FieldClass158A78* cell, FieldClass154E60* row, s32 index,
+                                         const FieldVector4* position_step, const FieldVector4* angle_pair, const FieldVector4* axis_radii,
+                                         const FieldVector4* angle_step, const FieldVector4* radius_step);
 
 /**
  * @brief Fill a row of secondary elements from a cell (or an explicit vector).
@@ -1698,13 +1848,83 @@ void func_002A5310(FieldClass158720* object, FieldClass158A78* cell, FieldClass1
  * @param index Unused.
  * @param source Vector copied to each element, or null to use the cell's.
  */
-void func_002ADDF0(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, const FieldVector4* source);
-void func_002AD9E0(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
-void func_002AD960(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
-/** Clear four state bytes on the cell, then update its row through the owner. */
-void func_002AD990(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, const FieldVector4* source);
+void field_fill_secondary_row(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, const FieldVector4* source);
+
+/**
+ * @brief Position a secondary row using optional linear and angular steps.
+ * @param object Grid owning the row.
+ * @param cell Cell supplying the initial position and secondary vector.
+ * @param row First secondary element of the row.
+ * @param index Nonzero to initialize each stepped element's first auxiliary value.
+ * @param position_step Displacement subtracted per element, or null to copy the cell position.
+ * @param angle_pair Initial two angles in radians, or null for linear stepping only.
+ * @param axis_radii Initial per-axis radii used with the two angles.
+ * @param angle_step Change subtracted from the two angles per element.
+ * @param radius_step Change subtracted from the three radii per element.
+ */
+void field_position_secondary_row(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index,
+                                  const FieldVector4* position_step, const FieldVector4* angle_pair, const FieldVector4* axis_radii,
+                                  const FieldVector4* angle_step, const FieldVector4* radius_step);
+
+/**
+ * @brief Clear four trailing cell bytes and prepare the associated row.
+ * @param object Grid owning the row.
+ * @param cell Cell whose trailing bytes are cleared.
+ * @param row First secondary element of the row.
+ * @param index Value passed through to the row handler.
+ * @param position_step Displacement subtracted per row element.
+ * @param angle_pair Optional angle pair used by the row handler.
+ * @param axis_radii Initial per-axis radii used with the angle pair.
+ * @param angle_step Per-row change to the angle pair.
+ * @param radius_step Change subtracted from the radii per row element.
+ */
+void field_prepare_cell_row(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index,
+                            const FieldVector4* position_step, const FieldVector4* angle_pair, const FieldVector4* axis_radii,
+                            const FieldVector4* angle_step, const FieldVector4* radius_step);
+
+/**
+ * @brief Clear four trailing cell bytes and prepare the row using a vector.
+ * @param object Grid owning the row.
+ * @param cell Cell whose trailing bytes are cleared.
+ * @param row First secondary element of the row.
+ * @param index Value passed through to the row handler.
+ * @param source Vector supplied to the row handler.
+ */
+void field_prepare_cell_row_from_vector(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, const FieldVector4* source);
+
+/**
+ * @brief Emit entries through the primary linked emitter.
+ * @param object Grid owning the emission settings.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+void field_emit_primary_entries(FieldClass158860* object, const LibVector4* position, const LibVector4* first_offset, const LibVector4* second_offset,
+                                const LibVector4* color_scale);
+
+/**
+ * @brief Emit entries through the secondary linked emitter.
+ * @param object Grid owning the emission settings.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set. Its fourth component receives the grid value after emission.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+void field_emit_secondary_entries(FieldClass158860* object, const LibVector4* position, LibVector4* first_offset, const LibVector4* second_offset,
+                                  const LibVector4* color_scale);
+
+/**
+ * @brief Advance active cells' frame vectors and playback state into an output batch.
+ * @param object Grid owning the cells and frame resource.
+ * @param capacity Output-entry budget, counted in steps of the grid column count.
+ * @param output Output records, with each cell written at the start of its row.
+ * @param preserve_row_vector Nonzero to retain the saved xyz components in the first secondary element.
+ */
+void field_update_grid_frame_vectors(FieldClass158860* object, s32 capacity, FieldGridOutputRecord* output, s32 preserve_row_vector);
 
 #ifdef __cplusplus
 }
 #endif
+
 #endif

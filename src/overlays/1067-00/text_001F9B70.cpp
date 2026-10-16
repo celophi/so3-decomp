@@ -465,7 +465,7 @@ extern "C" void func_001FC9C0(FieldLateRecords* object)
     object->unk44 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FCAC0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", __ct__16FieldClass150750Fv);
 
 extern "C" s32 func_001FCBD0(FieldScriptCursorU32* cursor)
 {
@@ -480,7 +480,7 @@ extern "C" s32 func_001FCBD0(FieldScriptCursorU32* cursor)
 
 extern "C" s32 func_001FCC20(FieldScriptCursorF14* cursor)
 {
-    if (func_0026F690(D_001B6430->context->unk08->unkdc, *cursor->current))
+    if (field_context_test_entry_flag(D_001B6430->context->unk08->current_object, *cursor->current))
     {
         cursor->value = 1.0f;
         return 0;
@@ -493,7 +493,7 @@ extern "C" s32 func_001FCC80(FieldScriptCursorU32* cursor)
     u32* arg = cursor->current;
     cursor->current = arg + 1;
     u32 key = *arg;
-    func_0026F730(D_001B6430->context->unk08->unkdc, key, *cursor->current);
+    field_context_apply_entry_value(D_001B6430->context->unk08->current_object, key, *cursor->current);
     return 1;
 }
 
@@ -501,7 +501,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FCC
 
 extern "C" s32 func_001FCD20(FieldScriptCursorU16* cursor)
 {
-    func_0026FF10(D_001B6430->context->unk08->unkdc, *cursor->current);
+    func_0026FF10(D_001B6430->context->unk08->current_object, *cursor->current);
     return 1;
 }
 

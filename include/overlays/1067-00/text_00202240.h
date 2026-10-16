@@ -354,4 +354,11 @@ public:
 };
 #endif
 
+#ifdef __cplusplus
+extern "C"
+{
+    u32 func_00204DC0(void* object);
+}
+#endif
+
 #endif

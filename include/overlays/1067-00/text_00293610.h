@@ -4,6 +4,15 @@
 #include "types.h"
 #include "overlays/1067-00/text_001ED7E0.h"
 
+/** Optional vector inputs supplied to a linked emitter. */
+enum FieldEmissionInputFlags
+{
+    FIELD_EMISSION_POSITION = 0x01,
+    FIELD_EMISSION_FIRST_OFFSET = 0x02,
+    FIELD_EMISSION_SECOND_OFFSET = 0x04,
+    FIELD_EMISSION_COLOR_SCALE = 0x08
+};
+
 /** Partial receiver with the countdown used by its update callback. */
 typedef struct FieldClass157400
 {
@@ -12,6 +21,7 @@ typedef struct FieldClass157400
 } FieldClass157400;
 
 typedef struct FieldClass1587E8 FieldClass1587E8;
+typedef struct FieldResourceHeader273720 FieldResourceHeader273720;
 typedef struct FieldResourceRecord273720 FieldResourceRecord273720;
 
 /** Partial scalar state of the distinct D_158240 hierarchy. */
@@ -82,103 +92,159 @@ typedef struct FieldVectorBuffer293610
     s32 unkC4;
 } FieldVectorBuffer293610;
 
-typedef struct FieldObject158860Link48 FieldObject158860Link48;
-typedef struct FieldObject158860Link50 FieldObject158860Link50;
+#ifdef __cplusplus
+class LibClass173990;
+#else
+typedef struct LibClass173990 LibClass173990;
+#endif
 
 /** Partial scalar state shared by the D_158860 and D_158930 class hierarchy. */
 typedef struct FieldObject158860
 {
     u8 unk00[0x28];
-    float unk28;
-    s32 unk2C;
-    float unk30;
-    float unk34;
-    float unk38;
-    float unk3C;
-    float unk40;
-    float unk44;
-    FieldObject158860Link48* unk48;
-    u8 unk4C;
-    u8 unk4D;
-    u8 unk4E;
-    u8 unk4F;
-    FieldObject158860Link50* unk50;
-    u8 unk54;
-    u8 unk55;
-    u8 unk56;
-    u8 unk57;
-    u8 unk58[8];
-    FieldVector4 unk60;
-    FieldVector4 unk70;
-    FieldVector4 unk80;
-    FieldVector4 unk90;
-    u8* unkA0;
-    FieldResourceRecord273720* unkA4;
-} FieldObject158860;
 
-typedef struct FieldLinkedObject157AF0 FieldLinkedObject157AF0;
+    float unk28;
+
+    s32 unk2C;
+
+    float unk30;
+
+    float unk34;
+
+    float unk38;
+
+    float unk3C;
+
+    float secondary_emission_scale;
+
+    float unk44;
+
+    LibClass173990* primary_emitter;
+
+    u8 unk4C;
+
+    u8 unk4D;
+
+    u8 primary_emission_flags;
+
+    u8 primary_emission_count;
+
+    LibClass173990* secondary_emitter;
+
+    u8 secondary_emission_flags;
+
+    u8 secondary_emission_count;
+
+    u8 unk56;
+
+    u8 skip_frame_playback;
+
+    u8 unk58[8];
+
+    FieldVector4 transform_rows[4];
+
+    FieldResourceHeader273720* frame_header;
+
+    FieldResourceRecord273720* frame_records;
+} FieldObject158860;
 
 /** Partial scalar and vector state of the D_157AF0 class hierarchy. */
 typedef struct FieldObject157AF0
 {
     u8 unk00[0x28];
+
     float unk28;
+
     s32 unk2C;
+
     float unk30;
+
     float unk34;
+
     float unk38;
+
     float unk3C;
-    float unk40;
+
+    float secondary_emission_scale;
+
     float unk44;
-    FieldLinkedObject157AF0* unk48;
+
+    LibClass173990* primary_emitter;
+
     u8 unk4C;
+
     u8 unk4D;
-    u8 unk4E;
-    u8 unk4F;
-    FieldLinkedObject157AF0* unk50;
-    u8 unk54;
-    u8 unk55;
+
+    u8 primary_emission_flags;
+
+    u8 primary_emission_count;
+
+    LibClass173990* secondary_emitter;
+
+    u8 secondary_emission_flags;
+
+    u8 secondary_emission_count;
+
     u8 unk56;
+
     u8 unk57;
+
     u8 unk58[8];
-    FieldVector4 unk60;
-    FieldVector4 unk70;
-    FieldVector4 unk80;
-    FieldVector4 unk90;
+
+    FieldVector4 transform_rows[4];
+
     u8* unkA0;
+
     FieldResourceRecord273720* unkA4;
 } FieldObject157AF0;
-
-typedef struct FieldLinkedObject157BC0 FieldLinkedObject157BC0;
 
 /** Partial scalar and vector state of the D_157BC0 class hierarchy. */
 typedef struct FieldObject157BC0
 {
     u8 unk00[0x28];
+
     float unk28;
+
     s32 unk2C;
+
     float unk30;
+
     float unk34;
+
     float unk38;
+
     float unk3C;
-    float unk40;
+
+    float secondary_emission_scale;
+
     float unk44;
-    FieldLinkedObject157BC0* unk48;
+
+    LibClass173990* primary_emitter;
+
     u8 unk4C;
+
     u8 unk4D;
-    u8 unk4E;
-    u8 unk4F;
-    FieldLinkedObject157BC0* unk50;
-    u8 unk54;
-    u8 unk55;
+
+    u8 primary_emission_flags;
+
+    u8 primary_emission_count;
+
+    LibClass173990* secondary_emitter;
+
+    u8 secondary_emission_flags;
+
+    u8 secondary_emission_count;
+
     u8 unk56;
+
     u8 unk57;
+
     u8 unk58[8];
-    FieldVector4 unk60;
-    FieldVector4 unk70;
-    FieldVector4 unk80;
-    FieldVector4 unk90;
+
+    FieldVector4 transform_rows[4];
+
     u8* unkA0;
+
     FieldResourceRecord273720* unkA4;
 } FieldObject157BC0;
 
@@ -401,25 +467,25 @@ float func_00298A80(FieldObject158860* object);
 float func_00298A90(FieldObject158860* object);
 
 /**
- * @brief Store the byte state at offset 0x4F.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the entry count for primary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
  */
-void func_00298AC0(FieldObject158860* object, u8 value);
+void field_set_primary_emission_count(FieldObject158860* object, u8 value);
 
 /**
- * @brief Store the byte state at offset 0x4E.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Select the vectors supplied to primary emission.
+ * @param object Grid to update.
+ * @param value Bits selecting position, first offset, second offset and color.
  */
-void func_00298AD0(FieldObject158860* object, u8 value);
+void field_set_primary_emission_flags(FieldObject158860* object, u8 value);
 
 /**
- * @brief Store the byte state at offset 0x55.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the entry count for secondary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
  */
-void func_00298B00(FieldObject158860* object, u8 value);
+void field_set_secondary_emission_count(FieldObject158860* object, u8 value);
 
 /**
  * @brief Store the floating-point value at offset 0x3C.
@@ -429,18 +495,18 @@ void func_00298B00(FieldObject158860* object, u8 value);
 void func_00298B10(FieldObject158860* object, float value);
 
 /**
- * @brief Store the byte state at offset 0x54.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Select the vectors supplied to secondary emission.
+ * @param object Grid to update.
+ * @param value Bits selecting position, first offset, second offset and color.
  */
-void func_00298B20(FieldObject158860* object, u8 value);
+void field_set_secondary_emission_flags(FieldObject158860* object, u8 value);
 
 /**
- * @brief Store the floating-point value at offset 0x40.
- * @param object Object to update.
- * @param value Value to store.
+ * @brief Set the scale applied to the first secondary-emission offset.
+ * @param object Grid to update.
+ * @param value Offset scale.
  */
-void func_00298B30(FieldObject158860* object, float value);
+void field_set_secondary_emission_scale(FieldObject158860* object, float value);
 
 /**
  * @brief Store the floating-point value at offset 0x38.
@@ -450,32 +516,32 @@ void func_00298B30(FieldObject158860* object, float value);
 void func_00298BB0(FieldObject158860* object, float value);
 
 /**
- * @brief Store the linked object at offset 0x48.
- * @param object Object to update.
- * @param value Linked object to store.
+ * @brief Set the grid's primary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
  */
-void func_00298AA0(FieldObject158860* object, FieldObject158860Link48* value);
+void field_set_primary_emitter(FieldObject158860* object, LibClass173990* value);
 
 /**
- * @brief Read the linked object at offset 0x48.
- * @param object Object to inspect.
- * @return Stored linked object.
+ * @brief Return the grid's primary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
  */
-FieldObject158860Link48* func_00298AB0(FieldObject158860* object);
+LibClass173990* field_primary_emitter(FieldObject158860* object);
 
 /**
- * @brief Store the linked object at offset 0x50.
- * @param object Object to update.
- * @param value Linked object to store.
+ * @brief Set the grid's secondary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
  */
-void func_00298AE0(FieldObject158860* object, FieldObject158860Link50* value);
+void field_set_secondary_emitter(FieldObject158860* object, LibClass173990* value);
 
 /**
- * @brief Read the linked object at offset 0x50.
- * @param object Object to inspect.
- * @return Stored linked object.
+ * @brief Return the grid's secondary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
  */
-FieldObject158860Link50* func_00298AF0(FieldObject158860* object);
+LibClass173990* field_secondary_emitter(FieldObject158860* object);
 
 /**
  * @brief Reset the word at offset 0x2C and copy four aligned values.
@@ -569,53 +635,53 @@ float func_0029BCB0(const FieldObject157AF0* object);
 float func_0029BCC0(const FieldObject157AF0* object);
 
 /**
- * @brief Store the value in unk48.
- * @param object Receiver to update.
- * @param value Value to store.
+ * @brief Set the grid's primary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
  */
-void func_0029BCD0(FieldObject157AF0* object, FieldLinkedObject157AF0* value);
+void field_set_primary_emitter_157af0(FieldObject157AF0* object, LibClass173990* value);
 
 /**
- * @brief Read the value in unk48.
- * @param object Receiver to inspect.
- * @return Stored value.
+ * @brief Return the grid's primary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
  */
-FieldLinkedObject157AF0* func_0029BCE0(const FieldObject157AF0* object);
+LibClass173990* field_primary_emitter_157af0(const FieldObject157AF0* object);
 
 /**
- * @brief Store the value in unk4F.
- * @param object Receiver to update.
- * @param value Value to store.
+ * @brief Set the number of entries generated by primary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
  */
-void func_0029BCF0(FieldObject157AF0* object, u8 value);
+void field_set_primary_emission_count_157af0(FieldObject157AF0* object, u8 value);
 
 /**
- * @brief Store the value in unk4E.
- * @param object Receiver to update.
- * @param value Value to store.
+ * @brief Set the optional inputs supplied to primary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
  */
-void func_0029BD00(FieldObject157AF0* object, u8 value);
+void field_set_primary_emission_flags_157af0(FieldObject157AF0* object, u8 value);
 
 /**
- * @brief Store the value in unk50.
- * @param object Receiver to update.
- * @param value Value to store.
+ * @brief Set the grid's secondary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
  */
-void func_0029BD10(FieldObject157AF0* object, FieldLinkedObject157AF0* value);
+void field_set_secondary_emitter_157af0(FieldObject157AF0* object, LibClass173990* value);
 
 /**
- * @brief Read the value in unk50.
- * @param object Receiver to inspect.
- * @return Stored value.
+ * @brief Return the grid's secondary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
  */
-FieldLinkedObject157AF0* func_0029BD20(const FieldObject157AF0* object);
+LibClass173990* field_secondary_emitter_157af0(const FieldObject157AF0* object);
 
 /**
- * @brief Store the value in unk55.
- * @param object Receiver to update.
- * @param value Value to store.
+ * @brief Set the number of entries generated by secondary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
  */
-void func_0029BD30(FieldObject157AF0* object, u8 value);
+void field_set_secondary_emission_count_157af0(FieldObject157AF0* object, u8 value);
 
 /**
  * @brief Store the value in unk3C.
@@ -625,18 +691,18 @@ void func_0029BD30(FieldObject157AF0* object, u8 value);
 void func_0029BD40(FieldObject157AF0* object, float value);
 
 /**
- * @brief Store the value in unk54.
- * @param object Receiver to update.
- * @param value Value to store.
+ * @brief Set the optional inputs supplied to secondary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
  */
-void func_0029BD50(FieldObject157AF0* object, u8 value);
+void field_set_secondary_emission_flags_157af0(FieldObject157AF0* object, u8 value);
 
 /**
- * @brief Store the value in unk40.
- * @param object Receiver to update.
- * @param value Value to store.
+ * @brief Set the scale applied to the first secondary-emission offset.
+ * @param object Grid to update.
+ * @param value Offset scale.
  */
-void func_0029BD60(FieldObject157AF0* object, float value);
+void field_set_secondary_emission_scale_157af0(FieldObject157AF0* object, float value);
 
 /**
  * @brief Store the value in unk38.
@@ -667,19 +733,19 @@ void* func_0029B6E0(FieldClass158D00* object, s32 index);
 void func_00295D90(FieldVectorBuffer293610* object);
 
 /**
- * @brief Bind the resource bytes and records and set the mode from byte zero.
- * @param object Callback receiver.
- * @param header Resource header bytes.
- * @param records Resource records to bind.
+ * @brief Bind a frame resource, skipping playback when it contains one frame.
+ * @param object Grid to update.
+ * @param header Frame resource header.
+ * @param records Frame records containing duration values.
  */
-void func_00298B40(FieldObject158860* object, u8* header, FieldResourceRecord273720* records);
+void field_bind_grid_frame_resource(FieldObject158860* object, FieldResourceHeader273720* header, FieldResourceRecord273720* records);
 
 /**
- * @brief Clear the resource bindings and set the mode from a flag.
- * @param object Callback receiver.
- * @param enabled Nonzero to set the mode.
+ * @brief Clear the frame resource bindings and select whether playback is skipped.
+ * @param object Grid to update.
+ * @param skip_playback Nonzero to skip frame playback.
  */
-void func_00298B80(FieldObject158860* object, s32 enabled);
+void field_clear_grid_frame_resource(FieldObject158860* object, s32 skip_playback);
 
 /**
  * @brief Perform no work.

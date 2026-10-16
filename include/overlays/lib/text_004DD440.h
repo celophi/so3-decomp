@@ -13,6 +13,16 @@ typedef struct N50OwnerBC_004DD440 N50OwnerBC_004DD440;
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/vector.h"
 
+/** Display state with its virtual pointer after the display data. */
+class LibDisplayState
+{
+public:
+    u8 unk00[0x3F0C];
+
+    /** @brief Destroy the display state. */
+    virtual ~LibDisplayState();
+};
+
 /** Partial LibClass178EA0 with vtable D_175290 in main data. */
 class FieldClass175290 : public LibClass178EA0
 {
@@ -174,6 +184,17 @@ extern "C" {
 
 /** Resident VIF1 DMA queue initialized by the Lib runtime. */
 extern ResidentDmaQueue* g_vif1_dma_queue;
+
+struct FieldPacketQueue;
+
+/**
+ * @brief Process the render iteration and submit its queued packets.
+ * @param object Display state.
+ * @param frame Render iteration.
+ * @param queue Packet queue to process.
+ */
+void func_4DD830(void* object, s32 frame, struct FieldPacketQueue* queue);
+
 
 void func_004E59A0(void* object);
 void func_004E5B00(void* object);
@@ -355,6 +376,47 @@ void* func_004E4AD0(void* object);
 
 
 }
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** Release the retained display objects and storage. */
+void func_004E33B0(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+
+/** Transform owner with an intrusive list and DMA notification interface. */
+class LibClass178FC0 : public LibClass172000, public LibClass178DD0, public LibClass171FF0
+{
+public:
+    LibClass178FC0();
+
+    virtual ~LibClass178FC0();
+
+    virtual void func_003EEBD0();
+
+    virtual void func_003EEBE0();
+
+    virtual const LibVector4* func_003EFAA0();
+
+    virtual void func_003F4440(const void* matrix, void* context);
+
+    virtual void func_003F4410(u32 value);
+
+    void func_004E13D0();
+
+    s32 func_004E10B0(s32 size);
+
+    u8 unk10c[8];
+
+    void* unk114;
+};
 #endif
 
 #endif

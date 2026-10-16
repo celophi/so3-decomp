@@ -78,4 +78,37 @@ s32 func_002D1440(FieldD1440Object* object, u8 value, u32 flags);
 }
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct ResidentContextObject64;
+
+/** Release the receiver's retained objects and reset its state. */
+void func_002D2170(struct ResidentContextObject64* object);
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001DD3C0.h"
+
+/** Retained field attachment with a context callback. */
+class FieldClass15B0E0 : public FieldClass150070, public FieldClass1DD400
+{
+public:
+    static void* operator new(u32 size);
+
+    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+
+    FieldClass15B0E0();
+
+    virtual ~FieldClass15B0E0();
+
+    u8 unk18[0x40];
+};
+#endif
+
 #endif

@@ -8,6 +8,10 @@
 
 typedef struct FieldRuntime FieldRuntime;
 
+struct FieldClass150F90;
+
+struct FieldClass150C10;
+
 /** Partial resident resource storage containing the category entries. */
 typedef struct ResidentObject1B64F8
 {
@@ -27,7 +31,8 @@ typedef struct ResidentContext08
     u8 unk00[0xB8];
     s32 unkb8;
     u8 unkbc[0x20];
-    void* unkdc;
+    /** Selected field object from the context's object array. */
+    struct FieldClass150F90* current_object;
     u8 unke0[0x15];
     u8 unkf5_0_2 : 3;
     u8 unkf5_3 : 1;
@@ -62,6 +67,12 @@ typedef struct ResidentContextObject38
     u8 unk00[0x4C8];
     u8 unk4c8_0 : 1;
     u8 unk4c8_1_7 : 7;
+
+    u8 unk4c9[0x103];
+
+    void* unk5cc;
+
+    void* unk5d0;
 } ResidentContextObject38;
 
 /** Flag byte at field context offset 0xDD (a separate member: functions testing two of its bits keep its address). */
@@ -70,7 +81,7 @@ typedef struct ResidentContextFlagsDD
     u8 unk0 : 1;
     u8 unk1 : 1;
     u8 unk2 : 1;
-    u8 unk3 : 1;
+    u8 time_step_hold_active : 1;
     u8 unk4 : 1;
     u8 unk5 : 1;
     u8 unk6 : 1;
@@ -123,48 +134,134 @@ typedef struct ResidentContextInput10
 typedef struct ResidentContext
 {
     u8 unk00[4];
+
     void* unk04;
+
     ResidentContext08* unk08;
-    u8 unk0c[4];
+
+    struct LibDisplayState* unk0c;
+
     ResidentContextInput10* input;
+
     void* unk14;
+
     void* unk18;
+
     void* unk1c;
-    u8 unk20[4];
+
+    void* unk20;
+
     void* unk24;
-    u8 unk28[4];
+
+    void* unk28;
+
     struct FieldResourceList14* unk2c;
+
     void* unk30;
+
     void* unk34;
+
     ResidentContextObject38* unk38;
+
     void* unk3c;
+
     void* unk40;
+
     ResidentContextObject52* unk44;
-    u8 unk48[0x10];
+
+    struct LibClass171EA0* unk48;
+
+    struct FieldClass154CC0* unk4c;
+
+    struct FieldClass159050* unk50;
+
+    struct FieldClass150070* unk54;
+
     ResidentContextObject58* unk58;
-    u8 unk5c[8];
+
+    void* unk5c;
+
+    struct FieldClass158EA0* unk60;
+
     ResidentContextObject64* unk64;
-    u8 unk68[4];
+
+    struct FieldClass1502A0* unk68;
+
     void* unk6c;
+
     void* unk70;
-    u8 unk74[0x34];
-    u16 unka8;
+
+    struct ResidentHeap* unk74;
+
+    struct ResidentHeap* unk78;
+
+    void* unk7c;
+
+    void* unk80;
+
+    /** Optional receiver updated by the field loop. */
+    struct FieldClass150C10* update_callback;
+
+    /** Render iteration passed to the display-buffer functions. */
+    s32 render_count;
+
+    /** Display field returned by the resident synchronization functions. */
+    u32 display_field;
+
+    /** Number of completed object-list updates. */
+    s32 update_count;
+
+    /** Integer interval used when waiting for the next field update. */
+    s32 time_step_level;
+
+    /** Unscaled increment retained when the update argument is nonpositive. */
+    float time_step;
+
+    /** Remaining updates before the current time-step level can reset. */
+    float time_step_hold;
+
+    float unkA0;
+
+    /** Multiplier applied to the retained time step. */
+    float time_scale;
+
+    s16 unka8;
+
     s16 unkaa;
+
     u8 unkac[4];
-    u16 unkb0;
-    u8 unkb2[0x1E];
+
+    s16 unkb0;
+
+    s16 unkb2;
+
+    u8 unkb4[0x1C];
+
     u32 unkd0;
+
     u32 unkd4;
-    u8 unkd8[4];
+
+    /** Remaining updates that skip the normal interval wait. */
+    s32 wait_skip_count;
+
     s8 unkdc;
     ResidentContextFlagsDD unkdd;
-    u8 unkde_0 : 1;
+    u8 exit_requested : 1;
     u8 unkde_1 : 1;
     u8 unkde_2 : 1;
     u8 unkde_3 : 1;
     u8 unkde_4 : 1;
     u8 unkde_5 : 1;
-    u8 unkde_6_7 : 2;
+    u8 skip_render : 1;
+    u8 unkde_7 : 1;
+
+    u8 unkdf_0 : 1;
+
+    u8 unkdf_1 : 1;
+
+    u8 unkdf_2 : 1;
+
+    u8 unkdf_3_7 : 5;
 } ResidentContext;
 
 /** Partial resident record containing condition masks and checked Fol. */
@@ -174,7 +271,15 @@ typedef struct ResidentCheckedRecord
     u16 unk02;
     u16 unk04;
     u16 unk06;
-    u8 unk08[0x2C];
+    u8 unk08[0x1D];
+
+    u8 unk25_0_3 : 4;
+
+    u8 unk25_4_5 : 2;
+
+    u8 unk25_6_7 : 2;
+
+    u8 unk26[0xE];
     /** Fol XOR-encoded with 0x7CE3C7F7. */
     u32 encoded_fol;
     u8 unk38[0x6C];
@@ -212,6 +317,8 @@ extern void* D_001B661C;
 extern void* D_001B6684;
 extern float D_001B6688;
 extern float D_001B6690;
+
+extern u8 D_001B6420;
 
 #ifdef __cplusplus
 }

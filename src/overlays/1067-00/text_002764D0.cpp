@@ -250,10 +250,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00277F
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00278250);
 
-void func_002782A0(void* object)
+/** @brief Detach the controller and add it to the resident release queue. */
+void FieldClass1553B0::func_001DD7B0()
 {
-    lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 void func_002782D0(void* object)
@@ -329,7 +330,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002790
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279050);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00279130);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_001DF360__16FieldClass155610Fv);
 
 FieldClass155610::~FieldClass155610()
 {
@@ -503,7 +504,7 @@ void FieldClass155640::func_00279B80()
             if (unk34.func_003F4B50(i) != source.func_003F4B50(i))
             {
                 u32 word = record->unk00;
-                u32 size = record->rounded_unk04();
+                u32 size = record->buffer_address();
                 func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
                 record->unk1c_0 = 0;
                 record->unk1c_1 = 1;
@@ -511,7 +512,7 @@ void FieldClass155640::func_00279B80()
             else
             {
                 u32 word = record->unk00;
-                u32 size = record->rounded_unk04();
+                u32 size = record->buffer_address();
                 record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
                 if (record->unk10)
                 {
@@ -665,7 +666,7 @@ void FieldClass155640::func_001E0A50(s32 flag)
         }
         FieldClass150040* record = &unk1c[unk2e];
         record->func_0023AD00();
-        if (!record->rounded_unk04())
+        if (!record->buffer_address())
         {
             u32 word = record->unk00;
             FlushCache(0);
@@ -686,7 +687,7 @@ void FieldClass155640::func_001E0A50(s32 flag)
         {
             FieldClass150040* record = &unk1c[i];
             u32 word = record->unk00;
-            u32 size = record->rounded_unk04();
+            u32 size = record->buffer_address();
             func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
             record->unk1c_0 = 0;
             record->unk1c_1 = 1;
@@ -1021,7 +1022,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027CB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027CCD0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027CE30);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", __ct__16FieldClass1557B0Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_0027CFD0);
 

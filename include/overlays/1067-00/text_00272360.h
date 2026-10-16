@@ -5,6 +5,42 @@
 #include "overlays/1067-00/curve.h"
 
 #ifdef __cplusplus
+#include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/lib/text_004BD360.h"
+
+/** 0x90-byte field list with its secondary list base at offset 0x14. */
+class FieldClass154E90 : public FieldClass150070, public FieldClass1502A0
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    static void* operator new(u32 size);
+
+    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object)
+    {
+        func_004DB570(object);
+    }
+
+    /** @brief Initialize the inherited node and list. */
+    FieldClass154E90()
+    {
+    }
+
+    /** @brief Destroy both list bases. */
+    virtual ~FieldClass154E90();
+
+    /** @brief Report the fixed list kind. @return Four. */
+    virtual s32 func_001DF3D0();
+
+    /** @brief Release the listed objects, detach this node and queue it for release. */
+    virtual void func_001DD7B0();
+
+    /** @brief Advance the list's objects when their update conditions hold. */
+    virtual void func_001DF360();
+
+    u8 unk8c[4];
+};
+
 extern "C" {
 #endif
 
@@ -33,13 +69,6 @@ s32 func_00272950(FieldClass1514F8* object, float first, float second);
  * @return Interpolated value, or zero when the curve has fewer than two points.
  */
 float func_00272820(FieldClass1514F8* curve, float position);
-
-/**
- * @brief Return the fixed value 4.
- * @param object Receiver or first argument; unused.
- * @return Always 4.
- */
-s32 func_00272F90(void* object);
 
 #ifdef __cplusplus
 }

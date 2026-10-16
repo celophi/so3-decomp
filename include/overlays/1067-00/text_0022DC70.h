@@ -295,8 +295,8 @@ void func_00238520(void* object);
 class FieldClass1530C0
 {
 public:
-    /** @brief Clear the state words and flags, and set bit 1 at offset 0x16. */
-    FieldClass1530C0()
+    /** @brief Clear request state without releasing storage or changing the capacity. */
+    void reset_request()
     {
         unk0c = -1;
         unk04 = 0;
@@ -307,6 +307,12 @@ public:
         unk16_2 = 0;
         unk14 = 0;
         unk15 = 0;
+    }
+
+    /** @brief Clear the state words and flags, and set bit 1 at offset 0x16. */
+    FieldClass1530C0()
+    {
+        reset_request();
     }
 
     u32 unk00;
@@ -328,23 +334,15 @@ public:
     void release()
     {
         func_0023AD00();
-        unk0c = -1;
-        unk04 = 0;
-        unk10 = 0;
-        unk16_0 = 0;
-        unk16_1 = 1;
-        unk08_0 = 0;
-        unk16_2 = 0;
-        unk14 = 0;
-        unk15 = 0;
+        reset_request();
     }
 
     /**
-     * @brief Return the word at offset 4, rounded up to 128 bytes unless bit 0
+     * @brief Return the buffer address at offset 4, aligned to 128 bytes unless bit 0
      *        at offset 8 or bit 2 at offset 0x16 is set.
-     * @return The raw or rounded value.
+     * @return The raw or aligned buffer address.
      */
-    u32 rounded_unk04() const
+    u32 buffer_address() const
     {
         if (unk08_0 || unk16_2)
         {

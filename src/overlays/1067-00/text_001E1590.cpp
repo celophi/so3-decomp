@@ -207,7 +207,7 @@ static inline s32 field_resource_size(FieldResourceRecord*& source, s32 index)
  */
 static inline s32 field_decode_resource(FieldClass150150* loader, u8* allocation, s32 index)
 {
-    ResidentResourceHeader* source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+    ResidentResourceHeader* source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
     return func_001025A0(D_001B65EC, source, field_aligned_buffer(allocation), index);
 }
 
@@ -226,18 +226,18 @@ s32 FieldClass150120::func_001E1830(FieldClass150150* loader)
     if (!present_1)
     {
         u8* allocation = func_00102920(D_001B65EC,
-            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 1, 1);
+            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 1, 1);
         if (!allocation)
         {
             void* previous_heap = resident_exchange_allocation_heap(0);
             allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 1, 1);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 1, 1);
             resident_exchange_allocation_heap(previous_heap);
         }
         if (!allocation || !field_decode_resource(loader, allocation, 1))
         {
             func_00102A40(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 1);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 1);
             field_decode_resource(loader, allocation, 1);
             if (allocation)
             {
@@ -255,18 +255,18 @@ s32 FieldClass150120::func_001E1830(FieldClass150150* loader)
     if (!present_2)
     {
         u8* allocation = func_00102920(D_001B65EC,
-            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 2, 1);
+            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 2, 1);
         if (!allocation)
         {
             void* previous_heap = resident_exchange_allocation_heap(0);
             allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 2, 1);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 2, 1);
             resident_exchange_allocation_heap(previous_heap);
         }
         if (!allocation || !field_decode_resource(loader, allocation, 2))
         {
             func_00102A40(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 2);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 2);
             field_decode_resource(loader, allocation, 2);
             if (allocation)
             {
@@ -286,18 +286,18 @@ s32 FieldClass150120::func_001E1830(FieldClass150150* loader)
         if (!present)
         {
             u8* allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), index, 1);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), index, 1);
             if (!allocation)
             {
                 void* previous_heap = resident_exchange_allocation_heap(0);
                 allocation = func_00102920(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), index, 1);
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), index, 1);
                 resident_exchange_allocation_heap(previous_heap);
             }
             if (!allocation || !field_decode_resource(loader, allocation, index))
             {
                 func_00102A40(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), index);
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), index);
                 field_decode_resource(loader, allocation, index);
                 if (allocation)
                 {
@@ -316,18 +316,18 @@ s32 FieldClass150120::func_001E1830(FieldClass150150* loader)
     if (!present_11)
     {
         u8* allocation = func_00102920(D_001B65EC,
-            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 11, 1);
+            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 11, 1);
         if (!allocation)
         {
             void* previous_heap = resident_exchange_allocation_heap(0);
             allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 11, 1);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 11, 1);
             resident_exchange_allocation_heap(previous_heap);
         }
         if (!allocation || !field_decode_resource(loader, allocation, 11))
         {
             func_00102A40(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 11);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 11);
             field_decode_resource(loader, allocation, 11);
             if (allocation)
             {
@@ -346,7 +346,7 @@ s32 FieldClass150120::func_001E1830(FieldClass150150* loader)
     {
         FieldResourceRecord* source;
         FieldClass1530C0* record = loader->unk1c;
-        source = reinterpret_cast<FieldResourceRecord*>(record->rounded_unk04());
+        source = reinterpret_cast<FieldResourceRecord*>(record->buffer_address());
         for (s32 position = 0; position < 12; position++)
         {
             if (!source->next_offset)
@@ -361,18 +361,18 @@ s32 FieldClass150120::func_001E1830(FieldClass150150* loader)
         }
         s32 size = source->unk08;
         u8* allocation = func_00102920(D_001B65EC,
-            reinterpret_cast<ResidentResourceHeader*>(record->rounded_unk04()), 12, 1);
+            reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), 12, 1);
         if (!allocation)
         {
             void* previous_heap = resident_exchange_allocation_heap(0);
             allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 12, 1);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 12, 1);
             resident_exchange_allocation_heap(previous_heap);
         }
         if (!allocation || !field_decode_resource(loader, allocation, 12))
         {
             func_00102A40(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 12);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 12);
             field_decode_resource(loader, allocation, 12);
             if (allocation)
             {
@@ -395,21 +395,21 @@ s32 FieldClass150120::func_001E1830(FieldClass150150* loader)
             resource_index = slot + 13;
             FieldResourceRecord* source;
             FieldClass1530C0* record = loader->unk1c;
-            source = reinterpret_cast<FieldResourceRecord*>(record->rounded_unk04());
+            source = reinterpret_cast<FieldResourceRecord*>(record->buffer_address());
             s32 size = field_resource_size(source, resource_index);
             u8* allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(record->rounded_unk04()), resource_index, 1);
+                reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), resource_index, 1);
             if (!allocation)
             {
                 void* previous_heap = resident_exchange_allocation_heap(0);
                 allocation = func_00102920(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), resource_index, 1);
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), resource_index, 1);
                 resident_exchange_allocation_heap(previous_heap);
             }
             if (!allocation || !field_decode_resource(loader, allocation, resource_index))
             {
                 func_00102A40(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), resource_index);
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), resource_index);
                 field_decode_resource(loader, allocation, resource_index);
                 if (allocation)
                 {
@@ -435,18 +435,18 @@ s32 FieldClass150120::func_001E1830(FieldClass150150* loader)
         if (!present)
         {
             allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), index, 1);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), index, 1);
             if (!allocation)
             {
                 previous_heap = resident_exchange_allocation_heap(0);
                 allocation = func_00102920(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), index, 1);
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), index, 1);
                 resident_exchange_allocation_heap(previous_heap);
             }
             if (!allocation || !field_decode_resource(loader, allocation, index))
             {
                 func_00102A40(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), index);
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), index);
                 field_decode_resource(loader, allocation, index);
                 if (allocation)
                 {
@@ -467,18 +467,18 @@ s32 FieldClass150120::func_001E1830(FieldClass150150* loader)
         if (!present)
         {
             u8* allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), slot + 24, 1);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), slot + 24, 1);
             if (!allocation)
             {
                 void* previous_heap = resident_exchange_allocation_heap(0);
                 allocation = func_00102920(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), slot + 24, 1);
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), slot + 24, 1);
                 resident_exchange_allocation_heap(previous_heap);
             }
             if (!allocation || !field_decode_resource(loader, allocation, slot + 24))
             {
                 func_00102A40(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), slot + 24);
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), slot + 24);
                 field_decode_resource(loader, allocation, slot + 24);
                 if (allocation)
                 {
@@ -499,18 +499,18 @@ s32 FieldClass150120::func_001E1830(FieldClass150150* loader)
         if (!present)
         {
             u8* allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), slot + 26, 1);
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), slot + 26, 1);
             if (!allocation)
             {
                 void* previous_heap = resident_exchange_allocation_heap(0);
                 allocation = func_00102920(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), slot + 26, 1);
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), slot + 26, 1);
                 resident_exchange_allocation_heap(previous_heap);
             }
             if (!allocation || !field_decode_resource(loader, allocation, slot + 26))
             {
                 func_00102A40(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), slot + 26);
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), slot + 26);
                 field_decode_resource(loader, allocation, slot + 26);
                 if (allocation)
                 {
@@ -544,8 +544,8 @@ s32 FieldClass150120::func_001E2E40(FieldClass150150* loader)
         if (!present)
         {
             u8* allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 1, 1);
-            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 1, 1);
+            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
             if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 1))
             {
                 if (allocation)
@@ -566,8 +566,8 @@ s32 FieldClass150120::func_001E2E40(FieldClass150150* loader)
         if (!present)
         {
             u8* allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 2, 1);
-            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 2, 1);
+            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
             if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 2))
             {
                 if (allocation)
@@ -588,8 +588,8 @@ s32 FieldClass150120::func_001E2E40(FieldClass150150* loader)
         if (!present)
         {
             u8* allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 3, 1);
-            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 3, 1);
+            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
             if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 3))
             {
                 if (allocation)
@@ -610,7 +610,7 @@ s32 FieldClass150120::func_001E2E40(FieldClass150150* loader)
     {
         FieldResourceRecord* source;
         FieldClass1530C0* record = loader->unk1c;
-        source = reinterpret_cast<FieldResourceRecord*>(record->rounded_unk04());
+        source = reinterpret_cast<FieldResourceRecord*>(record->buffer_address());
         for (s32 position = 0; position < 4; position++)
         {
             if (!source->next_offset)
@@ -625,8 +625,8 @@ s32 FieldClass150120::func_001E2E40(FieldClass150150* loader)
         }
         s32 size = source->unk08;
         u8* allocation = func_00102920(D_001B65EC,
-            reinterpret_cast<ResidentResourceHeader*>(record->rounded_unk04()), 4, 1);
-        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+            reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), 4, 1);
+        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
         if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 4))
         {
             if (allocation)
@@ -644,8 +644,8 @@ s32 FieldClass150120::func_001E2E40(FieldClass150150* loader)
     for (s32 slot = 0; slot < 38; slot++)
     {
         u8* allocation = func_00102920(D_001B65EC,
-            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), slot + 5, 1);
-        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), slot + 5, 1);
+        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
         if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), slot + 5))
         {
             if (allocation)
@@ -665,8 +665,8 @@ s32 FieldClass150120::func_001E2E40(FieldClass150150* loader)
         if (!present)
         {
             u8* allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 43, 1);
-            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 43, 1);
+            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
             if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 43))
             {
                 if (allocation)
@@ -706,8 +706,8 @@ s32 FieldClass150120::func_001E3580(FieldClass150150* loader)
             {
                 u16 resource_index = index + 1;
                 u8* allocation = func_00102920(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), resource_index, 1);
-                ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), resource_index, 1);
+                ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
                 if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), resource_index))
                 {
                     if (allocation)
@@ -731,8 +731,8 @@ s32 FieldClass150120::func_001E3580(FieldClass150150* loader)
             {
                 u16 resource_index = index + 1;
                 u8* allocation = func_00102920(D_001B65EC,
-                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), resource_index, 1);
-                ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+                    reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), resource_index, 1);
+                ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
                 if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), resource_index))
                 {
                     if (allocation)
@@ -757,8 +757,8 @@ s32 FieldClass150120::func_001E3580(FieldClass150150* loader)
         {
             u16 resource_index = index + 11;
             u8* allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), resource_index, 1);
-            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), resource_index, 1);
+            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
             if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), resource_index))
             {
                 if (allocation)
@@ -791,8 +791,8 @@ s32 FieldClass150120::func_001E39A0(FieldClass150150* loader)
     bool present = field_has_allocation(unk94, 11);
     if (!present)
     {
-        u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 1, 1);
-        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+        u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 1, 1);
+        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
         if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 1))
         {
             if (allocation)
@@ -812,8 +812,8 @@ s32 FieldClass150120::func_001E39A0(FieldClass150150* loader)
         bool present = field_has_allocation(unk94, slot + 1);
         if (!present)
         {
-            u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), slot + 2, 1);
-            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+            u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), slot + 2, 1);
+            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
             if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), slot + 2))
             {
                 if (allocation)
@@ -834,10 +834,10 @@ s32 FieldClass150120::func_001E39A0(FieldClass150150* loader)
     {
         FieldResourceRecord* source;
         FieldClass1530C0* record = loader->unk1c;
-        source = reinterpret_cast<FieldResourceRecord*>(record->rounded_unk04());
+        source = reinterpret_cast<FieldResourceRecord*>(record->buffer_address());
         s32 size = field_resource_size(source, 10);
-        u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(record->rounded_unk04()), 10, 1);
-        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+        u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), 10, 1);
+        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
         if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 10))
         {
             if (allocation)
@@ -861,10 +861,10 @@ s32 FieldClass150120::func_001E39A0(FieldClass150150* loader)
             index = slot + 11;
             FieldResourceRecord* source;
             FieldClass1530C0* record = loader->unk1c;
-            source = reinterpret_cast<FieldResourceRecord*>(record->rounded_unk04());
+            source = reinterpret_cast<FieldResourceRecord*>(record->buffer_address());
             s32 size = field_resource_size(source, index);
-            u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(record->rounded_unk04()), index, 1);
-            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+            u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), index, 1);
+            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
             if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), index))
             {
                 if (allocation)
@@ -886,8 +886,8 @@ s32 FieldClass150120::func_001E39A0(FieldClass150150* loader)
         bool present = field_has_allocation(unk94, slot + 9);
         if (!present)
         {
-            u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), slot + 14, 1);
-            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+            u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), slot + 14, 1);
+            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
             if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), slot + 14))
             {
                 if (allocation)
@@ -908,8 +908,8 @@ s32 FieldClass150120::func_001E39A0(FieldClass150150* loader)
         bool present = field_has_allocation(unk94, slot + 49);
         if (!present)
         {
-            u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), slot + 16, 1);
-            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+            u8* allocation = func_00102920(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), slot + 16, 1);
+            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
             if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), slot + 16))
             {
                 if (allocation)
@@ -943,8 +943,8 @@ s32 FieldClass150120::func_001E4220(FieldClass150150* loader)
     if (!present)
     {
         u8* allocation = func_00102920(D_001B65EC,
-            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 1, 1);
-        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 1, 1);
+        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
         if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 1))
         {
             if (allocation)
@@ -963,8 +963,8 @@ s32 FieldClass150120::func_001E4220(FieldClass150150* loader)
     if (!second_present)
     {
         u8* allocation = func_00102920(D_001B65EC,
-            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), 2, 1);
-        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+            reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), 2, 1);
+        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
         if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 2))
         {
             if (allocation)
@@ -985,8 +985,8 @@ s32 FieldClass150120::func_001E4220(FieldClass150150* loader)
         if (!present)
         {
             u8* allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), index, 1);
-            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), index, 1);
+            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
             if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), index))
             {
                 if (allocation)
@@ -1007,7 +1007,7 @@ s32 FieldClass150120::func_001E4220(FieldClass150150* loader)
     {
         FieldResourceRecord* source;
         FieldClass1530C0* record = loader->unk1c;
-        source = reinterpret_cast<FieldResourceRecord*>(record->rounded_unk04());
+        source = reinterpret_cast<FieldResourceRecord*>(record->buffer_address());
         for (s32 position = 0; position < 11; position++)
         {
             if (!source->next_offset)
@@ -1022,8 +1022,8 @@ s32 FieldClass150120::func_001E4220(FieldClass150150* loader)
         }
         s32 size = source->unk08;
         u8* allocation = func_00102920(D_001B65EC,
-            reinterpret_cast<ResidentResourceHeader*>(record->rounded_unk04()), 11, 1);
-        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+            reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), 11, 1);
+        ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
         if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 11))
         {
             if (allocation)
@@ -1045,8 +1045,8 @@ s32 FieldClass150120::func_001E4220(FieldClass150150* loader)
         {
             s32 index = slot + 12;
             u8* allocation = func_00102920(D_001B65EC,
-                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04()), index, 1);
-            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+                reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address()), index, 1);
+            ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
             if (!func_001025A0(D_001B65EC, decoded_source, field_aligned_buffer(allocation), index))
             {
                 if (allocation)
@@ -1111,7 +1111,7 @@ void FieldClass150120::func_001DDB30(void* arg)
     if (unk1d == 1)
     {
         FieldClass150150* loader = static_cast<FieldClass150150*>(arg);
-        ResidentResourceHeader* source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->rounded_unk04());
+        ResidentResourceHeader* source = reinterpret_cast<ResidentResourceHeader*>(loader->unk1c->buffer_address());
         void* destination = D_001B5FC0[0];
         if (destination)
         {
@@ -1437,13 +1437,13 @@ void FieldClass150150::func_001E5AD0()
 void FieldClass150150::func_001E5BA0()
 {
     FieldClass1530C0* record = &unk1c[unk2e];
-    if (record->rounded_unk04())
+    if (record->buffer_address())
     {
         FieldClass1DD400* owner = this;
         u32 first = record->unk00;
-        func_00103E70(D_001B65E8, record->unk0c, record->rounded_unk04(), 0x80000000, unk28, owner, first, 0, 1);
+        func_00103E70(D_001B65E8, record->unk0c, record->buffer_address(), 0x80000000, unk28, owner, first, 0, 1);
         u32 word = record->unk00;
-        u32 size = record->rounded_unk04();
+        u32 size = record->buffer_address();
         record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
         unk15 = 1;
         unk30_1 = 0;
@@ -1467,7 +1467,7 @@ void FieldClass150150::func_001E5D20()
         }
         FieldClass1530C0* record = &unk1c[unk2e];
         u32 word = record->unk00;
-        u32 size = record->rounded_unk04();
+        u32 size = record->buffer_address();
         if (func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0))
         {
             return;
@@ -1534,7 +1534,7 @@ void FieldClass150150::func_001E0A50(s32 flag)
             {
                 FieldClass1530C0* record = &unk1c[i];
                 u32 word = record->unk00;
-                u32 size = record->rounded_unk04();
+                u32 size = record->buffer_address();
                 func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
             }
             unk15 = 9;
@@ -1543,7 +1543,7 @@ void FieldClass150150::func_001E0A50(s32 flag)
         {
             FieldClass1530C0* record = &unk1c[unk2e];
             u32 word = record->unk00;
-            u32 size = record->rounded_unk04();
+            u32 size = record->buffer_address();
             if (!func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0) && !field_records_blocked())
             {
                 func_001DDB30(0);
@@ -1564,7 +1564,7 @@ void FieldClass150150::func_001E0A50(s32 flag)
         {
             FieldClass1530C0* record = &records[i];
             u32 word = record->unk00;
-            u32 size = record->rounded_unk04();
+            u32 size = record->buffer_address();
             record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
             if (record->unk10)
             {
@@ -1593,7 +1593,7 @@ void FieldClass150150::func_001E0A50(s32 flag)
         for (s32 i = 0; i < unk2d; i++, record++)
         {
             u32 word = record->unk00;
-            u32 size = record->rounded_unk04();
+            u32 size = record->buffer_address();
             record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
             if (record->unk10)
             {
@@ -1632,7 +1632,7 @@ s32 FieldClass150150::func_001E07A0()
             if (!record->unk08_0)
             {
                 u32 word = record->unk00;
-                u32 size = record->rounded_unk04();
+                u32 size = record->buffer_address();
                 func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
             }
         }
@@ -1651,7 +1651,7 @@ s32 FieldClass150150::func_001E07A0()
         for (s32 i = 0; i < unk2d; i++)
         {
             FieldClass1530C0* record = records + i;
-            if (record->rounded_unk04())
+            if (record->buffer_address())
             {
                 result = 1;
                 break;
@@ -1671,7 +1671,7 @@ s32 FieldClass150150::func_001E07A0()
         for (s32 i = 0; i < unk2d; i++)
         {
             FieldClass1530C0* record = records + i;
-            if (record->rounded_unk04())
+            if (record->buffer_address())
             {
                 result = 2;
                 break;
@@ -1698,7 +1698,7 @@ s32 FieldClass150150::func_001DF640()
             if (!entry->unk08_0)
             {
                 u32 word = entry->unk00;
-                u32 size = entry->rounded_unk04();
+                u32 size = entry->buffer_address();
                 func_00103B20(D_001B65E8, entry->unk0c, size, 0x80000000, word, 0);
             }
         }

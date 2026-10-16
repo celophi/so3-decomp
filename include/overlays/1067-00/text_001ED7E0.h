@@ -24,6 +24,7 @@ public:
         unk30_0 = 0;
         func_001F2DE0();
     }
+
     /** @brief Test whether the request callback is ready. @return True when ready. */
     bool request_ready() const
     {
@@ -66,11 +67,11 @@ class FieldClass150750 : public FieldClass150700
 {
 public:
     /** @brief Initialize the inherited loader. */
-    FieldClass150750()
-    {
-    }
+    inline FieldClass150750();
+
     /** @brief Destroy the inherited loader. */
     virtual ~FieldClass150750();
+
     /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
     static void* operator new(u32 size);
     /** @brief Release through the Lib heap. @param object Storage to release. */
@@ -237,14 +238,24 @@ public:
     s32 unk1c;
 };
 
-/** Shape list whose destructor releases the inherited entries. */
+/** 0x7C-byte shape list whose destructor releases the inherited entries. */
 class FieldClass1505F0 : public FieldClass1502A0
 {
 public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    static void* operator new(u32 size);
+
+    /** @brief Initialize the inherited list. */
+    FieldClass1505F0()
+    {
+    }
+
     /** @brief Release every listed shape and the inherited list state. */
     virtual ~FieldClass1505F0();
     /** @brief Release storage through the Lib heap. @param object Storage to release. */
     static void operator delete(void* object);
+
+    u8 unk78[4];
 };
 #endif
 

@@ -92,9 +92,13 @@ public:
     /** @brief Default handler that performs no work. */
     virtual void func_001DD410();
 
-    u8 unk0c[2];
+    /** Kind used by the owning intrusive list. */
+    s16 list_kind;
+
     u8 unk0e;
+
     u8 unk0f;
+
     void* unk10;
 };
 
@@ -128,6 +132,17 @@ public:
 class FieldClass1530D0 : public FieldClass150070, public LibClass178DD0
 {
 public:
+    /** @brief Initialize the inherited field node and object list. */
+    FieldClass1530D0()
+    {
+    }
+
+    virtual s32 func_001DF3D0();
+
+    virtual void func_001DF360();
+
+    virtual void func_004D6730();
+
     virtual ~FieldClass1530D0();
 
     /** @brief Prepend a node using its default list kind. @param node Node to register. */
@@ -151,6 +166,10 @@ public:
 class FieldClass14FE30 : public LibClass178DD0, public FieldClass150070, public FieldClass14FE84
 {
 public:
+    static void* operator new(u32 size);
+
+    FieldClass14FE30();
+
     /** @brief Detach the member at offset 0xA0, then destroy the object. */
     virtual ~FieldClass14FE30();
 
@@ -481,6 +500,27 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+
+/** Registered field object list. */
+class FieldClass150E10 : public FieldClass150070, public LibClass178DD0
+{
+public:
+    /** @brief Initialize the inherited field node and object list. */
+    FieldClass150E10()
+    {
+    }
+
+    virtual ~FieldClass150E10();
+
+    virtual s32 func_001DF3D0();
+
+    virtual void func_001DD7B0();
+
+    virtual void func_001DF360();
+};
 #endif
 
 #endif

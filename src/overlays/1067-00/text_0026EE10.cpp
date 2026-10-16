@@ -1,6 +1,7 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "main/resident_data.h"
+#include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/1067-00/text_001ED7E0_callbacks.h"
@@ -82,95 +83,117 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026F4
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026F670);
 
 /** Keyed context entry linked from the context's entry list. */
-struct FieldContextEntry26F690
+struct FieldKeyedContextEntry
 {
     u8 unk00[8];
-    FieldContextEntry26F690* next;
+
+    FieldKeyedContextEntry* next;
+
     u8 unk0c[8];
+
     void* value;
+
     u8 unk18[0x10];
+
     u32 key;
+
     u8 flags;
 };
 
 /** Context entry list whose sentinel entry starts at offset 0x14. */
-struct FieldContextList26F690
+struct FieldKeyedContextList
 {
     u8 unk00[0x14];
-    FieldContextEntry26F690 head;
+
+    FieldKeyedContextEntry head;
 };
 
 /** Partial context holding its entry list. */
-struct FieldContext26F690
+struct FieldKeyedContext
 {
     u8 unk00[0xD8];
-    FieldContextList26F690* list;
+
+    FieldKeyedContextList* list;
 };
 
-s32 func_0026F690(void* context, u32 key)
+/**
+ * @brief Test flag bit 0 of the first context entry with the supplied key.
+ * @param context Context containing the keyed entry list.
+ * @param key Entry key.
+ * @return Flag bit 0, or zero when no entry has the key.
+ */
+s32 field_context_test_entry_flag(void* context, u32 key)
 {
-    FieldContextEntry26F690* entry;
-    FieldContextEntry26F690* head = &static_cast<FieldContext26F690*>(context)->list->head;
-    entry = head;
-    while (1)
+    FieldKeyedContextEntry* entry;
+    FieldKeyedContextEntry* head = &static_cast<FieldKeyedContext*>(context)->list->head;
+
+    for (entry = head; ; )
     {
         entry = entry->next;
-        if (entry == 0)
+
+        if (entry == 0 || head == entry)
         {
             break;
         }
-        if (head == entry)
-        {
-            break;
-        }
+
         if (key == entry->key)
         {
             return entry->flags & 1;
         }
     }
+
     return 0;
 }
 
-void* func_0026F6E0(void* context, u32 key)
+/**
+ * @brief Return the value pointer of the first context entry with the supplied key.
+ * @param context Context containing the keyed entry list.
+ * @param key Entry key.
+ * @return Stored pointer, or null when no entry has the key.
+ */
+void* field_context_get_entry_value(void* context, u32 key)
 {
-    FieldContextEntry26F690* entry;
-    FieldContextEntry26F690* head = &static_cast<FieldContext26F690*>(context)->list->head;
-    entry = head;
-    while (1)
+    FieldKeyedContextEntry* entry;
+    FieldKeyedContextEntry* head = &static_cast<FieldKeyedContext*>(context)->list->head;
+
+    for (entry = head; ; )
     {
         entry = entry->next;
-        if (entry == 0)
+
+        if (entry == 0 || head == entry)
         {
             break;
         }
-        if (head == entry)
-        {
-            break;
-        }
+
         if (key == entry->key)
         {
             return entry->value;
         }
     }
+
     return 0;
 }
 
-void func_0026F730(void* context, u32 key, u32 value)
+/**
+ * @brief Reset the first entry with the supplied key and apply an integer value.
+ * @param context Context containing the keyed entry list.
+ * @param key Entry key.
+ * @param value Signed integer converted to float by the entry update.
+ */
+void field_context_apply_entry_value(void* context, u32 key, s32 value)
 {
-    FieldContextEntry26F690* entry;
-    FieldContextEntry26F690* head = &static_cast<FieldContext26F690*>(context)->list->head;
-    entry = head;
-    while (1)
+    FieldKeyedContextEntry* entry;
+    FieldKeyedContextEntry* head = &static_cast<FieldKeyedContext*>(context)->list->head;
+
+    for (entry = head; ; )
     {
         entry = entry->next;
-        if (entry == 0)
+
+        if (entry == 0 || head == entry)
         {
             break;
         }
-        if (head == entry)
-        {
-            break;
-        }
+
         if (key == entry->key)
         {
             func_002077B0(reinterpret_cast<FieldState2C*>(entry), value);
@@ -312,40 +335,17 @@ void func_00271750(FieldState271750* object)
     }
 }
 
-struct FieldObject271790;
-
-/** Partial interface of the child notified by func_00271790. */
-class FieldChild271790
+/** @brief Notify the context callback and finish the loader requests. */
+void FieldClass154C70::finish_requests()
 {
-public:
-    // Placeholder virtuals in their vtable order (byte offset in the name); only
-    // their positions are known.
-    virtual void func_slot08();
-    /** @brief Notify the child that its owner changed state. @param owner Owning field object. */
-    virtual void func_slot0c(FieldObject271790* owner);
-};
+    FieldClass1DD400* child = unk20;
 
-/** Partial field object with a state byte and an optional notified child. */
-struct FieldObject271790
-{
-    u8 unk00[0x15];
-    u8 state;
-    u8 unk16[0xA];
-    FieldChild271790* child;
-};
-
-/**
- * @brief Notify the child, if any, and set the object's state to five.
- * @param object Field object.
- */
-extern "C" void func_00271790(FieldObject271790* object)
-{
-    FieldChild271790* child = object->child;
     if (child != 0)
     {
-        child->func_slot0c(object);
+        child->func_001DDB30(this);
     }
-    object->state = 5;
+
+    unk15 = 5;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002717E0);
@@ -354,19 +354,45 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00271B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00271C60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00271E60);
+/**
+ * @brief Append a file-backed resource request when a slot remains.
+ * @param loader Resource loader.
+ * @param file_key File key used to look up the resource size.
+ * @param kind Resource kind stored in the request.
+ * @return Appended request, or null when the array is full.
+ */
+extern "C" FieldClass152210* field_append_file_request(FieldClass154C70* loader, s32 file_key, s32 kind)
+{
+    if (loader->unk2d >= loader->unk24)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00271FC0);
+    loader->unk1c[loader->unk2d].reset_request();
+    loader->unk1c[loader->unk2d].unk0c = file_key;
+    loader->unk1c[loader->unk2d].set_capacity(func_0011C8C0(D_001B65E4, loader->unk1c[loader->unk2d].unk0c));
+    loader->unk1c[loader->unk2d].unk14 = loader->unk2d;
+    loader->unk1c[loader->unk2d].unk15 = kind;
+    loader->unk2d++;
+    return &loader->unk1c[loader->unk2d - 1];
+}
 
-s32 func_00272080(const void* object)
+/** @brief Destroy the field node and its secondary list. */
+FieldClass154CC0::~FieldClass154CC0()
+{
+}
+
+/** @brief Report the fixed list kind. @return Three. */
+s32 FieldClass154CC0::func_001DF3D0()
 {
     return 3;
 }
 
-void func_00272090(void* object)
+/** @brief Detach this node and queue it for release. */
+void FieldClass154CC0::func_001DD7B0()
 {
-    lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002720C0);
@@ -394,7 +420,4 @@ void func_00272290(FieldFlag272290* object)
     object->unk1c_0 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002722B0);
-
-// Compiler-generated this-adjustment thunk; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00272350);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_001DF360__16FieldClass154CC0Fv);
