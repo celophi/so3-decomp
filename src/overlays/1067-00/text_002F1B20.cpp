@@ -56,22 +56,22 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F2F
 
 FieldClass15B9F8::FieldClass15B9F8()
 {
-    unk00 = new (0) FieldListNode;
-    if (unk00 == 0)
+    head = new (0) FieldListNode;
+    if (head == 0)
     {
         throw;
     }
-    unk00->unk04 = 0;
-    unk04 = 0;
+    head->next = 0;
+    count = 0;
 }
 
 FieldClass15B9F8::~FieldClass15B9F8()
 {
     func_002F31D0(this);
-    if (unk00 != 0)
+    if (head != 0)
     {
-        ::operator delete(unk00);
-        unk00 = 0;
+        ::operator delete(head);
+        head = 0;
     }
 }
 
@@ -82,36 +82,36 @@ extern "C" void func_002F30A0(FieldCountedList* list, void* value)
     if (node != 0)
     {
         FieldListNode* tail;
-        node->unk00 = value;
-        node->unk04 = 0;
-        tail = list->unk00;
-        while (tail->unk04 != 0)
+        node->value = value;
+        node->next = 0;
+        tail = list->head;
+        while (tail->next != 0)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
-        tail->unk04 = node;
-        list->unk04++;
+        tail->next = node;
+        list->count++;
     }
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F3130);
 
-/** @brief Delete every node after the sentinel and reset the count. @param list List to clear. */
+/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
 extern "C" void func_002F31D0(FieldCountedList* list)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        FieldListNode* next = node->unk04;
+        FieldListNode* next = node->next;
         delete node;
         node = next;
     }
-    list->unk00->unk04 = 0;
-    list->unk04 = 0;
+    list->head->next = 0;
+    list->count = 0;
 }
 
 extern "C" void* func_002F3250(void* object, s32 count)
@@ -140,18 +140,18 @@ extern "C" void* func_002F3250(void* object, s32 count)
  */
 extern "C" s32 func_002F3290(FieldCountedList* list, void** value)
 {
-    FieldListNode* node = list->unk00->unk04;
+    FieldListNode* node = list->head->next;
     if (node != 0)
     {
-        *value = node->unk00;
+        *value = node->value;
     }
     else
     {
         return 0;
     }
-    list->unk00->unk04 = node->unk04;
+    list->head->next = node->next;
     delete node;
-    list->unk04--;
+    list->count--;
     return 1;
 }
 

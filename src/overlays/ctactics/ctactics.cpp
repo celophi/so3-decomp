@@ -22,87 +22,100 @@
 #define TACTICS_STAT_HALFWORD_XOR_KEY 0x7E93
 
 /** Partial primary interface of the resident field context; later methods and secondary tables are omitted. */
-struct TacticsFieldContext1516A0 : public FieldClass151D40
+struct FieldScriptContext1516A0 : public FieldClass151D40
 {
     /**
-     * @brief Resolve the display coordinates for a keyed field object.
+     * @brief Resolve display coordinates for a keyed field object.
      * @param x Receives the horizontal coordinate.
      * @param y Receives the vertical coordinate.
      * @param key Field object key.
      * @param width Horizontal extent used for clipping.
      * @param height Vertical extent used for clipping.
      */
-    virtual void func_0020E9B0(float* x, float* y, s32 key, float width, float height);
+    virtual void resolve_field_object_display_position(float* x, float* y, s32 key, float width, float height);
+
     /**
-     * @brief Forward a scalar update to the keyed field object.
-     * @param value Full control word.
+     * @brief Forward a scalar value to the keyed field object.
+     * @param value Integer value forwarded to the object.
      * @param key Field object key.
-     * @param amount Scalar update value.
+     * @param amount Value forwarded to the object.
      */
-    virtual void func_0020E940(s32 value, s32 key, float amount);
+    virtual void set_field_object_value(s32 value, s32 key, float amount);
+
     /**
-     * @brief Queue a field control request with an optional keyed attachment.
-     * @param first First request word.
-     * @param second Second request word.
-     * @param third Third request word.
-     * @param fourth Fourth request word.
-     * @param key Attachment key, or -1.
-     * @param enabled Nonzero to attach the keyed object.
-     * @return Request slot, or -1 on failure.
+     * @brief Queue a field request with an optional keyed attachment.
+     * @param first First request value.
+     * @param second Second request value.
+     * @param third Third request value.
+     * @param fourth Fourth request value.
+     * @param key Optional attachment key, or -1.
+     * @param enabled Whether to resolve and attach the keyed object.
+     * @return Request slot, or -1 if the request could not be queued.
      */
-    virtual s32 func_0020E860(s32 first, s32 second, s32 third, s32 fourth, s32 key, u32 enabled);
+    virtual s32 queue_field_request(s32 first, s32 second, s32 third, s32 fourth, s32 key, u32 enabled);
+
     /**
-     * @brief Clear a queued field request and optionally release attached objects.
-     * @param index Request slot, or -1 for every slot.
-     * @param release Nonzero to release attached objects.
+     * @brief Clear one or all field requests and optionally release their attachments.
+     * @param index Request slot, or -1 for all slots.
+     * @param release Whether to release attached objects.
      */
-    virtual void func_0020E7D0(s8 index, u32 release);
-    /** @brief Query a request's status. @param index Request slot. @return Request status, or -1 for a negative slot. */
-    virtual s32 func_0020E790(s8 index);
-    /** @brief Query a request's flags. @param index Request slot. @return Flag status, or -1 for a negative slot. */
-    virtual s32 func_0020E750(s8 index);
-    /** @brief Test whether resident field work has completed. @return One when no work remains, otherwise zero. */
-    virtual s32 func_0020E670();
-    /** @brief Refresh resident character state and its attached field display. */
-    virtual void func_0020E590();
+    virtual void clear_field_requests(s8 index, u32 release);
+
+    /** @brief Get the interpolated progress value for a request slot. @param index Request slot. @return Progress value, or -1 for a negative slot. */
+    virtual s32 get_field_request_progress(s8 index);
+
+    /** @brief Get the state code for a request slot. @param index Request slot. @return Request state, or -1 for a negative slot. */
+    virtual s32 get_field_request_state(s8 index);
+
+    /** @brief Test whether no field work is pending. @return One when no work is pending, otherwise zero. */
+    virtual s32 has_no_pending_field_work();
+
+    /** @brief Refresh character state and its attached field display. */
+    virtual void refresh_field_character_state();
 };
 
 /** Kind-9 movement widget with its storage base at offset 0x40. */
-struct TacticsMovement175030 : public LibClass178600, public TacticsStorage18B010
+struct TacticsMovementWidget175030 : public LibClass178600, public TacticsStorage18B010
 {
     /** @brief Destroy the movement storage and widget base. */
-    virtual ~TacticsMovement175030();
+    virtual ~TacticsMovementWidget175030();
+
     /** @brief Initialize the movement bases and select widget kind nine. */
-    TacticsMovement175030()
+    TacticsMovementWidget175030()
     {
         unk38 = 9;
     }
 
-    /** @brief Update the widget movement state. */
-    virtual void func_00413D20();
+    /** @brief Update the widget movement state and its refresh flag. */
+    virtual void update_movement_state();
+
     /** @brief Draw the moving widget. */
-    virtual void func_00462310();
+    virtual void draw_moving_widget();
 };
 
-/** Coordinate widget owning its sentinel list and selected entry. */
-struct TacticsWidget18AFD0 : public TacticsMovement175030
+/** Coordinate selector owning its position list and selected entry. */
+struct TacticsCoordinateSelector18AFD0 : public TacticsMovementWidget175030
 {
     /** @brief Destroy the coordinate list and movement bases. */
-    virtual ~TacticsWidget18AFD0();
+    virtual ~TacticsCoordinateSelector18AFD0();
+
     /** @brief Initialize the coordinate list and clear its selected entry. */
-    TacticsWidget18AFD0()
+    TacticsCoordinateSelector18AFD0()
     {
         selected = -1;
     }
 
     /** @brief Report widget kind three. @return Always three. */
-    virtual s32 func_003EEBC0();
-    /** @brief Perform no refresh work. */
-    virtual void func_003EEBD0();
-    /** @brief Perform no widget update work. */
-    virtual void func_003EEBE0();
+    virtual s32 get_object_kind();
 
-    TacticsList18B8B0 nodes;
+    /** @brief Leave the default update hook unchanged. */
+    virtual void update();
+
+    /** @brief Leave the default notification hook unchanged. */
+    virtual void notify();
+
+    TacticsCoordinatePositionList nodes;
+
     s32 selected;
 };
 
@@ -140,9 +153,13 @@ static inline void clear_grid_state(TacticsWindow18B420* object)
 struct TacticsEntryResourceRecord
 {
     u8 unk00[0x20];
+
     char saved_name[0x18];
+
     u8 selected_entry;
+
     u8 previous_entry;
+
     u8 unk3a[0xDA];
 };
 
@@ -150,59 +167,111 @@ struct TacticsEntryResourceRecord
 struct TacticsGridResourceRecord
 {
     s16 character_id;
+
     s16 stat_limit_type;
+
     s16 encoded_level;
+
     s16 encoded_base_level;
+
     s32 encoded_flags;
+
     s32 encoded_experience;
+
     s32 encoded_base_hp;
+
     s32 encoded_max_hp;
+
     s32 encoded_hp;
+
     s32 encoded_base_mp;
+
     s32 encoded_max_mp;
+
     s32 encoded_mp;
+
     float unk28;
+
     /** Fury is stored at sixteen times its displayed amount. */
     float scaled_max_fury;
+
     float scaled_fury;
+
     s32 encoded_base_attack;
+
     s32 encoded_effective_attack;
+
     s32 encoded_attack;
+
     s32 encoded_base_defense;
+
     s32 encoded_effective_defense;
+
     s32 encoded_defense;
+
     s32 encoded_base_agility;
+
     s32 encoded_effective_agility;
+
     s32 encoded_agility;
+
     s32 encoded_base_hit;
+
     s32 encoded_effective_hit;
+
     s32 encoded_hit;
+
     /** The resident INT helpers validate these values through the HIT checksum. */
     s32 encoded_base_intelligence;
+
     s32 encoded_effective_intelligence;
+
     s32 encoded_intelligence;
+
     s16 encoded_base_knockback_power;
+
     s16 encoded_effective_knockback_power;
+
     s16 encoded_knockback_power;
+
     s16 encoded_base_knockback_resistance;
+
     s16 encoded_effective_knockback_resistance;
+
     s16 encoded_knockback_resistance;
+
     s16 encoded_base_critical_rate;
+
     s16 encoded_effective_critical_rate;
+
     s16 encoded_critical_rate;
+
     s32 level_checksum;
+
     s32 flags_experience_checksum;
+
     s32 hp_checksum;
+
     s32 mp_checksum;
+
     s32 attack_checksum;
+
     s32 defense_checksum;
+
     s32 agility_checksum;
+
     s32 hit_checksum;
+
     s32 knockback_power_checksum;
+
     s32 checksum_salt;
+
     s32 critical_rate_checksum;
+
     s32 knockback_resistance_checksum;
+
     s32 unkb4[3];
+
     s32 unkc0;
 
     /** @brief Decode current HP, marking valid flags when the HP checksum fails. @return Current HP, or zero for corruption. */
@@ -376,8 +445,10 @@ static inline void set_resource_display_scale(ItemCreationOptionResourceDisplay*
 struct TacticsAlignedResource
 {
     u8 unk00[0x40];
+
     s32 unk40;
 };
+
 /**
  * @brief Round the resource buffer to its next 128-byte boundary.
  * @param buffer Completed buffer containing the aligned header.
@@ -387,14 +458,19 @@ static inline TacticsAlignedResource* aligned_resource(void* buffer)
 {
     return reinterpret_cast<TacticsAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
 }
+
 /** Coordinate value and next link in an owned list. */
 struct TacticsCoordinateNode
 {
     float x;
+
     float y;
+
     TacticsCoordinateNode* next;
+
     /** @brief Initialize both coordinate components to zero. */
     TacticsCoordinateNode() { y = 0.0f; x = 0.0f; }
+
     /** @brief Finish the coordinate node lifetime. */
     ~TacticsCoordinateNode() {}
 };
@@ -402,34 +478,43 @@ struct TacticsCoordinateNode
 typedef struct
 {
     u8 pad_00[0x3C];
+
     u8 active;
+
     u8 pad_3d[0x57];
+
     u32 color;
 } TacticsIcon;
 
 typedef struct TacticsIconNode
 {
     TacticsIcon* icon;
+
     struct TacticsIconNode* next;
 } TacticsIconNode;
 
 typedef struct
 {
     u8 pad_00[4];
+
     TacticsIconNode* next;
 } TacticsIconList;
 
 typedef struct
 {
     u8 pad_00[0x2C];
+
     TacticsIconList* list;
 } TacticsIconOwner;
 
 typedef struct TacticsPosition
 {
     float x;
+
     float y;
+
     float z;
+
     float w;
 } TacticsPosition;
 
@@ -437,8 +522,11 @@ typedef struct TacticsPosition
 typedef struct TacticsPositionTarget
 {
     u8 pad_00[0x18];
+
     TacticsPosition position;
+
     u8 pad_28[0x14];
+
     u8 active;
 } TacticsPositionTarget;
 
@@ -446,6 +534,7 @@ typedef struct TacticsPositionTarget
 struct TacticsPresetOwner
 {
     u8 pad_00[0xC0];
+
     TacticsPresetPosition preset_position;
 };
 
@@ -453,8 +542,11 @@ struct TacticsPresetOwner
 struct TacticsDualSelectionOwner
 {
     u8 pad_00[0xB8];
+
     FieldObject23B1D0* first_selector;
+
     FieldObject23B1D0* second_selector;
+
     u8 use_second;
 };
 
@@ -462,6 +554,7 @@ struct TacticsDualSelectionOwner
 struct TacticsAssociatedMovementRef
 {
     u8 unk00[0xB8];
+
     LibClass175030* movement;
 };
 
@@ -469,16 +562,27 @@ struct TacticsAssociatedMovementRef
 struct TacticsGridOwner
 {
     u8 pad_00[0x2C];
+
     TacticsList nodes;
+
     u8 pad_30[0x7C];
+
     TacticsPositionTarget* target;
+
     u8 pad_b0[4];
+
     FieldObject23CEA0* grid;
+
     u8 pad_b8[8];
+
     TacticsPositionTarget* indicators[3];
+
     u8 pad_cc[3];
+
     u8 selected;
+
     float base_x;
+
     float base_y;
 };
 
@@ -486,7 +590,9 @@ struct TacticsGridOwner
 typedef struct TacticsSavedGridSelection
 {
     u8 pad_00[0x20];
+
     u8 selected_record_index;
+
     u8 selected_character_id;
 } TacticsSavedGridSelection;
 
@@ -494,6 +600,7 @@ typedef struct TacticsSavedGridSelection
 struct TacticsRuntimeControl
 {
     u8 unk00[0x6E];
+
     u8 character_state_refresh_pending;
 };
 
@@ -501,8 +608,11 @@ struct TacticsRuntimeControl
 struct TacticsRuntimeCallbacks
 {
     u8 unk00[0x14];
+
     FieldClass153E30* state;
+
     u8 unk18[2];
+
     u16 tactics_mode_flags;
 };
 
@@ -510,16 +620,24 @@ struct TacticsRuntimeCallbacks
 typedef struct TacticsGridSelectionRef
 {
     TacticsSavedGridSelection* state;
+
     void* character_records;
+
     void* entry_records;
+
     FieldClass153E00* runtime;
+
     TacticsRuntimeCallbacks* callbacks;
+
     u8 pad_14[0xC];
+
     FieldBufferSlots* resources;
 } TacticsGridSelectionRef;
 
 extern "C" TacticsGridSelectionRef* D_001B643C;
+
 extern "C" LibWidgetColors4C5590 D_00352000;
+
 extern "C" const char D_00352080[];
 
 static inline bool tactics_selection_inactive(FieldObject23B1D0* selection);
@@ -527,6 +645,7 @@ static inline bool tactics_selection_inactive(FieldObject23B1D0* selection);
 static inline u8 tactics_grid_empty(FieldObject23CEA0* grid);
 
 static inline void set_text_position(LibObject178750* target, float x, float y, float z, float w);
+
 static inline void tactics_set_position(TacticsPositionTarget* target, float x, float y, float z, float w);
 
 static inline void tactics_set_xy(TacticsPositionTarget* target, float x, float y);
@@ -539,7 +658,7 @@ static inline float shifted_position(const float& origin, float offset);
 
 static inline bool coordinate_records_ready(TacticsWindow18B520* object);
 
-static inline void append_position(TacticsWidget18AFD0* widget, float x, float y);
+static inline void append_position(TacticsCoordinateSelector18AFD0* widget, float x, float y);
 
 static inline void set_resource_scale(ItemCreationOptionResourceDisplay* object, float scale);
 
@@ -627,6 +746,7 @@ static inline void tactics_set_xy(TacticsPositionTarget* target, float x, float 
 }
 
 extern "C" LibWidgetColors4C5590 D_00352010;
+
 /** Four packed colors copied into the child title panel. */
 extern "C" LibWidgetColors4C5590 D_00352020;
 
@@ -685,11 +805,11 @@ static inline void refresh_grid_entry(TacticsWindow18B220* object, s16 selected_
     lib_text_set_resource(object->title, object->func_slot54(), selected_entry + 0x2A62, 0);
     s32 selected = selected_entry;
     s32 index = 0;
-    FieldListNode* node = object->unk2c.unk00->unk04;
+    FieldListNode* node = object->unk2c.head->next;
 
     while (node != 0)
     {
-        LibObject178750* text = static_cast<LibObject178750*>(node->unk00);
+        LibObject178750* text = static_cast<LibObject178750*>(node->value);
 
         if (index == selected)
         {
@@ -701,7 +821,7 @@ static inline void refresh_grid_entry(TacticsWindow18B220* object, s16 selected_
             text->set_color(0x808080);
         }
 
-        node = node->unk04;
+        node = node->next;
         index++;
     }
 }
@@ -753,7 +873,7 @@ static inline bool coordinate_records_ready(TacticsWindow18B520* object)
  * @param x Horizontal coordinate.
  * @param y Vertical coordinate.
  */
-static inline void append_position(TacticsWidget18AFD0* widget, float x, float y)
+static inline void append_position(TacticsCoordinateSelector18AFD0* widget, float x, float y)
 {
     append_coordinate_pair(&widget->nodes, TacticsPresetPosition(x, y));
 }
@@ -812,10 +932,16 @@ static inline u8 character_record_empty(const TacticsGridResourceRecord* record)
     return !record->character_id;
 }
 
-void TacticsWidget18AFD0::func_003EEBD0()
+/** @brief Leave the default update hook unchanged. */
+void TacticsCoordinateSelector18AFD0::update()
 {
 }
 
+/**
+ * @brief Mark each icon active and color the selected one differently.
+ * @param object Holder of the icon list.
+ * @param selected Index of the icon to color differently.
+ */
 void color_icon_list_selection(void* object, s16 selected)
 {
     s32 index = 0;
@@ -850,6 +976,11 @@ void TacticsWindow18B020::func_slot5c()
     }
 }
 
+/**
+ * @brief Return the field at byte offset 0x20.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
 u32 get_field_word_20(void* object)
 {
     return *(u32*)((u8*)object + 0x20);
@@ -889,6 +1020,11 @@ u8 TacticsWindow18B020::func_slotb4()
     return 2;
 }
 
+/**
+ * @brief Store the field at byte offset 0x20.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
 void set_field_word_20(void* object, u32 value)
 {
     *(u32*)((u8*)object + 0x20) = value;
@@ -908,7 +1044,7 @@ u8 TacticsWindow18B020::func_slotb0()
         if (reinterpret_cast<TacticsRuntimeControl*>(D_001B643C->runtime)->character_state_refresh_pending != 0)
         {
             ResidentContextObject38* context = D_001B6430->context->unk38;
-            reinterpret_cast<TacticsFieldContext1516A0*>(context)->func_0020E590();
+            reinterpret_cast<FieldScriptContext1516A0*>(context)->refresh_field_character_state();
             reinterpret_cast<TacticsRuntimeControl*>(D_001B643C->runtime)->character_state_refresh_pending = 0;
         }
 
@@ -1003,11 +1139,11 @@ void TacticsWindow18B120::func_slot6c()
         {
             s32 selected_entry = grid->unk114;
             s32 index = 0;
-            FieldListNode* node = unk44.unk00->unk04;
+            FieldListNode* node = unk44.head->next;
 
             while (node != 0)
             {
-                LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+                LibObject175140* icon = static_cast<LibObject175140*>(node->value);
 
                 if (index == selected_entry)
                 {
@@ -1019,7 +1155,7 @@ void TacticsWindow18B120::func_slot6c()
                     icon->set_color(0x808080);
                 }
 
-                node = node->unk04;
+                node = node->next;
                 index++;
             }
         }
@@ -1035,11 +1171,11 @@ void TacticsWindow18B120::func_slot68()
         {
             s32 selected_entry = grid->unk114;
             s32 index = 0;
-            FieldListNode* node = unk44.unk00->unk04;
+            FieldListNode* node = unk44.head->next;
 
             while (node != 0)
             {
-                LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+                LibObject175140* icon = static_cast<LibObject175140*>(node->value);
 
                 if (index == selected_entry)
                 {
@@ -1051,7 +1187,7 @@ void TacticsWindow18B120::func_slot68()
                     icon->set_color(0x808080);
                 }
 
-                node = node->unk04;
+                node = node->next;
                 index++;
             }
         }
@@ -1076,11 +1212,11 @@ u8 TacticsWindow18B120::func_slotb4()
 
     s32 selected_entry = icon_indices_by_slot[selected];
     s32 index = 0;
-    FieldListNode* node = unk44.unk00->unk04;
+    FieldListNode* node = unk44.head->next;
 
     while (node != 0)
     {
-        LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+        LibObject175140* icon = static_cast<LibObject175140*>(node->value);
 
         if (index == selected_entry)
         {
@@ -1092,7 +1228,7 @@ u8 TacticsWindow18B120::func_slotb4()
             icon->set_color(0x808080);
         }
 
-        node = node->unk04;
+        node = node->next;
         index++;
     }
 
@@ -1238,11 +1374,11 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, indicator);
     s32 selected_entry = icon_indices_by_slot[selected];
     s32 index = 0;
-    FieldListNode* node = unk44.unk00->unk04;
+    FieldListNode* node = unk44.head->next;
 
     while (node != 0)
     {
-        LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+        LibObject175140* icon = static_cast<LibObject175140*>(node->value);
 
         if (index == selected_entry)
         {
@@ -1254,7 +1390,7 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
             icon->set_color(0x808080);
         }
 
-        node = node->unk04;
+        node = node->next;
         index++;
     }
 
@@ -1306,11 +1442,11 @@ u8 TacticsWindow18B220::func_slotb8()
 
     s32 selected_entry = child->icon_indices_by_slot[child->selected];
     s32 index = 0;
-    FieldListNode* node = child->unk44.unk00->unk04;
+    FieldListNode* node = child->unk44.head->next;
 
     while (node != 0)
     {
-        LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+        LibObject175140* icon = static_cast<LibObject175140*>(node->value);
 
         if (index == selected_entry)
         {
@@ -1322,7 +1458,7 @@ u8 TacticsWindow18B220::func_slotb8()
             icon->set_color(0x808080);
         }
 
-        node = node->unk04;
+        node = node->next;
         index++;
     }
 
@@ -1331,6 +1467,7 @@ u8 TacticsWindow18B220::func_slotb8()
     return 1;
 }
 
+/** @brief Return the alternate associated window. @return Stored window pointer. */
 void* FieldClass15AE70::func_slot4c()
 {
     return *(void**)((u8*)this + 0x9C);
@@ -1378,6 +1515,7 @@ u8 TacticsWindow18B220::func_slotb4()
     return 2;
 }
 
+/** @brief Return the stored resource source word. @return Stored word. */
 u32 FieldClass15AE70::func_slot54()
 {
     return *(u32*)((u8*)this + 0x4);
@@ -1435,6 +1573,7 @@ void TacticsWindow18B220::func_slot68()
     }
 }
 
+/** @brief Restore the grid and resource widget movement flags. */
 void TacticsWindow18B220::func_slot64()
 {
     void* first;
@@ -1714,11 +1853,11 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
 
     s32 selected_entry = selected;
     s32 index = 0;
-    FieldListNode* node = unk2c.unk00->unk04;
+    FieldListNode* node = unk2c.head->next;
 
     while (node != 0)
     {
-        LibObject178750* text = static_cast<LibObject178750*>(node->unk00);
+        LibObject178750* text = static_cast<LibObject178750*>(node->value);
 
         if (index == selected_entry)
         {
@@ -1730,7 +1869,7 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
             text->set_color(0x808080);
         }
 
-        node = node->unk04;
+        node = node->next;
         index++;
     }
 
@@ -1738,6 +1877,7 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
     return 1;
 }
 
+/** @brief Leave the base destructor unchanged. */
 ItemCreationClass175110::~ItemCreationClass175110()
 {
 }
@@ -2301,12 +2441,12 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
     }
 
     FieldClass15AE70::func_slot10(source, 16.0f, 96.0f, 8);
-    first_selector = reinterpret_cast<FieldObject23B1D0*>(new (0) TacticsWidget18AFD0);
-    second_selector = reinterpret_cast<FieldObject23B1D0*>(new (0) TacticsWidget18AFD0);
+    first_selector = reinterpret_cast<FieldObject23B1D0*>(new (0) TacticsCoordinateSelector18AFD0);
+    second_selector = reinterpret_cast<FieldObject23B1D0*>(new (0) TacticsCoordinateSelector18AFD0);
     lib_moving_widget_init_position(reinterpret_cast<LibClass175030*>(first_selector), 0.0f, 0.0f);
     lib_moving_widget_init_position(reinterpret_cast<LibClass175030*>(second_selector), 0.0f, 0.0f);
-    lib_container_attach_widget(unk10, reinterpret_cast<TacticsWidget18AFD0*>(first_selector));
-    lib_container_attach_widget(unk10, reinterpret_cast<TacticsWidget18AFD0*>(second_selector));
+    lib_container_attach_widget(unk10, reinterpret_cast<TacticsCoordinateSelector18AFD0*>(first_selector));
+    lib_container_attach_widget(unk10, reinterpret_cast<TacticsCoordinateSelector18AFD0*>(second_selector));
 
     for (s32 index = 0; index < 8; index++)
     {
@@ -2560,8 +2700,8 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
 
         if (index < 3)
         {
-            append_position(reinterpret_cast<TacticsWidget18AFD0*>(first_selector), 20.0f + column_x, 38.0f + label_y);
-            append_position(reinterpret_cast<TacticsWidget18AFD0*>(second_selector), 20.0f + column_x, 38.0f + label_y);
+            append_position(reinterpret_cast<TacticsCoordinateSelector18AFD0*>(first_selector), 20.0f + column_x, 38.0f + label_y);
+            append_position(reinterpret_cast<TacticsCoordinateSelector18AFD0*>(second_selector), 20.0f + column_x, 38.0f + label_y);
         }
         else
         {
@@ -2569,8 +2709,8 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
             max_hp_value->unk3f = 0;
             mp_separator->unk3f = 0;
             max_mp_value->unk3f = 0;
-            append_position(reinterpret_cast<TacticsWidget18AFD0*>(first_selector), 20.0f + column_x, 18.0f + label_y);
-            append_position(reinterpret_cast<TacticsWidget18AFD0*>(second_selector), 20.0f + column_x, 18.0f + label_y);
+            append_position(reinterpret_cast<TacticsCoordinateSelector18AFD0*>(first_selector), 20.0f + column_x, 18.0f + label_y);
+            append_position(reinterpret_cast<TacticsCoordinateSelector18AFD0*>(second_selector), 20.0f + column_x, 18.0f + label_y);
         }
 
         lib_container_attach_widget(unk10, character_name_label);
@@ -2622,12 +2762,12 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
     append_text_widget_node(&unk2c, second_title);
     func_0023B1D0(first_selector, 0, 1);
     func_0023B1D0(second_selector, 0, 1);
-    reinterpret_cast<TacticsWidget18AFD0*>(second_selector)->unk3f = 0;
+    reinterpret_cast<TacticsCoordinateSelector18AFD0*>(second_selector)->unk3f = 0;
     return 1;
 }
 
 /** @brief Destroy the movement storage and widget base. */
-inline TacticsMovement175030::~TacticsMovement175030()
+inline TacticsMovementWidget175030::~TacticsMovementWidget175030()
 {
 }
 
@@ -2695,10 +2835,16 @@ void TacticsWindow18B420::func_slot5c()
     selected = index;
 }
 
+/** @brief Set the window message by signed text key. @param text_key Message key or relative index. */
 void FieldClass15AE70::func_slot60(s32 text_key)
 {
 }
 
+/**
+ * @brief Return the field at byte offset 0x24.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
 u32 get_field_word_24(void* object)
 {
     return *(u32*)((u8*)object + 0x24);
@@ -2712,7 +2858,7 @@ void refresh_grid_list_selection(TacticsWindow18B420* object)
 {
     s16 selected = object->grid->unk114;
     s32 index = 0;
-    FieldListNode* node = object->unk2c.unk00->unk04;
+    FieldListNode* node = object->unk2c.head->next;
 
     while (node != 0)
     {
@@ -2721,7 +2867,7 @@ void refresh_grid_list_selection(TacticsWindow18B420* object)
             break;
         }
 
-        LibObject178750* display = static_cast<LibObject178750*>(node->unk00);
+        LibObject178750* display = static_cast<LibObject178750*>(node->value);
 
         if (index == selected)
         {
@@ -2736,11 +2882,12 @@ void refresh_grid_list_selection(TacticsWindow18B420* object)
             display->unk3c = 1;
         }
 
-        node = node->unk04;
+        node = node->next;
         index++;
     }
 }
 
+/** @brief Move to the following grid entry and refresh its highlight. */
 void TacticsWindow18B420::func_slot6c()
 {
     if (static_cast<s16>(grid->process_direction(1)) == 1)
@@ -2751,6 +2898,7 @@ void TacticsWindow18B420::func_slot6c()
     refresh_grid_list_selection(this);
 }
 
+/** @brief Move to the preceding grid entry and refresh its highlight. */
 void TacticsWindow18B420::func_slot68()
 {
     if (static_cast<s16>(grid->process_direction(0)) == 1)
@@ -2995,10 +3143,12 @@ s32 TacticsWindow18B420::func_slotf4(u32 associated)
     return 1;
 }
 
+/** @brief Destroy the grid window. */
 TacticsWindow18B420::~TacticsWindow18B420()
 {
 }
 
+/** @brief Initialize the grid window's pointers and control fields. */
 TacticsWindow18B420::TacticsWindow18B420()
 {
     character_records = 0;
@@ -3017,6 +3167,7 @@ TacticsWindow18B420::TacticsWindow18B420()
     selected_entry = 0;
 }
 
+/** @brief Restore the selector movement or visibility state. */
 void TacticsWindow18B520::func_slot64()
 {
     s16 state = selected;
@@ -3035,6 +3186,7 @@ void TacticsWindow18B520::func_slot64()
     }
 }
 
+/** @brief Move to the following coordinate, wrapping after the eighth. */
 void TacticsWindow18B520::func_slot6c()
 {
     FieldObject23B1D0* selection = this->selection;
@@ -3054,6 +3206,7 @@ void TacticsWindow18B520::func_slot6c()
     func_0023B1D0(selection, index, 0);
 }
 
+/** @brief Move to the preceding coordinate, wrapping before the first. */
 void TacticsWindow18B520::func_slot68()
 {
     FieldObject23B1D0* selection = this->selection;
@@ -3073,6 +3226,7 @@ void TacticsWindow18B520::func_slot68()
     func_0023B1D0(selection, index, 0);
 }
 
+/** @brief Map the first three coordinate entries to entries three, five, and six. */
 void TacticsWindow18B520::func_slot74()
 {
     FieldObject23B1D0* selection = this->selection;
@@ -3102,6 +3256,7 @@ void TacticsWindow18B520::func_slot74()
     func_0023B1D0(selection, index, 0);
 }
 
+/** @brief Map the last five coordinate entries to the first three. */
 void TacticsWindow18B520::func_slot70()
 {
     FieldObject23B1D0* selection = this->selection;
@@ -3333,9 +3488,9 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
 
     u32 source = associated;
     FieldClass15AE70::func_slot10(source, 16.0f, 96.0f, 8);
-    selection = reinterpret_cast<FieldObject23B1D0*>(new (0) TacticsWidget18AFD0);
+    selection = reinterpret_cast<FieldObject23B1D0*>(new (0) TacticsCoordinateSelector18AFD0);
     lib_moving_widget_init_position(reinterpret_cast<LibClass175030*>(selection), 0.0f, 0.0f);
-    lib_container_attach_widget(unk10, reinterpret_cast<TacticsWidget18AFD0*>(selection));
+    lib_container_attach_widget(unk10, reinterpret_cast<TacticsCoordinateSelector18AFD0*>(selection));
 
     for (s32 index = 0; index < 8; index++)
     {
@@ -3447,11 +3602,11 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
 
         if (index < 3)
         {
-            append_position(reinterpret_cast<TacticsWidget18AFD0*>(selection), 18.0f + column_x, 52.0f + row_y);
+            append_position(reinterpret_cast<TacticsCoordinateSelector18AFD0*>(selection), 18.0f + column_x, 52.0f + row_y);
         }
         else
         {
-            append_position(reinterpret_cast<TacticsWidget18AFD0*>(selection), 18.0f + column_x, 36.0f + row_y);
+            append_position(reinterpret_cast<TacticsCoordinateSelector18AFD0*>(selection), 18.0f + column_x, 36.0f + row_y);
         }
 
         append_icon_widget_node(&unk44, label);
@@ -3484,10 +3639,15 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
     return 1;
 }
 
+/** @brief Destroy the coordinate-selection window. */
 TacticsWindow18B520::~TacticsWindow18B520()
 {
 }
 
+/**
+ * @brief Replace the text for supported keys and reset its scrolling state.
+ * @param text_key Text key in the supported 0x2714..0x271B range.
+ */
 void TacticsWindow18B620::func_slot60(s32 text_key)
 {
     if (text_key >= 0x2714 && text_key < 0x271C)
@@ -3499,6 +3659,7 @@ void TacticsWindow18B620::func_slot60(s32 text_key)
     }
 }
 
+/** @brief Hold the text position, then scroll and wrap it after the timer expires. */
 void TacticsWindow18B620::func_slot5c()
 {
     LibObject178750* target = text;
@@ -3610,10 +3771,16 @@ s32 TacticsWindow18B620::func_slotf4(void* associated)
     return 1;
 }
 
+/** @brief Destroy the scrolling window. */
 TacticsWindow18B620::~TacticsWindow18B620()
 {
 }
 
+/**
+ * @brief Initialize the resource window and attach its three displays.
+ * @param associated Resource source word forwarded to the base initializer.
+ * @return One after the displays are attached.
+ */
 s32 TacticsWindow18B720::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 20);
@@ -3636,11 +3803,13 @@ s32 TacticsWindow18B720::func_slotf4(u32 associated)
     return 1;
 }
 
+/** @brief Destroy the resource window. */
 TacticsWindow18B720::~TacticsWindow18B720()
 {
 }
 
-void TacticsState18B820::func_slot5c()
+/** @brief Release the loaded resource, detach the State, and dispatch its release handler. */
+void TacticsResourceMenuState::func_slot5c()
 {
     if (resource_slot != 0)
     {
@@ -3660,6 +3829,10 @@ void enqueue_resident_object(void* object)
     resident_enqueue_object(D_001B65F4, object);
 }
 
+/**
+ * @brief Perform no work.
+ * @param object Receiver or first argument; unused.
+ */
 void tactics_callback_noop(void* object)
 {
 }
@@ -3668,7 +3841,7 @@ void tactics_callback_noop(void* object)
  * @brief Initialize the State's windows and their resource-mode associations.
  * @return One after setup, or zero when a required window allocation fails.
  */
-s32 TacticsState18B820::func_00263CD0()
+s32 TacticsResourceMenuState::func_00263CD0()
 {
     TacticsWindow18B720* background = new (0) TacticsWindow18B720;
     TacticsWindow18B620* scrolling = new (0) TacticsWindow18B620;
@@ -3754,11 +3927,11 @@ s32 TacticsState18B820::func_00263CD0()
 
         s32 selected_entry = child->icon_indices_by_slot[child->selected];
         s32 index = 0;
-        FieldListNode* node = child->unk44.unk00->unk04;
+        FieldListNode* node = child->unk44.head->next;
 
         while (node != 0)
         {
-            LibObject175140* icon = static_cast<LibObject175140*>(node->unk00);
+            LibObject175140* icon = static_cast<LibObject175140*>(node->value);
 
             if (index == selected_entry)
             {
@@ -3770,7 +3943,7 @@ s32 TacticsState18B820::func_00263CD0()
                 icon->set_color(0x808080);
             }
 
-            node = node->unk04;
+            node = node->next;
             index++;
         }
 
@@ -3784,12 +3957,18 @@ s32 TacticsState18B820::func_00263CD0()
     return 1;
 }
 
+/** @brief Store the alternate window pointer. @param associated Pointer to store. */
 void FieldClass15AE70::func_slot48(void* associated)
 {
     *(void**)((u8*)this + 0x9C) = associated;
 }
 
-s32 TacticsState18B820::func_001E1820(void* buffer)
+/**
+ * @brief Load the completed aligned resource using the State's heap context.
+ * @param buffer Completed resource buffer, or null to report failure.
+ * @return Zero for a null buffer; otherwise the window initialization result.
+ */
+s32 TacticsResourceMenuState::func_001E1820(void* buffer)
 {
     if (buffer == 0)
     {
@@ -3813,7 +3992,11 @@ s32 TacticsState18B820::func_001E1820(void* buffer)
     return func_00263CD0();
 }
 
-u8 TacticsState18B820::func_00264110()
+/**
+ * @brief Allocate and initialize the State's record selection.
+ * @return One when a selection exists and initialization succeeds; otherwise zero.
+ */
+u8 TacticsResourceMenuState::func_00264110()
 {
     selection = new (0) FieldRecordSelection;
     u8 result = func_0028E3D0(selection);
@@ -3827,7 +4010,7 @@ u8 TacticsState18B820::func_00264110()
 }
 
 /** @brief Release the owned record selection and destroy the State base. */
-TacticsState18B820::~TacticsState18B820()
+TacticsResourceMenuState::~TacticsResourceMenuState()
 {
     if (selection != 0)
     {
@@ -3836,7 +4019,7 @@ TacticsState18B820::~TacticsState18B820()
 }
 
 /** @brief Clear the resource slot, window initialization flag, and selection pointer. */
-TacticsState18B820::TacticsState18B820()
+TacticsResourceMenuState::TacticsResourceMenuState()
 {
     resource_slot = 0;
     windows_initialized = 0;
@@ -3844,302 +4027,427 @@ TacticsState18B820::TacticsState18B820()
 }
 
 /** @brief Destroy the coordinate list and movement bases. */
-TacticsWidget18AFD0::~TacticsWidget18AFD0()
+TacticsCoordinateSelector18AFD0::~TacticsCoordinateSelector18AFD0()
 {
 }
 
+/** @brief Perform no work. */
 void TacticsStorage18B010::func_slot0c()
 {
 }
 
-s32 TacticsWidget18AFD0::func_003EEBC0()
+/** @brief Report widget kind three. @return Always three. */
+s32 TacticsCoordinateSelector18AFD0::get_object_kind()
 {
     return 3;
 }
 
-void TacticsWidget18AFD0::func_003EEBE0()
+/** @brief Leave the default notification hook unchanged. */
+void TacticsCoordinateSelector18AFD0::notify()
 {
 }
 
+/** @brief Store the window control byte. @param value Control value. */
 void FieldClass15AE70::func_slot24(u8 value)
 {
     *(u8*)((u8*)this + 0xC) = value;
 }
 
+/** @brief Read the window control byte. @return Stored control value. */
 u8 FieldClass15AE70::func_slot28()
 {
     return *(u8*)((u8*)this + 0xC);
 }
 
+/** @brief Store the byte state code. @param value State code. */
 void FieldClass15AE70::func_slot2c(u8 value)
 {
     *(u8*)((u8*)this + 0x8) = value;
 }
 
+/** @brief Read the byte state code. @return Stored state code. */
 u8 FieldClass15AE70::func_slot30()
 {
     return *(u8*)((u8*)this + 0x8);
 }
 
+/** @brief Store the halfword state flags. @param value State flags. */
 void FieldClass15AE70::func_slot34(u16 value)
 {
     *(u16*)((u8*)this + 0xA) = value;
 }
 
+/** @brief Read the halfword state flags. @return Stored state flags. */
 u16 FieldClass15AE70::func_slot38()
 {
     return *(u16*)((u8*)this + 0xA);
 }
 
+/** @brief Store the opaque resource source word. @param value Word to store. */
 void FieldClass15AE70::func_slot50(u32 value)
 {
     *(u32*)((u8*)this + 0x4) = value;
 }
 
+/** @brief Return the nested display container. @return Stored container. */
 LibObject178660* FieldClass15AE70::func_slot58()
 {
     return *(LibObject178660**)((u8*)this + 0x10);
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot64()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot70()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot74()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot78()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot7c()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot80()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot84()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot88()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot8c()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot90()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot94()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot98()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slot9c()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slota0()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slota4()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slota8()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slotac()
 {
 }
 
+/** @brief Return the default byte result. @return Zero. */
 u8 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
+/** @brief Return the default byte result. @return Zero. */
 u8 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
 
+/** @brief Return the default status. @return Zero. */
 s32 FieldClass15AE70::func_slotc0()
 {
     return 0;
 }
 
+/** @brief Return the default status. @return Zero. */
 s32 FieldClass15AE70::func_slotc4()
 {
     return 0;
 }
 
+/** @brief Return the default status. @return Zero. */
 s32 FieldClass15AE70::func_slotc8()
 {
     return 0;
 }
 
+/** @brief Return the default status. @return Zero. */
 s32 FieldClass15AE70::func_slotcc()
 {
     return 0;
 }
 
+/** @brief Return the default status. @return Zero. */
 s32 FieldClass15AE70::func_slotd0()
 {
     return 0;
 }
 
+/** @brief Return the default status. @return Zero. */
 s32 FieldClass15AE70::func_slotd4()
 {
     return 0;
 }
 
+/** @brief Return the default status. @return Zero. */
 s32 FieldClass15AE70::func_slotd8()
 {
     return 0;
 }
 
+/** @brief Return the default status. @return Zero. */
 s32 FieldClass15AE70::func_slotdc()
 {
     return 0;
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slote0()
 {
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slote4()
 {
 }
 
+/** @brief Read the nested display byte flag. @return Stored flag. */
 u8 FieldClass15AE70::func_slote8()
 {
     return *(u8*)((u8*)this + 0xD);
 }
 
+/** @brief Set the nested display byte flag. @param value Flag value. */
 void FieldClass15AE70::func_slotec(u8 value)
 {
     *(u8*)((u8*)this + 0xD) = value;
 }
 
+/** @brief Leave the default virtual hook unchanged. */
 void FieldClass15AE70::func_slotf0()
 {
 }
 
+/** @brief Leave the default virtual update hook unchanged. */
 void FieldClass15AE70::func_slot5c()
 {
 }
 
+/** @brief Leave the default virtual navigation hook unchanged. */
 void FieldClass15AE70::func_slot68()
 {
 }
 
+/** @brief Leave the default virtual navigation hook unchanged. */
 void FieldClass15AE70::func_slot6c()
 {
 }
 
+/** @brief Return the default window action status. @return Zero. */
 u8 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
+/** @brief Return the default window action status. @return Zero. */
 u8 FieldClass15AE70::func_slotb4()
 {
     return 0;
 }
 
+/**
+ * @brief Return bit zero of the byte at offset 0x38.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
 u32 read_mode_flag_bit(void* object)
 {
     return *(u8*)((u8*)object + 0x38) & 1;
 }
 
+/**
+ * @brief Return the field at byte offset 0x34.
+ * @param object Object containing the field.
+ * @return The field value.
+ */
 u32 read_word_at_34(void* object)
 {
     return *(u32*)((u8*)object + 0x34);
 }
 
+/**
+ * @brief Return the fixed value 4.
+ * @param object Receiver or first argument; unused.
+ * @return Always 4.
+ */
 s32 return_constant_four(void* object)
 {
     return 4;
 }
 
+/**
+ * @brief Store the field at byte offset 0x24.
+ * @param object Object containing the field.
+ * @param value Value to store.
+ */
 void write_word_at_24(void* object, u32 value)
 {
     *(u32*)((u8*)object + 0x24) = value;
 }
 
+/**
+ * @brief Store the byte at offset 0x28.
+ * @param object Object containing the field.
+ * @param value Byte to store.
+ */
 void write_byte_at_28(void* object, u8 value)
 {
     *(u8*)((u8*)object + 0x28) = value;
 }
 
+/**
+ * @brief Read the signed byte at offset 0x28.
+ * @param object Object containing the field.
+ * @return The stored signed byte.
+ */
 s8 read_signed_byte_at_28(void* object)
 {
     return *(s8*)((u8*)object + 0x28);
 }
 
+/**
+ * @brief Return zero for the callback slot.
+ * @param object Receiver or first argument; unused.
+ * @return Zero.
+ */
 s32 return_zero_callback_6(void* object)
 {
     return 0;
 }
 
+/**
+ * @brief Return zero for the callback slot.
+ * @param object Receiver or first argument; unused.
+ * @return Zero.
+ */
 s32 return_zero_callback_1(void* object)
 {
     return 0;
 }
 
+/**
+ * @brief Perform no work for the callback slot.
+ * @param object Receiver or first argument; unused.
+ */
 void noop_callback_1(void* object)
 {
 }
 
+/**
+ * @brief Return zero for the callback slot.
+ * @param object Receiver or first argument; unused.
+ * @return Zero.
+ */
 s32 return_zero_callback_2(void* object)
 {
     return 0;
 }
 
+/**
+ * @brief Perform no work for the callback slot.
+ * @param object Receiver or first argument; unused.
+ */
 void noop_callback_2(void* object)
 {
 }
 
+/**
+ * @brief Perform no work for the callback slot.
+ * @param object Receiver or first argument; unused.
+ */
 void noop_callback_3(void* object)
 {
 }
 
+/**
+ * @brief Perform no work for the callback slot.
+ * @param object Receiver or first argument; unused.
+ */
 void noop_callback_4(void* object)
 {
 }
 
+/**
+ * @brief Return zero for the callback slot.
+ * @param object Receiver or first argument; unused.
+ * @return Zero.
+ */
 s32 return_zero_callback_3(void* object)
 {
     return 0;
 }
 
+/**
+ * @brief Return zero for the callback slot.
+ * @param object Receiver or first argument; unused.
+ * @return Zero.
+ */
 s32 return_zero_callback_4(void* object)
 {
     return 0;
 }
 
+/**
+ * @brief Return zero for the callback slot.
+ * @param object Receiver or first argument; unused.
+ * @return Zero.
+ */
 s32 return_zero_callback_5(void* object)
 {
     return 0;
 }
 
-TacticsList18B8E0::TacticsList18B8E0()
+/** @brief Create the head node and start with an empty list. */
+TacticsCharacterNameWidgetList::TacticsCharacterNameWidgetList()
 {
     head = new (0) TacticsListNode;
 
@@ -4152,7 +4460,8 @@ TacticsList18B8E0::TacticsList18B8E0()
     count = 0;
 }
 
-TacticsList18B8E0::~TacticsList18B8E0()
+/** @brief Delete the value nodes and the head node. */
+TacticsCharacterNameWidgetList::~TacticsCharacterNameWidgetList()
 {
     clear_character_name_widget_list(this);
 
@@ -4163,7 +4472,11 @@ TacticsList18B8E0::~TacticsList18B8E0()
     }
 }
 
-void clear_character_name_widget_list(TacticsList18B8E0* list)
+/**
+ * @brief Delete every node after the head node and set the count to zero.
+ * @param list List to clear. The head node stays allocated.
+ */
+void clear_character_name_widget_list(TacticsCharacterNameWidgetList* list)
 {
     TacticsListNode* node = list->head->next;
 
@@ -4183,6 +4496,11 @@ void clear_character_name_widget_list(TacticsList18B8E0* list)
     list->count = 0;
 }
 
+/**
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
+ */
 void append_cursor_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
@@ -4192,19 +4510,24 @@ void append_cursor_widget_node(FieldCountedList* list, void* value)
         return;
     }
 
-    node->unk00 = value;
-    node->unk04 = 0;
-    FieldListNode* cursor = list->unk00;
+    node->value = value;
+    node->next = 0;
+    FieldListNode* cursor = list->head;
 
-    while (cursor->unk04 != 0)
+    while (cursor->next != 0)
     {
-        cursor = cursor->unk04;
+        cursor = cursor->next;
     }
 
-    cursor->unk04 = node;
-    list->unk04++;
+    cursor->next = node;
+    list->count++;
 }
 
+/**
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
+ */
 void append_grid_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
@@ -4214,19 +4537,24 @@ void append_grid_widget_node(FieldCountedList* list, void* value)
         return;
     }
 
-    node->unk00 = value;
-    node->unk04 = 0;
-    FieldListNode* cursor = list->unk00;
+    node->value = value;
+    node->next = 0;
+    FieldListNode* cursor = list->head;
 
-    while (cursor->unk04 != 0)
+    while (cursor->next != 0)
     {
-        cursor = cursor->unk04;
+        cursor = cursor->next;
     }
 
-    cursor->unk04 = node;
-    list->unk04++;
+    cursor->next = node;
+    list->count++;
 }
 
+/**
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
+ */
 void append_icon_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
@@ -4236,19 +4564,25 @@ void append_icon_widget_node(FieldCountedList* list, void* value)
         return;
     }
 
-    node->unk00 = value;
-    node->unk04 = 0;
-    FieldListNode* cursor = list->unk00;
+    node->value = value;
+    node->next = 0;
+    FieldListNode* cursor = list->head;
 
-    while (cursor->unk04 != 0)
+    while (cursor->next != 0)
     {
-        cursor = cursor->unk04;
+        cursor = cursor->next;
     }
 
-    cursor->unk04 = node;
-    list->unk04++;
+    cursor->next = node;
+    list->count++;
 }
 
+/**
+ * @brief Return the node at `index`. Index zero is the first node after the head node.
+ * @param list List to search.
+ * @param index Zero-based index among the value nodes.
+ * @return The node at that index, or null if the list ends first.
+ */
 TacticsListNode* get_widget_node_at_index(TacticsList* list, s32 index)
 {
     TacticsListNode* node = list->head->next;
@@ -4268,7 +4602,8 @@ TacticsListNode* get_widget_node_at_index(TacticsList* list, s32 index)
 }
 
 
-TacticsList18B8D0::TacticsList18B8D0()
+/** @brief Create the head node and start with an empty list. */
+TacticsStatValueWidgetList::TacticsStatValueWidgetList()
 {
     head = new (0) TacticsListNode;
 
@@ -4281,7 +4616,8 @@ TacticsList18B8D0::TacticsList18B8D0()
     count = 0;
 }
 
-TacticsList18B8D0::~TacticsList18B8D0()
+/** @brief Release the stat-value nodes and the head node. */
+TacticsStatValueWidgetList::~TacticsStatValueWidgetList()
 {
     clear_stat_value_list(this);
 
@@ -4292,6 +4628,11 @@ TacticsList18B8D0::~TacticsList18B8D0()
     }
 }
 
+/**
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
+ */
 void append_stat_value_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
@@ -4301,20 +4642,24 @@ void append_stat_value_node(FieldCountedList* list, void* value)
         return;
     }
 
-    node->unk00 = value;
-    node->unk04 = 0;
-    FieldListNode* cursor = list->unk00;
+    node->value = value;
+    node->next = 0;
+    FieldListNode* cursor = list->head;
 
-    while (cursor->unk04 != 0)
+    while (cursor->next != 0)
     {
-        cursor = cursor->unk04;
+        cursor = cursor->next;
     }
 
-    cursor->unk04 = node;
-    list->unk04++;
+    cursor->next = node;
+    list->count++;
 }
 
-void clear_stat_value_list(TacticsList18B8D0* list)
+/**
+ * @brief Delete every node after the head node and set the count to zero.
+ * @param list List to clear. The head node stays allocated.
+ */
+void clear_stat_value_list(TacticsStatValueWidgetList* list)
 {
     TacticsListNode* node = list->head->next;
 
@@ -4334,6 +4679,12 @@ void clear_stat_value_list(TacticsList18B8D0* list)
     list->count = 0;
 }
 
+/**
+ * @brief Return the node at `index`. Index zero is the first node after the head node.
+ * @param list List to search.
+ * @param index Zero-based index among the value nodes.
+ * @return The node at that index, or null if the list ends first.
+ */
 TacticsListNode* get_stat_value_node(TacticsList* list, s32 index)
 {
     TacticsListNode* node = list->head->next;
@@ -4353,7 +4704,8 @@ TacticsListNode* get_stat_value_node(TacticsList* list, s32 index)
 }
 
 
-TacticsList18B8C0::TacticsList18B8C0()
+/** @brief Create the head node and start with an empty list. */
+TacticsTextWidgetList::TacticsTextWidgetList()
 {
     head = new (0) TacticsListNode;
 
@@ -4366,7 +4718,8 @@ TacticsList18B8C0::TacticsList18B8C0()
     count = 0;
 }
 
-TacticsList18B8C0::~TacticsList18B8C0()
+/** @brief Release the text-widget nodes and the head node. */
+TacticsTextWidgetList::~TacticsTextWidgetList()
 {
     clear_text_widget_list(this);
 
@@ -4377,6 +4730,11 @@ TacticsList18B8C0::~TacticsList18B8C0()
     }
 }
 
+/**
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
+ */
 void append_text_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
@@ -4386,20 +4744,24 @@ void append_text_widget_node(FieldCountedList* list, void* value)
         return;
     }
 
-    node->unk00 = value;
-    node->unk04 = 0;
-    FieldListNode* cursor = list->unk00;
+    node->value = value;
+    node->next = 0;
+    FieldListNode* cursor = list->head;
 
-    while (cursor->unk04 != 0)
+    while (cursor->next != 0)
     {
-        cursor = cursor->unk04;
+        cursor = cursor->next;
     }
 
-    cursor->unk04 = node;
-    list->unk04++;
+    cursor->next = node;
+    list->count++;
 }
 
-void clear_text_widget_list(TacticsList18B8C0* list)
+/**
+ * @brief Delete every node after the head node and set the count to zero.
+ * @param list List to clear. The head node stays allocated.
+ */
+void clear_text_widget_list(TacticsTextWidgetList* list)
 {
     TacticsListNode* node = list->head->next;
 
@@ -4419,6 +4781,12 @@ void clear_text_widget_list(TacticsList18B8C0* list)
     list->count = 0;
 }
 
+/**
+ * @brief Return the node at `index`. Index zero is the first node after the head node.
+ * @param list List to search.
+ * @param index Zero-based index among the value nodes.
+ * @return The node at that index, or null if the list ends first.
+ */
 TacticsListNode* get_text_widget_node(TacticsList* list, s32 index)
 {
     TacticsListNode* node = list->head->next;
@@ -4438,6 +4806,11 @@ TacticsListNode* get_text_widget_node(TacticsList* list, s32 index)
 }
 
 
+/**
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
+ */
 void append_clip_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
@@ -4447,19 +4820,24 @@ void append_clip_widget_node(FieldCountedList* list, void* value)
         return;
     }
 
-    node->unk00 = value;
-    node->unk04 = 0;
-    FieldListNode* cursor = list->unk00;
+    node->value = value;
+    node->next = 0;
+    FieldListNode* cursor = list->head;
 
-    while (cursor->unk04 != 0)
+    while (cursor->next != 0)
     {
-        cursor = cursor->unk04;
+        cursor = cursor->next;
     }
 
-    cursor->unk04 = node;
-    list->unk04++;
+    cursor->next = node;
+    list->count++;
 }
 
+/**
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
+ */
 void append_panel_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
@@ -4469,20 +4847,21 @@ void append_panel_widget_node(FieldCountedList* list, void* value)
         return;
     }
 
-    node->unk00 = value;
-    node->unk04 = 0;
-    FieldListNode* cursor = list->unk00;
+    node->value = value;
+    node->next = 0;
+    FieldListNode* cursor = list->head;
 
-    while (cursor->unk04 != 0)
+    while (cursor->next != 0)
     {
-        cursor = cursor->unk04;
+        cursor = cursor->next;
     }
 
-    cursor->unk04 = node;
-    list->unk04++;
+    cursor->next = node;
+    list->count++;
 }
 
-TacticsList18B8B0::~TacticsList18B8B0()
+/** @brief Release the coordinate nodes and the head node. */
+TacticsCoordinatePositionList::~TacticsCoordinatePositionList()
 {
     clear_coordinate_widget_list(this);
 
@@ -4493,7 +4872,11 @@ TacticsList18B8B0::~TacticsList18B8B0()
     }
 }
 
-void clear_coordinate_widget_list(TacticsList18B8B0* list)
+/**
+ * @brief Delete every coordinate node after the head node and set the count to zero.
+ * @param list List to clear. The head node stays allocated.
+ */
+void clear_coordinate_widget_list(TacticsCoordinatePositionList* list)
 {
     TacticsCoordinateNode* node = list->head->next;
 
@@ -4513,7 +4896,12 @@ void clear_coordinate_widget_list(TacticsList18B8B0* list)
     list->count = 0;
 }
 
-void append_coordinate_pair(TacticsList18B8B0* list, TacticsPresetPosition value)
+/**
+ * @brief Copy `value.x` and `value.y` into a new node at the end of the list.
+ * @param list List to append to.
+ * @param value Coordinate pair to copy.
+ */
+void append_coordinate_pair(TacticsCoordinatePositionList* list, TacticsPresetPosition value)
 {
     TacticsCoordinateNode* node = new (0) TacticsCoordinateNode;
 
@@ -4536,7 +4924,8 @@ void append_coordinate_pair(TacticsList18B8B0* list, TacticsPresetPosition value
     list->count++;
 }
 
-TacticsList18B8B0::TacticsList18B8B0()
+/** @brief Create the head node and start with an empty list. */
+TacticsCoordinatePositionList::TacticsCoordinatePositionList()
 {
     head = new (0) TacticsCoordinateNode;
 

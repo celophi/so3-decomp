@@ -1919,7 +1919,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     return 1;
 }
 
-/** @brief Destroy the list receiver and its contained sentinel. */
+/** @brief Destroy the list receiver and its head node. */
 LibClass178A70::~LibClass178A70()
 {
 }
@@ -3888,8 +3888,8 @@ s32 ShopState::func_slot84()
 }
 
 /**
- * @brief Append a value after the list's sentinel node.
- * @param list List containing an existing sentinel and element count.
+ * @brief Append a value after the list head node.
+ * @param list List containing an existing head node and element count.
  * @param value Object pointer to append.
  */
 void shop_append_choice(FieldCountedList* list, void* value)
@@ -3898,23 +3898,23 @@ void shop_append_choice(FieldCountedList* list, void* value)
 
     if (node != 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        FieldListNode* tail = list->unk00;
+        node->value = value;
+        node->next = 0;
+        FieldListNode* tail = list->head;
 
-        while (tail->unk04 != 0)
+        while (tail->next != 0)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
 
-        tail->unk04 = node;
-        list->unk04++;
+        tail->next = node;
+        list->count++;
     }
 }
 
 /**
- * @brief Append a value after the list's sentinel node.
- * @param list List containing an existing sentinel and element count.
+ * @brief Append a value after the list head node.
+ * @param list List containing an existing head node and element count.
  * @param value Object pointer to append.
  */
 void shop_append_text(FieldCountedList* list, void* value)
@@ -3923,23 +3923,23 @@ void shop_append_text(FieldCountedList* list, void* value)
 
     if (node != 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        FieldListNode* tail = list->unk00;
+        node->value = value;
+        node->next = 0;
+        FieldListNode* tail = list->head;
 
-        while (tail->unk04 != 0)
+        while (tail->next != 0)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
 
-        tail->unk04 = node;
-        list->unk04++;
+        tail->next = node;
+        list->count++;
     }
 }
 
 /**
- * @brief Append a value after the list's sentinel node.
- * @param list List containing an existing sentinel and element count.
+ * @brief Append a value after the list head node.
+ * @param list List containing an existing head node and element count.
  * @param value Object pointer to append.
  */
 void shop_append_frame(FieldCountedList* list, void* value)
@@ -3948,23 +3948,23 @@ void shop_append_frame(FieldCountedList* list, void* value)
 
     if (node != 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        FieldListNode* tail = list->unk00;
+        node->value = value;
+        node->next = 0;
+        FieldListNode* tail = list->head;
 
-        while (tail->unk04 != 0)
+        while (tail->next != 0)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
 
-        tail->unk04 = node;
-        list->unk04++;
+        tail->next = node;
+        list->count++;
     }
 }
 
 /**
- * @brief Append a value after the list's sentinel node.
- * @param list List containing an existing sentinel and element count.
+ * @brief Append a value after the list head node.
+ * @param list List containing an existing head node and element count.
  * @param value Object pointer to append.
  */
 void shop_append_panel(FieldCountedList* list, void* value)
@@ -3973,16 +3973,16 @@ void shop_append_panel(FieldCountedList* list, void* value)
 
     if (node != 0)
     {
-        node->unk00 = value;
-        node->unk04 = 0;
-        FieldListNode* tail = list->unk00;
+        node->value = value;
+        node->next = 0;
+        FieldListNode* tail = list->head;
 
-        while (tail->unk04 != 0)
+        while (tail->next != 0)
         {
-            tail = tail->unk04;
+            tail = tail->next;
         }
 
-        tail->unk04 = node;
-        list->unk04++;
+        tail->next = node;
+        list->count++;
     }
 }

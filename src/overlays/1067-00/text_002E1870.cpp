@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "clamp.h"
 #include "overlays/1067-00/text_002E1870.h"
 #include "overlays/1067-00/field_runtime.h"
 #include "overlays/1067-00/text_002CD390.h"
@@ -41,7 +42,48 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E18
 // Large dispatcher; needs callback and runtime-record interfaces.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E19D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E7D20);
+s32 func_002E7D20(FieldCheckedWordsState1870* object, s32 value)
+{
+    if (object->unk9C != (object->unkA8 ^ (object->unk54 ^ (object->unk4C + object->unk50))))
+    {
+        return 0;
+    }
+    value += 32113;
+    if (object->unk02 == 0)
+    {
+        value = clamp(value, 32113, 42112);
+    }
+    if (object->unk02 == 1)
+    {
+        value = clamp(value, 32113, 42112);
+    }
+    value -= 32113;
+    object->unk50 = value ^ 0x7DE3F7E3;
+    object->unk9C = object->unkA8 ^ (object->unk54 ^ (object->unk4C + object->unk50));
+    s32 current;
+    if (object->unk9C != (object->unkA8 ^ (object->unk54 ^ (object->unk4C + object->unk50))))
+    {
+        current = 0;
+    }
+    else
+    {
+        current = object->unk50 ^ 0x7DE3F7E3;
+    }
+    if (value < current)
+    {
+        if (object->unk9C == (object->unkA8 ^ (object->unk54 ^ (object->unk4C + object->unk50))))
+        {
+            s32 next = func_002E7F30(object, value);
+            object->unk50 = next ^ 0x7DE3F7E3;
+            object->unk9C = object->unkA8 ^ (object->unk54 ^ (object->unk4C + object->unk50));
+            if (next < func_002E7EF0(object))
+            {
+                func_002E7D20(object, next);
+            }
+        }
+    }
+    return value;
+}
 
 s32 func_002E7EF0(const FieldCheckedWordsState1870* object)
 {

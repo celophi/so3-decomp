@@ -6,7 +6,9 @@
 /** Partial receiver containing encoded values and their check words. */
 typedef struct FieldCheckedWordsState1870
 {
-    u8 unk00[0x34];
+    u8 unk00[2];
+    s16 unk02;
+    u8 unk04[0x30];
     u32 unk34;
     u32 unk38;
     u32 unk3C;
@@ -95,6 +97,24 @@ u16 func_002EE9B0(const FieldObject2EDFD0* object);
  * @return One if stored, or zero when value is null.
  */
 s32 func_002EE9C0(FieldObject2EDFD0* object, void* value);
+
+/**
+ * @brief Clamp a value to 0..9999, store it encoded in unk50 and refresh its check word.
+ *
+ * Returns zero without storing when the current check word is invalid.
+ * @param object Encoded values and check words.
+ * @param value Value to store.
+ * @return The stored value, or zero if validation fails.
+ */
+s32 func_002E7D20(FieldCheckedWordsState1870* object, s32 value);
+
+/**
+ * @brief Return the follow-up value func_002E7D20 stores after a decrease.
+ * @param object Encoded values and check words.
+ * @param value Value just stored.
+ * @return Value to store next.
+ */
+s32 func_002E7F30(FieldCheckedWordsState1870* object, s32 value);
 
 /**
  * @brief Decode the value stored in unk50 after validating its check word.

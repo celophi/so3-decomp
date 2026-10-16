@@ -1,2 +1,2 @@
-@64@__dt__21TacticsMovement175030Fv = 0x004673B0;
-@64@__dt__19TacticsWidget18AFD0Fv = 0x00351F90;
+@64@__dt__27TacticsMovementWidget175030Fv = 0x004673B0;
+@64@__dt__31TacticsCoordinateSelector18AFD0Fv = 0x00351F90;

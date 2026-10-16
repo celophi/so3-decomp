@@ -1,7 +1,7 @@
 #ifndef SO3_OVERLAYS_CITEMCREATION_ITEM_DISPLAY_INLINES_H
 #define SO3_OVERLAYS_CITEMCREATION_ITEM_DISPLAY_INLINES_H
 
-#include "overlays/citemcreation/text_003483C0.h"
+#include "overlays/citemcreation/citemcreation.h"
 #include "overlays/1067-00/text_marker.h"
 
 #ifdef __cplusplus
