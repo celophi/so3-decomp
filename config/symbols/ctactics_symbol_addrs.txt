@@ -88,8 +88,8 @@ __vt__33ItemCreationOptionResourceDisplay = 0x0015B240; // size:0x24 absolute:Tr
 lib_draw_state_init = 0x00453FF0; // type:func absolute:True
 __dt__23ItemCreationClass175110Fv = 0x0034AE50; // type:func
 
-load_resource_and_initialize_windows__24TacticsResourceMenuStateFPv = 0x00350D20; // type:func
-initialize_record_selection__24TacticsResourceMenuStateFv = 0x00350DE0; // type:func
+func_001E1820__24TacticsResourceMenuStateFPv = 0x00350D20; // type:func
+func_00264110__24TacticsResourceMenuStateFv = 0x00350DE0; // type:func
 
 func_00263D80__24TacticsResourceMenuStateFv = 0x00350740; // type:func absolute:True allow_duplicated:True
 func_slot5c__24TacticsResourceMenuStateFv = 0x00350740; // type:func allow_duplicated:True
@@ -306,7 +306,7 @@ func_003507B0 = 0x003507B0; // type:func allow_duplicated:True
 
 __vt__24TacticsResourceMenuState = 0x0018B820; // size:0x8C absolute:True
 __dt__24TacticsResourceMenuStateFv = 0x00350E60; // type:func
-initialize_mode_windows__24TacticsResourceMenuStateFv = 0x003507C0; // type:func
+func_00263CD0__24TacticsResourceMenuStateFv = 0x003507C0; // type:func
 __ct__24TacticsResourceMenuStateFv = 0x00350F00; // type:func
 
 

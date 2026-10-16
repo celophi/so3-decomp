@@ -3841,7 +3841,7 @@ void tactics_callback_noop(void* object)
  * @brief Initialize the State's windows and their resource-mode associations.
  * @return One after setup, or zero when a required window allocation fails.
  */
-s32 TacticsResourceMenuState::initialize_mode_windows()
+s32 TacticsResourceMenuState::func_00263CD0()
 {
     TacticsWindow18B720* background = new (0) TacticsWindow18B720;
     TacticsWindow18B620* scrolling = new (0) TacticsWindow18B620;
@@ -3968,7 +3968,7 @@ void FieldClass15AE70::func_slot48(void* associated)
  * @param buffer Completed resource buffer, or null to report failure.
  * @return Zero for a null buffer; otherwise the window initialization result.
  */
-s32 TacticsResourceMenuState::load_resource_and_initialize_windows(void* buffer)
+s32 TacticsResourceMenuState::func_001E1820(void* buffer)
 {
     if (buffer == 0)
     {
@@ -3989,14 +3989,14 @@ s32 TacticsResourceMenuState::load_resource_and_initialize_windows(void* buffer)
 
     resource_slot = lib_load_resource_slot(D_001B657C, aligned);
     resident_exchange_allocation_heap(saved_heap);
-    return initialize_mode_windows();
+    return func_00263CD0();
 }
 
 /**
  * @brief Allocate and initialize the State's record selection.
  * @return One when a selection exists and initialization succeeds; otherwise zero.
  */
-u8 TacticsResourceMenuState::initialize_record_selection()
+u8 TacticsResourceMenuState::func_00264110()
 {
     selection = new (0) FieldRecordSelection;
     u8 result = func_0028E3D0(selection);

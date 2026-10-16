@@ -2816,7 +2816,7 @@ INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034C060);
 void skill_position_selection_rows(SkillModeSelection* record, float scroll_offset)
 {
     s32 index = 0;
-    ListNode0035CCE0* name_node = reinterpret_cast<ListNode0035CCE0*>(record->unk2c.unk00)->next;
+    ListNode0035CCE0* name_node = reinterpret_cast<ListNode0035CCE0*>(record->unk2c.head)->next;
     ListNode0035CCE0* cp_node = reinterpret_cast<ListNode0035CCE0*>(record->cp_rows.head)->next;
     while (name_node != 0)
     {
@@ -5996,7 +5996,7 @@ void func_0035CBB0(SkillList* list, void* value)
 void SkillGridChoice::func_slotf4(s16 selected)
 {
     s32 index = 0;
-    SkillListNode* node = reinterpret_cast<SkillListNode*>(unk2c.unk00->unk04);
+    SkillListNode* node = reinterpret_cast<SkillListNode*>(unk2c.head->next);
     while (node != 0)
     {
         LibObject178750* item = static_cast<LibObject178750*>(node->value);

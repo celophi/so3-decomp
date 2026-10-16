@@ -93,19 +93,19 @@ struct TacticsResourceMenuState : public FieldClass153E30
      * @brief Allocate and initialize the State's record selection.
      * @return One when a selection exists and initialization succeeds; otherwise zero.
      */
-    virtual u8 initialize_record_selection();
+    virtual u8 func_00264110();
     /**
      * @brief Load the completed aligned resource using the State's heap context.
      * @param buffer Completed resource buffer, or null to report failure.
      * @return Zero for a null buffer; otherwise the virtual completion result.
      */
-    virtual s32 load_resource_and_initialize_windows(void* buffer);
+    virtual s32 func_001E1820(void* buffer);
 
     /** @brief Release the loaded resource, detach the State, and dispatch its release handler. */
     virtual void func_slot5c();
 
     /** @brief Initialize the State's windows for its resource mode. @return One on success, otherwise zero. */
-    virtual s32 initialize_mode_windows();
+    virtual s32 func_00263CD0();
 
     s32 resource_slot;
     u8 windows_initialized : 1;

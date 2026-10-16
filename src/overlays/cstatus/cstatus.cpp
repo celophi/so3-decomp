@@ -2034,7 +2034,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
                                          (152.0f + 36.0f * index) - 2.0f, 57.0f, 0.0f, 0.0f);
         if (first_name_marker == 0)
         {
-            first_name_marker = unk2c.unk04;
+            first_name_marker = unk2c.count;
         }
 
         lib_container_attach_widget(unk10, marker);
