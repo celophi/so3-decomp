@@ -8035,7 +8035,264 @@ InventoryItemTypeList::InventoryItemTypeList(ItemCreationSelectedDisplayState* s
     unk218 = 11;
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0035D7C0);
+// Both enums are sized like the selector parameters they feed (u8 columns, u16 cursor).
+#pragma enumsalwaysint off
+/** Column count of a selection widget. */
+enum SelectorColumns
+{
+    SELECTOR_SINGLE_COLUMN = 1
+};
+
+/** Initial cursor index of a selection widget. */
+enum SelectorCursor
+{
+    SELECTOR_CURSOR_FIRST,
+    SELECTOR_CURSOR_MAX = 0xFFFF
+};
+#pragma enumsalwaysint reset
+
+/**
+ * @brief Move a widget vertically.
+ * @param widget Widget to move.
+ * @param y New vertical position.
+ */
+static inline void set_y(LibClass178600* widget, float y)
+{
+    widget->unk18.unk04 = y;
+    widget->unk3c = 1;
+}
+
+/**
+ * @brief Resize a widget.
+ * @param widget Widget to resize.
+ * @param width New width.
+ * @param height New height.
+ */
+static inline void set_size(LibClass178600* widget, float width, float height)
+{
+    widget->unk18.unk08 = width;
+    widget->unk18.unk0c = height;
+    widget->unk3c = 1;
+}
+
+/**
+ * @brief Move a widget.
+ * @param widget Widget to move.
+ * @param x New horizontal position.
+ * @param y New vertical position.
+ */
+static inline void set_position(LibClass178600* widget, float x, float y)
+{
+    widget->unk18.unk00 = x;
+    widget->unk18.unk04 = y;
+    widget->unk3c = 1;
+}
+
+/**
+ * @brief Set a selector's drawing extent.
+ * @param widget Selector to update.
+ * @param extent New extent.
+ */
+static inline void set_extent(FieldClass153130* widget, float extent)
+{
+    widget->ItemCreationClass185050::unk30 = extent;
+    widget->unk3c = 1;
+}
+
+/**
+ * @brief Set a numeric display's value.
+ * @param widget Numeric display.
+ * @param quantity Value to show.
+ */
+static inline void set_quantity(LibObject174F20* widget, s32 quantity)
+{
+    widget->numeric_value = quantity;
+    widget->unk3c = 1;
+}
+
+/**
+ * @brief Highlight the first option row and dim the others.
+ * @param object Plan window whose option rows are recoloured.
+ */
+static inline void highlight_first(PlanItemGroupWindow* object)
+{
+    if (object->unkac != 0)
+    {
+        for (s32 index = 0; index < object->unkb4; index++)
+        {
+            LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&object->unk2c, index)->unk00);
+            if (index == 0)
+            {
+                display->set_color(0x288080);
+                object->unkb0->func_0023B7E0(display);
+            }
+            else
+            {
+                display->set_color(0x808080);
+            }
+        }
+    }
+}
+
+/**
+ * @brief Rebuild the plan window's layout for a display mode.
+ * @param object Plan window to rebuild.
+ * @param mode Display mode, zero through two.
+ */
+extern "C" void func_0035D7C0(PlanItemGroupWindow* object, u8 mode)
+{
+    for (s32 index = 0; index < 6; index++)
+    {
+        object->unkc8[index]->unk3f = 0;
+        object->unke0[index]->unk3f = 0;
+    }
+    switch (mode)
+    {
+    case 0:
+    {
+        object->unkb4 = 6;
+        object->unk14c = 0;
+        u8 group = static_cast<AssignedInventorGrid*>(object->func_slot44())->unk1f0;
+        object->unka8->line_item_ids[group][0] = 0;
+        object->unka8->line_item_ids[group][1] = 0;
+        set_height(object->unkbc, 116.0f);
+        lib_text_set_resource(object->unk110[0], object->func_slot54(), 0x1B7A, 0);
+        lib_text_set_resource(object->unk110[1], object->func_slot54(), 0x1B7B, 0);
+        lib_text_set_resource(object->unk110[2], object->func_slot54(), 0x1B78, 0);
+        for (s32 index = 0; index < 3; index++)
+        {
+            object->unk110[index]->unk3f = 1;
+            object->unk128[index * 2]->unk3f = 1;
+            object->unk11c[index]->unk3f = 0;
+            object->unk128[index * 2 + 1]->unk3f = 0;
+            object->unk140[index]->unk3f = 0;
+        }
+        set_y(object->unkc0, 116.0f);
+        set_size(object->unkc0, 200.0f, 190.0f);
+        object->unkac->func_003EF740();
+        object->unkac = new (0) FieldClass153130;
+        SelectorColumns columns = SELECTOR_SINGLE_COLUMN;
+        object->unkac->func_0023B530(columns, 1, 1, 0, 1, object->unkfc[3], 146.0f, 0.0f, object->unkfc[2]);
+        lib_container_attach_widget(object->unk10, object->unkac);
+        for (s32 index = 0; index < object->unkb4; index++)
+        {
+            object->unkc8[index]->unk3f = 1;
+            object->unkc8[index]->set_color(0x505050);
+            set_y(object->unkc8[index], (float)(132 + index * 27));
+            object->unke0[index]->unk3f = 1;
+            set_y(object->unke0[index], (float)(132 + index * 27));
+        }
+        set_y(object->unkc4, 305.0f);
+        object->unkc4->unk3f = 1;
+        lib_text_set_resource(object->unkf8, object->func_slot54(), 0x1B7C, 0);
+        set_y(object->unkf8, 320.0f);
+        object->unkf8->unk3f = 1;
+        if (object->unkac != 0)
+        {
+            set_extent(object->unkac, 64.0f);
+        }
+        func_0035D0C0(object->unk150, 1);
+        object->unk150->func_slot10c(1, 1);
+        object->unk150->func_slot110(1);
+        if (D_001B643C->unk0c != 0)
+        {
+            D_001B643C->unk0c->unk9a = 1;
+        }
+        LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&object->unk2c, 0)->unk00);
+        display->set_color(0x288080);
+        object->unkb0->func_0023B7E0(display);
+        ItemCreationAllocationRecord* records[99];
+        s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, 0x20);
+        func_0035E150(object, lib_allocation_get_identifier(records[0]), count, 2);
+        D_001B643C->unk10->unk14->func_00263C70(object->unk150);
+        break;
+    }
+    case 1:
+    {
+        object->unkb4 = 6;
+        object->unk14c = 1;
+        object->unkac->func_003EF740();
+        object->unkac = new (0) FieldClass153130;
+        SelectorColumns columns = SELECTOR_SINGLE_COLUMN;
+        object->unkac->func_0023B530(columns, (u8)object->unkb4, 1, 0, 1, object->unkfc[3], 144.0f, 0.0f, object->unkfc[2]);
+        lib_container_attach_widget(object->unk10, object->unkac);
+        for (s32 index = 0; index < object->unkb4; index++)
+        {
+            object->unkc8[index]->unk3f = 1;
+            object->unkc8[index]->set_color(0x808080);
+            object->unke0[index]->unk3f = 1;
+        }
+        lib_text_set_resource(object->unkf8, object->func_slot54(), 0x1B7D, 0);
+        object->unkf8->unk3f = 1;
+        object->unk150->func_slot11c(1, 0);
+        object->unk150->func_slot10c(0, 0);
+        object->unk128[1]->unk3f = 0;
+        highlight_first(object);
+        break;
+    }
+    case 2:
+    {
+        object->unkb4 = 6;
+        object->unk14c = 2;
+        set_size(object->unkc0, 200.0f, 200.0f);
+        lib_text_set_resource(object->unk110[0], object->func_slot54(), 0x1B78, 0);
+        set_height(object->unkbc, 56.0f);
+        set_y(object->unkc0, 56.0f);
+        for (s32 index = 1; index < 3; index++)
+        {
+            object->unk110[index]->unk3f = 0;
+            object->unk128[index * 2]->unk3f = 0;
+            object->unk11c[index]->unk3f = 0;
+            object->unk128[index * 2 + 1]->unk3f = 0;
+            object->unk140[index]->unk3f = 0;
+        }
+        for (s32 index = 0; index < object->unkb4; index++)
+        {
+            object->unkc8[index]->unk3f = 1;
+            object->unkc8[index]->set_color(0x808080);
+            object->unke0[index]->unk3f = 1;
+            set_y(object->unkc8[index], (float)(72 + index * 27));
+            set_y(object->unke0[index], (float)(72 + index * 27));
+        }
+        object->unkac->func_003EF740();
+        object->unkac = new (0) FieldClass153130;
+        SelectorColumns columns = SELECTOR_SINGLE_COLUMN;
+        object->unkac->func_0023B530(columns, (u8)object->unkb4, 1, 0, 1, object->unkfc[3], 12.0f + object->unkfc[1], 0.0f, object->unkfc[2]);
+        lib_container_attach_widget(object->unk10, object->unkac);
+        set_position(object->unkc4, 0.0f, 252.0f);
+        object->unkc4->unk3f = 1;
+        set_position(object->unkf8, 18.0f, 268.0f);
+        lib_text_set_resource(object->unkf8, object->func_slot54(), 0x1B7F, 0);
+        object->unkf8->unk3f = 1;
+        func_0035D0C0(object->unk150, 0);
+        object->unk150->func_slot10c(0, 0);
+        s16 category = 0;
+        switch (object->unka8->line_skill_ids[(u16)object->unka8->selected_line_index])
+        {
+        case 1: category = 0x14; break;
+        case 2: category = 0x17; break;
+        case 3: category = 0x24; break;
+        case 4: category = 0x25; break;
+        case 5: category = 0x21; break;
+        case 6: category = 0x1E; break;
+        case 7: category = 0x1F; break;
+        case 8: category = 0x20; break;
+        }
+        LibObject172410* display = object->unk11c[0];
+        display->unkfc = category;
+        display->unkfe = 0;
+        display->unk3c = 1;
+        object->unk11c[0]->unk3f = 1;
+        ItemCreationAllocationRecord* records[99];
+        s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, (u16)category);
+        set_quantity(object->unk140[0], count);
+        object->unk140[0]->unk3f = 1;
+        object->unk128[1]->unk3f = 1;
+        highlight_first(object);
+        break;
+    }
+    }
+}
 
 void func_0035E150(PlanItemGroupWindow* object, s16 value, s32 quantity, s8 index)
 {
@@ -8241,7 +8498,116 @@ void PlanItemGroupWindow::func_slot68()
     }
 }
 
-INCLUDE_ASM("build/overlays/citemcreation/asm/nonmatchings/text_003483C0", func_0035E770);
+/**
+ * @brief Scale a row index by its spacing.
+ * @param index Row index.
+ * @param step Distance between rows.
+ * @return Offset from the first row.
+ */
+static inline float row_offset(float index, float step)
+{
+    return index * step;
+}
+
+/**
+ * @brief Build the plan window's rows, option list and option selector.
+ * @param associated Full resource source word.
+ * @return Always 1.
+ */
+s32 PlanItemGroupWindow::func_slotf4(u32 associated)
+{
+    unkfc[2] = 26.0f;
+    unkfc[0] = 20.0f;
+    unkfc[1] = 74.0f;
+    func_002CE760(this, associated, 0, 9, 2200, 20.0f, 72.0f, 0.0f);
+    unkbc = new (0) LibClass178630;
+    lib_panel_init_rectangle(unkbc, 1, 0.0f, 2.0f, 600.0f, 56.0f, 88.0f);
+    lib_container_attach_widget(unk10, unkbc);
+    for (s32 index = 0; index < 3; index++)
+    {
+        unk110[index] = new (0) LibObject178750;
+        float offset = row_offset(index, 28.0f);
+        float y = 18.0f + offset;
+        unk110[index]->init_resource_rectangle(16.0f, y, 0.0f, 0.0f, (s32)associated, 0x1B78, 0);
+        unk110[index]->set_scale(0.9f, 0.9f);
+        set_text_spacing(unk110[index], -1.0f);
+        lib_container_attach_widget(unk10, unk110[index]);
+        unk128[index * 2] = new (0) LibObject178750;
+        float marker_y = 16.0f + offset;
+        unk128[index * 2]->init_resource_rectangle(210.0f, marker_y, 0.0f, 0.0f, (s32)associated, 0x7E4, 0);
+        lib_container_attach_widget(unk10, unk128[index * 2]);
+        unk11c[index] = new (0) LibObject172410;
+        lib_item_code_init_rectangle(unk11c[index], 226.0f, y, 323.99997f, 21.599998f, 0, 0, 0);
+        unk11c[index]->set_scale(0.9f, 0.9f);
+        LibObject172410* display = unk11c[index];
+        display->unkfa = 1;
+        display->unk3c = 1;
+        set_text_spacing(unk11c[index], -1.0f);
+        unk11c[index]->set_color(0x804080FF);
+        lib_container_attach_widget(unk10, unk11c[index]);
+        unk128[index * 2 + 1] = new (0) LibObject178750;
+        unk128[index * 2 + 1]->init_resource_rectangle(526.0f, marker_y, 0.0f, 0.0f, (s32)associated, 0x7E4, 1);
+        lib_container_attach_widget(unk10, unk128[index * 2 + 1]);
+        unk140[index] = new (0) LibObject174F20;
+        unk140[index]->init_numeric_resource_rectangle(534.0f, marker_y, 28.0f, 24.0f, 99, (s32)associated, 1);
+        lib_container_attach_widget(unk10, unk140[index]);
+    }
+    unkc0 = new (0) LibClass178630;
+    lib_panel_init_rectangle(unkc0, 1, 0.0f, 56.0f, 200.0f, 160.0f, 88.0f);
+    lib_container_attach_widget(unk10, unkc0);
+    unkc4 = new (0) LibClass178630;
+    lib_panel_init_rectangle(unkc4, 1, 0.0f, 244.0f, 200.0f, 84.0f, 88.0f);
+    lib_container_attach_widget(unk10, unkc4);
+    unkb4 = 6;
+    for (s32 index = 0; index < unkb4; index++)
+    {
+        unkc8[index] = new (0) LibObject178750;
+        float y = 74.0f + 26.0f * index;
+        unkc8[index]->init_resource_rectangle(42.0f, y, 0.0f, 0.0f, (s32)associated, index + 0x1B80, 0);
+        set_text_spacing(unkc8[index], -1.0f);
+        unkc8[index]->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(unk10, unkc8[index]);
+        func_0036F1A0(&unk2c, unkc8[index]);
+        unke0[index] = new (0) ItemCreationOptionResourceDisplay;
+        void* allocation = func_002D3D80(D_001B643C->unk20, 14);
+        FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, index + 50);
+        unke0[index]->unkcc = allocation;
+        unke0[index]->unkd0 = 14;
+        unke0[index]->func_002D6440(record, 16.0f, y);
+        lib_container_attach_widget(unk10, unke0[index]);
+    }
+    unkf8 = new (0) LibObject178750;
+    unkf8->init_resource_rectangle(20.0f, 262.0f, 0.0f, 0.0f, (s32)associated, 0x1B7C, 0);
+    lib_container_attach_widget(unk10, unkf8);
+    unkfc[3] = 20.0f;
+    unkac = new (0) FieldClass153130;
+    SelectorColumns columns = SELECTOR_SINGLE_COLUMN;
+    SelectorCursor cursor = SELECTOR_CURSOR_FIRST;
+    unkac->func_0023B530(columns, (u8)unkb4, 1, cursor, 1, unkfc[3], 86.0f, 0.0f, 26.0f);
+    lib_container_attach_widget(unk10, unkac);
+    LibObject178750* first = static_cast<LibObject178750*>(func_0036F230(&unk2c, 0)->unk00);
+    unkb0 = new (0) FieldClass153170;
+    unkb0->func_0023B850(first, 0x288080);
+    lib_container_attach_widget(unk10, unkb0);
+    if (unkac != 0)
+    {
+        for (s32 index = 0; index < unkb4; index++)
+        {
+            LibObject178750* display = static_cast<LibObject178750*>(func_0036F230(&unk2c, index)->unk00);
+            if (index == 0)
+            {
+                display->set_color(0x288080);
+                unkb0->func_0023B7E0(display);
+            }
+            else
+            {
+                display->set_color(0x808080);
+            }
+        }
+    }
+    func_0035E150(this, 0, 0, 0);
+    return 1;
+}
 
 PlanItemGroupWindow::~PlanItemGroupWindow()
 {
