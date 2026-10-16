@@ -110,3 +110,57 @@ rom:0xF15AC reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
 rom:0xF15B4 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
 rom:0xF15BC reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
 rom:0xF15C4 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
+
+// Secondary list parts of the field list tables.
+rom:0x42710 reloc:MIPS_HI16 symbol:__vt__16FieldClass1522C0 addend:0x1C
+rom:0x42718 reloc:MIPS_LO16 symbol:__vt__16FieldClass1522C0 addend:0x1C
+rom:0xD61A8 reloc:MIPS_HI16 symbol:__vt__16FieldClass1522C0 addend:0x1C
+rom:0xD61B0 reloc:MIPS_LO16 symbol:__vt__16FieldClass1522C0 addend:0x1C
+rom:0x94C60 reloc:MIPS_HI16 symbol:__vt__16FieldClass154CC0 addend:0x1C
+rom:0x94C68 reloc:MIPS_LO16 symbol:__vt__16FieldClass154CC0 addend:0x1C
+rom:0xD60B8 reloc:MIPS_HI16 symbol:__vt__16FieldClass154CC0 addend:0x1C
+rom:0xD60C0 reloc:MIPS_LO16 symbol:__vt__16FieldClass154CC0 addend:0x1C
+rom:0x95C90 reloc:MIPS_HI16 symbol:__vt__16FieldClass154E90 addend:0x1C
+rom:0x95C98 reloc:MIPS_LO16 symbol:__vt__16FieldClass154E90 addend:0x1C
+rom:0xD6458 reloc:MIPS_HI16 symbol:__vt__16FieldClass154E90 addend:0x1C
+rom:0xD6460 reloc:MIPS_LO16 symbol:__vt__16FieldClass154E90 addend:0x1C
+
+// Native secondary tables in field context initialization and cleanup.
+rom:0x24DD4 reloc:MIPS_HI16 symbol:__vt__16FieldClass150E10 addend:0x1C
+rom:0x24DDC reloc:MIPS_LO16 symbol:__vt__16FieldClass150E10 addend:0x1C
+rom:0xD5C7C reloc:MIPS_HI16 symbol:__vt__16FieldClass150E10 addend:0x1C
+rom:0xD5C84 reloc:MIPS_LO16 symbol:__vt__16FieldClass150E10 addend:0x1C
+rom:0x5DD60 reloc:MIPS_HI16 symbol:__vt__16FieldClass1530D0 addend:0x1C
+rom:0x5DD68 reloc:MIPS_LO16 symbol:__vt__16FieldClass1530D0 addend:0x1C
+rom:0xD5D0C reloc:MIPS_HI16 symbol:__vt__16FieldClass1530D0 addend:0x1C
+rom:0xD5D14 reloc:MIPS_LO16 symbol:__vt__16FieldClass1530D0 addend:0x1C
+rom:0x6F034 reloc:MIPS_HI16 symbol:__vt__16FieldClass1534B0 addend:0x74
+rom:0x6F03C reloc:MIPS_LO16 symbol:__vt__16FieldClass1534B0 addend:0x74
+rom:0xD6250 reloc:MIPS_HI16 symbol:__vt__16FieldClass1534B0 addend:0x74
+rom:0xD6258 reloc:MIPS_LO16 symbol:__vt__16FieldClass1534B0 addend:0x74
+rom:0x6F044 reloc:MIPS_HI16 symbol:__vt__16FieldClass1534B0 addend:0xAC
+rom:0x6F04C reloc:MIPS_LO16 symbol:__vt__16FieldClass1534B0 addend:0xAC
+rom:0xD6264 reloc:MIPS_HI16 symbol:__vt__16FieldClass1534B0 addend:0xAC
+rom:0xD626C reloc:MIPS_LO16 symbol:__vt__16FieldClass1534B0 addend:0xAC
+rom:0x1F2E8 reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0x1F2F0 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0x7B994 reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0x7B99C reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0x80D9C reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0x80DA4 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0x94360 reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0x94368 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0xB489C reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0xB48A4 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0xD67A0 reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0xD67A8 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0xFDDFC reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0xFDE04 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
+
+// Indexed halfword in the field resource descriptor table.
+rom:0xD6954 reloc:MIPS_HI16 symbol:D_303CB0 addend:0xC
+rom:0xD6958 reloc:MIPS_LO16 symbol:D_303CB0 addend:0xC
+rom:0xD6988 reloc:MIPS_HI16 symbol:D_303CB0 addend:0xC
+rom:0xD698C reloc:MIPS_LO16 symbol:D_303CB0 addend:0xC
+rom:0xD69C8 reloc:MIPS_HI16 symbol:D_303CB0 addend:0xC
+rom:0xD69CC reloc:MIPS_LO16 symbol:D_303CB0 addend:0xC

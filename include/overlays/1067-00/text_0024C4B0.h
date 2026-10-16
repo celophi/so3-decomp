@@ -78,4 +78,19 @@ public:
 };
 #endif
 
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001DD3C0.h"
+
+/** Field context attachment. */
+class FieldClass153590 : public FieldClass150070
+{
+public:
+    FieldClass153590();
+
+    virtual ~FieldClass153590();
+
+    u8 unk14[0x414];
+};
+#endif
+
 #endif

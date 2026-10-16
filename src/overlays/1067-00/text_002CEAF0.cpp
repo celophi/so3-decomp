@@ -695,7 +695,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D39
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3990);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D3A50);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", __ct__16FieldClass15B0E0Fv);
 
 /**
  * @brief Report this object's type value.

@@ -3,6 +3,50 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+/** Resident object root with vtable at 0x14FA20. */
+class ResidentClass14FA20
+{
+public:
+    /** @brief Destroy the resident root. */
+    virtual ~ResidentClass14FA20();
+};
+
+/** Partial resident intrusive node with vtable at 0x14FA30. */
+class ResidentClass14FA30 : public ResidentClass14FA20
+{
+public:
+    /** @brief Destroy the intrusive node. */
+    virtual ~ResidentClass14FA30();
+
+    ResidentClass14FA30* previous;
+
+    ResidentClass14FA30* next;
+};
+
+/** Partial resident object interface with vtable at 0x14FA40. */
+class ResidentClass14FA40 : public ResidentClass14FA30
+{
+public:
+    /** @brief Destroy the resident object. */
+    virtual ~ResidentClass14FA40();
+
+    /** @brief Return the object's kind. @return Object kind. */
+    virtual s32 func_00104730();
+
+    /** @brief Queue the object for release. */
+    virtual void func_00104740();
+
+    s16 list_kind;
+
+    u8 unk0e;
+
+    u8 unk0f;
+
+    void* owner;
+};
+#endif
+
 /** Dispatch table whose complete layout is not yet known. */
 typedef struct ResidentDispatchTable ResidentDispatchTable;
 

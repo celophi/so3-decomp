@@ -744,7 +744,7 @@ extern "C" LibClass178A90* func_0020CA10(FieldClass151620* entry, const char* na
 {
     func_0013A4C0(entry->unk84, name, sizeof(entry->unk84));
     LibClass178A90* transform = (LibClass178A90*)func_00473390(
-        ((FieldClass150F90*)D_001B6430->context->unk08->unkdc)->unk7c, entry->unk84);
+        D_001B6430->context->unk08->current_object->unk7c, entry->unk84);
     entry->shape.unk04 = transform;
     return transform;
 }
@@ -820,7 +820,7 @@ extern "C" FieldClass1515B0* func_0020CB70(FieldClass151640* object,
  */
 extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
 {
-    FieldClass150F90* root = (FieldClass150F90*)D_001B6430->context->unk08->unkdc;
+    FieldClass150F90* root = D_001B6430->context->unk08->current_object;
     if (!root)
     {
         return 0;
@@ -875,7 +875,7 @@ extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
         {
             char name[32];
             func_0013C4F0(name, D_31A840, (u8)(shape->unk18->unk0b - 0x3f));
-            result = lib_find_camera_entry(static_cast<LibEntryManager*>(((FieldClass150F90*)D_001B6430->context->unk08->unkdc)->unk7c), name);
+            result = lib_find_camera_entry(static_cast<LibEntryManager*>(D_001B6430->context->unk08->current_object->unk7c), name);
         }
         if (result)
         {

@@ -75,4 +75,22 @@ s32 func_00404CA0(void* object, s32 value);
 }
 #endif
 
+#ifdef __cplusplus
+struct LibResourceRecordC4
+{
+    u8 data[0xC4];
+};
+
+struct LibResourceRecord114
+{
+    u8 data[0x114];
+};
+
+
+extern "C"
+{
+    void func_004076D0(LibResourceRecordC4* output, LibResourceRecord114* input, s32 flag);
+}
+#endif
+
 #endif

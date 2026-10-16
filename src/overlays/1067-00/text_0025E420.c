@@ -6,7 +6,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025E4
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025E4D0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025E5F0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", __ct__16FieldClass153CD0Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025E7D0);
 

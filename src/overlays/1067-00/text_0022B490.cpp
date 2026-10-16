@@ -647,13 +647,13 @@ s32 func_0022D150(FieldCallback22D150* object)
 
 s32 func_0022D180(FieldCallback22D180* object)
 {
-    func_0026F8F0(D_001B6430->context->unk08->unkdc, object->handle->target->selector, object->value);
+    func_0026F8F0(D_001B6430->context->unk08->current_object, object->handle->target->selector, object->value);
     return 1;
 }
 
 s32 func_0022D1C0(FieldCallback22D180* object)
 {
-    if (func_0026F870(D_001B6430->context->unk08->unkdc, object->handle->target->selector))
+    if (func_0026F870(D_001B6430->context->unk08->current_object, object->handle->target->selector))
     {
         object->handle->value = 1.0f;
         return 0;
@@ -663,7 +663,7 @@ s32 func_0022D1C0(FieldCallback22D180* object)
 
 s32 func_0022D230(FieldCallback22D180* object)
 {
-    func_0026FA40(D_001B6430->context->unk08->unkdc, object->handle->target->selector, object->value);
+    func_0026FA40(D_001B6430->context->unk08->current_object, object->handle->target->selector, object->value);
     return 1;
 }
 

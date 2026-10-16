@@ -36,6 +36,6 @@ void func_002D9F80(FieldState2D9F80* object)
     object->unk70_2 = 1;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D8410", func_002D9FA0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D8410", __ct__16FieldClass15B800Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D8410", func_002DA0C0);

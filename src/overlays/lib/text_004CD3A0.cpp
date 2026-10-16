@@ -1,4 +1,5 @@
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/matrix_vu0.h"

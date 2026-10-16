@@ -840,4 +840,15 @@ public:
 };
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** Clear the motion state's owned object and active flag. */
+void func_00209640(void* motion);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

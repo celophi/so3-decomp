@@ -10,6 +10,19 @@ typedef struct FieldFlagScriptCursor FieldFlagScriptCursor;
 typedef struct FieldScriptCursorF14 FieldScriptCursorF14;
 
 #ifdef __cplusplus
+/** Partial update and release interface of the native field callback at vtable 0x150C10. */
+class FieldClass150C10 : public FieldClass1DD400
+{
+public:
+    /** @brief Advance the field callback. */
+    virtual void func_001FC020();
+
+    /** @brief Release the callback. */
+    virtual void func_001FC370();
+};
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 

@@ -2,6 +2,12 @@
 #include "overlays/1067-00/field_class_154D40.h"
 #include "overlays/1067-00/text_0029E9E0.h"
 #include "main/resident_data.h"
+#include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/emission_vu0.h"
+#include "overlays/1067-00/grid_frame_vu0.h"
+#include "ee.h"
+
+static inline void field_clear_grid_cell_bit(FieldBitset154E80* object, u32 index);
 
 bool func_0029E9E0(FieldObject157BC0* object)
 {
@@ -43,7 +49,140 @@ extern "C" FieldElementPart29E9F0* func_0029E9F0(const FieldOwner29E9F0* object,
     return &object->unk14[index];
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_0029EA20);
+/**
+ * @brief Position a secondary row using optional linear and angular steps.
+ * @param object Grid owning the row.
+ * @param cell Cell supplying the initial position and secondary vector.
+ * @param row First secondary element of the row.
+ * @param index Nonzero to initialize each stepped element's first auxiliary value.
+ * @param position_step Displacement subtracted per element, or null to copy the cell position.
+ * @param angle_pair Initial two angles in radians, or null for linear stepping only.
+ * @param axis_radii Initial per-axis radii used with the two angles.
+ * @param angle_step Change subtracted from the two angles per element.
+ * @param radius_step Change subtracted from the three radii per element.
+ */
+void field_position_secondary_row_157e30(FieldClass157E30* object, FieldClass158A38* cell, FieldClass154E60* row, s32 index,
+                                         const FieldVector4* position_step, const FieldVector4* angle_pair, const FieldVector4* axis_radii,
+                                         const FieldVector4* angle_step, const FieldVector4* radius_step)
+{
+    if (object->secondary_emitter != 0)
+    {
+        cell->unk3C = object->unk3C;
+    }
+
+    bool copy_secondary_vector = false;
+
+    if (object->unk4D != 1 && object->unk4D != 3)
+    {
+        copy_secondary_vector = true;
+    }
+
+    if (position_step != 0)
+    {
+        if (angle_pair != 0)
+        {
+            const FieldClass158A38* source_cell = cell;
+            FieldVector4 position;
+            FieldVector4 radii;
+            FieldVector4 angles;
+            LibVector4 second_trig;
+            LibVector4 first_trig;
+            s32 count = object->unk10 - 1;
+            angles.packed = angle_pair->packed;
+            radii.packed = axis_radii->packed;
+            lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
+            lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+            float previous_x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+            float previous_y = radii.floats[1] * first_trig.components[3];
+            float previous_z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+            position.packed = source_cell->position().packed;
+            position.floats[3] = 1.0f;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                angles.floats[0] -= angle_step->floats[0];
+                angles.floats[1] -= angle_step->floats[1];
+                radii.floats[0] -= radius_step->floats[0];
+                radii.floats[1] -= radius_step->floats[1];
+                radii.floats[2] -= radius_step->floats[2];
+                lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
+                lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+                float x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+                position.floats[0] += x - previous_x;
+                previous_x = x;
+                float y = radii.floats[1] * first_trig.components[3];
+                position.floats[1] += y - previous_y;
+                previous_y = y;
+                float z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+                position.floats[2] += z - previous_z;
+                previous_z = z;
+                position.floats[0] -= position_step->floats[0];
+                position.floats[1] -= position_step->floats[1];
+                position.floats[2] -= position_step->floats[2];
+                row->unk10.packed = position.packed;
+
+                if (copy_secondary_vector)
+                {
+                    row->unk20 = source_cell->unk20;
+                }
+
+                row->unk30.packed = 0;
+
+                if (index != 0)
+                {
+                    row->unk30.floats[0] = object->unk28;
+                }
+
+                row++;
+            }
+        }
+        else
+        {
+            s32 count = object->unk10 - 1;
+            FieldVector4 position;
+            position.packed = cell->position().packed;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                position.floats[0] -= position_step->floats[0];
+                position.floats[1] -= position_step->floats[1];
+                position.floats[2] -= position_step->floats[2];
+                row->unk10.packed = position.packed;
+
+                if (copy_secondary_vector)
+                {
+                    row->unk20 = cell->unk20;
+                }
+
+                row->unk30.packed = 0;
+
+                if (index != 0)
+                {
+                    row->unk30.floats[0] = object->unk28;
+                }
+
+                row++;
+            }
+        }
+    }
+    else
+    {
+        s32 count = object->unk10 - 1;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            row->unk10 = cell->position();
+
+            if (copy_secondary_vector)
+            {
+                row->unk20 = cell->unk20;
+            }
+
+            row->unk30.packed = 0;
+            row++;
+        }
+    }
+}
 
 /**
  * @brief Fill a row of secondary elements from a cell (or an explicit vector).
@@ -55,7 +194,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_0029EA
  */
 void func_0029EE30(FieldClass157E30* object, FieldClass158A38* cell, FieldClass154E60* row, s32 index, const FieldVector4* source)
 {
-    if (object->unk50 != 0)
+    if (object->secondary_emitter != 0)
     {
         cell->unk3C = object->unk3C;
     }
@@ -148,39 +287,74 @@ float func_0029EFD0(FieldObject157BC0* object)
     return object->unk28;
 }
 
-void func_0029EFE0(FieldObject157BC0* object, FieldLinkedObject157BC0* value)
+/**
+ * @brief Set the grid's primary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
+ */
+void field_set_primary_emitter_157e30(FieldObject157BC0* object, LibClass173990* value)
 {
-    object->unk48 = value;
+    object->primary_emitter = value;
 }
 
-FieldLinkedObject157BC0* func_0029EFF0(FieldObject157BC0* object)
+/**
+ * @brief Return the grid's primary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
+ */
+LibClass173990* field_primary_emitter_157e30(FieldObject157BC0* object)
 {
-    return object->unk48;
+    return object->primary_emitter;
 }
 
-void func_0029F000(FieldObject157BC0* object, u8 value)
+/**
+ * @brief Set the number of entries generated by primary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
+ */
+void field_set_primary_emission_count_157e30(FieldObject157BC0* object, u8 value)
 {
-    object->unk4F = value;
+    object->primary_emission_count = value;
 }
 
-void func_0029F010(FieldObject157BC0* object, u8 value)
+/**
+ * @brief Set the optional inputs supplied to primary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
+ */
+void field_set_primary_emission_flags_157e30(FieldObject157BC0* object, u8 value)
 {
-    object->unk4E = value;
+    object->primary_emission_flags = value;
 }
 
-void func_0029F020(FieldObject157BC0* object, FieldLinkedObject157BC0* value)
+/**
+ * @brief Set the grid's secondary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
+ */
+void field_set_secondary_emitter_157e30(FieldObject157BC0* object, LibClass173990* value)
 {
-    object->unk50 = value;
+    object->secondary_emitter = value;
 }
 
-FieldLinkedObject157BC0* func_0029F030(FieldObject157BC0* object)
+/**
+ * @brief Return the grid's secondary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
+ */
+LibClass173990* field_secondary_emitter_157e30(FieldObject157BC0* object)
 {
-    return object->unk50;
+    return object->secondary_emitter;
 }
 
-void func_0029F040(FieldObject157BC0* object, u8 value)
+/**
+ * @brief Set the number of entries generated by secondary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
+ */
+void field_set_secondary_emission_count_157e30(FieldObject157BC0* object, u8 value)
 {
-    object->unk55 = value;
+    object->secondary_emission_count = value;
 }
 
 void func_0029F050(FieldObject157BC0* object, float value)
@@ -188,14 +362,24 @@ void func_0029F050(FieldObject157BC0* object, float value)
     object->unk3C = value;
 }
 
-void func_0029F060(FieldObject157BC0* object, u8 value)
+/**
+ * @brief Set the optional inputs supplied to secondary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
+ */
+void field_set_secondary_emission_flags_157e30(FieldObject157BC0* object, u8 value)
 {
-    object->unk54 = value;
+    object->secondary_emission_flags = value;
 }
 
-void func_0029F070(FieldObject157BC0* object, float value)
+/**
+ * @brief Set the scale applied to the first secondary-emission offset.
+ * @param object Grid to update.
+ * @param value Offset scale.
+ */
+void field_set_secondary_emission_scale_157e30(FieldObject157BC0* object, float value)
 {
-    object->unk40 = value;
+    object->secondary_emission_scale = value;
 }
 
 /**
@@ -278,10 +462,10 @@ s32 func_0029F130(void* object)
 void func_0029F140(FieldObject157BC0* object, const FieldVectorSource150* source)
 {
     object->unk2C = 0;
-    object->unk60 = source->unk150;
-    object->unk70 = source->unk160;
-    object->unk80 = source->unk170;
-    object->unk90 = source->unk180;
+    object->transform_rows[0] = source->unk150;
+    object->transform_rows[1] = source->unk160;
+    object->transform_rows[2] = source->unk170;
+    object->transform_rows[3] = source->unk180;
 }
 
 void func_0029F170(void* object)
@@ -330,7 +514,140 @@ extern "C" FieldElementPart2A1C60* func_002A1C60(const FieldOwner2A1C60* object,
     return &object->unk14[index];
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A1C90);
+/**
+ * @brief Position a secondary row using optional linear and angular steps.
+ * @param object Grid owning the row.
+ * @param cell Cell supplying the initial position and secondary vector.
+ * @param row First secondary element of the row.
+ * @param index Nonzero to initialize each stepped element's first auxiliary value.
+ * @param position_step Displacement subtracted per element, or null to copy the cell position.
+ * @param angle_pair Initial two angles in radians, or null for linear stepping only.
+ * @param axis_radii Initial per-axis radii used with the two angles.
+ * @param angle_step Change subtracted from the two angles per element.
+ * @param radius_step Change subtracted from the three radii per element.
+ */
+void field_position_secondary_row_158170(FieldClass158170* object, FieldClass158A58* cell, FieldClass154E60* row, s32 index,
+                                         const FieldVector4* position_step, const FieldVector4* angle_pair, const FieldVector4* axis_radii,
+                                         const FieldVector4* angle_step, const FieldVector4* radius_step)
+{
+    if (object->secondary_emitter != 0)
+    {
+        cell->unk3C = object->unk3C;
+    }
+
+    bool copy_secondary_vector = false;
+
+    if (object->unk4D != 1 && object->unk4D != 3)
+    {
+        copy_secondary_vector = true;
+    }
+
+    if (position_step != 0)
+    {
+        if (angle_pair != 0)
+        {
+            const FieldClass158A58* source_cell = cell;
+            FieldVector4 position;
+            FieldVector4 radii;
+            FieldVector4 angles;
+            LibVector4 second_trig;
+            LibVector4 first_trig;
+            s32 count = object->unk10 - 1;
+            angles.packed = angle_pair->packed;
+            radii.packed = axis_radii->packed;
+            lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
+            lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+            float previous_x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+            float previous_y = radii.floats[1] * first_trig.components[3];
+            float previous_z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+            position.packed = source_cell->position().packed;
+            position.floats[3] = 1.0f;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                angles.floats[0] -= angle_step->floats[0];
+                angles.floats[1] -= angle_step->floats[1];
+                radii.floats[0] -= radius_step->floats[0];
+                radii.floats[1] -= radius_step->floats[1];
+                radii.floats[2] -= radius_step->floats[2];
+                lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
+                lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+                float x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+                position.floats[0] += x - previous_x;
+                previous_x = x;
+                float y = radii.floats[1] * first_trig.components[3];
+                position.floats[1] += y - previous_y;
+                previous_y = y;
+                float z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+                position.floats[2] += z - previous_z;
+                previous_z = z;
+                position.floats[0] -= position_step->floats[0];
+                position.floats[1] -= position_step->floats[1];
+                position.floats[2] -= position_step->floats[2];
+                row->unk10.packed = position.packed;
+
+                if (copy_secondary_vector)
+                {
+                    row->unk20 = source_cell->unk20;
+                }
+
+                row->unk30.packed = 0;
+
+                if (index != 0)
+                {
+                    row->unk30.floats[0] = object->unk28;
+                }
+
+                row++;
+            }
+        }
+        else
+        {
+            s32 count = object->unk10 - 1;
+            FieldVector4 position;
+            position.packed = cell->position().packed;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                position.floats[0] -= position_step->floats[0];
+                position.floats[1] -= position_step->floats[1];
+                position.floats[2] -= position_step->floats[2];
+                row->unk10.packed = position.packed;
+
+                if (copy_secondary_vector)
+                {
+                    row->unk20 = cell->unk20;
+                }
+
+                row->unk30.packed = 0;
+
+                if (index != 0)
+                {
+                    row->unk30.floats[0] = object->unk28;
+                }
+
+                row++;
+            }
+        }
+    }
+    else
+    {
+        s32 count = object->unk10 - 1;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            row->unk10 = cell->position();
+
+            if (copy_secondary_vector)
+            {
+                row->unk20 = cell->unk20;
+            }
+
+            row->unk30.packed = 0;
+            row++;
+        }
+    }
+}
 
 /**
  * @brief Fill a row of secondary elements from a cell (or an explicit vector).
@@ -342,7 +659,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A1C
  */
 void func_002A20A0(FieldClass158170* object, FieldClass158A58* cell, FieldClass154E60* row, s32 index, const FieldVector4* source)
 {
-    if (object->unk50 != 0)
+    if (object->secondary_emitter != 0)
     {
         cell->unk3C = object->unk3C;
     }
@@ -435,39 +752,74 @@ float func_002A2240(FieldObject157F00* object)
     return object->unk28;
 }
 
-void func_002A2250(FieldObject157F00* object, FieldLinkedObject157F00* value)
+/**
+ * @brief Set the grid's primary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
+ */
+void field_set_primary_emitter_158170(FieldObject157F00* object, LibClass173990* value)
 {
-    object->unk48 = value;
+    object->primary_emitter = value;
 }
 
-FieldLinkedObject157F00* func_002A2260(FieldObject157F00* object)
+/**
+ * @brief Return the grid's primary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
+ */
+LibClass173990* field_primary_emitter_158170(FieldObject157F00* object)
 {
-    return object->unk48;
+    return object->primary_emitter;
 }
 
-void func_002A2270(FieldObject157F00* object, u8 value)
+/**
+ * @brief Set the number of entries generated by primary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
+ */
+void field_set_primary_emission_count_158170(FieldObject157F00* object, u8 value)
 {
-    object->unk4F = value;
+    object->primary_emission_count = value;
 }
 
-void func_002A2280(FieldObject157F00* object, u8 value)
+/**
+ * @brief Set the optional inputs supplied to primary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
+ */
+void field_set_primary_emission_flags_158170(FieldObject157F00* object, u8 value)
 {
-    object->unk4E = value;
+    object->primary_emission_flags = value;
 }
 
-void func_002A2290(FieldObject157F00* object, FieldLinkedObject157F00* value)
+/**
+ * @brief Set the grid's secondary linked emitter.
+ * @param object Grid to update.
+ * @param value Emitter to store.
+ */
+void field_set_secondary_emitter_158170(FieldObject157F00* object, LibClass173990* value)
 {
-    object->unk50 = value;
+    object->secondary_emitter = value;
 }
 
-FieldLinkedObject157F00* func_002A22A0(FieldObject157F00* object)
+/**
+ * @brief Return the grid's secondary linked emitter.
+ * @param object Grid to inspect.
+ * @return Stored emitter.
+ */
+LibClass173990* field_secondary_emitter_158170(FieldObject157F00* object)
 {
-    return object->unk50;
+    return object->secondary_emitter;
 }
 
-void func_002A22B0(FieldObject157F00* object, u8 value)
+/**
+ * @brief Set the number of entries generated by secondary emission.
+ * @param object Grid to update.
+ * @param value Entry count.
+ */
+void field_set_secondary_emission_count_158170(FieldObject157F00* object, u8 value)
 {
-    object->unk55 = value;
+    object->secondary_emission_count = value;
 }
 
 void func_002A22C0(FieldObject157F00* object, float value)
@@ -475,14 +827,24 @@ void func_002A22C0(FieldObject157F00* object, float value)
     object->unk3C = value;
 }
 
-void func_002A22D0(FieldObject157F00* object, u8 value)
+/**
+ * @brief Set the optional inputs supplied to secondary emission.
+ * @param object Grid to update.
+ * @param value Input flags.
+ */
+void field_set_secondary_emission_flags_158170(FieldObject157F00* object, u8 value)
 {
-    object->unk54 = value;
+    object->secondary_emission_flags = value;
 }
 
-void func_002A22E0(FieldObject157F00* object, float value)
+/**
+ * @brief Set the scale applied to the first secondary-emission offset.
+ * @param object Grid to update.
+ * @param value Offset scale.
+ */
+void field_set_secondary_emission_scale_158170(FieldObject157F00* object, float value)
 {
-    object->unk40 = value;
+    object->secondary_emission_scale = value;
 }
 
 /**
@@ -560,10 +922,10 @@ s32 func_002A23A0(void* object)
 void func_002A23B0(FieldObject157F00* object, const FieldVectorSource150* source)
 {
     object->unk2C = 0;
-    object->unk60 = source->unk150;
-    object->unk70 = source->unk160;
-    object->unk80 = source->unk170;
-    object->unk90 = source->unk180;
+    object->transform_rows[0] = source->unk150;
+    object->transform_rows[1] = source->unk160;
+    object->transform_rows[2] = source->unk170;
+    object->transform_rows[3] = source->unk180;
 }
 
 void func_002A23E0(void* object)
@@ -617,7 +979,140 @@ extern "C" FieldElementPart2A4ED0* func_002A4ED0(const FieldOwner2A4ED0* object,
     return &object->unk14[index];
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A4F00);
+/**
+ * @brief Position a secondary row using optional linear and angular steps.
+ * @param object Grid owning the row.
+ * @param cell Cell supplying the initial position and secondary vector.
+ * @param row First secondary element of the row.
+ * @param index Nonzero to initialize each stepped element's first auxiliary value.
+ * @param position_step Displacement subtracted per element, or null to copy the cell position.
+ * @param angle_pair Initial two angles in radians, or null for linear stepping only.
+ * @param axis_radii Initial per-axis radii used with the two angles.
+ * @param angle_step Change subtracted from the two angles per element.
+ * @param radius_step Change subtracted from the three radii per element.
+ */
+void field_position_secondary_row_158720(FieldClass158720* object, FieldClass158A78* cell, FieldClass154E60* row, s32 index,
+                                         const FieldVector4* position_step, const FieldVector4* angle_pair, const FieldVector4* axis_radii,
+                                         const FieldVector4* angle_step, const FieldVector4* radius_step)
+{
+    if (object->unk50 != 0)
+    {
+        cell->unk3C = object->unk3C;
+    }
+
+    bool copy_secondary_vector = false;
+
+    if (object->unk4D != 1 && object->unk4D != 3)
+    {
+        copy_secondary_vector = true;
+    }
+
+    if (position_step != 0)
+    {
+        if (angle_pair != 0)
+        {
+            const FieldClass158A78* source_cell = cell;
+            FieldVector4 position;
+            FieldVector4 radii;
+            FieldVector4 angles;
+            LibVector4 second_trig;
+            LibVector4 first_trig;
+            s32 count = object->unk10 - 1;
+            angles.packed = angle_pair->packed;
+            radii.packed = axis_radii->packed;
+            lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
+            lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+            float previous_x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+            float previous_y = radii.floats[1] * first_trig.components[3];
+            float previous_z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+            position.packed = source_cell->position().packed;
+            position.floats[3] = 1.0f;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                angles.floats[0] -= angle_step->floats[0];
+                angles.floats[1] -= angle_step->floats[1];
+                radii.floats[0] -= radius_step->floats[0];
+                radii.floats[1] -= radius_step->floats[1];
+                radii.floats[2] -= radius_step->floats[2];
+                lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
+                lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+                float x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+                position.floats[0] += x - previous_x;
+                previous_x = x;
+                float y = radii.floats[1] * first_trig.components[3];
+                position.floats[1] += y - previous_y;
+                previous_y = y;
+                float z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+                position.floats[2] += z - previous_z;
+                previous_z = z;
+                position.floats[0] -= position_step->floats[0];
+                position.floats[1] -= position_step->floats[1];
+                position.floats[2] -= position_step->floats[2];
+                row->unk10.packed = position.packed;
+
+                if (copy_secondary_vector)
+                {
+                    row->unk20 = source_cell->unk20;
+                }
+
+                row->unk30.packed = 0;
+
+                if (index != 0)
+                {
+                    row->unk30.floats[0] = object->unk28;
+                }
+
+                row++;
+            }
+        }
+        else
+        {
+            s32 count = object->unk10 - 1;
+            FieldVector4 position;
+            position.packed = cell->position().packed;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                position.floats[0] -= position_step->floats[0];
+                position.floats[1] -= position_step->floats[1];
+                position.floats[2] -= position_step->floats[2];
+                row->unk10.packed = position.packed;
+
+                if (copy_secondary_vector)
+                {
+                    row->unk20 = cell->unk20;
+                }
+
+                row->unk30.packed = 0;
+
+                if (index != 0)
+                {
+                    row->unk30.floats[0] = object->unk28;
+                }
+
+                row++;
+            }
+        }
+    }
+    else
+    {
+        s32 count = object->unk10 - 1;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            row->unk10 = cell->position();
+
+            if (copy_secondary_vector)
+            {
+                row->unk20 = cell->unk20;
+            }
+
+            row->unk30.packed = 0;
+            row++;
+        }
+    }
+}
 
 /**
  * @brief Fill a row of secondary elements from a cell (or an explicit vector).
@@ -1912,14 +2407,14 @@ void func_002A87F0(FieldClass158170* object, const FieldClass158170* other)
     object->unk30 = other->unk30;
     object->unk34 = other->unk34;
     object->unk38 = other->unk38;
-    object->unk48 = other->unk48;
+    object->primary_emitter = other->primary_emitter;
     object->unk4C = other->unk4C;
     object->unk4D = other->unk4D;
-    object->unk4E = other->unk4E;
-    object->unk4F = other->unk4F;
-    object->unk50 = other->unk50;
-    object->unk54 = other->unk54;
-    object->unk55 = other->unk55;
+    object->primary_emission_flags = other->primary_emission_flags;
+    object->primary_emission_count = other->primary_emission_count;
+    object->secondary_emitter = other->secondary_emitter;
+    object->secondary_emission_flags = other->secondary_emission_flags;
+    object->secondary_emission_count = other->secondary_emission_count;
     object->unk3C = other->unk3C;
     object->unkA0 = other->unkA0;
     object->unkA4 = other->unkA4;
@@ -1941,14 +2436,14 @@ void func_002A8FE0(FieldClass157E30* object, const FieldClass157E30* other)
     object->unk30 = other->unk30;
     object->unk34 = other->unk34;
     object->unk38 = other->unk38;
-    object->unk48 = other->unk48;
+    object->primary_emitter = other->primary_emitter;
     object->unk4C = other->unk4C;
     object->unk4D = other->unk4D;
-    object->unk4E = other->unk4E;
-    object->unk4F = other->unk4F;
-    object->unk50 = other->unk50;
-    object->unk54 = other->unk54;
-    object->unk55 = other->unk55;
+    object->primary_emission_flags = other->primary_emission_flags;
+    object->primary_emission_count = other->primary_emission_count;
+    object->secondary_emitter = other->secondary_emitter;
+    object->secondary_emission_flags = other->secondary_emission_flags;
+    object->secondary_emission_count = other->secondary_emission_count;
     object->unk3C = other->unk3C;
     object->unkA0 = other->unkA0;
     object->unkA4 = other->unkA4;
@@ -1970,14 +2465,14 @@ void func_002A9810(FieldClass157AF0* object, const FieldClass157AF0* other)
     object->unk30 = other->unk30;
     object->unk34 = other->unk34;
     object->unk38 = other->unk38;
-    object->unk48 = other->unk48;
+    object->primary_emitter = other->primary_emitter;
     object->unk4C = other->unk4C;
     object->unk4D = other->unk4D;
-    object->unk4E = other->unk4E;
-    object->unk4F = other->unk4F;
-    object->unk50 = other->unk50;
-    object->unk54 = other->unk54;
-    object->unk55 = other->unk55;
+    object->primary_emission_flags = other->primary_emission_flags;
+    object->primary_emission_count = other->primary_emission_count;
+    object->secondary_emitter = other->secondary_emitter;
+    object->secondary_emission_flags = other->secondary_emission_flags;
+    object->secondary_emission_count = other->secondary_emission_count;
     object->unk3C = other->unk3C;
     object->unkA0 = other->unkA0;
     object->unkA4 = other->unkA4;
@@ -2032,17 +2527,17 @@ void func_002AD760(FieldClass158860* object, const FieldClass158860* other)
     object->unk30 = other->unk30;
     object->unk34 = other->unk34;
     object->unk38 = other->unk38;
-    object->unk48 = other->unk48;
+    object->primary_emitter = other->primary_emitter;
     object->unk4C = other->unk4C;
     object->unk4D = other->unk4D;
-    object->unk4E = other->unk4E;
-    object->unk4F = other->unk4F;
-    object->unk50 = other->unk50;
-    object->unk54 = other->unk54;
-    object->unk55 = other->unk55;
+    object->primary_emission_flags = other->primary_emission_flags;
+    object->primary_emission_count = other->primary_emission_count;
+    object->secondary_emitter = other->secondary_emitter;
+    object->secondary_emission_flags = other->secondary_emission_flags;
+    object->secondary_emission_count = other->secondary_emission_count;
     object->unk3C = other->unk3C;
-    object->unkA0 = other->unkA0;
-    object->unkA4 = other->unkA4;
+    object->frame_header = other->frame_header;
+    object->frame_records = other->frame_records;
 }
 
 /**
@@ -2053,10 +2548,10 @@ void func_002AD760(FieldClass158860* object, const FieldClass158860* other)
 void func_002AD830(FieldObject158860* object, const FieldVectorSource150* source)
 {
     object->unk2C = 0;
-    object->unk60 = source->unk150;
-    object->unk70 = source->unk160;
-    object->unk80 = source->unk170;
-    object->unk90 = source->unk180;
+    object->transform_rows[0] = source->unk150;
+    object->transform_rows[1] = source->unk160;
+    object->transform_rows[2] = source->unk170;
+    object->transform_rows[3] = source->unk180;
 }
 
 /**
@@ -2107,24 +2602,44 @@ void func_002AD920(FieldClass158D00* object, const FieldClass158D00* other)
     object->resize(object->unk0C, object->unk10);
 }
 
-void func_002AD960(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8)
+/**
+ * @brief Clear four trailing cell bytes and prepare the associated row.
+ * @param object Grid owning the row.
+ * @param cell Cell whose trailing bytes are cleared.
+ * @param row First secondary element of the row.
+ * @param index Value passed through to the row handler.
+ * @param position_step Displacement subtracted per row element.
+ * @param angle_pair Optional angle pair used by the row handler.
+ * @param axis_radii Initial per-axis radii used with the angle pair.
+ * @param angle_step Per-row change to the angle pair.
+ * @param radius_step Change subtracted from the radii per row element.
+ */
+void field_prepare_cell_row(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index,
+                            const FieldVector4* position_step, const FieldVector4* angle_pair, const FieldVector4* axis_radii,
+                            const FieldVector4* angle_step, const FieldVector4* radius_step)
 {
-    u8* state = (u8*)cell;
-    state[0x130] = 0;
-    state[0x132] = 0;
-    state[0x131] = 0;
-    state[0x133] = 0;
-    func_002AD9E0(object, cell, row, index, extra4, extra5, extra6, extra7, extra8);
+    cell->unk130 = 0;
+    cell->unk132 = 0;
+    cell->unk131 = 0;
+    cell->unk133 = 0;
+    field_position_secondary_row(object, cell, row, index, position_step, angle_pair, axis_radii, angle_step, radius_step);
 }
 
-void func_002AD990(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, const FieldVector4* source)
+/**
+ * @brief Clear four trailing cell bytes and prepare the row using a vector.
+ * @param object Grid owning the row.
+ * @param cell Cell whose trailing bytes are cleared.
+ * @param row First secondary element of the row.
+ * @param index Value passed through to the row handler.
+ * @param source Vector supplied to the row handler.
+ */
+void field_prepare_cell_row_from_vector(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, const FieldVector4* source)
 {
-    u8* state = (u8*)cell;
-    state[0x130] = 0;
-    state[0x132] = 0;
-    state[0x131] = 0;
-    state[0x133] = 0;
-    func_002ADDF0(object, cell, row, index, source);
+    cell->unk130 = 0;
+    cell->unk132 = 0;
+    cell->unk131 = 0;
+    cell->unk133 = 0;
+    field_fill_secondary_row(object, cell, row, index, source);
 }
 
 void func_002AD9C0(void* object)
@@ -2141,7 +2656,140 @@ bool func_002AD9D0(FieldObject158860* object)
     return true;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD9E0);
+/**
+ * @brief Position a secondary row using optional linear and angular steps.
+ * @param object Grid owning the row.
+ * @param cell Cell supplying the initial position and secondary vector.
+ * @param row First secondary element of the row.
+ * @param index Nonzero to initialize each stepped element's first auxiliary value.
+ * @param position_step Displacement subtracted per element, or null to copy the cell position.
+ * @param angle_pair Initial two angles in radians, or null for linear stepping only.
+ * @param axis_radii Initial per-axis radii used with the two angles.
+ * @param angle_step Change subtracted from the two angles per element.
+ * @param radius_step Change subtracted from the three radii per element.
+ */
+void field_position_secondary_row(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index,
+                                  const FieldVector4* position_step, const FieldVector4* angle_pair, const FieldVector4* axis_radii,
+                                  const FieldVector4* angle_step, const FieldVector4* radius_step)
+{
+    if (object->secondary_emitter != 0)
+    {
+        cell->unk3C = object->unk3C;
+    }
+
+    bool copy_secondary_vector = false;
+
+    if (object->unk4D != 1 && object->unk4D != 3)
+    {
+        copy_secondary_vector = true;
+    }
+
+    if (position_step != 0)
+    {
+        if (angle_pair != 0)
+        {
+            const FieldClass1589F8* source_cell = cell;
+            FieldVector4 position;
+            FieldVector4 radii;
+            FieldVector4 angles;
+            LibVector4 second_trig;
+            LibVector4 first_trig;
+            s32 count = object->unk10 - 1;
+            angles.packed = angle_pair->packed;
+            radii.packed = axis_radii->packed;
+            lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
+            lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+            float previous_x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+            float previous_y = radii.floats[1] * first_trig.components[3];
+            float previous_z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+            position.packed = source_cell->position().packed;
+            position.floats[3] = 1.0f;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                angles.floats[0] -= angle_step->floats[0];
+                angles.floats[1] -= angle_step->floats[1];
+                radii.floats[0] -= radius_step->floats[0];
+                radii.floats[1] -= radius_step->floats[1];
+                radii.floats[2] -= radius_step->floats[2];
+                lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
+                lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+                float x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+                position.floats[0] += x - previous_x;
+                previous_x = x;
+                float y = radii.floats[1] * first_trig.components[3];
+                position.floats[1] += y - previous_y;
+                previous_y = y;
+                float z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+                position.floats[2] += z - previous_z;
+                previous_z = z;
+                position.floats[0] -= position_step->floats[0];
+                position.floats[1] -= position_step->floats[1];
+                position.floats[2] -= position_step->floats[2];
+                row->unk10.packed = position.packed;
+
+                if (copy_secondary_vector)
+                {
+                    row->unk20 = source_cell->unk20;
+                }
+
+                row->unk30.packed = 0;
+
+                if (index != 0)
+                {
+                    row->unk30.floats[0] = object->unk28;
+                }
+
+                row++;
+            }
+        }
+        else
+        {
+            s32 count = object->unk10 - 1;
+            FieldVector4 position;
+            position.packed = cell->position().packed;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                position.floats[0] -= position_step->floats[0];
+                position.floats[1] -= position_step->floats[1];
+                position.floats[2] -= position_step->floats[2];
+                row->unk10.packed = position.packed;
+
+                if (copy_secondary_vector)
+                {
+                    row->unk20 = cell->unk20;
+                }
+
+                row->unk30.packed = 0;
+
+                if (index != 0)
+                {
+                    row->unk30.floats[0] = object->unk28;
+                }
+
+                row++;
+            }
+        }
+    }
+    else
+    {
+        s32 count = object->unk10 - 1;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            row->unk10 = cell->position();
+
+            if (copy_secondary_vector)
+            {
+                row->unk20 = cell->unk20;
+            }
+
+            row->unk30.packed = 0;
+            row++;
+        }
+    }
+}
 
 /**
  * @brief Fill a row of secondary elements from a cell (or an explicit vector).
@@ -2151,9 +2799,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AD9
  * @param index Unused.
  * @param source Vector copied to each element, or null to use the cell's.
  */
-void func_002ADDF0(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, const FieldVector4* source)
+void field_fill_secondary_row(FieldClass158860* object, FieldClass1589F8* cell, FieldClass154E60* row, s32 index, const FieldVector4* source)
 {
-    if (object->unk50 != 0)
+    if (object->secondary_emitter != 0)
     {
         cell->unk3C = object->unk3C;
     }
@@ -2191,11 +2839,429 @@ void func_002ADDF0(FieldClass158860* object, FieldClass1589F8* cell, FieldClass1
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002ADEF0);
+/**
+ * @brief Emit entries through the primary linked emitter.
+ * @param object Grid owning the emission settings.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+void field_emit_primary_entries(FieldClass158860* object, const LibVector4* position, const LibVector4* first_offset, const LibVector4* second_offset,
+                                const LibVector4* color_scale)
+{
+    LibVector4 transformed_position;
+    LibVector4 transformed_first;
+    LibVector4 transformed_second;
+    LibVector4 saved_state[2];
+    const LibVector4* position_arg;
+    const LibVector4* first_offset_arg;
+    const LibVector4* second_offset_arg;
+    const LibVector4* color_arg;
+    u8 flags = object->primary_emission_flags;
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AE070);
+    if (flags & FIELD_EMISSION_POSITION)
+    {
+        vu0_transform_emission_point(object->transform_rows, position, &transformed_position);
+        position_arg = &transformed_position;
+    }
+    else
+    {
+        position_arg = 0;
+    }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002AE240);
+    if (flags & FIELD_EMISSION_FIRST_OFFSET)
+    {
+        vu0_transform_emission_direction(object->transform_rows, first_offset, &transformed_first);
+        first_offset_arg = &transformed_first;
+    }
+    else
+    {
+        first_offset_arg = 0;
+    }
+
+    if (flags & FIELD_EMISSION_SECOND_OFFSET)
+    {
+        vu0_transform_emission_direction(object->transform_rows, second_offset, &transformed_second);
+        second_offset_arg = &transformed_second;
+    }
+    else
+    {
+        second_offset_arg = 0;
+    }
+
+    if (flags & FIELD_EMISSION_COLOR_SCALE)
+    {
+        color_arg = color_scale;
+    }
+    else
+    {
+        color_arg = 0;
+    }
+
+    vu0_save_emission_state(saved_state);
+    object->primary_emitter->emit_entries(object->primary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
+                                         0, 0, 0, 0, 0, 0);
+    vu0_reset_emission_state();
+    vu0_set_emission_delta(D_001B6690);
+    vu0_restore_emission_state(saved_state);
+}
+
+/**
+ * @brief Emit entries through the secondary linked emitter.
+ * @param object Grid owning the emission settings.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set. Its fourth component receives the grid value after emission.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+void field_emit_secondary_entries(FieldClass158860* object, const LibVector4* position, LibVector4* first_offset, const LibVector4* second_offset,
+                                  const LibVector4* color_scale)
+{
+    if (object->secondary_emitter != 0)
+    {
+        LibVector4 transformed_position;
+        LibVector4 transformed_first;
+        LibVector4 transformed_second;
+        LibVector4 saved_state[2];
+        const LibVector4* position_arg;
+        const LibVector4* first_offset_arg;
+        const LibVector4* second_offset_arg;
+        const LibVector4* color_arg;
+        u8 flags = object->secondary_emission_flags;
+
+        if (flags & FIELD_EMISSION_POSITION)
+        {
+            vu0_transform_emission_point(object->transform_rows, position, &transformed_position);
+            position_arg = &transformed_position;
+        }
+        else
+        {
+            position_arg = 0;
+        }
+
+        if (flags & FIELD_EMISSION_FIRST_OFFSET)
+        {
+            vu0_transform_emission_direction(object->transform_rows, first_offset, &transformed_first);
+            first_offset_arg = &transformed_first;
+            float scale = object->secondary_emission_scale;
+            transformed_first.components[0] *= scale;
+            transformed_first.components[1] *= scale;
+            transformed_first.components[2] *= scale;
+        }
+        else
+        {
+            first_offset_arg = 0;
+        }
+
+        if (flags & FIELD_EMISSION_SECOND_OFFSET)
+        {
+            vu0_transform_emission_direction(object->transform_rows, second_offset, &transformed_second);
+            second_offset_arg = &transformed_second;
+        }
+        else
+        {
+            second_offset_arg = 0;
+        }
+
+        if (flags & FIELD_EMISSION_COLOR_SCALE)
+        {
+            color_arg = color_scale;
+        }
+        else
+        {
+            color_arg = 0;
+        }
+
+        vu0_save_emission_state(saved_state);
+        object->secondary_emitter->emit_entries(object->secondary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
+                                               0, 0, 0, 0, 0, 0);
+        vu0_reset_emission_state();
+        vu0_set_emission_delta(D_001B6690);
+        vu0_restore_emission_state(saved_state);
+        first_offset->components[3] = object->unk3C;
+    }
+}
+
+/**
+ * @brief Clear an active cell bit.
+ * @param object Bit set owning the storage.
+ * @param index Unsigned cell index.
+ */
+static inline void field_clear_grid_cell_bit(FieldBitset154E80* object, u32 index)
+{
+    u32 word_index = index >> 6;
+    u64 keep_mask = ~((u64)1 << (index & 63));
+    object->unk08[word_index] &= keep_mask;
+}
+
+/**
+ * @brief Advance active cells' frame vectors and playback state into an output batch.
+ * @param object Grid owning the cells and frame resource.
+ * @param capacity Output-entry budget, counted in steps of the grid column count.
+ * @param output Output records, with each cell written at the start of its row.
+ * @param preserve_row_vector Nonzero to retain the saved xyz components in the first secondary element.
+ */
+void field_update_grid_frame_vectors(FieldClass158860* object, s32 capacity, FieldGridOutputRecord* output, s32 preserve_row_vector)
+{
+    s32 columns = object->unk10;
+    s32 index = object->unk2C;
+    s32 cells = object->unk0C;
+    u64* words = object->unk1C->unk08;
+    u64 mask = (u64)1 << (index & 63);
+    s32 word_index = index / 64;
+    u64 active_word = words[word_index++];
+
+    if (object->skip_frame_playback != 0)
+    {
+        s32 consumed = 0;
+        vu0_set_grid_frame_delta(D_001B6690);
+
+        if (columns == 1)
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                mask <<= 1;
+
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                FieldGridFrameMotion* state = &object->unk14[index];
+
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+        else
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                mask <<= 1;
+
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                FieldGridFrameMotion* state = &object->unk14[index];
+
+                FieldGridFrameVector* previous = &object->unk20[index * (columns - 1)].unk30;
+
+                if (preserve_row_vector == 0)
+                {
+                    previous->packed = state->value.packed;
+                }
+
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+                previous->components.frame_index = 0;
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+    }
+    else
+    {
+        s32 consumed = 0;
+        s32 frame_count = object->frame_header->frame_count;
+        s32 loop_mode = object->frame_header->loop_mode;
+        s32 boundary_limit = (s32)object->unk30;
+        float frame_seconds = 1.0f / 60.0f;
+        vu0_set_grid_frame_delta(D_001B6690);
+
+        if (columns == 1)
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                mask <<= 1;
+
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                FieldGridFrameMotion* state = &object->unk14[index];
+
+                FieldGridFrameState* frame = &state->frame;
+
+                if (object->unk4C == 4 && boundary_limit < frame->boundary_count)
+                {
+                    field_clear_grid_cell_bit(object->unk1C, index);
+                    index++;
+                    continue;
+                }
+
+                frame->remaining_time -= D_001B6690;
+
+                s32 frame_index = frame->frame_index;
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+
+                while (frame->remaining_time <= 0.0f)
+                {
+                    frame_index += frame->reverse != 0 ? -1 : 1;
+
+                    if (frame_index >= frame_count)
+                    {
+                        switch (loop_mode)
+                        {
+                        case FIELD_GRID_FRAME_WRAP:
+                            frame_index = 0;
+                            break;
+                        case FIELD_GRID_FRAME_PING_PONG:
+                            frame->reverse = 1;
+                            frame_index--;
+                            break;
+                        case FIELD_GRID_FRAME_HOLD_LAST:
+                            frame_index--;
+                            break;
+                        }
+
+                        frame->boundary_count++;
+                    }
+                    else if (frame_index < 0)
+                    {
+                        frame->reverse = 0;
+                        frame_index = 0;
+                        frame->boundary_count++;
+                    }
+
+                    frame->frame_index = frame_index;
+                    frame->remaining_time += frame_seconds * object->frame_records[frame_index].duration_frames;
+                }
+
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                output->frame_vector.components.frame_index = frame_index;
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+        else
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                mask <<= 1;
+
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                FieldGridFrameMotion* state = &object->unk14[index];
+
+                FieldGridFrameState* frame = &state->frame;
+
+                if (object->unk4C == 4 && boundary_limit < frame->boundary_count)
+                {
+                    field_clear_grid_cell_bit(object->unk1C, index);
+                    index++;
+                    continue;
+                }
+
+                frame->remaining_time -= D_001B6690;
+
+                s32 frame_index = frame->frame_index;
+                FieldGridFrameVector* previous = &object->unk20[index * (columns - 1)].unk30;
+
+                if (preserve_row_vector == 0)
+                {
+                    previous->packed = state->value.packed;
+                }
+                previous->components.frame_index = frame_index;
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+
+                while (frame->remaining_time <= 0.0f)
+                {
+                    frame_index += frame->reverse != 0 ? -1 : 1;
+
+                    if (frame_index >= frame_count)
+                    {
+                        switch (loop_mode)
+                        {
+                        case FIELD_GRID_FRAME_WRAP:
+                            frame_index = 0;
+                            break;
+                        case FIELD_GRID_FRAME_PING_PONG:
+                            frame->reverse = 1;
+                            frame_index--;
+                            break;
+                        case FIELD_GRID_FRAME_HOLD_LAST:
+                            frame_index--;
+                            break;
+                        }
+
+                        frame->boundary_count++;
+                    }
+                    else if (frame_index < 0)
+                    {
+                        frame->reverse = 0;
+                        frame_index = 0;
+                        frame->boundary_count++;
+                    }
+
+                    frame->frame_index = frame_index;
+                    frame->remaining_time += frame_seconds * object->frame_records[frame_index].duration_frames;
+                }
+
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                output->frame_vector.components.frame_index = frame_index;
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+    }
+}
 
 void func_002AE9A0(void* object)
 {

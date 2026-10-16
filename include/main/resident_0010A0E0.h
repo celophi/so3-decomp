@@ -17,11 +17,101 @@ struct BootInputRoot9670;
 /** Resident descriptor table used by the keyed resource-size lookup. */
 struct ResidentObject1B65E4;
 
-/** Opaque receiver for resident request allocation. */
+/** One of the sixty resident request slots. */
+typedef struct ResidentRequestSlot
+{
+    u8 active;
+
+    u8 pending;
+
+    u8 flags2;
+
+    u8 flags3;
+
+    u8 flags4;
+
+    u8 selector;
+
+    u8 unk06[2];
+
+    s16 value;
+
+    u8 unk0a[2];
+
+    u32 unk0c;
+
+    s32 identifier;
+
+    u32 unk14;
+
+    s32 unk18;
+
+    u8 unk1c;
+
+    u8 unk1d[3];
+
+    void* target;
+
+    u32 unk24;
+
+    u32 unk28;
+
+    u32 unk2c;
+
+    u32 unk30;
+
+    u8 unk34[8];
+} ResidentRequestSlot;
+
+/** Receiver prefix containing the cyclic slot cursor and request identifiers. */
+struct ResidentRequest112400
+{
+    void* context;
+
+    u8 unk04[8];
+
+    u32 unk0c;
+
+    u8 unk10[0x100];
+
+    u8 state;
+
+    u8 unk111[0x260];
+
+    u8 unk371;
+
+    u8 unk372[0x16A];
+
+    u32 next_identifier;
+
+    s32 cursor;
+
+    ResidentRequestSlot slots[60];
+};
+
 typedef struct ResidentRequest112400 ResidentRequest112400;
 
-/** Opaque resident queue of DMA submissions for a single channel. */
-typedef struct ResidentDmaQueue ResidentDmaQueue;
+/** Partial resident DMA queue exposing the asynchronously cleared busy flag. */
+typedef struct ResidentDmaQueue
+{
+    u8 unk00[0x1011];
+
+    volatile u8 busy;
+} ResidentDmaQueue;
+
+#ifdef __cplusplus
+/** Resident allocation heap with its virtual pointer following the heap state. */
+class ResidentHeap
+{
+public:
+    ResidentHeap();
+
+    u8 unk00[0x54];
+
+    /** @brief Release heap storage and child heaps. */
+    virtual ~ResidentHeap();
+};
+#endif
 
 #ifdef __cplusplus
 /** Interface called by the resident queue when a DMA transfer starts or completes. */
@@ -165,6 +255,21 @@ u32 func_00115830(const void* object);
 u32 func_001158A0(const void* object);
 /** Return and clear the word at receiver offset 0x10. */
 u32 func_0011DF00(void* object);
+
+/**
+ * @brief Wait for the next display interrupt and return the retained GS field bit.
+ * @param root Resident input and display state.
+ * @param mode Minus one reads the field without waiting; other values wait.
+ * @return Retained display field, zero or one.
+ */
+u32 func_0011DF10(struct BootInputRoot9670* root, s32 mode);
+
+/**
+ * @brief Release the objects in both resident queue rings.
+ * @param queue Queue whose pending objects are released.
+ */
+void func_0011ECD0(ResidentObjectQueue* queue);
+
 /** Store the word at receiver offset 0x8 and clear its byte at offset 0x2F9. */
 void func_0011DF60(void* object, u32 value);
 /** Return the word at receiver offset 0x8. */
@@ -226,6 +331,37 @@ void func_0011C6B0(void* object);
 s32 func_0011C7C0(const void* object);
 
 #ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** Clear the receiver's eight retained request buffers. */
+void func_00110C60(ResidentRequest112400* request);
+
+/** Reconfigure the resident request receiver. */
+s32 func_001106B0(ResidentRequest112400* request, s32 value);
+
+/** Synchronize the GS path while holding the receiver's semaphore. */
+s32 func_0011DE00(void* object, s32 first, s32 second);
+
+/** Bind the display state and store its input flag. */
+void func_0011DEE0(void* object, void* display, u8 flag);
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+    void func_00114650(void* object, s32 value);
+
+    u32 func_00113930(ResidentHeap* heap, u32 size);
+
+    u32 func_001138B0(ResidentHeap* heap, void* address, u32 size);
 }
 #endif
 

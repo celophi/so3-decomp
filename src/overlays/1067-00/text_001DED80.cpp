@@ -205,13 +205,13 @@ s32 FieldClass150070::func_001DF3D0()
 void FieldClass14FFB0::func_001DF3E0()
 {
     FieldClass150040* record = &unk1c[unk2e];
-    if (record->rounded_unk04())
+    if (record->buffer_address())
     {
         FieldClass1DD400* owner = this;
         u32 first = record->unk00;
-        func_00103E70(D_001B65E8, record->unk0c, record->rounded_unk04(), 0x80000000, unk28, owner, first, 0, 1);
+        func_00103E70(D_001B65E8, record->unk0c, record->buffer_address(), 0x80000000, unk28, owner, first, 0, 1);
         u32 word = record->unk00;
-        u32 size = record->rounded_unk04();
+        u32 size = record->buffer_address();
         record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
         unk15 = 1;
         unk30_1 = 0;
@@ -241,7 +241,7 @@ s32 FieldClass14FFB0::func_001DF640()
             if (!entry->unk08_0)
             {
                 u32 word = entry->unk00;
-                u32 size = entry->rounded_unk04();
+                u32 size = entry->buffer_address();
                 func_00103B20(D_001B65E8, entry->unk0c, size, 0x80000000, word, 0);
             }
         }
@@ -764,7 +764,7 @@ s32 FieldClass14FFB0::func_001E07A0()
             if (!record->unk08_0)
             {
                 u32 word = record->unk00;
-                u32 size = record->rounded_unk04();
+                u32 size = record->buffer_address();
                 func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
             }
         }
@@ -783,7 +783,7 @@ s32 FieldClass14FFB0::func_001E07A0()
         for (s32 i = 0; i < unk2d; i++)
         {
             FieldClass150040* record = records + i;
-            if (record->rounded_unk04())
+            if (record->buffer_address())
             {
                 result = 1;
                 break;
@@ -803,7 +803,7 @@ s32 FieldClass14FFB0::func_001E07A0()
         for (s32 i = 0; i < unk2d; i++)
         {
             FieldClass150040* record = records + i;
-            if (record->rounded_unk04())
+            if (record->buffer_address())
             {
                 result = 2;
                 break;
@@ -838,7 +838,7 @@ void FieldClass14FFB0::func_001E0A50(s32 flag)
             {
                 FieldClass150040* record = &unk1c[i];
                 u32 word = record->unk00;
-                u32 size = record->rounded_unk04();
+                u32 size = record->buffer_address();
                 func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
             }
             unk15 = 9;
@@ -847,7 +847,7 @@ void FieldClass14FFB0::func_001E0A50(s32 flag)
         {
             FieldClass150040* record = &unk1c[unk2e];
             u32 word = record->unk00;
-            u32 size = record->rounded_unk04();
+            u32 size = record->buffer_address();
             if (!func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0) && !field_records_blocked())
             {
                 func_001DDB30(0);
@@ -868,7 +868,7 @@ void FieldClass14FFB0::func_001E0A50(s32 flag)
         {
             FieldClass150040* record = &records[i];
             u32 word = record->unk00;
-            u32 size = record->rounded_unk04();
+            u32 size = record->buffer_address();
             record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
             if (record->unk10)
             {
@@ -897,7 +897,7 @@ void FieldClass14FFB0::func_001E0A50(s32 flag)
         for (s32 i = 0; i < unk2d; i++, record++)
         {
             u32 word = record->unk00;
-            u32 size = record->rounded_unk04();
+            u32 size = record->buffer_address();
             record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
             if (record->unk10)
             {
@@ -932,7 +932,7 @@ void FieldClass14FFB0::func_001E0F60()
         }
         FieldClass150040* record = &unk1c[unk2e];
         u32 word = record->unk00;
-        u32 size = record->rounded_unk04();
+        u32 size = record->buffer_address();
         if (func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0))
         {
             return;

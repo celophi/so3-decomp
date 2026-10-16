@@ -5,6 +5,7 @@
 #include "overlays/1067-00/text_00207AF0.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "main/resident_0010A0E0.h"
+#include "overlays/lib/text_004CD3A0.h"
 #include "main/resident_data.h"
 
 extern "C" void func_4486A0(void* object);
@@ -185,14 +186,24 @@ FieldBitset154E80::~FieldBitset154E80()
     }
 }
 
-s32 func_00272F90(void* object)
+/** @brief Report the fixed list kind. @return Four. */
+s32 FieldClass154E90::func_001DF3D0()
 {
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272FA0);
+/** @brief Release the listed objects, detach this node and queue it for release. */
+void FieldClass154E90::func_001DD7B0()
+{
+    func_001DD730();
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00272FF0);
+/** @brief Destroy the field node and its secondary list. */
+FieldClass154E90::~FieldClass154E90()
+{
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002730B0);
 
@@ -204,7 +215,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002731
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00273260);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002732B0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_001DF360__16FieldClass154E90Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00273320);
 
@@ -218,5 +229,3 @@ FieldClass154EF0::~FieldClass154EF0()
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00273640);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00273710);

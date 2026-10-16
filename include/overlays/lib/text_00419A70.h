@@ -317,4 +317,18 @@ extern "C" s32 func_00423990(void* object);
 extern "C" s32 func_004284A0(void* object, const void* value, float* zero_output, float* small_output);
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** Detach and release the retained objects with the supplied byte tag. */
+void func_00428B90(u8 tag);
+
+/** Detach and release the second retained set with the supplied byte tag. */
+void func_004288C0(u8 tag);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

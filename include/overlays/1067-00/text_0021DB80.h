@@ -5,6 +5,43 @@
 
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001ED7E0.h"
+#include "overlays/lib/text_004BD360.h"
+
+/** 0x94-byte field list with its secondary list base at offset 0x14. */
+class FieldClass1522C0 : public FieldClass150070, public FieldClass1502A0
+{
+public:
+    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    static void* operator new(u32 size);
+
+    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object)
+    {
+        func_004DB570(object);
+    }
+
+    /** @brief Initialize the inherited node and list. */
+    FieldClass1522C0()
+    {
+        unk90 = 0;
+    }
+
+    /** @brief Destroy both list bases. */
+    virtual ~FieldClass1522C0();
+
+    /** @brief Report the fixed list kind. @return Three. */
+    virtual s32 func_001DF3D0();
+
+    /** @brief Detach this node and queue it for release. */
+    virtual void func_001DD7B0();
+
+    /** @brief Advance the list's objects when their update conditions hold. */
+    virtual void func_001DF360();
+
+    u8 unk8c[4];
+
+    void* unk90;
+};
 
 /** Scene-loader record whose native array stride is 32 bytes. */
 class FieldClass152210 : public FieldClass1530C0
@@ -83,7 +120,6 @@ typedef struct FieldClass152270 FieldClass152270;
  */
 void func_0021F530(FieldClass152270* loader, s32 key);
 
-typedef struct FieldObject1522C0 FieldObject1522C0;
 typedef struct FieldScriptObject151D40 FieldScriptObject151D40;
 
 /**
@@ -117,19 +153,6 @@ s32 func_0021DE70(FieldScriptObject151D40* object, u32 count);
  * @return Always 1.
  */
 s32 func_0021DEF0(FieldScriptObject151D40* object, u32 count);
-
-/**
- * @brief Report the fixed category for this object.
- * @param object Receiver.
- * @return Always 3.
- */
-s32 func_0021FB30(FieldObject1522C0* object);
-
-/**
- * @brief Detach this object and add it to the resident object queue.
- * @param object Object to detach and queue.
- */
-void func_0021FB40(FieldObject1522C0* object);
 
 /**
  * @brief Return the fixed value 2.

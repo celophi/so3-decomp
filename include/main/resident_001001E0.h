@@ -60,6 +60,14 @@ void func_001011B0(struct FieldRuntimeRoot* root, void* destination, s32 type, u
 
 void func_00100AB0(void* object);
 
+/**
+ * @brief Restore an overlay descriptor and the runtime's saved execution context.
+ * @param root Resident runtime owner.
+ * @param descriptor Saved overlay descriptor.
+ * @param slot Overlay slot selected in the resident descriptor table.
+ */
+void func_001010D0(void* root, void* descriptor, s32 slot);
+
 #ifdef __cplusplus
 }
 #endif

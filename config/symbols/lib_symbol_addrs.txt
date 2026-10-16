@@ -489,3 +489,38 @@ lib_list_collect_nodes_by_kind = 0x004D6AF0; // type:func
 func_004D6AF0 = 0x004D6AF0; // type:func absolute:True allow_duplicated:True
 lib_list_add_chain_kind_offsets = 0x004D6DF0; // type:func allow_duplicated:True
 func_004D6DF0 = 0x004D6DF0; // type:func absolute:True allow_duplicated:True
+
+emit_entries__14LibClass173990FiPC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4 = 0x00435840; // type:func absolute:True allow_duplicated:True
+func_00435840 = 0x00435840; // type:func absolute:True allow_duplicated:True
+
+copy_state__14LibClass173990FPC14LibClass173990 = 0x004352E0; // type:func absolute:True allow_duplicated:True
+func_004352E0 = 0x004352E0; // type:func absolute:True allow_duplicated:True
+
+__dt__14LibClass173990Fv = 0x0043B730; // type:func absolute:True allow_duplicated:True
+func_0043B730 = 0x0043B730; // type:func absolute:True allow_duplicated:True
+
+__dt__14LibClass173A28Fv = 0x0043BC40; // type:func absolute:True allow_duplicated:True
+func_0043BC40 = 0x0043BC40; // type:func absolute:True allow_duplicated:True
+
+__vt__14LibClass173990 = 0x00173990; // size:0x98 absolute:True allow_duplicated:True
+
+__vt__14LibClass173A28 = 0x00173A28; // size:0xC absolute:True allow_duplicated:True
+
+func_003EEBC0__14LibClass173990Fv = 0x00434F20; // type:func absolute:True allow_duplicated:True
+func_00434F20 = 0x00434F20; // type:func absolute:True allow_duplicated:True
+
+func_003EF740__14LibClass173990Fv = 0x00434F30; // type:func absolute:True allow_duplicated:True
+func_00434F30 = 0x00434F30; // type:func absolute:True allow_duplicated:True
+
+func_003EEBD0__14LibClass173990Fv = 0x0043AFD0; // type:func absolute:True allow_duplicated:True
+func_0043AFD0 = 0x0043AFD0; // type:func absolute:True allow_duplicated:True
+
+__ct__14LibClass173990Fv = 0x0043B840; // type:func absolute:True allow_duplicated:True
+func_0043B840 = 0x0043B840; // type:func absolute:True allow_duplicated:True
+
+lib_object_list_00507c40 = 0x00507C40; // size:0x78 absolute:True allow_duplicated:True
+D_507C40 = 0x00507C40; // absolute:True allow_duplicated:True
+__vt__14LibClass174CF0 = 0x00174CF0; // size:0xC
+__dt__14LibClass174CF0Fv = 0x00456140; // type:func allow_duplicated:True
+
+__dt__14LibBufferOwnerFv = 0x003F5FA0; // type:func size:0x60

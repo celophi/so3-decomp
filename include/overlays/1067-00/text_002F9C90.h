@@ -275,4 +275,51 @@ void func_002FED50(void* object);
 }
 #endif
 
+#ifdef __cplusplus
+#include "main/resident_0010A0E0.h"
+#include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/lib/text_004CD3A0.h"
+
+/** Camera transform with queued DMA and field context callbacks. */
+class FieldClass15BBB0 : public LibClass178A90, public DmaSubmission, public FieldClass1DD400
+{
+public:
+    FieldClass15BBB0();
+
+    virtual ~FieldClass15BBB0();
+
+    virtual void submit_dma(u32 channel);
+
+    virtual void complete_dma(u32 channel);
+
+    virtual void func_001DDB30(void* argument);
+
+    u8 unk98[0x928];
+
+    s32 unk9c0;
+
+    u8 unk9c4[6];
+
+    u8 unk9ca;
+
+    u8 unk9cb[5];
+
+    FieldVec4A unk9d0;
+
+    u32 unk9e0;
+
+    u32 unk9e4;
+
+    u32 unk9e8;
+
+    char name[0x11];
+
+    u8 unk9fd_0 : 1;
+
+    u8 unk9fd_1_7 : 7;
+
+    u8 unk9fe[2];
+};
+#endif
+
 #endif

@@ -781,7 +781,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FFF
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_00300D20);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_00300EB0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", __ct__16FieldClass15BBB0Fv);
 
 extern "C" void func_00301090(FieldByte4F9C90* object)
 {

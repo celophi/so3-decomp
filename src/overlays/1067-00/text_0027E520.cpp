@@ -2466,14 +2466,6 @@ s32 func_00287600(void* object)
     return 3;
 }
 
-/** Partial FieldClass150070 object with vtable D_156B50 in main data. */
-class FieldClass156B50 : public FieldClass150070
-{
-public:
-    /** @brief Destroy the object. */
-    virtual ~FieldClass156B50();
-};
-
 FieldClass156B50::~FieldClass156B50()
 {
 }
@@ -2486,7 +2478,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_002878
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_00287B00);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_002880A0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", __ct__16FieldClass156B50Fv);
 
 FieldClass156B70::~FieldClass156B70()
 {

@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/vector_inlines.h"
 #include "overlays/1067-00/text_001E6C50.h"
 #include "overlays/1067-00/field_runtime.h"
 #include "main/resident_data.h"

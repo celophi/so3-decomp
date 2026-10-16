@@ -459,44 +459,6 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00111EF0)
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112160);
 
 
-/** One of the sixty resident request slots. */
-typedef struct ResidentRequestSlot
-{
-    u8 active;
-    u8 pending;
-    u8 flags2;
-    u8 flags3;
-    u8 flags4;
-    u8 selector;
-    u8 unk06[2];
-    s16 value;
-    u8 unk0a[2];
-    u32 unk0c;
-    s32 identifier;
-    u32 unk14;
-    s32 unk18;
-    u8 unk1c;
-    u8 unk1d[3];
-    void* target;
-    u32 unk24;
-    u32 unk28;
-    u32 unk2c;
-    u32 unk30;
-    u8 unk34[8];
-} ResidentRequestSlot;
-/** Receiver prefix containing the cyclic slot cursor and request identifiers. */
-struct ResidentRequest112400
-{
-    void* context;
-    u8 unk04[0x10C];
-    u8 state;
-    u8 unk111[0x260];
-    u8 unk371;
-    u8 unk372[0x16A];
-    u32 next_identifier;
-    s32 cursor;
-    ResidentRequestSlot slots[60];
-};
 extern void func_0010EE60(void* response, ResidentRequestSlot* slot);
 extern s32 func_00108220(void* context, s32 first,
     void (*callback)(void*, ResidentRequestSlot*), ResidentRequestSlot* slot,

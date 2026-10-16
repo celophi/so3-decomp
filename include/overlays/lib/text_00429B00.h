@@ -326,4 +326,15 @@ void func_0042A340(void* object, u8 mode);
 }
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** Remove and free the keyed text resource. */
+void func_00433680(void);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

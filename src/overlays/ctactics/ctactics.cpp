@@ -21,59 +21,6 @@
 #define TACTICS_STAT_WORD_XOR_KEY 0x7DE3F7E3
 #define TACTICS_STAT_HALFWORD_XOR_KEY 0x7E93
 
-/** Partial primary interface of the resident field context; later methods and secondary tables are omitted. */
-struct FieldScriptContext1516A0 : public FieldClass151D40
-{
-    /**
-     * @brief Resolve display coordinates for a keyed field object.
-     * @param x Receives the horizontal coordinate.
-     * @param y Receives the vertical coordinate.
-     * @param key Field object key.
-     * @param width Horizontal extent used for clipping.
-     * @param height Vertical extent used for clipping.
-     */
-    virtual void resolve_field_object_display_position(float* x, float* y, s32 key, float width, float height);
-
-    /**
-     * @brief Forward a scalar value to the keyed field object.
-     * @param value Integer value forwarded to the object.
-     * @param key Field object key.
-     * @param amount Value forwarded to the object.
-     */
-    virtual void set_field_object_value(s32 value, s32 key, float amount);
-
-    /**
-     * @brief Queue a field request with an optional keyed attachment.
-     * @param first First request value.
-     * @param second Second request value.
-     * @param third Third request value.
-     * @param fourth Fourth request value.
-     * @param key Optional attachment key, or -1.
-     * @param enabled Whether to resolve and attach the keyed object.
-     * @return Request slot, or -1 if the request could not be queued.
-     */
-    virtual s32 queue_field_request(s32 first, s32 second, s32 third, s32 fourth, s32 key, u32 enabled);
-
-    /**
-     * @brief Clear one or all field requests and optionally release their attachments.
-     * @param index Request slot, or -1 for all slots.
-     * @param release Whether to release attached objects.
-     */
-    virtual void clear_field_requests(s8 index, u32 release);
-
-    /** @brief Get the interpolated progress value for a request slot. @param index Request slot. @return Progress value, or -1 for a negative slot. */
-    virtual s32 get_field_request_progress(s8 index);
-
-    /** @brief Get the state code for a request slot. @param index Request slot. @return Request state, or -1 for a negative slot. */
-    virtual s32 get_field_request_state(s8 index);
-
-    /** @brief Test whether no field work is pending. @return One when no work is pending, otherwise zero. */
-    virtual s32 has_no_pending_field_work();
-
-    /** @brief Refresh character state and its attached field display. */
-    virtual void refresh_field_character_state();
-};
-
 /** Kind-9 movement widget with its storage base at offset 0x40. */
 struct TacticsMovementWidget175030 : public LibClass178600, public TacticsStorage18B010
 {
@@ -1044,7 +991,7 @@ u8 TacticsWindow18B020::func_slotb0()
         if (reinterpret_cast<TacticsRuntimeControl*>(D_001B643C->runtime)->character_state_refresh_pending != 0)
         {
             ResidentContextObject38* context = D_001B6430->context->unk38;
-            reinterpret_cast<FieldScriptContext1516A0*>(context)->refresh_field_character_state();
+            reinterpret_cast<FieldClass151D40*>(context)->refresh_field_character_state();
             reinterpret_cast<TacticsRuntimeControl*>(D_001B643C->runtime)->character_state_refresh_pending = 0;
         }
 

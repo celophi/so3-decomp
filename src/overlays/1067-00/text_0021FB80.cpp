@@ -215,7 +215,7 @@ FieldClass152350::~FieldClass152350()
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224A00);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", __ct__16FieldClass152350Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224B90);
 
@@ -224,44 +224,40 @@ s32 func_00224C30(void* object)
     return 0;
 }
 
-/** Partial FieldClass150070 object with vtable D_1523F0 in main data. */
-class FieldClass1523F0 : public FieldClass150070
-{
-public:
-    /** @brief Destroy the object. */
-    virtual ~FieldClass1523F0();
-};
-
-FieldClass1523F0::~FieldClass1523F0()
+/** @brief Destroy the inherited input node. */
+FieldInputState::~FieldInputState()
 {
 }
 
-s32 func_00224CD0(void* object)
+/** @brief Report the input object kind. @return Zero. */
+s32 FieldInputState::func_001DF3D0()
 {
     return 0;
 }
 
-void func_00224CE0(void* object)
+/** @brief Detach the input and queue it for release. */
+void FieldInputState::func_001DD7B0()
 {
-    lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224D10);
 
-void func_00224E50(FieldObject224E50* object)
+/** @brief Clear all transient control words. @param unused Unused reset argument. */
+void FieldInputState::clear(s32 unused)
 {
-    object->unk14[0] = 0;
-    object->unk14[1] = 0;
-    object->unk14[2] = 0;
-    object->unk14[3] = 0;
-    object->unk14[4] = 0;
-    object->unk14[5] = 0;
-    object->unk14[6] = 0;
-    object->unk14[7] = 0;
+    button_masks[0] = 0;
+    button_masks[1] = 0;
+    button_masks[2] = 0;
+    button_masks[3] = 0;
+    button_masks[4] = 0;
+    button_masks[5] = 0;
+    button_masks[6] = 0;
+    button_masks[7] = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224E80);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_001DF360__15FieldInputStateFv);
 
 s32 func_00224FC0(FieldObject152410* object)
 {
@@ -308,7 +304,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002263
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002263B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002267E0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", __ct__16FieldClass152410Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00226980);
 

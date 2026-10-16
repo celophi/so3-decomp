@@ -17,3 +17,7 @@
 @16@__dt__16FieldClass151640Fv = 0x0020E490;
 @16@func_001DD730__16FieldClass151640Fv = 0x0020E4A0;
 @24@func_001DDB30__16FieldClass150700FPv = 0x001F9B60;
+
+@20@__dt__16FieldClass1522C0Fv = 0x0021FB70;
+@20@__dt__16FieldClass154CC0Fv = 0x00272350;
+@20@__dt__16FieldClass154E90Fv = 0x00273710;

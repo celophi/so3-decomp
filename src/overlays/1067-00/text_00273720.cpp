@@ -126,7 +126,7 @@ void func_00275AD0(FieldResourceOwner273720* object, FieldResourceHeader273720* 
 {
     object->unk2C = header;
     object->unk30 = records;
-    if (object->unk2C->unk00 == 1)
+    if (object->unk2C->frame_count == 1)
     {
         object->unk34 = 1;
     }

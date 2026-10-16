@@ -472,7 +472,7 @@ void FieldClass14FE30::func_004D6730()
         }
     } while (swapped);
     s32 count = active_node_count;
-    FieldClass150F90* focus = static_cast<FieldClass150F90*>(D_001B6430->context->unk08->unkdc);
+    FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
     if (!focus || (focus && focus->unk90 <= 0.0f))
     {
         for (active_node_index = 0; active_node_index < active_node_count; active_node_index++)
@@ -577,7 +577,7 @@ void FieldClass14FE30::func_001DF360()
 {
     ResidentContext* ctx = D_001B6430->context;
     if (ctx->unkdd.unk4 || func_002B0BC0((FieldFlagOwner2B0BC0*)ctx) || D_001B6430->context->unkde_1
-        || D_001B6430->context->unkdd.unk5 || !D_001B6430->context->unk08->unkdc)
+        || D_001B6430->context->unkdd.unk5 || !D_001B6430->context->unk08->current_object)
     {
         return;
     }
@@ -586,7 +586,7 @@ void FieldClass14FE30::func_001DF360()
         return;
     }
     func_004D6730();
-    FieldClass150F90* focus = static_cast<FieldClass150F90*>(D_001B6430->context->unk08->unkdc);
+    FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
     if (!focus)
     {
         return;

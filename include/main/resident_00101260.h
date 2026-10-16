@@ -22,6 +22,9 @@ void* resident_get_entry_table(void* object);
  */
 u32 resident_find_entry(void* table, s32 key);
 
+/** Remove the entry associated with a key. */
+void func_00101480(void* table, s32 key);
+
 /** Return the first pointer argument unchanged. */
 void* func_00101270(void* value);
 
@@ -32,6 +35,13 @@ void* func_001012C0(void* object);
 void* func_001012D0(void* object);
 
 #ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+    u32 func_001014B0(void* table, void* entry, s32 key);
 }
 #endif
 

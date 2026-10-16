@@ -17,12 +17,6 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021DD
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021DDD0);
 
-typedef union FieldScriptStackWord
-{
-    u32 word;
-    float number;
-} FieldScriptStackWord;
-
 typedef struct FieldScriptWord18
 {
     u8 unk00[0x14];
@@ -89,7 +83,7 @@ s32 func_0021DF30(FieldScriptObject151D40* object, u32 count)
 s32 func_0021DF60(FieldScriptObject151D40* object, u32 count)
 {
     FieldRuntimeValues* values = (FieldRuntimeValues*)func_101440(func_101290(func_10D8E0()), 4);
-    func_13A678(values->unk184, 0, sizeof(values->unk184));
+    func_13A678(values->flags_5000, 0, sizeof(values->flags_5000));
     return 1;
 }
 
@@ -207,7 +201,7 @@ FieldClass152210::FieldClass152210()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F760);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F7D0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_001DF360__16FieldClass1522C0Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F860);
 
@@ -217,17 +211,20 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F9
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F9B0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021FA70);
+/** @brief Destroy the field node and its secondary list. */
+FieldClass1522C0::~FieldClass1522C0()
+{
+}
 
-s32 func_0021FB30(FieldObject1522C0* object)
+/** @brief Report the fixed list kind. @return Three. */
+s32 FieldClass1522C0::func_001DF3D0()
 {
     return 3;
 }
 
-void func_0021FB40(FieldObject1522C0* object)
+/** @brief Detach this node and queue it for release. */
+void FieldClass1522C0::func_001DD7B0()
 {
-    lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021FB70);

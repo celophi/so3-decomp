@@ -7,6 +7,7 @@
 #include "main/resident_data.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/1067-00/field_class_1553b0.h"
 
 /**
  * Partial 0x7D8-byte FieldClass14FFB0 with vtable D_155640 in main data
@@ -419,28 +420,48 @@ void func_0027CB20(ResidentContextObject58* object, s32 value);
 #ifdef __cplusplus
 }
 
-/** Partial FieldClass150070 object with vtable D_1553B0 in main data. */
-class FieldClass1553B0 : public FieldClass150070
-{
-public:
-    /** @brief Destroy the object. */
-    virtual ~FieldClass1553B0()
-    {
-    }
-
-    /**
-     * @brief Release the object's storage through the Lib heap.
-     * @param object Storage to release.
-     */
-    static void operator delete(void* object);
-};
-
 /** Partial FieldClass1553B0 object with vtable D_155610 in main data. */
 class FieldClass155610 : public FieldClass1553B0
 {
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass155610();
+
+    /** @brief Update the controller. */
+    virtual void func_001DF360();
+};
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct ResidentContextObject58;
+
+/** Run the shutdown hook on each object in the retained list. */
+void func_0027C020(struct ResidentContextObject58* object);
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001DD3C0.h"
+
+/** Retained field object list. */
+class FieldClass1557B0 : public FieldClass150070, public FieldClass1502A0
+{
+public:
+    static void* operator new(u32 size);
+
+    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    static void operator delete(void* object);
+
+    FieldClass1557B0();
+
+    virtual ~FieldClass1557B0();
+
+    u8 unk8c[0x160];
 };
 #endif
 

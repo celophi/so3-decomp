@@ -106,28 +106,33 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00200B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00200CC0);
 
+/** @brief Destroy the script state and detach its inherited list node. */
 FieldClass150DC0::~FieldClass150DC0()
 {
 }
 
-extern "C" s32 func_00201510(void* object)
+/** @brief Report the script kind. @return One. */
+s32 FieldClass150DC0::func_001DF3D0()
 {
     return 1;
 }
 
-extern "C" s32 func_00201520(void* object)
+/** @brief Return the fixed script state value. @return One. */
+s32 FieldClass150DC0::func_00201520()
 {
     return 1;
 }
 
-extern "C" float func_00201530(void* object)
+/** @brief Read the field frame increment. @return Current frame increment. */
+float FieldClass150DC0::func_00201530()
 {
     return D_001B6688;
 }
 
-extern "C" void func_00201540(void* object)
+/** @brief Queue the script object for release. */
+void FieldClass150DC0::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 extern "C" void func_00201560(void* object)

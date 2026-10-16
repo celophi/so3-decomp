@@ -10,6 +10,22 @@ extern "C" void func_003EF030(u8* object);
 typedef struct N50Owner94_003E68C0 N50Owner94_003E68C0;
 
 #ifdef __cplusplus
+/** Partial owner whose nonvirtual destructor releases its two buffers. */
+class LibBufferOwner
+{
+public:
+    void* first;
+
+    u8 unk04[4];
+
+    void* second;
+
+    LibBufferOwner();
+
+    /** @brief Release both owned buffers. */
+    ~LibBufferOwner();
+};
+
 class LibClass178A90;
 class LibClass171EC0;
 class LibClass171EF0;
@@ -330,6 +346,20 @@ extern "C" void func_003F2550(LibClass178A90* object);
 extern "C" s32 func_003EF090(void* object);
 extern "C" s32 func_003F2570(void* object);
 extern "C" void func_003EFAF0(N50Owner94_003E68C0* object);
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** Release the resident category storage and clear its counters. */
+void func_003EF860(void);
+
+/** Remove and free the keyed Lib resource. */
+void func_003EF8A0(void);
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

@@ -192,4 +192,27 @@ void func_00412C40(void* object);
 }
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** Free the retained allocation at D_001B64AC. */
+void func_0040AF80(void);
+
+/** Remove and release the runtime resource keyed by 0x76505730. */
+void func_0040B1F0(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+    u32 func_0040AFA0();
+
+    u32 func_0040B250();
+}
+#endif
+
 #endif
