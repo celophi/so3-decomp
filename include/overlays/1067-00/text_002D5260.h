@@ -291,7 +291,7 @@ void func_002D82F0(FieldClass178A90* object);
  * @param object Callback receiver.
  * @return Always 5.
  */
-s32 func_002D82E0(FieldClass150070* object);
+s32 func_002D82E0(FieldListObject* object);
 #endif
 
 /**

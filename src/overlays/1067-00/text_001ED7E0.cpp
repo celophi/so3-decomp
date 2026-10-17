@@ -189,7 +189,7 @@ struct FieldRangeContext371
     u8 unk00[0x30];
     FieldMotionRange motion;
     u8 unk1d0[0x130];
-    FieldClass150070* unk300;
+    FieldListObject* unk300;
     u8 unk304[4];
     FieldState3D3* unk308;
     u8 unk30c[0x28];
@@ -351,7 +351,6 @@ struct FieldLateFlag30
 };
 
 
-extern "C" s32 func_0023AEB0(FieldClass1530D0* owner, FieldClass150070* loader);
 
 extern "C" void func_00222840(void*, void*);
 extern "C" void func_00238530(void*, void*);
@@ -476,12 +475,12 @@ extern "C" void func_4289B0(FieldLateIndexedObject*);
 extern "C" void func_428C80(FieldLateIndexedObject*);
 
 /** @brief Initialize the inherited resource loader. */
-inline FieldClass150750::FieldClass150750()
+inline FieldHeapSceneResourceLoader::FieldHeapSceneResourceLoader()
 {
 }
 
 /** @brief Destroy the inherited resource-loader state. */
-inline FieldClass150750::~FieldClass150750()
+inline FieldHeapSceneResourceLoader::~FieldHeapSceneResourceLoader()
 {
 }
 
@@ -1917,15 +1916,18 @@ FieldClass150630::~FieldClass150630()
 }
 
 /** @brief Apply the packed callback fields, then unlink and release this object. */
-void FieldClass150630::func_001DF360()
+void FieldClass150630::update()
 {
     func_004DAFE0(D_001B6628, D_001B6650, unk18 != 0, unk19 != 0, unk1a != 0, unk1c, 0xFFFFFF);
     lib_object_detach_owner(this);
     func_001DD7B0();
 }
 
-/** @brief Return the object kind. @return Sixteen. */
-s32 FieldClass150630::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 16.
+ */
+s32 FieldClass150630::get_default_list_kind()
 {
     return 16;
 }
@@ -2179,7 +2181,7 @@ extern "C" s32 func_001F2B00(FieldScriptCursorU32* cursor)
     s32 key = *cursor->current;
     FieldClass152220* loader = new FieldClass152220;
     func_0021F530(loader, key);
-    FieldClass1530D0* manager = (FieldClass1530D0*)D_001B6430->context->unk30;
+    FieldResourceLoaderList* manager = (FieldResourceLoaderList*)D_001B6430->context->unk30;
     LibClass178DD0& list = *manager;
     list.append_node(loader, -1);
     return 1;
@@ -2188,22 +2190,27 @@ extern "C" s32 func_001F2B00(FieldScriptCursorU32* cursor)
 /** @brief Release the scene-resource records and destroy the inherited loader. */
 FieldClass152270::~FieldClass152270()
 {
-    func_001F9050();
+    release_requests();
 }
 
 /** @brief Construct the common resource-loader state and clear its scene descriptor. */
 FieldClass152270::FieldClass152270()
 {
     unk3c = 0;
-    unk14 = 4;
+    load_kind = 4;
 }
 
-
-
-extern "C" void func_001F2DE0(FieldRecords* state)
+/**
+ * @brief Reset request slots, counts, and the completion callback.
+ * Existing buffer addresses are cleared without freeing their storage.
+ * @param state Loader view containing the allocated slots and their capacity.
+ */
+extern "C" void field_reset_scene_resource_requests(FieldRecords* state)
 {
-    if (state->records != 0) {
-        for (s32 i = 0; i < state->count; ++i) {
+    if (state->records != 0)
+    {
+        for (s32 i = 0; i < state->count; ++i)
+        {
             FieldRecord20& record = state->records[i];
             record.indexC = -1;
             record.value4 = 0;
@@ -2216,12 +2223,12 @@ extern "C" void func_001F2DE0(FieldRecords* state)
             record.byte15 = 0;
         }
     }
+
     state->value20 = 0;
     state->byte2F = 0;
     state->byte2D = 0;
     state->byte2E = 0;
 }
-
 
 extern "C" s32 func_001F2EB0(FieldScriptCursorU32* cursor, u32 count)
 {
@@ -2265,7 +2272,8 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F33
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F39A0);
 
-FieldClass175290::~FieldClass175290()
+/** @brief Destroy the look-at transform and its transform base. */
+LibLookAtTransform::~LibLookAtTransform()
 {
 }
 
@@ -2498,7 +2506,7 @@ extern "C" void func_001F76F0(FieldActorCommandState* actor)
 }
 
 /** @brief Keep the resident script waiting until actor commands finish, then unlink and queue this object. */
-void FieldClass150650::func_001DF360()
+void FieldClass150650::update()
 {
     if (field_actor_commands_pending())
     {
@@ -2894,59 +2902,63 @@ void FieldClass1507A0::func_001DD7B0()
 }
 
 /** @brief Start the request for the current record when its buffer address is nonzero. */
-void FieldClass150700::func_001F8CB0()
+void FieldSceneResourceLoader::start_current_read()
 {
-    FieldClass152210* record = &unk1c[unk2e];
+    FieldSceneResourceRequest* record = &requests[current_request];
+
     if (record->buffer_address())
     {
         FieldClass1DD400* owner = this;
-        u32 first = record->unk00;
-        func_00103E70(D_001B65E8, record->unk0c, record->buffer_address(), 0x80000000, unk28, owner, first, 0, 1);
-        u32 word = record->unk00;
+        u32 submitted_byte_count = record->byte_capacity;
+        resident_queue_resource_request(D_001B65E8, record->file_key, record->buffer_address(), 0x80000000, unk28, owner, submitted_byte_count, 0, 1);
+        u32 byte_count = record->byte_capacity;
         u32 buffer_address = record->buffer_address();
-        record->unk10 = func_00103640(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0);
-        unk15 = 1;
-        unk30_1 = 0;
+        record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+        request_state = 1;
+        callback_ready = 0;
     }
 }
 
 /** @brief Release the retained record array and destroy the common loader. */
-FieldClass150700::~FieldClass150700()
+FieldSceneResourceLoader::~FieldSceneResourceLoader()
 {
-    if (unk1c)
+    if (requests)
     {
-        func_001F9050();
-        delete[] unk1c;
-        unk1c = 0;
+        release_requests();
+        delete[] requests;
+        requests = 0;
     }
 }
 
 /**
- * @brief Submit record requests or detach a loader whose state does not permit them.
+ * @brief Cancel pending reads or detach the loader, according to its state.
  * @return One after detaching, otherwise zero.
  */
-s32 FieldClass150700::func_001DF640()
+s32 FieldSceneResourceLoader::request_removal()
 {
-    switch (unk15)
+    switch (request_state)
     {
     case 1:
     {
-        FieldRecord20* record = (FieldRecord20*)unk1c;
-        for (s32 i = 0; i < unk2d; ++i, ++record)
+        FieldRecord20* record = (FieldRecord20*)requests;
+
+        for (s32 i = 0; i < request_count; ++i, ++record)
         {
             if (!record->flag8)
             {
-                u32 word = record->unk0;
+                u32 byte_count = record->unk0;
                 u32 buffer_address = field_record_buffer_address(record);
-                func_00103B20(D_001B65E8, record->indexC, buffer_address, 0x80000000, word, 0);
+                resident_cancel_resource_requests(D_001B65E8, record->indexC, buffer_address, 0x80000000, byte_count, 0);
             }
         }
-        unk15 = 7;
+
+        request_state = 7;
         break;
     }
+
     case 9:
     case 10:
-        unk15 = 7;
+        request_state = 7;
         break;
     case 7:
         break;
@@ -2954,10 +2966,15 @@ s32 FieldClass150700::func_001DF640()
         func_001DD7B0();
         return 1;
     }
+
     return 0;
 }
 
-extern "C" void func_001F9050(FieldLateNodes* object)
+/**
+ * @brief Release resources in every allocated request slot.
+ * @param object Loader view containing the request array and slot capacity.
+ */
+extern "C" void field_release_scene_resource_requests(FieldLateNodes* object)
 {
     for (int i = 0; i < object->count; i++)
     {
@@ -2966,7 +2983,11 @@ extern "C" void func_001F9050(FieldLateNodes* object)
     }
 }
 
-extern "C" void func_001F90D0(FieldLateFlag30* object)
+/**
+ * @brief Flush the cache once and mark the request callback ready.
+ * @param object Loader view containing the callback-ready flag.
+ */
+extern "C" void field_mark_scene_resource_ready(FieldLateFlag30* object)
 {
     if (!object->unk30_1)
     {
@@ -2977,29 +2998,33 @@ extern "C" void func_001F90D0(FieldLateFlag30* object)
 
 /**
  * @brief Finish or cancel pending records.
- * @return One when record storage remains during cancellation, two when a request remains, otherwise zero.
+ * @return One if a buffer was present before cleanup, two if a buffer remains pending, otherwise zero.
  */
-s32 FieldClass150700::func_001E07A0()
+s32 FieldSceneResourceLoader::poll_request_release()
 {
     s32 result = 0;
-    FieldClass152210* records = unk1c;
-    switch (unk15)
+    FieldSceneResourceRequest* records = requests;
+
+    switch (request_state)
     {
     case 1:
     {
-        for (s32 i = 0; i < unk2d; i++)
+        for (s32 i = 0; i < request_count; i++)
         {
-            const FieldClass1530C0* record = records + i;
+            const FieldResourceRequest* record = records + i;
+
             if (!record->unk08_0)
             {
-                u32 word = record->unk00;
+                u32 byte_count = record->byte_capacity;
                 u32 buffer_address = record->buffer_address();
-                func_00103B20(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0);
+                resident_cancel_resource_requests(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
         }
-        unk15 = 10;
+
+        request_state = 10;
         break;
     }
+
     case 10:
         break;
     case 9:
@@ -3009,29 +3034,34 @@ s32 FieldClass150700::func_001E07A0()
         }
     default:
     {
-        for (s32 i = 0; i < unk2d; i++)
+        for (s32 i = 0; i < request_count; i++)
         {
-            FieldClass152210* record = records + i;
+            FieldSceneResourceRequest* record = records + i;
+
             if (record->buffer_address())
             {
                 result = 1;
                 break;
             }
         }
-        for (s32 i = 0; i < unk24; i++)
+
+        for (s32 i = 0; i < request_capacity; i++)
         {
-            records[i].func_0023AD00();
+            records[i].release_buffer();
         }
-        unk15 = 0;
-        unk2e = 0;
+
+        request_state = 0;
+        current_request = 0;
         break;
     }
     }
+
     if (result != 1)
     {
-        for (s32 i = 0; i < unk2d; i++)
+        for (s32 i = 0; i < request_count; i++)
         {
-            FieldClass152210* record = records + i;
+            FieldSceneResourceRequest* record = records + i;
+
             if (record->buffer_address())
             {
                 result = 2;
@@ -3039,165 +3069,192 @@ s32 FieldClass150700::func_001E07A0()
             }
         }
     }
+
     return result;
 }
 
-/** @brief Advance record requests or handle a requested cancellation. @param flag Request control flag. */
-void FieldClass150700::func_001E0A50(s32 flag)
+/** @brief Advance record requests or handle a requested cancellation. @param cancel_request One requests cancellation; zero advances reads. */
+void FieldSceneResourceLoader::update_requests(s32 cancel_request)
 {
-    switch (unk15)
+    switch (request_state)
     {
     case 0:
-        if (!flag && unk1c)
+        if (!cancel_request && requests)
         {
             FlushCache(0);
-            FieldClass152210* record = &unk1c[unk2e];
-            void* buffer = func_001F9A80(this, (record->unk00 + 0x7FF) & ~0x7FF, 1);
+            FieldSceneResourceRequest* record = &requests[current_request];
+            void* buffer = field_allocate_scene_buffer(this, (record->byte_capacity + 0x7FF) & ~0x7FF, 1);
+
             if (buffer)
             {
-                record->unk04 = (u32)buffer;
+                record->buffer_base = (u32)buffer;
                 record->unk08_0 = 0;
-                func_001F8CB0();
+                start_current_read();
             }
         }
+
         break;
     case 1:
-        if (flag == 1)
+        if (cancel_request == 1)
         {
-            for (s32 i = 0; i < unk2d; i++)
+            for (s32 i = 0; i < request_count; i++)
             {
-                FieldClass152210* record = &unk1c[i];
-                u32 word = record->unk00;
+                FieldSceneResourceRequest* record = &requests[i];
+                u32 byte_count = record->byte_capacity;
                 u32 buffer_address = record->buffer_address();
-                func_00103B20(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0);
+                resident_cancel_resource_requests(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
-            unk15 = 9;
+
+            request_state = 9;
         }
         else
         {
-            FieldClass152210* record = &unk1c[unk2e];
-            u32 word = record->unk00;
+            FieldSceneResourceRequest* record = &requests[current_request];
+            u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
-            if (!func_00103640(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0) && !field_records_blocked())
+
+            if (!resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0) && !field_records_blocked())
             {
                 func_001DDB30(0);
             }
         }
+
         break;
     case 9:
-        if (!flag)
+        if (!cancel_request)
         {
-            func_001F8CB0();
+            start_current_read();
         }
+
         break;
     case 10:
     {
         bool done = true;
-        FieldClass152210* records = unk1c;
-        for (s32 i = 0; i < unk2d; i++)
+        FieldSceneResourceRequest* records = requests;
+
+        for (s32 i = 0; i < request_count; i++)
         {
-            FieldClass152210* record = &records[i];
-            u32 word = record->unk00;
+            FieldSceneResourceRequest* record = &records[i];
+            u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
-            record->unk10 = func_00103640(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0);
-            if (record->unk10)
+            record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+
+            if (record->request_address)
             {
                 done = false;
             }
         }
+
         if (field_records_blocked())
         {
             done = false;
         }
+
         if (done)
         {
-            for (s32 i = 0; i < unk24; i++, records++)
+            for (s32 i = 0; i < request_capacity; i++, records++)
             {
-                records->func_0023AD00();
+                records->release_buffer();
             }
-            unk2e = 0;
-            unk15 = 0;
+
+            current_request = 0;
+            request_state = 0;
         }
+
         break;
     }
+
     case 7:
     {
         bool done = true;
-        FieldClass152210* record = unk1c;
-        for (s32 i = 0; i < unk2d; i++, record++)
+        FieldSceneResourceRequest* record = requests;
+
+        for (s32 i = 0; i < request_count; i++, record++)
         {
-            u32 word = record->unk00;
+            u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
-            record->unk10 = func_00103640(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0);
-            if (record->unk10)
+            record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+
+            if (record->request_address)
             {
                 done = false;
             }
         }
+
         if (field_records_blocked())
         {
             done = false;
         }
+
         if (done)
         {
             func_001DD7B0();
         }
+
         break;
     }
     }
-    func_001F98E0();
+
+    advance_requests();
 }
 
 /** @brief Advance the current request and skip marked records after it finishes. */
-void FieldClass150700::func_001F98E0()
+void FieldSceneResourceLoader::advance_requests()
 {
     if (!request_ready())
     {
         return;
     }
-    if (unk15 == 1)
+
+    if (request_state == 1)
     {
         if (field_records_blocked())
         {
             return;
         }
-        FieldClass152210* record = &unk1c[unk2e];
-        u32 word = record->unk00;
+
+        FieldSceneResourceRequest* record = &requests[current_request];
+        u32 byte_count = record->byte_capacity;
         u32 buffer_address = record->buffer_address();
-        if (func_00103640(D_001B65E8, record->unk0c, buffer_address, 0x80000000, word, 0))
+
+        if (resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0))
         {
             return;
         }
-        while (unk2e < unk2d)
+
+        for (; current_request < request_count; )
         {
-            unk2e++;
-            if (!unk1c[unk2e].unk16_0)
+            current_request++;
+
+            if (!requests[current_request].unk16_0)
             {
                 break;
             }
         }
-        if (unk2e >= unk2d)
+
+        if (current_request >= request_count)
         {
-            unk15 = 5;
+            request_state = 5;
         }
         else
         {
-            unk15 = 0;
+            request_state = 0;
         }
     }
-    unk30_1 = 0;
+
+    callback_ready = 0;
 }
 
 /**
  * @brief Allocate a 128-byte-aligned buffer, retrying after other listed loaders release storage.
- * @param owner Loader attached to the resource list.
+ * @param loader Loader attached to the resource list.
  * @param size Requested buffer size in bytes.
  * @param mode Nonzero to use the Lib allocation path, zero to use the resident allocator.
  * @return Allocated buffer, or null when allocation or recovery fails after at most eight attempts.
  */
-extern "C" void* func_001F9A80(FieldClass150070* owner, u32 size, s32 mode)
+extern "C" void* field_allocate_scene_buffer(FieldListObject* loader, u32 size, s32 mode)
 {
-    FieldClass1530D0* manager = static_cast<FieldClass1530D0*>(static_cast<LibClass178DD0*>(owner->unk10));
+    FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(loader->owner);
     for (s32 attempt = 0; attempt < 8; attempt++)
     {
         void* result;
@@ -3214,7 +3271,7 @@ extern "C" void* func_001F9A80(FieldClass150070* owner, u32 size, s32 mode)
         {
             return result;
         }
-        if (manager->node_count == 1 || !func_0023AEB0(manager, owner))
+        if (manager->node_count == 1 || !field_reclaim_loader_buffers(manager, loader))
         {
             break;
         }

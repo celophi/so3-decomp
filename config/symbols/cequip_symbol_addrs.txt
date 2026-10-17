@@ -430,3 +430,9 @@ remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func absolute:True allow_
 append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
 prepend_node__14LibClass178DD0FPvi = 0x004D7450; // type:func absolute:True allow_duplicated:True
 insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func absolute:True allow_duplicated:True
+
+func_002D3CC0 = 0x002D3CC0; // type:func absolute:True allow_duplicated:True
+field_find_resource_record = 0x002D3CC0; // type:func absolute:True allow_duplicated:True
+
+func_002D3D80 = 0x002D3D80; // type:func absolute:True allow_duplicated:True
+field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_duplicated:True

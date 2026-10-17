@@ -28,7 +28,7 @@ public:
     /** @brief Create the grid for this object. */
     virtual void func_slot30();
     /** @brief Update the base, then place the target at this object's position. */
-    virtual void func_001DF360();
+    virtual void update();
 };
 #endif
 

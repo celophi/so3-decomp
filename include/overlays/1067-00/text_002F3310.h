@@ -10,18 +10,18 @@ typedef struct FieldByte60F3310 FieldByte60F3310;
 
 #ifdef __cplusplus
 /** Partial Field object with vtable D_15BA10 in main data and an owned child at offset 0x14. */
-class FieldClass15BA10 : public FieldClass150070
+class FieldClass15BA10 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass15BA10();
     /** @brief Detach and delete the child, then delete this object. */
     virtual void func_001DD7B0();
-    FieldClass150070* unk14;
+    FieldListObject* unk14;
 };
 
 /** Partial Field object with vtable D_15BA50 in main data and an owned child at offset 0x18. */
-class FieldClass15BA50 : public FieldClass150070
+class FieldClass15BA50 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -29,7 +29,7 @@ public:
     /** @brief Detach this object, delete the child when present, then delete this object. */
     virtual void func_001DD7B0();
     u8 unk14[4];
-    FieldClass150070* unk18;
+    FieldListObject* unk18;
 };
 #endif
 
@@ -53,7 +53,7 @@ void func_002F97E0(void* object);
  * @param object Callback receiver.
  * @return Always 9.
  */
-s32 func_002F3860(FieldClass150070* object);
+s32 func_002F3860(FieldListObject* object);
 #endif
 
 #ifdef __cplusplus

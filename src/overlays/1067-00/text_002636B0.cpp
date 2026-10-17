@@ -777,7 +777,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026BD
 
 void FieldClass1547D0::func_slot0c()
 {
-    FieldClass150070* item = 0;
+    FieldListObject* item = 0;
     while (func_0026E5F0(unkfc, &item))
     {
         item->func_001DD7B0();
@@ -829,7 +829,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_0026D1
 void FieldClass1548D0::func_slot0c()
 {
     FieldClass15AE70::func_slot0c();
-    FieldClass150070* item = 0;
+    FieldListObject* item = 0;
     while (func_0026E7E0(unkb8, &item))
     {
         item->func_001DD7B0();

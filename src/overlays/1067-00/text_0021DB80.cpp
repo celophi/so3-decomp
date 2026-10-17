@@ -162,7 +162,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021E3
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021E780);
 
-s32 func_0021E840(void* object)
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 2.
+ */
+s32 FieldClass152270::get_default_list_kind()
 {
     return 2;
 }
@@ -173,21 +177,22 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021EB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021ED20);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_001F9050__16FieldClass152270Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", release_requests__16FieldClass152270Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_001F8CB0__16FieldClass152270Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", start_current_read__16FieldClass152270Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_001E0A50__16FieldClass152270Fi);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", update_requests__16FieldClass152270Fi);
 
 /** @brief Consume the ready flag and enter state two after resident requests finish. */
-void FieldClass152270::func_001F98E0()
+void FieldClass152270::advance_requests()
 {
     if (request_ready())
     {
-        unk30_1 = 0;
-        if (unk15 == 1 && !field_records_blocked())
+        callback_ready = 0;
+
+        if (request_state == 1 && !field_records_blocked())
         {
-            unk15 = 2;
+            request_state = 2;
         }
     }
 }
@@ -195,13 +200,13 @@ void FieldClass152270::func_001F98E0()
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F530);
 
 /** @brief Initialize the inherited record state. */
-FieldClass152210::FieldClass152210()
+FieldSceneResourceRequest::FieldSceneResourceRequest()
 {
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F760);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_001DF360__16FieldClass1522C0Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", update__16FieldClass1522C0Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021F860);
 
@@ -216,8 +221,11 @@ FieldClass1522C0::~FieldClass1522C0()
 {
 }
 
-/** @brief Report the fixed list kind. @return Three. */
-s32 FieldClass1522C0::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 3.
+ */
+s32 FieldClass1522C0::get_default_list_kind()
 {
     return 3;
 }

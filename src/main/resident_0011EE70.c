@@ -77,33 +77,21 @@ typedef struct FlagFloatQuadOffset20Ownerresident_0011EE70
 
 typedef struct FlagFloatTripleOwnerresident_0011EE70 { u8 pad00[0x40]; float values[3]; u8 pad4C[4]; u8 flag50; } FlagFloatTripleOwnerresident_0011EE70;
 
-typedef struct ResidentInitViewOwnerresident_0011EE70
-{
-    u32 unk00;
-    u32 unk04;
-    u8 pad08[0x1000];
-    u32 unk1008;
-    u32 unk100C;
-    u8 pad1010[0x1000];
-    void* unk2010;
-} ResidentInitViewOwnerresident_0011EE70;
-
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011EE70);
 
 /**
- * @brief Initialize the selected fields and return the receiver.
- * @param object Object to update.
- * @return The same object.
+ * @brief Initialize both resident release rings as empty.
+ * @param queues Release queues to initialize.
+ * @return The initialized queues.
  */
-void* func_0011EED0(void* object)
+ResidentReleaseQueues* resident_initialize_release_queues(ResidentReleaseQueues* queues)
 {
-    ResidentInitViewOwnerresident_0011EE70* receiver = object;
-    receiver->unk2010 = D_0014FC78;
-    receiver->unk00 = 1;
-    receiver->unk04 = 0;
-    receiver->unk1008 = 1;
-    receiver->unk100C = 0;
-    return receiver;
+    queues->vtable = D_0014FC78;
+    queues->allocations.write_index = 1;
+    queues->allocations.read_index = 0;
+    queues->objects.write_index = 1;
+    queues->objects.read_index = 0;
+    return queues;
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011EF00);

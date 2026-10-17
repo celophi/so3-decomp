@@ -19,7 +19,7 @@ typedef struct FieldObject153E00 FieldObject153E00;
 typedef FieldVec4A FieldVector2624;
 
 /** Partial Field object with vtable D_153E00 in main data; it adds vtable slot 0x1C. */
-class FieldClass153E00 : public FieldClass150070
+class FieldClass153E00 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -29,7 +29,7 @@ public:
     u8 unk14[0x19];
     u8 unk2d;
     u8 unk2e[0x1E];
-    FieldClass150070* unk4c;
+    FieldListObject* unk4c;
 };
 #else
 /** Four aligned floating-point components used by the field vector helpers. */

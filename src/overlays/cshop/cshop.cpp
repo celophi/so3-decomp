@@ -182,7 +182,7 @@ typedef struct ShopRuntime
 } ShopRuntime;
 // Resident runtime interface, scoped to this overlay.
 extern ShopRuntime* D_001B643C;
-extern ResidentObjectQueue* D_001B65F4;
+extern ResidentReleaseQueues* D_001B65F4;
 extern float D_001B6690;
 extern ShopInventoryState* D_001B64F8;
 
@@ -3264,8 +3264,8 @@ s32 ShopEquipmentPreviewWindow::func_slotf4(u32 associated)
         if (character_resource_slot != 0)
         {
             character_displays[i] = new (0) ItemCreationOptionResourceDisplay;
-            void* character_buffer = func_002D3D80(D_001B643C->resource_buffers, static_cast<u8>(character_resource_slot));
-            FieldResourceRecord* display_record = func_002D3CC0(D_001B643C->resource_buffers, 4);
+            void* character_buffer = field_get_aligned_allocation(D_001B643C->resource_buffers, static_cast<u8>(character_resource_slot));
+            FieldResourceRecord* display_record = field_find_resource_record(D_001B643C->resource_buffers, 4);
             character_displays[i]->unkcc = character_buffer;
             character_displays[i]->unkd0 = character_resource_slot;
             character_displays[i]->func_002D6440(display_record, 20.0f + 50.0f * column, 12.0f + 68.0f * row);
@@ -3416,18 +3416,18 @@ s32 ShopBackgroundWindow::func_slotf4(u32 associated)
     ItemCreationOptionResourceDisplay* left_image = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* middle_image = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* right_image = new (0) ItemCreationOptionResourceDisplay;
-    void* background_buffer = func_002D3D80(D_001B643C->resource_buffers, 11);
+    void* background_buffer = field_get_aligned_allocation(D_001B643C->resource_buffers, 11);
     left_image->unkcc = background_buffer;
     middle_image->unkcc = background_buffer;
     right_image->unkcc = background_buffer;
     left_image->unkd0 = 11;
     middle_image->unkd0 = 11;
     right_image->unkd0 = 11;
-    FieldResourceRecord* image_record = func_002D3CC0(D_001B643C->resource_buffers, 5);
+    FieldResourceRecord* image_record = field_find_resource_record(D_001B643C->resource_buffers, 5);
     left_image->func_002D6440(image_record, 0.0f, 0.0f);
-    image_record = func_002D3CC0(D_001B643C->resource_buffers, 6);
+    image_record = field_find_resource_record(D_001B643C->resource_buffers, 6);
     middle_image->func_002D6440(image_record, 256.0f, 0.0f);
-    image_record = func_002D3CC0(D_001B643C->resource_buffers, 7);
+    image_record = field_find_resource_record(D_001B643C->resource_buffers, 7);
     right_image->func_002D6440(image_record, 512.0f, 0.0f);
     lib_container_attach_widget(unk10, left_image);
     lib_container_attach_widget(unk10, middle_image);
@@ -3732,7 +3732,8 @@ ShopState::ShopState()
     category = SHOP_CATEGORY_ALL;
 }
 
-void ShopState::func_001DF360()
+/** @brief Default shop receiver handler. */
+void ShopState::update()
 {
 }
 
@@ -3816,7 +3817,11 @@ u8 ShopState::func_00261D20()
     return windows_initialized;
 }
 
-s32 ShopState::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 4.
+ */
+s32 ShopState::get_default_list_kind()
 {
     return 4;
 }

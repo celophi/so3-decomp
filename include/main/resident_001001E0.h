@@ -23,6 +23,9 @@ void* operator new[](u32 size, s32 unused);
 extern "C" {
 #endif
 
+/** Optional heap used by resident operator new and aligned decode buffers. */
+extern void* D_001B6400;
+
 /** Store a byte in the global at address 0x001B6420. */
 void func_00100A40(u8 value);
 

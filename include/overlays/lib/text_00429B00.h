@@ -28,9 +28,18 @@ typedef struct {
     u8 unk64;
     u8 unk65[0x1AB];
     u8 unk210;
-    u8 unk211[0x35F];
-    unsigned __int128 unk570;
-    u8 unk580[0x1D];
+    u8 unk211[0x34F];
+
+    /** Packed four-float RGBA factor supplied by the object's own state. */
+    unsigned __int128 base_color_factor;
+
+    /** Packed four-float RGBA factor applied over the base factor. */
+    unsigned __int128 color_modulation;
+
+    /** Component-wise product of the base and modulation factors. */
+    unsigned __int128 combined_color_factor;
+
+    u8 unk590[0xD];
     u8 unk59d_0_2 : 3;
     u8 unk59d_3 : 1;
     u8 unk59d_4_7 : 4;
@@ -137,13 +146,6 @@ u8* func_0042AAB0(LibTextBufferState* object);
 u8 func_0042AAC0(const LibTextBufferState* object);
 
 /**
- * @brief Store a byte at offset 0x210 in a buffer state.
- * @param object Buffer state to update.
- * @param value Byte to store.
- */
-void func_0042ABA0(LibTextBufferState* object, u8 value);
-
-/**
  * @brief Set the bytes at offsets 0x62 and 0x64 in a buffer state.
  * @param object Buffer state to update.
  */
@@ -219,11 +221,17 @@ void func_0042A800(void* object, const void* value, float key);
 void func_0042A810(void* object);
 
 /**
- * @brief Return the embedded vector at offset 0x570.
- * @param object Buffer state containing the vector.
- * @return Pointer to the 16-byte embedded vector.
+ * @brief Recompute the RGBA factor from the stored base and modulation factors.
+ * @param object Rendering state whose combined factor is updated.
  */
-unsigned __int128* func_0042AB20(LibTextBufferState* object);
+void lib_update_color_factor(LibTextBufferState* object);
+
+/**
+ * @brief Access the stored RGBA modulation factor.
+ * @param object Rendering state containing the factor.
+ * @return Pointer to the packed four-float RGBA factor.
+ */
+unsigned __int128* lib_get_color_modulation(LibTextBufferState* object);
 
 /**
  * @brief Copy the byte at offset 0x83C to offset 0x60.

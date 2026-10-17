@@ -2,6 +2,7 @@
 #define SO3_MAIN_RESIDENT_0011EE70_H
 
 #include "types.h"
+#include "main/resident_0010A0E0.h"
 
 struct LibClass171FF0;
 
@@ -25,11 +26,11 @@ extern "C" {
 #endif
 
 /**
- * @brief Initialize a resident object and return it.
- * @param object Object to update.
- * @return The same object.
+ * @brief Initialize both resident release rings as empty.
+ * @param queues Release queues to initialize.
+ * @return The initialized queues.
  */
-void* func_0011EED0(void* object);
+ResidentReleaseQueues* resident_initialize_release_queues(ResidentReleaseQueues* queues);
 
 /**
  * @brief Initialize selected status bytes when the byte at 0x25 is clear.

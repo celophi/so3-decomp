@@ -52,8 +52,8 @@ func_2CEA20 = 0x2CEA20; // type:func
 func_2CEAF0 = 0x2CEAF0; // type:func
 func_2CEBE0 = 0x2CEBE0; // type:func
 func_2CFE10 = 0x2CFE10; // type:func
-func_002D3CC0 = 0x2D3CC0; // type:func
-func_002D3D80 = 0x2D3D80; // type:func
+func_002D3CC0 = 0x002D3CC0; // type:func absolute:True allow_duplicated:True
+func_002D3D80 = 0x002D3D80; // type:func absolute:True allow_duplicated:True
 func_2D3DC0 = 0x2D3DC0; // type:func
 func_002D5CF0 = 0x2D5CF0; // type:func
 func_2D6410 = 0x2D6410; // type:func
@@ -219,3 +219,5 @@ resident_heap_allocate = 0x00113710; // type:func absolute:True allow_duplicated
 resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplicated:True
 
 lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True
+field_find_resource_record = 0x002D3CC0; // type:func absolute:True allow_duplicated:True
+field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_duplicated:True

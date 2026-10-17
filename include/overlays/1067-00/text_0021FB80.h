@@ -390,7 +390,7 @@ public:
 };
 
 /** Field input object with eight transient control words. */
-class FieldInputState : public FieldClass150070
+class FieldInputState : public FieldListObject
 {
 public:
     /** @brief Initialize the inherited input node. */
@@ -401,11 +401,16 @@ public:
     /** @brief Destroy the inherited input node. */
     virtual ~FieldInputState();
 
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
 
     virtual void func_001DD7B0();
 
-    virtual void func_001DF360();
+    /** @brief Update this registered object. */
+    virtual void update();
 
     /** @brief Clear transient button masks. @param unused Unused reset argument. */
     void clear(s32 unused);
@@ -416,7 +421,7 @@ public:
 };
 
 /** Field context owner with an owned child and an initial position. */
-class FieldClass152410 : public FieldClass150070
+class FieldClass152410 : public FieldListObject
 {
 public:
     static void* operator new(u32 size);
@@ -437,7 +442,7 @@ public:
 
     u8 unk50[0x2B0];
 
-    FieldClass150070* unk300;
+    FieldListObject* unk300;
 
     u8 unk304[0x7C];
 };

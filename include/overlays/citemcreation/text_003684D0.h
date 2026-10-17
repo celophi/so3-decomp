@@ -43,10 +43,13 @@ typedef struct ItemCreationSelectedDisplayState
     virtual ~ItemCreationSelectedDisplayState();
     /** @brief Save workshop lines and append the selection state to the resident queue. */
     virtual void func_001DD7B0();
-    /** @brief Report the selected-display object kind. @return Object kind 4. */
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
     /** @brief Advance display transitions and the active target animation. */
-    virtual void func_001DF360();
+    virtual void update();
     /** @brief Prepare record selection and count available option records. @return One on success, zero when required runtime data is missing. */
     virtual u8 func_00264110();
     /** @brief Store the associated state pointer. @param value Pointer to store. */

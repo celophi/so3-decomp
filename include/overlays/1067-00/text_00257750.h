@@ -32,18 +32,23 @@ public:
 };
 
 /** Field resource loader with a position query and context callback. */
-class FieldClass153CD0 : public FieldClass150070, public FieldClass153AA8, public FieldClass1DD400
+class FieldClass153CD0 : public FieldListObject, public FieldClass153AA8, public FieldClass1DD400
 {
 public:
     FieldClass153CD0();
 
     virtual ~FieldClass153CD0();
 
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
 
     virtual void func_001DD7B0();
 
-    virtual void func_001DF360();
+    /** @brief Update the registered field context. */
+    virtual void update();
 
     virtual void func_001DDB30(void* request);
 

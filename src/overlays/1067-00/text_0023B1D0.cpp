@@ -276,8 +276,8 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023C2
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023C360);
 
-/** Partial FieldClass150070 object with vtable D_153270 in main data. */
-class FieldClass153270 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_153270 in main data. */
+class FieldClass153270 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -479,7 +479,7 @@ s32 func_0023D2B0(FieldObject153270* object)
 struct FieldObject23D2C0
 {
     u8 unk00[0x14];
-    FieldClass150070* attachment;
+    FieldListObject* attachment;
 };
 
 /**

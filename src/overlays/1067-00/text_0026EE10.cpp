@@ -30,12 +30,6 @@ typedef struct FieldState270EE0
     u8 unk1fa_2_7 : 6;
 } FieldState270EE0;
 
-typedef struct FieldState271750
-{
-    u8 unk00[0x3C];
-    u32 state;
-} FieldState271750;
-
 typedef struct FieldFlag272290
 {
     u8 unk00[0x1C];
@@ -43,8 +37,8 @@ typedef struct FieldFlag272290
     u8 unk1c_1_7 : 7;
 } FieldFlag272290;
 
-/** Partial FieldClass150070 object with vtable D_154BB0 in main data. */
-class FieldClass154BB0 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_154BB0 in main data. */
+class FieldClass154BB0 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -214,8 +208,8 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026FA
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026FC00);
 
-/** Partial FieldClass150070 object with vtable D_156F60 in main data. */
-class FieldClass156F60 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_156F60 in main data. */
+class FieldClass156F60 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -300,14 +294,14 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002714
  * @brief Detach the object, then delete it through its virtual handler.
  * @param object Object to release.
  */
-extern "C" void func_00271560(FieldClass150070* object)
+extern "C" void func_00271560(FieldListObject* object)
 {
     lib_object_detach_owner(object);
     object->func_001DD7B0();
 }
 
-/** Partial FieldClass150070 object with vtable D_154BF0 in main data. */
-class FieldClass154BF0 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_154BF0 in main data. */
+class FieldClass154BF0 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -327,25 +321,31 @@ s32 func_002716B0(const void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002716C0);
 
-void func_00271750(FieldState271750* object)
+/**
+ * @brief Release request buffers and delay the next read when cleanup found a buffer.
+ * @return The inherited request-release result.
+ */
+s32 FieldContextResourceLoader::poll_request_release()
 {
-    if (func_001F9120(object) == 1)
+    s32 result = FieldSceneResourceLoader::poll_request_release();
+    if (result == 1)
     {
-        object->state = 10;
+        start_delay = 10;
     }
+    return result;
 }
 
 /** @brief Notify the context callback and finish the loader requests. */
-void FieldClass154C70::finish_requests()
+void FieldContextResourceLoader::finish_requests()
 {
-    FieldClass1DD400* child = unk20;
+    FieldClass1DD400* child = completion_callback;
 
     if (child != 0)
     {
         child->func_001DDB30(this);
     }
 
-    unk15 = 5;
+    request_state = 5;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002717E0);
@@ -361,20 +361,20 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00271C
  * @param kind Resource kind stored in the request.
  * @return Appended request, or null when the array is full.
  */
-extern "C" FieldClass152210* field_append_file_request(FieldClass154C70* loader, s32 file_key, s32 kind)
+extern "C" FieldSceneResourceRequest* field_append_file_request(FieldContextResourceLoader* loader, s32 file_key, s32 kind)
 {
-    if (loader->unk2d >= loader->unk24)
+    if (loader->request_count >= loader->request_capacity)
     {
         return 0;
     }
 
-    loader->unk1c[loader->unk2d].reset_request();
-    loader->unk1c[loader->unk2d].unk0c = file_key;
-    loader->unk1c[loader->unk2d].set_capacity(func_0011C8C0(D_001B65E4, loader->unk1c[loader->unk2d].unk0c));
-    loader->unk1c[loader->unk2d].unk14 = loader->unk2d;
-    loader->unk1c[loader->unk2d].unk15 = kind;
-    loader->unk2d++;
-    return &loader->unk1c[loader->unk2d - 1];
+    loader->requests[loader->request_count].reset_request();
+    loader->requests[loader->request_count].file_key = file_key;
+    loader->requests[loader->request_count].set_capacity(func_0011C8C0(D_001B65E4, loader->requests[loader->request_count].file_key));
+    loader->requests[loader->request_count].slot_index = loader->request_count;
+    loader->requests[loader->request_count].kind = kind;
+    loader->request_count++;
+    return &loader->requests[loader->request_count - 1];
 }
 
 /** @brief Destroy the field node and its secondary list. */
@@ -382,8 +382,11 @@ FieldClass154CC0::~FieldClass154CC0()
 {
 }
 
-/** @brief Report the fixed list kind. @return Three. */
-s32 FieldClass154CC0::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 3.
+ */
+s32 FieldClass154CC0::get_default_list_kind()
 {
     return 3;
 }
@@ -420,4 +423,4 @@ void func_00272290(FieldFlag272290* object)
     object->unk1c_0 = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_001DF360__16FieldClass154CC0Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", update__16FieldClass154CC0Fv);

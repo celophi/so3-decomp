@@ -1744,8 +1744,8 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
         static_cast<TacticsEntryResourceRecord*>(record_selection->unk04)[static_cast<s16>(resource_index)].saved_name, 0);
     lib_container_attach_widget(unk10, label);
     ItemCreationOptionResourceDisplay* display = new (0) ItemCreationOptionResourceDisplay;
-    void* allocation = func_002D3D80(D_001B643C->resources, 0);
-    FieldResourceRecord* record = func_002D3CC0(D_001B643C->resources, 8);
+    void* allocation = field_get_aligned_allocation(D_001B643C->resources, 0);
+    FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 8);
     display->unkcc = allocation;
     display->unkd0 = 0;
     func_002D6440(display, record, base_x, base_y);
@@ -1769,11 +1769,11 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
         character_displays[2] = new (0) ItemCreationOptionResourceDisplay;
     }
 
-    FieldResourceRecord* default_record = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->resources, 0));
+    FieldResourceRecord* default_record = static_cast<FieldResourceRecord*>(field_get_builtin_resource_data(D_001B643C->resources, 0));
 
     if (character_displays[2] != 0)
     {
-        character_displays[2]->unkcc = func_002D3D80(D_001B643C->resources, character_ids[2]);
+        character_displays[2]->unkcc = field_get_aligned_allocation(D_001B643C->resources, character_ids[2]);
         character_displays[2]->unkd0 = character_ids[2];
         func_002D6440(character_displays[2], default_record, base_x, base_y);
         set_resource_display_scale(character_displays[2], 0.4f);
@@ -1782,7 +1782,7 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
 
     if (character_displays[1] != 0)
     {
-        character_displays[1]->unkcc = func_002D3D80(D_001B643C->resources, character_ids[1]);
+        character_displays[1]->unkcc = field_get_aligned_allocation(D_001B643C->resources, character_ids[1]);
         character_displays[1]->unkd0 = character_ids[1];
         func_002D6440(character_displays[1], default_record, base_x, base_y);
         set_resource_display_scale(character_displays[1], 0.4f);
@@ -1791,7 +1791,7 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
 
     if (character_displays[0] != 0)
     {
-        character_displays[0]->unkcc = func_002D3D80(D_001B643C->resources, character_ids[0]);
+        character_displays[0]->unkcc = field_get_aligned_allocation(D_001B643C->resources, character_ids[0]);
         character_displays[0]->unkd0 = character_ids[0];
         func_002D6440(character_displays[0], default_record, base_x, base_y);
         set_resource_display_scale(character_displays[0], 0.4f);
@@ -2327,14 +2327,14 @@ void TacticsWindow18B320::func_slot5c()
 
                 if (static_cast<TacticsGridResourceRecord*>(character_records)[i].get_flags() & 5)
                 {
-                    allocation = func_002D3D80(D_001B643C->resources, static_cast<u8>(character_id + 0x30));
-                    record = func_002D3CC0(D_001B643C->resources, 4);
+                    allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character_id + 0x30));
+                    record = field_find_resource_record(D_001B643C->resources, 4);
                     character_name->set_color(0x505080);
                 }
                 else
                 {
-                    allocation = func_002D3D80(D_001B643C->resources, static_cast<u8>(character_id));
-                    record = func_002D3CC0(D_001B643C->resources, 4);
+                    allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character_id));
+                    record = field_find_resource_record(D_001B643C->resources, 4);
                     character_name->set_color(0x808080);
                 }
 
@@ -2587,14 +2587,14 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
 
             if (static_cast<TacticsGridResourceRecord*>(character_records)[index].get_flags() & 5)
             {
-                allocation = func_002D3D80(D_001B643C->resources, static_cast<u8>(character_id + 0x30));
-                record = func_002D3CC0(D_001B643C->resources, 4);
+                allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character_id + 0x30));
+                record = field_find_resource_record(D_001B643C->resources, 4);
                 character_name_label->set_color(0x505080);
             }
             else
             {
-                allocation = func_002D3D80(D_001B643C->resources, static_cast<u8>(character_id));
-                record = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->resources, 0));
+                allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character_id));
+                record = static_cast<FieldResourceRecord*>(field_get_builtin_resource_data(D_001B643C->resources, 0));
                 character_name_label->set_color(0x808080);
             }
 
@@ -2627,8 +2627,8 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
             current_mp_value->unk3f = 0;
             mp_separator->unk3f = 0;
             max_mp_value->unk3f = 0;
-            void* allocation = func_002D3D80(D_001B643C->resources, 1);
-            FieldResourceRecord* record = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->resources, 0));
+            void* allocation = field_get_aligned_allocation(D_001B643C->resources, 1);
+            FieldResourceRecord* record = static_cast<FieldResourceRecord*>(field_get_builtin_resource_data(D_001B643C->resources, 0));
             resource_displays[index]->unkcc = allocation;
             resource_displays[index]->unkd0 = character_id;
 
@@ -3514,8 +3514,8 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
             empty->unk3f = 0;
             record_enabled[index] = 1;
             ItemCreationOptionResourceDisplay* display = new (0) ItemCreationOptionResourceDisplay;
-            void* allocation = func_002D3D80(D_001B643C->resources, static_cast<u8>(character_id));
-            FieldResourceRecord* record = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->resources, 0));
+            void* allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character_id));
+            FieldResourceRecord* record = static_cast<FieldResourceRecord*>(field_get_builtin_resource_data(D_001B643C->resources, 0));
             display->unkcc = allocation;
             display->unkd0 = character_id;
 
@@ -3734,16 +3734,16 @@ s32 TacticsWindow18B720::func_slotf4(u32 associated)
     ItemCreationOptionResourceDisplay* first = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* second = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* third = new (0) ItemCreationOptionResourceDisplay;
-    void* allocation = func_002D3D80(D_001B643C->resources, 11);
+    void* allocation = field_get_aligned_allocation(D_001B643C->resources, 11);
     first->unkcc = allocation;
     second->unkcc = allocation;
     third->unkcc = allocation;
     first->unkd0 = 11;
     second->unkd0 = 11;
     third->unkd0 = 11;
-    func_002D6440(first, func_002D3CC0(D_001B643C->resources, 5), 0.0f, 0.0f);
-    func_002D6440(second, func_002D3CC0(D_001B643C->resources, 6), 256.0f, 0.0f);
-    func_002D6440(third, func_002D3CC0(D_001B643C->resources, 7), 512.0f, 0.0f);
+    func_002D6440(first, field_find_resource_record(D_001B643C->resources, 5), 0.0f, 0.0f);
+    func_002D6440(second, field_find_resource_record(D_001B643C->resources, 6), 256.0f, 0.0f);
+    func_002D6440(third, field_find_resource_record(D_001B643C->resources, 7), 512.0f, 0.0f);
     lib_container_attach_widget(unk10, first);
     lib_container_attach_widget(unk10, second);
     lib_container_attach_widget(unk10, third);

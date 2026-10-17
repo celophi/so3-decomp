@@ -12,7 +12,7 @@ public:
 };
 
 /** 0x4A0-byte emitter whose remaining resource and grid settings are unrecovered. */
-class LibClass173990 : public LibClass178EA0, public LibClass173A28
+class LibClass173990 : public LibTransform, public LibClass173A28
 {
 public:
     /** @brief Initialize the emitter's resources and grid settings. */

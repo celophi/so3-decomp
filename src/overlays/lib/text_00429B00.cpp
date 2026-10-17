@@ -1,4 +1,6 @@
 #include "include_asm.h"
+#include "vu0.h"
+#include "overlays/lib/blend_transform.h"
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "sdk/main/libc_guess_00137290.h"
@@ -292,17 +294,25 @@ u8 func_0042AAC0(const LibTextBufferState* object) {
     return object->unk794;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AAD0);
+/**
+ * @brief Recompute the RGBA factor from the stored base and modulation factors.
+ * @param object Rendering state whose combined factor is updated.
+ */
+void lib_update_color_factor(LibTextBufferState* object)
+{
+    vu0_multiply_xyzw(&object->combined_color_factor, &object->base_color_factor, &object->color_modulation);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AAF0);
 
 /**
- * @brief Return the embedded vector at offset 0x570.
- * @param object Buffer state containing the vector.
- * @return Pointer to the 16-byte embedded vector.
+ * @brief Access the stored RGBA modulation factor.
+ * @param object Rendering state containing the factor.
+ * @return Pointer to the packed four-float RGBA factor.
  */
-unsigned __int128* func_0042AB20(LibTextBufferState* object) {
-    return &object->unk570;
+unsigned __int128* lib_get_color_modulation(LibTextBufferState* object)
+{
+    return &object->color_modulation;
 }
 
 /**
@@ -315,16 +325,28 @@ void func_0042AB30(LibTextBufferState* object, u32 value) {
     object->unk59d_3 = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AB50);
+}
 
 /**
- * @brief Store a byte at offset 0x210 in a buffer state.
- * @param object Buffer state to update.
- * @param value Byte to store.
+ * @brief Apply the source blend mode and copy its inherited transform state.
+ * @param source Blend transform to copy.
  */
-void func_0042ABA0(LibTextBufferState* object, u8 value) {
-    object->unk210 = value;
+void LibBlendTransform::copy_blend_state(const LibBlendTransform* source)
+{
+    set_blend_mode(source->blend_mode);
+    LibTransform::copy_transform_state(source);
 }
+
+/**
+ * @brief Store the blend mode.
+ * @param mode Blend mode to store.
+ */
+void LibBlendTransform::set_blend_mode(u8 mode)
+{
+    blend_mode = mode;
+}
+
+extern "C" {
 
 /**
  * @brief Set the bytes at offsets 0x62 and 0x64 in a buffer state.

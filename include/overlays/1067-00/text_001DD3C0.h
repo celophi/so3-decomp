@@ -29,7 +29,7 @@ typedef struct FieldFlaggedListObject
 #ifdef __cplusplus
 
 
-/** Root of the FieldClass150070 hierarchy, with vtable D_150050 in main data. */
+/** Root of the FieldListObject hierarchy, with vtable D_150050 in main data. */
 class FieldClass150050
 {
 public:
@@ -59,35 +59,48 @@ public:
     FieldClass150060* unk08;
 };
 
-/** Base class with four virtual handlers, with vtable D_150070 in main data. */
-class FieldClass150070 : public FieldClass150060
+/**
+ * @brief Field object registered with a Lib intrusive list.
+ *
+ * The owner points to the Lib list subobject, which can sit inside a larger
+ * list object. Registration and node updates use the shared list interface.
+ */
+class FieldListObject : public FieldClass150060
 {
 public:
-    /** @brief Clear the state bytes and owner pointer. */
-    FieldClass150070()
+    /** @brief Clear the registration flag, state byte and list owner. */
+    FieldListObject()
     {
-        unk0e = 0;
+        is_listed = 0;
         unk0f = 0;
-        unk10 = 0;
+        owner = 0;
     }
 
-    /** @brief Detach the object from the owner at offset 0x10, then destroy it. */
-    virtual ~FieldClass150070()
+    /** @brief Detach from the owning list, then destroy the node. */
+    virtual ~FieldListObject()
     {
         lib_object_detach_owner(this);
     }
 
     /**
-     * @brief Report the fixed value 3 for this class.
-     * @return Always 3.
+     * @brief Report the list kind used when registration requests the default.
+     *
+     * This is separate from list_kind, which records the kind chosen by the
+     * owner. An explicit insertion kind or later kind change can differ.
+     * @return Three in the base implementation.
      */
-    virtual s32 func_001DF3D0();
+    virtual s32 get_default_list_kind();
 
     /** @brief Delete the object through its virtual destructor. */
     virtual void func_001DD7B0();
 
-    /** @brief Default handler that performs no work. */
-    virtual void func_001DF360();
+    /**
+     * @brief Advance this registered object's state.
+     *
+     * Called during the owning list's update pass. The base does no work;
+     * overrides can detach this node or queue it for release.
+     */
+    virtual void update();
 
     /** @brief Default handler that performs no work. */
     virtual void func_001DD410();
@@ -95,11 +108,13 @@ public:
     /** Kind used by the owning intrusive list. */
     s16 list_kind;
 
-    u8 unk0e;
+    /** Registration flag set on insertion and cleared on removal. */
+    u8 is_listed;
 
     u8 unk0f;
 
-    void* unk10;
+    /** List subobject that registered this node, or null after detachment. */
+    LibClass178DD0* owner;
 };
 
 /**
@@ -115,35 +130,44 @@ public:
 
     /**
      * @brief Default handler that performs no work.
-     * @param arg Pointer argument; the FieldClass14FFB0 state machine passes null and
-     *        FieldClass150120's override reads its word at offset 0x1C.
+     * @param arg Pointer argument; the FieldResourcePreloader state machine passes null and
+     *        FieldResourceRequestHandler's override reads its word at offset 0x1C.
      */
     virtual void func_001DDB30(void* arg);
 };
 
 /**
- * Field context object at offset 0x30, with vtable D_1530D0 in main data; its
- * methods (destructor 0x23B0C0, func_0023AEB0) are in text_0022DC70. A
- * FieldClass150070 list node that owns a Lib list (the LibClass178DD0 base at
- * offset 0x14) of record loaders, FieldClass150010 objects whose word at offset
- * 0x10 points back to that list. The list's first 12 bytes (unk00) are its
- * sentinel node: the word at +8 is the first loader.
+ * @brief Coordinate resource loaders registered with the field context.
+ *
+ * The 140-byte owner has a Lib list base at offset 0x14. Loaders point back to
+ * that list through their owner field. Updates snapshot its nodes by list
+ * kind, allow entry zero to load and request cancellation from later entries.
  */
-class FieldClass1530D0 : public FieldClass150070, public LibClass178DD0
+class FieldResourceLoaderList : public FieldListObject, public LibClass178DD0
 {
 public:
     /** @brief Initialize the inherited field node and object list. */
-    FieldClass1530D0()
+    FieldResourceLoaderList()
     {
     }
 
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
 
-    virtual void func_001DF360();
+    /** @brief Dispatch the list's virtual update handler. */
+    virtual void update();
 
-    virtual void func_004D6730();
+    /**
+     * @brief Update snapshot entry zero and cancel later entries while the field permits it.
+     * Null entries and nodes no longer registered with the list are skipped.
+     */
+    virtual void update_nodes();
 
-    virtual ~FieldClass1530D0();
+    /** @brief Destroy the Lib list owner and detach the inherited field node. */
+    virtual ~FieldResourceLoaderList();
 
     /** @brief Prepend a node using its default list kind. @param node Node to register. */
     void insert(void* node)
@@ -163,7 +187,7 @@ public:
 };
 
 /** Partial class with bases at offsets 0x78 and 0x90 and a Lib member at 0xA0, with vtable D_14FE30 in main data. */
-class FieldClass14FE30 : public LibClass178DD0, public FieldClass150070, public FieldClass14FE84
+class FieldClass14FE30 : public LibClass178DD0, public FieldListObject, public FieldClass14FE84
 {
 public:
     static void* operator new(u32 size);
@@ -182,7 +206,7 @@ public:
         func_004DB570(object);
     }
 
-    /** @brief Detach the FieldClass150070 base and queue it on the resident object queue. */
+    /** @brief Detach the FieldListObject base and queue it on the resident object queue. */
     virtual void func_001DD7B0();
 
     /**
@@ -192,10 +216,10 @@ public:
     virtual void func_001DDB30(void* arg);
 
     /**
-     * @brief Report the fixed value 4 for this class.
-     * @return Always 4.
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
      */
-    virtual s32 func_001DF3D0();
+    virtual s32 get_default_list_kind();
 
     /**
      * @brief Sort the list items by height, then run their per-frame handlers.
@@ -206,176 +230,209 @@ public:
      * offset 0x90, live type-0x2 items then run slots 21, 23 and 24; every live
      * item runs slot 13. Nothing happens when bit 7 at context offset 0xDD is set.
      */
-    virtual void func_004D6730();
+    virtual void update_nodes();
 
     /**
-     * @brief Point the context's FieldClass155640 at the nearest live type-0x20 list item.
+     * @brief Point the context's FieldBattleResourcePreloader at the nearest live type-0x20 list item.
      *
      * Skipped while context flags or the focus object block it. Otherwise runs
      * the per-frame list handler, then finds the type-0x20 item nearest to the
      * context object at offset 0x18 among those with a valid word at offset
-     * 0x690. The context's FieldClass155640, created on first use, is updated
-     * through func_00279EA0 when its settings differ from that item's.
+     * 0x690. The context's FieldBattleResourcePreloader, created on first use, is updated
+     * through set_resource_selection when its settings differ from that item's.
      */
-    virtual void func_001DF360();
+    virtual void update();
 
-    LibClass178EA0 unkA0;
+    LibTransform unkA0;
 };
 
 /**
- * Partial class derived from FieldClass150070, with vtable D_150010 in main
- * data. Slots 5-7 are pure virtual (zero vtable entries); they are named after
- * FieldClass14FFB0's implementations.
+ * @brief Shared lifecycle for resource loaders registered with the field context.
+ *
+ * Derived loaders advance reads, release request buffers and schedule their
+ * own removal. The 24-byte base keeps the load kind and current state; its
+ * vtable at 0x150010 leaves the three lifecycle operations pure virtual.
  */
-class FieldClass150010 : public FieldClass150070
+class FieldResourceLoadTask : public FieldListObject
 {
 public:
-    /** @brief Set the byte at offset 0x14 to 5 and clear the byte at offset 0x15. */
-    FieldClass150010()
+    /** @brief Initialize load kind 5 and the idle request state. */
+    FieldResourceLoadTask()
     {
-        unk14 = 5;
-        unk15 = 0;
+        load_kind = 5;
+        request_state = 0;
     }
 
     /** @brief Destroy the object. */
-    virtual ~FieldClass150010()
+    virtual ~FieldResourceLoadTask()
     {
     }
 
     /**
-     * @brief Report the fixed value 3 for this class.
-     * @return Always 3.
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
      */
-    virtual s32 func_001DF3D0();
+    virtual s32 get_default_list_kind();
 
     /** @brief Detach the object and queue it on the resident object queue. */
     virtual void func_001DD7B0();
 
     /**
-     * @brief Pure virtual handler slot 5.
-     * @param flag Value tested for nonzero by FieldClass14FFB0's implementation.
+     * @brief Advance resource reads or handle a cancellation request.
+     * @param cancel_request One requests cancellation; zero advances loading.
      */
-    virtual void func_001E0A50(s32 flag) = 0;
-
-    /** @brief Pure virtual handler slot 6. */
-    virtual s32 func_001E07A0() = 0;
-
-    /** @brief Pure virtual handler slot 7. */
-    virtual s32 func_001DF640() = 0;
+    virtual void update_requests(s32 cancel_request) = 0;
 
     /**
-     * @brief Read the byte at offset 0x14.
-     * @return The stored byte.
+     * @brief Poll cancellation and release request buffers when cleanup can proceed.
+     * @return One if a buffer was present before cleanup, two if a buffer remains pending, otherwise zero.
      */
-    virtual u8 func_001DF350();
+    virtual s32 poll_request_release() = 0;
 
-    u8 unk14;
-    u8 unk15;
+    /**
+     * @brief Cancel pending reads or queue the loader for removal.
+     * @return One after queuing the loader for removal, otherwise zero while reads finish.
+     */
+    virtual s32 request_removal() = 0;
+
+    /**
+     * @brief Read the loader kind used when coordinating resource requests.
+     * @return The stored load kind.
+     */
+    virtual u8 get_load_kind();
+
+    /** @brief Load category used when coordinating other registered loaders. */
+    u8 load_kind;
+
+    /**
+     * @brief Current loading, cancellation or removal state.
+     *
+     * Common states are 0 for idle, 1 for reading and 5 for completion.
+     * Decoder subclasses also use this byte for their processing stages.
+     */
+    u8 request_state;
 };
 
 /**
- * Partial 32-byte record with vtable D_150040 in main data. Its base keeps its
- * vtable pointer at offset 0x18, after the base's data.
+ * @brief Resource request with completion and cancellation flags for preloading.
+ *
+ * The 32-byte record retains the base's vtable pointer at offset 0x18.
  */
-class FieldClass150040 : public FieldClass1530C0
+class FieldPreloadRequest : public FieldResourceRequest
 {
 public:
-    /** @brief Construct the base, then clear bits 0 and 1 at offset 0x1C. */
-    FieldClass150040();
+    /** @brief Initialize a request with neither completion nor cancellation pending. */
+    FieldPreloadRequest();
 
     /**
-     * @brief Clear bits 0 and 1 at offset 0x1C, then run the base handler.
-     * @return The base handler's result.
+     * @brief Clear the preload flags and release the request's buffer.
+     * @return The base request's release result.
      */
-    virtual s32 func_0023AD00();
+    virtual s32 release_buffer();
 
-    u8 unk1c_0 : 1;
-    u8 unk1c_1 : 1;
+    u8 read_complete : 1;
+
+    u8 cancel_pending : 1;
+
     u8 unk1c_2_7 : 6;
+
     u8 unk1d[3];
 };
 
 /**
- * Partial FieldClass150010 with a FieldClass1DD400 base at offset 0x18 and a
- * counted array of FieldClass150040 records at offset 0x1C, with vtable
- * D_14FFB0 in main data. The FieldClass1DD400 vtable part is D_14FFDC
- * (__vt__16FieldClass14FFB0 + 0x2C).
+ * @brief Preload a counted array of resources through the resident request queue.
+ *
+ * The 52-byte object has its completion callback base at offset 0x18.
+ * Its primary vtable is at 0x14FFB0; the callback part follows at 0x14FFDC.
  */
-class FieldClass14FFB0 : public FieldClass150010, public FieldClass1DD400
+class FieldResourcePreloader : public FieldResourceLoadTask, public FieldClass1DD400
 {
 public:
     /** @brief Clear the record array and state, set the defaults, then reset the records. */
-    FieldClass14FFB0();
+    FieldResourcePreloader();
 
     /** @brief Free the record array, then destroy the object. */
-    virtual ~FieldClass14FFB0();
+    virtual ~FieldResourcePreloader();
 
     /**
-     * @brief Virtual handler slot 5.
-     * @param flag Value tested for nonzero.
+     * @brief Advance resource reads or wait for their cancellation and cleanup.
+     * @param flag One to request cancellation, zero to continue loading.
      */
-    virtual void func_001E0A50(s32 flag);
+    virtual void update_requests(s32 flag);
 
     /**
-     * @brief Finish the record requests according to the state at offset 0x15.
+     * @brief Poll cancellation and release the requests when cleanup can proceed.
      *
      * State 1 releases every record not flagged by bit 0 at its offset 0x08 and moves to
      * state 10. State 10 only reports. State 9 waits while field_records_blocked() reports
      * a block; otherwise, like any other state, it notes whether a record still has a
-     * nonzero rounded size, runs virtual slot 0 of the first count (offset 0x24) records,
-     * and resets the state and the record index at offset 0x2E.
+     * nonzero buffer address, releases all request_capacity records,
+     * and resets the state and current request index.
      * @return 1 if that scan found such a record, otherwise 2 if a record still has a
-     *         nonzero rounded size, otherwise 0.
+     *         nonzero buffer address, otherwise 0.
      */
-    virtual s32 func_001E07A0();
+    virtual s32 poll_request_release();
 
     /**
-     * @brief Advance the record release state at offset 0x15.
+     * @brief Cancel pending reads or queue the preloader for removal.
      *
-     * State 7 is finished; states 9 and 10 become 7. In state 1 every record not flagged by
-     * bit 0 at its offset 0x08 is released through func_00103B20, then the state becomes 7.
-     * Any other state releases the object through virtual slot 2 (func_001DD7B0).
-     * @return 1 after releasing the object, otherwise 0.
+     * State 1 cancels reads for records that do not borrow their buffers and
+     * enters state 7. States 9 and 10 also enter state 7. That state waits for
+     * update_requests to finish the reads and queue removal; other states
+     * queue the object immediately through func_001DD7B0.
+     * @return One after queuing the preloader for removal, otherwise zero.
      */
-    virtual s32 func_001DF640();
+    virtual s32 request_removal();
 
     /**
-     * @brief Start the request for the current record (index at offset 0x2E).
+     * @brief Queue a read into the current request's buffer.
      *
-     * Does nothing when the record's rounded size is zero. Otherwise passes it to func_00103E70
-     * and func_00103640, keeps the second result at the record's offset 0x10, sets state 1 at
-     * offset 0x15 and clears bit 1 at offset 0x30.
+     * A missing buffer leaves the request unchanged. Otherwise keeps the resident
+     * queue slot in request_address, enters state 1 and clears callback_ready.
      */
-    virtual void func_001DF3E0();
+    virtual void start_current_read();
 
-    /** @brief Second virtual handler introduced by this class. */
-    virtual void func_001E0F60();
+    /** @brief Advance past the completed read and skip requests marked as finished. */
+    virtual void advance_requests();
 
-    /** @brief Reset every record, then clear the word at offset 0x20 and the bytes at offsets 0x2D-0x2F. */
-    virtual void func_001DEA80();
+    /** @brief Reset the request records, counts and current index without freeing buffers. */
+    virtual void reset_requests();
 
-    /** @brief Virtual handler called by the destructor before the record array is freed. */
-    virtual void func_001DF780();
+    /** @brief Release the buffer of every allocated request record. */
+    virtual void release_requests();
 
-    /** @brief FieldClass1DD400 slot 1 override; ignores arg. */
+    /**
+     * @brief Flush the cache and mark the current read ready for completion handling.
+     * @param arg Unused callback argument.
+     */
     virtual void func_001DDB30(void* arg);
 
     /**
      * @brief Replace the record array with count newly constructed records.
      * @param count Number of records to allocate.
      */
-    void func_001DE8B0(s32 count);
+    void allocate_requests(s32 count);
 
-    FieldClass150040* unk1c;
+    FieldPreloadRequest* requests;
+
     u32 unk20;
-    s32 unk24;
-    s32 unk28;
+
+    s32 request_capacity;
+
+    s32 request_priority;
+
     u8 unk2c;
-    u8 unk2d;
-    u8 unk2e;
+
+    u8 request_count;
+
+    u8 current_request;
+
     u8 unk2f;
+
     u8 unk30_0 : 1;
-    u8 unk30_1 : 1;
+
+    u8 callback_ready : 1;
+
     u8 unk30_2_7 : 6;
 };
 
@@ -505,7 +562,7 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed);
 #ifdef __cplusplus
 
 /** Registered field object list. */
-class FieldClass150E10 : public FieldClass150070, public LibClass178DD0
+class FieldClass150E10 : public FieldListObject, public LibClass178DD0
 {
 public:
     /** @brief Initialize the inherited field node and object list. */
@@ -515,11 +572,16 @@ public:
 
     virtual ~FieldClass150E10();
 
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
 
     virtual void func_001DD7B0();
 
-    virtual void func_001DF360();
+    /** @brief Update inherited nodes when the field context permits it. */
+    virtual void update();
 };
 #endif
 

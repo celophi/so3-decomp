@@ -8,7 +8,7 @@
 #include "overlays/lib/text_004BD360.h"
 
 /** 0x94-byte field list with its secondary list base at offset 0x14. */
-class FieldClass1522C0 : public FieldClass150070, public FieldClass1502A0
+class FieldClass1522C0 : public FieldListObject, public FieldClass1502A0
 {
 public:
     /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
@@ -29,14 +29,17 @@ public:
     /** @brief Destroy both list bases. */
     virtual ~FieldClass1522C0();
 
-    /** @brief Report the fixed list kind. @return Three. */
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
 
     /** @brief Detach this node and queue it for release. */
     virtual void func_001DD7B0();
 
     /** @brief Advance the list's objects when their update conditions hold. */
-    virtual void func_001DF360();
+    virtual void update();
 
     u8 unk8c[4];
 
@@ -44,34 +47,50 @@ public:
 };
 
 /** Scene-loader record whose native array stride is 32 bytes. */
-class FieldClass152210 : public FieldClass1530C0
+class FieldSceneResourceRequest : public FieldResourceRequest
 {
 public:
     /** @brief Initialize the inherited resource-record state. */
-    FieldClass152210();
+    FieldSceneResourceRequest();
+
     u8 unk1c[4];
 };
 
 /** Resource loader whose 0x3C word is initialized by its native constructor. */
-class FieldClass152270 : public FieldClass150750
+class FieldClass152270 : public FieldHeapSceneResourceLoader
 {
 public:
     /** @brief Initialize the scene-resource loader. */
     FieldClass152270();
+
     /** @brief Release the scene-resource loader. */
     virtual ~FieldClass152270();
-    /** @brief Report category2. @return Always2. */
-    virtual s32 func_001DF3D0();
-    /** @brief Advance the scene-resource state. @param flag Unused inherited argument. */
-    virtual void func_001E0A50(s32 flag);
+
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
+
+    /**
+     * @brief Allocate the scene-resource buffer or advance an existing read.
+     * @param cancel_request Nonzero prevents a new read and is forwarded for an active read.
+     */
+    virtual void update_requests(s32 cancel_request);
+
     /** @brief Submit the scene-resource request. */
-    virtual void func_001F8CB0();
+    virtual void start_current_read();
+
     /** @brief Advance the scene-resource request. */
-    virtual void func_001F98E0();
+    virtual void advance_requests();
+
     /** @brief Release the counted records and their scene-resource registration. */
-    virtual void func_001F9050();
+    virtual void release_requests();
+
     u8 unk34[4];
+
     s32 unk38;
+
     void* unk3c;
 };
 
@@ -95,12 +114,15 @@ public:
     /** @brief Initialize the byte-buffer loader. */
     FieldClass152220()
     {
-        unk14 = 0;
+        load_kind = 0;
     }
     /** @brief Release the byte-buffer loader. */
     virtual ~FieldClass152220();
-    /** @brief Handle the loader request. @param request Request value. */
-    virtual void func_001E0A50(s32 request);
+    /**
+     * @brief Advance resource-block decoding or handle a cancellation request.
+     * @param cancel_request One requests cancellation; zero advances loading.
+     */
+    virtual void update_requests(s32 cancel_request);
     u8* unk40;
     s32 unk44;
     ResidentDecodeState1C unk48;
@@ -154,12 +176,6 @@ s32 func_0021DE70(FieldScriptObject151D40* object, u32 count);
  */
 s32 func_0021DEF0(FieldScriptObject151D40* object, u32 count);
 
-/**
- * @brief Return the fixed value 2.
- * @param object Receiver or first argument; unused.
- * @return Always 2.
- */
-s32 func_0021E840(void* object);
 
 /**
  * @brief Copy the current script word to the resident halfword at 0xB0.

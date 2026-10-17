@@ -538,7 +538,7 @@ extern "C" void func_002CFD80(FieldCountedList* list)
  * @param object Callback receiver.
  * @return Always 3.
  */
-s32 func_002CFE00(FieldClass150070* object)
+s32 func_002CFE00(FieldListObject* object)
 {
     return 3;
 }
@@ -702,7 +702,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", __ct__16Fie
  * @param object Callback receiver.
  * @return Always 4.
  */
-s32 func_002D3BB0(FieldClass150070* object)
+s32 func_002D3BB0(FieldListObject* object)
 {
     return 4;
 }

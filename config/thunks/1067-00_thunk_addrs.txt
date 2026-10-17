@@ -4,20 +4,27 @@
 @120@__dt__16FieldClass14FE30Fv = 0x001E1570;
 @120@func_001DD7B0__16FieldClass14FE30Fv = 0x001E1550;
 @120@func_001DF3D0__16FieldClass14FE30Fv = 0x001E1560;
+@120@get_default_list_kind__16FieldClass14FE30Fv = 0x001E1560;
 @120@func_001DF360__16FieldClass14FE30Fv = 0x001E1540;
+@120@update__16FieldClass14FE30Fv = 0x001E1540;
 @144@func_001DDB30__16FieldClass14FE30FPv = 0x001E1580;
-// FieldClass150120 (vtable D_150120); kept copy ends text_001E1590.
-@20@func_001DDB30__16FieldClass150120FPv = 0x001E6C40;
-// FieldClass14FFB0 (vtable D_14FFB0); kept copy ends text_001DED80.
-@24@func_001DDB30__16FieldClass14FFB0FPv = 0x001E1530;
-// FieldClass1501A0 secondary interface at offset 0x18.
-@24@func_001DDB30__16FieldClass1501A0FPv = 0x001E6C20;
-@24@func_001DDB30__16FieldClass150150FPv = 0x001E6C30;
+// FieldResourceRequestHandler (vtable D_150120); kept copy ends text_001E1590.
+@20@func_001DDB30__27FieldResourceRequestHandlerFPv = 0x001E6C40;
+// FieldResourcePreloader (vtable D_14FFB0); kept copy ends text_001DED80.
+@24@func_001DDB30__22FieldResourcePreloaderFPv = 0x001E1530;
+// FieldKeyedResourceLoader secondary interface at offset 0x18.
+@24@func_001DDB30__24FieldKeyedResourceLoaderFPv = 0x001E6C20;
+@24@func_001DDB30__19FieldResourceLoaderFPv = 0x001E6C30;
 
 @16@__dt__16FieldClass151640Fv = 0x0020E490;
 @16@func_001DD730__16FieldClass151640Fv = 0x0020E4A0;
-@24@func_001DDB30__16FieldClass150700FPv = 0x001F9B60;
+@24@func_001DDB30__24FieldSceneResourceLoaderFPv = 0x001F9B60;
 
 @20@__dt__16FieldClass1522C0Fv = 0x0021FB70;
 @20@__dt__16FieldClass154CC0Fv = 0x00272350;
 @20@__dt__16FieldClass154E90Fv = 0x00273710;
+
+// FieldResourceLoaderList secondary list interface at offset 0x14.
+@20@func_004D6730__23FieldResourceLoaderListFv = 0x0023B1B0;
+@20@__dt__23FieldResourceLoaderListFv = 0x0023B1C0;
+@20@update_nodes__23FieldResourceLoaderListFv = 0x0023B1B0;

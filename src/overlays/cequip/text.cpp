@@ -727,16 +727,16 @@ s32 EquipClass182450::func_slotf4(u32 associated)
     unka8 = new (0) ItemCreationOptionResourceDisplay;
     unkac = new (0) ItemCreationOptionResourceDisplay;
     unkb0 = new (0) ItemCreationOptionResourceDisplay;
-    void* allocation = func_002D3D80(D_001B643C->unk20, 11);
+    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 11);
     unka8->unkcc = allocation;
     unkac->unkcc = allocation;
     unkb0->unkcc = allocation;
     unka8->unkd0 = 11;
     unkac->unkd0 = 11;
     unkb0->unkd0 = 11;
-    unka8->func_002D6440(func_002D3CC0(D_001B643C->unk20, 5), 0.0f, 0.0f);
-    unkac->func_002D6440(func_002D3CC0(D_001B643C->unk20, 6), 256.0f, 0.0f);
-    unkb0->func_002D6440(func_002D3CC0(D_001B643C->unk20, 7), 512.0f, 0.0f);
+    unka8->func_002D6440(field_find_resource_record(D_001B643C->unk20, 5), 0.0f, 0.0f);
+    unkac->func_002D6440(field_find_resource_record(D_001B643C->unk20, 6), 256.0f, 0.0f);
+    unkb0->func_002D6440(field_find_resource_record(D_001B643C->unk20, 7), 512.0f, 0.0f);
     lib_container_attach_widget(unk10, unka8);
     lib_container_attach_widget(unk10, unkac);
     lib_container_attach_widget(unk10, unkb0);
@@ -923,7 +923,7 @@ void EquipClass182550::refresh_rows(s32 start)
                 }
             }
             unk138[row]->func_002D5CF0(unk184,
-                         func_002D3CC0(D_001B643C->unk20, count + 60), 14);
+                         field_find_resource_record(D_001B643C->unk20, count + 60), 14);
             unk15c[row]->unk3d = 1;
             unk138[row]->unk3d = 1;
         }
@@ -986,7 +986,7 @@ s32 EquipClass182550::func_slot104(u32 associated)
     lib_container_attach_widget(FieldClass15AE70::unk10, unk180);
     lib_scissor_init_rectangle(frame, 8.0f, 10.0f, 302.0f, 224.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, frame);
-    unk184 = func_002D3D80(D_001B643C->unk20, 14);
+    unk184 = field_get_aligned_allocation(D_001B643C->unk20, 14);
     for (s32 index = 0; index < 9; index++)
     {
         unk15c[index] = new (0) LibObject172410;
@@ -997,7 +997,7 @@ s32 EquipClass182550::func_slot104(u32 associated)
         set_display_depth(unk15c[index], -1.0f);
         lib_container_attach_widget(FieldClass15AE70::unk10, unk15c[index]);
         unk138[index] = new (0) ItemCreationOptionResourceDisplay;
-        FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 60);
+        FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 60);
         void* allocation = unk184;
         unk138[index]->unkcc = allocation;
         unk138[index]->unkd0 = 14;
@@ -1957,8 +1957,8 @@ s32 EquipClass182C90::func_slotf4(u32 associated)
         {
             unke4[index] = slot;
             unkc4[index] = new (0) ItemCreationOptionResourceDisplay;
-            void* allocation = func_002D3D80(D_001B643C->unk20, static_cast<u8>(slot));
-            FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 4);
+            void* allocation = field_get_aligned_allocation(D_001B643C->unk20, static_cast<u8>(slot));
+            FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 4);
             unkc4[index]->unkcc = allocation;
             unkc4[index]->unkd0 = slot;
             unkc4[index]->func_002D6440(record, 20.0f, 50.0f);

@@ -586,7 +586,7 @@ struct FieldTransformParentLink20C
 class FieldClass151620;
 
 /** Transform attachment with two matrices and an optional owner. */
-class FieldClass151570 : public FieldClass150070
+class FieldClass151570 : public FieldListObject
 {
 public:
     /** @brief Initialize an unattached object and its identity matrix. */
@@ -601,7 +601,7 @@ public:
     /** @brief Detach this node and enqueue it for deferred removal. */
     virtual void func_001DD7B0();
     /** @brief Update both matrices from the attached transform. */
-    virtual void func_001DF360();
+    virtual void update();
 
     LibClass178A90* unk14;
     LibClass178A90* unk18;
@@ -613,7 +613,7 @@ public:
 };
 
 /** A0-byte shape entry identified by MAIN vtable151620 and caller1FCD60. */
-class FieldClass151620 : public FieldClass150070
+class FieldClass151620 : public FieldListObject
 {
 public:
     /** @brief Allocate through the Lib heap. @param size Required storage. @return Allocated storage or null. */
@@ -777,7 +777,7 @@ public:
     /** @brief Delete the optional channel and destroy the inherited actor. */
     virtual ~FieldClass151510();
     /** @brief Update the actor. */
-    virtual void func_001DF360();
+    virtual void update();
     /** @brief Update the actor state. */
     virtual void func_00204210();
     /** @brief Load the actor resource selected by its key. @param key Resource key, or -1. @return One on success, zero otherwise. */

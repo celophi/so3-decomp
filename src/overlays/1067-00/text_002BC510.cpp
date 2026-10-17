@@ -47,12 +47,12 @@ FieldClass159A80::~FieldClass159A80()
  * @param object Callback receiver.
  * @return Always 9.
  */
-s32 func_002BC5A0(FieldClass150070* object)
+s32 func_002BC5A0(FieldListObject* object)
 {
     return 9;
 }
 
-void func_002BC5B0(FieldClass150070* object)
+void func_002BC5B0(FieldListObject* object)
 {
     resident_enqueue_object(D_001B65F4, object);
 }

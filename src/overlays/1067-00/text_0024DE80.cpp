@@ -76,7 +76,7 @@ struct FieldOwner24E860
 {
     u8 unk00[0x12C];
     LibObject178660* unk12c;
-    FieldClass150070* child;
+    FieldListObject* child;
     u32 unk134;
     u8 unk138[0x10D4];
     s32 unk120c;

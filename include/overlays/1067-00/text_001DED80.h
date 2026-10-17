@@ -622,12 +622,12 @@ public:
 extern "C" {
 /**
  * @brief Allocate a 128-byte-aligned buffer, retrying after other loaders release storage.
- * @param owner Loader attached to the resource list.
+ * @param loader Loader attached to the resource list.
  * @param size Requested buffer size in bytes.
  * @param mode Nonzero for the library allocator, zero for the resident allocator.
- * @return Allocated buffer, or null after allocation or recovery fails.
+ * @return Allocated buffer, or null when allocation or recovery fails after at most eight attempts.
  */
-void* func_001E1100(FieldClass150070* owner, u32 size, s32 mode);
+void* field_allocate_preload_buffer(FieldListObject* loader, u32 size, s32 mode);
 }
 #endif
 

@@ -9,7 +9,7 @@
 #include "overlays/lib/text_004BD360.h"
 
 /** 0x90-byte field list with its secondary list base at offset 0x14. */
-class FieldClass154E90 : public FieldClass150070, public FieldClass1502A0
+class FieldClass154E90 : public FieldListObject, public FieldClass1502A0
 {
 public:
     /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
@@ -29,14 +29,17 @@ public:
     /** @brief Destroy both list bases. */
     virtual ~FieldClass154E90();
 
-    /** @brief Report the fixed list kind. @return Four. */
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
 
     /** @brief Release the listed objects, detach this node and queue it for release. */
     virtual void func_001DD7B0();
 
     /** @brief Advance the list's objects when their update conditions hold. */
-    virtual void func_001DF360();
+    virtual void update();
 
     u8 unk8c[4];
 };

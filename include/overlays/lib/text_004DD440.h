@@ -17,29 +17,45 @@ typedef struct N50OwnerBC_004DD440 N50OwnerBC_004DD440;
 class LibDisplayState
 {
 public:
-    u8 unk00[0x3F0C];
+    u8 unk00[0x3E6C];
+
+    /** Enable alpha blending in the display drawing commands. */
+    u8 blend_enabled;
+
+    u8 unk3e6d[3];
+
+    /** Alpha multiplied by 128 when building display drawing commands. */
+    float blend_alpha;
+
+    u8 unk3e74[0x98];
 
     /** @brief Destroy the display state. */
     virtual ~LibDisplayState();
 };
 
-/** Partial LibClass178EA0 with vtable D_175290 in main data. */
-class FieldClass175290 : public LibClass178EA0
+/** Transform that faces an optional target with a roll about the viewing direction. */
+class LibLookAtTransform : public LibTransform
 {
 public:
-    /** @brief Construct the object and clear the words at offsets 0x210 and 0x214. */
-    FieldClass175290();
-    /** @brief Destroy the object. */
-    virtual ~FieldClass175290();
+    /** @brief Initialize the transform without a look-at target or roll. */
+    LibLookAtTransform();
+    /** @brief Destroy the look-at transform and its transform base. */
+    virtual ~LibLookAtTransform();
 
-    /** @brief Copy the associated transform and inherited state. @param source Transform source. */
-    virtual void func_0046B890(const FieldClass175290* source);
+    /**
+     * @brief Copy the look-at target and inherited transform state.
+     * @param source Transform to copy; its roll angle is not copied.
+     */
+    virtual void copy_look_at_state(const LibLookAtTransform* source);
 
-    /** @brief Update the attached transform state. */
-    virtual void func_004D0090();
+    /** @brief Update the matrix to face the target when one is attached. */
+    virtual void update_transform_matrix();
 
-    LibClass178EA0* unk210;
-    u32 unk214;
+    /** Transform whose position supplies the viewing direction, or null. */
+    LibTransform* look_at_target;
+
+    /** Rotation about the viewing direction, passed to the sine/cosine helper. */
+    float roll_angle;
 };
 /** Partial resident context supplying signed viewport dimensions. */
 struct LibCameraContext
@@ -50,7 +66,7 @@ struct LibCameraContext
 };
 
 /** Scene and model-preview camera, with its submission callback interface at 0x220. */
-class LibClass179080 : public FieldClass175290, public DmaSubmission
+class LibClass179080 : public LibLookAtTransform, public DmaSubmission
 {
 public:
     /** @brief Initialize the camera from the resident context. @param context Resident context. */
@@ -66,7 +82,7 @@ public:
     /** @brief Upload the camera's clip geometry into VU0 data memory. */
     void upload_clip_geometry() const;
     /** @brief Update the transform and extract its rotation components. */
-    virtual void func_004D0090();
+    virtual void update_transform_matrix();
     /** @brief Update camera state and its attached-transform distance. */
     virtual void func_003EEBD0();
     /** @brief Update the active camera projection state. */

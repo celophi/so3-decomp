@@ -10,7 +10,7 @@
 typedef struct FieldHeldObject20
 {
     u8 unk00[0x20];
-    struct FieldClass150070* unk20;
+    struct FieldListObject* unk20;
     u8 unk24[0x22C];
     s32 unk250;
 } FieldHeldObject20;
@@ -2870,7 +2870,7 @@ void func_00289730(FieldClass156E90* object, const FieldClass156E90* other);
 #include "overlays/1067-00/text_001DD3C0.h"
 
 /** Partial Field object with vtable D_156E60 in main data and an owned child at offset 0x40. */
-class FieldClass156E60 : public FieldClass150070
+class FieldClass156E60 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -2878,7 +2878,7 @@ public:
     /** @brief Detach and delete the child, then detach this object and queue it for release. */
     virtual void func_001DD7B0();
     u8 unk14[0x2C];
-    FieldClass150070* unk40;
+    FieldListObject* unk40;
 };
 #endif
 
@@ -2886,7 +2886,7 @@ public:
 #include "overlays/1067-00/text_001DD3C0.h"
 
 /** Field context attachment. */
-class FieldClass156B50 : public FieldClass150070
+class FieldClass156B50 : public FieldListObject
 {
 public:
     FieldClass156B50();

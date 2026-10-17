@@ -73,4 +73,4 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00257750", func_0025BC
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00257750", func_0025D400);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00257750", func_0025DBA0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00257750", update__16FieldClass153CD0Fv);

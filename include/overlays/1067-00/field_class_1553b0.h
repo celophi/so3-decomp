@@ -5,7 +5,7 @@
 
 #ifdef __cplusplus
 /** 0x20-byte Field controller base with native table 0x1553B0. */
-class FieldClass1553B0 : public FieldClass150070
+class FieldClass1553B0 : public FieldListObject
 {
 public:
     /** @brief Initialize the controller state. */

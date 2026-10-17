@@ -118,15 +118,15 @@ struct FieldMatrix44
 struct FieldModelMatrix90
 {
     u8 unk00[0x90];
-    FieldMatrix44 unk90;
+    FieldMatrix44 transform;
 };
 
 /**
- * @brief Return the receiver's embedded transformation matrix.
+ * @brief Read the receiver's embedded transformation matrix.
  * @param object Matrix-owning receiver.
- * @return Address of the matrix at offset 0x90.
+ * @return Pointer to the stored matrix; no update is performed.
  */
-extern "C" const void* func_001E9B70(FieldModelMatrix90* object);
+extern "C" const FieldMatrix44* field_get_transform_matrix(const FieldModelMatrix90* object);
 
 /** Partial source record for FieldClass150220: three floats followed by a vector at offset 0x10. */
 struct FieldRecord150220
@@ -139,11 +139,11 @@ struct FieldRecord150220
 };
 
 /**
- * Partial class derived from FieldClass150070, with vtable D_150220 in main
+ * Partial class derived from FieldListObject, with vtable D_150220 in main
  * data. Holds a source record pointer at offset 0x18 and a done flag at bit 0
  * of offset 0x20; slot 8 is pure virtual.
  */
-class FieldClass150220 : public FieldClass150070
+class FieldClass150220 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -305,11 +305,11 @@ public:
 class FieldClass150EB0;
 
 /**
- * Partial 0x70-byte keyed animation node derived from FieldClass150070, with
+ * Partial 0x70-byte keyed animation node derived from FieldListObject, with
  * vtable D_150280 in main data. FieldClass1502E0 keeps a list of them; the
  * node owns two Lib objects and refers back to its FieldClass150EB0 owner.
  */
-class FieldClass150280 : public FieldClass150070
+class FieldClass150280 : public FieldListObject
 {
 public:
     /**
@@ -374,7 +374,7 @@ public:
 
 /**
  * Partial Lib list class derived from FieldClass1502A0, with vtable D_1502E0 in
- * main data. Owns two FieldClass150070 objects at offset 0x80 and a
+ * main data. Owns two FieldListObject nodes at offset 0x80 and a
  * FieldClass150320 at offset 0x90.
  */
 class FieldClass1502E0 : public FieldClass1502A0
@@ -534,8 +534,8 @@ struct FieldIndexPair
     s16 unk02;
 };
 
-/** Partial class derived from FieldClass150070, with vtable D_150330 in main data. */
-class FieldClass150330 : public FieldClass150070
+/** Partial class derived from FieldListObject, with vtable D_150330 in main data. */
+class FieldClass150330 : public FieldListObject
 {
 public:
     /** @brief Clear the words, array pointers and halfwords, and set flag bit 1 at offset 0x3C. */
@@ -600,10 +600,10 @@ public:
 };
 
 /**
- * Partial class derived from FieldClass150070, with vtable D_150440 in main
+ * Partial class derived from FieldListObject, with vtable D_150440 in main
  * data. Its storage is released through the Lib heap.
  */
-class FieldClass150440 : public FieldClass150070
+class FieldClass150440 : public FieldListObject
 {
 public:
     /** @brief Initialize the command word. */
@@ -646,10 +646,10 @@ public:
 };
 
 /**
- * Partial 0x50-byte class derived from FieldClass150070, with vtable D_1504F0
+ * Partial 0x50-byte class derived from FieldListObject, with vtable D_1504F0
  * in main data. At most one exists at a time, in D_001B6428.
  */
-class FieldClass1504F0 : public FieldClass150070
+class FieldClass1504F0 : public FieldListObject
 {
 public:
     /** @brief Construct the object with its state cleared. */
@@ -678,7 +678,7 @@ public:
     LibObject178750* unk2c[2];
     LibObject174F20* unk34[2];
     s32 unk3c;
-    FieldClass150070* unk40;
+    FieldListObject* unk40;
     float unk44;
     float unk48;
     s8 unk4c;
@@ -696,8 +696,8 @@ public:
 /** The current FieldClass1504F0, or null. */
 extern "C" FieldClass1504F0* D_001B6428;
 
-/** Partial class derived from FieldClass150070, with vtable D_150460 in main data. */
-class FieldClass150460 : public FieldClass150070
+/** Partial class derived from FieldListObject, with vtable D_150460 in main data. */
+class FieldClass150460 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -755,7 +755,7 @@ public:
 };
 
 /** Partial 0x40-byte field object with vtable D_1505B0, derived from the node base. */
-class FieldClass1505B0 : public FieldClass150070
+class FieldClass1505B0 : public FieldListObject
 {
 public:
     u8 unk14[4];
@@ -912,7 +912,7 @@ public:
 
 /**
  * Partial class derived from FieldClass150490, with vtable D_1504C0 in main
- * data. Owns a list of FieldClass150070 objects at offset 0x38.
+ * data. Owns a list of FieldListObject objects at offset 0x38.
  */
 class FieldClass1504C0 : public FieldClass150490
 {
@@ -924,7 +924,7 @@ public:
     virtual void func_001DD7B0();
 
     /** @brief Advance the counter at offset 0xC0, then call func_001EA730 when the pointer at offset 0x30 and flag bit 1 at offset 0xC4 are set. */
-    virtual void func_001DF360();
+    virtual void update();
 
     /**
      * @brief Create and attach shapes from successive records until the record's terminal flag is set.
@@ -967,7 +967,7 @@ public:
         shape->func_001EA2E0(owner, record, 0x8040FF40, unkc4_5);
     }
 
-    /** @brief Update the object; func_001DF360 calls it after advancing the counter when the gating flags are set. */
+    /** @brief Update the object; update calls it after advancing the counter when the gating flags are set. */
     void func_001EA730();
 
     /**

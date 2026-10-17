@@ -30,8 +30,8 @@ void FieldClass15BA10::func_001DD7B0()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3760);
 
-/** Partial FieldClass150070 object with vtable D_15BA30 in main data. */
-class FieldClass15BA30 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_15BA30 in main data. */
+class FieldClass15BA30 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -47,7 +47,7 @@ FieldClass15BA30::~FieldClass15BA30()
  * @param object Callback receiver.
  * @return Always 9.
  */
-s32 func_002F3860(FieldClass150070* object)
+s32 func_002F3860(FieldListObject* object)
 {
     return 9;
 }

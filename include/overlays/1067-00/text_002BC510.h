@@ -29,7 +29,7 @@ struct FieldState2BDF70;
 
 #ifdef __cplusplus
 /** Partial Field object with vtable D_159A80 in main data. */
-class FieldClass159A80 : public FieldClass150070
+class FieldClass159A80 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -52,7 +52,7 @@ void func_002BC650(void* object, u16 mode);
  * @brief Append this receiver to the resident object queue.
  * @param object Receiver to append.
  */
-void func_002BC5B0(FieldClass150070* object);
+void func_002BC5B0(FieldListObject* object);
 
 /**
  * @brief Apply the requested state when the global receiver is available.
@@ -106,7 +106,7 @@ bool func_002BDF70(FieldState2BDF70* object, u16 value);
  * @param object Callback receiver.
  * @return Always 9.
  */
-s32 func_002BC5A0(FieldClass150070* object);
+s32 func_002BC5A0(FieldListObject* object);
 }
 #endif
 

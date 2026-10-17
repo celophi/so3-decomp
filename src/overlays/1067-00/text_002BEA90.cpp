@@ -307,7 +307,7 @@ public:
     virtual ~FieldClass159E10();
 
     /** @brief Update the controller. */
-    virtual void func_001DF360();
+    virtual void update();
 
     /** @brief Clear the controller's state bit. */
     virtual void func_00272290();

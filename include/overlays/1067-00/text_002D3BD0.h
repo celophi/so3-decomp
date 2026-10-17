@@ -7,7 +7,7 @@
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
 #else
-typedef struct FieldClass150070 FieldClass150070;
+typedef struct FieldListObject FieldListObject;
 #endif
 
 /** Partial state receiver with a byte flag at offset 0x28. */
@@ -23,7 +23,7 @@ typedef struct FieldLinkedAttached2D4A30
     u8 unk00[0x08];
     struct FieldLinkedAttached2D4A30* next;
     u8 unk0c[0x34];
-    FieldClass150070* unk40;
+    FieldListObject* unk40;
 } FieldLinkedAttached2D4A30;
 
 typedef struct FieldReset2D4160 FieldReset2D4160;
@@ -36,7 +36,7 @@ extern "C" {
  * @brief Detach the object and queue it for disposal.
  * @param object Callback receiver.
  */
-void func_002D3BE0(FieldClass150070* object);
+void func_002D3BE0(FieldListObject* object);
 
 /**
  * @brief Clear three receiver fields after releasing attached resources.
@@ -45,12 +45,12 @@ void func_002D3BE0(FieldClass150070* object);
 void func_002D4160(FieldReset2D4160* object);
 
 /**
- * @brief Return the overlay data area at D_30EC10.
+ * @brief Return the built-in DTT resource data.
  * @param object Callback receiver; unused.
  * @param raw_index Resource slot index; unused.
- * @return Address of the overlay data area.
+ * @return Address of the embedded DTT data.
  */
-void* func_002D3EB0(void* object, u32 raw_index);
+void* field_get_builtin_resource_data(void* object, u32 raw_index);
 
 /**
  * @brief Clear attached objects in a circular list.
@@ -68,7 +68,7 @@ void func_002D47A0(void* object);
  * @brief Detach the object and queue it for disposal.
  * @param object Callback receiver.
  */
-void func_002D4D50(FieldClass150070* object);
+void func_002D4D50(FieldListObject* object);
 
 /**
  * @brief Set the byte flag at offset 0x28.
@@ -84,23 +84,23 @@ void func_002D5060(FieldState2D5060* object);
  * @param index Slot index from zero to two.
  * @return One when attached, or zero when rejected.
  */
-u8 func_002D3C40(FieldBufferSlots* object, void* allocation, s32 size, s32 index);
+u8 field_attach_buffer_slot(FieldBufferSlots* object, void* allocation, s32 size, s32 index);
 
 /**
  * @brief Read the stored size for a buffer slot.
  * @param object Receiver containing the buffer slots.
- * @param index Slot index.
+ * @param index Slot index from zero to two; the caller supplies a valid index.
  * @return The stored signed size.
  */
-s32 func_002D3C20(const FieldBufferSlots* object, s32 index);
+s32 field_get_buffer_slot_size(const FieldBufferSlots* object, s32 index);
 
 /**
  * @brief Read the aligned pointer for a buffer slot.
  * @param object Receiver containing the buffer slots.
- * @param index Slot index.
+ * @param index Slot index from zero to two; the caller supplies a valid index.
  * @return The stored aligned pointer.
  */
-void* func_002D3C30(const FieldBufferSlots* object, s32 index);
+void* field_get_aligned_buffer_slot(const FieldBufferSlots* object, s32 index);
 
 /**
  * @brief Find an indexed record in the attached resource chain.
@@ -108,16 +108,17 @@ void* func_002D3C30(const FieldBufferSlots* object, s32 index);
  * @param index Zero-based record index.
  * @return The requested record, or null if unavailable.
  */
-FieldResourceRecord* func_002D3CC0(const FieldBufferSlots* object, s32 index);
+FieldResourceRecord* field_find_resource_record(const FieldBufferSlots* object, s32 index);
 
 /**
- * @brief Store the resource size and attach an allocation if the slot is empty.
+ * @brief Store the chain size, then attach its allocation if the slot is empty.
+ * The size is written even when the allocation cannot be attached.
  * @param object Receiver containing the resource allocation.
  * @param allocation Allocation to attach.
  * @param size Allocation size to store.
  * @return One when attached, or zero when rejected.
  */
-u8 func_002D3D40(FieldBufferSlots* object, void* allocation, s32 size);
+u8 field_attach_resource_chain(FieldBufferSlots* object, void* allocation, s32 size);
 
 /**
  * @brief Read an allocation pointer aligned upward to 128 bytes.
@@ -125,7 +126,7 @@ u8 func_002D3D40(FieldBufferSlots* object, void* allocation, s32 size);
  * @param raw_index Allocation slot index; only its low eight bits are used.
  * @return The aligned pointer, or null when the normalized index is 64 or greater.
  */
-void* func_002D3D80(const FieldBufferSlots* object, u32 raw_index);
+void* field_get_aligned_allocation(const FieldBufferSlots* object, u32 raw_index);
 
 /**
  * @brief Queue an attached allocation and clear its slot.
@@ -133,7 +134,7 @@ void* func_002D3D80(const FieldBufferSlots* object, u32 raw_index);
  * @param index Allocation slot index.
  * @return One when the slot was cleared, or zero when it was empty or invalid.
  */
-u8 func_002D3DC0(FieldBufferSlots* object, u8 index);
+u8 field_queue_allocation_release(FieldBufferSlots* object, u8 index);
 
 /**
  * @brief Attach a non-null allocation to an empty allocation slot.
@@ -142,7 +143,7 @@ u8 func_002D3DC0(FieldBufferSlots* object, u8 index);
  * @param index Allocation slot index.
  * @return One when attached, or zero when rejected.
  */
-u8 func_002D3E40(FieldBufferSlots* object, void* allocation, u8 index);
+u8 field_attach_allocation(FieldBufferSlots* object, void* allocation, u8 index);
 
 #ifdef __cplusplus
 /**
@@ -150,13 +151,13 @@ u8 func_002D3E40(FieldBufferSlots* object, void* allocation, u8 index);
  * @param object Callback receiver.
  * @return Always 14.
  */
-s32 func_002D3BD0(FieldClass150070* object);
+s32 func_002D3BD0(FieldListObject* object);
 /**
  * @brief Report this object's type value.
  * @param object Callback receiver.
  * @return Always 9.
  */
-s32 func_002D4D40(FieldClass150070* object);
+s32 func_002D4D40(FieldListObject* object);
 #endif
 
 /**

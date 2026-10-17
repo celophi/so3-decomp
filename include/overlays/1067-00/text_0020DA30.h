@@ -6,7 +6,7 @@
 #include "overlays/1067-00/text_001E6C50.h"
 
 /** Shape node base identified by MAIN vtable D_1515B0. */
-class FieldClass1515B0 : public FieldClass150070
+class FieldClass1515B0 : public FieldListObject
 {
 public:
     /** @brief Initialize the inherited list node. */
@@ -47,7 +47,7 @@ public:
      * @param index Starting record index.
      */
     virtual void func_0020DBC0(FieldShapeOwner18* shape, FieldShapeData10* data, s32 index);
-    FieldClass150070* unk20;
+    FieldListObject* unk20;
 };
 /** Shape node used for descriptors whose kind lies in the range 0x40-0x7E. */
 class FieldClass151590 : public FieldClass1515B0
@@ -87,7 +87,7 @@ public:
 struct FieldClass151640;
 struct FieldContext26FF70;
 struct FieldClass151620;
-struct FieldClass150070;
+struct FieldListObject;
 struct FieldClass151570;
 struct LibClass178DD0;
 struct FieldShapeOwner18;
@@ -107,7 +107,7 @@ void func_0020DEF0(struct FieldClass151640* object, struct LibClass178DD0* sourc
 /** @brief Move the inherited shape nodes into a destination list. @param object Source shape list owner. @param destination Destination list. */
 void func_0020DF80(struct FieldClass151640* object, struct LibClass178DD0* destination);
 /** @brief Detach and delete an optional shape node. @param object Shape list owner. @param node Node to remove, or null. */
-void func_0020E090(struct FieldClass151640* object, struct FieldClass150070* node);
+void func_0020E090(struct FieldClass151640* object, struct FieldListObject* node);
 /** @brief Append the shape entry and bind an optional animation attachment. @param object Shape list owner. @param entry Entry to append. @return Created attachment, or null. */
 struct FieldClass151570* func_0020E0D0(struct FieldClass151640* object, struct FieldClass151620* entry);
 #ifdef __cplusplus

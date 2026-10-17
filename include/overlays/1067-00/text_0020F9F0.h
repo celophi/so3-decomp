@@ -41,13 +41,13 @@ typedef struct FieldState6C
 #include "overlays/1067-00/text_001DD3C0.h"
 
 /** Partial Field object with vtable D_151C00 in main data and four words for its release call. */
-class FieldClass151C00 : public FieldClass150070
+class FieldClass151C00 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass151C00();
     /** @brief Pass the four words to the Lib manager, then detach and delete this object. */
-    virtual void func_001DF360();
+    virtual void update();
     u32 unk14;
     u32 unk18;
     u32 unk1c;

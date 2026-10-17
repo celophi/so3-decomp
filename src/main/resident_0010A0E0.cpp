@@ -2,6 +2,16 @@
 #include "main/resident_0010A0E0.h"
 #include "main/resident_00101550.h"
 
+/**
+ * @brief Check whether the object release ring has no insertion slot available.
+ * @param queue Deferred release queues.
+ * @return True when the object ring is full, or false when it has space.
+ */
+static inline bool resident_object_release_ring_is_full(const ResidentReleaseQueues* queue)
+{
+    return queue->objects.read_index == queue->objects.write_index;
+}
+
 extern "C" {
 void func_00118880(void* object);
 void func_00114E00(void* value);
@@ -173,11 +183,6 @@ struct ResidentHeapBlock
     ResidentHeapBlock* free_previous;
     u32 tag;
 };
-
-static inline s32 resident_queue_unavailable(const ResidentObjectQueue* queue)
-{
-    return queue->read == queue->write;
-}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010A0E0);
 
@@ -585,7 +590,16 @@ void func_00113180(void* object)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00113190);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001132F0);
+/**
+ * @brief Resize a block, releasing and replacing it when it must grow.
+ *
+ * Growing a block does not preserve its contents.
+ *
+ * @param memory Resident heap allocation to resize.
+ * @param size Requested payload size in bytes.
+ * @return Allocation base, or null if a replacement cannot be allocated.
+ */
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_heap_resize);
 
 /** @brief Return a block to its heap, coalesce free neighbors, and restore the free-list links. @param memory Allocated payload pointer. */
 void resident_heap_release(void* memory)
@@ -1104,8 +1118,37 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011EA80)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011EC30);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011ECD0);
+/**
+ * @brief Release pending allocations, then destroy pending objects and flush the cache.
+ * @param queues Deferred release queues to drain.
+ */
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_drain_release_queues);
 
-/** @brief Submit an object to the resident ring queue. @param queue Queue receiver. @param object Object to submit; null succeeds without insertion. @return One on success, or zero when no slot is available. */
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_enqueue_object);
+/**
+ * @brief Queue an object for destruction by its virtual destructor.
+ * @param queue Deferred release queues.
+ * @param object Object to destroy later; null succeeds without insertion.
+ * @return One on success, or zero when the object ring is full.
+ */
+s32 resident_enqueue_object(ResidentReleaseQueues* queue, void* object)
+{
+    if (object == 0)
+    {
+        return 1;
+    }
+
+    if (resident_object_release_ring_is_full(queue))
+    {
+        return 0;
+    }
+
+    queue->objects.entries[queue->objects.write_index++] = object;
+
+    if (queue->objects.write_index >= 0x400)
+    {
+        queue->objects.write_index = 0;
+    }
+
+    return 1;
+}
 }

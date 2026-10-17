@@ -4,6 +4,7 @@
 #include "types.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/counted_list.h"
+#include "overlays/lib/render_channel.h"
 #include "overlays/lib/vector.h"
 
 /** Partial object with a busy flag that something else clears; the rest is unknown. */
@@ -64,6 +65,12 @@ public:
 
 extern "C"
 {
+    /**
+     * @brief Normalize the first three floating-point components in place.
+     * @param value At least three components with nonzero squared length.
+     */
+    void lib_normalize_vector3(float* value);
+
     /**
      * @brief Convert a quaternion by mapping each matrix row from (x, y, z) to (x, -z, y).
      * @param quaternion Source quaternion.
@@ -201,11 +208,14 @@ public:
      */
     virtual void func_003F4440(const void* matrix, void* context);
 
-    /** @brief Mark the matrix ready. */
-    virtual void func_004D0090();
+    /** @brief Mark the base transform's matrix state ready. */
+    virtual void update_transform_matrix();
 
-    /** @brief Return the transformation matrix. @return Matrix pointer, or null in the base implementation. */
-    virtual const LibMatrix44Value* func_004D00A0();
+    /**
+     * @brief Read the stored transformation matrix without updating it.
+     * @return Null in the base implementation.
+     */
+    virtual const LibMatrix44Value* get_transform_matrix();
 
     /**
      * @brief Copy the source transformation state.
@@ -223,7 +233,8 @@ public:
     virtual void func_003EEE60();
 
     u8 unk60;
-    u8 unk61;
+    /** Nonzero when callers can reuse the cached matrix without an update. */
+    u8 matrix_ready;
     u8 unk62;
     u8 unk63;
     /** Nonzero while the submitted packet awaits its DMA notification. */
@@ -265,8 +276,13 @@ public:
     /** @brief Remove a registered node and clear its pending buffer entries. @param object Node to remove. */
     virtual void remove_node(void* object);
 
-    /** @brief Lib virtual slot 6. */
-    virtual void func_004D6730();
+    /**
+     * @brief Run update handlers for registered nodes in list-kind order.
+     *
+     * Snapshot the list chain, skip null or detached nodes, and honor each
+     * node's update flags. Derived lists can choose their own update order.
+     */
+    virtual void update_nodes();
 
     /** @brief Register and append a node. @param object Node to append. @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind. */
     virtual void append_node(void* object, s32 kind);
@@ -362,56 +378,150 @@ public:
     u8 unk96[2];
 };
 
-/** Partial Lib class used as a member object, with vtable D_178EA0 in main data. */
-class LibClass178EA0 : public LibClass178A90
+/** Transform with local vectors, a cached matrix, and a parent link. */
+class LibTransform : public LibClass178A90
 {
 public:
     /** @brief Initialize the object and its transform state. */
-    LibClass178EA0();
+    LibTransform();
 
     /** @brief Destroy the object. */
-    virtual ~LibClass178EA0();
+    virtual ~LibTransform();
 
-    /** @brief Return the first local transform vector. @return Vector at offset 0x1D0. */
-    virtual const LibVector4* func_003F4520() const;
-    /** @brief Return the second local transform vector. @return Vector at offset 0x1E0. */
-    virtual const LibVector4* func_003F4530() const;
-    /** @brief Return the third local transform vector. @return Vector at offset 0x1F0. */
-    virtual const LibVector4* func_003F4540() const;
-    /** @brief Copy transform state from another receiver. @param source Transform to copy. */
-    virtual void func_004D9F40(const LibClass178EA0* source);
+    /**
+     * @brief Read the additional local translation.
+     * @return Stored translation vector; only xyz is used to build the offset matrix.
+     */
+    virtual const LibVector4* get_offset_translation() const;
+
+    /**
+     * @brief Read the additional local rotation.
+     * @return Stored quaternion in x, y, z, w order.
+     */
+    virtual const LibVector4* get_offset_rotation() const;
+
+    /**
+     * @brief Read the additional local scale.
+     * @return Stored scale vector; only xyz is used to build the offset matrix.
+     */
+    virtual const LibVector4* get_offset_scale() const;
+
+    /**
+     * @brief Copy local transform state and its inherited state.
+     * @param source Transform to copy.
+     */
+    virtual void copy_transform_state(const LibTransform* source);
     /** @brief Update transform state relative to the current camera. */
     virtual void func_003EEBD0();
-    /** @brief Update the object transformation matrix. */
-    virtual void func_004D0090();
-    /** @brief Return the object transformation matrix. @return Transformation matrix. */
-    virtual const LibMatrix44Value* func_004D00A0();
+    /** @brief Update the cached transformation matrices. */
+    virtual void update_transform_matrix();
+    /**
+     * @brief Read the cached combined transformation matrix.
+     * @return Pointer to the stored matrix; this call does not update it.
+     */
+    virtual const LibMatrix44Value* get_transform_matrix();
     LibMatrix44Value transform;
-    u8 unkd0[0x100];
-    LibVector4 unk1d0;
-    LibVector4 unk1e0;
-    LibVector4 unk1f0;
+    /** Transform composed from the inherited components and the parent. */
+    LibMatrix44Value base_transform;
+
+    /** Additional local transform composed with the base transform. */
+    LibMatrix44Value offset_transform;
+
+    u8 unk150[0x80];
+
+    LibVector4 offset_translation;
+
+    /** Quaternion used to build the offset transform. */
+    LibVector4 offset_rotation;
+
+    LibVector4 offset_scale;
     float unk200;
     u8 unk204[4];
-    LibClass178EA0* unk208;
+    /** Parent used when updating the matrix and invalidating the transform chain. */
+    LibTransform* parent_transform;
     u16 unk20c;
     u8 unk20e[2];
+};
+
+class LibResourceBuffer;
+struct LibRenderDataRecord;
+struct LibImageSequenceHeader;
+
+/** Image-sequence channel backed by linked FIS chunks. */
+class LibImageSequenceChannel : public LibRenderChannel
+{
+public:
+    /** @brief Initialize an empty image-sequence channel. */
+    LibImageSequenceChannel();
+
+    /** @brief Release the image-pointer table and destroy the channel base. */
+    virtual ~LibImageSequenceChannel();
+
+    /**
+     * @brief Select the image for the stored frame position.
+     *
+     * The sequence duration must be nonzero and covered by its frame durations.
+     */
+    virtual void update();
+
+    /**
+     * @brief Report the stored sequence's image count.
+     * @return Image count, or zero when no sequence header is stored.
+     */
+    virtual s32 get_entry_count();
+
+    /**
+     * @brief Read an indexed image pointer.
+     * @param index Caller-validated image index.
+     * @return Image pointer at index.
+     */
+    virtual void* get_entry(s32 index);
+
+    /**
+     * @brief Bind a resource record and build its image-pointer table.
+     *
+     * Offsets are relative to the first image chunk in the chain.
+     * Rebinding does not release an older entry table.
+     * @param record Resource record containing inline or resolved image chunks.
+     * @param use_inline True to select inline chunks even when a data pointer is set.
+     * @return True when a sequence is found and its pointer table is allocated.
+     */
+    bool bind_record(LibRenderDataRecord* record, bool use_inline);
+
+    /**
+     * @brief Bind the selected record from the source resource.
+     * @return True when no record is bound or binding succeeds; false for a missing resource or failed binding.
+     */
+    bool load_resource();
+
+    s32 frame;
+
+    LibRenderDataRecord* target;
+
+    void** entries;
+
+    const LibImageSequenceHeader* sequence;
+
+    LibResourceBuffer* resource;
 };
 
 /** @brief Copy a complete local vector. @param output Destination vector. @param input Source vector. */
 extern "C" void func_004DA040(LibVector4* output, const LibVector4* input);
 /** @brief Return the transform's 16-bit state value. @param object Transform owner. @return Stored state value. */
-extern "C" u16 func_004DA2B0(const LibClass178EA0* object);
+extern "C" u16 func_004DA2B0(const LibTransform* object);
 
 /** @brief Extract the transform's translation column. @param object Transform owner. @return Translation coordinates with homogeneous component one. */
-extern "C" FieldVec4B func_004DA6F0(const LibClass178EA0* object);
+extern "C" FieldVec4B func_004DA6F0(const LibTransform* object);
 /** @brief Store the local scalar and update its threshold flag. @param object Transform receiver. @param value Local scalar value. */
-extern "C" void func_004DA050(LibClass178EA0* object, float value);
-/** @brief Update the local transformation matrix. @param object Transform receiver. */
-extern "C" void func_004DAB50(LibClass178EA0* object);
+extern "C" void func_004DA050(LibTransform* object, float value);
+/**
+ * @brief Rebuild the offset matrix from the stored translation, quaternion and scale.
+ * @param object Transform whose offset matrix is updated.
+ */
+extern "C" void lib_rebuild_offset_transform(LibTransform* object);
 
 /** @brief Mark each transform in the parent chain dirty. @param object First transform, or null. */
-extern "C" void lib_invalidate_transform_chain(LibClass178EA0* object);
+extern "C" void lib_invalidate_transform_chain(LibTransform* object);
 #endif
 
 #ifdef __cplusplus
@@ -543,13 +653,6 @@ s32 lib_compare_bounded_strings(const char* first, const char* second, s32 count
  */
 void func_004D6700(void* list, void* item);
 
-/**
- * @brief Return an entry from the pointer table at receiver offset 0x50.
- * @param object Receiver containing the pointer table.
- * @param index Entry index.
- * @return Selected table entry.
- */
-void* func_004D8870(const void* object, s32 index);
 
 
 /**
@@ -614,13 +717,6 @@ void* func_004D99A0(void* object);
  * @param object Object to wait on.
  */
 void func_004D99B0(LibBusyObject* object);
-
-/**
- * @brief Return the base transform's null matrix pointer.
- * @param object Transform receiver; unused.
- * @return Null.
- */
-const void* func_004D00A0(void* object);
 
 /**
  * @brief Return the fixed value 16.

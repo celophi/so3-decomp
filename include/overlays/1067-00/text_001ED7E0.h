@@ -7,73 +7,102 @@
 #include "overlays/1067-00/text_001E6C50.h"
 #include "main/resident_0010A0E0.h"
 
-class FieldClass152210;
+class FieldSceneResourceRequest;
 
-/** Partial common loader prefix observed through byte 0x30. */
-class FieldClass150700 : public FieldClass150010, public FieldClass1DD400
+/** Common scene-resource loader with request slots and a completion callback. */
+class FieldSceneResourceLoader : public FieldResourceLoadTask, public FieldClass1DD400
 {
 public:
     /** @brief Initialize the common resource-loader state. */
-    FieldClass150700()
+    FieldSceneResourceLoader()
     {
         unk2c = 0x80;
-        unk24 = 0;
+        request_capacity = 0;
         unk28 = 0x34BC0;
-        unk1c = 0;
-        unk30_1 = 0;
+        requests = 0;
+        callback_ready = 0;
         unk30_0 = 0;
-        func_001F2DE0();
+        reset_requests();
     }
 
     /** @brief Test whether the request callback is ready. @return True when ready. */
     bool request_ready() const
     {
-        return unk30_1;
+        return callback_ready;
     }
+
     /** @brief Destroy the common resource-loader state. */
-    virtual ~FieldClass150700();
-    /** @brief Handle the loader request. @param request Request value. */
-    virtual void func_001E0A50(s32 request);
-    /** @brief Query pending-record progress. @return Progress value. */
-    virtual s32 func_001E07A0();
-    /** @brief Submit record requests or detach the loader. @return One after detaching, otherwise zero. */
-    virtual s32 func_001DF640();
-    /** @brief Run the loader callback. */
-    virtual void func_001F8CB0();
-    /** @brief Run the loader callback. */
-    virtual void func_001F98E0();
-    /** @brief Reset the retained loader records and flags. */
-    virtual void func_001F2DE0();
-    /** @brief Release each counted record. */
-    virtual void func_001F9050();
+    virtual ~FieldSceneResourceLoader();
+
+    /** @brief Advance reads or handle cancellation. @param cancel_request One requests cancellation; zero advances reads. */
+    virtual void update_requests(s32 cancel_request);
+
+    /**
+     * @brief Poll cancellation and release request buffers once reads finish.
+     * @return One if a buffer was present before cleanup, two if a buffer remains pending, otherwise zero.
+     */
+    virtual s32 poll_request_release();
+
+    /**
+     * @brief Cancel pending reads or queue the loader for removal, according to its state.
+     * @return One after queuing the loader for removal, otherwise zero.
+     */
+    virtual s32 request_removal();
+
+    /** @brief Start a read for the current request when it has a buffer. */
+    virtual void start_current_read();
+
+    /** @brief Consume completion, skip available requests, and select the next request. */
+    virtual void advance_requests();
+
+    /**
+     * @brief Reset request slots, counts, and the completion callback.
+     * Existing buffer addresses are cleared without freeing their storage.
+     */
+    virtual void reset_requests();
+
+    /** @brief Release resources in every allocated request slot. */
+    virtual void release_requests();
+
     /** @brief Mark the pending request ready. @param arg Unused callback argument. */
     virtual void func_001DDB30(void* arg);
 
-    FieldClass152210* unk1c;
-    FieldClass1DD400* unk20;
-    s32 unk24;
+    FieldSceneResourceRequest* requests;
+
+    FieldClass1DD400* completion_callback;
+
+    s32 request_capacity;
+
     s32 unk28;
+
     u8 unk2c;
-    u8 unk2d;
-    u8 unk2e;
+
+    u8 request_count;
+
+    u8 current_request;
+
     u8 unk2f;
+
     u8 unk30_0 : 1;
-    u8 unk30_1 : 1;
+
+    u8 callback_ready : 1;
+
     u8 unk30_2_7 : 6;
 };
 
-/** Lib-heap loader wrapper; its constructor adds only the two vtable stores. */
-class FieldClass150750 : public FieldClass150700
+/** Scene-resource loader with allocation and release through the Lib heap. */
+class FieldHeapSceneResourceLoader : public FieldSceneResourceLoader
 {
 public:
     /** @brief Initialize the inherited loader. */
-    inline FieldClass150750();
+    inline FieldHeapSceneResourceLoader();
 
     /** @brief Destroy the inherited loader. */
-    virtual ~FieldClass150750();
+    virtual ~FieldHeapSceneResourceLoader();
 
     /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
     static void* operator new(u32 size);
+
     /** @brief Release through the Lib heap. @param object Storage to release. */
     static void operator delete(void* object);
 };
@@ -180,7 +209,7 @@ public:
 
 
 /** Partial queue object with the native 1507A0 virtual interface. */
-class FieldClass1507A0 : public FieldClass150070
+class FieldClass1507A0 : public FieldListObject
 {
 public:
     /** @brief Clear the queue state word. */
@@ -211,12 +240,12 @@ public:
     /** @brief Unlink and add this object to the resident queue. */
     virtual void func_001DD7B0();
     /** @brief Process the resident entries. */
-    virtual void func_001DF360();
+    virtual void update();
     float unk1c;
 };
 
 /** Small callback object storing three byte flags and a word. */
-class FieldClass150630 : public FieldClass150070
+class FieldClass150630 : public FieldListObject
 {
 public:
     /** @brief Allocate from the Lib heap. @param size Allocation size. @return Allocated storage or null. */
@@ -225,12 +254,15 @@ public:
     static void operator delete(void* object);
     /** @brief Destroy the callback object. */
     virtual ~FieldClass150630();
-    /** @brief Return the object kind. @return Sixteen. */
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
     /** @brief Unlink and release the object. */
     virtual void func_001DD7B0();
     /** @brief Invoke the packed-field callback and release this object. */
-    virtual void func_001DF360();
+    virtual void update();
     u8 unk14[4];
     u8 unk18;
     u8 unk19;
@@ -796,10 +828,11 @@ s32 func_001F23E0(FieldScriptCursorF32* cursor);
 s32 func_001F2420(FieldScriptCursorU32* cursor);
 
 /**
- * @brief Reset the records and related state fields.
- * @param state Record owner to reset.
+ * @brief Reset request slots, counts, and the completion callback.
+ * Existing buffer addresses are cleared without freeing their storage.
+ * @param state Loader view containing the allocated slots and their capacity.
  */
-void func_001F2DE0(FieldRecords* state);
+void field_reset_scene_resource_requests(FieldRecords* state);
 
 /**
  * @brief Return the fixed value one.
@@ -933,26 +966,26 @@ void* func_001F8C70(void* object);
 void* func_001F8C80(void* object);
 
 /**
- * @brief Invoke the first virtual method on each record.
- * @param object Record owner.
+ * @brief Release resources in every allocated request slot.
+ * @param object Loader view containing the request array and slot capacity.
  */
-void func_001F9050(FieldLateNodes* object);
+void field_release_scene_resource_requests(FieldLateNodes* object);
 
 /**
- * @brief Run an initialization helper once and set the guard bit.
- * @param object Receiver containing the guard bit.
+ * @brief Flush the cache once and mark the request callback ready.
+ * @param object Loader view containing the callback-ready flag.
  */
-void func_001F90D0(FieldLateFlag30* object);
+void field_mark_scene_resource_ready(FieldLateFlag30* object);
 
 #ifdef __cplusplus
 /**
  * @brief Allocate a 128-byte-aligned buffer, retrying after other loaders release storage.
- * @param owner Loader attached to the resource list.
+ * @param loader Loader attached to the resource list.
  * @param size Requested buffer size in bytes.
  * @param mode Nonzero for the library allocator, zero for the resident allocator.
- * @return Allocated buffer, or null when allocation or recovery fails.
+ * @return Allocated buffer, or null when allocation or recovery fails after at most eight attempts.
  */
-void* func_001F9A80(class FieldClass150070* owner, u32 size, s32 mode);
+void* field_allocate_scene_buffer(class FieldListObject* loader, u32 size, s32 mode);
 #endif
 
 #ifdef __cplusplus

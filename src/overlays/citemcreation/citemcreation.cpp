@@ -943,8 +943,8 @@ s32 AssignInventorDialog::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, panel);
     u16 resource_index = unkc4 + 20;
     unkac = new (0) ItemCreationOptionResourceDisplay;
-    void* payload = func_002D3D80(D_001B643C->unk20, (u8)resource_index);
-    FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 81);
+    void* payload = field_get_aligned_allocation(D_001B643C->unk20, (u8)resource_index);
+    FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 81);
     unkac->unkcc = payload;
     unkac->unkd0 = resource_index;
     unkac->func_002D6440(record, 18.5f, 18.5f);
@@ -1088,8 +1088,8 @@ void func_00349DE0(WorkshopInventorStrip* object, u32 workshop_id)
         }
         for (s32 index = 0; index < 6; index++)
         {
-            void* allocation = func_002D3D80(D_001B643C->unk20, 0);
-            FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 16);
+            void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
+            FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 16);
             reset_display_scale(object->inventor_portraits[index]);
             object->inventor_portraits[index]->func_002D5CF0(allocation, record, 0);
         }
@@ -1099,8 +1099,8 @@ void func_00349DE0(WorkshopInventorStrip* object, u32 workshop_id)
             if (raw_portrait_index != 0)
             {
                 u8 portrait_index = raw_portrait_index;
-                void* allocation = func_002D3D80(D_001B643C->unk20, portrait_index);
-                FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 81);
+                void* allocation = field_get_aligned_allocation(D_001B643C->unk20, portrait_index);
+                FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 81);
                 object->inventor_portraits[index]->unkd0 = portrait_index;
                 object->inventor_portraits[index]->func_002D5CF0(allocation, record, 0);
                 object->inventor_portraits[index]->unk3f = 1;
@@ -2285,23 +2285,23 @@ void func_0034D340(TransferInventorStrip* object)
             FieldResourceRecord* record;
             if (list == 2 && (status < 2 || selected == object->unka9))
             {
-                allocation = func_002D3D80(D_001B643C->unk20, 0);
-                record = func_002D3CC0(D_001B643C->unk20, 16);
+                allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
+                record = field_find_resource_record(D_001B643C->unk20, 16);
             }
             else
             {
                 u8 value = transfer_inventor_option_code(object->unkc4, list, (u16)index);
                 if (value == 0)
                 {
-                    allocation = func_002D3D80(D_001B643C->unk20, 0);
-                    record = func_002D3CC0(D_001B643C->unk20, 16);
+                    allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
+                    record = field_find_resource_record(D_001B643C->unk20, 16);
                 }
                 else
                 {
                     u32 resource_index = inventor_resource_index(value);
                     slot = resource_index;
-                    allocation = func_002D3D80(D_001B643C->unk20, (u8)resource_index);
-                    record = func_002D3CC0(D_001B643C->unk20, 81);
+                    allocation = field_get_aligned_allocation(D_001B643C->unk20, (u8)resource_index);
+                    record = field_find_resource_record(D_001B643C->unk20, 81);
                 }
             }
             object->unkac[index]->unkd0 = slot;
@@ -2806,8 +2806,8 @@ void ItemCreationClass185A60::func_slotf8(u16 direction)
 extern "C" s32 func_0034FA70(ItemCreationClass185A60* object)
 {
     func_00369510(&object->unkdc);
-    void* allocation = func_002D3D80(D_001B643C->unk20, 13);
-    FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 2);
+    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 13);
+    FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 2);
     if (allocation != 0 && record != 0)
     {
         ItemCreationOptionResourceDisplay* const display = new (0) ItemCreationOptionResourceDisplay;
@@ -2820,7 +2820,7 @@ extern "C" s32 func_0034FA70(ItemCreationClass185A60* object)
         display->unk34 = 3;
         lib_container_attach_widget(object->unk10, display);
     }
-    allocation = func_002D3D80(D_001B643C->unk20, 0);
+    allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
     for (s32 index = 0; index < 12; index++)
     {
         ItemCreationOptionResourceDisplay* const display = new (0) ItemCreationOptionResourceDisplay;
@@ -2832,11 +2832,11 @@ extern "C" s32 func_0034FA70(ItemCreationClass185A60* object)
         case 1:
         case 2:
         case 5:
-            record = func_002D3CC0(D_001B643C->unk20, 42);
+            record = field_find_resource_record(D_001B643C->unk20, 42);
             break;
         case 3:
         case 4:
-            record = func_002D3CC0(D_001B643C->unk20, 43);
+            record = field_find_resource_record(D_001B643C->unk20, 43);
             break;
         case 6:
         case 7:
@@ -2845,7 +2845,7 @@ extern "C" s32 func_0034FA70(ItemCreationClass185A60* object)
         case 10:
         case 11:
         case 12:
-            record = func_002D3CC0(D_001B643C->unk20, 44);
+            record = field_find_resource_record(D_001B643C->unk20, 44);
             break;
         }
         display->unkcc = allocation;
@@ -3423,13 +3423,13 @@ s32 WorkshopInventorStrip::func_slotf4(u32 associated)
         func_420D20(frame, 0x808050);
         lib_container_attach_widget(unk10, frame);
     }
-    void* payload = func_002D3D80(D_001B643C->unk20, 0);
+    void* payload = field_get_aligned_allocation(D_001B643C->unk20, 0);
     float x = 0.0f;
     for (s32 index = 0; index < 6; index++)
     {
         x += 8.0f;
         ItemCreationOptionResourceDisplay* display = new (0) ItemCreationOptionResourceDisplay;
-        FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 16);
+        FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 16);
         display->unkcc = payload;
         display->unkd0 = 0;
         display->func_002D6440(record, x + 64.0f * (index % 6), 8.0f);
@@ -5005,8 +5005,8 @@ void func_00356160(ItemCreationNineResourceView* object)
         if (value != 0)
         {
             resource = (u8)inventor_resource_index(value);
-            allocation = func_002D3D80(D_001B643C->unk20, resource);
-            record = func_002D3CC0(D_001B643C->unk20, 0x51);
+            allocation = field_get_aligned_allocation(D_001B643C->unk20, resource);
+            record = field_find_resource_record(D_001B643C->unk20, 0x51);
             object->unkdc[index]->func_002D5CF0(allocation, record, resource);
             object->unkdc[index]->unk3f = 1;
             object->unk109++;
@@ -5345,19 +5345,19 @@ extern "C" void func_003568F0(ItemCreationClass186770* object, u8 index, u8 mode
         switch (mode)
         {
         case 0:
-            record = func_002D3CC0(D_001B643C->unk20, 0x51);
+            record = field_find_resource_record(D_001B643C->unk20, 0x51);
             break;
         case 1:
-            record = func_002D3CC0(D_001B643C->unk20, 0x50);
+            record = field_find_resource_record(D_001B643C->unk20, 0x50);
             break;
         case 2:
-            record = func_002D3CC0(D_001B643C->unk20, 0x4F);
+            record = field_find_resource_record(D_001B643C->unk20, 0x4F);
             break;
         case 3:
-            record = func_002D3CC0(D_001B643C->unk20, 0x52);
+            record = field_find_resource_record(D_001B643C->unk20, 0x52);
             break;
         }
-        allocation = func_002D3D80(D_001B643C->unk20, resource);
+        allocation = field_get_aligned_allocation(D_001B643C->unk20, resource);
         object->unkdc[index]->func_002D5CF0(allocation, record, resource);
     }
 }
@@ -5770,15 +5770,15 @@ s32 ItemCreationClass186770::func_slotf4(u32 associated)
         FieldResourceRecord* record;
         if (code == 0)
         {
-            allocation = func_002D3D80(D_001B643C->unk20, 0);
-            record = func_002D3CC0(D_001B643C->unk20, 0x20);
+            allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
+            record = field_find_resource_record(D_001B643C->unk20, 0x20);
             slot = 0;
         }
         else
         {
             slot = (u8)inventor_resource_index(code);
-            allocation = func_002D3D80(D_001B643C->unk20, slot);
-            record = func_002D3CC0(D_001B643C->unk20, 0x51);
+            allocation = field_get_aligned_allocation(D_001B643C->unk20, slot);
+            record = field_find_resource_record(D_001B643C->unk20, 0x51);
             unk109++;
             unk170[index / 3] = 1;
         }
@@ -5797,7 +5797,7 @@ s32 ItemCreationClass186770::func_slotf4(u32 associated)
         lib_container_attach_widget(unk10, display);
         unkdc[index] = display;
     }
-    allocation = func_002D3D80(D_001B643C->unk20, 0);
+    allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
     for (s32 row = 0; row < 3; row++)
     {
         float y1 = 3.0f + rows[row];
@@ -5810,16 +5810,16 @@ s32 ItemCreationClass186770::func_slotf4(u32 associated)
             switch (column)
             {
             case 0:
-                display->func_002D6440(func_002D3CC0(D_001B643C->unk20, 0x53), 4.0f, y1);
+                display->func_002D6440(field_find_resource_record(D_001B643C->unk20, 0x53), 4.0f, y1);
                 break;
             case 1:
-                display->func_002D6440(func_002D3CC0(D_001B643C->unk20, 0x54), 4.0f, y2);
+                display->func_002D6440(field_find_resource_record(D_001B643C->unk20, 0x54), 4.0f, y2);
                 break;
             case 2:
-                display->func_002D6440(func_002D3CC0(D_001B643C->unk20, 0x55), 187.0f, y1);
+                display->func_002D6440(field_find_resource_record(D_001B643C->unk20, 0x55), 187.0f, y1);
                 break;
             case 3:
-                display->func_002D6440(func_002D3CC0(D_001B643C->unk20, 0x56), 187.0f, y2);
+                display->func_002D6440(field_find_resource_record(D_001B643C->unk20, 0x56), 187.0f, y2);
                 break;
             }
             display->unk50.unk34 = 2.0f;
@@ -6051,13 +6051,13 @@ s32 TransferInventorStrip::func_slotf4(u32 associated)
         }
         lib_container_attach_widget(unk10, frame);
     }
-    void* allocation = func_002D3D80(D_001B643C->unk20, 0);
+    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
     float offset = 0.0f;
     for (s32 index = 0; index < 6; index++)
     {
         offset += 8.0f;
         ItemCreationOptionResourceDisplay* resource = new (0) ItemCreationOptionResourceDisplay;
-        FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 16);
+        FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 16);
         resource->unkcc = allocation;
         resource->unkd0 = 0;
         resource->func_002D6440(record, offset + 64.0f * (index % 6), 8.0f);
@@ -6455,9 +6455,9 @@ s32 PendingInventorSummary::func_slotf4(u32 associated)
         func_420D20(frame, 0x505080);
         lib_container_attach_widget(unk10, frame);
     }
-    void* allocation = func_002D3D80(D_001B643C->unk20, (u8)(unkb8 + 20));
+    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, (u8)(unkb8 + 20));
     ItemCreationOptionResourceDisplay* display = new (0) ItemCreationOptionResourceDisplay;
-    FieldResourceRecord* resource_record = func_002D3CC0(D_001B643C->unk20, 0x51);
+    FieldResourceRecord* resource_record = field_find_resource_record(D_001B643C->unk20, 0x51);
     display->unkcc = allocation;
     display->unkd0 = 0;
     display->unk50.unk34 = 1.0f;
@@ -6578,8 +6578,8 @@ void InventorInformationWindow::func_00358850()
     }
     FieldRecordSelection* selection = selection_state->record_selection;
     u32 resource = (u8)inventor_resource_index(inventor_option_code);
-    void* allocation = func_002D3D80(D_001B643C->unk20, resource);
-    FieldResourceRecord* source = func_002D3CC0(D_001B643C->unk20, 81);
+    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, resource);
+    FieldResourceRecord* source = field_find_resource_record(D_001B643C->unk20, 81);
     portrait_display->func_002D5CF0(allocation, source, resource);
     portrait_display->unk3d = 1;
     if ((u8)resource > 59)
@@ -6632,8 +6632,8 @@ s32 InventorInformationWindow::func_slotf4(u32 associated)
     heading->init_resource_rectangle(134.0f, 8.0f, 0.0f, 0.0f, (s32)associated, 0x15FA3, 0);
     heading->set_scale(0.9f, 0.9f);
     lib_container_attach_widget(unk10, heading);
-    void* allocation = func_002D3D80(D_001B643C->unk20, 49);
-    FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 81);
+    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 49);
+    FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 81);
     portrait_display = new (0) ItemCreationOptionResourceDisplay;
     portrait_display->unkcc = allocation;
     portrait_display->unkd0 = 49;
@@ -6807,10 +6807,10 @@ s32 ItemCreationControlHelp::func_slotf4(u32 associated)
     unkbc->init_resource_rectangle(40.0f, 68.0f, 0.0f, 0.0f, (s32)associated, 0x32E0, 0);
     unkc8->init_resource_rectangle(8.0f, 90.0f, 0.0f, 0.0f, (s32)associated, 0x32DC, 0);
     unkc4->init_resource_rectangle(40.0f, 94.0f, 0.0f, 0.0f, (s32)associated, 0x32E1, 0);
-    void* data = func_002D3D80(D_001B643C->unk20, 0);
+    void* data = field_get_aligned_allocation(D_001B643C->unk20, 0);
     unkcc->unkcc = data;
     unkcc->unkd0 = 0;
-    unkcc->func_002D6440(func_002D3CC0(D_001B643C->unk20, 25), 5.0f, 126.0f);
+    unkcc->func_002D6440(field_find_resource_record(D_001B643C->unk20, 25), 5.0f, 126.0f);
     {
         u32 value = checked_fol(D_001B6430->unk04);
         unkd0->init_numeric_resource_rectangle(32.0f, 126.0f, 126.0f, 24.0f, value, (s32)associated, 0);
@@ -6818,7 +6818,7 @@ s32 ItemCreationControlHelp::func_slotf4(u32 associated)
     }
     unkd4->unkcc = data;
     unkd4->unkd0 = 0;
-    unkd4->func_002D6440(func_002D3CC0(D_001B643C->unk20, 25), 5.0f, 140.0f);
+    unkd4->func_002D6440(field_find_resource_record(D_001B643C->unk20, 25), 5.0f, 140.0f);
     {
         u32 value = checked_fol(D_001B6430->unk04);
         unkd8->init_numeric_resource_rectangle(32.0f, 140.0f, 126.0f, 24.0f, value, (s32)associated, 0);
@@ -7313,8 +7313,8 @@ void InventoryItemInstanceList::refresh_rows(s32 start)
             display->unkfc = category;
             display->unkfe = value;
             display->unk3c = 1;
-            void* allocation = func_002D3D80(D_001B643C->unk20, 14);
-            FieldResourceRecord* resource = func_002D3CC0(D_001B643C->unk20, count + 60);
+            void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 14);
+            FieldResourceRecord* resource = field_find_resource_record(D_001B643C->unk20, count + 60);
             unk150[row]->func_002D5CF0(allocation, resource, 14);
             unk138[row]->unk3d = 1;
             unk150[row]->unk3d = 1;
@@ -7347,10 +7347,10 @@ s32 InventoryItemInstanceList::func_slot104(u32 associated)
     ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
     lib_scissor_init_rectangle(frame, 16.0f, 16.0f, 600.0f, 140.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, frame);
-    void* allocation = func_002D3D80(D_001B643C->unk20, 14);
+    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 14);
     for (s32 index = 0; index < 6; index++)
     {
-        FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 60);
+        FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 60);
         unk150[index] = new (0) ItemCreationOptionResourceDisplay;
         unk150[index]->unkcc = allocation;
         unk150[index]->unkd0 = 14;
@@ -8570,8 +8570,8 @@ s32 PlanItemGroupWindow::func_slotf4(u32 associated)
         lib_container_attach_widget(unk10, unkc8[index]);
         func_0036F1A0(&unk2c, unkc8[index]);
         unke0[index] = new (0) ItemCreationOptionResourceDisplay;
-        void* allocation = func_002D3D80(D_001B643C->unk20, 14);
-        FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, index + 50);
+        void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 14);
+        FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, index + 50);
         unke0[index]->unkcc = allocation;
         unke0[index]->unkd0 = 14;
         unke0[index]->func_002D6440(record, 16.0f, y);
@@ -9644,8 +9644,8 @@ void func_003614B0(AssignedInventorGrid* object)
         if (inventor_option_code != 0)
         {
             portrait_index = (u8)inventor_resource_index(inventor_option_code);
-            allocation = func_002D3D80(D_001B643C->unk20, portrait_index);
-            record = func_002D3CC0(D_001B643C->unk20, 0x51);
+            allocation = field_get_aligned_allocation(D_001B643C->unk20, portrait_index);
+            record = field_find_resource_record(D_001B643C->unk20, 0x51);
             object->unk13c[slot_index]->func_002D5CF0(allocation, record, portrait_index);
             object->unk13c[slot_index]->unk3f = 1;
             object->unk190++;
@@ -10461,8 +10461,8 @@ s32 AssignedInventorGrid::func_slotf4(u32 associated)
         lib_container_attach_widget(this->unk10, this->unk1dc[row]);
     }
 
-    void* allocation = func_002D3D80(D_001B643C->unk20, 0);
-    FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 45);
+    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
+    FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 45);
 
     for (s32 index = 0; index < 9; index++)
     {
@@ -10498,16 +10498,16 @@ s32 AssignedInventorGrid::func_slotf4(u32 associated)
             switch (column)
             {
             case 0:
-                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 83), 230.0f, top);
+                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 83), 230.0f, top);
                 break;
             case 1:
-                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 84), 230.0f, bottom);
+                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 84), 230.0f, bottom);
                 break;
             case 2:
-                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 85), 259.0f, top);
+                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 85), 259.0f, top);
                 break;
             case 3:
-                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 86), 259.0f, bottom);
+                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 86), 259.0f, bottom);
                 break;
             }
 
@@ -10535,16 +10535,16 @@ s32 AssignedInventorGrid::func_slotf4(u32 associated)
             switch (column)
             {
             case 0:
-                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 83), 302.0f, top);
+                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 83), 302.0f, top);
                 break;
             case 1:
-                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 84), 302.0f, bottom);
+                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 84), 302.0f, bottom);
                 break;
             case 2:
-                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 85), 450.0f, top);
+                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 85), 450.0f, top);
                 break;
             case 3:
-                image->func_002D6440(func_002D3CC0(D_001B643C->unk20, 86), 450.0f, bottom);
+                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 86), 450.0f, bottom);
                 break;
             }
 
@@ -10569,15 +10569,15 @@ s32 AssignedInventorGrid::func_slotf4(u32 associated)
 
         if (code == 0)
         {
-            data = func_002D3D80(D_001B643C->unk20, 0);
-            resource = func_002D3CC0(D_001B643C->unk20, 32);
+            data = field_get_aligned_allocation(D_001B643C->unk20, 0);
+            resource = field_find_resource_record(D_001B643C->unk20, 32);
             kind = 0;
         }
         else
         {
             kind = (u8)inventor_resource_index(code);
-            data = func_002D3D80(D_001B643C->unk20, kind);
-            resource = func_002D3CC0(D_001B643C->unk20, 81);
+            data = field_get_aligned_allocation(D_001B643C->unk20, kind);
+            resource = field_find_resource_record(D_001B643C->unk20, 81);
             this->unk190++;
         }
 
@@ -11211,8 +11211,8 @@ void func_00364D20(AvailableInventorGrid* object)
         if (inventor_option_code != 0)
         {
             portrait_index = (u8)inventor_resource_index(inventor_option_code);
-            allocation = func_002D3D80(D_001B643C->unk20, portrait_index);
-            record = func_002D3CC0(D_001B643C->unk20, 0x51);
+            allocation = field_get_aligned_allocation(D_001B643C->unk20, portrait_index);
+            record = field_find_resource_record(D_001B643C->unk20, 0x51);
             object->unkf0[slot_index]->func_002D5CF0(allocation, record, portrait_index);
             object->unkf0[slot_index]->unk3f = 1;
         }
@@ -11260,8 +11260,8 @@ s32 AvailableInventorGrid::func_slotf4(u32 associated)
     }
     float x = 6.0f;
     float y = 6.0f;
-    void* allocation = func_002D3D80(D_001B643C->unk20, 0);
-    FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 0x2D);
+    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
+    FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 0x2D);
     for (s32 index = 0; index < 14; index++)
     {
         ItemCreationOptionResourceDisplay* widget = new (0) ItemCreationOptionResourceDisplay;
@@ -11284,15 +11284,15 @@ s32 AvailableInventorGrid::func_slotf4(u32 associated)
         u8 value = this->unka8->available_inventor_option_codes[(u16)index];
         if (value == 0)
         {
-            allocation = func_002D3D80(D_001B643C->unk20, 0);
-            record = func_002D3CC0(D_001B643C->unk20, 0x20);
+            allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
+            record = field_find_resource_record(D_001B643C->unk20, 0x20);
             resource = 0;
         }
         else
         {
             resource = inventor_resource_index(value);
-            allocation = func_002D3D80(D_001B643C->unk20, resource);
-            record = func_002D3CC0(D_001B643C->unk20, 0x51);
+            allocation = field_get_aligned_allocation(D_001B643C->unk20, resource);
+            record = field_find_resource_record(D_001B643C->unk20, 0x51);
         }
         ItemCreationOptionResourceDisplay* widget = new (0) ItemCreationOptionResourceDisplay;
         widget->unkcc = allocation;
@@ -12037,8 +12037,8 @@ void func_00366F10(DevelopmentTeamsWindow* object)
                     if (value != 0)
                     {
                         resource = team_inventor_resource_index(value);
-                        void* allocation = func_002D3D80(D_001B643C->unk20, (u8)resource);
-                        FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 0x51);
+                        void* allocation = field_get_aligned_allocation(D_001B643C->unk20, (u8)resource);
+                        FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 0x51);
                         object->unkcc[slot]->unkd0 = resource;
                         object->unkcc[slot]->func_002D5CF0(allocation, record, 0);
                         object->unkcc[slot]->unk3f = 1;
@@ -12051,8 +12051,8 @@ void func_00366F10(DevelopmentTeamsWindow* object)
                     if (value != 0)
                     {
                         resource = team_inventor_resource_index(value);
-                        void* allocation = func_002D3D80(D_001B643C->unk20, (u8)resource);
-                        FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 0x51);
+                        void* allocation = field_get_aligned_allocation(D_001B643C->unk20, (u8)resource);
+                        FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 0x51);
                         object->unka8[index]->unkd0 = resource;
                         object->unka8[index]->func_002D5CF0(allocation, record, 0);
                         object->unka8[index]->unk3f = 1;
@@ -12109,8 +12109,8 @@ s32 DevelopmentTeamsWindow::func_slotf4(u32 associated)
     unk104[2] = new (0) FieldClass15B200(unk10, 1);
     func_002D5290(unk104[2], 0xBC, 0x18, &colors, 0.0f, rows[2], 230.0f, 72.0f);
     set_resource_scalar(unk104[2], 40.0f);
-    void* allocation = func_002D3D80(D_001B643C->unk20, 0);
-    FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 16);
+    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
+    FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 16);
     float inset = 10.0f;
     for (s32 index = 0; index < 9; index++)
     {
@@ -12183,8 +12183,8 @@ s32 DevelopmentTeamsWindow::func_slotf4(u32 associated)
     unk104[6] = new (0) FieldClass15B200(unk10, 1);
     func_002D5290(unk104[6], 0xBC, 0x18, &colors, 0.0f, 226.0f, 336.0f, 161.0f);
     set_resource_scalar(unk104[6], 40.0f);
-    allocation = func_002D3D80(D_001B643C->unk20, 0);
-    record = func_002D3CC0(D_001B643C->unk20, 16);
+    allocation = field_get_aligned_allocation(D_001B643C->unk20, 0);
+    record = field_find_resource_record(D_001B643C->unk20, 16);
     inset = 4.0f;
     s32 columns = 4;
     for (s32 index = 0; index < 14; index++)
@@ -12817,18 +12817,18 @@ s32 ItemCreationBackground::func_slotf4(u32 associated)
     left_display = new (0) ItemCreationOptionResourceDisplay;
     middle_display = new (0) ItemCreationOptionResourceDisplay;
     right_display = new (0) ItemCreationOptionResourceDisplay;
-    void* allocation = func_002D3D80(D_001B643C->unk20, 11);
+    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 11);
     left_display->unkcc = allocation;
     middle_display->unkcc = allocation;
     right_display->unkcc = allocation;
     left_display->unkd0 = 11;
     middle_display->unkd0 = 11;
     right_display->unkd0 = 11;
-    FieldResourceRecord* record = func_002D3CC0(D_001B643C->unk20, 5);
+    FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 5);
     left_display->func_002D6440(record, 0.0f, 0.0f);
-    record = func_002D3CC0(D_001B643C->unk20, 6);
+    record = field_find_resource_record(D_001B643C->unk20, 6);
     middle_display->func_002D6440(record, 256.0f, 0.0f);
-    record = func_002D3CC0(D_001B643C->unk20, 7);
+    record = field_find_resource_record(D_001B643C->unk20, 7);
     right_display->func_002D6440(record, 512.0f, 0.0f);
     ItemCreationOptionResourceDisplay* display = left_display;
     display->unk50.unk44 = 200.0f;
@@ -14780,7 +14780,7 @@ static inline void attach_animation(ItemCreationAnimationOwner* owner, void* att
 }
 
 /** @brief Advance display transitions and active target animation. */
-void ItemCreationSelectedDisplayState::func_001DF360()
+void ItemCreationSelectedDisplayState::update()
 {
     if (resource_window_release_pending)
     {
@@ -15865,8 +15865,11 @@ u8 ItemCreationSelectedDisplayState::func_00261D20()
     return window_setup_ready;
 }
 
-/** @brief Report the selected-display object kind. @return Object kind 4. */
-s32 ItemCreationSelectedDisplayState::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 4.
+ */
+s32 ItemCreationSelectedDisplayState::get_default_list_kind()
 {
     return 4;
 }

@@ -2,7 +2,6 @@
 #include "main/resident_001001E0.h"
 #include "main/resident_0010A0E0.h"
 
-extern void* D_001B6400;
 extern u8 D_001B6420;
 extern "C" void* __nw__FUi(u32 size);
 

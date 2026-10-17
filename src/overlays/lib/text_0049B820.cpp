@@ -1,3 +1,4 @@
+#include "overlays/lib/palette_blend_channel.h"
 #include "include_asm.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_0049B820.h"
@@ -5,8 +6,7 @@
 #include "main/resident_0010A0E0.h"
 
 extern "C" void func_004D00B0(void* object);
-extern "C" void func_0011ED90(void* queue, void* submission);
-extern "C" void* D_001B65F4;
+extern "C" ResidentReleaseQueues* D_001B65F4;
 
 /** Partial word-array owner with its native virtual pointer after the data fields. */
 class LibResourceBitset
@@ -20,7 +20,6 @@ public:
     /** @brief Release an owned word buffer. */
     virtual ~LibResourceBitset();
 };
-
 
 /**
  * @brief Add three components to a copied vector, preserving the fourth.
@@ -56,7 +55,6 @@ typedef struct FourQuadwordCopySourceOwnertext_0049B820
     u8 pad00[0x150];
     unsigned __int128 values150[4];
 } FourQuadwordCopySourceOwnertext_0049B820;
-
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049B820);
 
@@ -265,11 +263,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A36F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A37C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A39C0);
-
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3A30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3DD0);
+/** @brief Destroy the channel; its palette, source colors and indices are borrowed. */
+LibPaletteBlendChannel::~LibPaletteBlendChannel()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3E50);
 
@@ -316,9 +315,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A4710);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A4ED0);
 
-void* func_004A59C0(void* object, void* value)
+/**
+ * @brief Append the channel's packets to a packet chain.
+ * @param packet Current packet cursor.
+ * @return The packet cursor, unchanged by the base channel.
+ */
+void* LibRenderChannel::append_packets(void* packet)
 {
-    return value;
+    return packet;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A59D0);
@@ -327,11 +331,17 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A5E60);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A62D0);
 
-void func_004A6D00(void* object)
+/**
+ * @brief Default packet preparation that performs no work.
+ * @param owner Rendering object that owns the channel.
+ * @param program_address VU program entry point stored in the transfer commands.
+ */
+void LibRenderChannel::prepare_packets(LibTransform* owner, u32 program_address)
 {
 }
 
-void func_004A6D10(void* object)
+/** @brief Default channel update that performs no work. */
+void LibRenderChannel::update()
 {
 }
 
@@ -363,12 +373,21 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8450);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A85B0);
 
-s32 func_004A87F0(void* object)
+/**
+ * @brief Report the base channel's empty entry set.
+ * @return Zero.
+ */
+s32 LibRenderChannel::get_entry_count()
 {
     return 0;
 }
 
-s32 func_004A8800(void* object)
+/**
+ * @brief Provide the base channel's empty entry lookup.
+ * @param index Entry index; unused in the base channel.
+ * @return Null.
+ */
+void* LibRenderChannel::get_entry(s32 index)
 {
     return 0;
 }
@@ -419,7 +438,7 @@ void LibLodController::copy_state(const LibLodController* source)
         objects[index] = source->objects[index];
     }
     position_offset = source->position_offset;
-    LibClass178EA0::func_004D9F40(source);
+    LibTransform::copy_transform_state(source);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8B10);
@@ -490,14 +509,20 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A90E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9120);
 
-extern "C" void func_004A91F0(void* object)
+/**
+ * @brief Queue the object's receiver for deferred destruction.
+ * @param object Object containing the receiver at offset 0x14, or null.
+ */
+extern "C" void lib_queue_object_release(void* object)
 {
-    u8* submission = static_cast<u8*>(object);
+    u8* receiver = static_cast<u8*>(object);
+
     if (object != 0)
     {
-        submission += 0x14;
+        receiver += 0x14;
     }
-    func_0011ED90(D_001B65F4, submission);
+
+    resident_enqueue_object(D_001B65F4, receiver);
 }
 
 void func_004A9220(void* object)

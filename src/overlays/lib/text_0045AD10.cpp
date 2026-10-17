@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "main/func_0011EE00.h"
 #include "main/resident_data.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/text_0045AD10.h"
@@ -568,7 +569,7 @@ typedef struct LibResourceSlotOwner
     u8 pad00[0x14];
     LibManagedResourceSlot slots[16];
 } LibResourceSlotOwner;
-extern "C" s32 func_0011EE00(void* queue, void* object);
+
 /**
  * @brief Queue the slot allocation for release and deactivate the resource slot.
  * @param manager Owner of the sixteen resource slots.
@@ -581,7 +582,7 @@ extern "C" void lib_release_resource_slot(void* manager, s32 index)
     {
         if (slot->allocation)
         {
-            func_0011EE00(D_001B65F4, slot->allocation);
+            resident_queue_allocation_release(D_001B65F4, slot->allocation);
             slot->allocation = 0;
         }
         slot->active = 0;

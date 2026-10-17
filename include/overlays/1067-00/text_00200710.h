@@ -14,14 +14,17 @@ union FieldScriptStackWord
 };
 
 /** Script context base containing the stack, variable registers and command flags. */
-class FieldClass150DC0 : public FieldClass150070
+class FieldClass150DC0 : public FieldListObject
 {
 public:
     /** @brief Initialize the script base state. */
     FieldClass150DC0();
 
-    /** @brief Report the fixed script kind. @return One. */
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
 
     /** @brief Queue the script object for release. */
     virtual void func_001DD7B0();
@@ -62,7 +65,7 @@ public:
 
 struct FieldClass159010;
 struct ResidentContextObject64;
-struct FieldClass158EA0;
+struct FieldObjectSlotOwner;
 struct FieldClass154E90;
 struct FieldClass154CC0;
 struct FieldClass1505F0;
@@ -101,7 +104,8 @@ public:
 
     void* context58;
 
-    FieldClass158EA0* context60;
+    /** Slot owner retained for reuse by the active field context. */
+    FieldObjectSlotOwner* object_slots;
 
     ResidentContextObject64* context64;
 
@@ -198,12 +202,6 @@ void* func_00201EA0(FieldResourceList14* object, u32 kind, u32 key, s32 mode);
  */
 void func_00201560(void* object);
 
-/**
- * @brief Return the fixed value twelve.
- * @param object Receiver of the call.
- * @return Twelve.
- */
-s32 func_00202120(void* object);
 
 #ifdef __cplusplus
 }

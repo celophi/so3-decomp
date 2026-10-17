@@ -27,7 +27,7 @@ typedef struct FieldResourceDescriptor
 #include "overlays/lib/text_004BD360.h"
 
 /** 0x90-byte field list with its secondary list base at offset 0x14. */
-class FieldClass154CC0 : public FieldClass150070, public FieldClass1502A0
+class FieldClass154CC0 : public FieldListObject, public FieldClass1502A0
 {
 public:
     /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
@@ -47,14 +47,17 @@ public:
     /** @brief Destroy both list bases. */
     virtual ~FieldClass154CC0();
 
-    /** @brief Report the fixed list kind. @return Three. */
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
 
     /** @brief Detach this node and queue it for release. */
     virtual void func_001DD7B0();
 
     /** @brief Advance the list's objects when their update conditions hold. */
-    virtual void func_001DF360();
+    virtual void update();
 
     u8 unk8c[4];
 };
@@ -85,7 +88,6 @@ struct FieldRoot26FF70
 typedef struct FieldWords270E90 FieldWords270E90;
 typedef struct FieldState270EE0 FieldState270EE0;
 typedef struct FieldFlag272290 FieldFlag272290;
-typedef struct FieldState271750 FieldState271750;
 
 #ifdef __cplusplus
 extern "C" {
@@ -132,12 +134,6 @@ void func_00270EB0(FieldState270EE0* object, u32 flags);
  * @param flags Word stored at offset 0x1E0 and tested for bit 1.
  */
 void func_00270EE0(FieldState270EE0* object, u32 value, u32 flags);
-
-/**
- * @brief Set state 10 when the receiver reports category 1.
- * @param object Receiver to inspect and update.
- */
-void func_00271750(FieldState271750* object);
 
 /**
  * @brief Clear the low bit of the receiver's flag byte.
@@ -231,7 +227,7 @@ public:
      */
     virtual bool func_00204420();
     u8 unka0[0x38];
-    FieldClass150070* unkd8;
+    FieldListObject* unkd8;
 };
 #endif
 
@@ -239,35 +235,50 @@ public:
 #include "overlays/1067-00/text_001ED7E0.h"
 
 /** Field resource loader that restores retained requests. */
-class FieldClass154C70 : public FieldClass150750
+class FieldContextResourceLoader : public FieldHeapSceneResourceLoader
 {
 public:
     /** @brief Clear the retained resource selection and reset the loader. */
-    FieldClass154C70()
+    FieldContextResourceLoader()
     {
         resource_index = 0;
 
         unk40 = 0;
 
-        unk14 = 1;
+        load_kind = 1;
 
-        func_001F2DE0();
+        reset_requests();
     }
 
     /** @brief Notify the context callback and finish the loader requests. */
     void finish_requests();
 
-    virtual ~FieldClass154C70();
+    virtual ~FieldContextResourceLoader();
 
-    virtual void func_001E0A50(s32 request);
+    /**
+     * @brief Advance retained resource reads and handle cancellation or field-state changes.
+     * @param cancel_request One requests cancellation; zero advances loading.
+     */
+    virtual void update_requests(s32 cancel_request);
 
-    virtual s32 func_001E07A0();
+    /**
+     * @brief Release request buffers and delay the next read when cleanup found a buffer.
+     * @return One if a buffer was present before cleanup, two if a buffer remains pending, otherwise zero.
+     */
+    virtual s32 poll_request_release();
 
-    virtual void func_001F98E0();
+    /** @brief Consume completion and advance past requests already marked available. */
+    virtual void advance_requests();
 
-    virtual void func_001F2DE0();
+    /**
+     * @brief Reset request slots, counts, and auxiliary-file settings.
+     * Existing buffer addresses are cleared without freeing their storage.
+     */
+    virtual void reset_requests();
 
-    u8 unk34[0xC];
+    u8 unk34[8];
+
+    s32 start_delay;
 
     u32 unk40;
 
@@ -294,7 +305,7 @@ extern "C"
      * @param kind Resource kind stored in the request.
      * @return Appended request, or null when the request array is full.
      */
-    FieldClass152210* field_append_file_request(FieldClass154C70* loader, s32 file_key, s32 kind);
+    FieldSceneResourceRequest* field_append_file_request(FieldContextResourceLoader* loader, s32 file_key, s32 kind);
 
 }
 #endif

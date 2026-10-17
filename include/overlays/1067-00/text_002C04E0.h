@@ -1130,8 +1130,8 @@ float func_002CABA0(void* object);
 #endif
 
 #ifdef __cplusplus
-/** Partial FieldClass150070 object with vtable D_15A760 in main data. */
-class FieldClass15A760 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_15A760 in main data. */
+class FieldClass15A760 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -1205,7 +1205,7 @@ public:
     /** @brief Delete the child, then detach this object and queue it for release. */
     virtual void func_001DD7B0();
     u8 unk14[0x18];
-    FieldClass150070* unk2C;
+    FieldListObject* unk2C;
 };
 #endif
 

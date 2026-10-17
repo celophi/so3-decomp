@@ -84,7 +84,7 @@ segments:
       - [0x76E70, c, text_002541F0]
       - [0x78150, cpp, text_002554D0]
       - [0x7A3D0, c, text_00257750]
-      - [0x810A0, c, text_0025E420]
+      - [0x810A0, cpp, text_0025E420]
       - [0x83430, cpp, text_002607B0]
       - [0x86330, cpp, text_002636B0]
       - [0x910E0, c, text_0026E460]

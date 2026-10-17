@@ -12,7 +12,8 @@ public:
     /** @brief Destroy the object list and inherited script state. */
     virtual ~FieldClass151D40();
 
-    virtual void func_001DF360();
+    /** @brief Advance the registered script context. */
+    virtual void update();
 
     /** @brief Reset the script command state. */
     virtual void func_00217AD0();

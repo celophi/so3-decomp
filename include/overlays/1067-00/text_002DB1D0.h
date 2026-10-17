@@ -21,7 +21,7 @@ extern "C" {
  * @brief Detach this object and add it to the resident object queue.
  * @param object Object to detach and queue.
  */
-void func_002DB280(FieldClass150070* object);
+void func_002DB280(FieldListObject* object);
 
 /**
  * @brief Set bit zero of the byte at offset 0x60.
@@ -35,7 +35,7 @@ void func_002DBB50(FieldObjectDBB50* object);
  * @param object Callback receiver.
  * @return Always 5.
  */
-s32 func_002DB270(FieldClass150070* object);
+s32 func_002DB270(FieldListObject* object);
 #endif
 
 #ifdef __cplusplus

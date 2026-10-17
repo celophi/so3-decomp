@@ -8,15 +8,18 @@
 
 #ifdef __cplusplus
 /** Queued field object storing a channel index, float value and flags. */
-class FieldClass150F50 : public FieldClass150070
+class FieldClass150F50 : public FieldListObject
 {
 public:
     /** @brief Destroy the queued object. */
     virtual ~FieldClass150F50();
-    /** @brief Return the object kind. @return Five. */
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
     /** @brief Process the selected channel using the stored value and flags. */
-    virtual void func_001DF360();
+    virtual void update();
     s32 unk14;
     float unk18;
     u32 unk1c;
@@ -68,12 +71,6 @@ void func_00203500(void* object);
  */
 bool func_00203930(FieldState3BA* obj);
 
-/**
- * @brief Return the fixed value five.
- * @param object Receiver of the call.
- * @return Five.
- */
-s32 func_00203B10(void* object);
 
 /**
  * @brief Store a byte and set the related bit flag.
@@ -234,7 +231,7 @@ void func_00207400(FieldState634* object);
  * Derived classes set a type bit in unk78 (0x1 FieldClass151510, 0x2
  * FieldClass152430, 0x400 FieldClass153330, 0x20000 FieldClass15B090).
  */
-class FieldClass150F90 : public FieldClass150070
+class FieldClass150F90 : public FieldListObject
 {
 public:
     /** @brief Set the default vectors, clear the table pointers and flags, and set unk74 to -1 and unk90 to 3.0. */
@@ -244,16 +241,16 @@ public:
     virtual ~FieldClass150F90();
 
     /**
-     * @brief Report the fixed value 4 for this class.
-     * @return Always 4.
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
      */
-    virtual s32 func_001DF3D0();
+    virtual s32 get_default_list_kind();
 
     /** @brief Virtual handler slot 2. */
     virtual void func_001DD7B0();
 
     /** @brief Virtual handler slot 3. */
-    virtual void func_001DF360();
+    virtual void update();
 
     /** @brief Virtual handler slot 5. */
     virtual void func_00204210();

@@ -10,77 +10,82 @@
 #include "overlays/1067-00/field_class_1553b0.h"
 
 /**
- * Partial 0x7D8-byte FieldClass14FFB0 with vtable D_155640 in main data
- * (FieldClass1DD400 part at +0x2C). The field context keeps one instance at
- * offset 0x1C; it is created on first use and inserted into the context's
- * offset 0x30 list (FieldClass14FE30::func_001DF360, func_00258AC0).
+ * @brief Prepare the battle overlay, archive and selected resources while in the field.
+ *
+ * The field context owns one 0x7D8-byte preloader and lists it with the other
+ * resource loaders. Its 26 requests follow resource_plan; the first buffer
+ * holds resources 0xD7E and 0xD7F for the battle transition.
  */
-class FieldClass155640 : public FieldClass14FFB0
+class FieldBattleResourcePreloader : public FieldResourcePreloader
 {
 public:
-    /** @brief Reset the records and settings; the settings start unset (-1). */
-    FieldClass155640()
+    /** @brief Allocate 26 request records and initialize the preload state and selection sentinels. */
+    FieldBattleResourcePreloader()
     {
-        FieldClass14FFB0::func_001DEA80();
-        func_001DE8B0(0x1A);
-        unk7d6_0 = 0;
-        unk7d6_1 = 0;
-        unk14 = 2;
-        unk7d0 = 0;
+        FieldResourcePreloader::reset_requests();
+        allocate_requests(0x1A);
+        refresh_pending = 0;
+        include_optional_resource = 0;
+        load_kind = 2;
+        start_delay = 0;
         unk7c8 = -1;
         unk7cc = -1;
         unk7d5 = -1;
     }
 
     /** @brief Clear the field context's pointer to this object, then destroy it. */
-    virtual ~FieldClass155640();
+    virtual ~FieldBattleResourcePreloader();
 
     /**
-     * @brief Override of FieldClass14FFB0 slot 7.
-     * @param flag Value whose meaning is not yet known.
+     * @brief Start pending battle reads when the field state and available memory permit.
+     * @param flag One to request cancellation, zero to continue loading.
      */
-    virtual void func_001E0A50(s32 flag);
+    virtual void update_requests(s32 flag);
 
     /**
-     * @brief Advance to the next pending record, refilling the buffers first when requested.
+     * @brief Mark the current read complete and advance to the next pending request.
      *
-     * Does nothing unless bit 1 at offset 0x30 is set, and clears it afterwards.
-     * In state 1, and unless field_records_blocked() reports a block, toggles
-     * the current record's bits; if bit 0 at offset 0x7D6 is set, clears it and
-     * refills a temporary LibClass3F5B80 and the member at 0x34 from the
-     * settings and the field context's word at offset 0xD0. Then skips records
-     * that are finished, already handled or unused and sets state 0, or 5 when
-     * none remain.
+     * Waits for callback_ready and any field resource block to clear. A pending
+     * cancellation clears the request's completion flag. A pending refresh
+     * reconciles the records against the new selection before advancing.
      */
-    virtual void func_001E0F60();
+    virtual void advance_requests();
 
-    /** @brief Rebuild the records from the current settings. */
-    void func_00279B80();
+    /** @brief Rebuild the resource selection and cancel reads whose file keys changed. */
+    void rebuild_requests();
 
     /**
-     * @brief Rebuild the records from a filled LibClass3F5B80.
-     * @param source Filled object to read.
+     * @brief Reconcile request records with the supplied resource plan.
+     * @param source Plan whose file keys replace the current selection.
      */
-    void func_002797D0(LibClass3F5B80* source);
+    void reconcile_requests(LibClass3F5B80* source);
 
     /**
-     * @brief Store new settings, then rebuild the records through func_00279B80.
+     * @brief Store the resource selection and rebuild its requests.
      * @param id Setting stored at offset 0x7C8.
      * @param area Setting stored at offset 0x7CC.
      * @param kind Setting stored at offset 0x7D4.
      * @param mode Setting stored at offset 0x7D5.
-     * @param flag Stored in bit 1 at offset 0x7D6.
+     * @param flag Whether to include the optional resource in slot 2.
      */
-    void func_00279EA0(s32 id, s32 area, u8 kind, s8 mode, bool flag);
+    void set_resource_selection(s32 id, s32 area, u8 kind, s8 mode, bool flag);
 
-    LibClass3F5B80 unk34;
+    LibClass3F5B80 resource_plan;
+
     s32 unk7c8;
+
     s32 unk7cc;
-    s32 unk7d0;
+
+    s32 start_delay;
+
     u8 unk7d4;
+
     s8 unk7d5;
-    u8 unk7d6_0 : 1;
-    u8 unk7d6_1 : 1;
+
+    u8 refresh_pending : 1;
+
+    u8 include_optional_resource : 1;
+
     u8 unk7d6_2_7 : 6;
 };
 #endif
@@ -428,7 +433,7 @@ public:
     virtual ~FieldClass155610();
 
     /** @brief Update the controller. */
-    virtual void func_001DF360();
+    virtual void update();
 };
 #endif
 
@@ -449,7 +454,7 @@ void func_0027C020(struct ResidentContextObject58* object);
 #include "overlays/1067-00/text_001DD3C0.h"
 
 /** Retained field object list. */
-class FieldClass1557B0 : public FieldClass150070, public FieldClass1502A0
+class FieldClass1557B0 : public FieldListObject, public FieldClass1502A0
 {
 public:
     static void* operator new(u32 size);

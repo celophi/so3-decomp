@@ -235,3 +235,9 @@ resident_heap_allocate = 0x00113710; // type:func absolute:True allow_duplicated
 resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplicated:True
 
 lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True
+
+func_002D3CC0 = 0x002D3CC0; // type:func absolute:True allow_duplicated:True
+field_find_resource_record = 0x002D3CC0; // type:func absolute:True allow_duplicated:True
+
+func_002D3D80 = 0x002D3D80; // type:func absolute:True allow_duplicated:True
+field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_duplicated:True

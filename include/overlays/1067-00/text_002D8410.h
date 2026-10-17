@@ -26,20 +26,20 @@ extern "C" {
  * @param object Callback receiver.
  * @return Always 4.
  */
-s32 func_002D8410(FieldClass150070* object);
+s32 func_002D8410(FieldListObject* object);
 #endif
 
 /**
  * @brief Clear this object's active state and attached resources.
  * @param object Receiver to clear.
  */
-void func_002D9730(FieldClass150070* object);
+void func_002D9730(FieldListObject* object);
 
 /**
  * @brief Clear, detach, and delete the object through its virtual destructor.
  * @param object Receiver to destroy.
  */
-void func_002D98A0(FieldClass150070* object);
+void func_002D98A0(FieldListObject* object);
 
 /**
  * @brief Set state flag 2 on the object.
@@ -55,7 +55,7 @@ void func_002D9F80(FieldState2D9F80* object);
 #include "overlays/1067-00/text_001DD3C0.h"
 
 /** Retained field attachment with a context callback. */
-class FieldClass15B800 : public FieldClass150070, public FieldClass1DD400
+class FieldClass15B800 : public FieldListObject, public FieldClass1DD400
 {
 public:
     static void* operator new(u32 size);
