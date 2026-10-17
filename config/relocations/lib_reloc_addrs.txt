@@ -50,3 +50,6 @@ rom:0xE5E88 reloc:MIPS_HI16 symbol:D_50CC80 addend:0x18
 rom:0xE5E90 reloc:MIPS_LO16 symbol:D_50CC80 addend:0x18
 rom:0xE5ED0 reloc:MIPS_HI16 symbol:D_50CC80 addend:0x1C
 rom:0xE5ED8 reloc:MIPS_LO16 symbol:D_50CC80 addend:0x1C
+
+// Packet-stride increment, not the low half of an uncached address.
+rom:0xF1FA8 reloc:MIPS_NONE symbol:0x90

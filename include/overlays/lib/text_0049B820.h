@@ -5,6 +5,7 @@
 
 #ifdef __cplusplus
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/render_channel.h"
 
 enum
 {
@@ -13,7 +14,7 @@ enum
 };
 
 /** Partial level-selection controller with primary vtable at 0x177960. */
-class LibLodController : public LibClass178EA0
+class LibLodController : public LibTransform
 {
 public:
     /** @brief Initialize the level-selection controller. */
@@ -74,7 +75,6 @@ void lib_append_entry_handle(LibEntryHandleCollection* collection, void* object)
  */
 void func_004A2370(void* object);
 
-
 /**
  * @brief Set renderable resource state when its buffers are eligible.
  * @param object Renderable receiver.
@@ -122,12 +122,6 @@ s32 func_004A0C50(void* object);
 s32 func_004A0C70(void* object);
 
 /** Return the fixed value 0. */
-s32 func_004A87F0(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004A8800(void* object);
-
-/** Return the fixed value 0. */
 s32 func_004A8DD0(void* object);
 
 /** Return the fixed value 0. */
@@ -136,8 +130,6 @@ s32 func_004AA410(void* object);
 void func_004A08A0(void* object);
 void func_004A0C40(void* object);
 void func_004A0C60(void* object);
-void func_004A6D00(void* object);
-void func_004A6D10(void* object);
 void func_004A9220(void* object);
 void func_004A9230(void* object);
 
@@ -147,16 +139,16 @@ void func_004A06B0(void* object, const void* source);
 /** Queue the receiver's DMA submission object and return its queue result. */
 s32 func_004A4570(void* object);
 
-/** Submit the object's embedded payload at offset 0x14 when the object is present. */
-void func_004A91F0(void* object);
+/**
+ * @brief Queue the object's receiver for deferred destruction.
+ * @param object Object containing the receiver at offset 0x14, or null.
+ */
+void lib_queue_object_release(void* object);
 
 /** Forward the receiver to func_004D00B0. */
 void func_004A4550(void* object);
 
 #ifdef __cplusplus
-/** Return the second pointer argument unchanged. */
-void* func_004A59C0(void* object, void* value);
-
 }
 #endif
 

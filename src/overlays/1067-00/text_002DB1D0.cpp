@@ -12,7 +12,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DB1D0", func_002DB1
  * @param object Callback receiver.
  * @return Always 5.
  */
-s32 func_002DB270(FieldClass150070* object)
+s32 func_002DB270(FieldListObject* object)
 {
     return 5;
 }
@@ -21,7 +21,7 @@ s32 func_002DB270(FieldClass150070* object)
  * @brief Detach this object and add it to the resident object queue.
  * @param object Object to detach and queue.
  */
-void func_002DB280(FieldClass150070* object)
+void func_002DB280(FieldListObject* object)
 {
     lib_object_detach_owner(object);
     resident_enqueue_object(D_001B65F4, object);

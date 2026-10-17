@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/render_buffer.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
@@ -16,6 +17,18 @@ extern "C" s32 func_00464EF0(FieldRuntime* runtime, s32 index);
 extern "C" s32 func_00467800(ItemCreationClass174C40* object, s32 resource, s32 first, s32 second, s32 third, s32 fourth, float x, float y);
 extern "C" void func_00465A90(void* owner, LibClass174610* object);
 extern "C" ResidentDmaQueue* g_vif1_dma_queue;
+
+/**
+ * @brief Find the resource payload after the allocation prefix.
+ * @param resource Resource whose backing storage is inspected.
+ * @return Payload pointer, or null when no backing storage is present.
+ */
+static inline u8* lib_resource_payload(LibResourceBuffer* resource)
+{
+    return resource->data == 0 ? 0 :
+        resource->external_data ? static_cast<u8*>(resource->data) + 16 :
+        reinterpret_cast<u8*>((reinterpret_cast<u32>(resource->data) + 127) & ~0x7F) + 16;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044ABE0);
 
@@ -278,7 +291,7 @@ typedef struct LibDisplayReadyView
 /** @brief Update the transform and mark the current display ready. @param object Transform receiver. */
 extern "C" void func_0044D0D0(void* object)
 {
-    static_cast<LibClass178EA0*>(object)->LibClass178EA0::func_003EEBD0();
+    static_cast<LibTransform*>(object)->LibTransform::func_003EEBD0();
     LibDisplayManagerView* manager = static_cast<LibDisplayManagerView*>(D_001B661C);
     LibDisplayReadyView* display = static_cast<LibDisplayReadyView*>(manager->current_display);
     display->ready = 1;
@@ -470,9 +483,45 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454CB0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454D40);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454DC0);
+/**
+ * @brief Read the data referenced by the resource payload header.
+ * @return Data pointer, or null when storage or the stored data offset is zero.
+ */
+void* LibResourceBuffer::get_data()
+{
+    LibResourcePayloadHeader* header = reinterpret_cast<LibResourcePayloadHeader*>(lib_resource_payload(this));
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454E30);
+    if (header == 0)
+    {
+        return 0;
+    }
+
+    if (header->data_offset == 0)
+    {
+        return 0;
+    }
+
+    return reinterpret_cast<u8*>(header) + header->data_offset;
+}
+
+/**
+ * @brief Resolve a stored byte offset relative to the resource payload.
+ *
+ * Nonzero offsets require backing storage.
+ * @param offset Pointer to the stored byte offset.
+ * @return Resolved pointer, or null when the stored offset is zero.
+ */
+void* LibResourceBuffer::resolve_offset(const u32* offset)
+{
+    u32 byte_offset = *offset;
+
+    if (byte_offset == 0)
+    {
+        return 0;
+    }
+
+    return lib_resource_payload(this) + byte_offset;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454E90);
 
@@ -490,13 +539,74 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455BD0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455DF0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455EB0);
+/**
+ * @brief Allocate command buffers, block sizes and packet storage.
+ * @param buffer_count Command-buffer count, at most two.
+ * @param word_capacity Word count before the 32-word allocation overhead.
+ * @param block_capacity Number of entries in the block-size array.
+ * @param staging_blocks Packet-block count, capped before adding two extra blocks.
+ * @return True when all allocations succeed; false on the first failure.
+ */
+bool LibDrawBuffer::allocate_storage(s32 buffer_count, s32 word_capacity, s32 block_capacity, s32 staging_blocks)
+{
+    command_buffer_count = buffer_count;
+    this->word_capacity = word_capacity;
+    this->block_capacity = block_capacity;
+    command_buffer_index = 0;
+    ::operator delete(command_buffers[0]);
+    ::operator delete(command_buffers[1]);
+    command_buffers[0] = 0;
+    command_buffers[1] = 0;
+    for (s32 i = 0; i < buffer_count; i++)
+    {
+        command_buffers[i] = new (0) u32[word_capacity + 32];
+        if (command_buffers[i] == 0)
+        {
+            return false;
+        }
+    }
+    ::operator delete(block_sizes);
+    block_sizes = new (0) u32[block_capacity];
+    if (block_sizes == 0)
+    {
+        return false;
+    }
+    if (staging_blocks > block_capacity)
+    {
+        staging_blocks = block_capacity;
+    }
+    block_packets = new (0) u8[(staging_blocks + 2) * 48];
+    if (block_packets == 0)
+    {
+        return false;
+    }
+    FlushCache(0);
+    return true;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456010);
+/** @brief Release command buffers, block sizes and packet storage. */
+LibDrawBuffer::~LibDrawBuffer()
+{
+    ::operator delete(command_buffers[0]);
+    ::operator delete(command_buffers[1]);
+    ::operator delete(block_sizes);
+    delete[] block_packets;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004560A0);
+/** @brief Initialize empty command storage and texture bookkeeping. */
+LibDrawBuffer::LibDrawBuffer()
+{
+    FlushCache(0);
+    command_buffers[0] = 0;
+    command_buffers[1] = 0;
+    block_sizes = 0;
+    texture_count = 0;
+    unkcd = 1;
+    unkce = 0;
+    block_packets = 0;
+    command_begin = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", __dt__14LibClass174CF0Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456190);
 

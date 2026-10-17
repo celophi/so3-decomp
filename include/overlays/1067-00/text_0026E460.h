@@ -18,7 +18,7 @@ void* func_0026EBF0(void* object, s32 count);
  * @param item Receives the next object.
  * @return Nonzero while an object was returned.
  */
-s32 func_0026E5F0(void* list, struct FieldClass150070** item);
+s32 func_0026E5F0(void* list, struct FieldListObject** item);
 /**
  * @brief Reset a list.
  * @param list List to reset.
@@ -30,7 +30,7 @@ void func_0026E570(void* list);
  * @param item Receives the next object.
  * @return Nonzero while an object was returned.
  */
-s32 func_0026E7E0(void* list, struct FieldClass150070** item);
+s32 func_0026E7E0(void* list, struct FieldListObject** item);
 
 /** @brief Forward the callback after adjusting from the secondary object at offset 0x04. */
 void func_0026ED50(void* object);

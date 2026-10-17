@@ -11,12 +11,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DA0D0", func_002DA0
  * @param object Callback receiver.
  * @return Always 9.
  */
-s32 func_002DA170(FieldClass150070* object)
+s32 func_002DA170(FieldListObject* object)
 {
     return 9;
 }
 
-void func_002DA180(FieldClass150070* object)
+void func_002DA180(FieldListObject* object)
 {
     lib_object_detach_owner(object);
     resident_enqueue_object(D_001B65F4, object);

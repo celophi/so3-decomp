@@ -449,7 +449,8 @@ func_00261150__19StatusResourceStateFv = 0x003486E0; // type:func
 func_00263C70__19StatusResourceStateFPv = 0x003486F0; // type:func
 func_slot5c__19StatusResourceStateFv = 0x00350160; // type:func
 func_001DD7B0__19StatusResourceStateFv = 0x00350200; // type:func
-func_001DF360__19StatusResourceStateFv = 0x00350220; // type:func allow_duplicated:True
+func_001DF360__19StatusResourceStateFv = 0x00350220; // type:func absolute:True allow_duplicated:True
+update__19StatusResourceStateFv = 0x00350220; // type:func allow_duplicated:True
 func_00263C90__19StatusResourceStateFv = 0x00350530; // type:func
 func_00263CD0__19StatusResourceStateFv = 0x00350540; // type:func
 func_001E1820__19StatusResourceStateFPv = 0x00350700; // type:func
@@ -457,7 +458,8 @@ func_00264110__19StatusResourceStateFv = 0x003507E0; // type:func
 func_001DD410__19StatusResourceStateFv = 0x003509A0; // type:func
 func_00261D20__19StatusResourceStateFv = 0x00350A70; // type:func
 func_00263CC0__19StatusResourceStateFv = 0x00350A80; // type:func
-func_001DF3D0__19StatusResourceStateFv = 0x00350A90; // type:func
+func_001DF3D0__19StatusResourceStateFv = 0x00350A90; // type:func absolute:True allow_duplicated:True
+get_default_list_kind__19StatusResourceStateFv = 0x00350A90; // type:func allow_duplicated:True
 selected_records__19StatusResourceStateFv = 0x00350AA0; // type:func
 func_00263C80__19StatusResourceStateFPv = 0x00350AB0; // type:func
 func_00263CA0__19StatusResourceStateFSc = 0x00350AC0; // type:func
@@ -646,3 +648,15 @@ remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func absolute:True allow_
 append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
 prepend_node__14LibClass178DD0FPvi = 0x004D7450; // type:func absolute:True allow_duplicated:True
 insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func absolute:True allow_duplicated:True
+
+func_002D3CC0 = 0x002D3CC0; // type:func absolute:True allow_duplicated:True
+field_find_resource_record = 0x002D3CC0; // type:func absolute:True allow_duplicated:True
+
+func_002D3D80 = 0x002D3D80; // type:func absolute:True allow_duplicated:True
+field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_duplicated:True
+
+func_002D3DC0 = 0x002D3DC0; // type:func absolute:True allow_duplicated:True
+field_queue_allocation_release = 0x002D3DC0; // type:func absolute:True allow_duplicated:True
+
+func_002D3EB0 = 0x002D3EB0; // type:func absolute:True allow_duplicated:True
+field_get_builtin_resource_data = 0x002D3EB0; // type:func absolute:True allow_duplicated:True

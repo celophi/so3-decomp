@@ -111,8 +111,11 @@ FieldClass150DC0::~FieldClass150DC0()
 {
 }
 
-/** @brief Report the script kind. @return One. */
-s32 FieldClass150DC0::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 1.
+ */
+s32 FieldClass150DC0::get_default_list_kind()
 {
     return 1;
 }
@@ -221,7 +224,21 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201E
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201FF0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00202080);
+/** @brief Update the inherited node list while both context gates are clear. */
+void FieldClass150E10::update()
+{
+    ResidentContext* context = D_001B6430->context;
+    if (!context->unk08)
+    {
+        return;
+    }
+    if (context->unkde_1 || (context->unk08->unk60 & 1))
+    {
+        return;
+    }
+    LibClass178DD0& list = *this;
+    list.update_nodes();
+}
 
 /** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
 extern "C" void func_002020F0(void* object)
@@ -230,7 +247,11 @@ extern "C" void func_002020F0(void* object)
     resident_enqueue_object(D_001B65F4, object);
 }
 
-extern "C" s32 func_00202120(void* object)
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 12.
+ */
+s32 FieldClass150E10::get_default_list_kind()
 {
     return 12;
 }

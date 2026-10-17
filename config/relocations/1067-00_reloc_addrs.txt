@@ -1,7 +1,7 @@
 // The initializer stores the dispatch pointer at 0x00330000 - 0x4950.
 rom:0x14D528 reloc:MIPS_HI16 symbol:D_32B6B0
 rom:0x14D530 reloc:MIPS_LO16 symbol:D_32B6B0
-// FieldClass14FE30's secondary vtables for FieldClass150070 (+0x38) and
+// FieldClass14FE30's secondary vtables for FieldListObject (+0x38) and
 // FieldClass1DD400 (+0x54), in its destructor and in func_001DF100.
 rom:0x140 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FE30 addend:0x38
 rom:0x148 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FE30 addend:0x38
@@ -11,39 +11,39 @@ rom:0x1DC8 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FE30 addend:0x38
 rom:0x1DE8 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FE30 addend:0x38
 rom:0x1DD0 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FE30 addend:0x54
 rom:0x1DF0 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FE30 addend:0x54
-// FieldClass150120's FieldClass1DD400 vtable part (+0x1C), in its destructor and func_001E5110.
-rom:0x7CD8 reloc:MIPS_HI16 symbol:__vt__16FieldClass150120 addend:0x1C
-rom:0x7CE0 reloc:MIPS_LO16 symbol:__vt__16FieldClass150120 addend:0x1C
-rom:0x7DA4 reloc:MIPS_HI16 symbol:__vt__16FieldClass150120 addend:0x1C
-rom:0x7DBC reloc:MIPS_LO16 symbol:__vt__16FieldClass150120 addend:0x1C
-// FieldClass14FFB0's FieldClass1DD400 vtable part (+0x2C), in its constructor, destructor and func_0025EAD0.
-rom:0x181C reloc:MIPS_HI16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
-rom:0x1848 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
-rom:0x21F0 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
-rom:0x21F8 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
-rom:0x81770 reloc:MIPS_HI16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
-rom:0x81778 reloc:MIPS_LO16 symbol:__vt__16FieldClass14FFB0 addend:0x2C
-// FieldClass155640's FieldClass1DD400 vtable part (+0x2C), in its inline constructor
-// (func_001DF360 of FieldClass14FE30, func_00258B60) and its destructor (0x279360).
-rom:0x13E0 reloc:MIPS_HI16 symbol:__vt__16FieldClass155640 addend:0x2C
-rom:0x13E8 reloc:MIPS_LO16 symbol:__vt__16FieldClass155640 addend:0x2C
-rom:0x7B7D0 reloc:MIPS_HI16 symbol:__vt__16FieldClass155640 addend:0x2C
-rom:0x7B7D8 reloc:MIPS_LO16 symbol:__vt__16FieldClass155640 addend:0x2C
-rom:0x9C000 reloc:MIPS_HI16 symbol:__vt__16FieldClass155640 addend:0x2C
-rom:0x9C008 reloc:MIPS_LO16 symbol:__vt__16FieldClass155640 addend:0x2C
+// FieldResourceRequestHandler's FieldClass1DD400 vtable part (+0x1C), in its destructor and func_001E5110.
+rom:0x7CD8 reloc:MIPS_HI16 symbol:__vt__27FieldResourceRequestHandler addend:0x1C
+rom:0x7CE0 reloc:MIPS_LO16 symbol:__vt__27FieldResourceRequestHandler addend:0x1C
+rom:0x7DA4 reloc:MIPS_HI16 symbol:__vt__27FieldResourceRequestHandler addend:0x1C
+rom:0x7DBC reloc:MIPS_LO16 symbol:__vt__27FieldResourceRequestHandler addend:0x1C
+// FieldResourcePreloader's FieldClass1DD400 vtable part (+0x2C), in its constructor, destructor and func_0025EAD0.
+rom:0x181C reloc:MIPS_HI16 symbol:__vt__22FieldResourcePreloader addend:0x2C
+rom:0x1848 reloc:MIPS_LO16 symbol:__vt__22FieldResourcePreloader addend:0x2C
+rom:0x21F0 reloc:MIPS_HI16 symbol:__vt__22FieldResourcePreloader addend:0x2C
+rom:0x21F8 reloc:MIPS_LO16 symbol:__vt__22FieldResourcePreloader addend:0x2C
+rom:0x81770 reloc:MIPS_HI16 symbol:__vt__22FieldResourcePreloader addend:0x2C
+rom:0x81778 reloc:MIPS_LO16 symbol:__vt__22FieldResourcePreloader addend:0x2C
+// FieldBattleResourcePreloader's FieldClass1DD400 vtable part (+0x2C), in its inline constructor
+// (FieldClass14FE30::update, func_00258B60) and its destructor (0x279360).
+rom:0x13E0 reloc:MIPS_HI16 symbol:__vt__28FieldBattleResourcePreloader addend:0x2C
+rom:0x13E8 reloc:MIPS_LO16 symbol:__vt__28FieldBattleResourcePreloader addend:0x2C
+rom:0x7B7D0 reloc:MIPS_HI16 symbol:__vt__28FieldBattleResourcePreloader addend:0x2C
+rom:0x7B7D8 reloc:MIPS_LO16 symbol:__vt__28FieldBattleResourcePreloader addend:0x2C
+rom:0x9C000 reloc:MIPS_HI16 symbol:__vt__28FieldBattleResourcePreloader addend:0x2C
+rom:0x9C008 reloc:MIPS_LO16 symbol:__vt__28FieldBattleResourcePreloader addend:0x2C
 // FieldClass1504C0::func_001EAC90 loads D_4ED330 through $at.
 rom:0xD958 reloc:MIPS_HI16 symbol:D_4ED330
 rom:0xD95C reloc:MIPS_LO16 symbol:D_4ED330
-// FieldClass150150's FieldClass1DD400 vtable part in the loader constructor and base destructor.
-rom:0x84C4 reloc:MIPS_HI16 symbol:__vt__16FieldClass150150 addend:0x2C
-rom:0x84F8 reloc:MIPS_LO16 symbol:__vt__16FieldClass150150 addend:0x2C
-rom:0x8B70 reloc:MIPS_HI16 symbol:__vt__16FieldClass150150 addend:0x2C
-rom:0x8B78 reloc:MIPS_LO16 symbol:__vt__16FieldClass150150 addend:0x2C
-// FieldClass1501A0's FieldClass1DD400 vtable part in its constructor and destructor.
-rom:0x8560 reloc:MIPS_HI16 symbol:__vt__16FieldClass1501A0 addend:0x2C
-rom:0x8568 reloc:MIPS_LO16 symbol:__vt__16FieldClass1501A0 addend:0x2C
-rom:0x8410 reloc:MIPS_HI16 symbol:__vt__16FieldClass1501A0 addend:0x2C
-rom:0x8418 reloc:MIPS_LO16 symbol:__vt__16FieldClass1501A0 addend:0x2C
+// FieldResourceLoader's FieldClass1DD400 vtable part in the loader constructor and base destructor.
+rom:0x84C4 reloc:MIPS_HI16 symbol:__vt__19FieldResourceLoader addend:0x2C
+rom:0x84F8 reloc:MIPS_LO16 symbol:__vt__19FieldResourceLoader addend:0x2C
+rom:0x8B70 reloc:MIPS_HI16 symbol:__vt__19FieldResourceLoader addend:0x2C
+rom:0x8B78 reloc:MIPS_LO16 symbol:__vt__19FieldResourceLoader addend:0x2C
+// FieldKeyedResourceLoader's FieldClass1DD400 vtable part in its constructor and destructor.
+rom:0x8560 reloc:MIPS_HI16 symbol:__vt__24FieldKeyedResourceLoader addend:0x2C
+rom:0x8568 reloc:MIPS_LO16 symbol:__vt__24FieldKeyedResourceLoader addend:0x2C
+rom:0x8410 reloc:MIPS_HI16 symbol:__vt__24FieldKeyedResourceLoader addend:0x2C
+rom:0x8418 reloc:MIPS_LO16 symbol:__vt__24FieldKeyedResourceLoader addend:0x2C
 
 // The callback reads the first pointer in the resident destination table.
 rom:0x7BE0 reloc:MIPS_HI16 symbol:D_001B5FC0
@@ -74,26 +74,26 @@ rom:0x157B4 reloc:MIPS_HI16 symbol:__vt__16FieldClass152220 addend:0x2C
 rom:0x157BC reloc:MIPS_LO16 symbol:__vt__16FieldClass152220 addend:0x2C
 
 // Common loader secondary callback tables in its scene-loader constructor.
-rom:0x158E4 reloc:MIPS_HI16 symbol:__vt__16FieldClass150700 addend:0x2C
-rom:0x15924 reloc:MIPS_LO16 symbol:__vt__16FieldClass150700 addend:0x2C
-rom:0x159A0 reloc:MIPS_HI16 symbol:__vt__16FieldClass150750 addend:0x2C
-rom:0x159A8 reloc:MIPS_LO16 symbol:__vt__16FieldClass150750 addend:0x2C
+rom:0x158E4 reloc:MIPS_HI16 symbol:__vt__24FieldSceneResourceLoader addend:0x2C
+rom:0x15924 reloc:MIPS_LO16 symbol:__vt__24FieldSceneResourceLoader addend:0x2C
+rom:0x159A0 reloc:MIPS_HI16 symbol:__vt__28FieldHeapSceneResourceLoader addend:0x2C
+rom:0x159A8 reloc:MIPS_LO16 symbol:__vt__28FieldHeapSceneResourceLoader addend:0x2C
 rom:0x159BC reloc:MIPS_HI16 symbol:__vt__16FieldClass152270 addend:0x2C
 rom:0x159C4 reloc:MIPS_LO16 symbol:__vt__16FieldClass152270 addend:0x2C
 
 // Heap-wrapper loader secondary callback table in its destructor.
-rom:0x15A10 reloc:MIPS_HI16 symbol:__vt__16FieldClass150750 addend:0x2C
-rom:0x15A18 reloc:MIPS_LO16 symbol:__vt__16FieldClass150750 addend:0x2C
+rom:0x15A10 reloc:MIPS_HI16 symbol:__vt__28FieldHeapSceneResourceLoader addend:0x2C
+rom:0x15A18 reloc:MIPS_LO16 symbol:__vt__28FieldHeapSceneResourceLoader addend:0x2C
 
 // Scene resource loader and heap wrapper secondary tables in scene-loader destruction.
 rom:0x15840 reloc:MIPS_HI16 symbol:__vt__16FieldClass152270 addend:0x2C
 rom:0x15848 reloc:MIPS_LO16 symbol:__vt__16FieldClass152270 addend:0x2C
-rom:0x1586C reloc:MIPS_HI16 symbol:__vt__16FieldClass150750 addend:0x2C
-rom:0x15874 reloc:MIPS_LO16 symbol:__vt__16FieldClass150750 addend:0x2C
+rom:0x1586C reloc:MIPS_HI16 symbol:__vt__28FieldHeapSceneResourceLoader addend:0x2C
+rom:0x15874 reloc:MIPS_LO16 symbol:__vt__28FieldHeapSceneResourceLoader addend:0x2C
 
 // Common loader secondary callback table in its record-array destructor.
-rom:0x1BAC0 reloc:MIPS_HI16 symbol:__vt__16FieldClass150700 addend:0x2C
-rom:0x1BAC8 reloc:MIPS_LO16 symbol:__vt__16FieldClass150700 addend:0x2C
+rom:0x1BAC0 reloc:MIPS_HI16 symbol:__vt__24FieldSceneResourceLoader addend:0x2C
+rom:0x1BAC8 reloc:MIPS_LO16 symbol:__vt__24FieldSceneResourceLoader addend:0x2C
 
 // List-window secondary callback table in construction and destruction.
 rom:0xF0690 reloc:MIPS_HI16 symbol:__vt__16FieldClass15AD40 addend:0xF4
@@ -130,10 +130,10 @@ rom:0x24DD4 reloc:MIPS_HI16 symbol:__vt__16FieldClass150E10 addend:0x1C
 rom:0x24DDC reloc:MIPS_LO16 symbol:__vt__16FieldClass150E10 addend:0x1C
 rom:0xD5C7C reloc:MIPS_HI16 symbol:__vt__16FieldClass150E10 addend:0x1C
 rom:0xD5C84 reloc:MIPS_LO16 symbol:__vt__16FieldClass150E10 addend:0x1C
-rom:0x5DD60 reloc:MIPS_HI16 symbol:__vt__16FieldClass1530D0 addend:0x1C
-rom:0x5DD68 reloc:MIPS_LO16 symbol:__vt__16FieldClass1530D0 addend:0x1C
-rom:0xD5D0C reloc:MIPS_HI16 symbol:__vt__16FieldClass1530D0 addend:0x1C
-rom:0xD5D14 reloc:MIPS_LO16 symbol:__vt__16FieldClass1530D0 addend:0x1C
+rom:0x5DD60 reloc:MIPS_HI16 symbol:__vt__23FieldResourceLoaderList addend:0x1C
+rom:0x5DD68 reloc:MIPS_LO16 symbol:__vt__23FieldResourceLoaderList addend:0x1C
+rom:0xD5D0C reloc:MIPS_HI16 symbol:__vt__23FieldResourceLoaderList addend:0x1C
+rom:0xD5D14 reloc:MIPS_LO16 symbol:__vt__23FieldResourceLoaderList addend:0x1C
 rom:0x6F034 reloc:MIPS_HI16 symbol:__vt__16FieldClass1534B0 addend:0x74
 rom:0x6F03C reloc:MIPS_LO16 symbol:__vt__16FieldClass1534B0 addend:0x74
 rom:0xD6250 reloc:MIPS_HI16 symbol:__vt__16FieldClass1534B0 addend:0x74
@@ -142,20 +142,20 @@ rom:0x6F044 reloc:MIPS_HI16 symbol:__vt__16FieldClass1534B0 addend:0xAC
 rom:0x6F04C reloc:MIPS_LO16 symbol:__vt__16FieldClass1534B0 addend:0xAC
 rom:0xD6264 reloc:MIPS_HI16 symbol:__vt__16FieldClass1534B0 addend:0xAC
 rom:0xD626C reloc:MIPS_LO16 symbol:__vt__16FieldClass1534B0 addend:0xAC
-rom:0x1F2E8 reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0x1F2F0 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0x7B994 reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0x7B99C reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0x80D9C reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0x80DA4 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0x94360 reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0x94368 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0xB489C reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0xB48A4 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0xD67A0 reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0xD67A8 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0xFDDFC reloc:MIPS_HI16 symbol:__vt__16FieldClass154C70 addend:0x2C
-rom:0xFDE04 reloc:MIPS_LO16 symbol:__vt__16FieldClass154C70 addend:0x2C
+rom:0x1F2E8 reloc:MIPS_HI16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0x1F2F0 reloc:MIPS_LO16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0x7B994 reloc:MIPS_HI16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0x7B99C reloc:MIPS_LO16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0x80D9C reloc:MIPS_HI16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0x80DA4 reloc:MIPS_LO16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0x94360 reloc:MIPS_HI16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0x94368 reloc:MIPS_LO16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0xB489C reloc:MIPS_HI16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0xB48A4 reloc:MIPS_LO16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0xD67A0 reloc:MIPS_HI16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0xD67A8 reloc:MIPS_LO16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0xFDDFC reloc:MIPS_HI16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
+rom:0xFDE04 reloc:MIPS_LO16 symbol:__vt__26FieldContextResourceLoader addend:0x2C
 
 // Indexed halfword in the field resource descriptor table.
 rom:0xD6954 reloc:MIPS_HI16 symbol:D_303CB0 addend:0xC

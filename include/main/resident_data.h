@@ -28,7 +28,10 @@ typedef struct ResidentHudSection1B4
 /** Partial object at offset 0x8 of the field context. */
 typedef struct ResidentContext08
 {
-    u8 unk00[0xB8];
+    u8 unk00[0x60];
+    /** Unidentified flags; bit zero blocks the registered field-object list update. */
+    u8 unk60;
+    u8 unk61[0x57];
     s32 unkb8;
     u8 unkbc[0x20];
     /** Selected field object from the context's object array. */
@@ -173,15 +176,17 @@ typedef struct ResidentContext
 
     struct FieldClass154CC0* unk4c;
 
-    struct FieldClass159050* unk50;
+    /** Node that rebuilds drawing commands while display blending is active. */
+    struct FieldDisplayBlendNode* display_blend_node;
 
-    struct FieldClass150070* unk54;
+    struct FieldListObject* unk54;
 
     ResidentContextObject58* unk58;
 
     void* unk5c;
 
-    struct FieldClass158EA0* unk60;
+    /** Slot owner whose objects can be detached and registered again. */
+    struct FieldObjectSlotOwner* object_slots;
 
     ResidentContextObject64* unk64;
 
@@ -302,10 +307,10 @@ extern "C" {
 
 extern const ResidentDispatchTable D_159070;
 extern ResidentObject1B65E4* D_001B65E4;
-extern ResidentObject1B65E8* D_001B65E8;
+extern ResidentResourceQueue* D_001B65E8;
 /** Resident input root supplying per-slot samples and retained flags. */
 extern struct BootInputRoot9670* D_001B65F0;
-extern ResidentObjectQueue* D_001B65F4;
+extern ResidentReleaseQueues* D_001B65F4;
 extern ResidentRequest112400* D_001B65F8;
 extern ResidentContextRef* D_001B6430;
 extern FieldRuntime* D_001B657C;
@@ -328,14 +333,15 @@ extern u8 D_001B6420;
 /**
  * @brief Report whether record processing must wait for the resident objects.
  *
- * Shared by FieldClass14FFB0::func_001E0F60 and its FieldClass155640 override.
+ * Shared by FieldResourcePreloader::advance_requests and its FieldBattleResourcePreloader override.
  * @return True when the byte at offset 0x12183 of D_001B65E4 is set,
- *         func_00102AA0(D_001B65E8) reports work, or the byte at offset 0x30
+ *         resident_update_resource_queue(D_001B65E8) reports pending cancellation, or
+ *         the byte at offset 0x30
  *         of D_001B65E8 is set.
  */
 static inline bool field_records_blocked()
 {
-    if (D_001B65E4->unk12183 || func_00102AA0(D_001B65E8) || D_001B65E8->unk30)
+    if (D_001B65E4->unk12183 || resident_update_resource_queue(D_001B65E8) || D_001B65E8->unk30)
     {
         return true;
     }

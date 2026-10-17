@@ -7,15 +7,7 @@
 #include "overlays/1067-00/text_002CD390.h"
 #endif
 
-/** Partial receiver with a word at offset 0x30 and a byte at offset 0x34. */
-typedef struct FieldWordByte30
-{
-    u8 unk00[0x30];
-    u32 unk30;
-    u8 unk34;
-} FieldWordByte30;
-
-/** Partial 28-byte record reset by func_001E5690 and func_001E5AD0. */
+/** Partial 28-byte record reset by func_001E5690 and reset_requests. */
 typedef struct FieldSlotRecord1C
 {
     u8 unk00[4];
@@ -53,100 +45,119 @@ typedef struct FieldSlotRecordOwner1C
 } FieldSlotRecordOwner1C;
 
 #ifdef __cplusplus
-/** Partial record loader with vtable D_150150 and a secondary interface at offset 0x18. */
-class FieldClass150150 : public FieldClass150010, public FieldClass1DD400
+/** Resource loader with 28-byte request slots and a secondary completion interface at offset 0x18. */
+class FieldResourceLoader : public FieldResourceLoadTask, public FieldClass1DD400
 {
 public:
     /**
      * @brief Initialize the record state, allocation flags, and request span.
      */
-    FieldClass150150()
+    FieldResourceLoader()
     {
         unk2c = 0x80;
-        unk24 = 0;
-        unk28 = 0x34BC0;
-        unk1c = 0;
-        unk30_1 = 0;
+        request_capacity = 0;
+        request_priority = 0x34BC0;
+        requests = 0;
+        callback_ready = 0;
         unk30_0 = 0;
-        func_001E5AD0();
+        reset_requests();
     }
 
     /**
      * @brief Destroy the record loader.
      */
-    virtual ~FieldClass150150();
-    /**
-     * @brief Advance record requests according to the supplied flag.
-     * @param flag Request flag.
-     */
-    virtual void func_001E0A50(s32 flag);
-    /**
-     * @brief Finish pending record requests.
-     * @return Record request status.
-     */
-    virtual s32 func_001E07A0();
-    /**
-     * @brief Advance the record release state.
-     * @return Record release status.
-     */
-    virtual s32 func_001DF640();
-    /**
-     * @brief Start the request for the current record when its rounded size is nonzero.
-     */
-    virtual void func_001E5BA0();
+    virtual ~FieldResourceLoader();
 
     /**
-     * @brief Start or advance the request for the current record.
+     * @brief Advance reads or handle cancellation.
+     * @param cancel_request One requests cancellation; zero advances reads.
      */
-    virtual void func_001E5D20();
+    virtual void update_requests(s32 cancel_request);
 
     /**
-     * @brief Reset every record and clear the active request state.
+     * @brief Poll cancellation and release request buffers once reads finish.
+     * @return One if a buffer was present before cleanup, two if a buffer remains pending, otherwise zero.
      */
-    virtual void func_001E5AD0();
+    virtual s32 poll_request_release();
 
     /**
-     * @brief Release every record in the counted array.
+     * @brief Cancel pending reads or queue the loader for removal, according to its state.
+     * @return One after queuing the loader for removal, otherwise zero.
      */
-    virtual void func_001E68D0();
+    virtual s32 request_removal();
 
     /**
-     * @brief Process the secondary interface's record request.
-     * @param arg Request argument.
+     * @brief Start the request for the current record when its buffer address is nonzero.
+     */
+    virtual void start_current_read();
+
+    /**
+     * @brief Consume completion, skip available requests, and select the next request.
+     */
+    virtual void advance_requests();
+
+    /**
+     * @brief Reset request slots, counts, and the completion callback.
+     * Existing buffer addresses are cleared without freeing their storage.
+     */
+    virtual void reset_requests();
+
+    /**
+     * @brief Release resources in every allocated request slot.
+     */
+    virtual void release_requests();
+
+    /**
+     * @brief Flush the cache once and mark the current request ready to advance.
+     * @param arg Unused callback argument.
      */
     virtual void func_001DDB30(void* arg);
 
-    FieldClass1530C0* unk1c;
-    FieldClass1DD400* unk20;
-    s32 unk24;
-    s32 unk28;
+    FieldResourceRequest* requests;
+
+    FieldClass1DD400* completion_callback;
+
+    s32 request_capacity;
+
+    s32 request_priority;
+
     u8 unk2c;
-    u8 unk2d;
-    u8 unk2e;
+
+    u8 request_count;
+
+    u8 current_request;
+
     u8 unk2f;
+
     u8 unk30_0 : 1;
-    u8 unk30_1 : 1;
+
+    u8 callback_ready : 1;
+
     u8 unk30_2_7 : 6;
+
     u8 unk31[3];
 };
-/** Keyed record loader with vtable D_1501A0; its complete allocation is 0x48 bytes. */
-class FieldClass1501A0 : public FieldClass150150
+
+/** Loader created and reused by file key; its separate request array reserves 50 slots. */
+class FieldKeyedResourceLoader : public FieldResourceLoader
 {
 public:
     /**
-     * @brief Initialize a loader for the requested key.
-     * @param key Request key.
+     * @brief Reserve 50 request slots and prepare the initial file request.
+     * @param key File key retained for lookup and the initial request.
      */
-    FieldClass1501A0(s32 key);
+    FieldKeyedResourceLoader(s32 key);
+
     /**
      * @brief Destroy the keyed loader.
      */
-    virtual ~FieldClass1501A0();
+    virtual ~FieldKeyedResourceLoader();
 
     /**
      * @brief Queue the loader on the resident object queue without detaching it.
      */
     virtual void func_001DD7B0();
+
     /**
      * @brief Flush the cache once for this loader.
      * @param arg Unused secondary-interface argument.
@@ -155,33 +166,39 @@ public:
 
     /**
      * @brief Advance the keyed loader's record requests.
-     * @param flag Request flag.
+     * @param cancel_request One requests cancellation; zero advances reads.
      */
-    virtual void func_001E0A50(s32 flag);
+    virtual void update_requests(s32 cancel_request);
 
     /**
      * @brief Advance the keyed loader's current request.
      */
-    virtual void func_001E5D20();
+    virtual void advance_requests();
 
     /**
-     * @brief Reset the keyed loader and its request limit.
+     * @brief Reset request slots, restore the start delay, and clear the initial slot index.
+     * Existing buffer addresses are cleared without freeing their storage.
      */
-    virtual void func_001E5AD0();
+    virtual void reset_requests();
 
-    s32 unk34;
-    s32 unk38;
-    s32 unk3c;
-    void* unk40;
-    u8 unk44;
+    s32 file_key;
+
+    s32 start_delay;
+
+    s32 initial_request_slot;
+
+    void* buffer_allocation;
+
+    u8 completion_ready;
+
     u8 unk45[3];
 };
 
 struct FieldBufferSlots;
 struct FieldRecordSelection;
 
-/** Partial FieldClass150070 receiver with MAIN vtable 0x153E30. */
-class FieldClass153E30 : public FieldClass150070
+/** Partial FieldListObject receiver with MAIN vtable 0x153E30. */
+class FieldClass153E30 : public FieldListObject
 {
 public:
     /** @brief Initialize the callback receiver and its Field base storage. */
@@ -307,8 +324,8 @@ public:
     void* unk30;
 };
 
-/** Partial class with a FieldClass1DD400 base at offset 0x14, with vtable D_150120 in main data. */
-class FieldClass150120 : public FieldClass150070, public FieldClass1DD400
+/** Handler for keyed resource requests, decoded buffer delivery, and attachment slots. */
+class FieldResourceRequestHandler : public FieldListObject, public FieldClass1DD400
 {
 public:
     /**
@@ -316,63 +333,63 @@ public:
      * @param loader Completed record loader.
      * @return Resource loading result.
      */
-    s32 func_001E1830(FieldClass150150* loader);
+    s32 func_001E1830(FieldResourceLoader* loader);
 
     /**
      * @brief Attach additional resources from a completed record loader.
      * @param loader Completed record loader.
      * @return Resource attachment result.
      */
-    s32 func_001E3580(FieldClass150150* loader);
+    s32 func_001E3580(FieldResourceLoader* loader);
 
     /**
      * @brief Attach resource buffers from a completed record loader.
      * @param loader Completed record loader.
      * @return Resource attachment result.
      */
-    s32 func_001E2E40(FieldClass150150* loader);
+    s32 func_001E2E40(FieldResourceLoader* loader);
 
     /**
      * @brief Fill the aligned resource slots from a completed record loader.
      * @param loader Completed record loader.
      * @return Resource loading result.
      */
-    s32 func_001E39A0(FieldClass150150* loader);
+    s32 func_001E39A0(FieldResourceLoader* loader);
 
     /**
      * @brief Attach decoded resources from a completed loader to the buffer slots.
      * @param loader Completed record loader.
      * @return Attachment result.
      */
-    s32 func_001E4220(FieldClass150150* loader);
+    s32 func_001E4220(FieldResourceLoader* loader);
 
     /**
-     * @brief Complete the stored loader and release its temporary request buffer.
+     * @brief Decode the completed request, notify its receiver, and release the temporary buffer and loader.
      */
-    void func_001E4E50();
+    void deliver_completed_request();
+
     /**
-     * @brief Decode the supplied loader into a temporary request buffer.
+     * @brief Decode the completed request and attach its resource groups.
      * @param loader Completed record loader.
      * @return Temporary byte buffer, or null when unavailable.
      */
-    u8* func_001E48A0(FieldClass150150* loader);
-
+    u8* decode_request_resources(FieldResourceLoader* loader);
 
     /**
      * @brief Clear the request state, parallel arrays, and loader pointers.
      */
-    FieldClass150120();
+    FieldResourceRequestHandler();
 
     /**
-     * @brief Destroy the object.
+     * @brief Release the owned buffers and destroy the request handler.
      */
-    virtual ~FieldClass150120();
+    virtual ~FieldResourceRequestHandler();
 
     /**
-     * @brief Report the fixed value 4 for this class.
-     * @return Always 4.
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
      */
-    virtual s32 func_001DF3D0();
+    virtual s32 get_default_list_kind();
 
     /**
      * @brief Queue the object on the resident object queue without detaching it.
@@ -382,35 +399,57 @@ public:
     /**
      * @brief Reuse a matching keyed loader or create and append one when needed.
      */
-    virtual void func_001DF360();
+    virtual void update();
 
     /**
-     * @brief FieldClass1DD400 slot 1 override.
+     * @brief Decode into the shared buffer or retain the loader for later resource processing.
+     * @param arg Completed resource loader.
      */
     virtual void func_001DDB30(void* arg);
 
-    s32 unk18;
+    s32 file_key;
+
     u8 unk1c;
-    u8 unk1d;
+
+    u8 request_mode;
+
     u8 unk1e;
-    u8 unk1f;
+
+    u8 notification_pending;
+
     u8 unk20;
+
     u8 unk21[3];
+
     u32 unk24;
+
     u8 unk28;
+
     u8 unk29[3];
-    FieldClass153E30* unk2c;
-    u32 unk30;
-    u8 unk34;
+
+    FieldClass153E30* receiver;
+
+    u32 next_file_key;
+
+    u8 next_request_mode;
+
     u8 unk35[3];
+
     u32 unk38;
-    FieldClass150150* unk3c;
+
+    FieldResourceLoader* completed_loader;
+
     u32 unk40;
-    u8* unk44[10];
+
+    u8* owned_buffers[10];
+
     u32 unk6c[10];
-    FieldBufferSlots* unk94;
-    FieldClass1501A0* unk98;
-    FieldClass1501A0* unk9c;
+
+    FieldBufferSlots* buffer_slots;
+
+    FieldKeyedResourceLoader* request_loader;
+
+    FieldKeyedResourceLoader* unk9c;
 };
 #endif
 
@@ -420,40 +459,42 @@ extern "C" {
 
 #ifdef __cplusplus
 /**
- * @brief Allocate aligned storage, retrying while the owner permits it.
- * @param owner Loader whose owner pointer identifies its context list.
+ * @brief Allocate a 128-byte-aligned buffer, retrying after other loaders release storage.
+ * @param loader Loader whose owner pointer identifies its context list.
  * @param size Requested size in bytes.
- * @param mode Allocator selection.
- * @return Allocated storage, or null when allocation fails or retries stop.
+ * @param mode Nonzero for the Lib allocator, zero for the resident allocator.
+ * @return Allocated buffer, or null when allocation or recovery fails after at most eight attempts.
  */
-void* func_001E6B40(FieldClass150070* owner, u32 size, s32 mode);
+void* field_allocate_request_buffer(FieldListObject* loader, u32 size, s32 mode);
 
 /**
- * @brief Find or prepare a record slot for the supplied request key.
- * @param object Record loader.
- * @param key Request key.
- * @param mode Record request mode.
- * @return Selected record slot, or null when none is available.
+ * @brief Append a file-backed resource request when a slot remains.
+ * @param loader Loader owning the request array.
+ * @param file_key File key used to look up the resource size.
+ * @param kind Resource kind stored in the request.
+ * @return Appended request, or null when the array is full.
  */
-FieldClass1530C0* func_001E69A0(FieldClass150150* object, s32 key, u8 mode);
+FieldResourceRequest* field_append_resource_request(FieldResourceLoader* loader, s32 file_key, u8 kind);
 
 /**
- * @brief Initialize a keyed request, create its loader, and append it to the context list.
- * @param object Request owner.
- * @param key Request key.
- * @param mode Request mode.
+ * @brief Cancel listed kind-eight loaders, initialize the request, and append its new loader.
+ * @param handler Request handler receiving completion.
+ * @param file_key File key to request.
+ * @param mode One decodes into the shared buffer first; other values retain the completed loader.
  * @return Created loader, or null when allocation fails.
  */
-FieldClass1501A0* func_001E15C0(FieldClass150120* object, s32 key, u8 mode);
+FieldKeyedResourceLoader* field_start_keyed_resource_request(FieldResourceRequestHandler* handler, s32 file_key, u8 mode);
 #endif
 
+#ifdef __cplusplus
 /**
- * @brief Store the word at offset 0x30 and the byte at offset 0x34.
- * @param object Receiver to update.
- * @param word Word to store.
- * @param value Byte to store.
+ * @brief Store the file key and mode for the request that follows direct-buffer decoding.
+ * @param handler Request handler retaining the next request.
+ * @param file_key Next file key; zero leaves no request queued.
+ * @param mode Mode passed to the next keyed request.
  */
-void func_001E5020(FieldWordByte30* object, u32 word, u8 value);
+void field_set_next_resource_request(FieldResourceRequestHandler* handler, u32 file_key, u8 mode);
+#endif
 
 #ifdef __cplusplus
 }

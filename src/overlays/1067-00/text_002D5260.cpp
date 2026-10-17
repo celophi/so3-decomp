@@ -356,16 +356,165 @@ FieldClass15B210::~FieldClass15B210()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D65E0);
 
-/** Partial LibClass178EA0 with vtable D_15B270 in main data. */
-class FieldClass15B270 : public LibClass178EA0
+/** Partial LibTransform with vtable D_15B270 in main data. */
+class FieldClass15B270 : public LibTransform
 {
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass15B270();
+
+    /**
+     * @brief Default transform hook that performs no work.
+     */
+    virtual void func_003EEBE0();
+
+    /**
+     * @brief Store the translation coordinates and mark the transform dirty.
+     * @param x Horizontal translation.
+     * @param y Vertical translation.
+     * @param z Third translation component.
+     */
+    virtual void func_003EF790(float x, float y, float z);
+
+    /**
+     * @brief Copy the translation vector and mark the transform dirty.
+     * @param value Translation vector to copy.
+     */
+    virtual void func_003EF780(const LibVector4* value);
+
+    /**
+     * @brief Copy the translation vector and mark the transform dirty.
+     * @param value Translation vector to copy.
+     */
+    virtual void func_003EF770(const LibVector4* value);
+
+    /**
+     * @brief Build the rotation quaternion from three angles and mark the transform dirty.
+     * @param x First rotation angle.
+     * @param y Second rotation angle.
+     * @param z Third rotation angle.
+     */
+    virtual void func_003EEF90(float x, float y, float z);
+
+    /**
+     * @brief Build the rotation quaternion from an angle vector and mark the transform dirty.
+     * @param value Rotation angles to convert.
+     */
+    virtual void func_003EEF60(const LibVector4* value);
+
+    /**
+     * @brief Build the rotation quaternion from an angle vector and mark the transform dirty.
+     * @param value Rotation angles to convert.
+     */
+    virtual void func_003EEF30(const LibVector4* value);
+
+    /**
+     * @brief Copy the rotation quaternion and mark the transform dirty.
+     * @param value Quaternion to copy.
+     */
+    virtual void func_003EEF10(const LibVector4* value);
+
+    /**
+     * @brief Copy the rotation quaternion and mark the transform dirty.
+     * @param value Quaternion to copy.
+     */
+    virtual void func_003EEEF0(const LibVector4* value);
+
+    /**
+     * @brief Store the quaternion components and mark the transform dirty.
+     * @param x First quaternion component.
+     * @param y Second quaternion component.
+     * @param z Third quaternion component.
+     * @param w Scalar quaternion component.
+     */
+    virtual void func_003EEED0(float x, float y, float z, float w);
+
+    /**
+     * @brief Store the scale components and mark the transform dirty.
+     * @param x Horizontal scale factor.
+     * @param y Vertical scale factor.
+     * @param z Third scale factor.
+     */
+    virtual void func_003EF010(float x, float y, float z);
+
+    /**
+     * @brief Copy the scale vector and mark the transform dirty.
+     * @param value Scale vector to copy.
+     */
+    virtual void func_003EEFF0(const LibVector4* value);
+
+    /**
+     * @brief Copy the scale vector and mark the transform dirty.
+     * @param value Scale vector to copy.
+     */
+    virtual void func_003EEFD0(const LibVector4* value);
+
+    /**
+     * @brief Clear the inherited state byte.
+     */
+    virtual void func_003F4420();
+
+    /**
+     * @brief Default output hook that returns zero.
+     * @param output Caller output; unused.
+     * @return Zero.
+     */
+    virtual s32 func_003EEE20(void* output);
+
+    /**
+     * @brief Test whether the supplied value is negative.
+     * @param value Value to test.
+     * @param mode Additional caller mode; unused.
+     * @return One if the value is negative, otherwise zero.
+     */
+    virtual s32 func_003EEE30(float value, float mode);
+
+    /**
+     * @brief Read the stored translation vector.
+     * @return Pointer to the translation vector.
+     */
+    virtual const LibVector4* func_003EFAA0();
+
+    /**
+     * @brief Default matrix hook that performs no work.
+     * @param matrix Caller matrix; unused.
+     * @param context Caller context; unused.
+     */
+    virtual void func_003F4440(const void* matrix, void* context);
+
+    /**
+     * @brief Return the default transform creation result.
+     * @return Null.
+     */
+    virtual LibClass178A90* func_003EEE50();
+
+    /**
+     * @brief Default receiver hook that performs no work.
+     */
+    virtual void func_003EEE60();
+
+    /**
+     * @brief Read the additional local translation.
+     * @return Stored translation vector; only xyz is used to build the offset matrix.
+     */
+    virtual const LibVector4* get_offset_translation() const;
+
+    /**
+     * @brief Read the additional local rotation.
+     * @return Stored quaternion in x, y, z, w order.
+     */
+    virtual const LibVector4* get_offset_rotation() const;
+
+    /**
+     * @brief Read the additional local scale.
+     * @return Stored scale vector; only xyz is used to build the offset matrix.
+     */
+    virtual const LibVector4* get_offset_scale() const;
+
     /** @brief Return the object transformation matrix. @return Transformation matrix. */
-    virtual const LibMatrix44Value* func_004D00A0();
+    virtual const LibMatrix44Value* get_transform_matrix();
     /** @brief Update the object transformation and its additional matrices. */
-    virtual void func_004D0090();
+    virtual void update_transform_matrix();
 };
 
 /** @brief Destroy the object. */
@@ -373,7 +522,7 @@ FieldClass15B270::~FieldClass15B270()
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_004D0090__16FieldClass15B270Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", update_transform_matrix__16FieldClass15B270Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D68F0);
 
@@ -885,7 +1034,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D81
  * @param object Callback receiver.
  * @return Always 5.
  */
-s32 func_002D82E0(FieldClass150070* object)
+s32 func_002D82E0(FieldListObject* object)
 {
     return 5;
 }

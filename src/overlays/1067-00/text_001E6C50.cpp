@@ -738,21 +738,25 @@ void FieldClass150330::func_001E9A50()
     }
 
     unk3c_0 = 1;
-    if (!unk20->unk61)
+    if (!unk20->matrix_ready)
     {
-        unk20->func_004D0090();
+        unk20->update_transform_matrix();
     }
-    const void* matrix = unk20->func_004D00A0();
+    const void* matrix = unk20->get_transform_matrix();
     for (s32 index = 0; index < unk38; index++)
     {
         func_00433730(matrix, &unk24[index], &unk28[index]);
     }
 }
 
-// Returns &object->unk90; subobject type unknown.
-extern "C" const void* func_001E9B70(FieldModelMatrix90* object)
+/**
+ * @brief Read the receiver's embedded transformation matrix.
+ * @param object Matrix-owning receiver.
+ * @return Pointer to the stored matrix; no update is performed.
+ */
+extern "C" const FieldMatrix44* field_get_transform_matrix(const FieldModelMatrix90* object)
 {
-    return &object->unk90;
+    return &object->transform;
 }
 
 void FieldClass150330::func_001E9B80(const FieldVec4B* low, const FieldVec4B* high)
@@ -951,7 +955,7 @@ void FieldClass1504C0::func_001EA730()
             if (unkc4_0)
             {
                 FieldShapeOwner18* owner = item->unk18;
-                const void* matrix = owner->unk04->func_004D00A0();
+                const void* matrix = owner->unk04->get_transform_matrix();
                 FieldVec4A point(owner->unk10);
                 float radius = point.w;
                 point.w = 1.0f;
@@ -985,7 +989,8 @@ void FieldClass1504C0::func_001EA730()
     }
 }
 
-void FieldClass1504C0::func_001DF360()
+/** @brief Advance the counter at offset 0xC0, then call func_001EA730 when the pointer at offset 0x30 and flag bit 1 at offset 0xC4 are set. */
+void FieldClass1504C0::update()
 {
     unkc0++;
     if (unk30 == 0 || !unkc4_1)
@@ -1082,7 +1087,7 @@ FieldClass1504C0::~FieldClass1504C0()
         }
         node = node->unk08;
         lib_object_detach_owner(current);
-        static_cast<FieldClass150070*>(current)->func_001DD7B0();
+        static_cast<FieldListObject*>(current)->func_001DD7B0();
     }
 }
 

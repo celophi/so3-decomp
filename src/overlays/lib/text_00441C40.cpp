@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/blend_transform.h"
 #include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/vector.h"
 
@@ -577,7 +578,11 @@ float func_00447DC0(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447DD0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447DF0);
+/** @brief Set the inherited state byte to two when blending is enabled. */
+void LibBlendTransform::func_003F4420()
+{
+    unk60 = blend_mode ? 2 : 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447E10);
 
@@ -594,8 +599,6 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448250);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_004482B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448360);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448630);
 
 void* func_00448690(void* value)
 {

@@ -56,21 +56,28 @@ typedef struct ResidentRegisteredObject
     const ResidentDispatchTable* dispatch;
 } ResidentRegisteredObject;
 
-/** Partial resident object reached through D_001B65E8. */
-typedef struct ResidentObject1B65E8
+/** Partial resident resource queue reached through D_001B65E8. */
+typedef struct ResidentResourceQueue
 {
     u8 unk00[0x30];
     u8 unk30;
-} ResidentObject1B65E8;
+} ResidentResourceQueue;
 
 /** Opaque resident decoder used by the resource loading helpers. */
 typedef struct ResidentDecodeObject ResidentDecodeObject;
 
-/** Partial resource header containing a payload size and relative link. */
+/** Header of an SLZ/SLE compression block; next_offset is relative to this header. */
 typedef struct ResidentResourceHeader
 {
-    u8 unk00[8];
-    u32 unk08;
+    /** Three-byte SLZ/SLE tag, without a terminating null byte. */
+    u8 signature[3];
+
+    u8 compression_kind;
+
+    u32 compressed_size;
+
+    u32 decoded_size;
+
     u32 next_offset;
 } ResidentResourceHeader;
 
@@ -79,51 +86,53 @@ extern "C" {
 #endif
 
 /**
- * @brief Run the object's two update steps until the second reports no more work.
- * @param object Object to update.
- * @return Nonzero while the object is still busy.
+ * @brief Start queued work and process completed requests until no more completions are available.
+ * @param queue Resident resource queue.
+ * @return Nonzero while cancellation of an active read is still pending.
  */
-s32 func_00102AA0(ResidentObject1B65E8* object);
+s32 resident_update_resource_queue(ResidentResourceQueue* queue);
 
 /**
- * @brief Submit a request to the object at D_001B65E8.
- * @param object Receiving object.
- * @param key First request word.
- * @param size Request size.
- * @param mask Third request word.
- * @param word Fourth request word.
- * @param mode Fifth request word.
- * @return Request result; meaning not yet known.
+ * @brief Process completed work, then find the first queued request matching the filters.
+ * @param queue Resident resource queue.
+ * @param file_key File key to match, or zero to accept any key.
+ * @param buffer_address Destination address to match, or zero to accept any address.
+ * @param tag Exact request tag to match, or zero to accept any tag.
+ * @param byte_count Read length to match, or 0xFFFFFFFF to accept any length.
+ * @param request_kind Request kind to match in the low byte, or zero to accept any kind.
+ * @return Matching request address, or zero when none remains.
  */
-s32 func_00103640(ResidentObject1B65E8* object, s32 key, u32 size, u32 mask, u32 word, s32 mode);
+s32 resident_find_resource_request(ResidentResourceQueue* queue, s32 file_key, u32 buffer_address, u32 tag,
+                                  u32 byte_count, s32 request_kind);
 
 /**
- * @brief Submit the alternative request form to the object at D_001B65E8.
- * @param object Receiving object.
- * @param key First request word.
- * @param size Request size.
- * @param mask Third request word.
- * @param word Fourth request word.
- * @param mode Fifth request word.
- * @return Request result; meaning not yet known.
+ * @brief Remove every matching request and cancel its active read when applicable.
+ * @param queue Resident resource queue.
+ * @param file_key File key to match, or zero to accept any key.
+ * @param buffer_address Destination address to match, or zero to accept any address.
+ * @param tag Exact request tag to match, or zero to accept any tag.
+ * @param byte_count Read length to match, or 0xFFFFFFFF to accept any length.
+ * @param request_kind Request kind to match in the low byte, or zero to accept any kind.
  */
-s32 func_00103B20(ResidentObject1B65E8* object, s32 key, u32 size, u32 mask, u32 word, s32 mode);
+void resident_cancel_resource_requests(ResidentResourceQueue* queue, s32 file_key, u32 buffer_address, u32 tag,
+                                     u32 byte_count, s32 request_kind);
 
 /**
- * @brief Submit a resident request with an owner and two extra words; meaning not yet known.
- * @param object Resident object D_001B65E8.
- * @param key First request word.
- * @param size Second request word.
- * @param mask Third request word.
- * @param value Fourth request word.
- * @param owner Owner passed through to the request.
- * @param word Sixth request word.
- * @param mode Seventh request word.
- * @param flag Eighth request word.
- * @return Request result; meaning not yet known.
+ * @brief Queue a resource request in priority order.
+ * @param queue Resident resource queue.
+ * @param file_key Nonzero file key for the request.
+ * @param buffer_address Destination buffer address.
+ * @param tag Tag retained for later lookup and cancellation.
+ * @param priority Lower values run first; minus one inserts at the front.
+ * @param completion_callback Optional callback object notified when the request finishes.
+ * @param byte_count Read length passed to the resource backend.
+ * @param file_offset Offset applied when selecting a file for request kinds two and three.
+ * @param request_kind Request kind stored in the low byte.
+ * @return One when queued, or zero when the file key is zero or no request slot remains.
  */
-s32 func_00103E70(ResidentObject1B65E8* object, s32 key, u32 size, u32 mask, s32 value, void* owner, u32 word, s32 mode,
-                  s32 flag);
+s32 resident_queue_resource_request(ResidentResourceQueue* queue, s32 file_key, u32 buffer_address, u32 tag,
+                                   s32 priority, void* completion_callback, u32 byte_count, s32 file_offset,
+                                   s32 request_kind);
 
 /**
  * @brief Initialize the dispatch pointer and register the object.
@@ -136,33 +145,65 @@ ResidentRegisteredObject* func_00101560(ResidentRegisteredObject* object);
 extern ResidentDecodeObject* D_001B65EC;
 
 /**
- * @brief Decode or copy the selected resource into a destination buffer.
- * @param decoder Resident decoder.
- * @param source Resource header.
- * @param destination Destination buffer.
- * @param index Resource index.
- * @return Decode result.
- */
-s32 func_001025A0(ResidentDecodeObject* decoder, ResidentResourceHeader* source, void* destination, s32 index);
-
-/**
- * @brief Allocate storage for the selected resource.
- * @param decoder Resident decoder.
- * @param source Resource header.
- * @param index Resource index.
- * @param aligned Allocation alignment mode.
- * @return Allocated byte buffer, or null when allocation fails.
- */
-u8* func_00102920(ResidentDecodeObject* decoder, ResidentResourceHeader* source, s32 index, s32 aligned);
-
-/**
- * @brief Find a resource header by following its relative links.
+ * @brief Decode an LZ payload with 16-bit literals and word offsets.
  * @param decoder Resident decoder; unused.
- * @param source First resource header.
- * @param index Number of links to follow.
+ * @param source Compressed word stream, without its block header.
+ * @param destination Output word buffer.
+ * @return One when a token with zero distance ends the stream.
+ */
+s32 resident_decode_lz_words(ResidentDecodeObject* decoder, const u16* source, u16* destination);
+
+/**
+ * @brief Decode an LZ payload with byte literals, back references, and runs of repeated bytes.
+ * @param decoder Resident decoder; unused.
+ * @param source Compressed byte stream, without its block header.
+ * @param destination Output byte buffer.
+ * @param decoded_size Output byte count at which decoding stops.
+ * @return One after decoding.
+ */
+s32 resident_decode_lz_runs(ResidentDecodeObject* decoder, const u8* source, u8* destination, u32 decoded_size);
+
+/**
+ * @brief Decode an LZ payload with byte literals and back references.
+ * @param decoder Resident decoder; unused.
+ * @param source Compressed byte stream, without its block header.
+ * @param destination Output byte buffer.
+ * @return One when a token with zero distance ends the stream.
+ */
+s32 resident_decode_lz_bytes(ResidentDecodeObject* decoder, const u8* source, u8* destination);
+
+/**
+ * @brief Decode or copy the selected SLZ/SLE block into a destination buffer.
+ * @param decoder Resident decoder.
+ * @param source First block header; SLE payloads are decrypted in place.
+ * @param destination Destination buffer.
+ * @param index Links to follow; nonpositive values select the first block.
+ * @return One after decoding, or zero for an invalid header or a missing block.
+ */
+s32 resident_decode_resource_block(ResidentDecodeObject* decoder, ResidentResourceHeader* source, void* destination, s32 index);
+
+/**
+ * @brief Allocate an output buffer for the selected compression block.
+ *
+ * Aligned allocations use the selected heap when one is set. Otherwise allocation
+ * uses the default C allocator.
+ *
+ * @param decoder Resident decoder; unused.
+ * @param source First block header.
+ * @param index Links to follow; nonpositive values select the first block.
+ * @param aligned Nonzero reserves space for aligning the payload to 128 bytes.
+ * @return Allocation base, or null when the block or storage is unavailable.
+ */
+u8* resident_allocate_decode_buffer(ResidentDecodeObject* decoder, ResidentResourceHeader* source, s32 index, s32 aligned);
+
+/**
+ * @brief Find a compression block by following its relative links.
+ * @param decoder Resident decoder; unused.
+ * @param source First block header.
+ * @param index Links to follow; nonpositive values select the first block.
  * @return Selected header, or null when the chain ends.
  */
-ResidentResourceHeader* func_00102A40(ResidentDecodeObject* decoder, ResidentResourceHeader* source, s32 index);
+ResidentResourceHeader* resident_find_resource_block(ResidentDecodeObject* decoder, ResidentResourceHeader* source, s32 index);
 
 /** Return the fixed integer value 3. */
 s32 func_00104730(void* object);

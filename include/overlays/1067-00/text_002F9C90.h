@@ -24,7 +24,7 @@ typedef struct FieldFloatState5C
 
 #ifdef __cplusplus
 /** Status window with an owned transform/display object. */
-class FieldClass15BB90 : public FieldClass150070
+class FieldClass15BB90 : public FieldListObject
 {
 public:
     /** @brief Initialize the window and its owned display object. */
@@ -37,7 +37,7 @@ public:
     virtual void func_001DD7B0();
 
     /** @brief Update the window state. */
-    virtual void func_001DF360();
+    virtual void update();
 
     s16 status;
     u8 unk16[6];
@@ -71,7 +71,7 @@ public:
     LibClass171EA0* display;
     LibClass171EA0* previous_display;
     u8 unka8[8];
-    LibClass178EA0 member;
+    LibTransform member;
     u8 unk2c0[0x10];
 };
 typedef FieldClass15BB90 FieldStatus14;
@@ -244,7 +244,7 @@ void func_002FB8A0(FieldStateTargets* object);
  * @param object Callback receiver.
  * @return Always 3.
  */
-s32 func_002FE870(FieldClass150070* object);
+s32 func_002FE870(FieldListObject* object);
 #endif
 
 /**

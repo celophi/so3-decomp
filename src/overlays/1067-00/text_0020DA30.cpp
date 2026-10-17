@@ -90,7 +90,7 @@ extern "C" void func_0020DDD0(FieldClass151640* object, FieldContext26FF70* cont
 /** @brief Update the attached shape-node list. */
 void FieldClass151640::func_0020BDA0()
 {
-    unk88.func_004D6730();
+    unk88.update_nodes();
 }
 
 /**
@@ -170,7 +170,7 @@ void FieldClass151640::func_001DD730()
         }
         node = node->unk08;
         lib_object_detach_owner(current);
-        static_cast<FieldClass150070*>(current)->func_001DD7B0();
+        static_cast<FieldListObject*>(current)->func_001DD7B0();
     }
 }
 
@@ -179,7 +179,7 @@ void FieldClass151640::func_001DD730()
  * @param object Shape resource receiving the request.
  * @param node Node to remove, or null.
  */
-extern "C" void func_0020E090(FieldClass151640* object, FieldClass150070* node)
+extern "C" void func_0020E090(FieldClass151640* object, FieldListObject* node)
 {
     if (node)
     {

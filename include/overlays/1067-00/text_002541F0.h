@@ -37,7 +37,7 @@ s32 func_00254BD0(void);
 #include "overlays/1067-00/text_001DD3C0.h"
 
 /** Camera controller retained by the field context. */
-class FieldClass1537C0 : public FieldClass150070, public FieldClass1DD400
+class FieldClass1537C0 : public FieldListObject, public FieldClass1DD400
 {
 public:
     FieldClass1537C0();

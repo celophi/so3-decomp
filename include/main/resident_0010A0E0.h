@@ -3,14 +3,29 @@
 
 #include "types.h"
 
-/** Partial ring buffer of 0x400 object pointers with write and read indices. */
-typedef struct ResidentObjectQueue
+/**
+ * Pointer ring with write_index at the next insertion slot and read_index at the
+ * last released slot. Equal indices mean full; an empty ring has write_index
+ * one slot ahead of read_index, wrapping at 0x400.
+ */
+typedef struct ResidentReleaseRing
 {
-    u8 unk00[0x1008];
-    s32 write;
-    s32 read;
+    s32 write_index;
+
+    s32 read_index;
+
     void* entries[0x400];
-} ResidentObjectQueue;
+} ResidentReleaseRing;
+
+/** Resident rings for deferred allocation release and object destruction. */
+typedef struct ResidentReleaseQueues
+{
+    ResidentReleaseRing allocations;
+
+    ResidentReleaseRing objects;
+
+    void* vtable;
+} ResidentReleaseQueues;
 
 struct BootInputRoot9670;
 
@@ -157,9 +172,29 @@ s32 func_00114100(ResidentDmaQueue* queue, DmaSubmission* submission);
  */
 void* resident_get_runtime_owner(void);
 
-/** @brief Allocate a block from the resident heap. @param heap Heap receiver. @param size Requested byte count. @return Allocated block, or null. */
+/**
+ * @brief Allocate a block from a resident heap.
+ * @param heap Heap to allocate from.
+ * @param size Requested payload size in bytes.
+ * @return Allocation base, or null when no block is available.
+ */
 void* resident_heap_allocate(void* heap, s32 size);
-/** @brief Return a block to the resident heap. @param memory Allocated block. */
+
+/**
+ * @brief Resize a block, releasing and replacing it when it must grow.
+ *
+ * Growing a block does not preserve its contents.
+ *
+ * @param memory Resident heap allocation to resize.
+ * @param size Requested payload size in bytes.
+ * @return Allocation base, or null if a replacement cannot be allocated.
+ */
+void* resident_heap_resize(void* memory, s32 size);
+
+/**
+ * @brief Return a block to its resident heap.
+ * @param memory Allocation to release.
+ */
 void resident_heap_release(void* memory);
 
 /** Clear bytes at 0x78-0x7B and copy the word at 0x84 to offsets 0x7C and 0x80. */
@@ -220,12 +255,12 @@ u32 func_0011C8C0(struct ResidentObject1B65E4* object, s32 key);
 void func_0011E030(struct BootInputRoot9670* root, s32 slot, u32 flag);
 
 /**
- * @brief Append an object to the ring buffer unless it is full.
- * @param queue Queue to append to.
- * @param object Object to append; null is accepted and ignored.
- * @return 1 when the object was appended or is null, 0 when the queue is full.
+ * @brief Queue an object for destruction by its virtual destructor.
+ * @param queue Deferred release queues.
+ * @param object Object to destroy later; null succeeds without insertion.
+ * @return One on success, or zero when the object ring is full.
  */
-s32 resident_enqueue_object(ResidentObjectQueue* queue, void* object);
+s32 resident_enqueue_object(ResidentReleaseQueues* queue, void* object);
 
 /**
  * @brief Allocate a resident request using its selector and packed values.
@@ -265,10 +300,10 @@ u32 func_0011DF00(void* object);
 u32 func_0011DF10(struct BootInputRoot9670* root, s32 mode);
 
 /**
- * @brief Release the objects in both resident queue rings.
- * @param queue Queue whose pending objects are released.
+ * @brief Release pending allocations, then destroy pending objects and flush the cache.
+ * @param queues Deferred release queues to drain.
  */
-void func_0011ECD0(ResidentObjectQueue* queue);
+void resident_drain_release_queues(ResidentReleaseQueues* queues);
 
 /** Store the word at receiver offset 0x8 and clear its byte at offset 0x2F9. */
 void func_0011DF60(void* object, u32 value);

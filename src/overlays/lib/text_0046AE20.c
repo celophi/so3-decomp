@@ -199,7 +199,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B830);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B890);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004D0090__16FieldClass175290Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", update_transform_matrix__18LibLookAtTransformFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046BA00);
 

@@ -402,12 +402,15 @@ struct ShopState : FieldClass153E30
     ShopState();
     /** @brief Destroy the record selection and Field controller base. */
     virtual ~ShopState();
-    /** @brief Report the shop receiver type. @return Four. */
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
     /** @brief Queue the shop receiver for resident processing. */
     virtual void func_001DD7B0();
     /** @brief Default shop receiver handler. */
-    virtual void func_001DF360();
+    virtual void update();
     /** @brief Default shop receiver handler. */
     virtual void func_001DD410();
     /** @brief Initialize the selected records. @return Nonzero when selection links are present. */

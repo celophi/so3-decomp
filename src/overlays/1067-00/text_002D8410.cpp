@@ -7,7 +7,7 @@
  * @param object Callback receiver.
  * @return Always 4.
  */
-s32 func_002D8410(FieldClass150070* object)
+s32 func_002D8410(FieldListObject* object)
 {
     return 4;
 }
@@ -20,7 +20,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D8410", func_002D85
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D8410", func_002D9730);
 
-void func_002D98A0(FieldClass150070* object)
+void func_002D98A0(FieldListObject* object)
 {
     func_002D9730(object);
     lib_object_detach_owner(object);

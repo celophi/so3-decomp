@@ -91,13 +91,13 @@ extern "C" {
  * @param object Callback receiver.
  * @return Always 9.
  */
-s32 func_002DA170(FieldClass150070* object);
+s32 func_002DA170(FieldListObject* object);
 
 /**
  * @brief Detach the object and queue it for removal.
  * @param object Object to remove.
  */
-void func_002DA180(FieldClass150070* object);
+void func_002DA180(FieldListObject* object);
 
 /**
  * @brief Copy four aligned values to an object and return a copy of them.

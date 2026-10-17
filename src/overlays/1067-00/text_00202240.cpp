@@ -188,7 +188,11 @@ bool FieldClass152430::func_002039C0() const
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203A30);
 
-s32 FieldClass150F90::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 4.
+ */
+s32 FieldClass150F90::get_default_list_kind()
 {
     return 4;
 }
@@ -197,12 +201,16 @@ FieldClass150F50::~FieldClass150F50()
 {
 }
 
-extern "C" s32 func_00203B10(void* object)
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 5.
+ */
+s32 FieldClass150F50::get_default_list_kind()
 {
     return 5;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203B20);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", update__16FieldClass150F50Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203CB0);
 
@@ -342,7 +350,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00204F
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00205140__16FieldClass150F90Fv);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_001DF360__16FieldClass150F90Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", update__16FieldClass150F90Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", __dt__16FieldClass150F90Fv);
 
@@ -371,8 +379,8 @@ FieldClass150F90::FieldClass150F90()
     unk8d_1 = 0;
 }
 
-/** Partial FieldClass150070 object with vtable D_150F70 in main data. */
-class FieldClass150F70 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_150F70 in main data. */
+class FieldClass150F70 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */

@@ -32,7 +32,7 @@ s32 func_110920(ResidentRequest112400* request, s32 handle, s32 flag);
  * releases the resource handle at offset 0x24. It adds the vtable slots at
  * 0x1C, 0x20 and 0x24.
  */
-class FieldClass155780 : public FieldClass150070
+class FieldClass155780 : public FieldListObject
 {
 public:
     /** @brief Release the handle at offset 0x24, then destroy the object. */
@@ -84,7 +84,7 @@ public:
         FieldClass155750::func_slot20();
         unk50 = &unk60;
     }
-    LibClass178EA0 unk60;
+    LibTransform unk60;
 };
 #endif
 

@@ -1044,9 +1044,9 @@ __dt__16FieldClass159A70Fv = 0x002BC410; // type:func absolute:True
 
 func_003F4440__14LibClass174610FPCvPv = 0x0044B240; // type:func absolute:True
 
-func_004D0090__14LibClass178A90Fv = 0x004D0090; // type:func absolute:True
+func_004D0090__14LibClass178A90Fv = 0x004D0090; // type:func absolute:True allow_duplicated:True
 
-func_004D00A0__14LibClass178A90Fv = 0x004D00A0; // type:func absolute:True
+func_004D00A0__14LibClass178A90Fv = 0x004D00A0; // type:func absolute:True allow_duplicated:True
 
 func_004CFFA0__14LibClass178A90FPC14LibClass178A90 = 0x004CFFA0; // type:func absolute:True
 
@@ -1076,7 +1076,8 @@ __dt__15SkillControllerFv = 0x0035BEC0; // type:func allow_duplicated:True
 
 __ct__15SkillControllerFv = 0x0035BF70; // type:func allow_duplicated:True
 
-func_001DF3D0__15SkillControllerFv = 0x0035C410; // type:func allow_duplicated:True
+func_001DF3D0__15SkillControllerFv = 0x0035C410; // type:func absolute:True allow_duplicated:True
+get_default_list_kind__15SkillControllerFv = 0x0035C410; // type:func allow_duplicated:True
 
 func_001DD7B0__15SkillControllerFv = 0x0035B4B0; // type:func allow_duplicated:True
 
@@ -1102,9 +1103,12 @@ __ct__16FieldClass153E30Fv = 0x002642D0; // type:func absolute:True allow_duplic
 
 __dt__16FieldClass153E30Fv = 0x00264230; // type:func absolute:True allow_duplicated:True
 
-func_001DF360__16FieldClass150070Fv = 0x0035C110; // type:func absolute:True allow_duplicated:True
+func_001DF360__16FieldClass150070Fv = 0x0035C110; // absolute:True allow_duplicated:True type:func
+func_001DF360__15FieldListObjectFv = 0x0035C110; // type:func absolute:True allow_duplicated:True
+update__15FieldListObjectFv = 0x0035C110; // type:func absolute:True allow_duplicated:True
 
-func_001DD410__16FieldClass150070Fv = 0x0035C120; // type:func absolute:True allow_duplicated:True
+func_001DD410__16FieldClass150070Fv = 0x0035C120; // absolute:True allow_duplicated:True type:func
+func_001DD410__15FieldListObjectFv = 0x0035C120; // type:func absolute:True allow_duplicated:True
 
 func_00264080__16FieldClass153E30Fv = 0x00264080; // type:func absolute:True allow_duplicated:True
 
@@ -1143,7 +1147,8 @@ func_slot80__16FieldClass153E30Fv = 0x0035C3F0; // type:func allow_duplicated:Tr
 func_slot84__16FieldClass153E30Fv = 0x0035C400; // type:func allow_duplicated:True
 
 func_slot88__16FieldClass153E30Fv = 0x00263E80; // type:func absolute:True allow_duplicated:True
-@4@func_001DF3D0__15SkillControllerFv = 0x0035CC40; // type:func allow_duplicated:True
+@4@func_001DF3D0__15SkillControllerFv = 0x0035CC40; // type:func absolute:True allow_duplicated:True
+@4@get_default_list_kind__15SkillControllerFv = 0x0035CC40; // type:func allow_duplicated:True
 @4@selected_records__15SkillControllerFv = 0x0035CC50; // type:func allow_duplicated:True
 @4@func_slot5c__15SkillControllerFv = 0x0035CC60; // type:func allow_duplicated:True
 @4@func_00263CD0__15SkillControllerFv = 0x0035CC70; // type:func allow_duplicated:True
@@ -1270,3 +1275,13 @@ remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func absolute:True allow_
 append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
 prepend_node__14LibClass178DD0FPvi = 0x004D7450; // type:func absolute:True allow_duplicated:True
 insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func absolute:True allow_duplicated:True
+
+func_002D3CC0 = 0x002D3CC0; // type:func absolute:True allow_duplicated:True
+field_find_resource_record = 0x002D3CC0; // type:func absolute:True allow_duplicated:True
+
+func_002D3D80 = 0x002D3D80; // type:func absolute:True allow_duplicated:True
+field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_duplicated:True
+func_0035CC40 = 0x0035CC40; // type:func absolute:True allow_duplicated:True
+
+update_transform_matrix__14LibClass178A90Fv = 0x004D0090; // type:func allow_duplicated:True absolute:True
+get_transform_matrix__14LibClass178A90Fv = 0x004D00A0; // type:func allow_duplicated:True absolute:True

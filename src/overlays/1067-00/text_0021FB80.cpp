@@ -81,8 +81,8 @@ struct FieldObject2B440
     u8 unk94;
 };
 
-/** Partial FieldClass150070 object with vtable D_152320 in main data. */
-class FieldClass152320 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_152320 in main data. */
+class FieldClass152320 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -228,8 +228,11 @@ FieldInputState::~FieldInputState()
 {
 }
 
-/** @brief Report the input object kind. @return Zero. */
-s32 FieldInputState::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 0.
+ */
+s32 FieldInputState::get_default_list_kind()
 {
     return 0;
 }
@@ -256,7 +259,7 @@ void FieldInputState::clear(s32 unused)
     button_masks[7] = 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_001DF360__15FieldInputStateFv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", update__15FieldInputStateFv);
 
 s32 func_00224FC0(FieldObject152410* object)
 {

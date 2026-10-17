@@ -77,18 +77,23 @@ void FieldClass1DD400::func_001DD400()
 {
 }
 
-void FieldClass150070::func_001DD410()
+/** @brief Default handler that performs no work. */
+void FieldListObject::func_001DD410()
 {
 }
 
 void FieldClass14FE30::func_001DD7B0()
 {
-    FieldClass150070& base = *this;
+    FieldListObject& base = *this;
     lib_object_detach_owner(&base);
-    resident_enqueue_object(D_001B65F4, static_cast<FieldClass150070*>(this));
+    resident_enqueue_object(D_001B65F4, static_cast<FieldListObject*>(this));
 }
 
-s32 FieldClass14FE30::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 4.
+ */
+s32 FieldClass14FE30::get_default_list_kind()
 {
     return 4;
 }
@@ -179,11 +184,12 @@ void FieldClass1502A0::func_001DD730()
         }
         node = node->unk08;
         lib_object_detach_owner(current);
-        static_cast<FieldClass150070*>(current)->func_001DD7B0();
+        static_cast<FieldListObject*>(current)->func_001DD7B0();
     }
 }
 
-void FieldClass150070::func_001DD7B0()
+/** @brief Delete the node through its virtual destructor. */
+void FieldListObject::func_001DD7B0()
 {
     delete this;
 }
@@ -444,7 +450,13 @@ FieldFlaggedListObject* func_001DDF50(FieldFlaggedListObject* list, s32 key)
     return 0;
 }
 
-void FieldClass14FE30::func_004D6730()
+/**
+ * @brief Sort field nodes by height and run their update handlers.
+ *
+ * Keep snapshot entry zero in place. Skip detached nodes and nodes whose
+ * 0x80000000 flag is set, then release the snapshot after all passes.
+ */
+void FieldClass14FE30::update_nodes()
 {
     if (D_001B6430->context->unkdd.unk7)
     {
@@ -453,8 +465,7 @@ void FieldClass14FE30::func_004D6730()
     active_node_count = node_count;
     active_node_buffer = new(0) void*[active_node_count];
     lib_list_collect_nodes_by_kind(this, active_node_buffer);
-    bool swapped;
-    do
+    for (bool swapped = true; swapped;)
     {
         swapped = false;
         for (s32 i = 1; i < active_node_count - 1; i++)
@@ -470,7 +481,7 @@ void FieldClass14FE30::func_004D6730()
                 active_node_buffer[i + 1] = first;
             }
         }
-    } while (swapped);
+    }
     s32 count = active_node_count;
     FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
     if (!focus || (focus && focus->unk90 <= 0.0f))
@@ -478,7 +489,7 @@ void FieldClass14FE30::func_004D6730()
         for (active_node_index = 0; active_node_index < active_node_count; active_node_index++)
         {
             FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[active_node_index]);
-            if (object && object->unk0e && !object->test_unk70(0x80000000))
+            if (object && object->is_listed && !object->test_unk70(0x80000000))
             {
                 func_004D6700(this, object);
             }
@@ -486,7 +497,7 @@ void FieldClass14FE30::func_004D6730()
         for (s32 i = 0; i < count; i++)
         {
             FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[i]);
-            if (object && object->unk0e && !object->test_unk70(0x80000000) && (object->unk78 & 0x2))
+            if (object && object->is_listed && !object->test_unk70(0x80000000) && (object->unk78 & 0x2))
             {
                 static_cast<FieldClass152430*>(object)->func_001DE3D0();
             }
@@ -494,7 +505,7 @@ void FieldClass14FE30::func_004D6730()
         for (s32 i = 0; i < count; i++)
         {
             FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[i]);
-            if (object && object->unk0e && !object->test_unk70(0x80000000) && (object->unk78 & 0x2)
+            if (object && object->is_listed && !object->test_unk70(0x80000000) && (object->unk78 & 0x2)
                 && object->func_00204420())
             {
                 static_cast<FieldClass152430*>(object)->func_00227CC0();
@@ -503,7 +514,7 @@ void FieldClass14FE30::func_004D6730()
         for (s32 i = 0; i < count; i++)
         {
             FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[i]);
-            if (object && object->unk0e && !object->test_unk70(0x80000000) && (object->unk78 & 0x2)
+            if (object && object->is_listed && !object->test_unk70(0x80000000) && (object->unk78 & 0x2)
                 && object->func_00204420())
             {
                 static_cast<FieldClass152430*>(object)->func_001DE3C0();
@@ -513,7 +524,7 @@ void FieldClass14FE30::func_004D6730()
     for (s32 j = 0; j < count; j++)
     {
         FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[j]);
-        if (object && object->unk0e && !object->test_unk70(0x80000000))
+        if (object && object->is_listed && !object->test_unk70(0x80000000))
         {
             object->func_001DE3B0();
         }
@@ -573,7 +584,16 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed)
     }
 }
 
-void FieldClass14FE30::func_001DF360()
+/**
+ * @brief Point the context's FieldBattleResourcePreloader at the nearest live type-0x20 list item.
+ *
+ * Skipped while context flags or the focus object block it. Otherwise runs
+ * the per-frame list handler, then finds the type-0x20 item nearest to the
+ * context object at offset 0x18 among those with a valid word at offset
+ * 0x690. The context's FieldBattleResourcePreloader, created on first use, is updated
+ * through set_resource_selection when its settings differ from that item's.
+ */
+void FieldClass14FE30::update()
 {
     ResidentContext* ctx = D_001B6430->context;
     if (ctx->unkdd.unk4 || func_002B0BC0((FieldFlagOwner2B0BC0*)ctx) || D_001B6430->context->unkde_1
@@ -585,7 +605,7 @@ void FieldClass14FE30::func_001DF360()
     {
         return;
     }
-    func_004D6730();
+    update_nodes();
     FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
     if (!focus)
     {
@@ -632,83 +652,83 @@ void FieldClass14FE30::func_001DF360()
     {
         return;
     }
-    FieldClass155640* sound = static_cast<FieldClass155640*>(D_001B6430->context->unk1c);
-    if (!sound)
+    FieldBattleResourcePreloader* preloader = static_cast<FieldBattleResourcePreloader*>(D_001B6430->context->unk1c);
+    if (!preloader)
     {
-        sound = new(0) FieldClass155640;
-        D_001B6430->context->unk1c = sound;
-        static_cast<FieldClass1530D0*>(D_001B6430->context->unk30)->insert(sound);
+        preloader = new(0) FieldBattleResourcePreloader;
+        D_001B6430->context->unk1c = preloader;
+        static_cast<FieldResourceLoaderList*>(D_001B6430->context->unk30)->insert(preloader);
     }
-    s32 current_id = sound->unk7c8;
-    if (nearest->unk690 != current_id || !same_area(sound->unk7cc, nearest) || !same_kind(sound->unk7d4, nearest))
+    s32 current_id = preloader->unk7c8;
+    if (nearest->unk690 != current_id || !same_area(preloader->unk7cc, nearest) || !same_kind(preloader->unk7d4, nearest))
     {
         s32 id = nearest->unk690;
         u8 kind = nearest->unk69c;
-        sound->func_00279EA0(id, (nearest->unk694 == -1 ? D_001B6430->context->unkaa : nearest->unk694), kind, -1, 1);
+        preloader->set_resource_selection(id, (nearest->unk694 == -1 ? D_001B6430->context->unkaa : nearest->unk694), kind, -1, 1);
     }
 }
 
-void FieldClass14FFB0::func_001DE8B0(s32 count)
+void FieldResourcePreloader::allocate_requests(s32 count)
 {
     if (unk30_0)
     {
-        if (unk1c)
+        if (requests)
         {
-            delete[] unk1c;
+            delete[] requests;
         }
-        unk1c = new(0) FieldClass150040[count];
+        requests = new(0) FieldPreloadRequest[count];
     }
     else
     {
         void* heap = resident_exchange_allocation_heap(D_001B6430->context->unk6c);
-        if (unk1c)
+        if (requests)
         {
-            delete[] unk1c;
+            delete[] requests;
         }
-        unk1c = new(0) FieldClass150040[count];
+        requests = new(0) FieldPreloadRequest[count];
         resident_exchange_allocation_heap(heap);
     }
-    unk24 = count;
+    request_capacity = count;
 }
 
-FieldClass150040::FieldClass150040()
+FieldPreloadRequest::FieldPreloadRequest()
 {
-    unk1c_0 = 0;
-    unk1c_1 = 0;
+    read_complete = 0;
+    cancel_pending = 0;
 }
 
-void FieldClass14FFB0::func_001DEA80()
+void FieldResourcePreloader::reset_requests()
 {
     s32 i;
-    if (unk1c)
+    if (requests)
     {
-        for (i = 0; i < unk24; i++)
+        for (i = 0; i < request_capacity; i++)
         {
-            FieldClass150040* record = &unk1c[i];
-            record->unk0c = -1;
-            record->unk04 = 0;
-            record->unk10 = 0;
+            FieldPreloadRequest* record = &requests[i];
+            record->file_key = -1;
+            record->buffer_base = 0;
+            record->request_address = 0;
             record->unk16_0 = 0;
             record->unk16_1 = 1;
             record->unk08_0 = 0;
             record->unk16_2 = 0;
-            record->unk14 = 0;
-            record->unk15 = 0;
+            record->slot_index = 0;
+            record->kind = 0;
         }
     }
     unk20 = 0;
     unk2f = 0;
-    unk2d = 0;
-    unk2e = 0;
+    request_count = 0;
+    current_request = 0;
 }
 
-FieldClass14FFB0::FieldClass14FFB0()
+FieldResourcePreloader::FieldResourcePreloader()
 {
     unk2c = 0x80;
-    unk24 = 0;
-    unk28 = 0x34BC0;
-    unk1c = 0;
-    unk30_1 = 0;
+    request_capacity = 0;
+    request_priority = 0x34BC0;
+    requests = 0;
+    callback_ready = 0;
     unk30_0 = 0;
-    func_001DEA80();
+    reset_requests();
 }

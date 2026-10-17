@@ -426,28 +426,40 @@ extern "C" void func_003F4500(LibClass178A90* object)
     object->unk60 = 8;
 }
 
-/** @brief Read the object transformation matrix. @return Pointer to the stored matrix. */
-const LibMatrix44Value* LibClass178EA0::func_004D00A0()
+/**
+ * @brief Read the cached combined transformation matrix.
+ * @return Pointer to the stored matrix; this call does not update it.
+ */
+const LibMatrix44Value* LibTransform::get_transform_matrix()
 {
     return &transform;
 }
 
-/** @brief Read the local transform vector. @return Pointer to the stored vector. */
-const LibVector4* LibClass178EA0::func_003F4520() const
+/**
+ * @brief Read the additional local translation.
+ * @return Stored translation vector; only xyz is used to build the offset matrix.
+ */
+const LibVector4* LibTransform::get_offset_translation() const
 {
-    return &unk1d0;
+    return &offset_translation;
 }
 
-/** @brief Read the local transform vector. @return Pointer to the stored vector. */
-const LibVector4* LibClass178EA0::func_003F4530() const
+/**
+ * @brief Read the additional local rotation.
+ * @return Stored quaternion in x, y, z, w order.
+ */
+const LibVector4* LibTransform::get_offset_rotation() const
 {
-    return &unk1e0;
+    return &offset_rotation;
 }
 
-/** @brief Read the local transform vector. @return Pointer to the stored vector. */
-const LibVector4* LibClass178EA0::func_003F4540() const
+/**
+ * @brief Read the additional local scale.
+ * @return Stored scale vector; only xyz is used to build the offset matrix.
+ */
+const LibVector4* LibTransform::get_offset_scale() const
 {
-    return &unk1f0;
+    return &offset_scale;
 }
 
 /** @brief Return the fixed value 14. @param object Receiver or first argument; unused. @return Always 14. */

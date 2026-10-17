@@ -37,6 +37,14 @@ void* func_0013A4C0(void* destination, const void* source, u32 size);
 void* func_0013A678(void* destination, s32 value, u32 size);
 
 /**
+ * @brief Resize an allocation through the default C allocator.
+ * @param memory Allocation to resize, or null to allocate a new block.
+ * @param size Requested payload size in bytes.
+ * @return Resized allocation base, or null when allocation fails.
+ */
+void* func_0013B858(void* memory, u32 size);
+
+/**
  * @brief Format text into a null-terminated destination buffer.
  * @param destination Buffer receiving the formatted text.
  * @param format Printf-style format string.

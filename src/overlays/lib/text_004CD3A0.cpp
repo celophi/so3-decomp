@@ -1,3 +1,8 @@
+#include "overlays/lib/texture_scroll_channel.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
+#include "sdk/main/libdma_0012B2C8.h"
+#include "sdk/main/libkernl_00121940.h"
+#include "overlays/lib/palette_blend_channel.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_0043A920.h"
@@ -10,11 +15,101 @@
 #include "overlays/lib/text_0046AE20.h"
 #include "sdk/main/libm_guess_0013F3E0.h"
 #include "include_asm.h"
+#include "overlays/lib/render_buffer.h"
+#include "overlays/lib/render_channel.h"
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
 
+#define TEXTURE_TRANSFER_GIF_TAG 0x1000000000008004ULL
+
+enum
+{
+    IMAGE_SEQUENCE_MAGIC = 0x41534946,
+    IMAGE_SEQUENCE_LOOP = 0,
+    IMAGE_SEQUENCE_PING_PONG = 1,
+    IMAGE_SEQUENCE_CLAMP = 2,
+    RENDER_DATA_INLINE = 0,
+    RENDER_DATA_SHARED = 1,
+    RENDER_DATA_OFFSET = 4,
+    RENDER_DATA_RESOLVED = 5
+};
+
+enum
+{
+    TEXTURE_TRANSFER_VIF_UNPACK = 0x6C060060,
+    TEXTURE_TRANSFER_VIF_FLUSH = 0x11000000,
+    TEXTURE_TRANSFER_QUADWORDS = 8,
+    DMA_TAG_REFERENCE = 0x30000000,
+    GIF_REGISTER_AD = 0xE,
+    GS_REGISTER_BITBLTBUF = 0x50,
+    GS_REGISTER_TRXPOS = 0x51,
+    GS_REGISTER_TRXREG = 0x52,
+    GS_REGISTER_TRXDIR = 0x53,
+    GS_REGISTER_TEXFLUSH = 0x3F,
+    GS_TRANSFER_LOCAL_TO_LOCAL = 2
+};
+
+/** Header shared by the linked image and sequence chunks. */
+struct LibResourceChunkHeader
+{
+    u32 magic;
+
+    u32 payload_size;
+
+    u32 previous_offset;
+
+    u32 next_offset;
+};
+
+/** Offset and duration for one image in a FISA sequence. */
+struct LibImageSequenceEntry
+{
+    u32 data_offset;
+
+    u32 duration;
+};
+
+/** Fixed prefix followed by entry_count image-sequence entries. */
+struct LibImageSequenceHeader
+{
+    u16 entry_count;
+
+    u16 playback_mode;
+
+    u32 duration;
+};
+
+/** Resource record prefix whose data word can hold an offset or resolved pointer. */
+struct LibRenderDataRecord
+{
+    u32 next_offset;
+
+    s16 storage_kind;
+
+    s16 index;
+
+    u32 key08;
+
+    u32 key0c;
+
+    u8 unk10[0x10];
+
+    void* resolved_data;
+
+    u32 unk24;
+
+    union
+    {
+        void* data;
+        u32 data_offset;
+    };
+
+    u32 unk2c;
+};
+
 extern "C" void func_004D6C20(LibClass178DD0* list, void** items, u32* offsets);
 extern "C" void func_004D00B0(LibClass178A90* object);
+extern "C" LibRenderDataRecord* func_00448910(u32 first_key, u32 second_key);
 
 struct LibFieldPointer634
 {
@@ -27,18 +122,24 @@ struct LibFieldPointer634
 extern "C" LibClass178F30* D_001B6628;
 extern "C" ResidentDmaQueue* D_001B660C;
 
-struct LibPointerTableFields50
-{
-    u8 pad00[0x50];
-    void** entries;
-};
-
 struct LibHalfwordToggleFields3E78
 {
     u8 pad00[0x3E78];
     s16 unk3E78;
     s16 unk3E7A;
 };
+
+/**
+ * @brief Locate the payload after the resource's chunk header.
+ * @param buffer Resource whose backing storage is inspected.
+ * @return Payload pointer, or null when no backing storage is present.
+ */
+static inline u8* lib_resource_payload(LibResourceBuffer* buffer)
+{
+    return buffer->data == 0 ? 0 :
+        buffer->external_data ? static_cast<u8*>(buffer->data) + sizeof(LibResourceChunkHeader) :
+        reinterpret_cast<u8*>((reinterpret_cast<u32>(buffer->data) + 127) & ~0x7F) + sizeof(LibResourceChunkHeader);
+}
 
 /** @brief View an aligned matrix row as a vector. @param matrix Source matrix. @param index Row index. @return Read-only row vector. */
 static inline const FieldVec4A& matrix_row_vector(const LibMatrix44Value& matrix, s32 index)
@@ -522,7 +623,7 @@ extern "C" void func_004CF1C0(const LibMatrix44Value* input, LibMatrix44Value* o
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CF580);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CF5E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", lib_normalize_vector3);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CF640);
 
@@ -721,13 +822,17 @@ void LibClass178A90::func_004CFFA0(const LibClass178A90* source)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_003EF740__14LibClass178A90Fv);
 
-/** @brief Mark the transform's matrix as ready. @param object Transform owner. */
-extern "C" void func_004D0090(LibClass178A90* object)
+/** @brief Mark the base transform's matrix state ready. */
+void LibClass178A90::update_transform_matrix()
 {
-    object->unk61 = 1;
+    matrix_ready = 1;
 }
 
-extern "C" const void* func_004D00A0(void* object)
+/**
+ * @brief Return the base transform's null matrix pointer.
+ * @return Null; the base has no matrix storage.
+ */
+const LibMatrix44Value* LibClass178A90::get_transform_matrix()
 {
     return 0;
 }
@@ -890,7 +995,43 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __ct__14LibClas
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5940);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D59A0);
+/**
+ * @brief Find an indexed entry across the linked child channels.
+ *
+ * Only positive child counts consume part of the index.
+ * @param index Entry index across the children; negative values reach the first nonempty child.
+ * @return Entry pointer, or null when no child supplies the index.
+ */
+void* LibResourceBuffer::find_child_data(s32 index)
+{
+    if (children == 0)
+    {
+        return 0;
+    }
+
+    for (LibClass171E90* node = children->next; ; node = node->next)
+    {
+        if (children == node)
+        {
+            break;
+        }
+
+        LibRenderChannel* child = static_cast<LibRenderChannel*>(node);
+        s32 count = child->get_entry_count();
+
+        if (count > 0)
+        {
+            if (index < count)
+            {
+                return child->get_entry(index);
+            }
+
+            index -= count;
+        }
+    }
+
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5A50);
 
@@ -908,7 +1049,22 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5C10);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5C90);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5CD0);
+extern "C" void func_004486A0(LibResourceBuffer* resource);
+extern "C" void func_004D0260(void* owner, LibResourceBuffer* resource);
+extern "C" void* D_001B6640;
+/** @brief Unregister the resource and release owned data. */
+LibResourceBuffer::~LibResourceBuffer()
+{
+    if (registered)
+    {
+        func_004486A0(this);
+        func_004D0260(D_001B6640, this);
+    }
+    if (!external_data)
+    {
+        ::operator delete(data);
+    }
+}
 
 extern "C" s32 func_004D5D70(void* object)
 {
@@ -1007,7 +1163,7 @@ extern "C" void func_004D66F0(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6700);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6730);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update_nodes__14LibClass178DD0Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D68F0);
 
@@ -1169,37 +1325,383 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D76C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D78F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D79F0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update__22LibPaletteBlendChannelFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D7AB0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D7BA0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D7C40);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D7D40);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D7E90);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8020);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D80B0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8130);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8180);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8700);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8850);
-
-void* func_004D8870(const void* object, s32 index)
+/**
+ * @brief Bind the selected image from the source resource.
+ *
+ * A nonempty record list with no matching selector reports success and keeps
+ * the previous target. Failed lookups also leave that target unchanged.
+ * @return False for a missing resource, empty record list or unsupported matching storage kind; true otherwise.
+ */
+bool LibPaletteBlendChannel::load_resource()
 {
-    const LibPointerTableFields50* state = (const LibPointerTableFields50*)object;
-    return state->entries[index];
+    if (resource == 0)
+    {
+        return false;
+    }
+
+    u8* payload = lib_resource_payload(resource);
+    u32 first = reinterpret_cast<LibResourcePayloadHeader*>(payload)->data_offset;
+
+    if (first)
+    {
+        for (LibRenderDataRecord* record = reinterpret_cast<LibRenderDataRecord*>(payload + first); ; )
+        {
+            s16 kind = record->storage_kind;
+
+            if (record->index == unk38)
+            {
+                if (kind == RENDER_DATA_INLINE || kind == RENDER_DATA_RESOLVED)
+                {
+                    if (record->data)
+                    {
+                        target = static_cast<LibImageDataHeader*>(record->data);
+                    }
+                    else
+                    {
+                        target = reinterpret_cast<LibImageDataHeader*>(reinterpret_cast<u8*>(record) + sizeof(LibRenderDataRecord) + sizeof(LibResourceChunkHeader));
+                    }
+
+                    break;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            if (record->next_offset == 0)
+            {
+                break;
+            }
+
+            record = reinterpret_cast<LibRenderDataRecord*>(payload + record->next_offset);
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+    return true;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8890);
+/** @brief Flush the data cache and initialize an empty palette blend. */
+LibPaletteBlendChannel::LibPaletteBlendChannel()
+{
+    FlushCache(0);
+    start_colors = 0;
+    end_colors = 0;
+    palette_indices = 0;
+    entry_count = 0;
+    blend = 0;
+    target = 0;
+    unk40 = 2;
+}
+
+/**
+ * @brief Select the image for the stored frame position.
+ *
+ * The sequence duration must be nonzero and covered by its frame durations.
+ */
+void LibImageSequenceChannel::update()
+{
+    s32 remaining;
+    s32 cycle;
+    s32 index;
+    const LibImageSequenceEntry* frame_info;
+    u32 duration;
+    LibRenderDataRecord* record;
+    const LibImageSequenceHeader* header;
+
+    record = target;
+
+    if (record)
+    {
+        header = sequence;
+        duration = header->duration;
+        remaining = frame % duration;
+        cycle = frame / duration;
+
+        if (frame < 0)
+        {
+            cycle--;
+        }
+
+        if (cycle != 0)
+        {
+            switch (header->playback_mode)
+            {
+                case IMAGE_SEQUENCE_PING_PONG:
+                    if (cycle & 1)
+                    {
+                        remaining = duration - remaining - 1;
+                    }
+                    break;
+                case IMAGE_SEQUENCE_CLAMP:
+                    if (cycle > 0)
+                    {
+                        remaining = duration - 1;
+                    }
+
+                    if (cycle < 0)
+                    {
+                        remaining = 0;
+                    }
+                    break;
+            }
+        }
+
+        index = 0;
+        frame_info = reinterpret_cast<const LibImageSequenceEntry*>(header + 1);
+
+        for (; index < header->entry_count; index++)
+        {
+            remaining -= frame_info[index].duration;
+
+            if (remaining < 0)
+            {
+                break;
+            }
+        }
+
+        record->data = entries[index];
+    }
+}
+
+/**
+ * @brief Bind a resource record and build its image-pointer table.
+ *
+ * Offsets are relative to the first image chunk in the chain.
+ * Rebinding does not release an older entry table.
+ * @param record Resource record containing inline or resolved image chunks.
+ * @param use_inline True to select inline chunks even when a data pointer is set.
+ * @return True when a sequence is found and its pointer table is allocated.
+ */
+bool LibImageSequenceChannel::bind_record(LibRenderDataRecord* record, bool use_inline)
+{
+    target = record;
+
+    if (target)
+    {
+        LibResourceChunkHeader* chunk;
+        u8* base;
+
+        if (target->data == 0 || use_inline)
+        {
+            chunk = reinterpret_cast<LibResourceChunkHeader*>(target + 1);
+            base = reinterpret_cast<u8*>(chunk);
+        }
+        else
+        {
+            chunk = reinterpret_cast<LibResourceChunkHeader*>(static_cast<u8*>(target->data) - sizeof(LibResourceChunkHeader));
+            base = reinterpret_cast<u8*>(chunk);
+        }
+
+        for (;;)
+        {
+            if (chunk->magic == IMAGE_SEQUENCE_MAGIC)
+            {
+                break;
+            }
+
+            chunk = chunk->next_offset == 0 ? 0 :
+                reinterpret_cast<LibResourceChunkHeader*>(reinterpret_cast<u8*>(chunk) + chunk->next_offset);
+
+            if (chunk == 0)
+            {
+                return false;
+            }
+        }
+
+        sequence = reinterpret_cast<LibImageSequenceHeader*>(chunk + 1);
+        entries = new(0) void*[sequence->entry_count];
+
+        if (entries == 0)
+        {
+            return false;
+        }
+
+        const LibImageSequenceEntry* entry = reinterpret_cast<const LibImageSequenceEntry*>(sequence + 1);
+
+        for (s32 index = 0; index < sequence->entry_count; index++, entry++)
+        {
+            entries[index] = base + entry->data_offset;
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Bind the selected record from the source resource.
+ * @return True when no record is bound or binding succeeds; false for a missing resource or failed binding.
+ */
+bool LibImageSequenceChannel::load_resource()
+{
+    if (resource == 0)
+    {
+        return false;
+    }
+
+    u8* payload = lib_resource_payload(resource);
+    target = 0;
+    u32 first = reinterpret_cast<LibResourcePayloadHeader*>(payload)->data_offset;
+
+    if (first)
+    {
+        for (LibRenderDataRecord* record = reinterpret_cast<LibRenderDataRecord*>(payload + first); ;)
+        {
+            s16 kind = record->storage_kind;
+
+            if (record->index == unk38)
+            {
+                if (kind == RENDER_DATA_OFFSET)
+                {
+                    record->data = reinterpret_cast<u8*>(record) + record->data_offset;
+                    record->resolved_data = record->data;
+                    record->storage_kind = RENDER_DATA_RESOLVED;
+                    return bind_record(record, false);
+                }
+
+                if (kind == RENDER_DATA_RESOLVED)
+                {
+                    record->data = record->resolved_data;
+                    return bind_record(record, false);
+                }
+
+                if (kind == RENDER_DATA_INLINE)
+                {
+                    return bind_record(record, true);
+                }
+
+                if (kind == RENDER_DATA_SHARED)
+                {
+                    LibRenderDataRecord* shared = func_00448910(record->key08, record->key0c);
+
+                    if (shared)
+                    {
+                        return bind_record(shared, true);
+                    }
+                }
+            }
+
+            if (record->next_offset == 0)
+            {
+                break;
+            }
+
+            record = reinterpret_cast<LibRenderDataRecord*>(payload + record->next_offset);
+        }
+    }
+
+    return true;
+}
+
+/** @brief Release the image-pointer table and destroy the channel base. */
+LibImageSequenceChannel::~LibImageSequenceChannel()
+{
+    delete[] entries;
+}
+
+/** @brief Initialize an empty image-sequence channel. */
+LibImageSequenceChannel::LibImageSequenceChannel()
+{
+    resource = 0;
+    entries = 0;
+    sequence = 0;
+    frame = 0;
+    unk40 = 1;
+    target = 0;
+}
+
+/**
+ * @brief Append DMA references for the active texture transfers.
+ * @param packet Packet cursor with room for up to four DMA tags.
+ * @return Packet cursor after the appended tags.
+ */
+void* LibTextureScrollChannel::append_packets(void* packet)
+{
+    DmaSourceTag* cursor = static_cast<DmaSourceTag*>(packet);
+
+    for (s32 i = 0; i < TRANSFER_COUNT; i++)
+    {
+        if (transfer_enabled[i])
+        {
+            cursor->control = (static_cast<u64>(reinterpret_cast<u32>(&transfers[i])) << 32) | (DMA_TAG_REFERENCE | TEXTURE_TRANSFER_QUADWORDS);
+            cursor++;
+        }
+    }
+
+    return cursor;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", prepare_packets__23LibTextureScrollChannelFP12LibTransformUi);
+
+/** @brief Initialize four inactive texture-transfer templates. */
+LibTextureScrollChannel::LibTextureScrollChannel()
+{
+    y_offset = 0;
+    x_offset = 0;
+    FlushCache(0);
+    unk40 = 0;
+    LibTextureTransferPacket* packet = reinterpret_cast<LibTextureTransferPacket*>(reinterpret_cast<u32>(transfers) | 0x30000000);
+
+    for (s32 i = 0; i < TRANSFER_COUNT; i++, packet++)
+    {
+        func_0013A678(packet, 0, sizeof(LibTextureTransferPacket));
+        packet->vif_unpack[0] = 0;
+        packet->vif_unpack[1] = 0;
+        packet->vif_unpack[2] = 0;
+        packet->vif_unpack[3] = TEXTURE_TRANSFER_VIF_UNPACK;
+        packet->gif_tag = TEXTURE_TRANSFER_GIF_TAG;
+        packet->gif_registers = GIF_REGISTER_AD;
+        packet->buffer_register = GS_REGISTER_BITBLTBUF;
+        packet->position_register = GS_REGISTER_TRXPOS;
+        packet->size_register = GS_REGISTER_TRXREG;
+        packet->direction = GS_TRANSFER_LOCAL_TO_LOCAL;
+        packet->direction_register = GS_REGISTER_TRXDIR;
+        packet->texture_flush_register = GS_REGISTER_TEXFLUSH;
+        packet->unk74 = 0;
+        packet->unk78 = 0;
+        packet->vif_flush = TEXTURE_TRANSFER_VIF_FLUSH;
+        transfer_enabled[i] = 0;
+    }
+}
+
+/**
+ * @brief Report the stored sequence's image count.
+ * @return Image count, or zero when no sequence header is stored.
+ */
+s32 LibImageSequenceChannel::get_entry_count()
+{
+    if (sequence)
+    {
+        return sequence->entry_count;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Read an indexed image pointer.
+ * @param index Caller-validated image index.
+ * @return Image pointer at index.
+ */
+void* LibImageSequenceChannel::get_entry(s32 index)
+{
+    return entries[index];
+}
+
+/** @brief Destroy the channel and its intrusive-link base. */
+LibTextureScrollChannel::~LibTextureScrollChannel()
+{
+}
 
 /**
  * @brief Compare two strings for equality up to a signed character limit.
@@ -1318,7 +1820,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9C60);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9CD0);
 
 /** @brief Apply the enabled camera-facing rotation components. */
-void LibClass178EA0::func_003EEBD0()
+void LibTransform::func_003EEBD0()
 {
     if (unk6a & 0x380)
     {
@@ -1333,9 +1835,9 @@ void LibClass178EA0::func_003EEBD0()
         }
         if (camera != 0)
         {
-            if (camera->unk61 == 0)
+            if (camera->matrix_ready == 0)
             {
-                camera->func_004D0090();
+                camera->update_transform_matrix();
             }
             LibVector4 angles;
             const float* camera_angles = camera->rotation_angles;
@@ -1354,32 +1856,35 @@ void LibClass178EA0::func_003EEBD0()
             }
             angles.components[1] += 3.1415927f;
             func_003EEF60(&angles);
-            unk61 = 0;
+            matrix_ready = 0;
         }
     }
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9E70);
 
-/** @brief Copy local transform state, then copy its inherited state. @param source Transform source. */
-void LibClass178EA0::func_004D9F40(const LibClass178EA0* source)
+/**
+ * @brief Copy local transform state and its inherited state.
+ * @param source Transform to copy.
+ */
+void LibTransform::copy_transform_state(const LibTransform* source)
 {
     if (source->unk6a & 0x20)
     {
         unk6a |= 0x20;
     }
     func_004DA050(this, source->unk200);
-    func_00479090(&unk1d0, source->func_003F4520());
-    func_004DAB50(this);
+    func_00479090(&offset_translation, source->get_offset_translation());
+    lib_rebuild_offset_transform(this);
     lib_transform_set_dirty(this, 1);
-    func_004DA040(&unk1e0, source->func_003F4530());
-    func_004DAB50(this);
+    func_004DA040(&offset_rotation, source->get_offset_rotation());
+    lib_rebuild_offset_transform(this);
     lib_transform_set_dirty(this, 1);
-    func_00479090(&unk1f0, source->func_003F4540());
-    func_004DAB50(this);
+    func_00479090(&offset_scale, source->get_offset_scale());
+    lib_rebuild_offset_transform(this);
     lib_transform_set_dirty(this, 1);
     unk20c = source->unk20c;
-    unk208 = source->unk208;
+    parent_transform = source->parent_transform;
     LibClass178A90::func_004CFFA0(source);
 }
 
@@ -1393,25 +1898,24 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA050);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA0F0);
 
-extern "C" u16 func_004DA2B0(const LibClass178EA0* object)
+extern "C" u16 func_004DA2B0(const LibTransform* object)
 {
     return object->unk20c;
 }
 
 /** @brief Mark each transform in the parent chain dirty. @param object First transform, or null. */
-extern "C" void lib_invalidate_transform_chain(LibClass178EA0* object)
+extern "C" void lib_invalidate_transform_chain(LibTransform* object)
 {
-    while (object != 0)
+    for (; object != 0; object = object->parent_transform)
     {
-        object->unk61 = 0;
-        object = object->unk208;
+        object->matrix_ready = 0;
     }
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA2F0);
 
 /** @brief Extract the transform's translation column. @param object Transform owner. @return Translation coordinates with homogeneous component one. */
-extern "C" FieldVec4B func_004DA6F0(const LibClass178EA0* object)
+extern "C" FieldVec4B func_004DA6F0(const LibTransform* object)
 {
     FieldVec4B result;
     result.x = object->transform.m[0][3];
@@ -1423,11 +1927,11 @@ extern "C" FieldVec4B func_004DA6F0(const LibClass178EA0* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA730);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0090__14LibClass178EA0Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update_transform_matrix__12LibTransformFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DAB50);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", lib_rebuild_offset_transform);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __dt__14LibClass178EA0Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __dt__12LibTransformFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DAD90);
 

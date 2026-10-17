@@ -97,11 +97,11 @@ typedef struct WordGetterOwnertext_004DD440
 } WordGetterOwnertext_004DD440;
 
 
-static inline void lib_get_transform_translation(FieldVec4B& result, const LibClass178EA0& object);
+static inline void lib_get_transform_translation(FieldVec4B& result, const LibTransform& object);
 static inline float lib_vector_length(const FieldVec4B& vector);
 
 /** @brief Read the matrix translation into a position vector. @param result Destination vector. @param object Transform source. */
-static inline void lib_get_transform_translation(FieldVec4B& result, const LibClass178EA0& object)
+static inline void lib_get_transform_translation(FieldVec4B& result, const LibTransform& object)
 {
     result.x = object.transform.m[0][3];
     result.y = object.transform.m[1][3];
@@ -337,27 +337,27 @@ void LibClass179080::get_fog_factors(float* far_factor, float* near_factor) cons
 }
 
 /** @brief Update the transform and extract its rotation components. */
-void LibClass179080::func_004D0090()
+void LibClass179080::update_transform_matrix()
 {
-    FieldClass175290::func_004D0090();
-    func_004CEBA0(rotation_angles, func_004D00A0());
+    LibLookAtTransform::update_transform_matrix();
+    func_004CEBA0(rotation_angles, get_transform_matrix());
 }
 
 /** @brief Update camera state and its attached-transform distance. */
 void LibClass179080::func_003EEBD0()
 {
     unk63 = 0;
-    LibClass178EA0::func_003EEBD0();
+    LibTransform::func_003EEBD0();
     transform_dirty = 1;
     if (static_cast<LibClass178F30*>(owner)->current_display == this)
     {
         func_004E24D0();
     }
-    if (unk210 != 0 && unk3d3 != 0)
+    if (look_at_target != 0 && unk3d3 != 0)
     {
         FieldVec4B attached_position;
         FieldVec4B difference;
-        lib_get_transform_translation(attached_position, *unk210);
+        lib_get_transform_translation(attached_position, *look_at_target);
         lib_get_transform_translation(difference, *this);
         difference -= attached_position;
         unk244 = lib_vector_length(difference);
@@ -424,8 +424,8 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1E70);
 void LibClass179080::copy_camera(const LibClass179080* source)
 {
     copy_view_and_fog(source);
-    unk210 = source->unk210;
-    LibClass178EA0::func_004D9F40(source);
+    look_at_target = source->look_at_target;
+    LibTransform::copy_transform_state(source);
 }
 
 /** @brief Copy the camera's view and fog settings. @param source Camera to copy. */

@@ -79,7 +79,11 @@ void FieldClass154D50::func_002729B0()
 {
 }
 
-s32 FieldClass154EF0::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 4.
+ */
+s32 FieldClass154EF0::get_default_list_kind()
 {
     return 4;
 }
@@ -186,8 +190,11 @@ FieldBitset154E80::~FieldBitset154E80()
     }
 }
 
-/** @brief Report the fixed list kind. @return Four. */
-s32 FieldClass154E90::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 4.
+ */
+s32 FieldClass154E90::get_default_list_kind()
 {
     return 4;
 }
@@ -215,11 +222,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002731
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00273260);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_001DF360__16FieldClass154E90Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", update__16FieldClass154E90Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_00273320);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002733A0);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", update__16FieldClass154EF0Fv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_slot34__16FieldClass154EF0Fv);
 

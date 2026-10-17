@@ -64,7 +64,7 @@ void* func_002DBFF0(void* object);
  * @brief Detach the object and append it to the resident object queue.
  * @param object Object to detach and queue.
  */
-void func_002DCA40(FieldClass150070* object);
+void func_002DCA40(FieldListObject* object);
 
 /**
  * @brief Clear the state at offsets 0x40 through 0x50.

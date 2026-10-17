@@ -113,10 +113,11 @@ void func_001FC980(FieldHeldObject20* object);
 void func_001FC900(FieldLateLarge* object);
 
 /**
- * @brief Reset the records and related receiver state.
- * @param object Record owner to reset.
+ * @brief Reset request slots, counts, and auxiliary-file settings.
+ * Existing buffer addresses are cleared without freeing their storage.
+ * @param object Context loader view containing the allocated request slots.
  */
-void func_001FC9C0(FieldLateRecords* object);
+void field_reset_context_resource_requests(FieldLateRecords* object);
 
 /**
  * @brief Set the cursor's float state to one when a context entry is active.

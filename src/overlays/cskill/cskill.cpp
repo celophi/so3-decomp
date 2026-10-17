@@ -278,8 +278,11 @@ struct SkillController : public LibClass171FF0, public FieldClass153E30
     virtual u8 func_00261D20();
     /** @brief Get the loaded resource handle. @return Resource handle. */
     virtual u32 func_00263CC0();
-    /** @brief Report the controller kind. @return Four. */
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
     /** @brief Submit the Field receiver to the resident object queue. */
     virtual void func_001DD7B0();
     /** @brief Allocate and initialize the character record selection. @return One on success, or zero on failure. */
@@ -4966,16 +4969,16 @@ s32 SkillSecondarySelection::func_slotf4(u32 associated)
     ItemCreationOptionResourceDisplay* icon_first = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* icon_second = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* icon_third = new (0) ItemCreationOptionResourceDisplay;
-    void* resource = func_002D3D80(D_001B643C->resources, 0);
+    void* resource = field_get_aligned_allocation(D_001B643C->resources, 0);
     icon_first->unkcc = resource;
     icon_second->unkcc = resource;
     icon_third->unkcc = resource;
     icon_first->unkd0 = 0;
     icon_second->unkd0 = 0;
     icon_third->unkd0 = 0;
-    icon_second->func_002D6440(func_002D3CC0(D_001B643C->resources, 0x12), 32.0f, 11.0f);
-    icon_first->func_002D6440(func_002D3CC0(D_001B643C->resources, 0x14), 32.0f, 38.0f);
-    icon_third->func_002D6440(func_002D3CC0(D_001B643C->resources, 0x15), 32.0f, 65.0f);
+    icon_second->func_002D6440(field_find_resource_record(D_001B643C->resources, 0x12), 32.0f, 11.0f);
+    icon_first->func_002D6440(field_find_resource_record(D_001B643C->resources, 0x14), 32.0f, 38.0f);
+    icon_third->func_002D6440(field_find_resource_record(D_001B643C->resources, 0x15), 32.0f, 65.0f);
     lib_container_attach_widget(this->unk10, icon_first);
     lib_container_attach_widget(this->unk10, icon_second);
     lib_container_attach_widget(this->unk10, icon_third);
@@ -5129,16 +5132,16 @@ s32 SkillResourceWindow::func_slotf4(u32 associated)
     ItemCreationOptionResourceDisplay* first = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* second = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* third = new (0) ItemCreationOptionResourceDisplay;
-    void* resource = func_002D3D80(D_001B643C->resources, 11);
+    void* resource = field_get_aligned_allocation(D_001B643C->resources, 11);
     first->unkcc = resource;
     second->unkcc = resource;
     third->unkcc = resource;
     first->unkd0 = 11;
     second->unkd0 = 11;
     third->unkd0 = 11;
-    first->func_002D6440(func_002D3CC0(D_001B643C->resources, 5), 0.0f, 0.0f);
-    second->func_002D6440(func_002D3CC0(D_001B643C->resources, 6), 256.0f, 0.0f);
-    third->func_002D6440(func_002D3CC0(D_001B643C->resources, 7), 512.0f, 0.0f);
+    first->func_002D6440(field_find_resource_record(D_001B643C->resources, 5), 0.0f, 0.0f);
+    second->func_002D6440(field_find_resource_record(D_001B643C->resources, 6), 256.0f, 0.0f);
+    third->func_002D6440(field_find_resource_record(D_001B643C->resources, 7), 512.0f, 0.0f);
     lib_container_attach_widget(this->unk10, first);
     lib_container_attach_widget(this->unk10, second);
     lib_container_attach_widget(this->unk10, third);
@@ -5694,8 +5697,11 @@ s32 FieldClass153E30::func_slot84()
     return 0;
 }
 
-/** @brief Report the controller object kind. @return Four. */
-s32 SkillController::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 4.
+ */
+s32 SkillController::get_default_list_kind()
 {
     return 4;
 }
@@ -6787,7 +6793,7 @@ s32 SkillSymbologyWindow::func_slotf4(u32 associated)
     lib_scissor_init_rectangle(clip_begin, 16.0f, 16.0f, 580.0f, 230.0f);
     lib_container_attach_widget(unk10, clip_begin);
     FieldBufferSlots* resources = D_001B643C->resources;
-    void* icon_resource = func_002D3D80(resources, 0);
+    void* icon_resource = field_get_aligned_allocation(resources, 0);
     for (s32 entry = 0; entry < 30; entry++)
     {
         spell_labels[entry] = new (0) LibObject178750;
@@ -6802,7 +6808,7 @@ s32 SkillSymbologyWindow::func_slotf4(u32 associated)
         spell_icons[entry] = new (0) ItemCreationOptionResourceDisplay;
         spell_icons[entry]->unkcc = icon_resource;
         spell_icons[entry]->unkd0 = 0;
-        spell_icons[entry]->func_002D6440(func_002D3CC0(resources, 22), x - 32.0f, y);
+        spell_icons[entry]->func_002D6440(field_find_resource_record(resources, 22), x - 32.0f, y);
         ItemCreationOptionResourceDisplay* icon = spell_icons[entry];
         icon->unk50.unk34 = 0.85f;
         icon->unk50.unk30 = 0.85f;
@@ -7068,16 +7074,16 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
         {
             character_slots[slot] = character;
             character_markers[slot].available = new (0) ItemCreationOptionResourceDisplay;
-            marker_resource = func_002D3D80(D_001B643C->resources, static_cast<u8>(character));
-            marker_record = func_002D3CC0(D_001B643C->resources, 4);
+            marker_resource = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character));
+            marker_record = field_find_resource_record(D_001B643C->resources, 4);
             character_markers[slot].available->unkcc = marker_resource;
             character_markers[slot].available->unkd0 = character;
             character_markers[slot].available->func_002D6440(marker_record, 36.0f, 46.0f);
             character_markers[slot].available->unk3f = 0;
             lib_container_attach_widget(unk10, character_markers[slot].available);
 
-            marker_resource = func_002D3D80(D_001B643C->resources, static_cast<u8>(character + 48));
-            marker_record = func_002D3CC0(D_001B643C->resources, 4);
+            marker_resource = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character + 48));
+            marker_record = field_find_resource_record(D_001B643C->resources, 4);
             character_markers[slot].unavailable = new (0) ItemCreationOptionResourceDisplay;
             character_markers[slot].unavailable->unkcc = marker_resource;
             character_markers[slot].unavailable->unkd0 = 0;
@@ -7098,8 +7104,8 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
         }
     }
 
-    void* resource = func_002D3D80(D_001B643C->resources, 0);
-    FieldResourceRecord* condition_record = func_002D3CC0(D_001B643C->resources, 40);
+    void* resource = field_get_aligned_allocation(D_001B643C->resources, 0);
+    FieldResourceRecord* condition_record = field_find_resource_record(D_001B643C->resources, 40);
     condition_markers[0] = new (0) ItemCreationOptionResourceDisplay;
     condition_markers[0]->unkcc = resource;
     condition_markers[0]->unkd0 = 0;
@@ -7111,7 +7117,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     condition_markers[0]->unk3f = 0;
     lib_container_attach_widget(unk10, condition_markers[0]);
 
-    condition_record = func_002D3CC0(D_001B643C->resources, 39);
+    condition_record = field_find_resource_record(D_001B643C->resources, 39);
     condition_markers[1] = new (0) ItemCreationOptionResourceDisplay;
     condition_markers[1]->unkcc = resource;
     condition_markers[1]->unkd0 = 0;
@@ -7123,7 +7129,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     condition_markers[1]->unk3f = 0;
     lib_container_attach_widget(unk10, condition_markers[1]);
 
-    condition_record = func_002D3CC0(D_001B643C->resources, 38);
+    condition_record = field_find_resource_record(D_001B643C->resources, 38);
     condition_markers[2] = new (0) ItemCreationOptionResourceDisplay;
     condition_markers[2]->unkcc = resource;
     condition_markers[2]->unkd0 = 0;

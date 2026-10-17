@@ -53,8 +53,8 @@ void* func_002DBFF0(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DC000);
 
-/** Partial FieldClass150070 object with vtable D_15B8E0 in main data. */
-class FieldClass15B8E0 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_15B8E0 in main data. */
+class FieldClass15B8E0 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -71,7 +71,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DC4
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DC630);
 
-void func_002DCA40(FieldClass150070* object)
+void func_002DCA40(FieldListObject* object)
 {
     lib_object_detach_owner(object);
     resident_enqueue_object(D_001B65F4, object);

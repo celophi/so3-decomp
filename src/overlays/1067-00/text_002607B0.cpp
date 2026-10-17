@@ -43,8 +43,8 @@ struct FieldObject261810
     void* unk28;
 };
 
-/** Partial FieldClass150070 object with vtable D_153D20 in main data. */
-class FieldClass153D20 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_153D20 in main data. */
+class FieldClass153D20 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -159,10 +159,11 @@ void func_00262900(FieldVector262900* vector)
     vector->floats[3] = 1.0f;
 }
 
-FieldClass175290::FieldClass175290()
+/** @brief Initialize the transform without a look-at target or roll. */
+LibLookAtTransform::LibLookAtTransform()
 {
-    unk210 = 0;
-    unk214 = 0;
+    look_at_target = 0;
+    roll_angle = 0.0f;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_00262950);

@@ -13,7 +13,6 @@
 #include "overlays/1067-00/text_0026EE10.h"
 #include "overlays/lib/text_004AB8B0.h"
 
-extern "C" s32 func_0023AEB0(FieldClass1530D0* owner, FieldClass150070* loader);
 
 bool FieldClass154C10::func_00204420()
 {
@@ -25,10 +24,15 @@ bool FieldClass154C10::func_00204420()
     return FieldClass150F90::func_00204420();
 }
 
+/**
+ * @brief Detach the field object, then invoke its removal handler.
+ * @param list Unused interface argument.
+ * @param object Field object to detach and remove.
+ */
 void func_001DEDF0(void* list, void* object)
 {
     lib_object_detach_owner(object);
-    static_cast<FieldClass150070*>(object)->func_001DD7B0();
+    static_cast<FieldListObject*>(object)->func_001DD7B0();
 }
 
 FieldFlaggedListObject* func_001DEE30(FieldFlaggedListObject* list, s32 key, u32 mask)
@@ -103,7 +107,7 @@ void func_001DEF70(FieldClass150060* list, s32 preserve_focus)
         if (!preserve_focus || focus != current)
         {
             lib_object_detach_owner(current);
-            static_cast<FieldClass150070*>(current)->func_001DD7B0();
+            static_cast<FieldListObject*>(current)->func_001DD7B0();
         }
         else if (focus->unk144)
         {
@@ -166,23 +170,28 @@ void FieldClass150090::func_001DF300()
 {
 }
 
-s32 FieldClass150010::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 3.
+ */
+s32 FieldResourceLoadTask::get_default_list_kind()
 {
     return 3;
 }
 
-void FieldClass150010::func_001DD7B0()
+void FieldResourceLoadTask::func_001DD7B0()
 {
     lib_object_detach_owner(this);
     resident_enqueue_object(D_001B65F4, this);
 }
 
-u8 FieldClass150010::func_001DF350()
+u8 FieldResourceLoadTask::get_load_kind()
 {
-    return unk14;
+    return load_kind;
 }
 
-void FieldClass150070::func_001DF360()
+/** @brief Default update handler that performs no work. */
+void FieldListObject::update()
 {
 }
 
@@ -190,67 +199,71 @@ void FieldClass1DD400::func_001DDB30(void* arg)
 {
 }
 
-s32 FieldClass150040::func_0023AD00()
+s32 FieldPreloadRequest::release_buffer()
 {
-    unk1c_0 = 0;
-    unk1c_1 = 0;
-    return FieldClass1530C0::func_0023AD00();
+    read_complete = 0;
+    cancel_pending = 0;
+    return FieldResourceRequest::release_buffer();
 }
 
-s32 FieldClass150070::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 3.
+ */
+s32 FieldListObject::get_default_list_kind()
 {
     return 3;
 }
 
-void FieldClass14FFB0::func_001DF3E0()
+void FieldResourcePreloader::start_current_read()
 {
-    FieldClass150040* record = &unk1c[unk2e];
+    FieldPreloadRequest* record = &requests[current_request];
     if (record->buffer_address())
     {
         FieldClass1DD400* owner = this;
-        u32 first = record->unk00;
-        func_00103E70(D_001B65E8, record->unk0c, record->buffer_address(), 0x80000000, unk28, owner, first, 0, 1);
-        u32 word = record->unk00;
-        u32 size = record->buffer_address();
-        record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
-        unk15 = 1;
-        unk30_1 = 0;
+        u32 submitted_byte_count = record->byte_capacity;
+        resident_queue_resource_request(D_001B65E8, record->file_key, record->buffer_address(), 0x80000000, request_priority, owner, submitted_byte_count, 0, 1);
+        u32 byte_count = record->byte_capacity;
+        u32 buffer_address = record->buffer_address();
+        record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+        request_state = 1;
+        callback_ready = 0;
     }
 }
 
-FieldClass14FFB0::~FieldClass14FFB0()
+FieldResourcePreloader::~FieldResourcePreloader()
 {
-    if (unk1c)
+    if (requests)
     {
-        func_001DF780();
-        delete[] unk1c;
-        unk1c = 0;
+        release_requests();
+        delete[] requests;
+        requests = 0;
     }
 }
 
-s32 FieldClass14FFB0::func_001DF640()
+s32 FieldResourcePreloader::request_removal()
 {
-    switch (unk15)
+    switch (request_state)
     {
     case 1:
     {
-        FieldClass150040* record = unk1c;
-        for (s32 i = 0; i < unk2d; i++, record++)
+        FieldPreloadRequest* record = requests;
+        for (s32 i = 0; i < request_count; i++, record++)
         {
-            const FieldClass1530C0* entry = record;
+            const FieldResourceRequest* entry = record;
             if (!entry->unk08_0)
             {
-                u32 word = entry->unk00;
-                u32 size = entry->buffer_address();
-                func_00103B20(D_001B65E8, entry->unk0c, size, 0x80000000, word, 0);
+                u32 byte_count = entry->byte_capacity;
+                u32 buffer_address = entry->buffer_address();
+                resident_cancel_resource_requests(D_001B65E8, entry->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
         }
-        unk15 = 7;
+        request_state = 7;
         break;
     }
     case 9:
     case 10:
-        unk15 = 7;
+        request_state = 7;
         break;
     case 7:
         break;
@@ -261,22 +274,22 @@ s32 FieldClass14FFB0::func_001DF640()
     return 0;
 }
 
-void FieldClass14FFB0::func_001DF780()
+void FieldResourcePreloader::release_requests()
 {
     s32 i;
-    for (i = 0; i < unk24; i++)
+    for (i = 0; i < request_capacity; i++)
     {
-        FieldClass150040* record = &unk1c[i];
-        record->func_0023AD00();
+        FieldPreloadRequest* record = &requests[i];
+        record->release_buffer();
     }
 }
 
-void FieldClass14FFB0::func_001DDB30(void* arg)
+void FieldResourcePreloader::func_001DDB30(void* arg)
 {
-    if (!unk30_1)
+    if (!callback_ready)
     {
         FlushCache(0);
-        unk30_1 = 1;
+        callback_ready = 1;
     }
 }
 
@@ -750,25 +763,25 @@ float FieldClass14FEB0::func_001E0380(float key)
  * @brief Finish or cancel pending record requests and report their remaining state.
  * @return One when cancelled storage remains, two when requests remain, or zero otherwise.
  */
-s32 FieldClass14FFB0::func_001E07A0()
+s32 FieldResourcePreloader::poll_request_release()
 {
     s32 result = 0;
-    FieldClass150040* records = unk1c;
-    switch (unk15)
+    FieldPreloadRequest* records = requests;
+    switch (request_state)
     {
     case 1:
     {
-        for (s32 i = 0; i < unk2d; i++)
+        for (s32 i = 0; i < request_count; i++)
         {
-            const FieldClass1530C0* record = records + i;
+            const FieldResourceRequest* record = records + i;
             if (!record->unk08_0)
             {
-                u32 word = record->unk00;
-                u32 size = record->buffer_address();
-                func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+                u32 byte_count = record->byte_capacity;
+                u32 buffer_address = record->buffer_address();
+                resident_cancel_resource_requests(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
         }
-        unk15 = 10;
+        request_state = 10;
         break;
     }
     case 10:
@@ -780,29 +793,29 @@ s32 FieldClass14FFB0::func_001E07A0()
         }
     default:
     {
-        for (s32 i = 0; i < unk2d; i++)
+        for (s32 i = 0; i < request_count; i++)
         {
-            FieldClass150040* record = records + i;
+            FieldPreloadRequest* record = records + i;
             if (record->buffer_address())
             {
                 result = 1;
                 break;
             }
         }
-        for (s32 i = 0; i < unk24; i++)
+        for (s32 i = 0; i < request_capacity; i++)
         {
-            records[i].func_0023AD00();
+            records[i].release_buffer();
         }
-        unk15 = 0;
-        unk2e = 0;
+        request_state = 0;
+        current_request = 0;
         break;
     }
     }
     if (result != 1)
     {
-        for (s32 i = 0; i < unk2d; i++)
+        for (s32 i = 0; i < request_count; i++)
         {
-            FieldClass150040* record = records + i;
+            FieldPreloadRequest* record = records + i;
             if (record->buffer_address())
             {
                 result = 2;
@@ -813,42 +826,42 @@ s32 FieldClass14FFB0::func_001E07A0()
     return result;
 }
 
-void FieldClass14FFB0::func_001E0A50(s32 flag)
+void FieldResourcePreloader::update_requests(s32 flag)
 {
-    switch (unk15)
+    switch (request_state)
     {
     case 0:
-        if (!flag && unk1c)
+        if (!flag && requests)
         {
             FlushCache(0);
-            FieldClass150040* record = &unk1c[unk2e];
-            void* buffer = func_001E1100(this, (record->unk00 + 0x7FF) & ~0x7FF, 1);
+            FieldPreloadRequest* record = &requests[current_request];
+            void* buffer = field_allocate_preload_buffer(this, (record->byte_capacity + 0x7FF) & ~0x7FF, 1);
             if (buffer)
             {
-                record->unk04 = (u32)buffer;
+                record->buffer_base = (u32)buffer;
                 record->unk08_0 = 0;
-                func_001DF3E0();
+                start_current_read();
             }
         }
         break;
     case 1:
         if (flag == 1)
         {
-            for (s32 i = 0; i < unk2d; i++)
+            for (s32 i = 0; i < request_count; i++)
             {
-                FieldClass150040* record = &unk1c[i];
-                u32 word = record->unk00;
-                u32 size = record->buffer_address();
-                func_00103B20(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
+                FieldPreloadRequest* record = &requests[i];
+                u32 byte_count = record->byte_capacity;
+                u32 buffer_address = record->buffer_address();
+                resident_cancel_resource_requests(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
-            unk15 = 9;
+            request_state = 9;
         }
         else
         {
-            FieldClass150040* record = &unk1c[unk2e];
-            u32 word = record->unk00;
-            u32 size = record->buffer_address();
-            if (!func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0) && !field_records_blocked())
+            FieldPreloadRequest* record = &requests[current_request];
+            u32 byte_count = record->byte_capacity;
+            u32 buffer_address = record->buffer_address();
+            if (!resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0) && !field_records_blocked())
             {
                 func_001DDB30(0);
             }
@@ -857,20 +870,20 @@ void FieldClass14FFB0::func_001E0A50(s32 flag)
     case 9:
         if (!flag)
         {
-            func_001DF3E0();
+            start_current_read();
         }
         break;
     case 10:
     {
         bool done = true;
-        FieldClass150040* records = unk1c;
-        for (s32 i = 0; i < unk2d; i++)
+        FieldPreloadRequest* records = requests;
+        for (s32 i = 0; i < request_count; i++)
         {
-            FieldClass150040* record = &records[i];
-            u32 word = record->unk00;
-            u32 size = record->buffer_address();
-            record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
-            if (record->unk10)
+            FieldPreloadRequest* record = &records[i];
+            u32 byte_count = record->byte_capacity;
+            u32 buffer_address = record->buffer_address();
+            record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+            if (record->request_address)
             {
                 done = false;
             }
@@ -881,25 +894,25 @@ void FieldClass14FFB0::func_001E0A50(s32 flag)
         }
         if (done)
         {
-            for (s32 i = 0; i < unk24; i++, records++)
+            for (s32 i = 0; i < request_capacity; i++, records++)
             {
-                records->func_0023AD00();
+                records->release_buffer();
             }
-            unk2e = 0;
-            unk15 = 0;
+            current_request = 0;
+            request_state = 0;
         }
         break;
     }
     case 7:
     {
         bool done = true;
-        FieldClass150040* record = unk1c;
-        for (s32 i = 0; i < unk2d; i++, record++)
+        FieldPreloadRequest* record = requests;
+        for (s32 i = 0; i < request_count; i++, record++)
         {
-            u32 word = record->unk00;
-            u32 size = record->buffer_address();
-            record->unk10 = func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0);
-            if (record->unk10)
+            u32 byte_count = record->byte_capacity;
+            u32 buffer_address = record->buffer_address();
+            record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+            if (record->request_address)
             {
                 done = false;
             }
@@ -915,58 +928,58 @@ void FieldClass14FFB0::func_001E0A50(s32 flag)
         break;
     }
     }
-    func_001E0F60();
+    advance_requests();
 }
 
-void FieldClass14FFB0::func_001E0F60()
+void FieldResourcePreloader::advance_requests()
 {
-    if (!unk30_1)
+    if (!callback_ready)
     {
         return;
     }
-    if (unk15 == 1)
+    if (request_state == 1)
     {
         if (field_records_blocked())
         {
             return;
         }
-        FieldClass150040* record = &unk1c[unk2e];
-        u32 word = record->unk00;
-        u32 size = record->buffer_address();
-        if (func_00103640(D_001B65E8, record->unk0c, size, 0x80000000, word, 0))
+        FieldPreloadRequest* record = &requests[current_request];
+        u32 byte_count = record->byte_capacity;
+        u32 buffer_address = record->buffer_address();
+        if (resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0))
         {
             return;
         }
-        while (unk2e < unk2d)
+        for (; current_request < request_count;)
         {
-            unk2e++;
-            if (!unk1c[unk2e].unk16_0)
+            current_request++;
+            if (!requests[current_request].unk16_0)
             {
                 break;
             }
         }
-        if (unk2e >= unk2d)
+        if (current_request >= request_count)
         {
-            unk15 = 5;
+            request_state = 5;
         }
         else
         {
-            unk15 = 0;
+            request_state = 0;
         }
     }
-    unk30_1 = 0;
+    callback_ready = 0;
 }
 
 /**
- * @brief Allocate an aligned buffer with up to eight recovery attempts.
- * @param owner Loader attached to the resource list.
+ * @brief Allocate a 128-byte-aligned buffer, retrying after other listed loaders release storage.
+ * @param loader Loader attached to the resource list.
  * @param size Requested buffer size in bytes.
  * @param mode Nonzero for the library allocator, zero for the resident allocator.
- * @return Allocated buffer, or null when allocation or recovery fails.
+ * @return Allocated buffer, or null when allocation or recovery fails after at most eight attempts.
  */
-void* func_001E1100(FieldClass150070* owner, u32 size, s32 mode)
+void* field_allocate_preload_buffer(FieldListObject* loader, u32 size, s32 mode)
 {
-    FieldClass1530D0* manager = static_cast<FieldClass1530D0*>(static_cast<LibClass178DD0*>(owner->unk10));
+    FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(loader->owner);
     for (s32 attempt = 0; attempt < 8; attempt++)
     {
         void* result;
@@ -983,7 +996,7 @@ void* func_001E1100(FieldClass150070* owner, u32 size, s32 mode)
         {
             return result;
         }
-        if (manager->node_count == 1 || !func_0023AEB0(manager, owner))
+        if (manager->node_count == 1 || !field_reclaim_loader_buffers(manager, loader))
         {
             break;
         }
@@ -1055,13 +1068,13 @@ void FieldClass150090::func_001E1500(const float* x, const float* y, const float
 }
 
 
-// Compiler-generated this-adjustment thunk; needs recovered classes.
+/** @brief Forward the node update from the field-list secondary base. */
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1540);
 
 // Compiler-generated this-adjustment thunk; needs recovered classes.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1550);
 
-// Compiler-generated this-adjustment thunk; needs recovered classes.
+/** @brief Forward the default-kind query from the field-node subobject. */
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001DED80", func_001E1560);
 
 // Compiler-generated this-adjustment thunk; needs recovered classes.

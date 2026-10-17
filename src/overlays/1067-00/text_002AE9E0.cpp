@@ -278,8 +278,9 @@ static inline void field_release_context_object(T*& object);
 template <class T>
 static inline void field_detach_release_context_object(T*& object);
 
-static inline void field_release_slot_object(LibClass171EA0*& object);
-static inline void field_delete_render_buffer(LibClass174CF0*& buffer);
+template <class T>
+static inline void field_release_slot_object(T*& object);
+static inline void field_delete_render_buffer(LibDrawBuffer*& buffer);
 static inline void field_apply_time_step(ResidentContext* context, float step);
 
 /** Partial fixed pool of tracks with a bitmap of used slots. */
@@ -293,15 +294,6 @@ struct FieldTrackPool
     s32 words;
     u64* used;
     bool external;
-};
-
-/** Partial view of the global state object at D_001B6650. */
-struct FieldGlobal3E6C
-{
-    u8 unk00[0x3E6C];
-    u8 unk3e6c;
-    u8 unk3e6d[3];
-    float unk3e70;
 };
 
 /** Partial field runtime exposing the increment used by its updates. */
@@ -335,9 +327,9 @@ struct FieldContextOwner14
 
     u8 unk25c[0xB0];
 
-    FieldClass150070* unk30c;
+    FieldListObject* unk30c;
 
-    FieldClass150070* unk310;
+    FieldListObject* unk310;
 };
 
 /** Partial view of the FieldClass156B50 retained by the context. */
@@ -949,7 +941,8 @@ bool field_update_timed_value(FieldTimedValueState* state, float* value)
  * @brief Detach and release an object, then clear the stored pointer.
  * @param object Stored intrusive object pointer.
  */
-static inline void field_release_slot_object(LibClass171EA0*& object)
+template <class T>
+static inline void field_release_slot_object(T*& object)
 {
     if (object != 0)
     {
@@ -965,7 +958,7 @@ static inline void field_release_context_object(T*& object)
 {
     if (object != 0)
     {
-        reinterpret_cast<FieldClass150070*>(object)->func_001DD7B0();
+        reinterpret_cast<FieldListObject*>(object)->func_001DD7B0();
         object = 0;
     }
 }
@@ -977,7 +970,7 @@ static inline void field_detach_release_context_object(T*& object)
     if (object != 0)
     {
         lib_object_detach_owner(object);
-        reinterpret_cast<FieldClass150070*>(object)->func_001DD7B0();
+        reinterpret_cast<FieldListObject*>(object)->func_001DD7B0();
         object = 0;
     }
 }
@@ -986,9 +979,9 @@ static inline void field_detach_release_context_object(T*& object)
  * @brief Detach and release every occupied object slot.
  * @param owner Slot owner.
  */
-void field_clear_object_slots(FieldClass158EA0* owner)
+void field_clear_object_slots(FieldObjectSlotOwner* owner)
 {
-    for (s32 i = 0; i < FieldClass158EA0::SLOT_COUNT; i++)
+    for (s32 i = 0; i < FieldObjectSlotOwner::SLOT_COUNT; i++)
     {
         if (owner->objects[i] != 0)
         {
@@ -1002,9 +995,9 @@ void field_clear_object_slots(FieldClass158EA0* owner)
  * @brief Register every occupied object slot with the Lib object list.
  * @param owner Slot owner.
  */
-void field_register_object_slots(FieldClass158EA0* owner)
+void field_register_object_slots(FieldObjectSlotOwner* owner)
 {
-    for (s32 i = 0; i < FieldClass158EA0::SLOT_COUNT; i++)
+    for (s32 i = 0; i < FieldObjectSlotOwner::SLOT_COUNT; i++)
     {
         if (owner->objects[i] != 0)
         {
@@ -1015,12 +1008,14 @@ void field_register_object_slots(FieldClass158EA0* owner)
 }
 
 /**
- * @brief Detach every occupied object slot from its current owner.
+ * @brief Detach every occupied object slot from its current list.
+ *
+ * Keep the stored pointers and removal flags for later registration.
  * @param owner Slot owner.
  */
-void field_detach_object_slots(FieldClass158EA0* owner)
+void field_detach_object_slots(FieldObjectSlotOwner* owner)
 {
-    for (s32 i = 0; i < FieldClass158EA0::SLOT_COUNT; i++)
+    for (s32 i = 0; i < FieldObjectSlotOwner::SLOT_COUNT; i++)
     {
         if (owner->objects[i] != 0)
         {
@@ -1031,12 +1026,14 @@ void field_detach_object_slots(FieldClass158EA0* owner)
 
 /**
  * @brief Mark the first slot containing an object for deferred release.
+ *
+ * Marking a slot does not detach or release its object.
  * @param owner Slot owner.
  * @param object Object to mark.
  */
-void field_request_object_slot_removal(FieldClass158EA0* owner, LibClass171EA0* object)
+void field_request_object_slot_removal(FieldObjectSlotOwner* owner, LibClass171EA0* object)
 {
-    for (s32 i = 0; i < FieldClass158EA0::SLOT_COUNT; i++)
+    for (s32 i = 0; i < FieldObjectSlotOwner::SLOT_COUNT; i++)
     {
         if (owner->objects[i] == object)
         {
@@ -1048,13 +1045,15 @@ void field_request_object_slot_removal(FieldClass158EA0* owner, LibClass171EA0* 
 
 /**
  * @brief Store and register an object in the first vacant slot.
+ *
+ * A full owner leaves the object with the caller.
  * @param owner Slot owner.
  * @param object Object to store and register.
  * @return True if a vacant slot was found; false when all slots are occupied.
  */
-bool field_add_object_slot(FieldClass158EA0* owner, LibClass171EA0* object)
+bool field_add_object_slot(FieldObjectSlotOwner* owner, LibClass171EA0* object)
 {
-    for (s32 i = 0; i < FieldClass158EA0::SLOT_COUNT; i++)
+    for (s32 i = 0; i < FieldObjectSlotOwner::SLOT_COUNT; i++)
     {
         if (owner->objects[i] == 0)
         {
@@ -1070,7 +1069,7 @@ bool field_add_object_slot(FieldClass158EA0* owner, LibClass171EA0* object)
 }
 
 /** @brief Detach and release occupied slots marked for removal. */
-void FieldClass158EA0::func_001DF360()
+void FieldObjectSlotOwner::update()
 {
     for (s32 i = 0; i < SLOT_COUNT; i++)
     {
@@ -1083,7 +1082,7 @@ void FieldClass158EA0::func_001DF360()
 }
 
 /** @brief Release every stored object and destroy the intrusive owner base. */
-FieldClass158EA0::~FieldClass158EA0()
+FieldObjectSlotOwner::~FieldObjectSlotOwner()
 {
     for (s32 i = 0; i < SLOT_COUNT; i++)
     {
@@ -1092,7 +1091,7 @@ FieldClass158EA0::~FieldClass158EA0()
 }
 
 /** @brief Initialize the intrusive base and clear all slots and removal flags. */
-FieldClass158EA0::FieldClass158EA0()
+FieldObjectSlotOwner::FieldObjectSlotOwner()
 {
     for (s32 i = 0; i < SLOT_COUNT; i++)
     {
@@ -1105,14 +1104,14 @@ FieldClass158EA0::FieldClass158EA0()
  * @brief Delete a rendering buffer and clear its owning pointer.
  * @param buffer Owned rendering buffer, or null.
  */
-static inline void field_delete_render_buffer(LibClass174CF0*& buffer)
+static inline void field_delete_render_buffer(LibDrawBuffer*& buffer)
 {
     delete buffer;
     buffer = 0;
 }
 
 /** @brief Release the timed quad records. */
-FieldClass158EC0::~FieldClass158EC0()
+FieldTimedQuadController::~FieldTimedQuadController()
 {
     for (s32 i = 0; i < RECORD_COUNT; i++)
     {
@@ -1124,14 +1123,19 @@ FieldClass158EC0::~FieldClass158EC0()
     }
 }
 
-/** @brief Accept any actor and source for quad generation. */
-s32 FieldClass158EC0::accepts_source(const void* actor, const void* source)
+/**
+ * @brief Accept any actor and source for quad generation.
+ * @param actor Actor supplying the vertices; unused.
+ * @param source Source record associated with the actor; unused.
+ * @return Always one.
+ */
+s32 FieldTimedQuadController::accepts_source(const void* actor, const void* source)
 {
     return 1;
 }
 
 /** @brief Detach and queue the controller, releasing its rendering resources. */
-void FieldClass158EC0::func_001DD7B0()
+void FieldTimedQuadController::func_001DD7B0()
 {
     lib_object_detach_owner(this);
     resident_enqueue_object(D_001B65F4, this);
@@ -1147,7 +1151,7 @@ void FieldClass158EC0::func_001DD7B0()
 }
 
 /** @brief Release all records and resources, then unset the texture and count. */
-void FieldClass158EC0::func_00272220()
+void FieldTimedQuadController::func_00272220()
 {
     for (s32 i = 0; i < RECORD_COUNT; i++)
     {
@@ -1171,32 +1175,74 @@ void FieldClass158EC0::func_00272220()
     record_count = 0;
 }
 
-void func_002AFD90(FieldFlagOwner2AFD90* object)
+/** @brief Set the low flag bit on the attached transform when present. */
+void FieldTimedQuadController::func_00272130()
 {
-    FieldFlagTarget2AFD90* target = object->target;
+    LibTransform* target = attached_object;
     if (target != 0)
     {
-        target->flags |= 1;
+        target->unk6a |= 1;
     }
 }
 
-void func_002AFDB0(FieldFlagOwner2AFD90* object)
+/** @brief Clear the low flag bit on the attached transform when present. */
+void FieldTimedQuadController::func_002721A0()
 {
-    FieldFlagTarget2AFD90* target = object->target;
+    LibTransform* target = attached_object;
     if (target != 0)
     {
-        target->flags &= 0xFFFE;
+        target->unk6a &= 0xFFFE;
     }
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002AFDD0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", add_quad__16FieldClass158EC0FPC12FieldVector4UcUc);
+/**
+ * @brief Add a timed quad in the first free record slot.
+ *
+ * Leave the count unchanged when the pool is full or allocation fails.
+ * @param vertices Four aligned vertices to copy.
+ * @param side Low bit selects the quad's texture orientation.
+ * @param alpha Initial alpha for the hold and fade intervals.
+ */
+void FieldTimedQuadController::add_quad(const FieldVector4* vertices, u8 side, u8 alpha)
+{
+    FieldTimedQuad* record = 0;
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_001DF360__16FieldClass158EC0Fv);
+    for (s32 i = 0; i < RECORD_COUNT; i++)
+    {
+        if (records[i] == 0)
+        {
+            records[i] = new (0) FieldTimedQuad;
+
+            if (records[i] == 0)
+            {
+                return;
+            }
+
+            record = records[i];
+            break;
+        }
+    }
+
+    if (record != 0)
+    {
+        record->side = side;
+        record->base_alpha = alpha;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            record->vertices[i] = vertices[i];
+        }
+
+        record_count++;
+    }
+}
+
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", update__24FieldTimedQuadControllerFv);
 
 /** @brief Initialize the quad pool and rendering state. */
-FieldClass158EC0::FieldClass158EC0()
+FieldTimedQuadController::FieldTimedQuadController()
 {
     unk18 = 5;
     func_0013A678(records, 0, sizeof(records));
@@ -1215,18 +1261,21 @@ extern "C" void func_002B0A80(FieldByte60AE9E0* object)
 }
 
 /** @brief Destroy the shutdown sequence. */
-FieldClass158FF0::~FieldClass158FF0()
+FieldShutdownSequence::~FieldShutdownSequence()
 {
 }
 
-/** @brief Report the sequence kind. @return Nine. */
-s32 FieldClass158FF0::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 9.
+ */
+s32 FieldShutdownSequence::get_default_list_kind()
 {
     return 9;
 }
 
-/** @brief Advance shutdown and request loop exit after the fourth update. */
-void FieldClass158FF0::func_001DF360()
+/** @brief Run the next stage, then request exit and remove the node after stage three. */
+void FieldShutdownSequence::update()
 {
     field_run_shutdown_stage(D_001B6430->context, stage);
     stage++;
@@ -1254,9 +1303,42 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B0C
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B0D80);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", func_002B14C0);
+/**
+ * @brief Set display alpha blending, creating or removing its update node as needed.
+ *
+ * Zero detaches the node and queues its removal. The display blend flag and
+ * alpha reset when the queued node is destroyed.
+ * @param context Field context retaining the blend node.
+ * @param alpha Nonzero alpha enables blending; zero requests removal.
+ */
+extern "C" void field_set_display_blend(ResidentContext* context, float alpha)
+{
+    if (alpha == 0.0f)
+    {
+        if (context->display_blend_node != 0)
+        {
+            lib_object_detach_owner(context->display_blend_node);
+            context->display_blend_node->func_001DD7B0();
+            context->display_blend_node = 0;
+        }
+    }
+    else
+    {
+        if (context->display_blend_node == 0)
+        {
+            context->display_blend_node = new (0) FieldDisplayBlendNode;
+            D_001B6614->append_node(context->display_blend_node, -1);
+        }
 
-void FieldClass159050::func_001DD7B0()
+        context->display_blend_node->alpha = alpha;
+        LibDisplayState* state = static_cast<LibDisplayState*>(D_001B6650);
+        state->blend_enabled = 1;
+        state->blend_alpha = alpha;
+    }
+}
+
+/** @brief Detach the node and add it to the resident release queue. */
+void FieldDisplayBlendNode::func_001DD7B0()
 {
     lib_object_detach_owner(this);
     resident_enqueue_object(D_001B65F4, this);
@@ -1363,21 +1445,21 @@ void field_adjust_time_step(ResidentContext* context, s32 overrun)
 }
 
 /**
- * @brief Run field rendering and object updates until an exit is requested.
+ * @brief Run field rendering and object updates, then finish shutdown after exit.
  * @param context Field context retaining update, display, and timing state.
  */
 void field_run_update_loop(ResidentContext* context)
 {
     TIMER0_MODE = 0x83;
 
-    while (func_0011DF10(D_001B65F0, 0) == 0)
+    for (; func_0011DF10(D_001B65F0, 0) == 0;)
     {
     }
 
     func_4DCEA0(D_001B6650, true, false);
     D_001B6420 = 1;
 
-    while (!context->exit_requested)
+    for (; !context->exit_requested;)
     {
         if (!context->skip_render)
         {
@@ -1398,7 +1480,7 @@ void field_run_update_loop(ResidentContext* context)
 
         func_4D8AC0();
         func_4D4BE0(D_001B661C);
-        D_001B6614->func_004D6730();
+        D_001B6614->update_nodes();
         context->update_count++;
 
         if (context->update_callback != 0)
@@ -1406,7 +1488,7 @@ void field_run_update_loop(ResidentContext* context)
             context->update_callback->func_001FC020();
         }
 
-        func_0011ECD0(D_001B65F4);
+        resident_drain_release_queues(D_001B65F4);
         resident_get_runtime_owner();
         s32 overrun = 0;
         void* first_attachment = 0;
@@ -1441,9 +1523,7 @@ void field_run_update_loop(ResidentContext* context)
         {
             s32 remaining = context->time_step_level;
             context->display_field = func_4DCFF0(D_001B6650, context->render_count);
-            s32 retries = 5;
-
-            do
+            for (s32 retries = 5; retries >= 0; retries--)
             {
                 remaining -= func_0011DF00(D_001B65F0);
 
@@ -1453,7 +1533,7 @@ void field_run_update_loop(ResidentContext* context)
                 }
 
                 context->display_field = func_0011DF10(D_001B65F0, 0);
-            } while (--retries >= 0);
+            }
 
             if (remaining < 0)
             {
@@ -1510,14 +1590,14 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
         if (context->unk1c != 0)
         {
-            static_cast<FieldClass150070*>(context->unk1c)->func_001DD7B0();
+            static_cast<FieldListObject*>(context->unk1c)->func_001DD7B0();
         }
 
-        lib_object_detach_owner(context->unk60);
-        field_detach_object_slots(context->unk60);
+        lib_object_detach_owner(context->object_slots);
+        field_detach_object_slots(context->object_slots);
         lib_object_detach_owner(context->unk64);
         func_002D2170(context->unk64);
-        func_002D9730(static_cast<FieldClass150070*>(context->unk28));
+        func_002D9730(static_cast<FieldListObject*>(context->unk28));
         lib_object_detach_owner(context->unk28);
         func_0027C020(context->unk58);
         lib_object_detach_owner(context->unk58);
@@ -1527,9 +1607,9 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         static_cast<FieldContextOwner14*>(context->unk14)->other_motion.list->func_002DDA70();
         lib_object_detach_owner(context->unk54);
         func_001DEF00(reinterpret_cast<FieldFlaggedListObject*>(context->unk04));
-        lib_object_detach_owner(&static_cast<FieldClass150070&>(*static_cast<FieldClass14FE30*>(context->unk04)));
+        lib_object_detach_owner(&static_cast<FieldListObject&>(*static_cast<FieldClass14FE30*>(context->unk04)));
         lib_object_detach_owner(context->unk4c);
-        field_detach_release_context_object(context->unk50);
+        field_detach_release_context_object(context->display_blend_node);
         lib_object_detach_owner(context->unk08);
 
         if (full_release)
@@ -1592,7 +1672,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
             field_release_context_object(context->unk58);
             delete static_cast<FieldClass1505F0*>(context->unk3c);
             context->unk3c = 0;
-            field_release_context_object(context->unk60);
+            field_release_context_object(context->object_slots);
             delete context->unk68;
             context->unk68 = 0;
         }
@@ -1629,7 +1709,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
         ResidentDmaQueue* dma_queue = D_001B6610;
 
-        while (dma_queue->busy != 0)
+        for (; dma_queue->busy != 0;)
         {
         }
 
@@ -1677,7 +1757,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
         delete context->unk78;
         context->unk78 = 0;
-        func_0011ECD0(D_001B65F4);
+        resident_drain_release_queues(D_001B65F4);
         delete static_cast<ResidentHeap*>(context->unk70);
         context->unk70 = 0;
         resident_exchange_allocation_heap(0);
@@ -1687,7 +1767,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
             func_004E33B0();
         }
 
-        func_0011ECD0(D_001B65F4);
+        resident_drain_release_queues(D_001B65F4);
 
         if (full_release)
         {
@@ -1751,7 +1831,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     context->unkd0 = 0;
     context->time_step_level = 1;
     context->update_callback = 0;
-    context->unk50 = 0;
+    context->display_blend_node = 0;
     context->unk14 = 0;
     context->unk5c = 0;
     context->unk6c = 0;
@@ -1924,7 +2004,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     D_001B6430 = reference;
     context->unk2c = reinterpret_cast<FieldResourceList14*>(::new (0) FieldClass150E10);
     D_001B6614->append_node(context->unk2c, -1);
-    context->unk30 = ::new (0) FieldClass1530D0;
+    context->unk30 = ::new (0) FieldResourceLoaderList;
     D_001B6614->append_node(context->unk30, -1);
     context->unk08 = reinterpret_cast<ResidentContext08*>(::new (0) FieldClass153CD0);
     D_001B6614->append_node(context->unk08, -1);
@@ -1947,7 +2027,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
         FieldClass150DC0* destination = reinterpret_cast<FieldClass150DC0*>(context->unk38);
         FieldClass150DC0* source = &saved->script;
         *destination = *source;
-        reinterpret_cast<FieldClass150DC0*>(context->unk38)->unk10 = 0;
+        reinterpret_cast<FieldClass150DC0*>(context->unk38)->owner = 0;
     }
 
     D_001B6614->append_node(context->unk38, -1);
@@ -1973,7 +2053,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
         context->unk04 = saved->context04;
     }
 
-    D_001B6614->append_node(static_cast<FieldClass150070*>(static_cast<FieldClass14FE30*>(context->unk04)), -1);
+    D_001B6614->append_node(static_cast<FieldListObject*>(static_cast<FieldClass14FE30*>(context->unk04)), -1);
     context->unk44 = reinterpret_cast<ResidentContextObject52*>(::new (0) FieldClass1537C0);
     FieldClass1537C0* camera_controller = reinterpret_cast<FieldClass1537C0*>(context->unk44);
     camera_controller->unk51_0 = 0;
@@ -2033,14 +2113,14 @@ extern "C" void field_initialize_context(ResidentContext* context)
 
     if (saved == 0)
     {
-        context->unk60 = new FieldClass158EA0;
+        context->object_slots = new FieldObjectSlotOwner;
     }
     else
     {
-        context->unk60 = saved->context60;
+        context->object_slots = saved->object_slots;
     }
 
-    D_001B6614->append_node(context->unk60, -1);
+    D_001B6614->append_node(context->object_slots, -1);
 
     if (saved == 0)
     {
@@ -2161,30 +2241,30 @@ extern "C" void field_initialize_context(ResidentContext* context)
             state->state = 2;
         case 2:
         {
-            FieldClass154C70* loader = new FieldClass154C70;
+            FieldContextResourceLoader* loader = new FieldContextResourceLoader;
 
             if (loader->unk30_0)
             {
-                if (loader->unk1c != 0)
+                if (loader->requests != 0)
                 {
-                    delete[] loader->unk1c;
+                    delete[] loader->requests;
                 }
 
-                loader->unk1c = new (0) FieldClass152210[3];
+                loader->requests = new (0) FieldSceneResourceRequest[3];
             }
             else
             {
                 previous_heap = resident_exchange_allocation_heap(D_001B6430->context->unk6c);
-                if (loader->unk1c != 0)
+                if (loader->requests != 0)
                 {
-                    delete[] loader->unk1c;
+                    delete[] loader->requests;
                 }
 
-                loader->unk1c = new (0) FieldClass152210[3];
+                loader->requests = new (0) FieldSceneResourceRequest[3];
                 resident_exchange_allocation_heap(previous_heap);
             }
 
-            loader->unk24 = 3;
+            loader->request_capacity = 3;
             u8 kinds = 0;
             s32 command_count = state->command_count;
 
@@ -2218,9 +2298,9 @@ extern "C" void field_initialize_context(ResidentContext* context)
 
             if (!(present_kinds & 1))
             {
-                FieldClass152210* record = field_append_file_request(loader, D_303CB0[saved->resource_index].file_key + 1, 1);
+                FieldSceneResourceRequest* record = field_append_file_request(loader, D_303CB0[saved->resource_index].file_key + 1, 1);
                 added++;
-                record->unk00 = (D_303CB0[saved->resource_index].byte_count + 0x7FF) & ~0x7FF;
+                record->byte_capacity = (D_303CB0[saved->resource_index].byte_count + 0x7FF) & ~0x7FF;
             }
 
             if (!(present_kinds & 4))
@@ -2229,19 +2309,19 @@ extern "C" void field_initialize_context(ResidentContext* context)
                 added++;
             }
 
-            loader->unk20 = static_cast<FieldClass1DD400*>(reinterpret_cast<FieldClass153CD0*>(context->unk08));
+            loader->completion_callback = static_cast<FieldClass1DD400*>(reinterpret_cast<FieldClass153CD0*>(context->unk08));
             loader->resource_index = saved->resource_index;
             loader->load_auxiliary = 1;
 
             if (added != 0)
             {
-                static_cast<LibClass178DD0&>(*static_cast<FieldClass1530D0*>(context->unk30)).append_node(loader, -1);
+                static_cast<LibClass178DD0&>(*static_cast<FieldResourceLoaderList*>(context->unk30)).append_node(loader, -1);
                 return;
             }
 
-            loader->unk15 = 1;
+            loader->request_state = 1;
             loader->func_001DDB30(0);
-            loader->func_001F98E0();
+            loader->advance_requests();
             loader->finish_requests();
             break;
         }
@@ -2282,19 +2362,25 @@ extern "C" void field_clear_flags_5000(FieldRuntimeValues* values)
     func_0013A678(values->flags_5000, 0, sizeof(values->flags_5000));
 }
 
-FieldClass159050::~FieldClass159050()
+/** @brief Disable display blending and restore the default alpha. */
+FieldDisplayBlendNode::~FieldDisplayBlendNode()
 {
-    FieldGlobal3E6C* state = static_cast<FieldGlobal3E6C*>(D_001B6650);
-    state->unk3e6c = 0;
-    state->unk3e70 = 0.5f;
+    LibDisplayState* state = static_cast<LibDisplayState*>(D_001B6650);
+    state->blend_enabled = 0;
+    state->blend_alpha = 0.5f;
 }
 
-s32 func_002B4030(FieldClass150070* object)
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 14.
+ */
+s32 FieldDisplayBlendNode::get_default_list_kind()
 {
     return 14;
 }
 
-void FieldClass159050::func_001DF360()
+/** @brief Rebuild the display drawing commands. */
+void FieldDisplayBlendNode::update()
 {
     func_4DCFA0(D_001B6650);
 }
@@ -2306,19 +2392,19 @@ void FieldClass159050::func_001DF360()
  * @param kind Resource kind stored in the request.
  * @param release_buffer Low bit selects whether to free the buffer on release.
  */
-extern "C" void field_append_loaded_resource(FieldClass154C70* loader, u32 buffer_address, u8 kind, u32 release_buffer)
+extern "C" void field_append_loaded_resource(FieldContextResourceLoader* loader, u32 buffer_address, u8 kind, u32 release_buffer)
 {
-    if (loader->unk2d < loader->unk24)
+    if (loader->request_count < loader->request_capacity)
     {
-        loader->unk1c[loader->unk2d].reset_request();
-        FieldClass152210* record = &loader->unk1c[loader->unk2d];
-        record->unk04 = buffer_address;
+        loader->requests[loader->request_count].reset_request();
+        FieldSceneResourceRequest* record = &loader->requests[loader->request_count];
+        record->buffer_base = buffer_address;
         record->unk08_0 = 1;
-        loader->unk1c[loader->unk2d].unk16_1 = release_buffer;
-        loader->unk1c[loader->unk2d].unk16_0 = 1;
-        loader->unk1c[loader->unk2d].unk14 = loader->unk2d;
-        loader->unk1c[loader->unk2d].unk15 = kind;
-        loader->unk2d++;
+        loader->requests[loader->request_count].unk16_1 = release_buffer;
+        loader->requests[loader->request_count].unk16_0 = 1;
+        loader->requests[loader->request_count].slot_index = loader->request_count;
+        loader->requests[loader->request_count].kind = kind;
+        loader->request_count++;
     }
 }
 
@@ -5263,7 +5349,7 @@ FieldTrackKey1598A0::FieldTrackKey1598A0()
  * @param object Callback receiver.
  * @return Always 14.
  */
-s32 func_002BC220(FieldClass150070* object)
+s32 func_002BC220(FieldListObject* object)
 {
     return 14;
 }

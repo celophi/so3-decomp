@@ -5,7 +5,7 @@ func_00101250 = 0x00101250; // type:func size:0x10
 func_00101510 = 0x00101510; // type:func size:0x40
 func_0010A080 = 0x0010A080; // type:func size:0x28
 func_0010A0B0 = 0x0010A0B0; // type:func size:0x30
-func_0011EE00 = 0x0011EE00; // type:func size:0x68
+func_0011EE00 = 0x0011EE00; // type:func absolute:True allow_duplicated:True
 
 // Sony's libraries, plus a few functions from GCC's C library (newlib). Each
 // group below is a run of object files from the SDK 2.7.2 EE runtime that
@@ -585,3 +585,41 @@ func_100B40 = 0x00100B40; // type:func absolute:True allow_duplicated:True
 resident_allocate_request = 0x00112400; // type:func size:0x208
 func_00112400 = 0x00112400; // type:func absolute:True allow_duplicated:True
 func_112400 = 0x00112400; // type:func absolute:True allow_duplicated:True
+
+// Resident resource queue update, lookup, cancellation, and submission.
+func_00102AA0 = 0x00102AA0; // type:func absolute:True allow_duplicated:True
+resident_update_resource_queue = 0x00102AA0; // type:func size:0x40 allow_duplicated:True
+func_00103640 = 0x00103640; // type:func absolute:True allow_duplicated:True
+resident_find_resource_request = 0x00103640; // type:func size:0x19C allow_duplicated:True
+func_00103B20 = 0x00103B20; // type:func absolute:True allow_duplicated:True
+resident_cancel_resource_requests = 0x00103B20; // type:func size:0x350 allow_duplicated:True
+func_00103E70 = 0x00103E70; // type:func absolute:True allow_duplicated:True
+resident_queue_resource_request = 0x00103E70; // type:func size:0x34C allow_duplicated:True
+
+func_001025A0 = 0x001025A0; // type:func absolute:True allow_duplicated:True
+resident_decode_resource_block = 0x001025A0; // type:func size:0x374 allow_duplicated:True
+
+func_00102920 = 0x00102920; // type:func absolute:True allow_duplicated:True
+resident_allocate_decode_buffer = 0x00102920; // type:func size:0x118 allow_duplicated:True
+
+func_00102A40 = 0x00102A40; // type:func absolute:True allow_duplicated:True
+resident_find_resource_block = 0x00102A40; // type:func size:0x50 allow_duplicated:True
+
+func_0011ECD0 = 0x0011ECD0; // type:func absolute:True allow_duplicated:True
+resident_drain_release_queues = 0x0011ECD0; // type:func size:0xBC allow_duplicated:True
+resident_queue_allocation_release = 0x0011EE00; // type:func size:0x68 allow_duplicated:True
+
+func_0011EED0 = 0x0011EED0; // type:func absolute:True allow_duplicated:True
+resident_initialize_release_queues = 0x0011EED0; // type:func size:0x28 allow_duplicated:True
+
+func_00101580 = 0x00101580; // type:func absolute:True allow_duplicated:True
+resident_decode_lz_words = 0x00101580; // type:func size:0x4A0 allow_duplicated:True
+
+func_00101A20 = 0x00101A20; // type:func absolute:True allow_duplicated:True
+resident_decode_lz_runs = 0x00101A20; // type:func size:0x504 allow_duplicated:True
+
+func_00101F30 = 0x00101F30; // type:func absolute:True allow_duplicated:True
+resident_decode_lz_bytes = 0x00101F30; // type:func size:0x408 allow_duplicated:True
+
+func_001132F0 = 0x001132F0; // type:func absolute:True allow_duplicated:True
+resident_heap_resize = 0x001132F0; // type:func size:0x1CC allow_duplicated:True

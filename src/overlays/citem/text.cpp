@@ -1391,8 +1391,8 @@ void item_update_allocation_page(Record0034E8B0* object, s32 first_index)
                         count++;
                     }
                 }
-                allocation = func_002D3D80(D_001B643C->buffers, 14);
-                record = func_002D3CC0(D_001B643C->buffers, count + 60);
+                allocation = field_get_aligned_allocation(D_001B643C->buffers, 14);
+                record = field_find_resource_record(D_001B643C->buffers, count + 60);
                 func_002D5CF0((ItemCreationOptionResourceDisplay*)object->second[index], allocation, record, 14);
                 ((CitemAllocationDisplay*)object->first[index])->unk3d = 1;
                 ((CitemResourceDisplay*)object->second[index])->unk3d = 1;

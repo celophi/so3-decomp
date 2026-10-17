@@ -557,12 +557,15 @@ struct StatusResourceState : public FieldClass153E30
     StatusResourceState();
     /** @brief Destroy the owned record selection and the Field receiver base. */
     virtual ~StatusResourceState();
-    /** @brief Report the status receiver type. @return Four. */
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return The class's default list kind.
+     */
+    virtual s32 get_default_list_kind();
     /** @brief Submit this receiver to the resident object queue. */
     virtual void func_001DD7B0();
     /** @brief Switch between record and name windows through a timed transition. */
-    virtual void func_001DF360();
+    virtual void update();
     /** @brief Leave the status receiver unchanged. */
     virtual void func_001DD410();
     /** @brief Report the receiver state. @return One. */
@@ -2079,8 +2082,8 @@ s32 StatusNameWindow::func_slotf4(void* associated)
     lib_container_attach_widget(unk10, name_cursor);
     portrait_resource_slot = selection->slots[selection->current];
     portrait = new (0) ItemCreationOptionResourceDisplay;
-    void* allocation = func_002D3D80(D_001B643C->slots, portrait_resource_slot);
-    FieldResourceRecord* resource = static_cast<FieldResourceRecord*>(func_002D3EB0(D_001B643C->slots, portrait_resource_slot));
+    void* allocation = field_get_aligned_allocation(D_001B643C->slots, portrait_resource_slot);
+    FieldResourceRecord* resource = static_cast<FieldResourceRecord*>(field_get_builtin_resource_data(D_001B643C->slots, portrait_resource_slot));
     portrait->unkcc = allocation;
     portrait->unkd0 = portrait_resource_slot;
     portrait->func_002D6440(resource, 40.0f, 15.0f);
@@ -2634,8 +2637,8 @@ void status_refresh_portrait(StatusCharacterWindow* object)
         key = selected + 14;
     }
 
-    void* allocation = func_002D3D80(D_001B643C->slots, key & 0xFF);
-    FieldResourceRecord* record = func_002D3CC0(D_001B643C->slots, 0);
+    void* allocation = field_get_aligned_allocation(D_001B643C->slots, key & 0xFF);
+    FieldResourceRecord* record = field_find_resource_record(D_001B643C->slots, 0);
 
     if (object->portrait != 0)
     {
@@ -2768,9 +2771,9 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
         resource_key = selected_slot + 14;
     }
 
-    portrait->unkcc = func_002D3D80(D_001B643C->slots, resource_key & 0xFF);
+    portrait->unkcc = field_get_aligned_allocation(D_001B643C->slots, resource_key & 0xFF);
     portrait->unkd0 = resource_key;
-    portrait->func_002D6440(func_002D3CC0(D_001B643C->slots, 0), portrait_x, portrait_y);
+    portrait->func_002D6440(field_find_resource_record(D_001B643C->slots, 0), portrait_x, portrait_y);
     portrait->unk34 = 3;
     lib_container_attach_widget(unk10, portrait);
     StatusVariantSection* variants = reinterpret_cast<StatusVariantSection*>(
@@ -3342,16 +3345,16 @@ s32 StatusBackgroundWindow::func_slotf4(u32 associated)
     ItemCreationOptionResourceDisplay* first = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* second = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* third = new (0) ItemCreationOptionResourceDisplay;
-    void* allocation = func_002D3D80(D_001B643C->slots, 11);
+    void* allocation = field_get_aligned_allocation(D_001B643C->slots, 11);
     first->unkcc = allocation;
     second->unkcc = allocation;
     third->unkcc = allocation;
     first->unkd0 = 11;
     second->unkd0 = 11;
     third->unkd0 = 11;
-    initialize_status_resource(first, func_002D3CC0(D_001B643C->slots, 5), 0.0f, 0.0f);
-    initialize_status_resource(second, func_002D3CC0(D_001B643C->slots, 6), 256.0f, 0.0f);
-    initialize_status_resource(third, func_002D3CC0(D_001B643C->slots, 7), 512.0f, 0.0f);
+    initialize_status_resource(first, field_find_resource_record(D_001B643C->slots, 5), 0.0f, 0.0f);
+    initialize_status_resource(second, field_find_resource_record(D_001B643C->slots, 6), 256.0f, 0.0f);
+    initialize_status_resource(third, field_find_resource_record(D_001B643C->slots, 7), 512.0f, 0.0f);
     lib_container_attach_widget(object->unk10, first);
     lib_container_attach_widget(object->unk10, second);
     lib_container_attach_widget(object->unk10, third);
@@ -3379,11 +3382,11 @@ void StatusResourceState::func_slot5c()
 
     for (s32 index = 15; index <= 22; index++)
     {
-        func_002D3DC0(slots, (u8)index);
+        field_queue_allocation_release(slots, (u8)index);
     }
 
-    func_002D3DC0(slots, 59);
-    func_002D3DC0(slots, 60);
+    field_queue_allocation_release(slots, 59);
+    field_queue_allocation_release(slots, 60);
 }
 
 /** @brief Submit this receiver to the resident object queue. */
@@ -3393,7 +3396,7 @@ void StatusResourceState::func_001DD7B0()
 }
 
 /** @brief Switch between record and name windows through a timed transition. */
-void StatusResourceState::func_001DF360()
+void StatusResourceState::update()
 {
     StatusResourceState* object = this;
 
@@ -3608,8 +3611,11 @@ u32 StatusResourceState::func_00263CC0()
     return resource;
 }
 
-/** @brief Report the status receiver type. @return Four. */
-s32 StatusResourceState::func_001DF3D0()
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 4.
+ */
+s32 StatusResourceState::get_default_list_kind()
 {
     return 4;
 }

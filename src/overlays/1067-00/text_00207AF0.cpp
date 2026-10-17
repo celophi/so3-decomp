@@ -215,9 +215,9 @@ s32 FieldClass151320::func_00207D40()
 /** @brief Wait for the command list's owning motion. @return Zero while active, otherwise one. */
 s32 FieldClass151340::func_00207DF0()
 {
-    if (((FieldCommandOwner80*)unk10)->unk7c->func_00208C80())
+    if (reinterpret_cast<FieldCommandOwner80*>(owner)->unk7c->func_00208C80())
     {
-        ((FieldCommandOwner80*)unk10)->unk78 = 1.0f;
+        reinterpret_cast<FieldCommandOwner80*>(owner)->unk78 = 1.0f;
         return 0;
     }
     return 1;
@@ -235,7 +235,7 @@ s32 FieldClass151360::func_00207E50()
 /** @brief Begin motion through the command list's owner. @return Always one. */
 s32 FieldClass151380::func_00207E90()
 {
-    ((FieldCommandOwner80*)unk10)->unk7c->func_00207EE0(unk20, unk1c);
+    reinterpret_cast<FieldCommandOwner80*>(owner)->unk7c->func_00207EE0(unk20, unk1c);
     ((FieldContextMotion2*)D_001B6430->context->unk14)->unk36e = 0;
     return 1;
 }
@@ -268,7 +268,7 @@ s32 FieldClass1513E0::func_00207F70()
     {
         return 0;
     }
-    ((FieldClass151490*)unk10)->unk78 = (float)unk1c;
+    static_cast<FieldClass151490*>(owner)->unk78 = (float)unk1c;
     return 1;
 }
 
@@ -279,7 +279,7 @@ s32 FieldClass151400::func_00207FE0()
     {
         return 0;
     }
-    ((FieldClass151460*)((FieldClass151490*)unk10)->unk7c)->func_00208C30();
+    static_cast<FieldClass151460*>(static_cast<FieldClass151490*>(owner)->unk7c)->func_00208C30();
     return 1;
 }
 
@@ -294,7 +294,7 @@ s32 FieldClass151440::func_00208230()
     }
     FieldContextVector371* context = (FieldContextVector371*)D_001B6430->context->unk14;
     context->unk36e = 1;
-    FieldMotionVector81* motion = (FieldMotionVector81*)((FieldClass151490*)unk10)->unk7c;
+    FieldMotionVector81* motion = static_cast<FieldMotionVector81*>(static_cast<FieldClass151490*>(owner)->unk7c);
     motion->unk30 = unk20;
     if (motion->unk80 == 1)
     {
@@ -611,9 +611,9 @@ void FieldClass154D20::func_0020BD00(FieldClass154D20* other)
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_00204210__16FieldClass151510Fv);
 
 /** @brief Update the inherited object and optional channel. */
-void FieldClass151510::func_001DF360()
+void FieldClass151510::update()
 {
-    FieldClass150F90::func_001DF360();
+    FieldClass150F90::update();
     if (unkA8)
     {
         unkA8->func_0020BDA0();
@@ -691,7 +691,7 @@ void FieldClass151570::func_001DD7B0()
     resident_enqueue_object(D_001B65F4, this);
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_001DF360__16FieldClass151570Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", update__16FieldClass151570Fv);
 
 /**
  * @brief Test a shape descriptor while its record range is inactive.
@@ -803,7 +803,7 @@ extern "C" FieldClass1515B0* func_0020CB70(FieldClass151640* object,
         {
             FieldVec4A transformed;
             FieldVec4A* point = &((FieldShapeRecord20*)D_0050CB30.unk0c)->unk10;
-            const void* matrix = D_0050CB30.unk14->func_004D00A0();
+            const void* matrix = D_0050CB30.unk14->get_transform_matrix();
             func_00433730(matrix, point, &transformed);
             *height = transformed.y - ((FieldShapeRecord20*)D_0050CB30.unk0c)->unk04;
             return (FieldClass1515B0*)node;
@@ -1077,7 +1077,7 @@ extern "C" void func_0020D4C0(FieldClass151640* object, FieldShapeOwner18* shape
     FieldClass151570* node = new (0) FieldClass151570;
     node->unk18 = node->unk14 = shape->unk04;
     node->unk1c = shape;
-    node->unk30 = *node->unk18->func_004D00A0();
+    node->unk30 = *node->unk18->get_transform_matrix();
     object->unk88.append_node(node, -1);
 }
 
@@ -1129,7 +1129,7 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibClass178
                 node->unk14 = shape->unk04;
                 node->unk18 = transform;
                 node->unk1c = shape;
-                node->unk30 = *node->unk18->func_004D00A0();
+                node->unk30 = *node->unk18->get_transform_matrix();
                 object->unk88.append_node(node, -1);
             }
         }

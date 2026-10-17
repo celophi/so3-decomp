@@ -141,11 +141,16 @@ static inline u8 transaction_item_category(const ItemCreationCategoryDefinition*
 struct FieldModelRequests
 {
     u8 pad00[0x18];
+
     s16 first_key;
+
     s16 second_key;
-    u32 first_request;
-    u32 second_request;
+
+    u32 first_buffer_address;
+
+    u32 second_buffer_address;
 };
+
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_sell_item);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", shop_complete_purchase);
@@ -574,7 +579,7 @@ extern "C" void field_replace_model_camera(FieldStatus14* object, void* attached
     object->previous_display = D_001B6628->current_display;
     object->display = new (0) LibClass179080(D_001B6650);
     ((LibClass179080*)object->display)->copy_camera((const LibClass179080*)attached);
-    ((LibClass179080*)object->display)->unk210 = &object->member;
+    ((LibClass179080*)object->display)->look_at_target = &object->member;
     object->rotation = 1.57f;
 }
 
@@ -598,20 +603,23 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FD8
 void field_cancel_model_request(FieldStatus14* object)
 {
     FieldModelRequests* requests = (FieldModelRequests*)object;
+
     switch (object->status)
     {
         case 0:
         case 5:
             return;
         case 1:
-            if (requests->first_request)
+            if (requests->first_buffer_address)
             {
-                func_00103B20(D_001B65E8, requests->first_key, requests->first_request, 0, -1, 0);
+                resident_cancel_resource_requests(D_001B65E8, requests->first_key, requests->first_buffer_address, 0, -1, 0);
             }
-            if (requests->second_request)
+
+            if (requests->second_buffer_address)
             {
-                func_00103B20(D_001B65E8, requests->second_key, requests->second_request, 0, -1, 0);
+                resident_cancel_resource_requests(D_001B65E8, requests->second_key, requests->second_buffer_address, 0, -1, 0);
             }
+
             object->status = 8;
             return;
         case 2:
@@ -645,24 +653,30 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FDA
 s32 field_request_model_resource(FieldStatus14* object, s32 key)
 {
     FieldModelRequests* state = (FieldModelRequests*)object;
+
     if (object->status != 0)
     {
         return 0;
     }
+
     state->first_key = key;
     state->second_key = 0;
-    state->first_request = (u32)func_00139700(64, func_0011C8C0(D_001B65E4, key));
-    if (!state->first_request)
+    state->first_buffer_address = (u32)func_00139700(64, func_0011C8C0(D_001B65E4, key));
+
+    if (!state->first_buffer_address)
     {
         return 0;
     }
-    state->second_request = 0;
-    if (!func_00103E70(D_001B65E8, key, state->first_request, 0x1357F, 1, 0, 0, 0, 1))
+
+    state->second_buffer_address = 0;
+
+    if (!resident_queue_resource_request(D_001B65E8, key, state->first_buffer_address, 0x1357F, 1, 0, 0, 0, 1))
     {
-        delete[] (u8*)state->first_request;
-        state->first_request = 0;
+        delete[] (u8*)state->first_buffer_address;
+        state->first_buffer_address = 0;
         return 0;
     }
+
     object->status = 1;
     return 1;
 }
@@ -671,7 +685,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FDC
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FE020);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_001DF360__16FieldClass15BB90Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", update__16FieldClass15BB90Fv);
 
 extern "C" void func_002FD800(FieldStatus14* object);
 
@@ -732,7 +746,7 @@ FieldClass15BB90::FieldClass15BB90()
  * @param object Callback receiver.
  * @return Always 3.
  */
-s32 func_002FE870(FieldClass150070* object)
+s32 func_002FE870(FieldListObject* object)
 {
     return 3;
 }

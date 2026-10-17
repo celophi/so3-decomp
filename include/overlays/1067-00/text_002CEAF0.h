@@ -15,12 +15,19 @@ typedef struct FieldClass15AE70 FieldClass15AE70;
 typedef struct FieldBufferSlots
 {
     u8 unk00[0x14];
-    void* unk14[64];
-    void* unk114;
-    s32 unk118;
-    void* unk11c[3];
-    void* unk128[3];
-    s32 unk134[3];
+
+    void* allocations[64];
+
+    void* block_chain_allocation;
+
+    s32 block_chain_size;
+
+    void* buffer_allocations[3];
+
+    void* aligned_buffers[3];
+
+    s32 buffer_sizes[3];
+
     u8 unk140;
 } FieldBufferSlots;
 
@@ -56,13 +63,13 @@ void field_queue_window_removal(FieldWindowRemovalContext* context, FieldClass15
  * @param object Callback receiver.
  * @return Always 3.
  */
-s32 func_002CFE00(FieldClass150070* object);
+s32 func_002CFE00(FieldListObject* object);
 /**
  * @brief Report this object's type value.
  * @param object Callback receiver.
  * @return Always 4.
  */
-s32 func_002D3BB0(FieldClass150070* object);
+s32 func_002D3BB0(FieldListObject* object);
 #endif
 
 /**
@@ -95,7 +102,7 @@ void func_002D2170(struct ResidentContextObject64* object);
 #include "overlays/1067-00/text_001DD3C0.h"
 
 /** Retained field attachment with a context callback. */
-class FieldClass15B0E0 : public FieldClass150070, public FieldClass1DD400
+class FieldClass15B0E0 : public FieldListObject, public FieldClass1DD400
 {
 public:
     static void* operator new(u32 size);

@@ -1,5 +1,9 @@
 #include "include_asm.h"
 #include "main/resident_00101550.h"
+#include "main/resident_0010A0E0.h"
+#include "main/resident_001001E0.h"
+#include "sdk/main/libc_guess_00137290.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 
 struct ResidentPointer90
 {
@@ -25,25 +29,126 @@ void func_00101550(void* object)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00101560);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00101580);
+/**
+ * @brief Decode an LZ payload with 16-bit literals and word offsets.
+ * @param decoder Resident decoder; unused.
+ * @param source Compressed word stream, without its block header.
+ * @param destination Output word buffer.
+ * @return One when a token with zero distance ends the stream.
+ */
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_decode_lz_words);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00101A20);
+/**
+ * @brief Decode an LZ payload with byte literals, back references, and runs of repeated bytes.
+ * @param decoder Resident decoder; unused.
+ * @param source Compressed byte stream, without its block header.
+ * @param destination Output byte buffer.
+ * @param decoded_size Output byte count at which decoding stops.
+ * @return One after decoding.
+ */
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_decode_lz_runs);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00101F30);
+/**
+ * @brief Decode an LZ payload with byte literals and back references.
+ * @param decoder Resident decoder; unused.
+ * @param source Compressed byte stream, without its block header.
+ * @param destination Output byte buffer.
+ * @return One when a token with zero distance ends the stream.
+ */
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_decode_lz_bytes);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102340);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001025A0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_decode_resource_block);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102920);
+/**
+ * @brief Allocate an output buffer for the selected compression block.
+ *
+ * Aligned allocations use the selected heap when one is set. Otherwise allocation
+ * uses the default C allocator.
+ *
+ * @param decoder Resident decoder; unused.
+ * @param source First block header.
+ * @param index Links to follow; nonpositive values select the first block.
+ * @param aligned Nonzero reserves space for aligning the payload to 128 bytes.
+ * @return Allocation base, or null when the block or storage is unavailable.
+ */
+extern "C" u8* resident_allocate_decode_buffer(ResidentDecodeObject* decoder, ResidentResourceHeader* source,
+                                             s32 index, s32 aligned)
+{
+    if (aligned && D_001B6400 != 0)
+    {
+        for (s32 block_index = 0; block_index < index; block_index++)
+        {
+            u32 next_offset = source->next_offset;
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102A40);
+            if (next_offset == 0)
+            {
+                return 0;
+            }
+
+            source = reinterpret_cast<ResidentResourceHeader*>(reinterpret_cast<u8*>(source) + next_offset);
+        }
+
+        u8* allocation = static_cast<u8*>(resident_heap_allocate(D_001B6400, source->decoded_size + 128));
+        u32 padding = 128 - ((u32)allocation & 127);
+
+        return static_cast<u8*>(resident_heap_resize(allocation, source->decoded_size + padding));
+    }
+
+    for (s32 block_index = 0; block_index < index; block_index++)
+    {
+        u32 next_offset = source->next_offset;
+
+        if (next_offset == 0)
+        {
+            return 0;
+        }
+
+        source = reinterpret_cast<ResidentResourceHeader*>(reinterpret_cast<u8*>(source) + next_offset);
+    }
+
+    if (aligned)
+    {
+        u8* allocation = static_cast<u8*>(func_00139900(source->decoded_size + 128));
+        u32 padding = 128 - ((u32)allocation & 127);
+
+        return static_cast<u8*>(func_0013B858(allocation, source->decoded_size + padding));
+    }
+
+    return static_cast<u8*>(func_00139900(source->decoded_size));
+}
+
+/**
+ * @brief Find a compression block by following its relative links.
+ * @param decoder Resident decoder; unused.
+ * @param source First block header.
+ * @param index Links to follow; nonpositive values select the first block.
+ * @return Selected header, or null when the chain ends.
+ */
+extern "C" ResidentResourceHeader* resident_find_resource_block(ResidentDecodeObject* decoder,
+                                                              ResidentResourceHeader* source, s32 index)
+{
+    for (s32 block_index = 0; block_index < index; block_index++)
+    {
+        u32 next_offset = source->next_offset;
+
+        if (next_offset == 0)
+        {
+            return 0;
+        }
+
+        source = reinterpret_cast<ResidentResourceHeader*>(reinterpret_cast<u8*>(source) + next_offset);
+    }
+
+    return source;
+}
 
 void func_00102A90(void* object)
 {
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102AA0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_update_resource_queue);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102AE0);
 
@@ -63,15 +168,15 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00103510)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00103580);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00103640);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_find_resource_request);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001037E0);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00103AE0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00103B20);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_cancel_resource_requests);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00103E70);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_queue_resource_request);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001041C0);
 

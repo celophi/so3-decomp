@@ -88,10 +88,20 @@ typedef struct FieldTimedValueState
 } FieldTimedValueState;
 
 #ifdef __cplusplus
-/** 0xB8-byte owner of 32 object slots, with native table 0x158EA0. */
-class FieldClass158EA0 : public FieldClass150070
+/**
+ * @brief Own up to 32 objects and release marked slots during list updates.
+ *
+ * Detaching the objects keeps the slots intact so they can be registered again
+ * when a saved field context is reused.
+ */
+class FieldObjectSlotOwner : public FieldListObject
 {
 public:
+    /**
+     * @brief Allocate storage from the active Lib heap or the default allocator.
+     * @param size Allocation size in bytes.
+     * @return Allocated storage, or null on failure.
+     */
     static void* operator new(u32 size);
 
     enum
@@ -99,25 +109,30 @@ public:
         SLOT_COUNT = 32
     };
 
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release storage allocated for the slot owner.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object)
     {
         func_004DB570(object);
     }
 
     /** @brief Clear all object slots and pending-removal flags. */
-    FieldClass158EA0();
+    FieldObjectSlotOwner();
 
     /** @brief Release every stored object. */
-    virtual ~FieldClass158EA0();
+    virtual ~FieldObjectSlotOwner();
 
     /** @brief Release objects marked for removal. */
-    virtual void func_001DF360();
+    virtual void update();
 
     u8 unk14[4];
 
+    /** Owned objects; null marks a vacant slot. */
     LibClass171EA0* objects[SLOT_COUNT];
 
+    /** Nonzero entries request release of their occupied slots on update. */
     u8 pending_removal[SLOT_COUNT];
 };
 
@@ -132,8 +147,10 @@ struct FieldTimedQuad
 
     FieldVector4 vertices[4];
 
+    /** Remaining hold time; negative values advance the alpha fade. */
     float hold_remaining;
 
+    /** Alpha retained during the hold, then reduced by the elapsed fade time. */
     u8 base_alpha;
 
     u8 side : 1;
@@ -141,10 +158,17 @@ struct FieldTimedQuad
     u8 unk45_1_7 : 7;
 };
 
-class LibClass174CF0;
+class LibDrawBuffer;
+class LibTransform;
 
-/** Controller owning up to 100 timed quads, with native table 0x158EC0. */
-class FieldClass158EC0 : public FieldClass1553B0
+/**
+ * @brief Own a fixed pool of timed, fading textured quads.
+ *
+ * Each record starts with a 120-unit hold. Once the hold expires, its alpha
+ * fades until the record is released. Rendering resources are initialized
+ * when the controller first updates.
+ */
+class FieldTimedQuadController : public FieldClass1553B0
 {
 public:
     enum
@@ -153,16 +177,16 @@ public:
     };
 
     /** @brief Initialize the quad pool and unset its rendering resources. */
-    FieldClass158EC0();
+    FieldTimedQuadController();
 
     /** @brief Release the quad records. */
-    virtual ~FieldClass158EC0();
+    virtual ~FieldTimedQuadController();
 
     /** @brief Release resources, detach the controller and queue it for release. */
     virtual void func_001DD7B0();
 
     /** @brief Advance the quad lifetimes and render surviving records. */
-    virtual void func_001DF360();
+    virtual void update();
 
     /** @brief Release the quad records and rendering resources. */
     virtual void func_00272220();
@@ -183,6 +207,8 @@ public:
 
     /**
      * @brief Add a timed quad in the first free record slot.
+     *
+     * Leave the count unchanged when the pool is full or allocation fails.
      * @param vertices Four aligned vertices to copy.
      * @param side Low bit selects the quad's texture orientation.
      * @param alpha Initial alpha for the hold and fade intervals.
@@ -191,9 +217,9 @@ public:
 
     FieldTimedQuad* records[RECORD_COUNT];
 
-    LibClass174CF0* renderer;
+    LibDrawBuffer* renderer;
 
-    LibClass171EA0* attached_object;
+    LibTransform* attached_object;
 
     s32 texture_index;
 
@@ -288,32 +314,69 @@ public:
 #endif
 
 #ifdef __cplusplus
-/** Shutdown sequence that runs one cleanup stage on each object-list update. */
-class FieldClass158FF0 : public FieldClass150070
+/**
+ * @brief Run shutdown stages zero through three over four object-list updates.
+ *
+ * Stage two has no cleanup, but still takes an update. The field loop runs
+ * stage four after this sequence requests exit.
+ */
+class FieldShutdownSequence : public FieldListObject
 {
 public:
+    /** @brief Start the shutdown sequence at stage zero. */
+    FieldShutdownSequence() : stage(0)
+    {
+    }
+
     /** @brief Destroy the shutdown sequence. */
-    virtual ~FieldClass158FF0();
+    virtual ~FieldShutdownSequence();
 
-    /** @brief Report the sequence kind. @return Nine. */
-    virtual s32 func_001DF3D0();
+    /**
+     * @brief Report this object's default list kind.
+     * @return Always 9.
+     */
+    virtual s32 get_default_list_kind();
 
-    /** @brief Advance shutdown and request loop exit after the fourth update. */
-    virtual void func_001DF360();
+    /** @brief Run the next stage, then request exit and remove the node after stage three. */
+    virtual void update();
 
+    /** Next shutdown stage, starting at zero. */
     s8 stage;
 };
 
-/** Partial Field object with vtable D_159050 in main data. */
-class FieldClass159050 : public FieldClass150070
+/**
+ * @brief Keep the display drawing commands updated while alpha blending is enabled.
+ *
+ * Removal is deferred through the resident release queue. Destruction disables
+ * blending and restores the display alpha to one half.
+ */
+class FieldDisplayBlendNode : public FieldListObject
 {
 public:
-    /** @brief Clear the global flag at offset 0x3E6C, set its float at 0x3E70 to one half, then destroy the object. */
-    virtual ~FieldClass159050();
-    /** @brief Detach the object and add it to the resident release queue. */
+    /** @brief Initialize the retained alpha to three quarters. */
+    FieldDisplayBlendNode() : alpha(0.75f)
+    {
+    }
+
+    /** @brief Disable display blending and restore the default alpha. */
+    virtual ~FieldDisplayBlendNode();
+
+    /**
+     * @brief Report this object's default list kind.
+     * @return Always 14.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Detach the node and add it to the resident release queue. */
     virtual void func_001DD7B0();
-    /** @brief Run the update on the global state object. */
-    virtual void func_001DF360();
+
+    /** @brief Rebuild the display drawing commands. */
+    virtual void update();
+
+    u8 unk14[4];
+
+    /** Alpha retained by the field blend setter. */
+    float alpha;
 };
 #endif
 
@@ -1724,20 +1787,6 @@ typedef struct FieldResetWords00
     u32 words[4];
 } FieldResetWords00;
 
-/** Partial target with a halfword flag field at offset 0x6A. */
-typedef struct FieldFlagTarget2AFD90
-{
-    u8 unk00[0x6A];
-    u16 flags;
-} FieldFlagTarget2AFD90;
-
-/** Partial receiver with a flag target at offset 0x1B4. */
-typedef struct FieldFlagOwner2AFD90
-{
-    u8 unk00[0x1B4];
-    FieldFlagTarget2AFD90* target;
-} FieldFlagOwner2AFD90;
-
 /** Partial target with two state bits at offset 0x34. */
 typedef struct FieldFlagTarget2B0BC0
 {
@@ -1932,34 +1981,40 @@ bool field_update_timed_value(FieldTimedValueState* state, float* value);
  * @brief Detach and release every occupied object slot.
  * @param owner Slot owner.
  */
-void field_clear_object_slots(FieldClass158EA0* owner);
+void field_clear_object_slots(FieldObjectSlotOwner* owner);
 
 /**
  * @brief Register every occupied object slot with the Lib object list.
  * @param owner Slot owner.
  */
-void field_register_object_slots(FieldClass158EA0* owner);
+void field_register_object_slots(FieldObjectSlotOwner* owner);
 
 /**
- * @brief Detach every occupied object slot from its current owner.
+ * @brief Detach every occupied object slot from its current list.
+ *
+ * Keep the stored pointers and removal flags for later registration.
  * @param owner Slot owner.
  */
-void field_detach_object_slots(FieldClass158EA0* owner);
+void field_detach_object_slots(FieldObjectSlotOwner* owner);
 
 /**
  * @brief Mark the first slot containing an object for deferred release.
+ *
+ * Marking a slot does not detach or release its object.
  * @param owner Slot owner.
  * @param object Object to mark.
  */
-void field_request_object_slot_removal(FieldClass158EA0* owner, LibClass171EA0* object);
+void field_request_object_slot_removal(FieldObjectSlotOwner* owner, LibClass171EA0* object);
 
 /**
  * @brief Store and register an object in the first vacant slot.
+ *
+ * A full owner leaves the object with the caller.
  * @param owner Slot owner.
  * @param object Object to store and register.
  * @return True if a vacant slot was found; false when all slots are occupied.
  */
-bool field_add_object_slot(FieldClass158EA0* owner, LibClass171EA0* object);
+bool field_add_object_slot(FieldObjectSlotOwner* owner, LibClass171EA0* object);
 #endif
 
 #ifdef __cplusplus
@@ -2058,18 +2113,6 @@ bool func_002B0BC0(FieldFlagOwner2B0BC0* object);
  * @param output Destination for the difference.
  */
 void func_002B7480(FieldSampleOwner2B7480* object, float* output);
-
-/**
- * @brief Set the low bit of the attached target's halfword flags when present.
- * @param object Receiver holding the optional target.
- */
-void func_002AFD90(FieldFlagOwner2AFD90* object);
-
-/**
- * @brief Clear the low bit of the attached target's halfword flags when present.
- * @param object Receiver holding the optional target.
- */
-void func_002AFDB0(FieldFlagOwner2AFD90* object);
 
 /**
  * @brief Clear the receiver's four words.
@@ -2340,13 +2383,6 @@ void* func_002B9080(FieldSequenceState40* object);
 
 #ifdef __cplusplus
 /**
- * @brief Report this object's type value.
- * @param object Callback receiver.
- * @return Always 14.
- */
-s32 func_002B4030(FieldClass150070* object);
-
-/**
  * @brief Copy the receiver's vector to the output.
  * @param object Sequence receiver.
  * @param output Destination vector.
@@ -2452,7 +2488,7 @@ void* func_002BC010(FieldSequenceState10* object);
  * @param object Callback receiver.
  * @return Always 14.
  */
-s32 func_002BC220(FieldClass150070* object);
+s32 func_002BC220(FieldListObject* object);
 #endif
 
 /**
@@ -2673,11 +2709,21 @@ void field_initialize_and_run(struct ResidentContext* context);
 #endif
 
 #ifdef __cplusplus
-class FieldClass154C70;
+class FieldContextResourceLoader;
 
 extern "C"
 {
     s32 func_002B0D80(ResidentContext* context, s32 flag, u32 address);
+
+    /**
+     * @brief Set display alpha blending, creating or removing its update node as needed.
+     *
+     * Zero detaches the node and queues its removal. The display blend flag and
+     * alpha reset when the queued node is destroyed.
+     * @param context Field context retaining the blend node.
+     * @param alpha Nonzero alpha enables blending; zero requests removal.
+     */
+    void field_set_display_blend(ResidentContext* context, float alpha);
 
     /**
      * @brief Append an already loaded resource when a request slot remains.
@@ -2686,7 +2732,7 @@ extern "C"
      * @param kind Resource kind stored in the request.
      * @param release_buffer Low bit selects whether to free the buffer when releasing the request.
      */
-    void field_append_loaded_resource(FieldClass154C70* loader, u32 buffer_address, u8 kind, u32 release_buffer);
+    void field_append_loaded_resource(FieldContextResourceLoader* loader, u32 buffer_address, u8 kind, u32 release_buffer);
 }
 #endif
 

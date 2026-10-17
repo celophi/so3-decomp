@@ -19,15 +19,37 @@ public:
     float unk78;
 };
 
-class FieldClass1530D0;
+class FieldResourceLoaderList;
+class FieldListObject;
 extern "C" {
 
 /**
- * @brief Run the release handler on listed loaders with the requested type.
- * @param list Loader list.
- * @param type Requested type, or -1 to include every loader.
+ * @brief Poll other loaders in reverse snapshot order until one reports released buffers.
+ * @param owner Resource-loader list whose registered nodes are inspected.
+ * @param excluded Loader whose buffers must be retained.
+ * @return One when a loader reports released buffers, otherwise zero.
  */
-void func_0023AE00(FieldClass1530D0* list, s16 type);
+u8 field_reclaim_loader_buffers(FieldResourceLoaderList* owner, FieldListObject* excluded);
+
+/**
+ * @brief Allow snapshot entry zero to load and request cancellation from later entries.
+ * @param owner Resource-loader list to update; null or unregistered snapshot entries are skipped.
+ */
+void field_update_resource_loaders(FieldResourceLoaderList* owner);
+
+/**
+ * @brief Report the resource-loader list's node category.
+ * @param owner List receiver; unused.
+ * @return Always 12.
+ */
+s32 field_resource_loader_list_kind(const FieldResourceLoaderList* owner);
+
+/**
+ * @brief Request removal of registered loaders with the selected load kind.
+ * @param list Loader list.
+ * @param load_kind Load kind's low byte, or -1 to include every loader.
+ */
+void field_request_loader_removal(FieldResourceLoaderList* list, s16 load_kind);
 #endif
 
 /** @brief Record a newly overlapping shape. @param actor Field receiver. @param shape Shape to record. @return One for a new entry, otherwise zero. */
@@ -270,15 +292,6 @@ typedef struct FieldObject1530A0 FieldObject1530A0;
  */
 void func_0023A6E0(FieldObject1530A0* object);
 
-typedef struct FieldObject1530D0 FieldObject1530D0;
-
-/**
- * @brief Report the fixed category for this object.
- * @param object Receiver.
- * @return Always 12.
- */
-s32 func_0023B1A0(FieldObject1530D0* object);
-
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
@@ -289,56 +302,70 @@ void func_00238520(void* object);
 }
 
 /**
- * Partial 28-byte record base, with vtable D_1530C0 in main data. Its
+ * Partial 28-byte resource request, with vtable D_1530C0 in main data. Its
  * vtable pointer follows its data at offset 0x18.
  */
-class FieldClass1530C0
+class FieldResourceRequest
 {
 public:
     /** @brief Clear request state without releasing storage or changing the capacity. */
     void reset_request()
     {
-        unk0c = -1;
-        unk04 = 0;
-        unk10 = 0;
+        file_key = -1;
+        buffer_base = 0;
+        request_address = 0;
         unk16_0 = 0;
         unk16_1 = 1;
         unk08_0 = 0;
         unk16_2 = 0;
-        unk14 = 0;
-        unk15 = 0;
+        slot_index = 0;
+        kind = 0;
     }
 
-    /** @brief Clear the state words and flags, and set bit 1 at offset 0x16. */
-    FieldClass1530C0()
+    /** @brief Reset request state with buffer ownership enabled. */
+    FieldResourceRequest()
     {
         reset_request();
     }
 
-    u32 unk00;
-    u32 unk04;
+    u32 byte_capacity;
+
+    u32 buffer_base;
+
     u8 unk08_0 : 1;
+
     u8 unk08_1_7 : 7;
+
     u8 unk09[3];
-    s32 unk0c;
-    u32 unk10;
-    u8 unk14;
-    u8 unk15;
+
+    s32 file_key;
+
+    /** Last matching resident request address, or zero when none was found. */
+    u32 request_address;
+
+    u8 slot_index;
+
+    u8 kind;
+
     u8 unk16_0 : 1;
+
     u8 unk16_1 : 1;
+
     u8 unk16_2 : 1;
+
     u8 unk16_3_7 : 5;
+
     u8 unk17;
 
-    /** @brief Run slot 2 to release the object at offset 0x4, then reset the fields as the constructor does. */
+    /** @brief Release the buffer through its virtual handler, then reset the request. */
     void release()
     {
-        func_0023AD00();
+        release_buffer();
         reset_request();
     }
 
     /**
-     * @brief Return the buffer address at offset 4, aligned to 128 bytes unless bit 0
+     * @brief Return the buffer address, aligned to 128 bytes unless bit 0
      *        at offset 8 or bit 2 at offset 0x16 is set.
      * @return The raw or aligned buffer address.
      */
@@ -346,9 +373,10 @@ public:
     {
         if (unk08_0 || unk16_2)
         {
-            return (u32)unk04;
+            return buffer_base;
         }
-        return ((u32)unk04 + 0x7F) & ~0x7F;
+
+        return (buffer_base + 0x7F) & ~0x7F;
     }
 
     /**
@@ -357,14 +385,14 @@ public:
      */
     void set_capacity(u32 capacity)
     {
-        unk00 = (capacity + 0x7FF) & ~0x7FF;
+        byte_capacity = (capacity + 0x7FF) & ~0x7FF;
     }
 
     /**
-     * @brief Delete the object at offset 0x4 when it is set and bit 1 at offset 0x16 is set.
-     * @return 1 when the object was deleted, otherwise 0.
+     * @brief Free the buffer when this request owns it.
+     * @return One if the buffer was freed, otherwise zero.
      */
-    virtual s32 func_0023AD00();
+    virtual s32 release_buffer();
 };
 #endif
 

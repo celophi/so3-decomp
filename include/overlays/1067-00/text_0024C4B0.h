@@ -82,7 +82,7 @@ public:
 #include "overlays/1067-00/text_001DD3C0.h"
 
 /** Field context attachment. */
-class FieldClass153590 : public FieldClass150070
+class FieldClass153590 : public FieldListObject
 {
 public:
     FieldClass153590();

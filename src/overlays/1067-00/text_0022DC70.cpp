@@ -1,11 +1,13 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
 #include "main/resident_0010A0E0.h"
+#include "main/resident_001001E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_001DED80_callbacks.h"
 #include "overlays/1067-00/text_00202240_callbacks.h"
 #include "overlays/1067-00/text_0021FB80.h"
 #include "overlays/1067-00/text_0022DC70.h"
+#include "overlays/1067-00/text_002AE9E0.h"
 #include "overlays/1067-00/text_0022B490.h"
 #include "overlays/1067-00/text_001ED7E0.h"
 
@@ -192,9 +194,15 @@ bool FieldClass1570D0::func_002039C0() const
     return unk2f0;
 }
 
+/**
+ * @brief Wait for bit zero of the owning actor's state word to clear.
+ *
+ * Keep the command-list timer at one while waiting.
+ * @return Zero while the bit is set, otherwise one.
+ */
 s32 FieldClass152DD0::func_0022E170()
 {
-    FieldClass152E50* owner = (FieldClass152E50*)unk10;
+    FieldClass152E50* owner = static_cast<FieldClass152E50*>(this->owner);
     s32 enabled = (owner->unk7c->unk204 & 1) ? 1 : 0;
     if (enabled)
     {
@@ -208,15 +216,23 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0022E1
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", __ct__16FieldClass152DF0FfUif);
 
+/**
+ * @brief Detach the command list's actor and invoke its removal handler.
+ * @return Always one.
+ */
 s32 FieldClass152E10::func_0022E350()
 {
-    func_001DEDF0(D_001B6430->context->unk04, ((FieldClass152E50*)unk10)->unk7c);
+    func_001DEDF0(D_001B6430->context->unk04, static_cast<FieldClass152E50*>(owner)->unk7c);
     return 1;
 }
 
+/**
+ * @brief Store the command's value in the owning list's timer.
+ * @return Always one.
+ */
 s32 FieldClass152E30::func_0022E380()
 {
-    ((FieldClass152E50*)unk10)->unk78 = unk1c;
+    static_cast<FieldClass152E50*>(owner)->unk78 = unk1c;
     return 1;
 }
 
@@ -473,8 +489,8 @@ FieldClass152E90::~FieldClass152E90()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00230FC0);
 
-/** Partial FieldClass150070 object with vtable D_152EB0 in main data. */
-class FieldClass152EB0 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_152EB0 in main data. */
+class FieldClass152EB0 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -637,7 +653,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_002335
 void func_00233620(void* object)
 {
     FieldObject2320D0* owner = static_cast<FieldObject2320D0*>(object);
-    FieldClass150070* attached = static_cast<FieldClass150070*>(owner->target);
+    FieldListObject* attached = static_cast<FieldListObject*>(owner->target);
     if (attached != 0)
     {
         attached->func_001DD7B0();
@@ -785,8 +801,8 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00239B
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023A4C0);
 
-/** Partial FieldClass150070 object with vtable D_153080 in main data. */
-class FieldClass153080 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_153080 in main data. */
+class FieldClass153080 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -803,8 +819,8 @@ FieldClass153080::~FieldClass153080()
 {
 }
 
-/** Partial FieldClass150070 object with vtable D_1530A0 in main data. */
-class FieldClass1530A0 : public FieldClass150070
+/** Partial FieldListObject subclass with vtable D_1530A0 in main data. */
+class FieldClass1530A0 : public FieldListObject
 {
 public:
     /** @brief Destroy the object. */
@@ -831,25 +847,120 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023A7
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023AB00);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023AD00__16FieldClass1530C0Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", release_buffer__20FieldResourceRequestFv);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023AD60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023AE00);
+/**
+ * @brief Request removal of registered loaders with the selected load kind.
+ * @param owner Resource-loader list to traverse.
+ * @param load_kind Load kind's low byte, or -1 to include every loader.
+ */
+extern "C" void field_request_loader_removal(FieldResourceLoaderList* owner, s16 load_kind)
+{
+    FieldResourceLoadTask* loader;
+    for (FieldResourceLoadTask* next = reinterpret_cast<FieldResourceLoadTask*>(owner->sentinel.next);;)
+    {
+        loader = next;
+        if (!next || static_cast<void*>(&owner->sentinel) == next)
+        {
+            break;
+        }
+        // Removal can detach this node, so keep the following link first.
+        next = static_cast<FieldResourceLoadTask*>(next->unk08);
+        if (load_kind == -1 || static_cast<u8>(load_kind) == loader->get_load_kind())
+        {
+            loader->request_removal();
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023AEB0);
+/**
+ * @brief Poll other loaders in reverse snapshot order until one reports released buffers.
+ * @param owner Resource-loader list whose registered nodes are inspected.
+ * @param excluded Loader whose buffers must be retained.
+ * @return One when a loader reports released buffers, otherwise zero.
+ */
+extern "C" u8 field_reclaim_loader_buffers(FieldResourceLoaderList* owner, FieldListObject* excluded)
+{
+    owner->active_node_count = owner->node_count;
+    owner->active_node_buffer = new(0) void*[owner->active_node_count];
+    LibClass178DD0& list = *owner;
+    lib_list_collect_nodes_by_kind(&list, owner->active_node_buffer);
+    u8 released = 0;
+    for (owner->active_node_index = owner->active_node_count - 1; owner->active_node_index >= 0; owner->active_node_index--)
+    {
+        FieldResourceLoadTask* loader = static_cast<FieldResourceLoadTask*>(owner->active_node_buffer[owner->active_node_index]);
+        if (loader && loader->is_listed && excluded != loader && loader->poll_request_release() == 1)
+        {
+            released = 1;
+            break;
+        }
+    }
+    delete[] owner->active_node_buffer;
+    owner->active_node_buffer = 0;
+    return released;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023AFA0);
+/**
+ * @brief Allow snapshot entry zero to load and request cancellation from later entries.
+ *
+ * Skipping a null or detached entry zero does not promote another loader.
+ */
+void FieldResourceLoaderList::update_nodes()
+{
+    if (func_002B0BC0(reinterpret_cast<FieldFlagOwner2B0BC0*>(D_001B6430->context)))
+    {
+        return;
+    }
+    active_node_count = node_count;
+    if (active_node_count == 0)
+    {
+        return;
+    }
+    void** items = new(0) void*[active_node_count];
+    if (!items)
+    {
+        // This resident hook currently does no work, but still receives the selected heap.
+        func_00113180(resident_get_allocation_heap());
+        return;
+    }
+    LibClass178DD0& list = *this;
+    lib_list_collect_nodes_by_kind(&list, items);
+    for (s32 index = 0; index < active_node_count; index++)
+    {
+        FieldResourceLoadTask* loader = static_cast<FieldResourceLoadTask*>(items[index]);
+        if (loader && loader->is_listed)
+        {
+            if (index == 0)
+            {
+                loader->update_requests(0);
+            }
+            else
+            {
+                loader->update_requests(1);
+            }
+        }
+    }
+    delete[] items;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023B0C0);
+/** @brief Destroy the Lib list owner and detach the inherited field node. */
+FieldResourceLoaderList::~FieldResourceLoaderList()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023B170);
+/** @brief Dispatch the list's virtual update handler. */
+void FieldResourceLoaderList::update()
+{
+    update_nodes();
+}
 
-s32 func_0023B1A0(FieldObject1530D0* object)
+/**
+ * @brief Report this object's default list kind.
+ * @return Always 12.
+ */
+s32 FieldResourceLoaderList::get_default_list_kind()
 {
     return 12;
 }
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023B1B0);
-
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023B1C0);

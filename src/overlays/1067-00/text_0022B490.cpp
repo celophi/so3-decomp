@@ -390,16 +390,24 @@ FieldClass1526C0::~FieldClass1526C0()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022B850);
 
+/**
+ * @brief Pass the command's stored word to its owning actor.
+ * @return Always one.
+ */
 s32 FieldClass152770::func_0022B8F0()
 {
-    FieldClass152E50* list = static_cast<FieldClass152E50*>(unk10);
+    FieldClass152E50* list = static_cast<FieldClass152E50*>(owner);
     func_00204070(list->unk7c, unk1c);
     return 1;
 }
 
+/**
+ * @brief Pass the command's stored float to its owning actor.
+ * @return Always one.
+ */
 s32 FieldClass152790::func_0022B920()
 {
-    FieldClass152E50* list = static_cast<FieldClass152E50*>(unk10);
+    FieldClass152E50* list = static_cast<FieldClass152E50*>(owner);
     func_002040E0(list->unk7c, unk1c);
     return 1;
 }
