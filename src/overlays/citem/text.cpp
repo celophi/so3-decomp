@@ -5,6 +5,7 @@
 #include "overlays/lib/ui_object.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/1067-00/text_002CD390.h"
+#include "overlays/1067-00/text_001E1590.h"
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "main/resident_0010A0E0.h"
@@ -259,15 +260,35 @@ struct ScreenOwner
     struct ScreenRecord* unka8;
 };
 
-/** Observed prefix of native D_184DF0, with a Field base at four and an owned selection. */
-struct Record00353850
+/** Observed prefix of native D_184DF0, with a DMA interface and a Field receiver base at four. */
+struct Record00353850 : public LibClass171FF0, public FieldClass153E30
 {
-    void* methods;
-    u8 unk04[0x3C];
+    u8 unk38[8];
     FieldRecordSelection* selection;
     u8 unk44[0x70];
     s32 unkb4;
     u32 category;
+};
+
+struct Record0034B060Display
+{
+    u8 unk00[0xCB];
+    u8 unkcb;
+};
+
+/** Window associated with the func_0034B060 receiver; its display gets a refresh flag. */
+struct Record0034B060 : public FieldClass15AE70
+{
+    u8 unka8[0xF0];
+    Record0034B060Display* unk198;
+};
+
+/** List window reached through two window associations from func_0034B060. */
+struct Record0034B060List : public FieldClass15AD40
+{
+    virtual void func_slot114();
+    virtual void func_slot118();
+    virtual void func_slot11c(s32 first, s32 second);
 };
 
 struct Record00353A50
@@ -670,11 +691,6 @@ u16 func_003484B0(ItemRecord* item)
 void func_003484C0(ItemRecord* item, u32 value)
 {
     item->unk98 = value;
-}
-
-u32 func_003484D0(ItemRecord* item)
-{
-    return item->unk98;
 }
 
 void func_003484E0(ItemRecord* item, u32 value)
@@ -1117,7 +1133,29 @@ void item_select_first_row(Record0034B770* owner)
     func_0023B1D0(selection, index, 0);
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034B060);
+u8 func_0034B060(FieldClass15AE70* window)
+{
+    ItemCreationAllocationRecord* records[100];
+    Record00353850* controller = static_cast<Record00353850*>(D_001B643C->controller->selected);
+    if (lib_collect_unequipped_allocations(D_001B64F8, records, controller->category) == 0)
+    {
+        controller->remove_child(window);
+        controller->remove_child(window->func_slot44());
+        FieldClass15AE70* associated = (FieldClass15AE70*)window->func_slot44();
+        Record0034B060List* list = (Record0034B060List*)associated->func_slot44();
+        list->func_slot11c(0, -1);
+        list->func_slot10c(1, 1);
+        D_001B643C->controller->selected->func_00263C70(list);
+    }
+    else
+    {
+        controller->remove_child(window);
+        Record0034B060* associated = (Record0034B060*)window->func_slot44();
+        associated->unk198->unkcb = 1;
+        controller->func_00263C70(associated);
+    }
+    return 2;
+}
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034B1B0);
 
@@ -1359,11 +1397,7 @@ INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034F970);
 void item_update_allocation_page(Record0034E8B0* object, s32 first_index)
 {
     ItemCreationAllocationRecord* records[99];
-    Record00353850* selected = (Record00353850*)D_001B643C->controller->selected;
-    if (selected != 0)
-    {
-        selected = (Record00353850*)((u8*)selected - 4);
-    }
+    Record00353850* selected = static_cast<Record00353850*>(D_001B643C->controller->selected);
     if (selected->unkb4 != 7)
     {
         u32 category = selected->category;
