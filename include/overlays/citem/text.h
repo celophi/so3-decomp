@@ -645,13 +645,6 @@ u16 func_003484B0(ItemRecord* item);
 void func_003484C0(ItemRecord* item, u32 value);
 
 /**
- * @brief Read the word field at 0x98.
- * @param item Item record to read.
- * @return Current field value.
- */
-u32 func_003484D0(ItemRecord* item);
-
-/**
  * @brief Store the word field at 0x9C.
  * @param item Item record to update.
  * @param value Value to store.

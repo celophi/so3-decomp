@@ -200,6 +200,8 @@ lib_collect_unequipped_allocations = 0x0040CF90; // type:func absolute:True allo
 
 func_slot5c__16FieldClass15AD40Fv = 0x002CD7C0; // type:func absolute:True allow_duplicated:True
 
+func_slot44__16FieldClass15AE70Fv = 0x003484D0; // type:func allow_duplicated:True
+
 set_selection_marker__16FieldClass15AD40FP14LibClass174EF0Ui = 0x002CD8B0; // type:func absolute:True allow_duplicated:True
 
 configure_selection__16FieldClass15AE60Fiii = 0x002CE220; // type:func absolute:True allow_duplicated:True
