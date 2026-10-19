@@ -380,7 +380,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004622F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462300);
 
-void LibClass178600::func_00462310()
+void LibClass178600::draw()
 {
 }
 

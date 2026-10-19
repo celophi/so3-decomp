@@ -84,7 +84,7 @@ public:
     /** @brief Update the transform and extract its rotation components. */
     virtual void update_transform_matrix();
     /** @brief Update camera state and its attached-transform distance. */
-    virtual void func_003EEBD0();
+    virtual void update();
     /** @brief Update the active camera projection state. */
     void func_004E24D0();
     /** @brief Submit the camera's DMA chain. @param channel DMA channel number. */
@@ -415,7 +415,7 @@ public:
 
     virtual ~LibClass178FC0();
 
-    virtual void func_003EEBD0();
+    virtual void update();
 
     virtual void func_003EEBE0();
 

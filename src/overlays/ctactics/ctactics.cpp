@@ -17,31 +17,13 @@
 #include "overlays/lib/text_003F90C0.h"
 #include "overlays/lib/scalar_indicator_inlines.h"
 #include "overlays/lib/resource_widget_inlines.h"
+#include "overlays/lib/movement_widget_inlines.h"
 
 #define TACTICS_STAT_WORD_XOR_KEY 0x7DE3F7E3
 #define TACTICS_STAT_HALFWORD_XOR_KEY 0x7E93
 
-/** Kind-9 movement widget with its storage base at offset 0x40. */
-struct TacticsMovementWidget175030 : public LibClass178600, public TacticsStorage18B010
-{
-    /** @brief Destroy the movement storage and widget base. */
-    virtual ~TacticsMovementWidget175030();
-
-    /** @brief Initialize the movement bases and select widget kind nine. */
-    TacticsMovementWidget175030()
-    {
-        unk38 = 9;
-    }
-
-    /** @brief Update the widget movement state and its refresh flag. */
-    virtual void update_movement_state();
-
-    /** @brief Draw the moving widget. */
-    virtual void draw_moving_widget();
-};
-
 /** Coordinate selector owning its position list and selected entry. */
-struct TacticsCoordinateSelector18AFD0 : public TacticsMovementWidget175030
+struct TacticsCoordinateSelector18AFD0 : public LibClass175030
 {
     /** @brief Destroy the coordinate list and movement bases. */
     virtual ~TacticsCoordinateSelector18AFD0();
@@ -52,14 +34,14 @@ struct TacticsCoordinateSelector18AFD0 : public TacticsMovementWidget175030
         selected = -1;
     }
 
-    /** @brief Report widget kind three. @return Always three. */
-    virtual s32 get_object_kind();
+    /** @brief Report the default list kind. @return Three. */
+    virtual s32 get_default_list_kind();
 
     /** @brief Leave the default update hook unchanged. */
     virtual void update();
 
     /** @brief Leave the default notification hook unchanged. */
-    virtual void notify();
+    virtual void func_003EEBE0();
 
     TacticsCoordinatePositionList nodes;
 
@@ -2667,7 +2649,7 @@ s32 TacticsWindow18B320::func_slotf4(void* associated)
 }
 
 /** @brief Destroy the movement storage and widget base. */
-inline TacticsMovementWidget175030::~TacticsMovementWidget175030()
+inline ItemCreationClass175030::~ItemCreationClass175030()
 {
 }
 
@@ -3922,18 +3904,18 @@ TacticsCoordinateSelector18AFD0::~TacticsCoordinateSelector18AFD0()
 }
 
 /** @brief Perform no work. */
-void TacticsStorage18B010::func_slot0c()
+void ItemCreationClass185050::func_slot0c()
 {
 }
 
-/** @brief Report widget kind three. @return Always three. */
-s32 TacticsCoordinateSelector18AFD0::get_object_kind()
+/** @brief Report the default list kind. @return Three. */
+s32 TacticsCoordinateSelector18AFD0::get_default_list_kind()
 {
     return 3;
 }
 
 /** @brief Leave the default notification hook unchanged. */
-void TacticsCoordinateSelector18AFD0::notify()
+void TacticsCoordinateSelector18AFD0::func_003EEBE0()
 {
 }
 

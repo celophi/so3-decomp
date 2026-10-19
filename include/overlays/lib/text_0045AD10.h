@@ -158,7 +158,7 @@ public:
     /** @brief Update the movement state and its refresh flag. */
     virtual void func_00413D20();
     /** @brief Draw the moving widget. */
-    virtual void func_00462310();
+    virtual void draw();
 };
 
 typedef ItemCreationClass185050 LibMovementState;
@@ -175,7 +175,7 @@ struct LibObject175140 : public LibClass174EF0
     /** @brief Destroy the string-backed drawing widget. */
     virtual ~LibObject175140();
     /** @brief Draw the string-backed widget. */
-    virtual void func_00462310();
+    virtual void draw();
     /**
      * @brief Configure the drawing rectangle and string.
      * @param x Horizontal position.
@@ -201,7 +201,7 @@ struct LibObject174F20 : public LibClass174EF0
     /** @brief Destroy the numeric widget. */
     virtual ~LibObject174F20();
     /** @brief Draw the numeric widget. */
-    virtual void func_00462310();
+    virtual void draw();
     /**
      * @brief Configure the numeric widget and its rectangle.
      * @param x Rectangle origin x.
@@ -227,7 +227,7 @@ struct LibObject172410 : public LibClass174EF0
     /** @brief Destroy the item code widget. */
     virtual ~LibObject172410();
     /** @brief Draw the code widget. */
-    virtual void func_00462310();
+    virtual void draw();
     u16 unkfc;
     u8 unkfe;
     u8 unkff;
@@ -243,7 +243,7 @@ struct LibObject172440 : public LibClass174EF0
     /** @brief Destroy the detail code widget. */
     virtual ~LibObject172440();
     /** @brief Draw the code widget. */
-    virtual void func_00462310();
+    virtual void draw();
     u16 unkfc;
     u8 unkfe;
     u8 unkff;

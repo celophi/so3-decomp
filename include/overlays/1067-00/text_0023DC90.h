@@ -177,7 +177,7 @@ public:
 
     virtual ~FieldClass1534B0();
 
-    virtual void func_003EEBD0();
+    virtual void update();
 
     virtual const LibVector4* func_003EFAA0();
 

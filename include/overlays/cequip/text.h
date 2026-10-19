@@ -55,7 +55,7 @@ struct EquipClass1797B0 : public LibClass178600
     /** @brief Release tooltip drawing storage and the widget base. */
     virtual ~EquipClass1797B0();
     /** @brief Draw the tooltip rectangle and its stored resource. */
-    virtual void func_00462310();
+    virtual void draw();
     LibStorageBlock0C unk40;
     u8 unk4c[4];
 };

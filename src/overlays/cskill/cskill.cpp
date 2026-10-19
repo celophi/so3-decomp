@@ -707,9 +707,9 @@ struct SkillCoordinateSelector : public LibClass175030
     /** @brief Destroy the coordinate list and movement bases. */
     virtual ~SkillCoordinateSelector();
     /** @brief Report the intrusive object kind. @return Three. */
-    virtual s32 func_003EEBC0();
+    virtual s32 get_default_list_kind();
     /** @brief Leave the default update hook unchanged. */
-    virtual void func_003EEBD0();
+    virtual void update();
     /** @brief Leave the default notification hook unchanged. */
     virtual void func_003EEBE0();
     SkillPairList184258 nodes;
@@ -841,9 +841,9 @@ struct SkillHpMpGauge : public FieldClass1599E0, public SkillHpMpGaugeDrawer
     /** @brief Submit the drawing packet for DMA notification. */
     virtual void func_003EEBE0();
     /** @brief Leave the default update state unchanged. */
-    virtual void func_003EEBD0();
+    virtual void update();
     /** @brief Report the transform kind. @return Fourteen. */
-    virtual s32 func_003EEBC0();
+    virtual s32 get_default_list_kind();
     /** @brief Detach and queue the gauge for release. */
     virtual void func_003EF740();
     /** @brief Restore the saved transform state. */
@@ -1038,15 +1038,15 @@ public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~FieldClass159FE0();
     /** @brief Report the intrusive widget kind. @return Three. */
-    virtual s32 func_003EEBC0();
+    virtual s32 get_default_list_kind();
     /** @brief Leave the default update hook unchanged. */
-    virtual void func_003EEBD0();
+    virtual void update();
     /** @brief Leave the default notification hook unchanged. */
     virtual void func_003EEBE0();
     /** @brief Update the widget drawing state. */
     virtual void func_00413D20();
     /** @brief Draw the widget. */
-    virtual void func_00462310();
+    virtual void draw();
     LibStorageBlock0C storage;
 };
 
@@ -1056,7 +1056,7 @@ struct FieldClass15A010 : public LibObject178750
     /** @brief Release the text drawing storage and widget base. */
     virtual ~FieldClass15A010();
     /** @brief Draw the text widget. */
-    virtual void func_00462310();
+    virtual void draw();
 };
 
 /** Fading container with an embedded panel and text widget. */
@@ -5485,12 +5485,12 @@ void LibClass171FF0::func_003F4410(u32 value)
 {
 }
 
-s32 SkillCoordinateSelector::func_003EEBC0()
+s32 SkillCoordinateSelector::get_default_list_kind()
 {
     return 3;
 }
 
-void SkillCoordinateSelector::func_003EEBD0()
+void SkillCoordinateSelector::update()
 {
 }
 
@@ -7186,7 +7186,7 @@ void ItemCreationClass185050::func_slot0c()
 {
 }
 
-s32 SkillHpMpGauge::func_003EEBC0()
+s32 SkillHpMpGauge::get_default_list_kind()
 {
     return 14;
 }

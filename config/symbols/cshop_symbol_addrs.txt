@@ -175,9 +175,9 @@ __dt__17LibStorageBlock0CFv = 0x004618F0; // type:func absolute:True allow_dupli
 __vt__14LibClass178630 = 0x00178630; // absolute:True
 __dt__14LibClass178630Fv = 0x004C4A00; // type:func absolute:True allow_duplicated:True
 func_004C4A00 = 0x004C4A00; // type:func allow_duplicated:True
-func_003EEBC0__14LibClass171EA0Fv = 0x003EEBC0; // type:func absolute:True allow_duplicated:True
+get_default_list_kind__14LibClass171EA0Fv = 0x003EEBC0; // type:func absolute:True allow_duplicated:True
 func_003EEBC0 = 0x003EEBC0; // type:func allow_duplicated:True
-func_003EEBD0__14LibClass171EA0Fv = 0x003EEBD0; // type:func absolute:True allow_duplicated:True
+update__14LibClass171EA0Fv = 0x003EEBD0; // type:func absolute:True allow_duplicated:True
 func_003EEBD0 = 0x003EEBD0; // type:func allow_duplicated:True
 func_003EEBE0__14LibClass171EA0Fv = 0x003EEBE0; // type:func absolute:True allow_duplicated:True
 func_003EEBE0 = 0x003EEBE0; // type:func allow_duplicated:True
@@ -185,7 +185,7 @@ func_003EF740__14LibClass178600Fv = 0x004C4860; // type:func absolute:True allow
 func_004C4860 = 0x004C4860; // type:func allow_duplicated:True
 func_00413D20__14LibClass178600Fv = 0x00413D20; // type:func absolute:True allow_duplicated:True
 func_004C56E0 = 0x004C56E0; // type:func allow_duplicated:True
-func_00462310__14LibClass178600Fv = 0x00462310; // type:func absolute:True allow_duplicated:True
+draw__14LibClass178600Fv = 0x00462310; // type:func absolute:True allow_duplicated:True
 func_004C55E0 = 0x004C55E0; // type:func allow_duplicated:True
 func_00464B10 = 0x00464B10; // type:func allow_duplicated:True
 __dt__14LibClass174EF0Fv = 0x00464A80; // type:func absolute:True allow_duplicated:True
@@ -210,7 +210,7 @@ D_00351FC0 = 0x00351FC0; // size:0x10
 D_00351FA0 = 0x00351FA0; // size:0x10
 
 func_00413D20__14LibClass178630Fv = 0x004C56E0; // type:func absolute:True allow_duplicated:True
-func_00462310__14LibClass178630Fv = 0x004C55E0; // type:func absolute:True allow_duplicated:True
+draw__14LibClass178630Fv = 0x004C55E0; // type:func absolute:True allow_duplicated:True
 func_0044B110 = 0x0044B110; // type:func allow_duplicated:True
 set_codes_and_z__14LibClass174610FiUifUiUi = 0x0044B110; // type:func absolute:True allow_duplicated:True
 D_00175110 = 0x00175110; // allow_duplicated:True
@@ -221,14 +221,14 @@ lib_draw_state_init = 0x00453FF0; // type:func absolute:True
 lib_indexed_resource_init = 0x004530E0; // type:func absolute:True
 __dt__23ItemCreationClass175110Fv = 0x0034E5C0; // type:func
 func_00413D20__23ItemCreationClass175110Fv = 0x00467750; // type:func absolute:True allow_duplicated:True
-func_00462310__23ItemCreationClass175110Fv = 0x00467670; // type:func absolute:True allow_duplicated:True
+draw__23ItemCreationClass175110Fv = 0x00467670; // type:func absolute:True allow_duplicated:True
 __dt__23ItemCreationClass174C40Fv = 0x00453000; // type:func absolute:True allow_duplicated:True
 func_00413D20__23ItemCreationClass174C40Fv = 0x00453080; // type:func absolute:True allow_duplicated:True
 
 D_001746A0 = 0x001746A0; // allow_duplicated:True
 __vt__23ItemCreationClass1746A0 = 0x001746A0; // absolute:True allow_duplicated:True
 __dt__23ItemCreationClass1746A0Fv = 0x00412D50; // type:func absolute:True allow_duplicated:True
-func_00462310__23ItemCreationClass1746A0Fv = 0x0044B350; // type:func absolute:True allow_duplicated:True
+draw__23ItemCreationClass1746A0Fv = 0x0044B350; // type:func absolute:True allow_duplicated:True
 lib_text_init_resource_rectangle = 0x004C7FE0; // type:func allow_duplicated:True absolute:True
 init_resource_rectangle__15LibObject178750FffffiiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 init_resource_rectangle__15LibObject178750FffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
@@ -300,27 +300,27 @@ __vt__15LibObject174F20 = 0x00174F20; // absolute:True allow_duplicated:True
 __ct__17ShopBuyListWindowFv = 0x0034D860; // type:func
 
 __dt__15LibObject174F20Fv = 0x00464BC0; // type:func absolute:True
-func_00462310__15LibObject174F20Fv = 0x00464C80; // type:func absolute:True
+draw__15LibObject174F20Fv = 0x00464C80; // type:func absolute:True
 
 __vt__23ItemCreationClass175030 = 0x00175030; // size:0x34 absolute:True
 __dt__23ItemCreationClass175030Fv = 0x00412E30; // type:func absolute:True
 func_00413D20__23ItemCreationClass175030Fv = 0x00467320; // type:func absolute:True
-func_00462310__23ItemCreationClass175030Fv = 0x004672C0; // type:func absolute:True
+draw__23ItemCreationClass175030Fv = 0x004672C0; // type:func absolute:True
 __vt__23ItemCreationClass1725D0 = 0x001725D0; // size:0x24 absolute:True
 __dt__23ItemCreationClass1725D0Fv = 0x00412DC0; // type:func absolute:True
-func_00462310__23ItemCreationClass1725D0Fv = 0x0041A560; // type:func absolute:True
+draw__23ItemCreationClass1725D0Fv = 0x0041A560; // type:func absolute:True
 __vt__15LibObject172410 = 0x00172410; // size:0x24 absolute:True
 __dt__15LibObject172410Fv = 0x00413CC0; // type:func absolute:True
-func_00462310__15LibObject172410Fv = 0x00413D90; // type:func absolute:True
+draw__15LibObject172410Fv = 0x00413D90; // type:func absolute:True
 
 lib_list_indicator_init = 0x0041A930; // type:func absolute:True allow_duplicated:True
 
 __vt__23ItemCreationClass172870 = 0x00172870; // size:0x24 absolute:True
 __dt__23ItemCreationClass172870Fv = 0x00412F30; // type:func absolute:True
-func_00462310__23ItemCreationClass172870Fv = 0x00420F20; // type:func absolute:True
+draw__23ItemCreationClass172870Fv = 0x00420F20; // type:func absolute:True
 __vt__15LibObject172440 = 0x00172440; // size:0x24 absolute:True
 __dt__15LibObject172440Fv = 0x00414280; // type:func absolute:True
-func_00462310__15LibObject172440Fv = 0x004142E0; // type:func absolute:True
+draw__15LibObject172440Fv = 0x004142E0; // type:func absolute:True
 func_421170 = 0x00421170; // type:func absolute:True
 lib_detail_code_init_rectangle = 0x004143F0; // type:func absolute:True
 
@@ -346,7 +346,7 @@ __dt__33ItemCreationOptionResourceDisplayFv = 0x002D65E0; // type:func absolute:
 
 func_00413D20__33ItemCreationOptionResourceDisplayFv = 0x002D63F0; // type:func absolute:True allow_duplicated:True
 
-func_00462310__33ItemCreationOptionResourceDisplayFv = 0x002D5DA0; // type:func absolute:True allow_duplicated:True
+draw__33ItemCreationOptionResourceDisplayFv = 0x002D5DA0; // type:func absolute:True allow_duplicated:True
 
 __vt__15LibObject174D90 = 0x00174D90; // absolute:True allow_duplicated:True
 
@@ -354,7 +354,7 @@ __dt__15LibObject174D90Fv = 0x004617B0; // type:func absolute:True allow_duplica
 
 func_00413D20__15LibObject174D90Fv = 0x0045F710; // type:func absolute:True allow_duplicated:True
 
-func_00462310__15LibObject174D90Fv = 0x0045F6B0; // type:func absolute:True allow_duplicated:True
+draw__15LibObject174D90Fv = 0x0045F6B0; // type:func absolute:True allow_duplicated:True
 
 __dla__FPv = 0x00100BE0; // type:func absolute:True allow_duplicated:True
 init_multiline_resource_rectangle__15LibObject174D90FffffiiUiUi = 0x00461720; // type:func allow_duplicated:True

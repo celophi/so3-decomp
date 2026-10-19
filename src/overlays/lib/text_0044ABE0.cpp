@@ -291,7 +291,7 @@ typedef struct LibDisplayReadyView
 /** @brief Update the transform and mark the current display ready. @param object Transform receiver. */
 extern "C" void func_0044D0D0(void* object)
 {
-    static_cast<LibTransform*>(object)->LibTransform::func_003EEBD0();
+    static_cast<LibTransform*>(object)->LibTransform::update();
     LibDisplayManagerView* manager = static_cast<LibDisplayManagerView*>(D_001B661C);
     LibDisplayReadyView* display = static_cast<LibDisplayReadyView*>(manager->current_display);
     display->ready = 1;

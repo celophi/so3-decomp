@@ -46,42 +46,6 @@ typedef struct TacticsTextWidgetList TacticsTextWidgetList;
 typedef struct TacticsCoordinatePositionList TacticsCoordinatePositionList;
 
 #ifdef __cplusplus
-/** Native storage receiver with its dispatch pointer after the scalar state. */
-class TacticsStorage18B010
-{
-public:
-    LibStorageBlock0C storage;
-    u8 unk0c[4];
-    float unk10;
-    float unk14;
-    float unk18;
-    float unk1c;
-    float unk20;
-    float unk24;
-    u8 unk28[0x10];
-
-    /** @brief Clear the three movement coordinate pairs. */
-    TacticsStorage18B010()
-    {
-        unk14 = 0.0f;
-        unk10 = 0.0f;
-        unk1c = 0.0f;
-        unk18 = 0.0f;
-        unk24 = 0.0f;
-        unk20 = 0.0f;
-    }
-
-    /** @brief Release the receiver's owned storage. */
-    virtual ~TacticsStorage18B010();
-    /** @brief Perform no work. */
-    virtual void func_slot0c();
-};
-
-/** @brief Release the receiver's owned storage. */
-inline TacticsStorage18B010::~TacticsStorage18B010()
-{
-}
-
 /** Known native State prefix through its owned selection pointer at offset 3C. */
 struct TacticsResourceMenuState : public FieldClass153E30
 {

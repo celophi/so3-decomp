@@ -376,7 +376,7 @@ struct LibObject178750 : public LibClass174EF0
     /** @brief Refresh the text widget drawing state. */
     virtual void func_00413D20();
     /** @brief Draw the text widget. */
-    virtual void func_00462310();
+    virtual void draw();
     /**
      * @brief Configure a text slot and its rectangle.
      * @param x Origin x.
@@ -407,7 +407,7 @@ struct LibObject174D90 : public LibObject178750
     /** @brief Advance and refresh the multiline text state. */
     virtual void func_00413D20();
     /** @brief Draw the multiline text widget. */
-    virtual void func_00462310();
+    virtual void draw();
     /**
      * @brief Configure the multiline text resource, rectangle, and drawing mode.
      * @param x Rectangle origin x.
@@ -467,7 +467,7 @@ struct LibClass178630 : public LibClass178600
     /** @brief Refresh the panel drawing state. */
     virtual void func_00413D20();
     /** @brief Draw the panel. */
-    virtual void func_00462310();
+    virtual void draw();
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     LibUiRect16 unk50;

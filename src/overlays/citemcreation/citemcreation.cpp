@@ -15546,12 +15546,12 @@ ItemCreationSelectedDisplayState::ItemCreationSelectedDisplayState()
     }
 }
 
-s32 LibClass171EA0::func_003EEBC0()
+s32 LibClass171EA0::get_default_list_kind()
 {
     return 3;
 }
 
-void LibClass171EA0::func_003EEBD0()
+void LibClass171EA0::update()
 {
 }
 

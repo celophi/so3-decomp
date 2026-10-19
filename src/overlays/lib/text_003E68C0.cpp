@@ -25,14 +25,14 @@ struct LibWordPairView
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEB50);
 
-/** @brief Report the fixed kind of this intrusive object. @return Always 3. */
-s32 LibClass171EA0::func_003EEBC0()
+/** @brief Report the list kind used when registration requests the default. @return Three. */
+s32 LibClass171EA0::get_default_list_kind()
 {
     return 3;
 }
 
-/** @brief Leave the base intrusive object unchanged. */
-void LibClass171EA0::func_003EEBD0()
+/** @brief Default update handler that performs no work. */
+void LibClass171EA0::update()
 {
 }
 
