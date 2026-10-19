@@ -367,7 +367,7 @@ struct ItemCreationOptionResourceDisplay : public ItemCreationClass175110
     /** @brief Refresh the resource widget. */
     virtual void func_00413D20();
     /** @brief Draw the resource widget. */
-    virtual void func_00462310();
+    virtual void draw();
     void* unkcc;
     u8 unkd0;
     u8 unkd1[0x37];

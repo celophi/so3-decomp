@@ -410,7 +410,7 @@ LibLodController::~LibLodController()
  * @brief Return the level-selection controller's kind identifier.
  * @return Kind nine.
  */
-s32 LibLodController::func_003EEBC0()
+s32 LibLodController::get_default_list_kind()
 {
     return 9;
 }

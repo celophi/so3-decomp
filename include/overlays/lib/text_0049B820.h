@@ -22,9 +22,9 @@ public:
     /** @brief Destroy the controller. */
     virtual ~LibLodController();
     /** @brief Report the controller kind. @return Kind nine. */
-    virtual s32 func_003EEBC0();
+    virtual s32 get_default_list_kind();
     /** @brief Select the active object range from the current transformed depth. */
-    virtual void func_003EEBD0();
+    virtual void update();
     /** @brief Copy level-selection state and inherited transform state. @param source Source controller. */
     virtual void copy_state(const LibLodController* source);
 

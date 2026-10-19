@@ -1820,7 +1820,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9C60);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9CD0);
 
 /** @brief Apply the enabled camera-facing rotation components. */
-void LibTransform::func_003EEBD0()
+void LibTransform::update()
 {
     if (unk6a & 0x380)
     {

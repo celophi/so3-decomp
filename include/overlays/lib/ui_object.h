@@ -24,8 +24,8 @@ struct LibClass178600 : public LibClass171EA0
     virtual void func_003EF740();
     /** @brief Virtual widget slot at 0x1C; its base implementation does no work. */
     virtual void func_00413D20();
-    /** @brief Virtual widget slot at 0x20; its base implementation does no work. */
-    virtual void func_00462310();
+    /** @brief Draw the widget; the base implementation does no work. */
+    virtual void draw();
     LibObject178660* container;
     LibUiRect16 unk18;
     float unk28;

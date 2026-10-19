@@ -14,7 +14,7 @@ public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass1725D0();
     /** @brief Draw the list indicator. */
-    virtual void func_00462310();
+    virtual void draw();
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     float unk50;
@@ -30,7 +30,7 @@ public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass172870();
     /** @brief Draw the marker widget. */
-    virtual void func_00462310();
+    virtual void draw();
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     u32 unk50;
@@ -48,7 +48,7 @@ public:
     /** @brief Advance the scalar indicator and mark it for refresh. */
     virtual void func_00413D20();
     /** @brief Draw the scalar indicator. */
-    virtual void func_00462310();
+    virtual void draw();
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     float unk50;

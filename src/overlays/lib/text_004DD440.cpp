@@ -344,10 +344,10 @@ void LibClass179080::update_transform_matrix()
 }
 
 /** @brief Update camera state and its attached-transform distance. */
-void LibClass179080::func_003EEBD0()
+void LibClass179080::update()
 {
     unk63 = 0;
-    LibTransform::func_003EEBD0();
+    LibTransform::update();
     transform_dirty = 1;
     if (static_cast<LibClass178F30*>(owner)->current_display == this)
     {

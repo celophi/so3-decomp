@@ -1840,7 +1840,7 @@ public:
     /** @brief Destroy the transform and notification bases. */
     virtual ~FieldClass1599E0();
     /** @brief Report the transform kind. @return Fourteen. */
-    virtual s32 func_003EEBC0();
+    virtual s32 get_default_list_kind();
     /** @brief Queue the receiver for release. */
     virtual void func_003EF740();
     /** @brief Leave the default update state unchanged. */

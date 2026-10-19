@@ -195,7 +195,7 @@ extern "C" void lib_object_detach_owner(void* object);
 
 /**
  * Partial 0x14-byte intrusive object with its vtable pointer at offset 0.
- * Vtable D_171EA0 is stored in main data. Slots 3 and 4 remain unknown.
+ * Vtable D_171EA0 is stored in main data. Slot 4 remains unknown.
  */
 class LibClass171EA0 : public LibClass171E90
 {
@@ -210,14 +210,14 @@ public:
         lib_object_detach_owner(this);
     }
 
-    /** @brief Report the fixed object kind. @return Always 3. */
-    virtual s32 func_003EEBC0();
+    /** @brief Report the list kind used when registration requests the default. @return Three in the base implementation. */
+    virtual s32 get_default_list_kind();
 
     /** @brief Delete the object through its virtual destructor; null is ignored. */
     virtual void func_003EF740();
 
-    /** @brief Virtual slot 3. */
-    virtual void func_003EEBD0();
+    /** @brief Advance this registered object's state; the owning list's update pass calls it. */
+    virtual void update();
 
     /** @brief Virtual slot 4. */
     virtual void func_003EEBE0();

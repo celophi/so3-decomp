@@ -22,13 +22,13 @@ public:
     virtual ~LibClass173990();
 
     /** @brief Report the emitter object kind. @return Six. */
-    virtual s32 func_003EEBC0();
+    virtual s32 get_default_list_kind();
 
     /** @brief Detach and queue the emitter. */
     virtual void func_003EF740();
 
     /** @brief Update the emitter and its attached grid. */
-    virtual void func_003EEBD0();
+    virtual void update();
 
     /**
      * @brief Initialize entries in the attached grid using optional vectors.

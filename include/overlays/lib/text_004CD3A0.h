@@ -368,9 +368,9 @@ public:
     /** @brief Destroy both manager interfaces. */
     virtual ~LibClass178F30();
     /** @brief Report the manager type. @return Manager type value. */
-    virtual s32 func_003EEBC0();
+    virtual s32 get_default_list_kind();
     /** @brief Update the manager's intrusive receiver. */
-    virtual void func_003EEBD0();
+    virtual void update();
     u8 unk8c[4];
     LibClass171EA0* current_display;
     u8 unk94;
@@ -412,7 +412,7 @@ public:
      */
     virtual void copy_transform_state(const LibTransform* source);
     /** @brief Update transform state relative to the current camera. */
-    virtual void func_003EEBD0();
+    virtual void update();
     /** @brief Update the cached transformation matrices. */
     virtual void update_transform_matrix();
     /**

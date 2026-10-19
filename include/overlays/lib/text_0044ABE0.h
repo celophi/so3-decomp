@@ -194,7 +194,7 @@ public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~ItemCreationClass1746A0();
     /** @brief Write the widget clipping bounds into its drawing packet. */
-    virtual void func_00462310();
+    virtual void draw();
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     u8 unk50;
@@ -214,7 +214,7 @@ public:
     /** @brief Refresh the resource drawing state. */
     virtual void func_00413D20();
     /** @brief Draw the resource widget. */
-    virtual void func_00462310();
+    virtual void draw();
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     LibDrawState64 unk50;
