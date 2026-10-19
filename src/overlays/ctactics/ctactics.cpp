@@ -422,38 +422,6 @@ struct TacticsCoordinateNode
     ~TacticsCoordinateNode() {}
 };
 
-typedef struct
-{
-    u8 pad_00[0x3C];
-
-    u8 active;
-
-    u8 pad_3d[0x57];
-
-    u32 color;
-} TacticsIcon;
-
-typedef struct TacticsIconNode
-{
-    TacticsIcon* icon;
-
-    struct TacticsIconNode* next;
-} TacticsIconNode;
-
-typedef struct
-{
-    u8 pad_00[4];
-
-    TacticsIconNode* next;
-} TacticsIconList;
-
-typedef struct
-{
-    u8 pad_00[0x2C];
-
-    TacticsIconList* list;
-} TacticsIconOwner;
-
 typedef struct TacticsPosition
 {
     float x;
@@ -885,28 +853,25 @@ void TacticsCoordinateSelector18AFD0::update()
 }
 
 /**
- * @brief Mark each icon active and color the selected one differently.
- * @param object Holder of the icon list.
- * @param selected Index of the icon to color differently.
+ * @brief Highlight the text display for the selected grid entry.
+ * @param selected Entry to highlight.
  */
-void color_icon_list_selection(void* object, s16 selected)
+void TacticsWindow18B020::func_slotf8(s16 selected)
 {
     s32 index = 0;
-    TacticsIconNode* node = ((TacticsIconOwner*)object)->list->next;
+    FieldListNode* node = unk2c.head->next;
 
     while (node != 0)
     {
-        TacticsIcon* icon = node->icon;
+        LibObject178750* text = static_cast<LibObject178750*>(node->value);
 
         if (index == selected)
         {
-            icon->color = 0x288080;
-            icon->active = 1;
+            text->set_color(0x288080);
         }
         else
         {
-            icon->color = 0x808080;
-            icon->active = 1;
+            text->set_color(0x808080);
         }
 
         node = node->next;
@@ -923,14 +888,10 @@ void TacticsWindow18B020::func_slot5c()
     }
 }
 
-/**
- * @brief Return the field at byte offset 0x20.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 get_field_word_20(void* object)
+/** @brief Return the associated object. @return Stored object. */
+void* FieldClass153E30::func_00261150()
 {
-    return *(u32*)((u8*)object + 0x20);
+    return unk20;
 }
 
 /** @brief Move to the following grid entry and update its text highlight. */
@@ -967,14 +928,10 @@ u8 TacticsWindow18B020::func_slotb4()
     return 2;
 }
 
-/**
- * @brief Store the field at byte offset 0x20.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void set_field_word_20(void* object, u32 value)
+/** @brief Store the associated object. @param value Object to store. */
+void FieldClass153E30::func_00263C70(void* value)
 {
-    *(u32*)((u8*)object + 0x20) = value;
+    unk20 = value;
 }
 
 /**
@@ -1417,7 +1374,7 @@ u8 TacticsWindow18B220::func_slotb8()
 /** @brief Return the alternate associated window. @return Stored window pointer. */
 void* FieldClass15AE70::func_slot4c()
 {
-    return *(void**)((u8*)this + 0x9C);
+    return unk9c;
 }
 
 /**
@@ -1465,28 +1422,27 @@ u8 TacticsWindow18B220::func_slotb4()
 /** @brief Return the stored resource source word. @return Stored word. */
 u32 FieldClass15AE70::func_slot54()
 {
-    return *(u32*)((u8*)this + 0x4);
+    return unk04;
 }
 
 /**
- * @brief Save the enabled grid selection and copy its node position to the display.
- * @param object Tactics receiver holding the grid, node list, and display target.
+ * @brief Save the enabled grid selection and fit the indicator to its text.
  * @return Zero when the grid's control byte is clear; otherwise one.
  */
-u8 save_grid_selection_to_display(TacticsGridOwner* object)
+u8 TacticsWindow18B220::func_slotb0()
 {
-    if (tactics_grid_empty(object->grid) == 1)
+    if (tactics_grid_empty(grid) == 1)
     {
         return 0;
     }
 
-    object->selected = object->grid->unk114;
-    D_001B643C->state->selected_record_index = object->selected;
-    TacticsPosition* position =
-        &((TacticsPositionTarget*)get_text_widget_node(&object->nodes, object->selected)->value)->position;
-    LibBounds4C69B0* bounds = lib_text_measure_bounds(
-        (LibObject178750*)get_text_widget_node(&object->nodes, object->selected)->value);
-    tactics_set_position(object->target, position->x, position->y, bounds->unk08, 24.0f);
+    selected = grid->unk114;
+    D_001B643C->state->selected_record_index = selected;
+    LibUiRect16* position = &static_cast<LibObject178750*>(get_text_widget_node(
+        reinterpret_cast<TacticsList*>(&unk2c), selected)->value)->unk18;
+    LibBounds4C69B0* bounds = lib_text_measure_bounds(static_cast<LibObject178750*>(get_text_widget_node(
+        reinterpret_cast<TacticsList*>(&unk2c), selected)->value));
+    set_widget_rectangle(indicator, position->unk00, position->unk04, bounds->unk08, 24.0f);
     return 1;
 }
 
@@ -1523,23 +1479,20 @@ void TacticsWindow18B220::func_slot68()
 /** @brief Restore the grid and resource widget movement flags. */
 void TacticsWindow18B220::func_slot64()
 {
-    void* first;
-    void* second;
+    FieldObject23CEA0* parent_grid = grid;
 
-    first = grid;
-
-    if (first != 0)
+    if (parent_grid != 0)
     {
-        *(float*)((u8*)first + 0xE0) = 128.0f;
-        *(u8*)((u8*)first + 0xAE) = 1;
+        parent_grid->FieldClass151C50::unk30 = 128.0f;
+        parent_grid->unkae = 1;
     }
 
-    second = resource_widget;
+    ItemCreationClass174C40* widget = resource_widget;
 
-    if (second != 0)
+    if (widget != 0)
     {
-        *(u32*)((u8*)second + 0xD0) = 0x22;
-        *(u8*)((u8*)second + 0x3C) = 1;
+        widget->unkd0 = 0x22;
+        widget->unk3c = 1;
     }
 }
 
@@ -2787,14 +2740,10 @@ void FieldClass15AE70::func_slot60(s32 text_key)
 {
 }
 
-/**
- * @brief Return the field at byte offset 0x24.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 get_field_word_24(void* object)
+/** @brief Return the alternate associated object. @return Stored object. */
+void* FieldClass153E30::func_00263C90()
 {
-    return *(u32*)((u8*)object + 0x24);
+    return unk24;
 }
 
 /**
@@ -3767,20 +3716,14 @@ void TacticsResourceMenuState::func_slot5c()
     func_001DD7B0();
 }
 
-/**
- * @brief Enqueue the receiver for deferred processing.
- * @param object Receiver to append to the resident object queue.
- */
-void enqueue_resident_object(void* object)
+/** @brief Submit the State to the resident object queue. */
+void TacticsResourceMenuState::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void tactics_callback_noop(void* object)
+/** @brief Default update handler that performs no work. */
+void FieldListObject::update()
 {
 }
 
@@ -3907,7 +3850,7 @@ s32 TacticsResourceMenuState::func_00263CD0()
 /** @brief Store the alternate window pointer. @param associated Pointer to store. */
 void FieldClass15AE70::func_slot48(void* associated)
 {
-    *(void**)((u8*)this + 0x9C) = associated;
+    unk9c = associated;
 }
 
 /**
@@ -3997,49 +3940,49 @@ void TacticsCoordinateSelector18AFD0::notify()
 /** @brief Store the window control byte. @param value Control value. */
 void FieldClass15AE70::func_slot24(u8 value)
 {
-    *(u8*)((u8*)this + 0xC) = value;
+    unk0c = value;
 }
 
 /** @brief Read the window control byte. @return Stored control value. */
 u8 FieldClass15AE70::func_slot28()
 {
-    return *(u8*)((u8*)this + 0xC);
+    return unk0c;
 }
 
 /** @brief Store the byte state code. @param value State code. */
 void FieldClass15AE70::func_slot2c(u8 value)
 {
-    *(u8*)((u8*)this + 0x8) = value;
+    unk08 = value;
 }
 
 /** @brief Read the byte state code. @return Stored state code. */
 u8 FieldClass15AE70::func_slot30()
 {
-    return *(u8*)((u8*)this + 0x8);
+    return unk08;
 }
 
 /** @brief Store the halfword state flags. @param value State flags. */
 void FieldClass15AE70::func_slot34(u16 value)
 {
-    *(u16*)((u8*)this + 0xA) = value;
+    unk0a = value;
 }
 
 /** @brief Read the halfword state flags. @return Stored state flags. */
 u16 FieldClass15AE70::func_slot38()
 {
-    return *(u16*)((u8*)this + 0xA);
+    return unk0a;
 }
 
 /** @brief Store the opaque resource source word. @param value Word to store. */
 void FieldClass15AE70::func_slot50(u32 value)
 {
-    *(u32*)((u8*)this + 0x4) = value;
+    unk04 = value;
 }
 
 /** @brief Return the nested display container. @return Stored container. */
 LibObject178660* FieldClass15AE70::func_slot58()
 {
-    return *(LibObject178660**)((u8*)this + 0x10);
+    return unk10;
 }
 
 /** @brief Leave the default virtual hook unchanged. */
@@ -4200,13 +4143,13 @@ void FieldClass15AE70::func_slote4()
 /** @brief Read the nested display byte flag. @return Stored flag. */
 u8 FieldClass15AE70::func_slote8()
 {
-    return *(u8*)((u8*)this + 0xD);
+    return unk0d;
 }
 
 /** @brief Set the nested display byte flag. @param value Flag value. */
 void FieldClass15AE70::func_slotec(u8 value)
 {
-    *(u8*)((u8*)this + 0xD) = value;
+    unk0d = value;
 }
 
 /** @brief Leave the default virtual hook unchanged. */
@@ -4241,154 +4184,94 @@ u8 FieldClass15AE70::func_slotb4()
     return 0;
 }
 
-/**
- * @brief Return bit zero of the byte at offset 0x38.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 read_mode_flag_bit(void* object)
+/** @brief Report whether window setup finished. @return Setup flag. */
+u8 TacticsResourceMenuState::func_00261D20()
 {
-    return *(u8*)((u8*)object + 0x38) & 1;
+    return windows_initialized;
 }
 
-/**
- * @brief Return the field at byte offset 0x34.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 read_word_at_34(void* object)
+/** @brief Return the loaded resource slot. @return Resource slot. */
+u32 TacticsResourceMenuState::func_00263CC0()
 {
-    return *(u32*)((u8*)object + 0x34);
+    return resource_slot;
 }
 
-/**
- * @brief Return the fixed value 4.
- * @param object Receiver or first argument; unused.
- * @return Always 4.
- */
-s32 return_constant_four(void* object)
+/** @brief Report this object's default list kind. @return Four. */
+s32 TacticsResourceMenuState::get_default_list_kind()
 {
     return 4;
 }
 
-/**
- * @brief Store the field at byte offset 0x24.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void write_word_at_24(void* object, u32 value)
+/** @brief Store the alternate associated object. @param value Object to store. */
+void FieldClass153E30::func_00263C80(void* value)
 {
-    *(u32*)((u8*)object + 0x24) = value;
+    unk24 = value;
 }
 
-/**
- * @brief Store the byte at offset 0x28.
- * @param object Object containing the field.
- * @param value Byte to store.
- */
-void write_byte_at_28(void* object, u8 value)
+/** @brief Store the receiver state byte. @param value State byte. */
+void FieldClass153E30::func_00263CA0(s8 value)
 {
-    *(u8*)((u8*)object + 0x28) = value;
+    unk28 = value;
 }
 
-/**
- * @brief Read the signed byte at offset 0x28.
- * @param object Object containing the field.
- * @return The stored signed byte.
- */
-s8 read_signed_byte_at_28(void* object)
+/** @brief Return the receiver state byte. @return State byte. */
+s8 FieldClass153E30::func_00263CB0()
 {
-    return *(s8*)((u8*)object + 0x28);
+    return unk28;
 }
 
-/**
- * @brief Return zero for the callback slot.
- * @param object Receiver or first argument; unused.
- * @return Zero.
- */
-s32 return_zero_callback_6(void* object)
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot60()
 {
     return 0;
 }
 
-/**
- * @brief Return zero for the callback slot.
- * @param object Receiver or first argument; unused.
- * @return Zero.
- */
-s32 return_zero_callback_1(void* object)
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot64()
 {
     return 0;
 }
 
-/**
- * @brief Perform no work for the callback slot.
- * @param object Receiver or first argument; unused.
- */
-void noop_callback_1(void* object)
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot68()
 {
 }
 
-/**
- * @brief Return zero for the callback slot.
- * @param object Receiver or first argument; unused.
- * @return Zero.
- */
-s32 return_zero_callback_2(void* object)
+/** @brief Return the receiver's selection object. @return Null in the base implementation. */
+FieldRecordSelection* FieldClass153E30::selected_records()
 {
     return 0;
 }
 
-/**
- * @brief Perform no work for the callback slot.
- * @param object Receiver or first argument; unused.
- */
-void noop_callback_2(void* object)
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot70()
 {
 }
 
-/**
- * @brief Perform no work for the callback slot.
- * @param object Receiver or first argument; unused.
- */
-void noop_callback_3(void* object)
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot74()
 {
 }
 
-/**
- * @brief Perform no work for the callback slot.
- * @param object Receiver or first argument; unused.
- */
-void noop_callback_4(void* object)
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot78()
 {
 }
 
-/**
- * @brief Return zero for the callback slot.
- * @param object Receiver or first argument; unused.
- * @return Zero.
- */
-s32 return_zero_callback_3(void* object)
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot7c()
 {
     return 0;
 }
 
-/**
- * @brief Return zero for the callback slot.
- * @param object Receiver or first argument; unused.
- * @return Zero.
- */
-s32 return_zero_callback_4(void* object)
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot80()
 {
     return 0;
 }
 
-/**
- * @brief Return zero for the callback slot.
- * @param object Receiver or first argument; unused.
- * @return Zero.
- */
-s32 return_zero_callback_5(void* object)
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot84()
 {
     return 0;
 }

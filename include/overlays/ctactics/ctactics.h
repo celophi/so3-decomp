@@ -89,6 +89,19 @@ struct TacticsResourceMenuState : public FieldClass153E30
     TacticsResourceMenuState();
     /** @brief Destroy the State; its complete virtual tail remains unresolved. */
     virtual ~TacticsResourceMenuState();
+
+    /** @brief Report this object's default list kind. @return Four. */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Submit the State to the resident object queue. */
+    virtual void func_001DD7B0();
+
+    /** @brief Return the loaded resource slot. @return Resource slot. */
+    virtual u32 func_00263CC0();
+
+    /** @brief Report whether window setup finished. @return Setup flag. */
+    virtual u8 func_00261D20();
+
     /**
      * @brief Allocate and initialize the State's record selection.
      * @return One when a selection exists and initialization succeeds; otherwise zero.
@@ -276,7 +289,10 @@ struct TacticsWindow18B220 : public FieldClass15AE70
     virtual void func_slot68();
     /** @brief Move to the following grid entry and update its title, cursor, and indicators. */
     virtual void func_slot6c();
-    /** @brief Save the enabled grid selection. @return Window action status. */
+    /**
+     * @brief Save the enabled grid selection and fit the indicator to its text.
+     * @return Zero when the grid's control byte is clear; otherwise one.
+     */
     virtual u8 func_slotb0();
     /**
      * @brief Open the selection child for an enabled grid, or update control-mode flags.
@@ -598,13 +614,6 @@ void clear_text_widget_list(TacticsTextWidgetList* list);
 void clear_coordinate_widget_list(TacticsCoordinatePositionList* list);
 
 /**
- * @brief Save the enabled grid selection and copy its node position to the display.
- * @param object Tactics receiver holding the grid, node list, and display target.
- * @return Zero when the grid's control byte is clear; otherwise one.
- */
-u8 save_grid_selection_to_display(TacticsGridOwner* object);
-
-/**
  * @brief Color up to six list displays and place the cursor for the selected grid entry.
  * @param object Tactics receiver holding the display list, grid, and cursor.
  */
@@ -615,12 +624,6 @@ void refresh_grid_list_selection(TacticsWindow18B420* object);
  * @param object Tactics receiver holding the grid, indicators, and base coordinates.
  */
 void position_grid_indicators(TacticsGridOwner* object);
-
-/**
- * @brief Enqueue the receiver for deferred processing.
- * @param object Receiver to append to the resident object queue.
- */
-void enqueue_resident_object(void* object);
 
 /**
  * @brief Select a preset display position, clearing it for an invalid index.
@@ -644,148 +647,6 @@ typedef struct TacticsList
 {
     TacticsListNode* head;
 } TacticsList;
-
-/**
- * @brief Mark each icon active and color the selected one differently.
- * @param object Holder of the icon list.
- * @param selected Index of the icon to color differently.
- */
-void color_icon_list_selection(void* object, s16 selected);
-
-/**
- * @brief Return the field at byte offset 0x20.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 get_field_word_20(void* object);
-
-/**
- * @brief Store the field at byte offset 0x20.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void set_field_word_20(void* object, u32 value);
-
-/**
- * @brief Return the field at byte offset 0x24.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 get_field_word_24(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void tactics_callback_noop(void* object);
-
-/**
- * @brief Return bit zero of the byte at offset 0x38.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 read_mode_flag_bit(void* object);
-
-/**
- * @brief Return the field at byte offset 0x34.
- * @param object Object containing the field.
- * @return The field value.
- */
-u32 read_word_at_34(void* object);
-
-/**
- * @brief Return the fixed value 4.
- * @param object Receiver or first argument; unused.
- * @return Always 4.
- */
-s32 return_constant_four(void* object);
-
-/**
- * @brief Store the field at byte offset 0x24.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void write_word_at_24(void* object, u32 value);
-
-/**
- * @brief Store the field at byte offset 0x28.
- * @param object Object containing the field.
- * @param value Value to store.
- */
-void write_byte_at_28(void* object, u8 value);
-
-/**
- * @brief Return the field at byte offset 0x28.
- * @param object Object containing the field.
- * @return The field value.
- */
-s8 read_signed_byte_at_28(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 return_zero_callback_6(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 return_zero_callback_1(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void noop_callback_1(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 return_zero_callback_2(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void noop_callback_2(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void noop_callback_3(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void noop_callback_4(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 return_zero_callback_3(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 return_zero_callback_4(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 return_zero_callback_5(void* object);
 
 /**
  * @brief Return the node at `index`. Index zero is the first node after the head node.
