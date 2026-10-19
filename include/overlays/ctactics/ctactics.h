@@ -9,15 +9,16 @@
 #include "overlays/lib/text_0045AD10.h"
 struct FieldRecordSelection;
 struct LibObject178750;
+class TacticsFormationWindow;
+class TacticsChangeWindow;
+class TacticsCharacterNameWidgetList;
+class TacticsStatValueWidgetList;
+class TacticsTextWidgetList;
+class TacticsCoordinatePositionList;
 #endif
 
 typedef struct FieldCountedList FieldCountedList;
 typedef struct FieldListNode FieldListNode;
-
-/** Formation window (mode 4) with the ten formations and the leader. */
-typedef struct TacticsFormationWindow TacticsFormationWindow;
-
-typedef struct TacticsChangeWindow TacticsChangeWindow;
 
 typedef struct TacticsPresetPosition
 {
@@ -42,15 +43,11 @@ typedef struct TacticsPresetPosition
     float y;
 } TacticsPresetPosition;
 
-typedef struct TacticsCharacterNameWidgetList TacticsCharacterNameWidgetList;
-typedef struct TacticsStatValueWidgetList TacticsStatValueWidgetList;
-typedef struct TacticsTextWidgetList TacticsTextWidgetList;
-typedef struct TacticsCoordinatePositionList TacticsCoordinatePositionList;
-
 #ifdef __cplusplus
 /** Tactics menu controller: loads the menu resource and builds the windows for the chosen mode. */
-struct TacticsController : public FieldClass153E30
+class TacticsController : public FieldClass153E30
 {
+public:
     /** @brief Clear the resource slot, window initialization flag, and selection pointer. */
     TacticsController();
 
@@ -103,8 +100,9 @@ struct TacticsController : public FieldClass153E30
 };
 
 /** Resource window owning three displays of resource 11. */
-struct TacticsResourceWindow : public FieldClass15AE70
+class TacticsResourceWindow : public FieldClass15AE70
 {
+public:
     /** @brief Destroy the resource window. */
     virtual ~TacticsResourceWindow();
 
@@ -117,8 +115,9 @@ struct TacticsResourceWindow : public FieldClass15AE70
 };
 
 /** 0xC4-byte help bar with the menu title, the mode name, and a scrolling description. */
-struct TacticsHelpWindow : public FieldClass15AE70
+class TacticsHelpWindow : public FieldClass15AE70
 {
+public:
     /** @brief Clear the scrolling text state and movement bounds. */
     TacticsHelpWindow()
     {
@@ -140,7 +139,7 @@ struct TacticsHelpWindow : public FieldClass15AE70
 
     /**
      * @brief Replace the text for supported keys and reset its scrolling state.
-     * @param text_key Text key in the supported 0x2714..0x271B range.
+     * @param text_key Help line key, from TACTICS_MSG_HELP_FIRST up to TACTICS_MSG_HELP_END.
      */
     virtual void func_slot60(s32 text_key);
 
@@ -169,8 +168,9 @@ struct TacticsHelpWindow : public FieldClass15AE70
 };
 
 /** 0xB0-byte Yes/No window that asks before leaving the current setup. */
-struct TacticsExitConfirmWindow : public FieldClass15AE70
+class TacticsExitConfirmWindow : public FieldClass15AE70
 {
+public:
     /** @brief Clear the grid pointer and saved selection. */
     TacticsExitConfirmWindow()
     {
@@ -227,8 +227,9 @@ struct TacticsExitConfirmWindow : public FieldClass15AE70
 };
 
 /** 0xD4-byte "Set Leader" window listing the party members by name. */
-struct TacticsLeaderWindow : public FieldClass15AE70
+class TacticsLeaderWindow : public FieldClass15AE70
 {
+public:
     /** @brief Clear the record selection, saved character IDs, and grid origin. */
     TacticsLeaderWindow()
     {
@@ -298,8 +299,9 @@ struct TacticsLeaderWindow : public FieldClass15AE70
 };
 
 /** 0xDC-byte "Formation" window: ten formations, the party's positions, and the leader's name. */
-struct TacticsFormationWindow : public FieldClass15AE70
+class TacticsFormationWindow : public FieldClass15AE70
 {
+public:
     /** @brief Clear the displays and restore the resident grid selection. */
     TacticsFormationWindow();
 
@@ -366,8 +368,9 @@ struct TacticsFormationWindow : public FieldClass15AE70
 };
 
 /** 0xC8-byte "Change Tactics" window: eight character rows with each one's battle strategy. */
-struct TacticsChangeWindow : public FieldClass15AE70
+class TacticsChangeWindow : public FieldClass15AE70
 {
+public:
     /** @brief Clear the resource links, coordinate selection, and preset position. */
     TacticsChangeWindow()
     {
@@ -425,11 +428,11 @@ struct TacticsChangeWindow : public FieldClass15AE70
      */
     u32 get_strategy_text_key(s16 character_id, s32 record_index);
 
-    struct TacticsCharacterRecord* character_records;
+    class TacticsCharacterRecord* character_records;
 
     struct TacticsCharacterEquipment* equipment_records;
 
-    struct TacticsCoordinateSelector* selection;
+    class TacticsCoordinateSelector* selection;
 
     s16 selected;
 
@@ -441,8 +444,9 @@ struct TacticsChangeWindow : public FieldClass15AE70
 };
 
 /** 0xF8-byte "Tactics Menu" window listing one character's six battle strategies. */
-struct TacticsStrategyWindow : public FieldClass15AE70
+class TacticsStrategyWindow : public FieldClass15AE70
 {
+public:
     /** @brief Initialize the grid window's pointers and control fields. */
     TacticsStrategyWindow();
 
@@ -485,7 +489,7 @@ struct TacticsStrategyWindow : public FieldClass15AE70
      */
     s32 set_character(s16 record_index, u8 initial_entry);
 
-    struct TacticsCharacterRecord* character_records;
+    class TacticsCharacterRecord* character_records;
 
     struct TacticsCharacterEquipment* equipment_records;
 
@@ -511,8 +515,9 @@ struct TacticsStrategyWindow : public FieldClass15AE70
 };
 
 /** Linked list with an empty head node, owned value nodes, and a count. */
-struct TacticsCharacterNameWidgetList : public FieldCountedList
+class TacticsCharacterNameWidgetList : public FieldCountedList
 {
+public:
     /** @brief Create the head node and start with an empty list. */
     TacticsCharacterNameWidgetList();
 
@@ -521,8 +526,9 @@ struct TacticsCharacterNameWidgetList : public FieldCountedList
 };
 
 /** Linked list with an empty head node, owned value nodes, and a count. */
-struct TacticsStatValueWidgetList : public FieldCountedList
+class TacticsStatValueWidgetList : public FieldCountedList
 {
+public:
     /** @brief Create the head node and start with an empty list. */
     TacticsStatValueWidgetList();
 
@@ -531,8 +537,9 @@ struct TacticsStatValueWidgetList : public FieldCountedList
 };
 
 /** Linked list with an empty head node, owned value nodes, and a count. */
-struct TacticsTextWidgetList : public FieldCountedList
+class TacticsTextWidgetList : public FieldCountedList
 {
+public:
     /** @brief Create the head node and start with an empty list. */
     TacticsTextWidgetList();
 
@@ -541,9 +548,10 @@ struct TacticsTextWidgetList : public FieldCountedList
 };
 
 /** Linked list with an empty head node, owned value nodes, and a count. */
-struct TacticsCoordinatePositionList
+class TacticsCoordinatePositionList
 {
-    struct TacticsCoordinateNode* head;
+public:
+    class TacticsCoordinateNode* head;
 
     u32 count;
 
@@ -555,8 +563,9 @@ struct TacticsCoordinatePositionList
 };
 
 /** 0x17C-byte "Replace" window that swaps two party slots and shows each row's level, HP, and MP. */
-struct TacticsReplaceWindow : public FieldClass15AE70
+class TacticsReplaceWindow : public FieldClass15AE70
 {
+public:
     /** @brief Construct the owned lists and clear the window control fields. */
     TacticsReplaceWindow();
 
@@ -603,17 +612,17 @@ struct TacticsReplaceWindow : public FieldClass15AE70
      */
     virtual s32 func_slotf4(u32 associated);
 
-    struct TacticsCharacterRecord* character_records;
+    class TacticsCharacterRecord* character_records;
 
     struct TacticsCharacterEquipment* equipment_records;
 
-    struct TacticsCharacterRecord* character_record_buffer;
+    class TacticsCharacterRecord* character_record_buffer;
 
     struct TacticsCharacterEquipment* equipment_record_buffer;
 
-    struct TacticsCoordinateSelector* first_selector;
+    class TacticsCoordinateSelector* first_selector;
 
-    struct TacticsCoordinateSelector* second_selector;
+    class TacticsCoordinateSelector* second_selector;
 
     u8 use_second;
 

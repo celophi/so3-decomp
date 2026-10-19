@@ -21,9 +21,51 @@
 #define TACTICS_STAT_WORD_XOR_KEY 0x7DE3F7E3
 #define TACTICS_STAT_HALFWORD_XOR_KEY 0x7E93
 
-/** Coordinate selector owning its position list and selected entry. */
-struct TacticsCoordinateSelector : public LibClass175030
+enum TacticsMessageKey
 {
+    TACTICS_MSG_TITLE = 0x2710,
+    TACTICS_MSG_CHANGE_TACTICS = 0x2711,
+    TACTICS_MSG_REPLACE = 0x2712,
+    TACTICS_MSG_FORMATION = 0x2713,
+    TACTICS_MSG_HELP_FIRST = 0x2714,
+    TACTICS_MSG_CHANGE_TACTICS_HELP = 0x2714,
+    TACTICS_MSG_REPLACE_HELP = 0x2719,
+    TACTICS_MSG_FORMATION_HELP = 0x271A,
+    TACTICS_MSG_HELP_END = 0x271C,
+    TACTICS_MSG_EMPTY_ROW = 0x2720,
+    TACTICS_MSG_LEFT_COLUMN_TITLE = 0x2721,
+    TACTICS_MSG_RIGHT_COLUMN_TITLE = 0x2722,
+    TACTICS_MSG_TACTICS_MENU = 0x2723,
+    TACTICS_MSG_DEFAULT_HINT = 0x2724,
+    TACTICS_MSG_LEVEL = 0x2725,
+    TACTICS_MSG_HP = 0x2726,
+    TACTICS_MSG_MP = 0x2727,
+    TACTICS_MSG_VALUE_SEPARATOR = 0x2728,
+    TACTICS_MSG_SET_LEADER = 0x2729,
+    TACTICS_MSG_SET_LEADER_TITLE = 0x272A,
+    TACTICS_MSG_LEADER = 0x272B,
+    TACTICS_MSG_STRATEGY_NAME_BASE = 0x2968,
+    TACTICS_MSG_ALT_STRATEGY_NAME_BASE = 0x296E,
+    TACTICS_MSG_DUMMY = 0x29CC,
+    TACTICS_MSG_CONFIRM_EXIT_TACTICS = 0x29CD,
+    TACTICS_MSG_CONFIRM_EXIT_REPLACE = 0x29CE,
+    TACTICS_MSG_CONFIRM_EXIT_FORMATION = 0x29CF,
+    TACTICS_MSG_CONFIRM_EXIT = 0x29D0,
+    TACTICS_MSG_STRATEGY_HELP_BASE = 0x29D1,
+    TACTICS_MSG_ALT_STRATEGY_HELP_BASE = 0x29D7,
+    TACTICS_MSG_STRATEGY_HINT = 0x29DD,
+    TACTICS_MSG_REPLACEMENT_HINT = 0x29DE,
+    TACTICS_MSG_FORMATION_HINT = 0x29DF,
+    TACTICS_MSG_FORMATION_NAME_BASE = 0x2A30,
+    TACTICS_MSG_FORMATION_HELP_BASE = 0x2A62,
+    TACTICS_MSG_YES = 0x7E8,
+    TACTICS_MSG_NO = 0x7E9
+};
+
+/** Coordinate selector owning its position list and selected entry. */
+class TacticsCoordinateSelector : public LibClass175030
+{
+public:
     /** @brief Destroy the coordinate list and movement bases. */
     virtual ~TacticsCoordinateSelector();
 
@@ -80,7 +122,7 @@ static inline void clear_grid_state(TacticsStrategyWindow* object)
 /**
  * @brief Return the text key of a character's first battle strategy.
  * @param character_id Signed character ID.
- * @return First of the character's six consecutive strategy names, or 0x29CC ("Dummy") for an unknown character.
+ * @return First of the character's six consecutive strategy names, or TACTICS_MSG_DUMMY for an unknown character.
  */
 static inline s32 first_strategy_text_key(s16 character_id)
 {
@@ -89,37 +131,37 @@ static inline s32 first_strategy_text_key(s16 character_id)
     switch (character_id)
     {
         case 1:
-            first_key = 0x2968;
+            first_key = TACTICS_MSG_STRATEGY_NAME_BASE;
             break;
         case 2:
-            first_key = 0x296E;
+            first_key = TACTICS_MSG_ALT_STRATEGY_NAME_BASE;
             break;
         case 3:
-            first_key = 0x2968;
+            first_key = TACTICS_MSG_STRATEGY_NAME_BASE;
             break;
         case 4:
-            first_key = 0x2968;
+            first_key = TACTICS_MSG_STRATEGY_NAME_BASE;
             break;
         case 5:
-            first_key = 0x2968;
+            first_key = TACTICS_MSG_STRATEGY_NAME_BASE;
             break;
         case 6:
-            first_key = 0x2968;
+            first_key = TACTICS_MSG_STRATEGY_NAME_BASE;
             break;
         case 7:
-            first_key = 0x2968;
+            first_key = TACTICS_MSG_STRATEGY_NAME_BASE;
             break;
         case 8:
-            first_key = 0x2968;
+            first_key = TACTICS_MSG_STRATEGY_NAME_BASE;
             break;
         case 9:
-            first_key = 0x296E;
+            first_key = TACTICS_MSG_ALT_STRATEGY_NAME_BASE;
             break;
         case 10:
-            first_key = 0x2968;
+            first_key = TACTICS_MSG_STRATEGY_NAME_BASE;
             break;
         default:
-            first_key = 0x29CC;
+            first_key = TACTICS_MSG_DUMMY;
             break;
     }
 
@@ -141,8 +183,9 @@ struct TacticsCharacterEquipment
 };
 
 /** Checksum-protected 0xC4-byte character statistics record with a signed character ID. */
-struct TacticsCharacterRecord
+class TacticsCharacterRecord
 {
+public:
     s16 character_id;
 
     s16 stat_limit_type;
@@ -418,12 +461,12 @@ static inline void set_resource_display_scale(ItemCreationOptionResourceDisplay*
     object->unk3c = 1;
 }
 
-/** Partial aligned resource header with its payload size at offset 40. */
+/** Partial aligned resource header with its size at offset 0x40. */
 struct TacticsAlignedResource
 {
     u8 unk00[0x40];
 
-    s32 unk40;
+    s32 size;
 };
 
 /**
@@ -437,8 +480,9 @@ static inline TacticsAlignedResource* aligned_resource(void* buffer)
 }
 
 /** Coordinate value and next link in an owned list. */
-struct TacticsCoordinateNode
+class TacticsCoordinateNode
 {
+public:
     float x;
 
     float y;
@@ -685,7 +729,7 @@ static inline void highlight_text(TacticsFormationWindow* window, s32 selected_e
  */
 static inline void refresh_formation(TacticsFormationWindow* object, s16 selected_entry)
 {
-    lib_text_set_resource(object->title, object->func_slot54(), selected_entry + 0x2A62, 0);
+    lib_text_set_resource(object->title, object->func_slot54(), selected_entry + TACTICS_MSG_FORMATION_HELP_BASE, 0);
     s32 selected = selected_entry;
     highlight_text(object, selected);
 }
@@ -939,10 +983,10 @@ s32 TacticsExitConfirmWindow::func_slotf4(u32 associated, float x, float y,
         return 0;
     }
 
-    lib_text_init_resource_rectangle(first, associated, 0x7E8, 0, 110.0f, 132.0f, 0.0f, 0.0f);
-    lib_text_init_resource_rectangle(second, associated, 0x7E9, 0, 110.0f, 168.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(first, associated, TACTICS_MSG_YES, 0, 110.0f, 132.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(second, associated, TACTICS_MSG_NO, 0, 110.0f, 168.0f, 0.0f, 0.0f);
     lib_text_init_resource_rectangle(heading, associated, text_key, 0, 24.0f, 64.0f, 0.0f, 0.0f);
-    lib_text_init_resource_rectangle(notice, associated, 0x29D0, 0, 0.0f, 8.0f, 290.0f, 40.0f);
+    lib_text_init_resource_rectangle(notice, associated, TACTICS_MSG_CONFIRM_EXIT, 0, 0.0f, 8.0f, 290.0f, 40.0f);
     notice->set_mode(1);
     lib_container_attach_widget(unk10, first);
     lib_container_attach_widget(unk10, second);
@@ -1071,7 +1115,7 @@ s32 TacticsLeaderWindow::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, title_panel);
     append_panel_widget_node(&unk14, title_panel);
     LibObject178750* title = new (0) LibObject178750;
-    lib_text_init_resource_rectangle(title, associated, 0x272A, 1, 42.0f, 8.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(title, associated, TACTICS_MSG_SET_LEADER_TITLE, 1, 42.0f, 8.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, title);
 
     if (record_selection == 0)
@@ -1242,7 +1286,7 @@ u8 TacticsFormationWindow::func_slotb4()
             return 0;
         }
 
-        child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, 0x29CF);
+        child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, TACTICS_MSG_CONFIRM_EXIT_FORMATION);
         child->func_slot40(this);
         D_001B643C->callbacks->state->add_child(child);
         D_001B643C->callbacks->state->func_00263C70(child);
@@ -1470,14 +1514,14 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     for (s32 index = 0; index < 10; index++)
     {
         LibObject178750* display = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(display, associated, 0x2A30 + index, 0,
+        lib_text_init_resource_rectangle(display, associated, TACTICS_MSG_FORMATION_NAME_BASE + index, 0,
             24.0f, 24.0f + 28.0f * index, 0.0f, 0.0f);
         lib_container_attach_widget(unk10, display);
         append_text_widget_node(&unk2c, display);
     }
 
     title = new (0) LibObject178750;
-    lib_text_init_resource_rectangle(title, associated, 0x2A62, 0, 256.0f, 16.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(title, associated, TACTICS_MSG_FORMATION_HELP_BASE, 0, 256.0f, 16.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, title);
     grid = new (0) FieldObject23CEA0;
     grid->func_0023CE80(1, 10);
@@ -1500,7 +1544,7 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     lib_indexed_resource_init(resource_widget, 0x22, 32.0f, 348.0f);
     lib_container_attach_widget(unk10, resource_widget);
     LibObject178750* resource_heading = new (0) LibObject178750;
-    lib_text_init_resource_rectangle(resource_heading, associated, 0x2729, 0, 72.0f, 352.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(resource_heading, associated, TACTICS_MSG_SET_LEADER, 0, 72.0f, 352.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, resource_heading);
     u8 saved_entry = D_001B643C->state->leader_character_id;
     u16 resource_index = 0;
@@ -1520,7 +1564,7 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     base_y = 132.0f;
     float heading_y = base_y - 24.0f;
     LibObject178750* selected_heading = new (0) LibObject178750;
-    selected_heading->init_resource_rectangle(322.0f, heading_y, 0.0f, 0.0f, associated, 0x272B, 1);
+    selected_heading->init_resource_rectangle(322.0f, heading_y, 0.0f, 0.0f, associated, TACTICS_MSG_LEADER, 1);
     selected_heading->set_color(0x288080);
     lib_container_attach_widget(unk10, selected_heading);
     label = new (0) LibObject175140;
@@ -1810,7 +1854,7 @@ u8 TacticsReplaceWindow::func_slotb4()
             return 0;
         }
 
-        child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, 0x29CE);
+        child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, TACTICS_MSG_CONFIRM_EXIT_REPLACE);
         child->func_slot40(this);
         LibClass175030* first_target = first_selector;
         first_target->unk30 = 64.0f;
@@ -2210,7 +2254,7 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
             return 0;
         }
 
-        empty_marker->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, source, 0x2720, 0);
+        empty_marker->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, source, TACTICS_MSG_EMPTY_ROW, 0);
         s32 row;
 
         if (index < 3)
@@ -2259,7 +2303,7 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
         character_name_label->set_scale(0.8f, 0.8f);
         set_widget_rectangle(empty_marker, column_x, empty_y, width, 24.0f);
         empty_marker->set_mode(1);
-        level_label->init_resource_rectangle(first_x, first_y, 0.0f, 0.0f, source, 0x2725, 0);
+        level_label->init_resource_rectangle(first_x, first_y, 0.0f, 0.0f, source, TACTICS_MSG_LEVEL, 0);
         level_label->set_scale(0.8f, 0.8f);
         level_label->set_color(0x806080);
 
@@ -2273,7 +2317,7 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
         }
 
         level_value->set_scale(0.8f, 0.8f);
-        hp_label->init_resource_rectangle(second_x, second_y, 0.0f, 0.0f, source, 0x2726, 0);
+        hp_label->init_resource_rectangle(second_x, second_y, 0.0f, 0.0f, source, TACTICS_MSG_HP, 0);
         hp_label->set_scale(0.8f, 0.8f);
         hp_label->set_color(0x806080);
         float value_width;
@@ -2290,11 +2334,11 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
         }
 
         current_hp_value->set_scale(0.8f, 0.8f);
-        hp_separator->init_resource_rectangle(98.0f + second_x, second_y, 0.0f, 0.0f, source, 0x2728, 0);
+        hp_separator->init_resource_rectangle(98.0f + second_x, second_y, 0.0f, 0.0f, source, TACTICS_MSG_VALUE_SEPARATOR, 0);
         hp_separator->set_scale(0.8f, 0.8f);
         max_hp_value->init_numeric_resource_rectangle(106.0f + second_x, second_y, value_width, 24.0f, 0, 0, 0);
         max_hp_value->set_scale(0.8f, 0.8f);
-        mp_label->init_resource_rectangle(third_x, third_y, 0.0f, 0.0f, source, 0x2727, 0);
+        mp_label->init_resource_rectangle(third_x, third_y, 0.0f, 0.0f, source, TACTICS_MSG_MP, 0);
         mp_label->set_scale(0.8f, 0.8f);
         mp_label->set_color(0x806080);
 
@@ -2308,7 +2352,7 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
         }
 
         current_mp_value->set_scale(0.8f, 0.8f);
-        mp_separator->init_resource_rectangle(98.0f + third_x, third_y, 0.0f, 0.0f, source, 0x2728, 0);
+        mp_separator->init_resource_rectangle(98.0f + third_x, third_y, 0.0f, 0.0f, source, TACTICS_MSG_VALUE_SEPARATOR, 0);
         mp_separator->set_scale(0.8f, 0.8f);
         max_mp_value->init_numeric_resource_rectangle(106.0f + third_x, third_y, value_width, 24.0f, 0, 0, 0);
         max_mp_value->set_scale(0.8f, 0.8f);
@@ -2453,11 +2497,11 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
         return 0;
     }
 
-    first_title->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, source, 0x2721, 1);
+    first_title->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, source, TACTICS_MSG_LEFT_COLUMN_TITLE, 1);
     set_widget_rectangle(first_title, 16.0f, -20.0f, 304.0f, 16.0f);
     first_title->set_mode(0);
     first_title->set_color(0x288080);
-    second_title->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, source, 0x2722, 1);
+    second_title->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, source, TACTICS_MSG_RIGHT_COLUMN_TITLE, 1);
     set_widget_rectangle(second_title, 320.0f, -20.0f, 304.0f, 16.0f);
     second_title->set_mode(0);
     second_title->set_color(0x288080);
@@ -2530,11 +2574,11 @@ void TacticsStrategyWindow::func_slot5c()
 
     if (character_id == 2 || character_id == 9)
     {
-        static_cast<FieldClass15AE70*>(D_001B643C->callbacks->state->func_00263C90())->func_slot60(index + 0x29D7);
+        static_cast<FieldClass15AE70*>(D_001B643C->callbacks->state->func_00263C90())->func_slot60(index + TACTICS_MSG_ALT_STRATEGY_HELP_BASE);
     }
     else
     {
-        static_cast<FieldClass15AE70*>(D_001B643C->callbacks->state->func_00263C90())->func_slot60(index + 0x29D1);
+        static_cast<FieldClass15AE70*>(D_001B643C->callbacks->state->func_00263C90())->func_slot60(index + TACTICS_MSG_STRATEGY_HELP_BASE);
     }
 
     selected = index;
@@ -2620,7 +2664,7 @@ u8 TacticsStrategyWindow::func_slotb4()
     static_cast<FieldClass15AE70*>(func_slot44())->func_slot64();
     FieldClass153E30* state = D_001B643C->callbacks->state;
     state->func_00263C70(func_slot44());
-    static_cast<FieldClass15AE70*>(D_001B643C->callbacks->state->func_00263C90())->func_slot60(0x2714);
+    static_cast<FieldClass15AE70*>(D_001B643C->callbacks->state->func_00263C90())->func_slot60(TACTICS_MSG_CHANGE_TACTICS_HELP);
     return 2;
 }
 
@@ -2656,7 +2700,7 @@ u8 TacticsStrategyWindow::func_slotb0()
     static_cast<FieldClass15AE70*>(func_slot44())->func_slot64();
     FieldClass153E30* state = D_001B643C->callbacks->state;
     state->func_00263C70(func_slot44());
-    static_cast<FieldClass15AE70*>(D_001B643C->callbacks->state->func_00263C90())->func_slot60(0x2714);
+    static_cast<FieldClass15AE70*>(D_001B643C->callbacks->state->func_00263C90())->func_slot60(TACTICS_MSG_CHANGE_TACTICS_HELP);
     return 1;
 }
 
@@ -2673,14 +2717,14 @@ s32 TacticsStrategyWindow::set_character(s16 record_index, u8 initial_entry)
     selected_entry = initial_entry;
     s32 first_key = first_strategy_text_key(character_id);
 
-    if (first_key == 0x29CC)
+    if (first_key == TACTICS_MSG_DUMMY)
     {
-        keys[0] = 0x29CC;
-        keys[1] = 0x29CC;
-        keys[2] = 0x29CC;
-        keys[3] = 0x29CC;
-        keys[4] = 0x29CC;
-        keys[5] = 0x29CC;
+        keys[0] = TACTICS_MSG_DUMMY;
+        keys[1] = TACTICS_MSG_DUMMY;
+        keys[2] = TACTICS_MSG_DUMMY;
+        keys[3] = TACTICS_MSG_DUMMY;
+        keys[4] = TACTICS_MSG_DUMMY;
+        keys[5] = TACTICS_MSG_DUMMY;
     }
     else
     {
@@ -2755,12 +2799,12 @@ s32 TacticsStrategyWindow::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, title_panel);
     append_panel_widget_node(&unk14, title_panel);
     clear_grid_state(this);
-    keys[0] = 0x29CC;
-    keys[1] = 0x29CC;
-    keys[2] = 0x29CC;
-    keys[3] = 0x29CC;
-    keys[4] = 0x29CC;
-    keys[5] = 0x29CC;
+    keys[0] = TACTICS_MSG_DUMMY;
+    keys[1] = TACTICS_MSG_DUMMY;
+    keys[2] = TACTICS_MSG_DUMMY;
+    keys[3] = TACTICS_MSG_DUMMY;
+    keys[4] = TACTICS_MSG_DUMMY;
+    keys[5] = TACTICS_MSG_DUMMY;
     lib_text_init_resource_rectangle(text[0], associated, keys[0], 0, 28.0f, 60.0f, 0.0f, 0.0f);
     lib_text_init_resource_rectangle(text[1], associated, keys[1], 0, 28.0f, 90.0f, 0.0f, 0.0f);
     lib_text_init_resource_rectangle(text[2], associated, keys[2], 0, 28.0f, 120.0f, 0.0f, 0.0f);
@@ -2779,7 +2823,7 @@ s32 TacticsStrategyWindow::func_slotf4(u32 associated)
     append_text_widget_node(&unk2c, text[3]);
     append_text_widget_node(&unk2c, text[4]);
     append_text_widget_node(&unk2c, text[5]);
-    lib_text_init_resource_rectangle(title, associated, 0x2723, 1, 0.0f, 12.0f, 364.0f, 48.0f);
+    lib_text_init_resource_rectangle(title, associated, TACTICS_MSG_TACTICS_MENU, 1, 0.0f, 12.0f, 364.0f, 48.0f);
     title->unk9c = 1;
     title->unk3c = 1;
     lib_container_attach_widget(unk10, title);
@@ -2980,7 +3024,7 @@ u8 TacticsChangeWindow::func_slotb4()
             return 0;
         }
 
-        child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, 0x29CD);
+        child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, TACTICS_MSG_CONFIRM_EXIT_TACTICS);
         child->func_slot40(this);
         D_001B643C->callbacks->state->add_child(child);
         D_001B643C->callbacks->state->func_00263C70(child);
@@ -3160,7 +3204,7 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
             return 0;
         }
 
-        lib_text_init_resource_rectangle(empty, source, 0x2720, 0, 16.0f, 16.0f, 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(empty, source, TACTICS_MSG_EMPTY_ROW, 0, 16.0f, 16.0f, 0.0f, 0.0f);
 
         if (index < 3)
         {
@@ -3216,7 +3260,7 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
         }
         else
         {
-            lib_text_init_resource_rectangle(text, source, 0x29CC, 0, 0.0f, 0.0f, 0.0f, 0.0f);
+            lib_text_init_resource_rectangle(text, source, TACTICS_MSG_DUMMY, 0, 0.0f, 0.0f, 0.0f, 0.0f);
             text->unk3f = 0;
             label->unk3f = 0;
             empty->unk3f = 1;
@@ -3245,11 +3289,11 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
         return 0;
     }
 
-    lib_text_init_resource_rectangle(first_title, source, 0x2721, 1, 16.0f, 16.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(first_title, source, TACTICS_MSG_LEFT_COLUMN_TITLE, 1, 16.0f, 16.0f, 0.0f, 0.0f);
     set_widget_rectangle(first_title, 16.0f, -20.0f, 304.0f, 16.0f);
     first_title->set_mode(0);
     first_title->set_color(0x288080);
-    lib_text_init_resource_rectangle(second_title, source, 0x2722, 1, 16.0f, 16.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(second_title, source, TACTICS_MSG_RIGHT_COLUMN_TITLE, 1, 16.0f, 16.0f, 0.0f, 0.0f);
     set_widget_rectangle(second_title, 320.0f, -20.0f, 304.0f, 16.0f);
     second_title->set_mode(0);
     second_title->set_color(0x288080);
@@ -3268,11 +3312,11 @@ TacticsChangeWindow::~TacticsChangeWindow()
 
 /**
  * @brief Replace the text for supported keys and reset its scrolling state.
- * @param text_key Text key in the supported 0x2714..0x271B range.
+ * @param text_key Help line key, from TACTICS_MSG_HELP_FIRST up to TACTICS_MSG_HELP_END.
  */
 void TacticsHelpWindow::func_slot60(s32 text_key)
 {
-    if (text_key >= 0x2714 && text_key < 0x271C)
+    if (text_key >= TACTICS_MSG_HELP_FIRST && text_key < TACTICS_MSG_HELP_END)
     {
         scroll_phase = 0;
         initial_pause_frames = 0;
@@ -3326,26 +3370,26 @@ s32 TacticsHelpWindow::func_slotf4(u32 associated)
     LibObject178750* heading = new (0) LibObject178750;
     LibObject178750* label = new (0) LibObject178750;
     LibObject178750* hint = new (0) LibObject178750;
-    lib_text_init_resource_rectangle(heading, resource_source, 0x2710, 0, 16.0f, 10.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(heading, resource_source, TACTICS_MSG_TITLE, 0, 16.0f, 10.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, heading);
     append_text_widget_node(&unk2c, heading);
 
     switch (D_001B643C->callbacks->tactics_mode_flags & 0xF)
     {
     case 1:
-        lib_text_init_resource_rectangle(label, resource_source, 0x2711, 0, 80.0f, 6.0f, 0.0f, 0.0f);
-        lib_text_init_resource_rectangle(hint, resource_source, 0x29DD, 0, 36.0f, 40.0f, 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(label, resource_source, TACTICS_MSG_CHANGE_TACTICS, 0, 80.0f, 6.0f, 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(hint, resource_source, TACTICS_MSG_STRATEGY_HINT, 0, 36.0f, 40.0f, 0.0f, 0.0f);
         break;
     case 2:
-        lib_text_init_resource_rectangle(label, resource_source, 0x2712, 0, 80.0f, 6.0f, 0.0f, 0.0f);
-        lib_text_init_resource_rectangle(hint, resource_source, 0x29DE, 0, 36.0f, 40.0f, 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(label, resource_source, TACTICS_MSG_REPLACE, 0, 80.0f, 6.0f, 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(hint, resource_source, TACTICS_MSG_REPLACEMENT_HINT, 0, 36.0f, 40.0f, 0.0f, 0.0f);
         break;
     case 4:
-        lib_text_init_resource_rectangle(label, resource_source, 0x2713, 0, 80.0f, 6.0f, 0.0f, 0.0f);
-        lib_text_init_resource_rectangle(hint, resource_source, 0x29DF, 0, 36.0f, 40.0f, 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(label, resource_source, TACTICS_MSG_FORMATION, 0, 80.0f, 6.0f, 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(hint, resource_source, TACTICS_MSG_FORMATION_HINT, 0, 36.0f, 40.0f, 0.0f, 0.0f);
         break;
     default:
-        lib_text_init_resource_rectangle(hint, resource_source, 0x2724, 0, 36.0f, 40.0f, 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(hint, resource_source, TACTICS_MSG_DEFAULT_HINT, 0, 36.0f, 40.0f, 0.0f, 0.0f);
         break;
     }
 
@@ -3370,7 +3414,7 @@ s32 TacticsHelpWindow::func_slotf4(u32 associated)
     lib_scissor_init_rectangle(clip, clip_x, 0.0f, clip_width, 56.0f);
     lib_container_attach_widget(unk10, clip);
     append_clip_widget_node(&unk20, clip);
-    lib_text_init_resource_rectangle(text, resource_source, 0x2714, 0, initial_text_x, 6.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(text, resource_source, TACTICS_MSG_CHANGE_TACTICS_HELP, 0, initial_text_x, 6.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, text);
     append_text_widget_node(&unk2c, text);
     lib_scissor_init_reset(reset_clip, 1);
@@ -3380,13 +3424,13 @@ s32 TacticsHelpWindow::func_slotf4(u32 associated)
     switch (D_001B643C->callbacks->tactics_mode_flags & 0xF)
     {
     case 1:
-        func_slot60(0x2714);
+        func_slot60(TACTICS_MSG_CHANGE_TACTICS_HELP);
         break;
     case 2:
-        func_slot60(0x2719);
+        func_slot60(TACTICS_MSG_REPLACE_HELP);
         break;
     case 4:
-        func_slot60(0x271A);
+        func_slot60(TACTICS_MSG_FORMATION_HELP);
         break;
     }
 
@@ -3572,7 +3616,7 @@ s32 TacticsController::func_001E1820(void* buffer)
     }
 
     TacticsAlignedResource* aligned = aligned_resource(buffer);
-    s32 size = aligned->unk40 + 0x80;
+    s32 size = aligned->size + 0x80;
     void* saved_heap = resident_get_allocation_heap();
     void* heap = D_001B6430->context->unk70;
     void* memory = resident_heap_allocate(heap, size);
