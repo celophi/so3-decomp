@@ -22,13 +22,13 @@
 #define TACTICS_STAT_HALFWORD_XOR_KEY 0x7E93
 
 /** Coordinate selector owning its position list and selected entry. */
-struct TacticsCoordinateSelector18AFD0 : public LibClass175030
+struct TacticsCoordinateSelector : public LibClass175030
 {
     /** @brief Destroy the coordinate list and movement bases. */
-    virtual ~TacticsCoordinateSelector18AFD0();
+    virtual ~TacticsCoordinateSelector();
 
     /** @brief Initialize the coordinate list and clear its selected entry. */
-    TacticsCoordinateSelector18AFD0()
+    TacticsCoordinateSelector()
     {
         selected = -1;
     }
@@ -65,7 +65,7 @@ static inline void delete_owned(T*& object)
  * @brief Clear the grid window's selection state and resource keys.
  * @param object Grid window to reset.
  */
-static inline void clear_grid_state(TacticsWindow18B420* object)
+static inline void clear_grid_state(TacticsStrategyWindow* object)
 {
     object->character_id = 0;
     object->selected_entry = 0;
@@ -77,22 +77,71 @@ static inline void clear_grid_state(TacticsWindow18B420* object)
     object->keys[5] = 0;
 }
 
-/** Resident entry record with its saved name at 0x20, grid entry at 0x38, and stride 0x114. */
-struct TacticsEntryResourceRecord
+/**
+ * @brief Return the text key of a character's first battle strategy.
+ * @param character_id Signed character ID.
+ * @return First of the character's six consecutive strategy names, or 0x29CC ("Dummy") for an unknown character.
+ */
+static inline s32 first_strategy_text_key(s16 character_id)
+{
+    s32 first_key;
+
+    switch (character_id)
+    {
+        case 1:
+            first_key = 0x2968;
+            break;
+        case 2:
+            first_key = 0x296E;
+            break;
+        case 3:
+            first_key = 0x2968;
+            break;
+        case 4:
+            first_key = 0x2968;
+            break;
+        case 5:
+            first_key = 0x2968;
+            break;
+        case 6:
+            first_key = 0x2968;
+            break;
+        case 7:
+            first_key = 0x2968;
+            break;
+        case 8:
+            first_key = 0x2968;
+            break;
+        case 9:
+            first_key = 0x296E;
+            break;
+        case 10:
+            first_key = 0x2968;
+            break;
+        default:
+            first_key = 0x29CC;
+            break;
+    }
+
+    return first_key;
+}
+
+/** 0x114-byte character record with the character's name and chosen battle strategy. */
+struct TacticsCharacterEquipment
 {
     u8 unk00[0x20];
 
-    char saved_name[0x18];
+    char character_name[0x18];
 
-    u8 selected_entry;
+    u8 battle_strategy;
 
-    u8 previous_entry;
+    u8 previous_battle_strategy;
 
     u8 unk3a[0xDA];
 };
 
 /** Checksum-protected 0xC4-byte character statistics record with a signed character ID. */
-struct TacticsGridResourceRecord
+struct TacticsCharacterRecord
 {
     s16 character_id;
 
@@ -328,12 +377,12 @@ struct TacticsGridResourceRecord
 };
 
 /**
- * @brief Return a text display from the grid window's owned display list.
- * @param object Grid window containing the list.
+ * @brief Return a strategy name display from the strategy window's list.
+ * @param object Strategy window containing the list.
  * @param index Node index.
  * @return Display payload stored in the indexed node.
  */
-static inline LibObject178750* grid_display(TacticsWindow18B420* object, s32 index)
+static inline LibObject178750* strategy_display(TacticsStrategyWindow* object, s32 index)
 {
     return static_cast<LibObject178750*>(get_text_widget_node(
         &object->unk2c, index)->value);
@@ -417,15 +466,15 @@ struct TacticsAssociatedMovementRef
     LibClass175030* movement;
 };
 
-/** Partial saved selection with a record index and selected character ID. */
-typedef struct TacticsSavedGridSelection
+/** Partial resident menu state with the chosen formation and leader. */
+typedef struct TacticsSavedFormation
 {
     u8 pad_00[0x20];
 
-    u8 selected_record_index;
+    u8 formation;
 
-    u8 selected_character_id;
-} TacticsSavedGridSelection;
+    u8 leader_character_id;
+} TacticsSavedFormation;
 
 /** Partial runtime control state with its pending refresh byte. */
 struct TacticsRuntimeControl
@@ -450,11 +499,11 @@ struct TacticsRuntimeCallbacks
 /** Partial resident reference used by the tactics selection callbacks. */
 typedef struct TacticsGridSelectionRef
 {
-    TacticsSavedGridSelection* state;
+    TacticsSavedFormation* state;
 
-    TacticsGridResourceRecord* character_records;
+    TacticsCharacterRecord* character_records;
 
-    TacticsEntryResourceRecord* entry_records;
+    TacticsCharacterEquipment* equipment_records;
 
     FieldClass153E00* runtime;
 
@@ -476,31 +525,27 @@ extern "C" LibWidgetColors4C5590 D_00352010;
 /** Four packed colors copied into the child title panel. */
 extern "C" LibWidgetColors4C5590 D_00352020;
 
-static inline bool tactics_selection_inactive(TacticsCoordinateSelector18AFD0* selection);
+static inline bool tactics_selection_inactive(TacticsCoordinateSelector* selection);
 
 static inline u8 tactics_grid_empty(FieldObject23CEA0* grid);
 
-static inline void set_text_position(LibObject178750* target, float x, float y, float z, float w);
-
 static inline void set_display_position(ItemCreationOptionResourceDisplay* display, float x, float y);
 
-static inline void refresh_grid_entry(TacticsWindow18B220* object, s16 selected_entry);
+static inline void refresh_formation(TacticsFormationWindow* object, s16 selected_entry);
 
 static inline bool resource_code_empty(u8 code);
 
 static inline float shifted_position(const float& origin, float offset);
 
-static inline bool coordinate_records_ready(TacticsWindow18B520* object);
+static inline bool coordinate_records_ready(TacticsChangeWindow* object);
 
-static inline void append_position(TacticsCoordinateSelector18AFD0* widget, float x, float y);
+static inline void append_position(TacticsCoordinateSelector* widget, float x, float y);
 
-static inline void set_resource_scale(ItemCreationOptionResourceDisplay* object, float scale);
+static inline bool initialize_selector_records(TacticsReplaceWindow* object);
 
-static inline bool initialize_selector_records(TacticsWindow18B320* object);
+static inline s32 record_character_id(TacticsCharacterRecord* record);
 
-static inline s32 record_character_id(TacticsGridResourceRecord* record);
-
-static inline u8 character_record_empty(const TacticsGridResourceRecord* record);
+static inline u8 character_record_empty(const TacticsCharacterRecord* record);
 
 /**
  * @brief Report whether the grid's control byte is clear.
@@ -509,12 +554,7 @@ static inline u8 character_record_empty(const TacticsGridResourceRecord* record)
  */
 static inline u8 tactics_grid_empty(FieldObject23CEA0* grid)
 {
-    if (grid->unk35)
-    {
-        return 0;
-    }
-
-    return 1;
+    return !grid->unk35;
 }
 
 /**
@@ -522,31 +562,9 @@ static inline u8 tactics_grid_empty(FieldObject23CEA0* grid)
  * @param selection Field coordinate selector.
  * @return True when the control byte is zero.
  */
-static inline bool tactics_selection_inactive(TacticsCoordinateSelector18AFD0* selection)
+static inline bool tactics_selection_inactive(TacticsCoordinateSelector* selection)
 {
-    if (selection->unk35)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief Store the text position and mark it for refresh.
- * @param target Text widget receiving the position.
- * @param x Horizontal position.
- * @param y Vertical position.
- * @param z Third position component.
- * @param w Fourth position component.
- */
-static inline void set_text_position(LibObject178750* target, float x, float y, float z, float w)
-{
-    target->unk18.unk00 = x;
-    target->unk18.unk04 = y;
-    target->unk18.unk08 = z;
-    target->unk18.unk0c = w;
-    target->unk3c = 1;
+    return !selection->unk35;
 }
 
 /**
@@ -563,12 +581,41 @@ static inline void set_display_position(ItemCreationOptionResourceDisplay* displ
 }
 
 /**
- * @brief Read the string-backed icon in the window's display list.
- * @param object Icon-grid window containing the list.
- * @param index Display index.
- * @return Icon stored in the selected list node.
+ * @brief Color the selected name, dim the others, and move the cursor to the selection.
+ * @param window Leader window holding the names and cursor.
+ * @param selected_entry Name to highlight.
  */
-static inline LibObject175140* icon_display(TacticsWindow18B120* object, s32 index)
+static inline void highlight_candidate(TacticsLeaderWindow* window, s32 selected_entry)
+{
+    s32 index = 0;
+    FieldListNode* node = window->unk44.head->next;
+
+    while (node != 0)
+    {
+        LibObject175140* name = static_cast<LibObject175140*>(node->value);
+
+        if (index == selected_entry)
+        {
+            name->set_color(0x288080);
+            func_0023B9B0(window->cursor, selected_entry, func_00467950(name)->unk08);
+        }
+        else
+        {
+            name->set_color(0x808080);
+        }
+
+        node = node->next;
+        index++;
+    }
+}
+
+/**
+ * @brief Return a party name label from the leader window's list.
+ * @param object Leader window containing the list.
+ * @param index Display index.
+ * @return Name label stored in the selected list node.
+ */
+static inline LibObject175140* candidate_display(TacticsLeaderWindow* object, s32 index)
 {
     return static_cast<LibObject175140*>(get_widget_node_at_index(
         &object->unk44, index)->value);
@@ -580,53 +627,46 @@ static inline LibObject175140* icon_display(TacticsWindow18B120* object, s32 ind
  * @param index Signed resource slot index.
  * @return True when the slot's entry code is zero.
  */
-static inline bool icon_resource_empty(FieldRecordSelection* resource, s16 index)
+static inline bool party_slot_empty(FieldRecordSelection* resource, s16 index)
 {
-    if (*reinterpret_cast<const u8*>(&resource->slots[index]))
-    {
-        return false;
-    }
-
-    return true;
+    return !static_cast<u8>(resource->slots[index]);
 }
 
 /**
- * @brief Fit the indicator to the selected icon's position and drawing width.
- * @param object Icon-grid window whose selected display supplies the rectangle.
+ * @brief Fit the indicator to the selected name's position and drawing width.
+ * @param object Leader window whose selected name supplies the rectangle.
  */
-static inline void position_icon_indicator(TacticsWindow18B120* object)
+static inline void position_candidate_indicator(TacticsLeaderWindow* object)
 {
-    if (icon_display(object, object->icon_indices_by_slot[object->selected]) != 0)
+    if (candidate_display(object, object->candidate_indices_by_slot[object->selected]) != 0)
     {
-        LibUiRect16* position = &icon_display(object,
-            object->icon_indices_by_slot[object->selected])->unk18;
-        LibBounds4C69B0* bounds = func_00467950(icon_display(object,
-            object->icon_indices_by_slot[object->selected]));
+        LibUiRect16* position = &candidate_display(object,
+            object->candidate_indices_by_slot[object->selected])->unk18;
+        LibBounds4C69B0* bounds = func_00467950(candidate_display(object,
+            object->candidate_indices_by_slot[object->selected]));
         set_widget_rectangle(object->indicator, position->unk00, position->unk04,
             bounds->unk08, 24.0f);
     }
 }
 
 /**
- * @brief Update the grid title and highlight the selected text entry.
- * @param object Parent window holding the title, text list, and cursor.
- * @param selected_entry Selected grid entry.
+ * @brief Color the selected text entry, dim the others, and move the cursor to the selection.
+ * @param window Formation window holding the text list and cursor.
+ * @param selected_entry Entry to highlight.
  */
-static inline void refresh_grid_entry(TacticsWindow18B220* object, s16 selected_entry)
+static inline void highlight_text(TacticsFormationWindow* window, s32 selected_entry)
 {
-    lib_text_set_resource(object->title, object->func_slot54(), selected_entry + 0x2A62, 0);
-    s32 selected = selected_entry;
     s32 index = 0;
-    FieldListNode* node = object->unk2c.head->next;
+    FieldListNode* node = window->unk2c.head->next;
 
     while (node != 0)
     {
         LibObject178750* text = static_cast<LibObject178750*>(node->value);
 
-        if (index == selected)
+        if (index == selected_entry)
         {
             text->set_color(0x288080);
-            func_0023B9B0(object->cursor, selected, lib_text_measure_bounds(text)->unk08);
+            func_0023B9B0(window->cursor, selected_entry, lib_text_measure_bounds(text)->unk08);
         }
         else
         {
@@ -639,18 +679,25 @@ static inline void refresh_grid_entry(TacticsWindow18B220* object, s16 selected_
 }
 
 /**
+ * @brief Show the selected formation's description and highlight its name.
+ * @param object Formation window holding the description, text list, and cursor.
+ * @param selected_entry Selected grid entry.
+ */
+static inline void refresh_formation(TacticsFormationWindow* object, s16 selected_entry)
+{
+    lib_text_set_resource(object->title, object->func_slot54(), selected_entry + 0x2A62, 0);
+    s32 selected = selected_entry;
+    highlight_text(object, selected);
+}
+
+/**
  * @brief Test whether a resource code is zero.
  * @param code Resource code.
  * @return True when the code is zero.
  */
 static inline bool resource_code_empty(u8 code)
 {
-    if (code)
-    {
-        return false;
-    }
-
-    return true;
+    return !code;
 }
 
 /**
@@ -669,9 +716,9 @@ static inline float shifted_position(const float& origin, float offset)
  * @param object Coordinate window holding the array links.
  * @return One when both links exist, otherwise zero.
  */
-static inline bool coordinate_records_ready(TacticsWindow18B520* object)
+static inline bool coordinate_records_ready(TacticsChangeWindow* object)
 {
-    if (object->character_records == 0 || object->entry_records == 0)
+    if (object->character_records == 0 || object->equipment_records == 0)
     {
         return false;
     }
@@ -685,21 +732,9 @@ static inline bool coordinate_records_ready(TacticsWindow18B520* object)
  * @param x Horizontal coordinate.
  * @param y Vertical coordinate.
  */
-static inline void append_position(TacticsCoordinateSelector18AFD0* widget, float x, float y)
+static inline void append_position(TacticsCoordinateSelector* widget, float x, float y)
 {
     append_coordinate_pair(&widget->nodes, TacticsPresetPosition(x, y));
-}
-
-/**
- * @brief Set both drawing scales and request a resource refresh.
- * @param object Resource display to update.
- * @param scale Drawing scale for both axes.
- */
-static inline void set_resource_scale(ItemCreationOptionResourceDisplay* object, float scale)
-{
-    object->unk50.unk34 = scale;
-    object->unk50.unk30 = scale;
-    object->unk3c = 1;
 }
 
 /**
@@ -707,20 +742,20 @@ static inline void set_resource_scale(ItemCreationOptionResourceDisplay* object,
  * @param object Selector window holding the records and buffers.
  * @return True when all four links exist, otherwise false.
  */
-static inline bool initialize_selector_records(TacticsWindow18B320* object)
+static inline bool initialize_selector_records(TacticsReplaceWindow* object)
 {
     object->character_records = D_001B643C->character_records;
-    object->entry_records = D_001B643C->entry_records;
-    object->character_record_buffer = new (0) TacticsGridResourceRecord;
-    object->entry_record_buffer = new (0) TacticsEntryResourceRecord;
+    object->equipment_records = D_001B643C->equipment_records;
+    object->character_record_buffer = new (0) TacticsCharacterRecord;
+    object->equipment_record_buffer = new (0) TacticsCharacterEquipment;
 
-    if (object->character_records == 0 || object->entry_records == 0 || object->character_record_buffer == 0 || object->entry_record_buffer == 0)
+    if (object->character_records == 0 || object->equipment_records == 0 || object->character_record_buffer == 0 || object->equipment_record_buffer == 0)
     {
         return false;
     }
 
-    func_0013A678(object->character_record_buffer, 0, sizeof(TacticsGridResourceRecord));
-    func_0013A678(object->entry_record_buffer, 0, sizeof(TacticsEntryResourceRecord));
+    func_0013A678(object->character_record_buffer, 0, sizeof(TacticsCharacterRecord));
+    func_0013A678(object->equipment_record_buffer, 0, sizeof(TacticsCharacterEquipment));
     return true;
 }
 
@@ -729,7 +764,7 @@ static inline bool initialize_selector_records(TacticsWindow18B320* object)
  * @param record Character record.
  * @return Signed character ID.
  */
-static inline s32 record_character_id(TacticsGridResourceRecord* record)
+static inline s32 record_character_id(TacticsCharacterRecord* record)
 {
     return record->character_id;
 }
@@ -739,13 +774,13 @@ static inline s32 record_character_id(TacticsGridResourceRecord* record)
  * @param record Character record.
  * @return Nonzero when the character ID is zero.
  */
-static inline u8 character_record_empty(const TacticsGridResourceRecord* record)
+static inline u8 character_record_empty(const TacticsCharacterRecord* record)
 {
     return !record->character_id;
 }
 
 /** @brief Leave the default update hook unchanged. */
-void TacticsCoordinateSelector18AFD0::update()
+void TacticsCoordinateSelector::update()
 {
 }
 
@@ -753,7 +788,7 @@ void TacticsCoordinateSelector18AFD0::update()
  * @brief Highlight the text display for the selected grid entry.
  * @param selected Entry to highlight.
  */
-void TacticsWindow18B020::func_slotf8(s16 selected)
+void TacticsExitConfirmWindow::func_slotf8(s16 selected)
 {
     s32 index = 0;
     FieldListNode* node = unk2c.head->next;
@@ -777,7 +812,7 @@ void TacticsWindow18B020::func_slotf8(s16 selected)
 }
 
 /** @brief Compare the State's active window with this window; neither outcome has further work. */
-void TacticsWindow18B020::func_slot5c()
+void TacticsExitConfirmWindow::func_slot5c()
 {
     if (D_001B643C->callbacks->state->func_00261150() != this)
     {
@@ -792,7 +827,7 @@ void* FieldClass153E30::func_00261150()
 }
 
 /** @brief Move to the following grid entry and update its text highlight. */
-void TacticsWindow18B020::func_slot6c()
+void TacticsExitConfirmWindow::func_slot6c()
 {
     if (grid->process_direction(1) != 1)
     {
@@ -801,7 +836,7 @@ void TacticsWindow18B020::func_slot6c()
 }
 
 /** @brief Move to the preceding grid entry and update its text highlight. */
-void TacticsWindow18B020::func_slot68()
+void TacticsExitConfirmWindow::func_slot68()
 {
     if (grid->process_direction(0) != 1)
     {
@@ -813,7 +848,7 @@ void TacticsWindow18B020::func_slot68()
  * @brief Close the child window and restore the associated window's movement.
  * @return Two after restoring the associated window and queuing removal.
  */
-u8 TacticsWindow18B020::func_slotb4()
+u8 TacticsExitConfirmWindow::func_slotb4()
 {
     FieldClass15AE70::func_slot18(0, 0x7F);
     LibClass175030* movement = static_cast<TacticsAssociatedMovementRef*>(func_slot44())->movement;
@@ -832,10 +867,10 @@ void FieldClass153E30::func_00263C70(void* value)
 }
 
 /**
- * @brief Apply the first grid entry or close the child, refreshing pending field state.
- * @return Two when closing succeeds; otherwise one.
+ * @brief On Yes, refresh any pending character state and leave the setup; on No, close this window.
+ * @return One after Yes; two after No closes the window.
  */
-u8 TacticsWindow18B020::func_slotb0()
+u8 TacticsExitConfirmWindow::func_slotb0()
 {
     selected = grid->unk114;
     u8 result = 0;
@@ -879,7 +914,7 @@ u8 TacticsWindow18B020::func_slotb0()
  * @param text_key Text key for the heading display.
  * @return One after initialization, or zero when a required display or grid is absent.
  */
-s32 TacticsWindow18B020::func_slotf4(u32 associated, float x, float y,
+s32 TacticsExitConfirmWindow::func_slotf4(u32 associated, float x, float y,
     s32 code, s32 text_key)
 {
     FieldClass15AE70::func_slot10(associated, x, y, code);
@@ -927,111 +962,51 @@ s32 TacticsWindow18B020::func_slotf4(u32 associated, float x, float y,
 }
 
 /** @brief Destroy the child window's base. */
-TacticsWindow18B020::~TacticsWindow18B020()
+TacticsExitConfirmWindow::~TacticsExitConfirmWindow()
 {
 }
 
-/** @brief Move to the following grid entry and update the icon highlight. */
-void TacticsWindow18B120::func_slot6c()
+/** @brief Move to the following grid entry and update the name highlight. */
+void TacticsLeaderWindow::func_slot6c()
 {
-    if (icon_count != 1)
+    if (candidate_count != 1)
     {
         if (grid->process_direction(1) != 1)
         {
-            s32 selected_entry = grid->unk114;
-            s32 index = 0;
-            FieldListNode* node = unk44.head->next;
-
-            while (node != 0)
-            {
-                LibObject175140* icon = static_cast<LibObject175140*>(node->value);
-
-                if (index == selected_entry)
-                {
-                    icon->set_color(0x288080);
-                    func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
-                }
-                else
-                {
-                    icon->set_color(0x808080);
-                }
-
-                node = node->next;
-                index++;
-            }
+            highlight_candidate(this, grid->unk114);
         }
     }
 }
 
-/** @brief Move to the preceding grid entry and update the icon highlight. */
-void TacticsWindow18B120::func_slot68()
+/** @brief Move to the preceding grid entry and update the name highlight. */
+void TacticsLeaderWindow::func_slot68()
 {
-    if (icon_count != 1)
+    if (candidate_count != 1)
     {
         if (grid->process_direction(0) != 1)
         {
-            s32 selected_entry = grid->unk114;
-            s32 index = 0;
-            FieldListNode* node = unk44.head->next;
-
-            while (node != 0)
-            {
-                LibObject175140* icon = static_cast<LibObject175140*>(node->value);
-
-                if (index == selected_entry)
-                {
-                    icon->set_color(0x288080);
-                    func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
-                }
-                else
-                {
-                    icon->set_color(0x808080);
-                }
-
-                node = node->next;
-                index++;
-            }
+            highlight_candidate(this, grid->unk114);
         }
     }
 }
 
 /**
- * @brief Restore the saved grid entry, refresh its icon, and return to the associated window.
+ * @brief Restore the saved grid entry, refresh its highlight, and return to the associated window.
  * @return Two after restoring the associated window.
  */
-u8 TacticsWindow18B120::func_slotb4()
+u8 TacticsLeaderWindow::func_slotb4()
 {
     FieldObject23CEA0* selected_grid = grid;
 
     if (selected_grid != 0)
     {
-        selected_grid->index = icon_indices_by_slot[selected];
+        selected_grid->index = candidate_indices_by_slot[selected];
         func_0023CB30(selected_grid);
         func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(grid));
         grid->unkad = 0;
     }
 
-    s32 selected_entry = icon_indices_by_slot[selected];
-    s32 index = 0;
-    FieldListNode* node = unk44.head->next;
-
-    while (node != 0)
-    {
-        LibObject175140* icon = static_cast<LibObject175140*>(node->value);
-
-        if (index == selected_entry)
-        {
-            icon->set_color(0x288080);
-            func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
-        }
-        else
-        {
-            icon->set_color(0x808080);
-        }
-
-        node = node->next;
-        index++;
-    }
+    highlight_candidate(this, candidate_indices_by_slot[selected]);
 
     func_slot20(0);
     FieldClass15AE70* parent = static_cast<FieldClass15AE70*>(func_slot44());
@@ -1044,33 +1019,33 @@ u8 TacticsWindow18B120::func_slotb4()
  * @brief Save the chosen character ID and update the parent label.
  * @return One after the selected character ID is applied.
  */
-u8 TacticsWindow18B120::func_slotb0()
+u8 TacticsLeaderWindow::func_slotb0()
 {
     for (s32 index = 0; index < 3; index++)
     {
-        if (icon_indices_by_slot[index] == grid->unk114)
+        if (candidate_indices_by_slot[index] == grid->unk114)
         {
             selected = index;
         }
     }
 
-    D_001B643C->state->selected_character_id = character_ids[icon_indices_by_slot[selected]];
+    D_001B643C->state->leader_character_id = character_ids[candidate_indices_by_slot[selected]];
 
-    if (icon_display(this, icon_indices_by_slot[selected]) != 0)
+    if (candidate_display(this, candidate_indices_by_slot[selected]) != 0)
     {
-        position_icon_indicator(this);
+        position_candidate_indicator(this);
     }
 
-    set_parent_character_id(static_cast<TacticsWindow18B220*>(func_slot44()), character_ids[icon_indices_by_slot[selected]]);
+    set_leader(static_cast<TacticsFormationWindow*>(func_slot44()), character_ids[candidate_indices_by_slot[selected]]);
     return 1;
 }
 
 /**
- * @brief Initialize the resource icons, grid, marker, and indicator.
+ * @brief Initialize the party names, grid, cursor, and indicator.
  * @param associated Full resource source word forwarded to the base and title.
  * @return Zero when a panel allocation or resource link fails; otherwise one.
  */
-s32 TacticsWindow18B120::func_slotf4(u32 associated)
+s32 TacticsLeaderWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 200.0f, 136.0f, 8);
     LibClass178630* panel = new (0) LibClass178630;
@@ -1107,26 +1082,26 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
     selected = -1;
     u8 character_id;
     s32 icon_index = 0;
-    u8 saved_character_id = D_001B643C->state->selected_character_id;
-    icon_count = 0;
+    u8 saved_character_id = D_001B643C->state->leader_character_id;
+    candidate_count = 0;
 
     for (s32 index = 0; index < 3; index++)
     {
-        icon_indices_by_slot[index] = 0;
+        candidate_indices_by_slot[index] = 0;
         character_id = static_cast<u8>(record_selection->slots[static_cast<s16>(index)]);
 
         if (character_id != 0)
         {
-            LibObject175140* icon = new (0) LibObject175140;
-            float y = 48.0f + 28.0f * icon_count;
-            icon->func_00467AD0(24.0f, y, 0.0f, 0.0f,
-                reinterpret_cast<const char*>(&static_cast<TacticsEntryResourceRecord*>(
+            LibObject175140* name = new (0) LibObject175140;
+            float y = 48.0f + 28.0f * candidate_count;
+            name->func_00467AD0(24.0f, y, 0.0f, 0.0f,
+                reinterpret_cast<const char*>(&static_cast<TacticsCharacterEquipment*>(
                     record_selection->unk04)[static_cast<s16>(index)]) + 0x20, 0);
-            lib_container_attach_widget(unk10, icon);
-            append_icon_widget_node(&unk44, icon);
-            icon_indices_by_slot[index] = icon_index;
+            lib_container_attach_widget(unk10, name);
+            append_icon_widget_node(&unk44, name);
+            candidate_indices_by_slot[index] = icon_index;
             icon_index++;
-            character_ids[icon_count++] = character_id;
+            character_ids[candidate_count++] = character_id;
 
             if (saved_character_id == character_id)
             {
@@ -1139,7 +1114,7 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
     {
         for (s32 index = 0; index < 3; index++)
         {
-            if (icon_resource_empty(record_selection, index))
+            if (party_slot_empty(record_selection, index))
             {
                 continue;
             }
@@ -1157,12 +1132,12 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
     base_x = 224.0f;
     base_y = 184.0f;
     grid = new (0) FieldObject23CEA0;
-    grid->func_0023CE80(1, icon_count);
+    grid->func_0023CE80(1, candidate_count);
     grid->func_0023CE60(0.0f, 28.0f);
     grid->unkF2 = 0;
     grid->func_0023CF50(0, base_x, base_y);
     FieldObject23CEA0* selected_grid = grid;
-    selected_grid->index = icon_indices_by_slot[selected];
+    selected_grid->index = candidate_indices_by_slot[selected];
     func_0023CB30(selected_grid);
     func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(grid));
     append_grid_widget_node(&unk74, grid);
@@ -1173,46 +1148,26 @@ s32 TacticsWindow18B120::func_slotf4(u32 associated)
     indicator = new (0) ItemCreationClass172600;
     func_0041AD10(indicator, base_x, base_y, 144.0f, 24.0f);
     lib_container_attach_widget(unk10, indicator);
-    s32 selected_entry = icon_indices_by_slot[selected];
-    s32 index = 0;
-    FieldListNode* node = unk44.head->next;
+    highlight_candidate(this, candidate_indices_by_slot[selected]);
 
-    while (node != 0)
+    if (candidate_display(this, candidate_indices_by_slot[selected]) != 0)
     {
-        LibObject175140* icon = static_cast<LibObject175140*>(node->value);
-
-        if (index == selected_entry)
-        {
-            icon->set_color(0x288080);
-            func_0023B9B0(cursor, selected_entry, func_00467950(icon)->unk08);
-        }
-        else
-        {
-            icon->set_color(0x808080);
-        }
-
-        node = node->next;
-        index++;
-    }
-
-    if (icon_display(this, icon_indices_by_slot[selected]) != 0)
-    {
-        position_icon_indicator(this);
+        position_candidate_indicator(this);
     }
 
     return 1;
 }
 
-/** @brief Destroy the icon-grid window's base. */
-TacticsWindow18B120::~TacticsWindow18B120()
+/** @brief Destroy the leader window's base. */
+TacticsLeaderWindow::~TacticsLeaderWindow()
 {
 }
 
 /**
- * @brief Restore the icon child grid and highlight, then activate that child.
- * @return One after activating the resource icon child.
+ * @brief Restore the leader window's grid and highlight, then activate it.
+ * @return One after activating the leader window.
  */
-u8 TacticsWindow18B220::func_slotb8()
+u8 TacticsFormationWindow::func_slotb8()
 {
     ItemCreationClass174C40* widget = resource_widget;
 
@@ -1230,38 +1185,18 @@ u8 TacticsWindow18B220::func_slotb8()
         parent_grid->unkae = 1;
     }
 
-    TacticsWindow18B120* child = static_cast<TacticsWindow18B120*>(func_slot4c());
+    TacticsLeaderWindow* child = static_cast<TacticsLeaderWindow*>(func_slot4c());
     FieldObject23CEA0* selected_grid = child->grid;
 
     if (selected_grid != 0)
     {
-        selected_grid->index = child->icon_indices_by_slot[child->selected];
+        selected_grid->index = child->candidate_indices_by_slot[child->selected];
         func_0023CB30(selected_grid);
         func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(child->grid));
         child->grid->unkad = 1;
     }
 
-    s32 selected_entry = child->icon_indices_by_slot[child->selected];
-    s32 index = 0;
-    FieldListNode* node = child->unk44.head->next;
-
-    while (node != 0)
-    {
-        LibObject175140* icon = static_cast<LibObject175140*>(node->value);
-
-        if (index == selected_entry)
-        {
-            icon->set_color(0x288080);
-            func_0023B9B0(child->cursor, selected_entry, func_00467950(icon)->unk08);
-        }
-        else
-        {
-            icon->set_color(0x808080);
-        }
-
-        node = node->next;
-        index++;
-    }
+    highlight_candidate(child, child->candidate_indices_by_slot[child->selected]);
 
     child->func_slot20(1);
     D_001B643C->callbacks->state->func_00263C70(child);
@@ -1278,7 +1213,7 @@ void* FieldClass15AE70::func_slot4c()
  * @brief Open the selection child for an enabled grid, or update the control-mode flags.
  * @return Two after the action, or zero for a disabled grid or an absent runtime or child.
  */
-u8 TacticsWindow18B220::func_slotb4()
+u8 TacticsFormationWindow::func_slotb4()
 {
     if (tactics_grid_empty(grid) == 1)
     {
@@ -1300,7 +1235,7 @@ u8 TacticsWindow18B220::func_slotb4()
     }
     else
     {
-        TacticsWindow18B020* child = new (0) TacticsWindow18B020;
+        TacticsExitConfirmWindow* child = new (0) TacticsExitConfirmWindow;
 
         if (!child)
         {
@@ -1326,7 +1261,7 @@ u32 FieldClass15AE70::func_slot54()
  * @brief Save the enabled grid selection and fit the indicator to its text.
  * @return Zero when the grid's control byte is clear; otherwise one.
  */
-u8 TacticsWindow18B220::func_slotb0()
+u8 TacticsFormationWindow::func_slotb0()
 {
     if (tactics_grid_empty(grid) == 1)
     {
@@ -1334,7 +1269,7 @@ u8 TacticsWindow18B220::func_slotb0()
     }
 
     selected = grid->unk114;
-    D_001B643C->state->selected_record_index = selected;
+    D_001B643C->state->formation = selected;
     LibUiRect16* position = &static_cast<LibObject178750*>(get_text_widget_node(
         &unk2c, selected)->value)->unk18;
     LibBounds4C69B0* bounds = lib_text_measure_bounds(static_cast<LibObject178750*>(get_text_widget_node(
@@ -1343,38 +1278,38 @@ u8 TacticsWindow18B220::func_slotb0()
     return 1;
 }
 
-/** @brief Move to the following grid entry and update its title, cursor, and indicators. */
-void TacticsWindow18B220::func_slot6c()
+/** @brief Move to the following formation and update its description, cursor, and character positions. */
+void TacticsFormationWindow::func_slot6c()
 {
     if (grid->process_direction(1) != 1)
     {
-        position_grid_indicators(this);
+        position_formation_characters(this);
 
         if (grid != 0)
         {
             s32 selected_entry = grid->unk114;
-            refresh_grid_entry(this, selected_entry);
+            refresh_formation(this, selected_entry);
         }
     }
 }
 
-/** @brief Move to the preceding grid entry and update its title, cursor, and indicators. */
-void TacticsWindow18B220::func_slot68()
+/** @brief Move to the preceding formation and update its description, cursor, and character positions. */
+void TacticsFormationWindow::func_slot68()
 {
     if (grid->process_direction(0) != 1)
     {
-        position_grid_indicators(this);
+        position_formation_characters(this);
 
         if (grid != 0)
         {
             s32 selected_entry = grid->unk114;
-            refresh_grid_entry(this, selected_entry);
+            refresh_formation(this, selected_entry);
         }
     }
 }
 
 /** @brief Restore the grid and resource widget movement flags. */
-void TacticsWindow18B220::func_slot64()
+void TacticsFormationWindow::func_slot64()
 {
     FieldObject23CEA0* parent_grid = grid;
 
@@ -1394,10 +1329,10 @@ void TacticsWindow18B220::func_slot64()
 }
 
 /**
- * @brief Place the present character displays using the selected grid row's coordinate pairs.
- * @param object Parent window holding the grid, character displays, and base coordinates.
+ * @brief Place the party's character displays at the selected formation's positions.
+ * @param object Formation window holding the grid, character displays, and base coordinates.
  */
-void position_grid_indicators(TacticsWindow18B220* object)
+void position_formation_characters(TacticsFormationWindow* object)
 {
     if (object->grid != 0)
     {
@@ -1439,10 +1374,10 @@ void position_grid_indicators(TacticsWindow18B220* object)
 
 /**
  * @brief Select the character ID in the parent and point its label at the matching record's text.
- * @param object Parent window produced by the paired window factory.
+ * @param object Formation window.
  * @param character_id Full character code; zero selects code 1.
  */
-void set_parent_character_id(TacticsWindow18B220* object, u32 character_id)
+void set_leader(TacticsFormationWindow* object, u32 character_id)
 {
     s32 code = static_cast<u8>(character_id ? character_id : 1);
     u8 selected = 0;
@@ -1465,7 +1400,7 @@ void set_parent_character_id(TacticsWindow18B220* object, u32 character_id)
             if (!resource_code_empty(slot_code))
             {
                 selected = index;
-                D_001B643C->state->selected_character_id = slot_code;
+                D_001B643C->state->leader_character_id = slot_code;
                 break;
             }
         }
@@ -1473,22 +1408,22 @@ void set_parent_character_id(TacticsWindow18B220* object, u32 character_id)
 
     LibObject175140* label = object->label;
     label->unkfc =
-        static_cast<TacticsEntryResourceRecord*>(object->record_selection->unk04)[static_cast<s16>(selected)].saved_name;
+        static_cast<TacticsCharacterEquipment*>(object->record_selection->unk04)[static_cast<s16>(selected)].character_name;
     label->unk3c = 1;
 }
 
 /**
- * @brief Update the parent window's indicators, grid title, highlight, and selection indicator.
- * @param object Parent window to refresh.
+ * @brief Update the formation window's character positions, description, highlight, and indicator.
+ * @param object Formation window to refresh.
  */
-void refresh_parent_selection_display(TacticsWindow18B220* object)
+void refresh_formation_display(TacticsFormationWindow* object)
 {
-    position_grid_indicators(object);
+    position_formation_characters(object);
 
     if (object->grid != 0)
     {
         s32 selected_entry = object->grid->unk114;
-        refresh_grid_entry(object, selected_entry);
+        refresh_formation(object, selected_entry);
     }
 
     LibUiRect16* position = &static_cast<LibObject178750*>(get_text_widget_node(
@@ -1499,11 +1434,11 @@ void refresh_parent_selection_display(TacticsWindow18B220* object)
 }
 
 /**
- * @brief Create the parent window's grid, resource widgets, and selected-entry label.
+ * @brief Create the formation window's grid, character displays, and leader label.
  * @param associated Full resource source word forwarded to the base and text widgets.
  * @return One after initialization, or zero when the resource selection or a panel is absent.
  */
-s32 TacticsWindow18B220::func_slotf4(u32 associated)
+s32 TacticsFormationWindow::func_slotf4(u32 associated)
 {
     if (record_selection == 0)
     {
@@ -1567,7 +1502,7 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
     LibObject178750* resource_heading = new (0) LibObject178750;
     lib_text_init_resource_rectangle(resource_heading, associated, 0x2729, 0, 72.0f, 352.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, resource_heading);
-    u8 saved_entry = D_001B643C->state->selected_character_id;
+    u8 saved_entry = D_001B643C->state->leader_character_id;
     u16 resource_index = 0;
     func_0013A678(character_ids, 0, 3);
 
@@ -1590,7 +1525,7 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, selected_heading);
     label = new (0) LibObject175140;
     label->func_00467AD0(434.0f, heading_y, 0.0f, 0.0f,
-        static_cast<TacticsEntryResourceRecord*>(record_selection->unk04)[static_cast<s16>(resource_index)].saved_name, 0);
+        static_cast<TacticsCharacterEquipment*>(record_selection->unk04)[static_cast<s16>(resource_index)].character_name, 0);
     lib_container_attach_widget(unk10, label);
     ItemCreationOptionResourceDisplay* display = new (0) ItemCreationOptionResourceDisplay;
     void* allocation = field_get_aligned_allocation(D_001B643C->resources, 0);
@@ -1598,9 +1533,7 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
     display->unkcc = allocation;
     display->unkd0 = 0;
     func_002D6440(display, record, base_x, base_y);
-    display->unk50.unk34 = 2.5f;
-    display->unk50.unk30 = 2.5f;
-    display->unk3c = 1;
+    set_resource_display_scale(display, 2.5f);
     lib_container_attach_widget(unk10, display);
 
     if (character_ids[0] != 0)
@@ -1647,29 +1580,9 @@ s32 TacticsWindow18B220::func_slotf4(u32 associated)
         lib_container_attach_widget(unk10, character_displays[0]);
     }
 
-    s32 selected_entry = selected;
-    s32 index = 0;
-    FieldListNode* node = unk2c.head->next;
+    highlight_text(this, selected);
 
-    while (node != 0)
-    {
-        LibObject178750* text = static_cast<LibObject178750*>(node->value);
-
-        if (index == selected_entry)
-        {
-            text->set_color(0x288080);
-            func_0023B9B0(cursor, static_cast<s16>(selected_entry), lib_text_measure_bounds(text)->unk08);
-        }
-        else
-        {
-            text->set_color(0x808080);
-        }
-
-        node = node->next;
-        index++;
-    }
-
-    refresh_parent_selection_display(this);
+    refresh_formation_display(this);
     return 1;
 }
 
@@ -1678,13 +1591,13 @@ ItemCreationClass175110::~ItemCreationClass175110()
 {
 }
 
-/** @brief Destroy the parent window base. */
-TacticsWindow18B220::~TacticsWindow18B220()
+/** @brief Destroy the formation window base. */
+TacticsFormationWindow::~TacticsFormationWindow()
 {
 }
 
 /** @brief Clear the displays and restore the resident grid selection. */
-TacticsWindow18B220::TacticsWindow18B220()
+TacticsFormationWindow::TacticsFormationWindow()
 {
     title = 0;
     grid = 0;
@@ -1696,7 +1609,7 @@ TacticsWindow18B220::TacticsWindow18B220()
     character_displays[1] = 0;
     character_displays[2] = 0;
     func_0013A678(character_ids, 0, 3);
-    selected = D_001B643C->state->selected_record_index;
+    selected = D_001B643C->state->formation;
     base_x = 0.0f;
     base_y = 0.0f;
     label = 0;
@@ -1705,9 +1618,9 @@ TacticsWindow18B220::TacticsWindow18B220()
 /**
  * @brief Advance the chosen selector one entry, wrapping after its eighth entry.
  */
-void TacticsWindow18B320::func_slot6c()
+void TacticsReplaceWindow::func_slot6c()
 {
-    TacticsCoordinateSelector18AFD0* selection;
+    TacticsCoordinateSelector* selection;
 
     if (use_second)
     {
@@ -1736,9 +1649,9 @@ void TacticsWindow18B320::func_slot6c()
 /**
  * @brief Move the chosen selector back one entry, wrapping to its eighth entry.
  */
-void TacticsWindow18B320::func_slot68()
+void TacticsReplaceWindow::func_slot68()
 {
-    TacticsCoordinateSelector18AFD0* selection;
+    TacticsCoordinateSelector* selection;
 
     if (use_second)
     {
@@ -1767,9 +1680,9 @@ void TacticsWindow18B320::func_slot68()
 /**
  * @brief Map the chosen selector's first three entries to entries three, five, and six.
  */
-void TacticsWindow18B320::func_slot74()
+void TacticsReplaceWindow::func_slot74()
 {
-    TacticsCoordinateSelector18AFD0* selection;
+    TacticsCoordinateSelector* selection;
 
     if (use_second)
     {
@@ -1808,9 +1721,9 @@ void TacticsWindow18B320::func_slot74()
 /**
  * @brief Map the chosen selector's last five entries back to its first three.
  */
-void TacticsWindow18B320::func_slot70()
+void TacticsReplaceWindow::func_slot70()
 {
-    TacticsCoordinateSelector18AFD0* selection;
+    TacticsCoordinateSelector* selection;
 
     if (use_second)
     {
@@ -1856,7 +1769,7 @@ void TacticsWindow18B320::func_slot70()
  * @brief Return to the first selector, update control-mode flags, or open its child window.
  * @return Two after the action, or zero when the runtime or child allocation is absent.
  */
-u8 TacticsWindow18B320::func_slotb4()
+u8 TacticsReplaceWindow::func_slotb4()
 {
     if (use_second == 1)
     {
@@ -1890,7 +1803,7 @@ u8 TacticsWindow18B320::func_slotb4()
     }
     else
     {
-        TacticsWindow18B020* child = new (0) TacticsWindow18B020;
+        TacticsExitConfirmWindow* child = new (0) TacticsExitConfirmWindow;
 
         if (!child)
         {
@@ -1913,7 +1826,7 @@ u8 TacticsWindow18B320::func_slotb4()
  * @brief Confirm a swap between the two selected character slots, or start choosing the second slot.
  * @return One when the selection continues, three when the swap is refused or rolled back.
  */
-u8 TacticsWindow18B320::func_slotb0()
+u8 TacticsReplaceWindow::func_slotb0()
 {
     u8 result = 1;
 
@@ -1928,7 +1841,7 @@ u8 TacticsWindow18B320::func_slotb0()
         {
             if (i != source && i != destination_record_index)
             {
-                TacticsGridResourceRecord* record = &character_records[i];
+                TacticsCharacterRecord* record = &character_records[i];
                 s32 character_id = record->character_id;
                 s32 stat_limit_type = record->stat_limit_type;
 
@@ -1950,9 +1863,9 @@ u8 TacticsWindow18B320::func_slotb0()
                 allowed = 1;
             }
 
-            TacticsGridResourceRecord* records = character_records;
-            TacticsGridResourceRecord* first_record = &records[source_record_index];
-            TacticsGridResourceRecord* second_record = &records[destination_record_index];
+            TacticsCharacterRecord* records = character_records;
+            TacticsCharacterRecord* first_record = &records[source_record_index];
+            TacticsCharacterRecord* second_record = &records[destination_record_index];
             s32 first_stat_limit_type = first_record->stat_limit_type;
             s32 first_character_id = first_record->character_id;
             s32 second_stat_limit_type = second_record->stat_limit_type;
@@ -1968,14 +1881,14 @@ u8 TacticsWindow18B320::func_slotb0()
         {
             if (source != destination_record_index)
             {
-                func_0013A678(character_record_buffer, 0, sizeof(TacticsGridResourceRecord));
-                func_0013A678(entry_record_buffer, 0, sizeof(TacticsEntryResourceRecord));
-                func_0013A4C0(character_record_buffer, &character_records[source_record_index], sizeof(TacticsGridResourceRecord));
-                func_0013A4C0(entry_record_buffer, &entry_records[source_record_index], sizeof(TacticsEntryResourceRecord));
-                func_0013A4C0(&character_records[source_record_index], &character_records[destination_record_index], sizeof(TacticsGridResourceRecord));
-                func_0013A4C0(&entry_records[source_record_index], &entry_records[destination_record_index], sizeof(TacticsEntryResourceRecord));
-                func_0013A4C0(&character_records[destination_record_index], character_record_buffer, sizeof(TacticsGridResourceRecord));
-                func_0013A4C0(&entry_records[destination_record_index], entry_record_buffer, sizeof(TacticsEntryResourceRecord));
+                func_0013A678(character_record_buffer, 0, sizeof(TacticsCharacterRecord));
+                func_0013A678(equipment_record_buffer, 0, sizeof(TacticsCharacterEquipment));
+                func_0013A4C0(character_record_buffer, &character_records[source_record_index], sizeof(TacticsCharacterRecord));
+                func_0013A4C0(equipment_record_buffer, &equipment_records[source_record_index], sizeof(TacticsCharacterEquipment));
+                func_0013A4C0(&character_records[source_record_index], &character_records[destination_record_index], sizeof(TacticsCharacterRecord));
+                func_0013A4C0(&equipment_records[source_record_index], &equipment_records[destination_record_index], sizeof(TacticsCharacterEquipment));
+                func_0013A4C0(&character_records[destination_record_index], character_record_buffer, sizeof(TacticsCharacterRecord));
+                func_0013A4C0(&equipment_records[destination_record_index], equipment_record_buffer, sizeof(TacticsCharacterEquipment));
                 u8 rejected = 0;
                 u8 invalid[4] = {0};
 
@@ -2010,14 +1923,14 @@ u8 TacticsWindow18B320::func_slotb0()
 
                 if (rejected)
                 {
-                    func_0013A678(character_record_buffer, 0, sizeof(TacticsGridResourceRecord));
-                    func_0013A678(entry_record_buffer, 0, sizeof(TacticsEntryResourceRecord));
-                    func_0013A4C0(character_record_buffer, &character_records[source_record_index], sizeof(TacticsGridResourceRecord));
-                    func_0013A4C0(entry_record_buffer, &entry_records[source_record_index], sizeof(TacticsEntryResourceRecord));
-                    func_0013A4C0(&character_records[source_record_index], &character_records[destination_record_index], sizeof(TacticsGridResourceRecord));
-                    func_0013A4C0(&entry_records[source_record_index], &entry_records[destination_record_index], sizeof(TacticsEntryResourceRecord));
-                    func_0013A4C0(&character_records[destination_record_index], character_record_buffer, sizeof(TacticsGridResourceRecord));
-                    func_0013A4C0(&entry_records[destination_record_index], entry_record_buffer, sizeof(TacticsEntryResourceRecord));
+                    func_0013A678(character_record_buffer, 0, sizeof(TacticsCharacterRecord));
+                    func_0013A678(equipment_record_buffer, 0, sizeof(TacticsCharacterEquipment));
+                    func_0013A4C0(character_record_buffer, &character_records[source_record_index], sizeof(TacticsCharacterRecord));
+                    func_0013A4C0(equipment_record_buffer, &equipment_records[source_record_index], sizeof(TacticsCharacterEquipment));
+                    func_0013A4C0(&character_records[source_record_index], &character_records[destination_record_index], sizeof(TacticsCharacterRecord));
+                    func_0013A4C0(&equipment_records[source_record_index], &equipment_records[destination_record_index], sizeof(TacticsCharacterEquipment));
+                    func_0013A4C0(&character_records[destination_record_index], character_record_buffer, sizeof(TacticsCharacterRecord));
+                    func_0013A4C0(&equipment_records[destination_record_index], equipment_record_buffer, sizeof(TacticsCharacterEquipment));
                     result = 3;
                 }
                 else
@@ -2027,11 +1940,11 @@ u8 TacticsWindow18B320::func_slotb0()
                 }
 
                 s32 i;
-                TacticsSavedGridSelection* saved = D_001B643C->state;
+                TacticsSavedFormation* saved = D_001B643C->state;
 
                 for (i = 0; i < 3; i++)
                 {
-                    if (saved->selected_character_id == character_records[i].character_id)
+                    if (saved->leader_character_id == character_records[i].character_id)
                     {
                         break;
                     }
@@ -2043,7 +1956,7 @@ u8 TacticsWindow18B320::func_slotb0()
                     {
                         if (!character_record_empty(&character_records[j]))
                         {
-                            D_001B643C->state->selected_character_id = character_records[j].character_id;
+                            D_001B643C->state->leader_character_id = character_records[j].character_id;
                             break;
                         }
                     }
@@ -2100,7 +2013,7 @@ u8 TacticsWindow18B320::func_slotb0()
 }
 
 /** @brief Refresh the eight resource rows after a record change while this window is active. */
-void TacticsWindow18B320::func_slot5c()
+void TacticsReplaceWindow::func_slot5c()
 {
     if (static_cast<FieldClass15AE70*>(D_001B643C->callbacks->state->func_00261150()) == this && refresh_pending == 1)
     {
@@ -2143,7 +2056,7 @@ void TacticsWindow18B320::func_slot5c()
 
             if (character_records[i].stat_limit_type == 0 && character_id != 0)
             {
-                character_name->unkfc = entry_records[i].saved_name;
+                character_name->unkfc = equipment_records[i].character_name;
                 character_name->unk3c = 1;
                 character_name->unk3f = 1;
                 empty_marker->unk3f = 0;
@@ -2223,7 +2136,7 @@ void TacticsWindow18B320::func_slot5c()
  * @param associated Resource source word forwarded to the base and text displays.
  * @return One on success, otherwise zero when records or required displays are absent.
  */
-s32 TacticsWindow18B320::func_slotf4(u32 associated)
+s32 TacticsReplaceWindow::func_slotf4(u32 associated)
 {
     s32 source = associated;
 
@@ -2233,8 +2146,8 @@ s32 TacticsWindow18B320::func_slotf4(u32 associated)
     }
 
     FieldClass15AE70::func_slot10(source, 16.0f, 96.0f, 8);
-    first_selector = new (0) TacticsCoordinateSelector18AFD0;
-    second_selector = new (0) TacticsCoordinateSelector18AFD0;
+    first_selector = new (0) TacticsCoordinateSelector;
+    second_selector = new (0) TacticsCoordinateSelector;
     lib_moving_widget_init_position(first_selector, 0.0f, 0.0f);
     lib_moving_widget_init_position(second_selector, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, first_selector);
@@ -2331,7 +2244,7 @@ s32 TacticsWindow18B320::func_slotf4(u32 associated)
             label_x = 78.0f + column_x;
             row_y = height * row;
             label_y = 14.0f + row_y;
-            empty_y = 8.0f + ((height / 2.0f + row_y) - 15.360001f);
+            empty_y = 8.0f + ((height / 2.0f + row_y) - 19.2f * 0.8f);
             first_x = 70.0f + column_x;
             numeric_offset = 36.0f;
             first_y = 3.0f + (numeric_offset + row_y);
@@ -2403,7 +2316,7 @@ s32 TacticsWindow18B320::func_slotf4(u32 associated)
 
         if (character_records[index].stat_limit_type == 0 && character_id != 0)
         {
-            character_name_label->unkfc = entry_records[index].saved_name;
+            character_name_label->unkfc = equipment_records[index].character_name;
             character_name_label->unk3c = 1;
             character_name_label->unk3f = 1;
             empty_marker->unk3f = 0;
@@ -2453,7 +2366,7 @@ s32 TacticsWindow18B320::func_slotf4(u32 associated)
             else
             {
                 func_002D6440(resource_displays[index], record, 15.0f + column_x, label_y - 5.0f);
-                set_resource_scale(resource_displays[index], 0.68f);
+                set_resource_display_scale(resource_displays[index], 0.68f);
             }
 
             row_character_ids[index] = character_id;
@@ -2484,7 +2397,7 @@ s32 TacticsWindow18B320::func_slotf4(u32 associated)
             else
             {
                 func_002D6440(resource_displays[index], record, 15.0f + column_x, label_y - 5.0f);
-                set_resource_scale(resource_displays[index], 0.68f);
+                set_resource_display_scale(resource_displays[index], 0.68f);
             }
 
             resource_displays[index]->unk3f = 0;
@@ -2564,26 +2477,26 @@ inline ItemCreationClass175030::~ItemCreationClass175030()
 }
 
 /** @brief Release both binary buffers, then destroy the lists and base window. */
-TacticsWindow18B320::~TacticsWindow18B320()
+TacticsReplaceWindow::~TacticsReplaceWindow()
 {
     if (character_record_buffer != 0)
     {
         delete_owned(character_record_buffer);
     }
 
-    if (entry_record_buffer != 0)
+    if (equipment_record_buffer != 0)
     {
-        delete_owned(entry_record_buffer);
+        delete_owned(equipment_record_buffer);
     }
 }
 
 /** @brief Construct the owned lists and clear the window control fields. */
-TacticsWindow18B320::TacticsWindow18B320()
+TacticsReplaceWindow::TacticsReplaceWindow()
 {
     character_records = 0;
-    entry_records = 0;
+    equipment_records = 0;
     character_record_buffer = 0;
-    entry_record_buffer = 0;
+    equipment_record_buffer = 0;
     second_selector = 0;
     first_selector = 0;
     use_second = 0;
@@ -2601,7 +2514,7 @@ TacticsWindow18B320::TacticsWindow18B320()
 }
 
 /** @brief Refresh the associated text when the active grid selection changes. */
-void TacticsWindow18B420::func_slot5c()
+void TacticsStrategyWindow::func_slot5c()
 {
     if (D_001B643C->callbacks->state->func_00261150() != this)
     {
@@ -2639,10 +2552,10 @@ void* FieldClass153E30::func_00263C90()
 }
 
 /**
- * @brief Color up to six list displays and place the cursor for the selected grid entry.
- * @param object Tactics receiver holding the display list, grid, and cursor.
+ * @brief Color up to six strategy names and place the cursor on the selected one.
+ * @param object Strategy window holding the names, grid, and cursor.
  */
-void refresh_grid_list_selection(TacticsWindow18B420* object)
+void highlight_strategy(TacticsStrategyWindow* object)
 {
     s16 selected = object->grid->unk114;
     s32 index = 0;
@@ -2659,15 +2572,13 @@ void refresh_grid_list_selection(TacticsWindow18B420* object)
 
         if (index == selected)
         {
-            display->unk94 = 0x288080;
-            display->unk3c = 1;
+            display->set_color(0x288080);
             func_0023B9B0(object->cursor, index,
                 lib_text_measure_bounds(display)->unk08);
         }
         else
         {
-            display->unk94 = 0x808080;
-            display->unk3c = 1;
+            display->set_color(0x808080);
         }
 
         node = node->next;
@@ -2676,32 +2587,32 @@ void refresh_grid_list_selection(TacticsWindow18B420* object)
 }
 
 /** @brief Move to the following grid entry and refresh its highlight. */
-void TacticsWindow18B420::func_slot6c()
+void TacticsStrategyWindow::func_slot6c()
 {
     if (static_cast<s16>(grid->process_direction(1)) == 1)
     {
         return;
     }
 
-    refresh_grid_list_selection(this);
+    highlight_strategy(this);
 }
 
 /** @brief Move to the preceding grid entry and refresh its highlight. */
-void TacticsWindow18B420::func_slot68()
+void TacticsStrategyWindow::func_slot68()
 {
     if (static_cast<s16>(grid->process_direction(0)) == 1)
     {
         return;
     }
 
-    refresh_grid_list_selection(this);
+    highlight_strategy(this);
 }
 
 /**
  * @brief Close the grid window, restore its parent, and reset the associated text.
  * @return Two after closing.
  */
-u8 TacticsWindow18B420::func_slotb4()
+u8 TacticsStrategyWindow::func_slotb4()
 {
     cursor->unk3f = 0;
     selection_indicator->unk3f = 0;
@@ -2714,17 +2625,17 @@ u8 TacticsWindow18B420::func_slotb4()
 }
 
 /**
- * @brief Save the selected grid entry, update its parent display, and restore the parent window.
+ * @brief Save the chosen strategy, update the character's row, and return to the Change Tactics window.
  * @return One after the selected entry is applied.
  */
-u8 TacticsWindow18B420::func_slotb0()
+u8 TacticsStrategyWindow::func_slotb0()
 {
-    TacticsWindow18B520* parent = static_cast<TacticsWindow18B520*>(func_slot44());
-    TacticsEntryResourceRecord* record = &parent->entry_records[parent->selected];
-    record->selected_entry = grid->unk114;
+    TacticsChangeWindow* parent = static_cast<TacticsChangeWindow*>(func_slot44());
+    TacticsCharacterEquipment* record = &parent->equipment_records[parent->selected];
+    record->battle_strategy = grid->unk114;
     LibObject178750* display = static_cast<LibObject178750*>(get_text_widget_node(
         &parent->unk2c, parent->selected)->value);
-    TacticsGridResourceRecord* records = parent->character_records;
+    TacticsCharacterRecord* records = parent->character_records;
     s16 record_index = parent->selected;
     s16 character_id;
 
@@ -2737,7 +2648,7 @@ u8 TacticsWindow18B420::func_slotb0()
         character_id = 0;
     }
 
-    u32 key = parent->get_record_text_key(character_id, record_index);
+    u32 key = parent->get_strategy_text_key(character_id, record_index);
     lib_text_set_resource(display, parent->func_slot54(), key, 0);
     cursor->unk3f = 0;
     selection_indicator->unk3f = 0;
@@ -2750,54 +2661,17 @@ u8 TacticsWindow18B420::func_slotb0()
 }
 
 /**
- * @brief Configure the grid resource keys and highlight its initial entry.
+ * @brief Show a character's six strategies and highlight the current one.
  * @param record_index Signed record index in the resident record table.
- * @param initial_entry Initial grid entry.
+ * @param initial_entry Strategy to highlight.
  * @return Marker position status.
  */
-s32 TacticsWindow18B420::set_grid_record(s16 record_index, u8 initial_entry)
+s32 TacticsStrategyWindow::set_character(s16 record_index, u8 initial_entry)
 {
     clear_grid_state(this);
     character_id = character_records[record_index].character_id;
     selected_entry = initial_entry;
-    s32 first_key;
-
-    switch (character_id)
-    {
-        case 1:
-            first_key = 0x2968;
-            break;
-        case 2:
-            first_key = 0x296E;
-            break;
-        case 3:
-            first_key = 0x2968;
-            break;
-        case 4:
-            first_key = 0x2968;
-            break;
-        case 5:
-            first_key = 0x2968;
-            break;
-        case 6:
-            first_key = 0x2968;
-            break;
-        case 7:
-            first_key = 0x2968;
-            break;
-        case 8:
-            first_key = 0x2968;
-            break;
-        case 9:
-            first_key = 0x296E;
-            break;
-        case 10:
-            first_key = 0x2968;
-            break;
-        default:
-            first_key = 0x29CC;
-            break;
-    }
+    s32 first_key = first_strategy_text_key(character_id);
 
     if (first_key == 0x29CC)
     {
@@ -2813,43 +2687,41 @@ s32 TacticsWindow18B420::set_grid_record(s16 record_index, u8 initial_entry)
         for (s32 index = 0; index < 6; index++)
         {
             keys[index] = first_key + index;
-            LibObject178750* display = grid_display(this, index);
+            LibObject178750* display = strategy_display(this, index);
             lib_text_set_resource(display, func_slot54(), keys[index], 0);
         }
     }
 
     for (s32 index = 0; index < 6; index++)
     {
-        LibObject178750* display = grid_display(this, index);
-        display->unk94 = 0x808080;
-        display->unk3c = 1;
+        LibObject178750* display = strategy_display(this, index);
+        display->set_color(0x808080);
     }
 
-    LibUiRect16* rectangle = &grid_display(this, selected_entry)->unk18;
-    LibBounds4C69B0* bounds = lib_text_measure_bounds(grid_display(this, selected_entry));
+    LibUiRect16* rectangle = &strategy_display(this, selected_entry)->unk18;
+    LibBounds4C69B0* bounds = lib_text_measure_bounds(strategy_display(this, selected_entry));
     FieldObject23CEA0* selection = grid;
     selection->index = selected_entry;
     func_0023CB30(selection);
     func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(grid));
     set_widget_rectangle(selection_indicator, rectangle->unk00, rectangle->unk04,
         bounds->unk08, bounds->unk0c);
-    LibObject178750* selected = grid_display(this, selected_entry);
-    selected->unk94 = 0x288080;
-    selected->unk3c = 1;
+    LibObject178750* selected = strategy_display(this, selected_entry);
+    selected->set_color(0x288080);
     return func_0023B9B0(cursor, selected_entry, bounds->unk08);
 }
 
 /**
- * @brief Create the grid window's text, panels, selector, and indicators.
+ * @brief Create the strategy window's text, panels, selector, and indicators.
  * @param associated Full resource source word forwarded to the base window and text widgets.
  * @return Zero when required resources or displays are missing; otherwise one.
  */
-s32 TacticsWindow18B420::func_slotf4(u32 associated)
+s32 TacticsStrategyWindow::func_slotf4(u32 associated)
 {
     character_records = D_001B643C->character_records;
-    entry_records = D_001B643C->entry_records;
+    equipment_records = D_001B643C->equipment_records;
 
-    if (character_records == 0 || entry_records == 0)
+    if (character_records == 0 || equipment_records == 0)
     {
         return 0;
     }
@@ -2933,15 +2805,15 @@ s32 TacticsWindow18B420::func_slotf4(u32 associated)
 }
 
 /** @brief Destroy the grid window. */
-TacticsWindow18B420::~TacticsWindow18B420()
+TacticsStrategyWindow::~TacticsStrategyWindow()
 {
 }
 
 /** @brief Initialize the grid window's pointers and control fields. */
-TacticsWindow18B420::TacticsWindow18B420()
+TacticsStrategyWindow::TacticsStrategyWindow()
 {
     character_records = 0;
-    entry_records = 0;
+    equipment_records = 0;
     grid = 0;
     selected = -1;
     text[0] = 0;
@@ -2957,7 +2829,7 @@ TacticsWindow18B420::TacticsWindow18B420()
 }
 
 /** @brief Restore the selector movement or visibility state. */
-void TacticsWindow18B520::func_slot64()
+void TacticsChangeWindow::func_slot64()
 {
     s16 state = selected;
     LibClass175030* target;
@@ -2975,9 +2847,9 @@ void TacticsWindow18B520::func_slot64()
 }
 
 /** @brief Move to the following coordinate, wrapping after the eighth. */
-void TacticsWindow18B520::func_slot6c()
+void TacticsChangeWindow::func_slot6c()
 {
-    TacticsCoordinateSelector18AFD0* selection = this->selection;
+    TacticsCoordinateSelector* selection = this->selection;
 
     if (tactics_selection_inactive(selection))
     {
@@ -2995,9 +2867,9 @@ void TacticsWindow18B520::func_slot6c()
 }
 
 /** @brief Move to the preceding coordinate, wrapping before the first. */
-void TacticsWindow18B520::func_slot68()
+void TacticsChangeWindow::func_slot68()
 {
-    TacticsCoordinateSelector18AFD0* selection = this->selection;
+    TacticsCoordinateSelector* selection = this->selection;
 
     if (tactics_selection_inactive(selection))
     {
@@ -3015,9 +2887,9 @@ void TacticsWindow18B520::func_slot68()
 }
 
 /** @brief Map the first three coordinate entries to entries three, five, and six. */
-void TacticsWindow18B520::func_slot74()
+void TacticsChangeWindow::func_slot74()
 {
-    TacticsCoordinateSelector18AFD0* selection = this->selection;
+    TacticsCoordinateSelector* selection = this->selection;
 
     if (tactics_selection_inactive(selection))
     {
@@ -3045,9 +2917,9 @@ void TacticsWindow18B520::func_slot74()
 }
 
 /** @brief Map the last five coordinate entries to the first three. */
-void TacticsWindow18B520::func_slot70()
+void TacticsChangeWindow::func_slot70()
 {
-    TacticsCoordinateSelector18AFD0* selection = this->selection;
+    TacticsCoordinateSelector* selection = this->selection;
 
     if (tactics_selection_inactive(selection))
     {
@@ -3084,7 +2956,7 @@ void TacticsWindow18B520::func_slot70()
  * @brief Open a child window, or update the window flags for the resident control mode.
  * @return Two after the action, or zero when the runtime or child allocation is absent.
  */
-u8 TacticsWindow18B520::func_slotb4()
+u8 TacticsChangeWindow::func_slotb4()
 {
     FieldClass153E00* runtime = D_001B643C->runtime;
 
@@ -3101,7 +2973,7 @@ u8 TacticsWindow18B520::func_slotb4()
     }
     else
     {
-        TacticsWindow18B020* child = new (0) TacticsWindow18B020;
+        TacticsExitConfirmWindow* child = new (0) TacticsExitConfirmWindow;
 
         if (!child)
         {
@@ -3121,15 +2993,15 @@ u8 TacticsWindow18B520::func_slotb4()
  * @brief Open the grid window for the selected enabled record and remember its current entry.
  * @return One after opening the grid window, or three for a disabled record.
  */
-u8 TacticsWindow18B520::func_slotb0()
+u8 TacticsChangeWindow::func_slotb0()
 {
     selected = selection->selected;
 
     if (record_enabled[selected])
     {
-        TacticsEntryResourceRecord* record = &entry_records[selected];
-        u8 initial_entry = record->selected_entry;
-        record->previous_entry = initial_entry;
+        TacticsCharacterEquipment* record = &equipment_records[selected];
+        u8 initial_entry = record->battle_strategy;
+        record->previous_battle_strategy = initial_entry;
 
         if (selected == 3 || selected == 4)
         {
@@ -3142,8 +3014,8 @@ u8 TacticsWindow18B520::func_slotb0()
             target->unk3c = 1;
         }
 
-        TacticsWindow18B420* child = static_cast<TacticsWindow18B420*>(func_slot44());
-        child->set_grid_record(selected, initial_entry);
+        TacticsStrategyWindow* child = static_cast<TacticsStrategyWindow*>(func_slot44());
+        child->set_character(selected, initial_entry);
         child->cursor->unk3f = 1;
         child->selection_indicator->unk3f = 1;
         child->FieldClass15AE70::func_slot18(1, 0x7F);
@@ -3159,63 +3031,26 @@ u8 TacticsWindow18B520::func_slotb0()
 }
 
 /**
- * @brief Find the text key for a resource record's saved grid entry.
+ * @brief Return the text key of a character's chosen battle strategy.
  * @param character_id Signed character ID selecting the key range.
  * @param record_index Record index in the resident entry table.
- * @return Text key for the record's saved entry.
+ * @return Text key of the chosen strategy's name.
  */
-u32 TacticsWindow18B520::get_record_text_key(s16 character_id, s32 record_index)
+u32 TacticsChangeWindow::get_strategy_text_key(s16 character_id, s32 record_index)
 {
-    u32 first_key;
+    u32 first_key = first_strategy_text_key(character_id);
 
-    switch (character_id)
-    {
-        case 1:
-            first_key = 0x2968;
-            break;
-        case 2:
-            first_key = 0x296E;
-            break;
-        case 3:
-            first_key = 0x2968;
-            break;
-        case 4:
-            first_key = 0x2968;
-            break;
-        case 5:
-            first_key = 0x2968;
-            break;
-        case 6:
-            first_key = 0x2968;
-            break;
-        case 7:
-            first_key = 0x2968;
-            break;
-        case 8:
-            first_key = 0x2968;
-            break;
-        case 9:
-            first_key = 0x296E;
-            break;
-        case 10:
-            first_key = 0x2968;
-            break;
-        default:
-            first_key = 0x29CC;
-            break;
-    }
-
-    TacticsEntryResourceRecord* record = &entry_records[record_index];
-    return first_key + record->selected_entry;
+    TacticsCharacterEquipment* record = &equipment_records[record_index];
+    return first_key + record->battle_strategy;
 }
 
 /**
- * @brief Select a preset display position, clearing it for an invalid index.
- * @param object Coordinate window holding the position pair.
- * @param index Zero-based preset index.
+ * @brief Select the position of a row's strategy text, clearing it for an invalid row.
+ * @param object Change Tactics window holding the position pair.
+ * @param index Zero-based row index.
  * @return The receiver's updated position pair.
  */
-TacticsPresetPosition* set_preset_position_from_index(TacticsWindow18B520* object, s32 index)
+TacticsPresetPosition* set_strategy_text_position(TacticsChangeWindow* object, s32 index)
 {
     switch (index)
     {
@@ -3265,10 +3100,10 @@ TacticsPresetPosition* set_preset_position_from_index(TacticsWindow18B520* objec
  * @param associated Resource source word forwarded to the base and text displays.
  * @return One on success, or zero when records or required displays are absent.
  */
-s32 TacticsWindow18B520::func_slotf4(u32 associated)
+s32 TacticsChangeWindow::func_slotf4(u32 associated)
 {
     character_records = D_001B643C->character_records;
-    entry_records = D_001B643C->entry_records;
+    equipment_records = D_001B643C->equipment_records;
 
     if (coordinate_records_ready(this) == false)
     {
@@ -3277,7 +3112,7 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
 
     u32 source = associated;
     FieldClass15AE70::func_slot10(source, 16.0f, 96.0f, 8);
-    selection = new (0) TacticsCoordinateSelector18AFD0;
+    selection = new (0) TacticsCoordinateSelector;
     lib_moving_widget_init_position(selection, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, selection);
 
@@ -3338,7 +3173,7 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
         {
             row_y = height * (index - 3);
             label->func_00467AD0(412.0f, 14.0f + row_y, 0.0f, 0.0f, D_00352080, 0);
-            set_widget_rectangle(empty, 304.0f, 8.0f + ((height / 2.0f + row_y) - 15.360001f), 304.0f, 24.0f);
+            set_widget_rectangle(empty, 304.0f, 8.0f + ((height / 2.0f + row_y) - 19.2f * 0.8f), 304.0f, 24.0f);
             column_x = 304.0f;
             empty->set_scale(0.8f, 0.8f);
         }
@@ -3350,7 +3185,7 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
 
         if (character_records[index].stat_limit_type == 0 && character_id != 0)
         {
-            label->unkfc = entry_records[index].saved_name;
+            label->unkfc = equipment_records[index].character_name;
             label->unk3c = 1;
             label->unk3f = 1;
             empty->unk3f = 0;
@@ -3368,14 +3203,12 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
             else
             {
                 func_002D6440(display, record, 18.0f + column_x, 10.0f + row_y);
-                display->unk50.unk34 = 0.68f;
-                display->unk50.unk30 = 0.68f;
-                display->unk3c = 1;
+                set_resource_display_scale(display, 0.68f);
             }
 
             lib_container_attach_widget(unk10, display);
-            u32 text_key = get_record_text_key(character_id, index);
-            TacticsPresetPosition* preset = set_preset_position_from_index(this, index);
+            u32 text_key = get_strategy_text_key(character_id, index);
+            TacticsPresetPosition* preset = set_strategy_text_position(this, index);
             lib_text_init_resource_rectangle(text, source, text_key, 0, preset->x, preset->y, 0.0f, 0.0f);
             text->unk88 = -1.0f;
             text->unk3c = 1;
@@ -3429,7 +3262,7 @@ s32 TacticsWindow18B520::func_slotf4(u32 associated)
 }
 
 /** @brief Destroy the coordinate-selection window. */
-TacticsWindow18B520::~TacticsWindow18B520()
+TacticsChangeWindow::~TacticsChangeWindow()
 {
 }
 
@@ -3437,7 +3270,7 @@ TacticsWindow18B520::~TacticsWindow18B520()
  * @brief Replace the text for supported keys and reset its scrolling state.
  * @param text_key Text key in the supported 0x2714..0x271B range.
  */
-void TacticsWindow18B620::func_slot60(s32 text_key)
+void TacticsHelpWindow::func_slot60(s32 text_key)
 {
     if (text_key >= 0x2714 && text_key < 0x271C)
     {
@@ -3449,7 +3282,7 @@ void TacticsWindow18B620::func_slot60(s32 text_key)
 }
 
 /** @brief Hold the text position, then scroll and wrap it after the timer expires. */
-void TacticsWindow18B620::func_slot5c()
+void TacticsHelpWindow::func_slot5c()
 {
     LibObject178750* target = text;
     float x = target->unk18.unk00;
@@ -3459,7 +3292,7 @@ void TacticsWindow18B620::func_slot5c()
 
     if (scroll_phase == 0)
     {
-        set_text_position(target, initial_text_x, y, z, w);
+        set_widget_rectangle(target, initial_text_x, y, z, w);
         initial_pause_frames++;
 
         if (!((float)initial_pause_frames <= 120.0f))
@@ -3478,7 +3311,7 @@ void TacticsWindow18B620::func_slot5c()
         x = 2.0f + (clip_x + clip_width);
     }
 
-    set_text_position(target, x, y, z, w);
+    set_widget_rectangle(target, x, y, z, w);
 }
 
 /**
@@ -3486,7 +3319,7 @@ void TacticsWindow18B620::func_slot5c()
  * @param associated Resource source word forwarded to the base and text displays.
  * @return One after initialization succeeds; otherwise zero.
  */
-s32 TacticsWindow18B620::func_slotf4(u32 associated)
+s32 TacticsHelpWindow::func_slotf4(u32 associated)
 {
     u32 resource_source = associated;
     FieldClass15AE70::func_slot10(resource_source, 16.0f, 16.0f, 19);
@@ -3561,7 +3394,7 @@ s32 TacticsWindow18B620::func_slotf4(u32 associated)
 }
 
 /** @brief Destroy the scrolling window. */
-TacticsWindow18B620::~TacticsWindow18B620()
+TacticsHelpWindow::~TacticsHelpWindow()
 {
 }
 
@@ -3570,7 +3403,7 @@ TacticsWindow18B620::~TacticsWindow18B620()
  * @param associated Resource source word forwarded to the base initializer.
  * @return One after the displays are attached.
  */
-s32 TacticsWindow18B720::func_slotf4(u32 associated)
+s32 TacticsResourceWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 20);
     ItemCreationOptionResourceDisplay* first = new (0) ItemCreationOptionResourceDisplay;
@@ -3593,12 +3426,12 @@ s32 TacticsWindow18B720::func_slotf4(u32 associated)
 }
 
 /** @brief Destroy the resource window. */
-TacticsWindow18B720::~TacticsWindow18B720()
+TacticsResourceWindow::~TacticsResourceWindow()
 {
 }
 
 /** @brief Release the loaded resource, detach the State, and dispatch its release handler. */
-void TacticsResourceMenuState::func_slot5c()
+void TacticsController::func_slot5c()
 {
     if (resource_slot != 0)
     {
@@ -3610,7 +3443,7 @@ void TacticsResourceMenuState::func_slot5c()
 }
 
 /** @brief Submit the State to the resident object queue. */
-void TacticsResourceMenuState::func_001DD7B0()
+void TacticsController::func_001DD7B0()
 {
     resident_enqueue_object(D_001B65F4, this);
 }
@@ -3624,10 +3457,10 @@ void FieldListObject::update()
  * @brief Initialize the State's windows and their resource-mode associations.
  * @return One after setup, or zero when a required window allocation fails.
  */
-s32 TacticsResourceMenuState::func_00263CD0()
+s32 TacticsController::func_00263CD0()
 {
-    TacticsWindow18B720* background = new (0) TacticsWindow18B720;
-    TacticsWindow18B620* scrolling = new (0) TacticsWindow18B620;
+    TacticsResourceWindow* background = new (0) TacticsResourceWindow;
+    TacticsHelpWindow* scrolling = new (0) TacticsHelpWindow;
 
     if (background == 0 || scrolling == 0)
     {
@@ -3646,8 +3479,8 @@ s32 TacticsResourceMenuState::func_00263CD0()
     {
     case 1:
     {
-        TacticsWindow18B520* coordinate = new (0) TacticsWindow18B520;
-        TacticsWindow18B420* child = new (0) TacticsWindow18B420;
+        TacticsChangeWindow* coordinate = new (0) TacticsChangeWindow;
+        TacticsStrategyWindow* child = new (0) TacticsStrategyWindow;
 
         if (coordinate == 0 || child == 0)
         {
@@ -3666,7 +3499,7 @@ s32 TacticsResourceMenuState::func_00263CD0()
     }
     case 2:
     {
-        TacticsWindow18B320* window = new (0) TacticsWindow18B320;
+        TacticsReplaceWindow* window = new (0) TacticsReplaceWindow;
 
         if (window == 0)
         {
@@ -3681,8 +3514,8 @@ s32 TacticsResourceMenuState::func_00263CD0()
     }
     case 4:
     {
-        TacticsWindow18B220* window = new (0) TacticsWindow18B220;
-        TacticsWindow18B120* child = new (0) TacticsWindow18B120;
+        TacticsFormationWindow* window = new (0) TacticsFormationWindow;
+        TacticsLeaderWindow* child = new (0) TacticsLeaderWindow;
 
         if (window == 0 || child == 0)
         {
@@ -3702,33 +3535,13 @@ s32 TacticsResourceMenuState::func_00263CD0()
 
         if (grid != 0)
         {
-            grid->index = child->icon_indices_by_slot[child->selected];
+            grid->index = child->candidate_indices_by_slot[child->selected];
             func_0023CB30(grid);
             func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(child->grid));
             child->grid->unkad = 0;
         }
 
-        s32 selected_entry = child->icon_indices_by_slot[child->selected];
-        s32 index = 0;
-        FieldListNode* node = child->unk44.head->next;
-
-        while (node != 0)
-        {
-            LibObject175140* icon = static_cast<LibObject175140*>(node->value);
-
-            if (index == selected_entry)
-            {
-                icon->set_color(0x288080);
-                func_0023B9B0(child->cursor, selected_entry, func_00467950(icon)->unk08);
-            }
-            else
-            {
-                icon->set_color(0x808080);
-            }
-
-            node = node->next;
-            index++;
-        }
+        highlight_candidate(child, child->candidate_indices_by_slot[child->selected]);
 
         child->func_slot20(0);
         unk20 = window;
@@ -3751,7 +3564,7 @@ void FieldClass15AE70::func_slot48(void* associated)
  * @param buffer Completed resource buffer, or null to report failure.
  * @return Zero for a null buffer; otherwise the window initialization result.
  */
-s32 TacticsResourceMenuState::func_001E1820(void* buffer)
+s32 TacticsController::func_001E1820(void* buffer)
 {
     if (buffer == 0)
     {
@@ -3779,7 +3592,7 @@ s32 TacticsResourceMenuState::func_001E1820(void* buffer)
  * @brief Allocate and initialize the State's record selection.
  * @return One when a selection exists and initialization succeeds; otherwise zero.
  */
-u8 TacticsResourceMenuState::func_00264110()
+u8 TacticsController::func_00264110()
 {
     selection = new (0) FieldRecordSelection;
     u8 result = func_0028E3D0(selection);
@@ -3793,7 +3606,7 @@ u8 TacticsResourceMenuState::func_00264110()
 }
 
 /** @brief Release the owned record selection and destroy the State base. */
-TacticsResourceMenuState::~TacticsResourceMenuState()
+TacticsController::~TacticsController()
 {
     if (selection != 0)
     {
@@ -3802,7 +3615,7 @@ TacticsResourceMenuState::~TacticsResourceMenuState()
 }
 
 /** @brief Clear the resource slot, window initialization flag, and selection pointer. */
-TacticsResourceMenuState::TacticsResourceMenuState()
+TacticsController::TacticsController()
 {
     resource_slot = 0;
     windows_initialized = 0;
@@ -3810,7 +3623,7 @@ TacticsResourceMenuState::TacticsResourceMenuState()
 }
 
 /** @brief Destroy the coordinate list and movement bases. */
-TacticsCoordinateSelector18AFD0::~TacticsCoordinateSelector18AFD0()
+TacticsCoordinateSelector::~TacticsCoordinateSelector()
 {
 }
 
@@ -3820,13 +3633,13 @@ void ItemCreationClass185050::func_slot0c()
 }
 
 /** @brief Report the default list kind. @return Three. */
-s32 TacticsCoordinateSelector18AFD0::get_default_list_kind()
+s32 TacticsCoordinateSelector::get_default_list_kind()
 {
     return 3;
 }
 
 /** @brief Leave the default notification hook unchanged. */
-void TacticsCoordinateSelector18AFD0::func_003EEBE0()
+void TacticsCoordinateSelector::func_003EEBE0()
 {
 }
 
@@ -4078,19 +3891,19 @@ u8 FieldClass15AE70::func_slotb4()
 }
 
 /** @brief Report whether window setup finished. @return Setup flag. */
-u8 TacticsResourceMenuState::func_00261D20()
+u8 TacticsController::func_00261D20()
 {
     return windows_initialized;
 }
 
 /** @brief Return the loaded resource slot. @return Resource slot. */
-u32 TacticsResourceMenuState::func_00263CC0()
+u32 TacticsController::func_00263CC0()
 {
     return resource_slot;
 }
 
 /** @brief Report this object's default list kind. @return Four. */
-s32 TacticsResourceMenuState::get_default_list_kind()
+s32 TacticsController::get_default_list_kind()
 {
     return 4;
 }
