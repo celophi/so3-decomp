@@ -12,13 +12,12 @@ struct LibObject178750;
 #endif
 
 typedef struct FieldCountedList FieldCountedList;
+typedef struct FieldListNode FieldListNode;
 
 /** Opaque resource-label window with its resident table at 0x18B220. */
 typedef struct TacticsWindow18B220 TacticsWindow18B220;
 
-typedef struct TacticsGridOwner TacticsGridOwner;
-typedef struct TacticsPresetOwner TacticsPresetOwner;
-typedef struct TacticsDualSelectionOwner TacticsDualSelectionOwner;
+typedef struct TacticsWindow18B520 TacticsWindow18B520;
 
 typedef struct TacticsPresetPosition
 {
@@ -29,6 +28,7 @@ typedef struct TacticsPresetPosition
         y = 0.0f;
         x = 0.0f;
     }
+
     /** @brief Initialize a coordinate pair. @param px Horizontal value. @param py Vertical value. */
     TacticsPresetPosition(float px, float py)
     {
@@ -36,7 +36,9 @@ typedef struct TacticsPresetPosition
         y = py;
     }
 #endif
+
     float x;
+
     float y;
 } TacticsPresetPosition;
 
@@ -51,7 +53,8 @@ struct TacticsResourceMenuState : public FieldClass153E30
 {
     /** @brief Clear the resource slot, window initialization flag, and selection pointer. */
     TacticsResourceMenuState();
-    /** @brief Destroy the State; its complete virtual tail remains unresolved. */
+
+    /** @brief Release the owned record selection and destroy the State base. */
     virtual ~TacticsResourceMenuState();
 
     /** @brief Report this object's default list kind. @return Four. */
@@ -71,23 +74,31 @@ struct TacticsResourceMenuState : public FieldClass153E30
      * @return One when a selection exists and initialization succeeds; otherwise zero.
      */
     virtual u8 func_00264110();
+
     /**
      * @brief Load the completed aligned resource using the State's heap context.
      * @param buffer Completed resource buffer, or null to report failure.
-     * @return Zero for a null buffer; otherwise the virtual completion result.
+     * @return Zero for a null buffer; otherwise the window initialization result.
      */
     virtual s32 func_001E1820(void* buffer);
 
     /** @brief Release the loaded resource, detach the State, and dispatch its release handler. */
     virtual void func_slot5c();
 
-    /** @brief Initialize the State's windows for its resource mode. @return One on success, otherwise zero. */
+    /**
+     * @brief Initialize the State's windows and their resource-mode associations.
+     * @return One after setup, or zero when a required window allocation fails.
+     */
     virtual s32 func_00263CD0();
 
     s32 resource_slot;
+
     u8 windows_initialized : 1;
+
     u8 unk38_1_7 : 7;
+
     u8 unk39[3];
+
     FieldRecordSelection* selection;
 };
 
@@ -96,9 +107,10 @@ struct TacticsWindow18B720 : public FieldClass15AE70
 {
     /** @brief Destroy the resource window. */
     virtual ~TacticsWindow18B720();
+
     /**
-     * @brief Initialize the window and attach three resource displays.
-     * @param associated Full resource source word.
+     * @brief Initialize the resource window and attach its three displays.
+     * @param associated Resource source word forwarded to the base initializer.
      * @return One after the displays are attached.
      */
     virtual s32 func_slotf4(u32 associated);
@@ -119,30 +131,40 @@ struct TacticsWindow18B620 : public FieldClass15AE70
         clip_x = 0.0f;
         clip_width = 0.0f;
     }
+
     /** @brief Destroy the scrolling window. */
     virtual ~TacticsWindow18B620();
+
     /** @brief Hold the text position, then scroll and wrap it after the timer expires. */
     virtual void func_slot5c();
+
     /**
      * @brief Replace the text for supported keys and reset its scrolling state.
-     * @param text_key Text key in the supported 2714..271B range.
+     * @param text_key Text key in the supported 0x2714..0x271B range.
      */
     virtual void func_slot60(s32 text_key);
 
     /**
      * @brief Initialize the scrolling window and its text displays.
-     * @param associated Associated context forwarded to the base initializer.
+     * @param associated Resource source word forwarded to the base and text displays.
      * @return One after initialization succeeds; otherwise zero.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
 
     LibObject178750* text;
+
     s32 scroll_span;
+
     s16 initial_pause_frames;
+
     u8 scroll_phase;
+
     float label_right_edge;
+
     float initial_text_x;
+
     float clip_x;
+
     float clip_width;
 };
 
@@ -155,28 +177,42 @@ struct TacticsWindow18B020 : public FieldClass15AE70
         grid = 0;
         selected = -1;
     }
+
     /** @brief Destroy the child window's base. */
     virtual ~TacticsWindow18B020();
+
     /** @brief Compare the State's active window with this window; neither outcome has further work. */
     virtual void func_slot5c();
+
     /** @brief Move to the preceding grid entry and update its text highlight. */
     virtual void func_slot68();
+
     /** @brief Move to the following grid entry and update its text highlight. */
     virtual void func_slot6c();
-    /** @brief Apply the grid action for the selected entry. @return Window action status. */
-    virtual u8 func_slotb0();
-    /** @brief Close the child and restore its associated window. @return Two after closing. */
-    virtual u8 func_slotb4();
+
     /**
-     * @brief Initialize the child window's grid and text displays.
-     * @param associated Full resource source word.
-     * @param x Horizontal position.
-     * @param y Vertical position.
+     * @brief Apply the first grid entry or close the child, refreshing pending field state.
+     * @return Two when closing succeeds; otherwise one.
+     */
+    virtual u8 func_slotb0();
+
+    /**
+     * @brief Close the child window and restore the associated window's movement.
+     * @return Two after restoring the associated window and queuing removal.
+     */
+    virtual u8 func_slotb4();
+
+    /**
+     * @brief Create the child window's two-entry grid, panels, and text displays.
+     * @param associated Full resource source word forwarded to the base and displays.
+     * @param x Horizontal window position.
+     * @param y Vertical window position.
      * @param code Base window initializer code.
      * @param text_key Text key for the heading display.
      * @return One after initialization, or zero when a required display or grid is absent.
      */
     virtual s32 func_slotf4(u32 associated, float x, float y, s32 code, s32 text_key);
+
     /**
      * @brief Highlight the text display for the selected grid entry.
      * @param selected Entry to highlight.
@@ -184,7 +220,9 @@ struct TacticsWindow18B020 : public FieldClass15AE70
     virtual void func_slotf8(s16 selected);
 
     struct FieldObject23CEA0* grid;
+
     s16 selected;
+
     u8 unkae[2];
 };
 
@@ -207,19 +245,28 @@ struct TacticsWindow18B120 : public FieldClass15AE70
         icon_indices_by_slot[1] = 0;
         icon_indices_by_slot[2] = 0;
     }
-    /** @brief Destroy the window base. */
+
+    /** @brief Destroy the icon-grid window's base. */
     virtual ~TacticsWindow18B120();
+
     /** @brief Move to the preceding grid entry and update the icon highlight. */
     virtual void func_slot68();
+
     /** @brief Move to the following grid entry and update the icon highlight. */
     virtual void func_slot6c();
+
     /**
      * @brief Save the chosen character ID and update the parent label.
      * @return One after the selected character ID is applied.
      */
     virtual u8 func_slotb0();
-    /** @brief Restore the associated window. @return Window action status. */
+
+    /**
+     * @brief Restore the saved grid entry, refresh its icon, and return to the associated window.
+     * @return Two after restoring the associated window.
+     */
     virtual u8 func_slotb4();
+
     /**
      * @brief Initialize the resource icons, grid, marker, and indicator.
      * @param associated Full resource source word forwarded to the base and title.
@@ -228,61 +275,93 @@ struct TacticsWindow18B120 : public FieldClass15AE70
     virtual s32 func_slotf4(u32 associated);
 
     FieldRecordSelection* record_selection;
+
     struct FieldObject23CEA0* grid;
+
     struct FieldObject23BE00* cursor;
+
     struct ItemCreationClass172600* indicator;
+
     s16 selected;
+
     u8 icon_count;
+
     u8 character_ids[3];
+
     u8 unkbe[2];
+
     float base_x;
+
     float base_y;
+
     s32 icon_indices_by_slot[3];
 };
 
 /** Native 0xDC-byte parent window containing a grid, character IDs, and their label. */
 struct TacticsWindow18B220 : public FieldClass15AE70
 {
-    /** @brief Clear the display pointers and restore the resident grid selection. */
+    /** @brief Clear the displays and restore the resident grid selection. */
     TacticsWindow18B220();
+
     /** @brief Destroy the parent window base. */
     virtual ~TacticsWindow18B220();
+
     /** @brief Restore the grid and resource widget movement flags. */
     virtual void func_slot64();
+
     /** @brief Move to the preceding grid entry and update its title, cursor, and indicators. */
     virtual void func_slot68();
+
     /** @brief Move to the following grid entry and update its title, cursor, and indicators. */
     virtual void func_slot6c();
+
     /**
      * @brief Save the enabled grid selection and fit the indicator to its text.
      * @return Zero when the grid's control byte is clear; otherwise one.
      */
     virtual u8 func_slotb0();
+
     /**
-     * @brief Open the selection child for an enabled grid, or update control-mode flags.
+     * @brief Open the selection child for an enabled grid, or update the control-mode flags.
      * @return Two after the action, or zero for a disabled grid or an absent runtime or child.
      */
     virtual u8 func_slotb4();
-    /** @brief Restore and activate the resource icon child. @return One after activation. */
-    virtual u8 func_slotb8();
+
     /**
-     * @brief Initialize the grid and resource displays.
-     * @param associated Full resource source word forwarded to the base and title.
-     * @return Window initialization status.
+     * @brief Restore the icon child grid and highlight, then activate that child.
+     * @return One after activating the resource icon child.
+     */
+    virtual u8 func_slotb8();
+
+    /**
+     * @brief Create the parent window's grid, resource widgets, and selected-entry label.
+     * @param associated Full resource source word forwarded to the base and text widgets.
+     * @return One after initialization, or zero when the resource selection or a panel is absent.
      */
     virtual s32 func_slotf4(u32 associated);
 
     LibObject178750* title;
+
     struct ItemCreationClass172600* indicator;
+
     class ItemCreationClass174C40* resource_widget;
+
     struct FieldObject23CEA0* grid;
+
     struct FieldObject23BE00* cursor;
+
     FieldRecordSelection* record_selection;
+
     struct ItemCreationOptionResourceDisplay* character_displays[3];
+
     u8 character_ids[3];
+
     u8 selected;
+
     float base_x;
+
     float base_y;
+
     LibObject175140* label;
 };
 
@@ -300,28 +379,37 @@ struct TacticsWindow18B520 : public FieldClass15AE70
         preset_position.x = 0.0f;
         preset_position.y = 0.0f;
     }
+
     /** @brief Destroy the coordinate-selection window. */
     virtual ~TacticsWindow18B520();
-    /** @brief Restore the selection movement or visibility state. */
+
+    /** @brief Restore the selector movement or visibility state. */
     virtual void func_slot64();
-    /** @brief Move to the preceding coordinate, wrapping after the first. */
+
+    /** @brief Move to the preceding coordinate, wrapping before the first. */
     virtual void func_slot68();
+
     /** @brief Move to the following coordinate, wrapping after the eighth. */
     virtual void func_slot6c();
+
     /** @brief Map the last five coordinate entries to the first three. */
     virtual void func_slot70();
+
     /** @brief Map the first three coordinate entries to entries three, five, and six. */
     virtual void func_slot74();
+
     /**
      * @brief Open the grid window for the selected enabled record and remember its current entry.
      * @return One after opening the grid window, or three for a disabled record.
      */
     virtual u8 func_slotb0();
+
     /**
      * @brief Open a child window, or update the window flags for the resident control mode.
      * @return Two after the action, or zero when the runtime or child allocation is absent.
      */
     virtual u8 func_slotb4();
+
     /**
      * @brief Initialize the coordinate selector, row displays, and resource bindings.
      * @param associated Resource source word forwarded to the base and text displays.
@@ -337,12 +425,18 @@ struct TacticsWindow18B520 : public FieldClass15AE70
      */
     u32 get_record_text_key(s16 character_id, s32 record_index);
 
-    void* character_records;
-    void* entry_records;
-    struct FieldObject23B1D0* selection;
+    struct TacticsGridResourceRecord* character_records;
+
+    struct TacticsEntryResourceRecord* entry_records;
+
+    struct TacticsCoordinateSelector18AFD0* selection;
+
     s16 selected;
+
     u8 record_enabled[8];
+
     u8 unkbe[2];
+
     TacticsPresetPosition preset_position;
 };
 
@@ -351,144 +445,210 @@ struct TacticsWindow18B420 : public FieldClass15AE70
 {
     /** @brief Initialize the grid window's pointers and control fields. */
     TacticsWindow18B420();
+
     /** @brief Destroy the grid window. */
     virtual ~TacticsWindow18B420();
-    /** @brief Refresh the associated text when the grid selection changes. */
+
+    /** @brief Refresh the associated text when the active grid selection changes. */
     virtual void func_slot5c();
+
     /** @brief Move to the preceding grid entry and refresh its highlight. */
     virtual void func_slot68();
+
     /** @brief Move to the following grid entry and refresh its highlight. */
     virtual void func_slot6c();
+
     /**
      * @brief Save the selected grid entry, update its parent display, and restore the parent window.
      * @return One after the selected entry is applied.
      */
     virtual u8 func_slotb0();
-    /** @brief Close the grid window. @return Window action status. */
-    virtual u8 func_slotb4();
+
     /**
-     * @brief Initialize the grid and its resource displays.
-     * @param associated Full resource source word.
-     * @return One on success; otherwise zero.
+     * @brief Close the grid window, restore its parent, and reset the associated text.
+     * @return Two after closing.
+     */
+    virtual u8 func_slotb4();
+
+    /**
+     * @brief Create the grid window's text, panels, selector, and indicators.
+     * @param associated Full resource source word forwarded to the base window and text widgets.
+     * @return Zero when required resources or displays are missing; otherwise one.
      */
     virtual s32 func_slotf4(u32 associated);
 
     /**
-     * @brief Set the grid resource record and highlight its initial entry.
-     * @param record_index Signed resident record index.
+     * @brief Configure the grid resource keys and highlight its initial entry.
+     * @param record_index Signed record index in the resident record table.
      * @param initial_entry Initial grid entry.
      * @return Marker position status.
      */
     s32 set_grid_record(s16 record_index, u8 initial_entry);
 
-    void* character_records;
-    void* entry_records;
+    struct TacticsGridResourceRecord* character_records;
+
+    struct TacticsEntryResourceRecord* entry_records;
+
     struct FieldObject23CEA0* grid;
+
     s16 selected;
+
     u8 unkb6[2];
+
     LibObject178750* text[6];
+
     u8 unkd0[4];
+
     struct ItemCreationClass172600* selection_indicator;
+
     struct FieldObject23BE00* cursor;
+
     s32 keys[6];
+
     s16 character_id;
+
     u8 selected_entry;
 };
 
 /** Linked list with an empty head node, owned value nodes, and a count. */
-struct TacticsCharacterNameWidgetList
+struct TacticsCharacterNameWidgetList : public FieldCountedList
 {
-    struct TacticsListNode* head;
-    u32 count;
     /** @brief Create the head node and start with an empty list. */
     TacticsCharacterNameWidgetList();
-    /** @brief Release the value nodes and the head node. */
+
+    /** @brief Delete the value nodes and the head node. */
     virtual ~TacticsCharacterNameWidgetList();
 };
+
 /** Linked list with an empty head node, owned value nodes, and a count. */
-struct TacticsStatValueWidgetList
+struct TacticsStatValueWidgetList : public FieldCountedList
 {
-    struct TacticsListNode* head;
-    u32 count;
     /** @brief Create the head node and start with an empty list. */
     TacticsStatValueWidgetList();
-    /** @brief Release the value nodes and the head node. */
+
+    /** @brief Release the stat-value nodes and the head node. */
     virtual ~TacticsStatValueWidgetList();
 };
+
 /** Linked list with an empty head node, owned value nodes, and a count. */
-struct TacticsTextWidgetList
+struct TacticsTextWidgetList : public FieldCountedList
 {
-    struct TacticsListNode* head;
-    u32 count;
     /** @brief Create the head node and start with an empty list. */
     TacticsTextWidgetList();
-    /** @brief Release the value nodes and the head node. */
+
+    /** @brief Release the text-widget nodes and the head node. */
     virtual ~TacticsTextWidgetList();
 };
+
 /** Linked list with an empty head node, owned value nodes, and a count. */
 struct TacticsCoordinatePositionList
 {
     struct TacticsCoordinateNode* head;
+
     u32 count;
+
     /** @brief Create the head node and start with an empty list. */
     TacticsCoordinatePositionList();
-    /** @brief Release the value nodes and the head node. */
+
+    /** @brief Release the coordinate nodes and the head node. */
     virtual ~TacticsCoordinatePositionList();
 };
+
 /** Native 0x17C-byte tactics window owning two binary buffers and eleven lists. */
 struct TacticsWindow18B320 : public FieldClass15AE70
 {
     /** @brief Construct the owned lists and clear the window control fields. */
     TacticsWindow18B320();
+
     /** @brief Release both binary buffers, then destroy the lists and base window. */
     virtual ~TacticsWindow18B320();
+
     /** @brief Refresh the eight resource rows after a record change while this window is active. */
     virtual void func_slot5c();
-    /** @brief Move the chosen selector to its preceding entry. */
+
+    /**
+     * @brief Move the chosen selector back one entry, wrapping to its eighth entry.
+     */
     virtual void func_slot68();
-    /** @brief Move the chosen selector to its following entry. */
+
+    /**
+     * @brief Advance the chosen selector one entry, wrapping after its eighth entry.
+     */
     virtual void func_slot6c();
-    /** @brief Map the chosen selector's last five entries to its first three. */
+
+    /**
+     * @brief Map the chosen selector's last five entries back to its first three.
+     */
     virtual void func_slot70();
+
     /** @brief Map the chosen selector's first three entries to entries three, five, and six. */
     virtual void func_slot74();
-    /** @brief Apply the chosen selector's entry. @return Selection action status. */
+
+    /**
+     * @brief Confirm a swap between the two selected character slots, or start choosing the second slot.
+     * @return One when the selection continues, three when the swap is refused or rolled back.
+     */
     virtual u8 func_slotb0();
+
     /**
      * @brief Return to the first selector, update control-mode flags, or open its child window.
      * @return Two after the action, or zero when the runtime or child allocation is absent.
      */
     virtual u8 func_slotb4();
+
     /**
      * @brief Initialize the paired selectors and their eight resource rows.
-     * @param associated Resource source forwarded to the base and text displays.
+     * @param associated Resource source word forwarded to the base and text displays.
      * @return One on success, otherwise zero when records or required displays are absent.
      */
-    virtual s32 func_slotf4(void* associated);
+    virtual s32 func_slotf4(u32 associated);
 
-    void* character_records;
-    void* entry_records;
-    u8* character_record_buffer;
-    u8* entry_record_buffer;
-    struct FieldObject23B1D0* first_selector;
-    struct FieldObject23B1D0* second_selector;
+    struct TacticsGridResourceRecord* character_records;
+
+    struct TacticsEntryResourceRecord* entry_records;
+
+    struct TacticsGridResourceRecord* character_record_buffer;
+
+    struct TacticsEntryResourceRecord* entry_record_buffer;
+
+    struct TacticsCoordinateSelector18AFD0* first_selector;
+
+    struct TacticsCoordinateSelector18AFD0* second_selector;
+
     u8 use_second;
+
     u8 refresh_pending;
+
     s16 source_record_index;
+
     s16 destination_record_index;
+
     u8 unkc6[2];
+
     TacticsTextWidgetList level_label_list;
+
     TacticsStatValueWidgetList level_value_list;
+
     TacticsTextWidgetList hp_label_list;
+
     TacticsTextWidgetList mp_label_list;
+
     TacticsStatValueWidgetList hp_value_list;
+
     TacticsTextWidgetList hp_separator_text_list;
+
     TacticsStatValueWidgetList max_hp_value_list;
+
     TacticsStatValueWidgetList mp_value_list;
+
     TacticsTextWidgetList mp_separator_text_list;
+
     TacticsStatValueWidgetList max_mp_value_list;
+
     TacticsCharacterNameWidgetList unk140;
+
     s16 row_character_ids[8];
+
     struct ItemCreationOptionResourceDisplay* resource_displays[8];
 };
 #endif
@@ -584,33 +744,18 @@ void clear_coordinate_widget_list(TacticsCoordinatePositionList* list);
 void refresh_grid_list_selection(TacticsWindow18B420* object);
 
 /**
- * @brief Place the present indicators using the selected grid row's coordinate pairs.
- * @param object Tactics receiver holding the grid, indicators, and base coordinates.
+ * @brief Place the present character displays using the selected grid row's coordinate pairs.
+ * @param object Parent window holding the grid, character displays, and base coordinates.
  */
-void position_grid_indicators(TacticsGridOwner* object);
+void position_grid_indicators(TacticsWindow18B220* object);
 
 /**
  * @brief Select a preset display position, clearing it for an invalid index.
- * @param object Receiver holding the position pair.
+ * @param object Coordinate window holding the position pair.
  * @param index Zero-based preset index.
  * @return The receiver's updated position pair.
  */
-TacticsPresetPosition* set_preset_position_from_index(TacticsPresetOwner* object, s32 index);
-
-typedef struct TacticsListNode
-{
-    void* value;
-    struct TacticsListNode* next;
-#ifdef __cplusplus
-    /** @brief Finish the node lifetime; the stored value is not owned. */
-    ~TacticsListNode() {}
-#endif
-} TacticsListNode;
-
-typedef struct TacticsList
-{
-    TacticsListNode* head;
-} TacticsList;
+TacticsPresetPosition* set_preset_position_from_index(TacticsWindow18B520* object, s32 index);
 
 /**
  * @brief Return the node at `index`. Index zero is the first node after the head node.
@@ -618,7 +763,7 @@ typedef struct TacticsList
  * @param index Zero-based index among the value nodes.
  * @return The node at that index, or null if the list ends first.
  */
-TacticsListNode* get_widget_node_at_index(TacticsList* list, s32 index);
+FieldListNode* get_widget_node_at_index(FieldCountedList* list, s32 index);
 
 /**
  * @brief Return the node at `index`. Index zero is the first node after the head node.
@@ -626,7 +771,7 @@ TacticsListNode* get_widget_node_at_index(TacticsList* list, s32 index);
  * @param index Zero-based index among the value nodes.
  * @return The node at that index, or null if the list ends first.
  */
-TacticsListNode* get_stat_value_node(TacticsList* list, s32 index);
+FieldListNode* get_stat_value_node(FieldCountedList* list, s32 index);
 
 /**
  * @brief Return the node at `index`. Index zero is the first node after the head node.
@@ -634,7 +779,7 @@ TacticsListNode* get_stat_value_node(TacticsList* list, s32 index);
  * @param index Zero-based index among the value nodes.
  * @return The node at that index, or null if the list ends first.
  */
-TacticsListNode* get_text_widget_node(TacticsList* list, s32 index);
+FieldListNode* get_text_widget_node(FieldCountedList* list, s32 index);
 
 /**
  * @brief Update the parent window's indicators, grid title, highlight, and selection indicator.
