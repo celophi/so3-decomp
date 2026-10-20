@@ -139,7 +139,7 @@ void FieldResourceRequestHandler::update()
  * @param buffer Completed buffer; unused.
  * @return Always zero.
  */
-s32 FieldClass153E30::func_001E1820(void* buffer)
+s32 FieldClass153E30::on_resource_loaded(void* buffer)
 {
     return 0;
 }
@@ -1084,7 +1084,7 @@ static inline void notify_request_buffer(FieldResourceRequestHandler* object, u8
     if (buffer)
     {
         FieldClass153E30* receiver = object->receiver;
-        receiver->func_001E1820(buffer);
+        receiver->on_resource_loaded(buffer);
         object->notification_pending = 0;
     }
 }

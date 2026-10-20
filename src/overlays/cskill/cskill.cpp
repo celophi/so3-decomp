@@ -275,9 +275,9 @@ struct SkillController : public LibClass171FF0, public FieldClass153E30
     /** @brief Delete the owned record selection and destroy the Field receiver base. */
     virtual ~SkillController();
     /** @brief Report whether window setup finished. @return Setup flag. */
-    virtual u8 func_00261D20();
+    virtual u8 windows_ready();
     /** @brief Get the loaded resource handle. @return Resource handle. */
-    virtual u32 func_00263CC0();
+    virtual u32 get_resource_slot();
     /**
      * @brief Report this object's default list kind.
      * @return The class's default list kind.
@@ -288,9 +288,9 @@ struct SkillController : public LibClass171FF0, public FieldClass153E30
     /** @brief Allocate and initialize the character record selection. @return One on success, or zero on failure. */
     virtual u8 func_00264110();
     /** @brief Load a completed menu resource and create the windows. @param buffer Completed resource buffer. @return Setup result, or zero without a buffer. */
-    virtual s32 func_001E1820(void* buffer);
+    virtual s32 on_resource_loaded(void* buffer);
     /** @brief Create the skill or symbology windows and attach their navigation links. @return One. */
-    virtual s32 func_00263CD0();
+    virtual s32 init_windows();
     /** @brief Release the status attachment and menu resource, then queue the controller for removal. */
     virtual void func_slot5c();
     /** @brief Get the character record selection. @return Owned record selection. */
@@ -5277,7 +5277,7 @@ void SkillController::func_001DD7B0()
 }
 
 /** @brief Create the skill or symbology windows and attach their navigation links. @return One. */
-s32 SkillController::func_00263CD0()
+s32 SkillController::init_windows()
 {
     SkillResourceWindow* resource = new (0) SkillResourceWindow;
     SkillHelpWindow* message = new (0) SkillHelpWindow;
@@ -5404,7 +5404,7 @@ s32 SkillController::func_00263CD0()
 }
 
 /** @brief Load a completed menu resource and create its windows. @param buffer Completed resource buffer. @return Setup result, or zero without a buffer. */
-s32 SkillController::func_001E1820(void* buffer)
+s32 SkillController::on_resource_loaded(void* buffer)
 {
     if (buffer == 0)
     {
@@ -5422,7 +5422,7 @@ s32 SkillController::func_001E1820(void* buffer)
     }
     resource_slot = lib_load_resource_slot(D_001B657C, aligned);
     resident_exchange_allocation_heap(saved_heap);
-    return func_00263CD0();
+    return init_windows();
 }
 
 /** @brief Allocate and initialize the character record selection. @return One on success, or zero on failure. */
@@ -5707,13 +5707,13 @@ s32 SkillController::get_default_list_kind()
 }
 
 /** @brief Report whether window setup finished. @return Setup flag. */
-u8 SkillController::func_00261D20()
+u8 SkillController::windows_ready()
 {
     return windows_initialized;
 }
 
 /** @brief Return the loaded resource slot. @return Resource slot. */
-u32 SkillController::func_00263CC0()
+u32 SkillController::get_resource_slot()
 {
     return resource_slot;
 }

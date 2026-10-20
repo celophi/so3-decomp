@@ -27,6 +27,11 @@ func_slotb4__24TacticsExitConfirmWindowFv = 0x00348590; // type:func
 func_slotf4__24TacticsExitConfirmWindowFUiffii = 0x00348720; // type:func
 func_slotf8__24TacticsExitConfirmWindowFs = 0x00348410; // type:func
 
+g_tactics_strategy_title_colors = 0x00352000; // size:0x10
+g_tactics_leader_title_colors = 0x00352010; // size:0x10 absolute:True
+g_tactics_exit_confirm_title_colors = 0x00352020; // size:0x10 absolute:True
+g_tactics_dummy_text = 0x00352080; // size:0x6 absolute:True
+
 D_001B6690 = 0x001B6690; // size:0x4
 func_2CE530 = 0x002CE530; // type:func allow_duplicated:True
 func_2CFE10 = 0x002CFE10; // type:func
@@ -86,7 +91,7 @@ __vt__33ItemCreationOptionResourceDisplay = 0x0015B240; // size:0x24 absolute:Tr
 lib_draw_state_init = 0x00453FF0; // type:func absolute:True
 __dt__23ItemCreationClass175110Fv = 0x0034AE50; // type:func
 
-func_001E1820__17TacticsControllerFPv = 0x00350D20; // type:func
+on_resource_loaded__17TacticsControllerFPv = 0x00350D20; // type:func
 func_00264110__17TacticsControllerFv = 0x00350DE0; // type:func
 
 func_slot5c__17TacticsControllerFv = 0x00350740; // type:func
@@ -244,7 +249,7 @@ update__15FieldListObjectFv = 0x003507B0; // type:func
 
 __vt__17TacticsController = 0x0018B820; // size:0x8C absolute:True
 __dt__17TacticsControllerFv = 0x00350E60; // type:func
-func_00263CD0__17TacticsControllerFv = 0x003507C0; // type:func
+init_windows__17TacticsControllerFv = 0x003507C0; // type:func
 __ct__17TacticsControllerFv = 0x00350F00; // type:func
 
 
@@ -318,8 +323,8 @@ init_numeric_resource_rectangle__15LibObject174F20FffffUiiUc = 0x00464D90; // ty
 set_leader = 0x0034A120; // type:func
 refresh_formation_display = 0x0034A200; // type:func
 set_strategy_text_position = 0x0034F190; // type:func
-func_00261D20__17TacticsControllerFv = 0x00351320; // type:func
-func_00263CC0__17TacticsControllerFv = 0x00351330; // type:func
+windows_ready__17TacticsControllerFv = 0x00351320; // type:func
+get_resource_slot__17TacticsControllerFv = 0x00351330; // type:func
 get_default_list_kind__17TacticsControllerFv = 0x00351340; // type:func
 func_00263C80__16FieldClass153E30FPv = 0x00351350; // type:func
 func_00263CA0__16FieldClass153E30FSc = 0x00351360; // type:func

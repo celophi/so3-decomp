@@ -3471,7 +3471,7 @@ s32 func_00352330(ConfigControlReceiver* object, void* buffer)
     }
     object->resource = lib_load_resource_slot(D_001B657C, aligned);
     resident_exchange_allocation_heap(saved_heap);
-    return object->func_00263CD0();
+    return object->init_windows();
 }
 
 s32 func_003523F0(void* object)

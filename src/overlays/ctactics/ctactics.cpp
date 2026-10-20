@@ -560,14 +560,14 @@ typedef struct TacticsGridSelectionRef
 
 extern "C" TacticsGridSelectionRef* D_001B643C;
 
-extern "C" LibWidgetColors4C5590 D_00352000;
+extern "C" LibWidgetColors4C5590 g_tactics_strategy_title_colors;
 
-extern "C" const char D_00352080[];
+extern "C" LibWidgetColors4C5590 g_tactics_leader_title_colors;
 
-extern "C" LibWidgetColors4C5590 D_00352010;
+extern "C" LibWidgetColors4C5590 g_tactics_exit_confirm_title_colors;
 
-/** Four packed colors copied into the child title panel. */
-extern "C" LibWidgetColors4C5590 D_00352020;
+/** "DUMMY", the initial text of the character name labels. */
+extern "C" const char g_tactics_dummy_text[];
 
 static inline bool tactics_selection_inactive(TacticsCoordinateSelector* selection);
 
@@ -962,7 +962,7 @@ s32 TacticsExitConfirmWindow::func_slotf4(u32 associated, float x, float y,
     s32 code, s32 text_key)
 {
     FieldClass15AE70::func_slot10(associated, x, y, code);
-    LibWidgetColors4C5590 colors = D_00352020;
+    LibWidgetColors4C5590 colors = g_tactics_exit_confirm_title_colors;
     LibClass178630* title_panel = new (0) LibClass178630;
     LibClass178630* panel = new (0) LibClass178630;
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 290.0f, 208.0f, 88.0f);
@@ -1110,7 +1110,7 @@ s32 TacticsLeaderWindow::func_slotf4(u32 associated)
     }
 
     lib_panel_init_rectangle(title_panel, 1, 0.0f, 0.0f, 232.0f, 40.0f, 88.0f);
-    LibWidgetColors4C5590 colors = D_00352010;
+    LibWidgetColors4C5590 colors = g_tactics_leader_title_colors;
     lib_panel_set_colors(title_panel, &colors);
     lib_container_attach_widget(unk10, title_panel);
     append_panel_widget_node(&unk14, title_panel);
@@ -2299,7 +2299,7 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
             empty_marker->set_scale(0.8f, 0.8f);
         }
 
-        character_name_label->func_00467AD0(label_x, label_y, 0.0f, 0.0f, D_00352080, 0);
+        character_name_label->func_00467AD0(label_x, label_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
         character_name_label->set_scale(0.8f, 0.8f);
         set_widget_rectangle(empty_marker, column_x, empty_y, width, 24.0f);
         empty_marker->set_mode(1);
@@ -2790,7 +2790,7 @@ s32 TacticsStrategyWindow::func_slotf4(u32 associated)
         return 0;
     }
 
-    LibWidgetColors4C5590 colors = D_00352000;
+    LibWidgetColors4C5590 colors = g_tactics_strategy_title_colors;
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 364.0f, 256.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     append_panel_widget_node(&unk14, panel);
@@ -3209,14 +3209,14 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
         if (index < 3)
         {
             row_y = height * index;
-            label->func_00467AD0(108.0f, 24.0f + row_y, 0.0f, 0.0f, D_00352080, 0);
+            label->func_00467AD0(108.0f, 24.0f + row_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
             set_widget_rectangle(empty, 0.0f, (height / 2.0f + row_y) - 19.2f, width, 24.0f);
             column_x = 0.0f;
         }
         else
         {
             row_y = height * (index - 3);
-            label->func_00467AD0(412.0f, 14.0f + row_y, 0.0f, 0.0f, D_00352080, 0);
+            label->func_00467AD0(412.0f, 14.0f + row_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
             set_widget_rectangle(empty, 304.0f, 8.0f + ((height / 2.0f + row_y) - 19.2f * 0.8f), 304.0f, 24.0f);
             column_x = 304.0f;
             empty->set_scale(0.8f, 0.8f);
@@ -3501,7 +3501,7 @@ void FieldListObject::update()
  * @brief Initialize the State's windows and their resource-mode associations.
  * @return One after setup, or zero when a required window allocation fails.
  */
-s32 TacticsController::func_00263CD0()
+s32 TacticsController::init_windows()
 {
     TacticsResourceWindow* background = new (0) TacticsResourceWindow;
     TacticsHelpWindow* scrolling = new (0) TacticsHelpWindow;
@@ -3608,7 +3608,7 @@ void FieldClass15AE70::func_slot48(void* associated)
  * @param buffer Completed resource buffer, or null to report failure.
  * @return Zero for a null buffer; otherwise the window initialization result.
  */
-s32 TacticsController::func_001E1820(void* buffer)
+s32 TacticsController::on_resource_loaded(void* buffer)
 {
     if (buffer == 0)
     {
@@ -3629,7 +3629,7 @@ s32 TacticsController::func_001E1820(void* buffer)
 
     resource_slot = lib_load_resource_slot(D_001B657C, aligned);
     resident_exchange_allocation_heap(saved_heap);
-    return func_00263CD0();
+    return init_windows();
 }
 
 /**
@@ -3935,13 +3935,13 @@ u8 FieldClass15AE70::func_slotb4()
 }
 
 /** @brief Report whether window setup finished. @return Setup flag. */
-u8 TacticsController::func_00261D20()
+u8 TacticsController::windows_ready()
 {
     return windows_initialized;
 }
 
 /** @brief Return the loaded resource slot. @return Resource slot. */
-u32 TacticsController::func_00263CC0()
+u32 TacticsController::get_resource_slot()
 {
     return resource_slot;
 }

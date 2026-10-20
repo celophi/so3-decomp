@@ -264,27 +264,27 @@ public:
      */
     virtual s8 func_00263CB0();
     /**
-     * @brief Return the default resource source word.
-     * @return Zero.
+     * @brief Return the loaded resource slot.
+     * @return Zero in the base implementation.
      */
-    virtual u32 func_00263CC0();
+    virtual u32 get_resource_slot();
     /**
      * @brief Update the callback receiver.
      */
     virtual void func_00263E90();
     /**
-     * @brief Report the receiver flag.
-     * @return Receiver flag.
-     */
-    virtual u8 func_00261D20();
-    /**
-     * @brief Handle a completed request buffer.
-     * @param buffer Completed buffer.
+     * @brief Report whether window setup finished.
      * @return Zero in the base implementation.
      */
-    virtual s32 func_001E1820(void* buffer);
-    /** @brief Complete receiver setup. @return Zero in the base implementation. */
-    virtual s32 func_00263CD0();
+    virtual u8 windows_ready();
+    /**
+     * @brief Load the completed resource buffer and create the windows.
+     * @param buffer Completed resource buffer.
+     * @return Zero in the base implementation.
+     */
+    virtual s32 on_resource_loaded(void* buffer);
+    /** @brief Create the menu windows. @return Zero in the base implementation. */
+    virtual s32 init_windows();
     /**
      * @brief Forward the flag to each child with all seven list bits selected.
      * @param flag Flag forwarded without narrowing.

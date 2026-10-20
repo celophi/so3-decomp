@@ -65,9 +65,9 @@ typedef struct ItemCreationSelectedDisplayState
     /** @brief Read the signed state byte. @return Stored state byte. */
     virtual s8 func_00263CB0();
     /** @brief Read the selected-display state flag. @return Stored state flag. */
-    virtual u8 func_00261D20();
+    virtual u8 windows_ready();
     /** @brief Read the resource source word. @return Stored word. */
-    virtual u32 func_00263CC0();
+    virtual u32 get_resource_slot();
     /**
      * @brief Set a slot, consume an available category record, and reset its status bytes.
      * @param index Slot index from zero through two.
@@ -79,9 +79,9 @@ typedef struct ItemCreationSelectedDisplayState
      * @param buffer Completed buffer, or null.
      * @return Zero without a buffer, otherwise the setup result.
      */
-    virtual s32 func_001E1820(void* buffer);
+    virtual s32 on_resource_loaded(void* buffer);
     /** @brief Allocate and attach the selected-display windows. @return One. */
-    virtual s32 func_00263CD0();
+    virtual s32 init_windows();
 #else
     u8 unk00[0x34];
 #endif

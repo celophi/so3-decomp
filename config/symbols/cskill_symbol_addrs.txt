@@ -1083,14 +1083,14 @@ func_001DD7B0__15SkillControllerFv = 0x0035B4B0; // type:func allow_duplicated:T
 
 func_00264110__15SkillControllerFv = 0x0035BE50; // type:func allow_duplicated:True
 
-func_00263CC0__15SkillControllerFv = 0x0035C430; // type:func allow_duplicated:True
+get_resource_slot__15SkillControllerFv = 0x0035C430; // type:func allow_duplicated:True
 
-func_00261D20__15SkillControllerFv = 0x0035C420; // type:func allow_duplicated:True
+windows_ready__15SkillControllerFv = 0x0035C420; // type:func allow_duplicated:True
 
 func_0035BD90 = 0x0035BD90; // type:func absolute:True allow_duplicated:True
-func_001E1820__15SkillControllerFPv = 0x0035BD90; // type:func allow_duplicated:True
+on_resource_loaded__15SkillControllerFPv = 0x0035BD90; // type:func allow_duplicated:True
 
-func_00263CD0__15SkillControllerFv = 0x0035B4E0; // type:func allow_duplicated:True
+init_windows__15SkillControllerFv = 0x0035B4E0; // type:func allow_duplicated:True
 
 func_0035B440 = 0x0035B440; // type:func absolute:True allow_duplicated:True
 func_slot5c__15SkillControllerFv = 0x0035B440; // type:func allow_duplicated:True
@@ -1151,10 +1151,10 @@ func_slot88__16FieldClass153E30Fv = 0x00263E80; // type:func absolute:True allow
 @4@get_default_list_kind__15SkillControllerFv = 0x0035CC40; // type:func allow_duplicated:True
 @4@selected_records__15SkillControllerFv = 0x0035CC50; // type:func allow_duplicated:True
 @4@func_slot5c__15SkillControllerFv = 0x0035CC60; // type:func allow_duplicated:True
-@4@func_00263CD0__15SkillControllerFv = 0x0035CC70; // type:func allow_duplicated:True
-@4@func_001E1820__15SkillControllerFPv = 0x0035CC80; // type:func allow_duplicated:True
-@4@func_00261D20__15SkillControllerFv = 0x0035CC90; // type:func allow_duplicated:True
-@4@func_00263CC0__15SkillControllerFv = 0x0035CCA0; // type:func allow_duplicated:True
+@4@init_windows__15SkillControllerFv = 0x0035CC70; // type:func allow_duplicated:True
+@4@on_resource_loaded__15SkillControllerFPv = 0x0035CC80; // type:func allow_duplicated:True
+@4@windows_ready__15SkillControllerFv = 0x0035CC90; // type:func allow_duplicated:True
+@4@get_resource_slot__15SkillControllerFv = 0x0035CCA0; // type:func allow_duplicated:True
 @4@func_00264110__15SkillControllerFv = 0x0035CCB0; // type:func allow_duplicated:True
 @4@func_001DD7B0__15SkillControllerFv = 0x0035CCC0; // type:func allow_duplicated:True
 @4@__dt__15SkillControllerFv = 0x0035CCD0; // type:func allow_duplicated:True

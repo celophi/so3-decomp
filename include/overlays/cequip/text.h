@@ -262,9 +262,9 @@ struct EquipListState : public FieldClass153E30
     /** @brief Destroy the equipment State. */
     virtual ~EquipListState();
     /** @brief Create and connect the equipment State displays. @return One after display setup. */
-    virtual s32 func_00263CD0();
+    virtual s32 init_windows();
     /** @brief Load an aligned resource and create the State displays. @param buffer Resource buffer. @return Display creation result, or zero for a null buffer. */
-    virtual s32 func_001E1820(void* buffer);
+    virtual s32 on_resource_loaded(void* buffer);
     /** @brief Forward a display flag to the owned windows. @param flag Display flag. */
     virtual void func_00263E20(u32 flag);
     /** @brief Release the State resources and queue its receiver. */
