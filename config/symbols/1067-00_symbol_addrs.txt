@@ -2089,50 +2089,21 @@ insert_node_after__14LibClass178DD0FPvPvi = 0x004D73B0; // type:func absolute:Tr
 
 lib_list_collect_nodes_by_kind = 0x004D6AF0; // type:func absolute:True allow_duplicated:True
 
-field_position_secondary_row = 0x002AD9E0; // type:func size:0x404 allow_duplicated:True
-func_002AD9E0 = 0x002AD9E0; // type:func allow_duplicated:True
-
-field_position_secondary_row_157e30 = 0x0029EA20; // type:func size:0x404 allow_duplicated:True
-func_0029EA20 = 0x0029EA20; // type:func allow_duplicated:True
-
-field_position_secondary_row_158170 = 0x002A1C90; // type:func size:0x404 allow_duplicated:True
-func_002A1C90 = 0x002A1C90; // type:func allow_duplicated:True
-
-field_position_secondary_row_158720 = 0x002A4F00; // type:func size:0x404 allow_duplicated:True
-func_002A4F00 = 0x002A4F00; // type:func allow_duplicated:True
-
-field_set_primary_emitter = 0x00298AA0; // type:func size:0x8 allow_duplicated:True
-func_00298AA0 = 0x00298AA0; // type:func allow_duplicated:True
-
-field_primary_emitter = 0x00298AB0; // type:func size:0x8 allow_duplicated:True
-func_00298AB0 = 0x00298AB0; // type:func allow_duplicated:True
-
-field_set_primary_emission_count = 0x00298AC0; // type:func size:0x8 allow_duplicated:True
-func_00298AC0 = 0x00298AC0; // type:func allow_duplicated:True
-
-field_set_primary_emission_flags = 0x00298AD0; // type:func size:0x8 allow_duplicated:True
-func_00298AD0 = 0x00298AD0; // type:func allow_duplicated:True
-
-field_set_secondary_emitter = 0x00298AE0; // type:func size:0x8 allow_duplicated:True
-func_00298AE0 = 0x00298AE0; // type:func allow_duplicated:True
-
-field_secondary_emitter = 0x00298AF0; // type:func size:0x8 allow_duplicated:True
-func_00298AF0 = 0x00298AF0; // type:func allow_duplicated:True
-
-field_set_secondary_emission_count = 0x00298B00; // type:func size:0x8 allow_duplicated:True
-func_00298B00 = 0x00298B00; // type:func allow_duplicated:True
-
-field_set_secondary_emission_flags = 0x00298B20; // type:func size:0x8 allow_duplicated:True
-func_00298B20 = 0x00298B20; // type:func allow_duplicated:True
-
-field_set_secondary_emission_scale = 0x00298B30; // type:func size:0x8 allow_duplicated:True
-func_00298B30 = 0x00298B30; // type:func allow_duplicated:True
-
-func_002ADEF0 = 0x002ADEF0; // type:func absolute:True allow_duplicated:True
-field_emit_primary_entries = 0x002ADEF0; // type:func size:0x180 allow_duplicated:True
-
-func_002AE070 = 0x002AE070; // type:func absolute:True allow_duplicated:True
-field_emit_secondary_entries = 0x002AE070; // type:func size:0x1CC allow_duplicated:True
+position_secondary_row__16FieldClass158860FP16FieldClass1589F8P16FieldClass154E60iPC12FieldVector4PC12FieldVector4PC12FieldVector4PC12FieldVector4PC12FieldVector4 = 0x002AD9E0; // type:func size:0x404
+position_secondary_row__16FieldClass157E30FP16FieldClass158A38P16FieldClass154E60iPC12FieldVector4PC12FieldVector4PC12FieldVector4PC12FieldVector4PC12FieldVector4 = 0x0029EA20; // type:func size:0x404
+position_secondary_row__16FieldClass158170FP16FieldClass158A58P16FieldClass154E60iPC12FieldVector4PC12FieldVector4PC12FieldVector4PC12FieldVector4PC12FieldVector4 = 0x002A1C90; // type:func size:0x404
+position_secondary_row__16FieldClass158720FP16FieldClass158A78P16FieldClass154E60iPC12FieldVector4PC12FieldVector4PC12FieldVector4PC12FieldVector4PC12FieldVector4 = 0x002A4F00; // type:func size:0x404
+set_primary_emitter__16FieldClass158860FP14LibClass173990 = 0x00298AA0; // type:func size:0x8
+get_primary_emitter__16FieldClass158860CFv = 0x00298AB0; // type:func size:0x8
+set_primary_emission_count__16FieldClass158860FUc = 0x00298AC0; // type:func size:0x8
+set_primary_emission_flags__16FieldClass158860FUc = 0x00298AD0; // type:func size:0x8
+set_secondary_emitter__16FieldClass158860FP14LibClass173990 = 0x00298AE0; // type:func size:0x8
+get_secondary_emitter__16FieldClass158860CFv = 0x00298AF0; // type:func size:0x8
+set_secondary_emission_count__16FieldClass158860FUc = 0x00298B00; // type:func size:0x8
+set_secondary_emission_flags__16FieldClass158860FUc = 0x00298B20; // type:func size:0x8
+set_secondary_emission_scale__16FieldClass158860Ff = 0x00298B30; // type:func size:0x8
+emit_primary_entries__16FieldClass158860FPC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4 = 0x002ADEF0; // type:func size:0x180
+emit_secondary_entries__16FieldClass158860FPC10LibVector4P10LibVector4PC10LibVector4PC10LibVector4 = 0x002AE070; // type:func size:0x1CC
 
 emit_entries__14LibClass173990FiPC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4 = 0x00435840; // type:func absolute:True allow_duplicated:True
 func_00435840 = 0x00435840; // type:func absolute:True allow_duplicated:True
@@ -2168,39 +2139,39 @@ field_bind_grid_frame_resource = 0x00298B40; // type:func size:0x38
 field_clear_grid_frame_resource = 0x00298B80; // type:func size:0x28
 
 // Linked emission for the additional grid families.
-field_emit_primary_entries_157af0 = 0x002AE9E0; // type:func size:0x180
-field_emit_secondary_entries_157af0 = 0x002AEB60; // type:func size:0x1CC
-field_emit_primary_entries_157e30 = 0x002AED30; // type:func size:0x180
-field_emit_secondary_entries_157e30 = 0x002AEEB0; // type:func size:0x1CC
-field_emit_primary_entries_158170 = 0x002AF080; // type:func size:0x180
-field_emit_secondary_entries_158170 = 0x002AF200; // type:func size:0x1CC
-field_set_primary_emitter_157af0 = 0x0029BCD0; // type:func size:0x8
-field_primary_emitter_157af0 = 0x0029BCE0; // type:func size:0x8
-field_set_primary_emission_count_157af0 = 0x0029BCF0; // type:func size:0x8
-field_set_primary_emission_flags_157af0 = 0x0029BD00; // type:func size:0x8
-field_set_secondary_emitter_157af0 = 0x0029BD10; // type:func size:0x8
-field_secondary_emitter_157af0 = 0x0029BD20; // type:func size:0x8
-field_set_secondary_emission_count_157af0 = 0x0029BD30; // type:func size:0x8
-field_set_secondary_emission_flags_157af0 = 0x0029BD50; // type:func size:0x8
-field_set_secondary_emission_scale_157af0 = 0x0029BD60; // type:func size:0x8
-field_set_primary_emitter_157e30 = 0x0029EFE0; // type:func size:0x8
-field_primary_emitter_157e30 = 0x0029EFF0; // type:func size:0x8
-field_set_primary_emission_count_157e30 = 0x0029F000; // type:func size:0x8
-field_set_primary_emission_flags_157e30 = 0x0029F010; // type:func size:0x8
-field_set_secondary_emitter_157e30 = 0x0029F020; // type:func size:0x8
-field_secondary_emitter_157e30 = 0x0029F030; // type:func size:0x8
-field_set_secondary_emission_count_157e30 = 0x0029F040; // type:func size:0x8
-field_set_secondary_emission_flags_157e30 = 0x0029F060; // type:func size:0x8
-field_set_secondary_emission_scale_157e30 = 0x0029F070; // type:func size:0x8
-field_set_primary_emitter_158170 = 0x002A2250; // type:func size:0x8
-field_primary_emitter_158170 = 0x002A2260; // type:func size:0x8
-field_set_primary_emission_count_158170 = 0x002A2270; // type:func size:0x8
-field_set_primary_emission_flags_158170 = 0x002A2280; // type:func size:0x8
-field_set_secondary_emitter_158170 = 0x002A2290; // type:func size:0x8
-field_secondary_emitter_158170 = 0x002A22A0; // type:func size:0x8
-field_set_secondary_emission_count_158170 = 0x002A22B0; // type:func size:0x8
-field_set_secondary_emission_flags_158170 = 0x002A22D0; // type:func size:0x8
-field_set_secondary_emission_scale_158170 = 0x002A22E0; // type:func size:0x8
+emit_primary_entries__16FieldClass157AF0FPC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4 = 0x002AE9E0; // type:func size:0x180
+emit_secondary_entries__16FieldClass157AF0FPC10LibVector4P10LibVector4PC10LibVector4PC10LibVector4 = 0x002AEB60; // type:func size:0x1CC
+emit_primary_entries__16FieldClass157E30FPC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4 = 0x002AED30; // type:func size:0x180
+emit_secondary_entries__16FieldClass157E30FPC10LibVector4P10LibVector4PC10LibVector4PC10LibVector4 = 0x002AEEB0; // type:func size:0x1CC
+emit_primary_entries__16FieldClass158170FPC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4 = 0x002AF080; // type:func size:0x180
+emit_secondary_entries__16FieldClass158170FPC10LibVector4P10LibVector4PC10LibVector4PC10LibVector4 = 0x002AF200; // type:func size:0x1CC
+set_primary_emitter__16FieldClass157AF0FP14LibClass173990 = 0x0029BCD0; // type:func size:0x8
+get_primary_emitter__16FieldClass157AF0CFv = 0x0029BCE0; // type:func size:0x8
+set_primary_emission_count__16FieldClass157AF0FUc = 0x0029BCF0; // type:func size:0x8
+set_primary_emission_flags__16FieldClass157AF0FUc = 0x0029BD00; // type:func size:0x8
+set_secondary_emitter__16FieldClass157AF0FP14LibClass173990 = 0x0029BD10; // type:func size:0x8
+get_secondary_emitter__16FieldClass157AF0CFv = 0x0029BD20; // type:func size:0x8
+set_secondary_emission_count__16FieldClass157AF0FUc = 0x0029BD30; // type:func size:0x8
+set_secondary_emission_flags__16FieldClass157AF0FUc = 0x0029BD50; // type:func size:0x8
+set_secondary_emission_scale__16FieldClass157AF0Ff = 0x0029BD60; // type:func size:0x8
+set_primary_emitter__16FieldClass157E30FP14LibClass173990 = 0x0029EFE0; // type:func size:0x8
+get_primary_emitter__16FieldClass157E30CFv = 0x0029EFF0; // type:func size:0x8
+set_primary_emission_count__16FieldClass157E30FUc = 0x0029F000; // type:func size:0x8
+set_primary_emission_flags__16FieldClass157E30FUc = 0x0029F010; // type:func size:0x8
+set_secondary_emitter__16FieldClass157E30FP14LibClass173990 = 0x0029F020; // type:func size:0x8
+get_secondary_emitter__16FieldClass157E30CFv = 0x0029F030; // type:func size:0x8
+set_secondary_emission_count__16FieldClass157E30FUc = 0x0029F040; // type:func size:0x8
+set_secondary_emission_flags__16FieldClass157E30FUc = 0x0029F060; // type:func size:0x8
+set_secondary_emission_scale__16FieldClass157E30Ff = 0x0029F070; // type:func size:0x8
+set_primary_emitter__16FieldClass158170FP14LibClass173990 = 0x002A2250; // type:func size:0x8
+get_primary_emitter__16FieldClass158170CFv = 0x002A2260; // type:func size:0x8
+set_primary_emission_count__16FieldClass158170FUc = 0x002A2270; // type:func size:0x8
+set_primary_emission_flags__16FieldClass158170FUc = 0x002A2280; // type:func size:0x8
+set_secondary_emitter__16FieldClass158170FP14LibClass173990 = 0x002A2290; // type:func size:0x8
+get_secondary_emitter__16FieldClass158170CFv = 0x002A22A0; // type:func size:0x8
+set_secondary_emission_count__16FieldClass158170FUc = 0x002A22B0; // type:func size:0x8
+set_secondary_emission_flags__16FieldClass158170FUc = 0x002A22D0; // type:func size:0x8
+set_secondary_emission_scale__16FieldClass158170Ff = 0x002A22E0; // type:func size:0x8
 
 // Object slot owner.
 __ct__16FieldClass158EA0Fv = 0x002AFA40; // type:func size:0xAC absolute:True allow_duplicated:True
