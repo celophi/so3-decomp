@@ -411,14 +411,13 @@ struct FieldFloat4CAE9E0
 
 /**
  * @brief Emit entries through the primary linked emitter.
- * @param object Grid owning the emission settings.
  * @param position Position transformed when the position flag is set.
  * @param first_offset First offset, transformed when its flag is set.
  * @param second_offset Second offset, transformed when its flag is set.
  * @param color_scale Color multiplier used when its flag is set.
  */
-void field_emit_primary_entries_157af0(FieldClass157AF0* object, const LibVector4* position, const LibVector4* first_offset, const LibVector4* second_offset,
-                                       const LibVector4* color_scale)
+void FieldClass157AF0::emit_primary_entries(const LibVector4* position, const LibVector4* first_offset, const LibVector4* second_offset,
+                                            const LibVector4* color_scale)
 {
     LibVector4 transformed_position;
     LibVector4 transformed_first;
@@ -428,11 +427,11 @@ void field_emit_primary_entries_157af0(FieldClass157AF0* object, const LibVector
     const LibVector4* first_offset_arg;
     const LibVector4* second_offset_arg;
     const LibVector4* color_arg;
-    u8 flags = object->primary_emission_flags;
+    u8 flags = primary_emission_flags;
 
     if (flags & FIELD_EMISSION_POSITION)
     {
-        vu0_transform_emission_point(object->transform_rows, position, &transformed_position);
+        vu0_transform_emission_point(transform_rows, position, &transformed_position);
         position_arg = &transformed_position;
     }
     else
@@ -442,7 +441,7 @@ void field_emit_primary_entries_157af0(FieldClass157AF0* object, const LibVector
 
     if (flags & FIELD_EMISSION_FIRST_OFFSET)
     {
-        vu0_transform_emission_direction(object->transform_rows, first_offset, &transformed_first);
+        vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
         first_offset_arg = &transformed_first;
     }
     else
@@ -452,7 +451,7 @@ void field_emit_primary_entries_157af0(FieldClass157AF0* object, const LibVector
 
     if (flags & FIELD_EMISSION_SECOND_OFFSET)
     {
-        vu0_transform_emission_direction(object->transform_rows, second_offset, &transformed_second);
+        vu0_transform_emission_direction(transform_rows, second_offset, &transformed_second);
         second_offset_arg = &transformed_second;
     }
     else
@@ -470,7 +469,7 @@ void field_emit_primary_entries_157af0(FieldClass157AF0* object, const LibVector
     }
 
     vu0_save_emission_state(saved_state);
-    object->primary_emitter->emit_entries(object->primary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
+    primary_emitter->emit_entries(primary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                          0, 0, 0, 0, 0, 0);
     vu0_reset_emission_state();
     vu0_set_emission_delta(D_001B6690);
@@ -479,16 +478,15 @@ void field_emit_primary_entries_157af0(FieldClass157AF0* object, const LibVector
 
 /**
  * @brief Emit entries through the secondary linked emitter.
- * @param object Grid owning the emission settings.
  * @param position Position transformed when the position flag is set.
  * @param first_offset First offset, transformed when its flag is set. Its fourth component receives the grid value after emission.
  * @param second_offset Second offset, transformed when its flag is set.
  * @param color_scale Color multiplier used when its flag is set.
  */
-void field_emit_secondary_entries_157af0(FieldClass157AF0* object, const LibVector4* position, LibVector4* first_offset, const LibVector4* second_offset,
-                                         const LibVector4* color_scale)
+void FieldClass157AF0::emit_secondary_entries(const LibVector4* position, LibVector4* first_offset, const LibVector4* second_offset,
+                                              const LibVector4* color_scale)
 {
-    if (object->secondary_emitter != 0)
+    if (secondary_emitter != 0)
     {
         LibVector4 transformed_position;
         LibVector4 transformed_first;
@@ -498,11 +496,11 @@ void field_emit_secondary_entries_157af0(FieldClass157AF0* object, const LibVect
         const LibVector4* first_offset_arg;
         const LibVector4* second_offset_arg;
         const LibVector4* color_arg;
-        u8 flags = object->secondary_emission_flags;
+        u8 flags = secondary_emission_flags;
 
         if (flags & FIELD_EMISSION_POSITION)
         {
-            vu0_transform_emission_point(object->transform_rows, position, &transformed_position);
+            vu0_transform_emission_point(transform_rows, position, &transformed_position);
             position_arg = &transformed_position;
         }
         else
@@ -512,9 +510,9 @@ void field_emit_secondary_entries_157af0(FieldClass157AF0* object, const LibVect
 
         if (flags & FIELD_EMISSION_FIRST_OFFSET)
         {
-            vu0_transform_emission_direction(object->transform_rows, first_offset, &transformed_first);
+            vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
             first_offset_arg = &transformed_first;
-            float scale = object->secondary_emission_scale;
+            float scale = secondary_emission_scale;
             transformed_first.components[0] *= scale;
             transformed_first.components[1] *= scale;
             transformed_first.components[2] *= scale;
@@ -526,7 +524,7 @@ void field_emit_secondary_entries_157af0(FieldClass157AF0* object, const LibVect
 
         if (flags & FIELD_EMISSION_SECOND_OFFSET)
         {
-            vu0_transform_emission_direction(object->transform_rows, second_offset, &transformed_second);
+            vu0_transform_emission_direction(transform_rows, second_offset, &transformed_second);
             second_offset_arg = &transformed_second;
         }
         else
@@ -544,25 +542,24 @@ void field_emit_secondary_entries_157af0(FieldClass157AF0* object, const LibVect
         }
 
         vu0_save_emission_state(saved_state);
-        object->secondary_emitter->emit_entries(object->secondary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
+        secondary_emitter->emit_entries(secondary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                                0, 0, 0, 0, 0, 0);
         vu0_reset_emission_state();
         vu0_set_emission_delta(D_001B6690);
         vu0_restore_emission_state(saved_state);
-        first_offset->components[3] = object->unk3C;
+        first_offset->components[3] = unk3C;
     }
 }
 
 /**
  * @brief Emit entries through the primary linked emitter.
- * @param object Grid owning the emission settings.
  * @param position Position transformed when the position flag is set.
  * @param first_offset First offset, transformed when its flag is set.
  * @param second_offset Second offset, transformed when its flag is set.
  * @param color_scale Color multiplier used when its flag is set.
  */
-void field_emit_primary_entries_157e30(FieldClass157E30* object, const LibVector4* position, const LibVector4* first_offset, const LibVector4* second_offset,
-                                       const LibVector4* color_scale)
+void FieldClass157E30::emit_primary_entries(const LibVector4* position, const LibVector4* first_offset, const LibVector4* second_offset,
+                                            const LibVector4* color_scale)
 {
     LibVector4 transformed_position;
     LibVector4 transformed_first;
@@ -572,11 +569,11 @@ void field_emit_primary_entries_157e30(FieldClass157E30* object, const LibVector
     const LibVector4* first_offset_arg;
     const LibVector4* second_offset_arg;
     const LibVector4* color_arg;
-    u8 flags = object->primary_emission_flags;
+    u8 flags = primary_emission_flags;
 
     if (flags & FIELD_EMISSION_POSITION)
     {
-        vu0_transform_emission_point(object->transform_rows, position, &transformed_position);
+        vu0_transform_emission_point(transform_rows, position, &transformed_position);
         position_arg = &transformed_position;
     }
     else
@@ -586,7 +583,7 @@ void field_emit_primary_entries_157e30(FieldClass157E30* object, const LibVector
 
     if (flags & FIELD_EMISSION_FIRST_OFFSET)
     {
-        vu0_transform_emission_direction(object->transform_rows, first_offset, &transformed_first);
+        vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
         first_offset_arg = &transformed_first;
     }
     else
@@ -596,7 +593,7 @@ void field_emit_primary_entries_157e30(FieldClass157E30* object, const LibVector
 
     if (flags & FIELD_EMISSION_SECOND_OFFSET)
     {
-        vu0_transform_emission_direction(object->transform_rows, second_offset, &transformed_second);
+        vu0_transform_emission_direction(transform_rows, second_offset, &transformed_second);
         second_offset_arg = &transformed_second;
     }
     else
@@ -614,7 +611,7 @@ void field_emit_primary_entries_157e30(FieldClass157E30* object, const LibVector
     }
 
     vu0_save_emission_state(saved_state);
-    object->primary_emitter->emit_entries(object->primary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
+    primary_emitter->emit_entries(primary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                          0, 0, 0, 0, 0, 0);
     vu0_reset_emission_state();
     vu0_set_emission_delta(D_001B6690);
@@ -623,16 +620,15 @@ void field_emit_primary_entries_157e30(FieldClass157E30* object, const LibVector
 
 /**
  * @brief Emit entries through the secondary linked emitter.
- * @param object Grid owning the emission settings.
  * @param position Position transformed when the position flag is set.
  * @param first_offset First offset, transformed when its flag is set. Its fourth component receives the grid value after emission.
  * @param second_offset Second offset, transformed when its flag is set.
  * @param color_scale Color multiplier used when its flag is set.
  */
-void field_emit_secondary_entries_157e30(FieldClass157E30* object, const LibVector4* position, LibVector4* first_offset, const LibVector4* second_offset,
-                                         const LibVector4* color_scale)
+void FieldClass157E30::emit_secondary_entries(const LibVector4* position, LibVector4* first_offset, const LibVector4* second_offset,
+                                              const LibVector4* color_scale)
 {
-    if (object->secondary_emitter != 0)
+    if (secondary_emitter != 0)
     {
         LibVector4 transformed_position;
         LibVector4 transformed_first;
@@ -642,11 +638,11 @@ void field_emit_secondary_entries_157e30(FieldClass157E30* object, const LibVect
         const LibVector4* first_offset_arg;
         const LibVector4* second_offset_arg;
         const LibVector4* color_arg;
-        u8 flags = object->secondary_emission_flags;
+        u8 flags = secondary_emission_flags;
 
         if (flags & FIELD_EMISSION_POSITION)
         {
-            vu0_transform_emission_point(object->transform_rows, position, &transformed_position);
+            vu0_transform_emission_point(transform_rows, position, &transformed_position);
             position_arg = &transformed_position;
         }
         else
@@ -656,9 +652,9 @@ void field_emit_secondary_entries_157e30(FieldClass157E30* object, const LibVect
 
         if (flags & FIELD_EMISSION_FIRST_OFFSET)
         {
-            vu0_transform_emission_direction(object->transform_rows, first_offset, &transformed_first);
+            vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
             first_offset_arg = &transformed_first;
-            float scale = object->secondary_emission_scale;
+            float scale = secondary_emission_scale;
             transformed_first.components[0] *= scale;
             transformed_first.components[1] *= scale;
             transformed_first.components[2] *= scale;
@@ -670,7 +666,7 @@ void field_emit_secondary_entries_157e30(FieldClass157E30* object, const LibVect
 
         if (flags & FIELD_EMISSION_SECOND_OFFSET)
         {
-            vu0_transform_emission_direction(object->transform_rows, second_offset, &transformed_second);
+            vu0_transform_emission_direction(transform_rows, second_offset, &transformed_second);
             second_offset_arg = &transformed_second;
         }
         else
@@ -688,25 +684,24 @@ void field_emit_secondary_entries_157e30(FieldClass157E30* object, const LibVect
         }
 
         vu0_save_emission_state(saved_state);
-        object->secondary_emitter->emit_entries(object->secondary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
+        secondary_emitter->emit_entries(secondary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                                0, 0, 0, 0, 0, 0);
         vu0_reset_emission_state();
         vu0_set_emission_delta(D_001B6690);
         vu0_restore_emission_state(saved_state);
-        first_offset->components[3] = object->unk3C;
+        first_offset->components[3] = unk3C;
     }
 }
 
 /**
  * @brief Emit entries through the primary linked emitter.
- * @param object Grid owning the emission settings.
  * @param position Position transformed when the position flag is set.
  * @param first_offset First offset, transformed when its flag is set.
  * @param second_offset Second offset, transformed when its flag is set.
  * @param color_scale Color multiplier used when its flag is set.
  */
-void field_emit_primary_entries_158170(FieldClass158170* object, const LibVector4* position, const LibVector4* first_offset, const LibVector4* second_offset,
-                                       const LibVector4* color_scale)
+void FieldClass158170::emit_primary_entries(const LibVector4* position, const LibVector4* first_offset, const LibVector4* second_offset,
+                                            const LibVector4* color_scale)
 {
     LibVector4 transformed_position;
     LibVector4 transformed_first;
@@ -716,11 +711,11 @@ void field_emit_primary_entries_158170(FieldClass158170* object, const LibVector
     const LibVector4* first_offset_arg;
     const LibVector4* second_offset_arg;
     const LibVector4* color_arg;
-    u8 flags = object->primary_emission_flags;
+    u8 flags = primary_emission_flags;
 
     if (flags & FIELD_EMISSION_POSITION)
     {
-        vu0_transform_emission_point(object->transform_rows, position, &transformed_position);
+        vu0_transform_emission_point(transform_rows, position, &transformed_position);
         position_arg = &transformed_position;
     }
     else
@@ -730,7 +725,7 @@ void field_emit_primary_entries_158170(FieldClass158170* object, const LibVector
 
     if (flags & FIELD_EMISSION_FIRST_OFFSET)
     {
-        vu0_transform_emission_direction(object->transform_rows, first_offset, &transformed_first);
+        vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
         first_offset_arg = &transformed_first;
     }
     else
@@ -740,7 +735,7 @@ void field_emit_primary_entries_158170(FieldClass158170* object, const LibVector
 
     if (flags & FIELD_EMISSION_SECOND_OFFSET)
     {
-        vu0_transform_emission_direction(object->transform_rows, second_offset, &transformed_second);
+        vu0_transform_emission_direction(transform_rows, second_offset, &transformed_second);
         second_offset_arg = &transformed_second;
     }
     else
@@ -758,7 +753,7 @@ void field_emit_primary_entries_158170(FieldClass158170* object, const LibVector
     }
 
     vu0_save_emission_state(saved_state);
-    object->primary_emitter->emit_entries(object->primary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
+    primary_emitter->emit_entries(primary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                          0, 0, 0, 0, 0, 0);
     vu0_reset_emission_state();
     vu0_set_emission_delta(D_001B6690);
@@ -767,16 +762,15 @@ void field_emit_primary_entries_158170(FieldClass158170* object, const LibVector
 
 /**
  * @brief Emit entries through the secondary linked emitter.
- * @param object Grid owning the emission settings.
  * @param position Position transformed when the position flag is set.
  * @param first_offset First offset, transformed when its flag is set. Its fourth component receives the grid value after emission.
  * @param second_offset Second offset, transformed when its flag is set.
  * @param color_scale Color multiplier used when its flag is set.
  */
-void field_emit_secondary_entries_158170(FieldClass158170* object, const LibVector4* position, LibVector4* first_offset, const LibVector4* second_offset,
-                                         const LibVector4* color_scale)
+void FieldClass158170::emit_secondary_entries(const LibVector4* position, LibVector4* first_offset, const LibVector4* second_offset,
+                                              const LibVector4* color_scale)
 {
-    if (object->secondary_emitter != 0)
+    if (secondary_emitter != 0)
     {
         LibVector4 transformed_position;
         LibVector4 transformed_first;
@@ -786,11 +780,11 @@ void field_emit_secondary_entries_158170(FieldClass158170* object, const LibVect
         const LibVector4* first_offset_arg;
         const LibVector4* second_offset_arg;
         const LibVector4* color_arg;
-        u8 flags = object->secondary_emission_flags;
+        u8 flags = secondary_emission_flags;
 
         if (flags & FIELD_EMISSION_POSITION)
         {
-            vu0_transform_emission_point(object->transform_rows, position, &transformed_position);
+            vu0_transform_emission_point(transform_rows, position, &transformed_position);
             position_arg = &transformed_position;
         }
         else
@@ -800,9 +794,9 @@ void field_emit_secondary_entries_158170(FieldClass158170* object, const LibVect
 
         if (flags & FIELD_EMISSION_FIRST_OFFSET)
         {
-            vu0_transform_emission_direction(object->transform_rows, first_offset, &transformed_first);
+            vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
             first_offset_arg = &transformed_first;
-            float scale = object->secondary_emission_scale;
+            float scale = secondary_emission_scale;
             transformed_first.components[0] *= scale;
             transformed_first.components[1] *= scale;
             transformed_first.components[2] *= scale;
@@ -814,7 +808,7 @@ void field_emit_secondary_entries_158170(FieldClass158170* object, const LibVect
 
         if (flags & FIELD_EMISSION_SECOND_OFFSET)
         {
-            vu0_transform_emission_direction(object->transform_rows, second_offset, &transformed_second);
+            vu0_transform_emission_direction(transform_rows, second_offset, &transformed_second);
             second_offset_arg = &transformed_second;
         }
         else
@@ -832,12 +826,12 @@ void field_emit_secondary_entries_158170(FieldClass158170* object, const LibVect
         }
 
         vu0_save_emission_state(saved_state);
-        object->secondary_emitter->emit_entries(object->secondary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
+        secondary_emitter->emit_entries(secondary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                                0, 0, 0, 0, 0, 0);
         vu0_reset_emission_state();
         vu0_set_emission_delta(D_001B6690);
         vu0_restore_emission_state(saved_state);
-        first_offset->components[3] = object->unk3C;
+        first_offset->components[3] = unk3C;
     }
 }
 
