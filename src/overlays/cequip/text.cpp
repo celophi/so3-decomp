@@ -1104,7 +1104,7 @@ u8 EquipClass182670::func_slotb0()
     if (FieldClass15AE60::unk88 != 0)
     {
         EquipClass182550* window = new (0) EquipClass182550(unk180);
-        u32 associated = unk180->func_00263CC0();
+        u32 associated = unk180->get_resource_slot();
         window->func_slot104(associated);
         window->func_slot40(this);
         unk180->add_child(window);
@@ -2328,7 +2328,7 @@ static inline void attach_comparison(EquipClass182990* object, EquipClass182B90*
     object->unk100 = comparison;
 }
 
-s32 EquipListState::func_00263CD0()
+s32 EquipListState::init_windows()
 {
     EquipRuntimeResource* runtime = reinterpret_cast<EquipRuntimeResource*>(D_001B657C);
     runtime->unk51c = unk34;
@@ -2386,7 +2386,7 @@ LibClass178A70::~LibClass178A70()
 {
 }
 
-s32 EquipListState::func_001E1820(void* buffer)
+s32 EquipListState::on_resource_loaded(void* buffer)
 {
     if (buffer == 0)
     {
@@ -2407,7 +2407,7 @@ s32 EquipListState::func_001E1820(void* buffer)
     EquipRuntimeResource* runtime = reinterpret_cast<EquipRuntimeResource*>(D_001B657C);
     runtime->unk514 = unk34;
     runtime->unk518 = 0xC351;
-    return func_00263CD0();
+    return init_windows();
 }
 
 /**

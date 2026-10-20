@@ -1026,7 +1026,7 @@ s32 shop_open_sell_all_confirmation(void* receiver)
     if (state->selected_allocation != 0)
     {
         ShopSellAllConfirmWindow* confirmation_window = new (0) ShopSellAllConfirmWindow;
-        confirmation_window->func_slotf4(state->func_00263CC0());
+        confirmation_window->func_slotf4(state->get_resource_slot());
         confirmation_window->func_slot40(receiver);
         state->add_child(confirmation_window);
         state->func_00263C70(confirmation_window);
@@ -1035,7 +1035,7 @@ s32 shop_open_sell_all_confirmation(void* receiver)
     return 1;
 }
 
-u32 ShopState::func_00263CC0()
+u32 ShopState::get_resource_slot()
 {
     return resource_slot;
 }
@@ -1052,7 +1052,7 @@ s32 shop_open_sell_confirmation(void* receiver)
     if (state->selected_allocation != 0)
     {
         ShopSellConfirmWindow* confirmation_window = new (0) ShopSellConfirmWindow;
-        confirmation_window->func_slotf4(state->func_00263CC0());
+        confirmation_window->func_slotf4(state->get_resource_slot());
         confirmation_window->func_slot40(receiver);
         state->add_child(confirmation_window);
         state->func_00263C70(confirmation_window);
@@ -1438,7 +1438,7 @@ u8 ShopSellListWindow::func_slotb0()
     if (FieldClass15AE60::unk88 != 0)
     {
         ShopSaleItemWindow* window = new (0) ShopSaleItemWindow;
-        window->func_slot104(state->func_00263CC0());
+        window->func_slot104(state->get_resource_slot());
         state->add_child(window);
         state->func_00263C70(window);
     }
@@ -2074,7 +2074,7 @@ s32 shop_open_item_details(void)
 {
     ShopState* state = D_001B643C->callbacks->shop;
     ShopItemDetailWindow* detail_window = new (0) ShopItemDetailWindow;
-    detail_window->func_slotf4(state->func_00263CC0());
+    detail_window->func_slotf4(state->get_resource_slot());
     state->add_child(detail_window);
     state->func_00263C70(detail_window);
     return 1;
@@ -2105,7 +2105,7 @@ s32 shop_open_buy_confirmation(void* receiver)
     if ((u16)(state->transaction.pending_unsellable_count + state->transaction.pending_sellable_count))
     {
         ShopBuyConfirmWindow* confirmation_window = new (0) ShopBuyConfirmWindow;
-        confirmation_window->func_slotf4(state->func_00263CC0());
+        confirmation_window->func_slotf4(state->get_resource_slot());
         confirmation_window->func_slot40(receiver);
         state->add_child(confirmation_window);
         state->func_00263C70(confirmation_window);
@@ -2596,7 +2596,7 @@ void ShopActionWindow::func_slot5c()
         }
     }
 
-    lib_text_set_resource(category_label, state->func_00263CC0(), state->category + SHOP_MSG_WEAPONS, 0);
+    lib_text_set_resource(category_label, state->get_resource_slot(), state->category + SHOP_MSG_WEAPONS, 0);
 }
 
 /**
@@ -3152,7 +3152,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
 
                 if (already_equipped)
                 {
-                    lib_text_set_resource(comparison_labels[i], state->func_00263CC0(), SHOP_MSG_EQUIPPED, 0);
+                    lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_EQUIPPED, 0);
                     comparison_labels[i]->set_color(0xFF8028);
                     comparison_labels[i]->unk3f = 1;
                     continue;
@@ -3177,18 +3177,18 @@ void ShopEquipmentPreviewWindow::func_slot5c()
 
                 if (shop_character_attack(character_copy) > shop_character_attack(*character))
                 {
-                    lib_text_set_resource(comparison_labels[i], state->func_00263CC0(), SHOP_MSG_STAT_INCREASE, 0);
+                    lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_STAT_INCREASE, 0);
                     comparison_labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
                 }
                 else if (shop_character_attack(character_copy) == shop_character_attack(*character))
                 {
-                    lib_text_set_resource(comparison_labels[i], state->func_00263CC0(), SHOP_MSG_STAT_UNCHANGED, 0);
+                    lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_STAT_UNCHANGED, 0);
                 }
                 else
                 {
-                    lib_text_set_resource(comparison_labels[i], state->func_00263CC0(), SHOP_MSG_STAT_DECREASE, 0);
+                    lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_STAT_DECREASE, 0);
                     comparison_labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
@@ -3201,18 +3201,18 @@ void ShopEquipmentPreviewWindow::func_slot5c()
 
                 if (shop_character_defense(character_copy) > shop_character_defense(*character))
                 {
-                    lib_text_set_resource(comparison_labels[i], state->func_00263CC0(), SHOP_MSG_STAT_INCREASE, 0);
+                    lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_STAT_INCREASE, 0);
                     comparison_labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
                 }
                 else if (shop_character_defense(character_copy) == shop_character_defense(*character))
                 {
-                    lib_text_set_resource(comparison_labels[i], state->func_00263CC0(), SHOP_MSG_STAT_UNCHANGED, 0);
+                    lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_STAT_UNCHANGED, 0);
                 }
                 else
                 {
-                    lib_text_set_resource(comparison_labels[i], state->func_00263CC0(), SHOP_MSG_STAT_DECREASE, 0);
+                    lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_STAT_DECREASE, 0);
                     comparison_labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
@@ -3629,7 +3629,7 @@ void ShopState::func_001DD7B0()
  * @param receiver Shop controller.
  * @return Always one.
  */
-s32 ShopState::func_00263CD0()
+s32 ShopState::init_windows()
 {
     ShopBackgroundWindow* background_window = new (0) ShopBackgroundWindow;
     ShopHelpWindow* help_window = new (0) ShopHelpWindow;
@@ -3676,7 +3676,7 @@ static inline ShopAlignedResource* aligned_shop_resource(void* buffer)
  * @param buffer Completed resource buffer, aligned to 128 bytes before use.
  * @return Controller setup result, or zero when the buffer is null.
  */
-s32 ShopState::func_001E1820(void* buffer)
+s32 ShopState::on_resource_loaded(void* buffer)
 {
     if (buffer == 0)
     {
@@ -3700,7 +3700,7 @@ s32 ShopState::func_001E1820(void* buffer)
     FieldRuntime* runtime = D_001B657C;
     runtime->item_name_resource_slot = resource_slot;
     runtime->item_name_base_key = SHOP_MSG_ITEM_NAMES + 1;
-    return func_00263CD0();
+    return init_windows();
 }
 
 /**
@@ -3812,7 +3812,7 @@ ShopState::~ShopState()
 {
 }
 
-u8 ShopState::func_00261D20()
+u8 ShopState::windows_ready()
 {
     return windows_initialized;
 }

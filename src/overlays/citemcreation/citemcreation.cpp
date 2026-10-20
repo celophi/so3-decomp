@@ -2905,7 +2905,7 @@ u8 InadequateLineDialog::func_slotb4()
         {
             DevelopmentCompleteDialog* window = new (0) DevelopmentCompleteDialog;
             state = selection_state;
-            window->func_slotf4(state->func_00263CC0());
+            window->func_slotf4(state->get_resource_slot());
             state = selection_state;
             state->add_child(window);
             state = selection_state;
@@ -2949,7 +2949,7 @@ u8 InadequateLineDialog::func_slotb0()
         {
             DevelopmentCompleteDialog* window = new (0) DevelopmentCompleteDialog;
             state = selection_state;
-            window->func_slotf4(state->func_00263CC0());
+            window->func_slotf4(state->get_resource_slot());
             state = selection_state;
             state->add_child(window);
             state = selection_state;
@@ -3199,7 +3199,7 @@ u8 AbortDevelopmentDialog::func_slotb0()
             if (any_line_not_stopped(selection_state) == false)
             {
                 DevelopmentCompleteDialog* window = new (0) DevelopmentCompleteDialog;
-                window->func_slotf4(selection_state->func_00263CC0());
+                window->func_slotf4(selection_state->get_resource_slot());
                 selection_state->add_child(window);
                 selection_state->func_00263C70(window);
                 resident_allocate_request(D_001B65F8, 8, 0, 0, 127, 64, 0);
@@ -4429,7 +4429,7 @@ u8 ItemDetailsWindow::func_slotb0()
     if (any_line_not_stopped(unka8) == false)
     {
         DevelopmentCompleteDialog* next = new (0) DevelopmentCompleteDialog;
-        next->func_slotf4(unka8->func_00263CC0());
+        next->func_slotf4(unka8->get_resource_slot());
         unka8->add_child(next);
         unka8->func_00263C70(next);
         resident_allocate_request(D_001B65F8, 8, 0, 0, 127, 64, 0);
@@ -4744,7 +4744,7 @@ u8 LineFailureDialog::func_slotb0()
     if (any_line_not_stopped(state) == false)
     {
         DevelopmentCompleteDialog* next = new (0) DevelopmentCompleteDialog;
-        next->func_slotf4(state->func_00263CC0());
+        next->func_slotf4(state->get_resource_slot());
         state->add_child(next);
         state->func_00263C70(next);
         resident_allocate_request(D_001B65F8, 8, 0, 0, 127, 64, 0);
@@ -4903,7 +4903,7 @@ u8 ItemSubmissionDialog::func_slotb0()
             if (target->unk83 == 1 && static_cast<FieldClass15BB30*>(target)->unk3b0 == 0)
             {
                 LineFailureDialog* next = new (0) LineFailureDialog;
-                next->func_slotf4(selection_state->func_00263CC0());
+                next->func_slotf4(selection_state->get_resource_slot());
                 selection_state->add_child(next);
                 selection_state->func_00263C70(next);
                 resident_allocate_request(D_001B65F8, 3, 0, 0, 127, 64, 0);
@@ -6922,12 +6922,12 @@ u8 InventoryItemInstanceList::func_slotb8()
         state->inventor_resource_countdown = 0;
         preview_mode = 0;
         preview_switch_label->unk3f = 1;
-        lib_text_set_resource(preview_switch_label, state->func_00263CC0(), 0x1B75, 0);
+        lib_text_set_resource(preview_switch_label, state->get_resource_slot(), 0x1B75, 0);
         LibObject178750* display = action_controls_label;
         display->unk18.unk00 = 428.0f;
         display->unk18.unk04 = 330.0f;
         display->unk3c = 1;
-        lib_text_set_resource(action_controls_label, state->func_00263CC0(), 0x1B76, 0);
+        lib_text_set_resource(action_controls_label, state->get_resource_slot(), 0x1B76, 0);
         resident_allocate_request(D_001B65F8, 2, 0, 0, 127, 64, 0);
     }
     else
@@ -6946,12 +6946,12 @@ u8 InventoryItemInstanceList::func_slotb8()
             state->pending_secondary_resource_key = 0;
             preview_mode = 1;
             preview_switch_label->unk3f = 0;
-            lib_text_set_resource(preview_switch_label, state->func_00263CC0(), 0x1B75, 0);
+            lib_text_set_resource(preview_switch_label, state->get_resource_slot(), 0x1B75, 0);
             LibObject178750* display = action_controls_label;
             display->unk18.unk00 = 405.0f;
             display->unk18.unk04 = 337.0f;
             display->unk3c = 1;
-            lib_text_set_resource(action_controls_label, state->func_00263CC0(), 0x1B77, 0);
+            lib_text_set_resource(action_controls_label, state->get_resource_slot(), 0x1B77, 0);
             resident_allocate_request(D_001B65F8, 1, 0, 0, 127, 64, 0);
         }
     }
@@ -6992,12 +6992,12 @@ u8 InventoryItemInstanceList::func_slotb4()
         state->inventor_resource_countdown = 0;
         preview_mode = 0;
         preview_switch_label->unk3f = 1;
-        lib_text_set_resource(preview_switch_label, state->func_00263CC0(), 0x1B75, 0);
+        lib_text_set_resource(preview_switch_label, state->get_resource_slot(), 0x1B75, 0);
         LibObject178750* display = action_controls_label;
         display->unk18.unk00 = 428.0f;
         display->unk18.unk04 = 330.0f;
         display->unk3c = 1;
-        lib_text_set_resource(action_controls_label, state->func_00263CC0(), 0x1B76, 0);
+        lib_text_set_resource(action_controls_label, state->get_resource_slot(), 0x1B76, 0);
         return 2;
     }
     else
@@ -7611,7 +7611,7 @@ u8 InventoryItemTypeList::func_slotb0()
     u16 item_type_id = record->catalog_index + 1;
     instances->item_group_index = unk1a4;
     instances->item_type_id = item_type_id;
-    instances->func_slot104(unk1a0->func_00263CC0());
+    instances->func_slot104(unk1a0->get_resource_slot());
     instances->func_slot40(this);
     unk1a0->add_child(instances);
     unk1a0->func_00263C70(instances);
@@ -8819,7 +8819,7 @@ u8 InventionPolicyWindow::func_slotb0()
             if (available <= 0)
             {
                 MissingMaterialsDialog* popup = new (0) MissingMaterialsDialog;
-                popup->func_slotf4(this->selection_state->func_00263CC0());
+                popup->func_slotf4(this->selection_state->get_resource_slot());
                 popup->func_slot40(this->unka8);
                 this->selection_state->add_child(popup);
                 this->selection_state->func_00263C70(popup);
@@ -9159,7 +9159,7 @@ u8 CreationSkillWindow::func_slotb0()
                 if (count <= 0)
                 {
                     MissingMaterialsDialog* popup = new (0) MissingMaterialsDialog;
-                    popup->func_slotf4(selection_state->func_00263CC0());
+                    popup->func_slotf4(selection_state->get_resource_slot());
                     popup->func_slot40(unkac);
                     selection_state->add_child(popup);
                     selection_state->func_00263C70(popup);
@@ -9725,7 +9725,7 @@ u8 AssignedInventorGrid::func_slotbc()
     if (value < state->line_fol_costs[2] + (state->line_fol_costs[0] + state->line_fol_costs[1]))
     {
         InsufficientFolDialog* popup = new (0) InsufficientFolDialog;
-        popup->func_slotf4(unka8->func_00263CC0());
+        popup->func_slotf4(unka8->get_resource_slot());
         popup->func_slot40(this);
         unka8->add_child(popup);
         unka8->func_00263C70(popup);
@@ -14922,7 +14922,7 @@ void ItemCreationSelectedDisplayState::update()
                                 pending_resource_key = 0;
                                 inventor_resource_countdown = 0;
                                 InventionSuccessDialog* popup = new(0) InventionSuccessDialog;
-                                popup->func_slotf4(func_00263CC0());
+                                popup->func_slotf4(get_resource_slot());
                                 FieldClass153E30::add_child(popup);
                                 FieldClass153E30::unk20 = popup;
                                 resident_allocate_request(D_001B65F8, 18, 0, 0, 127, 64, 0);
@@ -15085,7 +15085,7 @@ extern "C" void func_0036CD70(ItemCreationSelectedDisplayState* object)
  * @brief Allocate and configure the windows for the selected display mode.
  * @return Always one.
  */
-s32 ItemCreationSelectedDisplayState::func_00263CD0()
+s32 ItemCreationSelectedDisplayState::init_windows()
 {
     background = new (0) ItemCreationBackground;
     status_banner = new (0) ItemCreationStatusBanner;
@@ -15304,7 +15304,7 @@ static inline ItemCreationBufferHeader* buffer_header(void* buffer)
  * @param buffer Completed buffer, or null.
  * @return Zero without a buffer, otherwise the setup result.
  */
-s32 ItemCreationSelectedDisplayState::func_001E1820(void* buffer)
+s32 ItemCreationSelectedDisplayState::on_resource_loaded(void* buffer)
 {
     if (!buffer)
     {
@@ -15324,7 +15324,7 @@ s32 ItemCreationSelectedDisplayState::func_001E1820(void* buffer)
     FieldRuntime* runtime = D_001B657C;
     runtime->unk514 = unk34;
     runtime->unk518 = 0xC351;
-    return func_00263CD0();
+    return init_windows();
 }
 
 /**
@@ -15860,7 +15860,7 @@ WorkshopExpansionWindow::~WorkshopExpansionWindow()
 }
 
 /** @brief Read the selected-display state flag. @return Stored state flag. */
-u8 ItemCreationSelectedDisplayState::func_00261D20()
+u8 ItemCreationSelectedDisplayState::windows_ready()
 {
     return window_setup_ready;
 }

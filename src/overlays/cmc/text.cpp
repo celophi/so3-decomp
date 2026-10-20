@@ -1418,7 +1418,7 @@ INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_00358620);
  * @param buffer Completed buffer, aligned to 128 bytes before use.
  * @return Setup result, or zero when the buffer is null.
  */
-s32 CmcClass18AF20::func_001E1820(void* buffer)
+s32 CmcClass18AF20::on_resource_loaded(void* buffer)
 {
     CmcResourceBuffer* resource = static_cast<CmcResourceBuffer*>(buffer);
     if (!resource)
@@ -1437,7 +1437,7 @@ s32 CmcClass18AF20::func_001E1820(void* buffer)
     }
     resource_slot = lib_load_resource_slot(D_001B657C, resource);
     resident_exchange_allocation_heap(previous_heap);
-    return func_00263CD0();
+    return init_windows();
 }
 
 INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_00358D50);

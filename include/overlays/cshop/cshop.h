@@ -428,13 +428,13 @@ struct ShopState : FieldClass153E30
     /** @brief Return the signed byte at offset 0x28. */
     virtual s8 func_00263CB0();
     /** @brief Return the item-name resource slot. */
-    virtual u32 func_00263CC0();
+    virtual u32 get_resource_slot();
     /** @brief Return the shop window initialization flag. */
-    virtual u8 func_00261D20();
+    virtual u8 windows_ready();
     /** @brief Register the completed resource buffer and initialize the shop. */
-    virtual s32 func_001E1820(void* buffer);
+    virtual s32 on_resource_loaded(void* buffer);
     /** @brief Create and attach the shop windows. */
-    virtual s32 func_00263CD0();
+    virtual s32 init_windows();
     /** @brief Release shop resources and clear the discount flags. */
     virtual void func_slot5c();
     /** @brief Default shop receiver hook; returns zero. */

@@ -397,7 +397,7 @@ func_slotf4__25DevelopmentCompleteDialogFUi = 0x00354A30; // type:func allow_dup
 
 func_00263C70__32ItemCreationSelectedDisplayStateFPv = 0x003486F0; // type:func allow_duplicated:True
 func_003486F0 = 0x003486F0; // type:func absolute:True allow_duplicated:True
-func_00263CC0__32ItemCreationSelectedDisplayStateFv = 0x0034FF60; // type:func allow_duplicated:True
+get_resource_slot__32ItemCreationSelectedDisplayStateFv = 0x0034FF60; // type:func allow_duplicated:True
 func_0034FF60 = 0x0034FF60; // type:func allow_duplicated:True
 
 __vt__17LineFailureDialog = 0x00186470; // absolute:True
@@ -820,14 +820,14 @@ __dt__16FieldClass153E30Fv = 0x00264230; // type:func absolute:True allow_duplic
 __vt__32ItemCreationSelectedDisplayState = 0x001879D0; // absolute:True
 func_0036DED0 = 0x0036DED0; // type:func allow_duplicated:True
 func_0036DDC0 = 0x0036DDC0; // type:func allow_duplicated:True
-func_001E1820__32ItemCreationSelectedDisplayStateFPv = 0x0036DDC0; // type:func allow_duplicated:True
+on_resource_loaded__32ItemCreationSelectedDisplayStateFPv = 0x0036DDC0; // type:func allow_duplicated:True
 func_00264110__32ItemCreationSelectedDisplayStateFv = 0x0036DED0; // type:func allow_duplicated:True
 __ct__20FieldRecordSelectionFv = 0x0028E4D0; // type:func absolute:True allow_duplicated:True
 __dt__20FieldRecordSelectionFv = 0x0028E480; // type:func absolute:True allow_duplicated:True
 __vt__20FieldRecordSelection = 0x00157070; // absolute:True allow_duplicated:True
 func_0036CE00 = 0x0036CE00; // type:func allow_duplicated:True
-func_00263CD0__32ItemCreationSelectedDisplayStateFv = 0x0036CE00; // type:func allow_duplicated:True
-func_00263CD0__16FieldClass153E30Fv = 0x00263CD0; // type:func absolute:True allow_duplicated:True
+init_windows__32ItemCreationSelectedDisplayStateFv = 0x0036CE00; // type:func allow_duplicated:True
+init_windows__16FieldClass153E30Fv = 0x00263CD0; // type:func absolute:True allow_duplicated:True
 func_00263E20__16FieldClass153E30FUi = 0x00263E20; // type:func absolute:True allow_duplicated:True
 func_slotf4__20InadequateLineDialogFUi = 0x003501B0; // type:func absolute:True allow_duplicated:True
 add_child__16FieldClass153E30FPv = 0x00263FD0; // type:func absolute:True allow_duplicated:True
@@ -934,7 +934,7 @@ func_002D6440 = 0x002D6440; // type:func absolute:True allow_duplicated:True
 
 item_creation_current_workshop_id = 0x0036AFE0; // type:func
 item_creation_current_workshop_name_key = 0x0036B0E0; // type:func
-func_00261D20__32ItemCreationSelectedDisplayStateFv = 0x0036EBC0; // type:func allow_duplicated:True
+windows_ready__32ItemCreationSelectedDisplayStateFv = 0x0036EBC0; // type:func allow_duplicated:True
 func_00263C80__32ItemCreationSelectedDisplayStateFPv = 0x0036EBE0; // type:func allow_duplicated:True
 func_00263CA0__32ItemCreationSelectedDisplayStateFSc = 0x0036EBF0; // type:func allow_duplicated:True
 func_00263CB0__32ItemCreationSelectedDisplayStateFv = 0x0036EC00; // type:func allow_duplicated:True

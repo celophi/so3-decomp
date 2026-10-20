@@ -177,7 +177,7 @@ resident_enqueue_object = 0x0011ED90; // type:func absolute:True
 func_003585B0 = 0x003585B0; // type:func absolute:True
 func_00358600 = 0x00358600; // type:func absolute:True
 
-func_001E1820__14CmcClass18AF20FPv = 0x00358C90; // type:func
+on_resource_loaded__14CmcClass18AF20FPv = 0x00358C90; // type:func
 func_00358C90 = 0x00358C90; // type:func absolute:True
 resident_get_allocation_heap = 0x00100C90; // type:func absolute:True
 resident_exchange_allocation_heap = 0x00100C80; // type:func absolute:True

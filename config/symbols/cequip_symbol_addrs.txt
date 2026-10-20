@@ -180,7 +180,7 @@ draw__14LibClass178600Fv = 0x00462310; // type:func absolute:True
 func_00413D20__14LibClass178630Fv = 0x004C56E0; // type:func absolute:True
 draw__14LibClass178630Fv = 0x004C55E0; // type:func absolute:True
 func_slotf4__16EquipClass182790FUi = 0x0034B2A0; // type:func
-func_001E1820__14EquipListStateFPv = 0x00350FE0; // type:func
+on_resource_loaded__14EquipListStateFPv = 0x00350FE0; // type:func
 func_00263D80__14EquipListStateFv = 0x00350910; // type:func absolute:True allow_duplicated:True
 func_slot5c__14EquipListStateFv = 0x00350910; // type:func allow_duplicated:True
 func_slotb0__16EquipClass182990Fv = 0x0034CA50; // type:func
@@ -341,7 +341,7 @@ __vt__16EquipClass182B90 = 0x00182B90; // absolute:True
 __vt__16EquipClass182A90 = 0x00182A90; // absolute:True
 __vt__16EquipClass182790 = 0x00182790; // absolute:True
 add_child__16FieldClass153E30FPv = 0x00263FD0; // type:func absolute:True
-func_00263CD0__14EquipListStateFv = 0x003509B0; // type:func
+init_windows__14EquipListStateFv = 0x003509B0; // type:func
 
 __ct__14EquipListStateFv = 0x003511E0; // type:func
 __ct__16FieldClass153E30Fv = 0x002642D0; // type:func absolute:True

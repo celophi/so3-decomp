@@ -583,20 +583,20 @@ struct StatusResourceState : public FieldClass153E30
     /** @brief Get the receiver byte. @return Stored signed byte. */
     virtual s8 func_00263CB0();
     /** @brief Get the loaded resource handle. @return Resource handle. */
-    virtual u32 func_00263CC0();
+    virtual u32 get_resource_slot();
     /** @brief Report whether window setup finished. @return Setup flag. */
-    virtual u8 func_00261D20();
+    virtual u8 windows_ready();
     /**
      * @brief Load the completed status resource and finish receiver setup.
      * @param buffer Completed resource buffer, or null.
      * @return Zero without a buffer, otherwise the receiver setup result.
      */
-    virtual s32 func_001E1820(void* buffer);
+    virtual s32 on_resource_loaded(void* buffer);
     /**
      * @brief Create and attach the status windows and record selection.
      * @return One after setup succeeds, or zero otherwise.
      */
-    virtual s32 func_00263CD0();
+    virtual s32 init_windows();
     /** @brief Release the status resource, queue this receiver, and clear its allocation slots. */
     virtual void func_slot5c();
     /** @brief Report the default command result. @return Zero. */
@@ -3472,7 +3472,7 @@ void* StatusResourceState::func_00263C90()
  * @brief Create and attach the status windows and record selection.
  * @return One after setup succeeds, or zero otherwise.
  */
-s32 StatusResourceState::func_00263CD0()
+s32 StatusResourceState::init_windows()
 {
     StatusResourceState* object = this;
     StatusBackgroundWindow* background = new (0) StatusBackgroundWindow;
@@ -3504,7 +3504,7 @@ s32 StatusResourceState::func_00263CD0()
  * @param buffer Completed resource buffer, or null.
  * @return Zero without a buffer, otherwise the receiver setup result.
  */
-s32 StatusResourceState::func_001E1820(void* buffer)
+s32 StatusResourceState::on_resource_loaded(void* buffer)
 {
     StatusResourceState* object = this;
 
@@ -3530,7 +3530,7 @@ s32 StatusResourceState::func_001E1820(void* buffer)
     StatusRuntimeResource* runtime = reinterpret_cast<StatusRuntimeResource*>(D_001B657C);
     runtime->resource = object->resource;
     runtime->code = 0xC351;
-    return object->func_00263CD0();
+    return object->init_windows();
 }
 
 /** @brief Report the receiver state. @return One. */
@@ -3600,13 +3600,13 @@ void FieldClass15AE70::func_slot5c()
 }
 
 /** @brief Report whether window setup finished. @return Setup flag. */
-u8 StatusResourceState::func_00261D20()
+u8 StatusResourceState::windows_ready()
 {
     return setup_complete;
 }
 
 /** @brief Get the loaded resource handle. @return Resource handle. */
-u32 StatusResourceState::func_00263CC0()
+u32 StatusResourceState::get_resource_slot()
 {
     return resource;
 }

@@ -61,10 +61,10 @@ public:
     virtual void func_001DD7B0();
 
     /** @brief Return the loaded resource slot. @return Resource slot. */
-    virtual u32 func_00263CC0();
+    virtual u32 get_resource_slot();
 
     /** @brief Report whether window setup finished. @return Setup flag. */
-    virtual u8 func_00261D20();
+    virtual u8 windows_ready();
 
     /**
      * @brief Allocate and initialize the State's record selection.
@@ -77,7 +77,7 @@ public:
      * @param buffer Completed resource buffer, or null to report failure.
      * @return Zero for a null buffer; otherwise the window initialization result.
      */
-    virtual s32 func_001E1820(void* buffer);
+    virtual s32 on_resource_loaded(void* buffer);
 
     /** @brief Release the loaded resource, detach the State, and dispatch its release handler. */
     virtual void func_slot5c();
@@ -86,7 +86,7 @@ public:
      * @brief Initialize the State's windows and their resource-mode associations.
      * @return One after setup, or zero when a required window allocation fails.
      */
-    virtual s32 func_00263CD0();
+    virtual s32 init_windows();
 
     s32 resource_slot;
 
