@@ -323,8 +323,8 @@ s16 func_004E6870(const void* object);
 /** Store the byte constant at receiver offset 0x60. */
 void func_004E2EE0(void* object);
 
-/** Clear the byte at receiver offset 0xCB. */
-void func_004E97A0(void* object);
+/** Hide the equipment menu's factor tooltip by clearing its visible byte at 0xCB. */
+void lib_factor_tooltip_hide(void* object);
 
 /** Clear the word at receiver offset 0x114. */
 void func_004E13D0(void* object);

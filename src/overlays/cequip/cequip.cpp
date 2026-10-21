@@ -1,0 +1,3276 @@
+#include "overlays/cequip/cequip.h"
+#include "main/resident_data.h"
+#include "main/resident_0010A0E0.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
+#include "main/resident_001001E0.h"
+#include "main/resident_00101260.h"
+#include "overlays/1067-00/text_0028E240.h"
+#include "overlays/1067-00/text_001E1590.h"
+#include "overlays/lib/text_004095C0.h"
+#include "overlays/1067-00/text_002D5260.h"
+#include "overlays/1067-00/text_0023B1D0.h"
+#include "overlays/lib/resource_widget_inlines.h"
+#include "overlays/lib/movement_widget_inlines.h"
+#include "overlays/lib/list_indicator_inlines.h"
+#include "overlays/1067-00/text_002CEAF0.h"
+#include "overlays/lib/item_allocation.h"
+
+enum EquipMessageKey
+{
+    EQUIP_MSG_LABEL_SEPARATOR = 0x7E4,
+    EQUIP_MSG_YES = 0x7E8,
+    EQUIP_MSG_NO = 0x7E9,
+    EQUIP_MSG_STAT_NAME_BASE = 0x81A,
+    EQUIP_MSG_TITLE = 0xFA0,
+    EQUIP_MSG_SLOT_NAME_BASE = 0xFA1,
+    EQUIP_MSG_LEVEL = 0xFA9,
+    EQUIP_MSG_CONFIRM_EXIT = 0xFAC,
+    EQUIP_MSG_HELP_FIRST = 0xFAE,
+    EQUIP_MSG_CHANGE_HELP = 0xFAE,
+    EQUIP_MSG_HELP_END = 0xFAF,
+    EQUIP_MSG_MENU_LABEL = 0xFAF,
+    EQUIP_MSG_SWITCH_PROMPT = 0xFB5,
+    EQUIP_MSG_OPTIMIZE_PROMPT = 0xFB6,
+    EQUIP_MSG_ARROW = 0xFB7,
+    EQUIP_MSG_NONE = 0xFBA,
+    EQUIP_MSG_PARAMETER_CHANGES = 0xFBB,
+    EQUIP_MSG_PARAMETER_NAME_BASE = 0xFBC,
+    EQUIP_MSG_ITEM_NAME_BASE = 50000,
+    EQUIP_MSG_ITEM_DESCRIPTION_BASE = 0x12924
+};
+
+/** Partial aligned resource header, with its payload size at offset 0x40. */
+struct EquipAlignedResource
+{
+    u8 unk00[0x40];
+    s32 unk40;
+};
+
+/** Partial Field runtime reached through D_001B657C. */
+struct FieldRuntime
+{
+    u8 unk00[0x514];
+    s32 unk514;
+    u32 unk518;
+    s32 unk51c;
+    u32 unk520;
+};
+
+/** Partial callback directory containing the active menu State. */
+struct EquipMenuCallbacks
+{
+    u8 unk00[0x14];
+    FieldClass153E30* state;
+};
+
+/** Partial runtime control state read when leaving the menu. */
+struct EquipMenuRuntime
+{
+    u8 unk00[0x2D];
+    u8 unk2d;
+};
+
+/** Partial resident menu reference. */
+struct EquipMenuRef
+{
+    u8 unk00[0xC];
+    EquipMenuRuntime* runtime;
+    EquipMenuCallbacks* callbacks;
+    u8 unk14[0xC];
+    FieldBufferSlots* resources;
+};
+
+class EquipNewItemTypeNode
+{
+    public:
+        u16 value;
+        u8 pad_02[2];
+        EquipNewItemTypeNode* next;
+
+        /** @brief Destroy the node without releasing its stored value. */
+        ~EquipNewItemTypeNode()
+        {
+        }
+};
+
+class EquipItemTypeNode
+{
+    public:
+        ItemCreationCategoryRecord* value;
+        EquipItemTypeNode* next;
+
+        /** @brief Destroy the node without releasing its stored value. */
+        ~EquipItemTypeNode()
+        {
+        }
+};
+
+extern EquipMenuRef* D_001B643C;
+
+extern ResidentObject1B64F8* D_001B64F8;
+
+extern "C" void optimize_equipment(EquipController* state, const EquipCharacterRecord* record, EquipCharacterEquipment* equipment, s8 slot);
+
+/**
+ * @brief Recalculate a character's statistics from their equipment.
+ * @param record Character record to update.
+ * @param equipment Character equipment.
+ * @param candidate Allocation to try in a slot instead of the equipped one, or null.
+ * @param index Slot for the candidate, or -1 to use the equipment as it is.
+ */
+extern "C" void lib_character_recalculate_stats(EquipCharacterRecord* record, EquipCharacterEquipment* equipment, const ItemCreationAllocationRecord* candidate,
+                                                s32 index);
+
+extern "C" void refresh_equipment_slots(EquipSlotWindow* object);
+
+extern "C" void preview_item_stats(EquipStatComparisonWindow* window, s16 selected);
+
+extern "C" void equip_item_in_active_slot(EquipSlotWindow* object, s16 identifier);
+
+/**
+ * @brief Record which character has an allocation equipped and refresh its checksum and counts.
+ * @param inventory Resident item inventory.
+ * @param identifier One-based allocation ID.
+ * @param owner One-based character number, or zero to unequip.
+ * @return Result of the inventory update.
+ */
+extern "C" s32 lib_allocation_set_equipped_owner(ResidentObject1B64F8* inventory, s16 identifier, s32 owner);
+
+/** @brief Hide the factor tooltip. @param tooltip Factor tooltip. */
+extern "C" void lib_factor_tooltip_hide(EquipFactorTooltip* tooltip);
+
+/**
+ * @brief Show an item allocation's factors in the tooltip at a screen position.
+ * @param tooltip Factor tooltip.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Display depth.
+ * @param identifier One-based allocation ID.
+ * @param flag Display flag stored with the tooltip.
+ */
+extern "C" void lib_factor_tooltip_show(EquipFactorTooltip* tooltip, float x, float y, float z, s16 identifier, u32 flag);
+
+/** @brief Create the tooltip frame and factor lines, starting hidden. @param tooltip Factor tooltip. @return One after initialization, otherwise zero. */
+extern "C" s32 lib_factor_tooltip_init(EquipFactorTooltip* tooltip);
+
+static inline void set_visibility(LibClass178600* display, const u8& flag);
+
+static inline void set_equipment_icon(LibObject172410* icon, s32 category, u8 variant);
+
+static inline void set_display_depth(LibClass174EF0* icon, float depth);
+
+static inline void set_resource_scale(ItemCreationOptionResourceDisplay* display, float x, float y);
+
+static inline s32 equip_category_allocations(ItemCreationCategoryRecord* category, ItemCreationAllocationRecord** records, u16& identifier);
+
+static inline void set_comparison_number(LibObject174F20*& widget, s32 value, s32 previous);
+
+static inline EquipCharacterRecord* copy_comparison_context(EquipStatComparisonWindow* window, const s16& selected);
+
+static inline u8 selector_inactive(FieldClass153130* selector);
+
+static inline void initialize_equip_allocation(ItemCreationAllocationRecord* allocation, const ItemCreationCategoryRecord* item, const u16* factors);
+
+static inline void reset_scroll(LibObject174D90* display);
+
+static inline void set_resource_text(LibObject175140* display, const char* text);
+
+static inline s16 equipped_item(const EquipCharacterEquipment& equipment, s32 index);
+
+static inline void attach_comparison(EquipSlotWindow* object, EquipParameterWindow* detail, EquipStatComparisonWindow* comparison);
+
+template <class T>
+static inline void release_owned(T*& resource);
+
+/** @brief Align a resource buffer to the next 128-byte boundary. @param buffer Resource buffer. @return Aligned resource header. */
+static inline EquipAlignedResource* aligned_resource(void* buffer)
+{
+    return reinterpret_cast<EquipAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
+}
+
+/** @brief Set the item icon's mode flag and mark its display dirty. @param icon Item icon. @param enabled Mode flag. */
+static inline void equip_set_icon_enabled(LibObject172410* icon, u8 enabled)
+{
+    icon->unkfa = enabled;
+    icon->unk3c = 1;
+}
+
+/** @brief Return the equipment menu's active State. @return Active equipment controller. */
+static inline EquipController* current_controller()
+{
+    return static_cast<EquipController*>(D_001B643C->callbacks->state);
+}
+
+/** @brief Return the selected character's record. @param selection Character selection. @return Record of the current character. */
+static inline EquipCharacterRecord* selected_character(FieldRecordSelection* selection)
+{
+    return &reinterpret_cast<EquipCharacterRecord*>(selection->records)[selection->current];
+}
+
+/** @brief Return the selected character's equipment. @param selection Character selection. @return Equipment record of the current character. */
+static inline EquipCharacterEquipment* selected_equipment(FieldRecordSelection* selection)
+{
+    return &static_cast<EquipCharacterEquipment*>(selection->unk04)[selection->current];
+}
+
+/** @brief Refresh the selected record description, code, and active display widgets. @param associated Record display window. */
+static inline void equip_refresh_record_display(EquipCharacterWindow* associated)
+{
+    if (associated->selection != 0)
+    {
+        LibObject175140* text = associated->name_text;
+        text->unkfc = selected_equipment(associated->selection)->character_name;
+        text->unk3c = 1;
+        EquipCharacterRecord* record = selected_character(associated->selection);
+        s32 result = record->get_level();
+        LibObject174F20* number = associated->level_value;
+        number->numeric_value = result;
+        number->unk3c = 1;
+        associated->show_current_portrait();
+    }
+}
+
+/** @brief Find a category in resident storage. @param value One-based category index. @return Category, or null outside one through seven hundred fifty. */
+static inline ItemCreationCategoryRecord* equip_category_record(s32 value)
+{
+    ResidentObject1B64F8* base = D_001B64F8;
+    u16 index = value;
+    bool valid = false;
+
+    if (index > 0 && index <= 750)
+    {
+        valid = true;
+    }
+
+    if (valid)
+    {
+        return &base->item_types[index - 1];
+    }
+
+    return 0;
+}
+
+/** @brief Check the one-based packed record index. @param index Record index. @return True for indices from one through 3000. */
+static inline bool valid_record_index(s16 index)
+{
+    return index > 0 && index <= 3000;
+}
+
+/**
+ * @brief Find an item allocation record by its one-based ID.
+ * @param value Allocation ID before narrowing.
+ * @return Allocation record, or null for an invalid ID.
+ */
+static inline ItemCreationAllocationRecord* allocation_record(s32 value)
+{
+    ItemCreationAllocationRecord* records = reinterpret_cast<ItemCreationAllocationRecord*>(D_001B64F8);
+    s16 index = value;
+
+    if (valid_record_index(index))
+    {
+        return &records[index - 1];
+    }
+
+    return 0;
+}
+
+/** @brief Set a numeric widget value and mark it dirty. @param widget Numeric widget. @param value Display value. */
+static inline void set_number(LibObject174F20* widget, u32 value)
+{
+    widget->numeric_value = value;
+    widget->unk3c = 1;
+}
+
+/**
+ * @brief Copy the scalar position and mark the display receiver for refresh.
+ * @param target Display receiver to update.
+ * @param x Horizontal position component.
+ * @param y Vertical position component.
+ * @param z Third position component.
+ * @param w Fourth position component.
+ */
+static inline void equip_set_position(LibClass178600* target, float x, float y, float z, float w)
+{
+    target->unk18.unk00 = x;
+    target->unk18.unk04 = y;
+    target->unk18.unk08 = z;
+    target->unk18.unk0c = w;
+    target->unk3c = 1;
+}
+
+/** @brief Store the window byte at offset 0xC. @param value Unsigned byte to store. */
+void FieldClass15AE70::func_slot24(u8 value)
+{
+    unk0c = value;
+}
+
+/** @brief Read the window byte at offset 0xC. @return Stored unsigned byte. */
+u8 FieldClass15AE70::func_slot28()
+{
+    return unk0c;
+}
+
+/** @brief Store the window byte at offset 0x8. @param value Unsigned byte to store. */
+void FieldClass15AE70::func_slot2c(u8 value)
+{
+    unk08 = value;
+}
+
+/** @brief Read the window byte at offset 0x8. @return Stored unsigned byte. */
+u8 FieldClass15AE70::func_slot30()
+{
+    return unk08;
+}
+
+/** @brief Store the window halfword at offset 0xA. @param value Unsigned halfword to store. */
+void FieldClass15AE70::func_slot34(u16 value)
+{
+    unk0a = value;
+}
+
+/** @brief Read the window halfword at offset 0xA. @return Stored unsigned halfword. */
+u16 FieldClass15AE70::func_slot38()
+{
+    return unk0a;
+}
+
+/** @brief Store the alternate associated pointer. @param associated Pointer to store. */
+void FieldClass15AE70::func_slot48(void* associated)
+{
+    unk9c = associated;
+}
+
+/** @brief Read the alternate associated pointer. @return Stored pointer. */
+void* FieldClass15AE70::func_slot4c()
+{
+    return unk9c;
+}
+
+/** @brief Store the resource source word. @param value Word to store. */
+void FieldClass15AE70::func_slot50(u32 value)
+{
+    unk04 = value;
+}
+
+/** @brief Return the resource source word. @return Stored word. */
+u32 FieldClass15AE70::func_slot54()
+{
+    return unk04;
+}
+
+/** @brief Return the nested display container. @return Stored container. */
+LibObject178660* FieldClass15AE70::func_slot58()
+{
+    return unk10;
+}
+
+void FieldClass15AE70::func_slot60(s32 text_key)
+{
+}
+
+void FieldClass15AE70::func_slot64()
+{
+}
+
+void FieldClass15AE70::func_slot70()
+{
+}
+
+void FieldClass15AE70::func_slot74()
+{
+}
+
+void FieldClass15AE70::func_slot78()
+{
+}
+
+void FieldClass15AE70::func_slot7c()
+{
+}
+
+void FieldClass15AE70::func_slot80()
+{
+}
+
+void FieldClass15AE70::func_slot84()
+{
+}
+
+void FieldClass15AE70::func_slot88()
+{
+}
+
+void FieldClass15AE70::func_slot8c()
+{
+}
+
+void FieldClass15AE70::func_slot90()
+{
+}
+
+void FieldClass15AE70::func_slot94()
+{
+}
+
+void FieldClass15AE70::func_slot98()
+{
+}
+
+void FieldClass15AE70::func_slot9c()
+{
+}
+
+void FieldClass15AE70::func_slota0()
+{
+}
+
+void FieldClass15AE70::func_slota4()
+{
+}
+
+void FieldClass15AE70::func_slota8()
+{
+}
+
+void FieldClass15AE70::func_slotac()
+{
+}
+
+u8 FieldClass15AE70::func_slotb8()
+{
+    return 0;
+}
+
+u8 FieldClass15AE70::func_slotbc()
+{
+    return 0;
+}
+
+s32 FieldClass15AE70::func_slotc0()
+{
+    return 0;
+}
+
+s32 FieldClass15AE70::func_slotc4()
+{
+    return 0;
+}
+
+s32 FieldClass15AE70::func_slotc8()
+{
+    return 0;
+}
+
+s32 FieldClass15AE70::func_slotcc()
+{
+    return 0;
+}
+
+s32 FieldClass15AE70::func_slotd0()
+{
+    return 0;
+}
+
+s32 FieldClass15AE70::func_slotd4()
+{
+    return 0;
+}
+
+s32 FieldClass15AE70::func_slotd8()
+{
+    return 0;
+}
+
+s32 FieldClass15AE70::func_slotdc()
+{
+    return 0;
+}
+
+void FieldClass15AE70::func_slote0()
+{
+}
+
+void FieldClass15AE70::func_slote4()
+{
+}
+
+/** @brief Read the window byte at offset 0xD. @return Stored unsigned byte. */
+u8 FieldClass15AE70::func_slote8()
+{
+    return unk0d;
+}
+
+/** @brief Store the window byte at offset 0xD. @param value Unsigned byte to store. */
+void FieldClass15AE70::func_slotec(u8 value)
+{
+    unk0d = value;
+}
+
+void FieldClass15AE70::func_slotf0()
+{
+}
+
+void EquipExitConfirmWindow::func_slotf4(s16 selected)
+{
+    s32 index = 0;
+    FieldListNode* node = unk2c.head->next;
+
+    if (node != 0)
+    {
+        do
+        {
+            LibClass174EF0* icon = static_cast<LibClass174EF0*>(node->value);
+
+            if (index == selected)
+            {
+                icon->set_color(0x288080);
+            }
+            else
+            {
+                icon->set_color(0x808080);
+            }
+
+            node = node->next;
+            index++;
+        } while (node != 0);
+    }
+}
+
+void EquipExitConfirmWindow::func_slot5c()
+{
+    if (current_controller()->func_00261150() == this)
+    {
+        func_slotf4(grid->unk114);
+    }
+}
+
+/** @brief Return the stored window pointer. @return Stored pointer. */
+void* FieldClass153E30::func_00261150()
+{
+    return unk20;
+}
+
+void EquipExitConfirmWindow::func_slot6c()
+{
+    if (static_cast<s16>(grid->process_direction(1)) == 1)
+    {
+        return;
+    }
+}
+
+void EquipExitConfirmWindow::func_slot68()
+{
+    if (static_cast<s16>(grid->process_direction(0)) == 1)
+    {
+        return;
+    }
+}
+
+u8 EquipExitConfirmWindow::func_slotb4()
+{
+    FieldClass15AE70::func_slot18(0, 0x7F);
+    EquipController* state = current_controller();
+    state->func_00263C70(func_slot44());
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->callbacks), this);
+    return 2;
+}
+
+/** @brief Store the window pointer. @param value Pointer to store. */
+void FieldClass153E30::func_00263C70(void* value)
+{
+    unk20 = value;
+}
+
+u8 EquipExitConfirmWindow::func_slotb0()
+{
+    selected = grid->unk114;
+    u8 result = 0;
+
+    if (selected == 0)
+    {
+        set_state(0xFF, 0x80);
+    }
+    else
+    {
+        result = func_slotb4();
+    }
+
+    u8 status;
+
+    if (result == 0)
+    {
+        status = 1;
+    }
+    else
+    {
+        status = 2;
+    }
+
+    return status;
+}
+
+s32 EquipExitConfirmWindow::func_slot10(u32 associated, float x, float y, s32 code)
+{
+    FieldClass15AE70::func_slot10(associated, x, y, code);
+    LibClass178630* frame = new (0) LibClass178630;
+
+    if (frame == 0)
+    {
+        return 0;
+    }
+
+    lib_panel_init_rectangle(frame, 1, 0.0f, 0.0f, 240.0f, 160.0f, 88.0f);
+    lib_container_attach_widget(unk10, frame);
+    append_panel_widget_node(&unk14, frame);
+    LibObject178750* first = new (0) LibObject178750;
+    LibObject178750* second = new (0) LibObject178750;
+    LibObject178750* title = new (0) LibObject178750;
+    grid = new (0) FieldObject23CEA0;
+
+    if (first == 0 || second == 0 || title == 0 || grid == 0)
+    {
+        return 0;
+    }
+
+    first->init_resource_rectangle(84.0f, 84.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_YES, 0);
+    second->init_resource_rectangle(84.0f, 120.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_NO, 0);
+    title->init_resource_rectangle(24.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_CONFIRM_EXIT, 0);
+    lib_container_attach_widget(unk10, first);
+    lib_container_attach_widget(unk10, second);
+    lib_container_attach_widget(unk10, title);
+    append_text_widget_node(&unk2c, first);
+    append_text_widget_node(&unk2c, second);
+    append_text_widget_node(&unk2c, title);
+    grid->func_0023CE80(1, 2);
+    grid->func_0023CE60(0.0f, 36.0f);
+    grid->unkF2 = 0;
+    grid->func_0023CF50(1, 84.0f + x, 16.0f + (84.0f + y));
+    append_grid_widget_node(&unk74, grid);
+    return 1;
+}
+
+EquipExitConfirmWindow::~EquipExitConfirmWindow()
+{
+}
+
+void EquipHelpWindow::func_slot5c()
+{
+    LibClass178600* target = text;
+    float x = target->unk18.unk00;
+    float y = target->unk18.unk04;
+    float z = target->unk18.unk08;
+    float w = target->unk18.unk0c;
+
+    if (scroll_phase == 0)
+    {
+        equip_set_position(target, initial_text_x, y, z, w);
+        initial_pause_frames++;
+
+        if (!((float)initial_pause_frames <= 120.0f))
+        {
+            initial_pause_frames = 0;
+            scroll_phase = 1;
+        }
+
+        return;
+    }
+
+    x -= 108.0f * D_001B6690;
+
+    if (x < clip_x - (float)scroll_span)
+    {
+        x = 2.0f + (clip_x + clip_width);
+    }
+
+    equip_set_position(target, x, y, z, w);
+}
+
+void EquipHelpWindow::func_slot60(s32 text_key)
+{
+    if (text_key >= EQUIP_MSG_HELP_FIRST && text_key < EQUIP_MSG_HELP_END)
+    {
+        initial_pause_frames = 0;
+        scroll_phase = 0;
+        lib_text_set_resource(text, func_slot54(), text_key, 1);
+        scroll_span = static_cast<s32>(lib_text_measure_bounds(text)->unk08) + 6;
+    }
+}
+
+s32 EquipHelpWindow::func_slotf4(u32 associated)
+{
+    FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 19);
+    text = new (0) LibObject178750;
+    ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
+    ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
+
+    if (text == 0 || frame == 0 || overlay == 0)
+    {
+        return 0;
+    }
+
+    LibObject178750* title = new (0) LibObject178750;
+    title->init_resource_rectangle(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_TITLE, 0);
+    lib_container_attach_widget(unk10, title);
+    append_text_widget_node(&unk2c, title);
+    LibObject178750* label = new (0) LibObject178750;
+    label->init_resource_rectangle(36.0f, 40.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_MENU_LABEL, 0);
+    label->set_scale(0.65f, 0.65f);
+    lib_container_attach_widget(unk10, label);
+    append_text_widget_node(&unk2c, label);
+    label_right_edge = lib_text_measure_bounds(title)->unk08;
+    clip_x = 18.0f + label_right_edge;
+    float right_margin = 32.0f;
+    clip_width = 640.0f - (16.0f + (clip_x + right_margin));
+    initial_text_x = 24.0f + label_right_edge;
+    lib_scissor_init_rectangle(frame, clip_x, 0.0f, clip_width, 56.0f);
+    lib_container_attach_widget(unk10, frame);
+    append_clip_widget_node(&unk20, frame);
+    text->init_resource_rectangle(initial_text_x, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_CHANGE_HELP, 0);
+    lib_container_attach_widget(unk10, text);
+    append_text_widget_node(&unk2c, text);
+    lib_scissor_init_reset(overlay, 1);
+    lib_container_attach_widget(unk10, overlay);
+    append_clip_widget_node(&unk20, overlay);
+    func_slot60(EQUIP_MSG_CHANGE_HELP);
+    return 1;
+}
+
+EquipHelpWindow::~EquipHelpWindow()
+{
+}
+
+s32 EquipResourceWindow::func_slotf4(u32 associated)
+{
+    FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 20);
+    left_tile = new (0) ItemCreationOptionResourceDisplay;
+    middle_tile = new (0) ItemCreationOptionResourceDisplay;
+    right_tile = new (0) ItemCreationOptionResourceDisplay;
+    void* allocation = field_get_aligned_allocation(D_001B643C->resources, 11);
+    left_tile->unkcc = allocation;
+    middle_tile->unkcc = allocation;
+    right_tile->unkcc = allocation;
+    left_tile->unkd0 = 11;
+    middle_tile->unkd0 = 11;
+    right_tile->unkd0 = 11;
+    left_tile->func_002D6440(field_find_resource_record(D_001B643C->resources, 5), 0.0f, 0.0f);
+    middle_tile->func_002D6440(field_find_resource_record(D_001B643C->resources, 6), 256.0f, 0.0f);
+    right_tile->func_002D6440(field_find_resource_record(D_001B643C->resources, 7), 512.0f, 0.0f);
+    lib_container_attach_widget(unk10, left_tile);
+    lib_container_attach_widget(unk10, middle_tile);
+    lib_container_attach_widget(unk10, right_tile);
+    return 1;
+}
+
+ItemCreationClass175110::~ItemCreationClass175110()
+{
+}
+
+EquipResourceWindow::~EquipResourceWindow()
+{
+}
+
+/** @brief Write a stored display flag. @param display Display to update. @param flag Low-byte flag to store. */
+static inline void set_visibility(LibClass178600* display, const u8& flag)
+{
+    display->unk3f = flag;
+}
+
+void EquipItemInstanceListWindow::func_slot10c(u32 rows, u32 cursor)
+{
+    s32 index;
+    u8 flag = rows;
+
+    for (index = 0; index < 9; index++)
+    {
+        set_visibility(item_icons[index], flag);
+        set_visibility(factor_marks[index], flag);
+    }
+
+    if (panel != 0)
+    {
+        set_visibility(panel, flag);
+    }
+
+    if (FieldStateCE420::unk04 != 0)
+    {
+        FieldStateCE420::unk04->unk3f = cursor;
+
+        if (cursor != 0)
+        {
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 128.0f;
+            nested->unk3c = 1;
+        }
+        else
+        {
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 64.0f;
+            nested->unk3c = 1;
+        }
+    }
+
+    if (FieldStateCE420::unk00 != 0)
+    {
+        FieldStateCE420::unk00->unk3f = cursor;
+    }
+}
+
+/** @brief Return the empty equipment selection result. @return Zero. */
+u8 EquipItemInstanceListWindow::func_slotb8()
+{
+    return 0;
+}
+
+/** @brief Toggle the linked display flag. @return One. */
+u8 EquipItemInstanceListWindow::func_slotbc()
+{
+    EquipParameterWindow* target = controller->parameter_window;
+    target->show_parameters = !target->show_parameters;
+    return 1;
+}
+
+u8 EquipItemInstanceListWindow::func_slotb4()
+{
+    controller->remove_child(this);
+    FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
+    associated->func_slot10c(1, 1);
+    D_001B643C->callbacks->state->func_00263C70(associated);
+    preview_item_stats(controller->comparison_window, 0);
+    lib_factor_tooltip_hide(tooltip);
+    return 2;
+}
+
+u8 EquipItemInstanceListWindow::func_slotb0()
+{
+    ItemCreationAllocationRecord* records[100];
+
+    if (FieldClass15AE60::unk88 == 0)
+    {
+        return 3;
+    }
+
+    s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(controller->selected_item_type));
+    s32 selected = FieldStateCE420::unk24;
+
+    if (count != 0 && selected >= 0)
+    {
+        if (tooltip != 0)
+        {
+            lib_factor_tooltip_hide(tooltip);
+        }
+
+        FieldClass15AE70* first = controller->slot_window;
+        FieldClass15AE70* second = controller->comparison_window;
+        equip_item_in_active_slot(static_cast<EquipSlotWindow*>(first), lib_allocation_get_identifier(records[selected]));
+        first->func_slot20(1);
+        first->func_slot64();
+        D_001B643C->callbacks->state->func_00263C70(first);
+        preview_item_stats(static_cast<EquipStatComparisonWindow*>(second), 0);
+        second->func_slot20(0);
+        FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
+        associated->func_slot108(static_cast<u8>(controller->selected_slot));
+        associated->func_slot10c(0, 0);
+        controller->remove_child(this);
+        lib_factor_tooltip_hide(tooltip);
+    }
+    else
+    {
+        return 3;
+    }
+
+    return 1;
+}
+
+void EquipItemInstanceListWindow::func_slot5c()
+{
+    ItemCreationAllocationRecord* records[100];
+
+    if (D_001B643C->callbacks->state->func_00261150() == this)
+    {
+        FieldClass15AD40::func_slot5c();
+
+        if (D_001B643C->callbacks->state->func_00261150() == this)
+        {
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 128.0f;
+            nested->unk3c = 1;
+        }
+        else
+        {
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 64.0f;
+            nested->unk3c = 1;
+        }
+
+        s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(controller->selected_item_type));
+        s32 selected = FieldStateCE420::unk24;
+        EquipStatComparisonWindow* detail = controller->comparison_window;
+
+        if (count != 0 && selected >= 0)
+        {
+            preview_item_stats(detail, lib_allocation_get_identifier(records[selected]));
+            LibObject172410* icon = item_icons[FieldStateCE420::unk28];
+            set_selection_marker(icon, icon->unk94);
+            const LibUiRect16* position = &item_icons[FieldStateCE420::unk28]->unk18;
+            s32 x = static_cast<s32>(283.0f + position->unk00);
+            s32 y = static_cast<s32>(224.0f + (30.0f + position->unk04));
+            bool active = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04)->ItemCreationClass185050::unk35 != 0 && FieldClass15AE60::pad29[1] == 0;
+
+            if (active)
+            {
+                if (tooltip_item != lib_allocation_get_identifier(records[selected]))
+                {
+                    tooltip_item = lib_allocation_get_identifier(records[selected]);
+                    lib_factor_tooltip_hide(tooltip);
+                }
+
+                lib_factor_tooltip_show(tooltip, static_cast<float>(x), static_cast<float>(y), 18.0f, lib_allocation_get_identifier(records[selected]), 0);
+            }
+            else
+            {
+                lib_factor_tooltip_hide(tooltip);
+            }
+        }
+        else
+        {
+            preview_item_stats(detail, 0);
+            set_selection_marker(0, 0x808080);
+        }
+    }
+}
+
+void EquipItemInstanceListWindow::set_scroll_position(float offset)
+{
+    float position = (16.0f + offset) - 4.0f;
+    s32 index = 0;
+
+    do
+    {
+        LibClass178600* target_third;
+        LibClass178600* target_second;
+        target_third = item_icons[index];
+        target_third->unk18.unk04 = position;
+        target_third->unk3c = 1;
+        target_second = factor_marks[index];
+        target_second->unk18.unk04 = position;
+        target_second->unk3c = 1;
+        position += 28.0f;
+        index++;
+    } while (index < 9);
+}
+
+/** @brief Select the displayed item code. @param icon Code widget. @param category Category identifier. @param variant Packed record variant. */
+static inline void set_equipment_icon(LibObject172410* icon, s32 category, u8 variant)
+{
+    icon->unkfc = category;
+    icon->unkfe = variant;
+    icon->unk3c = 1;
+}
+
+void EquipItemInstanceListWindow::refresh_rows(s32 start)
+{
+    ItemCreationAllocationRecord* records[100];
+    s32 category = controller->selected_item_type;
+
+    for (s32 index = 99; index >= 0; index--)
+    {
+        records[index] = 0;
+    }
+
+    FieldClass15AE60::unk88 = lib_collect_unequipped_allocations(D_001B64F8, records, category);
+
+    for (s32 row = 0; row < 9; row++)
+    {
+        if (records[start + row] == 0)
+        {
+            item_icons[row]->unk3d = 0;
+            factor_marks[row]->unk3d = 0;
+        }
+        else
+        {
+            set_equipment_icon(item_icons[row], category, records[start + row]->modification_number);
+            s32 count = 0;
+
+            for (s32 index = 0; index < 8; index++)
+            {
+                u16 value = func_0040D930(records[start + row], index);
+
+                if (value != 0 && value != 700)
+                {
+                    count++;
+                }
+            }
+
+            factor_marks[row]->func_002D5CF0(mark_allocation, field_find_resource_record(D_001B643C->resources, count + 60), 14);
+            item_icons[row]->unk3d = 1;
+            factor_marks[row]->unk3d = 1;
+        }
+    }
+}
+
+void EquipItemInstanceListWindow::recount_rows()
+{
+    ItemCreationAllocationRecord* records[100];
+    FieldClass15AE60::unk88 = 0;
+    FieldClass15AE60::unk88 = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(current_controller()->selected_item_type));
+    s32 count = FieldClass15AE60::unk88;
+
+    if (count >= 8)
+    {
+        count = 8;
+    }
+
+    s32 start = FieldStateCE420::unk22;
+
+    if (FieldClass15AE60::unk88 < start + 8)
+    {
+        start = FieldClass15AE60::unk88 - 8;
+    }
+
+    if (start < 0)
+    {
+        start = 0;
+    }
+
+    s32 row = FieldStateCE420::unk28;
+
+    if (row >= count)
+    {
+        row = count - 1;
+    }
+
+    if (row < 0)
+    {
+        row = 0;
+    }
+
+    func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, count, 312, 28);
+    FieldClass15AE60::configure_selection(FieldClass15AE60::unk88, start, row);
+}
+
+/** @brief Set the drawing depth and mark the display dirty. @param icon Drawing widget. @param depth Drawing depth. */
+static inline void set_display_depth(LibClass174EF0* icon, float depth)
+{
+    icon->unk88 = depth;
+    icon->unk3c = 1;
+}
+
+/** @brief Set both resource drawing scales and mark the display dirty. @param display Resource display. @param x Horizontal scale. @param y Vertical scale. */
+static inline void set_resource_scale(ItemCreationOptionResourceDisplay* display, float x, float y)
+{
+    display->unk50.unk34 = y;
+    display->unk50.unk30 = x;
+    display->unk3c = 1;
+}
+
+s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
+{
+    FieldClass15AE70::func_slot10(associated, 283.0f, 224.0f, 8);
+    FieldStateCE420::unk3c = 1;
+    ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
+    ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
+    panel = new (0) LibClass178630;
+    lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 340.0f, 248.0f, 88.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, panel);
+    lib_scissor_init_rectangle(frame, 8.0f, 10.0f, 302.0f, 224.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, frame);
+    mark_allocation = field_get_aligned_allocation(D_001B643C->resources, 14);
+
+    for (s32 index = 0; index < 9; index++)
+    {
+        item_icons[index] = new (0) LibObject172410;
+        float y = 12.0f + 28.0f * static_cast<float>(index);
+        lib_item_code_init_rectangle(item_icons[index], 34.0f, y, 302.0f, 21.599998f, 0, 0, 0);
+        item_icons[index]->set_scale(0.9f, 0.9f);
+        equip_set_icon_enabled(item_icons[index], 1);
+        set_display_depth(item_icons[index], -1.0f);
+        lib_container_attach_widget(FieldClass15AE70::unk10, item_icons[index]);
+        factor_marks[index] = new (0) ItemCreationOptionResourceDisplay;
+        FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 60);
+        void* allocation = mark_allocation;
+        factor_marks[index]->unkcc = allocation;
+        factor_marks[index]->unkd0 = 14;
+        factor_marks[index]->func_002D6440(record, 13.0f, y);
+        set_resource_scale(factor_marks[index], 0.9f, 0.9f);
+        lib_container_attach_widget(FieldClass15AE70::unk10, factor_marks[index]);
+        factor_marks[index]->unk3f = 0;
+    }
+
+    lib_scissor_init_reset(overlay, 1);
+    lib_container_attach_widget(FieldClass15AE70::unk10, overlay);
+    FieldStateCE420::unk34 = 8.0f;
+    FieldStateCE420::unk38 = 24.0f;
+    FieldStateCE420::unk04 = new (0) ItemCreationClass175030;
+    lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 10.0f, 24.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
+    FieldStateCE420::unk04->unk3f = 0;
+    FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
+    lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 12.0f, 224.0f, 10.0f, 0);
+    lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
+    func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, 8, 312, 28);
+    FieldStateCE420::unk2b = 3;
+    unk85 = 0;
+    func_slot110(1);
+    func_slot10c(1, 1);
+    recount_rows();
+    return 1;
+}
+
+/** @brief Store the selection byte at offset 0x84. @param value Byte to store. */
+void FieldClass15AD40::func_slot110(u8 value)
+{
+    FieldClass15AE60::unk84 = value;
+}
+
+EquipItemInstanceListWindow::EquipItemInstanceListWindow(EquipController* state)
+{
+    for (s32 index = 0; index < 9; index++)
+    {
+        unk48[index] = 0;
+        item_icons[index] = 0;
+        factor_marks[index] = 0;
+    }
+
+    controller = state;
+    panel = 0;
+    mark_allocation = 0;
+    FieldClass15AD40();
+    tooltip = 0;
+    tooltip = state->tooltip;
+    tooltip_item = 0;
+}
+
+/** @brief Toggle the linked display flag. @return One. */
+u8 EquipItemListWindow::func_slotbc()
+{
+    EquipParameterWindow* target = controller->parameter_window;
+    target->show_parameters = !target->show_parameters;
+    return 1;
+}
+
+u8 EquipItemListWindow::func_slotb4()
+{
+    func_slot10c(0, 0);
+    FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(func_slot44());
+
+    if (associated != 0)
+    {
+        associated->func_slot20(1);
+        associated->func_slot64();
+        D_001B643C->callbacks->state->func_00263C70(associated);
+    }
+
+    FieldClass15AE70* other = comparison_window;
+
+    if (other != 0)
+    {
+        other->func_slot20(0);
+    }
+
+    return 2;
+}
+
+u8 EquipItemListWindow::func_slotb0()
+{
+    if (FieldClass15AE60::unk88 == 0)
+    {
+        return 3;
+    }
+
+    if (controller == 0)
+    {
+        return 0;
+    }
+
+    if (FieldStateCE420::unk24 == 0)
+    {
+        FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(func_slot44());
+
+        if (associated != 0)
+        {
+            equip_item_in_active_slot(static_cast<EquipSlotWindow*>(associated), 0);
+            associated->func_slot20(1);
+            associated->func_slot64();
+            FieldStateCE420::unk04->unk3f = 0;
+            D_001B643C->callbacks->state->func_00263C70(associated);
+            refresh_rows(FieldStateCE420::unk22);
+        }
+
+        if (comparison_window != 0)
+        {
+            comparison_window->func_slot20(0);
+        }
+
+        return 1;
+    }
+
+    if (FieldClass15AE60::unk88 != 0)
+    {
+        EquipItemInstanceListWindow* window = new (0) EquipItemInstanceListWindow(controller);
+        u32 associated = controller->get_resource_slot();
+        window->func_slot104(associated);
+        window->func_slot40(this);
+        controller->add_child(window);
+        controller->func_00263C70(window);
+    }
+    else
+    {
+        return 3;
+    }
+
+    FieldStateCE420::unk04->unk3f = 0;
+    return 1;
+}
+
+/** @brief Return the loaded resource slot. @return Resource slot. */
+u32 EquipController::get_resource_slot()
+{
+    return resource_slot;
+}
+
+/**
+ * @brief Set the optional control's flag and opacity.
+ * @param unused Unused first word.
+ * @param value Value tested for zero and stored in the control's low-byte flag.
+ */
+void EquipItemListWindow::func_slot10c(u32 unused, u32 cursor)
+{
+    if (FieldStateCE420::unk04 != 0)
+    {
+        FieldStateCE420::unk04->unk3f = cursor;
+
+        if (cursor != 0)
+        {
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 128.0f;
+            nested->unk3c = 1;
+        }
+        else
+        {
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 64.0f;
+            nested->unk3c = 1;
+        }
+    }
+}
+
+void EquipItemListWindow::set_scroll_position(float offset)
+{
+    float position = 16.0f + offset;
+    s32 index;
+    index = 0;
+
+    do
+    {
+        LibClass178600* target_first;
+        LibClass178600* target_second;
+        LibClass178600* target_third;
+        target_first = unk48[index];
+        target_first->unk18.unk04 = position;
+        target_first->unk3c = 1;
+        target_second = separators[index];
+        target_second->unk18.unk04 = position;
+        target_second->unk3c = 1;
+        target_third = counts[index];
+        target_third->unk18.unk04 = position;
+        target_third->unk3c = 1;
+        position += 28.0f;
+        index++;
+    } while (index < 9);
+}
+
+void EquipItemListWindow::refresh_rows(s32 start)
+{
+    if (controller != 0)
+    {
+        EquipItemTypeNode* node = get_item_type_node(&item_types, start);
+
+        for (s32 row = 0; row < 9; row++)
+        {
+            if (node != 0)
+            {
+                s32 category;
+                bool found;
+                s32 index;
+                ItemCreationCategoryRecord* record = node->value;
+
+                if (record != 0)
+                {
+                    found = false;
+                    u16 count = static_cast<u16>(new_item_types.count);
+                    index = 0;
+                    category = static_cast<u16>(record->catalog_index + 1);
+                    s32 key = category + EQUIP_MSG_ITEM_NAME_BASE;
+
+                    for (; index < count; index++)
+                    {
+                        if (category == get_new_item_type_node(&new_item_types, index)->value)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found)
+                    {
+                        static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[row])->set_color(0x508050);
+                    }
+                    else
+                    {
+                        static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[row])->set_color(0x808080);
+                    }
+
+                    lib_text_set_resource(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), key, 0);
+                    LibObject174F20* image = counts[row];
+                    image->numeric_value = record->inventory_count;
+                    image->unk3c = 1;
+                    FieldClass15AE60::unk48[row]->unk3d = 1;
+                    separators[row]->unk3d = 1;
+                    counts[row]->unk3d = 1;
+                }
+                else
+                {
+                    static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[row])->set_color(0x808080);
+                    lib_text_set_resource(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), EQUIP_MSG_NONE, 0);
+                    FieldClass15AE60::unk48[row]->unk3d = 1;
+                    separators[row]->unk3d = 0;
+                    counts[row]->unk3d = 0;
+                }
+
+                node = node->next;
+            }
+            else
+            {
+                FieldClass15AE60::unk48[row]->unk3d = 0;
+                separators[row]->unk3d = 0;
+                counts[row]->unk3d = 0;
+            }
+        }
+    }
+}
+
+/**
+ * @brief Collect a category's unequipped allocations.
+ * @param category Category record, or null.
+ * @param records Receives the allocation records.
+ * @param identifier Receives the one-based catalog identifier, or zero.
+ * @return Number of records collected.
+ */
+static inline s32 equip_category_allocations(ItemCreationCategoryRecord* category, ItemCreationAllocationRecord** records, u16& identifier)
+{
+    identifier = 0;
+    s32 count = 0;
+
+    if (category != 0)
+    {
+        u16 id = category->catalog_index + 1;
+        identifier = id;
+        count = lib_collect_unequipped_allocations(D_001B64F8, records, id);
+    }
+
+    return count;
+}
+
+void EquipItemListWindow::func_slot108(u8 category)
+{
+    s32 index;
+    ItemCreationAllocationRecord* records[100];
+    clear_item_types(&item_types);
+    clear_new_item_types(&new_item_types);
+    FieldClass15AE60::unk88 = 1;
+    append_item_type(&item_types, 0);
+    FieldRecordSelection* selection = controller->selected_records();
+    u8 slot = selection->slots[selection->current];
+
+    if (category >= 3)
+    {
+        category = 2;
+    }
+
+    for (index = 1; index <= 750; index++)
+    {
+        ItemCreationCategoryRecord* entry = equip_category_record(index);
+
+        if (entry != 0)
+        {
+            const ItemCreationCategoryDefinition* definition = &D_001B64F0[entry->catalog_index];
+
+            if ((static_cast<u16>(definition->equipment_mask) & (1 << (slot - 1))) != 0 && category == static_cast<u8>(definition->category) &&
+                entry->inventory_count != 0)
+            {
+                u16 identifier;
+                s32 count = equip_category_allocations(entry, records, identifier);
+
+                for (s32 record_index = 0; record_index < count; record_index++)
+                {
+                    if (records[record_index]->new_item)
+                    {
+                        append_new_item_type(&new_item_types, identifier);
+                        break;
+                    }
+                }
+
+                append_item_type(&item_types, entry);
+                FieldClass15AE60::unk88++;
+            }
+        }
+    }
+
+    s32 rows = FieldClass15AE60::unk88 >= 8 ? 8 : FieldClass15AE60::unk88;
+    func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, rows, 312, 28);
+    FieldClass15AE60::configure_selection(FieldClass15AE60::unk88, 0, 0);
+}
+
+/** @brief Return the State's record selection. @return Record selection. */
+FieldRecordSelection* EquipController::selected_records()
+{
+    return selection;
+}
+
+void EquipItemListWindow::func_slot5c()
+{
+    if (D_001B643C->callbacks->state->func_00261150() == this)
+    {
+        FieldClass15AD40::func_slot5c();
+        EquipItemTypeNode* selected = get_item_type_node(&item_types, FieldStateCE420::unk24);
+
+        if (selected != 0)
+        {
+            if (selected->value != 0)
+            {
+                controller->selected_item_type = static_cast<u16>(selected->value->catalog_index + 1);
+            }
+            else
+            {
+                controller->selected_item_type = 0;
+            }
+        }
+
+        if (FieldStateCE420::unk24 >= 0 && FieldClass15AE60::unk88 != 0)
+        {
+            LibClass174EF0* display = static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[FieldStateCE420::unk28]);
+            set_selection_marker(display, display->unk94);
+        }
+        else
+        {
+            set_selection_marker(0, 0x808080);
+        }
+
+        preview_item_stats(controller->comparison_window, 0);
+    }
+    else
+    {
+        set_selection_marker(0, 0x808080);
+    }
+}
+
+s32 EquipItemListWindow::func_slot104(u32 associated)
+{
+    FieldClass15AE70::func_slot10(associated, 283.0f, 224.0f, 9);
+    FieldStateCE420::unk3c = 1;
+    ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
+    ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
+    lib_scissor_init_rectangle(frame, 10.0f, 10.0f, 312.0f, 224.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, frame);
+
+    for (s32 index = 0; index < 9; index++)
+    {
+        unk48[index] = new (0) LibObject178750;
+        separators[index] = new (0) LibObject178750;
+        counts[index] = new (0) LibObject174F20;
+        float y = 16.0f + 28.0f * static_cast<float>(index);
+        static_cast<LibObject178750*>(unk48[index])->init_resource_rectangle(13.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_ITEM_NAME_BASE, 0);
+        separators[index]->init_resource_rectangle(268.0f, y - 4.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LABEL_SEPARATOR, 1);
+        counts[index]->init_numeric_resource_rectangle(276.0f, y, 28.0f, 24.0f, index, 0, 0);
+        set_display_depth(static_cast<LibObject178750*>(unk48[index]), -1.0f);
+        static_cast<LibObject178750*>(unk48[index])->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(FieldClass15AE70::unk10, unk48[index]);
+        lib_container_attach_widget(FieldClass15AE70::unk10, separators[index]);
+        lib_container_attach_widget(FieldClass15AE70::unk10, counts[index]);
+    }
+
+    lib_scissor_init_reset(overlay, 1);
+    lib_container_attach_widget(FieldClass15AE70::unk10, overlay);
+    FieldStateCE420::unk34 = 8.0f;
+    FieldStateCE420::unk38 = 28.0f;
+    FieldStateCE420::unk04 = new (0) ItemCreationClass175030;
+    lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 8.0f, 28.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
+    FieldStateCE420::unk04->unk3f = 0;
+    FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
+    lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 16.0f, 220.0f, 10.0f, 0.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
+    func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, 8, 312, 28);
+    FieldStateCE420::unk2b = 3;
+    unk84 = 0;
+    unk85 = 0;
+    func_slot10c(1, 0);
+    func_slot108(0);
+    return 1;
+}
+
+EquipItemListWindow::EquipItemListWindow(EquipController* state)
+{
+    for (s32 index = 0; index < 9; index++)
+    {
+        unk48[index] = 0;
+        separators[index] = 0;
+        counts[index] = 0;
+    }
+
+    controller = 0;
+    controller = state;
+    FieldClass15AD40();
+    unk184 = 0;
+    unk194 = 0;
+    comparison_window = 0;
+}
+
+s32 EquipItemListPanel::func_slotf4(u32 associated)
+{
+    FieldClass15AE70::func_slot10(associated, 283.0f, 224.0f, 10);
+    LibClass178630* widget = new (0) LibClass178630;
+    lib_panel_init_rectangle(widget, 1, 0.0f, 0.0f, 340.0f, 248.0f, 88.0f);
+    lib_container_attach_widget(unk10, widget);
+    return 1;
+}
+
+EquipItemListPanel::~EquipItemListPanel()
+{
+}
+
+/**
+ * @brief Show a comparison value colored by whether it rises or falls.
+ * @param widget Numeric widget.
+ * @param value Value with the selected item equipped.
+ * @param previous Current value.
+ */
+static inline void set_comparison_number(LibObject174F20*& widget, s32 value, s32 previous)
+{
+    if (value == previous)
+    {
+        set_number(widget, value);
+        widget->set_color(0x808080);
+    }
+    else if (value > previous)
+    {
+        set_number(widget, value);
+        widget->set_color(0x508050);
+    }
+    else if (value < previous)
+    {
+        set_number(widget, value);
+        widget->set_color(0x505080);
+    }
+}
+
+/**
+ * @brief Copy the selected character record with the item equipped in the category slot.
+ * @param window Item comparison window.
+ * @param selected Record index to equip.
+ * @return Original character record.
+ */
+static inline EquipCharacterRecord* copy_comparison_context(EquipStatComparisonWindow* window, const s16& selected)
+{
+    func_0013A678(&window->preview_record, 0, sizeof(window->preview_record));
+    func_0013A678(&window->preview_equipment, 0, sizeof(window->preview_equipment));
+    window->preview_item = selected;
+    FieldRecordSelection* selection = window->controller->selected_records();
+    EquipCharacterRecord* original = selected_character(selection);
+    EquipCharacterEquipment* equipment = selected_equipment(selection);
+    func_0013A4C0(&window->preview_record, original, sizeof(window->preview_record));
+    func_0013A4C0(&window->preview_equipment, equipment, sizeof(window->preview_equipment));
+    window->preview_equipment.set_equipment_id(window->slot, window->preview_item);
+    lib_character_recalculate_stats(&window->preview_record, &window->preview_equipment, 0, -1);
+    return original;
+}
+
+/**
+ * @brief Show the statistics with a record equipped next to the current ones.
+ * @param window Item comparison window.
+ * @param selected Record index to compare, or zero to hide the comparison.
+ */
+extern "C" void preview_item_stats(EquipStatComparisonWindow* window, s16 selected)
+{
+    if (selected == 0)
+    {
+        window->preview_values[0]->unk3f = 0;
+        window->preview_values[1]->unk3f = 0;
+        window->preview_values[2]->unk3f = 0;
+        window->preview_values[3]->unk3f = 0;
+        window->preview_values[4]->unk3f = 0;
+        return;
+    }
+
+    EquipCharacterRecord* original = copy_comparison_context(window, selected);
+    s32 value0 = window->preview_record.get_effective_attack();
+    s32 value1 = window->preview_record.get_effective_defense();
+    s32 value2 = window->preview_record.get_effective_agility();
+    s32 value3 = window->preview_record.get_effective_hit();
+    s32 value4 = window->preview_record.get_effective_intelligence();
+    s32 previous0 = original->get_effective_attack();
+    s32 previous1 = original->get_effective_defense();
+    s32 previous2 = original->get_effective_agility();
+    s32 previous3 = original->get_effective_hit();
+    s32 previous4 = original->get_effective_intelligence();
+    set_comparison_number(window->preview_values[0], value0, previous0);
+    set_comparison_number(window->preview_values[1], value1, previous1);
+    set_comparison_number(window->preview_values[2], value2, previous2);
+    set_comparison_number(window->preview_values[3], value3, previous3);
+    set_comparison_number(window->preview_values[4], value4, previous4);
+    window->preview_values[0]->unk3f = 1;
+    window->preview_values[1]->unk3f = 1;
+    window->preview_values[2]->unk3f = 1;
+    window->preview_values[3]->unk3f = 1;
+    window->preview_values[4]->unk3f = 1;
+}
+
+void EquipStatComparisonWindow::refresh_item_details(u8 category, s16 selected)
+{
+    slot = category;
+    lib_text_set_resource(slot_label, func_slot54(), slot + EQUIP_MSG_SLOT_NAME_BASE, 0);
+    item = selected;
+
+    if (item != 0)
+    {
+        ItemCreationAllocationRecord* packed = allocation_record(item);
+        u16 code = packed->definition_index();
+        u8 variant = packed->modification_number;
+        set_equipment_icon(item_icon, code + 1, variant);
+        item_icon->unk3f = 1;
+    }
+    else
+    {
+        item_icon->unk3f = 0;
+    }
+
+    FieldRecordSelection* selection = controller->selected_records();
+    const EquipCharacterRecord* record = selected_character(selection);
+
+    if (record != 0)
+    {
+        set_number(current_values[0], record->get_effective_attack());
+        set_number(current_values[1], record->get_effective_defense());
+        set_number(current_values[2], record->get_effective_agility());
+        set_number(current_values[3], record->get_effective_hit());
+        set_number(current_values[4], record->get_effective_intelligence());
+        set_number(preview_values[0], record->get_effective_attack());
+        set_number(preview_values[1], record->get_effective_defense());
+        set_number(preview_values[2], record->get_effective_agility());
+        set_number(preview_values[3], record->get_effective_hit());
+        set_number(preview_values[4], record->get_effective_intelligence());
+    }
+}
+
+s32 EquipStatComparisonWindow::func_slotf4(u32 associated)
+{
+    FieldClass15AE70::func_slot10(associated, 16.0f, 220.0f, 18);
+    slot_label = new (0) LibObject178750;
+    slot_label->init_resource_rectangle(14.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_SLOT_NAME_BASE, 1);
+    lib_container_attach_widget(unk10, slot_label);
+    slot_label->set_scale(0.8f, 0.8f);
+    slot_label->set_color(0x806080);
+    item_icon = new (0) LibObject172410;
+    lib_item_code_init_rectangle(item_icon, 12.0f, 38.0f, 244.0f, 24.0f, 0, 0, 0);
+    equip_set_icon_enabled(item_icon, 1);
+    item_icon->set_scale(0.9f, 0.9f);
+    lib_container_attach_widget(unk10, item_icon);
+
+    for (s32 index = 0; index < 5; index++)
+    {
+        float y = 78.0f + 32.0f * static_cast<float>(index);
+        stat_labels[index] = new (0) LibObject178750;
+        stat_labels[index]->init_resource_rectangle(28.0f, y - 2.0f, 0.0f, 0.0f, static_cast<s32>(associated), index + EQUIP_MSG_STAT_NAME_BASE, 0);
+        stat_labels[index]->set_color(0x805050);
+        lib_container_attach_widget(unk10, stat_labels[index]);
+        separators[index] = new (0) LibObject178750;
+        separators[index]->init_resource_rectangle(73.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LABEL_SEPARATOR, 0);
+        separators[index]->set_color(0x805050);
+        lib_container_attach_widget(unk10, separators[index]);
+        current_values[index] = new (0) LibObject174F20;
+        current_values[index]->init_numeric_resource_rectangle(92.0f, y, 48.0f, 22.8f, 9999, 0, 0);
+        current_values[index]->set_scale(0.95f, 0.95f);
+        lib_container_attach_widget(unk10, current_values[index]);
+        arrows[index] = new (0) LibObject178750;
+        arrows[index]->init_resource_rectangle(158.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_ARROW, 0);
+        arrows[index]->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(unk10, arrows[index]);
+        preview_values[index] = new (0) LibObject174F20;
+        preview_values[index]->init_numeric_resource_rectangle(196.0f, y, 48.0f, 22.8f, 9999, 0, 0);
+        preview_values[index]->set_scale(0.95f, 0.95f);
+        preview_values[index]->unk3f = 0;
+        lib_container_attach_widget(unk10, preview_values[index]);
+    }
+
+    func_slot20(0);
+    return 1;
+}
+
+EquipStatComparisonWindow::~EquipStatComparisonWindow()
+{
+}
+
+EquipStatComparisonWindow::EquipStatComparisonWindow(EquipController* state)
+{
+    controller = 0;
+    controller = state;
+    slot = 0xFF;
+    item = 0;
+    preview_item = 0;
+    unkb2 = 0;
+    func_0013A678(&preview_record, 0, sizeof(preview_record));
+    func_0013A678(&preview_equipment, 0, sizeof(preview_equipment));
+    slot_label = 0;
+    item_icon = 0;
+    stat_labels[0] = 0;
+    arrows[0] = 0;
+    current_values[0] = 0;
+    preview_values[0] = 0;
+
+    for (s32 i = 1; i < 5; i++)
+    {
+        stat_labels[i] = 0;
+        arrows[i] = 0;
+        current_values[i] = 0;
+        preview_values[i] = 0;
+    }
+}
+
+/**
+ * @brief Equip a record in the category window's selected slot.
+ * @param window Category window.
+ * @param identifier Record index to equip, or zero to clear the slot.
+ */
+extern "C" void equip_item_in_active_slot(EquipSlotWindow* window, s16 identifier)
+{
+    if (window->selection != 0)
+    {
+        lib_allocation_set_equipped_owner(D_001B64F8, selected_equipment(window->selection)->get_equipment_id(window->active_slot), 0);
+
+        if (identifier)
+        {
+            lib_allocation_set_equipped_owner(D_001B64F8, identifier, window->selection->slots[window->selection->current]);
+            selected_equipment(window->selection)->set_equipment_id(window->active_slot, identifier);
+        }
+        else
+        {
+            selected_equipment(window->selection)->set_equipment_id(window->active_slot, 0);
+        }
+
+        FieldRecordSelection* selection = window->controller->selected_records();
+        lib_character_recalculate_stats(selected_character(selection), selected_equipment(selection), 0, -1);
+    }
+
+    refresh_equipment_slots(window);
+    s32 category = window->active_slot;
+
+    if (category >= 3)
+    {
+        category = 2;
+    }
+
+    window->item_list->func_slot108(category);
+}
+
+void EquipSlotWindow::func_slot6c()
+{
+    if (static_cast<s16>(equipment_slot_selector->func_0023B3B0(1)) != 1)
+    {
+        s16 category = equipment_slot_selector->func_0023B3A0();
+        item_list = static_cast<FieldClass15AD40*>(func_slot4c());
+
+        switch (category)
+        {
+            case 0:
+                item_list->func_slot108(0);
+                controller->selected_slot = 0;
+                break;
+            case 1:
+                item_list->func_slot108(1);
+                controller->selected_slot = 1;
+                break;
+            case 2:
+            case 3:
+                item_list->func_slot108(2);
+                controller->selected_slot = 2;
+                break;
+        }
+    }
+}
+
+void EquipSlotWindow::func_slot68()
+{
+    if (static_cast<s16>(equipment_slot_selector->func_0023B3B0(0)) != 1)
+    {
+        s16 category = equipment_slot_selector->func_0023B3A0();
+        item_list = static_cast<FieldClass15AD40*>(func_slot4c());
+
+        switch (category)
+        {
+            case 0:
+                item_list->func_slot108(0);
+                controller->selected_slot = 0;
+                break;
+            case 1:
+                item_list->func_slot108(1);
+                controller->selected_slot = 1;
+                break;
+            case 2:
+            case 3:
+                item_list->func_slot108(2);
+                controller->selected_slot = 2;
+                break;
+        }
+    }
+}
+
+u8 EquipSlotWindow::func_slotb0()
+{
+    s32 category = static_cast<u16>(equipment_slot_selector->func_0023B3A0());
+
+    if (usable_slot_count < category)
+    {
+        return 3;
+    }
+
+    if (comparison_window != 0)
+    {
+        static_cast<EquipStatComparisonWindow*>(comparison_window)->refresh_item_details(category, equipped_items[category]);
+        comparison_window->func_slot20(1);
+    }
+
+    EquipCharacterWindow* associated = static_cast<EquipCharacterWindow*>(func_slot44());
+
+    if (associated->left_indicator != 0)
+    {
+        associated->left_indicator->unk3f = 0;
+    }
+
+    if (associated->right_indicator != 0)
+    {
+        associated->right_indicator->unk3f = 0;
+    }
+
+    item_list = static_cast<FieldClass15AD40*>(func_slot4c());
+
+    if (active_slot != category)
+    {
+        s32 next_category = static_cast<u16>(category);
+
+        switch (category)
+        {
+            case 0:
+            case 1:
+                break;
+            case 2:
+            case 3:
+                next_category = 2;
+                break;
+        }
+
+        item_list->func_slot108(next_category);
+    }
+
+    item_list->func_slot110(1);
+    item_list->func_slot10c(1, 1);
+    current_controller()->func_00263C70(item_list);
+    active_slot = category;
+    FieldClass153130* selector = equipment_slot_selector;
+    selector->ItemCreationClass185050::unk30 = 64.0f;
+    selector->LibClass178600::unk3c = 1;
+    func_slot20(0);
+    lib_factor_tooltip_hide(controller->tooltip);
+    return 1;
+}
+
+u8 EquipSlotWindow::func_slotb4()
+{
+    if (D_001B643C->runtime == 0)
+    {
+        return 0;
+    }
+
+    bool active = D_001B643C->runtime->unk2d != 0;
+
+    if (active == 1)
+    {
+        set_state(1, 0x80);
+    }
+    else
+    {
+        EquipExitConfirmWindow* window = new (0) EquipExitConfirmWindow;
+
+        if (window == 0)
+        {
+            return 0;
+        }
+
+        window->func_slot10(func_slot54(), 200.0f, 160.0f, 13);
+        window->func_slot40(this);
+        D_001B643C->callbacks->state->add_child(window);
+        D_001B643C->callbacks->state->func_00263C70(window);
+    }
+
+    lib_factor_tooltip_hide(controller->tooltip);
+    return 2;
+}
+
+void EquipSlotWindow::func_slot64()
+{
+    EquipCharacterWindow* associated = static_cast<EquipCharacterWindow*>(func_slot44());
+
+    if (associated->left_indicator != 0)
+    {
+        associated->left_indicator->unk3f = 1;
+    }
+
+    if (associated->right_indicator != 0)
+    {
+        associated->right_indicator->unk3f = 1;
+    }
+
+    equip_refresh_record_display(associated);
+    FieldClass153130* selector = equipment_slot_selector;
+    selector->ItemCreationClass185050::unk30 = 128.0f;
+    selector->LibClass178600::unk3c = 1;
+}
+
+u8 EquipSlotWindow::func_slotb8()
+{
+    EquipCharacterWindow* associated = static_cast<EquipCharacterWindow*>(func_slot44());
+
+    if (associated->left_indicator != 0)
+    {
+        associated->left_indicator->unk3f = 0;
+    }
+
+    if (associated->right_indicator != 0)
+    {
+        associated->right_indicator->unk3f = 0;
+    }
+
+    EquipCharacterRecord* record = selected_character(selection);
+    EquipCharacterEquipment* equipment = selected_equipment(selection);
+    optimize_equipment(controller, record, equipment, selection->slots[selection->current]);
+    lib_character_recalculate_stats(record, equipment, 0, -1);
+    lib_factor_tooltip_hide(controller->tooltip);
+    refresh_equipment_slots(this);
+    s32 category = static_cast<u16>(equipment_slot_selector->func_0023B3A0());
+
+    if (category == 0 || category == 1)
+    {
+        func_slot44();
+        item_list = static_cast<FieldClass15AD40*>(func_slot4c());
+        item_list->func_slot108(category);
+        item_list->func_slot110(1);
+    }
+
+    if (associated->left_indicator != 0)
+    {
+        associated->left_indicator->unk3f = 1;
+    }
+
+    if (associated->right_indicator != 0)
+    {
+        associated->right_indicator->unk3f = 1;
+    }
+
+    return 1;
+}
+
+u8 EquipSlotWindow::func_slotbc()
+{
+    EquipParameterWindow* target = controller->parameter_window;
+    target->show_parameters = !target->show_parameters;
+    return 1;
+}
+
+/** @brief Test whether a selector is inactive. @param selector Selector state. @return One when its control byte is clear. */
+static inline u8 selector_inactive(FieldClass153130* selector)
+{
+    return !(selector->ItemCreationClass185050::unk35 != 0);
+}
+
+void EquipSlotWindow::func_slot5c()
+{
+    if (current_controller()->func_00261150() == this)
+    {
+        u16 selected = equipment_slot_selector->func_0023B3A0();
+        ItemCreationAllocationRecord* record = allocation_record(equipped_items[selected]);
+
+        if (record != 0)
+        {
+            controller->selected_item_type = static_cast<u16>(record->definition_index() + 1);
+            const LibUiRect16* position = &item_icons[selected]->unk18;
+            s32 x = static_cast<s32>(16.0f + position->unk00);
+            s32 y = static_cast<s32>(220.0f + (29.0f + position->unk04));
+            u8 inactive = selector_inactive(equipment_slot_selector);
+
+            if (inactive == 0)
+            {
+                EquipFactorTooltip* tooltip = controller->tooltip;
+                lib_factor_tooltip_show(tooltip, static_cast<float>(x), static_cast<float>(y), 18.0f, lib_allocation_get_identifier(record), 0);
+            }
+            else
+            {
+                lib_factor_tooltip_hide(controller->tooltip);
+            }
+        }
+        else
+        {
+            controller->selected_item_type = 0;
+            lib_factor_tooltip_hide(controller->tooltip);
+        }
+    }
+}
+
+s32 EquipSlotWindow::func_slotdc()
+{
+    if (selection == 0)
+    {
+        return 0;
+    }
+
+    lib_factor_tooltip_hide(controller->tooltip);
+
+    if (selection->count > 1)
+    {
+        EquipController* state = current_controller();
+
+        if (state->selection != 0)
+        {
+            state->selection->active = 0;
+            func_0028E2B0(state->selection, 1);
+            equip_refresh_record_display(state->character_window);
+            refresh_equipment_slots(state->slot_window);
+            state->item_list_window->func_slot108(static_cast<u8>(state->selected_slot));
+        }
+
+        return 4;
+    }
+
+    return 0;
+}
+
+s32 EquipSlotWindow::func_slotd8()
+{
+    if (selection == 0)
+    {
+        return 0;
+    }
+
+    lib_factor_tooltip_hide(controller->tooltip);
+
+    if (selection->count > 1)
+    {
+        EquipController* state = current_controller();
+
+        if (state->selection != 0)
+        {
+            state->selection->active = 0;
+            func_0028E2B0(state->selection, 0);
+            equip_refresh_record_display(state->character_window);
+            refresh_equipment_slots(state->slot_window);
+            state->item_list_window->func_slot108(static_cast<u8>(state->selected_slot));
+        }
+
+        return 4;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Refresh the category window's equipment rows from the selected resource record.
+ * @param object Category window.
+ */
+extern "C" void refresh_equipment_slots(EquipSlotWindow* object)
+{
+    object->usable_slot_count = selected_equipment(object->selection)->encoded_equipment_slot_count ^ EQUIP_STAT_HALFWORD_XOR_KEY;
+
+    if (object->usable_slot_count >= 4)
+    {
+        object->usable_slot_count = 4;
+    }
+
+    for (s32 index = 0; index < 4; index++)
+    {
+        object->equipped_items[index] = 0;
+        object->slot_labels[index]->set_color(0x505050);
+    }
+
+    for (s32 index = 0; index < object->usable_slot_count; index++)
+    {
+        object->slot_labels[index]->set_color(0x806080);
+    }
+
+    for (s32 index = 0; index < object->usable_slot_count; index++)
+    {
+        object->item_icons[index]->unk3f = 0;
+        object->equipped_items[index] = selected_equipment(object->selection)->get_equipment_id(index);
+
+        if (object->equipped_items[index] != 0)
+        {
+            object->current_item = allocation_record(object->equipped_items[index]);
+            u16 code = object->current_item->definition_index();
+            u8 variant = object->current_item->modification_number;
+            set_equipment_icon(object->item_icons[index], static_cast<u16>(code) + 1, variant);
+            object->item_icons[index]->unk3f = 1;
+            object->empty_labels[index]->unk3f = 0;
+        }
+        else
+        {
+            object->empty_labels[index]->unk3f = 1;
+        }
+    }
+}
+
+s32 EquipSlotWindow::func_slotf4(u32 associated)
+{
+    if (selection == 0)
+    {
+        return 0;
+    }
+
+    FieldClass15AE70::func_slot10(associated, 16.0f, 220.0f, 18);
+    ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
+    ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
+    lib_scissor_init_rectangle(frame, 12.0f, 12.0f, 270.0f, 224.0f);
+    lib_container_attach_widget(unk10, frame);
+    row_spacing = 58.0f;
+
+    for (s32 index = 0; index < 4; index++)
+    {
+        float y = 16.0f + static_cast<float>(index) * row_spacing;
+        slot_labels[index] = new (0) LibObject178750;
+        lib_text_init_resource_rectangle(static_cast<LibObject178750*>(slot_labels[index]), static_cast<s32>(associated), index + EQUIP_MSG_SLOT_NAME_BASE, 1,
+                                         14.0f, y, 0.0f, 0.0f);
+        lib_container_attach_widget(unk10, slot_labels[index]);
+        slot_labels[index]->set_scale(0.8f, 0.8f);
+        slot_labels[index]->set_color(0x806080);
+        item_icons[index] = new (0) LibObject172410;
+        lib_item_code_init_rectangle(item_icons[index], 12.0f, 38.0f + row_spacing * static_cast<float>(index), 244.0f, 24.0f, 0, 0, 0);
+        equip_set_icon_enabled(item_icons[index], 1);
+        item_icons[index]->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(unk10, item_icons[index]);
+        empty_labels[index] = new (0) LibObject178750;
+        lib_text_init_resource_rectangle(static_cast<LibObject178750*>(empty_labels[index]), static_cast<s32>(associated), EQUIP_MSG_NONE, 0, 12.0f,
+                                         38.0f + row_spacing * static_cast<float>(index), 284.0f, 24.0f);
+        empty_labels[index]->set_scale(0.9f, 0.9f);
+        empty_labels[index]->unk3f = 0;
+        lib_container_attach_widget(unk10, empty_labels[index]);
+    }
+
+    lib_scissor_init_reset(overlay, 1);
+    lib_container_attach_widget(unk10, overlay);
+    equipment_slot_selector = new (0) FieldClass153130;
+    equipment_slot_selector->func_0023B530(1, 4, 1, 0, 1, 12.0f, 50.0f, 0.0f, row_spacing);
+    lib_container_attach_widget(unk10, equipment_slot_selector);
+    refresh_equipment_slots(this);
+    return 1;
+}
+
+EquipSlotWindow::EquipSlotWindow(EquipController* state)
+{
+    controller = 0;
+    controller = state;
+    unkf4 = 0;
+
+    for (s32 index = 0; index < 4; index++)
+    {
+        slot_labels[index] = 0;
+        item_icons[index] = 0;
+        equipped_items[index] = 0;
+    }
+
+    row_spacing = 0;
+    selection = 0;
+    selection = current_controller()->selected_records();
+    equipment_slot_selector = 0;
+    parameter_window = 0;
+    current_item = 0;
+    usable_slot_count = 0;
+    comparison_window = 0;
+    active_slot = 0;
+    item_list = 0;
+}
+
+s32 EquipSlotPanel::func_slotf4(u32 associated)
+{
+    FieldClass15AE70::func_slot10(associated, 16.0f, 224.0f, 19);
+    LibClass178630* widget = new (0) LibClass178630;
+    lib_panel_init_rectangle(widget, 0, 0.0f, 0.0f, 270.0f, 248.0f, 88.0f);
+    lib_container_attach_widget(unk10, widget);
+    return 1;
+}
+
+EquipSlotPanel::~EquipSlotPanel()
+{
+}
+
+extern "C" void lib_allocation_initialize(ItemCreationAllocationRecord* record, u16 item_code, u8 modification_number, const u16* factors, bool new_item,
+                                          bool suppress_allocation_id);
+
+/**
+ * @brief Reset a temporary allocation and initialize it from a category record.
+ * @param allocation Allocation record to initialize.
+ * @param item Category record supplying the catalog index.
+ * @param factors Eight factor codes, or null for catalog defaults.
+ */
+static inline void initialize_equip_allocation(ItemCreationAllocationRecord* allocation, const ItemCreationCategoryRecord* item, const u16* factors)
+{
+    allocation->reset(0);
+    lib_allocation_initialize(allocation, item->catalog_index + 1, 0, factors, false, true);
+}
+
+void EquipParameterWindow::func_slot5c()
+{
+    EquipController* state = current_controller();
+
+    if (state->selected_item_type > 0)
+    {
+        if (show_parameters != 0)
+        {
+            description->unk3f = 0;
+            title->unk3f = 1;
+            ItemCreationAllocationRecord preview __attribute__((aligned(16)));
+            preview.reset(0);
+            ItemCreationCategoryRecord* item_record = equip_category_record(state->selected_item_type);
+            initialize_equip_allocation(&preview, item_record, 0);
+            set_number(parameter_values[0], D_001B64F0[preview.definition_index()].attack);
+            set_number(parameter_values[1], D_001B64F0[preview.definition_index()].hit);
+            set_number(parameter_values[2], D_001B64F0[preview.definition_index()].defense);
+            set_number(parameter_values[3], D_001B64F0[preview.definition_index()].agility);
+            set_number(parameter_values[4], D_001B64F0[preview.definition_index()].intelligence);
+
+            for (s32 row = 0; row < 5; row++)
+            {
+                parameter_labels[row]->unk3f = 1;
+                separators[row]->unk3f = 1;
+                parameter_values[row]->unk3f = 1;
+            }
+        }
+        else
+        {
+            s32 key = state->selected_item_type + EQUIP_MSG_ITEM_DESCRIPTION_BASE;
+
+            if (key != description_key)
+            {
+                description->unk3f = 1;
+                lib_multiline_text_set_resource(description, func_slot54(), key, 8, 1);
+                LibObject174D90* text = description;
+                text->unk80 = 0.8f;
+                text->unk84 = 0.8f;
+                text->unk3c = 1;
+            }
+
+            for (s32 row = 0; row < 5; row++)
+            {
+                parameter_labels[row]->unk3f = 0;
+                separators[row]->unk3f = 0;
+                parameter_values[row]->unk3f = 0;
+            }
+
+            title->unk3f = 0;
+        }
+    }
+    else
+    {
+        title->unk3f = 0;
+        description->unk3f = 0;
+
+        for (s32 row = 0; row < 5; row++)
+        {
+            parameter_labels[row]->unk3f = 0;
+            separators[row]->unk3f = 0;
+            parameter_values[row]->unk3f = 0;
+        }
+    }
+}
+
+/** @brief Clear the multiline display scroll offsets. @param display Multiline text display. */
+static inline void reset_scroll(LibObject174D90* display)
+{
+    display->unk52c = 0.0f;
+    display->unk524 = 0.0f;
+}
+
+s32 EquipParameterWindow::func_slotf4(u32 associated)
+{
+    if (associated == 0)
+    {
+        return 0;
+    }
+
+    FieldClass15AE70::func_slot10(associated, 220.0f, 80.0f, 18);
+    LibClass178630* panel = new (0) LibClass178630;
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 404.0f, 145.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
+    description = new (0) LibObject174D90;
+    description->init_multiline_resource_rectangle(32.0f, 13.0f, 362.0f, 140.0f, static_cast<s32>(associated), EQUIP_MSG_CHANGE_HELP, 8, 0);
+    reset_scroll(description);
+    lib_container_attach_widget(unk10, description);
+    description->unk3f = 0;
+    title = new (0) LibObject178750;
+    title->init_resource_rectangle(40.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_PARAMETER_CHANGES, 0);
+    title->set_color(0x806080);
+    title->set_scale(0.75f, 0.75f);
+    lib_container_attach_widget(unk10, title);
+    title->unk3f = 0;
+
+    for (s32 index = 0; index < 5; index++)
+    {
+        parameter_labels[index] = new (0) LibObject178750;
+        float y = 42.0f + 28 * (index / 2);
+        parameter_labels[index]->init_resource_rectangle(50.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated),
+                                                         EQUIP_MSG_PARAMETER_NAME_BASE + index, 0);
+        parameter_labels[index]->set_color(0x805050);
+        lib_container_attach_widget(unk10, parameter_labels[index]);
+        parameter_labels[index]->unk3f = 0;
+        separators[index] = new (0) LibObject178750;
+        separators[index]->init_resource_rectangle(100.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LABEL_SEPARATOR, 0);
+        separators[index]->set_color(0x805050);
+        lib_container_attach_widget(unk10, separators[index]);
+        separators[index]->unk3f = 0;
+        parameter_values[index] = new (0) LibObject174F20;
+        parameter_values[index]->init_numeric_resource_rectangle(90.0f + 190 * (index % 2), y, 80.0f, 30.0f, 0, static_cast<s32>(associated), 1);
+        lib_container_attach_widget(unk10, parameter_values[index]);
+        parameter_values[index]->unk3f = 0;
+    }
+
+    return 1;
+}
+
+void EquipCharacterWindow::show_current_portrait()
+{
+    s32 selected = 0;
+    s32 clear_index = 0;
+    FieldRecordSelection* records = selection;
+    u16 slot = records->slots[records->current];
+
+    for (; clear_index < 8; clear_index++)
+    {
+        if (portraits[clear_index])
+        {
+            portraits[clear_index]->unk3f = 0;
+        }
+    }
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        if (slot == portrait_slots[i])
+        {
+            break;
+        }
+
+        selected++;
+    }
+
+    if (portraits[selected])
+    {
+        portraits[selected]->unk3f = 1;
+    }
+}
+
+void EquipCharacterWindow::func_slot5c()
+{
+    EquipController* state = current_controller();
+    FieldClass15AE70* window = state->slot_window;
+
+    if (state->func_00261150() == window)
+    {
+        optimize_prompt->unk3f = 1;
+    }
+    else
+    {
+        optimize_prompt->unk3f = 0;
+    }
+}
+
+/** @brief Update a resource display string. @param display String display. @param text String to display. */
+static inline void set_resource_text(LibObject175140* display, const char* text)
+{
+    display->unkfc = text;
+    display->unk3c = 1;
+}
+
+s32 EquipCharacterWindow::func_slotf4(u32 associated)
+{
+    if (selection == 0)
+    {
+        return 0;
+    }
+
+    character_slot = selection->slots[selection->current];
+    FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 17);
+    LibClass178630* panel = new (0) LibClass178630;
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 232.0f, 144.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
+    append_panel_widget_node(&unk14, panel);
+    name_text = new (0) LibObject175140;
+    const char* text = selected_equipment(selection)->character_name;
+    name_text->func_00467AD0(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
+    lib_container_attach_widget(unk10, name_text);
+    append_icon_widget_node(&unk44, name_text);
+    name_text->set_scale(0.8f, 0.8f);
+    level_label = new (0) LibObject178750;
+    level_value = new (0) LibObject174F20;
+    level_label->init_resource_rectangle(120.0f, 48.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LEVEL, 0);
+    level_value->init_numeric_resource_rectangle(170.0f, 48.0f, 42.0f, 24.0f, selected_character(selection)->get_level(), 0, 0);
+    lib_container_attach_widget(unk10, level_label);
+    append_text_widget_node(&unk2c, level_label);
+    level_label->set_color(0x806080);
+    lib_container_attach_widget(unk10, level_value);
+    append_stat_value_node(&unk38, level_value);
+    level_value->set_scale(0.9f, 0.9f);
+    optimize_prompt = new (0) LibObject178750;
+    optimize_prompt->init_resource_rectangle(105.0f, 80.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_OPTIMIZE_PROMPT, 0);
+    optimize_prompt->set_scale(0.8f, 0.8f);
+    lib_container_attach_widget(unk10, optimize_prompt);
+    switch_prompt = new (0) LibObject178750;
+    switch_prompt->init_resource_rectangle(105.0f, 110.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_SWITCH_PROMPT, 0);
+    switch_prompt->set_scale(0.8f, 0.8f);
+    lib_container_attach_widget(unk10, switch_prompt);
+
+    if (selection->count > 1)
+    {
+        left_indicator = new (0) ItemCreationClass174C40;
+        right_indicator = new (0) ItemCreationClass174C40;
+        lib_indexed_resource_init(left_indicator, 10, 8.0f, 8.0f);
+        lib_indexed_resource_init(right_indicator, 11, 196.0f, 8.0f);
+        left_indicator->set_scale(0.9f, 0.9f);
+        right_indicator->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(unk10, left_indicator);
+        lib_container_attach_widget(unk10, right_indicator);
+    }
+
+    FieldListNode* node = unk2c.head->next;
+
+    while (node != 0)
+    {
+        static_cast<LibObject178750*>(node->value)->set_scale(0.9f, 0.9f);
+        node = node->next;
+    }
+
+    for (s32 index = 0; index < 8; index++)
+    {
+        u16 slot = static_cast<u16>(selection->slots[static_cast<s16>(index)]);
+
+        if (slot != 0)
+        {
+            portrait_slots[index] = slot;
+            portraits[index] = new (0) ItemCreationOptionResourceDisplay;
+            void* allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(slot));
+            FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 4);
+            portraits[index]->unkcc = allocation;
+            portraits[index]->unkd0 = slot;
+            portraits[index]->func_002D6440(record, 20.0f, 50.0f);
+            portraits[index]->unk3f = 0;
+            lib_container_attach_widget(unk10, portraits[index]);
+        }
+    }
+
+    if (selection != 0)
+    {
+        set_resource_text(name_text, selected_equipment(selection)->character_name);
+        set_number(level_value, selected_character(selection)->get_level());
+        show_current_portrait();
+    }
+
+    return 1;
+}
+
+EquipCharacterWindow::EquipCharacterWindow()
+{
+    character_slot = 0;
+    selection = 0;
+    selection = current_controller()->selected_records();
+    level_label = 0;
+    level_value = 0;
+    left_indicator = 0;
+    right_indicator = 0;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        portraits[i] = 0;
+        portrait_slots[i] = 0;
+    }
+}
+
+/**
+ * @brief Decode the item equipped in a slot.
+ * @param equipment Character equipment.
+ * @param index Equipment slot.
+ * @return Item ID, or zero for an invalid checksum or slot.
+ */
+static inline s16 equipped_item(const EquipCharacterEquipment& equipment, s32 index)
+{
+    if (!equipment.equipment_valid())
+    {
+        return 0;
+    }
+
+    if (!(index >= 0 && index <= (equipment.encoded_slot_limit ^ EQUIP_STAT_HALFWORD_XOR_KEY)))
+    {
+        return 0;
+    }
+
+    return equipment.encoded_equipment_ids[index] ^ EQUIP_STAT_HALFWORD_XOR_KEY;
+}
+
+/**
+ * @brief Equip the unequipped weapon and armor that give the highest attack and defense.
+ * @param state Unused controller.
+ * @param record Character record each candidate is tried on.
+ * @param equipment Character equipment to update.
+ * @param slot One-based character number, tested against each item's ten-bit character mask.
+ */
+extern "C" void optimize_equipment(EquipController* state, const EquipCharacterRecord* record, EquipCharacterEquipment* equipment, s8 slot)
+{
+    ItemCreationAllocationRecord* candidates[100];
+    EquipCharacterRecord copy;
+    EquipCharacterEquipment copy_equipment;
+    ItemCreationAllocationRecord* best_first = 0;
+    ItemCreationAllocationRecord* best_second = 0;
+    s32 max_first = 0;
+    s32 max_second = 0;
+    s32 category;
+    s32 count_first;
+    s32 index_first;
+    s32 count_second;
+    s32 index_second;
+    s32 mask = 1 << (slot - 1);
+
+    for (category = 1; category <= 750; ++category)
+    {
+        ItemCreationCategoryRecord* entry = equip_category_record(category);
+
+        if (entry && entry->inventory_count > 0)
+        {
+            const ItemCreationCategoryDefinition* definition = &D_001B64F0[entry->catalog_index];
+
+            if (mask & static_cast<u16>(definition->equipment_mask))
+            {
+                switch (static_cast<u8>(definition->category))
+                {
+                    case 0:
+                    {
+                        count_first = lib_collect_unequipped_allocations(D_001B64F8, candidates, category);
+
+                        for (index_first = 0; index_first < count_first; ++index_first)
+                        {
+                            copy = *record;
+                            copy_equipment = *equipment;
+                            lib_character_recalculate_stats(&copy, &copy_equipment, candidates[index_first], 0);
+
+                            if (!best_first || max_first < copy.get_attack())
+                            {
+                                best_first = candidates[index_first];
+                                max_first = copy.get_attack();
+                            }
+                        }
+
+                        break;
+                    }
+                    case 1:
+                    {
+                        count_second = lib_collect_unequipped_allocations(D_001B64F8, candidates, category);
+
+                        for (index_second = 0; index_second < count_second; ++index_second)
+                        {
+                            copy = *record;
+                            copy_equipment = *equipment;
+                            lib_character_recalculate_stats(&copy, &copy_equipment, candidates[index_second], 1);
+
+                            if (!best_second || max_second < copy.get_defense())
+                            {
+                                best_second = candidates[index_second];
+                                max_second = copy.get_defense();
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    copy = *record;
+    copy_equipment = *equipment;
+    lib_character_recalculate_stats(&copy, &copy_equipment, 0, -1);
+
+    if (best_first)
+    {
+        s16 current = equipped_item(*equipment, 0);
+
+        if (current)
+        {
+            if (allocation_record(current) && copy.get_attack() < max_first)
+            {
+                lib_allocation_set_equipped_owner(D_001B64F8, current, 0);
+                lib_allocation_set_equipped_owner(D_001B64F8, lib_allocation_get_identifier(best_first), slot);
+                equipment->set_equipment_id(0, lib_allocation_get_identifier(best_first));
+            }
+        }
+        else
+        {
+            lib_allocation_set_equipped_owner(D_001B64F8, lib_allocation_get_identifier(best_first), slot);
+            equipment->set_equipment_id(0, lib_allocation_get_identifier(best_first));
+        }
+    }
+
+    if (best_second)
+    {
+        s16 current = equipped_item(*equipment, 1);
+
+        if (current)
+        {
+            if (allocation_record(current) && copy.get_defense() < max_second)
+            {
+                lib_allocation_set_equipped_owner(D_001B64F8, current, 0);
+                lib_allocation_set_equipped_owner(D_001B64F8, lib_allocation_get_identifier(best_second), slot);
+                equipment->set_equipment_id(1, lib_allocation_get_identifier(best_second));
+            }
+        }
+        else
+        {
+            lib_allocation_set_equipped_owner(D_001B64F8, lib_allocation_get_identifier(best_second), slot);
+            equipment->set_equipment_id(1, lib_allocation_get_identifier(best_second));
+        }
+    }
+}
+
+void EquipController::func_slot5c()
+{
+    LibObject178660* container = static_cast<LibObject178660*>(tooltip);
+
+    if (container != 0)
+    {
+        static_cast<LibClass174610&>(*container).func_003EF740();
+    }
+
+    if (resource_slot != 0)
+    {
+        lib_release_resource_slot(D_001B657C, resource_slot);
+    }
+
+    lib_object_detach_owner(this);
+    func_001DD7B0();
+}
+
+/** @brief Submit the State to the resident object queue. */
+void EquipController::func_001DD7B0()
+{
+    resident_enqueue_object(D_001B65F4, this);
+}
+
+/** @brief Default update handler that performs no work. */
+void FieldListObject::update()
+{
+}
+
+/**
+ * @brief Attach the detail and comparison windows.
+ * @param object Category window.
+ * @param detail Category detail window.
+ * @param comparison Item comparison window.
+ */
+static inline void attach_comparison(EquipSlotWindow* object, EquipParameterWindow* detail, EquipStatComparisonWindow* comparison)
+{
+    object->parameter_window = detail;
+    object->comparison_window = comparison;
+}
+
+s32 EquipController::init_windows()
+{
+    FieldRuntime* runtime = D_001B657C;
+    runtime->unk51c = resource_slot;
+    runtime->unk520 = 0x11171;
+    tooltip = new (0) EquipFactorTooltip;
+
+    if (tooltip != 0)
+    {
+        lib_factor_tooltip_init(tooltip);
+        lib_queue_display_object(D_001B657C, tooltip);
+    }
+
+    EquipResourceWindow* options = new (0) EquipResourceWindow;
+    EquipHelpWindow* scrolling = new (0) EquipHelpWindow;
+    character_window = new (0) EquipCharacterWindow;
+    parameter_window = new (0) EquipParameterWindow;
+    slot_window = new (0) EquipSlotWindow(this);
+    EquipSlotPanel* panel = new (0) EquipSlotPanel;
+    comparison_window = new (0) EquipStatComparisonWindow(this);
+    item_list_panel = new (0) EquipItemListPanel;
+    item_list_window = new (0) EquipItemListWindow(this);
+    options->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(options);
+    options->func_slot40(scrolling);
+    scrolling->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(scrolling);
+    scrolling->func_slot40(0);
+    panel->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(panel);
+    parameter_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(parameter_window);
+    character_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(character_window);
+    attach_comparison(slot_window, parameter_window, comparison_window);
+    slot_window->func_slot48(item_list_window);
+    slot_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(slot_window);
+    slot_window->func_slot40(character_window);
+    comparison_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(comparison_window);
+    item_list_panel->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(item_list_panel);
+    item_list_window->func_slot40(slot_window);
+    item_list_window->comparison_window = comparison_window;
+    item_list_window->func_slot104(resource_slot);
+    FieldClass153E30::add_child(item_list_window);
+    unk20 = slot_window;
+    windows_initialized = 1;
+    return 1;
+}
+
+EquipTooltipFrame::~EquipTooltipFrame()
+{
+}
+
+LibClass178A70::~LibClass178A70()
+{
+}
+
+s32 EquipController::on_resource_loaded(void* buffer)
+{
+    if (buffer == 0)
+    {
+        return 0;
+    }
+
+    EquipAlignedResource* aligned = aligned_resource(buffer);
+    s32 size = aligned->unk40 + 0x80;
+    void* saved_heap = resident_get_allocation_heap();
+    void* heap = D_001B6430->context->unk70;
+    void* memory = resident_heap_allocate(heap, size);
+
+    if (memory != 0)
+    {
+        resident_heap_release(memory);
+        resident_exchange_allocation_heap(heap);
+    }
+
+    resource_slot = lib_load_resource_slot(D_001B657C, aligned);
+    resident_exchange_allocation_heap(saved_heap);
+    FieldRuntime* runtime = D_001B657C;
+    runtime->unk514 = resource_slot;
+    runtime->unk518 = 0xC351;
+    return init_windows();
+}
+
+/**
+ * @brief Allocate and initialize the State's record selection.
+ * @return One when a selection exists and initialization succeeds; otherwise zero.
+ */
+u8 EquipController::func_00264110()
+{
+    selection = new (0) FieldRecordSelection;
+    u8 result = func_0028E3D0(selection);
+
+    if (selection == 0 || result == 0)
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Delete an owned object and clear its pointer.
+ * @param resource Nullable owned object pointer.
+ */
+template <class T>
+static inline void release_owned(T*& resource)
+{
+    if (resource)
+    {
+        delete resource;
+        resource = 0;
+    }
+}
+
+/** @brief Release the record selection before destroying the Field list base. */
+EquipController::~EquipController()
+{
+    if (selection != 0)
+    {
+        release_owned(selection);
+    }
+}
+
+/** @brief Initialize the equipment State and its resource table entries. */
+EquipController::EquipController()
+{
+    resource_slot = 0;
+    selection = 0;
+    windows_initialized = 0;
+    character_window = 0;
+    slot_window = 0;
+    item_list_panel = 0;
+    comparison_window = 0;
+    item_list_window = 0;
+    parameter_window = 0;
+    selected_item_type = 0;
+    unk58 = 0;
+    unk5c = 0;
+    void* table = resident_get_entry_table(resident_get_runtime_owner());
+    unk58 = resident_find_entry(table, 2);
+    unk5c = resident_find_entry(table, 3);
+    selected_slot = 0;
+    tooltip = 0;
+}
+
+/** @brief Default handler that performs no work. */
+void FieldListObject::func_001DD410()
+{
+}
+
+void ItemCreationClass185050::func_slot0c()
+{
+}
+
+void FieldClass15AE70::func_slot68()
+{
+}
+
+void FieldClass15AE70::func_slot6c()
+{
+}
+
+u8 FieldClass15AE70::func_slotb0()
+{
+    return 0;
+}
+
+u8 FieldClass15AE70::func_slotb4()
+{
+    return 0;
+}
+
+void FieldClass15AE70::func_slot5c()
+{
+}
+
+EquipItemInstanceListWindow::~EquipItemInstanceListWindow()
+{
+}
+
+EquipItemListWindow::~EquipItemListWindow()
+{
+}
+
+EquipSlotWindow::~EquipSlotWindow()
+{
+}
+
+EquipParameterWindow::~EquipParameterWindow()
+{
+}
+
+EquipCharacterWindow::~EquipCharacterWindow()
+{
+}
+
+/** @brief Report whether window setup finished. @return Setup flag. */
+u8 EquipController::windows_ready()
+{
+    return windows_initialized;
+}
+
+/** @brief Report this object's default list kind. @return Four. */
+s32 EquipController::get_default_list_kind()
+{
+    return 4;
+}
+
+/** @brief Store the alternate associated object. @param value Object to store. */
+void FieldClass153E30::func_00263C80(void* value)
+{
+    unk24 = value;
+}
+
+/** @brief Return the alternate associated object. @return Stored object. */
+void* FieldClass153E30::func_00263C90()
+{
+    return unk24;
+}
+
+/** @brief Store the receiver state byte. @param value State byte. */
+void FieldClass153E30::func_00263CA0(s8 value)
+{
+    unk28 = value;
+}
+
+/** @brief Return the receiver state byte. @return State byte. */
+s8 FieldClass153E30::func_00263CB0()
+{
+    return unk28;
+}
+
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot60()
+{
+    return 0;
+}
+
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot64()
+{
+    return 0;
+}
+
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot68()
+{
+}
+
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot70()
+{
+}
+
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot74()
+{
+}
+
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot78()
+{
+}
+
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot7c()
+{
+    return 0;
+}
+
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot80()
+{
+    return 0;
+}
+
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot84()
+{
+    return 0;
+}
+
+EquipNewItemTypeList::EquipNewItemTypeList()
+{
+    head = new (0) EquipNewItemTypeNode;
+
+    if (head == 0)
+    {
+        throw;
+    }
+
+    head->next = 0;
+    count = 0;
+}
+
+EquipNewItemTypeList::~EquipNewItemTypeList()
+{
+    clear_new_item_types(this);
+
+    if (head != 0)
+    {
+        ::operator delete(head);
+        head = 0;
+    }
+}
+
+void append_new_item_type(EquipNewItemTypeList* list, u16 value)
+{
+    EquipNewItemTypeNode* node;
+    EquipNewItemTypeNode* cursor;
+    node = new (0) EquipNewItemTypeNode;
+
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+
+        cursor->next = node;
+        list->count++;
+    }
+}
+
+void clear_new_item_types(EquipNewItemTypeList* list)
+{
+    EquipNewItemTypeNode* node = list->head->next;
+
+    if (node == 0)
+    {
+        return;
+    }
+
+    while (node != 0)
+    {
+        EquipNewItemTypeNode* next = node->next;
+        delete node;
+        node = next;
+    }
+
+    list->head->next = 0;
+    list->count = 0;
+}
+
+EquipNewItemTypeNode* get_new_item_type_node(EquipNewItemTypeList* list, s32 count)
+{
+    EquipNewItemTypeNode* node = list->head->next;
+    s32 index = 0;
+
+    while (index < count)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+
+        index++;
+        node = node->next;
+    }
+
+    return node;
+}
+
+EquipItemTypeList::EquipItemTypeList()
+{
+    head = new (0) EquipItemTypeNode;
+
+    if (head == 0)
+    {
+        throw;
+    }
+
+    head->next = 0;
+    count = 0;
+}
+
+EquipItemTypeList::~EquipItemTypeList()
+{
+    clear_item_types(this);
+
+    if (head != 0)
+    {
+        ::operator delete(head);
+        head = 0;
+    }
+}
+
+/**
+ * @brief Append a category-record pointer to the list.
+ * @param list List to update.
+ * @param value Category-record pointer, which may be null.
+ */
+void append_item_type(EquipItemTypeList* list, ItemCreationCategoryRecord* value)
+{
+    EquipItemTypeNode* node;
+    EquipItemTypeNode* cursor;
+    node = new (0) EquipItemTypeNode;
+
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+
+        cursor->next = node;
+        list->count++;
+    }
+}
+
+void clear_item_types(EquipItemTypeList* list)
+{
+    EquipItemTypeNode* node = list->head->next;
+
+    if (node == 0)
+    {
+        return;
+    }
+
+    while (node != 0)
+    {
+        EquipItemTypeNode* next = node->next;
+        delete node;
+        node = next;
+    }
+
+    list->head->next = 0;
+    list->count = 0;
+}
+
+EquipItemTypeNode* get_item_type_node(EquipItemTypeList* list, s32 count)
+{
+    EquipItemTypeNode* node = list->head->next;
+    s32 index = 0;
+
+    while (index < count)
+    {
+        if (node == 0)
+        {
+            return 0;
+        }
+
+        index++;
+        node = node->next;
+    }
+
+    return node;
+}
+
+void append_grid_widget_node(FieldCountedList* list, void* value)
+{
+    FieldListNode* node;
+    FieldListNode* cursor;
+    node = new (0) FieldListNode;
+
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+
+        cursor->next = node;
+        list->count++;
+    }
+}
+
+void append_icon_widget_node(FieldCountedList* list, void* value)
+{
+    FieldListNode* node;
+    FieldListNode* cursor;
+    node = new (0) FieldListNode;
+
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+
+        cursor->next = node;
+        list->count++;
+    }
+}
+
+void append_stat_value_node(FieldCountedList* list, void* value)
+{
+    FieldListNode* node;
+    FieldListNode* cursor;
+    node = new (0) FieldListNode;
+
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+
+        cursor->next = node;
+        list->count++;
+    }
+}
+
+void append_text_widget_node(FieldCountedList* list, void* value)
+{
+    FieldListNode* node;
+    FieldListNode* cursor;
+    node = new (0) FieldListNode;
+
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+
+        cursor->next = node;
+        list->count++;
+    }
+}
+
+void append_clip_widget_node(FieldCountedList* list, void* value)
+{
+    FieldListNode* node;
+    FieldListNode* cursor;
+    node = new (0) FieldListNode;
+
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+
+        cursor->next = node;
+        list->count++;
+    }
+}
+
+void append_panel_widget_node(FieldCountedList* list, void* value)
+{
+    FieldListNode* node;
+    FieldListNode* cursor;
+    node = new (0) FieldListNode;
+
+    if (node != 0)
+    {
+        node->value = value;
+        node->next = 0;
+        cursor = list->head;
+
+        while (cursor->next != 0)
+        {
+            cursor = cursor->next;
+        }
+
+        cursor->next = node;
+        list->count++;
+    }
+}

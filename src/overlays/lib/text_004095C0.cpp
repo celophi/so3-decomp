@@ -216,7 +216,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040C4C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040C690);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040C7E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", lib_allocation_set_equipped_owner);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040C8F0);
 
@@ -273,7 +273,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D1E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D260);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D2E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", lib_allocation_initialize);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D680);
 

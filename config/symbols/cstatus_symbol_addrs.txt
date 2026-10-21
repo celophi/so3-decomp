@@ -660,3 +660,4 @@ field_queue_allocation_release = 0x002D3DC0; // type:func absolute:True allow_du
 
 func_002D3EB0 = 0x002D3EB0; // type:func absolute:True allow_duplicated:True
 field_get_builtin_resource_data = 0x002D3EB0; // type:func absolute:True allow_duplicated:True
+lib_character_recalculate_stats = 0x003F9890; // type:func absolute:True allow_duplicated:True

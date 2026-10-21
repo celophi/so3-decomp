@@ -1744,7 +1744,7 @@ u8 ShopItemDetailWindow::func_slotb4()
  * @param new_item Mark the item as new in inventory lists.
  * @param suppress_allocation_id Suppress the resident allocation identifier when the record checksum is valid.
  */
-extern "C" void func_0040D2E0(ItemCreationAllocationRecord* record, u16 item_code, u8 modification_number, const u16* factors, bool new_item, bool suppress_allocation_id);
+extern "C" void lib_allocation_initialize(ItemCreationAllocationRecord* record, u16 item_code, u8 modification_number, const u16* factors, bool new_item, bool suppress_allocation_id);
 
 /**
  * @brief Load a text resource into the multiline text widget.
@@ -1765,7 +1765,7 @@ extern "C" void func_0040D2E0(ItemCreationAllocationRecord* record, u16 item_cod
 static inline void initialize_shop_item_allocation(ItemCreationAllocationRecord* allocation, const ItemCreationCategoryRecord* item, const u16* factors)
 {
     allocation->reset(0);
-    func_0040D2E0(allocation, item->catalog_index + 1, 0, factors, false, true);
+    lib_allocation_initialize(allocation, item->catalog_index + 1, 0, factors, false, true);
 }
 
 /** Five vertical row positions; the last places the detail window footer. */
@@ -2894,7 +2894,7 @@ struct ShopCharacterEquipment
  * @param index Statistic group to apply.
  * @return One on success, or zero when either copied record is null.
  */
-extern "C" s32 func_003F9890(ShopCharacterRecord* record, ShopCharacterEquipment* equipment, ItemCreationAllocationRecord* allocation, s32 index);
+extern "C" s32 lib_character_recalculate_stats(ShopCharacterRecord* record, ShopCharacterEquipment* equipment, ItemCreationAllocationRecord* allocation, s32 index);
 
 /**
  * @brief Read the checksum-protected attack value.
@@ -3033,7 +3033,7 @@ static inline void reset_shop_allocation(ItemCreationAllocationRecord* record, c
 static inline void initialize_shop_allocation(ItemCreationAllocationRecord* allocation, const ItemCreationCategoryRecord* item)
 {
     reset_shop_allocation(allocation, 0);
-    func_0040D2E0(allocation, item->catalog_index + 1, 0, 0, false, true);
+    lib_allocation_initialize(allocation, item->catalog_index + 1, 0, 0, false, true);
 }
 
 /**
@@ -3172,7 +3172,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
             switch (shop_definition_category(shop_definition(item_record)))
             {
             case SHOP_CATEGORY_WEAPONS:
-                func_003F9890(&character_copy, &equipment_copy, &preview_allocation, 0);
+                lib_character_recalculate_stats(&character_copy, &equipment_copy, &preview_allocation, 0);
                 comparison_labels[i]->unk3f = 1;
 
                 if (shop_character_attack(character_copy) > shop_character_attack(*character))
@@ -3196,7 +3196,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
 
                 break;
             case SHOP_CATEGORY_ARMOR:
-                func_003F9890(&character_copy, &equipment_copy, &preview_allocation, 1);
+                lib_character_recalculate_stats(&character_copy, &equipment_copy, &preview_allocation, 1);
                 comparison_labels[i]->unk3f = 1;
 
                 if (shop_character_defense(character_copy) > shop_character_defense(*character))

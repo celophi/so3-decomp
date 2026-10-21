@@ -3239,7 +3239,7 @@ void func_00350DF0(void* object)
 /** @brief Advance the dialog choices and refresh their colors and target. */
 void AbortDevelopmentDialog::func_slot6c()
 {
-    if (choice_selector != 0 && (u8)choice_selector->func_0023B3B0(1) != 1)
+    if (choice_selector != 0 && choice_selector->func_0023B3B0(1) != 1)
     {
         u16 selected = choice_selector->func_0023B3A0();
         if (choice_selector != 0)
@@ -3265,7 +3265,7 @@ void AbortDevelopmentDialog::func_slot6c()
 /** @brief Move backward through the dialog choices and refresh their colors and target. */
 void AbortDevelopmentDialog::func_slot68()
 {
-    if (choice_selector != 0 && (u8)choice_selector->func_0023B3B0(0) != 1)
+    if (choice_selector != 0 && choice_selector->func_0023B3B0(0) != 1)
     {
         u16 selected = choice_selector->func_0023B3A0();
         if (choice_selector != 0)
@@ -4772,7 +4772,7 @@ u8 InventionSuccessDialog::func_slotb0()
 /** @brief Advance the dialog choices and refresh their colors and target. */
 void ItemSubmissionDialog::func_slot6c()
 {
-    if (choice_selector != 0 && (u8)choice_selector->func_0023B3B0(1) != 1)
+    if (choice_selector != 0 && choice_selector->func_0023B3B0(1) != 1)
     {
         u16 selected = choice_selector->func_0023B3A0();
         if (choice_selector != 0)
@@ -4798,7 +4798,7 @@ void ItemSubmissionDialog::func_slot6c()
 /** @brief Move backward through the dialog choices and refresh their colors and target. */
 void ItemSubmissionDialog::func_slot68()
 {
-    if (choice_selector != 0 && (u8)choice_selector->func_0023B3B0(0) != 1)
+    if (choice_selector != 0 && choice_selector->func_0023B3B0(0) != 1)
     {
         u16 selected = choice_selector->func_0023B3A0();
         if (choice_selector != 0)
@@ -5956,7 +5956,7 @@ u8 StartInventingDialog::func_slotb0()
 
 void StartInventingDialog::func_slot6c()
 {
-    if (choice_selector != 0 && !selector_moving(choice_selector) && (u8)choice_selector->func_0023B3B0(1) != 1)
+    if (choice_selector != 0 && !selector_moving(choice_selector) && choice_selector->func_0023B3B0(1) != 1)
     {
         u16 selected = choice_selector->func_0023B3A0();
         switch (selected)
@@ -5981,7 +5981,7 @@ void StartInventingDialog::func_slot6c()
 
 void StartInventingDialog::func_slot68()
 {
-    if (choice_selector != 0 && !selector_moving(choice_selector) && (u8)choice_selector->func_0023B3B0(0) != 1)
+    if (choice_selector != 0 && !selector_moving(choice_selector) && choice_selector->func_0023B3B0(0) != 1)
     {
         u16 selected = choice_selector->func_0023B3A0();
         switch (selected)
@@ -8440,7 +8440,7 @@ u8 PlanItemGroupWindow::func_slotb0()
 /** @brief Refresh the selected mode colors, marker, and related list. */
 void PlanItemGroupWindow::func_slot6c()
 {
-    if (unkac != 0 && (u8)unkac->func_0023B3B0(1) != 1)
+    if (unkac != 0 && unkac->func_0023B3B0(1) != 1)
     {
         u16 raw_index = unkac->func_0023B3A0();
         s16 selected = raw_index;
@@ -8471,7 +8471,7 @@ void PlanItemGroupWindow::func_slot6c()
 /** @brief Refresh the previous mode colors, marker, and related list. */
 void PlanItemGroupWindow::func_slot68()
 {
-    if (unkac != 0 && (u8)unkac->func_0023B3B0(0) != 1)
+    if (unkac != 0 && unkac->func_0023B3B0(0) != 1)
     {
         u16 raw_index = unkac->func_0023B3A0();
         s16 selected = raw_index;
@@ -8847,7 +8847,7 @@ u8 InventionPolicyWindow::func_slotb0()
 /** @brief Move the selector and refresh the choice colors and target marker. */
 void InventionPolicyWindow::func_slot6c()
 {
-    if (this->unkcc != 0 && (u8)this->unkcc->func_0023B3B0(1) != 1)
+    if (this->unkcc != 0 && this->unkcc->func_0023B3B0(1) != 1)
     {
         u16 selected = this->unkcc->func_0023B3A0();
         if (this->unkcc != 0)
@@ -8873,7 +8873,7 @@ void InventionPolicyWindow::func_slot6c()
 /** @brief Move the selector and refresh the choice colors and target marker. */
 void InventionPolicyWindow::func_slot68()
 {
-    if (this->unkcc != 0 && (u8)this->unkcc->func_0023B3B0(0) != 1)
+    if (this->unkcc != 0 && this->unkcc->func_0023B3B0(0) != 1)
     {
         u16 selected = this->unkcc->func_0023B3A0();
         if (this->unkcc != 0)
@@ -9211,7 +9211,7 @@ u8 CreationSkillWindow::func_slotb0()
  */
 void CreationSkillWindow::func_slot6c()
 {
-    if (skill_selector != 0 && (u8)skill_selector->func_0023B3B0(1) != 1)
+    if (skill_selector != 0 && skill_selector->func_0023B3B0(1) != 1)
     {
         u16 selected = skill_selector->func_0023B3A0();
         item_creation_update_skill_labels(this, selected);
@@ -9222,7 +9222,7 @@ void CreationSkillWindow::func_slot6c()
  */
 void CreationSkillWindow::func_slot68()
 {
-    if (skill_selector != 0 && (u8)skill_selector->func_0023B3B0(0) != 1)
+    if (skill_selector != 0 && skill_selector->func_0023B3B0(0) != 1)
     {
         u16 selected = skill_selector->func_0023B3A0();
         item_creation_update_skill_labels(this, selected);

@@ -81,7 +81,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003F97E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003F9860);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003F9890);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", lib_character_recalculate_stats);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FEEF0);
 
