@@ -207,6 +207,19 @@ struct EquipClass182790 : public FieldClass15AE70
 };
 
 struct EquipListState;
+/** Partial view of a 0x114-byte resource record with its protected equipment entries. */
+struct EquipResourceEquipment
+{
+    u8 unk00[0xC];
+    s16 unk0c;
+    s16 unk0e;
+    s16 unk10[4];
+    u8 unk18[0xD8];
+    s32 unkf0;
+    u8 unkf4[0x18];
+    s32 unk10c;
+    u8 unk110[4];
+};
 /** Partial item-details window with one header and five statistic rows. */
 struct EquipClass182890 : public FieldClass15AE70
 {
@@ -226,8 +239,8 @@ struct EquipClass182890 : public FieldClass15AE70
     u8 unkb2;
     u8 unkb3;
     FieldRecord unkb4;
-    /** Encoded 0x114-byte resource record used for the comparison. */
-    u8 unk178[0x114];
+    /** Encoded resource record used for the comparison. */
+    EquipResourceEquipment unk178;
     LibObject178750* unk28c;
     LibObject172410* unk290;
     LibObject178750* unk294[5];
@@ -253,6 +266,7 @@ struct EquipClass182A90 : public FieldClass15AE70
 
 struct EquipClass182B90;
 struct EquipClass182990;
+struct EquipPackedRecord;
 struct EquipClass182670;
 /** Partial equipment State with its selection, resource keys, and owned windows. */
 struct EquipListState : public FieldClass153E30
@@ -358,7 +372,7 @@ struct EquipClass182990 : public FieldClass15AE70
     EquipListState* unka8;
     FieldRecordSelection* unkac;
     float unkb0;
-    void* unkb4;
+    EquipPackedRecord* unkb4;
     s16 unkb8[4];
     u8 unkc0;
     u8 unkc1[3];
