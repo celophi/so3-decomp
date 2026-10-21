@@ -7,6 +7,8 @@
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_002636B0.h"
+#include "overlays/1067-00/text_002607B0.h"
+#include "overlays/1067-00/text_0020E4B0.h"
 #include "overlays/cequip/cequip.h"
 #include "overlays/cstatus/text.h"
 #include "overlays/cskill/text.h"
@@ -39,6 +41,10 @@ struct FieldWindowRemovalContext
 
 extern "C" void func_00264460(FieldCountedList* list, void* value);
 
+extern "C" u8 func_0022A160(FieldScreenTransition* transition);
+
+extern "C" void* D_001B6694;
+
 /** Partial menu manager with vtable D_15B020 in main data; it creates the requested menu's controller. */
 typedef struct FieldMenuManager
 {
@@ -47,9 +53,52 @@ typedef struct FieldMenuManager
     u8 menu;
     u8 unk19;
     u16 argument;
-    u8 unk1c[0x6C];
+    FieldClass153E00* owner;
+    FieldResourceRequestHandler* request;
+    s32 resource_key;
+    u8 unk28;
+    u8 load_state;
+    u16 unk2a;
+    u8 skip_transition;
+    u8 unk2d[3];
+    u8 unk30[0xC];
+    u8 unk3c[0x20];
+    u32 unk5c;
+    u8 ready;
+    u8 unk61;
+    u8 unk62;
+    u8 unk63;
+    float transition_time;
+    u8 unk68;
+    u8 unk69[3];
+    u32 unk6c;
+    u8 unk70;
+    u8 unk71[3];
+    float timer;
+    u32 unk78;
+    u32 unk7c;
+    u32 unk80;
+    u32 unk84;
     u8 unk88;
 } FieldMenuManager;
+
+/**
+ * @brief Select the resources for a menu.
+ * @param owner Menu owner.
+ * @param menu Menu to open.
+ * @param argument Menu argument.
+ * @return The menu's keyed resource, or -1 when it has none.
+ */
+static inline s32 menu_resource_key(FieldClass153E00* const& owner, s32 menu, s32 argument)
+{
+    return func_00261160(owner, menu, argument);
+}
+
+/** @brief Return the field object that owns the screen effects. @return Field display object. */
+static inline FieldClass1516A0* field_display()
+{
+    return reinterpret_cast<FieldClass1516A0*>(D_001B6430->context->unk38);
+}
 
 enum FieldMenuId
 {
@@ -589,7 +638,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CFF
  * @param menu Menu to open.
  * @return True when the controller's record selection was created; false for an unknown menu.
  */
-extern "C" bool field_launch_menu(FieldMenuManager* manager, u8 menu)
+extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
 {
     u8 result = 0;
 
@@ -681,7 +730,161 @@ extern "C" bool field_launch_menu(FieldMenuManager* manager, u8 menu)
     return result != 0;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D0D30);
+/**
+ * @brief Advance the menu load: request resources, fade out, release the old controller, launch the new one and fade in.
+ * @param manager Menu manager.
+ * @return Load state after this step, or zero while waiting on resources or when the launch fails.
+ */
+extern "C" u8 field_advance_menu_load(FieldMenuManager* manager)
+{
+    switch (manager->load_state)
+    {
+        case 0:
+            break;
+        case 1:
+            manager->ready = 0;
+            manager->resource_key = menu_resource_key(manager->owner, manager->menu, manager->argument);
+
+            if (manager->resource_key != -1)
+            {
+                field_start_keyed_resource_request(manager->request, manager->resource_key, 1);
+                field_set_next_resource_request(manager->request, manager->owner->menu_resource_key, 0);
+            }
+            else
+            {
+                field_start_keyed_resource_request(manager->request, manager->owner->menu_resource_key, 0);
+            }
+
+            if (manager->skip_transition != 0)
+            {
+                manager->skip_transition = 0;
+                manager->load_state = 5;
+                manager->transition_time = 4.0f;
+            }
+            else
+            {
+                func_0020F230(field_display(), 0, 0, 0x80000000, 0, 0, 0, 10.0f, 0.0f, 0.0f);
+                FieldScreenTransition* transition;
+                (transition = field_display()->effects.transition)->unkc0 = D_001B6694;
+                transition->unkf0 = 10;
+                manager->load_state = 2;
+                manager->transition_time = 4.0f;
+            }
+
+            break;
+        case 2:
+            if (func_0022A160(field_display()->effects.transition) == 0)
+            {
+                manager->load_state = 3;
+            }
+
+            break;
+        case 3:
+            if (manager->state != 0)
+            {
+                func_00264010(manager->state);
+                manager->state->func_slot5c();
+                manager->state = 0;
+            }
+
+            manager->ready = 0;
+
+            if (manager->resource_key != -1)
+            {
+                manager->load_state = 4;
+            }
+            else
+            {
+                manager->load_state = 5;
+            }
+
+            break;
+        case 4:
+            if (manager->request->unk1e == 0)
+            {
+                return 0;
+            }
+
+            manager->load_state = 5;
+        case 5:
+        {
+            FieldClass153E00* owner = manager->owner;
+
+            if (owner->unk3c->unk09 == 0)
+            {
+                return 0;
+            }
+
+            if (owner->unk2e == 0)
+            {
+                return 0;
+            }
+
+            if (manager->request->unk20 == 0)
+            {
+                return 0;
+            }
+
+            if (manager->request->unk1c == 0)
+            {
+                return 0;
+            }
+
+            manager->request->unk28 = manager->menu;
+
+            bool launched = field_launch_menu(manager, manager->menu);
+
+            if (!launched)
+            {
+                return 0;
+            }
+
+            manager->request->deliver_completed_request();
+            manager->load_state = 6;
+        }
+        case 6:
+        {
+            func_0020F230(field_display(), 0, 0x80000000, 0, 0, 0, 0, manager->transition_time, 0.0f, 0.0f);
+            FieldScreenTransition* transition = field_display()->effects.transition;
+            void* value = D_001B6694;
+            FieldTransitionRect rect;
+            rect.bounds[0] = 0;
+            rect.bounds[1] = 0;
+            rect.bounds[2] = 768;
+            rect.bounds[3] = 448;
+            const s32* source = rect.bounds;
+
+            for (s32 i = 0; i < 4; i++)
+            {
+                transition->rect.bounds[i] = source[i];
+            }
+
+            transition->unkc0 = value;
+            transition->unkf0 = 10;
+            manager->load_state = 7;
+            manager->timer = 0.0f;
+        }
+        case 7:
+            if (func_0022A160(field_display()->effects.transition) == 0)
+            {
+                manager->load_state = 8;
+                static_cast<FieldClass15AE70*>(manager->state->func_00261150())->func_slot24(0);
+            }
+
+            if (!(manager->timer < 2.0f))
+            {
+                manager->ready = 1;
+            }
+            else
+            {
+                manager->timer += 1.0f;
+            }
+
+            break;
+    }
+
+    return manager->load_state;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1100);
 

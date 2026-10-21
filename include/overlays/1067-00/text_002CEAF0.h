@@ -81,6 +81,13 @@ s32 func_002D3BB0(FieldListObject* object);
  */
 s32 func_002D1440(FieldMenuManager* object, u8 value, u32 flags);
 
+/**
+ * @brief Advance the menu load: request resources, fade out, release the old controller, launch the new one and fade in.
+ * @param manager Menu manager.
+ * @return Load state after this step, or zero while waiting on resources or when the launch fails.
+ */
+u8 field_advance_menu_load(FieldMenuManager* manager);
+
 #ifdef __cplusplus
 /**
  * @brief Create the requested menu's controller, register it, and make it the active State.
@@ -88,7 +95,7 @@ s32 func_002D1440(FieldMenuManager* object, u8 value, u32 flags);
  * @param menu Menu to open.
  * @return True when the controller's record selection was created; false for an unknown menu.
  */
-bool field_launch_menu(FieldMenuManager* manager, u8 menu);
+s32 field_launch_menu(FieldMenuManager* manager, u8 menu);
 #endif
 
 #ifdef __cplusplus

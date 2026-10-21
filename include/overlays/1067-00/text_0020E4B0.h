@@ -73,6 +73,29 @@ public:
     virtual char* get_character_name(s32 index) = 0;
 };
 
+/** Target rectangle of a screen transition in screen pixels: x, y, width, height. */
+struct FieldTransitionRect
+{
+    s32 bounds[4];
+};
+
+/** Partial screen transition effect with its target rectangle. */
+struct FieldScreenTransition
+{
+    u8 unk00[0xB0];
+    FieldTransitionRect rect;
+    void* unkc0;
+    u8 unkc4[0x2C];
+    u8 unkf0;
+};
+
+/** Display effects owned by the field object; the first is the screen transition. */
+struct FieldDisplayEffects
+{
+    FieldScreenTransition* transition;
+    u8 unk04[0x68];
+};
+
 /** Partial field script object exposing context callbacks and character-name lookup. */
 class FieldClass1516A0 : public FieldClass151D40, public FieldCharacterNames
 {
@@ -103,7 +126,7 @@ public:
 
     virtual char* get_character_name(s32 index);
 
-    u8 unk5a4[0x6C];
+    FieldDisplayEffects effects;
 };
 #endif
 

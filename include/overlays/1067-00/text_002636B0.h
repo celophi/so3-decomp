@@ -224,6 +224,9 @@ void func_0026C000(FieldOuterC000* object);
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/1067-00/text_001E1590.h"
 
+/** @brief Release every child the receiver holds. @param receiver Callback receiver. */
+extern "C" void func_00264010(FieldClass153E30* receiver);
+
 /** Field menu controller created for menu 1, with vtables D_154AD0 and D_154AE0 in main data. Partial. */
 class FieldClass154AD0 : public FieldClass1DD400, public FieldClass153E30
 {
