@@ -1,5 +1,5 @@
 #include "include_asm.h"
-#include "overlays/cequip/text.h"
+#include "overlays/cequip/cequip.h"
 #include "main/resident_data.h"
 #include "main/resident_0010A0E0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
@@ -239,17 +239,6 @@ typedef struct EquipWordNode
     }
 } EquipWordNode;
 
-typedef struct
-{
-    void* methods;
-} EquipDestructorObject;
-
-extern u8 __vt__16EquipClass182350[];
-extern u8 __vt__16EquipClass182450[];
-extern u8 __vt__16EquipClass182790[];
-extern u8 __vt__16EquipClass182A90[];
-extern u8 __vt__16EquipClass182B90[];
-extern "C" void func_2CEAF0(void* object, s32 flags);
 
 static inline void equip_set_position(LibClass178600* target, float x, float y, float z, float w);
 
@@ -578,14 +567,10 @@ void EquipClass182220::func_slot5c()
     }
 }
 
-/**
- * @brief Read the State's stored window pointer.
- * @param object Equipment State.
- * @return Stored window pointer.
- */
-void* func_003487B0(void* object)
+/** @brief Return the stored window pointer. @return Stored pointer. */
+void* FieldClass153E30::func_00261150()
 {
-    return static_cast<EquipListState*>(object)->unk20;
+    return unk20;
 }
 
 void EquipClass182220::func_slot6c()
@@ -613,14 +598,10 @@ u8 EquipClass182220::func_slotb4()
     return 2;
 }
 
-/**
- * @brief Set the State's stored window pointer.
- * @param object Equipment State.
- * @param value Window pointer to store.
- */
-void func_003488C0(void* object, void* value)
+/** @brief Store the window pointer. @param value Pointer to store. */
+void FieldClass153E30::func_00263C70(void* value)
 {
-    static_cast<EquipListState*>(object)->unk20 = value;
+    unk20 = value;
 }
 
 u8 EquipClass182220::func_slotb0()
@@ -761,18 +742,8 @@ s32 EquipClass182350::func_slotf4(u32 associated)
     return 1;
 }
 
-void* func_00349230(void* object, s32 flags)
+EquipClass182350::~EquipClass182350()
 {
-    if (object != 0)
-    {
-        ((EquipDestructorObject*)object)->methods = __vt__16EquipClass182350;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
 s32 EquipClass182450::func_slotf4(u32 associated)
@@ -801,18 +772,8 @@ ItemCreationClass175110::~ItemCreationClass175110()
 {
 }
 
-void* func_00349560(void* object, s32 flags)
+EquipClass182450::~EquipClass182450()
 {
-    if (object != 0)
-    {
-        ((EquipDestructorObject*)object)->methods = __vt__16EquipClass182450;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
 /** @brief Write a stored display flag. @param display Display to update. @param flag Low-byte flag to store. */
@@ -1217,14 +1178,10 @@ u8 EquipClass182670::func_slotb0()
     return 1;
 }
 
-/**
- * @brief Return the equipment State's resource source word.
- * @param object Equipment State.
- * @return Stored resource source word.
- */
-u32 func_0034A710(void* object)
+/** @brief Return the loaded resource slot. @return Resource slot. */
+u32 EquipListState::get_resource_slot()
 {
-    return static_cast<EquipListState*>(object)->unk34;
+    return unk34;
 }
 
 /**
@@ -1403,14 +1360,10 @@ void EquipClass182670::func_slot108(u8 category)
     FieldClass15AE60::configure_selection(FieldClass15AE60::unk88, 0, 0);
 }
 
-/**
- * @brief Return the equipment State's record selection.
- * @param object Equipment State.
- * @return Stored record selection.
- */
-FieldRecordSelection* func_0034AC10(void* object)
+/** @brief Return the State's record selection. @return Record selection. */
+FieldRecordSelection* EquipListState::selected_records()
 {
-    return static_cast<EquipListState*>(object)->unk38;
+    return unk38;
 }
 
 void EquipClass182670::func_slot5c()
@@ -1515,18 +1468,8 @@ s32 EquipClass182790::func_slotf4(u32 associated)
     return 1;
 }
 
-void* func_0034B370(void* object, s32 flags)
+EquipClass182790::~EquipClass182790()
 {
-    if (object != 0)
-    {
-        ((EquipDestructorObject*)object)->methods = __vt__16EquipClass182790;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
 /** @brief Test one protected statistic's check word. @param record Character record statistics. @param index Statistic index. @return True when the check word differs. */
@@ -2192,18 +2135,8 @@ s32 EquipClass182A90::func_slotf4(u32 associated)
     return 1;
 }
 
-void* func_0034DD30(void* object, s32 flags)
+EquipClass182A90::~EquipClass182A90()
 {
-    if (object != 0)
-    {
-        ((EquipDestructorObject*)object)->methods = __vt__16EquipClass182A90;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
 extern "C" void func_0040D2E0(ItemCreationAllocationRecord* record, u16 item_code, u8 modification_number, const u16* factors, bool new_item, bool suppress_allocation_id);
@@ -2765,12 +2698,14 @@ void EquipListState::func_slot5c()
     func_001DD7B0();
 }
 
-void func_00350980(void* object)
+/** @brief Submit the State to the resident object queue. */
+void EquipListState::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
-void func_003509A0(void* object)
+/** @brief Default update handler that performs no work. */
+void FieldListObject::update()
 {
 }
 
@@ -2864,15 +2799,14 @@ s32 EquipListState::on_resource_loaded(void* buffer)
 }
 
 /**
- * @brief Create and initialize the State's record selection.
- * @param object Equipment State.
- * @return One when allocation and initialization succeed; otherwise zero.
+ * @brief Allocate and initialize the State's record selection.
+ * @return One when a selection exists and initialization succeeds; otherwise zero.
  */
-s32 func_003510C0(EquipListState* object)
+u8 EquipListState::func_00264110()
 {
-    object->unk38 = new (0) FieldRecordSelection;
-    u8 result = func_0028E3D0(object->unk38);
-    if (object->unk38 == 0 || result == 0)
+    unk38 = new (0) FieldRecordSelection;
+    u8 result = func_0028E3D0(unk38);
+    if (unk38 == 0 || result == 0)
     {
         return 0;
     }
@@ -2924,7 +2858,8 @@ EquipListState::EquipListState()
     unk68 = 0;
 }
 
-void func_00351350(void* object)
+/** @brief Default handler that performs no work. */
+void FieldListObject::func_001DD410()
 {
 }
 
@@ -2966,116 +2901,96 @@ EquipClass182990::~EquipClass182990()
 {
 }
 
-void* func_00351520(void* object, s32 flags)
+EquipClass182B90::~EquipClass182B90()
 {
-    if (object != 0)
-    {
-        ((EquipDestructorObject*)object)->methods = __vt__16EquipClass182B90;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
 EquipClass182C90::~EquipClass182C90()
 {
 }
 
-/**
- * @brief Return the equipment State's low flag bit.
- * @param object Equipment State.
- * @return Stored low flag bit.
- */
-u32 func_003515E0(void* object)
+/** @brief Report whether window setup finished. @return Setup flag. */
+u8 EquipListState::windows_ready()
 {
-    return static_cast<EquipListState*>(object)->unk3c_active;
+    return unk3c_active;
 }
 
-s32 func_003515F0(void* object)
+/** @brief Report this object's default list kind. @return Four. */
+s32 EquipListState::get_default_list_kind()
 {
     return 4;
 }
 
-/**
- * @brief Store the equipment State's pointer at offset 0x24.
- * @param object Equipment State.
- * @param value Pointer to store.
- */
-void func_00351600(void* object, void* value)
+/** @brief Store the alternate associated object. @param value Object to store. */
+void FieldClass153E30::func_00263C80(void* value)
 {
-    static_cast<EquipListState*>(object)->unk24 = value;
+    unk24 = value;
 }
 
-/**
- * @brief Return the equipment State's pointer at offset 0x24.
- * @param object Equipment State.
- * @return Stored pointer.
- */
-void* func_00351610(void* object)
+/** @brief Return the alternate associated object. @return Stored object. */
+void* FieldClass153E30::func_00263C90()
 {
-    return static_cast<EquipListState*>(object)->unk24;
+    return unk24;
 }
 
-/**
- * @brief Store the equipment State's signed byte at offset 0x28.
- * @param object Equipment State.
- * @param value Signed byte to store.
- */
-void func_00351620(void* object, s8 value)
+/** @brief Store the receiver state byte. @param value State byte. */
+void FieldClass153E30::func_00263CA0(s8 value)
 {
-    static_cast<EquipListState*>(object)->unk28 = value;
+    unk28 = value;
 }
 
-/**
- * @brief Return the equipment State's signed byte at offset 0x28.
- * @param object Equipment State.
- * @return Stored signed byte.
- */
-s8 func_00351630(void* object)
+/** @brief Return the receiver state byte. @return State byte. */
+s8 FieldClass153E30::func_00263CB0()
 {
-    return static_cast<EquipListState*>(object)->unk28;
+    return unk28;
 }
 
-s32 func_00351640(void* object)
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot60()
 {
     return 0;
 }
 
-s32 func_00351650(void* object)
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot64()
 {
     return 0;
 }
 
-void func_00351660(void* object)
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot68()
 {
 }
 
-void func_00351670(void* object)
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot70()
 {
 }
 
-void func_00351680(void* object)
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot74()
 {
 }
 
-void func_00351690(void* object)
+/** @brief Run the empty receiver hook. */
+void FieldClass153E30::func_slot78()
 {
 }
 
-s32 func_003516A0(void* object)
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot7c()
 {
     return 0;
 }
 
-s32 func_003516B0(void* object)
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot80()
 {
     return 0;
 }
 
-s32 func_003516C0(void* object)
+/** @brief Return the default receiver result. @return Zero. */
+s32 FieldClass153E30::func_slot84()
 {
     return 0;
 }

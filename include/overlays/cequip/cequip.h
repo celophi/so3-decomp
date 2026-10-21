@@ -1,5 +1,5 @@
-#ifndef SO3_OVERLAYS_CEQUIP_TEXT_H
-#define SO3_OVERLAYS_CEQUIP_TEXT_H
+#ifndef SO3_OVERLAYS_CEQUIP_CEQUIP_H
+#define SO3_OVERLAYS_CEQUIP_CEQUIP_H
 
 #include "types.h"
 #include "overlays/1067-00/text_0028E240.h"
@@ -279,16 +279,21 @@ struct EquipListState : public FieldClass153E30
     virtual s32 init_windows();
     /** @brief Load an aligned resource and create the State displays. @param buffer Resource buffer. @return Display creation result, or zero for a null buffer. */
     virtual s32 on_resource_loaded(void* buffer);
-    /** @brief Forward a display flag to the owned windows. @param flag Display flag. */
-    virtual void func_00263E20(u32 flag);
+    /** @brief Report this object's default list kind. @return Four. */
+    virtual s32 get_default_list_kind();
+    /** @brief Submit the State to the resident object queue. */
+    virtual void func_001DD7B0();
+    /**
+     * @brief Allocate and initialize the State's record selection.
+     * @return One when a selection exists and initialization succeeds; otherwise zero.
+     */
+    virtual u8 func_00264110();
+    /** @brief Return the loaded resource slot. @return Resource slot. */
+    virtual u32 get_resource_slot();
+    /** @brief Report whether window setup finished. @return Setup flag. */
+    virtual u8 windows_ready();
     /** @brief Release the State resources and queue its receiver. */
     virtual void func_slot5c();
-    /** @brief Return the default State result. @return Zero. */
-    virtual s32 func_slot60();
-    /** @brief Return the alternate State result. @return Zero. */
-    virtual s32 func_slot64();
-    /** @brief Run the empty State hook. */
-    virtual void func_slot68();
     /** @brief Return the record selection. @return Current record selection. */
     virtual FieldRecordSelection* selected_records();
     s32 unk34;
@@ -460,14 +465,6 @@ extern "C" {
 #endif
 
 /**
- * @brief Create and initialize the State's record selection.
- * @param object Equipment State.
- * @return One when allocation and initialization succeed; otherwise zero.
- */
-s32 func_003510C0(EquipListState* object);
-
-
-/**
  * @brief Set the value at object offset 0xC.
  * @param object Object to update.
  * @param value Value to store.
@@ -561,20 +558,6 @@ u8 func_003486B0(void* object);
 void func_003486C0(void* object, u8 value);
 
 /**
- * @brief Read the State's stored window pointer.
- * @param object Equipment State.
- * @return Stored window pointer.
- */
-void* func_003487B0(void* object);
-
-/**
- * @brief Set the State's stored window pointer.
- * @param object Equipment State.
- * @param value Window pointer to store.
- */
-void func_003488C0(void* object, void* value);
-
-/**
  * @brief Toggle the target object's flag byte.
  * @param object Object holding the target reference.
  * @return Always 1.
@@ -595,57 +578,6 @@ void func_0034A390(void* object, u8 value);
  * @return Always 1.
  */
 s32 func_0034A460(void* object);
-
-/**
- * @brief Return the equipment State's resource source word.
- * @param object Equipment State.
- * @return Stored resource source word.
- */
-u32 func_0034A710(void* object);
-
-
-
-/**
- * @brief Return the equipment State's record selection.
- * @param object Equipment State.
- * @return Stored record selection.
- */
-FieldRecordSelection* func_0034AC10(void* object);
-
-/**
- * @brief Return the equipment State's low flag bit.
- * @param object Equipment State.
- * @return Stored low flag bit.
- */
-u32 func_003515E0(void* object);
-
-/**
- * @brief Store the equipment State's pointer at offset 0x24.
- * @param object Equipment State.
- * @param value Pointer to store.
- */
-void func_00351600(void* object, void* value);
-
-/**
- * @brief Return the equipment State's pointer at offset 0x24.
- * @param object Equipment State.
- * @return Stored pointer.
- */
-void* func_00351610(void* object);
-
-/**
- * @brief Store the equipment State's signed byte at offset 0x28.
- * @param object Equipment State.
- * @param value Signed byte to store.
- */
-void func_00351620(void* object, s8 value);
-
-/**
- * @brief Return the equipment State's signed byte at offset 0x28.
- * @param object Equipment State.
- * @return Stored signed byte.
- */
-s8 func_00351630(void* object);
 
 /**
  * @brief Append a value to the linked list.
@@ -926,18 +858,6 @@ s32 func_00349680(void* object);
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
  */
-void func_003509A0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351350(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
 void func_00351370(void* object);
 
 /**
@@ -965,126 +885,6 @@ s32 func_003513A0(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_003513B0(void* object);
-
-/**
- * @brief Return the fixed value 4.
- * @param object Receiver or first argument; unused.
- * @return Always 4.
- */
-s32 func_003515F0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351640(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00351650(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351660(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351670(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351680(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00351690(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003516A0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003516B0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003516C0(void* object);
-
-/**
- * @brief Release the object's base state and optionally its storage.
- * @param object Object to release, or null.
- * @param flags Positive low halfword requests storage release.
- * @return The original object pointer.
- */
-void* func_00348CB0(void* object, s32 flags);
-
-/**
- * @brief Release the object's base state and optionally its storage.
- * @param object Object to release, or null.
- * @param flags Positive low halfword requests storage release.
- * @return The original object pointer.
- */
-void* func_00349230(void* object, s32 flags);
-
-/**
- * @brief Release the object's base state and optionally its storage.
- * @param object Object to release, or null.
- * @param flags Positive low halfword requests storage release.
- * @return The original object pointer.
- */
-void* func_00349560(void* object, s32 flags);
-
-/**
- * @brief Release the object's base state and optionally its storage.
- * @param object Object to release, or null.
- * @param flags Positive low halfword requests storage release.
- * @return The original object pointer.
- */
-void* func_0034B370(void* object, s32 flags);
-
-/**
- * @brief Release the object's base state and optionally its storage.
- * @param object Object to release, or null.
- * @param flags Positive low halfword requests storage release.
- * @return The original object pointer.
- */
-void* func_0034DD30(void* object, s32 flags);
-
-/**
- * @brief Release the object's base state and optionally its storage.
- * @param object Object to release, or null.
- * @param flags Positive low halfword requests storage release.
- * @return The original object pointer.
- */
-void* func_00351520(void* object, s32 flags);
-
-/**
- * @brief Add the receiver to the resident object queue.
- * @param object Object to enqueue.
- */
-void func_00350980(void* object);
 
 /**
  * @brief Delete the list nodes after the sentinel and reset the list count.

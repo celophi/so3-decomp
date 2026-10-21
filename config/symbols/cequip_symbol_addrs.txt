@@ -1,14 +1,8 @@
 D_001B6690 = 0x001B6690; // size:0x4
-func_2CEAF0 = 0x002CEAF0; // type:func allow_duplicated:True
 __dt__16FieldClass15AE70Fv = 0x002CEAF0; // type:func allow_duplicated:True absolute:True
 __nw__FUii = 0x00100AC0; // type:func
 __dl__FPv = 0x00100B40; // type:func
 __vt__16EquipClass182220 = 0x00182220; // absolute:True size:0xF8
-D_182350 = 0x00182350; // absolute:True
-D_182450 = 0x00182450; // absolute:True
-D_182790 = 0x00182790; // absolute:True
-D_182A90 = 0x00182A90; // absolute:True
-D_182B90 = 0x00182B90; // absolute:True
 __dt__17LibStorageBlock0CFv = 0x004618F0; // type:func absolute:True
 __vt__23ItemCreationClass185050 = 0x00182340; // size:0x10
 __dt__23ItemCreationClass185050Fv = 0x0034A330; // type:func
@@ -179,8 +173,7 @@ func_00413D20__14LibClass178630Fv = 0x004C56E0; // type:func absolute:True
 draw__14LibClass178630Fv = 0x004C55E0; // type:func absolute:True
 func_slotf4__16EquipClass182790FUi = 0x0034B2A0; // type:func
 on_resource_loaded__14EquipListStateFPv = 0x00350FE0; // type:func
-func_00263D80__14EquipListStateFv = 0x00350910; // type:func absolute:True allow_duplicated:True
-func_slot5c__14EquipListStateFv = 0x00350910; // type:func allow_duplicated:True
+func_slot5c__14EquipListStateFv = 0x00350910; // type:func
 func_slotb0__16EquipClass182990Fv = 0x0034CA50; // type:func
 func_slotf4__16EquipClass182A90FUi = 0x0034DC60; // type:func
 func_slot64__16EquipClass182990Fv = 0x0034CD50; // type:func
@@ -240,8 +233,7 @@ lib_draw_state_init = 0x00453FF0; // type:func absolute:True
 lib_list_indicator_init = 0x0041A930; // type:func absolute:True
 __dt__23ItemCreationClass175110Fv = 0x003494F0; // type:func
 
-func_00349560 = 0x00349560; // type:func allow_duplicated:True
-__dt__16EquipClass182450Fv = 0x00349560; // type:func absolute:True allow_duplicated:True
+__dt__16EquipClass182450Fv = 0x00349560; // type:func
 func_slotf4__16EquipClass182450FUi = 0x00349290; // type:func
 
 __vt__15LibObject175140 = 0x00175140; // size:0x24 absolute:True
@@ -346,11 +338,38 @@ __dt__14EquipListStateFv = 0x00351140; // type:func
 __ct__16FieldClass153E30Fv = 0x002642D0; // type:func absolute:True
 __dt__16FieldClass153E30Fv = 0x00264230; // type:func absolute:True
 __vt__14EquipListState = 0x00182D90; // absolute:True size:0x8C
+get_default_list_kind__14EquipListStateFv = 0x003515F0; // type:func
+func_001DD7B0__14EquipListStateFv = 0x00350980; // type:func
+func_00264110__14EquipListStateFv = 0x003510C0; // type:func
+get_resource_slot__14EquipListStateFv = 0x0034A710; // type:func
+windows_ready__14EquipListStateFv = 0x003515E0; // type:func
+selected_records__14EquipListStateFv = 0x0034AC10; // type:func
+update__15FieldListObjectFv = 0x003509A0; // type:func
+func_001DD410__15FieldListObjectFv = 0x00351350; // type:func
+func_00261150__16FieldClass153E30Fv = 0x003487B0; // type:func
+func_00263C70__16FieldClass153E30FPv = 0x003488C0; // type:func
+func_00263C80__16FieldClass153E30FPv = 0x00351600; // type:func
+func_00263C90__16FieldClass153E30Fv = 0x00351610; // type:func
+func_00263CA0__16FieldClass153E30FSc = 0x00351620; // type:func
+func_00263CB0__16FieldClass153E30Fv = 0x00351630; // type:func
+func_slot60__16FieldClass153E30Fv = 0x00351640; // type:func
+func_slot64__16FieldClass153E30Fv = 0x00351650; // type:func
+func_slot68__16FieldClass153E30Fv = 0x00351660; // type:func
+func_slot70__16FieldClass153E30Fv = 0x00351670; // type:func
+func_slot74__16FieldClass153E30Fv = 0x00351680; // type:func
+func_slot78__16FieldClass153E30Fv = 0x00351690; // type:func
+func_slot7c__16FieldClass153E30Fv = 0x003516A0; // type:func
+func_slot80__16FieldClass153E30Fv = 0x003516B0; // type:func
+func_slot84__16FieldClass153E30Fv = 0x003516C0; // type:func
 
 func_slot6c__16EquipClass182220Fv = 0x003487C0; // type:func
 func_slot68__16EquipClass182220Fv = 0x00348800; // type:func
 
 __dt__16EquipClass182220Fv = 0x00348CB0; // type:func
+__dt__16EquipClass182350Fv = 0x00349230; // type:func
+__dt__16EquipClass182790Fv = 0x0034B370; // type:func
+__dt__16EquipClass182A90Fv = 0x0034DD30; // type:func
+__dt__16EquipClass182B90Fv = 0x00351520; // type:func
 
 func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
 func_002D5CF0 = 0x002D5CF0; // type:func absolute:True allow_duplicated:True
@@ -416,14 +435,6 @@ resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplica
 
 lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True
 
-func_00351640 = 0x00351640; // type:func allow_duplicated:True
-func_slot60__14EquipListStateFv = 0x00351640; // type:func absolute:True allow_duplicated:True
-func_00351650 = 0x00351650; // type:func allow_duplicated:True
-func_slot64__14EquipListStateFv = 0x00351650; // type:func absolute:True allow_duplicated:True
-func_00351660 = 0x00351660; // type:func allow_duplicated:True
-func_slot68__14EquipListStateFv = 0x00351660; // type:func absolute:True allow_duplicated:True
-func_0034AC10 = 0x0034AC10; // type:func allow_duplicated:True
-selected_records__14EquipListStateFv = 0x0034AC10; // type:func absolute:True allow_duplicated:True
 
 remove_node__14LibClass178DD0FPv = 0x004D72A0; // type:func absolute:True allow_duplicated:True
 append_node__14LibClass178DD0FPvi = 0x004D74F0; // type:func absolute:True allow_duplicated:True
