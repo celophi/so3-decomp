@@ -43,7 +43,6 @@ enum EquipMessageKey
 struct EquipAlignedResource
 {
     u8 unk00[0x40];
-
     s32 unk40;
 };
 
@@ -51,13 +50,9 @@ struct EquipAlignedResource
 struct FieldRuntime
 {
     u8 unk00[0x514];
-
     s32 unk514;
-
     u32 unk518;
-
     s32 unk51c;
-
     u32 unk520;
 };
 
@@ -65,7 +60,6 @@ struct FieldRuntime
 struct EquipMenuCallbacks
 {
     u8 unk00[0x14];
-
     FieldClass153E30* state;
 };
 
@@ -73,7 +67,6 @@ struct EquipMenuCallbacks
 struct EquipMenuRuntime
 {
     u8 unk00[0x2D];
-
     u8 unk2d;
 };
 
@@ -81,42 +74,35 @@ struct EquipMenuRuntime
 struct EquipMenuRef
 {
     u8 unk00[0xC];
-
     EquipMenuRuntime* runtime;
-
     EquipMenuCallbacks* callbacks;
-
     u8 unk14[0xC];
-
     FieldBufferSlots* resources;
 };
 
 class EquipNewItemTypeNode
 {
-public:
-    u16 value;
+    public:
+        u16 value;
+        u8 pad_02[2];
+        EquipNewItemTypeNode* next;
 
-    u8 pad_02[2];
-
-    EquipNewItemTypeNode* next;
-
-    /** @brief Destroy the node without releasing its stored value. */
-    ~EquipNewItemTypeNode()
-    {
-    }
+        /** @brief Destroy the node without releasing its stored value. */
+        ~EquipNewItemTypeNode()
+        {
+        }
 };
 
 class EquipItemTypeNode
 {
-public:
-    ItemCreationCategoryRecord* value;
+    public:
+        ItemCreationCategoryRecord* value;
+        EquipItemTypeNode* next;
 
-    EquipItemTypeNode* next;
-
-    /** @brief Destroy the node without releasing its stored value. */
-    ~EquipItemTypeNode()
-    {
-    }
+        /** @brief Destroy the node without releasing its stored value. */
+        ~EquipItemTypeNode()
+        {
+        }
 };
 
 extern EquipMenuRef* D_001B643C;
@@ -166,6 +152,35 @@ extern "C" void lib_factor_tooltip_show(EquipFactorTooltip* tooltip, float x, fl
 
 /** @brief Create the tooltip frame and factor lines, starting hidden. @param tooltip Factor tooltip. @return One after initialization, otherwise zero. */
 extern "C" s32 lib_factor_tooltip_init(EquipFactorTooltip* tooltip);
+
+static inline void set_visibility(LibClass178600* display, const u8& flag);
+
+static inline void set_equipment_icon(LibObject172410* icon, s32 category, u8 variant);
+
+static inline void set_display_depth(LibClass174EF0* icon, float depth);
+
+static inline void set_resource_scale(ItemCreationOptionResourceDisplay* display, float x, float y);
+
+static inline s32 equip_category_allocations(ItemCreationCategoryRecord* category, ItemCreationAllocationRecord** records, u16& identifier);
+
+static inline void set_comparison_number(LibObject174F20*& widget, s32 value, s32 previous);
+
+static inline EquipCharacterRecord* copy_comparison_context(EquipStatComparisonWindow* window, const s16& selected);
+
+static inline u8 selector_inactive(FieldClass153130* selector);
+
+static inline void initialize_equip_allocation(ItemCreationAllocationRecord* allocation, const ItemCreationCategoryRecord* item, const u16* factors);
+
+static inline void reset_scroll(LibObject174D90* display);
+
+static inline void set_resource_text(LibObject175140* display, const char* text);
+
+static inline s16 equipped_item(const EquipCharacterEquipment& equipment, s32 index);
+
+static inline void attach_comparison(EquipSlotWindow* object, EquipParameterWindow* detail, EquipStatComparisonWindow* comparison);
+
+template <class T>
+static inline void release_owned(T*& resource);
 
 /** @brief Align a resource buffer to the next 128-byte boundary. @param buffer Resource buffer. @return Aligned resource header. */
 static inline EquipAlignedResource* aligned_resource(void* buffer)
