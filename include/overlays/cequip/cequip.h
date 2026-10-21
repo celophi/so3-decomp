@@ -15,7 +15,7 @@
 typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
 
 #ifdef __cplusplus
-struct EquipPackedRecord;
+struct ItemCreationAllocationRecord;
 class EquipController;
 class EquipItemListWindow;
 class EquipItemTypeNode;
@@ -850,7 +850,7 @@ public:
     /** @brief Apply the selected record action and refresh category displays. @return One. */
     virtual u8 func_slotb8();
 
-    /** @brief Toggle the owning State display flag. @return One. */
+    /** @brief Switch the parameter window between the item description and its parameter changes. @return One. */
     virtual u8 func_slotbc();
 
     /** @brief Cycle to the previous record and rebuild its displays. @return Four after cycling, or zero when unavailable. */
@@ -868,7 +868,7 @@ public:
 
     float row_spacing;
 
-    EquipPackedRecord* current_item;
+    ItemCreationAllocationRecord* current_item;
 
     s16 equipped_items[4];
 
@@ -886,7 +886,7 @@ public:
 
     void* parameter_window;
 
-    FieldState23B3A0* equipment_slot_selector;
+    FieldClass153130* equipment_slot_selector;
 
     FieldClass15AE70* comparison_window;
 
@@ -917,7 +917,7 @@ public:
     /** @brief Return the empty equipment selection result. @return Zero. */
     virtual u8 func_slotb8();
 
-    /** @brief Toggle the linked display flag. @return One. */
+    /** @brief Switch the parameter window between the item description and its parameter changes. @return One. */
     virtual u8 func_slotbc();
 
     /** @brief Refresh the visible equipment rows. @param start First record index. */
@@ -929,8 +929,12 @@ public:
     /** @brief Create the equipment list displays. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slot104(u32 associated);
 
-    /** @brief Set the paired display flags. @param first First flag. @param second Second flag. */
-    virtual void func_slot10c(u32 first, u32 second);
+    /**
+     * @brief Show or hide the rows and the list cursor.
+     * @param rows Nonzero shows the item icons, factor marks and panel.
+     * @param cursor Nonzero shows the cursor and indicator at full brightness; zero hides them and dims the cursor.
+     */
+    virtual void func_slot10c(u32 rows, u32 cursor);
 
     /** @brief Recount the category records and clamp the visible selection. */
     void recount_rows();
@@ -969,6 +973,7 @@ public:
     /** @brief Restore the associated window and hide the alternate window. @return Two. */
     virtual u8 func_slotb4();
 
+    /** @brief Switch the parameter window between the item description and its parameter changes. @return One. */
     virtual u8 func_slotbc();
 
     /** @brief Refresh category names, availability counts, and selection colors. @param start First category row. */
@@ -983,7 +988,12 @@ public:
     /** @brief Rebuild the list for the selected category. @param category Category index, clamped to two. */
     virtual void func_slot108(u8 category);
 
-    virtual void func_slot10c(u32 first, u32 second);
+    /**
+     * @brief Show or hide the list cursor.
+     * @param unused Unused.
+     * @param cursor Nonzero shows the cursor at full brightness; zero hides it and dims it.
+     */
+    virtual void func_slot10c(u32 unused, u32 cursor);
 
     LibObject178750* separators[9];
 
@@ -1063,19 +1073,19 @@ void append_panel_widget_node(FieldCountedList* list, void* value);
 
 /**
  * @brief Return the node at `count`. Index zero is the first node after the sentinel.
- * @param object New item type list.
+ * @param list New item type list.
  * @param count Zero-based index among the value nodes.
  * @return The node at that index, or null if the list ends first.
  */
-void* get_new_item_type_node(void* object, s32 count);
+EquipNewItemTypeNode* get_new_item_type_node(EquipNewItemTypeList* list, s32 count);
 
 /**
  * @brief Return the node at `count`. Index zero is the first node after the sentinel.
- * @param object Item type list.
+ * @param list Item type list.
  * @param count Zero-based index among the value nodes.
  * @return The node at that index, or null if the list ends first.
  */
-void* get_item_type_node(void* object, s32 count);
+EquipItemTypeNode* get_item_type_node(EquipItemTypeList* list, s32 count);
 
 /**
  * @brief Delete the list nodes after the sentinel and reset the list count.

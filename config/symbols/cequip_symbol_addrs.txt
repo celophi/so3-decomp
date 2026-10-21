@@ -155,6 +155,8 @@ __vt__15LibObject172410 = 0x00172410; // size:0x24 absolute:True
 __dt__15LibObject172410Fv = 0x00413CC0; // type:func absolute:True
 draw__15LibObject172410Fv = 0x00413D90; // type:func absolute:True
 __ct__16FieldClass153130Fv = 0x0023B6D0; // type:func absolute:True
+func_0023B3A0__16FieldClass153130Fv = 0x0023B3A0; // type:func absolute:True
+func_0023B3B0__16FieldClass153130FUs = 0x0023B3B0; // type:func absolute:True
 func_0023B530__16FieldClass153130FUcUcUcUsUcffff = 0x0023B530; // type:func absolute:True
 
 __vt__15LibObject174F20 = 0x00174F20; // size:0x24 absolute:True

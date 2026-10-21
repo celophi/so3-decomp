@@ -47,8 +47,8 @@ struct EquipAlignedResource
     s32 unk40;
 };
 
-/** Partial runtime storage for the loaded resource slot and equipment resource keys. */
-struct EquipRuntimeResource
+/** Partial Field runtime reached through D_001B657C. */
+struct FieldRuntime
 {
     u8 unk00[0x514];
 
@@ -61,194 +61,34 @@ struct EquipRuntimeResource
     u32 unk520;
 };
 
-/** @brief Align a resource buffer to the next 128-byte boundary. @param buffer Resource buffer. @return Aligned resource header. */
-static inline EquipAlignedResource* aligned_resource(void* buffer)
-{
-    return reinterpret_cast<EquipAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
-}
-
-/** Packed 16-byte item allocation record with a ten-bit code and checksum key. */
-struct EquipPackedRecord
-{
-    union
-    {
-        u16 raw;
-
-        struct
-        {
-            u16 value : 10;
-
-            u16 other : 6;
-        } bits;
-    } unk00;
-
-    u16 unk02;
-
-    u16 unk04;
-
-    u16 unk06;
-
-    u16 unk08;
-
-    u16 unk0a;
-
-    u8 unk0c;
-
-    u8 unk0d_low : 3;
-
-    u8 unk0d_key : 2;
-
-    u8 unk0d_high : 3;
-
-    u16 unk0e;
-};
-
-struct EquipRuntimeMenuState;
-
-struct EquipRuntimeMenuContext
+/** Partial callback directory containing the active menu State. */
+struct EquipMenuCallbacks
 {
     u8 unk00[0x14];
 
-    EquipRuntimeMenuState* unk14;
+    FieldClass153E30* state;
 };
 
-/** Partial menu flags read by alternate-window activation. */
-struct EquipRuntimeMenuFlags
+/** Partial runtime control state read when leaving the menu. */
+struct EquipMenuRuntime
 {
     u8 unk00[0x2D];
 
     u8 unk2d;
 };
 
-struct EquipRuntimeMenuRoot
+/** Partial resident menu reference. */
+struct EquipMenuRef
 {
     u8 unk00[0xC];
 
-    EquipRuntimeMenuFlags* unk0c;
+    EquipMenuRuntime* runtime;
 
-    EquipRuntimeMenuContext* unk10;
+    EquipMenuCallbacks* callbacks;
 
     u8 unk14[0xC];
 
-    FieldBufferSlots* unk20;
-};
-
-extern EquipRuntimeMenuRoot* D_001B643C;
-
-extern ResidentObject1B64F8* D_001B64F8;
-
-extern "C" void optimize_equipment(EquipController* state, const EquipCharacterRecord* record, EquipCharacterEquipment* equipment, s8 slot);
-
-extern "C" void func_003F9890(EquipCharacterRecord* record, EquipCharacterEquipment* equipment, u32 flag, s32 index);
-
-extern "C" void refresh_equipment_slots(EquipSlotWindow* object);
-
-extern "C" void preview_item_stats(EquipStatComparisonWindow* window, s16 selected);
-
-extern "C" void equip_item_in_active_slot(EquipSlotWindow* object, s16 identifier);
-
-extern "C" s32 func_0040C7E0(void* state, s16 identifier, s32 mode);
-
-extern "C" void func_004E97A0(void* object);
-
-extern "C" void func_004E97B0(void* object, float x, float y, float z, s16 identifier, u32 flag);
-
-/** @brief Initialize the embedded tooltip displays. @param object Tooltip container. @return One after initialization, otherwise zero. */
-extern "C" s32 func_004E9BC0(EquipClass1796F0* object);
-
-/** @brief Set the item icon's mode flag and mark its display dirty. @param icon Item icon. @param enabled Mode flag. */
-static inline void equip_set_icon_enabled(LibObject172410* icon, u8 enabled)
-{
-    icon->unkfa = enabled;
-    icon->unk3c = 1;
-}
-
-/** @brief Cycle the selector in the supplied direction. @param object Selector. @param direction Direction code. @return Selector result code. */
-extern "C" u8 func_0023B3B0(FieldState23B3A0* object, u16 direction);
-
-/** @brief Return the selected character's record. @param selection Character selection. @return Record of the current character. */
-static inline EquipCharacterRecord* selected_character(FieldRecordSelection* selection)
-{
-    return &reinterpret_cast<EquipCharacterRecord*>(selection->records)[selection->current];
-}
-
-/** @brief Return the selected character's equipment. @param selection Character selection. @return Equipment record of the current character. */
-static inline EquipCharacterEquipment* selected_equipment(FieldRecordSelection* selection)
-{
-    return &static_cast<EquipCharacterEquipment*>(selection->unk04)[selection->current];
-}
-
-/** @brief Refresh the selected record description, code, and active display widgets. @param associated Record display window. */
-static inline void equip_refresh_record_display(EquipCharacterWindow* associated)
-{
-    if (associated->selection != 0)
-    {
-        LibObject175140* text = associated->name_text;
-        text->unkfc = selected_equipment(associated->selection)->character_name;
-        text->unk3c = 1;
-        EquipCharacterRecord* record = selected_character(associated->selection);
-        s32 result = record->get_level();
-        LibObject174F20* number = associated->level_value;
-        number->numeric_value = result;
-        number->unk3c = 1;
-        associated->show_current_portrait();
-    }
-}
-
-struct EquipCategoryRecord
-{
-    u16 unk00;
-
-    u16 unk02;
-
-    u8 unk04[4];
-
-    u8 unk08;
-};
-
-/** Catalog prefix containing the equipment mode and ten-bit slot mask. */
-struct EquipCategoryMaskView
-{
-    u8 pad[0xB];
-
-    u8 low : 4;
-
-    u8 mode : 3;
-
-    u8 high : 1;
-
-    u32 unused : 14;
-
-    u32 mask : 10;
-
-    u32 rest : 8;
-};
-
-/** @brief Find a category in resident storage. @param value One-based category index. @return Category, or null outside one through seven hundred fifty. */
-static inline ItemCreationCategoryRecord* equip_category_record(s32 value)
-{
-    ResidentObject1B64F8* base = D_001B64F8;
-    u16 index = value;
-    bool valid = false;
-
-    if (index > 0 && index <= 750)
-    {
-        valid = true;
-    }
-
-    if (valid)
-    {
-        return &base->item_types[index - 1];
-    }
-
-    return 0;
-}
-
-struct EquipCategoryNode
-{
-    EquipCategoryRecord* value;
-
-    EquipCategoryNode* next;
+    FieldBufferSlots* resources;
 };
 
 class EquipNewItemTypeNode
@@ -279,16 +119,111 @@ public:
     }
 };
 
+extern EquipMenuRef* D_001B643C;
+
+extern ResidentObject1B64F8* D_001B64F8;
+
+extern "C" void optimize_equipment(EquipController* state, const EquipCharacterRecord* record, EquipCharacterEquipment* equipment, s8 slot);
+
+extern "C" void func_003F9890(EquipCharacterRecord* record, EquipCharacterEquipment* equipment, const ItemCreationAllocationRecord* candidate, s32 index);
+
+extern "C" void refresh_equipment_slots(EquipSlotWindow* object);
+
+extern "C" void preview_item_stats(EquipStatComparisonWindow* window, s16 selected);
+
+extern "C" void equip_item_in_active_slot(EquipSlotWindow* object, s16 identifier);
+
+extern "C" s32 func_0040C7E0(void* state, s16 identifier, s32 mode);
+
+extern "C" void func_004E97A0(void* object);
+
+extern "C" void func_004E97B0(void* object, float x, float y, float z, s16 identifier, u32 flag);
+
+/** @brief Initialize the embedded tooltip displays. @param object Tooltip container. @return One after initialization, otherwise zero. */
+extern "C" s32 func_004E9BC0(EquipClass1796F0* object);
+
+/** @brief Align a resource buffer to the next 128-byte boundary. @param buffer Resource buffer. @return Aligned resource header. */
+static inline EquipAlignedResource* aligned_resource(void* buffer)
+{
+    return reinterpret_cast<EquipAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
+}
+
+/** @brief Set the item icon's mode flag and mark its display dirty. @param icon Item icon. @param enabled Mode flag. */
+static inline void equip_set_icon_enabled(LibObject172410* icon, u8 enabled)
+{
+    icon->unkfa = enabled;
+    icon->unk3c = 1;
+}
+
+/** @brief Return the equipment menu's active State. @return Active equipment controller. */
+static inline EquipController* current_controller()
+{
+    return static_cast<EquipController*>(D_001B643C->callbacks->state);
+}
+
+/** @brief Return the selected character's record. @param selection Character selection. @return Record of the current character. */
+static inline EquipCharacterRecord* selected_character(FieldRecordSelection* selection)
+{
+    return &reinterpret_cast<EquipCharacterRecord*>(selection->records)[selection->current];
+}
+
+/** @brief Return the selected character's equipment. @param selection Character selection. @return Equipment record of the current character. */
+static inline EquipCharacterEquipment* selected_equipment(FieldRecordSelection* selection)
+{
+    return &static_cast<EquipCharacterEquipment*>(selection->unk04)[selection->current];
+}
+
+/** @brief Refresh the selected record description, code, and active display widgets. @param associated Record display window. */
+static inline void equip_refresh_record_display(EquipCharacterWindow* associated)
+{
+    if (associated->selection != 0)
+    {
+        LibObject175140* text = associated->name_text;
+        text->unkfc = selected_equipment(associated->selection)->character_name;
+        text->unk3c = 1;
+        EquipCharacterRecord* record = selected_character(associated->selection);
+        s32 result = record->get_level();
+        LibObject174F20* number = associated->level_value;
+        number->numeric_value = result;
+        number->unk3c = 1;
+        associated->show_current_portrait();
+    }
+}
+
+/** @brief Find a category in resident storage. @param value One-based category index. @return Category, or null outside one through seven hundred fifty. */
+static inline ItemCreationCategoryRecord* equip_category_record(s32 value)
+{
+    ResidentObject1B64F8* base = D_001B64F8;
+    u16 index = value;
+    bool valid = false;
+
+    if (index > 0 && index <= 750)
+    {
+        valid = true;
+    }
+
+    if (valid)
+    {
+        return &base->item_types[index - 1];
+    }
+
+    return 0;
+}
+
 /** @brief Check the one-based packed record index. @param index Record index. @return True for indices from one through 3000. */
 static inline bool valid_record_index(s16 index)
 {
     return index > 0 && index <= 3000;
 }
 
-/** @brief Find a packed record by its signed index. @param value Record index before narrowing. @return Record pointer, or null for an invalid index. */
-static inline EquipPackedRecord* packed_record(s32 value)
+/**
+ * @brief Find an item allocation record by its one-based ID.
+ * @param value Allocation ID before narrowing.
+ * @return Allocation record, or null for an invalid ID.
+ */
+static inline ItemCreationAllocationRecord* allocation_record(s32 value)
 {
-    EquipPackedRecord* records = reinterpret_cast<EquipPackedRecord*>(D_001B64F8);
+    ItemCreationAllocationRecord* records = reinterpret_cast<ItemCreationAllocationRecord*>(D_001B64F8);
     s16 index = value;
 
     if (valid_record_index(index))
@@ -297,30 +232,6 @@ static inline EquipPackedRecord* packed_record(s32 value)
     }
 
     return 0;
-}
-
-/** @brief Read one halfword of a packed record. @param record Packed record. @param index Halfword index. @return Stored halfword. */
-static inline u16 packed_word(EquipPackedRecord* const& record, s32 index)
-{
-    return reinterpret_cast<const u16*>(record)[index];
-}
-
-/** @brief Validate the packed record checksum. @param record Packed record. @return True when the checksum differs. */
-static inline bool invalid_packed_record(EquipPackedRecord* const& record)
-{
-    return record->unk0e != static_cast<u16>((0x83CF << record->unk0d_key) ^ ((packed_word(record, 4) + (packed_word(record, 0) + packed_word(record, 2))) ^
-                                                                              (packed_word(record, 1) + (packed_word(record, 3) + packed_word(record, 5)))));
-}
-
-/** @brief Decode a validated packed record code. @param record Packed record. @return Code, or zero for an invalid checksum. */
-static inline u16 packed_record_code(EquipPackedRecord* const& record)
-{
-    if (invalid_packed_record(record))
-    {
-        return 0;
-    }
-
-    return record->unk00.bits.value;
 }
 
 /** @brief Set a numeric widget value and mark it dirty. @param widget Numeric widget. @param value Display value. */
@@ -587,7 +498,7 @@ void EquipExitConfirmWindow::func_slotf4(s16 selected)
 
 void EquipExitConfirmWindow::func_slot5c()
 {
-    if (reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->func_00261150() == this)
+    if (current_controller()->func_00261150() == this)
     {
         func_slotf4(grid->unk114);
     }
@@ -618,9 +529,9 @@ void EquipExitConfirmWindow::func_slot68()
 u8 EquipExitConfirmWindow::func_slotb4()
 {
     FieldClass15AE70::func_slot18(0, 0x7F);
-    EquipController* state = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14);
+    EquipController* state = current_controller();
     state->func_00263C70(func_slot44());
-    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->unk10), this);
+    field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->callbacks), this);
     return 2;
 }
 
@@ -794,16 +705,16 @@ s32 EquipResourceWindow::func_slotf4(u32 associated)
     left_tile = new (0) ItemCreationOptionResourceDisplay;
     middle_tile = new (0) ItemCreationOptionResourceDisplay;
     right_tile = new (0) ItemCreationOptionResourceDisplay;
-    void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 11);
+    void* allocation = field_get_aligned_allocation(D_001B643C->resources, 11);
     left_tile->unkcc = allocation;
     middle_tile->unkcc = allocation;
     right_tile->unkcc = allocation;
     left_tile->unkd0 = 11;
     middle_tile->unkd0 = 11;
     right_tile->unkd0 = 11;
-    left_tile->func_002D6440(field_find_resource_record(D_001B643C->unk20, 5), 0.0f, 0.0f);
-    middle_tile->func_002D6440(field_find_resource_record(D_001B643C->unk20, 6), 256.0f, 0.0f);
-    right_tile->func_002D6440(field_find_resource_record(D_001B643C->unk20, 7), 512.0f, 0.0f);
+    left_tile->func_002D6440(field_find_resource_record(D_001B643C->resources, 5), 0.0f, 0.0f);
+    middle_tile->func_002D6440(field_find_resource_record(D_001B643C->resources, 6), 256.0f, 0.0f);
+    right_tile->func_002D6440(field_find_resource_record(D_001B643C->resources, 7), 512.0f, 0.0f);
     lib_container_attach_widget(unk10, left_tile);
     lib_container_attach_widget(unk10, middle_tile);
     lib_container_attach_widget(unk10, right_tile);
@@ -824,10 +735,10 @@ static inline void set_visibility(LibClass178600* display, const u8& flag)
     display->unk3f = flag;
 }
 
-void EquipItemInstanceListWindow::func_slot10c(u32 value, u32 enabled)
+void EquipItemInstanceListWindow::func_slot10c(u32 rows, u32 cursor)
 {
     s32 index;
-    u8 flag = value;
+    u8 flag = rows;
 
     for (index = 0; index < 9; index++)
     {
@@ -842,9 +753,9 @@ void EquipItemInstanceListWindow::func_slot10c(u32 value, u32 enabled)
 
     if (FieldStateCE420::unk04 != 0)
     {
-        FieldStateCE420::unk04->unk3f = enabled;
+        FieldStateCE420::unk04->unk3f = cursor;
 
-        if (enabled != 0)
+        if (cursor != 0)
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
             nested->ItemCreationClass185050::unk30 = 128.0f;
@@ -860,7 +771,7 @@ void EquipItemInstanceListWindow::func_slot10c(u32 value, u32 enabled)
 
     if (FieldStateCE420::unk00 != 0)
     {
-        FieldStateCE420::unk00->unk3f = enabled;
+        FieldStateCE420::unk00->unk3f = cursor;
     }
 }
 
@@ -883,7 +794,7 @@ u8 EquipItemInstanceListWindow::func_slotb4()
     controller->remove_child(this);
     FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
     associated->func_slot10c(1, 1);
-    reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(associated);
+    D_001B643C->callbacks->state->func_00263C70(associated);
     preview_item_stats(controller->comparison_window, 0);
     func_004E97A0(tooltip);
     return 2;
@@ -913,7 +824,7 @@ u8 EquipItemInstanceListWindow::func_slotb0()
         equip_item_in_active_slot(static_cast<EquipSlotWindow*>(first), lib_allocation_get_identifier(records[selected]));
         first->func_slot20(1);
         first->func_slot64();
-        reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(first);
+        D_001B643C->callbacks->state->func_00263C70(first);
         preview_item_stats(static_cast<EquipStatComparisonWindow*>(second), 0);
         second->func_slot20(0);
         FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
@@ -934,11 +845,11 @@ void EquipItemInstanceListWindow::func_slot5c()
 {
     ItemCreationAllocationRecord* records[100];
 
-    if (reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00261150() == this)
+    if (D_001B643C->callbacks->state->func_00261150() == this)
     {
         FieldClass15AD40::func_slot5c();
 
-        if (reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00261150() == this)
+        if (D_001B643C->callbacks->state->func_00261150() == this)
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
             nested->ItemCreationClass185050::unk30 = 128.0f;
@@ -963,7 +874,7 @@ void EquipItemInstanceListWindow::func_slot5c()
             const LibUiRect16* position = &item_icons[FieldStateCE420::unk28]->unk18;
             s32 x = static_cast<s32>(283.0f + position->unk00);
             s32 y = static_cast<s32>(224.0f + (30.0f + position->unk04));
-            bool active = reinterpret_cast<FieldState23B3A0*>(FieldStateCE420::unk04)->unk75 != 0 && FieldClass15AE60::pad29[1] == 0;
+            bool active = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04)->ItemCreationClass185050::unk35 != 0 && FieldClass15AE60::pad29[1] == 0;
 
             if (active)
             {
@@ -1050,7 +961,7 @@ void EquipItemInstanceListWindow::refresh_rows(s32 start)
                 }
             }
 
-            factor_marks[row]->func_002D5CF0(mark_allocation, field_find_resource_record(D_001B643C->unk20, count + 60), 14);
+            factor_marks[row]->func_002D5CF0(mark_allocation, field_find_resource_record(D_001B643C->resources, count + 60), 14);
             item_icons[row]->unk3d = 1;
             factor_marks[row]->unk3d = 1;
         }
@@ -1061,8 +972,7 @@ void EquipItemInstanceListWindow::recount_rows()
 {
     ItemCreationAllocationRecord* records[100];
     FieldClass15AE60::unk88 = 0;
-    FieldClass15AE60::unk88 = lib_collect_unequipped_allocations(
-        D_001B64F8, records, static_cast<u16>(reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->selected_item_type));
+    FieldClass15AE60::unk88 = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(current_controller()->selected_item_type));
     s32 count = FieldClass15AE60::unk88;
 
     if (count >= 8)
@@ -1124,7 +1034,7 @@ s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
     lib_container_attach_widget(FieldClass15AE70::unk10, panel);
     lib_scissor_init_rectangle(frame, 8.0f, 10.0f, 302.0f, 224.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, frame);
-    mark_allocation = field_get_aligned_allocation(D_001B643C->unk20, 14);
+    mark_allocation = field_get_aligned_allocation(D_001B643C->resources, 14);
 
     for (s32 index = 0; index < 9; index++)
     {
@@ -1136,7 +1046,7 @@ s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
         set_display_depth(item_icons[index], -1.0f);
         lib_container_attach_widget(FieldClass15AE70::unk10, item_icons[index]);
         factor_marks[index] = new (0) ItemCreationOptionResourceDisplay;
-        FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 60);
+        FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 60);
         void* allocation = mark_allocation;
         factor_marks[index]->unkcc = allocation;
         factor_marks[index]->unkd0 = 14;
@@ -1207,7 +1117,7 @@ u8 EquipItemListWindow::func_slotb4()
     {
         associated->func_slot20(1);
         associated->func_slot64();
-        reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(associated);
+        D_001B643C->callbacks->state->func_00263C70(associated);
     }
 
     FieldClass15AE70* other = comparison_window;
@@ -1242,7 +1152,7 @@ u8 EquipItemListWindow::func_slotb0()
             associated->func_slot20(1);
             associated->func_slot64();
             FieldStateCE420::unk04->unk3f = 0;
-            reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(associated);
+            D_001B643C->callbacks->state->func_00263C70(associated);
             refresh_rows(FieldStateCE420::unk22);
         }
 
@@ -1283,13 +1193,13 @@ u32 EquipController::get_resource_slot()
  * @param unused Unused first word.
  * @param value Value tested for zero and stored in the control's low-byte flag.
  */
-void EquipItemListWindow::func_slot10c(u32 unused, u32 value)
+void EquipItemListWindow::func_slot10c(u32 unused, u32 cursor)
 {
     if (FieldStateCE420::unk04 != 0)
     {
-        FieldStateCE420::unk04->unk3f = value;
+        FieldStateCE420::unk04->unk3f = cursor;
 
-        if (value != 0)
+        if (cursor != 0)
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
             nested->ItemCreationClass185050::unk30 = 128.0f;
@@ -1333,7 +1243,7 @@ void EquipItemListWindow::refresh_rows(s32 start)
 {
     if (controller != 0)
     {
-        EquipCategoryNode* node = static_cast<EquipCategoryNode*>(get_item_type_node(&item_types, start));
+        EquipItemTypeNode* node = get_item_type_node(&item_types, start);
 
         for (s32 row = 0; row < 9; row++)
         {
@@ -1342,19 +1252,19 @@ void EquipItemListWindow::refresh_rows(s32 start)
                 s32 category;
                 bool found;
                 s32 index;
-                EquipCategoryRecord* record = node->value;
+                ItemCreationCategoryRecord* record = node->value;
 
                 if (record != 0)
                 {
                     found = false;
                     u16 count = static_cast<u16>(new_item_types.count);
                     index = 0;
-                    category = static_cast<u16>(record->unk02 + 1);
+                    category = static_cast<u16>(record->catalog_index + 1);
                     s32 key = category + EQUIP_MSG_ITEM_NAME_BASE;
 
                     for (; index < count; index++)
                     {
-                        if (category == *static_cast<u16*>(get_new_item_type_node(&new_item_types, index)))
+                        if (category == get_new_item_type_node(&new_item_types, index)->value)
                         {
                             found = true;
                             break;
@@ -1372,7 +1282,7 @@ void EquipItemListWindow::refresh_rows(s32 start)
 
                     lib_text_set_resource(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), key, 0);
                     LibObject174F20* image = counts[row];
-                    image->numeric_value = record->unk08;
+                    image->numeric_value = record->inventory_count;
                     image->unk3c = 1;
                     FieldClass15AE60::unk48[row]->unk3d = 1;
                     separators[row]->unk3d = 1;
@@ -1443,10 +1353,10 @@ void EquipItemListWindow::func_slot108(u8 category)
 
         if (entry != 0)
         {
-            const EquipCategoryMaskView* definition =
-                reinterpret_cast<const EquipCategoryMaskView*>(reinterpret_cast<const u8*>(D_001B64F0) + entry->catalog_index * 32);
+            const ItemCreationCategoryDefinition* definition = &D_001B64F0[entry->catalog_index];
 
-            if ((static_cast<u16>(definition->mask) & (1 << (slot - 1))) != 0 && category == static_cast<u8>(definition->mode) && entry->inventory_count != 0)
+            if ((static_cast<u16>(definition->equipment_mask) & (1 << (slot - 1))) != 0 && category == static_cast<u8>(definition->category) &&
+                entry->inventory_count != 0)
             {
                 u16 identifier;
                 s32 count = equip_category_allocations(entry, records, identifier);
@@ -1479,16 +1389,16 @@ FieldRecordSelection* EquipController::selected_records()
 
 void EquipItemListWindow::func_slot5c()
 {
-    if (reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00261150() == this)
+    if (D_001B643C->callbacks->state->func_00261150() == this)
     {
         FieldClass15AD40::func_slot5c();
-        EquipCategoryRecord** selected = reinterpret_cast<EquipCategoryRecord**>(get_item_type_node(&item_types, FieldStateCE420::unk24));
+        EquipItemTypeNode* selected = get_item_type_node(&item_types, FieldStateCE420::unk24);
 
         if (selected != 0)
         {
-            if (*selected != 0)
+            if (selected->value != 0)
             {
-                controller->selected_item_type = static_cast<u16>((*selected)->unk02 + 1);
+                controller->selected_item_type = static_cast<u16>(selected->value->catalog_index + 1);
             }
             else
             {
@@ -1683,9 +1593,9 @@ void EquipStatComparisonWindow::refresh_item_details(u8 category, s16 selected)
 
     if (item != 0)
     {
-        EquipPackedRecord* packed = packed_record(item);
-        u16 code = packed_record_code(packed);
-        u8 variant = packed->unk0c & 0x7F;
+        ItemCreationAllocationRecord* packed = allocation_record(item);
+        u16 code = packed->definition_index();
+        u8 variant = packed->modification_number;
         set_equipment_icon(item_icon, code + 1, variant);
         item_icon->unk3f = 1;
     }
@@ -1824,9 +1734,9 @@ extern "C" void equip_item_in_active_slot(EquipSlotWindow* window, s16 identifie
 
 void EquipSlotWindow::func_slot6c()
 {
-    if (static_cast<s16>(func_0023B3B0(equipment_slot_selector, 1)) != 1)
+    if (static_cast<s16>(equipment_slot_selector->func_0023B3B0(1)) != 1)
     {
-        s16 category = func_0023B3A0(equipment_slot_selector);
+        s16 category = equipment_slot_selector->func_0023B3A0();
         item_list = static_cast<FieldClass15AD40*>(func_slot4c());
 
         switch (category)
@@ -1850,9 +1760,9 @@ void EquipSlotWindow::func_slot6c()
 
 void EquipSlotWindow::func_slot68()
 {
-    if (static_cast<s16>(func_0023B3B0(equipment_slot_selector, 0)) != 1)
+    if (static_cast<s16>(equipment_slot_selector->func_0023B3B0(0)) != 1)
     {
-        s16 category = func_0023B3A0(equipment_slot_selector);
+        s16 category = equipment_slot_selector->func_0023B3A0();
         item_list = static_cast<FieldClass15AD40*>(func_slot4c());
 
         switch (category)
@@ -1876,7 +1786,7 @@ void EquipSlotWindow::func_slot68()
 
 u8 EquipSlotWindow::func_slotb0()
 {
-    s32 category = static_cast<u16>(func_0023B3A0(equipment_slot_selector));
+    s32 category = static_cast<u16>(equipment_slot_selector->func_0023B3A0());
 
     if (usable_slot_count < category)
     {
@@ -1923,9 +1833,9 @@ u8 EquipSlotWindow::func_slotb0()
 
     item_list->func_slot110(1);
     item_list->func_slot10c(1, 1);
-    reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->func_00263C70(item_list);
+    current_controller()->func_00263C70(item_list);
     active_slot = category;
-    FieldClass153130* selector = reinterpret_cast<FieldClass153130*>(equipment_slot_selector);
+    FieldClass153130* selector = equipment_slot_selector;
     selector->ItemCreationClass185050::unk30 = 64.0f;
     selector->LibClass178600::unk3c = 1;
     func_slot20(0);
@@ -1935,12 +1845,12 @@ u8 EquipSlotWindow::func_slotb0()
 
 u8 EquipSlotWindow::func_slotb4()
 {
-    if (D_001B643C->unk0c == 0)
+    if (D_001B643C->runtime == 0)
     {
         return 0;
     }
 
-    bool active = D_001B643C->unk0c->unk2d != 0;
+    bool active = D_001B643C->runtime->unk2d != 0;
 
     if (active == 1)
     {
@@ -1957,8 +1867,8 @@ u8 EquipSlotWindow::func_slotb4()
 
         window->func_slot10(func_slot54(), 200.0f, 160.0f, 13);
         window->func_slot40(this);
-        reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->add_child(window);
-        reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(window);
+        D_001B643C->callbacks->state->add_child(window);
+        D_001B643C->callbacks->state->func_00263C70(window);
     }
 
     func_004E97A0(controller->tooltip);
@@ -1980,7 +1890,7 @@ void EquipSlotWindow::func_slot64()
     }
 
     equip_refresh_record_display(associated);
-    FieldClass153130* selector = reinterpret_cast<FieldClass153130*>(equipment_slot_selector);
+    FieldClass153130* selector = equipment_slot_selector;
     selector->ItemCreationClass185050::unk30 = 128.0f;
     selector->LibClass178600::unk3c = 1;
 }
@@ -2005,7 +1915,7 @@ u8 EquipSlotWindow::func_slotb8()
     func_003F9890(record, equipment, 0, -1);
     func_004E97A0(controller->tooltip);
     refresh_equipment_slots(this);
-    s32 category = static_cast<u16>(func_0023B3A0(equipment_slot_selector));
+    s32 category = static_cast<u16>(equipment_slot_selector->func_0023B3A0());
 
     if (category == 0 || category == 1)
     {
@@ -2036,21 +1946,21 @@ u8 EquipSlotWindow::func_slotbc()
 }
 
 /** @brief Test whether a selector is inactive. @param selector Selector state. @return One when its control byte is clear. */
-static inline u8 selector_inactive(FieldState23B3A0* selector)
+static inline u8 selector_inactive(FieldClass153130* selector)
 {
-    return !(selector->unk75 != 0);
+    return !(selector->ItemCreationClass185050::unk35 != 0);
 }
 
 void EquipSlotWindow::func_slot5c()
 {
-    if (reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->func_00261150() == this)
+    if (current_controller()->func_00261150() == this)
     {
-        u16 selected = func_0023B3A0(equipment_slot_selector);
-        EquipPackedRecord* record = packed_record(equipped_items[selected]);
+        u16 selected = equipment_slot_selector->func_0023B3A0();
+        ItemCreationAllocationRecord* record = allocation_record(equipped_items[selected]);
 
         if (record != 0)
         {
-            controller->selected_item_type = static_cast<u16>(packed_record_code(record) + 1);
+            controller->selected_item_type = static_cast<u16>(record->definition_index() + 1);
             const LibUiRect16* position = &item_icons[selected]->unk18;
             s32 x = static_cast<s32>(16.0f + position->unk00);
             s32 y = static_cast<s32>(220.0f + (29.0f + position->unk04));
@@ -2059,8 +1969,7 @@ void EquipSlotWindow::func_slot5c()
             if (inactive == 0)
             {
                 void* tooltip = controller->tooltip;
-                func_004E97B0(tooltip, static_cast<float>(x), static_cast<float>(y), 18.0f,
-                              lib_allocation_get_identifier(reinterpret_cast<ItemCreationAllocationRecord*>(record)), 0);
+                func_004E97B0(tooltip, static_cast<float>(x), static_cast<float>(y), 18.0f, lib_allocation_get_identifier(record), 0);
             }
             else
             {
@@ -2086,7 +1995,7 @@ s32 EquipSlotWindow::func_slotdc()
 
     if (selection->count > 1)
     {
-        EquipController* state = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14);
+        EquipController* state = current_controller();
 
         if (state->selection != 0)
         {
@@ -2114,7 +2023,7 @@ s32 EquipSlotWindow::func_slotd8()
 
     if (selection->count > 1)
     {
-        EquipController* state = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14);
+        EquipController* state = current_controller();
 
         if (state->selection != 0)
         {
@@ -2162,9 +2071,9 @@ extern "C" void refresh_equipment_slots(EquipSlotWindow* object)
 
         if (object->equipped_items[index] != 0)
         {
-            object->current_item = packed_record(object->equipped_items[index]);
-            u16 code = packed_record_code(object->current_item);
-            u8 variant = object->current_item->unk0c & 0x7F;
+            object->current_item = allocation_record(object->equipped_items[index]);
+            u16 code = object->current_item->definition_index();
+            u8 variant = object->current_item->modification_number;
             set_equipment_icon(object->item_icons[index], static_cast<u16>(code) + 1, variant);
             object->item_icons[index]->unk3f = 1;
             object->empty_labels[index]->unk3f = 0;
@@ -2214,9 +2123,9 @@ s32 EquipSlotWindow::func_slotf4(u32 associated)
 
     lib_scissor_init_reset(overlay, 1);
     lib_container_attach_widget(unk10, overlay);
-    equipment_slot_selector = reinterpret_cast<FieldState23B3A0*>(new (0) FieldClass153130);
-    reinterpret_cast<FieldClass153130*>(equipment_slot_selector)->func_0023B530(1, 4, 1, 0, 1, 12.0f, 50.0f, 0.0f, row_spacing);
-    lib_container_attach_widget(unk10, reinterpret_cast<FieldClass153130*>(equipment_slot_selector));
+    equipment_slot_selector = new (0) FieldClass153130;
+    equipment_slot_selector->func_0023B530(1, 4, 1, 0, 1, 12.0f, 50.0f, 0.0f, row_spacing);
+    lib_container_attach_widget(unk10, equipment_slot_selector);
     refresh_equipment_slots(this);
     return 1;
 }
@@ -2236,7 +2145,7 @@ EquipSlotWindow::EquipSlotWindow(EquipController* state)
 
     row_spacing = 0;
     selection = 0;
-    selection = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->selected_records();
+    selection = current_controller()->selected_records();
     equipment_slot_selector = 0;
     parameter_window = 0;
     current_item = 0;
@@ -2276,7 +2185,7 @@ static inline void initialize_equip_allocation(ItemCreationAllocationRecord* all
 
 void EquipParameterWindow::func_slot5c()
 {
-    EquipController* state = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14);
+    EquipController* state = current_controller();
 
     if (state->selected_item_type > 0)
     {
@@ -2425,7 +2334,7 @@ void EquipCharacterWindow::show_current_portrait()
 
 void EquipCharacterWindow::func_slot5c()
 {
-    EquipController* state = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14);
+    EquipController* state = current_controller();
     FieldClass15AE70* window = state->slot_window;
 
     if (state->func_00261150() == window)
@@ -2511,8 +2420,8 @@ s32 EquipCharacterWindow::func_slotf4(u32 associated)
         {
             portrait_slots[index] = slot;
             portraits[index] = new (0) ItemCreationOptionResourceDisplay;
-            void* allocation = field_get_aligned_allocation(D_001B643C->unk20, static_cast<u8>(slot));
-            FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 4);
+            void* allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(slot));
+            FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 4);
             portraits[index]->unkcc = allocation;
             portraits[index]->unkd0 = slot;
             portraits[index]->func_002D6440(record, 20.0f, 50.0f);
@@ -2535,7 +2444,7 @@ EquipCharacterWindow::EquipCharacterWindow()
 {
     character_slot = 0;
     selection = 0;
-    selection = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->selected_records();
+    selection = current_controller()->selected_records();
     level_label = 0;
     level_value = 0;
     left_indicator = 0;
@@ -2546,27 +2455,6 @@ EquipCharacterWindow::EquipCharacterWindow()
         portraits[i] = 0;
         portrait_slots[i] = 0;
     }
-}
-
-/** @brief Find an allocation record in resident storage. @param value Signed halfword record index. @return Record, or null outside one through three thousand.
- */
-static inline ItemCreationAllocationRecord* equip_allocation_record(s32 value)
-{
-    ResidentObject1B64F8* base = D_001B64F8;
-    s16 index = value;
-    bool valid = false;
-
-    if (index > 0 && index <= 3000)
-    {
-        valid = true;
-    }
-
-    if (valid)
-    {
-        return reinterpret_cast<ItemCreationAllocationRecord*>(reinterpret_cast<u8*>(base) + (index - 1) * 16);
-    }
-
-    return 0;
 }
 
 /**
@@ -2619,12 +2507,11 @@ extern "C" void optimize_equipment(EquipController* state, const EquipCharacterR
 
         if (entry && entry->inventory_count > 0)
         {
-            const EquipCategoryMaskView* definition =
-                reinterpret_cast<const EquipCategoryMaskView*>(reinterpret_cast<const u8*>(D_001B64F0) + entry->catalog_index * 32);
+            const ItemCreationCategoryDefinition* definition = &D_001B64F0[entry->catalog_index];
 
-            if (mask & static_cast<u16>(definition->mask))
+            if (mask & static_cast<u16>(definition->equipment_mask))
             {
-                switch (static_cast<u8>(definition->mode))
+                switch (static_cast<u8>(definition->category))
                 {
                     case 0:
                     {
@@ -2634,7 +2521,7 @@ extern "C" void optimize_equipment(EquipController* state, const EquipCharacterR
                         {
                             copy = *record;
                             copy_equipment = *equipment;
-                            func_003F9890(&copy, &copy_equipment, reinterpret_cast<u32>(candidates[index_first]), 0);
+                            func_003F9890(&copy, &copy_equipment, candidates[index_first], 0);
 
                             if (!best_first || max_first < copy.get_attack())
                             {
@@ -2653,7 +2540,7 @@ extern "C" void optimize_equipment(EquipController* state, const EquipCharacterR
                         {
                             copy = *record;
                             copy_equipment = *equipment;
-                            func_003F9890(&copy, &copy_equipment, reinterpret_cast<u32>(candidates[index_second]), 1);
+                            func_003F9890(&copy, &copy_equipment, candidates[index_second], 1);
 
                             if (!best_second || max_second < copy.get_defense())
                             {
@@ -2679,7 +2566,7 @@ extern "C" void optimize_equipment(EquipController* state, const EquipCharacterR
 
         if (current)
         {
-            if (equip_allocation_record(current) && copy.get_attack() < max_first)
+            if (allocation_record(current) && copy.get_attack() < max_first)
             {
                 func_0040C7E0(D_001B64F8, current, 0);
                 func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_first), slot);
@@ -2699,7 +2586,7 @@ extern "C" void optimize_equipment(EquipController* state, const EquipCharacterR
 
         if (current)
         {
-            if (equip_allocation_record(current) && copy.get_defense() < max_second)
+            if (allocation_record(current) && copy.get_defense() < max_second)
             {
                 func_0040C7E0(D_001B64F8, current, 0);
                 func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_second), slot);
@@ -2757,7 +2644,7 @@ static inline void attach_comparison(EquipSlotWindow* object, EquipParameterWind
 
 s32 EquipController::init_windows()
 {
-    EquipRuntimeResource* runtime = reinterpret_cast<EquipRuntimeResource*>(D_001B657C);
+    FieldRuntime* runtime = D_001B657C;
     runtime->unk51c = resource_slot;
     runtime->unk520 = 0x11171;
     tooltip = new (0) EquipClass1796F0;
@@ -2836,7 +2723,7 @@ s32 EquipController::on_resource_loaded(void* buffer)
 
     resource_slot = lib_load_resource_slot(D_001B657C, aligned);
     resident_exchange_allocation_heap(saved_heap);
-    EquipRuntimeResource* runtime = reinterpret_cast<EquipRuntimeResource*>(D_001B657C);
+    FieldRuntime* runtime = D_001B657C;
     runtime->unk514 = resource_slot;
     runtime->unk518 = 0xC351;
     return init_windows();
@@ -3107,9 +2994,9 @@ void clear_new_item_types(EquipNewItemTypeList* list)
     list->count = 0;
 }
 
-void* get_new_item_type_node(void* object, s32 count)
+EquipNewItemTypeNode* get_new_item_type_node(EquipNewItemTypeList* list, s32 count)
 {
-    EquipNewItemTypeNode* node = ((EquipNewItemTypeList*)object)->head->next;
+    EquipNewItemTypeNode* node = list->head->next;
     s32 index = 0;
 
     while (index < count)
@@ -3197,9 +3084,9 @@ void clear_item_types(EquipItemTypeList* list)
     list->count = 0;
 }
 
-void* get_item_type_node(void* object, s32 count)
+EquipItemTypeNode* get_item_type_node(EquipItemTypeList* list, s32 count)
 {
-    EquipItemTypeNode* node = ((EquipItemTypeList*)object)->head->next;
+    EquipItemTypeNode* node = list->head->next;
     s32 index = 0;
 
     while (index < count)

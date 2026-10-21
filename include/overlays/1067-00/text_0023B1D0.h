@@ -130,7 +130,7 @@ public:
      * @param direction Zero or three moves backward; one or two moves forward.
      * @return Zero after moving, one while movement is incomplete, two at the lower limit, or three at the upper limit.
      */
-    u32 func_0023B3B0(u16 direction);
+    u8 func_0023B3B0(u16 direction);
 
     /**
      * @brief Configure the selection widget and its drawing dimensions.
