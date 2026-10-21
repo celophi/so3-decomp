@@ -6,4 +6,4 @@
 @32@func_003EEBE0__15LibObject178660Fv = 0x00412FB0;
 @176@func_003F4410__15LibObject178660FUi = 0x00412FC0;
 @32@func_0044B100__15LibObject178660FUiUiUi = 0x00412FD0;
-@32@__dt__16EquipClass1796F0Fv = 0x004E9FE0;
+@32@__dt__18EquipFactorTooltipFv = 0x004E9FE0;

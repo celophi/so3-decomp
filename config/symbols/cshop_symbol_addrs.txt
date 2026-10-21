@@ -541,3 +541,5 @@ field_find_resource_record = 0x002D3CC0; // type:func absolute:True allow_duplic
 
 func_002D3D80 = 0x002D3D80; // type:func absolute:True allow_duplicated:True
 field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_duplicated:True
+lib_allocation_initialize = 0x0040D2E0; // type:func absolute:True allow_duplicated:True
+lib_character_recalculate_stats = 0x003F9890; // type:func absolute:True allow_duplicated:True

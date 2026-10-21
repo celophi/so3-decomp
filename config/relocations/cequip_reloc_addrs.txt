@@ -22,9 +22,9 @@ rom:0x8694 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
 rom:0x86A4 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
 rom:0x86A8 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
 rom:0x86B0 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
-rom:0x869C reloc:MIPS_HI16 symbol:__vt__16EquipClass1796F0
-rom:0x86BC reloc:MIPS_LO16 symbol:__vt__16EquipClass1796F0
-rom:0x86C4 reloc:MIPS_HI16 symbol:__vt__16EquipClass1796F0 addend:0x1C
-rom:0x86CC reloc:MIPS_LO16 symbol:__vt__16EquipClass1796F0 addend:0x1C
-rom:0x86D0 reloc:MIPS_HI16 symbol:__vt__16EquipClass1796F0 addend:0x90
-rom:0x86DC reloc:MIPS_LO16 symbol:__vt__16EquipClass1796F0 addend:0x90
+rom:0x869C reloc:MIPS_HI16 symbol:__vt__18EquipFactorTooltip
+rom:0x86BC reloc:MIPS_LO16 symbol:__vt__18EquipFactorTooltip
+rom:0x86C4 reloc:MIPS_HI16 symbol:__vt__18EquipFactorTooltip addend:0x1C
+rom:0x86CC reloc:MIPS_LO16 symbol:__vt__18EquipFactorTooltip addend:0x1C
+rom:0x86D0 reloc:MIPS_HI16 symbol:__vt__18EquipFactorTooltip addend:0x90
+rom:0x86DC reloc:MIPS_LO16 symbol:__vt__18EquipFactorTooltip addend:0x90

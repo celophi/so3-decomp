@@ -694,7 +694,7 @@ extern "C" s32 func_002CFE40(void* object, s16 index);
 extern "C" void* func_100AC0(s32 size, s32 flags);
 
 /** @brief Apply an allocation to character statistics and equipment. */
-extern "C" s32 func_003F9890(StatusCharacterRecord*, StatusCharacterEquipment*, ItemCreationAllocationRecord*, s32);
+extern "C" s32 lib_character_recalculate_stats(StatusCharacterRecord*, StatusCharacterEquipment*, ItemCreationAllocationRecord*, s32);
 /** @brief Compute the experience remaining for the requested level and optionally return its threshold. */
 extern "C" s32 func_004028C0(StatusExperienceTable*, s32, StatusCharacterRecord*, s32*);
 extern "C" ItemCreationAllocationRecord* D_001B64F8;
@@ -2279,7 +2279,7 @@ extern "C" void status_refresh_character_display(StatusCharacterWindow* object)
 {
     FieldRecordSelection* selection = object->selection;
     s8 current = selection->current;
-    func_003F9890(&reinterpret_cast<StatusCharacterRecord*>(selection->records)[current],
+    lib_character_recalculate_stats(&reinterpret_cast<StatusCharacterRecord*>(selection->records)[current],
                  &static_cast<StatusCharacterEquipment*>(selection->unk04)[current], 0, -1);
     LibObject175140* record = object->character_name_widget;
     record->unkfc = status_equipment(object->selection)->character_name;
@@ -2895,7 +2895,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     FieldRecordSelection* selected = selection;
     s8 current = selected->current;
     StatusCharacterRecord* character = &reinterpret_cast<StatusCharacterRecord*>(selected->records)[current];
-    func_003F9890(character, &static_cast<StatusCharacterEquipment*>(selected->unk04)[current], 0, -1);
+    lib_character_recalculate_stats(character, &static_cast<StatusCharacterEquipment*>(selected->unk04)[current], 0, -1);
     s32 hp = status_character(selection)->get_hp();
     s32 mp = status_character(selection)->get_mp();
     s32 maximum_hp = status_character(selection)->get_max_hp();

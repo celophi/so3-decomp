@@ -125,7 +125,15 @@ extern ResidentObject1B64F8* D_001B64F8;
 
 extern "C" void optimize_equipment(EquipController* state, const EquipCharacterRecord* record, EquipCharacterEquipment* equipment, s8 slot);
 
-extern "C" void func_003F9890(EquipCharacterRecord* record, EquipCharacterEquipment* equipment, const ItemCreationAllocationRecord* candidate, s32 index);
+/**
+ * @brief Recalculate a character's statistics from their equipment.
+ * @param record Character record to update.
+ * @param equipment Character equipment.
+ * @param candidate Allocation to try in a slot instead of the equipped one, or null.
+ * @param index Slot for the candidate, or -1 to use the equipment as it is.
+ */
+extern "C" void lib_character_recalculate_stats(EquipCharacterRecord* record, EquipCharacterEquipment* equipment, const ItemCreationAllocationRecord* candidate,
+                                                s32 index);
 
 extern "C" void refresh_equipment_slots(EquipSlotWindow* object);
 
@@ -133,14 +141,31 @@ extern "C" void preview_item_stats(EquipStatComparisonWindow* window, s16 select
 
 extern "C" void equip_item_in_active_slot(EquipSlotWindow* object, s16 identifier);
 
-extern "C" s32 func_0040C7E0(void* state, s16 identifier, s32 mode);
+/**
+ * @brief Record which character has an allocation equipped and refresh its checksum and counts.
+ * @param inventory Resident item inventory.
+ * @param identifier One-based allocation ID.
+ * @param owner One-based character number, or zero to unequip.
+ * @return Result of the inventory update.
+ */
+extern "C" s32 lib_allocation_set_equipped_owner(ResidentObject1B64F8* inventory, s16 identifier, s32 owner);
 
-extern "C" void func_004E97A0(void* object);
+/** @brief Hide the factor tooltip. @param tooltip Factor tooltip. */
+extern "C" void lib_factor_tooltip_hide(EquipFactorTooltip* tooltip);
 
-extern "C" void func_004E97B0(void* object, float x, float y, float z, s16 identifier, u32 flag);
+/**
+ * @brief Show an item allocation's factors in the tooltip at a screen position.
+ * @param tooltip Factor tooltip.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Display depth.
+ * @param identifier One-based allocation ID.
+ * @param flag Display flag stored with the tooltip.
+ */
+extern "C" void lib_factor_tooltip_show(EquipFactorTooltip* tooltip, float x, float y, float z, s16 identifier, u32 flag);
 
-/** @brief Initialize the embedded tooltip displays. @param object Tooltip container. @return One after initialization, otherwise zero. */
-extern "C" s32 func_004E9BC0(EquipClass1796F0* object);
+/** @brief Create the tooltip frame and factor lines, starting hidden. @param tooltip Factor tooltip. @return One after initialization, otherwise zero. */
+extern "C" s32 lib_factor_tooltip_init(EquipFactorTooltip* tooltip);
 
 /** @brief Align a resource buffer to the next 128-byte boundary. @param buffer Resource buffer. @return Aligned resource header. */
 static inline EquipAlignedResource* aligned_resource(void* buffer)
@@ -796,7 +821,7 @@ u8 EquipItemInstanceListWindow::func_slotb4()
     associated->func_slot10c(1, 1);
     D_001B643C->callbacks->state->func_00263C70(associated);
     preview_item_stats(controller->comparison_window, 0);
-    func_004E97A0(tooltip);
+    lib_factor_tooltip_hide(tooltip);
     return 2;
 }
 
@@ -816,7 +841,7 @@ u8 EquipItemInstanceListWindow::func_slotb0()
     {
         if (tooltip != 0)
         {
-            func_004E97A0(tooltip);
+            lib_factor_tooltip_hide(tooltip);
         }
 
         FieldClass15AE70* first = controller->slot_window;
@@ -831,7 +856,7 @@ u8 EquipItemInstanceListWindow::func_slotb0()
         associated->func_slot108(static_cast<u8>(controller->selected_slot));
         associated->func_slot10c(0, 0);
         controller->remove_child(this);
-        func_004E97A0(tooltip);
+        lib_factor_tooltip_hide(tooltip);
     }
     else
     {
@@ -881,14 +906,14 @@ void EquipItemInstanceListWindow::func_slot5c()
                 if (tooltip_item != lib_allocation_get_identifier(records[selected]))
                 {
                     tooltip_item = lib_allocation_get_identifier(records[selected]);
-                    func_004E97A0(tooltip);
+                    lib_factor_tooltip_hide(tooltip);
                 }
 
-                func_004E97B0(tooltip, static_cast<float>(x), static_cast<float>(y), 18.0f, lib_allocation_get_identifier(records[selected]), 0);
+                lib_factor_tooltip_show(tooltip, static_cast<float>(x), static_cast<float>(y), 18.0f, lib_allocation_get_identifier(records[selected]), 0);
             }
             else
             {
-                func_004E97A0(tooltip);
+                lib_factor_tooltip_hide(tooltip);
             }
         }
         else
@@ -1541,7 +1566,7 @@ static inline EquipCharacterRecord* copy_comparison_context(EquipStatComparisonW
     func_0013A4C0(&window->preview_record, original, sizeof(window->preview_record));
     func_0013A4C0(&window->preview_equipment, equipment, sizeof(window->preview_equipment));
     window->preview_equipment.set_equipment_id(window->slot, window->preview_item);
-    func_003F9890(&window->preview_record, &window->preview_equipment, 0, -1);
+    lib_character_recalculate_stats(&window->preview_record, &window->preview_equipment, 0, -1);
     return original;
 }
 
@@ -1705,11 +1730,11 @@ extern "C" void equip_item_in_active_slot(EquipSlotWindow* window, s16 identifie
 {
     if (window->selection != 0)
     {
-        func_0040C7E0(D_001B64F8, selected_equipment(window->selection)->get_equipment_id(window->active_slot), 0);
+        lib_allocation_set_equipped_owner(D_001B64F8, selected_equipment(window->selection)->get_equipment_id(window->active_slot), 0);
 
         if (identifier)
         {
-            func_0040C7E0(D_001B64F8, identifier, window->selection->slots[window->selection->current]);
+            lib_allocation_set_equipped_owner(D_001B64F8, identifier, window->selection->slots[window->selection->current]);
             selected_equipment(window->selection)->set_equipment_id(window->active_slot, identifier);
         }
         else
@@ -1718,7 +1743,7 @@ extern "C" void equip_item_in_active_slot(EquipSlotWindow* window, s16 identifie
         }
 
         FieldRecordSelection* selection = window->controller->selected_records();
-        func_003F9890(selected_character(selection), selected_equipment(selection), 0, -1);
+        lib_character_recalculate_stats(selected_character(selection), selected_equipment(selection), 0, -1);
     }
 
     refresh_equipment_slots(window);
@@ -1839,7 +1864,7 @@ u8 EquipSlotWindow::func_slotb0()
     selector->ItemCreationClass185050::unk30 = 64.0f;
     selector->LibClass178600::unk3c = 1;
     func_slot20(0);
-    func_004E97A0(controller->tooltip);
+    lib_factor_tooltip_hide(controller->tooltip);
     return 1;
 }
 
@@ -1871,7 +1896,7 @@ u8 EquipSlotWindow::func_slotb4()
         D_001B643C->callbacks->state->func_00263C70(window);
     }
 
-    func_004E97A0(controller->tooltip);
+    lib_factor_tooltip_hide(controller->tooltip);
     return 2;
 }
 
@@ -1912,8 +1937,8 @@ u8 EquipSlotWindow::func_slotb8()
     EquipCharacterRecord* record = selected_character(selection);
     EquipCharacterEquipment* equipment = selected_equipment(selection);
     optimize_equipment(controller, record, equipment, selection->slots[selection->current]);
-    func_003F9890(record, equipment, 0, -1);
-    func_004E97A0(controller->tooltip);
+    lib_character_recalculate_stats(record, equipment, 0, -1);
+    lib_factor_tooltip_hide(controller->tooltip);
     refresh_equipment_slots(this);
     s32 category = static_cast<u16>(equipment_slot_selector->func_0023B3A0());
 
@@ -1968,18 +1993,18 @@ void EquipSlotWindow::func_slot5c()
 
             if (inactive == 0)
             {
-                void* tooltip = controller->tooltip;
-                func_004E97B0(tooltip, static_cast<float>(x), static_cast<float>(y), 18.0f, lib_allocation_get_identifier(record), 0);
+                EquipFactorTooltip* tooltip = controller->tooltip;
+                lib_factor_tooltip_show(tooltip, static_cast<float>(x), static_cast<float>(y), 18.0f, lib_allocation_get_identifier(record), 0);
             }
             else
             {
-                func_004E97A0(controller->tooltip);
+                lib_factor_tooltip_hide(controller->tooltip);
             }
         }
         else
         {
             controller->selected_item_type = 0;
-            func_004E97A0(controller->tooltip);
+            lib_factor_tooltip_hide(controller->tooltip);
         }
     }
 }
@@ -1991,7 +2016,7 @@ s32 EquipSlotWindow::func_slotdc()
         return 0;
     }
 
-    func_004E97A0(controller->tooltip);
+    lib_factor_tooltip_hide(controller->tooltip);
 
     if (selection->count > 1)
     {
@@ -2019,7 +2044,7 @@ s32 EquipSlotWindow::func_slotd8()
         return 0;
     }
 
-    func_004E97A0(controller->tooltip);
+    lib_factor_tooltip_hide(controller->tooltip);
 
     if (selection->count > 1)
     {
@@ -2168,8 +2193,8 @@ EquipSlotPanel::~EquipSlotPanel()
 {
 }
 
-extern "C" void func_0040D2E0(ItemCreationAllocationRecord* record, u16 item_code, u8 modification_number, const u16* factors, bool new_item,
-                              bool suppress_allocation_id);
+extern "C" void lib_allocation_initialize(ItemCreationAllocationRecord* record, u16 item_code, u8 modification_number, const u16* factors, bool new_item,
+                                          bool suppress_allocation_id);
 
 /**
  * @brief Reset a temporary allocation and initialize it from a category record.
@@ -2180,7 +2205,7 @@ extern "C" void func_0040D2E0(ItemCreationAllocationRecord* record, u16 item_cod
 static inline void initialize_equip_allocation(ItemCreationAllocationRecord* allocation, const ItemCreationCategoryRecord* item, const u16* factors)
 {
     allocation->reset(0);
-    func_0040D2E0(allocation, item->catalog_index + 1, 0, factors, false, true);
+    lib_allocation_initialize(allocation, item->catalog_index + 1, 0, factors, false, true);
 }
 
 void EquipParameterWindow::func_slot5c()
@@ -2521,7 +2546,7 @@ extern "C" void optimize_equipment(EquipController* state, const EquipCharacterR
                         {
                             copy = *record;
                             copy_equipment = *equipment;
-                            func_003F9890(&copy, &copy_equipment, candidates[index_first], 0);
+                            lib_character_recalculate_stats(&copy, &copy_equipment, candidates[index_first], 0);
 
                             if (!best_first || max_first < copy.get_attack())
                             {
@@ -2540,7 +2565,7 @@ extern "C" void optimize_equipment(EquipController* state, const EquipCharacterR
                         {
                             copy = *record;
                             copy_equipment = *equipment;
-                            func_003F9890(&copy, &copy_equipment, candidates[index_second], 1);
+                            lib_character_recalculate_stats(&copy, &copy_equipment, candidates[index_second], 1);
 
                             if (!best_second || max_second < copy.get_defense())
                             {
@@ -2558,7 +2583,7 @@ extern "C" void optimize_equipment(EquipController* state, const EquipCharacterR
 
     copy = *record;
     copy_equipment = *equipment;
-    func_003F9890(&copy, &copy_equipment, 0, -1);
+    lib_character_recalculate_stats(&copy, &copy_equipment, 0, -1);
 
     if (best_first)
     {
@@ -2568,14 +2593,14 @@ extern "C" void optimize_equipment(EquipController* state, const EquipCharacterR
         {
             if (allocation_record(current) && copy.get_attack() < max_first)
             {
-                func_0040C7E0(D_001B64F8, current, 0);
-                func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_first), slot);
+                lib_allocation_set_equipped_owner(D_001B64F8, current, 0);
+                lib_allocation_set_equipped_owner(D_001B64F8, lib_allocation_get_identifier(best_first), slot);
                 equipment->set_equipment_id(0, lib_allocation_get_identifier(best_first));
             }
         }
         else
         {
-            func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_first), slot);
+            lib_allocation_set_equipped_owner(D_001B64F8, lib_allocation_get_identifier(best_first), slot);
             equipment->set_equipment_id(0, lib_allocation_get_identifier(best_first));
         }
     }
@@ -2588,14 +2613,14 @@ extern "C" void optimize_equipment(EquipController* state, const EquipCharacterR
         {
             if (allocation_record(current) && copy.get_defense() < max_second)
             {
-                func_0040C7E0(D_001B64F8, current, 0);
-                func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_second), slot);
+                lib_allocation_set_equipped_owner(D_001B64F8, current, 0);
+                lib_allocation_set_equipped_owner(D_001B64F8, lib_allocation_get_identifier(best_second), slot);
                 equipment->set_equipment_id(1, lib_allocation_get_identifier(best_second));
             }
         }
         else
         {
-            func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_second), slot);
+            lib_allocation_set_equipped_owner(D_001B64F8, lib_allocation_get_identifier(best_second), slot);
             equipment->set_equipment_id(1, lib_allocation_get_identifier(best_second));
         }
     }
@@ -2647,12 +2672,12 @@ s32 EquipController::init_windows()
     FieldRuntime* runtime = D_001B657C;
     runtime->unk51c = resource_slot;
     runtime->unk520 = 0x11171;
-    tooltip = new (0) EquipClass1796F0;
+    tooltip = new (0) EquipFactorTooltip;
 
     if (tooltip != 0)
     {
-        func_004E9BC0(static_cast<EquipClass1796F0*>(tooltip));
-        lib_queue_display_object(D_001B657C, static_cast<EquipClass1796F0*>(tooltip));
+        lib_factor_tooltip_init(tooltip);
+        lib_queue_display_object(D_001B657C, tooltip);
     }
 
     EquipResourceWindow* options = new (0) EquipResourceWindow;
@@ -2694,7 +2719,7 @@ s32 EquipController::init_windows()
     return 1;
 }
 
-EquipClass1797B0::~EquipClass1797B0()
+EquipTooltipFrame::~EquipTooltipFrame()
 {
 }
 

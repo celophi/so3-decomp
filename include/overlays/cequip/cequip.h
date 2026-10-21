@@ -53,26 +53,18 @@ public:
     virtual ~EquipItemTypeList();
 };
 
-/** Contextual copies of the recovered list-node base and sentinel. */
-typedef LibClass171E80 EquipClass182318;
-
-typedef LibClass171E90 EquipClass182328;
-
-/** Contextual copy of the movement widget's storage base. */
-typedef ItemCreationClass185050 EquipClass182340;
-
 /** Contextual tooltip widget with its owned DMA storage and resident table. */
-class EquipClass1797B0 : public LibClass178600
+class EquipTooltipFrame : public LibClass178600
 {
 public:
     /** @brief Initialize the tooltip display and drawing storage. */
-    EquipClass1797B0()
+    EquipTooltipFrame()
     {
         unk38 = 0x12;
     }
 
     /** @brief Release tooltip drawing storage and the widget base. */
-    virtual ~EquipClass1797B0();
+    virtual ~EquipTooltipFrame();
 
     /** @brief Draw the tooltip rectangle and its stored resource. */
     virtual void draw();
@@ -83,24 +75,25 @@ public:
 };
 
 /** Resident tooltip container with one tooltip and eight owned text widgets. */
-class EquipClass1796F0 : public LibObject178660
+class EquipFactorTooltip : public LibObject178660
 {
 public:
     /** @brief Initialize the tooltip container and its embedded displays. */
-    EquipClass1796F0()
+    EquipFactorTooltip()
     {
         unk6c = 0x6FF8;
     }
 
     /** @brief Destroy the text array, tooltip, and container bases. */
-    virtual ~EquipClass1796F0();
+    virtual ~EquipFactorTooltip();
 
     /** @brief Update the tooltip text animation. @param first First update flag. @param second Second update flag. @param third Third update flag. */
     virtual void func_00412C40(u32 first, u32 second, u32 third);
 
-    EquipClass1797B0 unkf0;
+    EquipTooltipFrame frame;
 
-    LibObject178750 unk140[8];
+    /** One line per factor slot of the item allocation. */
+    LibObject178750 factor_texts[8];
 
     u8 unk9e0[0x30];
 };
@@ -775,7 +768,7 @@ public:
 
     s32 selected_item_type;
 
-    void* tooltip;
+    EquipFactorTooltip* tooltip;
 };
 
 /** Selected item's description, or its "Parameter Changes" (ATK, HIT, DEF, AGL, INT bonuses) while toggled on. */
@@ -949,7 +942,7 @@ public:
 
     EquipController* controller;
 
-    void* tooltip;
+    EquipFactorTooltip* tooltip;
 
     s16 tooltip_item;
 };

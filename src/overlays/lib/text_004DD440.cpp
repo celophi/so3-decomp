@@ -972,17 +972,17 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E96C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E96D0);
 
-extern "C" void func_004E97A0(void* object)
+extern "C" void lib_factor_tooltip_hide(void* object)
 {
     ByteClearOwnertext_004DD440* receiver = static_cast<ByteClearOwnertext_004DD440*>(object);
     receiver->unkcb = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E97B0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", lib_factor_tooltip_show);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9940);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9BC0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", lib_factor_tooltip_init);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9CD0);
 
