@@ -14,6 +14,7 @@
 #include "overlays/lib/movement_widget_inlines.h"
 #include "overlays/lib/list_indicator_inlines.h"
 #include "overlays/1067-00/text_002CEAF0.h"
+#include "overlays/lib/item_allocation.h"
 
 /** Partial aligned resource header, with its payload size at offset 0x40. */
 struct EquipAlignedResource
@@ -92,10 +93,12 @@ extern ResidentObject1B64F8* D_001B64F8;
 struct EquipResourceTextRecord;
 extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipResourceTextRecord* resource, s8 slot);
 extern "C" void func_003F9890(FieldRecord* record, EquipResourceTextRecord* resource, u32 flag, s32 index);
-extern "C" void func_0034D4C0(void* object);
-extern "C" void func_0034B3D0(void* object, s16 category);
-extern "C" void func_0034C540(void* object, s16 category);
+extern "C" void func_0034D4C0(EquipClass182990* object);
+extern "C" void func_0034B3D0(EquipClass182890* window, s16 selected);
+extern "C" void func_0034C540(EquipClass182990* object, s16 identifier);
+extern "C" s32 func_0040C7E0(void* state, s16 identifier, s32 mode);
 extern "C" void func_004E97A0(void* object);
+extern "C" void func_004E97B0(void* object, float x, float y, float z, s16 identifier, u32 flag);
 /** @brief Initialize the embedded tooltip displays. @param object Tooltip container. @return One after initialization, otherwise zero. */
 extern "C" s32 func_004E9BC0(EquipClass1796F0* object);
 /** @brief Set the item icon's mode flag and mark its display dirty. @param icon Item icon. @param enabled Mode flag. */
@@ -115,6 +118,28 @@ struct EquipResourceTextRecord
     u8 unk00[0x20];
     u8 unk20[0xF4];
 };
+/**
+ * @brief Decode one protected equipment entry after validating its check word.
+ * @param resource Resource record.
+ * @param index Entry index.
+ * @return Decoded record index, or zero when invalid or out of range.
+ */
+static inline s16 protected_equipment_entry(const EquipResourceEquipment* resource, s32 index)
+{
+    if (resource->unkf0 != (resource->unk10c ^ ((resource->unk10[1] + resource->unk10[2]) ^ (resource->unk10[3] + resource->unk10[0]))))
+    {
+        return 0;
+    }
+    if (index < 0)
+    {
+        return 0;
+    }
+    if ((resource->unk0e ^ 0x7E93) < index)
+    {
+        return 0;
+    }
+    return static_cast<s16>(resource->unk10[index] ^ 0x7E93);
+}
 /** Partial view of a 0xC4-byte field record containing the protected display code. */
 struct EquipRecordDetails
 {
@@ -161,6 +186,30 @@ struct EquipCategoryRecord
     u8 unk04[4];
     u8 unk08;
 };
+
+/** Catalog prefix containing the equipment mode and ten-bit slot mask. */
+struct EquipCategoryMaskView
+{
+    u8 pad[0xB];
+    u8 low : 4;
+    u8 mode : 3;
+    u8 high : 1;
+    u32 unused : 14;
+    u32 mask : 10;
+    u32 rest : 8;
+};
+/** @brief Find a category in resident storage. @param value One-based category index. @return Category, or null outside one through seven hundred fifty. */
+static inline ItemCreationCategoryRecord* equip_category_record(s32 value)
+{
+    ResidentObject1B64F8* base = D_001B64F8;
+    u16 index = value;
+    bool valid = false;
+    if (index > 0 && index <= 750)
+        valid = true;
+    if (valid)
+        return &base->item_types[index - 1];
+    return 0;
+}
 
 struct EquipCategoryNode
 {
@@ -229,14 +278,19 @@ static inline EquipPackedRecord* packed_record(s32 value)
     }
     return 0;
 }
-/** @brief Validate the packed record checksum. @param record Packed record. @return True when the checksum differs. */
-static inline bool invalid_packed_record(EquipPackedRecord* record)
+/** @brief Read one halfword of a packed record. @param record Packed record. @param index Halfword index. @return Stored halfword. */
+static inline u16 packed_word(EquipPackedRecord* const& record, s32 index)
 {
-    const u16* words = reinterpret_cast<const u16*>(record);
-    return record->unk0e != static_cast<u16>((0x83CF << record->unk0d_key) ^ ((words[4] + (words[0] + words[2])) ^ (words[1] + (words[3] + words[5]))));
+    return reinterpret_cast<const u16*>(record)[index];
+}
+/** @brief Validate the packed record checksum. @param record Packed record. @return True when the checksum differs. */
+static inline bool invalid_packed_record(EquipPackedRecord* const& record)
+{
+    return record->unk0e != static_cast<u16>((0x83CF << record->unk0d_key) ^ ((packed_word(record, 4) + (packed_word(record, 0) + packed_word(record, 2))) ^
+                                                                            (packed_word(record, 1) + (packed_word(record, 3) + packed_word(record, 5)))));
 }
 /** @brief Decode a validated packed record code. @param record Packed record. @return Code, or zero for an invalid checksum. */
-static inline u16 packed_record_code(EquipPackedRecord* record)
+static inline u16 packed_record_code(EquipPackedRecord* const& record)
 {
     if (invalid_packed_record(record))
     {
@@ -841,11 +895,11 @@ u8 EquipClass182550::func_slotb0()
         }
         FieldClass15AE70* first = unk188->unk44;
         FieldClass15AE70* second = unk188->unk48;
-        func_0034C540(first, lib_allocation_get_identifier(records[selected]));
+        func_0034C540(static_cast<EquipClass182990*>(first), lib_allocation_get_identifier(records[selected]));
         first->func_slot20(1);
         first->func_slot64();
         reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(first);
-        func_0034B3D0(second, 0);
+        func_0034B3D0(static_cast<EquipClass182890*>(second), 0);
         second->func_slot20(0);
         FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
         associated->func_slot108(static_cast<u8>(unk188->unk60));
@@ -860,7 +914,57 @@ u8 EquipClass182550::func_slotb0()
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_003498D0);
+void EquipClass182550::func_slot5c()
+{
+    ItemCreationAllocationRecord* records[100];
+    if (reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00261150() == this)
+    {
+        FieldClass15AD40::func_slot5c();
+        if (reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00261150() == this)
+        {
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 128.0f;
+            nested->unk3c = 1;
+        }
+        else
+        {
+            ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+            nested->ItemCreationClass185050::unk30 = 64.0f;
+            nested->unk3c = 1;
+        }
+        s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(unk188->unk64));
+        s32 selected = FieldStateCE420::unk24;
+        EquipClass182890* detail = unk188->unk48;
+        if (count != 0 && selected >= 0)
+        {
+            func_0034B3D0(detail, lib_allocation_get_identifier(records[selected]));
+            LibObject172410* icon = unk15c[FieldStateCE420::unk28];
+            set_selection_marker(icon, icon->unk94);
+            const LibUiRect16* position = &unk15c[FieldStateCE420::unk28]->unk18;
+            s32 x = static_cast<s32>(283.0f + position->unk00);
+            s32 y = static_cast<s32>(224.0f + (30.0f + position->unk04));
+            bool active = reinterpret_cast<FieldState23B3A0*>(FieldStateCE420::unk04)->unk75 != 0 && FieldClass15AE60::pad29[1] == 0;
+            if (active)
+            {
+                if (unk190 != lib_allocation_get_identifier(records[selected]))
+                {
+                    unk190 = lib_allocation_get_identifier(records[selected]);
+                    func_004E97A0(unk18c);
+                }
+                func_004E97B0(unk18c, static_cast<float>(x), static_cast<float>(y), 18.0f, lib_allocation_get_identifier(records[selected]), 0);
+            }
+            else
+            {
+                func_004E97A0(unk18c);
+            }
+        }
+        else
+        {
+            func_0034B3D0(detail, 0);
+            set_selection_marker(0, 0x808080);
+        }
+    }
+}
 
 void EquipClass182550::set_scroll_position(float offset)
 {
@@ -881,11 +985,6 @@ void EquipClass182550::set_scroll_position(float offset)
     } while (index < 9);
 }
 
-struct ItemCreationAllocationRecord
-{
-    u8 unk00[0xC];
-    u8 unk0c;
-};
 /** @brief Select the displayed item code. @param icon Code widget. @param category Category identifier. @param variant Packed record variant. */
 static inline void set_equipment_icon(LibObject172410* icon, s32 category, u8 variant)
 {
@@ -912,7 +1011,7 @@ void EquipClass182550::refresh_rows(s32 start)
         else
         {
             set_equipment_icon(unk15c[row], category,
-                               records[start + row]->unk0c & 0x7F);
+                               records[start + row]->modification_number);
             s32 count = 0;
             for (s32 index = 0; index < 8; index++)
             {
@@ -1088,7 +1187,7 @@ u8 EquipClass182670::func_slotb0()
         FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(func_slot44());
         if (associated != 0)
         {
-            func_0034C540(associated, 0);
+            func_0034C540(static_cast<EquipClass182990*>(associated), 0);
             associated->func_slot20(1);
             associated->func_slot64();
             FieldStateCE420::unk04->unk3f = 0;
@@ -1241,7 +1340,68 @@ void EquipClass182670::refresh_rows(s32 start)
     }
 }
 
-INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_0034A9E0);
+/**
+ * @brief Collect a category's unequipped allocations.
+ * @param category Category record, or null.
+ * @param records Receives the allocation records.
+ * @param identifier Receives the one-based catalog identifier, or zero.
+ * @return Number of records collected.
+ */
+static inline s32 equip_category_allocations(ItemCreationCategoryRecord* category, ItemCreationAllocationRecord** records, u16& identifier)
+{
+    identifier = 0;
+    s32 count = 0;
+    if (category != 0)
+    {
+        u16 id = category->catalog_index + 1;
+        identifier = id;
+        count = lib_collect_unequipped_allocations(D_001B64F8, records, id);
+    }
+    return count;
+}
+
+void EquipClass182670::func_slot108(u8 category)
+{
+    s32 index;
+    ItemCreationAllocationRecord* records[100];
+    func_00351AB0(&unk188);
+    func_00351860(&unk198);
+    FieldClass15AE60::unk88 = 1;
+    func_00351A20(&unk188, 0);
+    FieldRecordSelection* selection = unk180->selected_records();
+    u8 slot = selection->slots[selection->current];
+    if (category >= 3)
+    {
+        category = 2;
+    }
+    for (index = 1; index <= 750; index++)
+    {
+        ItemCreationCategoryRecord* entry = equip_category_record(index);
+        if (entry != 0)
+        {
+            const EquipCategoryMaskView* definition =
+                reinterpret_cast<const EquipCategoryMaskView*>(reinterpret_cast<const u8*>(D_001B64F0) + entry->catalog_index * 32);
+            if ((static_cast<u16>(definition->mask) & (1 << (slot - 1))) != 0 && category == static_cast<u8>(definition->mode) && entry->inventory_count != 0)
+            {
+                u16 identifier;
+                s32 count = equip_category_allocations(entry, records, identifier);
+                for (s32 record_index = 0; record_index < count; record_index++)
+                {
+                    if (records[record_index]->new_item)
+                    {
+                        func_003517D0(&unk198, identifier);
+                        break;
+                    }
+                }
+                func_00351A20(&unk188, entry);
+                FieldClass15AE60::unk88++;
+            }
+        }
+    }
+    s32 rows = FieldClass15AE60::unk88 >= 8 ? 8 : FieldClass15AE60::unk88;
+    func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, rows, 312, 28);
+    FieldClass15AE60::configure_selection(FieldClass15AE60::unk88, 0, 0);
+}
 
 /**
  * @brief Return the equipment State's record selection.
@@ -1369,7 +1529,126 @@ void* func_0034B370(void* object, s32 flags)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_0034B3D0);
+/** @brief Test one protected statistic's check word. @param record Character record statistics. @param index Statistic index. @return True when the check word differs. */
+static inline bool invalid_comparison_statistic(const EquipRecordStats* record, s32 index)
+{
+    return record->unk94[index] != (record->unka8 ^ (record->unk34[index][2] ^ (record->unk34[index][0] + record->unk34[index][1])));
+}
+/** @brief Decode one of the first four protected statistics for the comparison. @param record Character record statistics. @param index Statistic index. @return Decoded value, or zero for an invalid checksum. */
+static inline u32 comparison_stat_value(const EquipRecordStats* record, s32 index)
+{
+    if (invalid_comparison_statistic(record, index))
+    {
+        return 0;
+    }
+    return record->unk34[index][1] ^ 0x7DE3F7E3;
+}
+/** @brief Decode the final statistic for the comparison using the fourth statistic check word. @param record Character record statistics. @return Decoded value, or zero for an invalid checksum. */
+static inline u32 comparison_final_value(const EquipRecordStats* record)
+{
+    if (invalid_comparison_statistic(record, 3))
+    {
+        return 0;
+    }
+    return record->unk34[4][1] ^ 0x7DE3F7E3;
+}
+/**
+ * @brief Show a comparison value colored by whether it rises or falls.
+ * @param widget Numeric widget.
+ * @param value Value with the selected item equipped.
+ * @param previous Current value.
+ */
+static inline void set_comparison_number(LibObject174F20*& widget, s32 value, s32 previous)
+{
+    if (value == previous)
+    {
+        set_number(widget, value);
+        widget->set_color(0x808080);
+    }
+    else if (value > previous)
+    {
+        set_number(widget, value);
+        widget->set_color(0x508050);
+    }
+    else if (value < previous)
+    {
+        set_number(widget, value);
+        widget->set_color(0x505080);
+    }
+}
+/**
+ * @brief Store one protected equipment entry in a resource copy and refresh its check word.
+ * @param resource Resource record copy.
+ * @param slot Entry index.
+ * @param item Record index to store.
+ */
+static inline void set_comparison_entry(EquipResourceEquipment& resource, s32 slot, s16 item)
+{
+    if (resource.unkf0 == (resource.unk10c ^ ((resource.unk10[1] + resource.unk10[2]) ^ (resource.unk10[3] + resource.unk10[0]))) && slot >= 0 && slot <= (resource.unk0e ^ 0x7E93))
+    {
+        resource.unk10[slot] = item ^ 0x7E93;
+        resource.unkf0 = (resource.unk10c ^ ((resource.unk10[1] + resource.unk10[2]) ^ (resource.unk10[3] + resource.unk10[0])));
+    }
+}
+/**
+ * @brief Copy the selected character record with the item equipped in the category slot.
+ * @param window Item comparison window.
+ * @param selected Record index to equip.
+ * @return Original character record.
+ */
+static inline FieldRecord* copy_comparison_context(EquipClass182890* window, const s16& selected)
+{
+    func_0013A678(&window->unkb4, 0, 0xC4);
+    func_0013A678(&window->unk178, 0, 0x114);
+    window->unkb0 = selected;
+    FieldRecordSelection* selection = window->unka8->selected_records();
+    FieldRecord* original = &selection->records[selection->current];
+    EquipResourceTextRecord* resource = &static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current];
+    func_0013A4C0(&window->unkb4, original, 0xC4);
+    func_0013A4C0(&window->unk178, resource, 0x114);
+    set_comparison_entry(window->unk178, window->unkac, window->unkb0);
+    func_003F9890(&window->unkb4, reinterpret_cast<EquipResourceTextRecord*>(&window->unk178), 0, -1);
+    return original;
+}
+
+/**
+ * @brief Show the statistics with a record equipped next to the current ones.
+ * @param window Item comparison window.
+ * @param selected Record index to compare, or zero to hide the comparison.
+ */
+extern "C" void func_0034B3D0(EquipClass182890* window, s16 selected)
+{
+    if (selected == 0)
+    {
+        window->unk2e4[0]->unk3f = 0;
+        window->unk2e4[1]->unk3f = 0;
+        window->unk2e4[2]->unk3f = 0;
+        window->unk2e4[3]->unk3f = 0;
+        window->unk2e4[4]->unk3f = 0;
+        return;
+    }
+    FieldRecord* original = copy_comparison_context(window, selected);
+    s32 value0 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->unkb4), 0);
+    s32 value1 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->unkb4), 1);
+    s32 value2 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->unkb4), 2);
+    s32 value3 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->unkb4), 3);
+    s32 value4 = comparison_final_value(reinterpret_cast<EquipRecordStats*>(&window->unkb4));
+    s32 previous0 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 0);
+    s32 previous1 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 1);
+    s32 previous2 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 2);
+    s32 previous3 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 3);
+    s32 previous4 = comparison_final_value(reinterpret_cast<EquipRecordStats*>(original));
+    set_comparison_number(window->unk2e4[0], value0, previous0);
+    set_comparison_number(window->unk2e4[1], value1, previous1);
+    set_comparison_number(window->unk2e4[2], value2, previous2);
+    set_comparison_number(window->unk2e4[3], value3, previous3);
+    set_comparison_number(window->unk2e4[4], value4, previous4);
+    window->unk2e4[0]->unk3f = 1;
+    window->unk2e4[1]->unk3f = 1;
+    window->unk2e4[2]->unk3f = 1;
+    window->unk2e4[3]->unk3f = 1;
+    window->unk2e4[4]->unk3f = 1;
+}
 
 void EquipClass182890::refresh_item_details(u8 category, s16 selected)
 {
@@ -1460,7 +1739,7 @@ EquipClass182890::EquipClass182890(EquipListState* state)
     unkb0 = 0;
     unkb2 = 0;
     func_0013A678(&unkb4, 0, sizeof(unkb4));
-    func_0013A678(unk178, 0, sizeof(unk178));
+    func_0013A678(&unk178, 0, sizeof(unk178));
     unk28c = 0;
     unk290 = 0;
     unk294[0] = 0;
@@ -1476,7 +1755,60 @@ EquipClass182890::EquipClass182890(EquipListState* state)
     }
 }
 
-INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_0034C540);
+/**
+ * @brief Store the category window's selected protected equipment entry and refresh the check word.
+ * @param resource Resource record.
+ * @param owner Category window holding the selected slot.
+ * @param value Record index to store.
+ */
+static inline void set_protected_equipment_entry(EquipResourceEquipment* resource, const EquipClass182990* owner, s32 value)
+{
+    s32 index = owner->unk108;
+    if (resource->unkf0 != (resource->unk10c ^ ((resource->unk10[1] + resource->unk10[2]) ^ (resource->unk10[3] + resource->unk10[0]))))
+    {
+        return;
+    }
+    if (index < 0)
+    {
+        return;
+    }
+    if (index <= (resource->unk0e ^ 0x7E93))
+    {
+        resource->unk10[index] = static_cast<s16>(value) ^ 0x7E93;
+        resource->unkf0 = resource->unk10c ^ ((resource->unk10[1] + resource->unk10[2]) ^ (resource->unk10[3] + resource->unk10[0]));
+    }
+}
+
+/**
+ * @brief Equip a record in the category window's selected slot.
+ * @param window Category window.
+ * @param identifier Record index to equip, or zero to clear the slot.
+ */
+extern "C" void func_0034C540(EquipClass182990* window, s16 identifier)
+{
+    if (window->unkac != 0)
+    {
+        func_0040C7E0(D_001B64F8, protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->unkac->unk04)[window->unkac->current], window->unk108), 0);
+        if (identifier)
+        {
+            func_0040C7E0(D_001B64F8, identifier, window->unkac->slots[window->unkac->current]);
+            set_protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->unkac->unk04)[window->unkac->current], window, identifier);
+        }
+        else
+        {
+            set_protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->unkac->unk04)[window->unkac->current], window, 0);
+        }
+        FieldRecordSelection* selection = window->unka8->selected_records();
+        func_003F9890(&selection->records[selection->current], &static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current], 0, -1);
+    }
+    func_0034D4C0(window);
+    s32 category = window->unk108;
+    if (category >= 3)
+    {
+        category = 2;
+    }
+    window->unk104->func_slot108(category);
+}
 
 void EquipClass182990::func_slot6c()
 {
@@ -1664,7 +1996,43 @@ u8 EquipClass182990::func_slotbc()
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_0034D000);
+/** @brief Test whether a selector is inactive. @param selector Selector state. @return One when its control byte is clear. */
+static inline u8 selector_inactive(FieldState23B3A0* selector)
+{
+    return !(selector->unk75 != 0);
+}
+
+void EquipClass182990::func_slot5c()
+{
+    if (reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->func_00261150() == this)
+    {
+        u16 selected = func_0023B3A0(equipment_slot_selector);
+        EquipPackedRecord* record = packed_record(unkb8[selected]);
+        if (record != 0)
+        {
+            unka8->unk64 = static_cast<u16>(packed_record_code(record) + 1);
+            const LibUiRect16* position = &unkd4[selected]->unk18;
+            s32 x = static_cast<s32>(16.0f + position->unk00);
+            s32 y = static_cast<s32>(220.0f + (29.0f + position->unk04));
+            u8 inactive = selector_inactive(equipment_slot_selector);
+            if (inactive == 0)
+            {
+                void* tooltip = unka8->unk68;
+                func_004E97B0(tooltip, static_cast<float>(x), static_cast<float>(y), 18.0f,
+                              lib_allocation_get_identifier(reinterpret_cast<ItemCreationAllocationRecord*>(record)), 0);
+            }
+            else
+            {
+                func_004E97A0(unka8->unk68);
+            }
+        }
+        else
+        {
+            unka8->unk64 = 0;
+            func_004E97A0(unka8->unk68);
+        }
+    }
+}
 
 s32 EquipClass182990::func_slotdc()
 {
@@ -1712,7 +2080,45 @@ s32 EquipClass182990::func_slotd8()
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_0034D4C0);
+/**
+ * @brief Refresh the category window's equipment rows from the selected resource record.
+ * @param object Category window.
+ */
+extern "C" void func_0034D4C0(EquipClass182990* object)
+{
+    object->unkc0 = static_cast<EquipResourceEquipment*>(object->unkac->unk04)[object->unkac->current].unk0c ^ 0x7E93;
+    if (object->unkc0 >= 4)
+    {
+        object->unkc0 = 4;
+    }
+    for (s32 index = 0; index < 4; index++)
+    {
+        object->unkb8[index] = 0;
+        object->unkc4[index]->set_color(0x505050);
+    }
+    for (s32 index = 0; index < object->unkc0; index++)
+    {
+        object->unkc4[index]->set_color(0x806080);
+    }
+    for (s32 index = 0; index < object->unkc0; index++)
+    {
+        object->unkd4[index]->unk3f = 0;
+        object->unkb8[index] = protected_equipment_entry(&static_cast<EquipResourceEquipment*>(object->unkac->unk04)[object->unkac->current], index);
+        if (object->unkb8[index] != 0)
+        {
+            object->unkb4 = packed_record(object->unkb8[index]);
+            u16 code = packed_record_code(object->unkb4);
+            u8 variant = object->unkb4->unk0c & 0x7F;
+            set_equipment_icon(object->unkd4[index], static_cast<u16>(code) + 1, variant);
+            object->unkd4[index]->unk3f = 1;
+            object->unke4[index]->unk3f = 0;
+        }
+        else
+        {
+            object->unke4[index]->unk3f = 1;
+        }
+    }
+}
 
 s32 EquipClass182990::func_slotf4(u32 associated)
 {
@@ -1800,7 +2206,78 @@ void* func_0034DD30(void* object, s32 flags)
     return object;
 }
 
-INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_0034DD90);
+extern "C" void func_0040D2E0(ItemCreationAllocationRecord* record, u16 item_code, u8 modification_number, const u16* factors, bool new_item, bool suppress_allocation_id);
+
+/**
+ * @brief Reset a temporary allocation and initialize it from a category record.
+ * @param allocation Allocation record to initialize.
+ * @param item Category record supplying the catalog index.
+ * @param factors Eight factor codes, or null for catalog defaults.
+ */
+static inline void initialize_equip_allocation(ItemCreationAllocationRecord* allocation, const ItemCreationCategoryRecord* item, const u16* factors)
+{
+    allocation->reset(0);
+    func_0040D2E0(allocation, item->catalog_index + 1, 0, factors, false, true);
+}
+
+void EquipClass182B90::func_slot5c()
+{
+    EquipListState* state = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14);
+    if (state->unk64 > 0)
+    {
+        if (unkf0 != 0)
+        {
+            unka8->unk3f = 0;
+            unkac->unk3f = 1;
+            ItemCreationAllocationRecord preview __attribute__((aligned(16)));
+            preview.reset(0);
+            ItemCreationCategoryRecord* item_record = equip_category_record(state->unk64);
+            initialize_equip_allocation(&preview, item_record, 0);
+            set_number(unkd8[0], D_001B64F0[preview.definition_index()].attack);
+            set_number(unkd8[1], D_001B64F0[preview.definition_index()].hit);
+            set_number(unkd8[2], D_001B64F0[preview.definition_index()].defense);
+            set_number(unkd8[3], D_001B64F0[preview.definition_index()].agility);
+            set_number(unkd8[4], D_001B64F0[preview.definition_index()].intelligence);
+            for (s32 row = 0; row < 5; row++)
+            {
+                unkb0[row]->unk3f = 1;
+                unkc4[row]->unk3f = 1;
+                unkd8[row]->unk3f = 1;
+            }
+        }
+        else
+        {
+            s32 key = state->unk64 + 0x12924;
+            if (key != unkec)
+            {
+                unka8->unk3f = 1;
+                lib_multiline_text_set_resource(unka8, func_slot54(), key, 8, 1);
+                LibObject174D90* description = unka8;
+                description->unk80 = 0.8f;
+                description->unk84 = 0.8f;
+                description->unk3c = 1;
+            }
+            for (s32 row = 0; row < 5; row++)
+            {
+                unkb0[row]->unk3f = 0;
+                unkc4[row]->unk3f = 0;
+                unkd8[row]->unk3f = 0;
+            }
+            unkac->unk3f = 0;
+        }
+    }
+    else
+    {
+        unkac->unk3f = 0;
+        unka8->unk3f = 0;
+        for (s32 row = 0; row < 5; row++)
+        {
+            unkb0[row]->unk3f = 0;
+            unkc4[row]->unk3f = 0;
+            unkd8[row]->unk3f = 0;
+        }
+    }
+}
 
 /** @brief Clear the multiline display scroll offsets. @param display Multiline text display. */
 static inline void reset_scroll(LibObject174D90* display)
@@ -1993,7 +2470,6 @@ EquipClass182C90::EquipClass182C90()
 
 /** @brief Set an allocation record selection and update its category. @param state Resident allocation storage. @param identifier One-based record identifier.
  * @param mode Selection value whose low four bits are stored. @return One when the record was updated, or zero for an invalid record. */
-extern "C" s32 func_0040C7E0(void* state, s16 identifier, s32 mode);
 
 /** Field record copy layout, with scalar statistics followed by a fifteen-word array. */
 struct EquipRecordCopyView
@@ -2083,29 +2559,6 @@ struct EquipResourceCopyView
     EquipFloatTen unke8;
     s32 unk110;
 };
-/** Catalog prefix containing the equipment mode and ten-bit slot mask. */
-struct EquipCategoryMaskView
-{
-    u8 pad[0xB];
-    u8 low : 4;
-    u8 mode : 3;
-    u8 high : 1;
-    u32 unused : 14;
-    u32 mask : 10;
-    u32 rest : 8;
-};
-/** @brief Find a category in resident storage. @param value One-based category index. @return Category, or null outside one through seven hundred fifty. */
-static inline ItemCreationCategoryRecord* equip_category_record(s32 value)
-{
-    ResidentObject1B64F8* base = D_001B64F8;
-    u16 index = value;
-    bool valid = false;
-    if (index > 0 && index <= 750)
-        valid = true;
-    if (valid)
-        return &base->item_types[index - 1];
-    return 0;
-}
 /** @brief Find an allocation record in resident storage. @param value Signed halfword record index. @return Record, or null outside one through three thousand.
  */
 static inline ItemCreationAllocationRecord* equip_allocation_record(s32 value)
@@ -2426,7 +2879,28 @@ s32 func_003510C0(EquipListState* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/cequip/asm/nonmatchings/text", func_00351140);
+/**
+ * @brief Delete an owned object and clear its pointer.
+ * @param resource Nullable owned object pointer.
+ */
+template <class T>
+static inline void release_owned(T*& resource)
+{
+    if (resource)
+    {
+        delete resource;
+        resource = 0;
+    }
+}
+
+/** @brief Release the record selection before destroying the Field list base. */
+EquipListState::~EquipListState()
+{
+    if (unk38 != 0)
+    {
+        release_owned(unk38);
+    }
+}
 
 /** @brief Initialize the equipment State and its resource table entries. */
 EquipListState::EquipListState()
