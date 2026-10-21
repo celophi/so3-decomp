@@ -322,217 +322,215 @@ static inline void equip_set_position(LibClass178600* target, float x, float y, 
     target->unk3c = 1;
 }
 
-void func_00348400(void* object, u8 value)
+/** @brief Store the window byte at offset 0xC. @param value Unsigned byte to store. */
+void FieldClass15AE70::func_slot24(u8 value)
 {
-    static_cast<FieldClass15AE70*>(object)->unk0c = value;
+    unk0c = value;
 }
 
-u8 func_00348410(void* object)
+/** @brief Read the window byte at offset 0xC. @return Stored unsigned byte. */
+u8 FieldClass15AE70::func_slot28()
 {
-    return static_cast<FieldClass15AE70*>(object)->unk0c;
+    return unk0c;
 }
 
-void func_00348420(void* object, u8 value)
+/** @brief Store the window byte at offset 0x8. @param value Unsigned byte to store. */
+void FieldClass15AE70::func_slot2c(u8 value)
 {
-    static_cast<FieldClass15AE70*>(object)->unk08 = value;
+    unk08 = value;
 }
 
-u8 func_00348430(void* object)
+/** @brief Read the window byte at offset 0x8. @return Stored unsigned byte. */
+u8 FieldClass15AE70::func_slot30()
 {
-    return static_cast<FieldClass15AE70*>(object)->unk08;
+    return unk08;
 }
 
-void func_00348440(void* object, u16 value)
+/** @brief Store the window halfword at offset 0xA. @param value Unsigned halfword to store. */
+void FieldClass15AE70::func_slot34(u16 value)
 {
-    static_cast<FieldClass15AE70*>(object)->unk0a = value;
+    unk0a = value;
 }
 
-u16 func_00348450(void* object)
+/** @brief Read the window halfword at offset 0xA. @return Stored unsigned halfword. */
+u16 FieldClass15AE70::func_slot38()
 {
-    return static_cast<FieldClass15AE70*>(object)->unk0a;
+    return unk0a;
 }
 
-/**
- * @brief Set the alternate associated window pointer.
- * @param object Window to update.
- * @param value Pointer to store.
- */
-void func_00348480(void* object, void* value)
+/** @brief Store the alternate associated pointer. @param associated Pointer to store. */
+void FieldClass15AE70::func_slot48(void* associated)
 {
-    static_cast<FieldClass15AE70*>(object)->unk9c = value;
+    unk9c = associated;
 }
 
-/**
- * @brief Return the alternate associated window pointer.
- * @param object Window to read.
- * @return Stored alternate associated window pointer.
- */
-void* func_00348490(void* object)
+/** @brief Read the alternate associated pointer. @return Stored pointer. */
+void* FieldClass15AE70::func_slot4c()
 {
-    return static_cast<FieldClass15AE70*>(object)->unk9c;
+    return unk9c;
 }
 
-void func_003484A0(void* object, u32 value)
+/** @brief Store the resource source word. @param value Word to store. */
+void FieldClass15AE70::func_slot50(u32 value)
 {
-    static_cast<FieldClass15AE70*>(object)->unk04 = value;
+    unk04 = value;
 }
 
-u32 func_003484B0(void* object)
+/** @brief Return the resource source word. @return Stored word. */
+u32 FieldClass15AE70::func_slot54()
 {
-    return static_cast<FieldClass15AE70*>(object)->unk04;
+    return unk04;
 }
 
-/**
- * @brief Return the nested display container.
- * @param object Window to read.
- * @return Stored container pointer.
- */
-void* func_003484C0(void* object)
+/** @brief Return the nested display container. @return Stored container. */
+LibObject178660* FieldClass15AE70::func_slot58()
 {
-    return static_cast<FieldClass15AE70*>(object)->unk10;
+    return unk10;
 }
 
-void func_003484D0(void* object)
+void FieldClass15AE70::func_slot60(s32 text_key)
 {
 }
 
-void func_003484E0(void* object)
+void FieldClass15AE70::func_slot64()
 {
 }
 
-void func_003484F0(void* object)
+void FieldClass15AE70::func_slot70()
 {
 }
 
-void func_00348500(void* object)
+void FieldClass15AE70::func_slot74()
 {
 }
 
-void func_00348510(void* object)
+void FieldClass15AE70::func_slot78()
 {
 }
 
-void func_00348520(void* object)
+void FieldClass15AE70::func_slot7c()
 {
 }
 
-void func_00348530(void* object)
+void FieldClass15AE70::func_slot80()
 {
 }
 
-void func_00348540(void* object)
+void FieldClass15AE70::func_slot84()
 {
 }
 
-void func_00348550(void* object)
+void FieldClass15AE70::func_slot88()
 {
 }
 
-void func_00348560(void* object)
+void FieldClass15AE70::func_slot8c()
 {
 }
 
-void func_00348570(void* object)
+void FieldClass15AE70::func_slot90()
 {
 }
 
-void func_00348580(void* object)
+void FieldClass15AE70::func_slot94()
 {
 }
 
-void func_00348590(void* object)
+void FieldClass15AE70::func_slot98()
 {
 }
 
-void func_003485A0(void* object)
+void FieldClass15AE70::func_slot9c()
 {
 }
 
-void func_003485B0(void* object)
+void FieldClass15AE70::func_slota0()
 {
 }
 
-void func_003485C0(void* object)
+void FieldClass15AE70::func_slota4()
 {
 }
 
-void func_003485D0(void* object)
+void FieldClass15AE70::func_slota8()
 {
 }
 
-void func_003485E0(void* object)
+void FieldClass15AE70::func_slotac()
 {
 }
 
-s32 func_003485F0(void* object)
+u8 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
-s32 func_00348600(void* object)
+u8 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
 
-s32 func_00348610(void* object)
+s32 FieldClass15AE70::func_slotc0()
 {
     return 0;
 }
 
-s32 func_00348620(void* object)
+s32 FieldClass15AE70::func_slotc4()
 {
     return 0;
 }
 
-s32 func_00348630(void* object)
+s32 FieldClass15AE70::func_slotc8()
 {
     return 0;
 }
 
-s32 func_00348640(void* object)
+s32 FieldClass15AE70::func_slotcc()
 {
     return 0;
 }
 
-s32 func_00348650(void* object)
+s32 FieldClass15AE70::func_slotd0()
 {
     return 0;
 }
 
-s32 func_00348660(void* object)
+s32 FieldClass15AE70::func_slotd4()
 {
     return 0;
 }
 
-s32 func_00348670(void* object)
+s32 FieldClass15AE70::func_slotd8()
 {
     return 0;
 }
 
-s32 func_00348680(void* object)
+s32 FieldClass15AE70::func_slotdc()
 {
     return 0;
 }
 
-void func_00348690(void* object)
+void FieldClass15AE70::func_slote0()
 {
 }
 
-void func_003486A0(void* object)
+void FieldClass15AE70::func_slote4()
 {
 }
 
-u8 func_003486B0(void* object)
+/** @brief Read the window byte at offset 0xD. @return Stored unsigned byte. */
+u8 FieldClass15AE70::func_slote8()
 {
-    return static_cast<FieldClass15AE70*>(object)->unk0d;
+    return unk0d;
 }
 
-void func_003486C0(void* object, u8 value)
+/** @brief Store the window byte at offset 0xD. @param value Unsigned byte to store. */
+void FieldClass15AE70::func_slotec(u8 value)
 {
-    static_cast<FieldClass15AE70*>(object)->unk0d = value;
+    unk0d = value;
 }
 
-void func_003486D0(void* object)
+void FieldClass15AE70::func_slotf0()
 {
 }
 
@@ -816,14 +814,16 @@ void EquipClass182550::func_slot10c(u32 value, u32 enabled)
     }
 }
 
-s32 func_00349680(void* object)
+/** @brief Return the empty equipment selection result. @return Zero. */
+u8 EquipClass182550::func_slotb8()
 {
     return 0;
 }
 
-s32 func_00349690(void* object)
+/** @brief Toggle the linked display flag. @return One. */
+u8 EquipClass182550::func_slotbc()
 {
-    EquipClass182B90* target = static_cast<EquipClass182550*>(object)->unk188->unk54;
+    EquipClass182B90* target = unk188->unk54;
     target->unkf0 = !target->unkf0;
     return 1;
 }
@@ -1086,9 +1086,10 @@ s32 EquipClass182550::func_slot104(u32 associated)
     return 1;
 }
 
-void func_0034A390(void* object, u8 value)
+/** @brief Store the selection byte at offset 0x84. @param value Byte to store. */
+void FieldClass15AD40::func_slot110(u8 value)
 {
-    static_cast<FieldClass15AD40*>(object)->FieldClass15AE60::unk84 = value;
+    FieldClass15AE60::unk84 = value;
 }
 
 EquipClass182550::EquipClass182550(EquipListState* state)
@@ -1108,9 +1109,10 @@ EquipClass182550::EquipClass182550(EquipListState* state)
     unk190 = 0;
 }
 
-s32 func_0034A460(void* object)
+/** @brief Toggle the linked display flag. @return One. */
+u8 EquipClass182670::func_slotbc()
 {
-    EquipClass182B90* target = static_cast<EquipClass182670*>(object)->unk180->unk54;
+    EquipClass182B90* target = unk180->unk54;
     target->unkf0 = !target->unkf0;
     return 1;
 }
@@ -2867,25 +2869,25 @@ void ItemCreationClass185050::func_slot0c()
 {
 }
 
-void func_00351370(void* object)
+void FieldClass15AE70::func_slot68()
 {
 }
 
-void func_00351380(void* object)
+void FieldClass15AE70::func_slot6c()
 {
 }
 
-s32 func_00351390(void* object)
-{
-    return 0;
-}
-
-s32 func_003513A0(void* object)
+u8 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
-void func_003513B0(void* object)
+u8 FieldClass15AE70::func_slotb4()
+{
+    return 0;
+}
+
+void FieldClass15AE70::func_slot5c()
 {
 }
 
