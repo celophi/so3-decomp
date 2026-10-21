@@ -9,6 +9,9 @@
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "overlays/1067-00/text_001E1590.h"
 
+#define EQUIP_STAT_WORD_XOR_KEY 0x7DE3F7E3
+#define EQUIP_STAT_HALFWORD_XOR_KEY 0x7E93
+
 typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
 
 #ifdef __cplusplus
@@ -289,26 +292,345 @@ public:
     virtual s32 func_slotf4(u32 associated);
 };
 
-/** Partial view of a 0x114-byte resource record with its protected equipment entries. */
-struct EquipResourceEquipment
+/** Indices into EquipCharacterRecord::checksums. */
+enum EquipCharacterCheck
 {
-    u8 unk00[0xC];
+    EQUIP_CHECK_LEVEL = 0,
+    EQUIP_CHECK_FLAGS_EXPERIENCE = 1,
+    EQUIP_CHECK_HP = 2,
+    EQUIP_CHECK_MP = 3,
+    EQUIP_CHECK_ATTACK = 4,
+    EQUIP_CHECK_DEFENSE = 5,
+    EQUIP_CHECK_AGILITY = 6,
+    EQUIP_CHECK_HIT = 7,
+    EQUIP_CHECK_KNOCKBACK_POWER = 8,
+    EQUIP_CHECK_SALT = 9,
+    EQUIP_CHECK_CRITICAL_RATE = 10,
+    EQUIP_CHECK_KNOCKBACK_RESISTANCE = 11
+};
 
-    s16 encoded_slot_count;
+/** Checksum-protected 0xC4-byte character record: level, experience, HP, MP, fury, and statistics. */
+class EquipCharacterRecord
+{
+public:
+    s16 character_id;
 
-    s16 encoded_last_slot;
+    s16 stat_limit_type;
 
-    s16 encoded_items[4];
+    s16 encoded_level;
 
-    u8 unk18[0xD8];
+    s16 encoded_base_level;
 
-    s32 check_word;
+    s32 encoded_flags;
 
-    u8 unkf4[0x18];
+    s32 encoded_experience;
 
-    s32 check_salt;
+    s32 encoded_base_hp;
 
-    u8 unk110[4];
+    s32 encoded_max_hp;
+
+    s32 encoded_hp;
+
+    s32 encoded_base_mp;
+
+    s32 encoded_max_mp;
+
+    s32 encoded_mp;
+
+    float unk28;
+
+    /** Fury is stored at sixteen times its displayed amount. */
+    float scaled_max_fury;
+
+    float scaled_fury;
+
+    s32 encoded_base_attack;
+
+    s32 encoded_effective_attack;
+
+    s32 encoded_attack;
+
+    s32 encoded_base_defense;
+
+    s32 encoded_effective_defense;
+
+    s32 encoded_defense;
+
+    s32 encoded_base_agility;
+
+    s32 encoded_effective_agility;
+
+    s32 encoded_agility;
+
+    s32 encoded_base_hit;
+
+    s32 encoded_effective_hit;
+
+    s32 encoded_hit;
+
+    /** Intelligence is validated through the HIT checksum. */
+    s32 encoded_base_intelligence;
+
+    s32 encoded_effective_intelligence;
+
+    s32 encoded_intelligence;
+
+    s16 encoded_base_knockback_power;
+
+    s16 encoded_effective_knockback_power;
+
+    s16 encoded_knockback_power;
+
+    s16 encoded_base_knockback_resistance;
+
+    s16 encoded_effective_knockback_resistance;
+
+    s16 encoded_knockback_resistance;
+
+    s16 encoded_base_critical_rate;
+
+    s16 encoded_effective_critical_rate;
+
+    s16 encoded_critical_rate;
+
+    /** Indexed by EquipCharacterCheck; the last three entries are unidentified. */
+    s32 checksums[15];
+
+    s32 unkc0;
+
+    /**
+     * @brief Decode a protected statistic's current value after validating its checksum.
+     * @param base Encoded base value.
+     * @param effective Encoded effective value.
+     * @param value Encoded current value.
+     * @param check Stored checksum.
+     * @param salt Record checksum salt.
+     * @return Current value, or zero for an invalid checksum.
+     */
+    static s32 decode_statistic(s32 base, s32 effective, s32 value, s32 check, s32 salt)
+    {
+        if (check != (salt ^ (value ^ (base + effective))))
+        {
+            return 0;
+        }
+
+        return value ^ EQUIP_STAT_WORD_XOR_KEY;
+    }
+
+    /** @brief Decode the level. @return Level, or one for an invalid checksum. */
+    s32 get_level() const
+    {
+        if (checksums[EQUIP_CHECK_LEVEL] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_level ^ (encoded_base_level + checksums[EQUIP_CHECK_SALT]))))
+        {
+            return 1;
+        }
+
+        return encoded_level ^ EQUIP_STAT_HALFWORD_XOR_KEY;
+    }
+
+    /** @brief Decode the current attack. @return Attack, or zero for an invalid checksum. */
+    s32 get_attack() const
+    {
+        return decode_statistic(encoded_base_attack, encoded_effective_attack, encoded_attack, checksums[EQUIP_CHECK_ATTACK], checksums[EQUIP_CHECK_SALT]);
+    }
+
+    /** @brief Decode the current defense. @return Defense, or zero for an invalid checksum. */
+    s32 get_defense() const
+    {
+        return decode_statistic(encoded_base_defense, encoded_effective_defense, encoded_defense, checksums[EQUIP_CHECK_DEFENSE], checksums[EQUIP_CHECK_SALT]);
+    }
+
+    /** @brief Decode the effective attack. @return Effective attack, or zero for an invalid checksum. */
+    u32 get_effective_attack() const
+    {
+        if (checksums[EQUIP_CHECK_ATTACK] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_attack ^ (encoded_base_attack + encoded_effective_attack))))
+        {
+            return 0;
+        }
+
+        return encoded_effective_attack ^ EQUIP_STAT_WORD_XOR_KEY;
+    }
+
+    /** @brief Decode the effective defense. @return Effective defense, or zero for an invalid checksum. */
+    u32 get_effective_defense() const
+    {
+        if (checksums[EQUIP_CHECK_DEFENSE] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_defense ^ (encoded_base_defense + encoded_effective_defense))))
+        {
+            return 0;
+        }
+
+        return encoded_effective_defense ^ EQUIP_STAT_WORD_XOR_KEY;
+    }
+
+    /** @brief Decode the effective agility. @return Effective agility, or zero for an invalid checksum. */
+    u32 get_effective_agility() const
+    {
+        if (checksums[EQUIP_CHECK_AGILITY] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_agility ^ (encoded_base_agility + encoded_effective_agility))))
+        {
+            return 0;
+        }
+
+        return encoded_effective_agility ^ EQUIP_STAT_WORD_XOR_KEY;
+    }
+
+    /** @brief Decode the effective hit. @return Effective hit, or zero for an invalid checksum. */
+    u32 get_effective_hit() const
+    {
+        if (checksums[EQUIP_CHECK_HIT] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_hit ^ (encoded_base_hit + encoded_effective_hit))))
+        {
+            return 0;
+        }
+
+        return encoded_effective_hit ^ EQUIP_STAT_WORD_XOR_KEY;
+    }
+
+    /** @brief Decode the effective intelligence, which shares the HIT checksum. @return Effective intelligence, or zero for an invalid checksum. */
+    u32 get_effective_intelligence() const
+    {
+        if (checksums[EQUIP_CHECK_HIT] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_hit ^ (encoded_base_hit + encoded_effective_hit))))
+        {
+            return 0;
+        }
+
+        return encoded_effective_intelligence ^ EQUIP_STAT_WORD_XOR_KEY;
+    }
+};
+
+/** Checksums protecting EquipCharacterEquipment, each mixed with the salt. */
+struct EquipEquipmentChecksums
+{
+    u32 luck;
+
+    u32 stamina;
+
+    u32 equipment;
+
+    u32 sp_cp;
+
+    u32 symbology_mastery;
+
+    u32 battle_skill_mastery;
+
+    u32 tactical_skill_states;
+
+    u32 battle_skill_indices;
+
+    u32 status_skill_levels;
+
+    u32 salt;
+};
+
+/** Checksum-protected 0x114-byte character equipment and skill record. */
+class EquipCharacterEquipment
+{
+public:
+    s16 encoded_base_luck;
+
+    s16 encoded_effective_luck;
+
+    s16 encoded_luck;
+
+    s16 encoded_base_stamina;
+
+    s16 encoded_effective_stamina;
+
+    s16 encoded_stamina;
+
+    s16 encoded_equipment_slot_count;
+
+    /** Highest valid index into encoded_equipment_ids. */
+    s16 encoded_slot_limit;
+
+    s16 encoded_equipment_ids[4];
+
+    s16 encoded_sp;
+
+    s16 encoded_cp;
+
+    s32 unk1c;
+
+    char character_name[24];
+
+    u8 battle_strategy;
+
+    u8 previous_battle_strategy;
+
+    u8 unk3a;
+
+    u8 encoded_anti_attack_aura_mask;
+
+    s8 encoded_status_skill_levels[5];
+
+    u8 encoded_battle_skill_indices[6];
+
+    s8 encoded_tactical_skill_states[7];
+
+    s16 encoded_symbology_mastery[32];
+
+    s16 encoded_battle_skill_mastery[42];
+
+    /** Damage responses in earth, water, fire, wind order. */
+    u8 elemental_damage_responses[4];
+
+    u8 attack_element_mask;
+
+    u8 character_resource_variant;
+
+    EquipEquipmentChecksums checksums;
+
+    u32 unk110;
+
+    /** @brief Compute the equipment checksum from the encoded IDs and the salt. @return Equipment checksum. */
+    s32 compute_equipment_checksum() const
+    {
+        return checksums.salt ^ ((encoded_equipment_ids[1] + encoded_equipment_ids[2]) ^ (encoded_equipment_ids[3] + encoded_equipment_ids[0]));
+    }
+
+    /** @brief Test the stored equipment checksum. @return True when it agrees with the encoded IDs and the salt. */
+    bool equipment_valid() const
+    {
+        return checksums.equipment ==
+               (checksums.salt ^ ((encoded_equipment_ids[1] + encoded_equipment_ids[2]) ^ (encoded_equipment_ids[3] + encoded_equipment_ids[0])));
+    }
+
+    /**
+     * @brief Decode the item equipped in a slot.
+     * @param index Equipment slot.
+     * @return Item ID, or zero for an invalid checksum or slot.
+     */
+    s16 get_equipment_id(s32 index) const
+    {
+        if (!equipment_valid())
+        {
+            return 0;
+        }
+
+        if (index < 0)
+        {
+            return 0;
+        }
+
+        if ((encoded_slot_limit ^ EQUIP_STAT_HALFWORD_XOR_KEY) < index)
+        {
+            return 0;
+        }
+
+        return encoded_equipment_ids[index] ^ EQUIP_STAT_HALFWORD_XOR_KEY;
+    }
+
+    /**
+     * @brief Equip an item in a slot and update the equipment checksum, when the record and slot are valid.
+     * @param index Equipment slot.
+     * @param value Item ID.
+     */
+    void set_equipment_id(s32 index, s16 value)
+    {
+        if (equipment_valid() && index >= 0 && index <= (encoded_slot_limit ^ EQUIP_STAT_HALFWORD_XOR_KEY))
+        {
+            encoded_equipment_ids[index] = value ^ EQUIP_STAT_HALFWORD_XOR_KEY;
+            checksums.equipment = compute_equipment_checksum();
+        }
+    }
 };
 
 /** Slot name, item icon, and ATK/DEF/AGL/HIT/INT rows comparing the current value with the selected item's. */
@@ -341,10 +663,10 @@ public:
 
     u8 unkb3;
 
-    FieldRecord preview_record;
+    EquipCharacterRecord preview_record;
 
     /** Encoded resource record used for the comparison. */
-    EquipResourceEquipment preview_equipment;
+    EquipCharacterEquipment preview_equipment;
 
     LibObject178750* slot_label;
 

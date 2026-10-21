@@ -103,24 +103,6 @@ struct EquipPackedRecord
     u16 unk0e;
 };
 
-/** Partial 0xC4-byte character record containing protected statistic triples, checksums and salt. */
-struct EquipRecordStats
-{
-    u8 unk00[0x34];
-
-    u32 unk34[5][3];
-
-    u8 unk70[0x24];
-
-    u32 unk94[4];
-
-    u8 unka4[4];
-
-    u32 unka8;
-
-    u8 unkac[0x18];
-};
-
 struct EquipRuntimeMenuState;
 
 struct EquipRuntimeMenuContext
@@ -155,11 +137,9 @@ extern EquipRuntimeMenuRoot* D_001B643C;
 
 extern ResidentObject1B64F8* D_001B64F8;
 
-struct EquipResourceTextRecord;
+extern "C" void optimize_equipment(EquipController* state, const EquipCharacterRecord* record, EquipCharacterEquipment* equipment, s8 slot);
 
-extern "C" void optimize_equipment(EquipController* state, FieldRecord* record, EquipResourceTextRecord* resource, s8 slot);
-
-extern "C" void func_003F9890(FieldRecord* record, EquipResourceTextRecord* resource, u32 flag, s32 index);
+extern "C" void func_003F9890(EquipCharacterRecord* record, EquipCharacterEquipment* equipment, u32 flag, s32 index);
 
 extern "C" void refresh_equipment_slots(EquipSlotWindow* object);
 
@@ -186,74 +166,16 @@ static inline void equip_set_icon_enabled(LibObject172410* icon, u8 enabled)
 /** @brief Cycle the selector in the supplied direction. @param object Selector. @param direction Direction code. @return Selector result code. */
 extern "C" u8 func_0023B3B0(FieldState23B3A0* object, u16 direction);
 
-/** Resource text record with its displayed payload beginning at offset 0x20. */
-struct EquipResourceTextRecord
+/** @brief Return the selected character's record. @param selection Character selection. @return Record of the current character. */
+static inline EquipCharacterRecord* selected_character(FieldRecordSelection* selection)
 {
-    u8 unk00[0x20];
-
-    u8 unk20[0xF4];
-};
-
-/**
- * @brief Decode one protected equipment entry after validating its check word.
- * @param resource Resource record.
- * @param index Entry index.
- * @return Decoded record index, or zero when invalid or out of range.
- */
-static inline s16 protected_equipment_entry(const EquipResourceEquipment* resource, s32 index)
-{
-    if (resource->check_word !=
-        (resource->check_salt ^ ((resource->encoded_items[1] + resource->encoded_items[2]) ^ (resource->encoded_items[3] + resource->encoded_items[0]))))
-    {
-        return 0;
-    }
-
-    if (index < 0)
-    {
-        return 0;
-    }
-
-    if ((resource->encoded_last_slot ^ 0x7E93) < index)
-    {
-        return 0;
-    }
-
-    return static_cast<s16>(resource->encoded_items[index] ^ 0x7E93);
+    return &reinterpret_cast<EquipCharacterRecord*>(selection->records)[selection->current];
 }
 
-/** Partial view of a 0xC4-byte field record containing the protected display code. */
-struct EquipRecordDetails
+/** @brief Return the selected character's equipment. @param selection Character selection. @return Equipment record of the current character. */
+static inline EquipCharacterEquipment* selected_equipment(FieldRecordSelection* selection)
 {
-    u8 unk00[4];
-
-    s16 unk04;
-
-    s16 unk06;
-
-    u8 unk08[0x7C];
-
-    s32 unk84;
-
-    u8 unk88[0x20];
-
-    s32 unka8;
-};
-
-/**
- * @brief Decode a field record display code after validating its check word.
- * @param record Selected field record.
- * @return Decoded code, or one when validation fails.
- */
-static inline s32 equip_record_value(const FieldRecord* record)
-{
-    const EquipRecordDetails* details = reinterpret_cast<const EquipRecordDetails*>(record);
-
-    if (details->unk84 != (details->unka8 ^ (details->unk04 ^ (details->unk06 + details->unka8))))
-    {
-        return 1;
-    }
-
-    return details->unk04 ^ 0x7E93;
+    return &static_cast<EquipCharacterEquipment*>(selection->unk04)[selection->current];
 }
 
 /** @brief Refresh the selected record description, code, and active display widgets. @param associated Record display window. */
@@ -262,10 +184,10 @@ static inline void equip_refresh_record_display(EquipCharacterWindow* associated
     if (associated->selection != 0)
     {
         LibObject175140* text = associated->name_text;
-        text->unkfc = reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(associated->selection->unk04)[associated->selection->current].unk20);
+        text->unkfc = selected_equipment(associated->selection)->character_name;
         text->unk3c = 1;
-        FieldRecord* record = &associated->selection->records[associated->selection->current];
-        s32 result = equip_record_value(record);
+        EquipCharacterRecord* record = selected_character(associated->selection);
+        s32 result = record->get_level();
         LibObject174F20* number = associated->level_value;
         number->numeric_value = result;
         number->unk3c = 1;
@@ -399,39 +321,6 @@ static inline u16 packed_record_code(EquipPackedRecord* const& record)
     }
 
     return record->unk00.bits.value;
-}
-
-/**
- * @brief Decode one of the first four protected statistics.
- * @param record Character record statistics.
- * @param index Statistic index.
- * @return Decoded value, or zero for an invalid checksum.
- */
-static inline u32 stat_value(const EquipRecordStats* record, s32 index)
-{
-    u32 value = record->unk34[index][1];
-
-    if (record->unk94[index] != (record->unka8 ^ (record->unk34[index][2] ^ (record->unk34[index][0] + value))))
-    {
-        return 0;
-    }
-
-    return value ^ 0x7DE3F7E3;
-}
-
-/**
- * @brief Decode the final statistic using the fourth statistic checksum.
- * @param record Character record statistics.
- * @return Decoded value, or zero for an invalid checksum.
- */
-static inline u32 final_stat_value(const EquipRecordStats* record)
-{
-    if (record->unk94[3] != (record->unka8 ^ (record->unk34[3][2] ^ (record->unk34[3][0] + record->unk34[3][1]))))
-    {
-        return 0;
-    }
-
-    return record->unk34[4][1] ^ 0x7DE3F7E3;
 }
 
 /** @brief Set a numeric widget value and mark it dirty. @param widget Numeric widget. @param value Display value. */
@@ -1701,48 +1590,6 @@ EquipItemListPanel::~EquipItemListPanel()
 }
 
 /**
- * @brief Test one protected statistic's check word.
- * @param record Character record statistics.
- * @param index Statistic index.
- * @return True when the check word differs.
- */
-static inline bool invalid_comparison_statistic(const EquipRecordStats* record, s32 index)
-{
-    return record->unk94[index] != (record->unka8 ^ (record->unk34[index][2] ^ (record->unk34[index][0] + record->unk34[index][1])));
-}
-
-/**
- * @brief Decode one of the first four protected statistics for the comparison.
- * @param record Character record statistics.
- * @param index Statistic index.
- * @return Decoded value, or zero for an invalid checksum.
- */
-static inline u32 comparison_stat_value(const EquipRecordStats* record, s32 index)
-{
-    if (invalid_comparison_statistic(record, index))
-    {
-        return 0;
-    }
-
-    return record->unk34[index][1] ^ 0x7DE3F7E3;
-}
-
-/**
- * @brief Decode the final statistic for the comparison using the fourth statistic check word.
- * @param record Character record statistics.
- * @return Decoded value, or zero for an invalid checksum.
- */
-static inline u32 comparison_final_value(const EquipRecordStats* record)
-{
-    if (invalid_comparison_statistic(record, 3))
-    {
-        return 0;
-    }
-
-    return record->unk34[4][1] ^ 0x7DE3F7E3;
-}
-
-/**
  * @brief Show a comparison value colored by whether it rises or falls.
  * @param widget Numeric widget.
  * @param value Value with the selected item equipped.
@@ -1768,41 +1615,23 @@ static inline void set_comparison_number(LibObject174F20*& widget, s32 value, s3
 }
 
 /**
- * @brief Store one protected equipment entry in a resource copy and refresh its check word.
- * @param resource Resource record copy.
- * @param slot Entry index.
- * @param item Record index to store.
- */
-static inline void set_comparison_entry(EquipResourceEquipment& resource, s32 slot, s16 item)
-{
-    if (resource.check_word ==
-            (resource.check_salt ^ ((resource.encoded_items[1] + resource.encoded_items[2]) ^ (resource.encoded_items[3] + resource.encoded_items[0]))) &&
-        slot >= 0 && slot <= (resource.encoded_last_slot ^ 0x7E93))
-    {
-        resource.encoded_items[slot] = item ^ 0x7E93;
-        resource.check_word =
-            (resource.check_salt ^ ((resource.encoded_items[1] + resource.encoded_items[2]) ^ (resource.encoded_items[3] + resource.encoded_items[0])));
-    }
-}
-
-/**
  * @brief Copy the selected character record with the item equipped in the category slot.
  * @param window Item comparison window.
  * @param selected Record index to equip.
  * @return Original character record.
  */
-static inline FieldRecord* copy_comparison_context(EquipStatComparisonWindow* window, const s16& selected)
+static inline EquipCharacterRecord* copy_comparison_context(EquipStatComparisonWindow* window, const s16& selected)
 {
-    func_0013A678(&window->preview_record, 0, 0xC4);
-    func_0013A678(&window->preview_equipment, 0, 0x114);
+    func_0013A678(&window->preview_record, 0, sizeof(window->preview_record));
+    func_0013A678(&window->preview_equipment, 0, sizeof(window->preview_equipment));
     window->preview_item = selected;
     FieldRecordSelection* selection = window->controller->selected_records();
-    FieldRecord* original = &selection->records[selection->current];
-    EquipResourceTextRecord* resource = &static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current];
-    func_0013A4C0(&window->preview_record, original, 0xC4);
-    func_0013A4C0(&window->preview_equipment, resource, 0x114);
-    set_comparison_entry(window->preview_equipment, window->slot, window->preview_item);
-    func_003F9890(&window->preview_record, reinterpret_cast<EquipResourceTextRecord*>(&window->preview_equipment), 0, -1);
+    EquipCharacterRecord* original = selected_character(selection);
+    EquipCharacterEquipment* equipment = selected_equipment(selection);
+    func_0013A4C0(&window->preview_record, original, sizeof(window->preview_record));
+    func_0013A4C0(&window->preview_equipment, equipment, sizeof(window->preview_equipment));
+    window->preview_equipment.set_equipment_id(window->slot, window->preview_item);
+    func_003F9890(&window->preview_record, &window->preview_equipment, 0, -1);
     return original;
 }
 
@@ -1823,17 +1652,17 @@ extern "C" void preview_item_stats(EquipStatComparisonWindow* window, s16 select
         return;
     }
 
-    FieldRecord* original = copy_comparison_context(window, selected);
-    s32 value0 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->preview_record), 0);
-    s32 value1 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->preview_record), 1);
-    s32 value2 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->preview_record), 2);
-    s32 value3 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->preview_record), 3);
-    s32 value4 = comparison_final_value(reinterpret_cast<EquipRecordStats*>(&window->preview_record));
-    s32 previous0 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 0);
-    s32 previous1 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 1);
-    s32 previous2 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 2);
-    s32 previous3 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 3);
-    s32 previous4 = comparison_final_value(reinterpret_cast<EquipRecordStats*>(original));
+    EquipCharacterRecord* original = copy_comparison_context(window, selected);
+    s32 value0 = window->preview_record.get_effective_attack();
+    s32 value1 = window->preview_record.get_effective_defense();
+    s32 value2 = window->preview_record.get_effective_agility();
+    s32 value3 = window->preview_record.get_effective_hit();
+    s32 value4 = window->preview_record.get_effective_intelligence();
+    s32 previous0 = original->get_effective_attack();
+    s32 previous1 = original->get_effective_defense();
+    s32 previous2 = original->get_effective_agility();
+    s32 previous3 = original->get_effective_hit();
+    s32 previous4 = original->get_effective_intelligence();
     set_comparison_number(window->preview_values[0], value0, previous0);
     set_comparison_number(window->preview_values[1], value1, previous1);
     set_comparison_number(window->preview_values[2], value2, previous2);
@@ -1866,20 +1695,20 @@ void EquipStatComparisonWindow::refresh_item_details(u8 category, s16 selected)
     }
 
     FieldRecordSelection* selection = controller->selected_records();
-    const EquipRecordStats* record = reinterpret_cast<const EquipRecordStats*>(&selection->records[selection->current]);
+    const EquipCharacterRecord* record = selected_character(selection);
 
     if (record != 0)
     {
-        set_number(current_values[0], stat_value(record, 0));
-        set_number(current_values[1], stat_value(record, 1));
-        set_number(current_values[2], stat_value(record, 2));
-        set_number(current_values[3], stat_value(record, 3));
-        set_number(current_values[4], final_stat_value(record));
-        set_number(preview_values[0], stat_value(record, 0));
-        set_number(preview_values[1], stat_value(record, 1));
-        set_number(preview_values[2], stat_value(record, 2));
-        set_number(preview_values[3], stat_value(record, 3));
-        set_number(preview_values[4], final_stat_value(record));
+        set_number(current_values[0], record->get_effective_attack());
+        set_number(current_values[1], record->get_effective_defense());
+        set_number(current_values[2], record->get_effective_agility());
+        set_number(current_values[3], record->get_effective_hit());
+        set_number(current_values[4], record->get_effective_intelligence());
+        set_number(preview_values[0], record->get_effective_attack());
+        set_number(preview_values[1], record->get_effective_defense());
+        set_number(preview_values[2], record->get_effective_agility());
+        set_number(preview_values[3], record->get_effective_hit());
+        set_number(preview_values[4], record->get_effective_intelligence());
     }
 }
 
@@ -1958,35 +1787,6 @@ EquipStatComparisonWindow::EquipStatComparisonWindow(EquipController* state)
 }
 
 /**
- * @brief Store the category window's selected protected equipment entry and refresh the check word.
- * @param resource Resource record.
- * @param owner Category window holding the selected slot.
- * @param value Record index to store.
- */
-static inline void set_protected_equipment_entry(EquipResourceEquipment* resource, const EquipSlotWindow* owner, s32 value)
-{
-    s32 index = owner->active_slot;
-
-    if (resource->check_word !=
-        (resource->check_salt ^ ((resource->encoded_items[1] + resource->encoded_items[2]) ^ (resource->encoded_items[3] + resource->encoded_items[0]))))
-    {
-        return;
-    }
-
-    if (index < 0)
-    {
-        return;
-    }
-
-    if (index <= (resource->encoded_last_slot ^ 0x7E93))
-    {
-        resource->encoded_items[index] = static_cast<s16>(value) ^ 0x7E93;
-        resource->check_word =
-            resource->check_salt ^ ((resource->encoded_items[1] + resource->encoded_items[2]) ^ (resource->encoded_items[3] + resource->encoded_items[0]));
-    }
-}
-
-/**
  * @brief Equip a record in the category window's selected slot.
  * @param window Category window.
  * @param identifier Record index to equip, or zero to clear the slot.
@@ -1995,22 +1795,20 @@ extern "C" void equip_item_in_active_slot(EquipSlotWindow* window, s16 identifie
 {
     if (window->selection != 0)
     {
-        func_0040C7E0(
-            D_001B64F8,
-            protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->selection->unk04)[window->selection->current], window->active_slot), 0);
+        func_0040C7E0(D_001B64F8, selected_equipment(window->selection)->get_equipment_id(window->active_slot), 0);
 
         if (identifier)
         {
             func_0040C7E0(D_001B64F8, identifier, window->selection->slots[window->selection->current]);
-            set_protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->selection->unk04)[window->selection->current], window, identifier);
+            selected_equipment(window->selection)->set_equipment_id(window->active_slot, identifier);
         }
         else
         {
-            set_protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->selection->unk04)[window->selection->current], window, 0);
+            selected_equipment(window->selection)->set_equipment_id(window->active_slot, 0);
         }
 
         FieldRecordSelection* selection = window->controller->selected_records();
-        func_003F9890(&selection->records[selection->current], &static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current], 0, -1);
+        func_003F9890(selected_character(selection), selected_equipment(selection), 0, -1);
     }
 
     refresh_equipment_slots(window);
@@ -2201,10 +1999,10 @@ u8 EquipSlotWindow::func_slotb8()
         associated->right_indicator->unk3f = 0;
     }
 
-    FieldRecord* record = &selection->records[selection->current];
-    EquipResourceTextRecord* resource = &static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current];
-    optimize_equipment(controller, record, resource, selection->slots[selection->current]);
-    func_003F9890(record, resource, 0, -1);
+    EquipCharacterRecord* record = selected_character(selection);
+    EquipCharacterEquipment* equipment = selected_equipment(selection);
+    optimize_equipment(controller, record, equipment, selection->slots[selection->current]);
+    func_003F9890(record, equipment, 0, -1);
     func_004E97A0(controller->tooltip);
     refresh_equipment_slots(this);
     s32 category = static_cast<u16>(func_0023B3A0(equipment_slot_selector));
@@ -2339,7 +2137,7 @@ s32 EquipSlotWindow::func_slotd8()
  */
 extern "C" void refresh_equipment_slots(EquipSlotWindow* object)
 {
-    object->usable_slot_count = static_cast<EquipResourceEquipment*>(object->selection->unk04)[object->selection->current].encoded_slot_count ^ 0x7E93;
+    object->usable_slot_count = selected_equipment(object->selection)->encoded_equipment_slot_count ^ EQUIP_STAT_HALFWORD_XOR_KEY;
 
     if (object->usable_slot_count >= 4)
     {
@@ -2360,8 +2158,7 @@ extern "C" void refresh_equipment_slots(EquipSlotWindow* object)
     for (s32 index = 0; index < object->usable_slot_count; index++)
     {
         object->item_icons[index]->unk3f = 0;
-        object->equipped_items[index] =
-            protected_equipment_entry(&static_cast<EquipResourceEquipment*>(object->selection->unk04)[object->selection->current], index);
+        object->equipped_items[index] = selected_equipment(object->selection)->get_equipment_id(index);
 
         if (object->equipped_items[index] != 0)
         {
@@ -2662,7 +2459,7 @@ s32 EquipCharacterWindow::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, panel);
     append_panel_widget_node(&unk14, panel);
     name_text = new (0) LibObject175140;
-    const char* text = reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current].unk20);
+    const char* text = selected_equipment(selection)->character_name;
     name_text->func_00467AD0(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
     lib_container_attach_widget(unk10, name_text);
     append_icon_widget_node(&unk44, name_text);
@@ -2670,7 +2467,7 @@ s32 EquipCharacterWindow::func_slotf4(u32 associated)
     level_label = new (0) LibObject178750;
     level_value = new (0) LibObject174F20;
     level_label->init_resource_rectangle(120.0f, 48.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LEVEL, 0);
-    level_value->init_numeric_resource_rectangle(170.0f, 48.0f, 42.0f, 24.0f, equip_record_value(&selection->records[selection->current]), 0, 0);
+    level_value->init_numeric_resource_rectangle(170.0f, 48.0f, 42.0f, 24.0f, selected_character(selection)->get_level(), 0, 0);
     lib_container_attach_widget(unk10, level_label);
     append_text_widget_node(&unk2c, level_label);
     level_label->set_color(0x806080);
@@ -2726,8 +2523,8 @@ s32 EquipCharacterWindow::func_slotf4(u32 associated)
 
     if (selection != 0)
     {
-        set_resource_text(name_text, reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current].unk20));
-        set_number(level_value, equip_record_value(&selection->records[selection->current]));
+        set_resource_text(name_text, selected_equipment(selection)->character_name);
+        set_number(level_value, selected_character(selection)->get_level());
         show_current_portrait();
     }
 
@@ -2751,157 +2548,6 @@ EquipCharacterWindow::EquipCharacterWindow()
     }
 }
 
-/** @brief Set an allocation record selection and update its category. @param state Resident allocation storage. @param identifier One-based record identifier.
- * @param mode Selection value whose low four bits are stored. @return One when the record was updated, or zero for an invalid record. */
-
-/** Field record copy layout, with scalar statistics followed by a fifteen-word array. */
-struct EquipRecordCopyView
-{
-    s16 unk00;
-
-    s16 unk02;
-
-    s16 unk04;
-
-    s16 unk06;
-
-    s32 unk08;
-
-    s32 unk0c;
-
-    s32 unk10;
-
-    s32 unk14;
-
-    s32 unk18;
-
-    s32 unk1c;
-
-    s32 unk20;
-
-    s32 unk24;
-
-    float unk28;
-
-    float unk2c;
-
-    float unk30;
-
-    s32 unk34;
-
-    s32 unk38;
-
-    s32 unk3c;
-
-    s32 unk40;
-
-    s32 unk44;
-
-    s32 unk48;
-
-    s32 unk4c;
-
-    s32 unk50;
-
-    s32 unk54;
-
-    s32 unk58;
-
-    s32 unk5c;
-
-    s32 unk60;
-
-    s32 unk64;
-
-    s32 unk68;
-
-    s32 unk6c;
-
-    s16 unk70;
-
-    s16 unk72;
-
-    s16 unk74;
-
-    s16 unk76;
-
-    s16 unk78;
-
-    s16 unk7a;
-
-    s16 unk7c;
-
-    s16 unk7e;
-
-    s16 unk80;
-
-    s32 unk84[15];
-
-    s32 unkc0;
-};
-
-/** Two signed bytes copied together in a resource array. */
-struct EquipBytePair
-{
-    s8 a, b;
-};
-
-/** Two signed halfwords copied together in a resource array. */
-struct EquipShortPair
-{
-    s16 a, b;
-};
-
-/** Four protected equipment identifiers stored consecutively. */
-struct EquipShortFour
-{
-    s16 a, b, c, d;
-};
-
-/** Four byte values copied as one resource field. */
-struct EquipByteFour
-{
-    u8 a, b, c, d;
-};
-
-/** Ten floats copied as one resource field; checksum views also read two words. */
-struct EquipFloatTen
-{
-    float a, b, c, d, e, f, g, h, i, j;
-};
-
-/** Resource copy layout containing equipment identifiers, paired arrays, and float values. */
-struct EquipResourceCopyView
-{
-    s16 unk00, unk02, unk04, unk06, unk08, unk0a, unk0c, unk0e;
-
-    EquipShortFour unk10;
-
-    s16 unk18, unk1a;
-
-    s32 unk1c;
-
-    EquipBytePair unk20[12];
-
-    u8 unk38, unk39, unk3a, unk3b;
-
-    s8 unk3c[5];
-
-    EquipBytePair unk41[3];
-
-    s8 unk47[7];
-
-    EquipShortPair unk4e[16], unk8e[21];
-
-    EquipByteFour unke2;
-
-    u8 unke6, unke7;
-
-    EquipFloatTen unke8;
-
-    s32 unk110;
-};
-
 /** @brief Find an allocation record in resident storage. @param value Signed halfword record index. @return Record, or null outside one through three thousand.
  */
 static inline ItemCreationAllocationRecord* equip_allocation_record(s32 value)
@@ -2923,110 +2569,39 @@ static inline ItemCreationAllocationRecord* equip_allocation_record(s32 value)
     return 0;
 }
 
-/** @brief Decode a protected statistic after validating its check word. @param first First summand. @param second Second summand. @param value Encoded
- * statistic. @param check Stored check word. @param salt Record salt. @return Decoded statistic, or zero for an invalid check word. */
-static inline s32 equip_checked_statistic(s32 first, s32 second, s32 value, s32 check, s32 salt)
-{
-    if (check != (salt ^ (value ^ (first + second))))
-    {
-        return 0;
-    }
-
-    return value ^ 0x7DE3F7E3;
-}
-
-/** @brief Read the first protected statistic. @param r Copied field record. @return Decoded value, or zero for an invalid check word. */
-static inline s32 equip_first_statistic(const EquipRecordCopyView& r)
-{
-    return equip_checked_statistic(r.unk34, r.unk38, r.unk3c, r.unk84[4], r.unk84[9]);
-}
-
-/** @brief Read the second protected statistic. @param r Copied field record. @return Decoded value, or zero for an invalid check word. */
-static inline s32 equip_second_statistic(const EquipRecordCopyView& r)
-{
-    return equip_checked_statistic(r.unk40, r.unk44, r.unk48, r.unk84[5], r.unk84[9]);
-}
-
-/** Integer view of the resource equipment identifiers, bound, check word, and salt. */
-struct EquipProtectedResourceView
-{
-    u8 unk00[0xE];
-
-    s16 count;
-
-    EquipShortFour values;
-
-    u8 unk18[0xD8];
-
-    u32 check;
-
-    u8 unkf4[0x18];
-
-    u32 salt;
-};
-
-/** @brief Calculate the equipment identifier check word. @param object Resource record. @return Check word calculated from its four identifiers and salt. */
-static inline s32 equip_resource_checksum(const void* object)
-{
-    const EquipProtectedResourceView* r = static_cast<const EquipProtectedResourceView*>(object);
-    return r->salt ^ ((r->values.b + r->values.c) ^ (r->values.d + r->values.a));
-}
-
-/** @brief Check a resource equipment index. @param index Requested index. @param count Decoded inclusive bound. @return True when the index is within the
- * bound. */
-static inline bool equip_valid_equipment_index(s32 index, s32 count)
-{
-    return index >= 0 && index <= count;
-}
-
-/** @brief Validate the equipment identifier check word. @param r Resource record view. @return True when its check word agrees with its identifiers and salt.
+/**
+ * @brief Decode the item equipped in a slot.
+ * @param equipment Character equipment.
+ * @param index Equipment slot.
+ * @return Item ID, or zero for an invalid checksum or slot.
  */
-static inline bool equip_resource_valid(const EquipProtectedResourceView* r)
+static inline s16 equipped_item(const EquipCharacterEquipment& equipment, s32 index)
 {
-    return r->check == (r->salt ^ ((r->values.b + r->values.c) ^ (r->values.d + r->values.a)));
-}
-
-/** @brief Read a protected equipment identifier. @param object Resource record. @param index Equipment index. @return Decoded identifier, or zero for an
- * invalid checksum or index. */
-static inline s16 equip_equipped(const void* object, s32 index)
-{
-    const EquipProtectedResourceView* r = static_cast<const EquipProtectedResourceView*>(object);
-
-    if (!equip_resource_valid(r))
+    if (!equipment.equipment_valid())
     {
         return 0;
     }
 
-    if (!equip_valid_equipment_index(index, r->count ^ 0x7E93))
+    if (!(index >= 0 && index <= (equipment.encoded_slot_limit ^ EQUIP_STAT_HALFWORD_XOR_KEY)))
     {
         return 0;
     }
 
-    return reinterpret_cast<const s16*>(&r->values)[index] ^ 0x7E93;
+    return equipment.encoded_equipment_ids[index] ^ EQUIP_STAT_HALFWORD_XOR_KEY;
 }
 
-/** @brief Update a valid protected equipment identifier and its check word. @param object Resource record. @param index Equipment index. @param value
- * Replacement identifier. */
-static inline void equip_set_equipped(void* object, s32 index, s16 value)
+/**
+ * @brief Equip the unequipped weapon and armor that give the highest attack and defense.
+ * @param state Unused controller.
+ * @param record Character record each candidate is tried on.
+ * @param equipment Character equipment to update.
+ * @param slot One-based character number, tested against each item's ten-bit character mask.
+ */
+extern "C" void optimize_equipment(EquipController* state, const EquipCharacterRecord* record, EquipCharacterEquipment* equipment, s8 slot)
 {
-    EquipProtectedResourceView* r = static_cast<EquipProtectedResourceView*>(object);
-
-    if (equip_resource_valid(r) && equip_valid_equipment_index(index, r->count ^ 0x7E93))
-    {
-        reinterpret_cast<s16*>(&r->values)[index] = value ^ 0x7E93;
-        r->check = equip_resource_checksum(r);
-    }
-}
-
-/** @brief Select available allocations that improve the first two protected statistics. @param state Unused state receiver. @param record Field record used for
- * each trial. @param resource Resource equipment identifiers to update. @param slot Equipment selection slot. */
-extern "C" void optimize_equipment(EquipController* state, FieldRecord* record, EquipResourceTextRecord* resource, s8 slot)
-{
-    const EquipRecordCopyView* original = reinterpret_cast<const EquipRecordCopyView*>(record);
-    EquipResourceCopyView* original_resource = reinterpret_cast<EquipResourceCopyView*>(resource);
     ItemCreationAllocationRecord* candidates[100];
-    EquipRecordCopyView copy;
-    EquipResourceCopyView copy_resource;
+    EquipCharacterRecord copy;
+    EquipCharacterEquipment copy_equipment;
     ItemCreationAllocationRecord* best_first = 0;
     ItemCreationAllocationRecord* best_second = 0;
     s32 max_first = 0;
@@ -3057,15 +2632,14 @@ extern "C" void optimize_equipment(EquipController* state, FieldRecord* record, 
 
                         for (index_first = 0; index_first < count_first; ++index_first)
                         {
-                            copy = *original;
-                            copy_resource = *original_resource;
-                            func_003F9890(reinterpret_cast<FieldRecord*>(&copy), reinterpret_cast<EquipResourceTextRecord*>(&copy_resource),
-                                          reinterpret_cast<u32>(candidates[index_first]), 0);
+                            copy = *record;
+                            copy_equipment = *equipment;
+                            func_003F9890(&copy, &copy_equipment, reinterpret_cast<u32>(candidates[index_first]), 0);
 
-                            if (!best_first || max_first < equip_first_statistic(copy))
+                            if (!best_first || max_first < copy.get_attack())
                             {
                                 best_first = candidates[index_first];
-                                max_first = equip_first_statistic(copy);
+                                max_first = copy.get_attack();
                             }
                         }
 
@@ -3077,15 +2651,14 @@ extern "C" void optimize_equipment(EquipController* state, FieldRecord* record, 
 
                         for (index_second = 0; index_second < count_second; ++index_second)
                         {
-                            copy = *original;
-                            copy_resource = *original_resource;
-                            func_003F9890(reinterpret_cast<FieldRecord*>(&copy), reinterpret_cast<EquipResourceTextRecord*>(&copy_resource),
-                                          reinterpret_cast<u32>(candidates[index_second]), 1);
+                            copy = *record;
+                            copy_equipment = *equipment;
+                            func_003F9890(&copy, &copy_equipment, reinterpret_cast<u32>(candidates[index_second]), 1);
 
-                            if (!best_second || max_second < equip_second_statistic(copy))
+                            if (!best_second || max_second < copy.get_defense())
                             {
                                 best_second = candidates[index_second];
-                                max_second = equip_second_statistic(copy);
+                                max_second = copy.get_defense();
                             }
                         }
 
@@ -3096,47 +2669,47 @@ extern "C" void optimize_equipment(EquipController* state, FieldRecord* record, 
         }
     }
 
-    copy = *original;
-    copy_resource = *original_resource;
-    func_003F9890(reinterpret_cast<FieldRecord*>(&copy), reinterpret_cast<EquipResourceTextRecord*>(&copy_resource), 0, -1);
+    copy = *record;
+    copy_equipment = *equipment;
+    func_003F9890(&copy, &copy_equipment, 0, -1);
 
     if (best_first)
     {
-        s16 current = equip_equipped(original_resource, 0);
+        s16 current = equipped_item(*equipment, 0);
 
         if (current)
         {
-            if (equip_allocation_record(current) && equip_first_statistic(copy) < max_first)
+            if (equip_allocation_record(current) && copy.get_attack() < max_first)
             {
                 func_0040C7E0(D_001B64F8, current, 0);
                 func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_first), slot);
-                equip_set_equipped(original_resource, 0, lib_allocation_get_identifier(best_first));
+                equipment->set_equipment_id(0, lib_allocation_get_identifier(best_first));
             }
         }
         else
         {
             func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_first), slot);
-            equip_set_equipped(original_resource, 0, lib_allocation_get_identifier(best_first));
+            equipment->set_equipment_id(0, lib_allocation_get_identifier(best_first));
         }
     }
 
     if (best_second)
     {
-        s16 current = equip_equipped(original_resource, 1);
+        s16 current = equipped_item(*equipment, 1);
 
         if (current)
         {
-            if (equip_allocation_record(current) && equip_second_statistic(copy) < max_second)
+            if (equip_allocation_record(current) && copy.get_defense() < max_second)
             {
                 func_0040C7E0(D_001B64F8, current, 0);
                 func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_second), slot);
-                equip_set_equipped(original_resource, 1, lib_allocation_get_identifier(best_second));
+                equipment->set_equipment_id(1, lib_allocation_get_identifier(best_second));
             }
         }
         else
         {
             func_0040C7E0(D_001B64F8, lib_allocation_get_identifier(best_second), slot);
-            equip_set_equipped(original_resource, 1, lib_allocation_get_identifier(best_second));
+            equipment->set_equipment_id(1, lib_allocation_get_identifier(best_second));
         }
     }
 }
