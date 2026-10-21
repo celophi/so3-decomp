@@ -6,6 +6,16 @@
 #include "overlays/1067-00/text_002CEAF0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/1067-00/text_002CD390.h"
+#include "overlays/1067-00/text_002636B0.h"
+#include "overlays/cequip/cequip.h"
+#include "overlays/cstatus/text.h"
+#include "overlays/cskill/text.h"
+#include "overlays/citem/item_controller.h"
+#include "overlays/cconfig/config_controller.h"
+#include "overlays/cmc/text.h"
+#include "overlays/ctactics/ctactics.h"
+#include "overlays/cshop/cshop.h"
+#include "overlays/citemcreation/text_003684D0.h"
 
 extern "C" void func_002CEDA0(FieldCountedList* list);
 extern "C" void func_002CEF20(FieldCountedList* list);
@@ -29,16 +39,31 @@ struct FieldWindowRemovalContext
 
 extern "C" void func_00264460(FieldCountedList* list, void* value);
 
-/** Partial object with byte values at 0x18 and 0x88, and flags at 0x1A. */
-typedef struct FieldD1440Object
+/** Partial menu manager with vtable D_15B020 in main data; it creates the requested menu's controller. */
+typedef struct FieldMenuManager
 {
-    u8 pad00[0x18];
-    u8 value18;
-    u8 pad19;
-    u16 flags;
-    u8 pad1c[0x6C];
-    u8 value88;
-} FieldD1440Object;
+    u8 unk00[0x14];
+    FieldClass153E30* state;
+    u8 menu;
+    u8 unk19;
+    u16 argument;
+    u8 unk1c[0x6C];
+    u8 unk88;
+} FieldMenuManager;
+
+enum FieldMenuId
+{
+    FIELD_MENU_1 = 1,
+    FIELD_MENU_EQUIP = 2,
+    FIELD_MENU_STATUS = 3,
+    FIELD_MENU_SKILL = 4,
+    FIELD_MENU_ITEM = 5,
+    FIELD_MENU_CONFIG = 6,
+    FIELD_MENU_7 = 7,
+    FIELD_MENU_TACTICS = 8,
+    FIELD_MENU_SHOP = 11,
+    FIELD_MENU_ITEM_CREATION = 12
+};
 
 FieldClass15AE70::~FieldClass15AE70()
 {
@@ -555,30 +580,129 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CFE
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CFF60);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D08B0);
+/**
+ * @brief Create the requested menu's controller, register it, and make it the active State.
+ *
+ * Every menu overlay loads at the same address, so each case calls the
+ * constructor of whichever overlay the manager loaded for that menu.
+ * @param manager Menu manager.
+ * @param menu Menu to open.
+ * @return True when the controller's record selection was created; false for an unknown menu.
+ */
+extern "C" bool field_launch_menu(FieldMenuManager* manager, u8 menu)
+{
+    u8 result = 0;
+
+    switch (menu)
+    {
+        case FIELD_MENU_1:
+        {
+            FieldClass154AD0* controller = new (0) FieldClass154AD0;
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            manager->state = controller;
+            result = controller->func_00264110();
+            break;
+        }
+        case FIELD_MENU_ITEM:
+        {
+            ItemController* controller = new (0) ItemController;
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            manager->state = controller;
+            result = controller->func_00264110();
+            break;
+        }
+        case FIELD_MENU_EQUIP:
+        {
+            EquipController* controller = new (0) EquipController;
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            manager->state = controller;
+            result = controller->func_00264110();
+            break;
+        }
+        case FIELD_MENU_SKILL:
+        {
+            SkillController* controller = new (0) SkillController;
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            manager->state = controller;
+            result = controller->func_00264110();
+            break;
+        }
+        case FIELD_MENU_STATUS:
+        {
+            StatusResourceState* controller = new (0) StatusResourceState;
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            manager->state = controller;
+            result = controller->func_00264110();
+            break;
+        }
+        case FIELD_MENU_CONFIG:
+        {
+            ConfigController* controller = new (0) ConfigController;
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            manager->state = controller;
+            result = controller->func_00264110();
+            break;
+        }
+        case FIELD_MENU_TACTICS:
+        {
+            TacticsController* controller = new (0) TacticsController;
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            manager->state = controller;
+            result = controller->func_00264110();
+            break;
+        }
+        case FIELD_MENU_7:
+        {
+            CmcClass18AF20* controller = new (0) CmcClass18AF20;
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            manager->state = controller;
+            controller->func_00263CA0(manager->argument);
+            result = controller->func_00264110();
+            break;
+        }
+        case FIELD_MENU_SHOP:
+        {
+            ShopState* controller = new (0) ShopState;
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            shop_set_id(controller, manager->argument);
+            manager->state = controller;
+            result = controller->func_00264110();
+            break;
+        }
+        case FIELD_MENU_ITEM_CREATION:
+        {
+            ItemCreationSelectedDisplayState* controller = new (0) ItemCreationSelectedDisplayState;
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            manager->state = controller;
+            result = controller->func_00264110();
+            break;
+        }    }
+
+    return result != 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D0D30);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1100);
 
-s32 func_002D1440(FieldD1440Object* object, u8 value, u32 flags)
+s32 func_002D1440(FieldMenuManager* object, u8 value, u32 flags)
 {
-    object->value18 = value;
+    object->menu = value;
     if (flags != 0)
     {
-        object->flags = flags;
+        object->argument = flags;
     }
     else
     {
-        object->flags = 0;
+        object->argument = 0;
     }
     if (((u16)flags) & 8)
     {
-        object->value88 = 0;
+        object->unk88 = 0;
     }
     else
     {
-        object->value88 = 1;
+        object->unk88 = 1;
     }
     return 1;
 }

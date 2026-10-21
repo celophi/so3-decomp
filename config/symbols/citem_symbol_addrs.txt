@@ -223,3 +223,4 @@ resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplica
 lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True
 field_find_resource_record = 0x002D3CC0; // type:func absolute:True allow_duplicated:True
 field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_duplicated:True
+__ct__14ItemControllerFv = 0x00353910; // type:func

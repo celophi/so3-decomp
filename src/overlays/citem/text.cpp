@@ -1,3 +1,4 @@
+#include "overlays/citem/item_controller.h"
 #include "include_asm.h"
 #include "overlays/citem/text.h"
 #include "main/resident_001001E0.h"
@@ -261,15 +262,6 @@ struct ScreenOwner
 };
 
 /** Observed prefix of native D_184DF0, with a DMA interface and a Field receiver base at four. */
-struct Record00353850 : public LibClass171FF0, public FieldClass153E30
-{
-    u8 unk38[8];
-    FieldRecordSelection* selection;
-    u8 unk44[0x70];
-    s32 unkb4;
-    u32 category;
-};
-
 struct Record0034B060Display
 {
     u8 unk00[0xCB];
@@ -569,7 +561,7 @@ static inline void scale_window_text(Record00353E40* object, u32 index)
  * @param object Receiver that owns the selection.
  * @return One after successful population, or zero if already present or initialization fails.
  */
-static inline u8 create_record_selection(Record00353850* object)
+static inline u8 create_record_selection(ItemController* object)
 {
     FieldRecordSelection* selection;
     if (object->selection != 0)
@@ -1136,7 +1128,7 @@ void item_select_first_row(Record0034B770* owner)
 u8 func_0034B060(FieldClass15AE70* window)
 {
     ItemCreationAllocationRecord* records[100];
-    Record00353850* controller = static_cast<Record00353850*>(D_001B643C->controller->selected);
+    ItemController* controller = static_cast<ItemController*>(D_001B643C->controller->selected);
     if (lib_collect_unequipped_allocations(D_001B64F8, records, controller->category) == 0)
     {
         controller->remove_child(window);
@@ -1397,7 +1389,7 @@ INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034F970);
 void item_update_allocation_page(Record0034E8B0* object, s32 first_index)
 {
     ItemCreationAllocationRecord* records[99];
-    Record00353850* selected = static_cast<Record00353850*>(D_001B643C->controller->selected);
+    ItemController* selected = static_cast<ItemController*>(D_001B643C->controller->selected);
     if (selected->unkb4 != 7)
     {
         u32 category = selected->category;
@@ -1673,7 +1665,7 @@ INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353270);
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353620);
 
-s32 item_initialize_record_selection(Record00353850* object)
+s32 item_initialize_record_selection(ItemController* object)
 {
     u8 created = create_record_selection(object);
     if (created == 0)
@@ -1688,7 +1680,7 @@ INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003537D0);
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353850);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353910);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", __ct__14ItemControllerFv);
 
 void func_00353A30(void* object)
 {

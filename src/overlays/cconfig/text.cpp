@@ -1,3 +1,4 @@
+#include "overlays/cconfig/config_controller.h"
 #include "include_asm.h"
 #include "overlays/cconfig/text.h"
 #include "main/resident_data.h"
@@ -3493,14 +3494,11 @@ void* func_00352400(void* object, s32 flags)
     return object;
 }
 
-ConfigControl* func_00352460(ConfigControl* object)
+ConfigController::ConfigController()
 {
-    func_2642D0(object);
-    object->methods = D_182170;
-    object->field_34 = 0;
-    object->field_38 = 0;
-    object->field_40 = 0;
-    return object;
+    resource = 0;
+    unk38 = 0;
+    unk40 = 0;
 }
 
 void ItemCreationClass185050::func_slot0c()

@@ -27,7 +27,7 @@ typedef struct Record0034E8B0 Record0034E8B0;
 typedef struct TransformRecord TransformRecord;
 typedef struct ScreenOwner ScreenOwner;
 typedef struct Record00351F50 Record00351F50;
-typedef struct Record00353850 Record00353850;
+typedef struct ItemController ItemController;
 typedef struct Record00353A50 Record00353A50;
 typedef struct Record00352960 Record00352960;
 typedef struct Record00352EE0 Record00352EE0;
@@ -343,7 +343,7 @@ void func_003546B0(ItemListOwner* owner, void* value);
  * @param object Receiver that owns the selection.
  * @return One after successful population, or zero if already present or initialization fails.
  */
-s32 item_initialize_record_selection(Record00353850* object);
+s32 item_initialize_record_selection(ItemController* object);
 
 /**
  * @brief Initialize a display record and run cleanup when requested.

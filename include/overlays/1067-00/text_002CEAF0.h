@@ -39,7 +39,7 @@ typedef struct FieldResourceRecord
     u32 next_offset;
 } FieldResourceRecord;
 
-typedef struct FieldD1440Object FieldD1440Object;
+typedef struct FieldMenuManager FieldMenuManager;
 
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
@@ -79,7 +79,17 @@ s32 func_002D3BB0(FieldListObject* object);
  * @param flags Flags to store at offset 0x1A.
  * @return Always 1.
  */
-s32 func_002D1440(FieldD1440Object* object, u8 value, u32 flags);
+s32 func_002D1440(FieldMenuManager* object, u8 value, u32 flags);
+
+#ifdef __cplusplus
+/**
+ * @brief Create the requested menu's controller, register it, and make it the active State.
+ * @param manager Menu manager.
+ * @param menu Menu to open.
+ * @return True when the controller's record selection was created; false for an unknown menu.
+ */
+bool field_launch_menu(FieldMenuManager* manager, u8 menu);
+#endif
 
 #ifdef __cplusplus
 }
