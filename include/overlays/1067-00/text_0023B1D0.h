@@ -527,4 +527,19 @@ void func_0023D2A0(void* object);
 }
 #endif
 
+#ifdef __cplusplus
+#include "overlays/1067-00/text_001DD3C0.h"
+
+/** Partial FieldListObject subclass with vtable D_153270 in main data; its byte at 0x18 is a step code. */
+class FieldClass153270 : public FieldListObject
+{
+    public:
+        /** @brief Destroy the object. */
+        virtual ~FieldClass153270();
+
+        u32 unk14;
+        u8 unk18;
+};
+#endif
+
 #endif

@@ -315,7 +315,6 @@ extern "C" void func_003565A0(ItemCreationClass186770* object, u16 direction);
 // These external interfaces are scoped here because their owning code is in other overlays.
 extern ItemCreationRuntimeData* D_001B64F8;
 extern ItemCreationRuntime643C* D_001B643C;
-extern "C" s32 func_002CFE40(void* object, s16 index);
 
 /** @brief Return the map position for a one-based workshop ID, or null if invalid. */
 static inline const float* workshop_map_position(ItemCreationSelection* selection, s32 workshop_id);
@@ -1462,7 +1461,7 @@ void WorkshopSelectionWindow::func_slotf8(u16 direction)
             position = selection->workshop_map_positions[index - 1].unk00;
         }
         this->workshop_selection_display->func_00466E40(position[0], position[1], 0.05f);
-        func_002CFE40(D_001B643C->unk10, 0);
+        field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->unk10), 0);
     }
     selected = this->workshop_selection->selected_workshop_id;
     if (this->workshop_name != 0)
@@ -2603,7 +2602,7 @@ void InventorTransferWindow::func_slotf8(u16 direction)
         index = func_003696B0(selection, direction);
         position = workshop_map_position(selection, index);
         workshop_selection_display->func_00466E40(position[0], position[1], 0.05f);
-        func_002CFE40(D_001B643C->unk10, 0);
+        field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->unk10), 0);
     }
     selected = workshop_selection->selected_workshop_id;
     func_0034DB00(this, selected);
@@ -2794,7 +2793,7 @@ void ItemCreationClass185A60::func_slotf8(u16 direction)
         index = func_003696B0(selection, direction);
         position = workshop_map_position(selection, index);
         workshop_selection_display->func_00466E40(position[0], position[1], 0.05f);
-        func_002CFE40(D_001B643C->unk10, 0);
+        field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->unk10), 0);
     }
 }
 

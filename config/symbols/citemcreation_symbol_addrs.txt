@@ -1023,6 +1023,7 @@ lib_multiline_text_set_resource = 0x0045F690; // type:func absolute:True
 lib_panel_detach = 0x004C4A90; // type:func absolute:True
 
 field_queue_window_removal = 0x002CFE10; // type:func absolute:True
+field_play_menu_sound = 0x002CFE40; // type:func absolute:True
 
 lib_multiline_text_init_rectangle = 0x004616D0; // type:func absolute:True allow_duplicated:True
 

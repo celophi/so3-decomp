@@ -610,7 +610,6 @@ struct StatusWidgetList
 };
 
 extern StatusRuntime* D_001B643C;
-extern "C" s32 func_002CFE40(void* object, s16 index);
 
 extern "C" void* func_100AC0(s32 size, s32 flags);
 
@@ -1547,7 +1546,7 @@ void status_move_name_grid_cursor(StatusNameWindow* object, s32 value)
 
         func_00466E40(&movement, x, 16.0f + (110.0f + 28.0f * row), 1.0f / 15.0f);
         object->selected_grid_cell = value;
-        func_002CFE40(D_001B643C->callbacks, 0);
+        field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->callbacks), 0);
     }
 }
 
@@ -1654,7 +1653,7 @@ void StatusNameWindow::func_slote4()
 
     status_refresh_name_markers(this);
     status_refresh_name_glyphs(this);
-    func_002CFE40(D_001B643C->callbacks, 1);
+    field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->callbacks), 1);
 }
 
 void StatusNameWindow::func_slote0()
@@ -2178,7 +2177,7 @@ void status_begin_scroll(StatusCharacterWindow* object, u16 scroll_page)
             object->scroll_timer = 0.0f;
         }
 
-        func_002CFE40(D_001B643C->callbacks, 0);
+        field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->callbacks), 0);
     }
 }
 

@@ -61,12 +61,6 @@ void field_queue_window_removal(FieldWindowRemovalContext* context, FieldClass15
 /**
  * @brief Report this object's type value.
  * @param object Callback receiver.
- * @return Always 3.
- */
-s32 func_002CFE00(FieldListObject* object);
-/**
- * @brief Report this object's type value.
- * @param object Callback receiver.
  * @return Always 4.
  */
 s32 func_002D3BB0(FieldListObject* object);
@@ -87,6 +81,14 @@ s32 func_002D1440(FieldMenuManager* object, u8 value, u32 flags);
  * @return Load state after this step, or zero while waiting on resources or when the launch fails.
  */
 u8 field_advance_menu_load(FieldMenuManager* manager);
+
+/**
+ * @brief Start one of the menu's eight sounds.
+ * @param manager Menu manager.
+ * @param sound Sound slot.
+ * @return One when the sound was started; zero for a slot out of range.
+ */
+s32 field_play_menu_sound(FieldMenuManager* manager, s16 sound);
 
 #ifdef __cplusplus
 /**

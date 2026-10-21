@@ -192,6 +192,7 @@ lib_panel_detach = 0x004C4A90; // type:func absolute:True
 remove_child__16FieldClass153E30FPv = 0x00263F50; // type:func absolute:True
 
 field_queue_window_removal = 0x002CFE10; // type:func absolute:True
+field_play_menu_sound = 0x002CFE40; // type:func absolute:True
 
 lib_container_attach_widget = 0x004C6190; // type:func absolute:True allow_duplicated:True
 

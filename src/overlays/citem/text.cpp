@@ -397,7 +397,7 @@ struct ControlOwner
     struct ControlScreen* unkac;
 };
 
-/** Prefix of the native D_15B020 controller produced by Field002D1550. */
+/** Prefix of Field's menu manager (vtable D_15B020); offset 0x14 is the active menu controller. */
 typedef struct CitemWindowController
 {
     u8 unk00[0x14];

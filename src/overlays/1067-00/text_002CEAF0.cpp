@@ -9,6 +9,8 @@
 #include "overlays/1067-00/text_002636B0.h"
 #include "overlays/1067-00/text_002607B0.h"
 #include "overlays/1067-00/text_0020E4B0.h"
+#include "overlays/1067-00/text_0023B1D0.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/cequip/cequip.h"
 #include "overlays/cstatus/text.h"
 #include "overlays/cskill/text.h"
@@ -45,42 +47,62 @@ extern "C" u8 func_0022A160(FieldScreenTransition* transition);
 
 extern "C" void* D_001B6694;
 
-/** Partial menu manager with vtable D_15B020 in main data; it creates the requested menu's controller. */
-typedef struct FieldMenuManager
+/** Menu manager with vtable D_15B020 in main data; it loads the requested menu and runs its controller. */
+class FieldMenuManager : public FieldListObject
 {
-    u8 unk00[0x14];
-    FieldClass153E30* state;
-    u8 menu;
-    u8 unk19;
-    u16 argument;
-    FieldClass153E00* owner;
-    FieldResourceRequestHandler* request;
-    s32 resource_key;
-    u8 unk28;
-    u8 load_state;
-    u16 unk2a;
-    u8 skip_transition;
-    u8 unk2d[3];
-    u8 unk30[0xC];
-    u8 unk3c[0x20];
-    u32 unk5c;
-    u8 ready;
-    u8 unk61;
-    u8 unk62;
-    u8 unk63;
-    float transition_time;
-    u8 unk68;
-    u8 unk69[3];
-    u32 unk6c;
-    u8 unk70;
-    u8 unk71[3];
-    float timer;
-    u32 unk78;
-    u32 unk7c;
-    u32 unk80;
-    u32 unk84;
-    u8 unk88;
-} FieldMenuManager;
+    public:
+        FieldMenuManager();
+
+        virtual ~FieldMenuManager();
+
+        /** @brief Report this object's list kind. @return Always 3. */
+        virtual s32 get_default_list_kind();
+
+        /** @brief Detach the manager and add it to the resident release queue. */
+        virtual void func_001DD7B0();
+
+        /**
+         * @brief Pass the pad's buttons to the active window and play the sound for its result.
+         * @param window Active window.
+         * @return One once the menu is running; zero for a null window or while loading.
+         */
+        u8 handle_input(FieldClass15AE70* window);
+
+        /** @brief Load the requested menu, poll the active controller for the next menu or a close request, flush deferred window removals and fade out on close. */
+        virtual void update();
+
+        FieldClass153E30* state;
+        u8 menu;
+        u8 unk19;
+        u16 argument;
+        FieldClass153E00* owner;
+        FieldResourceRequestHandler* request;
+        s32 resource_key;
+        u8 phase;
+        u8 load_state;
+        u16 unk2a;
+        u8 skip_transition;
+        u8 unk2d[3];
+        FieldClass153EC0 removals;
+        s32 sounds[8];
+        u32 unk5c;
+        u8 ready;
+        u8 closed;
+        u8 unk62;
+        u8 unk63;
+        float transition_time;
+        u8 shown;
+        u8 unk69[3];
+        u32 unk6c;
+        u8 unk70;
+        u8 unk71[3];
+        float timer;
+        u32 unk78;
+        u32 unk7c;
+        u32 unk80;
+        u32 unk84;
+        u8 unk88;
+};
 
 /**
  * @brief Select the resources for a menu.
@@ -93,6 +115,54 @@ static inline s32 menu_resource_key(FieldClass153E00* const& owner, s32 menu, s3
 {
     return func_00261160(owner, menu, argument);
 }
+
+/** Partial resident object reached through the menu runtime. */
+struct FieldMenuRuntimeObject
+{
+    u8 unk00[0x40];
+    u8 unk40;
+};
+
+/** Partial resident menu runtime. */
+struct FieldMenuRuntime
+{
+    u8 unk00[0xC];
+    FieldMenuRuntimeObject* unk0c;
+    FieldMenuManager* manager;
+};
+
+extern "C" FieldMenuRuntime* D_001B643C;
+
+extern "C" s32 func_110C10(ResidentRequest112400* request, s32 handle);
+
+extern "C" s32 func_110920(ResidentRequest112400* request, s32 handle, s32 flag);
+
+/** Partial pad state with its button masks. */
+struct FieldMenuPad
+{
+    u8 unk00[0x14];
+    u32 unk14;
+    u8 unk18[0xC];
+    u32 pressed;
+    u8 unk28[4];
+    u32 repeat;
+};
+
+/** @brief Return the pad state. @return Pad state. */
+static inline FieldMenuPad* menu_pad()
+{
+    return reinterpret_cast<FieldMenuPad*>(D_001B6430->context->input);
+}
+
+/** @brief Return the configured button masks. @return Button masks, one per menu command. */
+static inline u16* menu_buttons()
+{
+    return reinterpret_cast<u16*>(D_001B6430->unk04);
+}
+
+extern "C" void func_00264580(FieldCountedList* list);
+
+extern "C" s32 func_00264650(FieldCountedList* list, void** value);
 
 /** @brief Return the field object that owns the screen effects. @return Field display object. */
 static inline FieldClass1516A0* field_display()
@@ -607,12 +677,7 @@ extern "C" void func_002CFD80(FieldCountedList* list)
     list->count = 0;
 }
 
-/**
- * @brief Report this object's type value.
- * @param object Callback receiver.
- * @return Always 3.
- */
-s32 func_002CFE00(FieldListObject* object)
+s32 FieldMenuManager::get_default_list_kind()
 {
     return 3;
 }
@@ -625,9 +690,291 @@ void field_queue_window_removal(FieldWindowRemovalContext* context, FieldClass15
     }
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CFE40);
+/**
+ * @brief Start one of the menu's eight sounds, restarting it when it is already playing.
+ * @param manager Menu manager.
+ * @param sound Sound slot.
+ * @return One when the sound was started; zero for a slot out of range.
+ */
+static inline s32 play_menu_sound(FieldMenuManager* manager, s16 sound)
+{
+    u32 index = sound;
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002CFF60);
+    if (sound < 0 || sound >= 8)
+    {
+        return 0;
+    }
+
+    if (manager->sounds[index] == -1)
+    {
+        manager->sounds[index] = resident_allocate_request(D_001B65F8, index, 0, 0, 0x7F, 0x40, 0);
+    }
+    else
+    {
+        if (static_cast<u8>(func_110C10(D_001B65F8, manager->sounds[index])) == 1)
+        {
+            manager->unk5c = static_cast<u8>(func_110920(D_001B65F8, manager->sounds[index], 0));
+            manager->sounds[index] = -1;
+        }
+
+        manager->sounds[index] = resident_allocate_request(D_001B65F8, sound, 0, 0, 0x7F, 0x40, 0);
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Start one of the menu's eight sounds.
+ * @param manager Menu manager.
+ * @param sound Sound slot.
+ * @return One when the sound was started; zero for a slot out of range.
+ */
+extern "C" s32 field_play_menu_sound(FieldMenuManager* manager, s16 sound)
+{
+    return play_menu_sound(manager, sound);
+}
+
+u8 FieldMenuManager::handle_input(FieldClass15AE70* window)
+{
+    if (window == 0)
+    {
+        return 0;
+    }
+
+    if (phase != 6)
+    {
+        return 0;
+    }
+
+    u8 result = 0;
+    u32 pressed = menu_pad()->pressed;
+    u32 repeat = menu_pad()->repeat;
+
+    if (unk78 != 0)
+    {
+        unk78--;
+    }
+
+    if (unk7c != 0)
+    {
+        unk7c--;
+    }
+
+    if (unk80 != 0)
+    {
+        unk80--;
+    }
+
+    if (unk84 != 0)
+    {
+        unk84--;
+    }
+
+    if (pressed & menu_buttons()[0])
+    {
+        result = window->func_slotb0();
+    }
+    else if (pressed & menu_buttons()[1])
+    {
+        result = window->func_slotb4();
+    }
+    else if (pressed & menu_buttons()[2])
+    {
+        result = window->func_slotb8();
+    }
+    else if (pressed & menu_buttons()[3])
+    {
+        result = window->func_slotbc();
+    }
+    else
+    {
+        if ((repeat & menu_buttons()[4]) && unk78 == 0)
+        {
+            unk78 = 4;
+            result = window->func_slotd0();
+
+            if (result != 0)
+            {
+                goto play;
+            }
+        }
+
+        if ((repeat & menu_buttons()[5]) && unk7c == 0)
+        {
+            unk7c = 4;
+            result = window->func_slotd4();
+
+            if (result != 0)
+            {
+                goto play;
+            }
+        }
+
+        if ((repeat & menu_buttons()[6]) && unk80 == 0)
+        {
+            unk80 = 4;
+            result = window->func_slotd8();
+
+            if (result != 0)
+            {
+                goto play;
+            }
+        }
+
+        if ((repeat & menu_buttons()[7]) && unk84 == 0)
+        {
+            unk84 = 4;
+            result = window->func_slotdc();
+
+            if (result != 0)
+            {
+                goto play;
+            }
+        }
+
+        if (pressed & menu_buttons()[4])
+        {
+            result = window->func_slotc0();
+        }
+        else if (pressed & menu_buttons()[5])
+        {
+            result = window->func_slotc4();
+        }
+        else if (pressed & menu_buttons()[6])
+        {
+            result = window->func_slotc8();
+        }
+        else if (pressed & menu_buttons()[7])
+        {
+            result = window->func_slotcc();
+        }
+        else if (pressed & 8)
+        {
+            window->func_slote0();
+        }
+        else if (pressed & 1)
+        {
+            window->func_slote4();
+        }
+        else
+        {
+            if (window->func_slote8())
+            {
+                if (pressed & 0x10)
+                {
+                    window->func_slota0();
+                    goto play;
+                }
+
+                if (pressed & 0x40)
+                {
+                    window->func_slota4();
+                    goto play;
+                }
+
+                if (pressed & 0x80)
+                {
+                    window->func_slota8();
+                    goto play;
+                }
+
+                if (pressed & 0x20)
+                {
+                    window->func_slotac();
+                    goto play;
+                }
+            }
+
+
+            u16* buttons = menu_buttons();
+            FieldMenuPad* pad = menu_pad();
+
+            if (buttons[0] & pad->unk14)
+            {
+                window->func_slot78();
+            }
+            else if (buttons[1] & pad->unk14)
+            {
+                window->func_slot7c();
+            }
+            else if (buttons[2] & pad->unk14)
+            {
+                window->func_slot80();
+            }
+            else if (buttons[3] & pad->unk14)
+            {
+                window->func_slot84();
+            }
+            else if (buttons[4] & pad->unk14)
+            {
+                window->func_slot88();
+            }
+            else if (buttons[5] & pad->unk14)
+            {
+                window->func_slot8c();
+            }
+            else if (buttons[6] & pad->unk14)
+            {
+                window->func_slot90();
+            }
+            else if (buttons[7] & pad->unk14)
+            {
+                window->func_slot94();
+            }
+            else if (pad->unk14 & 8)
+            {
+                window->func_slot98();
+            }
+            else if (pad->unk14 & 1)
+            {
+                window->func_slot9c();
+            }
+            else
+            {
+                if (menu_pad()->repeat & 0x10)
+                {
+                    window->func_slot68();
+                }
+
+                if (menu_pad()->repeat & 0x40)
+                {
+                    window->func_slot6c();
+                }
+
+                if (menu_pad()->repeat & 0x80)
+                {
+                    window->func_slot70();
+                }
+
+                if (menu_pad()->repeat & 0x20)
+                {
+                    window->func_slot74();
+                }
+            }
+        }
+    }
+
+play:
+    switch (result)
+    {
+        case 1:
+            play_menu_sound(this, 1);
+            break;
+        case 2:
+            play_menu_sound(this, 2);
+            break;
+        case 3:
+            play_menu_sound(this, 3);
+            break;
+        case 4:
+            play_menu_sound(this, 0);
+            break;
+        case 0:
+            break;
+    }
+
+    return 1;
+}
 
 /**
  * @brief Create the requested menu's controller, register it, and make it the active State.
@@ -886,7 +1233,144 @@ extern "C" u8 field_advance_menu_load(FieldMenuManager* manager)
     return manager->load_state;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1100);
+void FieldMenuManager::update()
+{
+    switch (phase)
+    {
+        case 0:
+            break;
+        case 1:
+            phase = 2;
+            break;
+        case 2:
+            phase = 3;
+            break;
+        case 3:
+            if (menu == 0)
+            {
+                break;
+            }
+
+            phase = 4;
+            load_state = 1;
+        case 4:
+            if (field_advance_menu_load(this) != 8)
+            {
+                break;
+            }
+
+            phase = 6;
+        case 6:
+        {
+            if (state == 0)
+            {
+                break;
+            }
+
+            FieldClass15AE70* window = static_cast<FieldClass15AE70*>(state->func_00261150());
+            u8 next = window->func_slot30();
+
+            if (next != 0)
+            {
+                switch (next & 0xFF)
+                {
+                    case 0xFF:
+                        phase = 7;
+                        break;
+                    default:
+                        menu = next;
+
+                        if (window->func_slot38() != 0x80)
+                        {
+                            argument = window->func_slot38();
+                        }
+
+                        phase = 4;
+                        load_state = 1;
+                        break;
+                }
+
+                return;
+            }
+
+            state->func_00263E90();
+
+            if (ready == 0)
+            {
+                break;
+            }
+
+            FieldClass153270* child = state->unk30;
+
+            if (child != 0)
+            {
+                switch (child->unk18)
+                {
+                    case 1:
+                        return;
+                    case 2:
+                        child->unk18 = 3;
+                        break;
+                }
+            }
+
+            handle_input(window);
+
+            if (removals.count != 0)
+            {
+                void* value = 0;
+
+                while (func_00264650(&removals, &value))
+                {
+                    state->remove_child(value);
+                }
+
+                func_00264580(&removals);
+            }
+
+            if (shown == 0)
+            {
+                shown = 1;
+            }
+
+            break;
+        }
+        case 7:
+        {
+            func_0020F230(field_display(), 0, 0, 0x80000000, 0, 0, 0, 10.0f, 0.0f, 0.0f);
+            FieldScreenTransition* transition;
+            (transition = field_display()->effects.transition)->unkc0 = D_001B6694;
+            transition->unkf0 = 10;
+            phase = 8;
+            break;
+        }
+        case 8:
+            if (func_0022A160(field_display()->effects.transition) != 0)
+            {
+                break;
+            }
+
+            if (state != 0)
+            {
+                FieldClass15AE70* window = static_cast<FieldClass15AE70*>(state->func_00261150());
+
+                if (window->func_slot38() == 0x40)
+                {
+                    D_001B643C->unk0c->unk40 = 1;
+                }
+
+                func_00264010(state);
+                state->func_slot5c();
+                state = 0;
+            }
+
+            closed = 1;
+            phase = 9;
+            break;
+        case 9:
+            break;
+    }
+}
 
 s32 func_002D1440(FieldMenuManager* object, u8 value, u32 flags)
 {
@@ -910,16 +1394,47 @@ s32 func_002D1440(FieldMenuManager* object, u8 value, u32 flags)
     return 1;
 }
 
-/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
-extern "C" void func_002D1480(void* object)
+void FieldMenuManager::func_001DD7B0()
 {
-    lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    lib_object_detach_owner(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D14B0);
+FieldMenuManager::~FieldMenuManager()
+{
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1550);
+FieldMenuManager::FieldMenuManager()
+{
+    state = 0;
+    resource_key = 0;
+    menu = 0;
+    argument = 0x80;
+    owner = 0;
+    request = 0;
+    unk80 = 0;
+    unk84 = 0;
+    phase = 3;
+    load_state = 0;
+    unk2a = 0;
+    skip_transition = 0;
+    func_0013A678(sounds, 0, sizeof(sounds));
+    unk5c = 0;
+    ready = 0;
+    unk62 = 0;
+    closed = 0;
+    shown = 0;
+    transition_time = 0.0f;
+    unk6c = 0;
+    unk70 = 0;
+    timer = 0.0f;
+    unk88 = 0;
+    unk78 = 0;
+    // unk80 and unk84 are cleared twice in the original.
+    unk80 = 0;
+    unk7c = 0;
+    unk84 = 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CEAF0", func_002D1640);
 
