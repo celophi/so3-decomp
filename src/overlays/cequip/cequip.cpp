@@ -1,4 +1,3 @@
-#include "include_asm.h"
 #include "overlays/cequip/cequip.h"
 #include "main/resident_data.h"
 #include "main/resident_0010A0E0.h"
@@ -15,6 +14,30 @@
 #include "overlays/lib/list_indicator_inlines.h"
 #include "overlays/1067-00/text_002CEAF0.h"
 #include "overlays/lib/item_allocation.h"
+
+enum EquipMessageKey
+{
+    EQUIP_MSG_LABEL_SEPARATOR = 0x7E4,
+    EQUIP_MSG_YES = 0x7E8,
+    EQUIP_MSG_NO = 0x7E9,
+    EQUIP_MSG_STAT_NAME_BASE = 0x81A,
+    EQUIP_MSG_TITLE = 0xFA0,
+    EQUIP_MSG_SLOT_NAME_BASE = 0xFA1,
+    EQUIP_MSG_LEVEL = 0xFA9,
+    EQUIP_MSG_CONFIRM_EXIT = 0xFAC,
+    EQUIP_MSG_HELP_FIRST = 0xFAE,
+    EQUIP_MSG_CHANGE_HELP = 0xFAE,
+    EQUIP_MSG_HELP_END = 0xFAF,
+    EQUIP_MSG_MENU_LABEL = 0xFAF,
+    EQUIP_MSG_SWITCH_PROMPT = 0xFB5,
+    EQUIP_MSG_OPTIMIZE_PROMPT = 0xFB6,
+    EQUIP_MSG_ARROW = 0xFB7,
+    EQUIP_MSG_NONE = 0xFBA,
+    EQUIP_MSG_PARAMETER_CHANGES = 0xFBB,
+    EQUIP_MSG_PARAMETER_NAME_BASE = 0xFBC,
+    EQUIP_MSG_ITEM_NAME_BASE = 50000,
+    EQUIP_MSG_ITEM_DESCRIPTION_BASE = 0x12924
+};
 
 /** Partial aligned resource header, with its payload size at offset 0x40. */
 struct EquipAlignedResource
@@ -91,11 +114,11 @@ extern EquipRuntimeMenuRoot* D_001B643C;
 extern ResidentObject1B64F8* D_001B64F8;
 
 struct EquipResourceTextRecord;
-extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipResourceTextRecord* resource, s8 slot);
+extern "C" void optimize_equipment(EquipController* state, FieldRecord* record, EquipResourceTextRecord* resource, s8 slot);
 extern "C" void func_003F9890(FieldRecord* record, EquipResourceTextRecord* resource, u32 flag, s32 index);
-extern "C" void func_0034D4C0(EquipClass182990* object);
-extern "C" void func_0034B3D0(EquipClass182890* window, s16 selected);
-extern "C" void func_0034C540(EquipClass182990* object, s16 identifier);
+extern "C" void refresh_equipment_slots(EquipSlotWindow* object);
+extern "C" void preview_item_stats(EquipStatComparisonWindow* window, s16 selected);
+extern "C" void equip_item_in_active_slot(EquipSlotWindow* object, s16 identifier);
 extern "C" s32 func_0040C7E0(void* state, s16 identifier, s32 mode);
 extern "C" void func_004E97A0(void* object);
 extern "C" void func_004E97B0(void* object, float x, float y, float z, s16 identifier, u32 flag);
@@ -110,7 +133,6 @@ static inline void equip_set_icon_enabled(LibObject172410* icon, u8 enabled)
 
 /** @brief Cycle the selector in the supplied direction. @param object Selector. @param direction Direction code. @return Selector result code. */
 extern "C" u8 func_0023B3B0(FieldState23B3A0* object, u16 direction);
-/** @brief Queue a nonnull window on the menu context. @param context Menu context. @param window Window to queue. */
 
 /** Resource text record with its displayed payload beginning at offset 0x20. */
 struct EquipResourceTextRecord
@@ -126,7 +148,7 @@ struct EquipResourceTextRecord
  */
 static inline s16 protected_equipment_entry(const EquipResourceEquipment* resource, s32 index)
 {
-    if (resource->unkf0 != (resource->unk10c ^ ((resource->unk10[1] + resource->unk10[2]) ^ (resource->unk10[3] + resource->unk10[0]))))
+    if (resource->check_word != (resource->check_salt ^ ((resource->encoded_items[1] + resource->encoded_items[2]) ^ (resource->encoded_items[3] + resource->encoded_items[0]))))
     {
         return 0;
     }
@@ -134,11 +156,11 @@ static inline s16 protected_equipment_entry(const EquipResourceEquipment* resour
     {
         return 0;
     }
-    if ((resource->unk0e ^ 0x7E93) < index)
+    if ((resource->encoded_last_slot ^ 0x7E93) < index)
     {
         return 0;
     }
-    return static_cast<s16>(resource->unk10[index] ^ 0x7E93);
+    return static_cast<s16>(resource->encoded_items[index] ^ 0x7E93);
 }
 /** Partial view of a 0xC4-byte field record containing the protected display code. */
 struct EquipRecordDetails
@@ -163,19 +185,19 @@ static inline s32 equip_record_value(const FieldRecord* record)
 }
 
 /** @brief Refresh the selected record description, code, and active display widgets. @param associated Record display window. */
-static inline void equip_refresh_record_display(EquipClass182C90* associated)
+static inline void equip_refresh_record_display(EquipCharacterWindow* associated)
 {
-    if (associated->unkac != 0)
+    if (associated->selection != 0)
     {
-        LibObject175140* text = associated->unkb0;
-        text->unkfc = reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(associated->unkac->unk04)[associated->unkac->current].unk20);
+        LibObject175140* text = associated->name_text;
+        text->unkfc = reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(associated->selection->unk04)[associated->selection->current].unk20);
         text->unk3c = 1;
-        FieldRecord* record = &associated->unkac->records[associated->unkac->current];
+        FieldRecord* record = &associated->selection->records[associated->selection->current];
         s32 result = equip_record_value(record);
-        LibObject174F20* number = associated->unkb8;
+        LibObject174F20* number = associated->level_value;
         number->numeric_value = result;
         number->unk3c = 1;
-        associated->refresh_slot_marker();
+        associated->show_current_portrait();
     }
 }
 
@@ -218,39 +240,28 @@ struct EquipCategoryNode
 };
 
 
-typedef struct EquipLinkedNode
+struct EquipNewItemTypeNode
 {
     u16 value;
     u8 pad_02[2];
-    struct EquipLinkedNode* next;
+    EquipNewItemTypeNode* next;
     /** @brief Destroy the node without releasing its stored value. */
-    ~EquipLinkedNode()
+    ~EquipNewItemTypeNode()
     {
     }
-} EquipLinkedNode;
+};
 
-typedef struct EquipWordNode
+struct EquipItemTypeNode
 {
     ItemCreationCategoryRecord* value;
-    struct EquipWordNode* next;
+    EquipItemTypeNode* next;
     /** @brief Destroy the node without releasing its stored value. */
-    ~EquipWordNode()
+    ~EquipItemTypeNode()
     {
     }
-} EquipWordNode;
+};
 
 
-static inline void equip_set_position(LibClass178600* target, float x, float y, float z, float w);
-
-
-/**
- * @brief Copy the scalar position and mark the display receiver for refresh.
- * @param target Display receiver to update.
- * @param x Horizontal position component.
- * @param y Vertical position component.
- * @param z Third position component.
- * @param w Fourth position component.
- */
 /** @brief Check the one-based packed record index. @param index Record index. @return True for indices from one through 3000. */
 static inline bool valid_record_index(s16 index)
 {
@@ -313,6 +324,14 @@ static inline void set_number(LibObject174F20* widget, u32 value)
     widget->unk3c = 1;
 }
 
+/**
+ * @brief Copy the scalar position and mark the display receiver for refresh.
+ * @param target Display receiver to update.
+ * @param x Horizontal position component.
+ * @param y Vertical position component.
+ * @param z Third position component.
+ * @param w Fourth position component.
+ */
 static inline void equip_set_position(LibClass178600* target, float x, float y, float z, float w)
 {
     target->unk18.unk00 = x;
@@ -534,7 +553,7 @@ void FieldClass15AE70::func_slotf0()
 {
 }
 
-void EquipClass182220::func_slotf4(s16 selected)
+void EquipExitConfirmWindow::func_slotf4(s16 selected)
 {
     s32 index = 0;
     FieldListNode* node = unk2c.head->next;
@@ -557,11 +576,11 @@ void EquipClass182220::func_slotf4(s16 selected)
     }
 }
 
-void EquipClass182220::func_slot5c()
+void EquipExitConfirmWindow::func_slot5c()
 {
-    if (reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->func_00261150() == this)
+    if (reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->func_00261150() == this)
     {
-        func_slotf4(unka8->unk114);
+        func_slotf4(grid->unk114);
     }
 }
 
@@ -571,26 +590,26 @@ void* FieldClass153E30::func_00261150()
     return unk20;
 }
 
-void EquipClass182220::func_slot6c()
+void EquipExitConfirmWindow::func_slot6c()
 {
-    if (static_cast<s16>(unka8->process_direction(1)) == 1)
+    if (static_cast<s16>(grid->process_direction(1)) == 1)
     {
         return;
     }
 }
 
-void EquipClass182220::func_slot68()
+void EquipExitConfirmWindow::func_slot68()
 {
-    if (static_cast<s16>(unka8->process_direction(0)) == 1)
+    if (static_cast<s16>(grid->process_direction(0)) == 1)
     {
         return;
     }
 }
 
-u8 EquipClass182220::func_slotb4()
+u8 EquipExitConfirmWindow::func_slotb4()
 {
     FieldClass15AE70::func_slot18(0, 0x7F);
-    EquipListState* state = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14);
+    EquipController* state = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14);
     state->func_00263C70(func_slot44());
     field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->unk10), this);
     return 2;
@@ -602,11 +621,11 @@ void FieldClass153E30::func_00263C70(void* value)
     unk20 = value;
 }
 
-u8 EquipClass182220::func_slotb0()
+u8 EquipExitConfirmWindow::func_slotb0()
 {
-    unkac = unka8->unk114;
+    selected = grid->unk114;
     u8 result = 0;
-    if (unkac == 0)
+    if (selected == 0)
     {
         set_state(0xFF, 0x80);
     }
@@ -626,7 +645,7 @@ u8 EquipClass182220::func_slotb0()
     return status;
 }
 
-s32 EquipClass182220::func_slot10(u32 associated, float x, float y, s32 code)
+s32 EquipExitConfirmWindow::func_slot10(u32 associated, float x, float y, s32 code)
 {
     FieldClass15AE70::func_slot10(associated, x, y, code);
     LibClass178630* frame = new (0) LibClass178630;
@@ -636,133 +655,133 @@ s32 EquipClass182220::func_slot10(u32 associated, float x, float y, s32 code)
     }
     lib_panel_init_rectangle(frame, 1, 0.0f, 0.0f, 240.0f, 160.0f, 88.0f);
     lib_container_attach_widget(unk10, frame);
-    func_00351E40(&unk14, frame);
+    append_panel_widget_node(&unk14, frame);
     LibObject178750* first = new (0) LibObject178750;
     LibObject178750* second = new (0) LibObject178750;
     LibObject178750* title = new (0) LibObject178750;
-    unka8 = new (0) FieldObject23CEA0;
-    if (first == 0 || second == 0 || title == 0 || unka8 == 0)
+    grid = new (0) FieldObject23CEA0;
+    if (first == 0 || second == 0 || title == 0 || grid == 0)
     {
         return 0;
     }
-    first->init_resource_rectangle(84.0f, 84.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E8, 0);
-    second->init_resource_rectangle(84.0f, 120.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E9, 0);
-    title->init_resource_rectangle(24.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAC, 0);
+    first->init_resource_rectangle(84.0f, 84.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_YES, 0);
+    second->init_resource_rectangle(84.0f, 120.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_NO, 0);
+    title->init_resource_rectangle(24.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_CONFIRM_EXIT, 0);
     lib_container_attach_widget(unk10, first);
     lib_container_attach_widget(unk10, second);
     lib_container_attach_widget(unk10, title);
-    func_00351D20(&unk2c, first);
-    func_00351D20(&unk2c, second);
-    func_00351D20(&unk2c, title);
-    unka8->func_0023CE80(1, 2);
-    unka8->func_0023CE60(0.0f, 36.0f);
-    unka8->unkF2 = 0;
-    unka8->func_0023CF50(1, 84.0f + x, 16.0f + (84.0f + y));
-    func_00351B70(&unk74, unka8);
+    append_text_widget_node(&unk2c, first);
+    append_text_widget_node(&unk2c, second);
+    append_text_widget_node(&unk2c, title);
+    grid->func_0023CE80(1, 2);
+    grid->func_0023CE60(0.0f, 36.0f);
+    grid->unkF2 = 0;
+    grid->func_0023CF50(1, 84.0f + x, 16.0f + (84.0f + y));
+    append_grid_widget_node(&unk74, grid);
     return 1;
 }
 
-EquipClass182220::~EquipClass182220()
+EquipExitConfirmWindow::~EquipExitConfirmWindow()
 {
 }
 
-void EquipClass182350::func_slot5c()
+void EquipHelpWindow::func_slot5c()
 {
-    LibClass178600* target = unka8;
+    LibClass178600* target = text;
     float x = target->unk18.unk00;
     float y = target->unk18.unk04;
     float z = target->unk18.unk08;
     float w = target->unk18.unk0c;
-    if (unkb4 == 0)
+    if (scroll_phase == 0)
     {
-        equip_set_position(target, unkbc, y, z, w);
-        unkb2++;
-        if (!((float)unkb2 <= 120.0f))
+        equip_set_position(target, initial_text_x, y, z, w);
+        initial_pause_frames++;
+        if (!((float)initial_pause_frames <= 120.0f))
         {
-            unkb2 = 0;
-            unkb4 = 1;
+            initial_pause_frames = 0;
+            scroll_phase = 1;
         }
         return;
     }
     x -= 108.0f * D_001B6690;
-    if (x < unkc0 - (float)unkac)
+    if (x < clip_x - (float)scroll_span)
     {
-        x = 2.0f + (unkc0 + unkc4);
+        x = 2.0f + (clip_x + clip_width);
     }
     equip_set_position(target, x, y, z, w);
 }
 
-void EquipClass182350::func_slot60(s32 text_key)
+void EquipHelpWindow::func_slot60(s32 text_key)
 {
-    if (text_key >= 0xFAE && text_key < 0xFAF)
+    if (text_key >= EQUIP_MSG_HELP_FIRST && text_key < EQUIP_MSG_HELP_END)
     {
-        unkb2 = 0;
-        unkb4 = 0;
-        lib_text_set_resource(unka8, func_slot54(), text_key, 1);
-        unkac = static_cast<s32>(lib_text_measure_bounds(unka8)->unk08) + 6;
+        initial_pause_frames = 0;
+        scroll_phase = 0;
+        lib_text_set_resource(text, func_slot54(), text_key, 1);
+        scroll_span = static_cast<s32>(lib_text_measure_bounds(text)->unk08) + 6;
     }
 }
 
-s32 EquipClass182350::func_slotf4(u32 associated)
+s32 EquipHelpWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 19);
-    unka8 = new (0) LibObject178750;
+    text = new (0) LibObject178750;
     ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
-    if (unka8 == 0 || frame == 0 || overlay == 0)
+    if (text == 0 || frame == 0 || overlay == 0)
     {
         return 0;
     }
     LibObject178750* title = new (0) LibObject178750;
-    title->init_resource_rectangle(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA0, 0);
+    title->init_resource_rectangle(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_TITLE, 0);
     lib_container_attach_widget(unk10, title);
-    func_00351D20(&unk2c, title);
+    append_text_widget_node(&unk2c, title);
     LibObject178750* label = new (0) LibObject178750;
-    label->init_resource_rectangle(36.0f, 40.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAF, 0);
+    label->init_resource_rectangle(36.0f, 40.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_MENU_LABEL, 0);
     label->set_scale(0.65f, 0.65f);
     lib_container_attach_widget(unk10, label);
-    func_00351D20(&unk2c, label);
-    unkb8 = lib_text_measure_bounds(title)->unk08;
-    unkc0 = 18.0f + unkb8;
+    append_text_widget_node(&unk2c, label);
+    label_right_edge = lib_text_measure_bounds(title)->unk08;
+    clip_x = 18.0f + label_right_edge;
     float right_margin = 32.0f;
-    unkc4 = 640.0f - (16.0f + (unkc0 + right_margin));
-    unkbc = 24.0f + unkb8;
-    lib_scissor_init_rectangle(frame, unkc0, 0.0f, unkc4, 56.0f);
+    clip_width = 640.0f - (16.0f + (clip_x + right_margin));
+    initial_text_x = 24.0f + label_right_edge;
+    lib_scissor_init_rectangle(frame, clip_x, 0.0f, clip_width, 56.0f);
     lib_container_attach_widget(unk10, frame);
-    func_00351DB0(&unk20, frame);
-    unka8->init_resource_rectangle(unkbc, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFAE, 0);
-    lib_container_attach_widget(unk10, unka8);
-    func_00351D20(&unk2c, unka8);
+    append_clip_widget_node(&unk20, frame);
+    text->init_resource_rectangle(initial_text_x, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_CHANGE_HELP, 0);
+    lib_container_attach_widget(unk10, text);
+    append_text_widget_node(&unk2c, text);
     lib_scissor_init_reset(overlay, 1);
     lib_container_attach_widget(unk10, overlay);
-    func_00351DB0(&unk20, overlay);
-    func_slot60(0xFAE);
+    append_clip_widget_node(&unk20, overlay);
+    func_slot60(EQUIP_MSG_CHANGE_HELP);
     return 1;
 }
 
-EquipClass182350::~EquipClass182350()
+EquipHelpWindow::~EquipHelpWindow()
 {
 }
 
-s32 EquipClass182450::func_slotf4(u32 associated)
+s32 EquipResourceWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 20);
-    unka8 = new (0) ItemCreationOptionResourceDisplay;
-    unkac = new (0) ItemCreationOptionResourceDisplay;
-    unkb0 = new (0) ItemCreationOptionResourceDisplay;
+    left_tile = new (0) ItemCreationOptionResourceDisplay;
+    middle_tile = new (0) ItemCreationOptionResourceDisplay;
+    right_tile = new (0) ItemCreationOptionResourceDisplay;
     void* allocation = field_get_aligned_allocation(D_001B643C->unk20, 11);
-    unka8->unkcc = allocation;
-    unkac->unkcc = allocation;
-    unkb0->unkcc = allocation;
-    unka8->unkd0 = 11;
-    unkac->unkd0 = 11;
-    unkb0->unkd0 = 11;
-    unka8->func_002D6440(field_find_resource_record(D_001B643C->unk20, 5), 0.0f, 0.0f);
-    unkac->func_002D6440(field_find_resource_record(D_001B643C->unk20, 6), 256.0f, 0.0f);
-    unkb0->func_002D6440(field_find_resource_record(D_001B643C->unk20, 7), 512.0f, 0.0f);
-    lib_container_attach_widget(unk10, unka8);
-    lib_container_attach_widget(unk10, unkac);
-    lib_container_attach_widget(unk10, unkb0);
+    left_tile->unkcc = allocation;
+    middle_tile->unkcc = allocation;
+    right_tile->unkcc = allocation;
+    left_tile->unkd0 = 11;
+    middle_tile->unkd0 = 11;
+    right_tile->unkd0 = 11;
+    left_tile->func_002D6440(field_find_resource_record(D_001B643C->unk20, 5), 0.0f, 0.0f);
+    middle_tile->func_002D6440(field_find_resource_record(D_001B643C->unk20, 6), 256.0f, 0.0f);
+    right_tile->func_002D6440(field_find_resource_record(D_001B643C->unk20, 7), 512.0f, 0.0f);
+    lib_container_attach_widget(unk10, left_tile);
+    lib_container_attach_widget(unk10, middle_tile);
+    lib_container_attach_widget(unk10, right_tile);
     return 1;
 }
 
@@ -770,7 +789,7 @@ ItemCreationClass175110::~ItemCreationClass175110()
 {
 }
 
-EquipClass182450::~EquipClass182450()
+EquipResourceWindow::~EquipResourceWindow()
 {
 }
 
@@ -779,18 +798,18 @@ static inline void set_visibility(LibClass178600* display, const u8& flag)
 {
     display->unk3f = flag;
 }
-void EquipClass182550::func_slot10c(u32 value, u32 enabled)
+void EquipItemInstanceListWindow::func_slot10c(u32 value, u32 enabled)
 {
     s32 index;
     u8 flag = value;
     for (index = 0; index < 9; index++)
     {
-        set_visibility(unk15c[index], flag);
-        set_visibility(unk138[index], flag);
+        set_visibility(item_icons[index], flag);
+        set_visibility(factor_marks[index], flag);
     }
-    if (unk180 != 0)
+    if (panel != 0)
     {
-        set_visibility(unk180, flag);
+        set_visibility(panel, flag);
     }
     if (FieldStateCE420::unk04 != 0)
     {
@@ -815,58 +834,58 @@ void EquipClass182550::func_slot10c(u32 value, u32 enabled)
 }
 
 /** @brief Return the empty equipment selection result. @return Zero. */
-u8 EquipClass182550::func_slotb8()
+u8 EquipItemInstanceListWindow::func_slotb8()
 {
     return 0;
 }
 
 /** @brief Toggle the linked display flag. @return One. */
-u8 EquipClass182550::func_slotbc()
+u8 EquipItemInstanceListWindow::func_slotbc()
 {
-    EquipClass182B90* target = unk188->unk54;
-    target->unkf0 = !target->unkf0;
+    EquipParameterWindow* target = controller->parameter_window;
+    target->show_parameters = !target->show_parameters;
     return 1;
 }
 
-u8 EquipClass182550::func_slotb4()
+u8 EquipItemInstanceListWindow::func_slotb4()
 {
-    unk188->remove_child(this);
+    controller->remove_child(this);
     FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
     associated->func_slot10c(1, 1);
     reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(associated);
-    func_0034B3D0(unk188->unk48, 0);
-    func_004E97A0(unk18c);
+    preview_item_stats(controller->comparison_window, 0);
+    func_004E97A0(tooltip);
     return 2;
 }
 
-u8 EquipClass182550::func_slotb0()
+u8 EquipItemInstanceListWindow::func_slotb0()
 {
     ItemCreationAllocationRecord* records[100];
     if (FieldClass15AE60::unk88 == 0)
     {
         return 3;
     }
-    s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(unk188->unk64));
+    s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(controller->selected_item_type));
     s32 selected = FieldStateCE420::unk24;
     if (count != 0 && selected >= 0)
     {
-        if (unk18c != 0)
+        if (tooltip != 0)
         {
-            func_004E97A0(unk18c);
+            func_004E97A0(tooltip);
         }
-        FieldClass15AE70* first = unk188->unk44;
-        FieldClass15AE70* second = unk188->unk48;
-        func_0034C540(static_cast<EquipClass182990*>(first), lib_allocation_get_identifier(records[selected]));
+        FieldClass15AE70* first = controller->slot_window;
+        FieldClass15AE70* second = controller->comparison_window;
+        equip_item_in_active_slot(static_cast<EquipSlotWindow*>(first), lib_allocation_get_identifier(records[selected]));
         first->func_slot20(1);
         first->func_slot64();
         reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(first);
-        func_0034B3D0(static_cast<EquipClass182890*>(second), 0);
+        preview_item_stats(static_cast<EquipStatComparisonWindow*>(second), 0);
         second->func_slot20(0);
         FieldClass15AD40* associated = static_cast<FieldClass15AD40*>(func_slot44());
-        associated->func_slot108(static_cast<u8>(unk188->unk60));
+        associated->func_slot108(static_cast<u8>(controller->selected_slot));
         associated->func_slot10c(0, 0);
-        unk188->remove_child(this);
-        func_004E97A0(unk18c);
+        controller->remove_child(this);
+        func_004E97A0(tooltip);
     }
     else
     {
@@ -875,7 +894,7 @@ u8 EquipClass182550::func_slotb0()
     return 1;
 }
 
-void EquipClass182550::func_slot5c()
+void EquipItemInstanceListWindow::func_slot5c()
 {
     ItemCreationAllocationRecord* records[100];
     if (reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00261150() == this)
@@ -893,41 +912,41 @@ void EquipClass182550::func_slot5c()
             nested->ItemCreationClass185050::unk30 = 64.0f;
             nested->unk3c = 1;
         }
-        s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(unk188->unk64));
+        s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(controller->selected_item_type));
         s32 selected = FieldStateCE420::unk24;
-        EquipClass182890* detail = unk188->unk48;
+        EquipStatComparisonWindow* detail = controller->comparison_window;
         if (count != 0 && selected >= 0)
         {
-            func_0034B3D0(detail, lib_allocation_get_identifier(records[selected]));
-            LibObject172410* icon = unk15c[FieldStateCE420::unk28];
+            preview_item_stats(detail, lib_allocation_get_identifier(records[selected]));
+            LibObject172410* icon = item_icons[FieldStateCE420::unk28];
             set_selection_marker(icon, icon->unk94);
-            const LibUiRect16* position = &unk15c[FieldStateCE420::unk28]->unk18;
+            const LibUiRect16* position = &item_icons[FieldStateCE420::unk28]->unk18;
             s32 x = static_cast<s32>(283.0f + position->unk00);
             s32 y = static_cast<s32>(224.0f + (30.0f + position->unk04));
             bool active = reinterpret_cast<FieldState23B3A0*>(FieldStateCE420::unk04)->unk75 != 0 && FieldClass15AE60::pad29[1] == 0;
             if (active)
             {
-                if (unk190 != lib_allocation_get_identifier(records[selected]))
+                if (tooltip_item != lib_allocation_get_identifier(records[selected]))
                 {
-                    unk190 = lib_allocation_get_identifier(records[selected]);
-                    func_004E97A0(unk18c);
+                    tooltip_item = lib_allocation_get_identifier(records[selected]);
+                    func_004E97A0(tooltip);
                 }
-                func_004E97B0(unk18c, static_cast<float>(x), static_cast<float>(y), 18.0f, lib_allocation_get_identifier(records[selected]), 0);
+                func_004E97B0(tooltip, static_cast<float>(x), static_cast<float>(y), 18.0f, lib_allocation_get_identifier(records[selected]), 0);
             }
             else
             {
-                func_004E97A0(unk18c);
+                func_004E97A0(tooltip);
             }
         }
         else
         {
-            func_0034B3D0(detail, 0);
+            preview_item_stats(detail, 0);
             set_selection_marker(0, 0x808080);
         }
     }
 }
 
-void EquipClass182550::set_scroll_position(float offset)
+void EquipItemInstanceListWindow::set_scroll_position(float offset)
 {
     float position = (16.0f + offset) - 4.0f;
     s32 index = 0;
@@ -935,10 +954,10 @@ void EquipClass182550::set_scroll_position(float offset)
     {
         LibClass178600* target_third;
         LibClass178600* target_second;
-        target_third = unk15c[index];
+        target_third = item_icons[index];
         target_third->unk18.unk04 = position;
         target_third->unk3c = 1;
-        target_second = unk138[index];
+        target_second = factor_marks[index];
         target_second->unk18.unk04 = position;
         target_second->unk3c = 1;
         position += 28.0f;
@@ -953,10 +972,10 @@ static inline void set_equipment_icon(LibObject172410* icon, s32 category, u8 va
     icon->unkfe = variant;
     icon->unk3c = 1;
 }
-void EquipClass182550::refresh_rows(s32 start)
+void EquipItemInstanceListWindow::refresh_rows(s32 start)
 {
     ItemCreationAllocationRecord* records[100];
-    s32 category = unk188->unk64;
+    s32 category = controller->selected_item_type;
     for (s32 index = 99; index >= 0; index--)
     {
         records[index] = 0;
@@ -966,12 +985,12 @@ void EquipClass182550::refresh_rows(s32 start)
     {
         if (records[start + row] == 0)
         {
-            unk15c[row]->unk3d = 0;
-            unk138[row]->unk3d = 0;
+            item_icons[row]->unk3d = 0;
+            factor_marks[row]->unk3d = 0;
         }
         else
         {
-            set_equipment_icon(unk15c[row], category,
+            set_equipment_icon(item_icons[row], category,
                                records[start + row]->modification_number);
             s32 count = 0;
             for (s32 index = 0; index < 8; index++)
@@ -982,19 +1001,19 @@ void EquipClass182550::refresh_rows(s32 start)
                     count++;
                 }
             }
-            unk138[row]->func_002D5CF0(unk184,
+            factor_marks[row]->func_002D5CF0(mark_allocation,
                          field_find_resource_record(D_001B643C->unk20, count + 60), 14);
-            unk15c[row]->unk3d = 1;
-            unk138[row]->unk3d = 1;
+            item_icons[row]->unk3d = 1;
+            factor_marks[row]->unk3d = 1;
         }
     }
 }
 
-void EquipClass182550::func_00349D50()
+void EquipItemInstanceListWindow::recount_rows()
 {
     ItemCreationAllocationRecord* records[100];
     FieldClass15AE60::unk88 = 0;
-    FieldClass15AE60::unk88 = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->unk64));
+    FieldClass15AE60::unk88 = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->selected_item_type));
     s32 count = FieldClass15AE60::unk88;
     if (count >= 8)
     {
@@ -1035,36 +1054,36 @@ static inline void set_resource_scale(ItemCreationOptionResourceDisplay* display
     display->unk50.unk30 = x;
     display->unk3c = 1;
 }
-s32 EquipClass182550::func_slot104(u32 associated)
+s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 283.0f, 224.0f, 8);
     FieldStateCE420::unk3c = 1;
     ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
-    unk180 = new (0) LibClass178630;
-    lib_panel_init_rectangle(unk180, 1, 0.0f, 0.0f, 340.0f, 248.0f, 88.0f);
-    lib_container_attach_widget(FieldClass15AE70::unk10, unk180);
+    panel = new (0) LibClass178630;
+    lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 340.0f, 248.0f, 88.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, panel);
     lib_scissor_init_rectangle(frame, 8.0f, 10.0f, 302.0f, 224.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, frame);
-    unk184 = field_get_aligned_allocation(D_001B643C->unk20, 14);
+    mark_allocation = field_get_aligned_allocation(D_001B643C->unk20, 14);
     for (s32 index = 0; index < 9; index++)
     {
-        unk15c[index] = new (0) LibObject172410;
+        item_icons[index] = new (0) LibObject172410;
         float y = 12.0f + 28.0f * static_cast<float>(index);
-        lib_item_code_init_rectangle(unk15c[index], 34.0f, y, 302.0f, 21.599998f, 0, 0, 0);
-        unk15c[index]->set_scale(0.9f, 0.9f);
-        equip_set_icon_enabled(unk15c[index], 1);
-        set_display_depth(unk15c[index], -1.0f);
-        lib_container_attach_widget(FieldClass15AE70::unk10, unk15c[index]);
-        unk138[index] = new (0) ItemCreationOptionResourceDisplay;
+        lib_item_code_init_rectangle(item_icons[index], 34.0f, y, 302.0f, 21.599998f, 0, 0, 0);
+        item_icons[index]->set_scale(0.9f, 0.9f);
+        equip_set_icon_enabled(item_icons[index], 1);
+        set_display_depth(item_icons[index], -1.0f);
+        lib_container_attach_widget(FieldClass15AE70::unk10, item_icons[index]);
+        factor_marks[index] = new (0) ItemCreationOptionResourceDisplay;
         FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 60);
-        void* allocation = unk184;
-        unk138[index]->unkcc = allocation;
-        unk138[index]->unkd0 = 14;
-        unk138[index]->func_002D6440(record, 13.0f, y);
-        set_resource_scale(unk138[index], 0.9f, 0.9f);
-        lib_container_attach_widget(FieldClass15AE70::unk10, unk138[index]);
-        unk138[index]->unk3f = 0;
+        void* allocation = mark_allocation;
+        factor_marks[index]->unkcc = allocation;
+        factor_marks[index]->unkd0 = 14;
+        factor_marks[index]->func_002D6440(record, 13.0f, y);
+        set_resource_scale(factor_marks[index], 0.9f, 0.9f);
+        lib_container_attach_widget(FieldClass15AE70::unk10, factor_marks[index]);
+        factor_marks[index]->unk3f = 0;
     }
     lib_scissor_init_reset(overlay, 1);
     lib_container_attach_widget(FieldClass15AE70::unk10, overlay);
@@ -1082,7 +1101,7 @@ s32 EquipClass182550::func_slot104(u32 associated)
     unk85 = 0;
     func_slot110(1);
     func_slot10c(1, 1);
-    func_00349D50();
+    recount_rows();
     return 1;
 }
 
@@ -1092,32 +1111,32 @@ void FieldClass15AD40::func_slot110(u8 value)
     FieldClass15AE60::unk84 = value;
 }
 
-EquipClass182550::EquipClass182550(EquipListState* state)
+EquipItemInstanceListWindow::EquipItemInstanceListWindow(EquipController* state)
 {
     for (s32 index = 0; index < 9; index++)
     {
         unk48[index] = 0;
-        unk15c[index] = 0;
-        unk138[index] = 0;
+        item_icons[index] = 0;
+        factor_marks[index] = 0;
     }
-    unk188 = state;
-    unk180 = 0;
-    unk184 = 0;
+    controller = state;
+    panel = 0;
+    mark_allocation = 0;
     FieldClass15AD40();
-    unk18c = 0;
-    unk18c = state->unk68;
-    unk190 = 0;
+    tooltip = 0;
+    tooltip = state->tooltip;
+    tooltip_item = 0;
 }
 
 /** @brief Toggle the linked display flag. @return One. */
-u8 EquipClass182670::func_slotbc()
+u8 EquipItemListWindow::func_slotbc()
 {
-    EquipClass182B90* target = unk180->unk54;
-    target->unkf0 = !target->unkf0;
+    EquipParameterWindow* target = controller->parameter_window;
+    target->show_parameters = !target->show_parameters;
     return 1;
 }
 
-u8 EquipClass182670::func_slotb4()
+u8 EquipItemListWindow::func_slotb4()
 {
     func_slot10c(0, 0);
     FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(func_slot44());
@@ -1127,7 +1146,7 @@ u8 EquipClass182670::func_slotb4()
         associated->func_slot64();
         reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(associated);
     }
-    FieldClass15AE70* other = unk1a4;
+    FieldClass15AE70* other = comparison_window;
     if (other != 0)
     {
         other->func_slot20(0);
@@ -1135,13 +1154,13 @@ u8 EquipClass182670::func_slotb4()
     return 2;
 }
 
-u8 EquipClass182670::func_slotb0()
+u8 EquipItemListWindow::func_slotb0()
 {
     if (FieldClass15AE60::unk88 == 0)
     {
         return 3;
     }
-    if (unk180 == 0)
+    if (controller == 0)
     {
         return 0;
     }
@@ -1150,27 +1169,27 @@ u8 EquipClass182670::func_slotb0()
         FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(func_slot44());
         if (associated != 0)
         {
-            func_0034C540(static_cast<EquipClass182990*>(associated), 0);
+            equip_item_in_active_slot(static_cast<EquipSlotWindow*>(associated), 0);
             associated->func_slot20(1);
             associated->func_slot64();
             FieldStateCE420::unk04->unk3f = 0;
             reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(associated);
             refresh_rows(FieldStateCE420::unk22);
         }
-        if (unk1a4 != 0)
+        if (comparison_window != 0)
         {
-            unk1a4->func_slot20(0);
+            comparison_window->func_slot20(0);
         }
         return 1;
     }
     if (FieldClass15AE60::unk88 != 0)
     {
-        EquipClass182550* window = new (0) EquipClass182550(unk180);
-        u32 associated = unk180->get_resource_slot();
+        EquipItemInstanceListWindow* window = new (0) EquipItemInstanceListWindow(controller);
+        u32 associated = controller->get_resource_slot();
         window->func_slot104(associated);
         window->func_slot40(this);
-        unk180->add_child(window);
-        unk180->func_00263C70(window);
+        controller->add_child(window);
+        controller->func_00263C70(window);
     }
     else
     {
@@ -1181,9 +1200,9 @@ u8 EquipClass182670::func_slotb0()
 }
 
 /** @brief Return the loaded resource slot. @return Resource slot. */
-u32 EquipListState::get_resource_slot()
+u32 EquipController::get_resource_slot()
 {
-    return unk34;
+    return resource_slot;
 }
 
 /**
@@ -1191,7 +1210,7 @@ u32 EquipListState::get_resource_slot()
  * @param unused Unused first word.
  * @param value Value tested for zero and stored in the control's low-byte flag.
  */
-void EquipClass182670::func_slot10c(u32 unused, u32 value)
+void EquipItemListWindow::func_slot10c(u32 unused, u32 value)
 {
     if (FieldStateCE420::unk04 != 0)
     {
@@ -1211,7 +1230,7 @@ void EquipClass182670::func_slot10c(u32 unused, u32 value)
     }
 }
 
-void EquipClass182670::set_scroll_position(float offset)
+void EquipItemListWindow::set_scroll_position(float offset)
 {
     float position = 16.0f + offset;
     s32 index;
@@ -1224,10 +1243,10 @@ void EquipClass182670::set_scroll_position(float offset)
         target_first = unk48[index];
         target_first->unk18.unk04 = position;
         target_first->unk3c = 1;
-        target_second = unk138[index];
+        target_second = separators[index];
         target_second->unk18.unk04 = position;
         target_second->unk3c = 1;
-        target_third = unk15c[index];
+        target_third = counts[index];
         target_third->unk18.unk04 = position;
         target_third->unk3c = 1;
         position += 28.0f;
@@ -1235,11 +1254,11 @@ void EquipClass182670::set_scroll_position(float offset)
     } while (index < 9);
 }
 
-void EquipClass182670::refresh_rows(s32 start)
+void EquipItemListWindow::refresh_rows(s32 start)
 {
-    if (unk180 != 0)
+    if (controller != 0)
     {
-        EquipCategoryNode* node = static_cast<EquipCategoryNode*>(func_00351B30(&unk188, start));
+        EquipCategoryNode* node = static_cast<EquipCategoryNode*>(get_item_type_node(&item_types, start));
         for (s32 row = 0; row < 9; row++)
         {
             if (node != 0)
@@ -1251,13 +1270,13 @@ void EquipClass182670::refresh_rows(s32 start)
                 if (record != 0)
                 {
                     found = false;
-                    u16 count = static_cast<u16>(unk198.count);
+                    u16 count = static_cast<u16>(new_item_types.count);
                     index = 0;
                     category = static_cast<u16>(record->unk02 + 1);
-                    s32 key = category + 50000;
+                    s32 key = category + EQUIP_MSG_ITEM_NAME_BASE;
                     for (; index < count; index++)
                     {
-                        if (category == *static_cast<u16*>(func_003518E0(&unk198, index)))
+                        if (category == *static_cast<u16*>(get_new_item_type_node(&new_item_types, index)))
                         {
                             found = true;
                             break;
@@ -1272,28 +1291,28 @@ void EquipClass182670::refresh_rows(s32 start)
                         static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[row])->set_color(0x808080);
                     }
                     lib_text_set_resource(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), key, 0);
-                    LibObject174F20* image = unk15c[row];
+                    LibObject174F20* image = counts[row];
                     image->numeric_value = record->unk08;
                     image->unk3c = 1;
                     FieldClass15AE60::unk48[row]->unk3d = 1;
-                    unk138[row]->unk3d = 1;
-                    unk15c[row]->unk3d = 1;
+                    separators[row]->unk3d = 1;
+                    counts[row]->unk3d = 1;
                 }
                 else
                 {
                     static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[row])->set_color(0x808080);
-                    lib_text_set_resource(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), 0xFBA, 0);
+                    lib_text_set_resource(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), EQUIP_MSG_NONE, 0);
                     FieldClass15AE60::unk48[row]->unk3d = 1;
-                    unk138[row]->unk3d = 0;
-                    unk15c[row]->unk3d = 0;
+                    separators[row]->unk3d = 0;
+                    counts[row]->unk3d = 0;
                 }
                 node = node->next;
             }
             else
             {
                 FieldClass15AE60::unk48[row]->unk3d = 0;
-                unk138[row]->unk3d = 0;
-                unk15c[row]->unk3d = 0;
+                separators[row]->unk3d = 0;
+                counts[row]->unk3d = 0;
             }
         }
     }
@@ -1319,15 +1338,15 @@ static inline s32 equip_category_allocations(ItemCreationCategoryRecord* categor
     return count;
 }
 
-void EquipClass182670::func_slot108(u8 category)
+void EquipItemListWindow::func_slot108(u8 category)
 {
     s32 index;
     ItemCreationAllocationRecord* records[100];
-    func_00351AB0(&unk188);
-    func_00351860(&unk198);
+    clear_item_types(&item_types);
+    clear_new_item_types(&new_item_types);
     FieldClass15AE60::unk88 = 1;
-    func_00351A20(&unk188, 0);
-    FieldRecordSelection* selection = unk180->selected_records();
+    append_item_type(&item_types, 0);
+    FieldRecordSelection* selection = controller->selected_records();
     u8 slot = selection->slots[selection->current];
     if (category >= 3)
     {
@@ -1348,11 +1367,11 @@ void EquipClass182670::func_slot108(u8 category)
                 {
                     if (records[record_index]->new_item)
                     {
-                        func_003517D0(&unk198, identifier);
+                        append_new_item_type(&new_item_types, identifier);
                         break;
                     }
                 }
-                func_00351A20(&unk188, entry);
+                append_item_type(&item_types, entry);
                 FieldClass15AE60::unk88++;
             }
         }
@@ -1363,26 +1382,26 @@ void EquipClass182670::func_slot108(u8 category)
 }
 
 /** @brief Return the State's record selection. @return Record selection. */
-FieldRecordSelection* EquipListState::selected_records()
+FieldRecordSelection* EquipController::selected_records()
 {
-    return unk38;
+    return selection;
 }
 
-void EquipClass182670::func_slot5c()
+void EquipItemListWindow::func_slot5c()
 {
     if (reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00261150() == this)
     {
         FieldClass15AD40::func_slot5c();
-        EquipCategoryRecord** selected = reinterpret_cast<EquipCategoryRecord**>(func_00351B30(&unk188, FieldStateCE420::unk24));
+        EquipCategoryRecord** selected = reinterpret_cast<EquipCategoryRecord**>(get_item_type_node(&item_types, FieldStateCE420::unk24));
         if (selected != 0)
         {
             if (*selected != 0)
             {
-                unk180->unk64 = static_cast<u16>((*selected)->unk02 + 1);
+                controller->selected_item_type = static_cast<u16>((*selected)->unk02 + 1);
             }
             else
             {
-                unk180->unk64 = 0;
+                controller->selected_item_type = 0;
             }
         }
         if (FieldStateCE420::unk24 >= 0 && FieldClass15AE60::unk88 != 0)
@@ -1394,7 +1413,7 @@ void EquipClass182670::func_slot5c()
         {
             set_selection_marker(0, 0x808080);
         }
-        func_0034B3D0(unk180->unk48, 0);
+        preview_item_stats(controller->comparison_window, 0);
     }
     else
     {
@@ -1402,7 +1421,7 @@ void EquipClass182670::func_slot5c()
     }
 }
 
-s32 EquipClass182670::func_slot104(u32 associated)
+s32 EquipItemListWindow::func_slot104(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 283.0f, 224.0f, 9);
     FieldStateCE420::unk3c = 1;
@@ -1413,17 +1432,17 @@ s32 EquipClass182670::func_slot104(u32 associated)
     for (s32 index = 0; index < 9; index++)
     {
         unk48[index] = new (0) LibObject178750;
-        unk138[index] = new (0) LibObject178750;
-        unk15c[index] = new (0) LibObject174F20;
+        separators[index] = new (0) LibObject178750;
+        counts[index] = new (0) LibObject174F20;
         float y = 16.0f + 28.0f * static_cast<float>(index);
-        static_cast<LibObject178750*>(unk48[index])->init_resource_rectangle(13.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 50000, 0);
-        unk138[index]->init_resource_rectangle(268.0f, y - 4.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 1);
-        unk15c[index]->init_numeric_resource_rectangle(276.0f, y, 28.0f, 24.0f, index, 0, 0);
+        static_cast<LibObject178750*>(unk48[index])->init_resource_rectangle(13.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_ITEM_NAME_BASE, 0);
+        separators[index]->init_resource_rectangle(268.0f, y - 4.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LABEL_SEPARATOR, 1);
+        counts[index]->init_numeric_resource_rectangle(276.0f, y, 28.0f, 24.0f, index, 0, 0);
         set_display_depth(static_cast<LibObject178750*>(unk48[index]), -1.0f);
         static_cast<LibObject178750*>(unk48[index])->set_scale(0.9f, 0.9f);
         lib_container_attach_widget(FieldClass15AE70::unk10, unk48[index]);
-        lib_container_attach_widget(FieldClass15AE70::unk10, unk138[index]);
-        lib_container_attach_widget(FieldClass15AE70::unk10, unk15c[index]);
+        lib_container_attach_widget(FieldClass15AE70::unk10, separators[index]);
+        lib_container_attach_widget(FieldClass15AE70::unk10, counts[index]);
     }
     lib_scissor_init_reset(overlay, 1);
     lib_container_attach_widget(FieldClass15AE70::unk10, overlay);
@@ -1445,23 +1464,23 @@ s32 EquipClass182670::func_slot104(u32 associated)
     return 1;
 }
 
-EquipClass182670::EquipClass182670(EquipListState* state)
+EquipItemListWindow::EquipItemListWindow(EquipController* state)
 {
     for (s32 index = 0; index < 9; index++)
     {
         unk48[index] = 0;
-        unk138[index] = 0;
-        unk15c[index] = 0;
+        separators[index] = 0;
+        counts[index] = 0;
     }
-    unk180 = 0;
-    unk180 = state;
+    controller = 0;
+    controller = state;
     FieldClass15AD40();
     unk184 = 0;
     unk194 = 0;
-    unk1a4 = 0;
+    comparison_window = 0;
 }
 
-s32 EquipClass182790::func_slotf4(u32 associated)
+s32 EquipItemListPanel::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 283.0f, 224.0f, 10);
     LibClass178630* widget = new (0) LibClass178630;
@@ -1470,7 +1489,7 @@ s32 EquipClass182790::func_slotf4(u32 associated)
     return 1;
 }
 
-EquipClass182790::~EquipClass182790()
+EquipItemListPanel::~EquipItemListPanel()
 {
 }
 
@@ -1529,10 +1548,10 @@ static inline void set_comparison_number(LibObject174F20*& widget, s32 value, s3
  */
 static inline void set_comparison_entry(EquipResourceEquipment& resource, s32 slot, s16 item)
 {
-    if (resource.unkf0 == (resource.unk10c ^ ((resource.unk10[1] + resource.unk10[2]) ^ (resource.unk10[3] + resource.unk10[0]))) && slot >= 0 && slot <= (resource.unk0e ^ 0x7E93))
+    if (resource.check_word == (resource.check_salt ^ ((resource.encoded_items[1] + resource.encoded_items[2]) ^ (resource.encoded_items[3] + resource.encoded_items[0]))) && slot >= 0 && slot <= (resource.encoded_last_slot ^ 0x7E93))
     {
-        resource.unk10[slot] = item ^ 0x7E93;
-        resource.unkf0 = (resource.unk10c ^ ((resource.unk10[1] + resource.unk10[2]) ^ (resource.unk10[3] + resource.unk10[0])));
+        resource.encoded_items[slot] = item ^ 0x7E93;
+        resource.check_word = (resource.check_salt ^ ((resource.encoded_items[1] + resource.encoded_items[2]) ^ (resource.encoded_items[3] + resource.encoded_items[0])));
     }
 }
 /**
@@ -1541,18 +1560,18 @@ static inline void set_comparison_entry(EquipResourceEquipment& resource, s32 sl
  * @param selected Record index to equip.
  * @return Original character record.
  */
-static inline FieldRecord* copy_comparison_context(EquipClass182890* window, const s16& selected)
+static inline FieldRecord* copy_comparison_context(EquipStatComparisonWindow* window, const s16& selected)
 {
-    func_0013A678(&window->unkb4, 0, 0xC4);
-    func_0013A678(&window->unk178, 0, 0x114);
-    window->unkb0 = selected;
-    FieldRecordSelection* selection = window->unka8->selected_records();
+    func_0013A678(&window->preview_record, 0, 0xC4);
+    func_0013A678(&window->preview_equipment, 0, 0x114);
+    window->preview_item = selected;
+    FieldRecordSelection* selection = window->controller->selected_records();
     FieldRecord* original = &selection->records[selection->current];
     EquipResourceTextRecord* resource = &static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current];
-    func_0013A4C0(&window->unkb4, original, 0xC4);
-    func_0013A4C0(&window->unk178, resource, 0x114);
-    set_comparison_entry(window->unk178, window->unkac, window->unkb0);
-    func_003F9890(&window->unkb4, reinterpret_cast<EquipResourceTextRecord*>(&window->unk178), 0, -1);
+    func_0013A4C0(&window->preview_record, original, 0xC4);
+    func_0013A4C0(&window->preview_equipment, resource, 0x114);
+    set_comparison_entry(window->preview_equipment, window->slot, window->preview_item);
+    func_003F9890(&window->preview_record, reinterpret_cast<EquipResourceTextRecord*>(&window->preview_equipment), 0, -1);
     return original;
 }
 
@@ -1561,142 +1580,142 @@ static inline FieldRecord* copy_comparison_context(EquipClass182890* window, con
  * @param window Item comparison window.
  * @param selected Record index to compare, or zero to hide the comparison.
  */
-extern "C" void func_0034B3D0(EquipClass182890* window, s16 selected)
+extern "C" void preview_item_stats(EquipStatComparisonWindow* window, s16 selected)
 {
     if (selected == 0)
     {
-        window->unk2e4[0]->unk3f = 0;
-        window->unk2e4[1]->unk3f = 0;
-        window->unk2e4[2]->unk3f = 0;
-        window->unk2e4[3]->unk3f = 0;
-        window->unk2e4[4]->unk3f = 0;
+        window->preview_values[0]->unk3f = 0;
+        window->preview_values[1]->unk3f = 0;
+        window->preview_values[2]->unk3f = 0;
+        window->preview_values[3]->unk3f = 0;
+        window->preview_values[4]->unk3f = 0;
         return;
     }
     FieldRecord* original = copy_comparison_context(window, selected);
-    s32 value0 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->unkb4), 0);
-    s32 value1 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->unkb4), 1);
-    s32 value2 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->unkb4), 2);
-    s32 value3 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->unkb4), 3);
-    s32 value4 = comparison_final_value(reinterpret_cast<EquipRecordStats*>(&window->unkb4));
+    s32 value0 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->preview_record), 0);
+    s32 value1 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->preview_record), 1);
+    s32 value2 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->preview_record), 2);
+    s32 value3 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(&window->preview_record), 3);
+    s32 value4 = comparison_final_value(reinterpret_cast<EquipRecordStats*>(&window->preview_record));
     s32 previous0 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 0);
     s32 previous1 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 1);
     s32 previous2 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 2);
     s32 previous3 = comparison_stat_value(reinterpret_cast<EquipRecordStats*>(original), 3);
     s32 previous4 = comparison_final_value(reinterpret_cast<EquipRecordStats*>(original));
-    set_comparison_number(window->unk2e4[0], value0, previous0);
-    set_comparison_number(window->unk2e4[1], value1, previous1);
-    set_comparison_number(window->unk2e4[2], value2, previous2);
-    set_comparison_number(window->unk2e4[3], value3, previous3);
-    set_comparison_number(window->unk2e4[4], value4, previous4);
-    window->unk2e4[0]->unk3f = 1;
-    window->unk2e4[1]->unk3f = 1;
-    window->unk2e4[2]->unk3f = 1;
-    window->unk2e4[3]->unk3f = 1;
-    window->unk2e4[4]->unk3f = 1;
+    set_comparison_number(window->preview_values[0], value0, previous0);
+    set_comparison_number(window->preview_values[1], value1, previous1);
+    set_comparison_number(window->preview_values[2], value2, previous2);
+    set_comparison_number(window->preview_values[3], value3, previous3);
+    set_comparison_number(window->preview_values[4], value4, previous4);
+    window->preview_values[0]->unk3f = 1;
+    window->preview_values[1]->unk3f = 1;
+    window->preview_values[2]->unk3f = 1;
+    window->preview_values[3]->unk3f = 1;
+    window->preview_values[4]->unk3f = 1;
 }
 
-void EquipClass182890::refresh_item_details(u8 category, s16 selected)
+void EquipStatComparisonWindow::refresh_item_details(u8 category, s16 selected)
 {
-    unkac = category;
-    lib_text_set_resource(unk28c, func_slot54(), unkac + 0xFA1, 0);
-    unkae = selected;
-    if (unkae != 0)
+    slot = category;
+    lib_text_set_resource(slot_label, func_slot54(), slot + EQUIP_MSG_SLOT_NAME_BASE, 0);
+    item = selected;
+    if (item != 0)
     {
-        EquipPackedRecord* item = packed_record(unkae);
-        u16 code = packed_record_code(item);
-        u8 variant = item->unk0c & 0x7F;
-        set_equipment_icon(unk290, code + 1, variant);
-        unk290->unk3f = 1;
+        EquipPackedRecord* packed = packed_record(item);
+        u16 code = packed_record_code(packed);
+        u8 variant = packed->unk0c & 0x7F;
+        set_equipment_icon(item_icon, code + 1, variant);
+        item_icon->unk3f = 1;
     }
     else
     {
-        unk290->unk3f = 0;
+        item_icon->unk3f = 0;
     }
-    FieldRecordSelection* selection = unka8->selected_records();
+    FieldRecordSelection* selection = controller->selected_records();
     const EquipRecordStats* record = reinterpret_cast<const EquipRecordStats*>(&selection->records[selection->current]);
     if (record != 0)
     {
-        set_number(unk2d0[0], stat_value(record, 0));
-        set_number(unk2d0[1], stat_value(record, 1));
-        set_number(unk2d0[2], stat_value(record, 2));
-        set_number(unk2d0[3], stat_value(record, 3));
-        set_number(unk2d0[4], final_stat_value(record));
-        set_number(unk2e4[0], stat_value(record, 0));
-        set_number(unk2e4[1], stat_value(record, 1));
-        set_number(unk2e4[2], stat_value(record, 2));
-        set_number(unk2e4[3], stat_value(record, 3));
-        set_number(unk2e4[4], final_stat_value(record));
+        set_number(current_values[0], stat_value(record, 0));
+        set_number(current_values[1], stat_value(record, 1));
+        set_number(current_values[2], stat_value(record, 2));
+        set_number(current_values[3], stat_value(record, 3));
+        set_number(current_values[4], final_stat_value(record));
+        set_number(preview_values[0], stat_value(record, 0));
+        set_number(preview_values[1], stat_value(record, 1));
+        set_number(preview_values[2], stat_value(record, 2));
+        set_number(preview_values[3], stat_value(record, 3));
+        set_number(preview_values[4], final_stat_value(record));
     }
 }
 
-s32 EquipClass182890::func_slotf4(u32 associated)
+s32 EquipStatComparisonWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 220.0f, 18);
-    unk28c  =  new (0) LibObject178750;
-    unk28c->init_resource_rectangle(14.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA1, 1);
-    lib_container_attach_widget(unk10, unk28c);
-    unk28c->set_scale(0.8f, 0.8f);
-    unk28c->set_color(0x806080);
-    unk290  =  new (0) LibObject172410;
-    lib_item_code_init_rectangle(unk290, 12.0f, 38.0f, 244.0f, 24.0f, 0, 0, 0);
-    equip_set_icon_enabled(unk290, 1);
-    unk290->set_scale(0.9f, 0.9f);
-    lib_container_attach_widget(unk10, unk290);
+    slot_label  =  new (0) LibObject178750;
+    slot_label->init_resource_rectangle(14.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_SLOT_NAME_BASE, 1);
+    lib_container_attach_widget(unk10, slot_label);
+    slot_label->set_scale(0.8f, 0.8f);
+    slot_label->set_color(0x806080);
+    item_icon  =  new (0) LibObject172410;
+    lib_item_code_init_rectangle(item_icon, 12.0f, 38.0f, 244.0f, 24.0f, 0, 0, 0);
+    equip_set_icon_enabled(item_icon, 1);
+    item_icon->set_scale(0.9f, 0.9f);
+    lib_container_attach_widget(unk10, item_icon);
     for (s32 index  =  0; index < 5; index++)
     {
         float y  =  78.0f + 32.0f * static_cast<float>(index);
-        unk294[index] = new(0) LibObject178750;
-        unk294[index]->init_resource_rectangle(28.0f, y-2.0f, 0.0f, 0.0f, static_cast<s32>(associated), index+0x81A, 0);
-        unk294[index]->set_color(0x805050);
-        lib_container_attach_widget(unk10, unk294[index]);
-        unk2a8[index] = new(0) LibObject178750;
-        unk2a8[index]->init_resource_rectangle(73.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 0);
-        unk2a8[index]->set_color(0x805050);
-        lib_container_attach_widget(unk10, unk2a8[index]);
-        unk2d0[index] = new(0) LibObject174F20;
-        unk2d0[index]->init_numeric_resource_rectangle(92.0f, y, 48.0f, 22.8f, 9999, 0, 0);
-        unk2d0[index]->set_scale(0.95f, 0.95f);
-        lib_container_attach_widget(unk10, unk2d0[index]);
-        unk2bc[index] = new(0) LibObject178750;
-        unk2bc[index]->init_resource_rectangle(158.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB7, 0);
-        unk2bc[index]->set_scale(0.9f, 0.9f);
-        lib_container_attach_widget(unk10, unk2bc[index]);
-        unk2e4[index] = new(0) LibObject174F20;
-        unk2e4[index]->init_numeric_resource_rectangle(196.0f, y, 48.0f, 22.8f, 9999, 0, 0);
-        unk2e4[index]->set_scale(0.95f, 0.95f);
-        unk2e4[index]->unk3f = 0;
-        lib_container_attach_widget(unk10, unk2e4[index]);
+        stat_labels[index] = new(0) LibObject178750;
+        stat_labels[index]->init_resource_rectangle(28.0f, y-2.0f, 0.0f, 0.0f, static_cast<s32>(associated), index+EQUIP_MSG_STAT_NAME_BASE, 0);
+        stat_labels[index]->set_color(0x805050);
+        lib_container_attach_widget(unk10, stat_labels[index]);
+        separators[index] = new(0) LibObject178750;
+        separators[index]->init_resource_rectangle(73.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LABEL_SEPARATOR, 0);
+        separators[index]->set_color(0x805050);
+        lib_container_attach_widget(unk10, separators[index]);
+        current_values[index] = new(0) LibObject174F20;
+        current_values[index]->init_numeric_resource_rectangle(92.0f, y, 48.0f, 22.8f, 9999, 0, 0);
+        current_values[index]->set_scale(0.95f, 0.95f);
+        lib_container_attach_widget(unk10, current_values[index]);
+        arrows[index] = new(0) LibObject178750;
+        arrows[index]->init_resource_rectangle(158.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_ARROW, 0);
+        arrows[index]->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(unk10, arrows[index]);
+        preview_values[index] = new(0) LibObject174F20;
+        preview_values[index]->init_numeric_resource_rectangle(196.0f, y, 48.0f, 22.8f, 9999, 0, 0);
+        preview_values[index]->set_scale(0.95f, 0.95f);
+        preview_values[index]->unk3f = 0;
+        lib_container_attach_widget(unk10, preview_values[index]);
     }
     func_slot20(0);
     return 1;
 }
 
-EquipClass182890::~EquipClass182890()
+EquipStatComparisonWindow::~EquipStatComparisonWindow()
 {
 }
 
-EquipClass182890::EquipClass182890(EquipListState* state)
+EquipStatComparisonWindow::EquipStatComparisonWindow(EquipController* state)
 {
-    unka8 = 0;
-    unka8 = state;
-    unkac = 0xFF;
-    unkae = 0;
-    unkb0 = 0;
+    controller = 0;
+    controller = state;
+    slot = 0xFF;
+    item = 0;
+    preview_item = 0;
     unkb2 = 0;
-    func_0013A678(&unkb4, 0, sizeof(unkb4));
-    func_0013A678(&unk178, 0, sizeof(unk178));
-    unk28c = 0;
-    unk290 = 0;
-    unk294[0] = 0;
-    unk2bc[0] = 0;
-    unk2d0[0] = 0;
-    unk2e4[0] = 0;
+    func_0013A678(&preview_record, 0, sizeof(preview_record));
+    func_0013A678(&preview_equipment, 0, sizeof(preview_equipment));
+    slot_label = 0;
+    item_icon = 0;
+    stat_labels[0] = 0;
+    arrows[0] = 0;
+    current_values[0] = 0;
+    preview_values[0] = 0;
     for (s32 i = 1; i < 5; i++)
     {
-        unk294[i] = 0;
-        unk2bc[i] = 0;
-        unk2d0[i] = 0;
-        unk2e4[i] = 0;
+        stat_labels[i] = 0;
+        arrows[i] = 0;
+        current_values[i] = 0;
+        preview_values[i] = 0;
     }
 }
 
@@ -1706,10 +1725,10 @@ EquipClass182890::EquipClass182890(EquipListState* state)
  * @param owner Category window holding the selected slot.
  * @param value Record index to store.
  */
-static inline void set_protected_equipment_entry(EquipResourceEquipment* resource, const EquipClass182990* owner, s32 value)
+static inline void set_protected_equipment_entry(EquipResourceEquipment* resource, const EquipSlotWindow* owner, s32 value)
 {
-    s32 index = owner->unk108;
-    if (resource->unkf0 != (resource->unk10c ^ ((resource->unk10[1] + resource->unk10[2]) ^ (resource->unk10[3] + resource->unk10[0]))))
+    s32 index = owner->active_slot;
+    if (resource->check_word != (resource->check_salt ^ ((resource->encoded_items[1] + resource->encoded_items[2]) ^ (resource->encoded_items[3] + resource->encoded_items[0]))))
     {
         return;
     }
@@ -1717,10 +1736,10 @@ static inline void set_protected_equipment_entry(EquipResourceEquipment* resourc
     {
         return;
     }
-    if (index <= (resource->unk0e ^ 0x7E93))
+    if (index <= (resource->encoded_last_slot ^ 0x7E93))
     {
-        resource->unk10[index] = static_cast<s16>(value) ^ 0x7E93;
-        resource->unkf0 = resource->unk10c ^ ((resource->unk10[1] + resource->unk10[2]) ^ (resource->unk10[3] + resource->unk10[0]));
+        resource->encoded_items[index] = static_cast<s16>(value) ^ 0x7E93;
+        resource->check_word = resource->check_salt ^ ((resource->encoded_items[1] + resource->encoded_items[2]) ^ (resource->encoded_items[3] + resource->encoded_items[0]));
     }
 }
 
@@ -1729,105 +1748,105 @@ static inline void set_protected_equipment_entry(EquipResourceEquipment* resourc
  * @param window Category window.
  * @param identifier Record index to equip, or zero to clear the slot.
  */
-extern "C" void func_0034C540(EquipClass182990* window, s16 identifier)
+extern "C" void equip_item_in_active_slot(EquipSlotWindow* window, s16 identifier)
 {
-    if (window->unkac != 0)
+    if (window->selection != 0)
     {
-        func_0040C7E0(D_001B64F8, protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->unkac->unk04)[window->unkac->current], window->unk108), 0);
+        func_0040C7E0(D_001B64F8, protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->selection->unk04)[window->selection->current], window->active_slot), 0);
         if (identifier)
         {
-            func_0040C7E0(D_001B64F8, identifier, window->unkac->slots[window->unkac->current]);
-            set_protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->unkac->unk04)[window->unkac->current], window, identifier);
+            func_0040C7E0(D_001B64F8, identifier, window->selection->slots[window->selection->current]);
+            set_protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->selection->unk04)[window->selection->current], window, identifier);
         }
         else
         {
-            set_protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->unkac->unk04)[window->unkac->current], window, 0);
+            set_protected_equipment_entry(&static_cast<EquipResourceEquipment*>(window->selection->unk04)[window->selection->current], window, 0);
         }
-        FieldRecordSelection* selection = window->unka8->selected_records();
+        FieldRecordSelection* selection = window->controller->selected_records();
         func_003F9890(&selection->records[selection->current], &static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current], 0, -1);
     }
-    func_0034D4C0(window);
-    s32 category = window->unk108;
+    refresh_equipment_slots(window);
+    s32 category = window->active_slot;
     if (category >= 3)
     {
         category = 2;
     }
-    window->unk104->func_slot108(category);
+    window->item_list->func_slot108(category);
 }
 
-void EquipClass182990::func_slot6c()
+void EquipSlotWindow::func_slot6c()
 {
     if (static_cast<s16>(func_0023B3B0(equipment_slot_selector, 1)) != 1)
     {
         s16 category = func_0023B3A0(equipment_slot_selector);
-        unk104 = static_cast<FieldClass15AD40*>(func_slot4c());
+        item_list = static_cast<FieldClass15AD40*>(func_slot4c());
         switch (category)
         {
             case 0:
-                unk104->func_slot108(0);
-                unka8->unk60 = 0;
+                item_list->func_slot108(0);
+                controller->selected_slot = 0;
                 break;
             case 1:
-                unk104->func_slot108(1);
-                unka8->unk60 = 1;
+                item_list->func_slot108(1);
+                controller->selected_slot = 1;
                 break;
             case 2:
             case 3:
-                unk104->func_slot108(2);
-                unka8->unk60 = 2;
+                item_list->func_slot108(2);
+                controller->selected_slot = 2;
                 break;
         }
     }
 }
 
-void EquipClass182990::func_slot68()
+void EquipSlotWindow::func_slot68()
 {
     if (static_cast<s16>(func_0023B3B0(equipment_slot_selector, 0)) != 1)
     {
         s16 category = func_0023B3A0(equipment_slot_selector);
-        unk104 = static_cast<FieldClass15AD40*>(func_slot4c());
+        item_list = static_cast<FieldClass15AD40*>(func_slot4c());
         switch (category)
         {
             case 0:
-                unk104->func_slot108(0);
-                unka8->unk60 = 0;
+                item_list->func_slot108(0);
+                controller->selected_slot = 0;
                 break;
             case 1:
-                unk104->func_slot108(1);
-                unka8->unk60 = 1;
+                item_list->func_slot108(1);
+                controller->selected_slot = 1;
                 break;
             case 2:
             case 3:
-                unk104->func_slot108(2);
-                unka8->unk60 = 2;
+                item_list->func_slot108(2);
+                controller->selected_slot = 2;
                 break;
         }
     }
 }
 
-u8 EquipClass182990::func_slotb0()
+u8 EquipSlotWindow::func_slotb0()
 {
     s32 category = static_cast<u16>(func_0023B3A0(equipment_slot_selector));
-    if (unkc0 < category)
+    if (usable_slot_count < category)
     {
         return 3;
     }
-    if (unk100 != 0)
+    if (comparison_window != 0)
     {
-        static_cast<EquipClass182890*>(unk100)->refresh_item_details(category, unkb8[category]);
-        unk100->func_slot20(1);
+        static_cast<EquipStatComparisonWindow*>(comparison_window)->refresh_item_details(category, equipped_items[category]);
+        comparison_window->func_slot20(1);
     }
-    EquipClass182C90* associated = static_cast<EquipClass182C90*>(func_slot44());
-    if (associated->unkbc != 0)
+    EquipCharacterWindow* associated = static_cast<EquipCharacterWindow*>(func_slot44());
+    if (associated->left_indicator != 0)
     {
-        associated->unkbc->unk3f = 0;
+        associated->left_indicator->unk3f = 0;
     }
-    if (associated->unkc0 != 0)
+    if (associated->right_indicator != 0)
     {
-        associated->unkc0->unk3f = 0;
+        associated->right_indicator->unk3f = 0;
     }
-    unk104 = static_cast<FieldClass15AD40*>(func_slot4c());
-    if (unk108 != category)
+    item_list = static_cast<FieldClass15AD40*>(func_slot4c());
+    if (active_slot != category)
     {
         s32 next_category = static_cast<u16>(category);
         switch (category)
@@ -1840,21 +1859,21 @@ u8 EquipClass182990::func_slotb0()
                 next_category = 2;
                 break;
         }
-        unk104->func_slot108(next_category);
+        item_list->func_slot108(next_category);
     }
-    unk104->func_slot110(1);
-    unk104->func_slot10c(1, 1);
-    reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->func_00263C70(unk104);
-    unk108 = category;
+    item_list->func_slot110(1);
+    item_list->func_slot10c(1, 1);
+    reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->func_00263C70(item_list);
+    active_slot = category;
     FieldClass153130* selector = reinterpret_cast<FieldClass153130*>(equipment_slot_selector);
     selector->ItemCreationClass185050::unk30 = 64.0f;
     selector->LibClass178600::unk3c = 1;
     func_slot20(0);
-    func_004E97A0(unka8->unk68);
+    func_004E97A0(controller->tooltip);
     return 1;
 }
 
-u8 EquipClass182990::func_slotb4()
+u8 EquipSlotWindow::func_slotb4()
 {
     if (D_001B643C->unk0c == 0)
     {
@@ -1867,7 +1886,7 @@ u8 EquipClass182990::func_slotb4()
     }
     else
     {
-        EquipClass182220* window = new (0) EquipClass182220;
+        EquipExitConfirmWindow* window = new (0) EquipExitConfirmWindow;
         if (window == 0)
         {
             return 0;
@@ -1877,20 +1896,20 @@ u8 EquipClass182990::func_slotb4()
         reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->add_child(window);
         reinterpret_cast<FieldClass153E30*>(D_001B643C->unk10->unk14)->func_00263C70(window);
     }
-    func_004E97A0(unka8->unk68);
+    func_004E97A0(controller->tooltip);
     return 2;
 }
 
-void EquipClass182990::func_slot64()
+void EquipSlotWindow::func_slot64()
 {
-    EquipClass182C90* associated = static_cast<EquipClass182C90*>(func_slot44());
-    if (associated->unkbc != 0)
+    EquipCharacterWindow* associated = static_cast<EquipCharacterWindow*>(func_slot44());
+    if (associated->left_indicator != 0)
     {
-        associated->unkbc->unk3f = 1;
+        associated->left_indicator->unk3f = 1;
     }
-    if (associated->unkc0 != 0)
+    if (associated->right_indicator != 0)
     {
-        associated->unkc0->unk3f = 1;
+        associated->right_indicator->unk3f = 1;
     }
     equip_refresh_record_display(associated);
     FieldClass153130* selector = reinterpret_cast<FieldClass153130*>(equipment_slot_selector);
@@ -1898,46 +1917,46 @@ void EquipClass182990::func_slot64()
     selector->LibClass178600::unk3c = 1;
 }
 
-u8 EquipClass182990::func_slotb8()
+u8 EquipSlotWindow::func_slotb8()
 {
-    EquipClass182C90* associated = static_cast<EquipClass182C90*>(func_slot44());
-    if (associated->unkbc != 0)
+    EquipCharacterWindow* associated = static_cast<EquipCharacterWindow*>(func_slot44());
+    if (associated->left_indicator != 0)
     {
-        associated->unkbc->unk3f = 0;
+        associated->left_indicator->unk3f = 0;
     }
-    if (associated->unkc0 != 0)
+    if (associated->right_indicator != 0)
     {
-        associated->unkc0->unk3f = 0;
+        associated->right_indicator->unk3f = 0;
     }
-    FieldRecord* record = &unkac->records[unkac->current];
-    EquipResourceTextRecord* resource = &static_cast<EquipResourceTextRecord*>(unkac->unk04)[unkac->current];
-    func_0034F2A0(unka8, record, resource, unkac->slots[unkac->current]);
+    FieldRecord* record = &selection->records[selection->current];
+    EquipResourceTextRecord* resource = &static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current];
+    optimize_equipment(controller, record, resource, selection->slots[selection->current]);
     func_003F9890(record, resource, 0, -1);
-    func_004E97A0(unka8->unk68);
-    func_0034D4C0(this);
+    func_004E97A0(controller->tooltip);
+    refresh_equipment_slots(this);
     s32 category = static_cast<u16>(func_0023B3A0(equipment_slot_selector));
     if (category == 0 || category == 1)
     {
         func_slot44();
-        unk104 = static_cast<FieldClass15AD40*>(func_slot4c());
-        unk104->func_slot108(category);
-        unk104->func_slot110(1);
+        item_list = static_cast<FieldClass15AD40*>(func_slot4c());
+        item_list->func_slot108(category);
+        item_list->func_slot110(1);
     }
-    if (associated->unkbc != 0)
+    if (associated->left_indicator != 0)
     {
-        associated->unkbc->unk3f = 1;
+        associated->left_indicator->unk3f = 1;
     }
-    if (associated->unkc0 != 0)
+    if (associated->right_indicator != 0)
     {
-        associated->unkc0->unk3f = 1;
+        associated->right_indicator->unk3f = 1;
     }
     return 1;
 }
 
-u8 EquipClass182990::func_slotbc()
+u8 EquipSlotWindow::func_slotbc()
 {
-    EquipClass182B90* target = unka8->unk54;
-    target->unkf0 = !target->unkf0;
+    EquipParameterWindow* target = controller->parameter_window;
+    target->show_parameters = !target->show_parameters;
     return 1;
 }
 
@@ -1947,78 +1966,78 @@ static inline u8 selector_inactive(FieldState23B3A0* selector)
     return !(selector->unk75 != 0);
 }
 
-void EquipClass182990::func_slot5c()
+void EquipSlotWindow::func_slot5c()
 {
-    if (reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->func_00261150() == this)
+    if (reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->func_00261150() == this)
     {
         u16 selected = func_0023B3A0(equipment_slot_selector);
-        EquipPackedRecord* record = packed_record(unkb8[selected]);
+        EquipPackedRecord* record = packed_record(equipped_items[selected]);
         if (record != 0)
         {
-            unka8->unk64 = static_cast<u16>(packed_record_code(record) + 1);
-            const LibUiRect16* position = &unkd4[selected]->unk18;
+            controller->selected_item_type = static_cast<u16>(packed_record_code(record) + 1);
+            const LibUiRect16* position = &item_icons[selected]->unk18;
             s32 x = static_cast<s32>(16.0f + position->unk00);
             s32 y = static_cast<s32>(220.0f + (29.0f + position->unk04));
             u8 inactive = selector_inactive(equipment_slot_selector);
             if (inactive == 0)
             {
-                void* tooltip = unka8->unk68;
+                void* tooltip = controller->tooltip;
                 func_004E97B0(tooltip, static_cast<float>(x), static_cast<float>(y), 18.0f,
                               lib_allocation_get_identifier(reinterpret_cast<ItemCreationAllocationRecord*>(record)), 0);
             }
             else
             {
-                func_004E97A0(unka8->unk68);
+                func_004E97A0(controller->tooltip);
             }
         }
         else
         {
-            unka8->unk64 = 0;
-            func_004E97A0(unka8->unk68);
+            controller->selected_item_type = 0;
+            func_004E97A0(controller->tooltip);
         }
     }
 }
 
-s32 EquipClass182990::func_slotdc()
+s32 EquipSlotWindow::func_slotdc()
 {
-    if (unkac == 0)
+    if (selection == 0)
     {
         return 0;
     }
-    func_004E97A0(unka8->unk68);
-    if (unkac->count > 1)
+    func_004E97A0(controller->tooltip);
+    if (selection->count > 1)
     {
-        EquipListState* state = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14);
-        if (state->unk38 != 0)
+        EquipController* state = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14);
+        if (state->selection != 0)
         {
-            state->unk38->active = 0;
-            func_0028E2B0(state->unk38, 1);
-            equip_refresh_record_display(state->unk40);
-            func_0034D4C0(state->unk44);
-            state->unk50->func_slot108(static_cast<u8>(state->unk60));
+            state->selection->active = 0;
+            func_0028E2B0(state->selection, 1);
+            equip_refresh_record_display(state->character_window);
+            refresh_equipment_slots(state->slot_window);
+            state->item_list_window->func_slot108(static_cast<u8>(state->selected_slot));
         }
         return 4;
     }
     return 0;
 }
 
-s32 EquipClass182990::func_slotd8()
+s32 EquipSlotWindow::func_slotd8()
 {
-    if (unkac == 0)
+    if (selection == 0)
     {
         return 0;
     }
-    func_004E97A0(unka8->unk68);
-    if (unkac->count > 1)
+    func_004E97A0(controller->tooltip);
+    if (selection->count > 1)
     {
-        EquipListState* state = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14);
-        if (state->unk38 != 0)
+        EquipController* state = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14);
+        if (state->selection != 0)
         {
-            state->unk38->active = 0;
-            func_0028E2B0(state->unk38, 0);
-            equip_refresh_record_display(state->unk40);
-            func_0034D4C0(state->unk44);
-            state->unk50->func_slot108(static_cast<u8>(state->unk60));
+            state->selection->active = 0;
+            func_0028E2B0(state->selection, 0);
+            equip_refresh_record_display(state->character_window);
+            refresh_equipment_slots(state->slot_window);
+            state->item_list_window->func_slot108(static_cast<u8>(state->selected_slot));
         }
         return 4;
     }
@@ -2029,45 +2048,45 @@ s32 EquipClass182990::func_slotd8()
  * @brief Refresh the category window's equipment rows from the selected resource record.
  * @param object Category window.
  */
-extern "C" void func_0034D4C0(EquipClass182990* object)
+extern "C" void refresh_equipment_slots(EquipSlotWindow* object)
 {
-    object->unkc0 = static_cast<EquipResourceEquipment*>(object->unkac->unk04)[object->unkac->current].unk0c ^ 0x7E93;
-    if (object->unkc0 >= 4)
+    object->usable_slot_count = static_cast<EquipResourceEquipment*>(object->selection->unk04)[object->selection->current].encoded_slot_count ^ 0x7E93;
+    if (object->usable_slot_count >= 4)
     {
-        object->unkc0 = 4;
+        object->usable_slot_count = 4;
     }
     for (s32 index = 0; index < 4; index++)
     {
-        object->unkb8[index] = 0;
-        object->unkc4[index]->set_color(0x505050);
+        object->equipped_items[index] = 0;
+        object->slot_labels[index]->set_color(0x505050);
     }
-    for (s32 index = 0; index < object->unkc0; index++)
+    for (s32 index = 0; index < object->usable_slot_count; index++)
     {
-        object->unkc4[index]->set_color(0x806080);
+        object->slot_labels[index]->set_color(0x806080);
     }
-    for (s32 index = 0; index < object->unkc0; index++)
+    for (s32 index = 0; index < object->usable_slot_count; index++)
     {
-        object->unkd4[index]->unk3f = 0;
-        object->unkb8[index] = protected_equipment_entry(&static_cast<EquipResourceEquipment*>(object->unkac->unk04)[object->unkac->current], index);
-        if (object->unkb8[index] != 0)
+        object->item_icons[index]->unk3f = 0;
+        object->equipped_items[index] = protected_equipment_entry(&static_cast<EquipResourceEquipment*>(object->selection->unk04)[object->selection->current], index);
+        if (object->equipped_items[index] != 0)
         {
-            object->unkb4 = packed_record(object->unkb8[index]);
-            u16 code = packed_record_code(object->unkb4);
-            u8 variant = object->unkb4->unk0c & 0x7F;
-            set_equipment_icon(object->unkd4[index], static_cast<u16>(code) + 1, variant);
-            object->unkd4[index]->unk3f = 1;
-            object->unke4[index]->unk3f = 0;
+            object->current_item = packed_record(object->equipped_items[index]);
+            u16 code = packed_record_code(object->current_item);
+            u8 variant = object->current_item->unk0c & 0x7F;
+            set_equipment_icon(object->item_icons[index], static_cast<u16>(code) + 1, variant);
+            object->item_icons[index]->unk3f = 1;
+            object->empty_labels[index]->unk3f = 0;
         }
         else
         {
-            object->unke4[index]->unk3f = 1;
+            object->empty_labels[index]->unk3f = 1;
         }
     }
 }
 
-s32 EquipClass182990::func_slotf4(u32 associated)
+s32 EquipSlotWindow::func_slotf4(u32 associated)
 {
-    if (unkac == 0)
+    if (selection == 0)
     {
         return 0;
     }
@@ -2076,59 +2095,59 @@ s32 EquipClass182990::func_slotf4(u32 associated)
     ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
     lib_scissor_init_rectangle(frame, 12.0f, 12.0f, 270.0f, 224.0f);
     lib_container_attach_widget(unk10, frame);
-    unkb0 = 58.0f;
+    row_spacing = 58.0f;
     for (s32 index = 0; index < 4; index++)
     {
-        float y = 16.0f + static_cast<float>(index) * unkb0;
-        unkc4[index] = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(static_cast<LibObject178750*>(unkc4[index]), static_cast<s32>(associated), index + 0xFA1, 1, 14.0f, y, 0.0f, 0.0f);
-        lib_container_attach_widget(unk10, unkc4[index]);
-        unkc4[index]->set_scale(0.8f, 0.8f);
-        unkc4[index]->set_color(0x806080);
-        unkd4[index] = new (0) LibObject172410;
-        lib_item_code_init_rectangle(unkd4[index], 12.0f, 38.0f + unkb0 * static_cast<float>(index), 244.0f, 24.0f, 0, 0, 0);
-        equip_set_icon_enabled(unkd4[index], 1);
-        unkd4[index]->set_scale(0.9f, 0.9f);
-        lib_container_attach_widget(unk10, unkd4[index]);
-        unke4[index] = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(static_cast<LibObject178750*>(unke4[index]), static_cast<s32>(associated), 0xFBA, 0, 12.0f, 38.0f + unkb0 * static_cast<float>(index), 284.0f, 24.0f);
-        unke4[index]->set_scale(0.9f, 0.9f);
-        unke4[index]->unk3f = 0;
-        lib_container_attach_widget(unk10, unke4[index]);
+        float y = 16.0f + static_cast<float>(index) * row_spacing;
+        slot_labels[index] = new (0) LibObject178750;
+        lib_text_init_resource_rectangle(static_cast<LibObject178750*>(slot_labels[index]), static_cast<s32>(associated), index + EQUIP_MSG_SLOT_NAME_BASE, 1, 14.0f, y, 0.0f, 0.0f);
+        lib_container_attach_widget(unk10, slot_labels[index]);
+        slot_labels[index]->set_scale(0.8f, 0.8f);
+        slot_labels[index]->set_color(0x806080);
+        item_icons[index] = new (0) LibObject172410;
+        lib_item_code_init_rectangle(item_icons[index], 12.0f, 38.0f + row_spacing * static_cast<float>(index), 244.0f, 24.0f, 0, 0, 0);
+        equip_set_icon_enabled(item_icons[index], 1);
+        item_icons[index]->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(unk10, item_icons[index]);
+        empty_labels[index] = new (0) LibObject178750;
+        lib_text_init_resource_rectangle(static_cast<LibObject178750*>(empty_labels[index]), static_cast<s32>(associated), EQUIP_MSG_NONE, 0, 12.0f, 38.0f + row_spacing * static_cast<float>(index), 284.0f, 24.0f);
+        empty_labels[index]->set_scale(0.9f, 0.9f);
+        empty_labels[index]->unk3f = 0;
+        lib_container_attach_widget(unk10, empty_labels[index]);
     }
     lib_scissor_init_reset(overlay, 1);
     lib_container_attach_widget(unk10, overlay);
     equipment_slot_selector = reinterpret_cast<FieldState23B3A0*>(new (0) FieldClass153130);
-    reinterpret_cast<FieldClass153130*>(equipment_slot_selector)->func_0023B530(1, 4, 1, 0, 1, 12.0f, 50.0f, 0.0f, unkb0);
+    reinterpret_cast<FieldClass153130*>(equipment_slot_selector)->func_0023B530(1, 4, 1, 0, 1, 12.0f, 50.0f, 0.0f, row_spacing);
     lib_container_attach_widget(unk10, reinterpret_cast<FieldClass153130*>(equipment_slot_selector));
-    func_0034D4C0(this);
+    refresh_equipment_slots(this);
     return 1;
 }
 
-EquipClass182990::EquipClass182990(EquipListState* state)
+EquipSlotWindow::EquipSlotWindow(EquipController* state)
 {
-    unka8 = 0;
-    unka8 = state;
+    controller = 0;
+    controller = state;
     unkf4 = 0;
     for(s32 index = 0; index < 4; index++)
     {
-        unkc4[index] = 0;
-        unkd4[index] = 0;
-        unkb8[index] = 0;
+        slot_labels[index] = 0;
+        item_icons[index] = 0;
+        equipped_items[index] = 0;
     }
-    unkb0 = 0;
-    unkac = 0;
-    unkac = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->selected_records();
+    row_spacing = 0;
+    selection = 0;
+    selection = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->selected_records();
     equipment_slot_selector = 0;
-    unkf8 = 0;
-    unkb4 = 0;
-    unkc0 = 0;
-    unk100 = 0;
-    unk108 = 0;
-    unk104 = 0;
+    parameter_window = 0;
+    current_item = 0;
+    usable_slot_count = 0;
+    comparison_window = 0;
+    active_slot = 0;
+    item_list = 0;
 }
 
-s32 EquipClass182A90::func_slotf4(u32 associated)
+s32 EquipSlotPanel::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 224.0f, 19);
     LibClass178630* widget = new (0) LibClass178630;
@@ -2137,7 +2156,7 @@ s32 EquipClass182A90::func_slotf4(u32 associated)
     return 1;
 }
 
-EquipClass182A90::~EquipClass182A90()
+EquipSlotPanel::~EquipSlotPanel()
 {
 }
 
@@ -2155,61 +2174,61 @@ static inline void initialize_equip_allocation(ItemCreationAllocationRecord* all
     func_0040D2E0(allocation, item->catalog_index + 1, 0, factors, false, true);
 }
 
-void EquipClass182B90::func_slot5c()
+void EquipParameterWindow::func_slot5c()
 {
-    EquipListState* state = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14);
-    if (state->unk64 > 0)
+    EquipController* state = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14);
+    if (state->selected_item_type > 0)
     {
-        if (unkf0 != 0)
+        if (show_parameters != 0)
         {
-            unka8->unk3f = 0;
-            unkac->unk3f = 1;
+            description->unk3f = 0;
+            title->unk3f = 1;
             ItemCreationAllocationRecord preview __attribute__((aligned(16)));
             preview.reset(0);
-            ItemCreationCategoryRecord* item_record = equip_category_record(state->unk64);
+            ItemCreationCategoryRecord* item_record = equip_category_record(state->selected_item_type);
             initialize_equip_allocation(&preview, item_record, 0);
-            set_number(unkd8[0], D_001B64F0[preview.definition_index()].attack);
-            set_number(unkd8[1], D_001B64F0[preview.definition_index()].hit);
-            set_number(unkd8[2], D_001B64F0[preview.definition_index()].defense);
-            set_number(unkd8[3], D_001B64F0[preview.definition_index()].agility);
-            set_number(unkd8[4], D_001B64F0[preview.definition_index()].intelligence);
+            set_number(parameter_values[0], D_001B64F0[preview.definition_index()].attack);
+            set_number(parameter_values[1], D_001B64F0[preview.definition_index()].hit);
+            set_number(parameter_values[2], D_001B64F0[preview.definition_index()].defense);
+            set_number(parameter_values[3], D_001B64F0[preview.definition_index()].agility);
+            set_number(parameter_values[4], D_001B64F0[preview.definition_index()].intelligence);
             for (s32 row = 0; row < 5; row++)
             {
-                unkb0[row]->unk3f = 1;
-                unkc4[row]->unk3f = 1;
-                unkd8[row]->unk3f = 1;
+                parameter_labels[row]->unk3f = 1;
+                separators[row]->unk3f = 1;
+                parameter_values[row]->unk3f = 1;
             }
         }
         else
         {
-            s32 key = state->unk64 + 0x12924;
-            if (key != unkec)
+            s32 key = state->selected_item_type + EQUIP_MSG_ITEM_DESCRIPTION_BASE;
+            if (key != description_key)
             {
-                unka8->unk3f = 1;
-                lib_multiline_text_set_resource(unka8, func_slot54(), key, 8, 1);
-                LibObject174D90* description = unka8;
-                description->unk80 = 0.8f;
-                description->unk84 = 0.8f;
-                description->unk3c = 1;
+                description->unk3f = 1;
+                lib_multiline_text_set_resource(description, func_slot54(), key, 8, 1);
+                LibObject174D90* text = description;
+                text->unk80 = 0.8f;
+                text->unk84 = 0.8f;
+                text->unk3c = 1;
             }
             for (s32 row = 0; row < 5; row++)
             {
-                unkb0[row]->unk3f = 0;
-                unkc4[row]->unk3f = 0;
-                unkd8[row]->unk3f = 0;
+                parameter_labels[row]->unk3f = 0;
+                separators[row]->unk3f = 0;
+                parameter_values[row]->unk3f = 0;
             }
-            unkac->unk3f = 0;
+            title->unk3f = 0;
         }
     }
     else
     {
-        unkac->unk3f = 0;
-        unka8->unk3f = 0;
+        title->unk3f = 0;
+        description->unk3f = 0;
         for (s32 row = 0; row < 5; row++)
         {
-            unkb0[row]->unk3f = 0;
-            unkc4[row]->unk3f = 0;
-            unkd8[row]->unk3f = 0;
+            parameter_labels[row]->unk3f = 0;
+            separators[row]->unk3f = 0;
+            parameter_values[row]->unk3f = 0;
         }
     }
 }
@@ -2220,7 +2239,7 @@ static inline void reset_scroll(LibObject174D90* display)
     display->unk52c = 0.0f;
     display->unk524 = 0.0f;
 }
-s32 EquipClass182B90::func_slotf4(u32 associated)
+s32 EquipParameterWindow::func_slotf4(u32 associated)
 {
     if (associated == 0)
     {
@@ -2230,76 +2249,76 @@ s32 EquipClass182B90::func_slotf4(u32 associated)
     LibClass178630* panel = new (0) LibClass178630;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 404.0f, 145.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
-    unka8 = new (0) LibObject174D90;
-    unka8->init_multiline_resource_rectangle(32.0f, 13.0f, 362.0f, 140.0f, static_cast<s32>(associated), 0xFAE, 8, 0);
-    reset_scroll(unka8);
-    lib_container_attach_widget(unk10, unka8);
-    unka8->unk3f = 0;
-    unkac = new (0) LibObject178750;
-    unkac->init_resource_rectangle(40.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFBB, 0);
-    unkac->set_color(0x806080);
-    unkac->set_scale(0.75f, 0.75f);
-    lib_container_attach_widget(unk10, unkac);
-    unkac->unk3f = 0;
+    description = new (0) LibObject174D90;
+    description->init_multiline_resource_rectangle(32.0f, 13.0f, 362.0f, 140.0f, static_cast<s32>(associated), EQUIP_MSG_CHANGE_HELP, 8, 0);
+    reset_scroll(description);
+    lib_container_attach_widget(unk10, description);
+    description->unk3f = 0;
+    title = new (0) LibObject178750;
+    title->init_resource_rectangle(40.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_PARAMETER_CHANGES, 0);
+    title->set_color(0x806080);
+    title->set_scale(0.75f, 0.75f);
+    lib_container_attach_widget(unk10, title);
+    title->unk3f = 0;
     for (s32 index = 0; index < 5; index++)
     {
-        unkb0[index] = new (0) LibObject178750;
+        parameter_labels[index] = new (0) LibObject178750;
         float y = 42.0f + 28 * (index / 2);
-        unkb0[index]->init_resource_rectangle(50.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), 0xFBC + index, 0);
-        unkb0[index]->set_color(0x805050);
-        lib_container_attach_widget(unk10, unkb0[index]);
-        unkb0[index]->unk3f = 0;
-        unkc4[index] = new (0) LibObject178750;
-        unkc4[index]->init_resource_rectangle(100.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), 0x7E4, 0);
-        unkc4[index]->set_color(0x805050);
-        lib_container_attach_widget(unk10, unkc4[index]);
-        unkc4[index]->unk3f = 0;
-        unkd8[index] = new (0) LibObject174F20;
-        unkd8[index]->init_numeric_resource_rectangle(90.0f + 190 * (index % 2), y, 80.0f, 30.0f, 0, static_cast<s32>(associated), 1);
-        lib_container_attach_widget(unk10, unkd8[index]);
-        unkd8[index]->unk3f = 0;
+        parameter_labels[index]->init_resource_rectangle(50.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_PARAMETER_NAME_BASE + index, 0);
+        parameter_labels[index]->set_color(0x805050);
+        lib_container_attach_widget(unk10, parameter_labels[index]);
+        parameter_labels[index]->unk3f = 0;
+        separators[index] = new (0) LibObject178750;
+        separators[index]->init_resource_rectangle(100.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LABEL_SEPARATOR, 0);
+        separators[index]->set_color(0x805050);
+        lib_container_attach_widget(unk10, separators[index]);
+        separators[index]->unk3f = 0;
+        parameter_values[index] = new (0) LibObject174F20;
+        parameter_values[index]->init_numeric_resource_rectangle(90.0f + 190 * (index % 2), y, 80.0f, 30.0f, 0, static_cast<s32>(associated), 1);
+        lib_container_attach_widget(unk10, parameter_values[index]);
+        parameter_values[index]->unk3f = 0;
     }
     return 1;
 }
 
-void EquipClass182C90::refresh_slot_marker()
+void EquipCharacterWindow::show_current_portrait()
 {
     s32 selected = 0;
     s32 clear_index = 0;
-    FieldRecordSelection* selection = unkac;
-    u16 slot = selection->slots[selection->current];
+    FieldRecordSelection* records = selection;
+    u16 slot = records->slots[records->current];
     for (; clear_index < 8; clear_index++)
     {
-        if (unkc4[clear_index])
+        if (portraits[clear_index])
         {
-            unkc4[clear_index]->unk3f = 0;
+            portraits[clear_index]->unk3f = 0;
         }
     }
     for (s32 i = 0; i < 8; i++)
     {
-        if (slot == unke4[i])
+        if (slot == portrait_slots[i])
         {
             break;
         }
         selected++;
     }
-    if (unkc4[selected])
+    if (portraits[selected])
     {
-        unkc4[selected]->unk3f = 1;
+        portraits[selected]->unk3f = 1;
     }
 }
 
-void EquipClass182C90::func_slot5c()
+void EquipCharacterWindow::func_slot5c()
 {
-    EquipListState* state = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14);
-    FieldClass15AE70* window = state->unk44;
+    EquipController* state = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14);
+    FieldClass15AE70* window = state->slot_window;
     if (state->func_00261150() == window)
     {
-        unkec->unk3f = 1;
+        optimize_prompt->unk3f = 1;
     }
     else
     {
-        unkec->unk3f = 0;
+        optimize_prompt->unk3f = 0;
     }
 }
 
@@ -2309,52 +2328,52 @@ static inline void set_resource_text(LibObject175140* display, const char* text)
     display->unkfc = text;
     display->unk3c = 1;
 }
-s32 EquipClass182C90::func_slotf4(u32 associated)
+s32 EquipCharacterWindow::func_slotf4(u32 associated)
 {
-    if (unkac == 0)
+    if (selection == 0)
     {
         return 0;
     }
-    unka8 = unkac->slots[unkac->current];
+    character_slot = selection->slots[selection->current];
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 17);
     LibClass178630* panel = new (0) LibClass178630;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 232.0f, 144.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
-    func_00351E40(&unk14, panel);
-    unkb0 = new (0) LibObject175140;
-    const char* text = reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(unkac->unk04)[unkac->current].unk20);
-    unkb0->func_00467AD0(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
-    lib_container_attach_widget(unk10, unkb0);
-    func_00351C00(&unk44, unkb0);
-    unkb0->set_scale(0.8f, 0.8f);
-    unkb4 = new (0) LibObject178750;
-    unkb8 = new (0) LibObject174F20;
-    unkb4->init_resource_rectangle(120.0f, 48.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFA9, 0);
-    unkb8->init_numeric_resource_rectangle(170.0f, 48.0f, 42.0f, 24.0f, equip_record_value(&unkac->records[unkac->current]), 0, 0);
-    lib_container_attach_widget(unk10, unkb4);
-    func_00351D20(&unk2c, unkb4);
-    unkb4->set_color(0x806080);
-    lib_container_attach_widget(unk10, unkb8);
-    func_00351C90(&unk38, unkb8);
-    unkb8->set_scale(0.9f, 0.9f);
-    unkec = new (0) LibObject178750;
-    unkec->init_resource_rectangle(105.0f, 80.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB6, 0);
-    unkec->set_scale(0.8f, 0.8f);
-    lib_container_attach_widget(unk10, unkec);
-    unkf0 = new (0) LibObject178750;
-    unkf0->init_resource_rectangle(105.0f, 110.0f, 0.0f, 0.0f, static_cast<s32>(associated), 0xFB5, 0);
-    unkf0->set_scale(0.8f, 0.8f);
-    lib_container_attach_widget(unk10, unkf0);
-    if (unkac->count > 1)
+    append_panel_widget_node(&unk14, panel);
+    name_text = new (0) LibObject175140;
+    const char* text = reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current].unk20);
+    name_text->func_00467AD0(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
+    lib_container_attach_widget(unk10, name_text);
+    append_icon_widget_node(&unk44, name_text);
+    name_text->set_scale(0.8f, 0.8f);
+    level_label = new (0) LibObject178750;
+    level_value = new (0) LibObject174F20;
+    level_label->init_resource_rectangle(120.0f, 48.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LEVEL, 0);
+    level_value->init_numeric_resource_rectangle(170.0f, 48.0f, 42.0f, 24.0f, equip_record_value(&selection->records[selection->current]), 0, 0);
+    lib_container_attach_widget(unk10, level_label);
+    append_text_widget_node(&unk2c, level_label);
+    level_label->set_color(0x806080);
+    lib_container_attach_widget(unk10, level_value);
+    append_stat_value_node(&unk38, level_value);
+    level_value->set_scale(0.9f, 0.9f);
+    optimize_prompt = new (0) LibObject178750;
+    optimize_prompt->init_resource_rectangle(105.0f, 80.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_OPTIMIZE_PROMPT, 0);
+    optimize_prompt->set_scale(0.8f, 0.8f);
+    lib_container_attach_widget(unk10, optimize_prompt);
+    switch_prompt = new (0) LibObject178750;
+    switch_prompt->init_resource_rectangle(105.0f, 110.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_SWITCH_PROMPT, 0);
+    switch_prompt->set_scale(0.8f, 0.8f);
+    lib_container_attach_widget(unk10, switch_prompt);
+    if (selection->count > 1)
     {
-        unkbc = new (0) ItemCreationClass174C40;
-        unkc0 = new (0) ItemCreationClass174C40;
-        lib_indexed_resource_init(unkbc, 10, 8.0f, 8.0f);
-        lib_indexed_resource_init(unkc0, 11, 196.0f, 8.0f);
-        unkbc->set_scale(0.9f, 0.9f);
-        unkc0->set_scale(0.9f, 0.9f);
-        lib_container_attach_widget(unk10, unkbc);
-        lib_container_attach_widget(unk10, unkc0);
+        left_indicator = new (0) ItemCreationClass174C40;
+        right_indicator = new (0) ItemCreationClass174C40;
+        lib_indexed_resource_init(left_indicator, 10, 8.0f, 8.0f);
+        lib_indexed_resource_init(right_indicator, 11, 196.0f, 8.0f);
+        left_indicator->set_scale(0.9f, 0.9f);
+        right_indicator->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(unk10, left_indicator);
+        lib_container_attach_widget(unk10, right_indicator);
     }
     FieldListNode* node = unk2c.head->next;
     while (node != 0)
@@ -2364,42 +2383,42 @@ s32 EquipClass182C90::func_slotf4(u32 associated)
     }
     for (s32 index = 0; index < 8; index++)
     {
-        u16 slot = static_cast<u16>(unkac->slots[static_cast<s16>(index)]);
+        u16 slot = static_cast<u16>(selection->slots[static_cast<s16>(index)]);
         if (slot != 0)
         {
-            unke4[index] = slot;
-            unkc4[index] = new (0) ItemCreationOptionResourceDisplay;
+            portrait_slots[index] = slot;
+            portraits[index] = new (0) ItemCreationOptionResourceDisplay;
             void* allocation = field_get_aligned_allocation(D_001B643C->unk20, static_cast<u8>(slot));
             FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 4);
-            unkc4[index]->unkcc = allocation;
-            unkc4[index]->unkd0 = slot;
-            unkc4[index]->func_002D6440(record, 20.0f, 50.0f);
-            unkc4[index]->unk3f = 0;
-            lib_container_attach_widget(unk10, unkc4[index]);
+            portraits[index]->unkcc = allocation;
+            portraits[index]->unkd0 = slot;
+            portraits[index]->func_002D6440(record, 20.0f, 50.0f);
+            portraits[index]->unk3f = 0;
+            lib_container_attach_widget(unk10, portraits[index]);
         }
     }
-    if (unkac != 0)
+    if (selection != 0)
     {
-        set_resource_text(unkb0, reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(unkac->unk04)[unkac->current].unk20));
-        set_number(unkb8, equip_record_value(&unkac->records[unkac->current]));
-        refresh_slot_marker();
+        set_resource_text(name_text, reinterpret_cast<const char*>(static_cast<EquipResourceTextRecord*>(selection->unk04)[selection->current].unk20));
+        set_number(level_value, equip_record_value(&selection->records[selection->current]));
+        show_current_portrait();
     }
     return 1;
 }
 
-EquipClass182C90::EquipClass182C90()
+EquipCharacterWindow::EquipCharacterWindow()
 {
-    unka8 = 0;
-    unkac = 0;
-    unkac = reinterpret_cast<EquipListState*>(D_001B643C->unk10->unk14)->selected_records();
-    unkb4 = 0;
-    unkb8 = 0;
-    unkbc = 0;
-    unkc0 = 0;
+    character_slot = 0;
+    selection = 0;
+    selection = reinterpret_cast<EquipController*>(D_001B643C->unk10->unk14)->selected_records();
+    level_label = 0;
+    level_value = 0;
+    left_indicator = 0;
+    right_indicator = 0;
     for (s32 i = 0; i < 8; i++)
     {
-        unkc4[i] = 0;
-        unke4[i] = 0;
+        portraits[i] = 0;
+        portrait_slots[i] = 0;
     }
 }
 
@@ -2578,7 +2597,7 @@ static inline void equip_set_equipped(void* object, s32 index, s16 value)
 }
 /** @brief Select available allocations that improve the first two protected statistics. @param state Unused state receiver. @param record Field record used for each trial. @param resource
  * Resource equipment identifiers to update. @param slot Equipment selection slot. */
-extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipResourceTextRecord* resource, s8 slot)
+extern "C" void optimize_equipment(EquipController* state, FieldRecord* record, EquipResourceTextRecord* resource, s8 slot)
 {
     const EquipRecordCopyView* original = reinterpret_cast<const EquipRecordCopyView*>(record);
     EquipResourceCopyView* original_resource = reinterpret_cast<EquipResourceCopyView*>(resource);
@@ -2685,23 +2704,23 @@ extern "C" void func_0034F2A0(EquipListState* state, FieldRecord* record, EquipR
     }
 }
 
-void EquipListState::func_slot5c()
+void EquipController::func_slot5c()
 {
-    LibObject178660* tooltip = static_cast<LibObject178660*>(unk68);
-    if (tooltip != 0)
+    LibObject178660* container = static_cast<LibObject178660*>(tooltip);
+    if (container != 0)
     {
-        static_cast<LibClass174610&>(*tooltip).func_003EF740();
+        static_cast<LibClass174610&>(*container).func_003EF740();
     }
-    if (unk34 != 0)
+    if (resource_slot != 0)
     {
-        lib_release_resource_slot(D_001B657C, unk34);
+        lib_release_resource_slot(D_001B657C, resource_slot);
     }
     lib_object_detach_owner(this);
     func_001DD7B0();
 }
 
 /** @brief Submit the State to the resident object queue. */
-void EquipListState::func_001DD7B0()
+void EquipController::func_001DD7B0()
 {
     resident_enqueue_object(D_001B65F4, this);
 }
@@ -2712,59 +2731,59 @@ void FieldListObject::update()
 }
 
 /** @brief Attach the detail and comparison windows. @param object Category window. @param detail Category detail window. @param comparison Item comparison window. */
-static inline void attach_comparison(EquipClass182990* object, EquipClass182B90* detail, EquipClass182890* comparison)
+static inline void attach_comparison(EquipSlotWindow* object, EquipParameterWindow* detail, EquipStatComparisonWindow* comparison)
 {
-    object->unkf8 = detail;
-    object->unk100 = comparison;
+    object->parameter_window = detail;
+    object->comparison_window = comparison;
 }
 
-s32 EquipListState::init_windows()
+s32 EquipController::init_windows()
 {
     EquipRuntimeResource* runtime = reinterpret_cast<EquipRuntimeResource*>(D_001B657C);
-    runtime->unk51c = unk34;
+    runtime->unk51c = resource_slot;
     runtime->unk520 = 0x11171;
-    unk68 = new (0) EquipClass1796F0;
-    if (unk68 != 0)
+    tooltip = new (0) EquipClass1796F0;
+    if (tooltip != 0)
     {
-        func_004E9BC0(static_cast<EquipClass1796F0*>(unk68));
-        lib_queue_display_object(D_001B657C, static_cast<EquipClass1796F0*>(unk68));
+        func_004E9BC0(static_cast<EquipClass1796F0*>(tooltip));
+        lib_queue_display_object(D_001B657C, static_cast<EquipClass1796F0*>(tooltip));
     }
-    EquipClass182450* options = new (0) EquipClass182450;
-    EquipClass182350* scrolling = new (0) EquipClass182350;
-    unk40 = new (0) EquipClass182C90;
-    unk54 = new (0) EquipClass182B90;
-    unk44 = new (0) EquipClass182990(this);
-    EquipClass182A90* panel = new (0) EquipClass182A90;
-    unk48 = new (0) EquipClass182890(this);
-    unk4c = new (0) EquipClass182790;
-    unk50 = new (0) EquipClass182670(this);
-    options->func_slotf4(unk34);
+    EquipResourceWindow* options = new (0) EquipResourceWindow;
+    EquipHelpWindow* scrolling = new (0) EquipHelpWindow;
+    character_window = new (0) EquipCharacterWindow;
+    parameter_window = new (0) EquipParameterWindow;
+    slot_window = new (0) EquipSlotWindow(this);
+    EquipSlotPanel* panel = new (0) EquipSlotPanel;
+    comparison_window = new (0) EquipStatComparisonWindow(this);
+    item_list_panel = new (0) EquipItemListPanel;
+    item_list_window = new (0) EquipItemListWindow(this);
+    options->func_slotf4(resource_slot);
     FieldClass153E30::add_child(options);
     options->func_slot40(scrolling);
-    scrolling->func_slotf4(unk34);
+    scrolling->func_slotf4(resource_slot);
     FieldClass153E30::add_child(scrolling);
     scrolling->func_slot40(0);
-    panel->func_slotf4(unk34);
+    panel->func_slotf4(resource_slot);
     FieldClass153E30::add_child(panel);
-    unk54->func_slotf4(unk34);
-    FieldClass153E30::add_child(unk54);
-    unk40->func_slotf4(unk34);
-    FieldClass153E30::add_child(unk40);
-    attach_comparison(unk44, unk54, unk48);
-    unk44->func_slot48(unk50);
-    unk44->func_slotf4(unk34);
-    FieldClass153E30::add_child(unk44);
-    unk44->func_slot40(unk40);
-    unk48->func_slotf4(unk34);
-    FieldClass153E30::add_child(unk48);
-    unk4c->func_slotf4(unk34);
-    FieldClass153E30::add_child(unk4c);
-    unk50->func_slot40(unk44);
-    unk50->unk1a4 = unk48;
-    unk50->func_slot104(unk34);
-    FieldClass153E30::add_child(unk50);
-    unk20 = unk44;
-    unk3c_active = 1;
+    parameter_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(parameter_window);
+    character_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(character_window);
+    attach_comparison(slot_window, parameter_window, comparison_window);
+    slot_window->func_slot48(item_list_window);
+    slot_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(slot_window);
+    slot_window->func_slot40(character_window);
+    comparison_window->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(comparison_window);
+    item_list_panel->func_slotf4(resource_slot);
+    FieldClass153E30::add_child(item_list_panel);
+    item_list_window->func_slot40(slot_window);
+    item_list_window->comparison_window = comparison_window;
+    item_list_window->func_slot104(resource_slot);
+    FieldClass153E30::add_child(item_list_window);
+    unk20 = slot_window;
+    windows_initialized = 1;
     return 1;
 }
 
@@ -2776,7 +2795,7 @@ LibClass178A70::~LibClass178A70()
 {
 }
 
-s32 EquipListState::on_resource_loaded(void* buffer)
+s32 EquipController::on_resource_loaded(void* buffer)
 {
     if (buffer == 0)
     {
@@ -2792,10 +2811,10 @@ s32 EquipListState::on_resource_loaded(void* buffer)
         resident_heap_release(memory);
         resident_exchange_allocation_heap(heap);
     }
-    unk34 = lib_load_resource_slot(D_001B657C, aligned);
+    resource_slot = lib_load_resource_slot(D_001B657C, aligned);
     resident_exchange_allocation_heap(saved_heap);
     EquipRuntimeResource* runtime = reinterpret_cast<EquipRuntimeResource*>(D_001B657C);
-    runtime->unk514 = unk34;
+    runtime->unk514 = resource_slot;
     runtime->unk518 = 0xC351;
     return init_windows();
 }
@@ -2804,11 +2823,11 @@ s32 EquipListState::on_resource_loaded(void* buffer)
  * @brief Allocate and initialize the State's record selection.
  * @return One when a selection exists and initialization succeeds; otherwise zero.
  */
-u8 EquipListState::func_00264110()
+u8 EquipController::func_00264110()
 {
-    unk38 = new (0) FieldRecordSelection;
-    u8 result = func_0028E3D0(unk38);
-    if (unk38 == 0 || result == 0)
+    selection = new (0) FieldRecordSelection;
+    u8 result = func_0028E3D0(selection);
+    if (selection == 0 || result == 0)
     {
         return 0;
     }
@@ -2830,34 +2849,34 @@ static inline void release_owned(T*& resource)
 }
 
 /** @brief Release the record selection before destroying the Field list base. */
-EquipListState::~EquipListState()
+EquipController::~EquipController()
 {
-    if (unk38 != 0)
+    if (selection != 0)
     {
-        release_owned(unk38);
+        release_owned(selection);
     }
 }
 
 /** @brief Initialize the equipment State and its resource table entries. */
-EquipListState::EquipListState()
+EquipController::EquipController()
 {
-    unk34 = 0;
-    unk38 = 0;
-    unk3c_active = 0;
-    unk40 = 0;
-    unk44 = 0;
-    unk4c = 0;
-    unk48 = 0;
-    unk50 = 0;
-    unk54 = 0;
-    unk64 = 0;
+    resource_slot = 0;
+    selection = 0;
+    windows_initialized = 0;
+    character_window = 0;
+    slot_window = 0;
+    item_list_panel = 0;
+    comparison_window = 0;
+    item_list_window = 0;
+    parameter_window = 0;
+    selected_item_type = 0;
     unk58 = 0;
     unk5c = 0;
     void* table = resident_get_entry_table(resident_get_runtime_owner());
     unk58 = resident_find_entry(table, 2);
     unk5c = resident_find_entry(table, 3);
-    unk60 = 0;
-    unk68 = 0;
+    selected_slot = 0;
+    tooltip = 0;
 }
 
 /** @brief Default handler that performs no work. */
@@ -2891,34 +2910,34 @@ void FieldClass15AE70::func_slot5c()
 {
 }
 
-EquipClass182550::~EquipClass182550()
+EquipItemInstanceListWindow::~EquipItemInstanceListWindow()
 {
 }
 
-EquipClass182670::~EquipClass182670()
+EquipItemListWindow::~EquipItemListWindow()
 {
 }
 
-EquipClass182990::~EquipClass182990()
+EquipSlotWindow::~EquipSlotWindow()
 {
 }
 
-EquipClass182B90::~EquipClass182B90()
+EquipParameterWindow::~EquipParameterWindow()
 {
 }
 
-EquipClass182C90::~EquipClass182C90()
+EquipCharacterWindow::~EquipCharacterWindow()
 {
 }
 
 /** @brief Report whether window setup finished. @return Setup flag. */
-u8 EquipListState::windows_ready()
+u8 EquipController::windows_ready()
 {
-    return unk3c_active;
+    return windows_initialized;
 }
 
 /** @brief Report this object's default list kind. @return Four. */
-s32 EquipListState::get_default_list_kind()
+s32 EquipController::get_default_list_kind()
 {
     return 4;
 }
@@ -2997,9 +3016,9 @@ s32 FieldClass153E30::func_slot84()
     return 0;
 }
 
-EquipLinkedList::EquipLinkedList()
+EquipNewItemTypeList::EquipNewItemTypeList()
 {
-    head = new (0) EquipLinkedNode;
+    head = new (0) EquipNewItemTypeNode;
     if (head == 0)
     {
         throw;
@@ -3008,9 +3027,9 @@ EquipLinkedList::EquipLinkedList()
     count = 0;
 }
 
-EquipLinkedList::~EquipLinkedList()
+EquipNewItemTypeList::~EquipNewItemTypeList()
 {
-    func_00351860(this);
+    clear_new_item_types(this);
     if (head != 0)
     {
         ::operator delete(head);
@@ -3018,11 +3037,11 @@ EquipLinkedList::~EquipLinkedList()
     }
 }
 
-void func_003517D0(EquipLinkedList* list, u16 value)
+void append_new_item_type(EquipNewItemTypeList* list, u16 value)
 {
-    EquipLinkedNode* node;
-    EquipLinkedNode* cursor;
-    node = new (0) EquipLinkedNode;
+    EquipNewItemTypeNode* node;
+    EquipNewItemTypeNode* cursor;
+    node = new (0) EquipNewItemTypeNode;
     if (node != 0)
     {
         node->value = value;
@@ -3037,16 +3056,16 @@ void func_003517D0(EquipLinkedList* list, u16 value)
     }
 }
 
-void func_00351860(EquipLinkedList* list)
+void clear_new_item_types(EquipNewItemTypeList* list)
 {
-    EquipLinkedNode* node = list->head->next;
+    EquipNewItemTypeNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        EquipLinkedNode* next = node->next;
+        EquipNewItemTypeNode* next = node->next;
         delete node;
         node = next;
     }
@@ -3054,9 +3073,9 @@ void func_00351860(EquipLinkedList* list)
     list->count = 0;
 }
 
-void* func_003518E0(void* object, s32 count)
+void* get_new_item_type_node(void* object, s32 count)
 {
-    EquipLinkedNode* node = ((EquipLinkedList*)object)->head->next;
+    EquipNewItemTypeNode* node = ((EquipNewItemTypeList*)object)->head->next;
     s32 index = 0;
     while (index < count)
     {
@@ -3070,9 +3089,9 @@ void* func_003518E0(void* object, s32 count)
     return node;
 }
 
-EquipWordList::EquipWordList()
+EquipItemTypeList::EquipItemTypeList()
 {
-    head = new (0) EquipWordNode;
+    head = new (0) EquipItemTypeNode;
     if (head == 0)
     {
         throw;
@@ -3081,9 +3100,9 @@ EquipWordList::EquipWordList()
     count = 0;
 }
 
-EquipWordList::~EquipWordList()
+EquipItemTypeList::~EquipItemTypeList()
 {
-    func_00351AB0(this);
+    clear_item_types(this);
     if (head != 0)
     {
         ::operator delete(head);
@@ -3096,11 +3115,11 @@ EquipWordList::~EquipWordList()
  * @param list List to update.
  * @param value Category-record pointer, which may be null.
  */
-void func_00351A20(EquipWordList* list, ItemCreationCategoryRecord* value)
+void append_item_type(EquipItemTypeList* list, ItemCreationCategoryRecord* value)
 {
-    EquipWordNode* node;
-    EquipWordNode* cursor;
-    node = new (0) EquipWordNode;
+    EquipItemTypeNode* node;
+    EquipItemTypeNode* cursor;
+    node = new (0) EquipItemTypeNode;
     if (node != 0)
     {
         node->value = value;
@@ -3115,16 +3134,16 @@ void func_00351A20(EquipWordList* list, ItemCreationCategoryRecord* value)
     }
 }
 
-void func_00351AB0(EquipWordList* list)
+void clear_item_types(EquipItemTypeList* list)
 {
-    EquipWordNode* node = list->head->next;
+    EquipItemTypeNode* node = list->head->next;
     if (node == 0)
     {
         return;
     }
     while (node != 0)
     {
-        EquipWordNode* next = node->next;
+        EquipItemTypeNode* next = node->next;
         delete node;
         node = next;
     }
@@ -3132,9 +3151,9 @@ void func_00351AB0(EquipWordList* list)
     list->count = 0;
 }
 
-void* func_00351B30(void* object, s32 count)
+void* get_item_type_node(void* object, s32 count)
 {
-    EquipWordNode* node = ((EquipWordList*)object)->head->next;
+    EquipItemTypeNode* node = ((EquipItemTypeList*)object)->head->next;
     s32 index = 0;
     while (index < count)
     {
@@ -3148,7 +3167,7 @@ void* func_00351B30(void* object, s32 count)
     return node;
 }
 
-void func_00351B70(FieldCountedList* list, void* value)
+void append_grid_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node;
     FieldListNode* cursor;
@@ -3167,7 +3186,7 @@ void func_00351B70(FieldCountedList* list, void* value)
     }
 }
 
-void func_00351C00(FieldCountedList* list, void* value)
+void append_icon_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node;
     FieldListNode* cursor;
@@ -3186,7 +3205,7 @@ void func_00351C00(FieldCountedList* list, void* value)
     }
 }
 
-void func_00351C90(FieldCountedList* list, void* value)
+void append_stat_value_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node;
     FieldListNode* cursor;
@@ -3205,7 +3224,7 @@ void func_00351C90(FieldCountedList* list, void* value)
     }
 }
 
-void func_00351D20(FieldCountedList* list, void* value)
+void append_text_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node;
     FieldListNode* cursor;
@@ -3224,7 +3243,7 @@ void func_00351D20(FieldCountedList* list, void* value)
     }
 }
 
-void func_00351DB0(FieldCountedList* list, void* value)
+void append_clip_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node;
     FieldListNode* cursor;
@@ -3243,7 +3262,7 @@ void func_00351DB0(FieldCountedList* list, void* value)
     }
 }
 
-void func_00351E40(FieldCountedList* list, void* value)
+void append_panel_widget_node(FieldCountedList* list, void* value)
 {
     FieldListNode* node;
     FieldListNode* cursor;

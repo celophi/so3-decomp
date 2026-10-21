@@ -9,32 +9,32 @@
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "overlays/1067-00/text_001E1590.h"
 
-typedef struct EquipLinkedList EquipLinkedList;
-typedef struct EquipWordList EquipWordList;
+typedef struct EquipNewItemTypeList EquipNewItemTypeList;
+typedef struct EquipItemTypeList EquipItemTypeList;
 typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
-typedef struct EquipListState EquipListState;
+typedef struct EquipController EquipController;
 
 #ifdef __cplusplus
-/** Equipment list with a sentinel node, element count, and virtual destructor. */
-struct EquipLinkedList
+/** Item type IDs that include a newly obtained item, behind a sentinel node. */
+struct EquipNewItemTypeList
 {
-    struct EquipLinkedNode* head;
+    struct EquipNewItemTypeNode* head;
     u32 count;
     /** @brief Allocate the sentinel and initialize the empty list. */
-    EquipLinkedList();
+    EquipNewItemTypeList();
     /** @brief Release the value nodes and sentinel storage. */
-    virtual ~EquipLinkedList();
+    virtual ~EquipNewItemTypeList();
 };
 
-/** Equipment list with a sentinel node, element count, and virtual destructor. */
-struct EquipWordList
+/** Item type records listed for the selected slot, behind a sentinel node; a null record is the "(None)" row. */
+struct EquipItemTypeList
 {
-    struct EquipWordNode* head;
+    struct EquipItemTypeNode* head;
     u32 count;
     /** @brief Allocate the sentinel and initialize the empty list. */
-    EquipWordList();
+    EquipItemTypeList();
     /** @brief Release the value nodes and sentinel storage. */
-    virtual ~EquipWordList();
+    virtual ~EquipItemTypeList();
 };
 
 /** Contextual copies of the recovered list-node base and sentinel. */
@@ -78,55 +78,55 @@ struct EquipClass1796F0 : public LibObject178660
 };
 
 struct FieldRecordSelection;
-/** Partial scrolling text window with its display bounds and timer. */
-struct EquipClass182350 : public FieldClass15AE70
+/** Help bar with the "Equipment" title and label and a scrolling help line. */
+struct EquipHelpWindow : public FieldClass15AE70
 {
     /** @brief Initialize the text display, timer, and scrolling bounds. */
-    EquipClass182350()
+    EquipHelpWindow()
     {
-        unka8 = 0;
-        unkac = 0;
+        text = 0;
+        scroll_span = 0;
         unkb0[0] = 0;
-        unkb2 = 0;
-        unkb4 = 0;
-        unkb8 = 0.0f;
-        unkbc = 0.0f;
-        unkc0 = 0.0f;
-        unkc4 = 0.0f;
+        initial_pause_frames = 0;
+        scroll_phase = 0;
+        label_right_edge = 0.0f;
+        initial_text_x = 0.0f;
+        clip_x = 0.0f;
+        clip_width = 0.0f;
     }
 
     /** @brief Destroy the scrolling text window. */
-    virtual ~EquipClass182350();
+    virtual ~EquipHelpWindow();
     /** @brief Hold the display position until its timer expires, then scroll and wrap it. */
     virtual void func_slot5c();
     /** @brief Reset the text display and recompute its width for the supported key range. @param text_key Text resource key. */
     virtual void func_slot60(s32 text_key);
     /** @brief Create the text, frame and scrolling display. @param associated Full resource source word. @return One when initial displays exist, otherwise zero. */
     virtual s32 func_slotf4(u32 associated);
-    LibObject178750* unka8;
-    s32 unkac;
+    LibObject178750* text;
+    s32 scroll_span;
     u8 unkb0[2];
-    s16 unkb2;
-    u8 unkb4;
+    s16 initial_pause_frames;
+    u8 scroll_phase;
     u8 unkb5[3];
-    float unkb8;
-    float unkbc;
-    float unkc0;
-    float unkc4;
+    float label_right_edge;
+    float initial_text_x;
+    float clip_x;
+    float clip_width;
 };
 
-/** Partial initial equipment window with its selected icon index. */
-struct EquipClass182220 : public FieldClass15AE70
+/** Yes/No window that asks "Finish equipping characters?" before leaving the menu. */
+struct EquipExitConfirmWindow : public FieldClass15AE70
 {
     /** @brief Initialize the selection grid pointer and signed selection index. */
-    EquipClass182220()
+    EquipExitConfirmWindow()
     {
-        unka8 = 0;
-        unkac = -1;
+        grid = 0;
+        selected = -1;
     }
 
     /** @brief Destroy the initial equipment window. */
-    virtual ~EquipClass182220();
+    virtual ~EquipExitConfirmWindow();
     /** @brief Create the panel, text labels and selection grid. @param associated Full resource source word. @param x Window horizontal position. @param y Window vertical position. @param code Nested display initializer code. @return One when all displays exist, otherwise zero. */
     virtual s32 func_slot10(u32 associated, float x, float y, s32 code);
     /** @brief Refresh icon colors while this window is selected. */
@@ -141,140 +141,140 @@ struct EquipClass182220 : public FieldClass15AE70
     virtual void func_slot6c();
     /** @brief Color each active icon according to its selection index. @param selected Selected icon index. */
     virtual void func_slotf4(s16 selected);
-    FieldObject23CEA0* unka8;
-    s16 unkac;
+    FieldObject23CEA0* grid;
+    s16 selected;
 };
 
-/** Partial equipment window with a display widget at offset 0xEC. */
-struct EquipClass182C90 : public FieldClass15AE70
+/** Selected character panel: name, level, portrait, Optimize/Switch prompts, and arrows when there are several characters. */
+struct EquipCharacterWindow : public FieldClass15AE70
 {
     /** @brief Initialize the window displays and acquire the active record selection. */
-    EquipClass182C90();
-    /** @brief Mark the option display corresponding to the current equipment slot. */
-    void refresh_slot_marker();
+    EquipCharacterWindow();
+    /** @brief Show the portrait of the selected character and hide the others. */
+    void show_current_portrait();
     /** @brief Destroy the equipment window. */
-    virtual ~EquipClass182C90();
+    virtual ~EquipCharacterWindow();
     /** @brief Enable the display widget while its State window is selected. */
     virtual void func_slot5c();
     /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
-    s16 unka8;
+    s16 character_slot;
     u8 unkaa[2];
-    FieldRecordSelection* unkac;
-    LibObject175140* unkb0;
-    LibObject178750* unkb4;
-    LibObject174F20* unkb8;
-    ItemCreationClass174C40* unkbc;
-    ItemCreationClass174C40* unkc0;
-    ItemCreationOptionResourceDisplay* unkc4[8];
-    u8 unke4[8];
-    LibObject178750* unkec;
-    LibObject178750* unkf0;
+    FieldRecordSelection* selection;
+    LibObject175140* name_text;
+    LibObject178750* level_label;
+    LibObject174F20* level_value;
+    ItemCreationClass174C40* left_indicator;
+    ItemCreationClass174C40* right_indicator;
+    ItemCreationOptionResourceDisplay* portraits[8];
+    u8 portrait_slots[8];
+    LibObject178750* optimize_prompt;
+    LibObject178750* switch_prompt;
 };
 
-/** Window containing three resource-backed option displays. */
-struct EquipClass182450 : public FieldClass15AE70
+/** Background window owning three displays of resource 11. */
+struct EquipResourceWindow : public FieldClass15AE70
 {
     /** @brief Initialize the three option display pointers. */
-    EquipClass182450()
+    EquipResourceWindow()
     {
-        unka8 = 0;
-        unkac = 0;
-        unkb0 = 0;
+        left_tile = 0;
+        middle_tile = 0;
+        right_tile = 0;
     }
 
     /** @brief Destroy the option window. */
-    virtual ~EquipClass182450();
+    virtual ~EquipResourceWindow();
     /** @brief Create and attach the three option displays. @param associated Full resource source word. @return One. */
     virtual s32 func_slotf4(u32 associated);
-    ItemCreationOptionResourceDisplay* unka8;
-    ItemCreationOptionResourceDisplay* unkac;
-    ItemCreationOptionResourceDisplay* unkb0;
+    ItemCreationOptionResourceDisplay* left_tile;
+    ItemCreationOptionResourceDisplay* middle_tile;
+    ItemCreationOptionResourceDisplay* right_tile;
 };
 
-/** Partial equipment panel window with a resident rectangle widget. */
-struct EquipClass182790 : public FieldClass15AE70
+/** Background panel behind the item lists. */
+struct EquipItemListPanel : public FieldClass15AE70
 {
     /** @brief Initialize the panel's Field base. */
-    EquipClass182790()
+    EquipItemListPanel()
     {
     }
 
     /** @brief Destroy the panel window. */
-    virtual ~EquipClass182790();
+    virtual ~EquipItemListPanel();
     /** @brief Create and attach the panel display. @param associated Full resource source word. @return One. */
     virtual s32 func_slotf4(u32 associated);
 };
 
-struct EquipListState;
+struct EquipController;
 /** Partial view of a 0x114-byte resource record with its protected equipment entries. */
 struct EquipResourceEquipment
 {
     u8 unk00[0xC];
-    s16 unk0c;
-    s16 unk0e;
-    s16 unk10[4];
+    s16 encoded_slot_count;
+    s16 encoded_last_slot;
+    s16 encoded_items[4];
     u8 unk18[0xD8];
-    s32 unkf0;
+    s32 check_word;
     u8 unkf4[0x18];
-    s32 unk10c;
+    s32 check_salt;
     u8 unk110[4];
 };
-/** Partial item-details window with one header and five statistic rows. */
-struct EquipClass182890 : public FieldClass15AE70
+/** Slot name, item icon, and ATK/DEF/AGL/HIT/INT rows comparing the current value with the selected item's. */
+struct EquipStatComparisonWindow : public FieldClass15AE70
 {
     /** @brief Initialize item comparison records and display pointers. @param state Owning equipment State. */
-    EquipClass182890(EquipListState* state);
+    EquipStatComparisonWindow(EquipController* state);
     /** @brief Refresh the selected item icon and both statistic columns. @param category Selected category. @param selected Selected item record index. */
     void refresh_item_details(u8 category, s16 selected);
     /** @brief Destroy the item-details window. */
-    virtual ~EquipClass182890();
+    virtual ~EquipStatComparisonWindow();
     /** @brief Create and attach the item-details displays. @param associated Full resource source word. @return One. */
     virtual s32 func_slotf4(u32 associated);
-    EquipListState* unka8;
-    u8 unkac;
+    EquipController* controller;
+    u8 slot;
     u8 unkad;
-    s16 unkae;
-    s16 unkb0;
+    s16 item;
+    s16 preview_item;
     u8 unkb2;
     u8 unkb3;
-    FieldRecord unkb4;
+    FieldRecord preview_record;
     /** Encoded resource record used for the comparison. */
-    EquipResourceEquipment unk178;
-    LibObject178750* unk28c;
-    LibObject172410* unk290;
-    LibObject178750* unk294[5];
-    LibObject178750* unk2a8[5];
-    LibObject178750* unk2bc[5];
-    LibObject174F20* unk2d0[5];
-    LibObject174F20* unk2e4[5];
+    EquipResourceEquipment preview_equipment;
+    LibObject178750* slot_label;
+    LibObject172410* item_icon;
+    LibObject178750* stat_labels[5];
+    LibObject178750* separators[5];
+    LibObject178750* arrows[5];
+    LibObject174F20* current_values[5];
+    LibObject174F20* preview_values[5];
 };
 
-/** Partial category panel window using a resident rectangle widget. */
-struct EquipClass182A90 : public FieldClass15AE70
+/** Background panel behind the equipment slot window. */
+struct EquipSlotPanel : public FieldClass15AE70
 {
     /** @brief Initialize the category panel's Field base. */
-    EquipClass182A90()
+    EquipSlotPanel()
     {
     }
 
     /** @brief Destroy the category panel window. */
-    virtual ~EquipClass182A90();
+    virtual ~EquipSlotPanel();
     /** @brief Create and attach the category panel display. @param associated Full resource source word. @return One. */
     virtual s32 func_slotf4(u32 associated);
 };
 
-struct EquipClass182B90;
-struct EquipClass182990;
+struct EquipParameterWindow;
+struct EquipSlotWindow;
 struct EquipPackedRecord;
-struct EquipClass182670;
-/** Partial equipment State with its selection, resource keys, and owned windows. */
-struct EquipListState : public FieldClass153E30
+struct EquipItemListWindow;
+/** Equipment menu controller: loads the menu resource and builds its windows. */
+struct EquipController : public FieldClass153E30
 {
     /** @brief Initialize the equipment State and its resource table entries. */
-    EquipListState();
+    EquipController();
     /** @brief Destroy the equipment State. */
-    virtual ~EquipListState();
+    virtual ~EquipController();
     /** @brief Create and connect the equipment State displays. @return One after display setup. */
     virtual s32 init_windows();
     /** @brief Load an aligned resource and create the State displays. @param buffer Resource buffer. @return Display creation result, or zero for a null buffer. */
@@ -296,62 +296,62 @@ struct EquipListState : public FieldClass153E30
     virtual void func_slot5c();
     /** @brief Return the record selection. @return Current record selection. */
     virtual FieldRecordSelection* selected_records();
-    s32 unk34;
-    FieldRecordSelection* unk38;
-    u8 unk3c_active : 1;
-    u8 unk3c_other : 7;
+    s32 resource_slot;
+    FieldRecordSelection* selection;
+    u8 windows_initialized : 1;
+    u8 unk3c_1_7 : 7;
     u8 unk3d[3];
-    EquipClass182C90* unk40;
-    EquipClass182990* unk44;
-    EquipClass182890* unk48;
-    EquipClass182790* unk4c;
-    EquipClass182670* unk50;
-    EquipClass182B90* unk54;
+    EquipCharacterWindow* character_window;
+    EquipSlotWindow* slot_window;
+    EquipStatComparisonWindow* comparison_window;
+    EquipItemListPanel* item_list_panel;
+    EquipItemListWindow* item_list_window;
+    EquipParameterWindow* parameter_window;
     u32 unk58;
     u32 unk5c;
-    u16 unk60;
+    u16 selected_slot;
     u8 unk62[2];
-    s32 unk64;
-    void* unk68;
+    s32 selected_item_type;
+    void* tooltip;
 };
 
 struct FieldState23B3A0;
-/** Partial category detail window with multiline, label, and numeric displays. */
-struct EquipClass182B90 : public FieldClass15AE70
+/** Selected item's description, or its "Parameter Changes" (ATK, HIT, DEF, AGL, INT bonuses) while toggled on. */
+struct EquipParameterWindow : public FieldClass15AE70
 {
     /** @brief Initialize the category detail state, labels, and numeric displays. */
-    EquipClass182B90()
+    EquipParameterWindow()
     {
-        unkec = 0;
-        unkf0 = 0;
+        description_key = 0;
+        show_parameters = 0;
         for (s32 i = 0; i < 5; i++)
         {
-            unkb0[i] = 0;
-            unkd8[i] = 0;
+            parameter_labels[i] = 0;
+            parameter_values[i] = 0;
         }
     }
 
     /** @brief Destroy the category detail window. */
-    virtual ~EquipClass182B90();
+    virtual ~EquipParameterWindow();
     /** @brief Refresh the selected category detail displays. */
     virtual void func_slot5c();
     /** @brief Create the multiline and comparison displays. @param associated Full resource source word. @return One, or zero without an associated object. */
     virtual s32 func_slotf4(u32 associated);
-    LibObject174D90* unka8;
-    LibObject178750* unkac;
-    LibObject178750* unkb0[5];
-    LibObject178750* unkc4[5];
-    LibObject174F20* unkd8[5];
-    s32 unkec;
-    u8 unkf0;
+    LibObject174D90* description;
+    LibObject178750* title;
+    LibObject178750* parameter_labels[5];
+    LibObject178750* separators[5];
+    LibObject174F20* parameter_values[5];
+    s32 description_key;
+    u8 show_parameters;
 };
-/** Partial category window with its selector and associated list window. */
-struct EquipClass182990 : public FieldClass15AE70
+/** Weapon, Armor, and Accessory slots with the equipped item or "(None)" in each, and the slot cursor. */
+struct EquipSlotWindow : public FieldClass15AE70
 {
     /** @brief Initialize the category widgets and attach the State selection. @param state Owning equipment State. */
-    EquipClass182990(EquipListState* state);
+    EquipSlotWindow(EquipController* state);
     /** @brief Destroy the category window. */
-    virtual ~EquipClass182990();
+    virtual ~EquipSlotWindow();
     /** @brief Update the selected category tooltip. */
     virtual void func_slot5c();
     /** @brief Restore the associated record displays and start the selector animation. */
@@ -374,31 +374,31 @@ struct EquipClass182990 : public FieldClass15AE70
     virtual s32 func_slotdc();
     /** @brief Create category widgets. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
-    EquipListState* unka8;
-    FieldRecordSelection* unkac;
-    float unkb0;
-    EquipPackedRecord* unkb4;
-    s16 unkb8[4];
-    u8 unkc0;
+    EquipController* controller;
+    FieldRecordSelection* selection;
+    float row_spacing;
+    EquipPackedRecord* current_item;
+    s16 equipped_items[4];
+    u8 usable_slot_count;
     u8 unkc1[3];
-    LibClass174EF0* unkc4[4];
-    LibObject172410* unkd4[4];
-    LibClass174EF0* unke4[4];
+    LibClass174EF0* slot_labels[4];
+    LibObject172410* item_icons[4];
+    LibClass174EF0* empty_labels[4];
     void* unkf4;
-    void* unkf8;
+    void* parameter_window;
     FieldState23B3A0* equipment_slot_selector;
-    FieldClass15AE70* unk100;
-    FieldClass15AD40* unk104;
-    u16 unk108;
+    FieldClass15AE70* comparison_window;
+    FieldClass15AD40* item_list;
+    u16 active_slot;
 };
 
-/** Equipment list window using Field callbacks at offset 0xA8. */
-struct EquipClass182550 : public FieldClass15AD40
+/** List of the unequipped items of the selected type, with their icons and modification marks. */
+struct EquipItemInstanceListWindow : public FieldClass15AD40
 {
     /** @brief Initialize list display pointers and attach the option State. @param state Owning equipment State. */
-    EquipClass182550(EquipListState* state);
+    EquipItemInstanceListWindow(EquipController* state);
     /** @brief Destroy the Field list window. */
-    virtual ~EquipClass182550();
+    virtual ~EquipItemInstanceListWindow();
     /** @brief Run the equipment list update hook. */
     virtual void func_slot5c();
     /** @brief Activate the selected record and restore the category window. @return One on success, or three when no record is selectable. */
@@ -418,23 +418,23 @@ struct EquipClass182550 : public FieldClass15AD40
     /** @brief Set the paired display flags. @param first First flag. @param second Second flag. */
     virtual void func_slot10c(u32 first, u32 second);
     /** @brief Recount the category records and clamp the visible selection. */
-    void func_00349D50();
-    ItemCreationOptionResourceDisplay* unk138[9];
-    LibObject172410* unk15c[9];
-    LibClass178630* unk180;
-    void* unk184;
-    EquipListState* unk188;
-    void* unk18c;
-    s16 unk190;
+    void recount_rows();
+    ItemCreationOptionResourceDisplay* factor_marks[9];
+    LibObject172410* item_icons[9];
+    LibClass178630* panel;
+    void* mark_allocation;
+    EquipController* controller;
+    void* tooltip;
+    s16 tooltip_item;
 };
 
-/** Equipment list window owning two counted lists. */
-struct EquipClass182670 : public FieldClass15AD40
+/** Item types that fit the selected slot, with how many of each are available; types holding a new item are tinted green. */
+struct EquipItemListWindow : public FieldClass15AD40
 {
     /** @brief Initialize the display pointers and owned lists. @param state Owning equipment State. */
-    EquipClass182670(EquipListState* state);
+    EquipItemListWindow(EquipController* state);
     /** @brief Destroy the owned lists and the Field window. */
-    virtual ~EquipClass182670();
+    virtual ~EquipItemListWindow();
     /** @brief Update the selected category, row highlight, and detail window. */
     virtual void func_slot5c();
     /** @brief Activate the category list or create the selected record window. @return Selection result. */
@@ -451,102 +451,102 @@ struct EquipClass182670 : public FieldClass15AD40
     /** @brief Rebuild the list for the selected category. @param category Category index, clamped to two. */
     virtual void func_slot108(u8 category);
     virtual void func_slot10c(u32 first, u32 second);
-    LibObject178750* unk138[9];
-    LibObject174F20* unk15c[9];
-    EquipListState* unk180;
+    LibObject178750* separators[9];
+    LibObject174F20* counts[9];
+    EquipController* controller;
     void* unk184;
-    EquipWordList unk188;
+    EquipItemTypeList item_types;
     s16 unk194;
-    EquipLinkedList unk198;
-    FieldClass15AE70* unk1a4;
+    EquipNewItemTypeList new_item_types;
+    FieldClass15AE70* comparison_window;
 };
 
 extern "C" {
 #endif
 
 /**
- * @brief Append a value to the linked list.
- * @param list List to update.
- * @param value Value to append.
+ * @brief Add an item type ID to the end of the list.
+ * @param list List to append to.
+ * @param value One-based item type ID.
  */
-void func_003517D0(EquipLinkedList* list, u16 value);
+void append_new_item_type(EquipNewItemTypeList* list, u16 value);
 
 /**
- * @brief Append a category-record pointer to the list.
- * @param list List to update.
- * @param value Category-record pointer, which may be null.
+ * @brief Add an item type record to the end of the list.
+ * @param list List to append to.
+ * @param value Item type record, or null for the "(None)" row.
  */
-void func_00351A20(EquipWordList* list, ItemCreationCategoryRecord* value);
+void append_item_type(EquipItemTypeList* list, ItemCreationCategoryRecord* value);
 
 /**
- * @brief Append a word value to the linked list.
- * @param list List to update.
- * @param value Value to append.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
-void func_00351B70(FieldCountedList* list, void* value);
+void append_grid_widget_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append a word value to the linked list.
- * @param list List to update.
- * @param value Value to append.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
-void func_00351C00(FieldCountedList* list, void* value);
+void append_icon_widget_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append a word value to the linked list.
- * @param list List to update.
- * @param value Value to append.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
-void func_00351C90(FieldCountedList* list, void* value);
+void append_stat_value_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append a word value to the linked list.
- * @param list List to update.
- * @param value Value to append.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
-void func_00351D20(FieldCountedList* list, void* value);
+void append_text_widget_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append a word value to the linked list.
- * @param list List to update.
- * @param value Value to append.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
-void func_00351DB0(FieldCountedList* list, void* value);
+void append_clip_widget_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Append a word value to the linked list.
- * @param list List to update.
- * @param value Value to append.
+ * @brief Add a node holding `value` to the end of the list.
+ * @param list List to append to.
+ * @param value Pointer stored in the node. The caller owns it.
  */
-void func_00351E40(FieldCountedList* list, void* value);
+void append_panel_widget_node(FieldCountedList* list, void* value);
 
 /**
- * @brief Advance from the first linked node by a number of steps.
- * @param object Holder of the linked list.
- * @param count Number of links to follow.
- * @return Reached node, or null if the chain ends early.
+ * @brief Return the node at `count`. Index zero is the first node after the sentinel.
+ * @param object New item type list.
+ * @param count Zero-based index among the value nodes.
+ * @return The node at that index, or null if the list ends first.
  */
-void* func_003518E0(void* object, s32 count);
+void* get_new_item_type_node(void* object, s32 count);
 
 /**
- * @brief Advance from the first linked node by a number of steps.
- * @param object Holder of the linked list.
- * @param count Number of links to follow.
- * @return Reached node, or null if the chain ends early.
+ * @brief Return the node at `count`. Index zero is the first node after the sentinel.
+ * @param object Item type list.
+ * @param count Zero-based index among the value nodes.
+ * @return The node at that index, or null if the list ends first.
  */
-void* func_00351B30(void* object, s32 count);
-
-/**
- * @brief Delete the list nodes after the sentinel and reset the list count.
- * @param list List whose nodes should be released.
- */
-void func_00351860(EquipLinkedList* list);
+void* get_item_type_node(void* object, s32 count);
 
 /**
  * @brief Delete the list nodes after the sentinel and reset the list count.
  * @param list List whose nodes should be released.
  */
-void func_00351AB0(EquipWordList* list);
+void clear_new_item_types(EquipNewItemTypeList* list);
+
+/**
+ * @brief Delete the list nodes after the sentinel and reset the list count.
+ * @param list List whose nodes should be released.
+ */
+void clear_item_types(EquipItemTypeList* list);
 
 #ifdef __cplusplus
 }
