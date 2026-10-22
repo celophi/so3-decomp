@@ -3359,7 +3359,58 @@ SkillTacticalDetailWindow::SkillTacticalDetailWindow()
     aura_row_count = 0;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034BD30);
+/**
+ * @brief Show a mode entry's skill description in the controller window and its mastery in the status window.
+ * @param object Mode selection window.
+ * @param index Entry row.
+ */
+
+void func_0034BD30(SkillModeSelection* object, s32 index)
+{
+    SkillController* controller;
+    SkillCharacterWindow* status;
+    s32 character;
+    s32* keys = object->skill_name_keys;
+    s32* key = index + keys;
+    if (*key == 0)
+    {
+        return;
+    }
+    controller = static_cast<SkillController*>(D_001B643C->callbacks->controller);
+    status = static_cast<SkillCharacterWindow*>(object->func_slot4c());
+    if (controller == 0 || status == 0)
+    {
+        return;
+    }
+    if (*key == SKILL_MSG_NONE)
+    {
+        controller->window->func_slot60(SKILL_MSG_BLANK);
+    }
+    else if (*key + 200 >= SKILL_MSG_INVALID_DESCRIPTION)
+    {
+        controller->window->func_slot60(SKILL_MSG_INVALID_DESCRIPTION);
+    }
+    else
+    {
+        controller->window->func_slot60(*key + 200);
+    }
+    FieldRecordSelection* selection = object->record_selection;
+    SkillCharacterEquipment* detail = &static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current];
+    character = selection->slots[selection->current];
+    s32 kind = -1;
+    s32 value = -1;
+    s32 mastery = -1;
+    s32 remainder = -1;
+    s32 entry = func_40AE00(character, *key - SKILL_MSG_NAME_BASE);
+    if (func_00408850(detail, character, entry, &kind, &value, &mastery, &remainder) == 0)
+    {
+        skill_refresh_mastery_display(status, -1, -1, -1);
+    }
+    else
+    {
+        skill_refresh_mastery_display(status, mastery, value, remainder);
+    }
+}
 
 /** @brief Refresh skill-name and CP row visibility, colors, and selection help. @param record Skill selection window. */
 void skill_refresh_selection_rows(SkillModeSelection* record)
@@ -6675,7 +6726,188 @@ void func_00358310(SkillCharacterWindow* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_00358410);
+/** @brief Read a character slot code. @param selection Character record selection. @param index Slot index. @return Slot code. */
+static inline u16 selection_slot(FieldRecordSelection* selection, s16 index)
+{
+    return selection->slots[index];
+}
+
+/**
+ * @brief Initialize a numeric display's rectangle and value from a resource source.
+ * @param display Numeric display.
+ * @param x Left edge.
+ * @param y Top edge.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @param value Displayed value.
+ * @param associated Full resource source word.
+ */
+static inline void init_numeric_display(LibObject174F20* display, float x, float y, float width, float height, s32 value, u32 associated)
+{
+    display->init_numeric_resource_rectangle(x, y, width, height, value, static_cast<s32>(associated), 0);
+}
+
+s32 SkillCharacterWindow::func_slotf4(u32 associated)
+{
+    this->selection = D_001B643C->callbacks->controller->selected_records();
+    FieldClass15AE70::func_slot10(associated, 216.0f, 72.0f, 16);
+    LibClass178630* panel = new (0) LibClass178630;
+    this->character_name = new (0) LibObject175140;
+    this->sp_label = new (0) LibObject178750;
+    this->level_label = new (0) LibObject178750;
+    this->mastery_label = new (0) LibObject178750;
+    this->next_level_label = new (0) LibObject178750;
+    this->sp_value = new (0) LibObject174F20;
+    this->mastery_values[1] = new (0) LibObject174F20;
+    this->mastery_values[0] = new (0) LibObject174F20;
+    this->mastery_values[2] = new (0) LibObject174F20;
+    this->max_level_label = new (0) LibObject178750;
+    this->cp_label = new (0) LibObject178750;
+    this->assigned_cp_value = new (0) LibObject174F20;
+    this->cp_separator = new (0) LibObject178750;
+    this->available_cp_value = new (0) LibObject174F20;
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 408.0f, 104.0f, 88.0f);
+    func_0035CBB0(reinterpret_cast<SkillList*>(&this->unk14), panel);
+    lib_container_attach_widget(this->unk10, panel);
+    this->character_name->func_00467AD0(152.0f, 18.0f, 0.0f, 0.0f, static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current].character_name, 0);
+    func_0035C5F0(reinterpret_cast<SkillList*>(&this->unk44), this->character_name);
+    lib_container_attach_widget(this->unk10, this->character_name);
+    this->sp_label->init_resource_rectangle(236.0f, 72.0f, 0.0f, 0.0f, associated, 0x178B, 1);
+    LibObject178750* label = this->sp_label;
+    label->unk94 = 0x806080;
+    label->unk3c = 1;
+    lib_container_attach_widget(this->unk10, this->sp_label);
+    this->cached_sp = character_sp(&static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current]);
+    init_numeric_display(this->sp_value, 308.0f, 72.0f, 72.0f, 24.0f, character_sp(&static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current]), associated);
+    lib_container_attach_widget(this->unk10, this->sp_value);
+    this->mastery_label->init_resource_rectangle(235.0f, 48.0f, 0.0f, 0.0f, associated, 0x178E, 1);
+    label = this->mastery_label;
+    label->unk94 = 0x806080;
+    label->unk3c = 1;
+    this->mastery_label->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->mastery_label);
+    this->level_label->init_resource_rectangle(104.0f, 72.0f, 0.0f, 0.0f, associated, 0x178C, 1);
+    label = this->level_label;
+    label->unk94 = 0x806080;
+    label->unk3c = 1;
+    this->level_label->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->level_label);
+    this->next_level_label->init_resource_rectangle(236.0f, 72.0f, 0.0f, 0.0f, associated, 0x178D, 1);
+    label = this->next_level_label;
+    label->unk94 = 0x806080;
+    label->unk3c = 1;
+    this->next_level_label->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->next_level_label);
+    this->mastery_values[0]->init_numeric_resource_rectangle(152.0f, 72.0f, 72.0f, 24.0f, 1, associated, 0);
+    lib_container_attach_widget(this->unk10, this->mastery_values[0]);
+    this->mastery_values[0]->unk3f = 0;
+    this->mastery_values[1]->init_numeric_resource_rectangle(308.0f, 48.0f, 72.0f, 24.0f, 1, associated, 0);
+    lib_container_attach_widget(this->unk10, this->mastery_values[1]);
+    this->mastery_values[1]->unk3f = 0;
+    this->mastery_values[2]->init_numeric_resource_rectangle(308.0f, 72.0f, 72.0f, 24.0f, 10, associated, 0);
+    lib_container_attach_widget(this->unk10, this->mastery_values[2]);
+    this->mastery_values[2]->unk3f = 0;
+    this->max_level_label->init_resource_rectangle(332.0f, 72.0f, 72.0f, 24.0f, associated, 0x17C6, 1);
+    lib_container_attach_widget(this->unk10, this->max_level_label);
+    this->max_level_label->unk3f = 0;
+    label = this->max_level_label;
+    label->unk94 = 0x508050;
+    label->unk3c = 1;
+    this->cp_label->init_resource_rectangle(104.0f, 48.0f, 0.0f, 0.0f, associated, 0x1788, 1);
+    lib_container_attach_widget(this->unk10, this->cp_label);
+    label = this->cp_label;
+    label->unk94 = 0x806080;
+    label->unk3c = 1;
+    this->cp_label->unk3f = 0;
+    this->assigned_cp_value->init_numeric_resource_rectangle(154.0f, 48.0f, 72.0f, 24.0f, 0, associated, 0);
+    lib_container_attach_widget(this->unk10, this->assigned_cp_value);
+    LibObject174F20* value = this->assigned_cp_value;
+    value->unk9c = 0;
+    value->unk3c = 1;
+    this->assigned_cp_value->unk3f = 0;
+    this->cp_separator->init_resource_rectangle(152.0f, 48.0f, 72.0f, 24.0f, associated, 0x1789, 1);
+    lib_container_attach_widget(this->unk10, this->cp_separator);
+    label = this->cp_separator;
+    label->unk9c = 1;
+    label->unk3c = 1;
+    this->cp_separator->unk3f = 0;
+    this->available_cp_value->init_numeric_resource_rectangle(152.0f, 48.0f, 72.0f, 24.0f, character_cp(&static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current]), associated, 0);
+    lib_container_attach_widget(this->unk10, this->available_cp_value);
+    value = this->available_cp_value;
+    value->unk9c = 2;
+    value->unk3c = 1;
+    this->available_cp_value->unk3f = 0;
+    if (this->selection->count > 1)
+    {
+        ItemCreationClass174C40* left = new (0) ItemCreationClass174C40;
+        ItemCreationClass174C40* right = new (0) ItemCreationClass174C40;
+        if (left == 0 || right == 0)
+        {
+            return 0;
+        }
+        lib_indexed_resource_init(left, 104.0f, 8.0f, 10);
+        lib_indexed_resource_init(right, 360.0f, 8.0f, 11);
+        left->set_scale(1.0f, 1.0f);
+        right->set_scale(1.0f, 1.0f);
+        lib_container_attach_widget(this->unk10, left);
+        lib_container_attach_widget(this->unk10, right);
+        this->first_display = left;
+        this->second_display = right;
+    }
+    u8 hidden = 1;
+    for (s32 index = 0; index < 8; index++)
+    {
+        s32 code = selection_slot(this->selection, index);
+        if (code != 0)
+        {
+            this->codes[index] = code;
+            this->icons[index] = new (0) ItemCreationOptionResourceDisplay;
+            void* resource = field_get_aligned_allocation(D_001B643C->resources, code & 0xFF);
+            FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 4);
+            this->icons[index]->unkcc = resource;
+            this->icons[index]->unkd0 = code;
+            this->icons[index]->func_002D6440(record, 20.0f, 14.0f);
+            if (hidden)
+            {
+                hidden = 0;
+                this->icons[index]->unk3f = 0;
+            }
+            else
+            {
+                this->icons[index]->unk3f = 1;
+            }
+            lib_container_attach_widget(this->unk10, this->icons[index]);
+        }
+    }
+    this->active = 1;
+    SkillController* owner = this->owner;
+    if (owner != 0)
+    {
+        FieldRecordSelection* selection = this->selection;
+        s32 current = selection->current;
+        FieldRecord* entry = &selection->records[current];
+        u8 code = selection->slots[current];
+        SkillCharacterEquipment* detail = &static_cast<SkillCharacterEquipment*>(selection->unk04)[current];
+        owner->entry = entry;
+        owner->detail = detail;
+        owner->code = code;
+    }
+    func_00358310(this);
+    this->sp_label->unk3f = 0;
+    this->sp_value->unk3f = 0;
+    this->level_label->unk3f = 1;
+    this->mastery_label->unk3f = 1;
+    this->next_level_label->unk3f = 1;
+    this->mastery_values[0]->unk3f = 1;
+    this->mastery_values[1]->unk3f = 1;
+    this->mastery_values[2]->unk3f = 1;
+    this->max_level_label->unk3f = 0;
+    this->cp_label->unk3f = 1;
+    this->assigned_cp_value->unk3f = 1;
+    this->cp_separator->unk3f = 1;
+    this->available_cp_value->unk3f = 1;
+    return 1;
+}
 
 SkillCharacterWindow::~SkillCharacterWindow()
 {
@@ -8737,7 +8969,70 @@ void SkillSymbologyWindow::func_slot64()
     func_0023CEA0(this->selection, 1);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_slotbc__20SkillSymbologyWindowFv);
+/**
+ * @brief Checksum the protected symbology state words.
+ * @param states Encoded states.
+ * @param size Size of the state array in bytes.
+ * @return Checksum value.
+ */
+static inline u32 symbology_states_checksum(const s16* states, s32 size)
+{
+    u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+    size /= 2;
+    for (s32 entry = 0; entry < size; entry++)
+    {
+        checksum ^= *states++;
+        checksum = checksum * 2 + 0x73;
+    }
+    return checksum;
+}
+
+/**
+ * @brief Store a spell's symbology state, limited to -9999..9999, when the protected state array is valid.
+ * @param record Character equipment and skill setup.
+ * @param index Spell index, zero through 31.
+ * @param state Signed state: positive enables the spell, negative disables it.
+ */
+static inline void set_symbology_state(SkillCharacterEquipment* record, s32 index, s32 state)
+{
+    if (record->symbology_states_checksum == symbology_states_checksum(record->encoded_symbology_states, sizeof(record->encoded_symbology_states)) && index >= 0 && static_cast<u32>(index) < 32)
+    {
+        state += 32113;
+        // Open-coded rather than clamp(): the extra inline level gives the bounds other registers.
+        state = ee_movn(state, 22114, state < 22114);
+        state = ee_movz(state, 42112, state <= 42112);
+        state -= 32113;
+        record->encoded_symbology_states[index] = state ^ 0x7E93;
+        record->symbology_states_checksum = symbology_states_checksum(record->encoded_symbology_states, sizeof(record->encoded_symbology_states));
+    }
+}
+
+u8 SkillSymbologyWindow::func_slotbc()
+{
+    s32 skill_id, mastery, result_index, remaining;
+    FieldRecordSelection* records = this->records;
+    s32 current = records->current;
+    SkillCharacterEquipment* equipment = &static_cast<SkillCharacterEquipment*>(records->unk04)[current];
+    s32 selected = this->position + this->selected;
+    s32 enabled = func_408EA0(equipment, records->slots[records->current], selected, &skill_id, &mastery, &result_index, &remaining, 1);
+    if (enabled == 0 || selected == 29)
+    {
+        return 3;
+    }
+    if (skill_id == 17)
+    {
+        return 3;
+    }
+    if (enabled == 1)
+    {
+        set_symbology_state(equipment, selected, -(mastery + 1));
+    }
+    else
+    {
+        set_symbology_state(equipment, selected, mastery + 1);
+    }
+    return 1;
+}
 
 u8 SkillSymbologyWindow::func_slotb4()
 {
