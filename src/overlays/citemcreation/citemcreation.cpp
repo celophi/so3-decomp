@@ -3890,11 +3890,11 @@ s32 WorkshopSelectionWindow::func_slotf4(u32 associated)
     this->register_button->unk34 = 6;
     this->back_button->unk34 = 6;
     this->view_button->unk34 = 6;
-    lib_indexed_resource_init(this->register_button, 0x20, 312.0f, 156.4f);
+    lib_indexed_resource_init(this->register_button, 312.0f, 156.4f, 0x20);
     this->register_label->init_resource_rectangle(344.0f, 160.0f, 0.0f, 0.0f, (s32)associated, 0x15F9A, 1);
-    lib_indexed_resource_init(this->view_button, 0x23, 312.0f, 180.4f);
+    lib_indexed_resource_init(this->view_button, 312.0f, 180.4f, 0x23);
     this->view_label->init_resource_rectangle(344.0f, 184.0f, 0.0f, 0.0f, (s32)associated, 0x15F9B, 1);
-    lib_indexed_resource_init(this->back_button, 0x21, 312.0f, 180.4f);
+    lib_indexed_resource_init(this->back_button, 312.0f, 180.4f, 0x21);
     this->back_label->init_resource_rectangle(344.0f, 184.0f, 0.0f, 0.0f, (s32)associated, 0x15F9C, 1);
     this->register_button->set_scale(0.9f, 0.9f);
     this->back_button->set_scale(0.9f, 0.9f);

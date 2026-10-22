@@ -2627,7 +2627,7 @@ s32 ShopActionWindow::func_slotf4(u32 associated)
     lib_panel_init_rectangle(category_panel, 0, 250.0f, 0.0f, 358.0f, 40.0f, 88.0f);
     lib_container_attach_widget(unk10, category_panel);
     previous_category_icon = new (0) LibClass174C40;
-    lib_indexed_resource_init(previous_category_icon, 10, 280.0f, 3.0f);
+    lib_indexed_resource_init(previous_category_icon, 280.0f, 3.0f, 10);
     lib_container_attach_widget(unk10, previous_category_icon);
     category_label = new (0) LibObject178750;
     lib_text_init_resource_rectangle(category_label, static_cast<s32>(associated), SHOP_MSG_WEAPONS, 1, 274.0f, 8.0f, 310.0f, 8.0f);
@@ -2635,7 +2635,7 @@ s32 ShopActionWindow::func_slotf4(u32 associated)
     category_label->set_mode(1);
     lib_container_attach_widget(unk10, category_label);
     next_category_icon = new (0) LibClass174C40;
-    lib_indexed_resource_init(next_category_icon, 11, 554.0f, 3.0f);
+    lib_indexed_resource_init(next_category_icon, 554.0f, 3.0f, 11);
     lib_container_attach_widget(unk10, next_category_icon);
     return 1;
 }

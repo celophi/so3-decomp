@@ -1541,7 +1541,7 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     func_0041AD10(indicator, 24.0f, 24.0f, 144.0f, 24.0f);
     lib_container_attach_widget(unk10, indicator);
     resource_widget = new (0) ItemCreationClass174C40;
-    lib_indexed_resource_init(resource_widget, 0x22, 32.0f, 348.0f);
+    lib_indexed_resource_init(resource_widget, 32.0f, 348.0f, 0x22);
     lib_container_attach_widget(unk10, resource_widget);
     LibObject178750* resource_heading = new (0) LibObject178750;
     lib_text_init_resource_rectangle(resource_heading, associated, TACTICS_MSG_SET_LEADER, 0, 72.0f, 352.0f, 0.0f, 0.0f);

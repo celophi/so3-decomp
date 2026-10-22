@@ -396,12 +396,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453080);
 /**
  * @brief Select the indexed resource and initialize its drawing position.
  * @param object Resource widget.
- * @param index Resource index.
  * @param x Horizontal position.
  * @param y Vertical position.
+ * @param index Resource index.
  * @return Initialization status.
  */
-extern "C" s32 lib_indexed_resource_init(ItemCreationClass174C40* object, s32 index, float x, float y)
+extern "C" s32 lib_indexed_resource_init(ItemCreationClass174C40* object, float x, float y, s32 index)
 {
     LibIndexedResourceState* state = (LibIndexedResourceState*)object;
     state->selected = index;

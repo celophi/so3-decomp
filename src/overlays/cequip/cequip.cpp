@@ -2436,8 +2436,8 @@ s32 EquipCharacterWindow::func_slotf4(u32 associated)
     {
         left_indicator = new (0) ItemCreationClass174C40;
         right_indicator = new (0) ItemCreationClass174C40;
-        lib_indexed_resource_init(left_indicator, 10, 8.0f, 8.0f);
-        lib_indexed_resource_init(right_indicator, 11, 196.0f, 8.0f);
+        lib_indexed_resource_init(left_indicator, 8.0f, 8.0f, 10);
+        lib_indexed_resource_init(right_indicator, 196.0f, 8.0f, 11);
         left_indicator->set_scale(0.9f, 0.9f);
         right_indicator->set_scale(0.9f, 0.9f);
         lib_container_attach_widget(unk10, left_indicator);

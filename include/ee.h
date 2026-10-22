@@ -23,6 +23,21 @@ static inline float ee_max(float left, float right)
 }
 
 /**
+ * @brief Return the EE scalar minimum of two floating-point operands.
+ * @param left First operand.
+ * @param right Second operand.
+ * @return Minimum produced by the EE scalar instruction.
+ * @see Silent Hill 2/3 (CodeWarrior) has the same one-instruction float_min
+ *      (https://github.com/dreamingmoths/memory-of-alessa, include/math.h).
+ */
+static inline float ee_min(float left, float right)
+{
+    float result;
+    asm __volatile__("min.s %0, %1, %2" : "=f"(result) : "f"(left), "f"(right));
+    return result;
+}
+
+/**
  * @brief Request cache prefetch for the supplied address.
  *
  * No memory clobber: pref is only a cache hint and doesn't order loads or
