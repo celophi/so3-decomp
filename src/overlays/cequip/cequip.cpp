@@ -752,9 +752,9 @@ s32 EquipResourceWindow::func_slotf4(u32 associated)
     left_tile->unkd0 = 11;
     middle_tile->unkd0 = 11;
     right_tile->unkd0 = 11;
-    left_tile->func_002D6440(field_find_resource_record(D_001B643C->resources, 5), 0.0f, 0.0f);
-    middle_tile->func_002D6440(field_find_resource_record(D_001B643C->resources, 6), 256.0f, 0.0f);
-    right_tile->func_002D6440(field_find_resource_record(D_001B643C->resources, 7), 512.0f, 0.0f);
+    left_tile->func_002D6440(0.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 5));
+    middle_tile->func_002D6440(256.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 6));
+    right_tile->func_002D6440(512.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 7));
     lib_container_attach_widget(unk10, left_tile);
     lib_container_attach_widget(unk10, middle_tile);
     lib_container_attach_widget(unk10, right_tile);
@@ -1090,7 +1090,7 @@ s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
         void* allocation = mark_allocation;
         factor_marks[index]->unkcc = allocation;
         factor_marks[index]->unkd0 = 14;
-        factor_marks[index]->func_002D6440(record, 13.0f, y);
+        factor_marks[index]->func_002D6440(13.0f, y, record);
         set_resource_scale(factor_marks[index], 0.9f, 0.9f);
         lib_container_attach_widget(FieldClass15AE70::unk10, factor_marks[index]);
         factor_marks[index]->unk3f = 0;
@@ -2464,7 +2464,7 @@ s32 EquipCharacterWindow::func_slotf4(u32 associated)
             FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 4);
             portraits[index]->unkcc = allocation;
             portraits[index]->unkd0 = slot;
-            portraits[index]->func_002D6440(record, 20.0f, 50.0f);
+            portraits[index]->func_002D6440(20.0f, 50.0f, record);
             portraits[index]->unk3f = 0;
             lib_container_attach_widget(unk10, portraits[index]);
         }

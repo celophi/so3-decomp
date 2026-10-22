@@ -946,7 +946,7 @@ s32 AssignInventorDialog::func_slotf4(u32 associated)
     FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 81);
     unkac->unkcc = payload;
     unkac->unkd0 = resource_index;
-    unkac->func_002D6440(record, 18.5f, 18.5f);
+    unkac->func_002D6440(18.5f, 18.5f, record);
     ItemCreationOptionResourceDisplay* display = unkac;
     display->unk50.unk34 = 2.0f;
     display->unk50.unk30 = 2.0f;
@@ -2812,7 +2812,7 @@ extern "C" s32 func_0034FA70(ItemCreationClass185A60* object)
         ItemCreationOptionResourceDisplay* const display = new (0) ItemCreationOptionResourceDisplay;
         display->unkcc = allocation;
         display->unkd0 = 13;
-        display->func_002D6440(record, 0.0f, 0.0f);
+        display->func_002D6440(0.0f, 0.0f, record);
         display->unk50.unk34 = 0.85f;
         display->unk50.unk30 = 0.85f;
         display->unk3c = 1;
@@ -2849,7 +2849,7 @@ extern "C" s32 func_0034FA70(ItemCreationClass185A60* object)
         }
         display->unkcc = allocation;
         display->unkd0 = 0;
-        display->func_002D6440(record, position[0], position[1] - 6.0f);
+        display->func_002D6440(position[0], position[1] - 6.0f, record);
         display->unk34 = 3;
         lib_container_attach_widget(object->unk10, display);
         if (enabled == 0)
@@ -3431,7 +3431,7 @@ s32 WorkshopInventorStrip::func_slotf4(u32 associated)
         FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 16);
         display->unkcc = payload;
         display->unkd0 = 0;
-        display->func_002D6440(record, x + 64.0f * (index % 6), 8.0f);
+        display->func_002D6440(x + 64.0f * (index % 6), 8.0f, record);
         lib_container_attach_widget(unk10, display);
         inventor_portraits[index] = display;
     }
@@ -5788,7 +5788,7 @@ s32 ItemCreationClass186770::func_slotf4(u32 associated)
         ItemCreationOptionResourceDisplay* display = new (0) ItemCreationOptionResourceDisplay;
         display->unkcc = allocation;
         display->unkd0 = slot;
-        display->func_002D6440(record, 10.0f + 72.0f * (index % 3), y);
+        display->func_002D6440(10.0f + 72.0f * (index % 3), y, record);
         display->unk50.unk34 = 1.0f;
         display->unk50.unk30 = 1.0f;
         display->unk3c = 1;
@@ -5809,16 +5809,16 @@ s32 ItemCreationClass186770::func_slotf4(u32 associated)
             switch (column)
             {
             case 0:
-                display->func_002D6440(field_find_resource_record(D_001B643C->unk20, 0x53), 4.0f, y1);
+                display->func_002D6440(4.0f, y1, field_find_resource_record(D_001B643C->unk20, 0x53));
                 break;
             case 1:
-                display->func_002D6440(field_find_resource_record(D_001B643C->unk20, 0x54), 4.0f, y2);
+                display->func_002D6440(4.0f, y2, field_find_resource_record(D_001B643C->unk20, 0x54));
                 break;
             case 2:
-                display->func_002D6440(field_find_resource_record(D_001B643C->unk20, 0x55), 187.0f, y1);
+                display->func_002D6440(187.0f, y1, field_find_resource_record(D_001B643C->unk20, 0x55));
                 break;
             case 3:
-                display->func_002D6440(field_find_resource_record(D_001B643C->unk20, 0x56), 187.0f, y2);
+                display->func_002D6440(187.0f, y2, field_find_resource_record(D_001B643C->unk20, 0x56));
                 break;
             }
             display->unk50.unk34 = 2.0f;
@@ -6059,7 +6059,7 @@ s32 TransferInventorStrip::func_slotf4(u32 associated)
         FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 16);
         resource->unkcc = allocation;
         resource->unkd0 = 0;
-        resource->func_002D6440(record, offset + 64.0f * (index % 6), 8.0f);
+        resource->func_002D6440(offset + 64.0f * (index % 6), 8.0f, record);
         lib_container_attach_widget(unk10, resource);
         unkac[index] = resource;
     }
@@ -6462,7 +6462,7 @@ s32 PendingInventorSummary::func_slotf4(u32 associated)
     display->unk50.unk34 = 1.0f;
     display->unk50.unk30 = 1.0f;
     display->unk3c = 1;
-    display->func_002D6440(resource_record, 8.0f, 9.0f);
+    display->func_002D6440(8.0f, 9.0f, resource_record);
     lib_container_attach_widget(unk10, display);
     unkb0 = new (0) LibObject178750;
     unkb0->init_resource_rectangle(78.0f, 9.0f, 0.0f, 0.0f, (s32)associated, unkb8 + 0x3584, 0);
@@ -6636,7 +6636,7 @@ s32 InventorInformationWindow::func_slotf4(u32 associated)
     portrait_display = new (0) ItemCreationOptionResourceDisplay;
     portrait_display->unkcc = allocation;
     portrait_display->unkd0 = 49;
-    portrait_display->func_002D6440(record, 22.0f, 18.0f);
+    portrait_display->func_002D6440(22.0f, 18.0f, record);
     ItemCreationOptionResourceDisplay* resource = portrait_display;
     resource->unk50.unk34 = 1.0f;
     resource->unk50.unk30 = 1.0f;
@@ -6809,7 +6809,7 @@ s32 ItemCreationControlHelp::func_slotf4(u32 associated)
     void* data = field_get_aligned_allocation(D_001B643C->unk20, 0);
     unkcc->unkcc = data;
     unkcc->unkd0 = 0;
-    unkcc->func_002D6440(field_find_resource_record(D_001B643C->unk20, 25), 5.0f, 126.0f);
+    unkcc->func_002D6440(5.0f, 126.0f, field_find_resource_record(D_001B643C->unk20, 25));
     {
         u32 value = checked_fol(D_001B6430->unk04);
         unkd0->init_numeric_resource_rectangle(32.0f, 126.0f, 126.0f, 24.0f, value, (s32)associated, 0);
@@ -6817,7 +6817,7 @@ s32 ItemCreationControlHelp::func_slotf4(u32 associated)
     }
     unkd4->unkcc = data;
     unkd4->unkd0 = 0;
-    unkd4->func_002D6440(field_find_resource_record(D_001B643C->unk20, 25), 5.0f, 140.0f);
+    unkd4->func_002D6440(5.0f, 140.0f, field_find_resource_record(D_001B643C->unk20, 25));
     {
         u32 value = checked_fol(D_001B6430->unk04);
         unkd8->init_numeric_resource_rectangle(32.0f, 140.0f, 126.0f, 24.0f, value, (s32)associated, 0);
@@ -7354,7 +7354,7 @@ s32 InventoryItemInstanceList::func_slot104(u32 associated)
         unk150[index]->unkcc = allocation;
         unk150[index]->unkd0 = 14;
         float y = 16.0f + 28.0f * index;
-        unk150[index]->func_002D6440(record, 30.0f, y);
+        unk150[index]->func_002D6440(30.0f, y, record);
         ItemCreationOptionResourceDisplay* resource = unk150[index];
         resource->unk50.unk34 = 0.95f;
         resource->unk50.unk30 = 0.95f;
@@ -8573,7 +8573,7 @@ s32 PlanItemGroupWindow::func_slotf4(u32 associated)
         FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, index + 50);
         unke0[index]->unkcc = allocation;
         unke0[index]->unkd0 = 14;
-        unke0[index]->func_002D6440(record, 16.0f, y);
+        unke0[index]->func_002D6440(16.0f, y, record);
         lib_container_attach_widget(unk10, unke0[index]);
     }
     unkf8 = new (0) LibObject178750;
@@ -10473,7 +10473,7 @@ s32 AssignedInventorGrid::func_slotf4(u32 associated)
         ItemCreationOptionResourceDisplay* image = new (0) ItemCreationOptionResourceDisplay;
         image->unkcc = allocation;
         image->unkd0 = 0;
-        image->func_002D6440(record, 6.0f + 72.0f * (index % 3), y);
+        image->func_002D6440(6.0f + 72.0f * (index % 3), y, record);
         image->unk50.unk34 = 2.0f;
         image->unk50.unk30 = 2.0f;
         image->unk3c = 1;
@@ -10497,16 +10497,16 @@ s32 AssignedInventorGrid::func_slotf4(u32 associated)
             switch (column)
             {
             case 0:
-                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 83), 230.0f, top);
+                image->func_002D6440(230.0f, top, field_find_resource_record(D_001B643C->unk20, 83));
                 break;
             case 1:
-                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 84), 230.0f, bottom);
+                image->func_002D6440(230.0f, bottom, field_find_resource_record(D_001B643C->unk20, 84));
                 break;
             case 2:
-                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 85), 259.0f, top);
+                image->func_002D6440(259.0f, top, field_find_resource_record(D_001B643C->unk20, 85));
                 break;
             case 3:
-                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 86), 259.0f, bottom);
+                image->func_002D6440(259.0f, bottom, field_find_resource_record(D_001B643C->unk20, 86));
                 break;
             }
 
@@ -10534,16 +10534,16 @@ s32 AssignedInventorGrid::func_slotf4(u32 associated)
             switch (column)
             {
             case 0:
-                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 83), 302.0f, top);
+                image->func_002D6440(302.0f, top, field_find_resource_record(D_001B643C->unk20, 83));
                 break;
             case 1:
-                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 84), 302.0f, bottom);
+                image->func_002D6440(302.0f, bottom, field_find_resource_record(D_001B643C->unk20, 84));
                 break;
             case 2:
-                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 85), 450.0f, top);
+                image->func_002D6440(450.0f, top, field_find_resource_record(D_001B643C->unk20, 85));
                 break;
             case 3:
-                image->func_002D6440(field_find_resource_record(D_001B643C->unk20, 86), 450.0f, bottom);
+                image->func_002D6440(450.0f, bottom, field_find_resource_record(D_001B643C->unk20, 86));
                 break;
             }
 
@@ -10588,7 +10588,7 @@ s32 AssignedInventorGrid::func_slotf4(u32 associated)
         ItemCreationOptionResourceDisplay* image = new (0) ItemCreationOptionResourceDisplay;
         image->unkcc = data;
         image->unkd0 = kind;
-        image->func_002D6440(resource, 10.0f + 72.0f * (index % 3), y);
+        image->func_002D6440(10.0f + 72.0f * (index % 3), y, resource);
         image->unk50.unk34 = 1.0f;
         image->unk50.unk30 = 1.0f;
         image->unk3c = 1;
@@ -11266,8 +11266,7 @@ s32 AvailableInventorGrid::func_slotf4(u32 associated)
         ItemCreationOptionResourceDisplay* widget = new (0) ItemCreationOptionResourceDisplay;
         widget->unkcc = allocation;
         widget->unkd0 = 0;
-        widget->func_002D6440(record,
-                     6.0f + 61.7142868f * (index % 7), 6.0f + 72.0f * (index / 7));
+        widget->func_002D6440(6.0f + 61.7142868f * (index % 7), 6.0f + 72.0f * (index / 7), record);
         widget->unk50.unk30 = 1.71428573f;
         widget->unk50.unk34 = 2.0f;
         widget->unk3c = 1;
@@ -11296,8 +11295,7 @@ s32 AvailableInventorGrid::func_slotf4(u32 associated)
         ItemCreationOptionResourceDisplay* widget = new (0) ItemCreationOptionResourceDisplay;
         widget->unkcc = allocation;
         widget->unkd0 = resource;
-        widget->func_002D6440(record,
-                     x + 61.7142868f * (index % 7), y + 72.0f * (index / 7));
+        widget->func_002D6440(x + 61.7142868f * (index % 7), y + 72.0f * (index / 7), record);
         widget->unk50.unk30 = 0.856999993f;
         widget->unk50.unk34 = 1.0f;
         widget->unk3c = 1;
@@ -12120,7 +12118,7 @@ s32 DevelopmentTeamsWindow::func_slotf4(u32 associated)
         ItemCreationOptionResourceDisplay* display = new (0) ItemCreationOptionResourceDisplay;
         display->unkcc = allocation;
         display->unkd0 = 0;
-        display->func_002D6440(record, inset + 66.0f * (index % 3), 4.0f + 75.0f * (index / 3));
+        display->func_002D6440(inset + 66.0f * (index % 3), 4.0f + 75.0f * (index / 3), record);
         lib_container_attach_widget(unk10, display);
         unka8[index] = display;
         unka8[index]->unk34 = 3;
@@ -12196,7 +12194,7 @@ s32 DevelopmentTeamsWindow::func_slotf4(u32 associated)
         columns = 7;
         display->unkcc = allocation;
         display->unkd0 = 0;
-        display->func_002D6440(record, inset + 44.57f * (index % columns), 236.0f + 78.0f * (index / columns));
+        display->func_002D6440(inset + 44.57f * (index % columns), 236.0f + 78.0f * (index / columns), record);
         display->unk50.unk30 = 0.6857f;
         display->unk50.unk34 = 1.0f;
         display->unk3c = 1;
@@ -12824,11 +12822,11 @@ s32 ItemCreationBackground::func_slotf4(u32 associated)
     middle_display->unkd0 = 11;
     right_display->unkd0 = 11;
     FieldResourceRecord* record = field_find_resource_record(D_001B643C->unk20, 5);
-    left_display->func_002D6440(record, 0.0f, 0.0f);
+    left_display->func_002D6440(0.0f, 0.0f, record);
     record = field_find_resource_record(D_001B643C->unk20, 6);
-    middle_display->func_002D6440(record, 256.0f, 0.0f);
+    middle_display->func_002D6440(256.0f, 0.0f, record);
     record = field_find_resource_record(D_001B643C->unk20, 7);
-    right_display->func_002D6440(record, 512.0f, 0.0f);
+    right_display->func_002D6440(512.0f, 0.0f, record);
     ItemCreationOptionResourceDisplay* display = left_display;
     display->unk50.unk44 = 200.0f;
     display->unk50.unk48 = 200.0f;

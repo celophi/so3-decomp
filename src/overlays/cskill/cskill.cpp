@@ -1151,6 +1151,8 @@ extern "C" u64 D_4ED330[];
 
 extern "C" LibVector4 D_50CD30;
 
+extern "C" const char D_364EF8[];
+
 extern "C" void func_2CEAF0(void* object, s32 flag);
 
 extern "C" void* func_2BC410(void* object, s16 flag);
@@ -6866,7 +6868,7 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
             FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 4);
             this->icons[index]->unkcc = resource;
             this->icons[index]->unkd0 = code;
-            this->icons[index]->func_002D6440(record, 20.0f, 14.0f);
+            this->icons[index]->func_002D6440(20.0f, 14.0f, record);
             if (hidden)
             {
                 hidden = 0;
@@ -7273,9 +7275,9 @@ s32 SkillSecondarySelection::func_slotf4(u32 associated)
     icon_first->unkd0 = 0;
     icon_second->unkd0 = 0;
     icon_third->unkd0 = 0;
-    icon_second->func_002D6440(field_find_resource_record(D_001B643C->resources, 0x12), 32.0f, 11.0f);
-    icon_first->func_002D6440(field_find_resource_record(D_001B643C->resources, 0x14), 32.0f, 38.0f);
-    icon_third->func_002D6440(field_find_resource_record(D_001B643C->resources, 0x15), 32.0f, 65.0f);
+    icon_second->func_002D6440(32.0f, 11.0f, field_find_resource_record(D_001B643C->resources, 0x12));
+    icon_first->func_002D6440(32.0f, 38.0f, field_find_resource_record(D_001B643C->resources, 0x14));
+    icon_third->func_002D6440(32.0f, 65.0f, field_find_resource_record(D_001B643C->resources, 0x15));
     lib_container_attach_widget(this->unk10, icon_first);
     lib_container_attach_widget(this->unk10, icon_second);
     lib_container_attach_widget(this->unk10, icon_third);
@@ -7436,9 +7438,9 @@ s32 SkillResourceWindow::func_slotf4(u32 associated)
     first->unkd0 = 11;
     second->unkd0 = 11;
     third->unkd0 = 11;
-    first->func_002D6440(field_find_resource_record(D_001B643C->resources, 5), 0.0f, 0.0f);
-    second->func_002D6440(field_find_resource_record(D_001B643C->resources, 6), 256.0f, 0.0f);
-    third->func_002D6440(field_find_resource_record(D_001B643C->resources, 7), 512.0f, 0.0f);
+    first->func_002D6440(0.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 5));
+    second->func_002D6440(256.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 6));
+    third->func_002D6440(512.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 7));
     lib_container_attach_widget(this->unk10, first);
     lib_container_attach_widget(this->unk10, second);
     lib_container_attach_widget(this->unk10, third);
@@ -8687,7 +8689,330 @@ u32 skill_mask_character_flags(SkillCharacterStats* record, u32 flags)
     return mask_character_flags(record, flags);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0035FAA0);
+static inline void set_widget_rectangle(LibClass178600* object, float x, float y, float width, float height)
+{
+    object->unk18.unk00 = x;
+    object->unk18.unk04 = y;
+    object->unk18.unk08 = width;
+    object->unk18.unk0c = height;
+    object->unk3c = 1;
+}
+
+/**
+ * @brief Append a selectable position to a coordinate selector.
+ * @param selector Coordinate selector.
+ * @param x Horizontal coordinate.
+ * @param y Vertical coordinate.
+ */
+static inline void append_selector_position(SkillCoordinateSelector* selector, float x, float y)
+{
+    func_00364BF0(&selector->nodes, SkillPairValue(x, y));
+}
+
+s32 SkillOptionsWindow::func_slotf4(u32 associated)
+{
+    s32 source = associated;
+    this->records = static_cast<SkillController*>(D_001B643C->callbacks->controller)->selected_records();
+    this->x = 16.0f;
+    this->y = 216.0f;
+    FieldClass15AE70::func_slot10(source, this->x, this->y, 15);
+    this->child = new (0) SkillCoordinateSelector;
+    if (this->child == 0)
+    {
+        return 0;
+    }
+    lib_moving_widget_init_position(this->child, 0.0f, 0.0f);
+    lib_container_attach_widget(this->unk10, this->child);
+    this->row_height = 128.0f;
+    for (s32 row = 0; row < 8; row++)
+    {
+        float panel_y;
+        float badge_x;
+        float badge_y;
+        float value_x;
+        float hp_row_y;
+        float mp_row_y;
+        float panel_x;
+        float indicator_x;
+        float hp_y;
+        float value_height;
+        float column_width;
+        s32 column;
+        if (row < 3)
+        {
+            column_width = 196.0f;
+            panel_y = 0.0f;
+            column = row;
+        }
+        else
+        {
+            panel_y = this->row_height;
+            column = row - 3;
+            column_width = 118.0f;
+        }
+        LibClass178630* panel = new (0) LibClass178630;
+        panel_x = 8.0f + column_width * (float)column;
+        lib_panel_init_rectangle(panel, 1, panel_x, panel_y, 3.0f + column_width, 2.0f + this->row_height, 88.0f);
+        lib_container_attach_widget(this->unk10, panel);
+        hp_row_y = 50.0f + panel_y;
+        mp_row_y = 78.0f + panel_y;
+        if (row < 3)
+        {
+            value_x = 68.0f + panel_x;
+            badge_x = 98.0f + panel_x;
+            badge_y = 36.0f + panel_y;
+        }
+        else
+        {
+            value_x = 8.0f + panel_x;
+            badge_x = 65.0f + panel_x;
+            badge_y = 12.0f + panel_y;
+        }
+        s16 index = row;
+        s8 slot = this->records->slots[index];
+        if (slot > 0)
+        {
+            if (row < 3)
+            {
+                this->labels[row] = new (0) LibObject175140;
+                this->labels[row]->func_00467AD0(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
+                    slot > 0 ? static_cast<SkillCharacterEquipment*>(this->records->unk04)[index].character_name : D_364EF8, 0);
+                lib_container_attach_widget(this->unk10, this->labels[row]);
+                this->labels[row]->set_scale(0.8f, 0.8f);
+                if (reinterpret_cast<SkillCharacterStats*>(this->records->records)[index].get_flags() & 5)
+                {
+                    this->labels[row]->set_color(0x505080);
+                }
+                else
+                {
+                    this->labels[row]->set_color(0x808080);
+                }
+            }
+            this->hp_values[row] = new (0) LibObject174F20;
+            if (row < 3)
+            {
+                hp_y = 16.0f + hp_row_y;
+                value_height = 19.2f;
+                column_width = 56.0f;
+                this->hp_values[row]->init_numeric_resource_rectangle(3.0f + value_x, hp_y, column_width, value_height, 0, 1, 0);
+            }
+            else
+            {
+                hp_y = 16.0f + hp_row_y;
+                value_height = 19.2f;
+                column_width = 56.0f;
+                this->hp_values[row]->init_numeric_resource_rectangle(40.0f + value_x, hp_y, column_width, value_height, 0, 1, 0);
+            }
+            this->hp_values[row]->set_scale(0.8f, 0.8f);
+            set_cost_value(this->hp_values[row], character_hp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
+            lib_container_attach_widget(this->unk10, this->hp_values[row]);
+            if (row < 3)
+            {
+                LibObject178750* separator = new (0) LibObject178750;
+                separator->init_resource_rectangle(60.0f + value_x, hp_y, 0.0f, 0.0f, source, 0x17A2, 0);
+                separator->set_scale(0.8f, 0.8f);
+                lib_container_attach_widget(this->unk10, separator);
+                this->max_hp_values[row] = new (0) LibObject174F20;
+                this->max_hp_values[row]->init_numeric_resource_rectangle(61.0f + value_x, hp_y, column_width, value_height, 0, 1, 0);
+                this->max_hp_values[row]->set_scale(0.8f, 0.8f);
+                set_cost_value(this->max_hp_values[row], character_max_hp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
+                lib_container_attach_widget(this->unk10, this->max_hp_values[row]);
+            }
+            this->mp_values[row] = new (0) LibObject174F20;
+            if (row < 3)
+            {
+                value_height = 16.0f + mp_row_y;
+                this->mp_values[row]->init_numeric_resource_rectangle(3.0f + value_x, value_height, column_width, 0.0f, 1, 0, 0);
+            }
+            else
+            {
+                value_height = 16.0f + mp_row_y;
+                this->mp_values[row]->init_numeric_resource_rectangle(40.0f + value_x, value_height, column_width, 0.0f, 1, 0, 0);
+            }
+            this->mp_values[row]->set_scale(0.8f, 0.8f);
+            set_cost_value(this->mp_values[row], character_mp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
+            lib_container_attach_widget(this->unk10, this->mp_values[row]);
+            if (row < 3)
+            {
+                LibObject178750* separator = new (0) LibObject178750;
+                separator->init_resource_rectangle(60.0f + value_x, value_height, 0.0f, 0.0f, source, 0x17A2, 0);
+                separator->set_scale(0.8f, 0.8f);
+                lib_container_attach_widget(this->unk10, separator);
+                this->max_mp_values[row] = new (0) LibObject174F20;
+                this->max_mp_values[row]->init_numeric_resource_rectangle(61.0f + value_x, value_height, column_width, 0.0f, 1, 0, 0);
+                this->max_mp_values[row]->set_scale(0.8f, 0.8f);
+                set_cost_value(this->max_mp_values[row], character_max_mp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
+                lib_container_attach_widget(this->unk10, this->max_mp_values[row]);
+            }
+            this->indicators[row] = new (0) ItemCreationOptionResourceDisplay;
+            u8 character = slot;
+            void* resource = field_get_aligned_allocation(D_001B643C->resources, character);
+            FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 4);
+            this->indicators[row]->unkcc = resource;
+            this->indicators[row]->unkd0 = character;
+            if (row < 3)
+            {
+                indicator_x = 14.0f + panel_x;
+                this->indicators[row]->func_002D6440(indicator_x, 48.0f + panel_y, record);
+                ItemCreationOptionResourceDisplay* indicator = this->indicators[row];
+                indicator->unk50.unk34 = 0.8f;
+                indicator->unk50.unk30 = 0.8f;
+                indicator->unk3c = 1;
+            }
+            else
+            {
+                indicator_x = 14.0f + panel_x;
+                this->indicators[row]->func_002D6440(indicator_x, 12.0f + panel_y, record);
+                ItemCreationOptionResourceDisplay* indicator = this->indicators[row];
+                indicator->unk50.unk34 = 0.65f;
+                indicator->unk50.unk30 = 0.65f;
+                indicator->unk3c = 1;
+            }
+            this->indicators[row]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->indicators[row]);
+            resource = field_get_aligned_allocation(D_001B643C->resources, 0);
+            record = field_find_resource_record(D_001B643C->resources, 40);
+            this->badges[row][0] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][0]->unkcc = resource;
+            this->badges[row][0]->unkd0 = 0;
+            ItemCreationOptionResourceDisplay* badge = this->badges[row][0];
+            badge->unk50.unk34 = 0.8f;
+            badge->unk50.unk30 = 0.8f;
+            badge->unk3c = 1;
+            this->badges[row][0]->func_002D6440(badge_x, badge_y, record);
+            this->badges[row][0]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->badges[row][0]);
+            record = field_find_resource_record(D_001B643C->resources, 39);
+            this->badges[row][1] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][1]->unkcc = resource;
+            this->badges[row][1]->unkd0 = 0;
+            badge = this->badges[row][1];
+            badge->unk50.unk34 = 0.8f;
+            badge->unk50.unk30 = 0.8f;
+            badge->unk3c = 1;
+            if (row < 3)
+            {
+                this->badges[row][1]->func_002D6440(35.0f + badge_x, badge_y, record);
+            }
+            else
+            {
+                this->badges[row][1]->func_002D6440(25.0f + badge_x, badge_y, record);
+            }
+            this->badges[row][1]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->badges[row][1]);
+            record = field_find_resource_record(D_001B643C->resources, 38);
+            this->badges[row][2] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][2]->unkcc = resource;
+            this->badges[row][2]->unkd0 = 0;
+            badge = this->badges[row][2];
+            badge->unk50.unk34 = 0.8f;
+            badge->unk50.unk30 = 0.8f;
+            badge->unk3c = 1;
+            if (row < 3)
+            {
+                this->badges[row][2]->func_002D6440(70.0f + badge_x, badge_y, record);
+            }
+            else
+            {
+                this->badges[row][2]->func_002D6440(25.0f + badge_x, 30.0f + badge_y, record);
+            }
+            this->badges[row][2]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->badges[row][2]);
+            resource = field_get_aligned_allocation(D_001B643C->resources, (u8)(slot + 0x30));
+            record = field_find_resource_record(D_001B643C->resources, 4);
+            this->badges[row][3] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][3]->unkcc = resource;
+            this->badges[row][3]->unkd0 = 0;
+            if (row < 3)
+            {
+                this->badges[row][3]->func_002D6440(indicator_x, 48.0f + panel_y, record);
+                badge = this->badges[row][3];
+                badge->unk50.unk34 = 0.8f;
+                badge->unk50.unk30 = 0.8f;
+                badge->unk3c = 1;
+            }
+            else
+            {
+                this->badges[row][3]->func_002D6440(indicator_x, 12.0f + panel_y, record);
+                badge = this->badges[row][3];
+                badge->unk50.unk34 = 0.65f;
+                badge->unk50.unk30 = 0.65f;
+                badge->unk3c = 1;
+            }
+            this->badges[row][3]->unk3f = reinterpret_cast<SkillCharacterStats*>(this->records->records)[index].get_flags() & 5;
+            lib_container_attach_widget(this->unk10, this->badges[row][3]);
+            SkillHpMpGauge* gauge = new (0) SkillHpMpGauge;
+            gauge->character_id = slot;
+            gauge->characters = D_001B643C->characters;
+            LibCameraContext* context = D_001B6650;
+            gauge->FieldClass159A70::unk1c = 0x800 - context->viewport_width / 2;
+            gauge->FieldClass159A70::unk20 = 0x800 - context->viewport_height / 2;
+            gauge->FieldClass159A70::unk24 = 0x800 + context->viewport_width / 2;
+            gauge->FieldClass159A70::unk28 = 0x800 + context->viewport_height / 2;
+            gauge->initialize(1, 0, 0, 0.0f, 0.0f, 0.0f);
+            if (row < 3)
+            {
+                gauge->origin.x = 22.0f + value_x;
+                gauge->origin.y = 32.0f + hp_row_y;
+                gauge->row_spacing = 30.0f;
+            }
+            else
+            {
+                gauge->origin.x = 20.0f + value_x;
+                gauge->origin.y = 32.0f + hp_row_y;
+                gauge->row_spacing = 25.0f;
+                gauge->FieldClass159A70::unk0c = 80.0f;
+                gauge->FieldClass159A70::unk10 = 5.0f;
+            }
+            gauge->func_002BC370(0x80);
+            gauge->FieldClass159A70::unk04 = this->unk10;
+            lib_queue_display_object(D_001B657C, gauge);
+            func_003649E0(reinterpret_cast<SkillList*>(&this->nested), gauge);
+            gauge->LibClass174610::unkab = 0;
+        }
+        else
+        {
+            LibObject178750* empty = new (0) LibObject178750;
+            empty->init_resource_rectangle(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f, source, 0x179E, 0);
+            set_widget_rectangle(empty, panel_x, (panel_y + this->row_height / 2.0f) - 9.6f, column_width, 24.0f);
+            empty->set_mode(1);
+            if (row < 3)
+            {
+                empty->set_scale(0.8f, 0.8f);
+            }
+            else
+            {
+                empty->set_scale(0.8f * 0.8f, 0.8f * 0.8f);
+            }
+            empty->unk3f = 1;
+            lib_container_attach_widget(this->unk10, empty);
+        }
+        if (row < 3)
+        {
+            append_selector_position(this->child, 14.0f + panel_x, 88.0f + panel_y);
+        }
+        else
+        {
+            append_selector_position(this->child, 14.0f + panel_x, 47.0f + panel_y);
+        }
+    }
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(this->child), 0, 1);
+    this->child->unk3f = 0;
+    this->unk10->LibClass174610::unkab = 0;
+    SkillListNode* node = this->nested.head->next;
+    while (node != 0)
+    {
+        static_cast<LibClass174610*>(node->value)->unkab = 0;
+        node = node->next;
+    }
+    node = this->nested.head->next;
+    while (node != 0)
+    {
+        static_cast<LibClass174610*>(node->value)->func_0044B100(1, 1, 1);
+        node = node->next;
+    }
+    return 1;
+}
 
 /** @brief Destroy the movement storage and intrusive widget base. */
 inline ItemCreationClass175030::~ItemCreationClass175030()
@@ -9169,7 +9494,7 @@ s32 SkillSymbologyWindow::func_slotf4(u32 associated)
         spell_icons[entry] = new (0) ItemCreationOptionResourceDisplay;
         spell_icons[entry]->unkcc = icon_resource;
         spell_icons[entry]->unkd0 = 0;
-        spell_icons[entry]->func_002D6440(field_find_resource_record(resources, 22), x - 32.0f, y);
+        spell_icons[entry]->func_002D6440(x - 32.0f, y, field_find_resource_record(resources, 22));
         ItemCreationOptionResourceDisplay* icon = spell_icons[entry];
         icon->unk50.unk34 = 0.85f;
         icon->unk50.unk30 = 0.85f;
@@ -9439,7 +9764,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
             marker_record = field_find_resource_record(D_001B643C->resources, 4);
             character_markers[slot].available->unkcc = marker_resource;
             character_markers[slot].available->unkd0 = character;
-            character_markers[slot].available->func_002D6440(marker_record, 36.0f, 46.0f);
+            character_markers[slot].available->func_002D6440(36.0f, 46.0f, marker_record);
             character_markers[slot].available->unk3f = 0;
             lib_container_attach_widget(unk10, character_markers[slot].available);
 
@@ -9448,7 +9773,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
             character_markers[slot].unavailable = new (0) ItemCreationOptionResourceDisplay;
             character_markers[slot].unavailable->unkcc = marker_resource;
             character_markers[slot].unavailable->unkd0 = 0;
-            character_markers[slot].unavailable->func_002D6440(marker_record, 36.0f, 46.0f);
+            character_markers[slot].unavailable->func_002D6440(36.0f, 46.0f, marker_record);
             character_markers[slot].unavailable->unk3f = 0;
             lib_container_attach_widget(unk10, character_markers[slot].unavailable);
             if (first_character)
@@ -9474,7 +9799,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     marker0->unk50.unk34 = 0.8f;
     marker0->unk50.unk30 = 0.8f;
     marker0->unk3c = 1;
-    condition_markers[0]->func_002D6440(condition_record, 125.0f, 42.0f);
+    condition_markers[0]->func_002D6440(125.0f, 42.0f, condition_record);
     condition_markers[0]->unk3f = 0;
     lib_container_attach_widget(unk10, condition_markers[0]);
 
@@ -9486,7 +9811,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     marker1->unk50.unk34 = 0.8f;
     marker1->unk50.unk30 = 0.8f;
     marker1->unk3c = 1;
-    condition_markers[1]->func_002D6440(condition_record, 157.0f, 42.0f);
+    condition_markers[1]->func_002D6440(157.0f, 42.0f, condition_record);
     condition_markers[1]->unk3f = 0;
     lib_container_attach_widget(unk10, condition_markers[1]);
 
@@ -9498,7 +9823,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     marker2->unk50.unk34 = 0.8f;
     marker2->unk50.unk30 = 0.8f;
     marker2->unk3c = 1;
-    condition_markers[2]->func_002D6440(condition_record, 189.0f, 42.0f);
+    condition_markers[2]->func_002D6440(189.0f, 42.0f, condition_record);
     condition_markers[2]->unk3f = 0;
     lib_container_attach_widget(unk10, condition_markers[2]);
 

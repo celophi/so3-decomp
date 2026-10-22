@@ -914,7 +914,7 @@ item_creation_build_transfer_inventor_list = 0x0036A780; // type:func
 
 func_002D5CF0__33ItemCreationOptionResourceDisplayFPvP19FieldResourceRecordUi = 0x002D5CF0; // type:func absolute:True allow_duplicated:True
 func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
-func_002D6440__33ItemCreationOptionResourceDisplayFP19FieldResourceRecordff = 0x002D6440; // type:func absolute:True allow_duplicated:True
+func_002D6440__33ItemCreationOptionResourceDisplayFffP19FieldResourceRecord = 0x002D6440; // type:func absolute:True allow_duplicated:True
 
 func_slot6c__22AbortDevelopmentDialogFv = 0x00350E00; // type:func
 func_slot68__22AbortDevelopmentDialogFv = 0x00350ED0; // type:func

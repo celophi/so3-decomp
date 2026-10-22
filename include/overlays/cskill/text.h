@@ -21,6 +21,9 @@ typedef struct SkillPairValue
 {
     float first;
     float second;
+#ifdef __cplusplus
+    SkillPairValue(float first, float second) : first(first), second(second) {}
+#endif
 } SkillPairValue;
 
 /** List storage begins with an anchor node. */
