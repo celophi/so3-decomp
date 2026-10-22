@@ -321,7 +321,7 @@ public:
     u8 unk29;
     u8 unk2a[2];
     void* unk2c;
-    void* unk30;
+    class FieldClass153270* unk30;
 };
 
 /** Handler for keyed resource requests, decoded buffer delivery, and attachment slots. */

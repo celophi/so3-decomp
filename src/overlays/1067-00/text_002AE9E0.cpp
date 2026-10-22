@@ -1590,7 +1590,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         lib_object_detach_owner(context->object_slots);
         field_detach_object_slots(context->object_slots);
         lib_object_detach_owner(context->unk64);
-        func_002D2170(context->unk64);
+        reinterpret_cast<FieldClass15B0E0*>(context->unk64)->func_002D2170();
         func_002D9730(static_cast<FieldListObject*>(context->unk28));
         lib_object_detach_owner(context->unk28);
         func_0027C020(context->unk58);

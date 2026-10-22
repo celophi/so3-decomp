@@ -28,3 +28,5 @@
 @20@func_004D6730__23FieldResourceLoaderListFv = 0x0023B1B0;
 @20@__dt__23FieldResourceLoaderListFv = 0x0023B1C0;
 @20@update_nodes__23FieldResourceLoaderListFv = 0x0023B1B0;
+// FieldClass15B0E0 (vtable D_15B0E0); kept copy ends text_002CEAF0.
+@20@func_001DDB30__16FieldClass15B0E0FPv = 0x002D3BC0;

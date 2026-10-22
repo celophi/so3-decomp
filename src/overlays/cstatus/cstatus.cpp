@@ -550,85 +550,6 @@ struct StatusRuntimeResource
     s32 resource;
     u32 code;
 };
-/** Status resource receiver with its resident vtable at 0x188CC0. */
-struct StatusResourceState : public FieldClass153E30
-{
-    /** @brief Initialize the resource handle, selection, and transition state. */
-    StatusResourceState();
-    /** @brief Destroy the owned record selection and the Field receiver base. */
-    virtual ~StatusResourceState();
-    /**
-     * @brief Report this object's default list kind.
-     * @return The class's default list kind.
-     */
-    virtual s32 get_default_list_kind();
-    /** @brief Submit this receiver to the resident object queue. */
-    virtual void func_001DD7B0();
-    /** @brief Switch between record and name windows through a timed transition. */
-    virtual void update();
-    /** @brief Leave the status receiver unchanged. */
-    virtual void func_001DD410();
-    /** @brief Report the receiver state. @return One. */
-    virtual u8 func_00264110();
-    /** @brief Set the active window. @param value Window pointer to store. */
-    virtual void func_00263C70(void* value);
-    /** @brief Get the active window. @return Stored window pointer. */
-    virtual void* func_00261150();
-    /** @brief Set the text window. @param value Window pointer to store. */
-    virtual void func_00263C80(void* value);
-    /** @brief Get the text window. @return Stored text window pointer. */
-    virtual void* func_00263C90();
-    /** @brief Set the receiver byte. @param value Signed byte to store. */
-    virtual void func_00263CA0(s8 value);
-    /** @brief Get the receiver byte. @return Stored signed byte. */
-    virtual s8 func_00263CB0();
-    /** @brief Get the loaded resource handle. @return Resource handle. */
-    virtual u32 get_resource_slot();
-    /** @brief Report whether window setup finished. @return Setup flag. */
-    virtual u8 windows_ready();
-    /**
-     * @brief Load the completed status resource and finish receiver setup.
-     * @param buffer Completed resource buffer, or null.
-     * @return Zero without a buffer, otherwise the receiver setup result.
-     */
-    virtual s32 on_resource_loaded(void* buffer);
-    /**
-     * @brief Create and attach the status windows and record selection.
-     * @return One after setup succeeds, or zero otherwise.
-     */
-    virtual s32 init_windows();
-    /** @brief Release the status resource, queue this receiver, and clear its allocation slots. */
-    virtual void func_slot5c();
-    /** @brief Report the default command result. @return Zero. */
-    virtual s32 func_slot60();
-    /** @brief Report the default command result. @return Zero. */
-    virtual s32 func_slot64();
-    /** @brief Leave the resource state unchanged. */
-    virtual void func_slot68();
-    /** @brief Get the record selection. @return Owned record selection. */
-    virtual FieldRecordSelection* selected_records();
-    /** @brief Default receiver callback with no action. */
-    virtual void func_slot70();
-    /** @brief Default receiver callback with no action. */
-    virtual void func_slot74();
-    /** @brief Default receiver callback with no action. */
-    virtual void func_slot78();
-    /** @brief Default receiver callback returning zero. @return Zero. */
-    virtual s32 func_slot7c();
-    /** @brief Default receiver callback returning zero. @return Zero. */
-    virtual s32 func_slot80();
-    /** @brief Default receiver callback returning zero. @return Zero. */
-    virtual s32 func_slot84();
-    s32 resource;
-    u8 setup_complete : 1;
-    u8 unknown_38 : 7;
-    u8 unknown_39[3];
-    FieldRecordSelection* selection;
-    u16 requested_window;
-    u16 transition_phase;
-    StatusCharacterWindow* character_window;
-};
-
 /** Partial effect with transition value and display mode. */
 struct StatusTransitionEffect
 {
@@ -689,7 +610,6 @@ struct StatusWidgetList
 };
 
 extern StatusRuntime* D_001B643C;
-extern "C" s32 func_002CFE40(void* object, s16 index);
 
 extern "C" void* func_100AC0(s32 size, s32 flags);
 
@@ -1626,7 +1546,7 @@ void status_move_name_grid_cursor(StatusNameWindow* object, s32 value)
 
         func_00466E40(&movement, x, 16.0f + (110.0f + 28.0f * row), 1.0f / 15.0f);
         object->selected_grid_cell = value;
-        func_002CFE40(D_001B643C->callbacks, 0);
+        field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->callbacks), 0);
     }
 }
 
@@ -1733,7 +1653,7 @@ void StatusNameWindow::func_slote4()
 
     status_refresh_name_markers(this);
     status_refresh_name_glyphs(this);
-    func_002CFE40(D_001B643C->callbacks, 1);
+    field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->callbacks), 1);
 }
 
 void StatusNameWindow::func_slote0()
@@ -2257,7 +2177,7 @@ void status_begin_scroll(StatusCharacterWindow* object, u16 scroll_page)
             object->scroll_timer = 0.0f;
         }
 
-        func_002CFE40(D_001B643C->callbacks, 0);
+        field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->callbacks), 0);
     }
 }
 

@@ -12,6 +12,7 @@ typedef struct FieldObject153E00 FieldObject153E00;
 
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/1067-00/text_001E1590.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_004DD440.h"
 
@@ -19,6 +20,14 @@ typedef struct FieldObject153E00 FieldObject153E00;
 typedef FieldVec4A FieldVector2624;
 
 /** Partial Field object with vtable D_153E00 in main data; it adds vtable slot 0x1C. */
+/** Partial 0x14-byte object created by func_002BD050; its byte at 0x09 reports readiness. */
+struct FieldObject2BD050
+{
+    u8 unk00[9];
+    u8 unk09;
+    u8 unk0a[0xA];
+};
+
 class FieldClass153E00 : public FieldListObject
 {
 public:
@@ -26,11 +35,31 @@ public:
     virtual ~FieldClass153E00();
     /** @brief Delete the attached object at offset 0x4C. */
     virtual void func_slot1c();
-    u8 unk14[0x19];
+    FieldResourceRequestHandler* request_handler;
+    struct FieldMenuManager* menu_manager;
+    u8 menu;
+    u8 unk1d[3];
+    u16 menu_argument;
+    u8 unk22[0xB];
     u8 unk2d;
-    u8 unk2e[0x1E];
+    u8 unk2e;
+    u8 unk2f;
+    s32 unk30;
+    u32 menu_resource_key;
+    u8 unk38[4];
+    struct FieldObject2BD050* unk3c;
+    u8 unk40[0xC];
     FieldListObject* unk4c;
 };
+
+/**
+ * @brief Select the resources for a menu.
+ * @param owner Menu owner; receives the menu's base resource key.
+ * @param menu Menu to open.
+ * @param argument Menu argument.
+ * @return The menu's keyed resource, or -1 when it has none.
+ */
+extern "C" s32 func_00261160(FieldClass153E00* owner, u8 menu, s32 argument);
 #else
 /** Four aligned floating-point components used by the field vector helpers. */
 typedef struct FieldVector2624
@@ -52,6 +81,7 @@ typedef union FieldVector262900
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 /**
  * @brief Restore the receiver's table pointer and delete it when the signed flag is positive.

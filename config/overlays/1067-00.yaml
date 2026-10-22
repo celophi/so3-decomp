@@ -130,6 +130,8 @@ segments:
       - [0x13D4C0, .rodata, text_00207AF0]
       - [0x13D4CB, pad, camera_format_align]
       - [0x13D4D0, rodatabin, rodata_31A850]
+      - [0x13DCD0, .rodata, text_002CEAF0]
+      - [0x13DD58, rodatabin, rodata_31B0D8]
       - [0x14D4A0, .rodata, text_002F9C90]
       - [0x14D4B8, rodatabin, rodata_32A838]
   - name: init

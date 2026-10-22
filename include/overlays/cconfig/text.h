@@ -3,16 +3,6 @@
 
 #include "types.h"
 
-typedef struct
-{
-    void* methods;
-    u8 pad_04[0x30];
-    u32 field_34;
-    u8 field_38;
-    u8 pad_39[7];
-    u32 field_40;
-} ConfigControl;
-
 typedef struct ConfigList182210 ConfigList182210;
 typedef struct ConfigList182200 ConfigList182200;
 typedef struct ConfigColorOwner ConfigColorOwner;
@@ -952,13 +942,6 @@ void func_003497F0(void* object);
  * @param selected Index of the icon to color differently.
  */
 void func_003486E0(void* object, s16 selected);
-
-/**
- * @brief Initialize the control fields.
- * @param object Control object to initialize.
- * @return The initialized object.
- */
-ConfigControl* func_00352460(ConfigControl* object);
 
 /**
  * @brief Find a node by index in the linked list.

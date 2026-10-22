@@ -16,7 +16,7 @@ FieldObject23B950* func_4C4960(FieldObject23B950* object);
 FieldObject23C180* func_0023D0C0(FieldObject23C180* object, s16 flags);
 void __dl__FPv(void* object);
 void func_466E40(void* point, float x, float y, float scale);
-void func_002CFE40(void* target, s32 value);
+s32 field_play_menu_sound(struct FieldMenuManager* manager, s16 sound);
 void func_467570(FieldObject23D020* object, s32 enabled, s32 first, s32 second, float first_float, float second_float, float third_float);
 void func_421170(FieldObject23B850* object, FieldTarget23B850* target,
                  float x, float y, float z, float scale);
@@ -114,7 +114,7 @@ struct FieldObject23B280
 struct FieldGlobal643C
 {
     u8 unk00[0x10];
-    void* target;
+    struct FieldMenuManager* menu_manager;
 };
 
 extern struct FieldGlobal643C* D_001B643C;
@@ -138,7 +138,7 @@ s32 func_0023B1D0(FieldObject23B1D0* object, s32 index, s32 direct)
     else
     {
         func_466E40(object->point40, node->x, node->y, 0.05f);
-        func_002CFE40(D_001B643C->target, 0);
+        field_play_menu_sound(D_001B643C->menu_manager, 0);
     }
     object->selected = index;
     return 1;
@@ -276,14 +276,6 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023C2
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023C360);
 
-/** Partial FieldListObject subclass with vtable D_153270 in main data. */
-class FieldClass153270 : public FieldListObject
-{
-public:
-    /** @brief Destroy the object. */
-    virtual ~FieldClass153270();
-};
-
 FieldClass153270::~FieldClass153270()
 {
 }
@@ -330,7 +322,7 @@ s16 FieldObject23CEA0::process_direction(s16 direction)
     }
     if (unkF3[0] != 1)
     {
-        func_002CFE40(D_001B643C->target, 0);
+        field_play_menu_sound(D_001B643C->menu_manager, 0);
     }
     return unkF3[0];
 }

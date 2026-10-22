@@ -1,3 +1,4 @@
+#include "overlays/cconfig/config_controller.h"
 #include "include_asm.h"
 #include "overlays/cconfig/text.h"
 #include "main/resident_data.h"
@@ -245,7 +246,6 @@ typedef struct
 } ConfigIconOwner;
 
 extern ConfigRuntime* D_001B643C;
-extern "C" s32 func_002CFE40(void* object, s16 index);
 
 extern "C" void func_2642D0(void* object);
 extern u8 D_182170[];
@@ -895,7 +895,7 @@ void func_0034A300(ConfigBindingWindow* object)
     D_001B643C->settings->bindings[2] = object->values[2];
     D_001B643C->settings->bindings[3] = object->values[3];
     static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(0x1FBC);
-    func_002CFE40(D_001B643C->unk10, 2);
+    field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->unk10), 2);
 }
 
 u32 func_0034A420(void* object)
@@ -2124,7 +2124,7 @@ void ConfigOptions::func_slotac()
         else
         {
             func_0034D180(this, static_cast<u8>(selected), 0x20);
-            func_002CFE40(D_001B643C->unk10, 0);
+            field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->unk10), 0);
         }
     }
 }
@@ -2141,7 +2141,7 @@ void ConfigOptions::func_slota8()
         else
         {
             func_0034D180(this, static_cast<u8>(selected), 0x80);
-            func_002CFE40(D_001B643C->unk10, 0);
+            field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->unk10), 0);
         }
     }
 }
@@ -3493,14 +3493,11 @@ void* func_00352400(void* object, s32 flags)
     return object;
 }
 
-ConfigControl* func_00352460(ConfigControl* object)
+ConfigController::ConfigController()
 {
-    func_2642D0(object);
-    object->methods = D_182170;
-    object->field_34 = 0;
-    object->field_38 = 0;
-    object->field_40 = 0;
-    return object;
+    resource = 0;
+    unk38 = 0;
+    unk40 = 0;
 }
 
 void ItemCreationClass185050::func_slot0c()

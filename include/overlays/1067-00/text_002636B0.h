@@ -221,6 +221,52 @@ void func_0026C000(FieldOuterC000* object);
 
 #ifdef __cplusplus
 #include "overlays/1067-00/text_002CD390.h"
+#include "overlays/1067-00/text_001DD3C0.h"
+#include "overlays/1067-00/text_001E1590.h"
+
+/** @brief Release every child the receiver holds. @param receiver Callback receiver. */
+extern "C" void func_00264010(FieldClass153E30* receiver);
+
+/** Field menu controller created for menu 1, with vtables D_154AD0 and D_154AE0 in main data. Partial. */
+class FieldClass154AD0 : public FieldClass1DD400, public FieldClass153E30
+{
+    public:
+        /** @brief Initialize both bases and clear the controller state. */
+        FieldClass154AD0();
+
+        /** @brief Destroy the controller and its bases. */
+        virtual ~FieldClass154AD0();
+
+        /**
+         * @brief Allocate and initialize the controller's record selection.
+         * @return One when initialization succeeds; otherwise zero.
+         */
+        virtual u8 func_00264110();
+
+        /** @brief Report whether window setup finished. @return Setup flag. */
+        virtual u8 windows_ready();
+
+        /**
+         * @brief Load the completed menu resource and create the windows.
+         * @param buffer Completed resource buffer.
+         * @return Window creation result.
+         */
+        virtual s32 on_resource_loaded(void* buffer);
+
+        /** @brief Create the menu windows. @return One after setup. */
+        virtual s32 init_windows();
+
+        /** @brief Return the loaded resource slot. @return Resource slot. */
+        virtual u32 get_resource_slot();
+
+        /** @brief Release the controller's resources and dispatch its release handler. */
+        virtual void func_slot5c();
+
+        /** @brief Submit the controller to the resident object queue. */
+        virtual void func_001DD7B0();
+
+        u8 unk38[0x200 - 0x38];
+};
 
 /** Partial Field window with vtable D_1547D0 in main data and an object list at offset 0xFC. */
 class FieldClass1547D0 : public FieldClass15AE70

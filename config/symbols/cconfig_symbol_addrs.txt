@@ -1,8 +1,9 @@
 __vt__16ConfigList182210 = 0x00182210; // size:0xC
 __vt__16ConfigList182200 = 0x00182200; // size:0xC
 __nw__FUii = 0x00100AC0; // type:func
-func_2642D0 = 0x002642D0; // type:func
-D_182170 = 0x00182170;
+func_2642D0 = 0x002642D0; // type:func allow_duplicated:True
+D_182170 = 0x00182170; // absolute:True allow_duplicated:True
+__vt__16ConfigController = 0x00182170; // absolute:True allow_duplicated:True
 func_264230 = 0x00264230; // type:func
 func_4618F0 = 0x004618F0; // type:func
 func_4C48B0 = 0x004C48B0; // type:func
@@ -191,6 +192,7 @@ lib_panel_detach = 0x004C4A90; // type:func absolute:True
 remove_child__16FieldClass153E30FPv = 0x00263F50; // type:func absolute:True
 
 field_queue_window_removal = 0x002CFE10; // type:func absolute:True
+field_play_menu_sound = 0x002CFE40; // type:func absolute:True
 
 lib_container_attach_widget = 0x004C6190; // type:func absolute:True allow_duplicated:True
 
@@ -241,3 +243,5 @@ field_find_resource_record = 0x002D3CC0; // type:func absolute:True allow_duplic
 
 func_002D3D80 = 0x002D3D80; // type:func absolute:True allow_duplicated:True
 field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_duplicated:True
+__ct__16ConfigControllerFv = 0x00352460; // type:func
+__ct__16FieldClass153E30Fv = 0x002642D0; // type:func absolute:True allow_duplicated:True
