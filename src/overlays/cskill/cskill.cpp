@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "clamp.h"
 #include "overlays/cskill/text.h"
 #include "main/resident_data.h"
 #include "main/resident_001001E0.h"
@@ -14,6 +15,9 @@
 #include "overlays/lib/resource_widget_inlines.h"
 #include "overlays/lib/list_indicator_inlines.h"
 #include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/marker_widget_inlines.h"
+#include "overlays/lib/movement_widget_inlines.h"
+#include "overlays/lib/text_004DD440.h"
 #include "overlays/1067-00/text_002D5260.h"
 #include "overlays/lib/text_003F90C0.h"
 #include "overlays/1067-00/text_002CEAF0.h"
@@ -137,6 +141,16 @@ typedef struct SkillCharacterStats
     u8 unk94[0x14];
     u32 checksum_salt;
     u8 unkac[0x18];
+    /** @brief Decode the protected flag word. @return Flags, or five when the check word is invalid. */
+    u32 get_flags() const
+    {
+        s32 experience = encoded_experience;
+        if (flags_experience_checksum != (checksum_salt ^ (experience ^ (encoded_flags + checksum_salt))))
+        {
+            return 5;
+        }
+        return encoded_flags ^ SKILL_FLAG_ENCODING_MASK;
+    }
 } SkillCharacterStats;
 
 /** Partial menu resource header; resource buffers begin on a 128-byte boundary. */
@@ -521,11 +535,22 @@ struct SkillRuntimeCallbacks
 /** Partial resident runtime view. */
 struct SkillRuntime
 {
-    u8 unk00[0xC];
+    u8 unk00[4];
+    /** Party character stats. */
+    SkillCharacterStats* characters;
+    u8 unk08[4];
     FieldSlotRecordOwner1C* loader;
     SkillRuntimeCallbacks* callbacks;
     u8 unk14[0xC];
     FieldBufferSlots* resources;
+};
+
+/** Partial Field runtime reached through D_001B657C. */
+struct FieldRuntime
+{
+    u8 unk00[0x568];
+    /** Integer arguments substituted into the next message. */
+    s32 message_arguments[1];
 };
 
 /** Linked node containing a pair of float values. */
@@ -574,7 +599,8 @@ typedef struct SkillCharacterWindow : public FieldClass15AE70
     LibObject174F20* mastery_values[3];
     LibObject178750* max_level_label;
     u32 unke4[3];
-    u8 unkf0[4];
+    /** SP shown when the window was opened. */
+    s32 cached_sp;
     u8 changed;
     u8 unkf5[3];
     SkillStatusSkillWindow* status_skills;
@@ -584,7 +610,7 @@ typedef struct SkillCharacterWindow : public FieldClass15AE70
     SkillTacticalDetailWindow* tactical_details;
     LibClass178600* first_display;
     LibClass178600* second_display;
-    LibClass178600* icons[8];
+    ItemCreationOptionResourceDisplay* icons[8];
     u8 codes[8];
     u8 active;
     u8 unk13d[3];
@@ -639,6 +665,11 @@ struct SkillCharacterEquipment
 /** Coordinate selector with an owned pair list after its movement state. */
 struct SkillCoordinateSelector : public LibClass175030
 {
+    /** @brief Initialize an empty coordinate list with no selected entry. */
+    SkillCoordinateSelector()
+    {
+        selected = -1;
+    }
     /** @brief Destroy the coordinate list and movement bases. */
     virtual ~SkillCoordinateSelector();
     /** @brief Report the intrusive object kind. @return Three. */
@@ -682,7 +713,8 @@ struct SkillOptionsWindow : public FieldClass15AE70
     SkillCoordinateSelector* child;
     float x;
     float y;
-    void* unkb8;
+    /** Height of each character panel. */
+    float row_height;
     SkillList184268 nested;
     LibObject174F20* hp_values[8];
     LibObject174F20* mp_values[8];
@@ -695,15 +727,35 @@ struct SkillOptionsWindow : public FieldClass15AE70
     s32 selected_index;
 };
 
+/** Gauge origin, zeroed on construction. */
+struct SkillGaugeOrigin
+{
+    /** @brief Start at the origin. */
+    SkillGaugeOrigin()
+    {
+        x = y = 0.0f;
+    }
+    float x;
+    float y;
+};
+
 /** Draw the paired HP and MP gauges for one character. */
 struct SkillHpMpGaugeDrawer : public FieldClass159A70
 {
+    /** @brief Clear the origin, spacing and character link. */
+    SkillHpMpGaugeDrawer()
+    {
+        origin.x = 0.0f;
+        origin.y = 0.0f;
+        row_spacing = 0.0f;
+        character_id = 0;
+        characters = 0;
+    }
     /** @brief Release the drawing packet and base. */
     virtual ~SkillHpMpGaugeDrawer();
     /** @brief Rebuild the drawing packet. @param first Unused draw flag. @param depth Unused drawing depth. @param value Unused drawing value. */
     virtual void func_002BC4F0(u32 first, u32 depth, float value);
-    float x;
-    float y;
+    SkillGaugeOrigin origin;
     float row_spacing;
     s16 character_id;
     u8 unk3e[2];
@@ -771,6 +823,11 @@ typedef struct SkillTacticalWindow : public FieldClass15AE70
 /** HP and MP gauge transform with drawing and DMA notification interfaces. */
 struct SkillHpMpGauge : public FieldClass1599E0, public SkillHpMpGaugeDrawer
 {
+    /** @brief Initialize the gauge bases with release not yet queued. */
+    SkillHpMpGauge()
+    {
+        queued_for_release = 0;
+    }
     /** @brief Release the drawing and transform bases. */
     virtual ~SkillHpMpGauge();
     /** @brief Submit the drawing packet for DMA notification. */
@@ -1079,6 +1136,7 @@ struct SkillTacticalPromptWindow : FieldClass15AE70
 };
 
 extern "C" SkillRuntime* D_001B643C;
+extern "C" LibCameraContext* D_001B6650;
 
 /** @brief Set display flags for the selected window lists. @param object Window base. @param flag Flag value. @param lists List-selection bit mask. */
 extern "C" void func_002CE530(FieldClass15AE70* object, u32 flag, u32 lists);
@@ -1251,7 +1309,7 @@ static inline s32 cycle_status_record(SkillCharacterWindow* status, s32 forward)
     }
     if (status->status_rows != 0)
     {
-        func_00354190(status->status_rows);
+        skill_refresh_battle_skill_rows(status->status_rows);
     }
     if (status->mode_query != 0)
     {
@@ -1430,20 +1488,114 @@ static inline u32 character_hp(SkillCharacterStats* record)
     return encoded ^ SKILL_FLAG_ENCODING_MASK;
 }
 
-/** @brief Decode a saved tactical state after validating its checksum. @param record Character equipment and skill setup. @param index Known tactical skill index. @return Signed state, or zero for an invalid checksum. */
-static inline s32 saved_tactical_state(SkillCharacterEquipment* record, s32 index)
+/**
+ * @brief Add flag bits when the protected flags checksum is valid.
+ * @param record Character statistics.
+ * @param flags Flag bits to add.
+ * @return Updated decoded flags, or five when the checksum is invalid.
+ */
+static inline u32 add_character_flags(SkillCharacterStats* record, u32 flags)
+{
+    if (record->flags_experience_checksum != (((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt))
+    {
+        return 5;
+    }
+    u32 value = record->encoded_flags;
+    record->encoded_flags = ((value ^ SKILL_FLAG_ENCODING_MASK) | flags) ^ SKILL_FLAG_ENCODING_MASK;
+    record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt;
+    return record->encoded_flags ^ SKILL_FLAG_ENCODING_MASK;
+}
+
+/**
+ * @brief Retain selected flag bits when the protected flags checksum is valid.
+ * @param record Character statistics.
+ * @param flags Mask of flag bits to retain.
+ * @return Updated decoded flags, or five when the checksum is invalid.
+ */
+static inline u32 mask_character_flags(SkillCharacterStats* record, u32 flags)
+{
+    if (record->flags_experience_checksum != (((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt))
+    {
+        return 5;
+    }
+    u32 value = record->encoded_flags;
+    record->encoded_flags = ((value ^ SKILL_FLAG_ENCODING_MASK) & flags) ^ SKILL_FLAG_ENCODING_MASK;
+    record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt;
+    return record->encoded_flags ^ SKILL_FLAG_ENCODING_MASK;
+}
+
+/**
+ * @brief Clamp a requested HP or MP value to the record's stat limit.
+ * @param record Character statistics; stat_limit_type selects the limit.
+ * @param value Requested value.
+ * @return value limited to 0..99999 for limit type 0, 0..99999999 for type 1, or unchanged otherwise.
+ */
+static inline s32 clamp_character_stat(SkillCharacterStats* record, s32 value)
+{
+    value += 32113;
+    if (record->stat_limit_type == 0)
+    {
+        value = clamp(value, 32113, 132112);
+    }
+    if (record->stat_limit_type == 1)
+    {
+        value = clamp(value, 32113, 100032112);
+    }
+    value -= 32113;
+    return value;
+}
+
+/** @brief Checksum the seven protected tactical state bytes. @param states Encoded states. @return Checksum value. */
+static inline u32 tactical_skill_states_checksum(const u8* states)
 {
     u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
     for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
     {
-        checksum ^= record->encoded_tactical_skill_states[entry];
+        checksum ^= *states++;
         checksum = checksum * 2 + 0x31;
     }
-    if (record->tactical_skill_states_checksum != checksum)
+    return checksum;
+}
+
+/** @brief Decode a saved tactical state after validating its checksum. @param record Character equipment and skill setup. @param index Known tactical skill index. @return Signed state, or zero for an invalid checksum. */
+static inline s32 saved_tactical_state(SkillCharacterEquipment* record, s32 index)
+{
+    if (record->tactical_skill_states_checksum != tactical_skill_states_checksum(record->encoded_tactical_skill_states))
+    {
+        return 0;
+    }
+    if (index < 0)
+    {
+        return 0;
+    }
+    if (static_cast<u32>(index) >= SKILL_TACTICAL_MODE_COUNT)
     {
         return 0;
     }
     return reinterpret_cast<const s8*>(record->encoded_tactical_skill_states)[index] ^ SKILL_TACTICAL_STATE_XOR_KEY;
+}
+
+/**
+ * @brief Decode the saved state for a tactical mode read from a row table.
+ * @param record Character equipment and skill setup.
+ * @param mode Tactical mode.
+ * @return Signed state, or zero for an invalid checksum or mode.
+ */
+static inline s32 tactical_mode_state(SkillCharacterEquipment* record, s32 mode)
+{
+    if (record->tactical_skill_states_checksum != tactical_skill_states_checksum(record->encoded_tactical_skill_states))
+    {
+        return 0;
+    }
+    if (mode < 0)
+    {
+        return 0;
+    }
+    if (static_cast<u32>(mode) >= SKILL_TACTICAL_MODE_COUNT)
+    {
+        return 0;
+    }
+    return (s8)record->encoded_tactical_skill_states[mode] ^ SKILL_TACTICAL_STATE_XOR_KEY;
 }
 
 /** @brief Append an available Aura type to the detail grid choices. @param object Tactical detail window. @param available Decoded availability mask. @param aura One-based Aura type. */
@@ -1452,6 +1604,323 @@ static inline void append_available_aura(SkillTacticalDetailWindow* object, u8 a
     if (available & (1 << (aura - 1)))
     {
         object->aura_indices[object->aura_row_count++] = aura;
+    }
+}
+
+extern "C" s32 func_40AE00(s32 character, s32 code);
+extern "C" s32 func_4087A0(s32 skill, s32 level, SkillCharacterEquipment* record);
+
+extern "C" s32 func_4086D0(SkillCharacterEquipment* record, s32 level, s32 kind);
+
+/** @brief Decode base HP after validating its checksum. @param record Character stats. @return Base HP, or zero after marking a corrupted record. */
+static inline u32 character_base_hp(SkillCharacterStats* record)
+{
+    if (record->hp_checksum != ((record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+    return record->encoded_base_hp ^ SKILL_FLAG_ENCODING_MASK;
+}
+
+/** @brief Decode maximum HP after validating its checksum. @param record Character stats. @return Maximum HP, or zero after marking a corrupted record. */
+static inline u32 checked_max_hp(SkillCharacterStats* record)
+{
+    if (record->hp_checksum != ((record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+    return record->encoded_max_hp ^ SKILL_FLAG_ENCODING_MASK;
+}
+
+/** @brief Decode base MP after validating its checksum. @param record Character stats. @return Base MP, or zero after marking a corrupted record. */
+static inline u32 character_base_mp(SkillCharacterStats* record)
+{
+    if (record->mp_checksum != ((record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+    return record->encoded_base_mp ^ SKILL_FLAG_ENCODING_MASK;
+}
+
+/** @brief Decode maximum MP after validating its checksum. @param record Character stats. @return Maximum MP, or zero after marking a corrupted record. */
+static inline u32 checked_max_mp(SkillCharacterStats* record)
+{
+    if (record->mp_checksum != ((record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+    return record->encoded_max_mp ^ SKILL_FLAG_ENCODING_MASK;
+}
+
+/** @brief Locate the selected character's equipment and skill setup. @param selection Character record selection. @return Selected record. */
+static inline SkillCharacterEquipment* selected_equipment(FieldRecordSelection* selection)
+{
+    return &static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current];
+}
+
+/** @brief Locate the selected character's protected stats. @param selection Character record selection. @return Selected stats record. */
+static inline SkillCharacterStats* selected_stats(FieldRecordSelection* selection)
+{
+    return &reinterpret_cast<SkillCharacterStats*>(selection->records)[selection->current];
+}
+
+/** @brief Checksum the five protected status skill level bytes. @param levels Encoded levels. @return Checksum value. */
+static inline u32 status_skill_levels_checksum(const u8* levels)
+{
+    u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+    for (s32 entry = 0; entry < 5; entry++)
+    {
+        checksum ^= *levels++;
+        checksum = checksum * 2 + 0x31;
+    }
+    return checksum;
+}
+
+/**
+ * @brief Decode a status skill level after validating the protected level array.
+ * @param record Character equipment and skill setup.
+ * @param index Status skill index.
+ * @return Level, or zero for a failed checksum or an invalid index.
+ */
+static inline s32 status_skill_level(SkillCharacterEquipment* record, s32 index)
+{
+    if (record->status_skill_levels_checksum != status_skill_levels_checksum(record->encoded_status_skill_levels))
+    {
+        return 0;
+    }
+    if (index < 0)
+    {
+        return 0;
+    }
+    if (static_cast<u32>(index) >= 5)
+    {
+        return 0;
+    }
+    return record->encoded_status_skill_levels[index] ^ SKILL_TACTICAL_STATE_XOR_KEY;
+}
+
+/**
+ * @brief Store a status skill level, limited to 0..10, when the protected level array is valid.
+ * @param record Character equipment and skill setup.
+ * @param index Status skill index.
+ * @param level New level.
+ */
+static inline void set_status_skill_level(SkillCharacterEquipment* record, s32 index, s32 level)
+{
+    if (record->status_skill_levels_checksum != status_skill_levels_checksum(record->encoded_status_skill_levels))
+    {
+        return;
+    }
+    if (index < 0 || static_cast<u32>(index) >= 5)
+    {
+        return;
+    }
+    level += 32113;
+    level = clamp(level, 32113, 32123);
+    level -= 32113;
+    record->encoded_status_skill_levels[index] = level ^ SKILL_TACTICAL_STATE_XOR_KEY;
+    record->status_skill_levels_checksum = status_skill_levels_checksum(record->encoded_status_skill_levels);
+}
+
+/** @brief Decode SP after validating the SP/CP checksum. @param record Character equipment and skill setup. @return SP, or zero after corruption. */
+static inline s32 character_sp(SkillCharacterEquipment* record)
+{
+    if (record->sp_cp_checksum != (((record->encoded_cp + record->checksum_salt) ^ record->encoded_sp) ^ record->checksum_salt))
+    {
+        return 0;
+    }
+    return record->encoded_sp ^ 0x7E93;
+}
+
+/** @brief Decode CP after validating the SP/CP checksum. @param record Character equipment and skill setup. @return CP, or zero after corruption. */
+static inline s32 character_cp(SkillCharacterEquipment* record)
+{
+    u32 key = record->checksum_salt;
+    s32 encoded = record->encoded_cp;
+    return (record->sp_cp_checksum != (key ^ (record->encoded_sp ^ (encoded + key)))) ? 0 : (encoded ^ 0x7E93);
+}
+
+/** @brief Decode CP after validating the SP/CP checksum, reading the checksum first. @param record Character equipment and skill setup. @return CP, or zero after corruption. */
+static inline s32 checked_character_cp(SkillCharacterEquipment* record)
+{
+    if (record->sp_cp_checksum != (record->checksum_salt ^ (record->encoded_sp ^ (record->encoded_cp + record->checksum_salt))))
+    {
+        return 0;
+    }
+    return record->encoded_cp ^ 0x7E93;
+}
+
+/** @brief Checksum the six protected battle skill index bytes. @param indices Encoded indices. @return Checksum value. */
+static inline u32 battle_skill_indices_checksum(const u8* indices)
+{
+    u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+    for (s32 entry = 0; entry < 6; entry++)
+    {
+        checksum ^= *indices++;
+        checksum = checksum * 2 + 0x31;
+    }
+    return checksum;
+}
+
+/**
+ * @brief Decode a battle slot's one-based skill index after validating the protected index array.
+ * @param record Character equipment and skill setup.
+ * @param slot Battle slot.
+ * @return One-based skill index, or zero for an empty slot, a failed checksum, or an invalid slot.
+ */
+static inline s32 battle_skill_index(SkillCharacterEquipment* record, s32 slot)
+{
+    if (record->battle_skill_indices_checksum != battle_skill_indices_checksum(record->encoded_battle_skill_indices))
+    {
+        return 0;
+    }
+    if (slot < 0)
+    {
+        return 0;
+    }
+    if (static_cast<u32>(slot) >= 6)
+    {
+        return 0;
+    }
+    return record->encoded_battle_skill_indices[slot] ^ SKILL_TACTICAL_STATE_XOR_KEY;
+}
+
+/**
+ * @brief Show the assigned CP sum, clamped at zero, and the selected character's available CP.
+ * @param status Character status window.
+ * @param sum Assigned CP sum.
+ */
+static inline void refresh_battle_cp_values(SkillCharacterWindow* status, s32 sum)
+{
+    if (status->assigned_cp_value != 0)
+    {
+        if (sum < 0)
+        {
+            sum = 0;
+        }
+        set_cost_value(status->assigned_cp_value, sum);
+    }
+    if (status->selection != 0)
+    {
+        SkillCharacterEquipment* record = selected_equipment(status->selection);
+        if (record != 0)
+        {
+            s32 cp = checked_character_cp(record);
+            set_cost_value(status->available_cp_value, cp);
+        }
+    }
+}
+
+/** @brief Store SP, limited to 0..9999, when the SP/CP checksum is valid. @param record Character equipment and skill setup. @param sp New SP. */
+static inline void set_character_sp(SkillCharacterEquipment* record, s32 sp)
+{
+    if (record->sp_cp_checksum != (((record->encoded_cp + record->checksum_salt) ^ record->encoded_sp) ^ record->checksum_salt))
+    {
+        return;
+    }
+    sp += 32113;
+    sp = clamp(sp, 32113, 42112);
+    sp -= 32113;
+    record->encoded_sp = sp ^ 0x7E93;
+    record->sp_cp_checksum = ((record->encoded_cp + record->checksum_salt) ^ record->encoded_sp) ^ record->checksum_salt;
+}
+
+/** @brief Store a clamped base HP when the HP checksum is valid, otherwise flag the record. @param record Character stats. @param value Requested base HP. */
+static inline void set_character_base_hp(SkillCharacterStats* record, s32 value)
+{
+    if (record->hp_checksum != ((record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt))
+    {
+        skill_add_character_flags(record, 1);
+        return;
+    }
+    value = skill_clamp_character_hp(record, value);
+    if (value < 0)
+    {
+        value = 0;
+    }
+    record->encoded_base_hp = value ^ SKILL_FLAG_ENCODING_MASK;
+    record->hp_checksum = (record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt;
+}
+
+/** @brief Store a clamped maximum HP and lower current HP to it, or flag a corrupted record. @param record Character stats. @param value Requested maximum HP. */
+static inline void set_character_max_hp(SkillCharacterStats* record, s32 value)
+{
+    if (record->hp_checksum != ((record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt))
+    {
+        skill_add_character_flags(record, 1);
+        return;
+    }
+    value = skill_clamp_character_hp(record, value);
+    if (value < 0)
+    {
+        value = 0;
+    }
+    record->encoded_max_hp = value ^ SKILL_FLAG_ENCODING_MASK;
+    record->hp_checksum = (record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt;
+    if (value < (s32)skill_character_hp(record))
+    {
+        skill_set_character_hp(record, value);
+    }
+}
+
+/** @brief Store a clamped base MP when the MP checksum is valid, otherwise flag the record. @param record Character stats. @param value Requested base MP. */
+static inline void set_character_base_mp(SkillCharacterStats* record, s32 value)
+{
+    if (record->mp_checksum != ((record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt))
+    {
+        skill_add_character_flags(record, 1);
+        return;
+    }
+    value = skill_clamp_character_mp(record, value);
+    record->encoded_base_mp = value ^ SKILL_FLAG_ENCODING_MASK;
+    record->mp_checksum = (record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt;
+}
+
+/** @brief Store a clamped maximum MP and lower current MP to it, or flag a corrupted record. @param record Character stats. @param value Requested maximum MP. */
+static inline void set_character_max_mp(SkillCharacterStats* record, s32 value)
+{
+    if (record->mp_checksum != ((record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt))
+    {
+        skill_add_character_flags(record, 1);
+        return;
+    }
+    value = skill_clamp_character_mp(record, value);
+    record->encoded_max_mp = value ^ SKILL_FLAG_ENCODING_MASK;
+    record->mp_checksum = (record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt;
+    if (value < (s32)skill_character_mp(record))
+    {
+        skill_set_character_mp(record, value);
+    }
+}
+
+/** @brief Checksum the seven protected tactical state bytes. @param states Encoded states. @return Checksum value. */
+static inline u32 tactical_states_checksum(const u8* states)
+{
+    u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+    for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
+    {
+        checksum ^= *states++;
+        checksum = checksum * 2 + 0x31;
+    }
+    return checksum;
+}
+
+/**
+ * @brief Store a tactical state when the protected state array is valid.
+ * @param record Character equipment and skill setup.
+ * @param index Tactical skill index.
+ * @param state Signed state to store.
+ */
+static inline void set_tactical_state(SkillCharacterEquipment* record, s32 index, s32 state)
+{
+    if (record->tactical_skill_states_checksum == tactical_states_checksum(record->encoded_tactical_skill_states) && index >= 0 && static_cast<u32>(index) < SKILL_TACTICAL_MODE_COUNT)
+    {
+        reinterpret_cast<s8*>(record->encoded_tactical_skill_states)[index] = state ^ SKILL_TACTICAL_STATE_XOR_KEY;
+        record->tactical_skill_states_checksum = tactical_states_checksum(record->encoded_tactical_skill_states);
     }
 }
 
@@ -2065,7 +2534,130 @@ void SkillCostWindow::func_slot60(s32 key)
     }
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_00348D10);
+s32 SkillCostWindow::func_slotf4(u32 associated)
+{
+    if (static_cast<signed long long>(static_cast<s32>(associated)) == 0)
+    {
+        return 0;
+    }
+    FieldClass15AE70::func_slot10(associated, 16.0f, 384.0f, 16);
+    LibClass178630* frame = new (0) LibClass178630;
+    this->title = new (0) LibObject178750;
+    this->multiplier_label = new (0) LibObject178750;
+    this->damage_label = new (0) LibObject178750;
+    this->multiplier_units = new (0) LibObject174F20;
+    this->decimal_point = new (0) LibObject178750;
+    this->multiplier_tenths = new (0) LibObject174F20;
+    this->multiplier_hundredths = new (0) LibObject174F20;
+    this->cp_label = new (0) LibObject178750;
+    this->cp_value = new (0) LibObject174F20;
+    this->fury_label = new (0) LibObject178750;
+    this->fury_value = new (0) LibObject174F20;
+    this->hp_mp_label = new (0) LibObject178750;
+    this->hp_mp_value = new (0) LibObject174F20;
+    lib_panel_init_rectangle(frame, 0, 0.0f, 0.0f, 608.0f, 80.0f, 88.0f);
+    lib_container_attach_widget(this->unk10, frame);
+    this->title->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, associated, SKILL_MSG_BLANK, 0);
+    LibObject178750* heading = this->title;
+    heading->unk88 = -1.0f;
+    heading->unk3c = 1;
+    lib_container_attach_widget(this->unk10, this->title);
+    this->damage_label->init_resource_rectangle(442.0f, 18.0f, 0.0f, 0.0f, associated, 0x17C1, 1);
+    this->damage_label->set_color(0x248CFA);
+    this->damage_label->set_scale(0.7f, 0.7f);
+    LibObject178750* damage = this->damage_label;
+    damage->unk88 = 2.0f;
+    damage->unk3c = 1;
+    this->damage_label->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->damage_label);
+    this->multiplier_label->init_resource_rectangle(423.0f, 46.0f, 0.0f, 0.0f, associated, 0x17C0, 1);
+    this->multiplier_label->set_color(0x248CFA);
+    this->multiplier_label->set_scale(0.7f, 0.7f);
+    LibObject178750* multiplier = this->multiplier_label;
+    multiplier->unk88 = 2.0f;
+    multiplier->unk3c = 1;
+    this->multiplier_label->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->multiplier_label);
+    lib_numeric_widget_init_rectangle(this->multiplier_units, 9, associated, 1, 436.0f, 42.0f, 12.0f, 20.0f);
+    this->multiplier_units->set_scale(0.85f, 0.85f);
+    this->multiplier_units->set_color(0x288080);
+    this->multiplier_units->set_mode(1);
+    this->multiplier_units->set_vertical_alignment(1);
+    this->multiplier_units->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->multiplier_units);
+    this->decimal_point->init_resource_rectangle(448.0f, 45.0f, 0.0f, 0.0f, associated, 0x17C5, 1);
+    this->decimal_point->set_color(0x248CFA);
+    this->decimal_point->set_scale(0.7f, 0.7f);
+    LibObject178750* point = this->decimal_point;
+    point->unk88 = 2.0f;
+    point->unk3c = 1;
+    this->decimal_point->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->decimal_point);
+    lib_numeric_widget_init_rectangle(this->multiplier_tenths, 8, associated, 1, 454.0f, 42.0f, 12.0f, 20.0f);
+    this->multiplier_tenths->set_scale(0.85f, 0.85f);
+    this->multiplier_tenths->set_color(0x288080);
+    this->multiplier_tenths->set_mode(1);
+    this->multiplier_tenths->set_vertical_alignment(1);
+    this->multiplier_tenths->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->multiplier_tenths);
+    lib_numeric_widget_init_rectangle(this->multiplier_hundredths, 7, associated, 1, 466.0f, 42.0f, 12.0f, 20.0f);
+    this->multiplier_hundredths->set_scale(0.85f, 0.85f);
+    this->multiplier_hundredths->set_color(0x288080);
+    this->multiplier_hundredths->set_mode(1);
+    this->multiplier_hundredths->set_vertical_alignment(1);
+    this->multiplier_hundredths->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->multiplier_hundredths);
+    this->cp_label->init_resource_rectangle(572.0f, 18.0f, 0.0f, 0.0f, associated, SKILL_MSG_CP, 1);
+    this->cp_label->set_color(0x248CFA);
+    this->cp_label->set_scale(0.7f, 0.7f);
+    LibObject178750* cp = this->cp_label;
+    cp->unk88 = 2.0f;
+    cp->unk3c = 1;
+    this->cp_label->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->cp_label);
+    this->fury_label->init_resource_rectangle(532.0f, 18.0f, 0.0f, 0.0f, associated, 0x17C2, 1);
+    this->fury_label->set_color(0x248CFA);
+    this->fury_label->set_scale(0.7f, 0.7f);
+    LibObject178750* fury = this->fury_label;
+    fury->unk88 = 2.0f;
+    fury->unk3c = 1;
+    this->fury_label->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->fury_label);
+    this->hp_mp_label->init_resource_rectangle(498.0f, 18.0f, 0.0f, 0.0f, associated, SKILL_MSG_HP_COST, 1);
+    this->hp_mp_label->set_color(0x248CFA);
+    this->hp_mp_label->set_scale(0.7f, 0.7f);
+    LibObject178750* hp_mp = this->hp_mp_label;
+    hp_mp->unk88 = 2.0f;
+    hp_mp->unk3c = 1;
+    this->hp_mp_label->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->hp_mp_label);
+    lib_text_measure_bounds(this->damage_label);
+    float cp_width = lib_text_measure_bounds(this->cp_label)->unk08;
+    lib_numeric_widget_init_rectangle(this->cp_value, 0x58, associated, 1, 572.0f, 42.0f, cp_width, 20.0f);
+    this->cp_value->set_scale(0.85f, 0.85f);
+    this->cp_value->set_color(0x288080);
+    this->cp_value->set_mode(1);
+    this->cp_value->set_vertical_alignment(1);
+    this->cp_value->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->cp_value);
+    float fury_width = lib_text_measure_bounds(this->fury_label)->unk08;
+    lib_numeric_widget_init_rectangle(this->fury_value, 0x58, associated, 1, 540.0f, 42.0f, fury_width, 20.0f);
+    this->fury_value->set_scale(0.85f, 0.85f);
+    this->fury_value->set_color(0x288080);
+    this->fury_value->set_mode(1);
+    this->fury_value->set_vertical_alignment(1);
+    this->fury_value->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->fury_value);
+    float hp_mp_width = lib_text_measure_bounds(this->hp_mp_label)->unk08;
+    lib_numeric_widget_init_rectangle(this->hp_mp_value, 0x22B8, associated, 1, 498.0f, 42.0f, hp_mp_width, 20.0f);
+    this->hp_mp_value->set_scale(0.85f, 0.85f);
+    this->hp_mp_value->set_color(0x288080);
+    this->hp_mp_value->set_mode(1);
+    this->hp_mp_value->set_vertical_alignment(1);
+    this->hp_mp_value->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->hp_mp_value);
+    return 1;
+}
 
 SkillCostWindow::~SkillCostWindow()
 {
@@ -2129,9 +2721,9 @@ s32 SkillTacticalPromptWindow::func_slotf4(u32 associated)
     this->no_label->init_resource_rectangle(140.0f, 38.0f, 0.0f, 0.0f, (s32)associated, SKILL_MSG_NO, 0);
     this->yes_label->unk3f = 0;
     this->no_label->unk3f = 0;
-    lib_indexed_resource_init(this->toggle_icon, 35, 64.0f, 86.0f);
+    lib_indexed_resource_init(this->toggle_icon, 64.0f, 86.0f, 35);
     this->toggle_hint->init_resource_rectangle(100.0f, 90.0f, 0.0f, 0.0f, (s32)associated, SKILL_MSG_SWITCH_ON_OFF, 0);
-    lib_indexed_resource_init(this->details_icon, 32, 64.0f, 122.0f);
+    lib_indexed_resource_init(this->details_icon, 64.0f, 122.0f, 32);
     this->details_hint->init_resource_rectangle(100.0f, 126.0f, 0.0f, 0.0f, (s32)associated, SKILL_MSG_DETAILED_SETUP, 0);
     lib_container_attach_widget(this->unk10, this->initiate_label);
     lib_container_attach_widget(this->unk10, this->yes_label);
@@ -2379,7 +2971,62 @@ void FieldClass153E30::func_00263C70(void* value)
     unk20 = value;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034A650);
+u8 SkillTacticalDetailWindow::func_slotb0()
+{
+    if (this->mode == SKILL_TACTICAL_DETAILS_AURA)
+    {
+        FieldObject23CEA0* grid = this->aura_grid;
+        u8 inactive = !grid->unk35;
+        if (inactive == 1)
+        {
+            return 0;
+        }
+        s32 aura = this->aura_indices[grid->unk114];
+        if (saved_tactical_state(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], SKILL_TACTICAL_ANTI_ATTACK_AURA) < 0)
+        {
+            aura = -aura;
+        }
+        set_tactical_state(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], SKILL_TACTICAL_ANTI_ATTACK_AURA, aura);
+    }
+    else if (this->mode == SKILL_TACTICAL_DETAILS_CONVERSION)
+    {
+        FieldObject23CEA0* grid = this->conversion_grid;
+        u8 inactive = !grid->unk35;
+        if (inactive == 1)
+        {
+            return 0;
+        }
+        switch (grid->unk114)
+        {
+        case 0:
+        {
+                if (saved_tactical_state(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], SKILL_TACTICAL_DAMAGE_CONVERSION) < 0)
+            {
+                set_tactical_state(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], SKILL_TACTICAL_DAMAGE_CONVERSION, -SKILL_DAMAGE_CONVERSION_PRESERVE_HP);
+            }
+            else
+            {
+                set_tactical_state(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], SKILL_TACTICAL_DAMAGE_CONVERSION, SKILL_DAMAGE_CONVERSION_PRESERVE_HP);
+            }
+            break;
+        }
+        case 1:
+        {
+                if (saved_tactical_state(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], SKILL_TACTICAL_DAMAGE_CONVERSION) < 0)
+            {
+                set_tactical_state(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], SKILL_TACTICAL_DAMAGE_CONVERSION, -SKILL_DAMAGE_CONVERSION_PRESERVE_MP);
+            }
+            else
+            {
+                set_tactical_state(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], SKILL_TACTICAL_DAMAGE_CONVERSION, SKILL_DAMAGE_CONVERSION_PRESERVE_MP);
+            }
+            break;
+        }
+        }
+    }
+    skill_refresh_tactical_detail_choices(this);
+    return 1;
+}
 
 void SkillTacticalDetailWindow::func_slot70()
 {
@@ -2748,7 +3395,42 @@ void skill_refresh_selection_rows(SkillModeSelection* record)
     }
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034C060);
+/**
+ * @brief Move a row widget vertically by the window's scroll step and mark it changed.
+ * @param object Mode selection window.
+ * @param node List node holding the row widget.
+ */
+static inline void scroll_row(SkillModeSelection* object, SkillListNode* node)
+{
+    LibClass178600* row = static_cast<LibClass178600*>(node->value);
+    float x = row->unk18.unk00;
+    float y = row->unk18.unk04;
+    float z = row->unk18.unk08;
+    float w = row->unk18.unk0c;
+    y += object->scroll_step;
+    row->unk18.unk00 = x;
+    row->unk18.unk04 = y;
+    row->unk18.unk08 = z;
+    row->unk18.unk0c = w;
+    row->unk3c = 1;
+}
+
+float skill_step_mode_scroll(SkillModeSelection* object)
+{
+    SkillListNode* name = reinterpret_cast<SkillListNode*>(object->unk2c.head->next);
+    SkillListNode* cp = object->cp_rows.head->next;
+    while (name != 0)
+    {
+        scroll_row(object, name);
+        name = name->next;
+        if (cp != 0)
+        {
+            scroll_row(object, cp);
+            cp = cp->next;
+        }
+    }
+    return object->scroll_frames_remaining -= 1.0f;
+}
 
 /** @brief Position skill-name and CP rows at the given scroll offset. @param record Skill selection window. @param scroll_offset Vertical scroll offset. */
 void skill_position_selection_rows(SkillModeSelection* record, float scroll_offset)
@@ -2884,7 +3566,7 @@ void SkillModeSelection::func_slot5c()
         }
         this->state = 2;
     case 2:
-        func_0034C060(this);
+        skill_step_mode_scroll(this);
         if (this->scroll_frames_remaining <= 0.0f)
         {
             this->state = 3;
@@ -3052,7 +3734,7 @@ s32 SkillModeSelection::func_slotd4()
     }
     this->scroll_step = -this->row_spacing * (float)(first_index - first);
     this->animation_mode = 2;
-    func_0034C060(this);
+    skill_step_mode_scroll(this);
     this->selection->row_count = first_index;
     selection = this->selection;
     selection->index = visible_index;
@@ -3067,7 +3749,50 @@ s32 SkillModeSelection::func_slotd4()
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034DCE0);
+s32 SkillModeSelection::func_slotd0()
+{
+    u8 inactive = !this->selection->FieldClass151C50::unk35;
+    if (inactive == 1)
+    {
+        return 0;
+    }
+    if ((s32)this->state > 0)
+    {
+        return 0;
+    }
+    s16 first = this->selection->row_count;
+    s16 selected = this->selection->unk114;
+    if (selected <= 0 && first <= 0)
+    {
+        return 0;
+    }
+    s32 first_index = first - 6;
+    s32 visible_index = selected - first;
+    if (first_index < 0)
+    {
+        visible_index += first_index;
+        first_index = 0;
+        if (visible_index < 0)
+        {
+            visible_index = 0;
+        }
+    }
+    this->scroll_step = this->row_spacing * (float)(first - first_index);
+    this->animation_mode = 1;
+    skill_step_mode_scroll(this);
+    this->selection->row_count = first_index;
+    FieldObject23CEA0* selection = this->selection;
+    selection->index = visible_index;
+    func_0023CB30(selection);
+    func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(this->selection));
+    skill_refresh_selection_rows(this);
+    skill_refresh_selection_marker(this);
+    refresh_mode_message(this);
+    refresh_mode_message(this);
+    skill_refresh_selection_marker(this);
+    resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    return 0;
+}
 
 void SkillModeSelection::func_slot6c()
 {
@@ -3178,21 +3903,539 @@ s32 skill_initialize_selection_grid(SkillModeSelection* record, s16 row_count)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034E380);
+/**
+ * @brief Check whether a skill differs from the one saved in the mode's battle slot.
+ * @param object Mode window.
+ * @param mode Character skill mode.
+ * @param code Skill code.
+ * @return Zero when the slot already holds the skill, otherwise one.
+ */
+static inline u8 skill_not_assigned(SkillModeSelection* object, s32 mode, s32 code)
+{
+    s32 slot;
+    SkillCharacterEquipment* record = selected_equipment(object->record_selection);
+    if (record != 0)
+    {
+        if (object->mode == 5)
+        {
+            slot = 4;
+        }
+        else
+        {
+            slot = 5;
+        }
+        if (func_40AE00(mode, code) == battle_skill_index(record, slot) - 1)
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034F1A0);
+s32 func_0034E380(SkillModeSelection* object, s32 mode, s32 index)
+{
+    s32 count = index;
+    if (skill_not_assigned(object, mode, 0x8F))
+    {
+        object->candidate_skill_ids[count++] = 0x8F;
+    }
+    if (mode != 2)
+    {
+        if (skill_not_assigned(object, mode, 0x90))
+        {
+            object->candidate_skill_ids[count++] = 0x90;
+        }
+        if (skill_not_assigned(object, mode, 0x91))
+        {
+            object->candidate_skill_ids[count++] = 0x91;
+        }
+    }
+    if (skill_not_assigned(object, mode, 0x92))
+    {
+        object->candidate_skill_ids[count++] = 0x92;
+    }
+    if (mode == 2 || mode == 9)
+    {
+        if (skill_not_assigned(object, mode, 0x94))
+        {
+            object->candidate_skill_ids[count++] = 0x94;
+        }
+        if (skill_not_assigned(object, mode, 0x95))
+        {
+            object->candidate_skill_ids[count++] = 0x95;
+        }
+    }
+    if (skill_not_assigned(object, mode, 0x96))
+    {
+        object->candidate_skill_ids[count++] = 0x96;
+    }
+    if (skill_not_assigned(object, mode, 0x97))
+    {
+        object->candidate_skill_ids[count++] = 0x97;
+    }
+    if (skill_not_assigned(object, mode, 0x98))
+    {
+        object->candidate_skill_ids[count++] = 0x98;
+    }
+    if (skill_not_assigned(object, mode, 0x99))
+    {
+        object->candidate_skill_ids[count++] = 0x99;
+    }
+    if (skill_not_assigned(object, mode, 0x9A))
+    {
+        object->candidate_skill_ids[count++] = 0x9A;
+    }
+    return count;
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034FB40);
+s32 func_0034F1A0(SkillModeSelection* object, s32 mode, s32 index)
+{
+    s32 count = 0;
+    count += index;
+    switch (mode)
+    {
+    case 1:
+        object->candidate_skill_ids[count++] = 30;
+        object->candidate_skill_ids[count++] = 31;
+        object->candidate_skill_ids[count++] = 32;
+        object->candidate_skill_ids[count++] = 33;
+        object->candidate_skill_ids[count++] = 34;
+        object->candidate_skill_ids[count++] = 35;
+        object->candidate_skill_ids[count++] = 36;
+        object->candidate_skill_ids[count++] = 37;
+        object->candidate_skill_ids[count++] = 38;
+        object->candidate_skill_ids[count++] = 39;
+        break;
+    case 2:
+        object->candidate_skill_ids[count++] = 1;
+        object->candidate_skill_ids[count++] = 2;
+        object->candidate_skill_ids[count++] = 3;
+        object->candidate_skill_ids[count++] = 5;
+        object->candidate_skill_ids[count++] = 7;
+        object->candidate_skill_ids[count++] = 9;
+        object->candidate_skill_ids[count++] = 10;
+        object->candidate_skill_ids[count++] = 11;
+        object->candidate_skill_ids[count++] = 12;
+        object->candidate_skill_ids[count++] = 13;
+        object->candidate_skill_ids[count++] = 14;
+        object->candidate_skill_ids[count++] = 15;
+        object->candidate_skill_ids[count++] = 18;
+        object->candidate_skill_ids[count++] = 19;
+        object->candidate_skill_ids[count++] = 20;
+        object->candidate_skill_ids[count++] = 21;
+        object->candidate_skill_ids[count++] = 22;
+        object->candidate_skill_ids[count++] = 23;
+        object->candidate_skill_ids[count++] = 24;
+        object->candidate_skill_ids[count++] = 25;
+        object->candidate_skill_ids[count++] = 26;
+        object->candidate_skill_ids[count++] = 27;
+        object->candidate_skill_ids[count++] = 28;
+        object->candidate_skill_ids[count++] = 29;
+        object->candidate_skill_ids[count++] = 17;
+        break;
+    case 3:
+        object->candidate_skill_ids[count++] = 41;
+        object->candidate_skill_ids[count++] = 42;
+        object->candidate_skill_ids[count++] = 43;
+        object->candidate_skill_ids[count++] = 44;
+        object->candidate_skill_ids[count++] = 45;
+        object->candidate_skill_ids[count++] = 46;
+        object->candidate_skill_ids[count++] = 47;
+        object->candidate_skill_ids[count++] = 48;
+        object->candidate_skill_ids[count++] = 49;
+        object->candidate_skill_ids[count++] = 50;
+        break;
+    case 4:
+        object->candidate_skill_ids[count++] = 52;
+        object->candidate_skill_ids[count++] = 53;
+        object->candidate_skill_ids[count++] = 54;
+        object->candidate_skill_ids[count++] = 55;
+        object->candidate_skill_ids[count++] = 56;
+        object->candidate_skill_ids[count++] = 57;
+        object->candidate_skill_ids[count++] = 58;
+        object->candidate_skill_ids[count++] = 59;
+        object->candidate_skill_ids[count++] = 60;
+        object->candidate_skill_ids[count++] = 61;
+        break;
+    case 5:
+        object->candidate_skill_ids[count++] = 63;
+        object->candidate_skill_ids[count++] = 64;
+        object->candidate_skill_ids[count++] = 65;
+        object->candidate_skill_ids[count++] = 66;
+        object->candidate_skill_ids[count++] = 67;
+        object->candidate_skill_ids[count++] = 68;
+        object->candidate_skill_ids[count++] = 69;
+        object->candidate_skill_ids[count++] = 70;
+        object->candidate_skill_ids[count++] = 71;
+        object->candidate_skill_ids[count++] = 72;
+        break;
+    case 6:
+        object->candidate_skill_ids[count++] = 74;
+        object->candidate_skill_ids[count++] = 75;
+        object->candidate_skill_ids[count++] = 76;
+        object->candidate_skill_ids[count++] = 77;
+        object->candidate_skill_ids[count++] = 78;
+        object->candidate_skill_ids[count++] = 79;
+        object->candidate_skill_ids[count++] = 80;
+        object->candidate_skill_ids[count++] = 81;
+        object->candidate_skill_ids[count++] = 82;
+        object->candidate_skill_ids[count++] = 83;
+        break;
+    case 7:
+        object->candidate_skill_ids[count++] = 85;
+        object->candidate_skill_ids[count++] = 86;
+        object->candidate_skill_ids[count++] = 87;
+        object->candidate_skill_ids[count++] = 88;
+        object->candidate_skill_ids[count++] = 89;
+        object->candidate_skill_ids[count++] = 90;
+        object->candidate_skill_ids[count++] = 91;
+        object->candidate_skill_ids[count++] = 92;
+        object->candidate_skill_ids[count++] = 93;
+        object->candidate_skill_ids[count++] = 94;
+        break;
+    case 8:
+        object->candidate_skill_ids[count++] = 96;
+        object->candidate_skill_ids[count++] = 97;
+        object->candidate_skill_ids[count++] = 98;
+        object->candidate_skill_ids[count++] = 99;
+        object->candidate_skill_ids[count++] = 100;
+        object->candidate_skill_ids[count++] = 101;
+        object->candidate_skill_ids[count++] = 102;
+        object->candidate_skill_ids[count++] = 103;
+        object->candidate_skill_ids[count++] = 104;
+        object->candidate_skill_ids[count++] = 105;
+        break;
+    case 9:
+        object->candidate_skill_ids[count++] = 1;
+        object->candidate_skill_ids[count++] = 5;
+        object->candidate_skill_ids[count++] = 107;
+        object->candidate_skill_ids[count++] = 108;
+        object->candidate_skill_ids[count++] = 109;
+        object->candidate_skill_ids[count++] = 110;
+        object->candidate_skill_ids[count++] = 111;
+        object->candidate_skill_ids[count++] = 112;
+        object->candidate_skill_ids[count++] = 113;
+        object->candidate_skill_ids[count++] = 114;
+        object->candidate_skill_ids[count++] = 115;
+        object->candidate_skill_ids[count++] = 116;
+        break;
+    case 10:
+        object->candidate_skill_ids[count++] = 118;
+        object->candidate_skill_ids[count++] = 119;
+        object->candidate_skill_ids[count++] = 120;
+        object->candidate_skill_ids[count++] = 121;
+        object->candidate_skill_ids[count++] = 122;
+        object->candidate_skill_ids[count++] = 123;
+        object->candidate_skill_ids[count++] = 124;
+        object->candidate_skill_ids[count++] = 125;
+        object->candidate_skill_ids[count++] = 126;
+        object->candidate_skill_ids[count++] = 127;
+        break;
+    }
+    return count;
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034FC30);
+s32 func_0034FB40(SkillModeSelection* object, s32 mode, s32 index)
+{
+    s32 count = 0;
+    count += index;
+    switch (mode)
+    {
+    case 2:
+        object->candidate_skill_ids[count++] = 4;
+        object->candidate_skill_ids[count++] = 6;
+        object->candidate_skill_ids[count++] = 8;
+        object->candidate_skill_ids[count++] = 16;
+        break;
+    case 9:
+        object->candidate_skill_ids[count++] = 1;
+        object->candidate_skill_ids[count++] = 4;
+        object->candidate_skill_ids[count++] = 5;
+        object->candidate_skill_ids[count++] = 6;
+        object->candidate_skill_ids[count++] = 16;
+        break;
+    }
+    return count;
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_003505C0);
+s32 func_0034FC30(SkillModeSelection* object, s32 mode, s32 index)
+{
+    s32 count = 0;
+    count += index;
+    switch (mode)
+    {
+    case 1:
+        object->candidate_skill_ids[count++] = 30;
+        object->candidate_skill_ids[count++] = 31;
+        object->candidate_skill_ids[count++] = 32;
+        object->candidate_skill_ids[count++] = 33;
+        object->candidate_skill_ids[count++] = 34;
+        object->candidate_skill_ids[count++] = 35;
+        object->candidate_skill_ids[count++] = 36;
+        object->candidate_skill_ids[count++] = 37;
+        object->candidate_skill_ids[count++] = 38;
+        object->candidate_skill_ids[count++] = 39;
+        break;
+    case 2:
+        object->candidate_skill_ids[count++] = 1;
+        object->candidate_skill_ids[count++] = 2;
+        object->candidate_skill_ids[count++] = 3;
+        object->candidate_skill_ids[count++] = 5;
+        object->candidate_skill_ids[count++] = 7;
+        object->candidate_skill_ids[count++] = 9;
+        object->candidate_skill_ids[count++] = 10;
+        object->candidate_skill_ids[count++] = 11;
+        object->candidate_skill_ids[count++] = 12;
+        object->candidate_skill_ids[count++] = 13;
+        object->candidate_skill_ids[count++] = 14;
+        object->candidate_skill_ids[count++] = 15;
+        object->candidate_skill_ids[count++] = 18;
+        object->candidate_skill_ids[count++] = 19;
+        object->candidate_skill_ids[count++] = 20;
+        object->candidate_skill_ids[count++] = 21;
+        object->candidate_skill_ids[count++] = 22;
+        object->candidate_skill_ids[count++] = 23;
+        object->candidate_skill_ids[count++] = 24;
+        object->candidate_skill_ids[count++] = 25;
+        object->candidate_skill_ids[count++] = 26;
+        object->candidate_skill_ids[count++] = 27;
+        object->candidate_skill_ids[count++] = 28;
+        object->candidate_skill_ids[count++] = 29;
+        break;
+    case 3:
+        object->candidate_skill_ids[count++] = 41;
+        object->candidate_skill_ids[count++] = 42;
+        object->candidate_skill_ids[count++] = 43;
+        object->candidate_skill_ids[count++] = 44;
+        object->candidate_skill_ids[count++] = 45;
+        object->candidate_skill_ids[count++] = 46;
+        object->candidate_skill_ids[count++] = 47;
+        object->candidate_skill_ids[count++] = 48;
+        object->candidate_skill_ids[count++] = 49;
+        object->candidate_skill_ids[count++] = 50;
+        break;
+    case 4:
+        object->candidate_skill_ids[count++] = 52;
+        object->candidate_skill_ids[count++] = 53;
+        object->candidate_skill_ids[count++] = 54;
+        object->candidate_skill_ids[count++] = 55;
+        object->candidate_skill_ids[count++] = 56;
+        object->candidate_skill_ids[count++] = 57;
+        object->candidate_skill_ids[count++] = 58;
+        object->candidate_skill_ids[count++] = 59;
+        object->candidate_skill_ids[count++] = 60;
+        object->candidate_skill_ids[count++] = 61;
+        break;
+    case 5:
+        object->candidate_skill_ids[count++] = 63;
+        object->candidate_skill_ids[count++] = 64;
+        object->candidate_skill_ids[count++] = 65;
+        object->candidate_skill_ids[count++] = 66;
+        object->candidate_skill_ids[count++] = 67;
+        object->candidate_skill_ids[count++] = 68;
+        object->candidate_skill_ids[count++] = 69;
+        object->candidate_skill_ids[count++] = 70;
+        object->candidate_skill_ids[count++] = 71;
+        object->candidate_skill_ids[count++] = 72;
+        break;
+    case 6:
+        object->candidate_skill_ids[count++] = 74;
+        object->candidate_skill_ids[count++] = 75;
+        object->candidate_skill_ids[count++] = 76;
+        object->candidate_skill_ids[count++] = 77;
+        object->candidate_skill_ids[count++] = 78;
+        object->candidate_skill_ids[count++] = 79;
+        object->candidate_skill_ids[count++] = 80;
+        object->candidate_skill_ids[count++] = 81;
+        object->candidate_skill_ids[count++] = 82;
+        object->candidate_skill_ids[count++] = 83;
+        break;
+    case 7:
+        object->candidate_skill_ids[count++] = 85;
+        object->candidate_skill_ids[count++] = 86;
+        object->candidate_skill_ids[count++] = 87;
+        object->candidate_skill_ids[count++] = 88;
+        object->candidate_skill_ids[count++] = 89;
+        object->candidate_skill_ids[count++] = 90;
+        object->candidate_skill_ids[count++] = 91;
+        object->candidate_skill_ids[count++] = 92;
+        object->candidate_skill_ids[count++] = 93;
+        object->candidate_skill_ids[count++] = 94;
+        break;
+    case 8:
+        object->candidate_skill_ids[count++] = 96;
+        object->candidate_skill_ids[count++] = 97;
+        object->candidate_skill_ids[count++] = 98;
+        object->candidate_skill_ids[count++] = 99;
+        object->candidate_skill_ids[count++] = 100;
+        object->candidate_skill_ids[count++] = 101;
+        object->candidate_skill_ids[count++] = 102;
+        object->candidate_skill_ids[count++] = 103;
+        object->candidate_skill_ids[count++] = 104;
+        object->candidate_skill_ids[count++] = 105;
+        break;
+    case 9:
+        object->candidate_skill_ids[count++] = 1;
+        object->candidate_skill_ids[count++] = 5;
+        object->candidate_skill_ids[count++] = 107;
+        object->candidate_skill_ids[count++] = 108;
+        object->candidate_skill_ids[count++] = 109;
+        object->candidate_skill_ids[count++] = 110;
+        object->candidate_skill_ids[count++] = 111;
+        object->candidate_skill_ids[count++] = 112;
+        object->candidate_skill_ids[count++] = 113;
+        object->candidate_skill_ids[count++] = 114;
+        object->candidate_skill_ids[count++] = 115;
+        object->candidate_skill_ids[count++] = 116;
+        break;
+    case 10:
+        object->candidate_skill_ids[count++] = 118;
+        object->candidate_skill_ids[count++] = 119;
+        object->candidate_skill_ids[count++] = 120;
+        object->candidate_skill_ids[count++] = 121;
+        object->candidate_skill_ids[count++] = 122;
+        object->candidate_skill_ids[count++] = 123;
+        object->candidate_skill_ids[count++] = 124;
+        object->candidate_skill_ids[count++] = 125;
+        object->candidate_skill_ids[count++] = 126;
+        object->candidate_skill_ids[count++] = 127;
+        break;
+    }
+    return count;
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_003506B0);
+s32 func_003505C0(SkillModeSelection* object, s32 mode, s32 index)
+{
+    s32 count = 0;
+    count += index;
+    switch (mode)
+    {
+    case 2:
+        object->candidate_skill_ids[count++] = 4;
+        object->candidate_skill_ids[count++] = 6;
+        object->candidate_skill_ids[count++] = 8;
+        object->candidate_skill_ids[count++] = 16;
+        break;
+    case 9:
+        object->candidate_skill_ids[count++] = 1;
+        object->candidate_skill_ids[count++] = 4;
+        object->candidate_skill_ids[count++] = 5;
+        object->candidate_skill_ids[count++] = 6;
+        object->candidate_skill_ids[count++] = 16;
+        break;
+    }
+    return count;
+}
+
+void skill_build_mode_candidates(SkillModeSelection* object, s32 mode, s16 kind)
+{
+    s32 count = 0;
+    switch (kind)
+    {
+    case 0:
+    case 2:
+        object->candidate_skill_ids[0] = 0x81;
+        object->candidate_skill_ids[1] = 0x82;
+        count = 2;
+    case 1:
+    case 3:
+        s32 index = 0;
+        index += count;
+        object->candidate_skill_ids[index++] = 0x85;
+        object->candidate_skill_ids[index++] = 0x86;
+        object->candidate_skill_ids[index++] = 0x87;
+        object->candidate_skill_ids[index++] = 0x88;
+        object->candidate_skill_ids[index++] = 0x89;
+        object->candidate_skill_ids[index++] = 0x8A;
+        object->candidate_skill_ids[index++] = 0x8B;
+        object->candidate_skill_ids[index++] = 0x8C;
+        object->candidate_skill_ids[index++] = 0x8D;
+        object->candidate_skill_ids[index++] = 0x8E;
+        count = index;
+        break;
+    }
+    switch (kind)
+    {
+    case 0:
+        count = func_003505C0(object, mode, count);
+    case 1:
+        func_0034FC30(object, mode, count);
+        break;
+    case 2:
+        count = func_0034FB40(object, mode, count);
+    case 3:
+        func_0034F1A0(object, mode, count);
+        break;
+    case 4:
+    case 5:
+        func_0034E380(object, mode, count);
+        break;
+    }
+}
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_00350890);
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_00351090);
+s32 skill_create_mode_rows(SkillModeSelection* object)
+{
+    for (s32 row = 0; row < 42; row++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        if (text == 0)
+        {
+            return 0;
+        }
+        float y = object->row_height + object->row_spacing * (float)row;
+        text->init_resource_rectangle(4.0f + object->list_x, y, 180.0f, 22.0f, (s32)object->func_slot54(), SKILL_MSG_NONE, 0);
+        text->unk88 = -1.0f;
+        text->unk3c = 1;
+        text->set_scale(0.92f, 0.92f);
+        lib_container_attach_widget(object->unk10, text);
+        func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), text);
+        LibObject174F20* cost = new (0) LibObject174F20;
+        if (cost == 0)
+        {
+            return 0;
+        }
+        y = (8.0f + object->row_height) + object->row_spacing * (float)row;
+        lib_numeric_widget_init_rectangle(cost, 0, (s32)object->func_slot54(), 1, 250.0f, y, 16.0f, 8.0f);
+        cost->set_scale(0.9f, 0.9f);
+        cost->set_color(0x288080);
+        cost->set_mode(1);
+        cost->set_vertical_alignment(1);
+        cost->unk3f = 0;
+        lib_container_attach_widget(object->unk10, cost);
+        func_0035C780(reinterpret_cast<SkillList*>(&object->cp_rows), cost);
+    }
+    SkillListNode* node = reinterpret_cast<SkillListNode*>(object->unk2c.head->next);
+    const LibUiRect16* position = &static_cast<LibClass178600*>(node->value)->unk18;
+    if (node == 0 || position == 0)
+    {
+        return 0;
+    }
+    float y = position->unk04;
+    float z = position->unk08;
+    float w = position->unk0c;
+    float x = position->unk00;
+    object->name_column_position.x = x;
+    object->name_column_position.y = y;
+    object->name_column_position.z = z;
+    object->name_column_position.w = w;
+    node = object->cp_rows.head->next;
+    position = &static_cast<LibClass178600*>(node->value)->unk18;
+    if (node == 0 || position == 0)
+    {
+        return 0;
+    }
+    y = position->unk04;
+    z = position->unk08;
+    w = position->unk0c;
+    x = position->unk00;
+    object->cp_column_position.x = x;
+    object->cp_column_position.y = y;
+    object->cp_column_position.z = z;
+    object->cp_column_position.w = w;
+    return 1;
+}
 
 /** @brief Set skill rows, CP heading, and grid activity. @param object Skill selection window. @param flag Display visibility word. @param active Grid activity value. */
 void skill_set_selection_visibility(SkillModeSelection* object, u32 flag, s32 active)
@@ -3267,7 +4510,7 @@ s32 SkillModeSelection::func_slotf4(u32 associated)
     lib_scissor_init_rectangle(first, 14.0f, 20.0f, 278.0f, 176.0f);
     lib_container_attach_widget(this->unk10, first);
     func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), first);
-    if ((u8)func_00351090(this) == 0)
+    if ((u8)skill_create_mode_rows(this) == 0)
     {
         return 0;
     }
@@ -3364,7 +4607,136 @@ void SkillTacticalWindow::func_slot64()
     }
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_00351BE0);
+/**
+ * @brief Show the tactical prompt's initiate label with the yes or no answer for a saved state.
+ * @param prompt Tactical prompt window.
+ * @param state Saved tactical state; positive shows yes.
+ */
+static inline void show_tactical_prompt(SkillTacticalPromptWindow* prompt, s32 state)
+{
+    prompt->initiate_label->unk3f = 1;
+    if (state > 0)
+    {
+        prompt->yes_label->unk3f = 1;
+        prompt->no_label->unk3f = 0;
+    }
+    else
+    {
+        prompt->yes_label->unk3f = 0;
+        prompt->no_label->unk3f = 1;
+    }
+}
+
+/**
+ * @brief Find a tactical row's mode label.
+ * @param object Tactical selection window.
+ * @param index Row index.
+ * @return Label text widget.
+ */
+static inline LibObject178750* tactical_row_label(SkillTacticalWindow* object, s32 index)
+{
+    return static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value);
+}
+
+void func_00351BE0(SkillTacticalWindow* object)
+{
+    for (s32 index = 0; index < 5; index++)
+    {
+        static_cast<LibClass178600*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value)->unk3f = 0;
+    }
+    if (object->row_count > 0)
+    {
+        lib_marker_set_bright_color(object->cursor, 0x808080);
+        for (s32 index = 0; index < object->row_count; index++)
+        {
+            LibObject178750* text = tactical_row_label(object, index);
+            text->unk3f = object->active;
+            s32 value = tactical_mode_state(&static_cast<SkillCharacterEquipment*>(object->records->unk04)[object->records->current], object->row_modes[index]);
+            if (value > 0)
+            {
+                text->set_color(0x808080);
+            }
+            else
+            {
+                text->set_color(0x505050);
+            }
+            if (index == object->selection->unk114)
+            {
+                if (object == D_001B643C->callbacks->controller->func_00261150())
+                {
+                    if (value > 0)
+                    {
+                        text->set_color(0x288080);
+                        lib_marker_set_bright_color(object->cursor, 0x288080);
+                    }
+                    else
+                    {
+                        lib_marker_set_bright_color(object->cursor, 0x505050);
+                    }
+                    func_0023B9B0(object->cursor, (s16)index, lib_text_measure_bounds(text)->unk08);
+                }
+            }
+            if (object == D_001B643C->callbacks->controller->func_00261150())
+            {
+                SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
+                FieldClass15AE70* window = owner->window;
+                if (object->row_count > 0)
+                {
+                    window->func_slot60(object->row_modes[object->selection->unk114] + SKILL_MSG_TACTICAL_HELP_BASE);
+                }
+                else
+                {
+                    window->func_slot60(SKILL_MSG_BLANK);
+                }
+            }
+        }
+        s32 mode = object->row_modes[object->selection->unk114];
+        s32 value = tactical_mode_state(&static_cast<SkillCharacterEquipment*>(object->records->unk04)[object->records->current], mode);
+        if (object == D_001B643C->callbacks->controller->func_00261150())
+        {
+            if (mode == SKILL_TACTICAL_CURE_CONDITION || mode == SKILL_TACTICAL_BERSERK || mode == SKILL_TACTICAL_COMBAT_TRAINING)
+            {
+                SkillTacticalPromptWindow* prompt = object->attachment;
+                show_tactical_prompt(prompt, value);
+                prompt->details_icon->unk3f = 0;
+                prompt->details_hint->unk3f = 0;
+                prompt->toggle_icon->unk3f = 1;
+                prompt->toggle_hint->unk3f = 1;
+                prompt->details_icon->unk3f = 0;
+                prompt->details_hint->unk3f = 0;
+            }
+            if (mode == SKILL_TACTICAL_DAMAGE_CONVERSION)
+            {
+                SkillTacticalPromptWindow* prompt = object->attachment;
+                show_tactical_prompt(prompt, value);
+                prompt->toggle_icon->unk3f = 1;
+                prompt->toggle_hint->unk3f = 1;
+                prompt->details_icon->unk3f = 1;
+                prompt->details_hint->unk3f = 1;
+            }
+            if (mode == SKILL_TACTICAL_ANTI_ATTACK_AURA)
+            {
+                SkillTacticalPromptWindow* prompt = object->attachment;
+                show_tactical_prompt(prompt, value);
+                prompt->toggle_icon->unk3f = 1;
+                prompt->toggle_hint->unk3f = 1;
+                prompt->details_icon->unk3f = 1;
+                prompt->details_hint->unk3f = 1;
+            }
+        }
+        else
+        {
+            if (object == D_001B643C->callbacks->controller->func_00261150())
+            {
+                skill_set_tactical_prompt_state(object->attachment, value);
+            }
+            else
+            {
+                skill_set_tactical_prompt_state(object->attachment, 0);
+            }
+        }
+    }
+}
 
 void SkillTacticalWindow::func_slot6c()
 {
@@ -3638,7 +5010,60 @@ void skill_refresh_tactical_rows(SkillTacticalWindow* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_slotf4__19SkillTacticalWindowFUi);
+/**
+ * @brief Create the five hidden tactical mode labels.
+ * @param window Tactical selection window.
+ */
+static inline void create_tactical_labels(SkillTacticalWindow* window)
+{
+    for (s32 row = 0; row < 5; row++)
+    {
+        LibObject178750* label = new (0) LibObject178750;
+        label->unk88 = -1.0f;
+        label->unk3c = 1;
+        s32 source = static_cast<s32>(window->func_slot54());
+        label->init_resource_rectangle(window->row_x, window->row_y + window->row_spacing * (float)row,
+            0.0f, 0.0f, source, row + 0x1A9E, 0);
+        label->unk3f = 0;
+        lib_container_attach_widget(window->unk10, label);
+        func_0035C9D0(reinterpret_cast<SkillList*>(&window->unk2c), label);
+    }
+}
+
+s32 SkillTacticalWindow::func_slotf4(u32 associated)
+{
+    FieldClass15AE70::func_slot10(associated, 16.0f, 176.0f, 15);
+    LibClass1746A0* clip = new (0) LibClass1746A0;
+    LibClass1746A0* reset = new (0) LibClass1746A0;
+    selection = new (0) FieldObject23CEA0;
+    if (clip == 0 || reset == 0 || selection == 0)
+    {
+        return 0;
+    }
+    lib_scissor_init_rectangle(clip, 8.0f, 8.0f, 288.0f, 192.0f);
+    lib_container_attach_widget(unk10, clip);
+    func_0035CB20(reinterpret_cast<SkillList*>(&unk20), clip);
+    create_tactical_labels(this);
+    lib_scissor_init_reset(reset, 1);
+    lib_container_attach_widget(unk10, reset);
+    func_0035CB20(reinterpret_cast<SkillList*>(&unk20), reset);
+    cursor = new (0) FieldObject23BE00;
+    cursor->func_0023BB20(row_x, row_y, 144.0f, 1.0f, selection, 0x288080);
+    lib_container_attach_widget(unk10, cursor);
+    func_0035C440(reinterpret_cast<SkillList*>(&unk8c), cursor);
+    const float* position = unk10->unk20.components;
+    float grid_x = 24.0f + position[0];
+    float grid_y = position[1] + row_y;
+    selection->func_0023CE80(1, 5);
+    selection->func_0023CE60(0.0f, row_spacing);
+    selection->unkF2 = 0;
+    selection->unk119 = 1;
+    selection->func_0023CF50(0, grid_x, grid_y);
+    func_0023CEA0(selection, 0);
+    func_0035C4D0(reinterpret_cast<SkillList*>(&unk74), selection);
+    skill_refresh_tactical_rows(this);
+    return 1;
+}
 
 SkillTacticalWindow::~SkillTacticalWindow()
 {
@@ -4019,9 +5444,199 @@ u8 SkillBattleSetupWindow::func_slotb0()
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_00354190);
+s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
+{
+    for (s32 i = 0; i < 6; i++)
+    {
+        object->skill_name_keys[i] = SKILL_MSG_NONE;
+        object->cp_costs[i] = -1;
+    }
+    s32 sum = 0;
+    s32 character = object->record_selection->slots[object->record_selection->current];
+    s32 saved_index = -1;
+    s32 skill_id = -1;
+    s32 mastery = -1;
+    s32 level = -1;
+    s32 remaining = -1;
+    FieldRecord* entry = &object->record_selection->records[object->record_selection->current];
+    SkillCharacterEquipment* record = selected_equipment(object->record_selection);
+    LibObject178750* label;
+    s32 minor_mp = 0;
+    s32 minor_hp = 0;
+    s32 cp_cost = 0;
+    s32 minor_fury = 0;
+    s32 major_damage_scale = 0;
+    for (s32 i = 0; i <= 5; i++)
+    {
+        label = static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->skill_name_labels), i)->value);
+        saved_index = battle_skill_index(record, i);
+        if (saved_index == 0)
+        {
+            object->skill_name_keys[i] = SKILL_MSG_NONE;
+            lib_text_set_resource(label, object->func_slot54(), object->skill_name_keys[i], 0);
+            label->unk80 = 0.9f;
+            label->unk3c = 1;
+            object->cp_costs[i] = -1;
+        }
+        else if (func_00408850(record, character, --saved_index, &skill_id, &mastery, &level, &remaining) == 0)
+        {
+            object->skill_name_keys[i] = SKILL_MSG_NONE;
+            lib_text_set_resource(label, object->func_slot54(), object->skill_name_keys[i], 0);
+            label->unk80 = 0.9f;
+            label->unk3c = 1;
+            object->cp_costs[i] = -1;
+        }
+        else
+        {
+            func_4095C0(skill_id, entry, record, &minor_mp, &minor_hp, &cp_cost, &minor_fury, &major_damage_scale, 0, 0, 0);
+            object->skill_name_keys[i] = skill_id + SKILL_MSG_NAME_BASE;
+            switch (i)
+            {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+                lib_text_set_resource(label, object->func_slot54(), object->skill_name_keys[i], 0);
+                break;
+            case 4:
+            case 5:
+                lib_text_set_resource(label, object->func_slot54(), object->skill_name_keys[i], 0);
+                break;
+            }
+            if (label != 0)
+            {
+                label->unk80 = 0.9f;
+                label->unk3c = 1;
+                float scale = 178.0f / lib_text_measure_bounds(label)->unk08;
+                scale = ee_min(scale, 1.0f);
+                label->unk80 = 0.9f * scale;
+                label->unk3c = 1;
+            }
+            object->skill_levels[i] = level;
+            object->mastery_values[i] = mastery;
+            object->next_level_remaining[i] = remaining;
+            object->cp_costs[i] = cp_cost;
+            sum += cp_cost;
+        }
+    }
+    skill_refresh_battle_cp_displays(object, object->visible);
+    if (object->visible != 0)
+    {
+        SkillCharacterWindow* status = static_cast<SkillController*>(D_001B643C->callbacks->controller)->status;
+        if (object->selection_active != 0)
+        {
+            SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
+            SkillCharacterWindow* owner_status = owner->status;
+            if (owner != 0 && owner_status != 0)
+            {
+                s32 index = object->selection->unk114;
+                if (object->skill_name_keys[index] == SKILL_MSG_NONE)
+                {
+                    skill_refresh_mastery_display(owner_status, -1, -1, -1);
+                }
+                else
+                {
+                    skill_refresh_mastery_display(owner_status, object->skill_levels[index], object->mastery_values[index], object->next_level_remaining[index]);
+                }
+            }
+            refresh_battle_cp_values(status, sum);
+        }
+        else
+        {
+            refresh_battle_cp_values(status, sum);
+            skill_refresh_mastery_display(status, -1, -1, -1);
+        }
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_003547C0);
+s32 func_003547C0(SkillBattleSetupWindow* object)
+{
+    s32 key;
+    for (key = 0x1780; key < 0x1786; key++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        if (text == 0)
+        {
+            return 0;
+        }
+        s32 index = key - 0x1780;
+        if (index < 4)
+        {
+            s32 source = static_cast<s32>(object->func_slot54());
+            text->init_resource_rectangle(object->row_x + 1.5f * (float)(key & 1), (object->row_y + object->row_spacing * (float)index) - 1.0f, 0.0f, 0.0f, source, index + 0x1780, 0);
+        }
+        else
+        {
+            s32 source = static_cast<s32>(object->func_slot54());
+            text->init_resource_rectangle(object->row_x - 30.0f, 4.0f + ((object->row_y + (object->support_row_gap + object->row_spacing * (float)index)) - 1.0f), 0.0f, 0.0f, source, index + 0x1780, 0);
+        }
+        lib_container_attach_widget(object->unk10, text);
+        func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), text);
+    }
+    for (s32 index = 0; index < 6; index++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        if (index < 4)
+        {
+            s32 source = static_cast<s32>(object->func_slot54());
+            text->init_resource_rectangle(shifted_position(object->row_x, 21.0f), -4.0f + (object->row_y + object->row_spacing * (float)index), 0.0f, 0.0f, source, 0x1796, 0);
+        }
+        else
+        {
+            s32 source = static_cast<s32>(object->func_slot54());
+            text->init_resource_rectangle(shifted_position(object->row_x, 21.0f), -4.0f + (object->row_y + (object->support_row_gap + object->row_spacing * (float)index)), 0.0f, 0.0f, source, 0x1796, 0);
+        }
+        lib_container_attach_widget(object->unk10, text);
+        func_0035C9D0(reinterpret_cast<SkillList*>(&object->slot_separators), text);
+        text->unk3f = 0;
+    }
+    s32 resource = 0;
+    for (s32 index = 0; index < 4; index++)
+    {
+        if (index >= 2)
+        {
+            resource = 1;
+        }
+        ItemCreationClass174C40* image = new (0) ItemCreationClass174C40;
+        lib_indexed_resource_init(image, object->row_x - 32.0f, (object->row_y + (float)index * object->row_spacing) - 4.0f, resource + 32);
+        image->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(object->unk10, image);
+        func_0035C560(reinterpret_cast<SkillList*>(&object->unk5c), image);
+    }
+    for (s32 index = 0; index < 6; index++)
+    {
+        object->skill_name_keys[index] = SKILL_MSG_NONE;
+        object->cp_costs[index] = -1;
+    }
+    for (s32 index = 0; index < 6; index++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        if (text == 0)
+        {
+            return 0;
+        }
+        object->skill_name_keys[index] = SKILL_MSG_NONE;
+        if (index < 4)
+        {
+            s32 key = object->skill_name_keys[index];
+            s32 source = static_cast<s32>(object->func_slot54());
+            text->init_resource_rectangle(shifted_position(object->row_x, 34.0f), object->row_y + object->row_spacing * (float)index, 0.0f, 0.0f, source, key, 0);
+        }
+        else
+        {
+            s32 key = object->skill_name_keys[index];
+            s32 source = static_cast<s32>(object->func_slot54());
+            text->init_resource_rectangle(shifted_position(object->row_x, 34.0f), object->row_y + (object->support_row_gap + object->row_spacing * (float)index), 0.0f, 0.0f, source, key, 0);
+        }
+        text->unk88 = -1.0f;
+        text->unk3c = 1;
+        text->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(object->unk10, text);
+        func_0035C9D0(reinterpret_cast<SkillList*>(&object->skill_name_labels), text);
+    }
+    return skill_refresh_battle_skill_rows(object);
+}
 
 /** @brief Create the battle slot displays, selection grid, and status attachment. @param associated Full resource source word. @return One on success, or zero on allocation or setup failure. */
 s32 SkillBattleSetupWindow::func_slotf4(u32 associated)
@@ -4171,7 +5786,42 @@ SkillBattleSetupWindow::SkillBattleSetupWindow(SkillController* controller)
     owner = controller;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_slot5c__22SkillStatusSkillWindowFv);
+void SkillStatusSkillWindow::func_slot5c()
+{
+    SkillController* controller = static_cast<SkillController*>(D_001B643C->callbacks->controller);
+    if (controller != 0 && controller->func_00261150() != this)
+    {
+        return;
+    }
+    s32 row = this->selection->unk114;
+    if (row == 2 || row == 3)
+    {
+        this->message->func_slot60(row + SKILL_MSG_STATUS_HELP_BASE);
+        return;
+    }
+    s32 level = status_skill_level(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], row);
+    if (level == 10)
+    {
+        D_001B657C->message_arguments[0] = 0;
+        this->message->func_slot60(row ? 0x1ABD : 0x1ABC);
+    }
+    else
+    {
+        SkillCharacterEquipment* record = &static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current];
+        s32 increase = 0;
+        switch (row)
+        {
+        case 0:
+            increase = func_4086D0(record, level + 1, 1);
+            break;
+        case 1:
+            increase = func_4086D0(record, level + 1, 2);
+            break;
+        }
+        D_001B657C->message_arguments[0] = increase;
+        this->message->func_slot60(this->selection->unk114 + SKILL_MSG_STATUS_HELP_BASE);
+    }
+}
 
 /** @brief Set status-skill display visibility and selection activity. @param object Status-skill window. @param flag Full display flag word. @param active Nonzero to activate the selection grid. */
 void skill_set_status_skill_visibility(SkillStatusSkillWindow* object, u32 flag, s32 active)
@@ -4210,7 +5860,39 @@ void skill_set_status_skill_visibility(SkillStatusSkillWindow* object, u32 flag,
     }
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_003559F0);
+void func_003559F0(SkillStatusSkillWindow* object)
+{
+    s32 index;
+    for (index = 0; index < 4; index++)
+    {
+        object->skill_levels[index]->unk3f = 0;
+        object->next_level_costs[index]->unk3f = 0;
+        object->max_level_labels[index]->unk3f = 0;
+    }
+    for (index = 0; index < 4; index++)
+    {
+        s32 level = status_skill_level(selected_equipment(object->records), index);
+        FieldRecordSelection* records = object->records;
+        s32 cost = func_4087A0(index + 1, status_skill_level(selected_equipment(records), index), selected_equipment(records));
+        LibObject174F20* value = object->skill_levels[index];
+        value->numeric_value = level;
+        value->unk3c = 1;
+        object->skill_levels[index]->unk3f = object->visible;
+        if (cost == -1)
+        {
+            object->next_level_costs[index]->unk3f = 0;
+            object->max_level_labels[index]->unk3f = object->visible;
+        }
+        else
+        {
+            LibObject174F20* next = object->next_level_costs[index];
+            next->numeric_value = cost;
+            next->unk3c = 1;
+            object->next_level_costs[index]->unk3f = object->visible;
+            object->max_level_labels[index]->unk3f = 0;
+        }
+    }
+}
 
 void SkillStatusSkillWindow::func_slot6c()
 {
@@ -4324,47 +6006,260 @@ u8 SkillStatusSkillWindow::func_slotb4()
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_slotb0__22SkillStatusSkillWindowFv);
+u8 SkillStatusSkillWindow::func_slotb0()
+{
+    bool inactive = this->selection->FieldClass151C50::unk35 ? false : true;
+    if (inactive == 1)
+    {
+        return 0;
+    }
+    s16 row = this->selection->unk114;
+    s32 level = status_skill_level(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], row);
+    s32 cost = func_4087A0(row + 1, level, 0);
+    s32 sp = character_sp(selected_equipment(this->records));
+    if (cost == -1)
+    {
+        return 3;
+    }
+    if (level == 10)
+    {
+        LibObject178750* label = this->max_level_labels[row];
+        label->unk3f = 1;
+    }
+    if (cost <= sp)
+    {
+        sp -= cost;
+        set_status_skill_level(selected_equipment(this->records), row, level + 1);
+        set_character_sp(selected_equipment(this->records), sp);
+        SkillCharacterWindow* status = this->status;
+        set_cost_value(status->sp_value, character_sp(selected_equipment(status->selection)));
+        SkillCharacterEquipment* record = selected_equipment(this->records);
+        switch (row)
+        {
+        case 0:
+        {
+            s32 increase = func_4086D0(record, level + 1, 1);
+            if (increase != 0)
+            {
+                s32 base = character_base_hp(selected_stats(this->records));
+                s32 max = checked_max_hp(selected_stats(this->records));
+                set_character_base_hp(selected_stats(this->records), base + increase);
+                set_character_max_hp(selected_stats(this->records), max + increase);
+            }
+            break;
+        }
+        case 1:
+        {
+            s32 increase = func_4086D0(record, level + 1, 2);
+            if (increase != 0)
+            {
+                s32 base = character_base_mp(selected_stats(this->records));
+                s32 max = checked_max_mp(selected_stats(this->records));
+                set_character_base_mp(selected_stats(this->records), base + increase);
+                set_character_max_mp(selected_stats(this->records), max + increase);
+            }
+            break;
+        }
+        }
+        func_003559F0(this);
+        resident_allocate_request(D_001B65F8, 0x12, 0, 0, 127, 64, 0);
+        return 0;
+    }
+    return 3;
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", skill_set_character_mp);
+s32 skill_set_character_mp(SkillCharacterStats* record, s32 value)
+{
+    if (record->mp_checksum != ((record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+    value = clamp_character_stat(record, value);
+    s32 max_mp = record->encoded_max_mp ^ SKILL_FLAG_ENCODING_MASK;
+    if (value > max_mp)
+    {
+        value = max_mp;
+    }
+    if (value == 0)
+    {
+        add_character_flags(record, 1);
+    }
+    if (value != 0 && (record->encoded_hp ^ SKILL_FLAG_ENCODING_MASK) != 0)
+    {
+        mask_character_flags(record, ~1);
+    }
+    record->encoded_mp = value ^ SKILL_FLAG_ENCODING_MASK;
+    record->mp_checksum = (record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt;
+    return value;
+}
 
 u32 skill_character_mp(SkillCharacterStats* record)
 {
     return character_mp(record);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_00356F80);
+s32 skill_clamp_character_mp(SkillCharacterStats* record, s32 value)
+{
+    return clamp_character_stat(record, value);
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_00357000);
+s32 skill_set_character_hp(SkillCharacterStats* record, s32 value)
+{
+    if (record->hp_checksum != ((record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+    value = clamp_character_stat(record, value);
+    s32 max_hp = record->encoded_max_hp ^ SKILL_FLAG_ENCODING_MASK;
+    if (value > max_hp)
+    {
+        value = max_hp;
+    }
+    if (value == 0)
+    {
+        add_character_flags(record, 1);
+    }
+    if (value != 0 && (record->encoded_mp ^ SKILL_FLAG_ENCODING_MASK) != 0)
+    {
+        mask_character_flags(record, ~1);
+    }
+    record->encoded_hp = value ^ SKILL_FLAG_ENCODING_MASK;
+    record->hp_checksum = (record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt;
+    return value;
+}
 
 u32 skill_character_hp(SkillCharacterStats* record)
 {
     return character_hp(record);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_003572D0);
+s32 skill_clamp_character_hp(SkillCharacterStats* record, s32 value)
+{
+    return clamp_character_stat(record, value);
+}
 
 u32 skill_add_character_flags(SkillCharacterStats* record, u32 flags)
 {
-    u32 key = record->checksum_salt;
-    u32 value = record->encoded_flags;
-    s32 salt = record->encoded_experience;
-    u32 checksum = record->flags_experience_checksum;
-    if (checksum != ((value + key) ^ salt ^ key))
-    {
-        return 5;
-    }
-    record->encoded_flags = ((value ^ SKILL_FLAG_ENCODING_MASK) | flags) ^ SKILL_FLAG_ENCODING_MASK;
-    s32 current_salt = record->encoded_experience;
-    record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
-    return record->encoded_flags ^ SKILL_FLAG_ENCODING_MASK;
+    return add_character_flags(record, flags);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_003573D0);
+void skill_ensure_status_skill_levels(SkillStatusSkillWindow* object)
+{
+    for (s32 index = 0; index < 4; index++)
+    {
+        if (status_skill_level(selected_equipment(object->records), index) == 0)
+        {
+            set_status_skill_level(selected_equipment(object->records), index, 1);
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_003575A0);
+s32 skill_create_status_skill_rows(SkillStatusSkillWindow* object)
+{
+    for (s32 key = 0x1779; key < 0x177F; key++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+        if (text == 0)
+        {
+            return 0;
+        }
+        switch (key)
+        {
+        case 0x1779:
+            text->init_resource_rectangle(158.0f, 14.0f, 0.0f, 0.0f, (s32)object->func_slot54(), 0x1779, 1);
+            text->set_color(0x6C6C6C);
+            object->level_heading = text;
+            break;
+        case 0x177A:
+            text->init_resource_rectangle(224.0f, 14.0f, 0.0f, 0.0f, (s32)object->func_slot54(), 0x177A, 1);
+            text->set_color(0x6C6C6C);
+            object->next_level_heading = text;
+            break;
+        case 0x177B:
+        case 0x177C:
+        case 0x177D:
+        case 0x177E:
+            s32 source = (s32)object->func_slot54();
+            text->init_resource_rectangle(32.0f, object->first_row_y + 32.0f * (float)(key - 0x177B), 0.0f, 0.0f, source, key, 0);
+            func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), text);
+            break;
+        default:
+            return 0;
+        }
+        lib_container_attach_widget(object->unk10, text);
+    }
+    object->heading_separator = new (0) LibClass172870;
+    if (object->heading_separator == 0)
+    {
+        return 0;
+    }
+    lib_marker_init_rectangle(object->heading_separator, 16.0f, 42.0f, 272.0f, 3.25f);
+    lib_container_attach_widget(object->unk10, object->heading_separator);
+    skill_ensure_status_skill_levels(object);
+    for (s32 index = 0; index < 4; index++)
+    {
+        LibObject174F20* level = new (0) LibObject174F20;
+        lib_numeric_widget_init_rectangle(level, status_skill_level(&static_cast<SkillCharacterEquipment*>(object->records->unk04)[object->records->current], index), 0, 0, 120.0f, object->first_row_y + 32.0f * (float)index, 64.0f, 24.0f);
+        lib_container_attach_widget(object->unk10, level);
+        object->skill_levels[index] = level;
+    }
+    for (s32 index = 0; index < 4; index++)
+    {
+        LibObject174F20* cost = new (0) LibObject174F20;
+        s32 value = func_4087A0(index + 1, status_skill_level(&static_cast<SkillCharacterEquipment*>(object->records->unk04)[object->records->current], index), 0);
+        lib_numeric_widget_init_rectangle(cost, value, 0, 0, 208.0f, object->first_row_y + 32.0f * (float)index, 64.0f, 24.0f);
+        lib_container_attach_widget(object->unk10, cost);
+        object->next_level_costs[index] = cost;
+        object->max_level_labels[index] = new (0) LibObject178750;
+        object->max_level_labels[index]->init_resource_rectangle(224.0f, object->first_row_y + 32.0f * (float)index, 0.0f, 0.0f, (s32)object->func_slot54(), 0x17C6, 0);
+        object->max_level_labels[index]->set_color(0x508050);
+        lib_container_attach_widget(object->unk10, object->max_level_labels[index]);
+        object->max_level_labels[index]->unk3f = 0;
+        if (value == -1)
+        {
+            object->next_level_costs[index]->unk3f = 0;
+            object->max_level_labels[index]->unk3f = 1;
+        }
+    }
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_slotf4__22SkillStatusSkillWindowFUi);
+s32 SkillStatusSkillWindow::func_slotf4(u32 associated)
+{
+    this->records = D_001B643C->callbacks->controller->selected_records();
+    this->FieldClass15AE70::func_slot10(associated, 16.0f, 176.0f, 16);
+    ItemCreationClass1746A0* clip = new (0) ItemCreationClass1746A0;
+    ItemCreationClass1746A0* reset_clip = new (0) ItemCreationClass1746A0;
+    this->selection = new (0) FieldObject23CEA0;
+    if (clip == 0 || reset_clip == 0 || this->selection == 0 || this->records == 0)
+    {
+        return 0;
+    }
+    lib_scissor_init_rectangle(clip, 8.0f, 8.0f, 288.0f, 192.0f);
+    lib_container_attach_widget(this->unk10, clip);
+    func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), clip);
+    if ((u8)skill_create_status_skill_rows(this) == 0)
+    {
+        return 0;
+    }
+    lib_scissor_init_reset(reset_clip, 1);
+    lib_container_attach_widget(this->unk10, reset_clip);
+    func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), reset_clip);
+    this->cursor = new (0) FieldObject23BE00;
+    func_0023BB20(this->cursor, reinterpret_cast<FieldObject23CEB0*>(this->selection), 0x288080, 32.0f, this->first_row_y, 144.0f, 1.0f);
+    lib_container_attach_widget(this->unk10, this->cursor);
+    func_0035C440(reinterpret_cast<SkillList*>(&this->unk8c), this->cursor);
+    const float* position = this->unk10->unk20.components;
+    this->selection->func_0023CE80(1, 4);
+    this->selection->func_0023CE60(0.0f, this->row_spacing);
+    this->selection->unkF2 = 0;
+    this->selection->func_0023CF50(0, 32.0f + position[0], position[1] + this->first_row_y);
+    func_0023CEA0(this->selection, 1);
+    func_0035C4D0(reinterpret_cast<SkillList*>(&this->unk74), this->selection);
+    return 1;
+}
 
 SkillStatusSkillWindow::~SkillStatusSkillWindow()
 {
@@ -4743,7 +6638,7 @@ u8 SkillSecondarySelection::func_slotb0()
     }
     case 0:
     {
-        func_00354190(this->status_rows);
+        skill_refresh_battle_skill_rows(this->status_rows);
         skill_refresh_battle_selection(this->status_rows);
         skill_refresh_battle_message(this->status_rows);
         FieldClass153E30* controller = D_001B643C->callbacks->controller;
@@ -5321,7 +7216,7 @@ s32 SkillController::init_windows()
         FieldClass153E30::add_child(tactical_details);
         tactical_details->func_slot40(mode_query);
         skill_set_battle_setup_visibility(status_rows, 1, 0);
-        func_00354190(status_rows);
+        skill_refresh_battle_skill_rows(status_rows);
         SkillTacticalWindow* query_window = mode_query;
         query_window->active = 0;
         query_window->func_slot18(0, 2);
@@ -5964,9 +7859,21 @@ void SkillGridChoice::func_slot5c()
     }
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0035CDB0);
+void SkillGridChoice::func_slot6c()
+{
+    if (this->selection->process_direction(1) == 1)
+    {
+        return;
+    }
+}
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0035CDF0);
+void SkillGridChoice::func_slot68()
+{
+    if (this->selection->process_direction(0) == 1)
+    {
+        return;
+    }
+}
 
 u8 SkillGridChoice::func_slotb4()
 {
@@ -6310,18 +8217,7 @@ INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0035E5C0);
 
 u32 skill_mask_character_flags(SkillCharacterStats* record, u32 flags)
 {
-    u32 key = record->checksum_salt;
-    u32 value = record->encoded_flags;
-    s32 salt = record->encoded_experience;
-    u32 checksum = record->flags_experience_checksum;
-    if (checksum != ((value + key) ^ salt ^ key))
-    {
-        return 5;
-    }
-    record->encoded_flags = ((value ^ SKILL_FLAG_ENCODING_MASK) & flags) ^ SKILL_FLAG_ENCODING_MASK;
-    s32 current_salt = record->encoded_experience;
-    record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
-    return record->encoded_flags ^ SKILL_FLAG_ENCODING_MASK;
+    return mask_character_flags(record, flags);
 }
 
 INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0035FAA0);
@@ -6356,7 +8252,7 @@ SkillOptionsWindow::SkillOptionsWindow()
     child = 0;
     x = 0.0f;
     y = 0.0f;
-    unkb8 = 0;
+    row_height = 0;
     selected_kind = 0;
 }
 
@@ -7080,8 +8976,8 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     {
         left_character_icon = new (0) ItemCreationClass174C40;
         right_character_icon = new (0) ItemCreationClass174C40;
-        lib_indexed_resource_init(left_character_icon, 10, 8.0f, 8.0f);
-        lib_indexed_resource_init(right_character_icon, 11, 216.0f, 8.0f);
+        lib_indexed_resource_init(left_character_icon, 8.0f, 8.0f, 10);
+        lib_indexed_resource_init(right_character_icon, 216.0f, 8.0f, 11);
         left_character_icon->set_scale(0.9f, 0.9f);
         right_character_icon->set_scale(0.9f, 0.9f);
         lib_container_attach_widget(unk10, left_character_icon);

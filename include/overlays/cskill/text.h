@@ -249,11 +249,35 @@ u32 skill_character_mp(SkillCharacterStats* record);
 s32 skill_set_character_mp(SkillCharacterStats* record, s32 value);
 
 /**
+ * @brief Clamp and store protected current HP, updating flag bit zero.
+ * @param record Character statistics.
+ * @param value Requested HP.
+ * @return Stored HP, or zero when the HP checksum is invalid.
+ */
+s32 skill_set_character_hp(SkillCharacterStats* record, s32 value);
+
+/**
  * @brief Decode current HP and mark valid flags when its checksum fails.
  * @param record Protected values receiver.
  * @return Decoded value, or zero when its checksum is invalid.
  */
 u32 skill_character_hp(SkillCharacterStats* record);
+
+/**
+ * @brief Clamp a requested MP value to the record's stat limit.
+ * @param record Character statistics; stat_limit_type selects the limit.
+ * @param value Requested MP.
+ * @return value limited to 0..99999 for limit type 0, 0..99999999 for type 1, or unchanged otherwise.
+ */
+s32 skill_clamp_character_mp(SkillCharacterStats* record, s32 value);
+
+/**
+ * @brief Clamp a requested HP value to the record's stat limit.
+ * @param record Character statistics; stat_limit_type selects the limit.
+ * @param value Requested HP.
+ * @return value limited to 0..99999 for limit type 0, 0..99999999 for type 1, or unchanged otherwise.
+ */
+s32 skill_clamp_character_hp(SkillCharacterStats* record, s32 value);
 
 /**
  * @brief Add flag bits when the protected record's checksum is valid.
@@ -327,8 +351,78 @@ void skill_refresh_selection_rows(SkillModeSelection* record);
  */
 void skill_refresh_selection_marker(SkillModeSelection* record);
 
-/** @brief Advance the mode window animation. @param object Mode window. */
-void func_0034C060(SkillModeSelection* object);
+/**
+ * @brief Move the name and CP rows by one scroll step and count down the scroll frames.
+ * @param object Mode window.
+ * @return Scroll frames remaining after this step.
+ */
+float skill_step_mode_scroll(SkillModeSelection* object);
+
+/**
+ * @brief Append the candidate skill IDs for selection kinds four and five.
+ * @param object Mode window.
+ * @param mode Character skill mode.
+ * @param index First free entry in candidate_skill_ids.
+ * @return Next free entry.
+ */
+s32 func_0034E380(SkillModeSelection* object, s32 mode, s32 index);
+
+/**
+ * @brief Append the mode-specific candidate skill IDs for selection kinds two and three.
+ * @param object Mode window.
+ * @param mode Character skill mode.
+ * @param index First free entry in candidate_skill_ids.
+ * @return Next free entry.
+ */
+s32 func_0034F1A0(SkillModeSelection* object, s32 mode, s32 index);
+
+/**
+ * @brief Append the extra candidate skill IDs modes two and nine add for selection kind two.
+ * @param object Mode window.
+ * @param mode Character skill mode.
+ * @param index First free entry in candidate_skill_ids.
+ * @return Next free entry.
+ */
+s32 func_0034FB40(SkillModeSelection* object, s32 mode, s32 index);
+
+/**
+ * @brief Append the mode-specific candidate skill IDs for selection kinds zero and one.
+ * @param object Mode window.
+ * @param mode Character skill mode.
+ * @param index First free entry in candidate_skill_ids.
+ * @return Next free entry.
+ */
+s32 func_0034FC30(SkillModeSelection* object, s32 mode, s32 index);
+
+/**
+ * @brief Append the extra candidate skill IDs modes two and nine add for selection kind zero.
+ * @param object Mode window.
+ * @param mode Character skill mode.
+ * @param index First free entry in candidate_skill_ids.
+ * @return Next free entry.
+ */
+s32 func_003505C0(SkillModeSelection* object, s32 mode, s32 index);
+
+/**
+ * @brief Fill the mode window's candidate skill IDs for a selection kind.
+ * @param object Mode window.
+ * @param mode Character skill mode.
+ * @param kind Selection kind, zero through five.
+ */
+void skill_build_mode_candidates(SkillModeSelection* object, s32 mode, s16 kind);
+
+/**
+ * @brief Raise each of the first four status skills to level one when its saved level is zero.
+ * @param object Status skill window.
+ */
+void skill_ensure_status_skill_levels(SkillStatusSkillWindow* object);
+
+/**
+ * @brief Create the status skill headings, separator, level values, next-level costs and max-level labels.
+ * @param object Status skill window.
+ * @return One after creating the rows, or zero when an allocation fails.
+ */
+s32 skill_create_status_skill_rows(SkillStatusSkillWindow* object);
 
 /**
  * @brief Initialize the damage-conversion grid and register its cursor.
@@ -352,8 +446,12 @@ s32 skill_initialize_aura_grid(SkillTacticalDetailWindow* record);
  */
 s32 skill_initialize_selection_grid(SkillModeSelection* record, s16 row_count);
 
-/** @brief Create the mode window's text and image rows. @param object Mode window. @return Nonzero after creating the rows. */
-s32 func_00351090(SkillModeSelection* object);
+/**
+ * @brief Create the 42 skill-name and CP rows and record each column's first row position.
+ * @param object Mode window.
+ * @return One after creating the rows, or zero when an allocation fails or a column is empty.
+ */
+s32 skill_create_mode_rows(SkillModeSelection* object);
 
 /**
  * @brief Cycle the symbology character and refresh its name, MP, and condition markers.
@@ -502,8 +600,12 @@ void func_00358310(SkillCharacterWindow* object);
 
 /** @brief Refresh the status-skill levels, next-level SP costs, and maximum-level labels. @param object Status-skill window. */
 void func_003559F0(SkillStatusSkillWindow* object);
-/** @brief Rebuild the six-row status values. @param object Status-row window. @return One on success, or zero on failure. */
-s32 func_00354190(SkillBattleSetupWindow* object);
+/**
+ * @brief Refresh the six battle skill rows: names, scaled labels, levels, mastery, CP costs, and the CP displays.
+ * @param object Battle setup window.
+ * @return One.
+ */
+s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object);
 /** @brief Create battle slot labels, separators, skill names, and slot icons. @param object Battle setup window. @return Row refresh result, or zero on allocation failure. */
 s32 func_003547C0(SkillBattleSetupWindow* object);
 /** @brief Refresh the tactical modes, selected character's row, and associated displays. @param object Tactical selection window. */

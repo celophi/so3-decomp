@@ -1874,6 +1874,9 @@ public:
     /** @brief Start with no packet, a 96.0 width and a 5.0 height. */
     FieldClass159A70();
 
+    /** @brief Allocate the packet storage. @param size Packet size in quadwords. */
+    void func_002BC370(s32 size);
+
     /** @brief Release the packet. */
     virtual ~FieldClass159A70();
 
