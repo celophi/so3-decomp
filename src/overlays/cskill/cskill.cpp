@@ -548,7 +548,13 @@ struct SkillRuntime
 /** Partial Field runtime reached through D_001B657C. */
 struct FieldRuntime
 {
-    u8 unk00[0x568];
+    u8 unk00[0x534];
+    /** Screen scale and offset applied to menu coordinates. */
+    float screen_scale_x;
+    float screen_scale_y;
+    float screen_offset_x;
+    float screen_offset_y;
+    u8 unk544[0x24];
     /** Integer arguments substituted into the next message. */
     s32 message_arguments[1];
 };
@@ -1174,6 +1180,16 @@ extern "C" s32 func_4C6A40(void* item);
 
 /** @brief Return the absolute value of a signed integer. @param value Integer to convert. @return Absolute value. */
 extern "C" s32 abs(s32 value);
+
+/**
+ * @brief Recalculate a character's statistics from their equipment.
+ * @param record Character record to update.
+ * @param equipment Character equipment.
+ * @param candidate Allocation to try in a slot instead of the equipped one, or null.
+ * @param index Slot for the candidate, or -1 to use the equipment as it is.
+ */
+extern "C" void lib_character_recalculate_stats(FieldRecord* record, SkillCharacterEquipment* equipment, const struct ItemCreationAllocationRecord* candidate,
+                                                s32 index);
 
 /**
  * @brief Read skill costs and the encoded major-attack damage scale.
@@ -3684,7 +3700,226 @@ FieldRecordSelection* SkillController::selected_records()
     return record_selection;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034C7D0);
+/**
+ * @brief Store a battle skill slot's one-based skill index when the protected slot array is valid.
+ * @param record Character equipment and skill setup.
+ * @param slot Battle skill slot, zero through five.
+ * @param value One-based skill index, or zero to clear the slot.
+ */
+static inline void set_battle_skill_index(SkillCharacterEquipment* record, s32 slot, s32 value)
+{
+    u8* entry;
+    u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+    entry = record->encoded_battle_skill_indices;
+    for (s32 i = 0; i < 6; i++)
+    {
+        checksum ^= *entry++;
+        checksum = checksum * 2 + 0x31;
+    }
+    if (record->battle_skill_indices_checksum == checksum && slot >= 0 && static_cast<u32>(slot) < 6 && value + 0x7D70 < 0x7D9B)
+    {
+        record->encoded_battle_skill_indices[slot] = value ^ SKILL_TACTICAL_STATE_XOR_KEY;
+        checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+        entry = record->encoded_battle_skill_indices;
+        for (s32 i = 0; i < 6; i++)
+        {
+            checksum ^= *entry++;
+            checksum = checksum * 2 + 0x31;
+        }
+        record->battle_skill_indices_checksum = checksum;
+    }
+}
+
+u8 SkillModeSelection::func_slotb0()
+{
+    FieldObject23CEA0* grid = this->selection;
+    u8 inactive = !grid->unk35;
+    if (inactive == 1)
+    {
+        return 0;
+    }
+    s16 row = grid->unk114;
+    s32 key = this->skill_name_keys[row];
+    if (key == 0)
+    {
+        return 3;
+    }
+    s32 skill;
+    if (key - SKILL_MSG_NONE == 0)
+    {
+        skill = -1;
+    }
+    else
+    {
+        skill = key - SKILL_MSG_NAME_BASE;
+    }
+    s32 character;
+    s32 cp_cost = this->row_cp_costs[row];
+    FieldRecordSelection* records = this->record_selection;
+    character = records->slots[records->current];
+    SkillBattleSetupWindow* battle = static_cast<SkillBattleSetupWindow*>(this->func_slot44());
+    if (battle == 0)
+    {
+        return 0;
+    }
+    s32 assigned = battle->cp_costs[this->mode];
+    if (assigned == -1)
+    {
+        assigned = 0;
+    }
+    assigned = skill_refresh_battle_cp_displays(battle, 1) - assigned;
+    SkillCharacterEquipment* record = &static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current];
+    if (cp_cost + assigned > character_cp(record))
+    {
+        return 3;
+    }
+    if (skill >= 0)
+    {
+        s32 mapped = func_40AE00(character, skill);
+        if (mapped == -1)
+        {
+            return 3;
+        }
+        switch (this->mode)
+        {
+        case 0:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 0, mapped + 1);
+            break;
+        }
+        case 1:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 1, mapped + 1);
+            break;
+        }
+        case 2:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 2, mapped + 1);
+            break;
+        }
+        case 3:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 3, mapped + 1);
+            break;
+        }
+        case 4:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 4, mapped + 1);
+            break;
+        }
+        case 5:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 5, mapped + 1);
+            break;
+        }
+        }
+    }
+    else
+    {
+        cp_cost = -1;
+        switch (this->mode)
+        {
+        case 0:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 0, 0);
+            break;
+        case 1:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 1, 0);
+            break;
+        case 2:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 2, 0);
+            break;
+        case 3:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 3, 0);
+            break;
+        case 4:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 4, 0);
+            break;
+        case 5:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 5, 0);
+            break;
+        }
+    }
+    if (character == 2)
+    {
+        func_40AE00(2, 0x94);
+        FieldRecordSelection* selection = this->record_selection;
+        s8 index = selection->current;
+        lib_character_recalculate_stats(&selection->records[index], &static_cast<SkillCharacterEquipment*>(selection->unk04)[index], 0, -1);
+    }
+    skill_refresh_battle_skill_rows(battle);
+    battle->cp_costs[this->mode] = cp_cost;
+    skill_refresh_battle_cp_displays(battle, 1);
+    SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
+    if (owner != 0)
+    {
+        s32 value = skill_refresh_battle_cp_displays(owner->status_rows, 1);
+        SkillCharacterWindow* status = owner->status;
+        LibObject174F20* item = status->assigned_cp_value;
+        if (item != 0)
+        {
+            if (value < 0)
+            {
+                value = 0;
+            }
+            item->numeric_value = value;
+            item->unk3c = 1;
+        }
+        FieldRecordSelection* selection = status->selection;
+        if (selection != 0)
+        {
+            SkillCharacterEquipment* record = &static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current];
+            if (record != 0)
+            {
+                s32 value = character_cp(record);
+                item = status->available_cp_value;
+                item->numeric_value = value;
+                item->unk3c = 1;
+            }
+        }
+    }
+    this->mode = -1;
+    clear_selection_rows(this);
+    this->state = 0;
+    if (this->selection != 0)
+    {
+        func_0023C710(this->selection);
+    }
+    if (this->selection != 0)
+    {
+        FieldObject23B950* marker = this->selection_marker;
+        if (marker != 0)
+        {
+            marker->unk28 = 0;
+            marker->flag3C = 1;
+        }
+        func_0023CEA0(this->selection, 0);
+    }
+    FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(this->func_slot44());
+    associated->func_slot64();
+    D_001B643C->callbacks->controller->func_00263C70(associated);
+    ListItem0035CCE0* label = static_cast<ListItem0035CCE0*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), this->selection->unk114)->value);
+    if (label != 0)
+    {
+        label->unk94 = 0x808080;
+        label->unk3c = 1;
+    }
+    SkillController* controller = this->owner;
+    if (controller != 0)
+    {
+        FieldClass15AE70* window = controller->window;
+        if (window != 0)
+        {
+            skill_refresh_costs(window);
+        }
+    }
+    skill_set_selection_visibility(this, 0, 0);
+    if (this->owner->status->first_display != 0 && this->owner->selected_records()->count > 1)
+    {
+        this->owner->status->first_display->unk3f = 1;
+        this->owner->status->second_display->unk3f = 1;
+    }
+    return 1;
+}
 
 s32 SkillModeSelection::func_slotd4()
 {

@@ -6,7 +6,9 @@ one after another, the way the original has them. In a few units though, the
 original keeps the tables in separate islands, with other data in between.
 I describe those islands in the overlay's Splat config with `rodata_anchors`:
 the function that uses each table, plus the table's offset and size inside the
-island. subsegments.py reads them for compile.py.
+island. A function with more than one table also says which one with `table`,
+counting in the order its code first refers to them. subsegments.py reads them
+for compile.py.
 
 For each island I give its tables the island's linker_section name (like
 .rodata.0036F6C0). The linker script places that name at the original address,
@@ -167,13 +169,24 @@ def owning_function(obj, name):
     return function
 
 
-def referenced_table(obj, function, tables):
-    """The one jump table a function's code refers to."""
+def referenced_table(obj, function, tables, which=None):
+    """The jump table a function's code refers to.
+
+    Without `which` the function has to refer to exactly one table. A function
+    with several switches refers to several, and `which` picks one of them, in
+    the order the code first refers to them.
+    """
     start, end = function.value, function.value + function.size
-    targets = {symbol for offset, _, symbol in obj.relocations[function.section]
-               if start <= offset < end and obj.symbols[symbol].section in tables}
-    require(len(targets) == 1, f'rodata owner has ambiguous compiler table references: {function.name}')
-    return obj.symbols[targets.pop()]
+    first = {}
+    for offset, _, symbol in obj.relocations[function.section]:
+        if start <= offset < end and obj.symbols[symbol].section in tables:
+            first[symbol] = min(offset, first.get(symbol, offset))
+    targets = sorted(first, key=first.get)
+    if which is None:
+        require(len(targets) == 1, f'rodata owner has ambiguous compiler table references: {function.name}')
+        return obj.symbols[targets[0]]
+    require(0 <= which < len(targets), f'rodata owner has no compiler table {which}: {function.name}')
+    return obj.symbols[targets[which]]
 
 
 def anchored_table(obj, anchor, island_size, tables, owners):
@@ -181,11 +194,15 @@ def anchored_table(obj, anchor, island_size, tables, owners):
     size = config_integer(anchor['size'], 'invalid native table size')
     offset = config_integer(anchor['offset'], 'invalid native table offset')
     name = anchor['function']
+    # A function with several tables names each with `table` (see referenced_table).
+    which = anchor.get('table')
+    if which is not None:
+        which = config_integer(which, 'invalid native table index')
     seen = {function.name for function, _ in owners.values()}
-    require(name not in seen and size > 0 and size % WORD == 0 and offset % WORD == 0 and offset + size <= island_size,
-            'invalid or repeated native table anchor')
+    require((which is not None or name not in seen) and size > 0 and size % WORD == 0 and offset % WORD == 0 and
+            offset + size <= island_size, 'invalid or repeated native table anchor')
     function = owning_function(obj, name)
-    table = referenced_table(obj, function, tables)
+    table = referenced_table(obj, function, tables, which)
     index = table.section
     # The table symbol has to be its whole section, and the configured size.
     require(index not in owners and table.value == 0 and table.size == obj.headers[index].size == size,
