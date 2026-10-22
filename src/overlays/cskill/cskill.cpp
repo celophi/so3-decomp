@@ -1674,10 +1674,34 @@ static inline u32 checked_max_mp(SkillCharacterStats* record)
     return record->encoded_max_mp ^ SKILL_FLAG_ENCODING_MASK;
 }
 
+/** @brief Read a record selection's current index. @param selection Character record selection. @return Current index. */
+static inline s32 selection_current(FieldRecordSelection* selection)
+{
+    return selection->current;
+}
+
+/** @brief Locate a record selection's equipment array. @param selection Character record selection. @return First equipment record. */
+static inline SkillCharacterEquipment* selection_equipment(FieldRecordSelection* selection)
+{
+    return static_cast<SkillCharacterEquipment*>(selection->unk04);
+}
+
 /** @brief Locate the selected character's equipment and skill setup. @param selection Character record selection. @return Selected record. */
 static inline SkillCharacterEquipment* selected_equipment(FieldRecordSelection* selection)
 {
     return &static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current];
+}
+
+/**
+ * @brief Locate the selected character's equipment, reading the index before the array.
+ * @param selection Character record selection.
+ * @return Selected record.
+ */
+static inline SkillCharacterEquipment* current_equipment(FieldRecordSelection* selection)
+{
+    s32 current = selection_current(selection);
+    SkillCharacterEquipment* equipment = selection_equipment(selection);
+    return &equipment[current];
 }
 
 /** @brief Locate the selected character's protected stats. @param selection Character record selection. @return Selected stats record. */
@@ -5089,7 +5113,71 @@ void skill_open_tactical_details(SkillTacticalWindow* object)
     D_001B643C->callbacks->controller->func_00263C70(window);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_003523A0);
+/** @brief Decode one tactical skill state if the checksum holds. @param states Encoded states. @param stored_checksum Stored checksum. @param index Mode index. @return Decoded state, or zero. */
+static inline s32 tactical_skill_state(const u8* states, const u32& stored_checksum, s32 index)
+{
+    u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+    for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
+    {
+        checksum ^= states[entry];
+        checksum = checksum * 2 + 0x31;
+    }
+    if (stored_checksum != checksum)
+    {
+        return 0;
+    }
+    if (index < 0)
+    {
+        return 0;
+    }
+    if (static_cast<u32>(index) >= SKILL_TACTICAL_MODE_COUNT)
+    {
+        return 0;
+    }
+    return static_cast<s8>(states[index]) ^ SKILL_TACTICAL_STATE_XOR_KEY;
+}
+
+/** @brief Encode one tactical skill state and refresh the checksum. @param states Encoded states. @param stored_checksum Stored checksum. @param index Mode index. @param state New state. */
+static inline void set_tactical_skill_state(u8* states, u32& stored_checksum, s32 index, s32 state)
+{
+    u8* entry_byte = states;
+    u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+    for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
+    {
+        checksum ^= *entry_byte++;
+        checksum = checksum * 2 + 0x31;
+    }
+    if (stored_checksum == checksum && index >= 0 && static_cast<u32>(index) < SKILL_TACTICAL_MODE_COUNT)
+    {
+        states[index] = state ^ SKILL_TACTICAL_STATE_XOR_KEY;
+        checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+        entry_byte = states;
+        for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
+        {
+            checksum ^= *entry_byte++;
+            checksum = checksum * 2 + 0x31;
+        }
+        stored_checksum = checksum;
+    }
+}
+
+u8 func_003523A0(SkillTacticalWindow* object)
+{
+    s32 mode = object->row_modes[object->selection->unk114];
+    SkillCharacterEquipment* record = current_equipment(object->records);
+    s32 state = tactical_skill_state(record->encoded_tactical_skill_states, record->tactical_skill_states_checksum, mode);
+    if (state != 0)
+    {
+        s32 next_state = -state;
+        set_tactical_skill_state(record->encoded_tactical_skill_states, record->tactical_skill_states_checksum, mode, next_state);
+    }
+    skill_refresh_tactical_rows(object);
+    if (state != 0)
+    {
+        skill_set_tactical_prompt_state(object->attachment, -state);
+    }
+    return 1;
+}
 
 s32 SkillTacticalWindow::func_slotdc()
 {
