@@ -9136,7 +9136,146 @@ SkillOptionsWindow::SkillOptionsWindow()
     selected_kind = 0;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_slot5c__20SkillSymbologyWindowFv);
+void SkillSymbologyWindow::func_slot5c()
+{
+    if (shift > 0)
+    {
+        for (s32 entry = 0; entry < 30; entry++)
+        {
+            LibClass178600* item = spell_labels[entry];
+            float y = (float)(s32)(11.0f + item->unk18.unk04);
+            item->unk18.unk04 = y;
+            item->unk3c = 1;
+            item = spell_icons[entry];
+            item->unk18.unk04 = y;
+            item->unk3c = 1;
+        }
+        shift -= 11;
+        if (shift < 0)
+        {
+            shift = 0;
+        }
+    }
+    else if (shift < 0)
+    {
+        for (s32 entry = 0; entry < 30; entry++)
+        {
+            LibClass178600* item = spell_labels[entry];
+            float y = (float)(s32)(item->unk18.unk04 - 11.0f);
+            item->unk18.unk04 = y;
+            item->unk3c = 1;
+            item = spell_icons[entry];
+            item->unk18.unk04 = y;
+            item->unk3c = 1;
+        }
+        shift += 11;
+        if (shift > 0)
+        {
+            shift = 0;
+        }
+    }
+    ItemCreationClass1725D0* indicator = scroll_indicator;
+    indicator->unk50 = 100.0f * (14.0f / 30.0f);
+    indicator->unk3c = 1;
+    indicator = scroll_indicator;
+    indicator->unk54 = 100.0f * ((float)position / 30.0f);
+    indicator->unk3c = 1;
+    FieldRecordSelection* current = records;
+    SkillCharacterStats* stats = &reinterpret_cast<SkillCharacterStats*>(current->records)[current->current];
+    SkillCharacterEquipment* equipment = &static_cast<SkillCharacterEquipment*>(current->unk04)[current->current];
+    for (s32 entry = 0; entry < 30; entry++)
+    {
+        spell_icons[entry]->unk3f = 0;
+        spell_labels[entry]->unk3f = 0;
+    }
+    s32 skill_id, mastery, result_index, remainder;
+    for (s32 row = 0; row < 14; row++)
+    {
+        s32 entry = position + row;
+        s32 result = func_408EA0(equipment, records->slots[records->current], entry,
+            &skill_id, &mastery, &result_index, &remainder, 1);
+        if (result == 0 || entry == 29)
+        {
+            if (row == selected)
+            {
+                cursor->unk3d = 0;
+            }
+        }
+        else
+        {
+            LibObject178750*& label = spell_labels[entry];
+            label->unk3f = 1;
+            lib_text_set_resource(label, static_cast<s32>(static_cast<SkillController*>(D_001B643C->callbacks->controller)->get_resource_slot()),
+                skill_id + SKILL_MSG_NAME_BASE, 0);
+            if (skill_id == 3 || skill_id == 18 || skill_id == 19 || skill_id == 20 || skill_id == 27)
+            {
+                s32 mp_cost = 0;
+                func_4095C0(skill_id, reinterpret_cast<FieldRecord*>(stats), equipment, &mp_cost, 0, 0, 0, 0, 0, 0, 0);
+                if ((s32)character_mp(stats) <= mp_cost)
+                {
+                    label->set_color(0x505050);
+                }
+                else
+                {
+                    label->set_color(0x808080);
+                }
+            }
+            else
+            {
+                label->set_color(0x505050);
+            }
+            if (skill_id == 17)
+            {
+                spell_icons[entry]->unk3f = 0;
+            }
+            else
+            {
+                spell_icons[entry]->unk3f = result == 1;
+            }
+            if (row == selected)
+            {
+                cursor->unk3d = 1;
+                if (shift == 0)
+                {
+                    cursor->func_0023B7E0(spell_labels[entry]);
+                    // TODO: This is my guess at the shape. The original seems to read the label in two separate
+                    // blocks here, and this always-true check is the only way I found to get that.
+                    s32 colour = 0;
+                    if (colour == 0)
+                    {
+                        colour = spell_labels[entry]->unk94;
+                    }
+                    lib_marker_set_bright_color(cursor, colour);
+                    func_0023B780(reinterpret_cast<FieldObject23B950*>(cursor));
+                }
+            }
+        }
+    }
+    if (shift != 0)
+    {
+        cursor->unk3d = 0;
+    }
+    FieldClass153E30* controller = D_001B643C->callbacks->controller;
+    SkillController* owner = static_cast<SkillController*>(controller);
+    s32 entry = position + selected;
+    SkillSymbologyCharacterWindow* character = owner->symbology_character;
+    FieldRecordSelection* current_records = static_cast<SkillController*>(controller)->selected_records();
+    SkillCharacterEquipment* detail = &static_cast<SkillCharacterEquipment*>(current_records->unk04)[current_records->current];
+    s32 selected_skill, selected_mastery, symbology_level, selected_remainder;
+    if (func_408EA0(detail, character->selection->slots[character->selection->current], entry,
+        &selected_skill, &selected_mastery, &symbology_level, &selected_remainder, 1) == 0 || entry == 29)
+    {
+        character->symbology_level_value->unk3f = 0;
+    }
+    else
+    {
+        LibObject174F20* display = character->symbology_level_value;
+        display->numeric_value = symbology_level;
+        display->unk3c = 1;
+        character->symbology_level_value->unk3f = 1;
+    }
+    skill_refresh_symbology_help(owner->symbology_help, position + selected);
+}
 
 /**
  * @brief Advance the paired display lists toward scroll position 16.
