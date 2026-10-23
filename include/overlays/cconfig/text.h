@@ -5,14 +5,14 @@
 
 typedef struct ConfigList182210 ConfigList182210;
 typedef struct ConfigList182200 ConfigList182200;
-typedef struct ConfigColorOwner ConfigColorOwner;
+typedef struct ConfigColorWindow ConfigColorWindow;
 typedef struct ConfigOptions ConfigOptions;
 typedef struct ConfigGridWindow ConfigGridWindow;
 typedef struct ConfigBindingWindow ConfigBindingWindow;
+typedef struct ConfigCornerWindow ConfigCornerWindow;
 typedef struct ConfigControlReceiver ConfigControlReceiver;
 typedef struct ConfigMessageWindow ConfigMessageWindow;
 typedef struct ConfigFrameWindow ConfigFrameWindow;
-typedef struct ConfigPreviewState ConfigPreviewState;
 typedef struct ItemCreationClass1725D0 ItemCreationClass1725D0;
 typedef struct ItemCreationOptionResourceDisplay ItemCreationOptionResourceDisplay;
 typedef struct ConfigPreviewWindow ConfigPreviewWindow;
@@ -39,6 +39,8 @@ typedef struct
 #ifdef __cplusplus
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/lib/text_0045AD10.h"
+
+class ConfigController;
 
 /** Configuration display list with an owned sentinel and a virtual destructor. */
 struct ConfigList182210
@@ -85,15 +87,21 @@ struct ConfigOptions : public FieldClass15AE70
     virtual void func_slota8();
     /** @brief Apply option control mask 0x20. */
     virtual void func_slotac();
-    /** @brief Handle virtual slot 0xB0. @return Handler result. */
+    /**
+     * @brief Confirm the button or window-color row: open its editor, or restore the defaults when the row offers that.
+     * @return One after opening an editor or restoring defaults, otherwise zero.
+     */
     virtual u8 func_slotb0();
-    /** @brief Handle virtual slot 0xB4. @return Handler result. */
+    /**
+     * @brief Leave the options: close at once when the menu runtime asks for it, otherwise open the end-configuration prompt.
+     * @return Zero without a menu runtime, otherwise two.
+     */
     virtual u8 func_slotb4();
     /** @brief Create the option displays. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
-    void* unka8;
+    ConfigController* controller;
     LibClass175030* scroll;
-    u8 unkb0;
+    bool unkb0;
     u8 selected;
     u8 unkb2;
     u8 unkb3;
@@ -303,9 +311,9 @@ void func_0034BB60(ConfigOptions* object, u16 input);
 void func_0034BD70(ConfigOptions* object, u16 input);
 
 /**
- * @brief Update the display ratio option and its choice colors.
+ * @brief Switch the screen aspect ratio between 4:3 and 16:9, recolor its two choices, and update the preview and camera.
  * @param object Configuration options window.
- * @param input Control mask for the row.
+ * @param input Control mask for the row (0x80 or 0x20).
  */
 void func_0034BF40(ConfigOptions* object, u16 input);
 
@@ -392,12 +400,156 @@ void func_0034AD30(ConfigOptions* object);
 void func_00348750(ConfigGridWindow* object);
 
 /**
- * @brief Move the selected option by an unsigned byte amount.
- * @param object Configuration options window to update.
- * @param direction Zero to decrease the selection, or one to increase it.
- * @param amount Amount added or subtracted from the selection.
+ * @brief Pass direction code 1 to the option grid.
+ * @param object Configuration selector window.
  */
-void func_0034AEC0(ConfigOptions* object, u16 direction, u8 amount);
+void func_003487C0(ConfigGridWindow* object);
+
+/**
+ * @brief Pass direction code 0 to the option grid.
+ * @param object Configuration selector window.
+ */
+void func_00348800(ConfigGridWindow* object);
+
+/**
+ * @brief Create the end-configuration prompt with its panel, Yes and No labels, and two-row grid.
+ * @param object End-configuration confirmation window.
+ * @param associated Full resource source word.
+ * @param x Horizontal window position.
+ * @param y Vertical window position.
+ * @param code Base window initializer code.
+ * @return One after creation, or zero when the panel, a label, or the grid is absent.
+ */
+s32 func_00348950(ConfigGridWindow* object, u32 associated, float x, float y, s32 code);
+
+/**
+ * @brief Pass direction code 1 to the color component grid.
+ * @param object Window-color editor.
+ */
+void func_00349110(ConfigColorWindow* object);
+
+/**
+ * @brief Refresh the component numbers and preview, and show the edited color on its corner of the selector frame.
+ * @param object Window-color editor.
+ */
+void func_00348D20(ConfigColorWindow* object);
+
+/**
+ * @brief Pass direction code 0 to the color component grid.
+ * @param object Window-color editor.
+ */
+void func_00349150(ConfigColorWindow* object);
+
+/**
+ * @brief Store the edited color in its corner of the window colors, repaint the frame, and close the editor.
+ * @param object Window-color editor.
+ * @return One after closing.
+ */
+u8 func_00349230(ConfigColorWindow* object);
+
+/**
+ * @brief Create the color editor's preview panel, component labels, number widgets, and grid, starting from the corner's stored color.
+ * @param object Window-color editor.
+ * @param associated Full resource source word.
+ * @param x Horizontal window position.
+ * @param y Vertical window position.
+ * @return One after creation, or zero when a display or the grid is absent or no corner is set.
+ */
+s32 func_00349320(ConfigColorWindow* object, u32 associated, float x, float y);
+
+/**
+ * @brief Check whether the corner selector is the active window; no work follows the check.
+ * @param object Window-color corner selector.
+ */
+void func_00349810(ConfigCornerWindow* object);
+
+/**
+ * @brief Pass direction code 2 to the corner grid.
+ * @param object Window-color corner selector.
+ */
+void func_00349850(ConfigCornerWindow* object);
+
+/**
+ * @brief Pass direction code 3 to the corner grid.
+ * @param object Window-color corner selector.
+ */
+void func_00349890(ConfigCornerWindow* object);
+
+/**
+ * @brief Pass direction code 1 to the corner grid.
+ * @param object Window-color corner selector.
+ */
+void func_003498D0(ConfigCornerWindow* object);
+
+/**
+ * @brief Pass direction code 0 to the corner grid.
+ * @param object Window-color corner selector.
+ */
+void func_00349910(ConfigCornerWindow* object);
+
+/**
+ * @brief Open the color editor for the selected corner, placed beside that corner.
+ * @param object Window-color corner selector.
+ * @return One after the editor is registered, or zero when it cannot be allocated.
+ */
+u8 func_003499F0(ConfigCornerWindow* object);
+
+/**
+ * @brief Create the corner selector's panels, four corner labels, and two-by-two grid.
+ * @param object Window-color corner selector.
+ * @param associated Full resource source word.
+ * @return One after creation, or zero when a panel, label, or the grid is absent.
+ */
+s32 func_00349C70(ConfigCornerWindow* object, u32 associated);
+
+/**
+ * @brief Pass direction code 1 to the binding grid.
+ * @param object Button binding selector.
+ */
+void func_0034A430(ConfigBindingWindow* object);
+
+/**
+ * @brief Pass direction code 0 to the binding grid.
+ * @param object Button binding selector.
+ */
+void func_0034A470(ConfigBindingWindow* object);
+
+/**
+ * @brief Create the button binding table: the current button names, the function rows, the headings, the grid, and the hint line.
+ * @param object Button binding selector.
+ * @param associated Full resource source word.
+ * @return One after creation, or zero when the panel, a label, or the grid is absent.
+ */
+s32 func_0034A4B0(ConfigBindingWindow* object, u32 associated);
+
+/**
+ * @brief Create and register the preview, message, frame, and options windows.
+ * @param object Configuration controller.
+ * @return One after the windows are registered.
+ */
+s32 func_00352130(ConfigController* object);
+
+/**
+ * @brief Create the help bar: its labels, clipped scrolling text, and the first help message.
+ * @param object Configuration help window.
+ * @param associated Full resource source word; zero leaves the window empty.
+ * @return One after creation, or zero when the source word or a display is missing.
+ */
+s32 func_00351820(ConfigMessageWindow* object, u32 associated);
+
+/**
+ * @brief Hold the help text for 120 frames, then scroll it left and wrap it; at each wrap the two alternating hints swap.
+ * @param object Configuration help window.
+ */
+void func_003516B0(ConfigMessageWindow* object);
+
+/**
+ * @brief Move the option selection, refresh its message, and scroll the list between its two pages.
+ * @param object Configuration options window to update.
+ * @param direction Zero to move up, or one to move down.
+ * @param amount Number of rows to move; only its low byte is used.
+ */
+void func_0034AEC0(ConfigOptions* object, u16 direction, s32 amount);
 
 /**
  * @brief Dispatch the option control mask to the selected row.
@@ -407,7 +559,19 @@ void func_0034AEC0(ConfigOptions* object, u16 direction, u8 amount);
  */
 void func_0034D180(ConfigOptions* object, u32 index, u16 bits);
 
-/** @brief Resolve the selected option message. @param object Options window. @param selected Selected row. @return Message key. */
+/**
+ * @brief Pick the button assignment row message from the current bindings.
+ * @param object Configuration options window.
+ * @return 0x1FBB when all eight buttons keep their defaults, otherwise 0x1FBC.
+ */
+s32 func_003501B0(ConfigOptions* object);
+
+/**
+ * @brief Resolve the message key that describes an option row's current setting.
+ * @param object Configuration options window; rows 9 and 10 cache their keys in it.
+ * @param selected Option row, 0 through 13.
+ * @return Message key, or zero for rows out of range or unavailable.
+ */
 s32 func_00350270(ConfigOptions* object, u16 selected);
 
 /**
@@ -429,36 +593,36 @@ void func_00352B80(ConfigList182200* object);
 void func_00352110(void* object);
 
 /**
- * @brief Adjust a selected color component and refresh its packed display values.
- * @param object Color controls to update.
- * @param index Color component index.
- * @param delta Component adjustment.
+ * @brief Add to one color component, clamp it to 0..255, and copy the color to all four preview corners.
+ * @param object Window-color editor.
+ * @param index Component: 0 red, 1 green, 2 blue; other values only refresh the preview.
+ * @param delta Amount added to the component.
  */
-void func_00348E60(ConfigColorOwner* object, s16 index, s32 delta);
+void func_00348E60(ConfigColorWindow* object, s16 index, s32 delta);
 
 /**
  * @brief Increase the selected color component by five when the selector is active.
  * @param object Color controls to update.
  */
-void func_00348FE0(ConfigColorOwner* object);
+void func_00348FE0(ConfigColorWindow* object);
 
 /**
  * @brief Increase the selected color component by one when the selector is active.
  * @param object Color controls to update.
  */
-void func_00349030(ConfigColorOwner* object);
+void func_00349030(ConfigColorWindow* object);
 
 /**
  * @brief Decrease the selected color component by five when the selector is active.
  * @param object Color controls to update.
  */
-void func_00349070(ConfigColorOwner* object);
+void func_00349070(ConfigColorWindow* object);
 
 /**
  * @brief Decrease the selected color component by one when the selector is active.
  * @param object Color controls to update.
  */
-void func_003490C0(ConfigColorOwner* object);
+void func_003490C0(ConfigColorWindow* object);
 
 
 
@@ -975,61 +1139,12 @@ ConfigNode* func_003529B0(ConfigListOwner* owner, s32 index);
  */
 ConfigNode* func_00352C00(ConfigListOwner* owner, s32 index);
 
-/**
- * @brief Release an object when requested.
- * @param object Object to release.
- * @param flags Controls whether the object is freed.
- * @return The original object pointer.
- */
-void* func_00348CC0(void* object, s32 flags);
 
-/**
- * @brief Release an object when requested.
- * @param object Object to release.
- * @param flags Controls whether the object is freed.
- * @return The original object pointer.
- */
-void* func_00349790(void* object, s32 flags);
 
-/**
- * @brief Release an object when requested.
- * @param object Object to release.
- * @param flags Controls whether the object is freed.
- * @return The original object pointer.
- */
-void* func_0034A080(void* object, s32 flags);
 
-/**
- * @brief Release an object when requested.
- * @param object Object to release.
- * @param flags Controls whether the object is freed.
- * @return The original object pointer.
- */
-void* func_0034AC80(void* object, s32 flags);
 
-/**
- * @brief Release an object when requested.
- * @param object Object to release.
- * @param flags Controls whether the object is freed.
- * @return The original object pointer.
- */
-void* func_003515B0(void* object, s32 flags);
 
-/**
- * @brief Release an object when requested.
- * @param object Object to release.
- * @param flags Controls whether the object is freed.
- * @return The original object pointer.
- */
-void* func_00351BD0(void* object, s32 flags);
 
-/**
- * @brief Release an object when requested.
- * @param object Object to release.
- * @param flags Controls whether the object is freed.
- * @return The original object pointer.
- */
-void* func_00351F70(void* object, s32 flags);
 
 
 /**
@@ -1074,13 +1189,6 @@ void func_00352C40(ConfigListOwner* list, void* value);
  */
 void func_00352CD0(ConfigListOwner* list, void* value);
 
-/**
- * @brief Release a control object when requested.
- * @param object Object to release.
- * @param flags Controls whether the object is freed.
- * @return The original object pointer.
- */
-void* func_00352400(void* object, s32 flags);
 
 
 /**
@@ -1162,9 +1270,9 @@ s32 func_00351C30(ConfigPreviewWindow* object, u32 associated);
 
 /**
  * @brief Update the configuration preview origin, position, and scale from the saved display flag.
- * @param object Configuration state containing its preview window.
+ * @param object Configuration controller holding the preview window.
  */
-void func_00351FD0(ConfigPreviewState* object);
+void func_00351FD0(ConfigController* object);
 
 /**
  * @brief Update an in-range message key and the window's special message state.

@@ -8,34 +8,106 @@ typedef struct StatusRecord StatusRecord;
 typedef struct DisplayRecord DisplayRecord;
 typedef struct Record00349190 Record00349190;
 typedef struct Record00349250 Record00349250;
-typedef struct Record00349C50 Record00349C50;
-typedef struct Record00353E40 Record00353E40;
-typedef struct Record0034C800 Record0034C800;
+typedef struct ItemWindow1844B0 ItemWindow1844B0;
 typedef struct Record00349BF0 Record00349BF0;
-typedef struct Record0034C7A0 Record0034C7A0;
 typedef struct Record0034C6A0 Record0034C6A0;
 typedef struct Record0034B770 Record0034B770;
 typedef struct Record0034E7E0 Record0034E7E0;
-typedef struct Record00350BD0 Record00350BD0;
-typedef struct Record00353EF0 Record00353EF0;
-typedef struct Record00350C20 Record00350C20;
-typedef struct Record00350FC0 Record00350FC0;
+#ifdef __cplusplus
+class ItemList184ED8;
+
+typedef ItemList184ED8 Record003540E0;
+#else
 typedef struct Record003540E0 Record003540E0;
+#endif
+
+#ifdef __cplusplus
+class ItemList184EC8;
+
+typedef ItemList184EC8 Record003542F0;
+#else
 typedef struct Record003542F0 Record003542F0;
+#endif
+
+#ifdef __cplusplus
+class ItemList184EB8;
+
+typedef ItemList184EB8 Record00354740;
+#else
 typedef struct Record00354740 Record00354740;
-typedef struct Record0034E8B0 Record0034E8B0;
+#endif
+
 typedef struct TransformRecord TransformRecord;
-typedef struct ScreenOwner ScreenOwner;
-typedef struct Record00351F50 Record00351F50;
-typedef struct ItemController ItemController;
+typedef struct ItemWindow1849F0 ItemWindow1849F0;
 typedef struct Record00353A50 Record00353A50;
-typedef struct Record00352960 Record00352960;
-typedef struct Record00352EE0 Record00352EE0;
-typedef struct Record003531B0 Record003531B0;
+typedef struct ItemWindow184AF0 ItemWindow184AF0;
+typedef struct ItemWindow184BF0 ItemWindow184BF0;
+typedef struct ItemWindow184CF0 ItemWindow184CF0;
+#ifdef __cplusplus
+class ItemListNode;
+#else
 typedef struct ItemListNode ItemListNode;
+#endif
 typedef struct ItemListOwner ItemListOwner;
-typedef struct AngleOwner AngleOwner;
-typedef struct ControlOwner ControlOwner;
+
+#ifdef __cplusplus
+class FieldClass15AE70;
+class FieldClass15AD40;
+
+class ItemListWindow1848D0;
+#else
+typedef struct FieldClass15AE70 FieldClass15AE70;
+typedef struct FieldClass15AD40 FieldClass15AD40;
+
+typedef struct ItemListWindow1848D0 ItemListWindow1848D0;
+#endif
+
+#ifdef __cplusplus
+class CitemCoordinateNode;
+
+/** Sentinel-headed item menu list with its own virtual destructor. */
+class ItemList184ED8
+{
+    public:
+        ItemListNode* head;
+        u32 count;
+
+        /** @brief Allocate the sentinel and initialize the empty list. */
+        ItemList184ED8();
+
+        /** @brief Release the links and sentinel without destroying payloads. */
+        virtual ~ItemList184ED8();
+};
+
+/** Sentinel-headed item menu list with its own virtual destructor. */
+class ItemList184EC8
+{
+    public:
+        ItemListNode* head;
+        u32 count;
+
+        /** @brief Allocate the sentinel and initialize the empty list. */
+        ItemList184EC8();
+
+        /** @brief Release the links and sentinel without destroying payloads. */
+        virtual ~ItemList184EC8();
+};
+
+/** Sentinel-headed coordinate list used by the item menu. */
+class ItemList184EB8
+{
+    public:
+        CitemCoordinateNode* head;
+        u32 count;
+
+        /** @brief Allocate the sentinel and initialize the empty list. */
+        ItemList184EB8();
+
+        /** @brief Release the coordinate links and sentinel. */
+        virtual ~ItemList184EB8();
+};
+
+#endif
 
 /** Two scalar coordinates passed together to the coordinate list. */
 typedef struct CitemCoordinate2
@@ -75,12 +147,56 @@ extern "C" {
 #endif
 
 /**
+ * @brief Delete the payload-list links and clear the count when the list is nonempty.
+ * @param owner List whose sentinel and payloads are retained.
+ */
+void func_003541F0(Record003540E0* owner);
+
+/**
+ * @brief Delete the payload-list links and clear the count when the list is nonempty.
+ * @param owner List whose sentinel and payloads are retained.
+ */
+void func_00354400(Record003542F0* owner);
+
+/**
+ * @brief Delete the coordinate-list links and clear the count when the list is nonempty.
+ * @param owner List whose sentinel is retained.
+ */
+void func_003547C0(Record00354740* owner);
+
+/**
+ * @brief Forward the window's slot 0xC4 handler to slot 0xC0.
+ * @param object Item menu window.
+ * @return The slot 0xC0 handler's result.
+ */
+s32 func_0034AE60(FieldClass15AE70* object);
+
+/**
+ * @brief Release the list's display objects, then release the window's base displays.
+ * @param owner Item window with a sentinel-headed display list.
+ */
+void func_0034E740(Record0034E7E0* owner);
+
+/** Comparator returning zero when passed the same node twice. */
+typedef s32 (*ItemListComparator)(const ItemListNode* left, const ItemListNode* right, u32 comparison_arg);
+
+/**
+ * @brief Sort the list by swapping links while retaining its payloads and sentinel.
+ * @param owner List to reorder.
+ * @param compare Signed node comparator, returning zero for equal nodes.
+ * @param comparison_arg Argument forwarded to each comparator call.
+ * @param ascending Nonzero for ascending order, zero for descending order.
+ */
+void func_00354980(Record003542F0* owner, ItemListComparator compare, u32 comparison_arg, s32 ascending);
+
+/**
  * @brief Compare the low ten-bit definition keys of two list entries.
  * @param left First list node containing an item record.
  * @param right Second list node containing an item record.
+ * @param comparison_arg Unused argument supplied by the list sort.
  * @return Signed difference between their definition keys.
  */
-s32 func_00351E40(const ItemListNode* left, const ItemListNode* right);
+s32 func_00351E40(const ItemListNode* left, const ItemListNode* right, u32 comparison_arg);
 
 /**
  * @brief Append a coordinate pair to the selector's sentinel list.
@@ -123,90 +239,12 @@ void item_queue_transform_release(Record00349250* object);
 Record00349BF0* func_00349BF0(Record00349BF0* record, s16 flag);
 
 /**
- * @brief Initialize a record and run cleanup when requested.
- * @param record Record to initialize.
- * @param flag Cleanup flag.
- * @return The record.
- */
-Record0034C7A0* func_0034C7A0(Record0034C7A0* record, s16 flag);
-
-/**
  * @brief Initialize a record and its embedded part.
  * @param record Record to initialize.
  * @param flag Cleanup flag.
  * @return The record.
  */
 Record0034C6A0* func_0034C6A0(Record0034C6A0* record, s16 flag);
-
-/**
- * @brief Initialize a record and run cleanup when requested.
- * @param record Record to initialize.
- * @param flag Cleanup flag.
- * @return The record.
- */
-Record00353EF0* func_00353EF0(Record00353EF0* record, s16 flag);
-
-/**
- * @brief Clean up a record and its attached object when present.
- * @param record Record to clean up.
- * @param flag Cleanup flag.
- * @return The record.
- */
-Record00350C20* func_00350C20(Record00350C20* record, s16 flag);
-
-/**
- * @brief Set positions and flags for three rows of fourteen slots.
- * @param owner Record holding the slot arrays.
- * @param start Starting vertical position before the first offset.
- */
-void func_00350FC0(Record00350FC0* owner, float start);
-
-/**
- * @brief Update slot flags and the attached control's float value.
- * @param record Record holding the slots and controls.
- * @param flag Flag stored in paired slots.
- * @param control_flag Flag stored in the optional controls.
- */
-void func_0034E8B0(Record0034E8B0* record, u8 flag, s32 control_flag);
-
-/**
- * @brief Populate six pairs of code and resource widgets from a category allocation list.
- * @param object Allocation-window receiver.
- * @param first_index First allocation-record index shown in the six widget pairs.
- */
-void item_update_allocation_page(Record0034E8B0* object, s32 first_index);
-
-/**
- * @brief Free list nodes and optionally the owner.
- * @param record List owner to clean up.
- * @param flag Cleanup flag.
- * @return The list owner.
- */
-Record003540E0* func_003540E0(Record003540E0* record, s16 flag);
-
-/**
- * @brief Free list nodes and optionally the owner.
- * @param record List owner to clean up.
- * @param flag Cleanup flag.
- * @return The list owner.
- */
-Record003542F0* func_003542F0(Record003542F0* record, s16 flag);
-
-/**
- * @brief Free list nodes and optionally the owner.
- * @param record List owner to clean up.
- * @param flag Cleanup flag.
- * @return The list owner.
- */
-Record00354740* func_00354740(Record00354740* record, s16 flag);
-
-/**
- * @brief Set the attached control's flag and one of two float values.
- * @param owner Record holding the control.
- * @param ignored Unused second argument.
- * @param flag Value to store and choice of float value.
- */
-void func_00350F70(ControlOwner* owner, s32 ignored, s32 flag);
 
 /**
  * @brief Move the selector back one entry, wrapping to its eighth entry.
@@ -269,18 +307,6 @@ void item_list_select_second_row(Record0034E7E0* owner);
 void item_list_select_first_row(Record0034E7E0* owner);
 
 /**
- * @brief Increase the attached angle and clamp it at its limit.
- * @param owner Record holding the angle.
- */
-void func_0034F340(AngleOwner* owner);
-
-/**
- * @brief Decrease the attached angle and clamp it at zero.
- * @param owner Record holding the angle.
- */
-void func_0034F2E0(AngleOwner* owner);
-
-/**
  * @brief Append a payload to the list when node allocation succeeds.
  * @param owner List with a sentinel head and element count.
  * @param value Payload stored in the new node.
@@ -337,75 +363,6 @@ void func_00354620(ItemListOwner* owner, void* value);
  * @param value Payload stored in the new node.
  */
 void func_003546B0(ItemListOwner* owner, void* value);
-
-/**
- * @brief Allocate and populate a missing record selection, then look up resident key 4.
- * @param object Receiver that owns the selection.
- * @return One after successful population, or zero if already present or initialization fails.
- */
-s32 item_initialize_record_selection(ItemController* object);
-
-/**
- * @brief Initialize a display record and run cleanup when requested.
- * @param display Display record to initialize.
- * @param flag Cleanup flag.
- * @return The display record.
- */
-DisplayRecord* func_00353E40(DisplayRecord* display, s16 flag);
-
-/**
- * @brief Initialize a record and run cleanup when requested.
- * @param record Record to initialize.
- * @param flag Cleanup flag.
- * @return The record.
- */
-Record00352960* func_00352960(Record00352960* record, s16 flag);
-
-/**
- * @brief Initialize a record and run cleanup when requested.
- * @param record Record to initialize.
- * @param flag Cleanup flag.
- * @return The record.
- */
-Record00352EE0* func_00352EE0(Record00352EE0* record, s16 flag);
-
-/**
- * @brief Hold the text at its starting position, then scroll and wrap it horizontally.
- * @param record Window storing the display, delay and scrolling bounds.
- */
-void item_update_horizontal_scroll(Record00352EE0* record);
-
-/**
- * @brief Initialize a record and run cleanup when requested.
- * @param record Record to initialize.
- * @param flag Cleanup flag.
- * @return The record.
- */
-Record003531B0* func_003531B0(Record003531B0* record, s16 flag);
-
-/**
- * @brief Initialize an item record and run cleanup when requested.
- * @param item Item record to initialize.
- * @param flag Cleanup flag.
- * @return The item record.
- */
-ItemRecord* func_00348400(ItemRecord* item, s16 flag);
-
-/**
- * @brief Initialize the window container and attach its configured panel.
- * @param object Window receiver with a FieldClass15AE70 base.
- * @param associated Associated source word passed to the Field initializer.
- * @return Always one.
- */
-s32 item_initialize_panel(Record00351F50* object, u32 associated);
-
-/**
- * @brief Initialize a screen owner and run cleanup when requested.
- * @param owner Screen owner to initialize.
- * @param flag Cleanup flag.
- * @return The screen owner.
- */
-ScreenOwner* func_00351F50(ScreenOwner* owner, s16 flag);
 
 /**
  * @brief Initialize a record and run cleanup when requested.
@@ -506,49 +463,6 @@ void func_00353CD0(TransformRecord* record, float x, float y, float z);
 s32 func_00353D00(float value);
 
 /**
- * @brief Set two fields of the attached screen record when present.
- * @param owner Record holding the screen pointer.
- */
-void func_00351FB0(ScreenOwner* owner);
-
-/**
- * @brief Read the word field at 0x38.
- * @param record Record to read.
- * @return Current field value.
- */
-u32 func_00349C50(Record00349C50* record);
-
-/**
- * @brief Initialize two panels, four text widgets and a two-column choice grid.
- * @param object Choice-window receiver.
- * @param associated Associated resource source word.
- * @return Always one.
- */
-s32 item_initialize_choice_window(ItemRecord* object, u32 associated);
-
-/**
- * @brief Initialize a panel with three positioned and scaled text widgets.
- * @param object Text-window receiver.
- * @param associated Associated resource source word.
- * @return One after initialization.
- */
-s32 item_initialize_text_panel(Record00353E40* object, u32 associated);
-
-/**
- * @brief Read the word field at 0x40.
- * @param record Record to read.
- * @return Current field value.
- */
-u32 func_0034C800(Record0034C800* record);
-
-/**
- * @brief Store the byte field at 0x12C.
- * @param record Record to update.
- * @param value Value to store.
- */
-void func_00350BD0(Record00350BD0* record, u8 value);
-
-/**
  * @brief Return the external table at 0x50CD30.
  * @return Pointer to the table.
  */
@@ -587,13 +501,6 @@ void func_00353F90(StatusRecord* state, s8 value);
  * @return Current field value.
  */
 s8 func_00353FA0(StatusRecord* state);
-
-/**
- * @brief Read the low bit of the byte field at 0x3C.
- * @param state Status record to read.
- * @return Low bit of the field.
- */
-u32 func_00354050(StatusRecord* state);
 
 /**
  * @brief Store the byte field at 0xC.
@@ -636,13 +543,6 @@ void func_003484A0(ItemRecord* item, u16 value);
  * @return Current field value.
  */
 u16 func_003484B0(ItemRecord* item);
-
-/**
- * @brief Store the word field at 0x98.
- * @param item Item record to update.
- * @param value Value to store.
- */
-void func_003484C0(ItemRecord* item, u32 value);
 
 /**
  * @brief Store the word field at 0x9C.
@@ -904,18 +804,6 @@ void func_00348700(void* object);
 void func_00348730(void* object);
 
 /**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00353A30(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00353A40(void* object);
-
-/**
  * @brief Return the fixed value 3.
  * @param object Receiver or first argument; unused.
  * @return Always 3.
@@ -953,12 +841,6 @@ s32 func_00353D30(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00353D40(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00353E10(void* object);
 
 /**
  * @brief Return the fixed value 14.
@@ -1057,13 +939,6 @@ s32 func_00354020(void* object);
  * @return Always 0.
  */
 s32 func_00354030(void* object);
-
-/**
- * @brief Return the fixed value 4.
- * @param object Receiver or first argument; unused.
- * @return Always 4.
- */
-s32 func_00354040(void* object);
 
 #ifdef __cplusplus
 }

@@ -21,6 +21,7 @@
 #include "overlays/lib/scalar_indicator_inlines.h"
 #include "overlays/lib/resource_widget_inlines.h"
 #include "overlays/lib/movement_widget_inlines.h"
+#include "overlays/lib/text_004DD440.h"
 
 /** Partial configuration callback receiver with its resource slot at offset 0x34. */
 struct ConfigControlReceiver : public FieldClass153E30
@@ -39,7 +40,7 @@ struct ConfigAlignedResource
 struct ConfigRuntimeCallbacks
 {
     u8 unk00[0x14];
-    FieldClass153E30* unk14;
+    ConfigController* unk14;
 };
 /**
  * @brief Process the supplied window when it is present.
@@ -50,8 +51,9 @@ struct ConfigRuntimeCallbacks
 /** Partial settings storage containing the protected option flags and checksums. */
 struct ConfigSettings
 {
-    u16 bindings[4];
-    u8 unk08[0x1C];
+    u16 bindings[8];
+    LibWidgetColors4C5590 window_colors;
+    u8 unk20[4];
     u8 unk24_low : 2;
     u8 unk24 : 2;
     u8 unk24_bit4 : 1;
@@ -70,7 +72,8 @@ struct ConfigSettings
     u8 unk29[0x7B];
     u16 checksum;
     u16 key;
-    u8 unka8[0xE5];
+    u8 unka8[0xE4];
+    u8 widescreen;
     u8 unk18d;
     u8 unk18e;
     u8 unk18f[0x11];
@@ -80,10 +83,20 @@ struct ConfigSettings
     u16 extra_key;
 };
 
+/** Partial menu control state read when leaving the menu. */
+struct ConfigMenuRuntime
+{
+    u8 unk00[0x2D];
+    u8 unk2d;
+    u8 unk2e[0x22];
+    LibClass179080* camera;
+};
+
 struct ConfigRuntime
 {
     ConfigSettings* settings;
-    u8 unk04[0xC];
+    u8 unk04[8];
+    ConfigMenuRuntime* runtime;
     ConfigRuntimeCallbacks* unk10;
     u8 unk14[0xC];
     FieldBufferSlots* resources;
@@ -92,13 +105,23 @@ struct ConfigRuntime
 /** Configuration preview window, its resource widgets, and saved display flag. */
 struct ConfigPreviewWindow : public FieldClass15AE70
 {
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
+
+    /** @brief Destroy the window base. */
+    virtual ~ConfigPreviewWindow();
+
+    /** @brief Clear the resource widgets. */
+    ConfigPreviewWindow()
+    {
+        resources[0] = 0;
+        resources[1] = 0;
+        resources[2] = 0;
+        display = 0;
+    }
+
     ItemCreationOptionResourceDisplay* resources[3];
     ItemCreationOptionResourceDisplay* display;
-};
-struct ConfigPreviewState : public FieldClass153E30
-{
-    u8 unk34[0xC];
-    ConfigPreviewWindow* window;
 };
 struct ConfigPreviewSection
 {
@@ -109,20 +132,58 @@ struct ConfigPreviewSection
 /** Partial configuration text window with its message state and bounds. */
 struct ConfigMessageWindow : public FieldClass15AE70
 {
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
+
+    /** @brief Destroy the window base. */
+    virtual ~ConfigMessageWindow();
+
+    /** @brief Clear the message state. */
+    ConfigMessageWindow()
+    {
+        source = 0;
+        text = 0;
+        initial_pause_frames = 0;
+        scroll_phase = 0;
+        label_width = 0;
+        initial_text_x = 0;
+        clip_x = 0;
+        clip_width = 0;
+        key = 0;
+        extent = 0;
+        active = 0;
+        unkcd = 0;
+    }
+
     u32 source;
     LibObject178750* text;
-    s16 unkb0;
-    u8 unkb2;
+    s16 initial_pause_frames;
+    u8 scroll_phase;
     u8 unkb3;
-    u8 unkb4[0x10];
+    float label_width;
+    float initial_text_x;
+    float clip_x;
+    float clip_width;
     s32 key;
     float extent;
     u8 active;
+    u8 unkcd;
 };
 
 /** Partial configuration window containing its panel widget. */
 struct ConfigFrameWindow : public FieldClass15AE70
 {
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
+
+    /** @brief Destroy the window base. */
+    virtual ~ConfigFrameWindow();
+
+    /** @brief Construct the window base. */
+    ConfigFrameWindow()
+    {
+    }
+
     LibClass178630* frame;
 };
 
@@ -131,6 +192,17 @@ struct ConfigGridWindow : public FieldClass15AE70
 {
     /** @brief Update the row highlights. @param selected Selected row index. */
     virtual void func_slotf4(s16 selected);
+
+    /** @brief Destroy the window base. */
+    virtual ~ConfigGridWindow();
+
+    /** @brief Clear the grid and mark no row selected. */
+    ConfigGridWindow()
+    {
+        grid = 0;
+        selected = -1;
+    }
+
     s16 selected;
     u8 unkaa[2];
     FieldObject23CEA0* grid;
@@ -139,7 +211,30 @@ struct ConfigGridWindow : public FieldClass15AE70
 /** Partial binding selector with its grid, four codes, and associated entries. */
 struct ConfigBindingWindow : public FieldClass15AE70
 {
-    u8 unka8[4];
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
+
+    /** @brief Destroy the window base. */
+    virtual ~ConfigBindingWindow();
+
+    /** @brief Clear the bindings and entries and set the default row spacing and label position. */
+    ConfigBindingWindow()
+    {
+        source = 0;
+        grid = 0;
+        dirty = 0;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            values[i] = 0;
+            entries[i] = 0;
+        }
+
+        spacing = 32.0f;
+        x = 24.0f;
+    }
+
+    u32 source;
     FieldObject23CEA0* grid;
     u8 unkb0[2];
     u16 values[4];
@@ -151,18 +246,82 @@ struct ConfigBindingWindow : public FieldClass15AE70
     float x;
 };
 
-/** Partial color selector and its selected component. */
-struct ConfigColorSelection
+/** Window-color editor for one corner: red, green, and blue values with a preview panel. */
+struct ConfigColorWindow : public FieldClass15AE70
 {
-    u8 unk00[0xE5];
-    u8 unke5;
-    u8 unke6[0x2E];
-    s16 selected;
+    /**
+     * @brief Create the component rows, value widgets, grid, and preview panel.
+     * @param associated Full resource source word.
+     * @param x Horizontal window position.
+     * @param y Vertical window position.
+     * @return One after creation, or zero when a display or the grid is absent.
+     */
+    virtual s32 func_slotf4(u32 associated, float x, float y);
+
+    /** @brief Destroy the window base. */
+    virtual ~ConfigColorWindow();
+
+    /** @brief Clear the color values, corner, and displays. */
+    ConfigColorWindow()
+    {
+        red = green = blue = 0;
+        corner = -1;
+        selection = 0;
+        preview = 0;
+        saved_red = 0;
+        saved_green = 0;
+        saved_blue = 0;
+        preview_colors.values[0] = 0;
+        preview_colors.values[1] = 0;
+        preview_colors.values[2] = 0;
+        preview_colors.values[3] = 0;
+    }
+
+    u8 red;
+    u8 green;
+    u8 blue;
+    u8 saved_red;
+    u8 saved_green;
+    u8 saved_blue;
+
+    /** Corner being edited, or -1 before one is chosen. */
+    s16 corner;
+
+    LibWidgetColors4C5590* colors;
+    FieldObject23CEA0* selection;
+    LibClass178630* preview;
+    LibWidgetColors4C5590 preview_colors;
 };
-struct ConfigColorOwner
+
+/** Window-color corner selector: a two-by-two grid whose entries open the color editor. */
+struct ConfigCornerWindow : public FieldClass15AE70
 {
-    u8 unk00[0xB4];
-    ConfigColorSelection* selection;
+    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    virtual s32 func_slotf4(u32 associated);
+
+    /** @brief Destroy the window base. */
+    virtual ~ConfigCornerWindow();
+
+    /** @brief Clear the displays, the selection, and the window geometry. */
+    ConfigCornerWindow()
+    {
+        grid = 0;
+        frame = 0;
+        selected = -1;
+        x = 0;
+        y = 0;
+        width = 0;
+        height = 0;
+    }
+
+    LibClass178630* frame;
+    FieldObject23CEA0* grid;
+    s16 selected;
+    u8 unkb2[2];
+    float x;
+    float y;
+    float width;
+    float height;
 };
 
 
@@ -247,18 +406,13 @@ typedef struct
 
 extern ConfigRuntime* D_001B643C;
 
-extern "C" void func_2642D0(void* object);
-extern u8 D_182170[];
+/** Four-corner gradient for the corner selector's background panel. */
+extern "C" LibWidgetColors4C5590 g_config_corner_panel_colors;
 
-extern "C" void func_264230(void* object, s32 flags);
-extern "C" void func_2CEAF0(void* object, s32 flags);
-extern u8 D_181960[];
-extern u8 D_181A70[];
-extern u8 D_181B70[];
-extern u8 D_181C70[];
-extern u8 D_181E70[];
-extern u8 D_181F70[];
-extern u8 D_182070[];
+extern "C" LibCameraContext* D_001B6650;
+
+extern "C" void func_2642D0(void* object);
+
 
 /**
  * @brief Read the extra-row flag when its protected bytes pass the checksum.
@@ -407,11 +561,71 @@ static inline void set_preview_scale(ItemCreationOptionResourceDisplay* display,
  * @param selection Color selector whose activity byte is tested.
  * @return One when inactive, or zero when active.
  */
-static inline u8 config_selection_inactive(const ConfigColorSelection* selection)
+static inline u8 config_selection_inactive(const FieldObject23CEA0* selection)
 {
-    return !selection->unke5;
+    return !selection->unk35;
 }
 
+
+/**
+ * @brief Pack red, green, and blue bytes into a panel color word with a zero top byte.
+ * @param red Red component.
+ * @param green Green component.
+ * @param blue Blue component.
+ * @return Packed color.
+ */
+static inline u32 pack_color(u8 red, u8 green, u8 blue)
+{
+    return static_cast<u64>(red) | (static_cast<u64>(green) << 8) | (static_cast<u64>(blue) << 16);
+}
+
+/**
+ * @brief Compute the 4:3 projection aspect for the current viewport, as the camera does at start-up.
+ * @return Aspect value stored in the camera.
+ */
+static inline float viewport_aspect()
+{
+    return (4.0f / 3.0f) * ((15.0f / 14.0f) * D_001B6650->viewport_height) / D_001B6650->viewport_width;
+}
+
+/**
+ * @brief Set a widget's rectangle and mark it for redraw.
+ * @param object Widget to update.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ */
+static inline void set_widget_rectangle(LibClass178600* object, float x, float y, float width, float height)
+{
+    object->unk18.unk00 = x;
+    object->unk18.unk04 = y;
+    object->unk18.unk08 = width;
+    object->unk18.unk0c = height;
+    object->unk3c = 1;
+}
+
+/**
+ * @brief Add a horizontal offset to a display origin.
+ * @param origin Display origin.
+ * @param offset Horizontal offset.
+ * @return Shifted horizontal coordinate.
+ */
+static inline float shifted_position(const float& origin, float offset)
+{
+    return origin + offset;
+}
+
+/**
+ * @brief Show a color component on its number widget.
+ * @param display Number widget.
+ * @param value Component value.
+ */
+static inline void set_component_value(LibObject174F20* display, u32 value)
+{
+    display->numeric_value = value;
+    display->unk3c = 1;
+}
 
 /**
  * @brief Set the resource display level and mark its drawing state dirty.
@@ -447,6 +661,135 @@ static inline s32 config_pair_key(ConfigSettings* settings)
         return 0x1fae;
     }
     return 0x1faf;
+}
+
+/**
+ * @brief Report whether the four face buttons keep their default assignments.
+ * @param settings Configuration settings.
+ * @return True when cross and circle are still assigned to the first two functions.
+ */
+static inline bool default_face_buttons(ConfigSettings* settings)
+{
+    bool result = true;
+
+    if (!(settings->bindings[0] & 0x4000) || !(settings->bindings[1] & 0x2000))
+    {
+        result = false;
+    }
+
+    return result;
+}
+
+/**
+ * @brief Resolve the message key for the voice and subtitle row.
+ * @param settings Configuration settings.
+ * @return Message key, or -1 for an unknown mode.
+ */
+static inline s32 voice_mode_key(ConfigSettings* settings)
+{
+    s32 key = -1;
+
+    switch (config_four_mode(settings))
+    {
+    case 0:
+        key = 0x1fa6;
+        break;
+    case 2:
+        key = 0x1fa7;
+        break;
+    case 1:
+        key = 0x1fa8;
+        break;
+    case 3:
+        key = 0x1fa9;
+        break;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Resolve the message key for the battle camera row.
+ * @param settings Configuration settings.
+ * @return Message key, or -1 for an unknown mode.
+ */
+static inline s32 battle_camera_key(ConfigSettings* settings)
+{
+    s32 key = -1;
+
+    switch (settings->unk24_low)
+    {
+    case 0:
+        key = 0x1fac;
+        break;
+    case 1:
+        key = 0x1fad;
+        break;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Resolve the message key for the audio output row.
+ * @param settings Configuration settings.
+ * @return Message key, or zero for an unknown mode.
+ */
+static inline s32 audio_mode_key(ConfigSettings* settings)
+{
+    s32 key = 0;
+
+    switch (settings->unk18e)
+    {
+    case 0:
+        key = 0x1fb6;
+        break;
+    case 1:
+        key = 0x1fb7;
+        break;
+    case 2:
+        key = 0x1fb8;
+        break;
+    case 3:
+        key = 0x1fb9;
+        break;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Resolve the message key for the Battle Trophy row and record whether the row is available.
+ * @param object Configuration options window.
+ * @return Message key, or zero when the feature is locked or its settings fail the checksum.
+ */
+static inline s32 battle_trophy_key(ConfigOptions* object)
+{
+    ConfigSettings* settings = D_001B643C->settings;
+
+    if (config_flag(settings) == 0 || config_enabled(settings) == 0)
+    {
+        object->unk101 = 0;
+        return 0;
+    }
+
+    object->unk101 = 1;
+    return D_001B643C->settings->unk18d ? 0x1fc1 : 0x1fc2;
+}
+
+/**
+ * @brief Resolve the message key for the battle mode row.
+ * @param settings Configuration settings.
+ * @return Message key, or zero when the protected extra settings fail their checksum.
+ */
+static inline s32 battle_mode_key(ConfigSettings* settings)
+{
+    if (config_extra(settings) == 0)
+    {
+        return 0;
+    }
+
+    return config_mode(D_001B643C->settings) == 1 ? 0x1fc5 : 0x1fc6;
 }
 
 void func_00348400(void* object, u8 value)
@@ -684,9 +1027,21 @@ u32 func_003487B0(void* object)
     return ((ConfigObjectFields*)object)->field_20;
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_003487C0);
+void func_003487C0(ConfigGridWindow* object)
+{
+    if (static_cast<s16>(object->grid->process_direction(1)) == 1)
+    {
+        return;
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00348800);
+void func_00348800(ConfigGridWindow* object)
+{
+    if (static_cast<s16>(object->grid->process_direction(0)) == 1)
+    {
+        return;
+    }
+}
 
 s32 func_00348840(FieldClass15AE70* object)
 {
@@ -717,61 +1072,180 @@ s32 func_003488D0(ConfigGridWindow* object)
     return handled == 0 ? 1 : 2;
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00348950);
-
-void* func_00348CC0(void* object, s32 flags)
+s32 func_00348950(ConfigGridWindow* object, u32 associated, float x, float y, s32 code)
 {
-    if (object != 0)
+    object->FieldClass15AE70::func_slot10(associated, x, y, code);
+    LibClass178630* panel = new (0) LibClass178630;
+
+    if (panel == 0)
     {
-        *(void**)object = D_181960;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
+        return 0;
+    }
+
+    lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 316.0f, 160.0f, 88.0f);
+    lib_container_attach_widget(object->unk10, panel);
+    func_00352CD0(reinterpret_cast<ConfigListOwner*>(&object->unk14), panel);
+    LibObject178750* yes = new (0) LibObject178750;
+    LibObject178750* no = new (0) LibObject178750;
+    LibObject178750* prompt = new (0) LibObject178750;
+
+    if (yes == 0 || no == 0 || prompt == 0)
+    {
+        return 0;
+    }
+
+    lib_text_init_resource_rectangle(yes, associated, 0x7E8, 0, 124.0f, 84.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(no, associated, 0x7E9, 0, 124.0f, 120.0f, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(prompt, associated, 0x1FE4, 0, 24.0f, 16.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(object->unk10, yes);
+    lib_container_attach_widget(object->unk10, no);
+    lib_container_attach_widget(object->unk10, prompt);
+    func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), yes);
+    func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), no);
+    func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), prompt);
+    object->grid = new (0) FieldObject23CEA0;
+
+    if (object->grid == 0)
+    {
+        return 0;
+    }
+
+    object->grid->func_0023CE80(1, 2);
+    object->grid->func_0023CE60(0.0f, 36.0f);
+    object->grid->unkF2 = 0;
+    object->grid->func_0023CF50(1, 124.0f + x, 16.0f + (84.0f + y));
+    func_00352600(reinterpret_cast<ConfigListOwner*>(&object->unk74), object->grid);
+    return 1;
+}
+
+ConfigGridWindow::~ConfigGridWindow()
+{
+}
+
+void func_00348D20(ConfigColorWindow* object)
+{
+    if (D_001B643C->unk10->unk14->func_00261150() == object && object->corner != -1)
+    {
+        set_component_value(static_cast<LibObject174F20*>(func_003529B0(reinterpret_cast<ConfigListOwner*>(&object->unk38), 0)->value), object->red);
+        set_component_value(static_cast<LibObject174F20*>(func_003529B0(reinterpret_cast<ConfigListOwner*>(&object->unk38), 1)->value), object->green);
+        set_component_value(static_cast<LibObject174F20*>(func_003529B0(reinterpret_cast<ConfigListOwner*>(&object->unk38), 2)->value), object->blue);
+        lib_panel_set_colors(object->preview, &object->preview_colors);
+        ConfigCornerWindow* corners = static_cast<ConfigCornerWindow*>(object->func_slot44());
+        s16 corner = object->corner;
+        u32 color = object->preview_colors.values[0];
+        if (corner >= 0 && corner < 4)
         {
-            ::operator delete(object);
+            LibWidgetColors4C5590 colors;
+            s32 i;
+            LibWidgetColors4C5590* window_colors = &D_001B643C->settings->window_colors;
+            for (i = 0; i < 4; i++)
+            {
+                colors.values[i] = 0;
+                if (i == corner)
+                {
+                    colors.values[i] = color;
+                }
+                else
+                {
+                    colors.values[i] = window_colors->values[i];
+                }
+            }
+            lib_panel_set_colors(corners->frame, &colors);
         }
     }
-    return object;
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00348D20);
+void func_00348E60(ConfigColorWindow* object, s16 index, s32 delta)
+{
+    switch (index)
+    {
+    case 0:
+        object->red += delta;
+        if (object->red < 0)
+        {
+            object->red = 0;
+        }
+        if (object->red > 255)
+        {
+            object->red = 255;
+        }
+        break;
+    case 1:
+        object->green += delta;
+        if (object->green < 0)
+        {
+            object->green = 0;
+        }
+        if (object->green > 255)
+        {
+            object->green = 255;
+        }
+        break;
+    case 2:
+        object->blue += delta;
+        if (object->blue < 0)
+        {
+            object->blue = 0;
+        }
+        if (object->blue > 255)
+        {
+            object->blue = 255;
+        }
+        break;
+    }
+    object->preview_colors.values[0] = pack_color(object->red, object->green, object->blue);
+    object->preview_colors.values[1] = pack_color(object->red, object->green, object->blue);
+    object->preview_colors.values[2] = pack_color(object->red, object->green, object->blue);
+    object->preview_colors.values[3] = pack_color(object->red, object->green, object->blue);
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00348E60);
-
-void func_00348FE0(ConfigColorOwner* object)
+void func_00348FE0(ConfigColorWindow* object)
 {
     if (config_selection_inactive(object->selection) != 1)
     {
-        func_00348E60(object, object->selection->selected, 5);
+        func_00348E60(object, object->selection->unk114, 5);
     }
 }
 
-void func_00349030(ConfigColorOwner* object)
+void func_00349030(ConfigColorWindow* object)
 {
     if (config_selection_inactive(object->selection) != 1)
     {
-        func_00348E60(object, object->selection->selected, 1);
+        func_00348E60(object, object->selection->unk114, 1);
     }
 }
 
-void func_00349070(ConfigColorOwner* object)
+void func_00349070(ConfigColorWindow* object)
 {
     if (config_selection_inactive(object->selection) != 1)
     {
-        func_00348E60(object, object->selection->selected, -5);
+        func_00348E60(object, object->selection->unk114, -5);
     }
 }
 
-void func_003490C0(ConfigColorOwner* object)
+void func_003490C0(ConfigColorWindow* object)
 {
     if (config_selection_inactive(object->selection) != 1)
     {
-        func_00348E60(object, object->selection->selected, -1);
+        func_00348E60(object, object->selection->unk114, -1);
     }
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00349110);
+void func_00349110(ConfigColorWindow* object)
+{
+    if (static_cast<s16>(object->selection->process_direction(1)) == 1)
+    {
+        return;
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00349150);
+void func_00349150(ConfigColorWindow* object)
+{
+    if (static_cast<s16>(object->selection->process_direction(0)) == 1)
+    {
+        return;
+    }
+}
 
 s32 func_00349190(FieldClass15AE70* object)
 {
@@ -783,22 +1257,100 @@ s32 func_00349190(FieldClass15AE70* object)
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00349230);
-
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00349320);
-
-void* func_00349790(void* object, s32 flags)
+u8 func_00349230(ConfigColorWindow* object)
 {
-    if (object != 0)
+    LibWidgetColors4C5590 colors;
+    u32 color = 0x80000000 | object->red | (object->green << 8) | (object->blue << 16);
+    for (s32 i = 0; i < 4; i++)
     {
-        *(void**)object = D_181A70;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
+        if (i == object->corner)
         {
-            ::operator delete(object);
+            colors.values[i] = color;
+        }
+        else
+        {
+            colors.values[i] = object->colors->values[i];
         }
     }
-    return object;
+    ConfigSettings* settings = D_001B643C->settings;
+    settings->window_colors.values[0] = colors.values[0];
+    settings->window_colors.values[1] = colors.values[1];
+    settings->window_colors.values[2] = colors.values[2];
+    settings->window_colors.values[3] = colors.values[3];
+    lib_panel_set_colors(D_001B643C->unk10->unk14->frame_window->frame, &D_001B643C->settings->window_colors);
+    object->func_slotb4();
+    return 1;
+}
+
+s32 func_00349320(ConfigColorWindow* object, u32 associated, float x, float y)
+{
+    object->FieldClass15AE70::func_slot10(associated, x, y, 7);
+    object->preview = new (0) LibClass178630;
+
+    if (object->preview == 0 || object->corner == -1)
+    {
+        return 0;
+    }
+
+    lib_panel_init_rectangle(object->preview, 1, 0.0f, 0.0f, 128.0f, 96.0f, 88.0f);
+    func_00352CD0(reinterpret_cast<ConfigListOwner*>(&object->unk14), object->preview);
+    lib_container_attach_widget(object->unk10, object->preview);
+
+    for (s32 i = 0; i < 3; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+
+        if (text == 0)
+        {
+            return 0;
+        }
+
+        lib_text_init_resource_rectangle(text, associated, 0x1FDE + i, 0, 12.0f, 12.0f + 24.0f * i, 0.0f, 0.0f);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), text);
+        lib_container_attach_widget(object->unk10, text);
+    }
+
+    object->colors = &D_001B643C->settings->window_colors;
+    u32 color = object->colors->values[object->corner];
+    object->red = color;
+    object->saved_red = color;
+    object->green = (color & 0xFF00) >> 8;
+    object->saved_green = (color & 0xFF00) >> 8;
+    object->blue = (color & 0xFF0000) >> 16;
+    object->saved_blue = (color & 0xFF0000) >> 16;
+    LibObject174F20* red_value = new (0) LibObject174F20;
+    LibObject174F20* green_value = new (0) LibObject174F20;
+    LibObject174F20* blue_value = new (0) LibObject174F20;
+    object->selection = new (0) FieldObject23CEA0;
+
+    if (red_value == 0 || green_value == 0 || blue_value == 0 || object->selection == 0)
+    {
+        return 0;
+    }
+
+    red_value->init_numeric_resource_rectangle(40.0f, 12.0f, 72.0f, 24.0f, object->red, 0, 0);
+    green_value->init_numeric_resource_rectangle(40.0f, 36.0f, 72.0f, 24.0f, object->green, 0, 0);
+    blue_value->init_numeric_resource_rectangle(40.0f, 60.0f, 72.0f, 24.0f, object->blue, 0, 0);
+    func_00352920(reinterpret_cast<ConfigListOwner*>(&object->unk38), red_value);
+    func_00352920(reinterpret_cast<ConfigListOwner*>(&object->unk38), green_value);
+    func_00352920(reinterpret_cast<ConfigListOwner*>(&object->unk38), blue_value);
+    lib_container_attach_widget(object->unk10, red_value);
+    lib_container_attach_widget(object->unk10, green_value);
+    lib_container_attach_widget(object->unk10, blue_value);
+    object->selection->func_0023CE80(1, 3);
+    object->selection->func_0023CE60(0.0f, 24.0f);
+    object->selection->unkF2 = 0;
+    object->selection->func_0023CF50(0, 8.0f + x, 12.0f + y);
+    func_00352600(reinterpret_cast<ConfigListOwner*>(&object->unk74), object->selection);
+    object->preview_colors.values[0] = color;
+    object->preview_colors.values[1] = color;
+    object->preview_colors.values[2] = color;
+    object->preview_colors.values[3] = color;
+    return 1;
+}
+
+ConfigColorWindow::~ConfigColorWindow()
+{
 }
 
 void func_003497F0(void* object)
@@ -808,15 +1360,45 @@ void func_003497F0(void* object)
     display->flag_ae = 1;
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00349810);
+void func_00349810(ConfigCornerWindow* object)
+{
+    if (D_001B643C->unk10->unk14->func_00261150() == object)
+    {
+        return;
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00349850);
+void func_00349850(ConfigCornerWindow* object)
+{
+    if (static_cast<s16>(object->grid->process_direction(2)) == 1)
+    {
+        return;
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00349890);
+void func_00349890(ConfigCornerWindow* object)
+{
+    if (static_cast<s16>(object->grid->process_direction(3)) == 1)
+    {
+        return;
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_003498D0);
+void func_003498D0(ConfigCornerWindow* object)
+{
+    if (static_cast<s16>(object->grid->process_direction(1)) == 1)
+    {
+        return;
+    }
+}
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00349910);
+void func_00349910(ConfigCornerWindow* object)
+{
+    if (static_cast<s16>(object->grid->process_direction(0)) == 1)
+    {
+        return;
+    }
+}
 
 s32 func_00349950(FieldClass15AE70* object)
 {
@@ -828,22 +1410,114 @@ s32 func_00349950(FieldClass15AE70* object)
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_003499F0);
-
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00349C70);
-
-void* func_0034A080(void* object, s32 flags)
+u8 func_003499F0(ConfigCornerWindow* object)
 {
-    if (object != 0)
+    object->selected = object->grid->unk114;
+    ConfigColorWindow* color = new (0) ConfigColorWindow;
+    if (color == 0)
     {
-        *(void**)object = D_181B70;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
+        return 0;
     }
-    return object;
+    color->corner = object->selected;
+    switch (object->selected)
+    {
+    case 0:
+        color->func_slotf4(object->func_slot54(), object->x - 128.0f, object->y);
+        break;
+    case 1:
+        color->func_slotf4(object->func_slot54(), object->x + object->width, object->y);
+        break;
+    case 2:
+        color->func_slotf4(object->func_slot54(), object->x - 128.0f, object->y + object->height - 96.0f);
+        break;
+    case 3:
+        color->func_slotf4(object->func_slot54(), object->x + object->width, object->y + object->height - 96.0f);
+        break;
+    }
+    color->func_slot40(object);
+    D_001B643C->unk10->unk14->add_child(color);
+    D_001B643C->unk10->unk14->func_00263C70(color);
+    FieldObject23CEA0* grid = static_cast<FieldObject23CEA0*>(func_00352690(reinterpret_cast<ConfigListOwner*>(&object->unk74), 0)->value);
+    grid->FieldClass151C50::unk30 = 64.0f;
+    grid->unkae = 1;
+    return 1;
+}
+
+s32 func_00349C70(ConfigCornerWindow* object, u32 associated)
+{
+    object->x = 192.0f;
+    object->y = 264.0f;
+    object->width = 320.0f;
+    object->height = 160.0f;
+    object->FieldClass15AE70::func_slot10(associated, object->x, object->y, 8);
+    LibClass178630* background = new (0) LibClass178630;
+    object->frame = new (0) LibClass178630;
+
+    if (background == 0 || object->frame == 0)
+    {
+        return 0;
+    }
+
+    lib_panel_init_rectangle(background, 1, 0.0f, 0.0f, 60.0f + object->width, object->height, 88.0f);
+    LibWidgetColors4C5590 colors = g_config_corner_panel_colors;
+    lib_panel_set_colors(background, &colors);
+    lib_panel_init_rectangle(object->frame, 1, 64.0f, 40.0f, 192.0f, 84.0f, 88.0f);
+    func_00352CD0(reinterpret_cast<ConfigListOwner*>(&object->unk14), background);
+    func_00352CD0(reinterpret_cast<ConfigListOwner*>(&object->unk14), object->frame);
+    lib_container_attach_widget(object->unk10, background);
+    lib_container_attach_widget(object->unk10, object->frame);
+
+    for (s32 i = 0; i < 4; i++)
+    {
+        LibObject178750* text = new (0) LibObject178750;
+
+        if (text == 0)
+        {
+            return 0;
+        }
+
+        switch (i)
+        {
+        case 0:
+            lib_text_init_resource_rectangle(text, associated, 0x1FD9, 0, 16.0f, 16.0f, 0.0f, 0.0f);
+            break;
+        case 1:
+            lib_text_init_resource_rectangle(text, associated, 0x1FDA, 0, 16.0f, 128.0f, 0.0f, 0.0f);
+            break;
+        case 2:
+            lib_text_init_resource_rectangle(text, associated, 0x1FDB, 0, 256.0f, 16.0f, 0.0f, 0.0f);
+            break;
+        case 3:
+            lib_text_init_resource_rectangle(text, associated, 0x1FDC, 0, 256.0f, 128.0f, 0.0f, 0.0f);
+            break;
+        }
+
+        lib_container_attach_widget(object->unk10, text);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), text);
+    }
+
+    object->grid = new (0) FieldObject23CEA0;
+
+    if (object->grid == 0)
+    {
+        return 0;
+    }
+
+    float x;
+    float y;
+    y = 16.0f + object->y;
+    x = 16.0f + object->x;
+    object->grid->func_0023CE80(2, 2);
+    object->grid->func_0023CE60(240.0f, 112.0f);
+    object->grid->unkF2 = 1;
+    object->grid->unk119 = 1;
+    object->grid->func_0023CF50(0, x, y);
+    func_00352600(reinterpret_cast<ConfigListOwner*>(&object->unk74), object->grid);
+    return 1;
+}
+
+ConfigCornerWindow::~ConfigCornerWindow()
+{
 }
 
 void func_0034A0E0(ConfigBindingWindow* object)
@@ -903,24 +1577,156 @@ u32 func_0034A420(void* object)
     return ((ConfigValue24*)object)->field_24;
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034A430);
-
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034A470);
-
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034A4B0);
-
-void* func_0034AC80(void* object, s32 flags)
+void func_0034A430(ConfigBindingWindow* object)
 {
-    if (object != 0)
+    if (static_cast<s16>(object->grid->process_direction(1)) == 1)
     {
-        *(void**)object = D_181C70;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
+        return;
+    }
+}
+
+void func_0034A470(ConfigBindingWindow* object)
+{
+    if (static_cast<s16>(object->grid->process_direction(0)) == 1)
+    {
+        return;
+    }
+}
+
+s32 func_0034A4B0(ConfigBindingWindow* object, u32 associated)
+{
+    object->FieldClass15AE70::func_slot10(associated, 240.0f, 208.0f, 8);
+    LibClass178630* panel = new (0) LibClass178630;
+
+    if (panel == 0)
+    {
+        return 0;
+    }
+
+    lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 360.0f, 216.0f, 88.0f);
+    func_00352CD0(reinterpret_cast<ConfigListOwner*>(&object->unk14), panel);
+    lib_container_attach_widget(object->unk10, panel);
+    object->source = associated;
+    object->values[0] = D_001B643C->settings->bindings[0];
+    object->values[1] = D_001B643C->settings->bindings[1];
+    object->values[2] = D_001B643C->settings->bindings[2];
+    object->values[3] = D_001B643C->settings->bindings[3];
+
+    for (s32 i = 0; i < 4; i++)
+    {
+        LibObject178750* entry = new (0) LibObject178750;
+
+        if (entry == 0)
         {
-            ::operator delete(object);
+            return 0;
+        }
+
+        s32 key = 0;
+
+        switch (object->values[i])
+        {
+        case 0x1000:
+            key = 0x7F0;
+            break;
+        case 0x4000:
+            key = 0x7EF;
+            break;
+        case 0x8000:
+            key = 0x7F1;
+            break;
+        case 0x2000:
+            key = 0x7EE;
+            break;
+        }
+
+        lib_text_init_resource_rectangle(entry, associated, key, 0, object->x, 16.0f + object->spacing * i, 0.0f, 0.0f);
+        lib_container_attach_widget(object->unk10, entry);
+        func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), entry);
+        object->entries[i] = entry;
+    }
+
+    for (s32 row = 0; row < 4; row++)
+    {
+        for (s32 column = 0; column < 3; column++)
+        {
+            LibObject178750* text = new (0) LibObject178750;
+
+            if (text == 0)
+            {
+                return 0;
+            }
+
+            switch (column)
+            {
+            case 0:
+                lib_text_init_resource_rectangle(text, associated, 0x1FDD, 0, 64.0f, 18.0f + object->spacing * row, 0.0f, 0.0f);
+                break;
+            case 1:
+                switch (row)
+                {
+                case 0:
+                    lib_text_init_resource_rectangle(text, associated, 0x7EF, 0, 96.0f, 16.0f + object->spacing * row, 0.0f, 0.0f);
+                    break;
+                case 1:
+                    lib_text_init_resource_rectangle(text, associated, 0x7EE, 0, 96.0f, 16.0f + object->spacing * row, 0.0f, 0.0f);
+                    break;
+                case 2:
+                    lib_text_init_resource_rectangle(text, associated, 0x7F0, 0, 96.0f, 16.0f + object->spacing * row, 0.0f, 0.0f);
+                    break;
+                case 3:
+                    lib_text_init_resource_rectangle(text, associated, 0x7F1, 0, 96.0f, 16.0f + object->spacing * row, 0.0f, 0.0f);
+                    break;
+                }
+                break;
+            case 2:
+                lib_text_init_resource_rectangle(text, associated, row + 0x1FC8, 0, 136.0f, 16.0f + object->spacing * row, 0.0f, 0.0f);
+                break;
+            }
+
+            lib_container_attach_widget(object->unk10, text);
+            func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), text);
         }
     }
-    return object;
+
+    LibObject178750* function_heading = new (0) LibObject178750;
+    LibObject178750* button_heading = new (0) LibObject178750;
+
+    if (function_heading == 0 || button_heading == 0)
+    {
+        return 0;
+    }
+
+    button_heading->init_resource_rectangle(object->x, -12.0f, 0.0f, 0.0f, associated, 0x1FE2, 1);
+    button_heading->set_scale(0.9f, 0.9f);
+    button_heading->set_color(0x806080);
+    function_heading->init_resource_rectangle(80.0f, -12.0f, 0.0f, 0.0f, associated, 0x1FE1, 1);
+    function_heading->set_scale(0.9f, 0.9f);
+    function_heading->set_color(0x806080);
+    lib_container_attach_widget(object->unk10, button_heading);
+    lib_container_attach_widget(object->unk10, function_heading);
+    func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), button_heading);
+    func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), function_heading);
+    object->grid = new (0) FieldObject23CEA0;
+
+    if (object->grid == 0)
+    {
+        return 0;
+    }
+
+    object->grid->func_0023CE80(1, 4);
+    object->grid->func_0023CE60(0.0f, object->spacing);
+    object->grid->unkF2 = 0;
+    object->grid->func_0023CF50(0, 268.0f, 224.0f);
+    func_00352600(reinterpret_cast<ConfigListOwner*>(&object->unk74), object->grid);
+    LibObject178750* hint = new (0) LibObject178750;
+    lib_text_init_resource_rectangle(hint, associated, 0x1FE3, 0, 96.0f, 16.0f + (16.0f + (1.0f + 4.0f * object->spacing)), 0.0f, 0.0f);
+    lib_container_attach_widget(object->unk10, hint);
+    func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), hint);
+    return 1;
+}
+
+ConfigBindingWindow::~ConfigBindingWindow()
+{
 }
 
 void ConfigOptions::func_slot5c()
@@ -979,7 +1785,79 @@ void func_0034AD30(ConfigOptions* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034AEC0);
+void func_0034AEC0(ConfigOptions* object, u16 direction, s32 amount)
+{
+    if (object->scroll != 0 && object->scroll->unk35 != 0 && object->unk288 == 0)
+    {
+        if (direction == 0 && object->selected == 0)
+        {
+            return;
+        }
+
+        if (direction == 1 && object->unkb6 == object->selected)
+        {
+            return;
+        }
+
+        if (direction == 0)
+        {
+            object->selected -= static_cast<u8>(amount);
+        }
+        else
+        {
+            object->selected += static_cast<u8>(amount);
+        }
+
+        func_0034B180(object, object->selected);
+        s32 key = func_00350270(object, object->selected);
+
+        if (key != object->unkb8)
+        {
+            static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(key);
+            object->unkb8 = key;
+        }
+
+        field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->unk10), 0);
+        bool changed = false;
+
+        if (!object->unkb0)
+        {
+            if (object->selected == 8)
+            {
+                if (direction == 1)
+                {
+                    changed = object->unkb0 = true;
+                    object->unk29c = -object->unk2a0;
+                    object->scroll->func_00466E40(object->unk110, 12.0f + (object->positions[object->selected] - 400.0f), 0.05f);
+                }
+            }
+            else
+            {
+                object->scroll->func_00466E40(object->unk110, 12.0f + object->positions[object->selected], 0.05f);
+            }
+        }
+        else if (object->selected == 7)
+        {
+            if (direction == 0)
+            {
+                object->unkb0 = false;
+                changed = true;
+                object->unk29c = object->unk2a0;
+                object->scroll->func_00466E40(object->unk110, 12.0f + object->positions[object->selected], 0.05f);
+            }
+        }
+        else
+        {
+            object->scroll->func_00466E40(object->unk110, 12.0f + (object->positions[object->selected] - 400.0f), 0.05f);
+        }
+
+        if (changed && object->unk288 == 0)
+        {
+            object->unk288 = 1;
+            object->unk298 = 0.0f;
+        }
+    }
+}
 
 void func_0034B180(ConfigOptions* object, u16 selected)
 {
@@ -1507,7 +2385,73 @@ void func_0034BD70(ConfigOptions* object, u16 input)
     }
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034BF40);
+void func_0034BF40(ConfigOptions* object, u16 input)
+{
+    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list12_first), 0)->value);
+    ConfigNode* second_node = func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list12_first), 1);
+    s32 key = D_001B643C->settings->widescreen ? 0x1fc0 : 0x1fbf;
+    bool selected = false;
+    LibObject178750* second = static_cast<LibObject178750*>(second_node->value);
+
+    if (input == 0x80)
+    {
+        if (key == 0x1fbf)
+        {
+            selected = true;
+        }
+        else
+        {
+            selected = false;
+        }
+    }
+
+    if (input == 0x20)
+    {
+        if (key == 0x1fc0)
+        {
+            selected = false;
+        }
+        else
+        {
+            selected = true;
+        }
+    }
+
+    ConfigSettings* settings = D_001B643C->settings;
+
+    if (selected)
+    {
+        settings->widescreen = 1;
+        first->set_color(0x505050);
+        second->set_color(0x808080);
+    }
+    else
+    {
+        settings->widescreen = 0;
+        first->set_color(0x808080);
+        second->set_color(0x505050);
+    }
+
+    if (object->controller != 0)
+    {
+        func_00351FD0(object->controller);
+    }
+
+    ConfigSettings* active_settings = D_001B643C->settings;
+    LibClass179080* camera = D_001B643C->runtime->camera;
+
+    if (active_settings != 0 && camera != 0)
+    {
+        if (active_settings->widescreen != 0)
+        {
+            camera->unk278 = (16.0f / 9.0f) * viewport_aspect() / (4.0f / 3.0f);
+        }
+        else
+        {
+            camera->unk278 = viewport_aspect();
+        }
+    }
+}
 
 void func_0034C140(ConfigOptions* object, u16 input)
 {
@@ -2159,7 +3103,76 @@ void ConfigOptions::func_slot64()
     }
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_slotb0__13ConfigOptionsFv);
+u8 ConfigOptions::func_slotb0()
+{
+    bool opened = false;
+
+    switch (selected)
+    {
+    case 9:
+        if (unkfc == 0x1fbc)
+        {
+            static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(0x1fc7);
+            ConfigBindingWindow* window = new (0) ConfigBindingWindow;
+            window->func_slotf4(controller->get_resource_slot());
+            window->func_slot40(this);
+            controller->add_child(window);
+            D_001B643C->unk10->unk14->func_00263C70(window);
+            opened = true;
+        }
+        else
+        {
+            D_001B643C->settings->bindings[0] = 0x4000;
+            D_001B643C->settings->bindings[1] = 0x2000;
+            D_001B643C->settings->bindings[2] = 0x1000;
+            D_001B643C->settings->bindings[3] = 0x8000;
+            D_001B643C->settings->bindings[4] = 0x400;
+            D_001B643C->settings->bindings[5] = 0x800;
+            D_001B643C->settings->bindings[6] = 0x100;
+            D_001B643C->settings->bindings[7] = 0x200;
+            return 1;
+        }
+
+        break;
+    case 10:
+    {
+        s32 key = func_00350270(this, selected);
+        static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(key);
+
+        if (unkf8 == 0x1fbe)
+        {
+            ConfigCornerWindow* window = new (0) ConfigCornerWindow;
+            window->func_slotf4(controller->get_resource_slot());
+            window->func_slot40(this);
+            controller->add_child(window);
+            D_001B643C->unk10->unk14->func_00263C70(window);
+            opened = true;
+        }
+        else
+        {
+            ConfigSettings* settings = D_001B643C->settings;
+            settings->window_colors.values[0] = 0x80A0A000;
+            settings->window_colors.values[1] = 0x80505000;
+            settings->window_colors.values[2] = 0x80505000;
+            settings->window_colors.values[3] = 0x80101000;
+            lib_panel_set_colors(D_001B643C->unk10->unk14->frame_window->frame, &D_001B643C->settings->window_colors);
+            return 1;
+        }
+
+        break;
+    }
+    }
+
+    if (opened == true)
+    {
+        LibClass175030* indicator = scroll;
+        indicator->ItemCreationClass185050::unk30 = 64.0f;
+        indicator->unk3c = 1;
+        return 1;
+    }
+
+    return 0;
+}
 
 u32 func_0034D8A0(void* object)
 {
@@ -3096,11 +4109,124 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_003501B0);
+s32 func_003501B0(ConfigOptions* object)
+{
+    if (default_face_buttons(D_001B643C->settings) == false)
+    {
+        return 0x1FBC;
+    }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00350270);
+    ConfigSettings* settings = D_001B643C->settings;
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_slotb4__13ConfigOptionsFv);
+    if (!((settings->bindings[2] & 0x1000) && (settings->bindings[3] & 0x8000) && (settings->bindings[4] & 0x400) &&
+          (settings->bindings[5] & 0x800) && (settings->bindings[6] & 0x100) && (settings->bindings[7] & 0x200)))
+    {
+        return 0x1FBC;
+    }
+
+    return 0x1FBB;
+}
+
+s32 func_00350270(ConfigOptions* object, u16 selected)
+{
+    s32 key = 0;
+
+    switch (selected)
+    {
+    case 0:
+        key = D_001B643C->settings->unk24_bit7 ? 0x1fa4 : 0x1fa5;
+        break;
+    case 1:
+        key = voice_mode_key(D_001B643C->settings);
+        break;
+    case 2:
+        key = config_bit6(D_001B643C->settings) == 0 ? 0x1faa : 0x1fab;
+        break;
+    case 3:
+        key = battle_camera_key(D_001B643C->settings);
+        break;
+    case 5:
+        key = D_001B643C->settings->unk24_bit4 ? 0x1fb0 : 0x1fb1;
+        break;
+    case 6:
+        key = D_001B643C->settings->unk25_bit1 ? 0x1fb3 : 0x1fb2;
+        break;
+    case 7:
+        key = D_001B643C->settings->unk24_bit5 ? 0x1fb4 : 0x1fb5;
+        break;
+    case 8:
+        key = audio_mode_key(D_001B643C->settings);
+        break;
+    case 9:
+        if (object->unkfc == -1)
+        {
+            key = func_003501B0(object);
+            object->unkfc = key;
+            return key;
+        }
+
+        return object->unkfc;
+    case 10:
+        if (object->unkf8 == -1)
+        {
+            LibWidgetColors4C5590* colors = &D_001B643C->settings->window_colors;
+
+            if (colors->values[0] != 0x80A0A000 || colors->values[1] != 0x80505000 || colors->values[2] != 0x80505000 ||
+                colors->values[3] != 0x80101000)
+            {
+                key = 0x1fbe;
+            }
+            else
+            {
+                key = 0x1fbd;
+            }
+
+            object->unkf8 = key;
+            return key;
+        }
+
+        return object->unkf8;
+    case 11:
+        key = D_001B643C->settings->widescreen ? 0x1fc0 : 0x1fbf;
+        break;
+    case 12:
+        key = battle_trophy_key(object);
+        break;
+    case 13:
+        key = battle_mode_key(D_001B643C->settings);
+        break;
+    case 4:
+        key = config_pair_key(D_001B643C->settings);
+        break;
+    }
+
+    return key;
+}
+
+u8 ConfigOptions::func_slotb4()
+{
+    if (D_001B643C->runtime == 0)
+    {
+        return 0;
+    }
+
+    bool active = D_001B643C->runtime->unk2d != 0;
+
+    if (active == 1)
+    {
+        set_state(1, 0x80);
+    }
+    else
+    {
+        ConfigGridWindow* window = new (0) ConfigGridWindow;
+        window->func_slot10(func_slot54(), 156.0f, 160.0f, 13);
+        window->func_slot40(this);
+        D_001B643C->unk10->unk14->add_child(window);
+        D_001B643C->unk10->unk14->func_00263C70(window);
+    }
+
+    return 2;
+}
 
 
 s32 ConfigOptions::func_slotf4(u32 associated)
@@ -3250,9 +4376,9 @@ s32 ConfigOptions::func_slotf4(u32 associated)
         static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(key);
         unkb8 = key;
     }
-    if (unka8 != 0)
+    if (controller != 0)
     {
-        func_00351FD0(static_cast<ConfigPreviewState*>(unka8));
+        func_00351FD0(controller);
     }
     return 1;
 }
@@ -3264,9 +4390,9 @@ ConfigOptions::~ConfigOptions()
 ConfigOptions::ConfigOptions()
 {
     func_slotec(1);
-    unka8 = 0;
+    controller = 0;
     scroll = 0;
-    unkb0 = 0;
+    unkb0 = false;
     last_index = 0;
     unkb6 = 0;
     s32 index;
@@ -3304,26 +4430,16 @@ s32 func_003514E0(ConfigFrameWindow* object, u32 associated)
     return 1;
 }
 
-void* func_003515B0(void* object, s32 flags)
+ConfigFrameWindow::~ConfigFrameWindow()
 {
-    if (object != 0)
-    {
-        *(void**)object = D_181E70;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
 void func_00351610(ConfigMessageWindow* object, s32 key)
 {
     if (key >= 0x1FA4 && key < 0x1FC8)
     {
-        object->unkb2 = 0;
-        object->unkb0 = 0;
+        object->scroll_phase = 0;
+        object->initial_pause_frames = 0;
         lib_text_set_resource(object->text, object->source, key, 1);
         object->extent = lib_text_measure_bounds(object->text)->unk08;
         if (key == 0x1FB8 || key == 0x1FBA)
@@ -3338,22 +4454,99 @@ void func_00351610(ConfigMessageWindow* object, s32 key)
     }
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_003516B0);
-
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00351820);
-
-void* func_00351BD0(void* object, s32 flags)
+void func_003516B0(ConfigMessageWindow* object)
 {
-    if (object != 0)
+    LibObject178750* text = object->text;
+    float x = text->unk18.unk00;
+    float y = text->unk18.unk04;
+    float width = text->unk18.unk08;
+    float height = text->unk18.unk0c;
+
+    if (object->scroll_phase == 0)
     {
-        *(void**)object = D_181F70;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
+        set_widget_rectangle(text, object->initial_text_x, y, width, height);
+        object->initial_pause_frames++;
+
+        if (!((float)object->initial_pause_frames <= 120.0f))
         {
-            ::operator delete(object);
+            object->initial_pause_frames = 0;
+            object->scroll_phase = 1;
+        }
+
+        return;
+    }
+
+    x -= 108.0f * D_001B6690;
+
+    if (x < object->clip_x - object->extent)
+    {
+        x = 2.0f + (object->clip_x + object->clip_width);
+
+        if (object->active == 1)
+        {
+            if (object->key == 0x1FB8)
+            {
+                object->func_slot60(0x1FBA);
+            }
+            else
+            {
+                object->func_slot60(0x1FB8);
+            }
+
+            object->scroll_phase = 1;
         }
     }
-    return object;
+
+    set_widget_rectangle(object->text, x, y, width, height);
+}
+
+s32 func_00351820(ConfigMessageWindow* object, u32 associated)
+{
+    object->source = associated;
+
+    if (object->source == 0)
+    {
+        return 0;
+    }
+
+    object->FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 19);
+    object->text = new (0) LibObject178750;
+    ItemCreationClass1746A0* clip = new (0) ItemCreationClass1746A0;
+    ItemCreationClass1746A0* reset_clip = new (0) ItemCreationClass1746A0;
+
+    if (object->text == 0 || clip == 0 || reset_clip == 0)
+    {
+        return 0;
+    }
+
+    LibObject178750* label = new (0) LibObject178750;
+    lib_text_init_resource_rectangle(label, associated, 0x1F40, 0, 16.0f, 6.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(object->unk10, label);
+    func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), label);
+    LibObject178750* hint = new (0) LibObject178750;
+    lib_text_init_resource_rectangle(hint, associated, 0x1F41, 0, 36.0f, 40.0f, 0.0f, 0.0f);
+    hint->set_scale(0.65f, 0.65f);
+    lib_container_attach_widget(object->unk10, hint);
+    func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), hint);
+    object->label_width = lib_text_measure_bounds(label)->unk08;
+    object->clip_x = 18.0f + object->label_width;
+    object->clip_width = 640.0f - (16.0f + shifted_position(object->clip_x, 32.0f));
+    object->initial_text_x = 24.0f + object->label_width;
+    lib_scissor_init_rectangle(clip, object->clip_x, 0.0f, object->clip_width, 56.0f);
+    lib_container_attach_widget(object->unk10, clip);
+    func_00352C40(reinterpret_cast<ConfigListOwner*>(&object->unk20), clip);
+    lib_text_init_resource_rectangle(object->text, associated, 0x1FA4, 0, object->initial_text_x, 6.0f, 0.0f, 0.0f);
+    lib_container_attach_widget(object->unk10, object->text);
+    func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), object->text);
+    lib_scissor_init_reset(reset_clip, 1);
+    lib_container_attach_widget(object->unk10, reset_clip);
+    func_00352C40(reinterpret_cast<ConfigListOwner*>(&object->unk20), reset_clip);
+    object->func_slot60(0x1FA4);
+    return 1;
+}
+
+ConfigMessageWindow::~ConfigMessageWindow()
+{
 }
 
 s32 func_00351C30(ConfigPreviewWindow* object, u32 associated)
@@ -3387,23 +4580,13 @@ s32 func_00351C30(ConfigPreviewWindow* object, u32 associated)
     return 1;
 }
 
-void* func_00351F70(void* object, s32 flags)
+ConfigPreviewWindow::~ConfigPreviewWindow()
 {
-    if (object != 0)
-    {
-        *(void**)object = D_182070;
-        func_2CEAF0(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
-void func_00351FD0(ConfigPreviewState* object)
+void func_00351FD0(ConfigController* object)
 {
-    ConfigPreviewWindow* window = object->window;
+    ConfigPreviewWindow* window = object->preview_window;
     if (window != 0)
     {
         s32 flag = 0;
@@ -3451,7 +4634,30 @@ void func_00352110(void* object)
     resident_enqueue_object(D_001B65F4, object);
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_00352130);
+s32 func_00352130(ConfigController* object)
+{
+    ConfigPreviewWindow* preview = new (0) ConfigPreviewWindow;
+    ConfigMessageWindow* message = new (0) ConfigMessageWindow;
+    ConfigOptions* options = new (0) ConfigOptions;
+    object->frame_window = new (0) ConfigFrameWindow;
+    object->preview_window = preview;
+    preview->func_slotf4(object->resource);
+    preview->func_slot40(0);
+    object->FieldClass153E30::add_child(preview);
+    message->func_slotf4(object->resource);
+    message->func_slot40(preview);
+    object->unk24 = message;
+    object->FieldClass153E30::add_child(message);
+    object->frame_window->func_slotf4(object->resource);
+    object->FieldClass153E30::add_child(object->frame_window);
+    options->controller = object;
+    options->func_slotf4(object->resource);
+    options->func_slot40(message);
+    object->FieldClass153E30::add_child(options);
+    object->unk20 = options;
+    object->ready = 1;
+    return 1;
+}
 
 s32 func_00352330(ConfigControlReceiver* object, void* buffer)
 {
@@ -3479,25 +4685,15 @@ s32 func_003523F0(void* object)
     return 1;
 }
 
-void* func_00352400(void* object, s32 flags)
+ConfigController::~ConfigController()
 {
-    if (object != 0)
-    {
-        *(void**)object = D_182170;
-        func_264230(object, 0);
-        if ((s16)flags > 0)
-        {
-            ::operator delete(object);
-        }
-    }
-    return object;
 }
 
 ConfigController::ConfigController()
 {
     resource = 0;
-    unk38 = 0;
-    unk40 = 0;
+    ready = 0;
+    preview_window = 0;
 }
 
 void ItemCreationClass185050::func_slot0c()
