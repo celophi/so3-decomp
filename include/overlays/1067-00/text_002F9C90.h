@@ -63,7 +63,7 @@ public:
     u8 display_attached;
     u8 unk5e[2];
     float rotation;
-    u8 unk64[0x14];
+    float values[5];
     u32 unk78;
     u8 unk7c[4];
     LibVector4 unk80;

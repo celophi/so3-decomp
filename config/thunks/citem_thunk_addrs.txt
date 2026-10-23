@@ -1,0 +1,14 @@
+@4@get_default_list_kind__14ItemControllerFv = 0x00354AA0;
+@4@selected_records__14ItemControllerFv = 0x00354AB0;
+@4@func_slot5c__14ItemControllerFv = 0x00354AC0;
+@4@init_windows__14ItemControllerFv = 0x00354AD0;
+@4@on_resource_loaded__14ItemControllerFPv = 0x00354AE0;
+@4@windows_ready__14ItemControllerFv = 0x00354AF0;
+@4@get_resource_slot__14ItemControllerFv = 0x00354B00;
+@4@func_00264110__14ItemControllerFv = 0x00354B10;
+@4@func_001DD7B0__14ItemControllerFv = 0x00354B20;
+@4@__dt__14ItemControllerFv = 0x00354B30;
+@168@set_scroll_position__20ItemListWindow1848D0Ff = 0x00354B40;
+@168@refresh_rows__20ItemListWindow1848D0Fi = 0x00354B50;
+@168@set_scroll_position__26ItemAllocationWindow1847B0Ff = 0x00354B60;
+@168@refresh_rows__26ItemAllocationWindow1847B0Fi = 0x00354B70;

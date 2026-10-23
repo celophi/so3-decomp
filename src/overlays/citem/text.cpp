@@ -14,17 +14,68 @@
 #include "main/resident_00101260.h"
 #include "main/resident_0011EE70.h"
 
-extern "C" {
+extern "C"
+{
 void func_4D00B0(void* object);
 FieldRecordSelection* func_0028E4D0(FieldRecordSelection* selection);
+}
+
 #include "overlays/lib/text_004095C0.h"
+#include "overlays/lib/item_allocation.h"
 #include "overlays/1067-00/text_002D3BD0.h"
 #include "overlays/1067-00/text_002D5260.h"
+#include "overlays/1067-00/text_002F9C90.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/lib/text_0045AD10.h"
+#include "overlays/lib/resource_widget_inlines.h"
+#include "overlays/lib/list_indicator_inlines.h"
+#include "overlays/lib/movement_widget_inlines.h"
 
 #define ANGLE_STEP_RADIANS 0.008726646f
 #define ANGLE_LIMIT_RADIANS 0.5235988f
+
+enum CitemMessageKey
+{
+    CITEM_MSG_ITEM_NAMES = 50000
+};
+
+/** Partial loaded-resource header containing the block's byte count. */
+struct CitemAlignedResource
+{
+    u8 unk00[0x40];
+    s32 byte_count;
+};
+
+/** Partial resource runtime containing the item-name slot and message base. */
+struct FieldRuntime
+{
+    u8 unk00[0x514];
+    s32 item_name_resource_slot;
+    u32 item_name_base_key;
+};
+
+/** Observed prefix of the resident entry-four block containing 3072 flags. */
+class CitemFlagBlock
+{
+    public:
+        /**
+         * @brief Read one flag as a full-word truth value.
+         * @param bit Nonnegative flag index.
+         * @return One when set, or zero when clear or beyond the flag block.
+         */
+        s32 is_set(s32 bit) const
+        {
+            if (bit >= 3072)
+            {
+                return false;
+            }
+
+            return (flags[bit / 8] & (1 << (bit % 8))) != 0;
+        }
+
+        u32 unk00;
+        u8 flags[384];
+};
 
 struct ItemListOwner
 {
@@ -32,7 +83,55 @@ struct ItemListOwner
     u32 count;
 };
 
-/** Native D_184280 window with a Field base, widget lists and a two-column grid. */
+/** Item choice window containing a two-column grid and text displays. */
+class ItemChoiceWindow184280 : public FieldClass15AE70
+{
+    public:
+        /** @brief Initialize the grid and text links. */
+        ItemChoiceWindow184280()
+        {
+            grid = 0;
+            first_text = 0;
+            second_text = 0;
+        }
+
+        /** @brief Destroy the choice window and its Field base. */
+        virtual ~ItemChoiceWindow184280();
+
+        /** @brief Enable grid input when this is the active window. */
+        virtual void func_slot5c();
+
+        /** @brief Move the grid selection and update the choice colors. */
+        virtual void func_slot70();
+
+        /** @brief Move the grid selection and update the choice colors. */
+        virtual void func_slot74();
+
+        /**
+         * @brief Apply the selected choice and restore the remaining allocation or item list.
+         * @return Zero when input is blocked, the back result for the second choice, otherwise one.
+         */
+        virtual u8 func_slotb0();
+
+        /**
+         * @brief Close the choice window and restore the allocation window.
+         * @return Zero when input is blocked, otherwise two.
+         */
+        virtual u8 func_slotb4();
+
+        /**
+         * @brief Create the panels, text displays, and two-column choice grid.
+         * @param associated Resource source word.
+         * @return One after initialization.
+         */
+        virtual s32 func_slotf4(u32 associated);
+
+        FieldObject23CEA0* grid;
+        LibObject178750* first_text;
+        LibObject178750* second_text;
+};
+
+/** Observed prefix used by the remaining C window entry points. */
 struct ItemRecord
 {
     void* methods;
@@ -53,9 +152,6 @@ struct ItemRecord
     u32 unk98;
     u32 unk9c;
     u8 unka0[8];
-    FieldObject23CEA0* grid;
-    LibObject178750* first_text;
-    LibObject178750* second_text;
 };
 
 struct StatusRecord
@@ -104,29 +200,12 @@ struct Record00349250
     u8 release_pending;
 };
 
-struct Record00349C50
-{
-    u8 unk00[0x38];
-    u32 unk38;
-};
-
-struct Record0034C800
-{
-    u8 unk00[0x40];
-    u32 unk40;
-};
-
 struct Record00349BF0
 {
     u8 unk00[0x2C];
     void* unk2c;
 };
 
-struct Record0034C7A0
-{
-    u8 unk00[0x38];
-    void* unk38;
-};
 
 struct Record0034C6A0
 {
@@ -149,72 +228,36 @@ struct Record0034E7E0
     void* methods;
     u8 unk04[0xA8];
     FieldObject23B1D0* selection;
+    u8 unkb0[0xC];
+    ItemListOwner displays;
 };
 
-struct Record00350BD0
+
+
+/** Coordinate-list link owned by the item menu. */
+class CitemCoordinateNode
 {
-    u8 unk00[0x12C];
-    u8 unk12c;
+    public:
+        float x;
+        float y;
+        CitemCoordinateNode* next;
+
+        /** @brief Initialize the coordinate pair to zero. */
+        CitemCoordinateNode()
+        {
+            x = y = 0.0f;
+        }
+
+        /** @brief Destroy a coordinate link. */
+        ~CitemCoordinateNode()
+        {
+        }
 };
 
-/** Counted payload list with a sentinel head and a method table. */
-struct Record003540E0
-{
-    ItemListNode* head;
-    u32 count;
-    void* methods;
-};
 
-struct Record003542F0
-{
-    void* head;
-    u32 count;
-    void* methods;
-};
 
-/** Counted coordinate list with a sentinel head and a method table. */
-struct Record00354740
-{
-    FieldNode23D310* head;
-    u32 count;
-    void* methods;
-};
 
-struct Record00353EF0
-{
-    void* methods;
-    u8 unk04[0xE4];
-    void* unke8;
-    u8 unkec[0xC0];
-    Record003542F0 embedded;
-};
 
-struct Record00350C20
-{
-    void* methods;
-    u8 unk04[0xE4];
-    void* unke8;
-    u8 unkec[0x88];
-    void* unk174;
-};
-
-struct SlotRecord
-{
-    u8 unk00[0x18];
-    float unk18;
-    float unk1c;
-    u8 unk20[0x1C];
-    u8 unk3c;
-};
-
-struct Record00350FC0
-{
-    u8 unk00[0xF0];
-    struct SlotRecord* first[14];
-    u8 unk128[0x10];
-    struct SlotRecord* second[14];
-    struct SlotRecord* third[14];
-};
 
 struct TransformRecord
 {
@@ -233,32 +276,24 @@ struct ScreenRecord
     float unk70;
 };
 
-/** Observed C prefix of the native 0x90-byte LibClass178630 panel widget. */
-typedef struct CitemPanelState
+/** Item panel window built on the Field window base. */
+class ItemWindow1849F0 : public FieldClass15AE70
 {
-    void* methods;
-    u8 unk04[0x34];
-    u8 unk38;
-    u8 unk39[7];
-    void* allocation;
-    u8 unk44[0xC];
-    LibUiRect16 unk50;
-    void* unk60;
-} CitemPanelState;
+    public:
+        /** @brief Initialize the window and its display links. */
+        ItemWindow1849F0()
+        {
+        }
 
-/** Partial native D_1849F0 window, allocated with its 0xA8-byte Field base. */
-struct Record00351F50
-{
-    void* methods;
-    u8 unk04[0xC];
-    LibObject178660* container;
-};
+        /** @brief Destroy the window and its Field base. */
+        virtual ~ItemWindow1849F0();
 
-struct ScreenOwner
-{
-    void* methods;
-    u8 unk04[0xA4];
-    struct ScreenRecord* unka8;
+        /**
+         * @brief Initialize the window displays from a resource source.
+         * @param associated Resource source word.
+         * @return One after initialization.
+         */
+        virtual s32 func_slotf4(u32 associated);
 };
 
 /** Observed prefix of native D_184DF0, with a DMA interface and a Field receiver base at four. */
@@ -283,14 +318,104 @@ struct Record0034B060List : public FieldClass15AD40
     virtual void func_slot11c(s32 first, s32 second);
 };
 
+/** Item list window with fourteen rows and an owned allocation list. */
+class ItemListWindow1848D0 : public FieldClass15AD40
+{
+    public:
+        /** @brief Initialize the row pointers and controller link. @param owner Parent item controller. */
+        ItemListWindow1848D0(ItemController* owner);
+
+        /** @brief Destroy the owned allocation list and Field window base. */
+        virtual ~ItemListWindow1848D0();
+
+        /** @brief Update the selected identifier and the selection marker. */
+        virtual void func_slot5c();
+
+        virtual u8 func_slotb0();
+
+        /** @brief Hide the rows and restore the associated window. @return Two after restoring the window. */
+        virtual u8 func_slotb4();
+
+        /** @brief Toggle sorting and refresh the current rows. @return Zero for category seven, otherwise one. */
+        virtual u8 func_slotbc();
+
+        /**
+         * @brief Create the row displays, clipping widgets, and selection controls.
+         * @param associated Resource source word.
+         * @return One after initialization.
+         */
+        virtual s32 func_slot104(u32 associated);
+
+        /**
+         * @brief Set the attached display flag and height.
+         * @param value Unused first flag.
+         * @param alternate Value stored as a byte; its full value selects the height.
+         */
+        virtual void func_slot10c(u32 value, u32 alternate);
+
+        /** @brief Populate the visible rows and update their colors. @param start First record index. */
+        virtual void refresh_rows(s32 start);
+
+        /** @brief Position the row displays. @param start Base vertical coordinate. */
+        virtual void set_scroll_position(float start);
+
+        virtual void func_slot11c(s32 first, s32 second);
+
+        LibClass178600* second[14];
+        LibClass178600* third[14];
+        ItemController* controller;
+        ItemList184EC8 entries;
+        u32 unk1b8[24];
+        u8 sort_enabled;
+};
+
 struct Record00353A50
 {
     void* methods;
 };
 
-struct Record00352960
+/** Item window linked to its controller and alternate list. */
+class ItemWindow184AF0 : public FieldClass15AE70
 {
-    void* methods;
+    public:
+        /** @brief Initialize the controller link and window fields. @param owner Parent item controller. */
+        ItemWindow184AF0(ItemController* owner)
+        {
+            unka8 = 0;
+            unkac = 0;
+            unkb0 = 0;
+            controller = owner;
+            unkb8 = 0;
+            unkbc = 0;
+            FieldClass15AE70();
+        }
+
+        /** @brief Destroy the window and its Field base. */
+        virtual ~ItemWindow184AF0();
+
+        virtual void func_slot5c();
+
+        /** @brief Restore the linked panel height and mark it for update. */
+        virtual void func_slot64();
+
+        virtual void func_slot68();
+
+        virtual void func_slot6c();
+
+        virtual u8 func_slotb0();
+
+        /** @brief Set the window state and flags. @return Two after updating the state. */
+        virtual u8 func_slotb4();
+
+        virtual s32 func_slotf4(u32 associated);
+
+        ScreenRecord* unka8;
+        void* unkac;
+        FieldClass15AE70* unkb0;
+        ItemController* controller;
+        u16 unkb8;
+        u8 unkba[2];
+        void* unkbc;
 };
 
 /** Observed C prefix of the native 0x114-byte LibObject178750 text widget. */
@@ -314,76 +439,137 @@ struct CitemTextDisplay
     u32 mode;
 };
 
-/** Native D_1844B0 window with a 0xA8-byte Field base and three text widgets. */
-struct Record00353E40
+/** Item message window containing three text displays. */
+class ItemWindow1844B0 : public FieldClass15AE70
 {
-    void* methods;
-    u8 unk04[0xC];
-    LibObject178660* container;
-    u8 unk14[0x94];
-    LibObject178750* text[3];
-    float width;
-    float height;
-    float scale;
-    float unkc0;
-    float row_spacing;
-    float text_x;
-    float text_y;
-    float unkd0;
+    public:
+        /** @brief Initialize the window and its display links. */
+        ItemWindow1844B0()
+        {
+            text[0] = 0;
+            text[1] = 0;
+            text[2] = 0;
+            width = 0.0f;
+            height = 0.0f;
+            scale = 0.0f;
+            unkc0 = 0.0f;
+            row_spacing = 0.0f;
+            text_x = 0.0f;
+            text_y = 0.0f;
+            unkd0 = 0.0f;
+        }
+
+        /** @brief Destroy the window and its Field base. */
+        virtual ~ItemWindow1844B0();
+
+        /**
+         * @brief Initialize the window displays from a resource source.
+         * @param associated Resource source word.
+         * @return One after initialization.
+         */
+        virtual s32 func_slotf4(u32 associated);
+
+        LibObject178750* text[3];
+        float width;
+        float height;
+        float scale;
+        float unkc0;
+        float row_spacing;
+        float text_x;
+        float text_y;
+        float unkd0;
 };
 
-/** Partial item window with a delayed horizontal text scroller. */
-struct Record00352EE0
+/** Item text window with delayed horizontal scrolling. */
+class ItemWindow184BF0 : public FieldClass15AE70
 {
-    void* methods;
-    u8 unk04[0xA4];
-    struct CitemTextDisplay* text_display;
-    s32 scroll_extent;
-    s16 delay_frames;
-    u8 scrolling;
-    u8 unkb3[5];
-    float start_x;
-    float left_edge;
-    float visible_width;
+    public:
+        /** @brief Initialize the window and its display links. */
+        ItemWindow184BF0()
+        {
+            text_display = 0;
+            scroll_extent = 0;
+            scrolling = 0;
+            delay_frames = 0;
+            unkb4 = 0.0f;
+            start_x = 0.0f;
+            left_edge = 0.0f;
+            visible_width = 0.0f;
+        }
+
+        /** @brief Destroy the window and its Field base. */
+        virtual ~ItemWindow184BF0();
+
+        /** @brief Delay, scroll and wrap the text within its horizontal bounds. */
+        virtual void func_slot5c();
+
+        virtual void func_slot60(s32 text_key);
+
+        virtual s32 func_slotf4(u32 associated);
+
+        CitemTextDisplay* text_display;
+        s32 scroll_extent;
+        s16 delay_frames;
+        u8 scrolling;
+        u8 unkb3;
+        float unkb4;
+        float start_x;
+        float left_edge;
+        float visible_width;
 };
 
-struct Record003531B0
+/** Item window containing three resource display widgets. */
+class ItemWindow184CF0 : public FieldClass15AE70
 {
-    void* methods;
+    public:
+        /** @brief Initialize the window and its display links. */
+        ItemWindow184CF0()
+        {
+            unka8 = 0;
+            unkac = 0;
+            unkb0 = 0;
+        }
+
+        /** @brief Destroy the window and its Field base. */
+        virtual ~ItemWindow184CF0();
+
+        virtual s32 func_slotf4(u32 associated);
+
+        ItemCreationOptionResourceDisplay* unka8;
+        ItemCreationOptionResourceDisplay* unkac;
+        ItemCreationOptionResourceDisplay* unkb0;
+        u8 unkb4[4];
 };
 
-struct ItemListNode
+/** Payload-list link owned by the item menu. */
+class ItemListNode
 {
-    void* value;
-    struct ItemListNode* next;
+    public:
+        void* value;
+        ItemListNode* next;
+
+        /** @brief Destroy the link without releasing its payload. */
+        ~ItemListNode()
+        {
+        }
 };
 
 typedef struct ItemSortRecord
 {
     u8 unk00[2];
     u16 table_index;
+    u8 unk04[4];
+    u8 unk08;
 } ItemSortRecord;
 
 typedef ItemCreationCategoryDefinition ItemSortDefinition;
 
 
-struct AngleState
-{
-    u8 unk00[0x6C];
-    float unk6c;
-};
-
-struct AngleOwner
-{
-    u8 unk00[0x1B0];
-    u8 unk1b0;
-    u8 unk1b1[7];
-    struct AngleState* unk1b8;
-};
-
 struct ControlScreen
 {
-    u8 unk00[0x3C];
+    u8 unk00[0x1C];
+    float y;
+    u8 unk20[0x1C];
     u8 unk3c;
     u8 unk3d[2];
     u8 unk3f;
@@ -391,10 +577,12 @@ struct ControlScreen
     float unk70;
 };
 
-struct ControlOwner
+
+/** Partial display settings used to frame the allocation model preview. */
+struct CitemDisplaySettings
 {
-    u8 unk00[0xAC];
-    struct ControlScreen* unkac;
+    u8 unk00[0x18C];
+    u8 widescreen;
 };
 
 /** Prefix of Field's menu manager (vtable D_15B020); offset 0x14 is the active menu controller. */
@@ -409,76 +597,107 @@ typedef struct CitemRuntime643C
 {
     u8 unk00[0x10];
     CitemWindowController* controller;
-    u8 unk14[0xC];
+    u8 unk14[8];
+    void* field_camera;
     FieldBufferSlots* buffers;
 } CitemRuntime643C;
 
 /** The allocation helper receives this resident storage opaquely. */
-extern ResidentObject1B64F8* D_001B64F8;
-extern CitemRuntime643C* D_001B643C;
+extern "C" ResidentObject1B64F8* D_001B64F8;
+extern "C" CitemRuntime643C* D_001B643C;
 
-/** Observed prefix of the native 0x100-byte LibObject172410 item-code widget. */
-typedef struct CitemAllocationDisplay
+/** Allocation-detail window with six item-code and resource-display rows. */
+class ItemAllocationWindow1847B0 : public FieldClass15AD40
 {
-    void* methods;
-    u8 unk04[0x38];
-    u8 update;
-    u8 unk3d;
-    u8 unk3e[0xBE];
-    u16 code;
-    u8 unkfe;
-    u8 unkff;
-} CitemAllocationDisplay;
+    public:
+        /** @brief Initialize row pointers, angle state, and the Field base. */
+        ItemAllocationWindow1847B0()
+        {
+            for (s32 index = 0; index < 6; index++)
+            {
+                first[index] = 0;
+            }
+            unk1b0 = 0;
+            unk1b8 = 0;
+            unk1bc = 0;
+            FieldClass15AD40();
+        }
 
-/** Observed prefix of the native 0x128-byte ItemCreationOptionResourceDisplay widget. */
-typedef struct CitemResourceDisplay
-{
-    u8 unk00[0x3D];
-    u8 unk3d;
-} CitemResourceDisplay;
+        /** @brief Detach the panel and destroy the Field window base. */
+        virtual ~ItemAllocationWindow1847B0();
 
+        /** @brief Release the nested container and the base display lists. */
+        virtual void func_slot0c();
 
-/** Byte prefix of the actual packed 16-byte allocation record. */
-typedef struct CitemAllocationRecord
-{
-    u8 unk00[0xC];
-    u8 unk0c;
-} CitemAllocationRecord;
+        virtual void func_slot5c();
 
-/** Observed prefix of the native 0x1C0-byte D_1847B0 window, with six pairs of code and resource widgets. */
-struct Record0034E8B0
-{
-    void* methods;
-    u8 unk04[0xA4];
-    struct ControlScreen* unka8;
-    struct ControlScreen* unkac;
-    u8 unkb0[0x80];
-    s32 record_count;
-    u8 unk134[4];
-    struct ControlScreen* first[6];
-    u8 unk150[0x24];
-    struct ControlScreen* unk174;
-    u8 unk178[8];
-    struct ControlScreen* second[6];
+        /** @brief Increase the active display angle up to its limit. */
+        virtual void func_slot68();
+
+        /** @brief Decrease the active display angle down to zero. */
+        virtual void func_slot6c();
+
+        virtual u8 func_slotb0();
+
+        /**
+         * @brief Cancel the active preview or restore the associated item list.
+         * @return Two after handling the back action.
+         */
+        virtual u8 func_slotb4();
+
+        /**
+         * @brief Toggle the selected allocation's model preview.
+         * @return Zero after handling or ignoring the preview request.
+         */
+        virtual u8 func_slotb8();
+
+        /**
+         * @brief Open the choice window for the selected allocation when permitted.
+         * @return Zero during a preview, three for an unsellable entry, otherwise one.
+         */
+        virtual u8 func_slotbc();
+
+        virtual s32 func_slot104(u32 associated);
+
+        /**
+         * @brief Set row flags and update the selection control height.
+         * @param value Flag stored in each item-code and resource row.
+         * @param alternate Control flag; its full value selects the height.
+         */
+        virtual void func_slot10c(u32 value, u32 alternate);
+
+        /** @brief Populate the visible allocation rows. @param start First allocation index. */
+        virtual void refresh_rows(s32 start);
+
+        /** @brief Position the allocation rows. @param start Vertical offset. */
+        virtual void set_scroll_position(float start);
+
+        /**
+         * @brief Refresh the allocation selection or its model preview.
+         * @param reset Nonzero to reset the selection position.
+         */
+        void func_0034FB80(s32 reset);
+
+        LibObject172410* first[6];
+        u8 unk150[0x24];
+        LibClass178630* panel;
+        LibObject178750* text178;
+        LibObject178750* text17c;
+        ItemCreationOptionResourceDisplay* second[6];
+        LibObject178660* container;
+        u8 unk19c[0x14];
+        u8 unk1b0;
+        u8 unk1b1[7];
+        FieldClass15BB90* unk1b8;
+        u8 unk1bc;
 };
 
-extern u8 D_184280[];
+
+extern "C"
+{
 extern u8 D_184390[];
-extern u8 D_1844B0[];
-extern u8 D_1849F0[];
-extern u8 D_184AF0[];
-extern u8 D_184BF0[];
-extern u8 D_184CF0[];
 extern u8 D_1844A0[];
-extern u8 D_1843F0[];
 extern u8 D_175110[];
-extern u8 D_1848D0[];
-extern u8 D_1849C4[];
-extern u8 D_1847B0[];
-extern u8 D_1848A4[];
-extern u8 D_184ED8[];
-extern u8 D_184EC8[];
-extern u8 D_184EB8[];
 extern u8 D_50CD30[];
 extern LibWidgetColors4C5590 D_354C40;
 extern void func_2CEAF0(void* object, s32 flags);
@@ -487,73 +706,61 @@ extern void func_4CE4C0(Vector4* destination, const Vector4* source);
 extern void func_2BC410(Record00349BF0* record, s32 flag);
 extern void func_4618F0(void* record, s32 flag);
 extern void func_4C48B0(void* record, s32 flag);
-extern void func_003541F0(Record003540E0* record);
-extern void func_00354400(Record003542F0* record);
-extern void func_003547C0(Record00354740* record);
 extern void func_2CD9F0(void* record, s32 flag);
 extern void func_44B110(void* object, s32 arg1, s32 arg2, void* arg3, float value, s32 flag);
 
 /** @brief Allocate and construct the native panel widget. @return The panel storage, or null. */
 static inline LibClass178630* allocate_panel(void)
 {
-    void* storage = func_00100AC0(0x90, 0);
-    LibClass178630* panel = (LibClass178630*)storage;
-    if (storage != 0)
-    {
-        CitemPanelState* state = (CitemPanelState*)panel;
-        func_004C4960((LibClass178600*)panel);
-        state->methods = D_178630;
-        state->allocation = 0;
-        state->unk50.unk0c = 0.0f;
-        state->unk50.unk08 = 0.0f;
-        state->unk50.unk04 = 0.0f;
-        state->unk50.unk00 = 0.0f;
-        state->unk38 = 1;
-        state->unk60 = 0;
-    }
-    return panel;
+    return new (0) LibClass178630;
 }
 
 /** @brief Allocate the native text widget with an empty rectangle. @return The text-widget storage, or null. */
 static inline LibObject178750* allocate_text_widget(void)
 {
-    void* storage = func_00100AC0(0x114, 0);
-    LibObject178750* widget = (LibObject178750*)storage;
-    if (storage != 0)
-    {
-        struct CitemTextDisplay* state = (struct CitemTextDisplay*)widget;
-        func_00464B10((LibClass174EF0*)widget);
-        state->methods = D_178750;
-        state->unk38 = 11;
-        lib_text_init_rectangle(widget, 0.0f, 0.0f, 0.0f, 0.0f);
-    }
-    return widget;
+    return new (0) LibObject178750;
 }
 
 /** @brief Set the text mode and mark the widget for update. @param widget Text widget. @param mode Text mode. */
 static inline void set_text_mode(LibObject178750* widget, u32 mode)
 {
-    struct CitemTextDisplay* text = (struct CitemTextDisplay*)widget;
-    text->mode = mode;
-    text->unk3c = 1;
+    widget->set_mode(mode);
 }
 
 /** @brief Set the packed text color and mark the widget for update. @param widget Text widget. @param color Packed color. */
 static inline void set_text_color(LibObject178750* widget, u32 color)
 {
-    struct CitemTextDisplay* text = (struct CitemTextDisplay*)widget;
-    text->color = color;
-    text->unk3c = 1;
+    widget->set_color(color);
 }
 
 /** @brief Apply the window scale to one text widget. @param object Text window. @param index Text-widget index. */
-static inline void scale_window_text(Record00353E40* object, u32 index)
+static inline void scale_window_text(ItemWindow1844B0* object, u32 index)
 {
     struct CitemTextDisplay* text = (struct CitemTextDisplay*)object->text[index];
     float scale = object->scale;
     text->scale_y = scale;
     text->scale_x = scale;
     text->unk3c = 1;
+}
+
+/**
+ * @brief Return the 128-byte-aligned resource header.
+ * @param buffer Completed resource buffer.
+ * @return Aligned resource header.
+ */
+static inline CitemAlignedResource* aligned_item_resource(void* buffer)
+{
+    return reinterpret_cast<CitemAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
+}
+
+/** @brief Delete an owned record selection and clear its pointer. @param selection Owned selection. */
+static inline void release_record_selection(FieldRecordSelection*& selection)
+{
+    if (selection != 0)
+    {
+        delete selection;
+        selection = 0;
+    }
 }
 
 /**
@@ -605,15 +812,9 @@ static inline struct LibClass171FF0* transform_notification(Record00349250* obje
  * @brief Allocate a coordinate node with its scalar values initially clear.
  * @return Allocated node, or null.
  */
-static inline FieldNode23D310* allocate_coordinate_node(void)
+static inline CitemCoordinateNode* allocate_coordinate_node(void)
 {
-    FieldNode23D310* node = (FieldNode23D310*)func_00100AC0(sizeof(FieldNode23D310), 0);
-
-    if (node != 0)
-    {
-        node->y = 0.0f;
-        node->x = 0.0f;
-    }
+    CitemCoordinateNode* node = new (0) CitemCoordinateNode;
     return node;
 }
 
@@ -634,21 +835,13 @@ static inline void set_text_bounds(struct CitemTextDisplay* display, float x, fl
     display->unk3c = 1;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003483C0);
-
-ItemRecord* func_00348400(ItemRecord* item, s16 flag)
+/** @brief Read the catalog entry's unsellable flag. @param definition Catalog entry. @return Flag as a byte. */
+static inline u8 item_definition_unsellable(const ItemCreationCategoryDefinition* definition)
 {
-    if (item != 0)
-    {
-        item->methods = D_184280;
-        func_2CEAF0(item, 0);
-        if (flag > 0)
-        {
-            func_100B40(item);
-        }
-    }
-    return item;
+    return definition->unsellable;
 }
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003483C0);
 
 void func_00348460(ItemRecord* item, u8 value)
 {
@@ -680,10 +873,6 @@ u16 func_003484B0(ItemRecord* item)
     return item->unk0a;
 }
 
-void func_003484C0(ItemRecord* item, u32 value)
-{
-    item->unk98 = value;
-}
 
 void func_003484E0(ItemRecord* item, u32 value)
 {
@@ -854,80 +1043,54 @@ void func_00348730(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00348740);
-
 u32 func_003487B0(ItemRecord* item)
 {
     return item->unk20;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003487C0);
+void ItemChoiceWindow184280::func_slot74()
+{
+    if (!func_slot28())
+    {
+        if (grid->process_direction(2) != 1)
+        {
+            if (grid->unk114 != 0)
+            {
+                first_text->set_color(0x808080);
+                second_text->set_color(0x288080);
+            }
+            else
+            {
+                first_text->set_color(0x288080);
+                second_text->set_color(0x808080);
+            }
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00348880);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00348940);
+void ItemChoiceWindow184280::func_slot70()
+{
+    if (!func_slot28())
+    {
+        if (grid->process_direction(3) != 1)
+        {
+            if (grid->unk114 != 0)
+            {
+                first_text->set_color(0x808080);
+                second_text->set_color(0x288080);
+            }
+            else
+            {
+                first_text->set_color(0x288080);
+                second_text->set_color(0x808080);
+            }
+        }
+    }
+}
 
 void func_003489F0(ItemRecord* item, u32 value)
 {
     item->unk20 = value;
-}
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00348A00);
-
-s32 item_initialize_choice_window(ItemRecord* object, u32 associated)
-{
-    LibClass178630* panel;
-    LibObject178750* text;
-    FieldObject23CEA0* grid;
-    LibWidgetColors4C5590 colors;
-    func_002CE8D0((FieldObjectCE8D0*)object, associated, 145.0f, 170.0f, 13);
-    panel = allocate_panel();
-    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 350.0f, 176.0f, 88.0f);
-    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)panel);
-    func_003546B0(&object->panels, panel);
-    panel = allocate_panel();
-    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 350.0f, 48.0f, 88.0f);
-    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)panel);
-    colors = D_354C40;
-    lib_panel_set_colors(panel, &colors);
-    func_003546B0(&object->panels, panel);
-    text = allocate_text_widget();
-    lib_text_init_resource_rectangle(text, associated, 0x1BA1, 0, 0.0f, 12.0f, 350.0f, 48.0f);
-    set_text_mode(text, 1);
-    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)text);
-    text = allocate_text_widget();
-    lib_text_init_resource_rectangle(text, associated, 0x1BA2, 0, 0.0f, 64.0f, 350.0f, 64.0f);
-    set_text_mode(text, 1);
-    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)text);
-    object->first_text = allocate_text_widget();
-    object->second_text = allocate_text_widget();
-    lib_text_init_resource_rectangle(object->first_text, associated, 0x1BA3, 0, 122.0f, 132.0f, 0.0f, 0.0f);
-    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)object->first_text);
-    lib_text_init_resource_rectangle(object->second_text, associated, 0x1BA4, 0, 212.0f, 132.0f, 0.0f, 0.0f);
-    lib_container_attach_widget((LibObject178660*)object->unk10, (LibClass178600*)object->second_text);
-    grid = (FieldObject23CEA0*)func_00100AC0(0x130, 0);
-    if (grid != 0)
-    {
-        grid = func_0023D170(grid);
-    }
-    object->grid = grid;
-    func_0023CE80((FieldObject23CE80*)object->grid, 2, 1);
-    func_0023CE60((FieldObject23CE80*)object->grid, 80.0f, 0.0f);
-    object->grid->unkF2 = 0;
-    func_0023CF50((FieldObject23CEB0*)object->grid, 1, 265.0f, 302.0f);
-    ((u8*)object->grid)[0xAD] = 0;
-    func_003544C0(&object->grids, object->grid);
-    if (object->grid->unk114 != 0)
-    {
-        set_text_color(object->first_text, 0x808080);
-        set_text_color(object->second_text, 0x288080);
-    }
-    else
-    {
-        set_text_color(object->first_text, 0x288080);
-        set_text_color(object->second_text, 0x808080);
-    }
-    return 1;
 }
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003490F0);
@@ -979,10 +1142,15 @@ Record00349BF0* func_00349BF0(Record00349BF0* record, s16 flag)
     return record;
 }
 
-u32 func_00349C50(Record00349C50* record)
-{
-    return record->unk38;
 }
+
+u32 ItemController::get_resource_slot()
+{
+    return resource_slot;
+}
+
+extern "C"
+{
 
 /**
  * @brief Initialize a panel with three positioned and scaled text widgets.
@@ -990,42 +1158,51 @@ u32 func_00349C50(Record00349C50* record)
  * @param associated Associated resource source word.
  * @return One after initialization.
  */
-s32 item_initialize_text_panel(Record00353E40* object, u32 associated)
+}
+
+s32 ItemWindow1844B0::func_slotf4(u32 associated)
 {
     LibClass178630* panel;
-    object->width = 192.0f;
-    object->height = 104.0f;
-    func_002CE760((FieldClass15AE70*)object, associated, 0, 9, 0x578, 16.0f, 360.0f, 0.0f);
+    this->width = 192.0f;
+    this->height = 104.0f;
+    func_002CE760(this, associated, 0, 9, 0x578, 16.0f, 360.0f, 0.0f);
     panel = allocate_panel();
-    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, object->width, object->height, 88.0f);
-    lib_container_attach_widget(object->container, (LibClass178600*)panel);
-    object->text[0] = allocate_text_widget();
-    object->text[1] = allocate_text_widget();
-    object->text[2] = allocate_text_widget();
-    object->scale = 0.85f;
-    object->unkc0 = 14.0f;
-    object->row_spacing = 28.0f;
-    object->text_x = 16.0f;
-    object->text_y = object->height / 3.0f - object->row_spacing / 2.0f;
-    object->unkd0 = 3.0f;
-    lib_text_init_resource_rectangle(object->text[0], associated, 0x1B80, 0, object->text_x, object->text_y, 0.0f, 0.0f);
-    lib_text_init_resource_rectangle(object->text[1], associated, 0x1B7D, 0, object->text_x, object->text_y + object->row_spacing, 0.0f, 0.0f);
-    lib_text_init_resource_rectangle(object->text[2], associated, 0x1B7E, 0, 80.0f + object->text_x, object->text_y + object->row_spacing, 0.0f, 0.0f);
-    scale_window_text(object, 0);
-    scale_window_text(object, 1);
-    scale_window_text(object, 2);
-    lib_container_attach_widget(object->container, (LibClass178600*)object->text[0]);
-    lib_container_attach_widget(object->container, (LibClass178600*)object->text[1]);
-    lib_container_attach_widget(object->container, (LibClass178600*)object->text[2]);
-    ((struct CitemTextDisplay*)object->text[0])->unk3f = 0;
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, this->width, this->height, 88.0f);
+    lib_container_attach_widget(this->unk10, (LibClass178600*)panel);
+    this->text[0] = allocate_text_widget();
+    this->text[1] = allocate_text_widget();
+    this->text[2] = allocate_text_widget();
+    this->scale = 0.85f;
+    this->unkc0 = 14.0f;
+    this->row_spacing = 28.0f;
+    this->text_x = 16.0f;
+    this->text_y = this->height / 3.0f - this->row_spacing / 2.0f;
+    this->unkd0 = 3.0f;
+    lib_text_init_resource_rectangle(this->text[0], associated, 0x1B80, 0, this->text_x, this->text_y, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(this->text[1], associated, 0x1B7D, 0, this->text_x, this->text_y + this->row_spacing, 0.0f, 0.0f);
+    lib_text_init_resource_rectangle(this->text[2], associated, 0x1B7E, 0, 80.0f + this->text_x, this->text_y + this->row_spacing, 0.0f, 0.0f);
+    scale_window_text(this, 0);
+    scale_window_text(this, 1);
+    scale_window_text(this, 2);
+    lib_container_attach_widget(this->unk10, (LibClass178600*)this->text[0]);
+    lib_container_attach_widget(this->unk10, (LibClass178600*)this->text[1]);
+    lib_container_attach_widget(this->unk10, (LibClass178600*)this->text[2]);
+    ((struct CitemTextDisplay*)this->text[0])->unk3f = 0;
     return 1;
 }
+
+extern "C"
+{
+
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00349F80);
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034AD00);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034AE60);
+s32 func_0034AE60(FieldClass15AE70* object)
+{
+    return object->func_slotc0();
+}
 
 /**
  * @brief Test whether the coordinate selector's control byte is clear.
@@ -1172,24 +1349,15 @@ Record0034C6A0* func_0034C6A0(Record0034C6A0* record, s16 flag)
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034C710);
 
-Record0034C7A0* func_0034C7A0(Record0034C7A0* record, s16 flag)
-{
-    if (record != 0)
-    {
-        record->unk38 = D_1843F0;
-        func_4618F0(record, -1);
-        if (flag > 0)
-        {
-            func_100B40(record);
-        }
-    }
-    return record;
 }
 
-u32 func_0034C800(Record0034C800* record)
+FieldRecordSelection* ItemController::selected_records()
 {
-    return record->unk40;
+    return selection;
 }
+
+extern "C"
+{
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034C810);
 
@@ -1287,7 +1455,15 @@ INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034D030);
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034D170);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034E740);
+void func_0034E740(Record0034E7E0* owner)
+{
+    for (ItemListNode* node = owner->displays.head->next; node != 0; node = node->next)
+    {
+        static_cast<LibClass171EA0*>(node->value)->func_003EF740();
+    }
+
+    reinterpret_cast<FieldClass15AE70*>(owner)->FieldClass15AE70::func_slot0c();
+}
 
 void item_queue_transform_release(Record00349250* object)
 {
@@ -1298,95 +1474,298 @@ void item_queue_transform_release(Record00349250* object)
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034E7E0);
 
-void func_0034E8B0(Record0034E8B0* record, u8 flag, s32 control_flag)
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotb0__26ItemAllocationWindow1847B0Fv);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot5c__26ItemAllocationWindow1847B0Fv);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034FB80__26ItemAllocationWindow1847B0Fi);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot104__26ItemAllocationWindow1847B0FUi);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00350B60);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot11c__20ItemListWindow1848D0Fii);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", __ct__20ItemListWindow1848D0FP14ItemController);
+
+s32 func_00351E40(const ItemListNode* left, const ItemListNode* right, u32 comparison_arg)
 {
-    record->first[0]->unk3f = flag;
-    record->second[0]->unk3f = flag;
-    record->first[1]->unk3f = flag;
-    record->second[1]->unk3f = flag;
-    record->first[2]->unk3f = flag;
-    record->second[2]->unk3f = flag;
-    record->first[3]->unk3f = flag;
-    record->second[3]->unk3f = flag;
-    record->first[4]->unk3f = flag;
-    record->second[4]->unk3f = flag;
-    record->first[5]->unk3f = flag;
-    record->second[5]->unk3f = flag;
-    if (record->unk174 != 0)
+    const ItemSortRecord* first = (const ItemSortRecord*)left->value;
+    const ItemSortRecord* second = (const ItemSortRecord*)right->value;
+    const ItemSortDefinition* first_definition = &D_001B64F0[first->table_index];
+    const ItemSortDefinition* second_definition = &D_001B64F0[second->table_index];
+    return first_definition->sort_order - second_definition->sort_order;
+}
+
+}
+
+u8 ItemChoiceWindow184280::func_slotb4()
+{
+    if (func_slot28())
     {
-        record->unk174->unk3f = 1;
+        return 0;
     }
-    if (record->unkac != 0)
+
+    ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
+    owner->remove_child(this);
+    ItemAllocationWindow1847B0* window = static_cast<ItemAllocationWindow1847B0*>(func_slot44());
+    window->container->unkab = 1;
+    owner->func_00263C70(window);
+    return 2;
+}
+
+u8 ItemChoiceWindow184280::func_slotb0()
+{
+    if (func_slot28())
     {
-        record->unkac->unk3f = control_flag;
-        if (control_flag != 0)
+        return 0;
+    }
+
+    if (grid != 0 && grid->unk114 != 0)
+    {
+        return func_slotb4();
+    }
+
+    ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
+    func_0040C9F0(D_001B64F8, lib_allocation_get_identifier(owner->unkbc));
+    ItemCreationAllocationRecord* records[99];
+    u16 identifier = owner->unkbc->definition_index();
+
+    if (lib_collect_unequipped_allocations(D_001B64F8, records, identifier + 1) == 0)
+    {
+        owner->remove_child(this);
+        owner->remove_child(func_slot44());
+        ItemListWindow1848D0* list = static_cast<ItemListWindow1848D0*>(static_cast<ItemAllocationWindow1847B0*>(func_slot44())->func_slot44());
+        list->func_slot11c(0, -1);
+        list->func_slot10c(1, 1);
+        D_001B643C->controller->selected->func_00263C70(list);
+    }
+    else
+    {
+        owner->remove_child(this);
+        ItemAllocationWindow1847B0* window = static_cast<ItemAllocationWindow1847B0*>(func_slot44());
+        window->container->unkab = 1;
+        window->func_0034FB80(0);
+        owner->func_00263C70(window);
+    }
+
+    return 1;
+}
+
+ItemChoiceWindow184280::~ItemChoiceWindow184280()
+{
+}
+
+void ItemChoiceWindow184280::func_slot5c()
+{
+    void* active = D_001B643C->controller->selected->func_00261150();
+    func_0023CEA0(this->grid, active == this);
+    D_001B643C->controller->selected->func_00261150();
+}
+
+s32 ItemChoiceWindow184280::func_slotf4(u32 associated)
+{
+    LibClass178630* panel;
+    LibObject178750* text;
+    FieldObject23CEA0* grid;
+    LibWidgetColors4C5590 colors;
+    FieldClass15AE70::func_slot10(associated, 145.0f, 170.0f, 13);
+    panel = allocate_panel();
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 350.0f, 176.0f, 88.0f);
+    lib_container_attach_widget((LibObject178660*)this->unk10, (LibClass178600*)panel);
+    func_003546B0(reinterpret_cast<ItemListOwner*>(&unk14), panel);
+    panel = allocate_panel();
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 350.0f, 48.0f, 88.0f);
+    lib_container_attach_widget((LibObject178660*)this->unk10, (LibClass178600*)panel);
+    colors = D_354C40;
+    lib_panel_set_colors(panel, &colors);
+    func_003546B0(reinterpret_cast<ItemListOwner*>(&unk14), panel);
+    text = allocate_text_widget();
+    lib_text_init_resource_rectangle(text, associated, 0x1BA1, 0, 0.0f, 12.0f, 350.0f, 48.0f);
+    set_text_mode(text, 1);
+    lib_container_attach_widget((LibObject178660*)this->unk10, (LibClass178600*)text);
+    text = allocate_text_widget();
+    lib_text_init_resource_rectangle(text, associated, 0x1BA2, 0, 0.0f, 64.0f, 350.0f, 64.0f);
+    set_text_mode(text, 1);
+    lib_container_attach_widget((LibObject178660*)this->unk10, (LibClass178600*)text);
+    this->first_text = allocate_text_widget();
+    this->second_text = allocate_text_widget();
+    lib_text_init_resource_rectangle(this->first_text, associated, 0x1BA3, 0, 122.0f, 132.0f, 0.0f, 0.0f);
+    lib_container_attach_widget((LibObject178660*)this->unk10, (LibClass178600*)this->first_text);
+    lib_text_init_resource_rectangle(this->second_text, associated, 0x1BA4, 0, 212.0f, 132.0f, 0.0f, 0.0f);
+    lib_container_attach_widget((LibObject178660*)this->unk10, (LibClass178600*)this->second_text);
+    grid = new (0) FieldObject23CEA0;
+    this->grid = grid;
+    func_0023CE80((FieldObject23CE80*)this->grid, 2, 1);
+    func_0023CE60((FieldObject23CE80*)this->grid, 80.0f, 0.0f);
+    this->grid->unkF2 = 0;
+    func_0023CF50((FieldObject23CEB0*)this->grid, 1, 265.0f, 302.0f);
+    this->grid->unkad = 0;
+    func_003544C0(reinterpret_cast<ItemListOwner*>(&unk74), this->grid);
+
+    if (this->grid->unk114 != 0)
+    {
+        set_text_color(this->first_text, 0x808080);
+        set_text_color(this->second_text, 0x288080);
+    }
+    else
+    {
+        set_text_color(this->first_text, 0x288080);
+        set_text_color(this->second_text, 0x808080);
+    }
+
+    return 1;
+}
+
+u8 ItemAllocationWindow1847B0::func_slotbc()
+{
+    if (unk1b0 != 0)
+    {
+        return 0;
+    }
+
+    ItemCreationAllocationRecord* records[99];
+    ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
+    s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, (u16)owner->category);
+    s32 selected = unk24;
+
+    if (count != 0 && selected >= 0)
+    {
+        ItemCreationAllocationRecord* allocation = records[selected];
+        u16 identifier = allocation->definition_index();
+
+        if (item_definition_unsellable(&D_001B64F0[identifier]) == 0)
         {
-            struct ControlScreen* screen = record->unkac;
-            screen->unk70 = 128.0f;
-            screen->unk3c = 1;
+            ItemChoiceWindow184280* window = new (0) ItemChoiceWindow184280;
+            window->func_slotf4(owner->get_resource_slot());
+            window->func_slot40(this);
+            owner->add_child(window);
+            owner->func_00263C70(window);
         }
         else
         {
-            struct ControlScreen* screen = record->unkac;
-            screen->unk70 = 64.0f;
-            screen->unk3c = 1;
+            return 3;
         }
     }
-    if (record->unka8 != 0)
+
+    return 1;
+}
+
+ItemAllocationWindow1847B0::~ItemAllocationWindow1847B0()
+{
+    if (panel != 0)
     {
-        record->unka8->unk3f = control_flag;
+        lib_panel_detach(panel);
     }
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034E980);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034EB40);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034EE60);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034EF40);
-
-void func_0034F2E0(AngleOwner* owner)
+void ItemAllocationWindow1847B0::func_slot0c()
 {
-    if (owner->unk1b0 != 0)
+    container->func_003EF740();
+    FieldClass15AE70::func_slot0c();
+}
+
+void ItemAllocationWindow1847B0::func_slot6c()
+{
+    if (this->unk1b0 != 0)
     {
-        struct AngleState* angle = owner->unk1b8;
+        FieldClass15BB90* angle = this->unk1b8;
         if (angle != 0)
         {
-            float value = angle->unk6c;
+            float value = angle->values[2];
             value -= ANGLE_STEP_RADIANS;
             if (value < 0.0f)
             {
                 value = 0.0f;
             }
-            angle->unk6c = value;
+            angle->values[2] = value;
         }
     }
 }
 
-void func_0034F340(AngleOwner* owner)
+void ItemAllocationWindow1847B0::func_slot68()
 {
-    if (owner->unk1b0 != 0)
+    if (this->unk1b0 != 0)
     {
-        struct AngleState* angle = owner->unk1b8;
+        FieldClass15BB90* angle = this->unk1b8;
         if (angle != 0)
         {
-            float value = angle->unk6c;
+            float value = angle->values[2];
             value += ANGLE_STEP_RADIANS;
             if (value > ANGLE_LIMIT_RADIANS)
             {
                 value = ANGLE_LIMIT_RADIANS;
             }
-            angle->unk6c = value;
+            angle->values[2] = value;
         }
     }
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034F3A0);
+void ItemAllocationWindow1847B0::func_slot10c(u32 value, u32 alternate)
+{
+    first[0]->unk3f = value;
+    second[0]->unk3f = value;
+    first[1]->unk3f = value;
+    second[1]->unk3f = value;
+    first[2]->unk3f = value;
+    second[2]->unk3f = value;
+    first[3]->unk3f = value;
+    second[3]->unk3f = value;
+    first[4]->unk3f = value;
+    second[4]->unk3f = value;
+    first[5]->unk3f = value;
+    second[5]->unk3f = value;
+    if (panel != 0)
+    {
+        panel->unk3f = 1;
+    }
+    if (FieldClass15AE60::unk04 != 0)
+    {
+        FieldClass15AE60::unk04->unk3f = alternate;
+        if (alternate != 0)
+        {
+            LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+            control->ItemCreationClass185050::unk30 = 128.0f;
+            control->unk3c = 1;
+        }
+        else
+        {
+            LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+            control->ItemCreationClass185050::unk30 = 64.0f;
+            control->unk3c = 1;
+        }
+    }
+    if (FieldClass15AE60::unk00 != 0)
+    {
+        FieldClass15AE60::unk00->unk3f = alternate;
+    }
+}
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034F970);
+void ItemAllocationWindow1847B0::set_scroll_position(float offset)
+{
+    ItemController* controller = static_cast<ItemController*>(D_001B643C->controller->selected);
 
-void item_update_allocation_page(Record0034E8B0* object, s32 first_index)
+    if (controller->unkb4 != 7)
+    {
+        float y = 16.0f + offset;
+
+        s32 row = 0;
+
+        do
+        {
+            LibClass178600* screen = first[row];
+            screen->unk18.unk04 = y;
+            screen->unk3c = 1;
+            screen = second[row];
+            screen->unk18.unk04 = y;
+            screen->unk3c = 1;
+            y += 28.0f;
+            row++;
+        } while (row < 6);
+    }
+}
+
+void ItemAllocationWindow1847B0::refresh_rows(s32 first_index)
 {
     ItemCreationAllocationRecord* records[99];
     ItemController* selected = static_cast<ItemController*>(D_001B643C->controller->selected);
@@ -1395,20 +1774,20 @@ void item_update_allocation_page(Record0034E8B0* object, s32 first_index)
         u32 category = selected->category;
         s32 index;
         func_0013A678(records, 0, sizeof(records));
-        object->record_count = lib_collect_unequipped_allocations(D_001B64F8, records, (u16)category);
+        unk88 = lib_collect_unequipped_allocations(D_001B64F8, records, (u16)category);
         for (index = 0; index < 6; index++)
         {
             if (records[first_index + index] != 0)
             {
-                CitemAllocationDisplay* display = (CitemAllocationDisplay*)object->first[index];
-                u8 value_byte = ((CitemAllocationRecord*)records[first_index + index])->unk0c & 0x7F;
+                LibObject172410* display = first[index];
+                u8 value_byte = records[first_index + index]->modification_number;
                 s32 count = 0;
                 s32 detail;
                 void* allocation;
                 FieldResourceRecord* record;
-                display->code = category;
+                display->unkfc = category;
                 display->unkfe = value_byte;
-                display->update = 1;
+                display->unk3c = 1;
                 for (detail = 0; detail < 8; detail++)
                 {
                     u16 value = func_0040D930(records[first_index + index], detail);
@@ -1419,145 +1798,407 @@ void item_update_allocation_page(Record0034E8B0* object, s32 first_index)
                 }
                 allocation = field_get_aligned_allocation(D_001B643C->buffers, 14);
                 record = field_find_resource_record(D_001B643C->buffers, count + 60);
-                func_002D5CF0((ItemCreationOptionResourceDisplay*)object->second[index], allocation, record, 14);
-                ((CitemAllocationDisplay*)object->first[index])->unk3d = 1;
-                ((CitemResourceDisplay*)object->second[index])->unk3d = 1;
+                func_002D5CF0((ItemCreationOptionResourceDisplay*)second[index], allocation, record, 14);
+                first[index]->unk3d = 1;
+                second[index]->unk3d = 1;
             }
             else
             {
-                ((CitemAllocationDisplay*)object->first[index])->unk3d = 0;
-                ((CitemResourceDisplay*)object->second[index])->unk3d = 0;
+                first[index]->unk3d = 0;
+                second[index]->unk3d = 0;
             }
         }
     }
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034FB80);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034FE70);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00350B60);
-
-void func_00350BD0(Record00350BD0* record, u8 value)
+u8 ItemAllocationWindow1847B0::func_slotb8()
 {
-    record->unk12c = value;
-}
+    ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00350BE0);
-
-Record00350C20* func_00350C20(Record00350C20* record, s16 flag)
-{
-    if (record != 0)
+    if (owner->unkb4 == 7)
     {
-        record->methods = D_1847B0;
-        record->unke8 = D_1848A4;
-        if (record->unk174 != 0)
+        return 0;
+    }
+
+    if (unk1b0 != 0)
+    {
+        field_cancel_model_request(unk1b8);
+        unk1bc = 1;
+        resident_allocate_request(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
+    }
+    else
+    {
+        ItemCreationAllocationRecord* records[99];
+        s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, (u16)owner->category);
+        s32 selected = unk24;
+
+        if (count != 0 && selected >= 0)
         {
-            lib_panel_detach((LibClass178630*)record->unk174);
-        }
-        func_2CD9F0(record, 0);
-        if (flag > 0)
-        {
-            func_100B40(record);
+            u16 identifier = records[selected]->definition_index();
+            s32 key = (u16)D_001B64F0[identifier].model_index + 0x88;
+
+            if (unk1b8 == 0)
+            {
+                unk1b8 = new (0) FieldClass15BB90;
+                field_request_model_resource(unk1b8, key);
+                unk1b8->unk5b = 1;
+                field_replace_model_camera(unk1b8, D_001B643C->field_camera);
+                field_attach_model_display(unk1b8);
+
+                if (reinterpret_cast<CitemDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen != 0)
+                {
+                    func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(unk1b8), 0.5235988f, 600.0f, 0.34906584f, 120.0f, 35.0f);
+                }
+                else
+                {
+                    func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(unk1b8), 0.5235988f, 500.0f, 0.34906584f, 90.0f, 50.0f);
+                }
+
+                D_001B6614->append_node(unk1b8, -1);
+            }
+
+            unk1b0 = 1;
+            text178->unk3f = 0;
+            lib_text_set_resource(text178, owner->get_resource_slot(), 0x1B9D, 0);
+            LibObject178750* text = text17c;
+            text->unk18.unk00 = 425.0f;
+            text->unk18.unk04 = 337.0f;
+            text->unk3c = 1;
+            lib_text_set_resource(text17c, owner->get_resource_slot(), 0x1B9F, 0);
+            resident_allocate_request(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
         }
     }
-    return record;
+
+    return 0;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00350CB0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00350D50);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00350DD0);
-
-void func_00350F70(ControlOwner* owner, s32 ignored, s32 flag)
+u8 ItemAllocationWindow1847B0::func_slotb4()
 {
-    if (owner->unkac != 0)
+    if (unk1b0 != 0)
     {
-        owner->unkac->unk3f = flag;
-        if (flag != 0)
+        if (unk1b8 != 0)
         {
-            struct ControlScreen* screen = owner->unkac;
+            field_cancel_model_request(unk1b8);
+            unk1bc = 1;
+        }
+        return 2;
+    }
+    ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
+    owner->remove_child(this);
+    ItemListWindow1848D0* list = static_cast<ItemListWindow1848D0*>(func_slot44());
+    list->func_slot11c(0, -1);
+    list->func_slot10c(1, 1);
+    D_001B643C->controller->selected->func_00263C70(list);
+    return 2;
+}
+
+u8 ItemListWindow1848D0::func_slotb0()
+{
+    if (unk88 == 0)
+    {
+        return 3;
+    }
+    if (controller == 0)
+    {
+        return 0;
+    }
+    ItemAllocationWindow1847B0* window = new (0) ItemAllocationWindow1847B0;
+    window->func_slot104(controller->get_resource_slot());
+    window->func_slot40(this);
+    controller->add_child(window);
+    controller->func_00263C70(window);
+    if (FieldClass15AE60::unk04 != 0)
+    {
+        LibClass175030* selector = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
+        selector->ItemCreationClass185050::unk30 = 64.0f;
+        selector->unk3c = 1;
+    }
+    if (controller->unkb4 == 7)
+    {
+        resident_allocate_request(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
+        return 0;
+    }
+    return 1;
+}
+
+s32 ItemListWindow1848D0::func_slot104(u32 associated)
+{
+    FieldClass15AE60::pad30[0] = 1;
+    FieldClass15AE60::unk3c = 1;
+    FieldClass15AE70::func_slot14(associated, 0, 9, 0x708, 216.0f, 72.0f, 0.0f);
+    LibClass1746A0* clip = new (0) LibClass1746A0;
+    LibClass1746A0* reset = new (0) LibClass1746A0;
+    lib_scissor_init_rectangle(clip, 18.0f, 14.0f, 378.0f, 366.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, clip);
+    for (s32 index = 0; index < 14; index++)
+    {
+        unk48[index] = new (0) LibObject178750;
+        second[index] = new (0) LibObject178750;
+        third[index] = new (0) LibObject174F20;
+        float y = 16.0f + 28.0f * (float)index;
+        lib_text_init_resource_rectangle(reinterpret_cast<LibObject178750*>(unk48[index]), associated, CITEM_MSG_ITEM_NAMES, 0, 22.0f, y, 0.0f, 0.0f);
+        lib_text_init_resource_rectangle(reinterpret_cast<LibObject178750*>(second[index]), associated, 0x7E4, 1, 326.0f, y - 4.0f, 0.0f, 0.0f);
+        lib_numeric_widget_init_rectangle(static_cast<LibObject174F20*>(third[index]), index, associated, 1, 334.0f, y, 28.0f, 24.0f);
+        {
+            LibClass174EF0* text = static_cast<LibClass174EF0*>(unk48[index]);
+            text->unk88 = -1.0f;
+            text->unk3c = 1;
+        }
+        static_cast<LibClass174EF0*>(unk48[index])->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(FieldClass15AE70::unk10, unk48[index]);
+        lib_container_attach_widget(FieldClass15AE70::unk10, second[index]);
+        lib_container_attach_widget(FieldClass15AE70::unk10, third[index]);
+    }
+    lib_scissor_init_reset(reset, 1);
+    lib_container_attach_widget(FieldClass15AE70::unk10, reset);
+    FieldClass15AE60::unk34 = 20.0f;
+    FieldClass15AE60::unk38 = 28.0f;
+    FieldClass15AE60::unk04 = new (0) LibClass175030;
+    lib_moving_widget_init_position(static_cast<LibClass175030*>(FieldClass15AE60::unk04), 20.0f, 28.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, FieldClass15AE60::unk04);
+    FieldClass15AE60::unk04->unk3f = 0;
+    FieldClass15AE60::unk00 = new (0) LibClass1725D0;
+    lib_list_indicator_init(static_cast<LibClass1725D0*>(FieldClass15AE60::unk00), 376.0f, 16.0f, 362.0f, 10.0f, 0.0f);
+    lib_container_attach_widget(FieldClass15AE70::unk10, FieldClass15AE60::unk00);
+    func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, 13, 378, 28);
+    FieldClass15AE60::unk2b = 3;
+    unk84 = 0;
+    unk85 = 0;
+    func_slot10c(1, 0);
+    func_slot11c(1, 0);
+    return 1;
+}
+
+void ItemCreationClass185050::func_slot0c()
+{
+}
+
+void ItemListWindow1848D0::func_slot5c()
+{
+    if (D_001B643C->controller->selected->func_00261150() == this)
+    {
+        FieldClass15AD40::func_slot5c();
+        if (FieldClass15AE60::unk8c == 7)
+        {
+            s16 selected = unk24;
+            if (selected >= 0)
+            {
+                ItemController* owner = controller;
+                s32 entry;
+                if (selected >= owner->entry_count)
+                {
+                    entry = -1;
+                }
+                else
+                {
+                    entry = owner->entries[selected];
+                }
+                owner->category = entry;
+            }
+        }
+        else
+        {
+            ItemListNode* node = func_00354480(reinterpret_cast<ItemListOwner*>(&entries), unk24);
+            if (node != 0)
+            {
+                ItemSortRecord* record = static_cast<ItemSortRecord*>(node->value);
+                controller->category = (u16)(record->table_index + 1);
+            }
+        }
+        if (unk24 >= 0 && unk88 != 0)
+        {
+            LibClass174EF0* display = static_cast<LibClass174EF0*>(unk48[unk28]);
+            set_selection_marker(display, display->unk94);
+        }
+        else
+        {
+            set_selection_marker(0, 0x808080);
+        }
+    }
+    else
+    {
+        set_selection_marker(0, 0x808080);
+    }
+}
+
+void ItemListWindow1848D0::refresh_rows(s32 start)
+{
+    if (controller != 0)
+    {
+        if (FieldClass15AE60::unk8c == 7)
+        {
+            for (s32 index = 0; index < 14; index++)
+            {
+                s32 entry;
+                if (index + start >= controller->entry_count)
+                {
+                    entry = -1;
+                }
+                else
+                {
+                    entry = controller->entries[start + index];
+                }
+                if (entry >= 0)
+                {
+                    lib_text_set_resource(reinterpret_cast<LibObject178750*>(unk48[index]), func_slot54(), entry + 0x124F9, 0);
+                    static_cast<LibClass174EF0*>(unk48[index])->set_color(0x808080);
+                    LibObject174F20* numeric = static_cast<LibObject174F20*>(third[index]);
+                    numeric->numeric_value = 1;
+                    numeric->unk3c = 1;
+                    unk48[index]->unk3d = 1;
+                    third[index]->unk3d = 1;
+                    second[index]->unk3d = 1;
+                }
+                else
+                {
+                    unk48[index]->unk3d = 0;
+                    third[index]->unk3d = 0;
+                    second[index]->unk3d = 0;
+                }
+            }
+        }
+        else
+        {
+            ItemListNode* node = func_00354480(reinterpret_cast<ItemListOwner*>(&entries), start);
+            for (s32 index = 0; index < 14; index++)
+            {
+                if (node != 0)
+                {
+                    s32 text_key;
+                    ItemSortRecord* record = static_cast<ItemSortRecord*>(node->value);
+                    if (record != 0)
+                    {
+                        s32 identifier = (u16)(record->table_index + 1);
+                        text_key = identifier + CITEM_MSG_ITEM_NAMES;
+                        if ((unk1b8[identifier / 32] & (1 << (identifier % 32))) != 0)
+                        {
+                            static_cast<LibClass174EF0*>(unk48[index])->set_color(0x508050);
+                        }
+                        else
+                        {
+                            static_cast<LibClass174EF0*>(unk48[index])->set_color(0x808080);
+                        }
+                        lib_text_set_resource(reinterpret_cast<LibObject178750*>(unk48[index]), func_slot54(), text_key, 0);
+                        LibObject174F20* numeric = static_cast<LibObject174F20*>(third[index]);
+                        numeric->numeric_value = record->unk08;
+                        numeric->unk3c = 1;
+                        unk48[index]->unk3d = 1;
+                        third[index]->unk3d = 1;
+                        second[index]->unk3d = 1;
+                    }
+                    node = node->next;
+                }
+                else
+                {
+                    unk48[index]->unk3d = 0;
+                    third[index]->unk3d = 0;
+                    second[index]->unk3d = 0;
+                }
+            }
+        }
+    }
+}
+
+ItemListWindow1848D0::~ItemListWindow1848D0()
+{
+}
+
+void FieldClass15AD40::func_slot110(u8 value)
+{
+    unk84 = value;
+}
+
+u8 ItemListWindow1848D0::func_slotbc()
+{
+    if (this->FieldClass15AE60::unk8c == 7)
+    {
+        return 0;
+    }
+
+    this->sort_enabled = !this->sort_enabled;
+
+    if (this->sort_enabled != 0)
+    {
+        func_00354980(&this->entries, func_00351E40, 0, 1);
+    }
+    else
+    {
+        this->func_slot11c(0, -1);
+    }
+
+    this->refresh_rows(this->unk22);
+    return 1;
+}
+
+u8 ItemListWindow1848D0::func_slotb4()
+{
+    this->func_slot10c(0, 0);
+    FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(this->func_slot44());
+    associated->func_slot64();
+    D_001B643C->controller->selected->func_00263C70(associated);
+    return 2;
+}
+
+void ItemListWindow1848D0::func_slot10c(u32 value, u32 alternate)
+{
+    if (reinterpret_cast<ControlScreen*>(FieldClass15AE60::unk04) != 0)
+    {
+        reinterpret_cast<ControlScreen*>(FieldClass15AE60::unk04)->unk3f = alternate;
+        if (alternate != 0)
+        {
+            struct ControlScreen* screen = reinterpret_cast<ControlScreen*>(FieldClass15AE60::unk04);
             screen->unk70 = 128.0f;
             screen->unk3c = 1;
         }
         else
         {
-            struct ControlScreen* screen = owner->unkac;
+            struct ControlScreen* screen = reinterpret_cast<ControlScreen*>(FieldClass15AE60::unk04);
             screen->unk70 = 64.0f;
             screen->unk3c = 1;
         }
     }
 }
 
-void func_00350FC0(Record00350FC0* owner, float start)
+void ItemListWindow1848D0::set_scroll_position(float start)
 {
     s32 index;
     float value = start + 16.0f;
     for (index = 0; index < 14; index++)
     {
-        struct SlotRecord* slot = owner->first[index];
-        slot->unk18 = 24.0f;
-        slot->unk1c = value;
+        LibClass178600* slot = unk48[index];
+        slot->unk18.unk00 = 24.0f;
+        slot->unk18.unk04 = value;
         slot->unk3c = 1;
-        slot = owner->second[index];
-        slot->unk18 = 326.0f;
-        slot->unk1c = value;
+        slot = second[index];
+        slot->unk18.unk00 = 326.0f;
+        slot->unk18.unk04 = value;
         slot->unk3c = 1;
-        slot = owner->third[index];
-        slot->unk18 = 334.0f;
-        slot->unk1c = value;
+        slot = third[index];
+        slot->unk18.unk00 = 334.0f;
+        slot->unk18.unk04 = value;
         slot->unk3c = 1;
         value += 28.0f;
     }
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00351040);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003512C0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00351770);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003518B0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00351D50);
-
-s32 func_00351E40(const ItemListNode* left, const ItemListNode* right)
-{
-    const ItemSortRecord* first = (const ItemSortRecord*)left->value;
-    const ItemSortRecord* second = (const ItemSortRecord*)right->value;
-    const ItemSortDefinition* first_definition = &D_001B64F0[first->table_index];
-    const ItemSortDefinition* second_definition = &D_001B64F0[second->table_index];
-    return first_definition->sort_order - second_definition->sort_order;
-}
-
-s32 item_initialize_panel(Record00351F50* object, u32 associated)
+s32 ItemWindow1849F0::func_slotf4(u32 associated)
 {
     LibClass178630* panel;
-    func_002CE760((FieldClass15AE70*)object, associated, 0, 9, 0x578, 204.0f, 72.0f, 0.0f);
+    func_002CE760(this, associated, 0, 9, 0x578, 204.0f, 72.0f, 0.0f);
     panel = allocate_panel();
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 412.0f, 396.0f, 88.0f);
-    lib_container_attach_widget(object->container, (LibClass178600*)panel);
+    lib_container_attach_widget(this->unk10, (LibClass178600*)panel);
     return 1;
 }
 
-ScreenOwner* func_00351F50(ScreenOwner* owner, s16 flag)
+ItemWindow1849F0::~ItemWindow1849F0()
 {
-    if (owner != 0)
-    {
-        owner->methods = D_1849F0;
-        func_2CEAF0(owner, 0);
-        if (flag > 0)
-        {
-            func_100B40(owner);
-        }
-    }
-    return owner;
 }
 
-void func_00351FB0(ScreenOwner* owner)
+void ItemWindow184AF0::func_slot64()
 {
-    struct ScreenRecord* screen = owner->unka8;
+    struct ScreenRecord* screen = this->unka8;
+
     if (screen != 0)
     {
         screen->unk70 = 128.0f;
@@ -1565,130 +2206,250 @@ void func_00351FB0(ScreenOwner* owner)
     }
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00351FE0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00352010);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003521D0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00352340);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003524B0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00352540);
-
-Record00352960* func_00352960(Record00352960* record, s16 flag)
+u8 ItemWindow184AF0::func_slotb4()
 {
-    if (record != 0)
-    {
-        record->methods = D_184AF0;
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            func_100B40(record);
-        }
-    }
-    return record;
+    this->set_state(1, 0x80);
+    return 2;
 }
+
+extern "C"
+{
+
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotb0__16ItemWindow184AF0Fv);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot6c__16ItemWindow184AF0Fv);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot68__16ItemWindow184AF0Fv);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot5c__16ItemWindow184AF0Fv);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotf4__16ItemWindow184AF0FUi);
+
+}
+
+ItemWindow184AF0::~ItemWindow184AF0()
+{
+}
+
+extern "C"
+{
+
 
 /**
  * @brief Hold the text at its starting position, then scroll and wrap it horizontally.
  * @param record Window storing the display, delay and scrolling bounds.
  */
-void item_update_horizontal_scroll(Record00352EE0* record)
+}
+
+void ItemWindow184BF0::func_slot5c()
 {
-    struct CitemTextDisplay* display = record->text_display;
+    struct CitemTextDisplay* display = this->text_display;
     float x = display->rectangle.unk00;
     float y = display->rectangle.unk04;
     float width = display->rectangle.unk08;
     float height = display->rectangle.unk0c;
 
-    if (record->scrolling == 0)
+    if (this->scrolling == 0)
     {
-        set_text_bounds(display, record->start_x, y, width, height);
-        record->delay_frames++;
-        if (!((float)record->delay_frames <= 120.0f))
+        set_text_bounds(display, this->start_x, y, width, height);
+        this->delay_frames++;
+
+        if (!((float)this->delay_frames <= 120.0f))
         {
-            record->delay_frames = 0;
-            record->scrolling = 1;
+            this->delay_frames = 0;
+            this->scrolling = 1;
         }
+
         return;
     }
+
     {
-        float left = record->left_edge;
+        float left = this->left_edge;
         x -= 108.0f * D_001B6690;
-        if (x < left - (float)record->scroll_extent)
+
+        if (x < left - (float)this->scroll_extent)
         {
-            x = 2.0f + (left + record->visible_width);
+            x = 2.0f + (left + this->visible_width);
         }
+
         set_text_bounds(display, x, y, width, height);
     }
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00352AB0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00352B40);
-
-Record00352EE0* func_00352EE0(Record00352EE0* record, s16 flag)
+extern "C"
 {
-    if (record != 0)
-    {
-        record->methods = D_184BF0;
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            func_100B40(record);
-        }
-    }
-    return record;
+
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot60__16ItemWindow184BF0Fi);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotf4__16ItemWindow184BF0FUi);
+
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00352F40);
-
-Record003531B0* func_003531B0(Record003531B0* record, s16 flag)
+ItemWindow184BF0::~ItemWindow184BF0()
 {
-    if (record != 0)
-    {
-        record->methods = D_184CF0;
-        func_2CEAF0(record, 0);
-        if (flag > 0)
-        {
-            func_100B40(record);
-        }
-    }
-    return record;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353210);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353270);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353620);
-
-s32 item_initialize_record_selection(ItemController* object)
+extern "C"
 {
-    u8 created = create_record_selection(object);
+
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotf4__16ItemWindow184CF0FUi);
+
+}
+
+ItemWindow184CF0::~ItemWindow184CF0()
+{
+}
+
+void ItemController::func_slot5c()
+{
+    if (resource_slot != 0)
+    {
+        lib_release_resource_slot(D_001B657C, resource_slot);
+    }
+
+    lib_object_detach_owner(&static_cast<FieldClass153E30&>(*this));
+    func_001DD7B0();
+    field_queue_allocation_release(D_001B643C->buffers, 14);
+}
+
+s32 ItemController::init_windows()
+{
+    CitemFlagBlock* flag_block = reinterpret_cast<CitemFlagBlock*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4));
+
+    if (flag_block != 0)
+    {
+        entry_count = 0;
+
+        for (s32 index = 0; index < 68; index++)
+        {
+            bool enabled = flag_block->is_set(index + 0x76C);
+
+            if (enabled == true)
+            {
+                entries[entry_count++] = index;
+            }
+        }
+    }
+
+    if (unk5c != 1)
+    {
+        unk44 = new (0) ItemWindow184CF0;
+        unk48 = new (0) ItemWindow184BF0;
+        unk4c = new (0) ItemWindow184AF0(this);
+        unk50 = new (0) ItemListWindow1848D0(this);
+        unk54 = new (0) ItemWindow1844B0;
+        unk58 = new (0) ItemWindow1849F0;
+        unk44->func_slotf4(resource_slot);
+        FieldClass153E30::add_child(unk44);
+        unk44->func_slot40(0);
+        unk48->func_slotf4(resource_slot);
+        FieldClass153E30::add_child(unk48);
+        unk24 = unk48;
+        unk48->func_slot40(unk44);
+        unk4c->func_slot48(unk50);
+        unk4c->func_slotf4(resource_slot);
+        FieldClass153E30::add_child(unk4c);
+        unk58->func_slotf4(resource_slot);
+        FieldClass153E30::add_child(unk58);
+        unk50->func_slot40(unk4c);
+        unk50->func_slot104(resource_slot);
+        FieldClass153E30::add_child(unk50);
+        unk54->func_slotf4(resource_slot);
+        FieldClass153E30::add_child(unk54);
+        unk20 = unk4c;
+    }
+
+    windows_initialized = 1;
+    return 1;
+}
+
+s32 ItemController::on_resource_loaded(void* buffer)
+{
+    if (buffer == 0)
+    {
+        return 0;
+    }
+
+    CitemAlignedResource* resource = aligned_item_resource(buffer);
+    s32 allocation_size = resource->byte_count + 128;
+    void* previous_heap = resident_get_allocation_heap();
+    void* resource_heap = D_001B6430->context->unk70;
+    void* heap_probe = resident_heap_allocate(resource_heap, allocation_size);
+
+    if (heap_probe != 0)
+    {
+        resident_heap_release(heap_probe);
+        resident_exchange_allocation_heap(resource_heap);
+    }
+
+    resource_slot = lib_load_resource_slot(D_001B657C, resource);
+    resident_exchange_allocation_heap(previous_heap);
+    FieldRuntime* runtime = D_001B657C;
+    runtime->item_name_resource_slot = resource_slot;
+    runtime->item_name_base_key = CITEM_MSG_ITEM_NAMES + 1;
+    return init_windows();
+}
+
+u8 ItemController::func_00264110()
+{
+    u8 created = create_record_selection(this);
+
     if (created == 0)
     {
         return 0;
     }
+
     resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4);
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003537D0);
+void ItemController::func_001DD7B0()
+{
+    if (selection != 0)
+    {
+        release_record_selection(selection);
+    }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353850);
+    FieldClass153E30* receiver = this;
+    resident_enqueue_object(D_001B65F4, receiver);
+}
+
+ItemController::~ItemController()
+{
+    if (remove_flagged_records != 0)
+    {
+        for (s32 index = 0; index < 5; index++)
+        {
+            s16 identifier = record_identifiers[index];
+
+            if (identifier != 0)
+            {
+                func_0040C9F0(D_001B64F8, identifier);
+            }
+        }
+    }
+}
+
+extern "C"
+{
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", __ct__14ItemControllerFv);
 
-void func_00353A30(void* object)
+}
+
+void ItemClass184380::func_00353A30()
 {
 }
 
-void func_00353A40(void* object)
+void ItemClass184380::func_00353A40()
 {
 }
+
+extern "C"
+{
 
 Record00353A50* func_00353A50(Record00353A50* record, s16 flag)
 {
@@ -1834,10 +2595,6 @@ void func_00353D40(void* object)
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353D50);
 
-void func_00353E10(void* object)
-{
-}
-
 s32 func_00353E20(void* object)
 {
     return 14;
@@ -1848,19 +2605,15 @@ void func_00353E30(DisplayRecord* display)
     display->unk60 = display->unka8;
 }
 
-DisplayRecord* func_00353E40(DisplayRecord* display, s16 flag)
-{
-    if (display != 0)
-    {
-        display->methods = D_1844B0;
-        func_2CEAF0(display, 0);
-        if (flag > 0)
-        {
-            func_100B40(display);
-        }
-    }
-    return display;
 }
+
+ItemWindow1844B0::~ItemWindow1844B0()
+{
+}
+
+extern "C"
+{
+
 
 void func_00353EA0(void* object)
 {
@@ -1882,22 +2635,6 @@ s32 func_00353ED0(void* object)
 s32 func_00353EE0(void* object)
 {
     return 0;
-}
-
-Record00353EF0* func_00353EF0(Record00353EF0* record, s16 flag)
-{
-    if (record != 0)
-    {
-        record->methods = D_1848D0;
-        record->unke8 = D_1849C4;
-        func_003542F0(&record->embedded, -1);
-        func_2CD9F0(record, 0);
-        if (flag > 0)
-        {
-            func_100B40(record);
-        }
-    }
-    return record;
 }
 
 void func_00353F70(StatusRecord* state, u32 value)
@@ -1961,36 +2698,44 @@ s32 func_00354030(void* object)
     return 0;
 }
 
-s32 func_00354040(void* object)
+}
+
+s32 ItemController::get_default_list_kind()
 {
     return 4;
 }
 
-u32 func_00354050(StatusRecord* state)
+u8 ItemController::windows_ready()
 {
-    return state->unk3c & 1;
+    return windows_initialized;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354060);
-
-Record003540E0* func_003540E0(Record003540E0* record, s16 flag)
+ItemList184ED8::ItemList184ED8()
 {
-    if (record != 0)
+    head = new (0) ItemListNode;
+
+    if (head == 0)
     {
-        record->methods = D_184ED8;
-        func_003541F0(record);
-        if (record->head != 0)
-        {
-            func_100B40(record->head);
-            record->head = 0;
-        }
-        if (flag > 0)
-        {
-            func_100B40(record);
-        }
+        throw;
     }
-    return record;
+
+    head->next = 0;
+    count = 0;
 }
+
+ItemList184ED8::~ItemList184ED8()
+{
+    func_003541F0(this);
+
+    if (head != 0)
+    {
+        ::operator delete(head);
+        head = 0;
+    }
+}
+
+extern "C"
+{
 
 void item_append_list_value(Record003540E0* owner, void* value)
 {
@@ -2010,28 +2755,54 @@ void item_append_list_value(Record003540E0* owner, void* value)
     }
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003541F0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354270);
-
-Record003542F0* func_003542F0(Record003542F0* record, s16 flag)
+void func_003541F0(Record003540E0* owner)
 {
-    if (record != 0)
+    ItemListNode* node = owner->head->next;
+
+    if (node == 0)
     {
-        record->methods = D_184EC8;
-        func_00354400(record);
-        if (record->head != 0)
-        {
-            func_100B40(record->head);
-            record->head = 0;
-        }
-        if (flag > 0)
-        {
-            func_100B40(record);
-        }
+        return;
     }
-    return record;
+
+    while (node != 0)
+    {
+        ItemListNode* next = node->next;
+        delete node;
+        node = next;
+    }
+
+    owner->head->next = 0;
+    owner->count = 0;
 }
+
+}
+
+ItemList184EC8::ItemList184EC8()
+{
+    head = new (0) ItemListNode;
+
+    if (head == 0)
+    {
+        throw;
+    }
+
+    head->next = 0;
+    count = 0;
+}
+
+ItemList184EC8::~ItemList184EC8()
+{
+    func_00354400(this);
+
+    if (head != 0)
+    {
+        ::operator delete(head);
+        head = 0;
+    }
+}
+
+extern "C"
+{
 
 void func_00354370(ItemListOwner* owner, void* value)
 {
@@ -2051,7 +2822,25 @@ void func_00354370(ItemListOwner* owner, void* value)
     }
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354400);
+void func_00354400(Record003542F0* owner)
+{
+    ItemListNode* node = owner->head->next;
+
+    if (node == 0)
+    {
+        return;
+    }
+
+    while (node != 0)
+    {
+        ItemListNode* next = node->next;
+        delete node;
+        node = next;
+    }
+
+    owner->head->next = 0;
+    owner->count = 0;
+}
 
 ItemListNode* func_00354480(ItemListOwner* owner, s32 index)
 {
@@ -2155,34 +2944,49 @@ void func_003546B0(ItemListOwner* owner, void* value)
     }
 }
 
-Record00354740* func_00354740(Record00354740* record, s16 flag)
-{
-    if (record != 0)
-    {
-        record->methods = D_184EB8;
-        func_003547C0(record);
-        if (record->head != 0)
-        {
-            func_100B40(record->head);
-            record->head = 0;
-        }
-        if (flag > 0)
-        {
-            func_100B40(record);
-        }
-    }
-    return record;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003547C0);
+ItemList184EB8::~ItemList184EB8()
+{
+    func_003547C0(this);
+
+    if (head != 0)
+    {
+        ::operator delete(head);
+        head = 0;
+    }
+}
+
+extern "C"
+{
+
+void func_003547C0(Record00354740* owner)
+{
+    CitemCoordinateNode* node = owner->head->next;
+
+    if (node == 0)
+    {
+        return;
+    }
+
+    while (node != 0)
+    {
+        CitemCoordinateNode* next = node->next;
+        delete node;
+        node = next;
+    }
+
+    owner->head->next = 0;
+    owner->count = 0;
+}
 
 void item_append_selector_coordinate(Record00354740* owner, CitemCoordinate2 value)
 {
-    FieldNode23D310* node = allocate_coordinate_node();
+    CitemCoordinateNode* node = allocate_coordinate_node();
 
     if (node != 0)
     {
-        FieldNode23D310* tail;
+        CitemCoordinateNode* tail;
 
         node->x = value.x;
         node->y = value.y;
@@ -2197,37 +3001,80 @@ void item_append_selector_coordinate(Record00354740* owner, CitemCoordinate2 val
     }
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003548F0);
+}
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354980);
+ItemList184EB8::ItemList184EB8()
+{
+    head = new (0) CitemCoordinateNode;
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354AA0);
+    if (head == 0)
+    {
+        throw;
+    }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354AB0);
+    head->next = 0;
+    count = 0;
+}
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354AC0);
+extern "C"
+{
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354AD0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354AE0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354AF0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B00);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B10);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B20);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B30);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B40);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B50);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B60);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B70);
+void func_00354980(ItemList184EC8* owner, ItemListComparator compare, u32 comparison_arg, s32 ascending)
+{
+    ItemListNode* position = owner->head;
+    ItemListNode* previous;
+    while (position != 0)
+    {
+        ItemListNode* scan = position->next;
+        ItemListNode* selected_previous = position;
+        if (scan != 0)
+        {
+            while (scan != 0)
+            {
+                s32 result = compare(selected_previous->next, scan, comparison_arg);
+                if (ascending != 0)
+                {
+                    if (result > 0)
+                    {
+                        selected_previous = previous;
+                    }
+                }
+                else if (result < 0)
+                {
+                    selected_previous = previous;
+                }
+                previous = scan;
+                scan = scan->next;
+            }
+            if (selected_previous != position)
+            {
+                if (selected_previous == position->next)
+                {
+                    ItemListNode* selected = selected_previous->next;
+                    ItemListNode* next = selected->next;
+                    position->next = selected;
+                    position->next->next = selected_previous;
+                    selected_previous->next = next;
+                }
+                else
+                {
+                    ItemListNode* first = position->next;
+                    ItemListNode* selected = selected_previous->next;
+                    ItemListNode* next = selected->next;
+                    position->next = selected;
+                    position->next->next = first->next;
+                    selected_previous->next = first;
+                    first->next = next;
+                }
+            }
+            position = position->next;
+        }
+        else
+        {
+            break;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B80);
 
