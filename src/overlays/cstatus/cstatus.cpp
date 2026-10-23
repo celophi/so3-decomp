@@ -679,7 +679,7 @@ static inline void set_status_record_rectangle(LibObject178750* target, float x,
  */
 static inline void initialize_status_resource(ItemCreationOptionResourceDisplay* display, FieldResourceRecord* record, float x, float y)
 {
-    func_002D6440(display, record, x, y);
+    func_002D6440(display, x, y, record);
 }
 
 /** @brief Set widget coordinates and request refresh. @param widget Display widget. @param x Horizontal coordinate. @param y Vertical coordinate. */
@@ -2006,7 +2006,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
     FieldResourceRecord* resource = static_cast<FieldResourceRecord*>(field_get_builtin_resource_data(D_001B643C->slots, portrait_resource_slot));
     portrait->unkcc = allocation;
     portrait->unkd0 = portrait_resource_slot;
-    portrait->func_002D6440(resource, 40.0f, 15.0f);
+    portrait->func_002D6440(40.0f, 15.0f, resource);
     lib_container_attach_widget(unk10, portrait);
     portrait->unk34 = 3;
     grid_marker = new (0) LibClass175030;
@@ -2693,7 +2693,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
 
     portrait->unkcc = field_get_aligned_allocation(D_001B643C->slots, resource_key & 0xFF);
     portrait->unkd0 = resource_key;
-    portrait->func_002D6440(field_find_resource_record(D_001B643C->slots, 0), portrait_x, portrait_y);
+    portrait->func_002D6440(portrait_x, portrait_y, field_find_resource_record(D_001B643C->slots, 0));
     portrait->unk34 = 3;
     lib_container_attach_widget(unk10, portrait);
     StatusVariantSection* variants = reinterpret_cast<StatusVariantSection*>(

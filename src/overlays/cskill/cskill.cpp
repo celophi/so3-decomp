@@ -548,7 +548,13 @@ struct SkillRuntime
 /** Partial Field runtime reached through D_001B657C. */
 struct FieldRuntime
 {
-    u8 unk00[0x568];
+    u8 unk00[0x534];
+    /** Screen scale and offset applied to menu coordinates. */
+    float screen_scale_x;
+    float screen_scale_y;
+    float screen_offset_x;
+    float screen_offset_y;
+    u8 unk544[0x24];
     /** Integer arguments substituted into the next message. */
     s32 message_arguments[1];
 };
@@ -1145,6 +1151,8 @@ extern "C" u64 D_4ED330[];
 
 extern "C" LibVector4 D_50CD30;
 
+extern "C" const char D_364EF8[];
+
 extern "C" void func_2CEAF0(void* object, s32 flag);
 
 extern "C" void* func_2BC410(void* object, s16 flag);
@@ -1174,6 +1182,16 @@ extern "C" s32 func_4C6A40(void* item);
 
 /** @brief Return the absolute value of a signed integer. @param value Integer to convert. @return Absolute value. */
 extern "C" s32 abs(s32 value);
+
+/**
+ * @brief Recalculate a character's statistics from their equipment.
+ * @param record Character record to update.
+ * @param equipment Character equipment.
+ * @param candidate Allocation to try in a slot instead of the equipped one, or null.
+ * @param index Slot for the candidate, or -1 to use the equipment as it is.
+ */
+extern "C" void lib_character_recalculate_stats(FieldRecord* record, SkillCharacterEquipment* equipment, const struct ItemCreationAllocationRecord* candidate,
+                                                s32 index);
 
 /**
  * @brief Read skill costs and the encoded major-attack damage scale.
@@ -1656,10 +1674,34 @@ static inline u32 checked_max_mp(SkillCharacterStats* record)
     return record->encoded_max_mp ^ SKILL_FLAG_ENCODING_MASK;
 }
 
+/** @brief Read a record selection's current index. @param selection Character record selection. @return Current index. */
+static inline s32 selection_current(FieldRecordSelection* selection)
+{
+    return selection->current;
+}
+
+/** @brief Locate a record selection's equipment array. @param selection Character record selection. @return First equipment record. */
+static inline SkillCharacterEquipment* selection_equipment(FieldRecordSelection* selection)
+{
+    return static_cast<SkillCharacterEquipment*>(selection->unk04);
+}
+
 /** @brief Locate the selected character's equipment and skill setup. @param selection Character record selection. @return Selected record. */
 static inline SkillCharacterEquipment* selected_equipment(FieldRecordSelection* selection)
 {
     return &static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current];
+}
+
+/**
+ * @brief Locate the selected character's equipment, reading the index before the array.
+ * @param selection Character record selection.
+ * @return Selected record.
+ */
+static inline SkillCharacterEquipment* current_equipment(FieldRecordSelection* selection)
+{
+    s32 current = selection_current(selection);
+    SkillCharacterEquipment* equipment = selection_equipment(selection);
+    return &equipment[current];
 }
 
 /** @brief Locate the selected character's protected stats. @param selection Character record selection. @return Selected stats record. */
@@ -3343,7 +3385,58 @@ SkillTacticalDetailWindow::SkillTacticalDetailWindow()
     aura_row_count = 0;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034BD30);
+/**
+ * @brief Show a mode entry's skill description in the controller window and its mastery in the status window.
+ * @param object Mode selection window.
+ * @param index Entry row.
+ */
+
+void func_0034BD30(SkillModeSelection* object, s32 index)
+{
+    SkillController* controller;
+    SkillCharacterWindow* status;
+    s32 character;
+    s32* keys = object->skill_name_keys;
+    s32* key = index + keys;
+    if (*key == 0)
+    {
+        return;
+    }
+    controller = static_cast<SkillController*>(D_001B643C->callbacks->controller);
+    status = static_cast<SkillCharacterWindow*>(object->func_slot4c());
+    if (controller == 0 || status == 0)
+    {
+        return;
+    }
+    if (*key == SKILL_MSG_NONE)
+    {
+        controller->window->func_slot60(SKILL_MSG_BLANK);
+    }
+    else if (*key + 200 >= SKILL_MSG_INVALID_DESCRIPTION)
+    {
+        controller->window->func_slot60(SKILL_MSG_INVALID_DESCRIPTION);
+    }
+    else
+    {
+        controller->window->func_slot60(*key + 200);
+    }
+    FieldRecordSelection* selection = object->record_selection;
+    SkillCharacterEquipment* detail = &static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current];
+    character = selection->slots[selection->current];
+    s32 kind = -1;
+    s32 value = -1;
+    s32 mastery = -1;
+    s32 remainder = -1;
+    s32 entry = func_40AE00(character, *key - SKILL_MSG_NAME_BASE);
+    if (func_00408850(detail, character, entry, &kind, &value, &mastery, &remainder) == 0)
+    {
+        skill_refresh_mastery_display(status, -1, -1, -1);
+    }
+    else
+    {
+        skill_refresh_mastery_display(status, mastery, value, remainder);
+    }
+}
 
 /** @brief Refresh skill-name and CP row visibility, colors, and selection help. @param record Skill selection window. */
 void skill_refresh_selection_rows(SkillModeSelection* record)
@@ -3684,7 +3777,226 @@ FieldRecordSelection* SkillController::selected_records()
     return record_selection;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0034C7D0);
+/**
+ * @brief Store a battle skill slot's one-based skill index when the protected slot array is valid.
+ * @param record Character equipment and skill setup.
+ * @param slot Battle skill slot, zero through five.
+ * @param value One-based skill index, or zero to clear the slot.
+ */
+static inline void set_battle_skill_index(SkillCharacterEquipment* record, s32 slot, s32 value)
+{
+    u8* entry;
+    u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+    entry = record->encoded_battle_skill_indices;
+    for (s32 i = 0; i < 6; i++)
+    {
+        checksum ^= *entry++;
+        checksum = checksum * 2 + 0x31;
+    }
+    if (record->battle_skill_indices_checksum == checksum && slot >= 0 && static_cast<u32>(slot) < 6 && value + 0x7D70 < 0x7D9B)
+    {
+        record->encoded_battle_skill_indices[slot] = value ^ SKILL_TACTICAL_STATE_XOR_KEY;
+        checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+        entry = record->encoded_battle_skill_indices;
+        for (s32 i = 0; i < 6; i++)
+        {
+            checksum ^= *entry++;
+            checksum = checksum * 2 + 0x31;
+        }
+        record->battle_skill_indices_checksum = checksum;
+    }
+}
+
+u8 SkillModeSelection::func_slotb0()
+{
+    FieldObject23CEA0* grid = this->selection;
+    u8 inactive = !grid->unk35;
+    if (inactive == 1)
+    {
+        return 0;
+    }
+    s16 row = grid->unk114;
+    s32 key = this->skill_name_keys[row];
+    if (key == 0)
+    {
+        return 3;
+    }
+    s32 skill;
+    if (key - SKILL_MSG_NONE == 0)
+    {
+        skill = -1;
+    }
+    else
+    {
+        skill = key - SKILL_MSG_NAME_BASE;
+    }
+    s32 character;
+    s32 cp_cost = this->row_cp_costs[row];
+    FieldRecordSelection* records = this->record_selection;
+    character = records->slots[records->current];
+    SkillBattleSetupWindow* battle = static_cast<SkillBattleSetupWindow*>(this->func_slot44());
+    if (battle == 0)
+    {
+        return 0;
+    }
+    s32 assigned = battle->cp_costs[this->mode];
+    if (assigned == -1)
+    {
+        assigned = 0;
+    }
+    assigned = skill_refresh_battle_cp_displays(battle, 1) - assigned;
+    SkillCharacterEquipment* record = &static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current];
+    if (cp_cost + assigned > character_cp(record))
+    {
+        return 3;
+    }
+    if (skill >= 0)
+    {
+        s32 mapped = func_40AE00(character, skill);
+        if (mapped == -1)
+        {
+            return 3;
+        }
+        switch (this->mode)
+        {
+        case 0:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 0, mapped + 1);
+            break;
+        }
+        case 1:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 1, mapped + 1);
+            break;
+        }
+        case 2:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 2, mapped + 1);
+            break;
+        }
+        case 3:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 3, mapped + 1);
+            break;
+        }
+        case 4:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 4, mapped + 1);
+            break;
+        }
+        case 5:
+        {
+            set_battle_skill_index(selected_equipment(this->record_selection), 5, mapped + 1);
+            break;
+        }
+        }
+    }
+    else
+    {
+        cp_cost = -1;
+        switch (this->mode)
+        {
+        case 0:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 0, 0);
+            break;
+        case 1:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 1, 0);
+            break;
+        case 2:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 2, 0);
+            break;
+        case 3:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 3, 0);
+            break;
+        case 4:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 4, 0);
+            break;
+        case 5:
+            set_battle_skill_index(&static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current], 5, 0);
+            break;
+        }
+    }
+    if (character == 2)
+    {
+        func_40AE00(2, 0x94);
+        FieldRecordSelection* selection = this->record_selection;
+        s8 index = selection->current;
+        lib_character_recalculate_stats(&selection->records[index], &static_cast<SkillCharacterEquipment*>(selection->unk04)[index], 0, -1);
+    }
+    skill_refresh_battle_skill_rows(battle);
+    battle->cp_costs[this->mode] = cp_cost;
+    skill_refresh_battle_cp_displays(battle, 1);
+    SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
+    if (owner != 0)
+    {
+        s32 value = skill_refresh_battle_cp_displays(owner->status_rows, 1);
+        SkillCharacterWindow* status = owner->status;
+        LibObject174F20* item = status->assigned_cp_value;
+        if (item != 0)
+        {
+            if (value < 0)
+            {
+                value = 0;
+            }
+            item->numeric_value = value;
+            item->unk3c = 1;
+        }
+        FieldRecordSelection* selection = status->selection;
+        if (selection != 0)
+        {
+            SkillCharacterEquipment* record = &static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current];
+            if (record != 0)
+            {
+                s32 value = character_cp(record);
+                item = status->available_cp_value;
+                item->numeric_value = value;
+                item->unk3c = 1;
+            }
+        }
+    }
+    this->mode = -1;
+    clear_selection_rows(this);
+    this->state = 0;
+    if (this->selection != 0)
+    {
+        func_0023C710(this->selection);
+    }
+    if (this->selection != 0)
+    {
+        FieldObject23B950* marker = this->selection_marker;
+        if (marker != 0)
+        {
+            marker->unk28 = 0;
+            marker->flag3C = 1;
+        }
+        func_0023CEA0(this->selection, 0);
+    }
+    FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(this->func_slot44());
+    associated->func_slot64();
+    D_001B643C->callbacks->controller->func_00263C70(associated);
+    ListItem0035CCE0* label = static_cast<ListItem0035CCE0*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), this->selection->unk114)->value);
+    if (label != 0)
+    {
+        label->unk94 = 0x808080;
+        label->unk3c = 1;
+    }
+    SkillController* controller = this->owner;
+    if (controller != 0)
+    {
+        FieldClass15AE70* window = controller->window;
+        if (window != 0)
+        {
+            skill_refresh_costs(window);
+        }
+    }
+    skill_set_selection_visibility(this, 0, 0);
+    if (this->owner->status->first_display != 0 && this->owner->selected_records()->count > 1)
+    {
+        this->owner->status->first_display->unk3f = 1;
+        this->owner->status->second_display->unk3f = 1;
+    }
+    return 1;
+}
 
 s32 SkillModeSelection::func_slotd4()
 {
@@ -4801,7 +5113,71 @@ void skill_open_tactical_details(SkillTacticalWindow* object)
     D_001B643C->callbacks->controller->func_00263C70(window);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_003523A0);
+/** @brief Decode one tactical skill state if the checksum holds. @param states Encoded states. @param stored_checksum Stored checksum. @param index Mode index. @return Decoded state, or zero. */
+static inline s32 tactical_skill_state(const u8* states, const u32& stored_checksum, s32 index)
+{
+    u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+    for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
+    {
+        checksum ^= states[entry];
+        checksum = checksum * 2 + 0x31;
+    }
+    if (stored_checksum != checksum)
+    {
+        return 0;
+    }
+    if (index < 0)
+    {
+        return 0;
+    }
+    if (static_cast<u32>(index) >= SKILL_TACTICAL_MODE_COUNT)
+    {
+        return 0;
+    }
+    return static_cast<s8>(states[index]) ^ SKILL_TACTICAL_STATE_XOR_KEY;
+}
+
+/** @brief Encode one tactical skill state and refresh the checksum. @param states Encoded states. @param stored_checksum Stored checksum. @param index Mode index. @param state New state. */
+static inline void set_tactical_skill_state(u8* states, u32& stored_checksum, s32 index, s32 state)
+{
+    u8* entry_byte = states;
+    u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+    for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
+    {
+        checksum ^= *entry_byte++;
+        checksum = checksum * 2 + 0x31;
+    }
+    if (stored_checksum == checksum && index >= 0 && static_cast<u32>(index) < SKILL_TACTICAL_MODE_COUNT)
+    {
+        states[index] = state ^ SKILL_TACTICAL_STATE_XOR_KEY;
+        checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+        entry_byte = states;
+        for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
+        {
+            checksum ^= *entry_byte++;
+            checksum = checksum * 2 + 0x31;
+        }
+        stored_checksum = checksum;
+    }
+}
+
+u8 func_003523A0(SkillTacticalWindow* object)
+{
+    s32 mode = object->row_modes[object->selection->unk114];
+    SkillCharacterEquipment* record = current_equipment(object->records);
+    s32 state = tactical_skill_state(record->encoded_tactical_skill_states, record->tactical_skill_states_checksum, mode);
+    if (state != 0)
+    {
+        s32 next_state = -state;
+        set_tactical_skill_state(record->encoded_tactical_skill_states, record->tactical_skill_states_checksum, mode, next_state);
+    }
+    skill_refresh_tactical_rows(object);
+    if (state != 0)
+    {
+        skill_set_tactical_prompt_state(object->attachment, -state);
+    }
+    return 1;
+}
 
 s32 SkillTacticalWindow::func_slotdc()
 {
@@ -6440,7 +6816,188 @@ void func_00358310(SkillCharacterWindow* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_00358410);
+/** @brief Read a character slot code. @param selection Character record selection. @param index Slot index. @return Slot code. */
+static inline u16 selection_slot(FieldRecordSelection* selection, s16 index)
+{
+    return selection->slots[index];
+}
+
+/**
+ * @brief Initialize a numeric display's rectangle and value from a resource source.
+ * @param display Numeric display.
+ * @param x Left edge.
+ * @param y Top edge.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @param value Displayed value.
+ * @param associated Full resource source word.
+ */
+static inline void init_numeric_display(LibObject174F20* display, float x, float y, float width, float height, s32 value, u32 associated)
+{
+    display->init_numeric_resource_rectangle(x, y, width, height, value, static_cast<s32>(associated), 0);
+}
+
+s32 SkillCharacterWindow::func_slotf4(u32 associated)
+{
+    this->selection = D_001B643C->callbacks->controller->selected_records();
+    FieldClass15AE70::func_slot10(associated, 216.0f, 72.0f, 16);
+    LibClass178630* panel = new (0) LibClass178630;
+    this->character_name = new (0) LibObject175140;
+    this->sp_label = new (0) LibObject178750;
+    this->level_label = new (0) LibObject178750;
+    this->mastery_label = new (0) LibObject178750;
+    this->next_level_label = new (0) LibObject178750;
+    this->sp_value = new (0) LibObject174F20;
+    this->mastery_values[1] = new (0) LibObject174F20;
+    this->mastery_values[0] = new (0) LibObject174F20;
+    this->mastery_values[2] = new (0) LibObject174F20;
+    this->max_level_label = new (0) LibObject178750;
+    this->cp_label = new (0) LibObject178750;
+    this->assigned_cp_value = new (0) LibObject174F20;
+    this->cp_separator = new (0) LibObject178750;
+    this->available_cp_value = new (0) LibObject174F20;
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 408.0f, 104.0f, 88.0f);
+    func_0035CBB0(reinterpret_cast<SkillList*>(&this->unk14), panel);
+    lib_container_attach_widget(this->unk10, panel);
+    this->character_name->func_00467AD0(152.0f, 18.0f, 0.0f, 0.0f, static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current].character_name, 0);
+    func_0035C5F0(reinterpret_cast<SkillList*>(&this->unk44), this->character_name);
+    lib_container_attach_widget(this->unk10, this->character_name);
+    this->sp_label->init_resource_rectangle(236.0f, 72.0f, 0.0f, 0.0f, associated, 0x178B, 1);
+    LibObject178750* label = this->sp_label;
+    label->unk94 = 0x806080;
+    label->unk3c = 1;
+    lib_container_attach_widget(this->unk10, this->sp_label);
+    this->cached_sp = character_sp(&static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current]);
+    init_numeric_display(this->sp_value, 308.0f, 72.0f, 72.0f, 24.0f, character_sp(&static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current]), associated);
+    lib_container_attach_widget(this->unk10, this->sp_value);
+    this->mastery_label->init_resource_rectangle(235.0f, 48.0f, 0.0f, 0.0f, associated, 0x178E, 1);
+    label = this->mastery_label;
+    label->unk94 = 0x806080;
+    label->unk3c = 1;
+    this->mastery_label->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->mastery_label);
+    this->level_label->init_resource_rectangle(104.0f, 72.0f, 0.0f, 0.0f, associated, 0x178C, 1);
+    label = this->level_label;
+    label->unk94 = 0x806080;
+    label->unk3c = 1;
+    this->level_label->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->level_label);
+    this->next_level_label->init_resource_rectangle(236.0f, 72.0f, 0.0f, 0.0f, associated, 0x178D, 1);
+    label = this->next_level_label;
+    label->unk94 = 0x806080;
+    label->unk3c = 1;
+    this->next_level_label->unk3f = 0;
+    lib_container_attach_widget(this->unk10, this->next_level_label);
+    this->mastery_values[0]->init_numeric_resource_rectangle(152.0f, 72.0f, 72.0f, 24.0f, 1, associated, 0);
+    lib_container_attach_widget(this->unk10, this->mastery_values[0]);
+    this->mastery_values[0]->unk3f = 0;
+    this->mastery_values[1]->init_numeric_resource_rectangle(308.0f, 48.0f, 72.0f, 24.0f, 1, associated, 0);
+    lib_container_attach_widget(this->unk10, this->mastery_values[1]);
+    this->mastery_values[1]->unk3f = 0;
+    this->mastery_values[2]->init_numeric_resource_rectangle(308.0f, 72.0f, 72.0f, 24.0f, 10, associated, 0);
+    lib_container_attach_widget(this->unk10, this->mastery_values[2]);
+    this->mastery_values[2]->unk3f = 0;
+    this->max_level_label->init_resource_rectangle(332.0f, 72.0f, 72.0f, 24.0f, associated, 0x17C6, 1);
+    lib_container_attach_widget(this->unk10, this->max_level_label);
+    this->max_level_label->unk3f = 0;
+    label = this->max_level_label;
+    label->unk94 = 0x508050;
+    label->unk3c = 1;
+    this->cp_label->init_resource_rectangle(104.0f, 48.0f, 0.0f, 0.0f, associated, 0x1788, 1);
+    lib_container_attach_widget(this->unk10, this->cp_label);
+    label = this->cp_label;
+    label->unk94 = 0x806080;
+    label->unk3c = 1;
+    this->cp_label->unk3f = 0;
+    this->assigned_cp_value->init_numeric_resource_rectangle(154.0f, 48.0f, 72.0f, 24.0f, 0, associated, 0);
+    lib_container_attach_widget(this->unk10, this->assigned_cp_value);
+    LibObject174F20* value = this->assigned_cp_value;
+    value->unk9c = 0;
+    value->unk3c = 1;
+    this->assigned_cp_value->unk3f = 0;
+    this->cp_separator->init_resource_rectangle(152.0f, 48.0f, 72.0f, 24.0f, associated, 0x1789, 1);
+    lib_container_attach_widget(this->unk10, this->cp_separator);
+    label = this->cp_separator;
+    label->unk9c = 1;
+    label->unk3c = 1;
+    this->cp_separator->unk3f = 0;
+    this->available_cp_value->init_numeric_resource_rectangle(152.0f, 48.0f, 72.0f, 24.0f, character_cp(&static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current]), associated, 0);
+    lib_container_attach_widget(this->unk10, this->available_cp_value);
+    value = this->available_cp_value;
+    value->unk9c = 2;
+    value->unk3c = 1;
+    this->available_cp_value->unk3f = 0;
+    if (this->selection->count > 1)
+    {
+        ItemCreationClass174C40* left = new (0) ItemCreationClass174C40;
+        ItemCreationClass174C40* right = new (0) ItemCreationClass174C40;
+        if (left == 0 || right == 0)
+        {
+            return 0;
+        }
+        lib_indexed_resource_init(left, 104.0f, 8.0f, 10);
+        lib_indexed_resource_init(right, 360.0f, 8.0f, 11);
+        left->set_scale(1.0f, 1.0f);
+        right->set_scale(1.0f, 1.0f);
+        lib_container_attach_widget(this->unk10, left);
+        lib_container_attach_widget(this->unk10, right);
+        this->first_display = left;
+        this->second_display = right;
+    }
+    u8 hidden = 1;
+    for (s32 index = 0; index < 8; index++)
+    {
+        s32 code = selection_slot(this->selection, index);
+        if (code != 0)
+        {
+            this->codes[index] = code;
+            this->icons[index] = new (0) ItemCreationOptionResourceDisplay;
+            void* resource = field_get_aligned_allocation(D_001B643C->resources, code & 0xFF);
+            FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 4);
+            this->icons[index]->unkcc = resource;
+            this->icons[index]->unkd0 = code;
+            this->icons[index]->func_002D6440(20.0f, 14.0f, record);
+            if (hidden)
+            {
+                hidden = 0;
+                this->icons[index]->unk3f = 0;
+            }
+            else
+            {
+                this->icons[index]->unk3f = 1;
+            }
+            lib_container_attach_widget(this->unk10, this->icons[index]);
+        }
+    }
+    this->active = 1;
+    SkillController* owner = this->owner;
+    if (owner != 0)
+    {
+        FieldRecordSelection* selection = this->selection;
+        s32 current = selection->current;
+        FieldRecord* entry = &selection->records[current];
+        u8 code = selection->slots[current];
+        SkillCharacterEquipment* detail = &static_cast<SkillCharacterEquipment*>(selection->unk04)[current];
+        owner->entry = entry;
+        owner->detail = detail;
+        owner->code = code;
+    }
+    func_00358310(this);
+    this->sp_label->unk3f = 0;
+    this->sp_value->unk3f = 0;
+    this->level_label->unk3f = 1;
+    this->mastery_label->unk3f = 1;
+    this->next_level_label->unk3f = 1;
+    this->mastery_values[0]->unk3f = 1;
+    this->mastery_values[1]->unk3f = 1;
+    this->mastery_values[2]->unk3f = 1;
+    this->max_level_label->unk3f = 0;
+    this->cp_label->unk3f = 1;
+    this->assigned_cp_value->unk3f = 1;
+    this->cp_separator->unk3f = 1;
+    this->available_cp_value->unk3f = 1;
+    return 1;
+}
 
 SkillCharacterWindow::~SkillCharacterWindow()
 {
@@ -6806,9 +7363,9 @@ s32 SkillSecondarySelection::func_slotf4(u32 associated)
     icon_first->unkd0 = 0;
     icon_second->unkd0 = 0;
     icon_third->unkd0 = 0;
-    icon_second->func_002D6440(field_find_resource_record(D_001B643C->resources, 0x12), 32.0f, 11.0f);
-    icon_first->func_002D6440(field_find_resource_record(D_001B643C->resources, 0x14), 32.0f, 38.0f);
-    icon_third->func_002D6440(field_find_resource_record(D_001B643C->resources, 0x15), 32.0f, 65.0f);
+    icon_second->func_002D6440(32.0f, 11.0f, field_find_resource_record(D_001B643C->resources, 0x12));
+    icon_first->func_002D6440(32.0f, 38.0f, field_find_resource_record(D_001B643C->resources, 0x14));
+    icon_third->func_002D6440(32.0f, 65.0f, field_find_resource_record(D_001B643C->resources, 0x15));
     lib_container_attach_widget(this->unk10, icon_first);
     lib_container_attach_widget(this->unk10, icon_second);
     lib_container_attach_widget(this->unk10, icon_third);
@@ -6969,9 +7526,9 @@ s32 SkillResourceWindow::func_slotf4(u32 associated)
     first->unkd0 = 11;
     second->unkd0 = 11;
     third->unkd0 = 11;
-    first->func_002D6440(field_find_resource_record(D_001B643C->resources, 5), 0.0f, 0.0f);
-    second->func_002D6440(field_find_resource_record(D_001B643C->resources, 6), 256.0f, 0.0f);
-    third->func_002D6440(field_find_resource_record(D_001B643C->resources, 7), 512.0f, 0.0f);
+    first->func_002D6440(0.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 5));
+    second->func_002D6440(256.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 6));
+    third->func_002D6440(512.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 7));
     lib_container_attach_widget(this->unk10, first);
     lib_container_attach_widget(this->unk10, second);
     lib_container_attach_widget(this->unk10, third);
@@ -8220,7 +8777,330 @@ u32 skill_mask_character_flags(SkillCharacterStats* record, u32 flags)
     return mask_character_flags(record, flags);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0035FAA0);
+static inline void set_widget_rectangle(LibClass178600* object, float x, float y, float width, float height)
+{
+    object->unk18.unk00 = x;
+    object->unk18.unk04 = y;
+    object->unk18.unk08 = width;
+    object->unk18.unk0c = height;
+    object->unk3c = 1;
+}
+
+/**
+ * @brief Append a selectable position to a coordinate selector.
+ * @param selector Coordinate selector.
+ * @param x Horizontal coordinate.
+ * @param y Vertical coordinate.
+ */
+static inline void append_selector_position(SkillCoordinateSelector* selector, float x, float y)
+{
+    func_00364BF0(&selector->nodes, SkillPairValue(x, y));
+}
+
+s32 SkillOptionsWindow::func_slotf4(u32 associated)
+{
+    s32 source = associated;
+    this->records = static_cast<SkillController*>(D_001B643C->callbacks->controller)->selected_records();
+    this->x = 16.0f;
+    this->y = 216.0f;
+    FieldClass15AE70::func_slot10(source, this->x, this->y, 15);
+    this->child = new (0) SkillCoordinateSelector;
+    if (this->child == 0)
+    {
+        return 0;
+    }
+    lib_moving_widget_init_position(this->child, 0.0f, 0.0f);
+    lib_container_attach_widget(this->unk10, this->child);
+    this->row_height = 128.0f;
+    for (s32 row = 0; row < 8; row++)
+    {
+        float panel_y;
+        float badge_x;
+        float badge_y;
+        float value_x;
+        float hp_row_y;
+        float mp_row_y;
+        float panel_x;
+        float indicator_x;
+        float hp_y;
+        float value_height;
+        float column_width;
+        s32 column;
+        if (row < 3)
+        {
+            column_width = 196.0f;
+            panel_y = 0.0f;
+            column = row;
+        }
+        else
+        {
+            panel_y = this->row_height;
+            column = row - 3;
+            column_width = 118.0f;
+        }
+        LibClass178630* panel = new (0) LibClass178630;
+        panel_x = 8.0f + column_width * (float)column;
+        lib_panel_init_rectangle(panel, 1, panel_x, panel_y, 3.0f + column_width, 2.0f + this->row_height, 88.0f);
+        lib_container_attach_widget(this->unk10, panel);
+        hp_row_y = 50.0f + panel_y;
+        mp_row_y = 78.0f + panel_y;
+        if (row < 3)
+        {
+            value_x = 68.0f + panel_x;
+            badge_x = 98.0f + panel_x;
+            badge_y = 36.0f + panel_y;
+        }
+        else
+        {
+            value_x = 8.0f + panel_x;
+            badge_x = 65.0f + panel_x;
+            badge_y = 12.0f + panel_y;
+        }
+        s16 index = row;
+        s8 slot = this->records->slots[index];
+        if (slot > 0)
+        {
+            if (row < 3)
+            {
+                this->labels[row] = new (0) LibObject175140;
+                this->labels[row]->func_00467AD0(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
+                    slot > 0 ? static_cast<SkillCharacterEquipment*>(this->records->unk04)[index].character_name : D_364EF8, 0);
+                lib_container_attach_widget(this->unk10, this->labels[row]);
+                this->labels[row]->set_scale(0.8f, 0.8f);
+                if (reinterpret_cast<SkillCharacterStats*>(this->records->records)[index].get_flags() & 5)
+                {
+                    this->labels[row]->set_color(0x505080);
+                }
+                else
+                {
+                    this->labels[row]->set_color(0x808080);
+                }
+            }
+            this->hp_values[row] = new (0) LibObject174F20;
+            if (row < 3)
+            {
+                hp_y = 16.0f + hp_row_y;
+                value_height = 19.2f;
+                column_width = 56.0f;
+                this->hp_values[row]->init_numeric_resource_rectangle(3.0f + value_x, hp_y, column_width, value_height, 0, 1, 0);
+            }
+            else
+            {
+                hp_y = 16.0f + hp_row_y;
+                value_height = 19.2f;
+                column_width = 56.0f;
+                this->hp_values[row]->init_numeric_resource_rectangle(40.0f + value_x, hp_y, column_width, value_height, 0, 1, 0);
+            }
+            this->hp_values[row]->set_scale(0.8f, 0.8f);
+            set_cost_value(this->hp_values[row], character_hp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
+            lib_container_attach_widget(this->unk10, this->hp_values[row]);
+            if (row < 3)
+            {
+                LibObject178750* separator = new (0) LibObject178750;
+                separator->init_resource_rectangle(60.0f + value_x, hp_y, 0.0f, 0.0f, source, 0x17A2, 0);
+                separator->set_scale(0.8f, 0.8f);
+                lib_container_attach_widget(this->unk10, separator);
+                this->max_hp_values[row] = new (0) LibObject174F20;
+                this->max_hp_values[row]->init_numeric_resource_rectangle(61.0f + value_x, hp_y, column_width, value_height, 0, 1, 0);
+                this->max_hp_values[row]->set_scale(0.8f, 0.8f);
+                set_cost_value(this->max_hp_values[row], character_max_hp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
+                lib_container_attach_widget(this->unk10, this->max_hp_values[row]);
+            }
+            this->mp_values[row] = new (0) LibObject174F20;
+            if (row < 3)
+            {
+                value_height = 16.0f + mp_row_y;
+                this->mp_values[row]->init_numeric_resource_rectangle(3.0f + value_x, value_height, column_width, 0.0f, 1, 0, 0);
+            }
+            else
+            {
+                value_height = 16.0f + mp_row_y;
+                this->mp_values[row]->init_numeric_resource_rectangle(40.0f + value_x, value_height, column_width, 0.0f, 1, 0, 0);
+            }
+            this->mp_values[row]->set_scale(0.8f, 0.8f);
+            set_cost_value(this->mp_values[row], character_mp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
+            lib_container_attach_widget(this->unk10, this->mp_values[row]);
+            if (row < 3)
+            {
+                LibObject178750* separator = new (0) LibObject178750;
+                separator->init_resource_rectangle(60.0f + value_x, value_height, 0.0f, 0.0f, source, 0x17A2, 0);
+                separator->set_scale(0.8f, 0.8f);
+                lib_container_attach_widget(this->unk10, separator);
+                this->max_mp_values[row] = new (0) LibObject174F20;
+                this->max_mp_values[row]->init_numeric_resource_rectangle(61.0f + value_x, value_height, column_width, 0.0f, 1, 0, 0);
+                this->max_mp_values[row]->set_scale(0.8f, 0.8f);
+                set_cost_value(this->max_mp_values[row], character_max_mp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
+                lib_container_attach_widget(this->unk10, this->max_mp_values[row]);
+            }
+            this->indicators[row] = new (0) ItemCreationOptionResourceDisplay;
+            u8 character = slot;
+            void* resource = field_get_aligned_allocation(D_001B643C->resources, character);
+            FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 4);
+            this->indicators[row]->unkcc = resource;
+            this->indicators[row]->unkd0 = character;
+            if (row < 3)
+            {
+                indicator_x = 14.0f + panel_x;
+                this->indicators[row]->func_002D6440(indicator_x, 48.0f + panel_y, record);
+                ItemCreationOptionResourceDisplay* indicator = this->indicators[row];
+                indicator->unk50.unk34 = 0.8f;
+                indicator->unk50.unk30 = 0.8f;
+                indicator->unk3c = 1;
+            }
+            else
+            {
+                indicator_x = 14.0f + panel_x;
+                this->indicators[row]->func_002D6440(indicator_x, 12.0f + panel_y, record);
+                ItemCreationOptionResourceDisplay* indicator = this->indicators[row];
+                indicator->unk50.unk34 = 0.65f;
+                indicator->unk50.unk30 = 0.65f;
+                indicator->unk3c = 1;
+            }
+            this->indicators[row]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->indicators[row]);
+            resource = field_get_aligned_allocation(D_001B643C->resources, 0);
+            record = field_find_resource_record(D_001B643C->resources, 40);
+            this->badges[row][0] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][0]->unkcc = resource;
+            this->badges[row][0]->unkd0 = 0;
+            ItemCreationOptionResourceDisplay* badge = this->badges[row][0];
+            badge->unk50.unk34 = 0.8f;
+            badge->unk50.unk30 = 0.8f;
+            badge->unk3c = 1;
+            this->badges[row][0]->func_002D6440(badge_x, badge_y, record);
+            this->badges[row][0]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->badges[row][0]);
+            record = field_find_resource_record(D_001B643C->resources, 39);
+            this->badges[row][1] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][1]->unkcc = resource;
+            this->badges[row][1]->unkd0 = 0;
+            badge = this->badges[row][1];
+            badge->unk50.unk34 = 0.8f;
+            badge->unk50.unk30 = 0.8f;
+            badge->unk3c = 1;
+            if (row < 3)
+            {
+                this->badges[row][1]->func_002D6440(35.0f + badge_x, badge_y, record);
+            }
+            else
+            {
+                this->badges[row][1]->func_002D6440(25.0f + badge_x, badge_y, record);
+            }
+            this->badges[row][1]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->badges[row][1]);
+            record = field_find_resource_record(D_001B643C->resources, 38);
+            this->badges[row][2] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][2]->unkcc = resource;
+            this->badges[row][2]->unkd0 = 0;
+            badge = this->badges[row][2];
+            badge->unk50.unk34 = 0.8f;
+            badge->unk50.unk30 = 0.8f;
+            badge->unk3c = 1;
+            if (row < 3)
+            {
+                this->badges[row][2]->func_002D6440(70.0f + badge_x, badge_y, record);
+            }
+            else
+            {
+                this->badges[row][2]->func_002D6440(25.0f + badge_x, 30.0f + badge_y, record);
+            }
+            this->badges[row][2]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->badges[row][2]);
+            resource = field_get_aligned_allocation(D_001B643C->resources, (u8)(slot + 0x30));
+            record = field_find_resource_record(D_001B643C->resources, 4);
+            this->badges[row][3] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][3]->unkcc = resource;
+            this->badges[row][3]->unkd0 = 0;
+            if (row < 3)
+            {
+                this->badges[row][3]->func_002D6440(indicator_x, 48.0f + panel_y, record);
+                badge = this->badges[row][3];
+                badge->unk50.unk34 = 0.8f;
+                badge->unk50.unk30 = 0.8f;
+                badge->unk3c = 1;
+            }
+            else
+            {
+                this->badges[row][3]->func_002D6440(indicator_x, 12.0f + panel_y, record);
+                badge = this->badges[row][3];
+                badge->unk50.unk34 = 0.65f;
+                badge->unk50.unk30 = 0.65f;
+                badge->unk3c = 1;
+            }
+            this->badges[row][3]->unk3f = reinterpret_cast<SkillCharacterStats*>(this->records->records)[index].get_flags() & 5;
+            lib_container_attach_widget(this->unk10, this->badges[row][3]);
+            SkillHpMpGauge* gauge = new (0) SkillHpMpGauge;
+            gauge->character_id = slot;
+            gauge->characters = D_001B643C->characters;
+            LibCameraContext* context = D_001B6650;
+            gauge->FieldClass159A70::unk1c = 0x800 - context->viewport_width / 2;
+            gauge->FieldClass159A70::unk20 = 0x800 - context->viewport_height / 2;
+            gauge->FieldClass159A70::unk24 = 0x800 + context->viewport_width / 2;
+            gauge->FieldClass159A70::unk28 = 0x800 + context->viewport_height / 2;
+            gauge->initialize(1, 0, 0, 0.0f, 0.0f, 0.0f);
+            if (row < 3)
+            {
+                gauge->origin.x = 22.0f + value_x;
+                gauge->origin.y = 32.0f + hp_row_y;
+                gauge->row_spacing = 30.0f;
+            }
+            else
+            {
+                gauge->origin.x = 20.0f + value_x;
+                gauge->origin.y = 32.0f + hp_row_y;
+                gauge->row_spacing = 25.0f;
+                gauge->FieldClass159A70::unk0c = 80.0f;
+                gauge->FieldClass159A70::unk10 = 5.0f;
+            }
+            gauge->func_002BC370(0x80);
+            gauge->FieldClass159A70::unk04 = this->unk10;
+            lib_queue_display_object(D_001B657C, gauge);
+            func_003649E0(reinterpret_cast<SkillList*>(&this->nested), gauge);
+            gauge->LibClass174610::unkab = 0;
+        }
+        else
+        {
+            LibObject178750* empty = new (0) LibObject178750;
+            empty->init_resource_rectangle(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f, source, 0x179E, 0);
+            set_widget_rectangle(empty, panel_x, (panel_y + this->row_height / 2.0f) - 9.6f, column_width, 24.0f);
+            empty->set_mode(1);
+            if (row < 3)
+            {
+                empty->set_scale(0.8f, 0.8f);
+            }
+            else
+            {
+                empty->set_scale(0.8f * 0.8f, 0.8f * 0.8f);
+            }
+            empty->unk3f = 1;
+            lib_container_attach_widget(this->unk10, empty);
+        }
+        if (row < 3)
+        {
+            append_selector_position(this->child, 14.0f + panel_x, 88.0f + panel_y);
+        }
+        else
+        {
+            append_selector_position(this->child, 14.0f + panel_x, 47.0f + panel_y);
+        }
+    }
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(this->child), 0, 1);
+    this->child->unk3f = 0;
+    this->unk10->LibClass174610::unkab = 0;
+    SkillListNode* node = this->nested.head->next;
+    while (node != 0)
+    {
+        static_cast<LibClass174610*>(node->value)->unkab = 0;
+        node = node->next;
+    }
+    node = this->nested.head->next;
+    while (node != 0)
+    {
+        static_cast<LibClass174610*>(node->value)->func_0044B100(1, 1, 1);
+        node = node->next;
+    }
+    return 1;
+}
 
 /** @brief Destroy the movement storage and intrusive widget base. */
 inline ItemCreationClass175030::~ItemCreationClass175030()
@@ -8256,7 +9136,146 @@ SkillOptionsWindow::SkillOptionsWindow()
     selected_kind = 0;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_slot5c__20SkillSymbologyWindowFv);
+void SkillSymbologyWindow::func_slot5c()
+{
+    if (shift > 0)
+    {
+        for (s32 entry = 0; entry < 30; entry++)
+        {
+            LibClass178600* item = spell_labels[entry];
+            float y = (float)(s32)(11.0f + item->unk18.unk04);
+            item->unk18.unk04 = y;
+            item->unk3c = 1;
+            item = spell_icons[entry];
+            item->unk18.unk04 = y;
+            item->unk3c = 1;
+        }
+        shift -= 11;
+        if (shift < 0)
+        {
+            shift = 0;
+        }
+    }
+    else if (shift < 0)
+    {
+        for (s32 entry = 0; entry < 30; entry++)
+        {
+            LibClass178600* item = spell_labels[entry];
+            float y = (float)(s32)(item->unk18.unk04 - 11.0f);
+            item->unk18.unk04 = y;
+            item->unk3c = 1;
+            item = spell_icons[entry];
+            item->unk18.unk04 = y;
+            item->unk3c = 1;
+        }
+        shift += 11;
+        if (shift > 0)
+        {
+            shift = 0;
+        }
+    }
+    ItemCreationClass1725D0* indicator = scroll_indicator;
+    indicator->unk50 = 100.0f * (14.0f / 30.0f);
+    indicator->unk3c = 1;
+    indicator = scroll_indicator;
+    indicator->unk54 = 100.0f * ((float)position / 30.0f);
+    indicator->unk3c = 1;
+    FieldRecordSelection* current = records;
+    SkillCharacterStats* stats = &reinterpret_cast<SkillCharacterStats*>(current->records)[current->current];
+    SkillCharacterEquipment* equipment = &static_cast<SkillCharacterEquipment*>(current->unk04)[current->current];
+    for (s32 entry = 0; entry < 30; entry++)
+    {
+        spell_icons[entry]->unk3f = 0;
+        spell_labels[entry]->unk3f = 0;
+    }
+    s32 skill_id, mastery, result_index, remainder;
+    for (s32 row = 0; row < 14; row++)
+    {
+        s32 entry = position + row;
+        s32 result = func_408EA0(equipment, records->slots[records->current], entry,
+            &skill_id, &mastery, &result_index, &remainder, 1);
+        if (result == 0 || entry == 29)
+        {
+            if (row == selected)
+            {
+                cursor->unk3d = 0;
+            }
+        }
+        else
+        {
+            LibObject178750*& label = spell_labels[entry];
+            label->unk3f = 1;
+            lib_text_set_resource(label, static_cast<s32>(static_cast<SkillController*>(D_001B643C->callbacks->controller)->get_resource_slot()),
+                skill_id + SKILL_MSG_NAME_BASE, 0);
+            if (skill_id == 3 || skill_id == 18 || skill_id == 19 || skill_id == 20 || skill_id == 27)
+            {
+                s32 mp_cost = 0;
+                func_4095C0(skill_id, reinterpret_cast<FieldRecord*>(stats), equipment, &mp_cost, 0, 0, 0, 0, 0, 0, 0);
+                if ((s32)character_mp(stats) <= mp_cost)
+                {
+                    label->set_color(0x505050);
+                }
+                else
+                {
+                    label->set_color(0x808080);
+                }
+            }
+            else
+            {
+                label->set_color(0x505050);
+            }
+            if (skill_id == 17)
+            {
+                spell_icons[entry]->unk3f = 0;
+            }
+            else
+            {
+                spell_icons[entry]->unk3f = result == 1;
+            }
+            if (row == selected)
+            {
+                cursor->unk3d = 1;
+                if (shift == 0)
+                {
+                    cursor->func_0023B7E0(spell_labels[entry]);
+                    // TODO: This is my guess at the shape. The original seems to read the label in two separate
+                    // blocks here, and this always-true check is the only way I found to get that.
+                    s32 colour = 0;
+                    if (colour == 0)
+                    {
+                        colour = spell_labels[entry]->unk94;
+                    }
+                    lib_marker_set_bright_color(cursor, colour);
+                    func_0023B780(reinterpret_cast<FieldObject23B950*>(cursor));
+                }
+            }
+        }
+    }
+    if (shift != 0)
+    {
+        cursor->unk3d = 0;
+    }
+    FieldClass153E30* controller = D_001B643C->callbacks->controller;
+    SkillController* owner = static_cast<SkillController*>(controller);
+    s32 entry = position + selected;
+    SkillSymbologyCharacterWindow* character = owner->symbology_character;
+    FieldRecordSelection* current_records = static_cast<SkillController*>(controller)->selected_records();
+    SkillCharacterEquipment* detail = &static_cast<SkillCharacterEquipment*>(current_records->unk04)[current_records->current];
+    s32 selected_skill, selected_mastery, symbology_level, selected_remainder;
+    if (func_408EA0(detail, character->selection->slots[character->selection->current], entry,
+        &selected_skill, &selected_mastery, &symbology_level, &selected_remainder, 1) == 0 || entry == 29)
+    {
+        character->symbology_level_value->unk3f = 0;
+    }
+    else
+    {
+        LibObject174F20* display = character->symbology_level_value;
+        display->numeric_value = symbology_level;
+        display->unk3c = 1;
+        character->symbology_level_value->unk3f = 1;
+    }
+    skill_refresh_symbology_help(owner->symbology_help, position + selected);
+}
 
 /**
  * @brief Advance the paired display lists toward scroll position 16.
@@ -8502,7 +9521,70 @@ void SkillSymbologyWindow::func_slot64()
     func_0023CEA0(this->selection, 1);
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_slotbc__20SkillSymbologyWindowFv);
+/**
+ * @brief Checksum the protected symbology state words.
+ * @param states Encoded states.
+ * @param size Size of the state array in bytes.
+ * @return Checksum value.
+ */
+static inline u32 symbology_states_checksum(const s16* states, s32 size)
+{
+    u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+    size /= 2;
+    for (s32 entry = 0; entry < size; entry++)
+    {
+        checksum ^= *states++;
+        checksum = checksum * 2 + 0x73;
+    }
+    return checksum;
+}
+
+/**
+ * @brief Store a spell's symbology state, limited to -9999..9999, when the protected state array is valid.
+ * @param record Character equipment and skill setup.
+ * @param index Spell index, zero through 31.
+ * @param state Signed state: positive enables the spell, negative disables it.
+ */
+static inline void set_symbology_state(SkillCharacterEquipment* record, s32 index, s32 state)
+{
+    if (record->symbology_states_checksum == symbology_states_checksum(record->encoded_symbology_states, sizeof(record->encoded_symbology_states)) && index >= 0 && static_cast<u32>(index) < 32)
+    {
+        state += 32113;
+        // Open-coded rather than clamp(): the extra inline level gives the bounds other registers.
+        state = ee_movn(state, 22114, state < 22114);
+        state = ee_movz(state, 42112, state <= 42112);
+        state -= 32113;
+        record->encoded_symbology_states[index] = state ^ 0x7E93;
+        record->symbology_states_checksum = symbology_states_checksum(record->encoded_symbology_states, sizeof(record->encoded_symbology_states));
+    }
+}
+
+u8 SkillSymbologyWindow::func_slotbc()
+{
+    s32 skill_id, mastery, result_index, remaining;
+    FieldRecordSelection* records = this->records;
+    s32 current = records->current;
+    SkillCharacterEquipment* equipment = &static_cast<SkillCharacterEquipment*>(records->unk04)[current];
+    s32 selected = this->position + this->selected;
+    s32 enabled = func_408EA0(equipment, records->slots[records->current], selected, &skill_id, &mastery, &result_index, &remaining, 1);
+    if (enabled == 0 || selected == 29)
+    {
+        return 3;
+    }
+    if (skill_id == 17)
+    {
+        return 3;
+    }
+    if (enabled == 1)
+    {
+        set_symbology_state(equipment, selected, -(mastery + 1));
+    }
+    else
+    {
+        set_symbology_state(equipment, selected, mastery + 1);
+    }
+    return 1;
+}
 
 u8 SkillSymbologyWindow::func_slotb4()
 {
@@ -8639,7 +9721,7 @@ s32 SkillSymbologyWindow::func_slotf4(u32 associated)
         spell_icons[entry] = new (0) ItemCreationOptionResourceDisplay;
         spell_icons[entry]->unkcc = icon_resource;
         spell_icons[entry]->unkd0 = 0;
-        spell_icons[entry]->func_002D6440(field_find_resource_record(resources, 22), x - 32.0f, y);
+        spell_icons[entry]->func_002D6440(x - 32.0f, y, field_find_resource_record(resources, 22));
         ItemCreationOptionResourceDisplay* icon = spell_icons[entry];
         icon->unk50.unk34 = 0.85f;
         icon->unk50.unk30 = 0.85f;
@@ -8909,7 +9991,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
             marker_record = field_find_resource_record(D_001B643C->resources, 4);
             character_markers[slot].available->unkcc = marker_resource;
             character_markers[slot].available->unkd0 = character;
-            character_markers[slot].available->func_002D6440(marker_record, 36.0f, 46.0f);
+            character_markers[slot].available->func_002D6440(36.0f, 46.0f, marker_record);
             character_markers[slot].available->unk3f = 0;
             lib_container_attach_widget(unk10, character_markers[slot].available);
 
@@ -8918,7 +10000,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
             character_markers[slot].unavailable = new (0) ItemCreationOptionResourceDisplay;
             character_markers[slot].unavailable->unkcc = marker_resource;
             character_markers[slot].unavailable->unkd0 = 0;
-            character_markers[slot].unavailable->func_002D6440(marker_record, 36.0f, 46.0f);
+            character_markers[slot].unavailable->func_002D6440(36.0f, 46.0f, marker_record);
             character_markers[slot].unavailable->unk3f = 0;
             lib_container_attach_widget(unk10, character_markers[slot].unavailable);
             if (first_character)
@@ -8944,7 +10026,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     marker0->unk50.unk34 = 0.8f;
     marker0->unk50.unk30 = 0.8f;
     marker0->unk3c = 1;
-    condition_markers[0]->func_002D6440(condition_record, 125.0f, 42.0f);
+    condition_markers[0]->func_002D6440(125.0f, 42.0f, condition_record);
     condition_markers[0]->unk3f = 0;
     lib_container_attach_widget(unk10, condition_markers[0]);
 
@@ -8956,7 +10038,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     marker1->unk50.unk34 = 0.8f;
     marker1->unk50.unk30 = 0.8f;
     marker1->unk3c = 1;
-    condition_markers[1]->func_002D6440(condition_record, 157.0f, 42.0f);
+    condition_markers[1]->func_002D6440(157.0f, 42.0f, condition_record);
     condition_markers[1]->unk3f = 0;
     lib_container_attach_widget(unk10, condition_markers[1]);
 
@@ -8968,7 +10050,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     marker2->unk50.unk34 = 0.8f;
     marker2->unk50.unk30 = 0.8f;
     marker2->unk3c = 1;
-    condition_markers[2]->func_002D6440(condition_record, 189.0f, 42.0f);
+    condition_markers[2]->func_002D6440(189.0f, 42.0f, condition_record);
     condition_markers[2]->unk3f = 0;
     lib_container_attach_widget(unk10, condition_markers[2]);
 

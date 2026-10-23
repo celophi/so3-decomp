@@ -57,7 +57,15 @@ segments:
       - [0x80, cpp, cskill]
       - [0x1C9E0, pad, text_end]
       - [0x1CA00, databin, data]
-      - [0x1CA80, rodatabin, rodata_00364E00]
+      - start: 0x1CA80
+        type: .rodata
+        name: cskill
+        linker_section: .rodata.00364E00
+        rodata_anchors:
+          - {function: func_slotb0__18SkillModeSelectionFv, table: 1, offset: 0x0, size: 0x18}
+          - {function: func_slotb0__18SkillModeSelectionFv, table: 0, offset: 0x20, size: 0x18}
+        linker_section_order: .rodata
+      - [0x1CAB8, pad, rodata_pad_00364E38]
       - start: 0x1CAC0
         type: .rodata
         name: cskill

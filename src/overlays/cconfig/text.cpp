@@ -356,7 +356,7 @@ static inline u8 config_four_mode(ConfigSettings* settings)
 /** @brief Initialize a resource widget. */
 static inline void initialize_preview_resource(ItemCreationOptionResourceDisplay* display, FieldResourceRecord* record, float x, float y)
 {
-    func_002D6440(display, record, x, y);
+    func_002D6440(display, x, y, record);
 }
 /** @brief Set an option icon's packed color and mark it active. */
 static inline void set_option_color(ConfigIcon* object, u32 color)

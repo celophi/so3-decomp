@@ -231,12 +231,12 @@ void func_002D6410(ItemCreationOptionResourceDisplay* object);
 /**
  * @brief Set the resource record and its displayed position.
  * @param object Resource display to update.
- * @param record Resource record to display.
  * @param x Horizontal coordinate.
  * @param y Vertical coordinate.
+ * @param record Resource record to display.
  * @return One on success, or zero when allocation fails.
  */
-s32 func_002D6440(ItemCreationOptionResourceDisplay* object, FieldResourceRecord* record, float x, float y);
+s32 func_002D6440(ItemCreationOptionResourceDisplay* object, float x, float y, FieldResourceRecord* record);
 
 /**
  * @brief Set the receiver's byte at offset 0x3C.
@@ -356,12 +356,12 @@ struct ItemCreationOptionResourceDisplay : public ItemCreationClass175110
     void func_002D6410();
     /**
      * @brief Allocate the resource drawing storage and set its record and position.
-     * @param record Resource record to display.
      * @param x Horizontal coordinate.
      * @param y Vertical coordinate.
+     * @param record Resource record to display.
      * @return One on success, or zero if drawing-storage allocation fails.
      */
-    s32 func_002D6440(FieldResourceRecord* record, float x, float y);
+    s32 func_002D6440(float x, float y, FieldResourceRecord* record);
     /** @brief Destroy the resource widget. */
     virtual ~ItemCreationOptionResourceDisplay();
     /** @brief Refresh the resource widget. */

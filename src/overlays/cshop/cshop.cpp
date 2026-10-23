@@ -3268,7 +3268,7 @@ s32 ShopEquipmentPreviewWindow::func_slotf4(u32 associated)
             FieldResourceRecord* display_record = field_find_resource_record(D_001B643C->resource_buffers, 4);
             character_displays[i]->unkcc = character_buffer;
             character_displays[i]->unkd0 = character_resource_slot;
-            character_displays[i]->func_002D6440(display_record, 20.0f + 50.0f * column, 12.0f + 68.0f * row);
+            character_displays[i]->func_002D6440(20.0f + 50.0f * column, 12.0f + 68.0f * row, display_record);
             ItemCreationOptionResourceDisplay* character_display = character_displays[i];
             character_display->unk50.unk30 = 0.62f;
             character_display->unk50.unk34 = 0.72f;
@@ -3424,11 +3424,11 @@ s32 ShopBackgroundWindow::func_slotf4(u32 associated)
     middle_image->unkd0 = 11;
     right_image->unkd0 = 11;
     FieldResourceRecord* image_record = field_find_resource_record(D_001B643C->resource_buffers, 5);
-    left_image->func_002D6440(image_record, 0.0f, 0.0f);
+    left_image->func_002D6440(0.0f, 0.0f, image_record);
     image_record = field_find_resource_record(D_001B643C->resource_buffers, 6);
-    middle_image->func_002D6440(image_record, 256.0f, 0.0f);
+    middle_image->func_002D6440(256.0f, 0.0f, image_record);
     image_record = field_find_resource_record(D_001B643C->resource_buffers, 7);
-    right_image->func_002D6440(image_record, 512.0f, 0.0f);
+    right_image->func_002D6440(512.0f, 0.0f, image_record);
     lib_container_attach_widget(unk10, left_image);
     lib_container_attach_widget(unk10, middle_image);
     lib_container_attach_widget(unk10, right_image);

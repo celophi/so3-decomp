@@ -303,12 +303,12 @@ void ItemCreationOptionResourceDisplay::func_002D6410()
 
 /**
  * @brief Initialize the resource drawing storage, record and position.
- * @param record Resource record to display.
  * @param x Horizontal coordinate.
  * @param y Vertical coordinate.
+ * @param record Resource record to display.
  * @return One on success, or zero if the drawing storage cannot be initialized.
  */
-s32 ItemCreationOptionResourceDisplay::func_002D6440(FieldResourceRecord* record, float x, float y)
+s32 ItemCreationOptionResourceDisplay::func_002D6440(float x, float y, FieldResourceRecord* record)
 {
     unk18.unk00 = x;
     unk18.unk04 = y;

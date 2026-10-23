@@ -163,7 +163,6 @@ func_slot60__18SkillOptionsWindowFi = 0x00359480; // type:func allow_duplicated:
 func_slotb0__18SkillOptionsWindowFv = 0x0035E5C0; // type:func allow_duplicated:True
 func_0035E5C0 = 0x0035E5C0; // type:func allow_duplicated:True
 func_slotf4__18SkillOptionsWindowFUi = 0x0035FAA0; // type:func allow_duplicated:True
-func_0035FAA0 = 0x0035FAA0; // type:func allow_duplicated:True
 __vt__18SkillOptionsWindow = 0x00183E60; // size:0xF8 absolute:True
 func_00359480 = 0x00359480; // type:func allow_duplicated:True
 func_00361150 = 0x00361150; // type:func absolute:True allow_duplicated:True
@@ -271,7 +270,6 @@ __vt__19StatusOwner003580D0 = 0x00183770; // size:0xF8 absolute:True allow_dupli
 func_slotf4__19StatusOwner003580D0FUi = 0x00358410; // type:func absolute:True allow_duplicated:True
 func_slot60__19StatusOwner003580D0Fi = 0x00359480; // type:func absolute:True allow_duplicated:True
 func_slot5c__19StatusOwner003580D0Fv = 0x003581B0; // type:func absolute:True allow_duplicated:True
-func_00358410 = 0x00358410; // type:func allow_duplicated:True
 func_003581B0 = 0x003581B0; // type:func absolute:True allow_duplicated:True
 
 func_003498A0 = 0x003498A0; // type:func allow_duplicated:True
@@ -293,14 +291,13 @@ __dt__18SkillModeSelectionFv = 0x00351790; // type:func allow_duplicated:True
 __vt__18SkillModeSelection = 0x00183170; // size:0xF8 absolute:True allow_duplicated:True
 func_slotd0__18SkillModeSelectionFv = 0x0034DCE0; // type:func allow_duplicated:True
 func_slotb4__18SkillModeSelectionFv = 0x0034C550; // type:func allow_duplicated:True
-func_slotb0__18SkillModeSelectionFv = 0x0034C7D0; // type:func absolute:True allow_duplicated:True
+func_slotb0__18SkillModeSelectionFv = 0x0034C7D0; // type:func allow_duplicated:True
 func_slot60__18SkillModeSelectionFi = 0x00359480; // type:func absolute:True allow_duplicated:True
 func_00351490 = 0x00351490; // type:func absolute:True allow_duplicated:True
 func_0034C530 = 0x0034C530; // type:func absolute:True allow_duplicated:True
 func_0034C540 = 0x0034C540; // type:func absolute:True allow_duplicated:True
 func_0034DA70 = 0x0034DA70; // type:func absolute:True allow_duplicated:True
 func_0034C550 = 0x0034C550; // type:func absolute:True allow_duplicated:True
-func_0034C7D0 = 0x0034C7D0; // type:func allow_duplicated:True
 func_0034DF00 = 0x0034DF00; // type:func absolute:True allow_duplicated:True
 func_0034E0B0 = 0x0034E0B0; // type:func absolute:True allow_duplicated:True
 func_slot60__19SkillResourceWindowFi = 0x00359480; // type:func absolute:True allow_duplicated:True
@@ -308,7 +305,7 @@ func_slot60__16FieldClass15AE70Fi = 0x00359480; // type:func allow_duplicated:Tr
 func_0034C320 = 0x0034C320; // type:func absolute:True allow_duplicated:True
 
 func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
-func_002D6440__33ItemCreationOptionResourceDisplayFP19FieldResourceRecordff = 0x002D6440; // type:func absolute:True allow_duplicated:True
+func_002D6440__33ItemCreationOptionResourceDisplayFffP19FieldResourceRecord = 0x002D6440; // type:func absolute:True allow_duplicated:True
 func_002D5CF0 = 0x002D5CF0; // type:func absolute:True allow_duplicated:True
 func_002D6410 = 0x002D6410; // type:func absolute:True allow_duplicated:True
 func_002D6440 = 0x002D6440; // type:func absolute:True allow_duplicated:True
@@ -320,6 +317,7 @@ func_0023BB20__17FieldObject23BE00FffffP17FieldObject23CEA0Ui = 0x0023BB20; // t
 func_003EEBE0__14SkillHpMpGaugeFv = 0x0035D460; // type:func
 func_0011F770 = 0x0011F770; // type:func absolute:True
 lib_text_set_resource = 0x004C6DF0; // type:func absolute:True
+lib_character_recalculate_stats = 0x003F9890; // type:func absolute:True allow_duplicated:True
 lib_multiline_text_set_resource = 0x0045F690; // type:func absolute:True
 abs = 0x00137250; // type:func absolute:True
 lib_panel_detach = 0x004C4A90; // type:func absolute:True
@@ -391,7 +389,7 @@ __ct__20SkillCharacterWindowFP15SkillQueueOwner = 0x00359200; // type:func allow
 __ct__20SkillCharacterWindowFP15SkillController = 0x00359200; // type:func allow_duplicated:True
 __dt__20SkillCharacterWindowFv = 0x003591A0; // type:func allow_duplicated:True
 __vt__20SkillCharacterWindow = 0x00183770; // size:0xF8 absolute:True allow_duplicated:True
-func_slotf4__20SkillCharacterWindowFUi = 0x00358410; // type:func absolute:True allow_duplicated:True
+func_slotf4__20SkillCharacterWindowFUi = 0x00358410; // type:func allow_duplicated:True
 func_slot60__20SkillCharacterWindowFi = 0x00359480; // type:func absolute:True allow_duplicated:True
 __ct__15SkillCostWindowFP15SkillQueueOwner = 0x003498A0; // type:func allow_duplicated:True absolute:True
 __ct__15SkillCostWindowFP15SkillController = 0x003498A0; // type:func allow_duplicated:True
@@ -767,7 +765,6 @@ func_00362500 = 0x00362500; // type:func absolute:True allow_duplicated:True
 
 func_slotb4__20SkillSymbologyWindowFv = 0x00362500; // type:func allow_duplicated:True
 
-func_00362210 = 0x00362210; // type:func absolute:True allow_duplicated:True
 
 func_slotbc__20SkillSymbologyWindowFv = 0x00362210; // type:func allow_duplicated:True
 
@@ -1027,6 +1024,9 @@ __vt__14SkillHpMpGauge = 0x00183DB0; // size:0xA0 absolute:True
 __dt__16FieldClass1599E0Fv = 0x002BC280; // type:func absolute:True
 
 __dt__16FieldClass159A70Fv = 0x002BC410; // type:func absolute:True
+__ct__16FieldClass1599E0Fv = 0x002BC310; // type:func absolute:True
+__ct__16FieldClass159A70Fv = 0x002BC4A0; // type:func absolute:True
+func_002BC370__16FieldClass159A70Fi = 0x002BC370; // type:func absolute:True
 
 func_003F4440__14LibClass174610FPCvPv = 0x0044B240; // type:func absolute:True
 

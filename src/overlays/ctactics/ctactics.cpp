@@ -1576,7 +1576,7 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 8);
     display->unkcc = allocation;
     display->unkd0 = 0;
-    func_002D6440(display, record, base_x, base_y);
+    func_002D6440(display, base_x, base_y, record);
     set_resource_display_scale(display, 2.5f);
     lib_container_attach_widget(unk10, display);
 
@@ -1601,7 +1601,7 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     {
         character_displays[2]->unkcc = field_get_aligned_allocation(D_001B643C->resources, character_ids[2]);
         character_displays[2]->unkd0 = character_ids[2];
-        func_002D6440(character_displays[2], default_record, base_x, base_y);
+        func_002D6440(character_displays[2], base_x, base_y, default_record);
         set_resource_display_scale(character_displays[2], 0.4f);
         lib_container_attach_widget(unk10, character_displays[2]);
     }
@@ -1610,7 +1610,7 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     {
         character_displays[1]->unkcc = field_get_aligned_allocation(D_001B643C->resources, character_ids[1]);
         character_displays[1]->unkd0 = character_ids[1];
-        func_002D6440(character_displays[1], default_record, base_x, base_y);
+        func_002D6440(character_displays[1], base_x, base_y, default_record);
         set_resource_display_scale(character_displays[1], 0.4f);
         lib_container_attach_widget(unk10, character_displays[1]);
     }
@@ -1619,7 +1619,7 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     {
         character_displays[0]->unkcc = field_get_aligned_allocation(D_001B643C->resources, character_ids[0]);
         character_displays[0]->unkd0 = character_ids[0];
-        func_002D6440(character_displays[0], default_record, base_x, base_y);
+        func_002D6440(character_displays[0], base_x, base_y, default_record);
         set_resource_display_scale(character_displays[0], 0.4f);
         lib_container_attach_widget(unk10, character_displays[0]);
     }
@@ -2405,11 +2405,11 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
 
             if (index < 3)
             {
-                func_002D6440(resource_displays[index], record, 20.0f + column_x, 8.0f + label_y);
+                func_002D6440(resource_displays[index], 20.0f + column_x, 8.0f + label_y, record);
             }
             else
             {
-                func_002D6440(resource_displays[index], record, 15.0f + column_x, label_y - 5.0f);
+                func_002D6440(resource_displays[index], 15.0f + column_x, label_y - 5.0f, record);
                 set_resource_display_scale(resource_displays[index], 0.68f);
             }
 
@@ -2436,11 +2436,11 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
 
             if (index < 3)
             {
-                func_002D6440(resource_displays[index], record, 20.0f + column_x, 8.0f + label_y);
+                func_002D6440(resource_displays[index], 20.0f + column_x, 8.0f + label_y, record);
             }
             else
             {
-                func_002D6440(resource_displays[index], record, 15.0f + column_x, label_y - 5.0f);
+                func_002D6440(resource_displays[index], 15.0f + column_x, label_y - 5.0f, record);
                 set_resource_display_scale(resource_displays[index], 0.68f);
             }
 
@@ -3242,11 +3242,11 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
 
             if (index < 3)
             {
-                func_002D6440(display, record, 18.0f + column_x, 16.0f + row_y);
+                func_002D6440(display, 18.0f + column_x, 16.0f + row_y, record);
             }
             else
             {
-                func_002D6440(display, record, 18.0f + column_x, 10.0f + row_y);
+                func_002D6440(display, 18.0f + column_x, 10.0f + row_y, record);
                 set_resource_display_scale(display, 0.68f);
             }
 
@@ -3460,9 +3460,9 @@ s32 TacticsResourceWindow::func_slotf4(u32 associated)
     first->unkd0 = 11;
     second->unkd0 = 11;
     third->unkd0 = 11;
-    func_002D6440(first, field_find_resource_record(D_001B643C->resources, 5), 0.0f, 0.0f);
-    func_002D6440(second, field_find_resource_record(D_001B643C->resources, 6), 256.0f, 0.0f);
-    func_002D6440(third, field_find_resource_record(D_001B643C->resources, 7), 512.0f, 0.0f);
+    func_002D6440(first, 0.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 5));
+    func_002D6440(second, 256.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 6));
+    func_002D6440(third, 512.0f, 0.0f, field_find_resource_record(D_001B643C->resources, 7));
     lib_container_attach_widget(unk10, first);
     lib_container_attach_widget(unk10, second);
     lib_container_attach_widget(unk10, third);
