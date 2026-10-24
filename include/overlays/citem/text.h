@@ -11,8 +11,6 @@ typedef struct Record00349250 Record00349250;
 typedef struct ItemWindow1844B0 ItemWindow1844B0;
 typedef struct Record00349BF0 Record00349BF0;
 typedef struct Record0034C6A0 Record0034C6A0;
-typedef struct Record0034B770 Record0034B770;
-typedef struct Record0034E7E0 Record0034E7E0;
 #ifdef __cplusplus
 class ItemList184ED8;
 
@@ -164,19 +162,6 @@ void func_00354400(Record003542F0* owner);
  */
 void func_003547C0(Record00354740* owner);
 
-/**
- * @brief Forward the window's slot 0xC4 handler to slot 0xC0.
- * @param object Item menu window.
- * @return The slot 0xC0 handler's result.
- */
-s32 func_0034AE60(FieldClass15AE70* object);
-
-/**
- * @brief Release the list's display objects, then release the window's base displays.
- * @param owner Item window with a sentinel-headed display list.
- */
-void func_0034E740(Record0034E7E0* owner);
-
 /** Comparator returning zero when passed the same node twice. */
 typedef s32 (*ItemListComparator)(const ItemListNode* left, const ItemListNode* right, u32 comparison_arg);
 
@@ -245,66 +230,6 @@ Record00349BF0* func_00349BF0(Record00349BF0* record, s16 flag);
  * @return The record.
  */
 Record0034C6A0* func_0034C6A0(Record0034C6A0* record, s16 flag);
-
-/**
- * @brief Move the selector back one entry, wrapping to its eighth entry.
- * @param owner Item window containing the coordinate selector.
- */
-void item_select_previous_entry(Record0034B770* owner);
-
-/**
- * @brief Advance the selector one entry, wrapping after its eighth entry.
- * @param owner Item window containing the coordinate selector.
- */
-void item_select_next_entry(Record0034B770* owner);
-
-/**
- * @brief Move the selector from its first coordinate row to its second row.
- *
- * Maps entries zero, one and two to entries three, five and six respectively.
- * Other indices and a clear control byte leave the selection unchanged.
- * @param owner Item window containing the coordinate selector.
- */
-void item_select_second_row(Record0034B770* owner);
-
-/**
- * @brief Move the selector from its second coordinate row to its first row.
- *
- * Maps entry three to zero, entries four and five to one, and entries six and seven to two.
- * Other indices and a clear control byte leave the selection unchanged.
- * @param owner Item window containing the coordinate selector.
- */
-void item_select_first_row(Record0034B770* owner);
-
-/**
- * @brief Move the list window's selector back one entry, wrapping to its eighth entry.
- * @param owner Item window containing the selector and display list.
- */
-void item_list_select_previous_entry(Record0034E7E0* owner);
-
-/**
- * @brief Advance the list window's selector one entry, wrapping after its eighth entry.
- * @param owner Item window containing the selector and display list.
- */
-void item_list_select_next_entry(Record0034E7E0* owner);
-
-/**
- * @brief Move the selector from its first coordinate row to its second row.
- *
- * Maps entries zero, one and two to entries three, five and six respectively.
- * Other indices and a clear control byte leave the selection unchanged.
- * @param owner Item window containing the selector and display list.
- */
-void item_list_select_second_row(Record0034E7E0* owner);
-
-/**
- * @brief Move the selector from its second coordinate row to its first row.
- *
- * Maps entry three to zero, entries four and five to one, and entries six and seven to two.
- * Other indices and a clear control byte leave the selection unchanged.
- * @param owner Item window containing the selector and display list.
- */
-void item_list_select_first_row(Record0034E7E0* owner);
 
 /**
  * @brief Append a payload to the list when node allocation succeeds.
