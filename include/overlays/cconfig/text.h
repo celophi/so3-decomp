@@ -1221,9 +1221,9 @@ void func_0034A0E0(ConfigBindingWindow* object);
 /**
  * @brief Swap the selected binding with the entry containing the supplied code.
  * @param object Binding selector window.
- * @param code Existing binding code to select.
+ * @param value Word containing the existing binding code to select.
  */
-void func_0034A270(ConfigBindingWindow* object, u16 code);
+void func_0034A270(ConfigBindingWindow* object, u32 value);
 
 /**
  * @brief Save the four binding codes and refresh the associated window.

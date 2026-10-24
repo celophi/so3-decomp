@@ -1556,7 +1556,28 @@ void func_0034A0E0(ConfigBindingWindow* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/cconfig/asm/nonmatchings/text", func_0034A270);
+void func_0034A270(ConfigBindingWindow* object, u32 value)
+{
+    u16 code = static_cast<u16>(value);
+    value = static_cast<u16>(object->grid->unk114);
+    u16 previous = object->values[value];
+    s32 found;
+
+    for (found = 0; found < 4; found++)
+    {
+        if (object->values[found] == code)
+        {
+            break;
+        }
+    }
+
+    object->values[value] = object->values[found];
+    object->values[found] = previous;
+    object->dirty = 1;
+    LibObject178750* previous_entry = object->entries[value];
+    object->entries[value] = object->entries[found];
+    object->entries[found] = previous_entry;
+}
 
 void func_0034A300(ConfigBindingWindow* object)
 {
