@@ -430,7 +430,6 @@ public:
     s32 func_004E10B0(s32 size);
 
     u8 unk10c[8];
-
     void* unk114;
 };
 #endif

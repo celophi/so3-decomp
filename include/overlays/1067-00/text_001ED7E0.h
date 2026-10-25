@@ -68,25 +68,15 @@ public:
     virtual void func_001DDB30(void* arg);
 
     FieldSceneResourceRequest* requests;
-
     FieldClass1DD400* completion_callback;
-
     s32 request_capacity;
-
     s32 unk28;
-
     u8 unk2c;
-
     u8 request_count;
-
     u8 current_request;
-
     u8 unk2f;
-
     u8 unk30_0 : 1;
-
     u8 callback_ready : 1;
-
     u8 unk30_2_7 : 6;
 };
 

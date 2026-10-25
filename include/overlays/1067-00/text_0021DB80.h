@@ -42,7 +42,6 @@ public:
     virtual void update();
 
     u8 unk8c[4];
-
     void* unk90;
 };
 
@@ -88,9 +87,7 @@ public:
     virtual void release_requests();
 
     u8 unk34[4];
-
     s32 unk38;
-
     void* unk3c;
 };
 

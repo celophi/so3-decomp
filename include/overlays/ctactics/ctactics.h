@@ -39,7 +39,6 @@ typedef struct TacticsPresetPosition
 #endif
 
     float x;
-
     float y;
 } TacticsPresetPosition;
 
@@ -89,13 +88,9 @@ public:
     virtual s32 init_windows();
 
     s32 resource_slot;
-
     u8 windows_initialized : 1;
-
     u8 unk38_1_7 : 7;
-
     u8 unk39[3];
-
     FieldRecordSelection* selection;
 };
 
@@ -151,19 +146,12 @@ public:
     virtual s32 func_slotf4(u32 associated);
 
     LibObject178750* text;
-
     s32 scroll_span;
-
     s16 initial_pause_frames;
-
     u8 scroll_phase;
-
     float label_right_edge;
-
     float initial_text_x;
-
     float clip_x;
-
     float clip_width;
 };
 
@@ -220,9 +208,7 @@ public:
     virtual void func_slotf8(s16 selected);
 
     struct FieldObject23CEA0* grid;
-
     s16 selected;
-
     u8 unkae[2];
 };
 
@@ -276,25 +262,15 @@ public:
     virtual s32 func_slotf4(u32 associated);
 
     FieldRecordSelection* record_selection;
-
     struct FieldObject23CEA0* grid;
-
     struct FieldObject23BE00* cursor;
-
     struct ItemCreationClass172600* indicator;
-
     s16 selected;
-
     u8 candidate_count;
-
     u8 character_ids[3];
-
     u8 unkbe[2];
-
     float base_x;
-
     float base_y;
-
     s32 candidate_indices_by_slot[3];
 };
 
@@ -343,27 +319,16 @@ public:
     virtual s32 func_slotf4(u32 associated);
 
     LibObject178750* title;
-
     struct ItemCreationClass172600* indicator;
-
     class ItemCreationClass174C40* resource_widget;
-
     struct FieldObject23CEA0* grid;
-
     struct FieldObject23BE00* cursor;
-
     FieldRecordSelection* record_selection;
-
     struct ItemCreationOptionResourceDisplay* character_displays[3];
-
     u8 character_ids[3];
-
     u8 selected;
-
     float base_x;
-
     float base_y;
-
     LibObject175140* label;
 };
 
@@ -429,17 +394,11 @@ public:
     u32 get_strategy_text_key(s16 character_id, s32 record_index);
 
     class TacticsCharacterRecord* character_records;
-
     struct TacticsCharacterEquipment* equipment_records;
-
     class TacticsCoordinateSelector* selection;
-
     s16 selected;
-
     u8 record_enabled[8];
-
     u8 unkbe[2];
-
     TacticsPresetPosition preset_position;
 };
 
@@ -490,27 +449,16 @@ public:
     s32 set_character(s16 record_index, u8 initial_entry);
 
     class TacticsCharacterRecord* character_records;
-
     struct TacticsCharacterEquipment* equipment_records;
-
     struct FieldObject23CEA0* grid;
-
     s16 selected;
-
     u8 unkb6[2];
-
     LibObject178750* text[6];
-
     u8 unkd0[4];
-
     struct ItemCreationClass172600* selection_indicator;
-
     struct FieldObject23BE00* cursor;
-
     s32 keys[6];
-
     s16 character_id;
-
     u8 selected_entry;
 };
 
@@ -552,7 +500,6 @@ class TacticsCoordinatePositionList
 {
 public:
     class TacticsCoordinateNode* head;
-
     u32 count;
 
     /** @brief Create the head node and start with an empty list. */
@@ -613,51 +560,28 @@ public:
     virtual s32 func_slotf4(u32 associated);
 
     class TacticsCharacterRecord* character_records;
-
     struct TacticsCharacterEquipment* equipment_records;
-
     class TacticsCharacterRecord* character_record_buffer;
-
     struct TacticsCharacterEquipment* equipment_record_buffer;
-
     class TacticsCoordinateSelector* first_selector;
-
     class TacticsCoordinateSelector* second_selector;
-
     u8 use_second;
-
     u8 refresh_pending;
-
     s16 source_record_index;
-
     s16 destination_record_index;
-
     u8 unkc6[2];
-
     TacticsTextWidgetList level_label_list;
-
     TacticsStatValueWidgetList level_value_list;
-
     TacticsTextWidgetList hp_label_list;
-
     TacticsTextWidgetList mp_label_list;
-
     TacticsStatValueWidgetList hp_value_list;
-
     TacticsTextWidgetList hp_separator_text_list;
-
     TacticsStatValueWidgetList max_hp_value_list;
-
     TacticsStatValueWidgetList mp_value_list;
-
     TacticsTextWidgetList mp_separator_text_list;
-
     TacticsStatValueWidgetList max_mp_value_list;
-
     TacticsCharacterNameWidgetList unk140;
-
     s16 row_character_ids[8];
-
     struct ItemCreationOptionResourceDisplay* resource_displays[8];
 };
 #endif

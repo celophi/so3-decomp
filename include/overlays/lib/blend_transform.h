@@ -36,7 +36,6 @@ public:
     virtual void copy_blend_state(const LibBlendTransform* source);
 
     u8 blend_mode;
-
     u8 unk211;
 };
 #endif

@@ -58,17 +58,11 @@ public:
     virtual void* get_entry(s32 index);
 
     u32 unk0c;
-
     u32 unk10;
-
     u32 unk14;
-
     u32 unk18;
-
     u32 unk1c;
-
     u32 unk20;
-
     u32 unk24;
 
     /** Packed GS TEX0 value used as the source of channel transfers. */
@@ -78,11 +72,8 @@ public:
     u64 destination_tex0;
 
     u32 unk38;
-
     u32 unk3c;
-
     u8 unk40;
-
     u8 unk41;
 };
 

@@ -12,7 +12,6 @@ class LibClass171E90;
 struct LibResourcePayloadHeader
 {
     u8 unk00[8];
-
     u32 data_offset;
 };
 
@@ -21,7 +20,6 @@ class LibRenderResource
 {
 public:
     u8 unk00;
-
     u8 unk01;
 
     /** @brief Clear the resource state bytes. */
@@ -84,7 +82,6 @@ public:
     void* data;
 
     u8 unk0c[8];
-
     u32 unk14;
 
     /** Intrusive sentinel for the channels supplying child entries. */
@@ -124,55 +121,30 @@ public:
     bool allocate_storage(s32 buffer_count, s32 word_capacity, s32 block_capacity, s32 staging_blocks);
 
     u32* command_buffers[2];
-
     u32* command_begin;
-
     u8 unk2c[0x34];
-
     u32* block_sizes;
-
     u8* block_packets;
-
     u8* setup_packet;
-
     u32 unk6c;
-
     s32 word_capacity;
-
     s32 block_capacity;
-
     s32 block_count;
-
     s32 texture_count;
-
     s16 vertex_count;
-
     s16 primitive_count;
-
     u16 texture_codes[8];
-
     u8 texture_width_log2[8];
-
     u8 texture_height_log2[8];
-
     void* textures[8];
-
     u8 command_buffer_index;
-
     u8 command_buffer_count;
-
     u8 scratchpad_index;
-
     u8 unkc7[4];
-
     u8 unkcb;
-
     u8 unkcc;
-
     u8 unkcd;
-
     u8 unkce;
-
     u8 unkcf;
 };
 

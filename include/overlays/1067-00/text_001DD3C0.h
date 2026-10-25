@@ -331,11 +331,8 @@ public:
     virtual s32 release_buffer();
 
     u8 read_complete : 1;
-
     u8 cancel_pending : 1;
-
     u8 unk1c_2_7 : 6;
-
     u8 unk1d[3];
 };
 
@@ -414,25 +411,15 @@ public:
     void allocate_requests(s32 count);
 
     FieldPreloadRequest* requests;
-
     u32 unk20;
-
     s32 request_capacity;
-
     s32 request_priority;
-
     u8 unk2c;
-
     u8 request_count;
-
     u8 current_request;
-
     u8 unk2f;
-
     u8 unk30_0 : 1;
-
     u8 callback_ready : 1;
-
     u8 unk30_2_7 : 6;
 };
 

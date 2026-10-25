@@ -12,3 +12,7 @@
 @168@refresh_rows__20ItemListWindow1848D0Fi = 0x00354B50;
 @168@set_scroll_position__26ItemAllocationWindow1847B0Ff = 0x00354B60;
 @168@refresh_rows__26ItemAllocationWindow1847B0Fi = 0x00354B70;
+@144@func_003F4410__13ItemHpMpGaugeFUi = 0x00354B80;
+@192@__dt__13ItemHpMpGaugeFv = 0x00354B90;
+@64@__dt__22ItemCoordinateSelectorFv = 0x00354BA0;
+@64@__dt__23ItemCreationClass175030Fv = 0x004673B0;

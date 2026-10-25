@@ -5,11 +5,7 @@
 
 typedef struct ItemRecord ItemRecord;
 typedef struct StatusRecord StatusRecord;
-typedef struct DisplayRecord DisplayRecord;
-typedef struct Record00349190 Record00349190;
-typedef struct Record00349250 Record00349250;
 typedef struct ItemWindow1844B0 ItemWindow1844B0;
-typedef struct Record00349BF0 Record00349BF0;
 typedef struct Record0034C6A0 Record0034C6A0;
 #ifdef __cplusplus
 class ItemList184ED8;
@@ -35,9 +31,7 @@ typedef ItemList184EB8 Record00354740;
 typedef struct Record00354740 Record00354740;
 #endif
 
-typedef struct TransformRecord TransformRecord;
 typedef struct ItemWindow1849F0 ItemWindow1849F0;
-typedef struct Record00353A50 Record00353A50;
 typedef struct ItemWindow184AF0 ItemWindow184AF0;
 typedef struct ItemWindow184BF0 ItemWindow184BF0;
 typedef struct ItemWindow184CF0 ItemWindow184CF0;
@@ -191,39 +185,6 @@ s32 func_00351E40(const ItemListNode* left, const ItemListNode* right, u32 compa
 void item_append_selector_coordinate(Record00354740* owner, CitemCoordinate2 value);
 
 /**
- * @brief Initialize a record and pass its setup arguments to the shared initializer.
- * @param record Record to initialize.
- * @param arg1 First integer setup argument.
- * @param arg2 Second integer setup argument.
- * @param arg3 Pointer setup argument.
- * @param first First float input; unused by this routine.
- * @param second Second float input; unused by this routine.
- * @param third Float passed to the shared initializer.
- * @return Always 1.
- */
-s32 func_00349190(Record00349190* record, s32 arg1, s32 arg2, void* arg3, float first, float second, float third);
-
-/**
- * @brief Mark DMA pending and submit the transform packet when present.
- * @param object Transform receiver containing the packet and notification interface.
- */
-void item_submit_transform_packet(Record00349250* object);
-
-/**
- * @brief Mark the transform for release, detach it, and queue its destruction.
- * @param object Transform receiver to release.
- */
-void item_queue_transform_release(Record00349250* object);
-
-/**
- * @brief Initialize a record and run cleanup when requested.
- * @param record Record to initialize.
- * @param flag Cleanup flag.
- * @return The record.
- */
-Record00349BF0* func_00349BF0(Record00349BF0* record, s16 flag);
-
-/**
  * @brief Initialize a record and its embedded part.
  * @param record Record to initialize.
  * @param flag Cleanup flag.
@@ -288,116 +249,6 @@ void func_00354620(ItemListOwner* owner, void* value);
  * @param value Payload stored in the new node.
  */
 void func_003546B0(ItemListOwner* owner, void* value);
-
-/**
- * @brief Initialize a record and run cleanup when requested.
- * @param record Record to initialize.
- * @param flag Cleanup flag.
- * @return The record.
- */
-Record00353A50* func_00353A50(Record00353A50* record, s16 flag);
-
-/**
- * @brief Copy three components and a unit fourth component to the field at 0x30.
- * @param record Transform record to update.
- * @param x First component.
- * @param y Second component.
- * @param z Third component.
- */
-void func_00353C50(TransformRecord* record, float x, float y, float z);
-/** Mark the transform as changed and copy a four-float value into it. */
-void func_00353BF0(TransformRecord* record, const Vector4* input);
-/** Mark the transform as changed and copy a four-float value into it. */
-void func_00353C20(TransformRecord* record, const Vector4* input);
-
-/**
- * @brief Copy a four-component value to the field at 0x20.
- * @param record Transform record to update.
- * @param value Components to copy.
- */
-void func_00353B30(TransformRecord* record, const Vector4* value);
-
-/**
- * @brief Copy a four-component value to the field at 0x20.
- * @param record Transform record to update.
- * @param value Components to copy.
- */
-void func_00353B50(TransformRecord* record, const Vector4* value);
-
-/**
- * @brief Copy a four-component value to the field at 0x30.
- * @param record Transform record to update.
- * @param value Components to copy.
- */
-void func_00353BB0(TransformRecord* record, const Vector4* value);
-
-/**
- * @brief Copy a four-component value to the field at 0x30.
- * @param record Transform record to update.
- * @param value Components to copy.
- */
-void func_00353BD0(TransformRecord* record, const Vector4* value);
-
-/**
- * @brief Copy a four-component value to the field at 0x40.
- * @param record Transform record to update.
- * @param value Components to copy.
- */
-void func_00353C90(TransformRecord* record, const Vector4* value);
-
-/**
- * @brief Copy a four-component value to the field at 0x40.
- * @param record Transform record to update.
- * @param value Components to copy.
- */
-void func_00353CB0(TransformRecord* record, const Vector4* value);
-
-/**
- * @brief Store three components at 0x20 with a unit fourth component.
- * @param record Transform record to update.
- * @param x First component.
- * @param y Second component.
- * @param z Third component.
- */
-void func_00353B70(TransformRecord* record, float x, float y, float z);
-
-/**
- * @brief Store four components at 0x30.
- * @param record Transform record to update.
- * @param x First component.
- * @param y Second component.
- * @param z Third component.
- * @param w Fourth component.
- */
-void func_00353B90(TransformRecord* record, float x, float y, float z, float w);
-
-/**
- * @brief Store three components at 0x40.
- * @param record Transform record to update.
- * @param x First component.
- * @param y Second component.
- * @param z Third component.
- */
-void func_00353CD0(TransformRecord* record, float x, float y, float z);
-
-/**
- * @brief Check whether a float is negative.
- * @param value Value to check.
- * @return One if negative, otherwise zero.
- */
-s32 func_00353D00(float value);
-
-/**
- * @brief Return the external table at 0x50CD30.
- * @return Pointer to the table.
- */
-u8* func_00353D20(void);
-
-/**
- * @brief Copy the byte field at 0xA8 to the field at 0x60.
- * @param display Display record to update.
- */
-void func_00353E30(DisplayRecord* display);
 
 /**
  * @brief Store the word field at 0x24.
@@ -727,52 +578,6 @@ void func_00348700(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_00348730(void* object);
-
-/**
- * @brief Return the fixed value 3.
- * @param object Receiver or first argument; unused.
- * @return Always 3.
- */
-s32 func_00353B00(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00353B10(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00353B20(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00353CF0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00353D30(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00353D40(void* object);
-
-/**
- * @brief Return the fixed value 14.
- * @param object Receiver or first argument; unused.
- * @return Always 14.
- */
-s32 func_00353E20(void* object);
 
 /**
  * @brief Perform no work.

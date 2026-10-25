@@ -39,11 +39,8 @@ public:
     static void operator delete(void* object);
 
     u8 unk14[4];
-
     s32 unk18;
-
     u8 unk1C_0 : 1;
-
     u8 unk1C_1_7 : 7;
 };
 #endif

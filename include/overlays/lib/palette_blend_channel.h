@@ -34,13 +34,9 @@ public:
     bool load_resource();
 
     const LibVector4* start_colors;
-
     const LibVector4* end_colors;
-
     const u8* palette_indices;
-
     LibImageDataHeader* target;
-
     LibResourceBuffer* resource;
 
     /** Weight of end_colors; start_colors uses 1 - blend. */

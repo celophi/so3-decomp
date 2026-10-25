@@ -85,7 +85,6 @@ public:
     virtual void func_003EEBE0();
 
     TacticsCoordinatePositionList nodes;
-
     s32 selected;
 };
 
@@ -172,13 +171,9 @@ static inline s32 first_strategy_text_key(s16 character_id)
 struct TacticsCharacterEquipment
 {
     u8 unk00[0x20];
-
     char character_name[0x18];
-
     u8 battle_strategy;
-
     u8 previous_battle_strategy;
-
     u8 unk3a[0xDA];
 };
 
@@ -187,111 +182,63 @@ class TacticsCharacterRecord
 {
 public:
     s16 character_id;
-
     s16 stat_limit_type;
-
     s16 encoded_level;
-
     s16 encoded_base_level;
-
     s32 encoded_flags;
-
     s32 encoded_experience;
-
     s32 encoded_base_hp;
-
     s32 encoded_max_hp;
-
     s32 encoded_hp;
-
     s32 encoded_base_mp;
-
     s32 encoded_max_mp;
-
     s32 encoded_mp;
-
     float unk28;
 
     /** Fury is stored at sixteen times its displayed amount. */
     float scaled_max_fury;
 
     float scaled_fury;
-
     s32 encoded_base_attack;
-
     s32 encoded_effective_attack;
-
     s32 encoded_attack;
-
     s32 encoded_base_defense;
-
     s32 encoded_effective_defense;
-
     s32 encoded_defense;
-
     s32 encoded_base_agility;
-
     s32 encoded_effective_agility;
-
     s32 encoded_agility;
-
     s32 encoded_base_hit;
-
     s32 encoded_effective_hit;
-
     s32 encoded_hit;
 
     /** The resident INT helpers validate these values through the HIT checksum. */
     s32 encoded_base_intelligence;
 
     s32 encoded_effective_intelligence;
-
     s32 encoded_intelligence;
-
     s16 encoded_base_knockback_power;
-
     s16 encoded_effective_knockback_power;
-
     s16 encoded_knockback_power;
-
     s16 encoded_base_knockback_resistance;
-
     s16 encoded_effective_knockback_resistance;
-
     s16 encoded_knockback_resistance;
-
     s16 encoded_base_critical_rate;
-
     s16 encoded_effective_critical_rate;
-
     s16 encoded_critical_rate;
-
     s32 level_checksum;
-
     s32 flags_experience_checksum;
-
     s32 hp_checksum;
-
     s32 mp_checksum;
-
     s32 attack_checksum;
-
     s32 defense_checksum;
-
     s32 agility_checksum;
-
     s32 hit_checksum;
-
     s32 knockback_power_checksum;
-
     s32 checksum_salt;
-
     s32 critical_rate_checksum;
-
     s32 knockback_resistance_checksum;
-
     s32 unkb4[3];
-
     s32 unkc0;
 
     /** @brief Decode current HP, marking valid flags when the HP checksum fails. @return Current HP, or zero for corruption. */
@@ -465,7 +412,6 @@ static inline void set_resource_display_scale(ItemCreationOptionResourceDisplay*
 struct TacticsAlignedResource
 {
     u8 unk00[0x40];
-
     s32 size;
 };
 
@@ -484,9 +430,7 @@ class TacticsCoordinateNode
 {
 public:
     float x;
-
     float y;
-
     TacticsCoordinateNode* next;
 
     /** @brief Initialize both coordinate components to zero. */
@@ -506,7 +450,6 @@ public:
 struct TacticsAssociatedMovementRef
 {
     u8 unk00[0xB8];
-
     LibClass175030* movement;
 };
 
@@ -514,9 +457,7 @@ struct TacticsAssociatedMovementRef
 typedef struct TacticsSavedFormation
 {
     u8 pad_00[0x20];
-
     u8 formation;
-
     u8 leader_character_id;
 } TacticsSavedFormation;
 
@@ -524,7 +465,6 @@ typedef struct TacticsSavedFormation
 struct TacticsRuntimeControl
 {
     u8 unk00[0x6E];
-
     u8 character_state_refresh_pending;
 };
 
@@ -532,11 +472,8 @@ struct TacticsRuntimeControl
 struct TacticsRuntimeCallbacks
 {
     u8 unk00[0x14];
-
     FieldClass153E30* state;
-
     u8 unk18[2];
-
     u16 tactics_mode_flags;
 };
 
@@ -544,17 +481,11 @@ struct TacticsRuntimeCallbacks
 typedef struct TacticsGridSelectionRef
 {
     TacticsSavedFormation* state;
-
     TacticsCharacterRecord* character_records;
-
     TacticsCharacterEquipment* equipment_records;
-
     FieldClass153E00* runtime;
-
     TacticsRuntimeCallbacks* callbacks;
-
     u8 pad_14[0xC];
-
     FieldBufferSlots* resources;
 } TacticsGridSelectionRef;
 

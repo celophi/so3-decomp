@@ -428,7 +428,6 @@ public:
     LibMatrix44Value offset_transform;
 
     u8 unk150[0x80];
-
     LibVector4 offset_translation;
 
     /** Quaternion used to build the offset transform. */
@@ -495,13 +494,9 @@ public:
     bool load_resource();
 
     s32 frame;
-
     LibRenderDataRecord* target;
-
     void** entries;
-
     const LibImageSequenceHeader* sequence;
-
     LibResourceBuffer* resource;
 };
 
@@ -805,11 +800,8 @@ public:
     virtual ~LibClass178B10();
 
     void** objects;
-
     s32 count;
-
     u32 unk1c;
-
     u8 unk20[4];
 };
 #endif

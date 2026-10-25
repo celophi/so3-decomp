@@ -35,9 +35,7 @@ typedef struct FieldFlagOwner273720
 typedef struct FieldResourceHeader273720
 {
     u8 frame_count;
-
     u8 unk01[2];
-
     u8 loop_mode;
 } FieldResourceHeader273720;
 
@@ -45,9 +43,7 @@ typedef struct FieldResourceHeader273720
 typedef struct FieldResourceRecord273720
 {
     u8 unk00[0xC];
-
     float duration_frames;
-
     u8 unk10[0x40];
 } FieldResourceRecord273720;
 
@@ -64,13 +60,9 @@ typedef struct FieldResourceOwner273720
 typedef struct FieldObject154E60
 {
     void* vtable;
-
     u8 unk04[0xC];
-
     FieldVector4 unk10;
-
     FieldVector4 unk20;
-
     FieldGridFrameVector unk30;
 } FieldObject154E60;
 typedef struct FieldBitset154E80 FieldBitset154E80;

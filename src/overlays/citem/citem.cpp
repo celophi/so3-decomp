@@ -27,6 +27,7 @@ FieldRecordSelection* func_0028E4D0(FieldRecordSelection* selection);
 #include "overlays/1067-00/text_002F9C90.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/lib/text_0045AD10.h"
+#include "overlays/1067-00/text_002AE9E0.h"
 #include "overlays/lib/resource_widget_inlines.h"
 #include "overlays/lib/list_indicator_inlines.h"
 #include "overlays/lib/movement_widget_inlines.h"
@@ -167,49 +168,6 @@ struct StatusRecord
     u8 unk3c;
 };
 
-struct DisplayRecord
-{
-    void* methods;
-    u8 unk04[0x5C];
-    u8 unk60;
-    u8 unk61[0x47];
-    u8 unka8;
-};
-
-struct Record00349190
-{
-    u8 unk00[0x20];
-    u32 unk20;
-    u32 unk24;
-    u32 unk28;
-    float unk2c;
-    u8 unk30[0x3C];
-    u16 unk6c;
-    u8 unk6e[0x46];
-    u32 unkb4;
-    u32 unkb8;
-};
-
-/** Partial transform receiver with MAIN table D_184400, a packet, and a release flag. */
-struct Record00349250
-{
-    void* methods;
-    u8 unk04[0x60];
-    u8 dma_pending;
-    u8 unk65[0x2B];
-    void* notification_table;
-    u8 unk94[0x34];
-    ResidentPacket* packet;
-    u8 unkcc[0x38];
-    u8 release_pending;
-};
-
-struct Record00349BF0
-{
-    u8 unk00[0x2C];
-    void* unk2c;
-};
-
 
 struct Record0034C6A0
 {
@@ -243,13 +201,76 @@ class CitemCoordinateNode
 
 
 
-struct TransformRecord
+/** Draw the paired HP and MP gauges for one character. */
+class ItemHpMpGaugeDrawer : public FieldClass159A70
 {
-    u8 unk00[0x20];
-    Vector4 unk20;
-    Vector4 unk30;
-    Vector4 unk40;
-    u8 unk50;
+    public:
+        /** @brief Release the drawing packet and base. */
+        virtual ~ItemHpMpGaugeDrawer();
+
+        /** @brief Rebuild the drawing packet. @param first Unused draw flag. @param depth Unused drawing depth. @param value Unused drawing value. */
+        virtual void func_002BC4F0(u32 first, u32 depth, float value);
+
+        float origin_x;
+        float origin_y;
+        float row_spacing;
+        s16 character_id;
+        u8 unk3e[2];
+        void* characters;
+};
+
+/** HP and MP gauge transform with drawing and DMA notification interfaces. */
+class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
+{
+    public:
+        /** @brief Release the drawing and transform bases. */
+        virtual ~ItemHpMpGauge();
+
+        /** @brief Submit the drawing packet for DMA notification. */
+        virtual void func_003EEBE0();
+
+        /** @brief Leave the default update state unchanged. */
+        virtual void update();
+
+        /** @brief Report the transform kind. @return Fourteen. */
+        virtual s32 get_default_list_kind();
+
+        /** @brief Detach and queue the gauge for release. */
+        virtual void func_003EF740();
+
+        /** @brief Restore the saved transform state. */
+        virtual void func_003F4420();
+
+        /** @brief Update gauge visibility and rebuild changed packets. @param first Update enabled. @param second Mark the packet changed. @param third Allow drawing. */
+        virtual void func_0044B100(u32 first, u32 second, u32 third);
+
+        /** @brief Complete DMA notification processing. @param value Unused notification value. */
+        virtual void func_003F4410(u32 value);
+
+        /** @brief Initialize the gauge transform. @param code Transform code. @param first First transform flag. @param source Transform source. @param x Unused first coordinate. @param y Unused second coordinate. @param z Third coordinate. @return One. */
+        virtual s32 initialize(s32 code, s32 first, void* source, float x, float y, float z);
+
+        u8 queued_for_release;
+};
+
+/** Moving selector with its coordinate list and selected entry. */
+class ItemCoordinateSelector : public LibClass175030
+{
+    public:
+        /** @brief Destroy the coordinate list and movement bases. */
+        virtual ~ItemCoordinateSelector();
+
+        /** @brief Report the intrusive object kind. @return Three. */
+        virtual s32 get_default_list_kind();
+
+        /** @brief Leave the default update hook unchanged. */
+        virtual void update();
+
+        /** @brief Leave the default notification hook unchanged. */
+        virtual void func_003EEBE0();
+
+        ItemList184EB8 nodes;
+        s32 selected;
 };
 
 struct ScreenRecord
@@ -329,11 +350,6 @@ class ItemListWindow1848D0 : public FieldClass15AD40
         ItemList184EC8 entries;
         u32 unk1b8[24];
         u8 sort_enabled;
-};
-
-struct Record00353A50
-{
-    void* methods;
 };
 
 /** Item window linked to its controller and alternate list. */
@@ -785,19 +801,17 @@ class ItemAllocationWindow1847B0 : public FieldClass15AD40
 
 extern "C"
 {
-extern u8 D_184390[];
-extern u8 D_1844A0[];
 extern u8 __vt__23ItemCreationClass175110[];
-extern u8 D_50CD30[];
+extern LibVector4 D_50CD30;
+extern u64 D_004ED330[];
 extern LibWidgetColors4C5590 D_354C40;
 extern void func_2CEAF0(void* object, s32 flags);
 extern void func_100B40(void* object);
-extern void func_4CE4C0(Vector4* destination, const Vector4* source);
-extern void func_2BC410(Record00349BF0* record, s32 flag);
+extern void func_4CE4C0(LibVector4* destination, const LibVector4* source);
 extern void func_4618F0(void* record, s32 flag);
 extern void func_4C48B0(void* record, s32 flag);
 extern void func_2CD9F0(void* record, s32 flag);
-extern void func_44B110(void* object, s32 arg1, s32 arg2, void* arg3, float value, s32 flag);
+extern void func_44B110(void* object, s32 code, s32 first, void* source, float z, s32 flag);
 
 /** @brief Allocate and construct the native panel widget. @return The panel storage, or null. */
 static inline LibClass178630* allocate_panel(void)
@@ -883,22 +897,6 @@ static inline u8 create_record_selection(ItemController* object)
 }
 
 /**
- * @brief View the transform receiver through its native secondary DMA interface.
- * @param object Complete transform receiver.
- * @return Interface at offset 0x90, or null for a null receiver.
- */
-static inline struct LibClass171FF0* transform_notification(Record00349250* object)
-{
-    void* notification = object;
-
-    if (object != 0)
-    {
-        notification = (u8*)notification + 0x90;
-    }
-    return (struct LibClass171FF0*)notification;
-}
-
-/**
  * @brief Allocate a coordinate node with its scalar values initially clear.
  * @return Allocated node, or null.
  */
@@ -930,8 +928,6 @@ static inline u8 item_definition_unsellable(const ItemCreationCategoryDefinition
 {
     return definition->unsellable;
 }
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003483C0);
 
 void func_00348460(ItemRecord* item, u8 value)
 {
@@ -1183,55 +1179,91 @@ void func_003489F0(ItemRecord* item, u32 value)
     item->unk20 = value;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003490F0);
+}
 
-s32 func_00349190(Record00349190* record, s32 arg1, s32 arg2, void* arg3, float first, float second, float third)
+void ItemHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
 {
-    record->unk6c = 0x6006;
-    record->unk20 = 0;
-    record->unk24 = 0;
-    record->unk28 = 0;
-    record->unk2c = 1.0f;
-    func_44B110(record, arg1, arg2, arg3, third, 0);
-    record->unkb4 = 0;
-    record->unkb8 = 0;
+    if (queued_for_release != 0)
+    {
+        return;
+    }
+    unk63 = 0;
+    if (first == 0)
+    {
+        return;
+    }
+    if (second != 0)
+    {
+        unkae = 1;
+    }
+    if (third == 0)
+    {
+        return;
+    }
+    if (unkae != 0)
+    {
+        ItemHpMpGaugeDrawer::unk00 = 0xFFFFFE - (ItemHpMpGaugeDrawer::unk04->unka0 << 4);
+        func_002BC4F0(0, ItemHpMpGaugeDrawer::unk00, 128.0f);
+    }
+    unk63 = 1;
+}
+
+s32 ItemHpMpGauge::initialize(s32 code, s32 first, void* source, float x, float y, float z)
+{
+    unk6c = 0x6006;
+    LibClass171EC0::unk20.components[0] = 0.0f;
+    LibClass171EC0::unk20.components[1] = 0.0f;
+    LibClass171EC0::unk20.components[2] = 0.0f;
+    LibClass171EC0::unk20.components[3] = 1.0f;
+    func_44B110(this, code, first, source, z, 0);
+    unkb4 = 0;
+    unkb8 = 0;
     return 1;
 }
 
-void func_003491F0(void* object)
+void ItemHpMpGauge::func_003F4410(u32 value)
 {
-    func_4D00B0(object);
+    func_4D00B0(this);
 }
 
-void item_submit_transform_packet(Record00349250* object)
+void ItemHpMpGauge::func_003EEBE0()
 {
-    object->dma_pending = 1;
-    if (object->packet != 0)
+    dma_pending = 1;
+    if (unk08 != 0)
     {
-        func_0011F770(object->packet, transform_notification(object));
+        func_0011F770(unk08, this);
     }
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00349250);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_003492F0);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00349B90);
-
-Record00349BF0* func_00349BF0(Record00349BF0* record, s16 flag)
+inline ItemHpMpGaugeDrawer::~ItemHpMpGaugeDrawer()
 {
-    if (record != 0)
-    {
-        record->unk2c = D_1844A0;
-        func_2BC410(record, 0);
-        if (flag > 0)
-        {
-            func_100B40(record);
-        }
-    }
-    return record;
 }
 
+ItemHpMpGauge::~ItemHpMpGauge()
+{
+}
+
+extern "C"
+{
+
+/** @brief Build the paired HP and MP gauge drawing packet. @param drawer Gauge drawer. */
+void func_003492F0(ItemHpMpGaugeDrawer* drawer);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_003492F0);
+
+}
+
+void ItemHpMpGaugeDrawer::func_002BC4F0(u32 first, u32 depth, float value)
+{
+    ResidentPacket* packet = unk08;
+    if (packet != 0)
+    {
+        packet->unk08 = packet->unk00 + 64;
+        packet->unk0c = packet->unk08;
+        packet->unk15 = 0;
+        func_0011F140(packet, D_004ED330[0]);
+        func_003492F0(this);
+    }
 }
 
 u32 ItemController::get_resource_slot()
@@ -1285,7 +1317,7 @@ extern "C"
 {
 
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot5c__16ItemWindow1845B0Fv);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot5c__16ItemWindow1845B0Fv);
 
 }
 
@@ -1473,7 +1505,7 @@ u8 ItemWindow1845B0::func_slotb4()
 extern "C"
 {
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotb0__16ItemWindow1845B0Fv);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotb0__16ItemWindow1845B0Fv);
 
 }
 
@@ -1489,7 +1521,7 @@ ItemWindow1845B0::~ItemWindow1845B0()
 extern "C"
 {
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotf4__16ItemWindow1845B0FUi);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotf4__16ItemWindow1845B0FUi);
 
 Record0034C6A0* func_0034C6A0(Record0034C6A0* record, s16 flag)
 {
@@ -1506,8 +1538,11 @@ Record0034C6A0* func_0034C6A0(Record0034C6A0* record, s16 flag)
     return record;
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_0034C710);
+}
 
+/** @brief Destroy the movement storage and intrusive widget base. */
+inline ItemCreationClass175030::~ItemCreationClass175030()
+{
 }
 
 FieldRecordSelection* ItemController::selected_records()
@@ -1518,7 +1553,7 @@ FieldRecordSelection* ItemController::selected_records()
 extern "C"
 {
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot5c__16ItemWindow1846B0Fv);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot5c__16ItemWindow1846B0Fv);
 
 }
 
@@ -1657,9 +1692,9 @@ u8 ItemWindow1846B0::func_slotb4()
 extern "C"
 {
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotb0__16ItemWindow1846B0Fv);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotb0__16ItemWindow1846B0Fv);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotf4__16ItemWindow1846B0FUi);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotf4__16ItemWindow1846B0FUi);
 
 }
 
@@ -1673,16 +1708,11 @@ void ItemWindow1846B0::func_slot0c()
     FieldClass15AE70::func_slot0c();
 }
 
-extern "C"
+void ItemHpMpGauge::func_003EF740()
 {
-
-void item_queue_transform_release(Record00349250* object)
-{
-    object->release_pending = 1;
-    func_0044B210((LibClass174610*)object);
-    resident_enqueue_object(D_001B65F4, object);
-}
-
+    queued_for_release = 1;
+    func_0044B210(this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 ItemWindow1846B0::~ItemWindow1846B0()
@@ -1761,13 +1791,21 @@ u8 ItemAllocationWindow1847B0::func_slotb0()
 extern "C"
 {
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot5c__26ItemAllocationWindow1847B0Fv);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot5c__26ItemAllocationWindow1847B0Fv);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00350B60);
+}
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot11c__20ItemListWindow1848D0Fii);
+/** @brief Destroy the list receiver and its head node. */
+LibClass178A70::~LibClass178A70()
+{
+}
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", __ct__20ItemListWindow1848D0FP14ItemController);
+extern "C"
+{
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot11c__20ItemListWindow1848D0Fii);
+
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", __ct__20ItemListWindow1848D0FP14ItemController);
 
 s32 func_00351E40(const ItemListNode* left, const ItemListNode* right, u32 comparison_arg)
 {
@@ -2735,15 +2773,15 @@ extern "C"
 {
 
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotb0__16ItemWindow184AF0Fv);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotb0__16ItemWindow184AF0Fv);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot6c__16ItemWindow184AF0Fv);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot6c__16ItemWindow184AF0Fv);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot68__16ItemWindow184AF0Fv);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot68__16ItemWindow184AF0Fv);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot5c__16ItemWindow184AF0Fv);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot5c__16ItemWindow184AF0Fv);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotf4__16ItemWindow184AF0FUi);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotf4__16ItemWindow184AF0FUi);
 
 }
 
@@ -2800,9 +2838,9 @@ extern "C"
 {
 
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slot60__16ItemWindow184BF0Fi);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot60__16ItemWindow184BF0Fi);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotf4__16ItemWindow184BF0FUi);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotf4__16ItemWindow184BF0FUi);
 
 }
 
@@ -2814,7 +2852,7 @@ extern "C"
 {
 
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_slotf4__16ItemWindow184CF0FUi);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotf4__16ItemWindow184CF0FUi);
 
 }
 
@@ -2955,140 +2993,137 @@ ItemController::~ItemController()
 extern "C"
 {
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", __ct__14ItemControllerFv);
+INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", __ct__14ItemControllerFv);
 
 }
 
-void ItemClass184380::func_00353A30()
+/** @brief Leave the default DMA notification hook unchanged. @param value Unused notification value. */
+void LibClass171FF0::func_003EFA90(u32 value)
 {
 }
 
-void ItemClass184380::func_00353A40()
+void LibClass171FF0::func_003F4410(u32 value)
 {
 }
 
-extern "C"
-{
-
-Record00353A50* func_00353A50(Record00353A50* record, s16 flag)
-{
-    if (record != 0)
-    {
-        record->methods = D_184390;
-        if (flag > 0)
-        {
-            func_100B40(record);
-        }
-    }
-    return record;
-}
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353AA0);
-
-s32 func_00353B00(void* object)
+s32 ItemCoordinateSelector::get_default_list_kind()
 {
     return 3;
 }
 
-void func_00353B10(void* object)
+void ItemCoordinateSelector::update()
 {
 }
 
-void func_00353B20(void* object)
+void ItemCoordinateSelector::func_003EEBE0()
 {
 }
 
-void func_00353B30(TransformRecord* record, const Vector4* value)
+/** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
+void LibClass178A90::func_003EF770(const LibVector4* value)
 {
-    record->unk50 = 1;
-    record->unk20 = *value;
+    transform_dirty = 1;
+    unk20.packed = value->packed;
 }
 
-void func_00353B50(TransformRecord* record, const Vector4* value)
+/** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
+void LibClass178A90::func_003EF780(const LibVector4* value)
 {
-    record->unk50 = 1;
-    record->unk20 = *value;
+    transform_dirty = 1;
+    unk20.packed = value->packed;
 }
 
-void func_00353B70(TransformRecord* record, float x, float y, float z)
+/** @brief Set the translation coordinates and mark the transform dirty. @param x Horizontal translation. @param y Vertical translation. @param z Third translation component. */
+void LibClass178A90::func_003EF790(float x, float y, float z)
 {
-    record->unk50 = 1;
-    record->unk20.x = x;
-    record->unk20.y = y;
-    record->unk20.z = z;
-    record->unk20.w = 1.0f;
+    transform_dirty = 1;
+    unk20.components[0] = x;
+    unk20.components[1] = y;
+    unk20.components[2] = z;
+    unk20.components[3] = 1.0f;
 }
 
-void func_00353B90(TransformRecord* record, float x, float y, float z, float w)
+/** @brief Set all quaternion components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. @param w Fourth component. */
+void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
 {
-    record->unk50 = 1;
-    record->unk30.x = x;
-    record->unk30.y = y;
-    record->unk30.z = z;
-    record->unk30.w = w;
+    transform_dirty = 1;
+    unk30.components[0] = x;
+    unk30.components[1] = y;
+    unk30.components[2] = z;
+    unk30.components[3] = w;
 }
 
-void func_00353BB0(TransformRecord* record, const Vector4* value)
+/** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
+void LibClass171EF0::func_003EEEF0(const LibVector4* value)
 {
-    record->unk50 = 1;
-    record->unk30 = *value;
+    transform_dirty = 1;
+    unk30.packed = value->packed;
 }
 
-void func_00353BD0(TransformRecord* record, const Vector4* value)
+/** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
+void LibClass171EF0::func_003EEF10(const LibVector4* value)
 {
-    record->unk50 = 1;
-    record->unk30 = *value;
+    transform_dirty = 1;
+    unk30.packed = value->packed;
 }
 
-void func_00353BF0(TransformRecord* record, const Vector4* input)
+/** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
+void LibClass171EF0::func_003EEF30(const LibVector4* value)
 {
-    record->unk50 = 1;
-    func_4CE4C0(&record->unk30, input);
+    transform_dirty = 1;
+    func_4CE4C0(&unk30, value);
 }
 
-void func_00353C20(TransformRecord* record, const Vector4* input)
+/** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
+void LibClass171EF0::func_003EEF60(const LibVector4* value)
 {
-    record->unk50 = 1;
-    func_4CE4C0(&record->unk30, input);
+    transform_dirty = 1;
+    func_4CE4C0(&unk30, value);
 }
 
-void func_00353C50(TransformRecord* record, float x, float y, float z)
+/** @brief Set the rotation components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. */
+void LibClass171EF0::func_003EEF90(float x, float y, float z)
 {
-    Vector4 value;
-    record->unk50 = 1;
-    value.x = x;
-    value.y = y;
-    value.z = z;
-    value.w = 1.0f;
-    func_4CE4C0(&record->unk30, &value);
+    transform_dirty = 1;
+    LibVector4 value;
+    value.components[0] = x;
+    value.components[1] = y;
+    value.components[2] = z;
+    value.components[3] = 1.0f;
+    func_4CE4C0(&unk30, &value);
 }
 
-void func_00353C90(TransformRecord* record, const Vector4* value)
+/** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
+void LibClass171EF0::func_003EEFD0(const LibVector4* value)
 {
-    record->unk50 = 1;
-    record->unk40 = *value;
+    transform_dirty = 1;
+    unk40.packed = value->packed;
 }
 
-void func_00353CB0(TransformRecord* record, const Vector4* value)
+/** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
+void LibClass171EF0::func_003EEFF0(const LibVector4* value)
 {
-    record->unk50 = 1;
-    record->unk40 = *value;
+    transform_dirty = 1;
+    unk40.packed = value->packed;
 }
 
-void func_00353CD0(TransformRecord* record, float x, float y, float z)
+/** @brief Set the scale coordinates and mark the transform dirty. @param x First scale component. @param y Second scale component. @param z Third scale component. */
+void LibClass171EF0::func_003EF010(float x, float y, float z)
 {
-    record->unk50 = 1;
-    record->unk40.x = x;
-    record->unk40.y = y;
-    record->unk40.z = z;
+    transform_dirty = 1;
+    unk40.components[0] = x;
+    unk40.components[1] = y;
+    unk40.components[2] = z;
 }
 
-s32 func_00353CF0(void* object)
+/** @brief Return the default output status. @param output Unused output object. @return Zero. */
+s32 LibClass178A90::func_003EEE20(void* output)
 {
     return 0;
 }
 
-s32 func_00353D00(float value)
+/** @brief Test whether the supplied value is negative. @param value Value to test. @param mode Unused mode. @return One if negative, otherwise zero. */
+s32 LibClass178A90::func_003EEE30(float value, float mode)
 {
     s32 result = 1;
     if (!(value < 0.0f))
@@ -3098,32 +3133,35 @@ s32 func_00353D00(float value)
     return result;
 }
 
-u8* func_00353D20(void)
+/** @brief Return the default transform vector. @return Resident vector pointer. */
+const LibVector4* LibClass178A90::func_003EFAA0()
 {
-    return D_50CD30;
+    return &D_50CD30;
 }
 
-s32 func_00353D30(void* object)
+/** @brief Return the default transform receiver. @return Null. */
+LibClass178A90* LibClass178A90::func_003EEE50()
 {
     return 0;
 }
 
-void func_00353D40(void* object)
+/** @brief Leave the default transform release hook unchanged. */
+void LibClass178A90::func_003EEE60()
 {
 }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00353D50);
+ItemCoordinateSelector::~ItemCoordinateSelector()
+{
+}
 
-s32 func_00353E20(void* object)
+s32 ItemHpMpGauge::get_default_list_kind()
 {
     return 14;
 }
 
-void func_00353E30(DisplayRecord* display)
+void ItemHpMpGauge::func_003F4420()
 {
-    display->unk60 = display->unka8;
-}
-
+    unk60 = unka8;
 }
 
 ItemWindow1844B0::~ItemWindow1844B0()
@@ -3594,11 +3632,5 @@ void func_00354980(ItemList184EC8* owner, ItemListComparator compare, u32 compar
         }
     }
 }
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B80);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354B90);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/text", func_00354BA0);
 
 }
