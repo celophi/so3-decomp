@@ -12,49 +12,27 @@ typedef struct FieldLinkedObject157F00 FieldLinkedObject157F00;
 typedef struct FieldObject157F00
 {
     u8 unk00[0x28];
-
     float unk28;
-
     s32 unk2C;
-
     float unk30;
-
     float unk34;
-
     float unk38;
-
     float unk3C;
-
     float secondary_emission_scale;
-
     float unk44;
-
     LibClass173990* primary_emitter;
-
     u8 unk4C;
-
     u8 unk4D;
-
     u8 primary_emission_flags;
-
     u8 primary_emission_count;
-
     LibClass173990* secondary_emitter;
-
     u8 secondary_emission_flags;
-
     u8 secondary_emission_count;
-
     u8 unk56;
-
     u8 unk57;
-
     u8 unk58[8];
-
     FieldVector4 transform_rows[4];
-
     u8* unkA0;
-
     FieldResourceRecord273720* unkA4;
 } FieldObject157F00;
 
@@ -133,15 +111,10 @@ public:
     }
 
     u8 unk40[0xF0];
-
     u8 unk130;
-
     u8 unk131;
-
     u8 unk132;
-
     u8 unk133;
-
     u8 unk134[0xC];
 };
 
@@ -341,47 +314,26 @@ public:
                                 const LibVector4* color_scale);
 
     float unk28;
-
     s32 unk2C;
-
     float unk30;
-
     float unk34;
-
     float unk38;
-
     float unk3C;
-
     float secondary_emission_scale;
-
     float unk44;
-
     LibClass173990* primary_emitter;
-
     u8 unk4C;
-
     u8 unk4D;
-
     u8 primary_emission_flags;
-
     u8 primary_emission_count;
-
     LibClass173990* secondary_emitter;
-
     u8 secondary_emission_flags;
-
     u8 secondary_emission_count;
-
     u8 unk56;
-
     u8 skip_frame_playback;
-
     u8 unk58[8];
-
     FieldVector4 transform_rows[4];
-
     FieldResourceHeader273720* frame_header;
-
     FieldResourceRecord273720* frame_records;
 };
 
@@ -551,47 +503,26 @@ public:
                                 const LibVector4* color_scale);
 
     float unk28;
-
     s32 unk2C;
-
     float unk30;
-
     float unk34;
-
     float unk38;
-
     float unk3C;
-
     float secondary_emission_scale;
-
     float unk44;
-
     LibClass173990* primary_emitter;
-
     u8 unk4C;
-
     u8 unk4D;
-
     u8 primary_emission_flags;
-
     u8 primary_emission_count;
-
     LibClass173990* secondary_emitter;
-
     u8 secondary_emission_flags;
-
     u8 secondary_emission_count;
-
     u8 unk56;
-
     u8 unk57;
-
     u8 unk58[8];
-
     FieldVector4 transform_rows[4];
-
     u8* unkA0;
-
     FieldResourceRecord273720* unkA4;
 };
 
@@ -694,47 +625,26 @@ public:
                                 const LibVector4* color_scale);
 
     float unk28;
-
     s32 unk2C;
-
     float unk30;
-
     float unk34;
-
     float unk38;
-
     float unk3C;
-
     float secondary_emission_scale;
-
     float unk44;
-
     LibClass173990* primary_emitter;
-
     u8 unk4C;
-
     u8 unk4D;
-
     u8 primary_emission_flags;
-
     u8 primary_emission_count;
-
     LibClass173990* secondary_emitter;
-
     u8 secondary_emission_flags;
-
     u8 secondary_emission_count;
-
     u8 unk56;
-
     u8 unk57;
-
     u8 unk58[8];
-
     FieldVector4 transform_rows[4];
-
     u8* unkA0;
-
     FieldResourceRecord273720* unkA4;
 };
 
@@ -837,47 +747,26 @@ public:
                                 const LibVector4* color_scale);
 
     float unk28;
-
     s32 unk2C;
-
     float unk30;
-
     float unk34;
-
     float unk38;
-
     float unk3C;
-
     float secondary_emission_scale;
-
     float unk44;
-
     LibClass173990* primary_emitter;
-
     u8 unk4C;
-
     u8 unk4D;
-
     u8 primary_emission_flags;
-
     u8 primary_emission_count;
-
     LibClass173990* secondary_emitter;
-
     u8 secondary_emission_flags;
-
     u8 secondary_emission_count;
-
     u8 unk56;
-
     u8 unk57;
-
     u8 unk58[8];
-
     FieldVector4 transform_rows[4];
-
     u8* unkA0;
-
     FieldResourceRecord273720* unkA4;
 };
 

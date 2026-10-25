@@ -141,13 +141,9 @@ static inline u8 transaction_item_category(const ItemCreationCategoryDefinition*
 struct FieldModelRequests
 {
     u8 pad00[0x18];
-
     s16 first_key;
-
     s16 second_key;
-
     u32 first_buffer_address;
-
     u32 second_buffer_address;
 };
 

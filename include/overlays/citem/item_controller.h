@@ -4,6 +4,7 @@
 #include "types.h"
 #include "overlays/1067-00/text_001E1590.h"
 #include "overlays/1067-00/text_0028E240.h"
+#include "overlays/lib/text_004BD360.h"
 
 class FieldClass15AE70;
 
@@ -21,19 +22,8 @@ class ItemWindow1844B0;
 
 class ItemWindow1849F0;
 
-/** Local two-slot base interface used by the item menu controller. */
-class ItemClass184380
-{
-    public:
-        /** @brief Perform no action. */
-        virtual void func_00353A30();
-
-        /** @brief Perform no action. */
-        virtual void func_00353A40();
-};
-
-/** Item menu controller with a local interface and a Field callback base. */
-class ItemController : public ItemClass184380, public FieldClass153E30
+/** Item menu controller with a DMA notification interface and a Field callback base. */
+class ItemController : public LibClass171FF0, public FieldClass153E30
 {
     public:
         /** @brief Initialize the controller's bases and clear its window and selection state. */

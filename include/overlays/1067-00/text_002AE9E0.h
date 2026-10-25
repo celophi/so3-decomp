@@ -77,13 +77,9 @@ typedef struct FieldSequenceTail
 typedef struct FieldTimedValueState
 {
     float delay_remaining;
-
     float update_remaining;
-
     float value_step;
-
     u8 updating : 1;
-
     u8 unk0C_1_7 : 7;
 } FieldTimedValueState;
 
@@ -154,7 +150,6 @@ struct FieldTimedQuad
     u8 base_alpha;
 
     u8 side : 1;
-
     u8 unk45_1_7 : 7;
 };
 
@@ -216,17 +211,11 @@ public:
     void add_quad(const FieldVector4* vertices, u8 side, u8 alpha);
 
     FieldTimedQuad* records[RECORD_COUNT];
-
     LibDrawBuffer* renderer;
-
     LibTransform* attached_object;
-
     s32 texture_index;
-
     s32 record_count;
-
     u8 renderer_external : 1;
-
     u8 unk1C0_1_7 : 7;
 };
 #endif

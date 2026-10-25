@@ -9,7 +9,6 @@
 union FieldScriptStackWord
 {
     u32 word;
-
     float number;
 };
 
@@ -39,27 +38,16 @@ public:
     virtual float func_00201530();
 
     float number;
-
     u32 instruction_index;
-
     s32 stack_depth;
-
     FieldScriptStackWord stack[256];
-
     u32 unk420;
-
     u32 unk424;
-
     u32 variables[32];
-
     float unk4a8[4];
-
     float unk4b8[4];
-
     u8 unk4c8_0 : 1;
-
     u8 unk4c8_1 : 1;
-
     u8 unk4c8_2_7 : 6;
 };
 
@@ -77,50 +65,30 @@ class FieldClass150DB0
 {
 public:
     u32 unk00;
-
     FieldClass150DC0 script;
-
     u8 unk4d0[0x10];
-
     FieldClass1502A0 lists[6];
-
     u8 unk7b0[0xC4];
-
     s32 resource_index;
-
     void* context14;
-
     FieldClass14FE30* context04;
-
     ResidentHeap* context6c;
-
     FieldClass1522C0* context34;
-
     FieldClass1505F0* context3c;
-
     FieldClass154CC0* context4c;
-
     FieldClass154E90* context54;
-
     void* context58;
 
     /** Slot owner retained for reuse by the active field context. */
     FieldObjectSlotOwner* object_slots;
 
     ResidentContextObject64* context64;
-
     u32 unk8a0;
-
     void* context24;
-
     FieldClass159010* context68;
-
     void* context28;
-
     u32 unk8b0;
-
     ResidentHeap* context74;
-
     u8 unk8b8[0x38];
 
     virtual ~FieldClass150DB0();

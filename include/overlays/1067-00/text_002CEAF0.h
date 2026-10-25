@@ -15,19 +15,12 @@ typedef struct FieldClass15AE70 FieldClass15AE70;
 typedef struct FieldBufferSlots
 {
     u8 unk00[0x14];
-
     void* allocations[64];
-
     void* block_chain_allocation;
-
     s32 block_chain_size;
-
     void* buffer_allocations[3];
-
     void* aligned_buffers[3];
-
     s32 buffer_sizes[3];
-
     u8 unk140;
 } FieldBufferSlots;
 

@@ -102,49 +102,27 @@ typedef struct LibClass173990 LibClass173990;
 typedef struct FieldObject158860
 {
     u8 unk00[0x28];
-
     float unk28;
-
     s32 unk2C;
-
     float unk30;
-
     float unk34;
-
     float unk38;
-
     float unk3C;
-
     float secondary_emission_scale;
-
     float unk44;
-
     LibClass173990* primary_emitter;
-
     u8 unk4C;
-
     u8 unk4D;
-
     u8 primary_emission_flags;
-
     u8 primary_emission_count;
-
     LibClass173990* secondary_emitter;
-
     u8 secondary_emission_flags;
-
     u8 secondary_emission_count;
-
     u8 unk56;
-
     u8 skip_frame_playback;
-
     u8 unk58[8];
-
     FieldVector4 transform_rows[4];
-
     FieldResourceHeader273720* frame_header;
-
     FieldResourceRecord273720* frame_records;
 } FieldObject158860;
 
@@ -152,49 +130,27 @@ typedef struct FieldObject158860
 typedef struct FieldObject157AF0
 {
     u8 unk00[0x28];
-
     float unk28;
-
     s32 unk2C;
-
     float unk30;
-
     float unk34;
-
     float unk38;
-
     float unk3C;
-
     float secondary_emission_scale;
-
     float unk44;
-
     LibClass173990* primary_emitter;
-
     u8 unk4C;
-
     u8 unk4D;
-
     u8 primary_emission_flags;
-
     u8 primary_emission_count;
-
     LibClass173990* secondary_emitter;
-
     u8 secondary_emission_flags;
-
     u8 secondary_emission_count;
-
     u8 unk56;
-
     u8 unk57;
-
     u8 unk58[8];
-
     FieldVector4 transform_rows[4];
-
     u8* unkA0;
-
     FieldResourceRecord273720* unkA4;
 } FieldObject157AF0;
 
@@ -202,49 +158,27 @@ typedef struct FieldObject157AF0
 typedef struct FieldObject157BC0
 {
     u8 unk00[0x28];
-
     float unk28;
-
     s32 unk2C;
-
     float unk30;
-
     float unk34;
-
     float unk38;
-
     float unk3C;
-
     float secondary_emission_scale;
-
     float unk44;
-
     LibClass173990* primary_emitter;
-
     u8 unk4C;
-
     u8 unk4D;
-
     u8 primary_emission_flags;
-
     u8 primary_emission_count;
-
     LibClass173990* secondary_emitter;
-
     u8 secondary_emission_flags;
-
     u8 secondary_emission_count;
-
     u8 unk56;
-
     u8 unk57;
-
     u8 unk58[8];
-
     FieldVector4 transform_rows[4];
-
     u8* unkA0;
-
     FieldResourceRecord273720* unkA4;
 } FieldObject157BC0;
 

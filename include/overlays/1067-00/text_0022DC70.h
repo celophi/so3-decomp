@@ -329,32 +329,21 @@ public:
     }
 
     u32 byte_capacity;
-
     u32 buffer_base;
-
     u8 unk08_0 : 1;
-
     u8 unk08_1_7 : 7;
-
     u8 unk09[3];
-
     s32 file_key;
 
     /** Last matching resident request address, or zero when none was found. */
     u32 request_address;
 
     u8 slot_index;
-
     u8 kind;
-
     u8 unk16_0 : 1;
-
     u8 unk16_1 : 1;
-
     u8 unk16_2 : 1;
-
     u8 unk16_3_7 : 5;
-
     u8 unk17;
 
     /** @brief Release the buffer through its virtual handler, then reset the request. */

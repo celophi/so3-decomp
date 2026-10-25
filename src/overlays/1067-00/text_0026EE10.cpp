@@ -80,17 +80,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_0026F6
 struct FieldKeyedContextEntry
 {
     u8 unk00[8];
-
     FieldKeyedContextEntry* next;
-
     u8 unk0c[8];
-
     void* value;
-
     u8 unk18[0x10];
-
     u32 key;
-
     u8 flags;
 };
 
@@ -98,7 +92,6 @@ struct FieldKeyedContextEntry
 struct FieldKeyedContextList
 {
     u8 unk00[0x14];
-
     FieldKeyedContextEntry head;
 };
 
@@ -106,7 +99,6 @@ struct FieldKeyedContextList
 struct FieldKeyedContext
 {
     u8 unk00[0xD8];
-
     FieldKeyedContextList* list;
 };
 

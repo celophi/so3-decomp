@@ -114,27 +114,16 @@ public:
     virtual void func_001DDB30(void* arg);
 
     FieldResourceRequest* requests;
-
     FieldClass1DD400* completion_callback;
-
     s32 request_capacity;
-
     s32 request_priority;
-
     u8 unk2c;
-
     u8 request_count;
-
     u8 current_request;
-
     u8 unk2f;
-
     u8 unk30_0 : 1;
-
     u8 callback_ready : 1;
-
     u8 unk30_2_7 : 6;
-
     u8 unk31[3];
 };
 
@@ -182,15 +171,10 @@ public:
     virtual void reset_requests();
 
     s32 file_key;
-
     s32 start_delay;
-
     s32 initial_request_slot;
-
     void* buffer_allocation;
-
     u8 completion_ready;
-
     u8 unk45[3];
 };
 
@@ -408,47 +392,26 @@ public:
     virtual void func_001DDB30(void* arg);
 
     s32 file_key;
-
     u8 unk1c;
-
     u8 request_mode;
-
     u8 unk1e;
-
     u8 notification_pending;
-
     u8 unk20;
-
     u8 unk21[3];
-
     u32 unk24;
-
     u8 unk28;
-
     u8 unk29[3];
-
     FieldClass153E30* receiver;
-
     u32 next_file_key;
-
     u8 next_request_mode;
-
     u8 unk35[3];
-
     u32 unk38;
-
     FieldResourceLoader* completed_loader;
-
     u32 unk40;
-
     u8* owned_buffers[10];
-
     u32 unk6c[10];
-
     FieldBufferSlots* buffer_slots;
-
     FieldKeyedResourceLoader* request_loader;
-
     FieldKeyedResourceLoader* unk9c;
 };
 #endif

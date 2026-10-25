@@ -20,7 +20,6 @@ public:
     virtual ~ResidentClass14FA30();
 
     ResidentClass14FA30* previous;
-
     ResidentClass14FA30* next;
 };
 
@@ -38,11 +37,8 @@ public:
     virtual void func_00104740();
 
     s16 list_kind;
-
     u8 unk0e;
-
     u8 unk0f;
-
     void* owner;
 };
 #endif
@@ -73,11 +69,8 @@ typedef struct ResidentResourceHeader
     u8 signature[3];
 
     u8 compression_kind;
-
     u32 compressed_size;
-
     u32 decoded_size;
-
     u32 next_offset;
 } ResidentResourceHeader;
 

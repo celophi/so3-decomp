@@ -15,9 +15,7 @@ class LibBufferOwner
 {
 public:
     void* first;
-
     u8 unk04[4];
-
     void* second;
 
     LibBufferOwner();

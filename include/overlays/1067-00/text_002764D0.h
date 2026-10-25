@@ -71,21 +71,13 @@ public:
     void set_resource_selection(s32 id, s32 area, u8 kind, s8 mode, bool flag);
 
     LibClass3F5B80 resource_plan;
-
     s32 unk7c8;
-
     s32 unk7cc;
-
     s32 start_delay;
-
     u8 unk7d4;
-
     s8 unk7d5;
-
     u8 refresh_pending : 1;
-
     u8 include_optional_resource : 1;
-
     u8 unk7d6_2_7 : 6;
 };
 #endif

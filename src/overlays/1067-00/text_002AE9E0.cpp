@@ -53,27 +53,21 @@
 struct FieldDisplaySlot
 {
     u8 unk00[0xAF];
-
     u8 unkaf;
 };
 
 struct FieldDisplayManagerState
 {
     u8 unk00[0x4084];
-
     void* unk4084;
-
     u8 unk4088[0x3DC];
-
     FieldDisplaySlot* unk4464;
-
     FieldDisplaySlot* unk4468;
 };
 
 struct FieldDisplayState6624
 {
     u8 unk00[0x360];
-
     void* unk360;
 };
 
@@ -145,47 +139,26 @@ struct FieldRuntimeState
     }
 
     u32 unk00;
-
     u8 unk04[0x180];
-
     u8 flags_5000[4];
-
     u32 variables[256];
-
     u8 unk588[0xC000];
-
     u8 unkC588[0x100];
-
     u8 unkC688[0x28];
-
     char character_names[10][24];
-
     u32 unkC7A0;
-
     u32 unkC7A4;
-
     u8 unkC7A8[8];
-
     FieldVec4B unkC7B0;
-
     FieldVec4B unkC7C0;
-
     FieldVec4B unkC7D0;
-
     s16 unkC7E0;
-
     s16 unkC7E2;
-
     s16 unkC7E4;
-
     u8 unkC7E6;
-
     u8 unkC7E7;
-
     u8 unkC7E8[0x7A8];
-
     u8 unkCF90[0xAC8];
-
     u8 unkDA58[0x88];
 };
 
@@ -193,11 +166,8 @@ struct FieldRuntimeState
 struct FieldLoaderCommand
 {
     u32 buffer_address;
-
     u8 kind;
-
     u8 option;
-
     u8 unk06[2];
 };
 
@@ -224,25 +194,15 @@ struct FieldLoaderState
     }
 
     u32 unk00;
-
     LibClass3F5B80 buffer;
-
     u32 unk798;
-
     FieldLoaderCommand commands[8];
-
     u8 unk7dc[4];
-
     u8 unk7e0[0x1000];
-
     u16 unk17e0;
-
     u8 command_count;
-
     u8 state;
-
     u8 unk17e4;
-
     u8 unk17e5[0xB];
 };
 
@@ -300,9 +260,7 @@ struct FieldTrackPool
 struct FieldRuntime
 {
     u8 unk00[0x5E8];
-
     FieldCharacterNames* character_names;
-
     float rate;
 };
 
@@ -310,7 +268,6 @@ struct FieldRuntime
 struct FieldContextMotion
 {
     u8 unk00[8];
-
     FieldClass15B900* list;
 };
 
@@ -318,17 +275,11 @@ struct FieldContextMotion
 struct FieldContextOwner14
 {
     u8 unk00[0x30];
-
     FieldContextMotion motion;
-
     u8 unk3c[0x214];
-
     FieldContextMotion other_motion;
-
     u8 unk25c[0xB0];
-
     FieldListObject* unk30c;
-
     FieldListObject* unk310;
 };
 
@@ -336,11 +287,8 @@ struct FieldContextOwner14
 struct FieldContextOwner20
 {
     u8 unk00[0x34];
-
     u8 unk34_0_3 : 4;
-
     u8 unk34_4 : 1;
-
     u8 unk34_5_7 : 3;
 };
 
@@ -348,7 +296,6 @@ struct FieldContextOwner20
 struct FieldState6628
 {
     u8 unk00[0x90];
-
     u32 unk90;
 };
 

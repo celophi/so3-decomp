@@ -416,7 +416,6 @@ public:
     void clear(s32 unused);
 
     u32 button_masks[8];
-
     s32 axes[4];
 };
 
@@ -437,13 +436,9 @@ public:
     virtual void func_001DD7B0();
 
     u8 unk14[0x2C];
-
     FieldVec4A unk40;
-
     u8 unk50[0x2B0];
-
     FieldListObject* unk300;
-
     u8 unk304[0x7C];
 };
 
@@ -673,7 +668,6 @@ public:
     u8 unk6d2_0_3 : 4;
     u8 unk6d2_4 : 1;
     u8 unk6d2_5_7 : 3;
-
     u8 unk6d3[0xD];
 };
 #endif

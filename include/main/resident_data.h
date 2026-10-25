@@ -70,11 +70,8 @@ typedef struct ResidentContextObject38
     u8 unk00[0x4C8];
     u8 unk4c8_0 : 1;
     u8 unk4c8_1_7 : 7;
-
     u8 unk4c9[0x103];
-
     void* unk5cc;
-
     void* unk5d0;
 } ResidentContextObject38;
 
@@ -137,71 +134,43 @@ typedef struct ResidentContextInput10
 typedef struct ResidentContext
 {
     u8 unk00[4];
-
     void* unk04;
-
     ResidentContext08* unk08;
-
     struct LibDisplayState* unk0c;
-
     ResidentContextInput10* input;
-
     void* unk14;
-
     void* unk18;
-
     void* unk1c;
-
     void* unk20;
-
     void* unk24;
-
     void* unk28;
-
     struct FieldResourceList14* unk2c;
-
     void* unk30;
-
     void* unk34;
-
     ResidentContextObject38* unk38;
-
     void* unk3c;
-
     void* unk40;
-
     ResidentContextObject52* unk44;
-
     struct LibClass171EA0* unk48;
-
     struct FieldClass154CC0* unk4c;
 
     /** Node that rebuilds drawing commands while display blending is active. */
     struct FieldDisplayBlendNode* display_blend_node;
 
     struct FieldListObject* unk54;
-
     ResidentContextObject58* unk58;
-
     void* unk5c;
 
     /** Slot owner whose objects can be detached and registered again. */
     struct FieldObjectSlotOwner* object_slots;
 
     ResidentContextObject64* unk64;
-
     struct FieldClass1502A0* unk68;
-
     void* unk6c;
-
     void* unk70;
-
     struct ResidentHeap* unk74;
-
     struct ResidentHeap* unk78;
-
     void* unk7c;
-
     void* unk80;
 
     /** Optional receiver updated by the field loop. */
@@ -231,19 +200,12 @@ typedef struct ResidentContext
     float time_scale;
 
     s16 unka8;
-
     s16 unkaa;
-
     u8 unkac[4];
-
     s16 unkb0;
-
     s16 unkb2;
-
     u8 unkb4[0x1C];
-
     u32 unkd0;
-
     u32 unkd4;
 
     /** Remaining updates that skip the normal interval wait. */
@@ -259,13 +221,9 @@ typedef struct ResidentContext
     u8 unkde_5 : 1;
     u8 skip_render : 1;
     u8 unkde_7 : 1;
-
     u8 unkdf_0 : 1;
-
     u8 unkdf_1 : 1;
-
     u8 unkdf_2 : 1;
-
     u8 unkdf_3_7 : 5;
 } ResidentContext;
 
@@ -277,13 +235,9 @@ typedef struct ResidentCheckedRecord
     u16 unk04;
     u16 unk06;
     u8 unk08[0x1D];
-
     u8 unk25_0_3 : 4;
-
     u8 unk25_4_5 : 2;
-
     u8 unk25_6_7 : 2;
-
     u8 unk26[0xE];
     /** Fol XOR-encoded with 0x7CE3C7F7. */
     u32 encoded_fol;

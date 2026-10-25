@@ -573,31 +573,18 @@ public:
     virtual s32 func_slot470(u32 count);
 
     void* script_data;
-
     const u32* current;
-
     void* unk54c;
-
     s32 unk550;
-
     void* attachments[16];
-
     void* special;
-
     u32 previous_instruction_index;
-
     u8 unk59c;
-
     u8 unk59d_0 : 1;
-
     u8 unk59d_1 : 1;
-
     u8 unk59d_2 : 1;
-
     u8 unk59d_3 : 1;
-
     u8 unk59d_4_7 : 4;
-
     u8 unk59e[2];
 };
 #endif

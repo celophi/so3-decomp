@@ -18,7 +18,6 @@ public:
 typedef struct FieldPacketDrawer
 {
     u8 unk00[0x20];
-
     struct FieldClass1525F0* packet;
 
 #ifdef __cplusplus

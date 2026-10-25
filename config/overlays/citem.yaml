@@ -54,11 +54,13 @@ segments:
     start: 0x40
     vram: 0x3483c0
     subsegments:
-      - [0x40, cpp, text]
+      - [0x40, pad, text_start]
+      - [0x80, cpp, citem]
+      - [0xC830, pad, text_end]
       - [0xc880, databin, data]
       - start: 0xc910
         type: .rodata
-        name: text
+        name: citem
         linker_section: .rodata.00354C90
         rodata_anchors:
           - {function: func_slotb0__26ItemAllocationWindow1847B0Fv, offset: 0x0, size: 0x1C}

@@ -53,11 +53,8 @@ enum
 struct LibResourceChunkHeader
 {
     u32 magic;
-
     u32 payload_size;
-
     u32 previous_offset;
-
     u32 next_offset;
 };
 
@@ -65,7 +62,6 @@ struct LibResourceChunkHeader
 struct LibImageSequenceEntry
 {
     u32 data_offset;
-
     u32 duration;
 };
 
@@ -73,9 +69,7 @@ struct LibImageSequenceEntry
 struct LibImageSequenceHeader
 {
     u16 entry_count;
-
     u16 playback_mode;
-
     u32 duration;
 };
 
@@ -83,19 +77,12 @@ struct LibImageSequenceHeader
 struct LibRenderDataRecord
 {
     u32 next_offset;
-
     s16 storage_kind;
-
     s16 index;
-
     u32 key08;
-
     u32 key0c;
-
     u8 unk10[0x10];
-
     void* resolved_data;
-
     u32 unk24;
 
     union

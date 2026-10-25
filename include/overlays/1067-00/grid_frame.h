@@ -8,13 +8,11 @@
 typedef union FieldGridFrameVector
 {
     FieldQword packed;
-
     float floats[4];
 
     struct
     {
         float xyz[3];
-
         s32 frame_index;
     } components;
 } FieldGridFrameVector;
@@ -31,11 +29,8 @@ enum FieldGridFrameLoopMode
 typedef struct FieldGridFrameState
 {
     s32 reverse;
-
     s32 frame_index;
-
     float remaining_time;
-
     s32 boundary_count;
 } FieldGridFrameState;
 
@@ -43,9 +38,7 @@ typedef struct FieldGridFrameState
 typedef struct FieldGridFrameMotion
 {
     FieldVector4 value;
-
     FieldVector4 rate;
-
     FieldGridFrameState frame;
 } FieldGridFrameMotion;
 
@@ -53,7 +46,6 @@ typedef struct FieldGridFrameMotion
 typedef struct FieldGridOutputRecord
 {
     u8 unk00[0x20];
-
     FieldGridFrameVector frame_vector;
 } FieldGridOutputRecord;
 

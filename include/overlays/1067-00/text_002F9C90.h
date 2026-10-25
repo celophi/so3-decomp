@@ -295,29 +295,17 @@ public:
     virtual void func_001DDB30(void* argument);
 
     u8 unk98[0x928];
-
     s32 unk9c0;
-
     u8 unk9c4[6];
-
     u8 unk9ca;
-
     u8 unk9cb[5];
-
     FieldVec4A unk9d0;
-
     u32 unk9e0;
-
     u32 unk9e4;
-
     u32 unk9e8;
-
     char name[0x11];
-
     u8 unk9fd_0 : 1;
-
     u8 unk9fd_1_7 : 7;
-
     u8 unk9fe[2];
 };
 #endif

@@ -8,17 +8,11 @@
 typedef struct FieldResourceDescriptor
 {
     u32 byte_count;
-
     u32 unk04;
-
     u32 unk08;
-
     s16 file_key;
-
     u8 unk0e[3];
-
     u8 auxiliary_file_offset;
-
     u8 unk12[2];
 } FieldResourceDescriptor;
 
@@ -277,20 +271,15 @@ public:
     virtual void reset_requests();
 
     u8 unk34[8];
-
     s32 start_delay;
-
     u32 unk40;
 
     /** Zero compares auxiliary file offsets, one loads the file, and two skips it. */
     u8 auxiliary_policy;
 
     u8 load_auxiliary : 1;
-
     u8 unk45_1_7 : 7;
-
     u8 unk46[2];
-
     s32 resource_index;
 };
 #endif

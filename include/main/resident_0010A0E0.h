@@ -11,9 +11,7 @@
 typedef struct ResidentReleaseRing
 {
     s32 write_index;
-
     s32 read_index;
-
     void* entries[0x400];
 } ResidentReleaseRing;
 
@@ -21,9 +19,7 @@ typedef struct ResidentReleaseRing
 typedef struct ResidentReleaseQueues
 {
     ResidentReleaseRing allocations;
-
     ResidentReleaseRing objects;
-
     void* vtable;
 } ResidentReleaseQueues;
 
@@ -36,45 +32,25 @@ struct ResidentObject1B65E4;
 typedef struct ResidentRequestSlot
 {
     u8 active;
-
     u8 pending;
-
     u8 flags2;
-
     u8 flags3;
-
     u8 flags4;
-
     u8 selector;
-
     u8 unk06[2];
-
     s16 value;
-
     u8 unk0a[2];
-
     u32 unk0c;
-
     s32 identifier;
-
     u32 unk14;
-
     s32 unk18;
-
     u8 unk1c;
-
     u8 unk1d[3];
-
     void* target;
-
     u32 unk24;
-
     u32 unk28;
-
     u32 unk2c;
-
     u32 unk30;
-
     u8 unk34[8];
 } ResidentRequestSlot;
 
@@ -82,25 +58,15 @@ typedef struct ResidentRequestSlot
 struct ResidentRequest112400
 {
     void* context;
-
     u8 unk04[8];
-
     u32 unk0c;
-
     u8 unk10[0x100];
-
     u8 state;
-
     u8 unk111[0x260];
-
     u8 unk371;
-
     u8 unk372[0x16A];
-
     u32 next_identifier;
-
     s32 cursor;
-
     ResidentRequestSlot slots[60];
 };
 
@@ -110,7 +76,6 @@ typedef struct ResidentRequest112400 ResidentRequest112400;
 typedef struct ResidentDmaQueue
 {
     u8 unk00[0x1011];
-
     volatile u8 busy;
 } ResidentDmaQueue;
 
