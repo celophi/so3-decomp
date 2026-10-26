@@ -2218,7 +2218,7 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F6830)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F7710);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F77F0);
+INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", __ct__15BootClass171BB0Fi);
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F7930);
 
@@ -2248,7 +2248,7 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F8720)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F8870);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F8920);
+INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", __ct__15BootProgressBarFv);
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F8980);
 
@@ -2277,7 +2277,7 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F8EC0)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F9040);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F90B0);
+INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", __ct__15BootClass171C00FP18BootDimensionsACD0);
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F9340);
 
@@ -2289,7 +2289,7 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FA620)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FA770);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FA820);
+INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", __ct__9BootImageFv);
 
 void func_001FA880(void* object)
 {
