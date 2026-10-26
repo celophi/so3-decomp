@@ -3,6 +3,9 @@
 
 #include "types.h"
 
+/** Number of item types. Item type IDs run from one to this. */
+#define ITEM_TYPE_COUNT 750
+
 typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
 
 /** Twelve-byte category entry containing its list head and catalog index. */

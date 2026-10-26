@@ -16,7 +16,7 @@ struct FieldClass150C10;
 typedef struct ResidentObject1B64F8
 {
     u8 unk00[0xEA60];
-    ItemCreationCategoryRecord item_types[750];
+    ItemCreationCategoryRecord item_types[ITEM_TYPE_COUNT];
 } ResidentObject1B64F8;
 /** Partial view of the section selected by resource key four. */
 typedef struct ResidentHudSection1B4
