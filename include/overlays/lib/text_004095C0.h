@@ -31,7 +31,7 @@ struct ItemCreationCategoryDefinition
     u32 sort_order : 10;
     u32 model_index : 10;
     u32 initial_factor : 10;
-    u32 unk13_high : 2;
+    u32 usage_flags : 2;
 #else
     union
     {
@@ -40,7 +40,7 @@ struct ItemCreationCategoryDefinition
             u32 sort_order : 10;
             u32 model_index : 10;
             u32 initial_factor : 10;
-            u32 unk13_high : 2;
+            u32 usage_flags : 2;
         };
         /** Low halfword containing the ten-bit list-order key. */
         u16 sort_key_bits;

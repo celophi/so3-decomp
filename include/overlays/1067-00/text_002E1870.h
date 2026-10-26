@@ -79,9 +79,19 @@ typedef struct FieldObject2EDFD0
     void* unk1254;
 } FieldObject2EDFD0;
 
+struct ItemCreationAllocationRecord;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Apply a usable item to a party member.
+ * @param record Item to use.
+ * @param character Party position.
+ * @return -1 or 0 when it can't be used, 1 when it was used up, 2 when it was used and kept.
+ */
+s32 func_002E19D0(struct ItemCreationAllocationRecord* record, s32 character);
 
 /**
  * @brief Return the receiver's unsigned halfword at offset 0x1050.

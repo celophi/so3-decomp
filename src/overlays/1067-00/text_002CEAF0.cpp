@@ -22,7 +22,7 @@
 #include "overlays/cequip/cequip.h"
 #include "overlays/cstatus/text.h"
 #include "overlays/cskill/text.h"
-#include "overlays/citem/item_controller.h"
+#include "overlays/citem/citem.h"
 #include "overlays/cconfig/config_controller.h"
 #include "overlays/cmc/text.h"
 #include "overlays/ctactics/ctactics.h"

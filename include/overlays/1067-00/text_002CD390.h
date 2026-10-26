@@ -97,6 +97,11 @@ public:
     FieldClass15AF68();
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AF68();
+    /**
+     * @brief Add a node holding `value` to the end of the list.
+     * @param value Pointer stored in the node. The caller owns it.
+     */
+    void append(void* value);
 };
 
 /** Pointer list with vtable D_15AF78 in main data. */
@@ -107,6 +112,11 @@ public:
     FieldClass15AF78();
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AF78();
+    /**
+     * @brief Add a node holding `value` to the end of the list.
+     * @param value Pointer stored in the node. The caller owns it.
+     */
+    void append(void* value);
 };
 
 /** Pointer list with vtable D_15AF88 in main data. */
@@ -117,6 +127,17 @@ public:
     FieldClass15AF88();
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AF88();
+    /**
+     * @brief Add a node holding `value` to the end of the list.
+     * @param value Pointer stored in the node. The caller owns it.
+     */
+    void append(void* value);
+    /**
+     * @brief Return the node at `index`. Index zero is the first node after the sentinel.
+     * @param index Zero-based index among the value nodes.
+     * @return The node at that index, or null if the list ends first.
+     */
+    FieldListNode* at(s32 index);
 };
 
 /** Pointer list with vtable D_15AF98 in main data. */
@@ -177,6 +198,11 @@ public:
     FieldClass15AFE8();
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFE8();
+    /**
+     * @brief Add a node holding `value` to the end of the list.
+     * @param value Pointer stored in the node. The caller owns it.
+     */
+    void append(void* value);
 };
 
 /** Pointer list with vtable D_15AFF8 in main data. */
@@ -454,6 +480,9 @@ void func_002CD7B0(void* object);
  * @param fourth Second halfword value.
  */
 void func_002CE420(FieldStateCE420* object, u8 first, u32 second, u16 third, u16 fourth);
+
+/** @brief Update the Field list parameters while the list isn't the focused window. @param object List state. */
+void func_002CDFB0(FieldStateCE420* object);
 
 /**
  * @brief Return the fixed value one.
