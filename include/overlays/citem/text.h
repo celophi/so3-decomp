@@ -106,6 +106,10 @@ typedef struct CitemCoordinate2
 {
     float x;
     float y;
+#ifdef __cplusplus
+    /** @brief Store both coordinates. @param x Horizontal coordinate. @param y Vertical coordinate. */
+    CitemCoordinate2(float x, float y) : x(x), y(y) {}
+#endif
 } CitemCoordinate2;
 
 /** Four float components stored on a 16-byte boundary. */

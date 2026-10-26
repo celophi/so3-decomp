@@ -64,6 +64,7 @@ segments:
         linker_section: .rodata.00354C90
         rodata_anchors:
           - {function: func_slotb0__26ItemAllocationWindow1847B0Fv, offset: 0x0, size: 0x1C}
+          - {function: func_slot11c__20ItemListWindow1848D0Fii, offset: 0x20, size: 0x28}
         linker_section_order: .rodata
-      - [0xc92c, rodatabin, data_00354CAC]
+      - [0xc958, rodatabin, data_00354CD8]
   - [0xca00]

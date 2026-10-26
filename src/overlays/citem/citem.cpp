@@ -33,6 +33,7 @@ FieldRecordSelection* func_0028E4D0(FieldRecordSelection* selection);
 #include "overlays/lib/movement_widget_inlines.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/marker_widget_inlines.h"
+#include "overlays/1067-00/text_marker.h"
 
 #define ANGLE_STEP_RADIANS 0.008726646f
 #define ANGLE_LIMIT_RADIANS 0.5235988f
@@ -57,7 +58,269 @@ struct FieldRuntime
     u32 item_name_base_key;
     s32 detail_resource_slot;
     u32 detail_base_key;
+    u8 unk524[0x10];
+
+    /** Screen scale and offset applied to menu coordinates. */
+    float screen_scale_x;
+    float screen_scale_y;
+    float screen_offset_x;
+    float screen_offset_y;
 };
+
+#define ITEM_STAT_WORD_XOR_KEY 0x7DE3F7E3
+#define ITEM_STAT_HALFWORD_XOR_KEY 0x7E93
+
+/** Packed allocation view with the four-bit equipped owner spanning bytes C and D. */
+struct ItemAllocationOwnerView
+{
+    u8 unk00[12];
+    u16 modification_number : 7;
+    u16 equipped_owner : 4;
+    u16 unk0d_high : 5;
+    u16 checksum;
+};
+
+/** Partial 0xC4-byte character record with checksum-protected flags, HP and MP. */
+typedef struct ItemCharacterStats
+{
+    u8 unk00[2];
+    /** Selects the clamping rules used by the character stat setters. */
+    s16 stat_limit_type;
+    u8 unk04[4];
+    u32 encoded_flags;
+    s32 encoded_experience;
+    u32 encoded_base_hp;
+    u32 encoded_max_hp;
+    u32 encoded_hp;
+    u32 encoded_base_mp;
+    u32 encoded_max_mp;
+    u32 encoded_mp;
+    float unk28;
+
+    /** Fury is stored at sixteen times its displayed amount. */
+    float scaled_max_fury;
+
+    float scaled_fury;
+    s32 encoded_base_attack;
+    s32 encoded_effective_attack;
+    s32 encoded_attack;
+    s32 encoded_base_defense;
+    s32 encoded_effective_defense;
+    s32 encoded_defense;
+    s32 encoded_base_agility;
+    s32 encoded_effective_agility;
+    s32 encoded_agility;
+    s32 encoded_base_hit;
+    s32 encoded_effective_hit;
+    s32 encoded_hit;
+
+    /** Intelligence is validated through the HIT checksum. */
+    s32 encoded_base_intelligence;
+
+    s32 encoded_effective_intelligence;
+    s32 encoded_intelligence;
+    u8 unk70[0x14];
+    s32 level_checksum;
+    u32 flags_experience_checksum;
+    u32 hp_checksum;
+    u32 mp_checksum;
+    s32 attack_checksum;
+    s32 defense_checksum;
+    s32 agility_checksum;
+    s32 hit_checksum;
+    s32 knockback_power_checksum;
+    u32 checksum_salt;
+    u8 unkac[0x18];
+
+    /** @brief Decode the protected flag word. @return Flags, or five when the check word is invalid. */
+    u32 get_flags() const
+    {
+        s32 experience = encoded_experience;
+        if (flags_experience_checksum != (checksum_salt ^ (experience ^ (encoded_flags + checksum_salt))))
+        {
+            return 5;
+        }
+        return encoded_flags ^ ITEM_STAT_WORD_XOR_KEY;
+    }
+} ItemCharacterStats;
+
+/** Checksum-protected 0x114-byte character equipment record. */
+class ItemCharacterEquipment
+{
+    public:
+        u8 unk00[0xE];
+
+        /** Highest valid index into encoded_equipment_ids. */
+        s16 encoded_slot_limit;
+
+        s16 encoded_equipment_ids[4];
+        s16 encoded_sp;
+        s16 encoded_cp;
+        s32 unk1c;
+        char character_name[24];
+        u8 unk38[0xB8];
+        u32 equipment_checksum;
+        u8 unkf4[0x18];
+        u32 checksum_salt;
+        u32 unk110;
+
+        /** @brief Test the stored equipment checksum. @return True when it agrees with the encoded IDs and the salt. */
+        bool equipment_valid() const
+        {
+            return equipment_checksum ==
+                   (checksum_salt ^ ((encoded_equipment_ids[1] + encoded_equipment_ids[2]) ^ (encoded_equipment_ids[3] + encoded_equipment_ids[0])));
+        }
+
+        /**
+         * @brief Decode the item equipped in a slot.
+         * @param index Equipment slot.
+         * @return Item ID, or zero for an invalid checksum or slot.
+         */
+        s16 get_equipment_id(s32 index) const
+        {
+            if (!equipment_valid())
+            {
+                return 0;
+            }
+
+            if (index < 0)
+            {
+                return 0;
+            }
+
+            if (index > (encoded_slot_limit ^ ITEM_STAT_HALFWORD_XOR_KEY))
+            {
+                return 0;
+            }
+
+            return encoded_equipment_ids[index] ^ ITEM_STAT_HALFWORD_XOR_KEY;
+        }
+
+        /**
+         * @brief Equip an item in a slot and update the equipment checksum, when the record and slot are valid.
+         * @param index Equipment slot.
+         * @param value Item ID.
+         */
+        void set_equipment_id(s32 index, s16 value)
+        {
+            if (equipment_valid() && index >= 0 && index <= (encoded_slot_limit ^ ITEM_STAT_HALFWORD_XOR_KEY))
+            {
+                encoded_equipment_ids[index] = value ^ ITEM_STAT_HALFWORD_XOR_KEY;
+                equipment_checksum = checksum_salt ^ ((encoded_equipment_ids[1] + encoded_equipment_ids[2]) ^ (encoded_equipment_ids[3] + encoded_equipment_ids[0]));
+            }
+        }
+};
+
+/** @brief Read a character record's checksum salt. @param record Character stats. @return Salt. */
+static inline u32 character_checksum_salt(ItemCharacterStats* record)
+{
+    return record->checksum_salt;
+}
+
+/** @brief Decode current HP, marking valid flags when its checksum fails. @param record Character stats. @return HP, or zero after corruption. */
+static inline u32 character_hp(ItemCharacterStats* record)
+{
+    u32 first = record->encoded_base_hp;
+    u32 salt = record->encoded_max_hp;
+    u32 key = character_checksum_salt(record);
+    u32 encoded = record->encoded_hp;
+    u32 checksum = record->hp_checksum;
+    if (checksum != ((first + salt) ^ encoded ^ key))
+    {
+        u32 flags = record->encoded_flags;
+        s32 flag_salt = record->encoded_experience;
+        if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
+        {
+            record->encoded_flags = ((flags ^ ITEM_STAT_WORD_XOR_KEY) | 1) ^ ITEM_STAT_WORD_XOR_KEY;
+            s32 current_salt = record->encoded_experience;
+            record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
+        }
+        return 0;
+    }
+    return encoded ^ ITEM_STAT_WORD_XOR_KEY;
+}
+
+/** @brief Decode maximum HP, marking valid flags when its checksum fails. @param record Character stats. @return Maximum HP, or zero after corruption. */
+static inline u32 character_max_hp(ItemCharacterStats* record)
+{
+    u32 first = record->encoded_base_hp;
+    u32 salt = record->encoded_max_hp;
+    u32 key = character_checksum_salt(record);
+    u32 encoded = record->encoded_hp;
+    u32 checksum = record->hp_checksum;
+    if (checksum != ((first + salt) ^ encoded ^ key))
+    {
+        u32 flags = record->encoded_flags;
+        s32 flag_salt = record->encoded_experience;
+        if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
+        {
+            record->encoded_flags = ((flags ^ ITEM_STAT_WORD_XOR_KEY) | 1) ^ ITEM_STAT_WORD_XOR_KEY;
+            s32 current_salt = record->encoded_experience;
+            record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
+        }
+        return 0;
+    }
+    return salt ^ ITEM_STAT_WORD_XOR_KEY;
+}
+
+/** @brief Decode current MP, marking valid flags when its checksum fails. @param record Character stats. @return MP, or zero after corruption. */
+static inline u32 character_mp(ItemCharacterStats* record)
+{
+    u32 first = record->encoded_base_mp;
+    u32 salt = record->encoded_max_mp;
+    u32 key = character_checksum_salt(record);
+    u32 encoded = record->encoded_mp;
+    u32 checksum = record->mp_checksum;
+    if (checksum != ((first + salt) ^ encoded ^ key))
+    {
+        u32 flags = record->encoded_flags;
+        s32 flag_salt = record->encoded_experience;
+        if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
+        {
+            record->encoded_flags = ((flags ^ ITEM_STAT_WORD_XOR_KEY) | 1) ^ ITEM_STAT_WORD_XOR_KEY;
+            s32 current_salt = record->encoded_experience;
+            record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
+        }
+        return 0;
+    }
+    return encoded ^ ITEM_STAT_WORD_XOR_KEY;
+}
+
+/** @brief Decode maximum MP, marking valid flags when its checksum fails. @param record Character stats. @return Maximum MP, or zero after corruption. */
+static inline u32 character_max_mp(ItemCharacterStats* record)
+{
+    u32 first = record->encoded_base_mp;
+    u32 salt = record->encoded_max_mp;
+    u32 key = character_checksum_salt(record);
+    u32 encoded = record->encoded_mp;
+    u32 checksum = record->mp_checksum;
+    if (checksum != ((first + salt) ^ encoded ^ key))
+    {
+        u32 flags = record->encoded_flags;
+        s32 flag_salt = record->encoded_experience;
+        if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
+        {
+            record->encoded_flags = ((flags ^ ITEM_STAT_WORD_XOR_KEY) | 1) ^ ITEM_STAT_WORD_XOR_KEY;
+            s32 current_salt = record->encoded_experience;
+            record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
+        }
+        return 0;
+    }
+    return salt ^ ITEM_STAT_WORD_XOR_KEY;
+}
+
+/** @brief Decode the protected flag word. @param record Character stats. @return Flags, or five when the check word is invalid. */
+static inline u32 character_flags(ItemCharacterStats* record)
+{
+    u32 key = record->checksum_salt;
+    u32 value = record->encoded_flags;
+    s32 salt = record->encoded_experience;
+    if (record->flags_experience_checksum != ((value + key) ^ salt ^ key))
+    {
+        return 5;
+    }
+    return value ^ ITEM_STAT_WORD_XOR_KEY;
+}
 
 /** Observed prefix of the resident entry-four block containing 3072 flags. */
 class CitemFlagBlock
@@ -202,27 +465,55 @@ class CitemCoordinateNode
 
 
 /** Draw the paired HP and MP gauges for one character. */
+/** Gauge origin, zeroed on construction. */
+struct ItemGaugeOrigin
+{
+    /** @brief Start at the origin. */
+    ItemGaugeOrigin()
+    {
+        x = y = 0.0f;
+    }
+
+    float x;
+    float y;
+};
+
 class ItemHpMpGaugeDrawer : public FieldClass159A70
 {
     public:
+        /** @brief Clear the origin, spacing and character link. */
+        ItemHpMpGaugeDrawer()
+        {
+            origin.x = 0.0f;
+            origin.y = 0.0f;
+            row_spacing = 0.0f;
+            character_id = 0;
+            characters = 0;
+        }
+
         /** @brief Release the drawing packet and base. */
         virtual ~ItemHpMpGaugeDrawer();
 
         /** @brief Rebuild the drawing packet. @param first Unused draw flag. @param depth Unused drawing depth. @param value Unused drawing value. */
         virtual void func_002BC4F0(u32 first, u32 depth, float value);
 
-        float origin_x;
-        float origin_y;
+        ItemGaugeOrigin origin;
         float row_spacing;
         s16 character_id;
         u8 unk3e[2];
-        void* characters;
+        ItemCharacterStats* characters;
 };
 
 /** HP and MP gauge transform with drawing and DMA notification interfaces. */
 class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
 {
     public:
+        /** @brief Initialize the gauge bases with release not yet queued. */
+        ItemHpMpGauge()
+        {
+            queued_for_release = 0;
+        }
+
         /** @brief Release the drawing and transform bases. */
         virtual ~ItemHpMpGauge();
 
@@ -257,6 +548,12 @@ class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
 class ItemCoordinateSelector : public LibClass175030
 {
     public:
+        /** @brief Initialize an empty coordinate list with no selected entry. */
+        ItemCoordinateSelector()
+        {
+            selected = -1;
+        }
+
         /** @brief Destroy the coordinate list and movement bases. */
         virtual ~ItemCoordinateSelector();
 
@@ -271,14 +568,6 @@ class ItemCoordinateSelector : public LibClass175030
 
         ItemList184EB8 nodes;
         s32 selected;
-};
-
-struct ScreenRecord
-{
-    u8 unk00[0x3C];
-    u8 unk3c;
-    u8 unk3d[0x33];
-    float unk70;
 };
 
 /** Item panel window built on the Field window base. */
@@ -342,7 +631,12 @@ class ItemListWindow1848D0 : public FieldClass15AD40
         /** @brief Position the row displays. @param start Base vertical coordinate. */
         virtual void set_scroll_position(float start);
 
-        virtual void func_slot11c(s32 first, s32 second);
+        /**
+         * @brief Rebuild the item-type list for a category and reset the visible rows and selection.
+         * @param reset Nonzero to move the selection back to the first row.
+         * @param category Category to list, or -1 for the controller's current category.
+         */
+        virtual void func_slot11c(s32 reset, s32 category);
 
         LibClass178600* second[14];
         LibClass178600* third[14];
@@ -371,25 +665,37 @@ class ItemWindow184AF0 : public FieldClass15AE70
         /** @brief Destroy the window and its Field base. */
         virtual ~ItemWindow184AF0();
 
+        /** @brief Update the active selection and hide the linked message display. */
         virtual void func_slot5c();
 
         /** @brief Restore the linked panel height and mark it for update. */
         virtual void func_slot64();
 
+        /** @brief Move the selector back and highlight, describe and show the newly selected entry. */
         virtual void func_slot68();
 
+        /** @brief Move the selector forward and highlight, describe and show the newly selected entry. */
         virtual void func_slot6c();
 
+        /**
+         * @brief Confirm the selected entry: lower the selector, focus the list and describe the choice.
+         * @return Zero while the selector is missing or idle, otherwise one.
+         */
         virtual u8 func_slotb0();
 
         /** @brief Set the window state and flags. @return Two after updating the state. */
         virtual u8 func_slotb4();
 
+        /**
+         * @brief Create the panel, the ten category labels and icons, the selector and its highlight, then highlight the first label.
+         * @param associated Resource source word.
+         * @return Zero when the list window is missing, otherwise one.
+         */
         virtual s32 func_slotf4(u32 associated);
 
-        ScreenRecord* unka8;
-        void* unkac;
-        FieldClass15AE70* unkb0;
+        FieldClass153130* unka8;
+        FieldClass153170* unkac;
+        ItemListWindow1848D0* unkb0;
         ItemController* controller;
         u16 unkb8;
         u8 unkba[2];
@@ -469,7 +775,7 @@ class ItemWindow184BF0 : public FieldClass15AE70
             scroll_extent = 0;
             scrolling = 0;
             delay_frames = 0;
-            unkb4 = 0.0f;
+            label_width = 0.0f;
             start_x = 0.0f;
             left_edge = 0.0f;
             visible_width = 0.0f;
@@ -481,16 +787,25 @@ class ItemWindow184BF0 : public FieldClass15AE70
         /** @brief Delay, scroll and wrap the text within its horizontal bounds. */
         virtual void func_slot5c();
 
+        /**
+         * @brief Set the scrolling message and restart its delay when the key is in range.
+         * @param text_key Message key; only keys 7020 through 7034 are accepted.
+         */
         virtual void func_slot60(s32 text_key);
 
+        /**
+         * @brief Create the label, hint and clipped scrolling message, then show the first message.
+         * @param associated Resource source word.
+         * @return Zero when a display could not be allocated, otherwise one.
+         */
         virtual s32 func_slotf4(u32 associated);
 
-        CitemTextDisplay* text_display;
+        LibObject178750* text_display;
         s32 scroll_extent;
         s16 delay_frames;
         u8 scrolling;
         u8 unkb3;
-        float unkb4;
+        float label_width;
         float start_x;
         float left_edge;
         float visible_width;
@@ -511,6 +826,11 @@ class ItemWindow184CF0 : public FieldClass15AE70
         /** @brief Destroy the window and its Field base. */
         virtual ~ItemWindow184CF0();
 
+        /**
+         * @brief Create the window container and its three resource displays.
+         * @param associated Resource source word.
+         * @return One after initialization.
+         */
         virtual s32 func_slotf4(u32 associated);
 
         ItemCreationOptionResourceDisplay* unka8;
@@ -570,10 +890,20 @@ typedef struct CitemWindowController
     struct FieldClass153E30* selected;
 } CitemWindowController;
 
+/** Partial runtime state reached through D_001B643C. */
+typedef struct CitemRuntimeState
+{
+    u8 unk00[0x9A];
+    u8 unk9a;
+} CitemRuntimeState;
+
 /** Prefix of native D_153D40 runtime storage produced by Field002630F0. */
 typedef struct CitemRuntime643C
 {
-    u8 unk00[0x10];
+    u8 unk00[4];
+    ItemCharacterStats* characters;
+    u8 unk08[4];
+    CitemRuntimeState* state;
     CitemWindowController* controller;
     u8 unk14[8];
     void* field_camera;
@@ -594,13 +924,13 @@ class ItemWindow1845B0 : public FieldClass15AE70
         /** @brief Initialize the selector links and action state. */
         ItemWindow1845B0()
         {
-            unka8 = 0;
+            records = 0;
             selection = 0;
-            unkb0 = 0.0f;
-            unkb4 = 0.0f;
-            unkb8 = 0.0f;
-            unkbc = 0.0f;
-            unkc0 = 1;
+            x = 0.0f;
+            y = 0.0f;
+            row_height = 0.0f;
+            pulse_level = 0;
+            pulse_step = 1;
             unkc4 = 2;
             message_changed = 0;
         }
@@ -608,6 +938,7 @@ class ItemWindow1845B0 : public FieldClass15AE70
         /** @brief Restore the controller message and destroy the window base. */
         virtual ~ItemWindow1845B0();
 
+        /** @brief Pulse the comparison colours and refresh each party member's ATK, DEF and INT change for the selected item. */
         virtual void func_slot5c();
         /** @brief Move the selector from its second coordinate row to its first row. */
         virtual void func_slot68();
@@ -617,6 +948,10 @@ class ItemWindow1845B0 : public FieldClass15AE70
         virtual void func_slot70();
         /** @brief Advance the selector one entry, wrapping after its eighth entry. */
         virtual void func_slot74();
+        /**
+         * @brief Equip the selected allocation on the selected character and refresh their statistics.
+         * @return Three when nobody or no eligible allocation is selected, otherwise zero.
+         */
         virtual u8 func_slotb0();
         /** @brief Close the action window and restore its parent. @return Two after closing the window. */
         virtual u8 func_slotb4();
@@ -627,18 +962,28 @@ class ItemWindow1845B0 : public FieldClass15AE70
         virtual s32 func_slotc0();
         /** @brief Forward to the slot 0xC0 handler. @return The handler's result. */
         virtual s32 func_slotc4();
+        /**
+         * @brief Create the party panels with names, portraits and stat-comparison labels, then show the item category hint.
+         * @param associated Resource source word.
+         * @return Zero when the selector could not be allocated, otherwise one.
+         */
         virtual s32 func_slotf4(u32 associated);
 
-        void* unka8;
-        FieldObject23B1D0* selection;
-        float unkb0;
-        float unkb4;
-        float unkb8;
-        float unkbc;
-        s32 unkc0;
+        FieldRecordSelection* records;
+        ItemCoordinateSelector* selection;
+        float x;
+        float y;
+
+        /** Height of each character panel. */
+        float row_height;
+
+        s32 pulse_level;
+        s32 pulse_step;
         s32 unkc4;
         u8 message_changed;
-        u8 unkc9[0x83];
+        u8 unkc9[3];
+        ItemCreationOptionResourceDisplay* indicators[8];
+        LibObject178750* stat_values[8][3];
 };
 
 /** Item action window owning a selector and a list of display widgets. */
@@ -648,11 +993,11 @@ class ItemWindow1846B0 : public FieldClass15AE70
         /** @brief Initialize the selector links, display list, and action state. */
         ItemWindow1846B0()
         {
-            unka8 = 0;
+            records = 0;
             selection = 0;
-            unkb0 = 0.0f;
-            unkb4 = 0.0f;
-            unkb8 = 0.0f;
+            x = 0.0f;
+            y = 0.0f;
+            row_height = 0.0f;
             message_changed = 0;
         }
 
@@ -660,6 +1005,7 @@ class ItemWindow1846B0 : public FieldClass15AE70
         virtual ~ItemWindow1846B0();
         /** @brief Release the list's display objects and the window's base displays. */
         virtual void func_slot0c();
+        /** @brief Update the gauges and refresh each party member's HP, MP, status badges and name color. */
         virtual void func_slot5c();
         /** @brief Move the selector from its second coordinate row to its first row. */
         virtual void func_slot68();
@@ -669,18 +1015,32 @@ class ItemWindow1846B0 : public FieldClass15AE70
         virtual void func_slot70();
         /** @brief Advance the selector one entry, wrapping after its eighth entry. */
         virtual void func_slot74();
+        /** @brief Use the selected item on the selected party member. @return Three when it can't be used, otherwise zero. */
         virtual u8 func_slotb0();
         /** @brief Close the action window and restore its parent. @return Two after closing the window. */
         virtual u8 func_slotb4();
+        /**
+         * @brief Create the party panels with names, HP and MP values, portraits, status badges, gauges and selector positions.
+         * @param associated Resource source word.
+         * @return Zero when the selector could not be allocated, otherwise one.
+         */
         virtual s32 func_slotf4(u32 associated);
 
-        void* unka8;
-        FieldObject23B1D0* selection;
-        float unkb0;
-        float unkb4;
-        float unkb8;
+        FieldRecordSelection* records;
+        ItemCoordinateSelector* selection;
+        float x;
+        float y;
+
+        /** Height of each character panel. */
+        float row_height;
         ItemList184ED8 displays;
-        u8 unkc8[0x140];
+        LibObject174F20* hp_values[8];
+        LibObject174F20* mp_values[8];
+        LibObject174F20* max_hp_values[8];
+        LibObject174F20* max_mp_values[8];
+        LibObject175140* labels[8];
+        ItemCreationOptionResourceDisplay* indicators[8];
+        ItemCreationOptionResourceDisplay* badges[8][4];
         u8 message_changed;
         u8 unk209[3];
 };
@@ -721,6 +1081,7 @@ class ItemAllocationWindow1847B0 : public FieldClass15AD40
         /** @brief Release the nested container and the base display lists. */
         virtual void func_slot0c();
 
+        /** @brief Update the list input, the selected allocation's detail codes and marker, and the model preview state. */
         virtual void func_slot5c();
 
         /** @brief Increase the active display angle up to its limit. */
@@ -812,6 +1173,12 @@ extern void func_4618F0(void* record, s32 flag);
 extern void func_4C48B0(void* record, s32 flag);
 extern void func_2CD9F0(void* record, s32 flag);
 extern void func_44B110(void* object, s32 code, s32 first, void* source, float z, s32 flag);
+extern s32 func_2E19D0(ItemCreationAllocationRecord* record, s32 character);
+extern u16 func_2CDFB0(FieldStateCE420* object);
+extern const char D_354C80[];
+extern LibCameraContext* D_001B6650;
+extern s32 func_40C7E0(ResidentObject1B64F8* inventory, s16 identifier, s32 owner);
+extern void func_3F9890(ItemCharacterStats* record, ItemCharacterEquipment* equipment, const ItemCreationAllocationRecord* candidate, s32 index);
 
 /** @brief Allocate and construct the native panel widget. @return The panel storage, or null. */
 static inline LibClass178630* allocate_panel(void)
@@ -914,13 +1281,204 @@ static inline CitemCoordinateNode* allocate_coordinate_node(void)
  * @param width Display width.
  * @param height Display height.
  */
-static inline void set_text_bounds(struct CitemTextDisplay* display, float x, float y, float width, float height)
+static inline void set_text_bounds(LibObject178750* display, float x, float y, float width, float height)
 {
-    display->rectangle.unk00 = x;
-    display->rectangle.unk04 = y;
-    display->rectangle.unk08 = width;
-    display->rectangle.unk0c = height;
+    display->unk18.unk00 = x;
+    display->unk18.unk04 = y;
+    display->unk18.unk08 = width;
+    display->unk18.unk0c = height;
     display->unk3c = 1;
+}
+
+/**
+ * @brief Find an item type's category record.
+ * @param value One-based item type, narrowed to a halfword.
+ * @return Category record, or null outside one through 750.
+ */
+static inline ItemCreationCategoryRecord* item_category_record(s32 value)
+{
+    ResidentObject1B64F8* base = D_001B64F8;
+    u16 index = value;
+    bool valid = false;
+
+    if (index > 0 && index <= 750)
+    {
+        valid = true;
+    }
+
+    if (valid)
+    {
+        return &base->item_types[index - 1];
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Collect an item type's unequipped allocations.
+ * @param category Category record, or null.
+ * @param records Receives the allocation records.
+ * @param identifier Receives the one-based catalog identifier, or zero.
+ * @return Number of records collected.
+ */
+static inline s32 item_category_allocations(ItemCreationCategoryRecord* category, ItemCreationAllocationRecord** records, u16& identifier)
+{
+    identifier = 0;
+    s32 count = 0;
+
+    if (category != 0)
+    {
+        u16 id = category->catalog_index + 1;
+        identifier = id;
+        count = lib_collect_unequipped_allocations(D_001B64F8, records, id);
+    }
+
+    return count;
+}
+
+/**
+ * @brief Test an allocation record's checksum against its six packed halfwords.
+ * @param record Allocation record to validate.
+ * @return True when the stored checksum differs.
+ */
+static inline bool item_allocation_invalid(ItemCreationAllocationRecord* record)
+{
+    return record->checksum != (u16)((0x83CF << record->checksum_shift) ^
+        ((((const u16*)record)[4] + (((const u16*)record)[0] + ((const u16*)record)[2])) ^
+         (((const u16*)record)[1] + (((const u16*)record)[3] + ((const u16*)record)[5]))));
+}
+
+/**
+ * @brief Read the catalog definition index from a valid allocation.
+ * @param record Allocation record to read.
+ * @return Definition index, or zero when the checksum differs.
+ */
+static inline u16 item_allocation_value(ItemCreationAllocationRecord* record)
+{
+    if (item_allocation_invalid(record))
+    {
+        return 0;
+    }
+    return record->definition_factors.bits.definition_index;
+}
+
+/**
+ * @brief Set a resource display's brightness on all three colour channels.
+ * @param object Resource display.
+ * @param value Brightness.
+ */
+static inline void set_display_brightness(ItemCreationOptionResourceDisplay* object, float value)
+{
+    object->unk50.unk44 = value;
+    object->unk50.unk48 = value;
+    object->unk50.unk4c = value;
+    object->unk3c = 1;
+}
+
+/**
+ * @brief Decode a character's checksum-protected attack.
+ * @param character Character stats.
+ * @return Attack, or zero for an invalid checksum.
+ */
+static inline s32 character_attack(const ItemCharacterStats& character)
+{
+    if (character.attack_checksum != (character.checksum_salt ^ (character.encoded_attack ^ (character.encoded_base_attack + character.encoded_effective_attack))))
+    {
+        return 0;
+    }
+    return character.encoded_attack ^ ITEM_STAT_WORD_XOR_KEY;
+}
+
+/**
+ * @brief Decode a character's checksum-protected defense.
+ * @param character Character stats.
+ * @return Defense, or zero for an invalid checksum.
+ */
+static inline s32 character_defense(const ItemCharacterStats& character)
+{
+    if (character.defense_checksum != (character.checksum_salt ^ (character.encoded_defense ^ (character.encoded_base_defense + character.encoded_effective_defense))))
+    {
+        return 0;
+    }
+    return character.encoded_defense ^ ITEM_STAT_WORD_XOR_KEY;
+}
+
+/**
+ * @brief Decode a character's intelligence, which shares the HIT checksum.
+ * @param character Character stats.
+ * @return Intelligence, or zero for an invalid checksum.
+ */
+static inline s32 character_intelligence(const ItemCharacterStats& character)
+{
+    if (character.hit_checksum != (character.checksum_salt ^ (character.encoded_hit ^ (character.encoded_base_hit + character.encoded_effective_hit))))
+    {
+        return 0;
+    }
+    return character.encoded_intelligence ^ ITEM_STAT_WORD_XOR_KEY;
+}
+
+/**
+ * @brief Set a widget's rectangle and mark it for update.
+ * @param object Widget to place.
+ * @param x Left edge.
+ * @param y Top edge.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ */
+static inline void set_widget_rectangle(LibClass178600* object, float x, float y, float width, float height)
+{
+    object->unk18.unk00 = x;
+    object->unk18.unk04 = y;
+    object->unk18.unk08 = width;
+    object->unk18.unk0c = height;
+    object->unk3c = 1;
+}
+
+/**
+ * @brief Append a selectable position to a coordinate selector.
+ * @param selector Coordinate selector.
+ * @param x Horizontal coordinate.
+ * @param y Vertical coordinate.
+ */
+static inline void append_selector_position(ItemCoordinateSelector* selector, float x, float y)
+{
+    item_append_selector_coordinate(&selector->nodes, CitemCoordinate2(x, y));
+}
+
+/**
+ * @brief Set a numeric widget's value and mark it for update.
+ * @param image Numeric widget.
+ * @param value Value to show.
+ */
+static inline void set_cost_value(LibObject174F20* image, s32 value)
+{
+    image->numeric_value = value;
+    image->unk3c = 1;
+}
+
+/**
+ * @brief Add a horizontal offset to a display origin.
+ * @param origin Display origin.
+ * @param offset Horizontal offset.
+ * @return Shifted horizontal coordinate.
+ */
+static inline float shifted_position(const float& origin, float offset)
+{
+    return origin + offset;
+}
+
+/**
+ * @brief Set a selector's panel height and mark it for update.
+ * @param selector Selector, or null.
+ * @param height Panel height.
+ */
+static inline void set_selector_height(FieldClass153130* selector, float height)
+{
+    if (selector != 0)
+    {
+        selector->ItemCreationClass185050::unk30 = height;
+        selector->unk3c = 1;
+    }
 }
 
 /** @brief Read the catalog entry's unsellable flag. @param definition Catalog entry. @return Flag as a byte. */
@@ -1313,12 +1871,140 @@ s32 ItemWindow1844B0::func_slotf4(u32 associated)
     return 1;
 }
 
-extern "C"
+/** @brief Pulse the comparison colours and refresh each party member's ATK, DEF and INT change for the selected item. */
+void ItemWindow1845B0::func_slot5c()
 {
+    ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
 
+    pulse_level += pulse_step;
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot5c__16ItemWindow1845B0Fv);
+    if (pulse_level > 18)
+    {
+        pulse_step = -1;
+    }
 
+    if (pulse_level < 0)
+    {
+        pulse_step = 1;
+    }
+
+    for (s32 row = 0; row < 8; row++)
+    {
+        s16 index = row;
+        s8 slot = records->slots[index];
+
+        if (slot <= 0)
+        {
+            continue;
+        }
+
+        indicators[row]->unk3f = 1;
+        stat_values[row][0]->unk3f = 1;
+        stat_values[row][1]->unk3f = 1;
+        stat_values[row][2]->unk3f = 1;
+        ItemCreationAllocationRecord* allocation = owner->unkbc;
+
+        if (allocation == 0)
+        {
+            set_display_brightness(indicators[row], 50.0f);
+            lib_text_set_resource(stat_values[row][0], owner->get_resource_slot(), 0x1B9C, 0);
+            lib_text_set_resource(stat_values[row][1], owner->get_resource_slot(), 0x1B9C, 0);
+            lib_text_set_resource(stat_values[row][2], owner->get_resource_slot(), 0x1B9C, 0);
+            continue;
+        }
+
+        u16 equipment_mask = D_001B64F0[item_allocation_value(allocation)].equipment_mask;
+
+        if (equipment_mask & (1 << (slot - 1)))
+        {
+            set_display_brightness(indicators[row], 128.0f);
+        }
+        else
+        {
+            set_display_brightness(indicators[row], 50.0f);
+            lib_text_set_resource(stat_values[row][0], owner->get_resource_slot(), 0x1B9C, 0);
+            lib_text_set_resource(stat_values[row][1], owner->get_resource_slot(), 0x1B9C, 0);
+            lib_text_set_resource(stat_values[row][2], owner->get_resource_slot(), 0x1B9C, 0);
+            continue;
+        }
+
+        ItemCharacterStats* character = &reinterpret_cast<ItemCharacterStats*>(records->records)[index];
+        ItemCharacterEquipment* equipment = &static_cast<ItemCharacterEquipment*>(records->unk04)[index];
+        ItemCharacterStats character_copy = *character;
+        ItemCharacterEquipment equipment_copy = *equipment;
+
+        switch (static_cast<u8>(D_001B64F0[item_allocation_value(allocation)].category))
+        {
+        case 0:
+            equipment_copy.set_equipment_id(0, lib_allocation_get_identifier(allocation));
+            break;
+        case 1:
+            equipment_copy.set_equipment_id(1, lib_allocation_get_identifier(allocation));
+            break;
+        case 2:
+            equipment_copy.set_equipment_id(unkc4, lib_allocation_get_identifier(allocation));
+            break;
+        }
+
+        func_3F9890(&character_copy, &equipment_copy, 0, -1);
+
+        if (character_attack(character_copy) > character_attack(*character))
+        {
+            lib_text_set_resource(stat_values[row][0], owner->get_resource_slot(), 0x1B99, 0);
+            stat_values[row][0]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
+        }
+        else if (character_attack(character_copy) == character_attack(*character))
+        {
+            lib_text_set_resource(stat_values[row][0], owner->get_resource_slot(), 0x1B9B, 0);
+        }
+        else
+        {
+            lib_text_set_resource(stat_values[row][0], owner->get_resource_slot(), 0x1B9A, 0);
+            stat_values[row][0]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
+        }
+
+        if (character_defense(character_copy) > character_defense(*character))
+        {
+            lib_text_set_resource(stat_values[row][1], owner->get_resource_slot(), 0x1B99, 0);
+            stat_values[row][1]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
+        }
+        else if (character_defense(character_copy) == character_defense(*character))
+        {
+            lib_text_set_resource(stat_values[row][1], owner->get_resource_slot(), 0x1B9B, 0);
+        }
+        else
+        {
+            lib_text_set_resource(stat_values[row][1], owner->get_resource_slot(), 0x1B9A, 0);
+            stat_values[row][1]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
+        }
+
+        if (character_intelligence(character_copy) > character_intelligence(*character))
+        {
+            lib_text_set_resource(stat_values[row][2], owner->get_resource_slot(), 0x1B99, 0);
+            stat_values[row][2]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
+        }
+        else if (character_intelligence(character_copy) == character_intelligence(*character))
+        {
+            lib_text_set_resource(stat_values[row][2], owner->get_resource_slot(), 0x1B9B, 0);
+        }
+        else
+        {
+            lib_text_set_resource(stat_values[row][2], owner->get_resource_slot(), 0x1B9A, 0);
+            stat_values[row][2]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
+                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
+        }
+    }
 }
 
 s32 ItemWindow1845B0::func_slotc0()
@@ -1363,16 +2049,16 @@ extern "C"
  * @param selection Coordinate selector to inspect.
  * @return One when the control byte is zero, otherwise zero.
  */
-static inline s32 item_selection_control_is_clear(FieldObject23B1D0* selection)
+static inline s32 item_selection_control_is_clear(ItemCoordinateSelector* selection)
 {
-    return ((u32)selection->flag75 > 0) ^ 1;
+    return ((u32)selection->ItemCreationClass185050::unk35 > 0) ^ 1;
 }
 
 }
 
 void ItemWindow1845B0::func_slot70()
 {
-    FieldObject23B1D0* selection = this->selection;
+    ItemCoordinateSelector* selection = this->selection;
     s32 index;
     if (item_selection_control_is_clear(selection) != 0)
     {
@@ -1383,7 +2069,7 @@ void ItemWindow1845B0::func_slot70()
     {
         index = 7;
     }
-    func_0023B1D0(selection, index, 0);
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(selection), index, 0);
 }
 
 extern "C"
@@ -1393,7 +2079,7 @@ extern "C"
 
 void ItemWindow1845B0::func_slot74()
 {
-    FieldObject23B1D0* selection = this->selection;
+    ItemCoordinateSelector* selection = this->selection;
     s32 index;
     if (item_selection_control_is_clear(selection) != 0)
     {
@@ -1404,7 +2090,7 @@ void ItemWindow1845B0::func_slot74()
     {
         index = 0;
     }
-    func_0023B1D0(selection, index, 0);
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(selection), index, 0);
 }
 
 extern "C"
@@ -1414,7 +2100,7 @@ extern "C"
 
 void ItemWindow1845B0::func_slot6c()
 {
-    FieldObject23B1D0* selection = this->selection;
+    ItemCoordinateSelector* selection = this->selection;
     s32 index;
     if (item_selection_control_is_clear(selection) != 0)
     {
@@ -1434,7 +2120,7 @@ void ItemWindow1845B0::func_slot6c()
     default:
         return;
     }
-    func_0023B1D0(selection, index, 0);
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(selection), index, 0);
 }
 
 extern "C"
@@ -1444,7 +2130,7 @@ extern "C"
 
 void ItemWindow1845B0::func_slot68()
 {
-    FieldObject23B1D0* selection = this->selection;
+    ItemCoordinateSelector* selection = this->selection;
     s32 index;
     if (item_selection_control_is_clear(selection) != 0)
     {
@@ -1470,7 +2156,7 @@ void ItemWindow1845B0::func_slot68()
     default:
         return;
     }
-    func_0023B1D0(selection, index, 0);
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(selection), index, 0);
 }
 
 extern "C"
@@ -1502,11 +2188,73 @@ u8 ItemWindow1845B0::func_slotb4()
     return 2;
 }
 
-extern "C"
+/**
+ * @brief Equip the selected allocation on the selected character and refresh their statistics.
+ * @return Three when nobody or no eligible allocation is selected, otherwise zero.
+ */
+u8 ItemWindow1845B0::func_slotb0()
 {
+    ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
+    s8 slot;
+    ItemCharacterStats* character;
+    ItemCharacterEquipment* equipment;
+    ItemCreationAllocationRecord* allocation = owner->unkbc;
+    FieldRecordSelection* records = this->records;
+    s16 index = selection->selected;
+    slot = records->slots[index];
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotb0__16ItemWindow1845B0Fv);
+    if (allocation != 0 && slot > 0)
+    {
+        character = &reinterpret_cast<ItemCharacterStats*>(records->records)[index];
+        equipment = &static_cast<ItemCharacterEquipment*>(records->unk04)[index];
 
+        if (allocation == 0)
+        {
+            return 3;
+        }
+
+        u8 equipped_owner = reinterpret_cast<ItemAllocationOwnerView*>(allocation)->equipped_owner;
+        if (equipped_owner > 0)
+        {
+            return 3;
+        }
+
+        u16 equipment_mask = D_001B64F0[allocation->definition_index()].equipment_mask;
+
+        if ((equipment_mask & (1 << (slot - 1))) == 0)
+        {
+            return 3;
+        }
+
+        switch (static_cast<u8>(D_001B64F0[allocation->definition_index()].category))
+        {
+        case 0:
+            func_40C7E0(D_001B64F8, equipment->get_equipment_id(0), 0);
+            func_40C7E0(D_001B64F8, lib_allocation_get_identifier(allocation), slot);
+            equipment->set_equipment_id(0, lib_allocation_get_identifier(allocation));
+            break;
+        case 1:
+            func_40C7E0(D_001B64F8, equipment->get_equipment_id(1), 0);
+            func_40C7E0(D_001B64F8, lib_allocation_get_identifier(allocation), slot);
+            equipment->set_equipment_id(1, lib_allocation_get_identifier(allocation));
+            break;
+        case 2:
+            func_40C7E0(D_001B64F8, equipment->get_equipment_id(unkc4), 0);
+            func_40C7E0(D_001B64F8, lib_allocation_get_identifier(allocation), slot);
+            equipment->set_equipment_id(unkc4, lib_allocation_get_identifier(allocation));
+            break;
+        }
+
+        func_3F9890(character, equipment, 0, -1);
+        resident_allocate_request(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
+    }
+    else
+    {
+        return 3;
+    }
+
+    static_cast<ItemAllocationWindow1847B0*>(func_slot44())->func_0034FB80(0);
+    return 0;
 }
 
 ItemWindow1845B0::~ItemWindow1845B0()
@@ -1518,10 +2266,193 @@ ItemWindow1845B0::~ItemWindow1845B0()
     }
 }
 
+/**
+ * @brief Create the party panels with names, portraits and stat-comparison labels, then show the item category hint.
+ * @param associated Resource source word.
+ * @return Zero when the selector could not be allocated, otherwise one.
+ */
+s32 ItemWindow1845B0::func_slotf4(u32 associated)
+{
+    s32 source = associated;
+    ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
+    this->records = owner->selected_records();
+    this->x = 12.0f;
+    this->y = 216.0f;
+    FieldClass15AE70::func_slot10(source, this->x, this->y, 15);
+    this->selection = new (0) ItemCoordinateSelector;
+    if (this->selection == 0)
+    {
+        return 0;
+    }
+    lib_moving_widget_init_position(this->selection, 0.0f, 0.0f);
+    lib_container_attach_widget(this->unk10, this->selection);
+    this->row_height = 128.0f;
+    for (s32 row = 0; row < 8; row++)
+    {
+        float panel_y;
+        float text_x;
+        float text_y;
+        float panel_x;
+        float column_width;
+        s32 column;
+        if (row < 3)
+        {
+            column_width = 196.0f;
+            panel_y = 0.0f;
+            column = row;
+        }
+        else
+        {
+            panel_y = this->row_height;
+            column = row - 3;
+            column_width = 117.0f;
+        }
+        LibClass178630* panel = new (0) LibClass178630;
+        panel_x = 8.0f + column_width * (float)column;
+        lib_panel_init_rectangle(panel, 1, panel_x, panel_y, 3.0f + column_width, 2.0f + this->row_height, 88.0f);
+        lib_container_attach_widget(this->unk10, panel);
+        if (row < 3)
+        {
+            text_x = 85.0f + panel_x;
+            text_y = 40.0f + panel_y;
+        }
+        else
+        {
+            text_x = 14.0f + panel_x;
+            text_y = 66.0f + panel_y;
+        }
+        s16 index = row;
+        s8 slot = this->records->slots[index];
+        if (slot > 0)
+        {
+            if (row < 3)
+            {
+                LibObject175140* label = new (0) LibObject175140;
+                label->func_00467AD0(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
+                    static_cast<ItemCharacterEquipment*>(this->records->unk04)[index].character_name, 0);
+                lib_container_attach_widget(this->unk10, label);
+                label->set_scale(0.8f, 0.8f);
+            }
+            this->indicators[row] = new (0) ItemCreationOptionResourceDisplay;
+            u8 character = slot;
+            void* resource = field_get_aligned_allocation(D_001B643C->buffers, character);
+            FieldResourceRecord* record = field_find_resource_record(D_001B643C->buffers, 4);
+            this->indicators[row]->unkcc = resource;
+            this->indicators[row]->unkd0 = character;
+            if (row < 3)
+            {
+                this->indicators[row]->func_002D6440(14.0f + panel_x, 48.0f + panel_y, record);
+                ItemCreationOptionResourceDisplay* indicator = this->indicators[row];
+                indicator->unk50.unk34 = 0.8f;
+                indicator->unk50.unk30 = 0.8f;
+                indicator->unk3c = 1;
+            }
+            else
+            {
+                this->indicators[row]->func_002D6440(14.0f + panel_x, 12.0f + panel_y, record);
+                ItemCreationOptionResourceDisplay* indicator = this->indicators[row];
+                indicator->unk50.unk34 = 0.65f;
+                indicator->unk50.unk30 = 0.65f;
+                indicator->unk3c = 1;
+            }
+            this->indicators[row]->unk34 = 3;
+            this->indicators[row]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->indicators[row]);
+            LibObject178750* first_label = new (0) LibObject178750;
+            LibObject178750* second_label = new (0) LibObject178750;
+            LibObject178750* third_label = new (0) LibObject178750;
+            this->stat_values[row][0] = new (0) LibObject178750;
+            this->stat_values[row][1] = new (0) LibObject178750;
+            this->stat_values[row][2] = new (0) LibObject178750;
+            if (row < 3)
+            {
+                first_label->init_resource_rectangle(text_x, text_y, 0.0f, 0.0f, source, 0x1B94, 0);
+                second_label->init_resource_rectangle(text_x, 26.0f + text_y, 0.0f, 0.0f, source, 0x1B96, 0);
+                third_label->init_resource_rectangle(text_x, 52.0f + text_y, 0.0f, 0.0f, source, 0x1B98, 0);
+                first_label->set_scale(0.8f, 0.8f);
+                second_label->set_scale(0.8f, 0.8f);
+                third_label->set_scale(0.8f, 0.8f);
+                this->stat_values[row][0]->init_resource_rectangle(45.0f + text_x, 1.0f + (text_y - 3.0f), 0.0f, 0.0f, source, 0x1B99, 0);
+                this->stat_values[row][1]->init_resource_rectangle(45.0f + text_x, 2.0f + ((26.0f + text_y) - 3.0f), 0.0f, 0.0f, source, 0x1B9A, 0);
+                this->stat_values[row][2]->init_resource_rectangle(45.0f + text_x, 4.0f + ((50.0f + text_y) - 3.0f), 0.0f, 0.0f, source, 0x1B9B, 0);
+            }
+            else
+            {
+                first_label->init_resource_rectangle(text_x, text_y, 0.0f, 0.0f, source, 0x1B94, 0);
+                second_label->init_resource_rectangle(text_x, 19.0f + text_y, 0.0f, 0.0f, source, 0x1B96, 0);
+                third_label->init_resource_rectangle(text_x, 38.0f + text_y, 0.0f, 0.0f, source, 0x1B98, 0);
+                first_label->set_scale(0.68f, 0.68f);
+                second_label->set_scale(0.68f, 0.68f);
+                third_label->set_scale(0.68f, 0.68f);
+                this->stat_values[row][0]->init_resource_rectangle(41.0f + text_x, text_y - 3.0f, 0.0f, 0.0f, source, 0x1B99, 0);
+                this->stat_values[row][1]->init_resource_rectangle(41.0f + text_x, (19.0f + text_y) - 3.0f, 0.0f, 0.0f, source, 0x1B9A, 0);
+                this->stat_values[row][2]->init_resource_rectangle(41.0f + text_x, (38.0f + text_y) - 3.0f, 0.0f, 0.0f, source, 0x1B9B, 0);
+                this->stat_values[row][0]->set_scale(0.9f, 0.9f);
+                this->stat_values[row][1]->set_scale(0.9f, 0.9f);
+                this->stat_values[row][2]->set_scale(0.9f, 0.9f);
+            }
+            this->stat_values[row][0]->unk3f = 0;
+            this->stat_values[row][1]->unk3f = 0;
+            this->stat_values[row][2]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, first_label);
+            lib_container_attach_widget(this->unk10, second_label);
+            lib_container_attach_widget(this->unk10, third_label);
+            lib_container_attach_widget(this->unk10, this->stat_values[row][0]);
+            lib_container_attach_widget(this->unk10, this->stat_values[row][1]);
+            lib_container_attach_widget(this->unk10, this->stat_values[row][2]);
+        }
+        else
+        {
+            LibObject178750* empty = new (0) LibObject178750;
+            empty->init_resource_rectangle(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f, source, 0x1B8F, 0);
+            set_widget_rectangle(empty, panel_x, (panel_y + this->row_height / 2.0f) - 9.6f, column_width, 24.0f);
+            empty->set_mode(1);
+            if (row < 3)
+            {
+                empty->set_scale(0.8f, 0.8f);
+            }
+            else
+            {
+                empty->set_scale(0.8f * 0.8f, 0.8f * 0.8f);
+            }
+            lib_container_attach_widget(this->unk10, empty);
+        }
+        if (row < 3)
+        {
+            append_selector_position(this->selection, 14.0f + panel_x, 88.0f + panel_y);
+        }
+        else
+        {
+            append_selector_position(this->selection, 14.0f + panel_x, 47.0f + panel_y);
+        }
+    }
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(this->selection), 0, 1);
+    this->selection->unk3f = 0;
+    this->unk10->LibClass174610::unkab = 0;
+    ItemCreationAllocationRecord* allocation = owner->unkbc;
+    if (allocation != 0)
+    {
+        if (static_cast<u8>(D_001B64F0[item_allocation_value(allocation)].category) == 0)
+        {
+            set_item_window_message(owner->unk48, 0x1B76);
+            this->message_changed = 1;
+        }
+        if (static_cast<u8>(D_001B64F0[item_allocation_value(allocation)].category) == 1)
+        {
+            set_item_window_message(owner->unk48, 0x1B77);
+            this->message_changed = 1;
+        }
+        if (static_cast<u8>(D_001B64F0[item_allocation_value(allocation)].category) == 2)
+        {
+            set_item_window_message(owner->unk48, 0x1B78);
+            this->message_changed = 1;
+        }
+    }
+    return 1;
+}
+
 extern "C"
 {
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotf4__16ItemWindow1845B0FUi);
 
 Record0034C6A0* func_0034C6A0(Record0034C6A0* record, s16 flag)
 {
@@ -1550,16 +2481,72 @@ FieldRecordSelection* ItemController::selected_records()
     return selection;
 }
 
-extern "C"
+/** @brief Update the gauges and refresh each party member's HP, MP, status badges and name color. */
+void ItemWindow1846B0::func_slot5c()
 {
+    for (ItemListNode* node = displays.head->next; node != 0; node = node->next)
+    {
+        static_cast<ItemHpMpGauge*>(node->value)->func_0044B100(1, 1, 1);
+    }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot5c__16ItemWindow1846B0Fv);
-
+    for (s32 row = 0; row < 8; ++row)
+    {
+        s16 index = row;
+        if (records->slots[index] > 0)
+        {
+            ItemCharacterStats* entry = &reinterpret_cast<ItemCharacterStats*>(records->records)[index];
+            func_3F9890(entry, &static_cast<ItemCharacterEquipment*>(records->unk04)[index], 0, -1);
+            u32 hp = character_hp(entry);
+            LibObject174F20* hp_display = hp_values[row];
+            hp_display->numeric_value = hp;
+            hp_display->unk3c = 1;
+            u32 mp = character_mp(entry);
+            LibObject174F20* mp_display = mp_values[row];
+            mp_display->numeric_value = mp;
+            mp_display->unk3c = 1;
+            if (row < 3)
+            {
+                u32 max_hp = character_max_hp(entry);
+                LibObject174F20* max_hp_display = max_hp_values[row];
+                max_hp_display->numeric_value = max_hp;
+                max_hp_display->unk3c = 1;
+                u32 max_mp = character_max_mp(entry);
+                LibObject174F20* max_mp_display = max_mp_values[row];
+                max_mp_display->numeric_value = max_mp;
+                max_mp_display->unk3c = 1;
+            }
+            badges[row][0]->unk3f = character_flags(entry) & 2;
+            badges[row][1]->unk3f = character_flags(entry) & 8;
+            badges[row][2]->unk3f = character_flags(entry) & 4;
+            if (character_flags(entry) & 5)
+            {
+                indicators[row]->unk3f = 0;
+                badges[row][3]->unk3f = 1;
+                if (row < 3)
+                {
+                    LibObject175140* label = labels[row];
+                    label->unk94 = 0x505080;
+                    label->unk3c = 1;
+                }
+            }
+            else
+            {
+                indicators[row]->unk3f = 1;
+                badges[row][3]->unk3f = 0;
+                if (row < 3)
+                {
+                    LibObject175140* label = labels[row];
+                    label->unk94 = 0x808080;
+                    label->unk3c = 1;
+                }
+            }
+        }
+    }
 }
 
 void ItemWindow1846B0::func_slot70()
 {
-    FieldObject23B1D0* selection = this->selection;
+    ItemCoordinateSelector* selection = this->selection;
     s32 index;
     if (item_selection_control_is_clear(selection) != 0)
     {
@@ -1570,7 +2557,7 @@ void ItemWindow1846B0::func_slot70()
     {
         index = 7;
     }
-    func_0023B1D0(selection, index, 0);
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(selection), index, 0);
 }
 
 extern "C"
@@ -1580,7 +2567,7 @@ extern "C"
 
 void ItemWindow1846B0::func_slot74()
 {
-    FieldObject23B1D0* selection = this->selection;
+    ItemCoordinateSelector* selection = this->selection;
     s32 index;
     if (item_selection_control_is_clear(selection) != 0)
     {
@@ -1591,7 +2578,7 @@ void ItemWindow1846B0::func_slot74()
     {
         index = 0;
     }
-    func_0023B1D0(selection, index, 0);
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(selection), index, 0);
 }
 
 extern "C"
@@ -1601,7 +2588,7 @@ extern "C"
 
 void ItemWindow1846B0::func_slot6c()
 {
-    FieldObject23B1D0* selection = this->selection;
+    ItemCoordinateSelector* selection = this->selection;
     s32 index;
     if (item_selection_control_is_clear(selection) != 0)
     {
@@ -1621,7 +2608,7 @@ void ItemWindow1846B0::func_slot6c()
     default:
         return;
     }
-    func_0023B1D0(selection, index, 0);
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(selection), index, 0);
 }
 
 extern "C"
@@ -1631,7 +2618,7 @@ extern "C"
 
 void ItemWindow1846B0::func_slot68()
 {
-    FieldObject23B1D0* selection = this->selection;
+    ItemCoordinateSelector* selection = this->selection;
     s32 index;
     if (item_selection_control_is_clear(selection) != 0)
     {
@@ -1657,7 +2644,7 @@ void ItemWindow1846B0::func_slot68()
     default:
         return;
     }
-    func_0023B1D0(selection, index, 0);
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(selection), index, 0);
 }
 
 extern "C"
@@ -1689,13 +2676,350 @@ u8 ItemWindow1846B0::func_slotb4()
     return 2;
 }
 
-extern "C"
+/**
+ * @brief Use the selected item on the selected party member.
+ * @return Three when nobody is selected or the item can't be used, otherwise zero.
+ */
+u8 ItemWindow1846B0::func_slotb0()
 {
+    ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
+    s32 selected = selection->selected;
+    s8 slot = records->slots[static_cast<s16>(selected)];
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotb0__16ItemWindow1846B0Fv);
+    if (owner->unkbc != 0 && slot > 0)
+    {
+        switch (func_2E19D0(owner->unkbc, selected))
+        {
+        case -1:
+        case 0:
+            return 3;
+        case 1:
+            func_0040C9F0(D_001B64F8, lib_allocation_get_identifier(owner->unkbc));
+            resident_allocate_request(D_001B65F8, 0x1B4, 0, 0, 0x7F, 0x40, 0);
+            break;
+        case 2:
+            resident_allocate_request(D_001B65F8, 0x1B4, 0, 0, 0x7F, 0x40, 0);
+            break;
+        }
+    }
+    else
+    {
+        return 3;
+    }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotf4__16ItemWindow1846B0FUi);
+    static_cast<ItemAllocationWindow1847B0*>(func_slot44())->func_0034FB80(0);
+    return 0;
+}
 
+/**
+ * @brief Create the party panels with names, HP and MP values, portraits, status badges, gauges and selector positions.
+ * @param associated Resource source word.
+ * @return Zero when the selector could not be allocated, otherwise one.
+ */
+s32 ItemWindow1846B0::func_slotf4(u32 associated)
+{
+    s32 source = associated;
+    ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
+    this->records = owner->selected_records();
+    this->x = 12.0f;
+    this->y = 216.0f;
+    FieldClass15AE70::func_slot10(source, this->x, this->y, 15);
+    this->selection = new (0) ItemCoordinateSelector;
+    if (this->selection == 0)
+    {
+        return 0;
+    }
+    lib_moving_widget_init_position(this->selection, 0.0f, 0.0f);
+    lib_container_attach_widget(this->unk10, this->selection);
+    this->row_height = 128.0f;
+    for (s32 row = 0; row < 8; row++)
+    {
+        float indicator_x;
+        float panel_y;
+        float badge_x;
+        float badge_y;
+        float value_x;
+        float hp_row_y;
+        float mp_row_y;
+        float panel_x;
+        float hp_y;
+        float value_height;
+        float column_width;
+        float value_width;
+        s32 column;
+        if (row < 3)
+        {
+            column_width = 196.0f;
+            panel_y = 0.0f;
+            column = row;
+        }
+        else
+        {
+            panel_y = this->row_height;
+            column = row - 3;
+            column_width = 117.0f;
+        }
+        LibClass178630* panel = new (0) LibClass178630;
+        panel_x = 8.0f + column_width * (float)column;
+        lib_panel_init_rectangle(panel, 1, panel_x, panel_y, 3.0f + column_width, 2.0f + this->row_height, 88.0f);
+        lib_container_attach_widget(this->unk10, panel);
+        hp_row_y = 50.0f + panel_y;
+        mp_row_y = 78.0f + panel_y;
+        if (row < 3)
+        {
+            value_x = 68.0f + panel_x;
+            badge_x = 98.0f + panel_x;
+            badge_y = 36.0f + panel_y;
+        }
+        else
+        {
+            value_x = 8.0f + panel_x;
+            badge_x = 65.0f + panel_x;
+            badge_y = 12.0f + panel_y;
+        }
+        s16 index = row;
+        s8 slot = this->records->slots[index];
+        if (slot > 0)
+        {
+            if (row < 3)
+            {
+                this->labels[row] = new (0) LibObject175140;
+                this->labels[row]->func_00467AD0(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
+                    slot > 0 ? static_cast<ItemCharacterEquipment*>(this->records->unk04)[index].character_name : D_354C80, 0);
+                lib_container_attach_widget(this->unk10, this->labels[row]);
+                this->labels[row]->set_scale(0.8f, 0.8f);
+                if (reinterpret_cast<ItemCharacterStats*>(this->records->records)[index].get_flags() & 5)
+                {
+                    this->labels[row]->set_color(0x505080);
+                }
+                else
+                {
+                    this->labels[row]->set_color(0x808080);
+                }
+            }
+            this->hp_values[row] = new (0) LibObject174F20;
+            if (row < 3)
+            {
+                // The original reuses the column width for the HP and MP row offsets.
+                column_width = 16.0f;
+                hp_y = column_width + hp_row_y;
+                value_height = 19.2f;
+                value_width = 56.0f;
+                lib_numeric_widget_init_rectangle(this->hp_values[row], 0, 1, 0, 3.0f + value_x, hp_y, value_width, value_height);
+            }
+            else
+            {
+                column_width = 16.0f;
+                hp_y = column_width + hp_row_y;
+                value_height = 19.2f;
+                value_width = 56.0f;
+                lib_numeric_widget_init_rectangle(this->hp_values[row], 0, 1, 0, 40.0f + value_x, hp_y, value_width, value_height);
+            }
+            this->hp_values[row]->set_scale(0.8f, 0.8f);
+            set_cost_value(this->hp_values[row], character_hp(&reinterpret_cast<ItemCharacterStats*>(this->records->records)[index]));
+            lib_container_attach_widget(this->unk10, this->hp_values[row]);
+            if (row < 3)
+            {
+                LibObject178750* separator = new (0) LibObject178750;
+                separator->init_resource_rectangle(60.0f + value_x, hp_y, 0.0f, 0.0f, source, 0x1B93, 0);
+                separator->set_scale(0.8f, 0.8f);
+                lib_container_attach_widget(this->unk10, separator);
+                this->max_hp_values[row] = new (0) LibObject174F20;
+                lib_numeric_widget_init_rectangle(this->max_hp_values[row], 0, 1, 0, 61.0f + value_x, hp_y, value_width, value_height);
+                this->max_hp_values[row]->set_scale(0.8f, 0.8f);
+                set_cost_value(this->max_hp_values[row], character_max_hp(&reinterpret_cast<ItemCharacterStats*>(this->records->records)[index]));
+                lib_container_attach_widget(this->unk10, this->max_hp_values[row]);
+            }
+            this->mp_values[row] = new (0) LibObject174F20;
+            if (row < 3)
+            {
+                column_width += mp_row_y;
+                lib_numeric_widget_init_rectangle(this->mp_values[row], 1, 0, 0, 3.0f + value_x, column_width, value_width, 0.0f);
+            }
+            else
+            {
+                column_width += mp_row_y;
+                lib_numeric_widget_init_rectangle(this->mp_values[row], 1, 0, 0, 40.0f + value_x, column_width, value_width, 0.0f);
+            }
+            this->mp_values[row]->set_scale(0.8f, 0.8f);
+            set_cost_value(this->mp_values[row], character_mp(&reinterpret_cast<ItemCharacterStats*>(this->records->records)[index]));
+            lib_container_attach_widget(this->unk10, this->mp_values[row]);
+            if (row < 3)
+            {
+                LibObject178750* separator = new (0) LibObject178750;
+                separator->init_resource_rectangle(60.0f + value_x, column_width, 0.0f, 0.0f, source, 0x1B93, 0);
+                separator->set_scale(0.8f, 0.8f);
+                lib_container_attach_widget(this->unk10, separator);
+                this->max_mp_values[row] = new (0) LibObject174F20;
+                lib_numeric_widget_init_rectangle(this->max_mp_values[row], 1, 0, 0, 61.0f + value_x, column_width, value_width, 0.0f);
+                this->max_mp_values[row]->set_scale(0.8f, 0.8f);
+                set_cost_value(this->max_mp_values[row], character_max_mp(&reinterpret_cast<ItemCharacterStats*>(this->records->records)[index]));
+                lib_container_attach_widget(this->unk10, this->max_mp_values[row]);
+            }
+            this->indicators[row] = new (0) ItemCreationOptionResourceDisplay;
+            u8 character = slot;
+            void* resource = field_get_aligned_allocation(D_001B643C->buffers, character);
+            FieldResourceRecord* record = field_find_resource_record(D_001B643C->buffers, 4);
+            this->indicators[row]->unkcc = resource;
+            this->indicators[row]->unkd0 = character;
+            if (row < 3)
+            {
+                indicator_x = 14.0f + panel_x;
+                this->indicators[row]->func_002D6440(indicator_x, 48.0f + panel_y, record);
+                ItemCreationOptionResourceDisplay* indicator = this->indicators[row];
+                indicator->unk50.unk34 = 0.8f;
+                indicator->unk50.unk30 = 0.8f;
+                indicator->unk3c = 1;
+            }
+            else
+            {
+                indicator_x = 14.0f + panel_x;
+                this->indicators[row]->func_002D6440(indicator_x, 12.0f + panel_y, record);
+                ItemCreationOptionResourceDisplay* indicator = this->indicators[row];
+                indicator->unk50.unk34 = 0.65f;
+                indicator->unk50.unk30 = 0.65f;
+                indicator->unk3c = 1;
+            }
+            lib_container_attach_widget(this->unk10, this->indicators[row]);
+            resource = field_get_aligned_allocation(D_001B643C->buffers, 0);
+            record = field_find_resource_record(D_001B643C->buffers, 40);
+            this->badges[row][0] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][0]->unkcc = resource;
+            this->badges[row][0]->unkd0 = 0;
+            ItemCreationOptionResourceDisplay* badge = this->badges[row][0];
+            badge->unk50.unk34 = 0.8f;
+            badge->unk50.unk30 = 0.8f;
+            badge->unk3c = 1;
+            this->badges[row][0]->func_002D6440(badge_x, badge_y, record);
+            this->badges[row][0]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->badges[row][0]);
+            record = field_find_resource_record(D_001B643C->buffers, 39);
+            this->badges[row][1] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][1]->unkcc = resource;
+            this->badges[row][1]->unkd0 = 0;
+            badge = this->badges[row][1];
+            badge->unk50.unk34 = 0.8f;
+            badge->unk50.unk30 = 0.8f;
+            badge->unk3c = 1;
+            if (row < 3)
+            {
+                this->badges[row][1]->func_002D6440(35.0f + badge_x, badge_y, record);
+            }
+            else
+            {
+                this->badges[row][1]->func_002D6440(25.0f + badge_x, badge_y, record);
+            }
+            this->badges[row][1]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->badges[row][1]);
+            record = field_find_resource_record(D_001B643C->buffers, 38);
+            this->badges[row][2] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][2]->unkcc = resource;
+            this->badges[row][2]->unkd0 = 0;
+            badge = this->badges[row][2];
+            badge->unk50.unk34 = 0.8f;
+            badge->unk50.unk30 = 0.8f;
+            badge->unk3c = 1;
+            if (row < 3)
+            {
+                this->badges[row][2]->func_002D6440(70.0f + badge_x, badge_y, record);
+            }
+            else
+            {
+                this->badges[row][2]->func_002D6440(25.0f + badge_x, 30.0f + badge_y, record);
+            }
+            this->badges[row][2]->unk3f = 0;
+            lib_container_attach_widget(this->unk10, this->badges[row][2]);
+            resource = field_get_aligned_allocation(D_001B643C->buffers, (u8)(slot + 0x30));
+            record = field_find_resource_record(D_001B643C->buffers, 4);
+            this->badges[row][3] = new (0) ItemCreationOptionResourceDisplay;
+            this->badges[row][3]->unkcc = resource;
+            this->badges[row][3]->unkd0 = 0;
+            if (row < 3)
+            {
+                this->badges[row][3]->func_002D6440(indicator_x, 48.0f + panel_y, record);
+                badge = this->badges[row][3];
+                badge->unk50.unk34 = 0.8f;
+                badge->unk50.unk30 = 0.8f;
+                badge->unk3c = 1;
+            }
+            else
+            {
+                this->badges[row][3]->func_002D6440(indicator_x, 12.0f + panel_y, record);
+                badge = this->badges[row][3];
+                badge->unk50.unk34 = 0.65f;
+                badge->unk50.unk30 = 0.65f;
+                badge->unk3c = 1;
+            }
+            this->badges[row][3]->unk3f = reinterpret_cast<ItemCharacterStats*>(this->records->records)[index].get_flags() & 5;
+            lib_container_attach_widget(this->unk10, this->badges[row][3]);
+            ItemHpMpGauge* gauge = new (0) ItemHpMpGauge;
+            gauge->character_id = slot;
+            gauge->characters = D_001B643C->characters;
+            LibCameraContext* context = D_001B6650;
+            gauge->FieldClass159A70::unk1c = 0x800 - context->viewport_width / 2;
+            gauge->FieldClass159A70::unk20 = 0x800 - context->viewport_height / 2;
+            gauge->FieldClass159A70::unk24 = 0x800 + context->viewport_width / 2;
+            gauge->FieldClass159A70::unk28 = 0x800 + context->viewport_height / 2;
+            gauge->initialize(1, 0, 0, 0.0f, 0.0f, 0.0f);
+            if (row < 3)
+            {
+                gauge->origin.x = 22.0f + value_x;
+                gauge->origin.y = 32.0f + hp_row_y;
+                gauge->row_spacing = 30.0f;
+            }
+            else
+            {
+                gauge->origin.x = 20.0f + value_x;
+                gauge->origin.y = 32.0f + hp_row_y;
+                gauge->row_spacing = 25.0f;
+                gauge->FieldClass159A70::unk0c = 80.0f;
+                gauge->FieldClass159A70::unk10 = 5.0f;
+            }
+            gauge->func_002BC370(0x80);
+            gauge->FieldClass159A70::unk04 = this->unk10;
+            lib_queue_display_object(D_001B657C, gauge);
+            item_append_list_value(&this->displays, gauge);
+            gauge->LibClass174610::unkab = 0;
+        }
+        else
+        {
+            LibObject178750* empty = new (0) LibObject178750;
+            empty->init_resource_rectangle(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f, source, 0x1B8F, 0);
+            set_widget_rectangle(empty, panel_x, (panel_y + this->row_height / 2.0f) - 9.6f, column_width, 24.0f);
+            empty->set_mode(1);
+            if (row < 3)
+            {
+                empty->set_scale(0.8f, 0.8f);
+            }
+            else
+            {
+                empty->set_scale(0.8f * 0.8f, 0.8f * 0.8f);
+            }
+            empty->unk3f = 1;
+            lib_container_attach_widget(this->unk10, empty);
+        }
+        if (row < 3)
+        {
+            append_selector_position(this->selection, 14.0f + panel_x, 88.0f + panel_y);
+        }
+        else
+        {
+            append_selector_position(this->selection, 14.0f + panel_x, 47.0f + panel_y);
+        }
+    }
+    func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(this->selection), 0, 1);
+    this->selection->unk3f = 0;
+    this->unk10->LibClass174610::unkab = 0;
+    for (ItemListNode* node = this->displays.head->next; node != 0; node = node->next)
+    {
+        static_cast<LibClass174610*>(node->value)->unkab = 0;
+    }
+    if (owner->unkbc != 0)
+    {
+        set_item_window_message(owner->unk48, 0x1B7A);
+        this->message_changed = 1;
+    }
+    return 1;
 }
 
 void ItemWindow1846B0::func_slot0c()
@@ -1752,7 +3076,7 @@ u8 ItemAllocationWindow1847B0::func_slotb0()
             ItemWindow1845B0* window = new (0) ItemWindow1845B0;
             window->func_slotf4(owner->get_resource_slot());
             window->func_slot40(this);
-            reinterpret_cast<LibClass178600*>(window->selection)->unk3f = 1;
+            window->selection->unk3f = 1;
             window->unk10->unkab = 1;
             owner->add_child(window);
             owner->func_00263C70(window);
@@ -1772,7 +3096,7 @@ u8 ItemAllocationWindow1847B0::func_slotb0()
             ItemWindow1846B0* window = new (0) ItemWindow1846B0;
             window->func_slotf4(owner->get_resource_slot());
             window->func_slot40(this);
-            reinterpret_cast<LibClass178600*>(window->selection)->unk3f = 1;
+            window->selection->unk3f = 1;
             window->unk10->unkab = 1;
             for (ItemListNode* node = window->displays.head->next; node != 0; node = node->next)
             {
@@ -1788,11 +3112,165 @@ u8 ItemAllocationWindow1847B0::func_slotb0()
     return 1;
 }
 
-extern "C"
+/** @brief Update the list input, the selected allocation's detail codes and marker, and the model preview state. */
+void ItemAllocationWindow1847B0::func_slot5c()
 {
+    if (D_001B643C->controller->selected->func_00261150() == this && unk1b0 == 0)
+    {
+        FieldClass15AD40::func_slot5c();
+    }
+    else if (unk1b0 == 0)
+    {
+        func_2CDFB0(&static_cast<FieldStateCE420&>(*this));
+    }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot5c__26ItemAllocationWindow1847B0Fv);
+    if (D_001B643C->controller->selected->func_00261150() == this)
+    {
+        ItemCreationClass175030* display = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+        display->unk30 = 128.0f;
+        display->unk3c = 1;
+    }
+    else
+    {
+        ItemCreationClass175030* display = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
+        display->unk30 = 64.0f;
+        display->unk3c = 1;
+    }
 
+    ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
+    ItemCreationAllocationRecord* records[99];
+
+    u32 category = owner->category;
+
+    if (owner->unkb4 != 7)
+    {
+        s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(category));
+        s32 selected = unk24;
+
+        if (count != 0 && selected >= 0)
+        {
+            s32 shown = 0;
+
+            for (s32 index = 0; index < 8; index++)
+            {
+                u16 value = func_0040D930(records[selected], index);
+
+                if (value != 0 && value != 700)
+                {
+                    LibObject172440* detail = details[shown];
+                    detail->unkfc = value;
+                    detail->unk3c = 1;
+                    details[shown]->unk3f = 1;
+                    shown++;
+                }
+            }
+
+            for (; shown < 8; shown++)
+            {
+                details[shown]->unk3f = 0;
+            }
+
+            LibObject172410* marked = first[unk28];
+            set_selection_marker(marked, marked->unk94);
+            u8 modification;
+            ItemCreationAllocationRecord* record = records[selected];
+            modification = record->modification_number;
+            u16 identifier = record->definition_index();
+            LibObject172410* code = selected_code;
+            code->unkfc = identifier + 1;
+            code->unkfe = modification;
+            code->unk3c = 1;
+            owner->unkbc = records[selected];
+        }
+        else
+        {
+            for (s32 index = 0; index < 8; index++)
+            {
+                details[index]->unk3f = 0;
+            }
+
+            set_selection_marker(0, 0x808080);
+            owner->unkbc = 0;
+        }
+    }
+    else
+    {
+        owner->unkbc = 0;
+    }
+
+    for (s32 index = 0; index < 6; index++)
+    {
+        first[index]->unk3f = 0;
+        second[index]->unk3f = 0;
+    }
+
+    if (unk1b0 != 0)
+    {
+        text19c->unk3f = 1;
+        selected_code->unk3f = 1;
+        text1a4->unk3f = 1;
+        text1a8->unk3f = 1;
+
+        if (owner->unkb4 == 7)
+        {
+            selected_code->unk3f = 0;
+        }
+
+        FieldStateCE420::unk04->unk3f = 0;
+        FieldStateCE420::unk00->unk3f = 0;
+        ItemCreationClass172870* marker = display170;
+        marker->unk18.unk04 = 66.0f;
+        marker->unk3c = 1;
+        set_selection_marker(0, 0x808080);
+
+        if (unk1bc != 0 && func_002FD480(unk1b8) != 0)
+        {
+            unk1b0 = 0;
+            unk1bc = 0;
+            text178->unk3f = 1;
+            lib_text_set_resource(text178, owner->get_resource_slot(), 0x1B9D, 0);
+            LibObject178750* text = text17c;
+            text->unk18.unk00 = 448.0f;
+            text->unk18.unk04 = 330.0f;
+            text->unk3c = 1;
+            lib_text_set_resource(text17c, owner->get_resource_slot(), 0x1B9E, 0);
+
+            if (unk1b8 != 0)
+            {
+                unk1b8->func_001DD7B0();
+                unk1b8 = 0;
+            }
+
+            if (owner->unkb4 == 7)
+            {
+                field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->controller), this);
+                ItemListWindow1848D0* list = static_cast<ItemListWindow1848D0*>(func_slot44());
+                list->func_slot11c(0, -1);
+                list->func_slot10c(1, 1);
+                D_001B643C->controller->selected->func_00263C70(list);
+                unk1b0 = 1;
+            }
+        }
+    }
+    else
+    {
+        text19c->unk3f = 0;
+        selected_code->unk3f = 0;
+        text1a4->unk3f = 0;
+        text1a8->unk3f = 0;
+
+        for (s32 index = 0; index < 6; index++)
+        {
+            first[index]->unk3f = 1;
+            second[index]->unk3f = 1;
+        }
+
+        FieldStateCE420::unk04->unk3f = 1;
+        FieldStateCE420::unk00->unk3f = 1;
+        ItemCreationClass172870* marker = display170;
+        marker->unk18.unk04 = 160.0f;
+        marker->unk3c = 1;
+    }
 }
 
 /** @brief Destroy the list receiver and its head node. */
@@ -1800,12 +3278,170 @@ LibClass178A70::~LibClass178A70()
 {
 }
 
+/**
+ * @brief Rebuild the item-type list for a category and reset the visible rows and selection.
+ * @param reset Nonzero to move the selection back to the first row.
+ * @param category Category to list, or -1 for the controller's current category.
+ */
+void ItemListWindow1848D0::func_slot11c(s32 reset, s32 category)
+{
+    func_00354400(&entries);
+
+    for (s32 index = 0; index < 24; index++)
+    {
+        unk1b8[index] = 0;
+    }
+
+    unk88 = 0;
+
+    category = category == -1 ? controller->unkb4 : category;
+
+    FieldClass15AE60::unk8c = category;
+
+    switch (category)
+    {
+    case 7:
+        unk88 = controller->entry_count;
+        break;
+    case 8:
+        ItemCreationCategoryRecord* entry = D_001B64F8->item_types;
+
+        for (s32 index = 0; index < 750; index++, entry++)
+        {
+
+            if ((static_cast<u8>(D_001B64F0[entry->catalog_index].unk13_high) & 2) && entry->inventory_count > 0)
+            {
+                func_00354370(reinterpret_cast<ItemListOwner*>(&entries), entry);
+                unk88++;
+            }
+        }
+        break;
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+        for (s32 index = 1; index <= 750; index++)
+        {
+            ItemCreationCategoryRecord* entry = item_category_record(index);
+
+            if (entry != 0 && category == static_cast<u8>(D_001B64F0[entry->catalog_index].category) && entry->inventory_count != 0)
+            {
+                ItemCreationAllocationRecord* records[100];
+                u16 identifier;
+                s32 count = item_category_allocations(entry, records, identifier);
+
+                for (s32 record_index = 0; record_index < count; record_index++)
+                {
+                    if (records[record_index]->new_item)
+                    {
+                        unk1b8[identifier / 32] |= 1 << (identifier % 32);
+                        break;
+                    }
+                }
+
+                func_00354370(reinterpret_cast<ItemListOwner*>(&entries), entry);
+                unk88++;
+            }
+        }
+        break;
+    case 9:
+        for (s32 index = 1; index <= 750; index++)
+        {
+            ItemCreationCategoryRecord* entry = item_category_record(index);
+
+            if (entry != 0)
+            {
+                ItemCreationAllocationRecord* records[100];
+                u16 identifier;
+                s32 count = item_category_allocations(entry, records, identifier);
+                bool found = false;
+
+                for (s32 record_index = 0; record_index < count; record_index++)
+                {
+                    found = records[record_index]->new_item;
+
+                    if (found)
+                    {
+                        break;
+                    }
+                }
+
+                if (found)
+                {
+                    unk1b8[identifier / 32] |= 1 << (identifier % 32);
+                    func_00354370(reinterpret_cast<ItemListOwner*>(&entries), entry);
+                    unk88++;
+                }
+            }
+        }
+        break;
+    default:
+        return;
+    }
+
+    if (sort_enabled != 0)
+    {
+        func_00354980(&entries, func_00351E40, 0, 1);
+    }
+
+    s32 visible = unk88 >= 13 ? 13 : unk88;
+
+    s32 start = unk22;
+
+    if (unk88 < start + 13)
+    {
+        start = unk88 - 13;
+    }
+
+    if (start < 0)
+    {
+        start = 0;
+    }
+
+    s32 selected = unk28;
+
+    if (selected >= visible)
+    {
+        selected = visible - 1;
+    }
+
+    if (selected < 0)
+    {
+        selected = 0;
+    }
+
+    if (reset != 0)
+    {
+        selected = 0;
+        start = 0;
+    }
+
+    func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, visible, 378, 28);
+    configure_selection(unk88, start, selected);
+}
+
+/** @brief Initialize the row pointers and controller link. @param owner Parent item controller. */
+ItemListWindow1848D0::ItemListWindow1848D0(ItemController* owner)
+{
+    for (s32 index = 0; index < 14; index++)
+    {
+        unk48[index] = 0;
+        second[index] = 0;
+        third[index] = 0;
+    }
+
+    // TODO: The only way I found to get the original's two stores is to clear the link before setting it.
+    controller = 0;
+    controller = owner;
+    sort_enabled = 0;
+    FieldClass15AD40();
+}
+
 extern "C"
 {
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot11c__20ItemListWindow1848D0Fii);
-
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", __ct__20ItemListWindow1848D0FP14ItemController);
 
 s32 func_00351E40(const ItemListNode* left, const ItemListNode* right, u32 comparison_arg)
 {
@@ -2754,13 +4390,7 @@ ItemWindow1849F0::~ItemWindow1849F0()
 
 void ItemWindow184AF0::func_slot64()
 {
-    struct ScreenRecord* screen = this->unka8;
-
-    if (screen != 0)
-    {
-        screen->unk70 = 128.0f;
-        screen->unk3c = 1;
-    }
+    set_selector_height(unka8, 128.0f);
 }
 
 u8 ItemWindow184AF0::func_slotb4()
@@ -2769,20 +4399,219 @@ u8 ItemWindow184AF0::func_slotb4()
     return 2;
 }
 
-extern "C"
+/**
+ * @brief Confirm the selected entry: lower the selector, focus the list and describe the choice.
+ * @return Zero while the selector is missing or idle, otherwise one.
+ */
+u8 ItemWindow184AF0::func_slotb0()
 {
+    if (unka8 == 0)
+    {
+        return 0;
+    }
 
+    bool idle = !unka8->ItemCreationClass185050::unk35;
+    if (idle)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotb0__16ItemWindow184AF0Fv);
+    set_selector_height(unka8, 64.0f);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot6c__16ItemWindow184AF0Fv);
+    u16 selected = unka8->func_0023B3A0();
+    unkb0->func_slot10c(1, 1);
+    unkb0->func_slot110(1);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot68__16ItemWindow184AF0Fv);
+    if (selected == 7)
+    {
+        if (controller->unk54 != 0)
+        {
+            controller->unk54->text[0]->unk3f = 0;
+        }
+    }
+    else
+    {
+        ItemController* owner;
+        ItemWindow1844B0* message = controller->unk54;
+        if (message != 0)
+        {
+            owner = static_cast<ItemController*>(D_001B643C->controller->selected);
+            lib_text_set_resource(message->text[0], owner->get_resource_slot(), 0x1B80, 0);
+            lib_text_set_resource(message->text[1], owner->get_resource_slot(), 0x1B7D, 0);
+            lib_text_set_resource(message->text[2], owner->get_resource_slot(), 0x1B7E, 0);
+            message->text[0]->unk3f = 1;
+        }
+    }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot5c__16ItemWindow184AF0Fv);
+    if (D_001B643C->state != 0)
+    {
+        D_001B643C->state->unk9a = 1;
+    }
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotf4__16ItemWindow184AF0FUi);
+    D_001B643C->controller->selected->func_00263C70(unkb0);
+    return 1;
+}
 
+/** @brief Move the selector forward and highlight, describe and show the newly selected entry. */
+void ItemWindow184AF0::func_slot6c()
+{
+    if (unka8 != 0 && unka8->func_0023B3B0(1) != 1)
+    {
+        u16 selected = unka8->func_0023B3A0();
+        s16 row = selected;
+
+        if (unka8 != 0)
+        {
+            for (s32 index = 0; index < unkb8; index++)
+            {
+                LibObject178750* text = static_cast<LibObject178750*>(func_003545E0(reinterpret_cast<ItemListOwner*>(&unk2c), index)->value);
+
+                if (index == row)
+                {
+                    set_text_color(text, 0x288080);
+                    unkac->func_0023B7E0(text);
+                }
+                else
+                {
+                    set_text_color(text, 0x808080);
+                }
+            }
+        }
+
+        s16 key = selected + 0x1B6C;
+        set_item_window_message(controller->unk48, key);
+        unkb0->func_slot11c(1, unka8->func_0023B3A0());
+        unkb0->func_slot10c(1, 0);
+    }
+}
+
+/** @brief Move the selector back and highlight, describe and show the newly selected entry. */
+void ItemWindow184AF0::func_slot68()
+{
+    if (unka8 != 0 && unka8->func_0023B3B0(0) != 1)
+    {
+        u16 selected = unka8->func_0023B3A0();
+        s16 row = selected;
+
+        if (unka8 != 0)
+        {
+            for (s32 index = 0; index < unkb8; index++)
+            {
+                LibObject178750* text = static_cast<LibObject178750*>(func_003545E0(reinterpret_cast<ItemListOwner*>(&unk2c), index)->value);
+
+                if (index == row)
+                {
+                    set_text_color(text, 0x288080);
+                    unkac->func_0023B7E0(text);
+                }
+                else
+                {
+                    set_text_color(text, 0x808080);
+                }
+            }
+        }
+
+        s16 key = selected + 0x1B6C;
+        set_item_window_message(controller->unk48, key);
+        unkb0->func_slot11c(1, unka8->func_0023B3A0());
+        unkb0->func_slot10c(1, 0);
+    }
+}
+
+void ItemWindow184AF0::func_slot5c()
+{
+    if (D_001B643C->controller->selected->func_00261150() == this)
+    {
+        ItemController* owner = static_cast<ItemController*>(D_001B643C->controller->selected);
+        owner->unkb4 = unka8->func_0023B3A0();
+
+        if (owner->unk54 != 0)
+        {
+            owner->unk54->text[0]->unk3f = 0;
+        }
+    }
+}
+
+// Sized like the u8 column parameter it feeds.
+#pragma enumsalwaysint off
+/** Column count of a selection widget. */
+enum SelectorColumns
+{
+    SELECTOR_SINGLE_COLUMN = 1
+};
+#pragma enumsalwaysint reset
+
+/**
+ * @brief Create the panel, the ten category labels and icons, the selector and its highlight, then highlight the first label.
+ * @param associated Resource source word.
+ * @return Zero when the list window is missing, otherwise one.
+ */
+s32 ItemWindow184AF0::func_slotf4(u32 associated)
+{
+    unkb0 = static_cast<ItemListWindow1848D0*>(func_slot4c());
+
+    if (unkb0 == 0)
+    {
+        return 0;
+    }
+
+    FieldClass15AE70::func_slot14(associated, 0, 9, 0x708, 16.0f, 72.0f, 0.0f);
+    LibClass178630* panel = allocate_panel();
+    lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 192.0f, 288.0f, 88.0f);
+    lib_container_attach_widget(unk10, panel);
+    unkb8 = 10;
+
+    for (s32 index = 0; index < unkb8; index++)
+    {
+        LibObject178750* text = allocate_text_widget();
+        float y = 16.0f + 26.0f * static_cast<float>(index);
+        text->init_resource_rectangle(42.0f, y, 0.0f, 0.0f, associated, index + 0x1B62, 0);
+        text->unk88 = -1.0f;
+        text->unk3c = 1;
+        text->set_scale(0.9f, 0.9f);
+        lib_container_attach_widget(unk10, text);
+        func_00354550(reinterpret_cast<ItemListOwner*>(&unk2c), text);
+
+        ItemCreationOptionResourceDisplay* icon = new (0) ItemCreationOptionResourceDisplay;
+        void* allocation = field_get_aligned_allocation(D_001B643C->buffers, 14);
+        FieldResourceRecord* record = field_find_resource_record(D_001B643C->buffers, index + 50);
+        icon->unkcc = allocation;
+        icon->unkd0 = 14;
+        icon->func_002D6440(16.0f, y, record);
+        lib_container_attach_widget(unk10, icon);
+    }
+
+    unka8 = new (0) FieldClass153130;
+    // TODO: Binding the row top through a reference is the only way I found to get the original's constant order.
+    const float& top = 28.0f;
+    SelectorColumns columns = SELECTOR_SINGLE_COLUMN;
+    unka8->func_0023B530(columns, unkb8, 1, 0, 1, 20.0f, top, 0.0f, 26.0f);
+    lib_container_attach_widget(unk10, unka8);
+
+    LibObject178750* first = static_cast<LibObject178750*>(func_003545E0(reinterpret_cast<ItemListOwner*>(&unk2c), 0)->value);
+    unkac = new (0) FieldClass153170;
+    unkac->func_0023B850(first, 0x288080);
+    lib_container_attach_widget(unk10, unkac);
+
+    if (unka8 != 0)
+    {
+        for (s32 index = 0; index < unkb8; index++)
+        {
+            LibObject178750* text = static_cast<LibObject178750*>(func_003545E0(reinterpret_cast<ItemListOwner*>(&unk2c), index)->value);
+
+            if (index == 0)
+            {
+                set_text_color(text, 0x288080);
+                unkac->func_0023B7E0(text);
+            }
+            else
+            {
+                set_text_color(text, 0x808080);
+            }
+        }
+    }
+
+    return 1;
 }
 
 ItemWindow184AF0::~ItemWindow184AF0()
@@ -2801,11 +4630,11 @@ extern "C"
 
 void ItemWindow184BF0::func_slot5c()
 {
-    struct CitemTextDisplay* display = this->text_display;
-    float x = display->rectangle.unk00;
-    float y = display->rectangle.unk04;
-    float width = display->rectangle.unk08;
-    float height = display->rectangle.unk0c;
+    LibObject178750* display = this->text_display;
+    float x = display->unk18.unk00;
+    float y = display->unk18.unk04;
+    float width = display->unk18.unk08;
+    float height = display->unk18.unk0c;
 
     if (this->scrolling == 0)
     {
@@ -2834,26 +4663,98 @@ void ItemWindow184BF0::func_slot5c()
     }
 }
 
-extern "C"
+void ItemWindow184BF0::func_slot60(s32 text_key)
 {
+    if (text_key >= 7020 && text_key < 7035)
+    {
+        scrolling = 0;
+        delay_frames = 0;
+        lib_text_set_resource(text_display, func_slot54(), text_key, 1);
+        scroll_extent = (s32)lib_text_measure_bounds(text_display)->unk08 + 6;
+    }
+}
 
+/**
+ * @brief Create the label, hint and clipped scrolling message, then show the first message.
+ * @param associated Resource source word.
+ * @return Zero when a display could not be allocated, otherwise one.
+ */
+s32 ItemWindow184BF0::func_slotf4(u32 associated)
+{
+    FieldClass15AE70::func_slot14(associated, 0, 9, 0x578, 16.0f, 16.0f, 0.0f);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slot60__16ItemWindow184BF0Fi);
+    LibObject178750* label = new (0) LibObject178750;
+    label->init_resource_rectangle(16.0f, 6.0f, 0.0f, 0.0f, associated, 0x1B58, 0);
+    lib_container_attach_widget(unk10, label);
+    func_00354550(reinterpret_cast<ItemListOwner*>(&unk2c), label);
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotf4__16ItemWindow184BF0FUi);
+    LibObject178750* caption = new (0) LibObject178750;
+    caption->init_resource_rectangle(36.0f, 40.0f, 0.0f, 0.0f, associated, 0x1B8E, 0);
+    caption->set_scale(0.65f, 0.65f);
+    lib_container_attach_widget(unk10, caption);
+    func_00354550(reinterpret_cast<ItemListOwner*>(&unk2c), caption);
 
+    text_display = new (0) LibObject178750;
+    LibClass1746A0* clip = new (0) LibClass1746A0;
+    LibClass1746A0* reset = new (0) LibClass1746A0;
+
+    if (text_display == 0 || clip == 0 || reset == 0)
+    {
+        return 0;
+    }
+
+    label_width = lib_text_measure_bounds(label)->unk08;
+    left_edge = 18.0f + label_width;
+    visible_width = 640.0f - (16.0f + shifted_position(left_edge, 32.0f));
+    start_x = 24.0f + label_width;
+    lib_scissor_init_rectangle(clip, left_edge, 0.0f, visible_width, 56.0f);
+    lib_container_attach_widget(unk10, clip);
+    func_00354620(reinterpret_cast<ItemListOwner*>(&unk20), clip);
+
+    text_display->init_resource_rectangle(start_x, 6.0f, 0.0f, 0.0f, associated, 0x1B6C, 0);
+    lib_container_attach_widget(unk10, text_display);
+    func_00354550(reinterpret_cast<ItemListOwner*>(&unk2c), text_display);
+
+    lib_scissor_init_reset(reset, 1);
+    lib_container_attach_widget(unk10, reset);
+    func_00354620(reinterpret_cast<ItemListOwner*>(&unk20), reset);
+
+    func_slot60(0x1B6C);
+    return 1;
 }
 
 ItemWindow184BF0::~ItemWindow184BF0()
 {
 }
 
-extern "C"
+/**
+ * @brief Create the window container and its three resource displays.
+ * @param associated Resource source word.
+ * @return One after initialization.
+ */
+s32 ItemWindow184CF0::func_slotf4(u32 associated)
 {
+    FieldClass15AE70::func_slot14(associated, 0, 9, 0x4B0, 16.0f, 16.0f, 0.0f);
+    unka8 = new (0) ItemCreationOptionResourceDisplay;
+    unkac = new (0) ItemCreationOptionResourceDisplay;
+    unkb0 = new (0) ItemCreationOptionResourceDisplay;
 
+    void* allocation = field_get_aligned_allocation(D_001B643C->buffers, 11);
+    unka8->unkcc = allocation;
+    unkac->unkcc = allocation;
+    unkb0->unkcc = allocation;
+    unka8->unkd0 = 11;
+    unkac->unkd0 = 11;
+    unkb0->unkd0 = 11;
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", func_slotf4__16ItemWindow184CF0FUi);
+    unka8->func_002D6440(0.0f, 0.0f, field_find_resource_record(D_001B643C->buffers, 5));
+    unkac->func_002D6440(256.0f, 0.0f, field_find_resource_record(D_001B643C->buffers, 6));
+    unkb0->func_002D6440(512.0f, 0.0f, field_find_resource_record(D_001B643C->buffers, 7));
 
+    lib_container_attach_widget(unk10, unka8);
+    lib_container_attach_widget(unk10, unkac);
+    lib_container_attach_widget(unk10, unkb0);
+    return 1;
 }
 
 ItemWindow184CF0::~ItemWindow184CF0()
@@ -2990,11 +4891,35 @@ ItemController::~ItemController()
     }
 }
 
-extern "C"
+/** @brief Initialize the controller's bases and clear its window and selection state. */
+ItemController::ItemController()
 {
+    resource_slot = 0;
+    windows_initialized = 0;
+    selection = 0;
+    unk44 = 0;
+    unk48 = 0;
+    unk4c = 0;
+    unk50 = 0;
+    unk54 = 0;
+    unk58 = 0;
+    unkbc = 0;
+    unk5c = 0;
+    // TODO: The original clears this byte twice. My guess is the second one was meant for unk5d.
+    unk5c = 0;
+    unk5e = 0;
+    unka8 = 0;
+    remove_flagged_records = 0;
 
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", __ct__14ItemControllerFv);
+    for (s32 index = 0; index < 5; index++)
+    {
+        record_identifiers[index] = 0;
+    }
 
+    for (s32 index = 0; index < 68; index++)
+    {
+        entries[index] = 0;
+    }
 }
 
 /** @brief Leave the default DMA notification hook unchanged. @param value Unused notification value. */
