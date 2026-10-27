@@ -51,19 +51,23 @@ typedef struct BootResource0970
     u8 unk24_low : 2;
     u8 unk24_mid : 2;
     u8 unk24_bit4 : 1;
-    u8 unk24_bit5 : 1;
+    /** Controller vibration on. */
+    u8 vibration : 1;
     u8 unk24_bit6 : 1;
-    u8 unk24_bit7 : 1;
+    /** Offer to skip events as they start. */
+    u8 event_skip : 1;
     u8 unk25_low : 1;
     u8 unk25_bit1 : 1;
-    u8 unk25_mode : 2;
+    /** Event dialog: subtitles and voice, voice only, subtitles only, or auto-advancing subtitles and voice. */
+    u8 voice_mode : 2;
     u8 unk25_mid : 2;
     u8 unk25_bit6 : 1;
     u8 unk25_bit7 : 1;
     /** First byte covered by checksum. */
     u8 unk26;
     u8 unk27;
-    u8 unk28;
+    /** Difficulty: Earth, Galaxy, Universe or 4D. */
+    u8 difficulty;
     u8 unk29[0x7B];
     u16 checksum;
     /** Seed for checksum, replaced on every write. */
@@ -72,14 +76,17 @@ typedef struct BootResource0970
     /** Nonzero for the 16:9 screen layout. */
     u8 widescreen;
     u8 unk18D;
-    u8 unk18E;
+    /** Sound output: mono, stereo, Dolby Pro Logic II or headphones. */
+    u8 sound_output;
     u8 unk18F;
     /** Angle of each of the four surround speakers, as saved. */
     float speaker_angles[4];
     /** First byte covered by extra_checksum. */
     u8 unk1A0;
-    u8 unk1A1;
-    u8 unk1A2;
+    /** Nonzero once Universe difficulty can be chosen. */
+    u8 universe_unlocked;
+    /** Nonzero once 4D difficulty can be chosen. */
+    u8 fourth_dimension_unlocked;
     u8 unk1A3;
     u16 extra_checksum;
     /** Seed for extra_checksum. */
@@ -126,8 +133,8 @@ public:
 struct BootSound1B65F8
 {
     u8 unk00[0x450];
-    /** Output mode the player selected in the options. */
-    u8 unk450;
+    /** Sound output mode: 1 mono, 0 stereo, 2 Dolby Pro Logic II, 3 headphones. */
+    u8 output_mode;
     u8 unk451[0xF4B];
     /** Angle of each of the four surround speakers. */
     float speaker_angles[4];
@@ -1054,42 +1061,61 @@ public:
     u8 unk2e;
 };
 
-/** Partial list object with vtable D_171070 in main data. */
-class BootClass171070 : public BootClass170E90
+/**
+ * Popup with vtable D_171070 in main data that tells the player to fix the PlayStation BB Unit while the resident
+ * loader reports an error, and removes itself once the error clears.
+ */
+class BootUnitErrorPopup : public BootClass170E90
 {
 public:
     /**
-     * @brief Start with no popup, enabled.
-     * @param owner Program whose first message block the popup waits for.
+     * @brief Start enabled, with nothing shown.
+     * @param owner Program whose message bank the popup uses.
      */
-    BootClass171070(class BootClass1710B0* owner)
+    BootUnitErrorPopup(class BootProgram* owner)
     {
         program = owner;
-        unk1C = 0;
-        unk20 = 0;
-        unk24 = 0;
-        unk18 = 1;
+        container = 0;
+        text = 0;
+        panel = 0;
+        enabled = 1;
     }
     /** @brief Destroy the object. */
-    virtual ~BootClass171070();
+    virtual ~BootUnitErrorPopup();
     /** @brief Release the owned objects, then queue this object for deletion. */
     virtual void destroy();
-    /** @brief Advance the object's state. */
+    /** @brief Show the popup while the loader reports a BB Unit error, and remove it once the error clears. */
     virtual void update();
-    /** @brief Store the byte at offset 0x18. @param value Byte to store. */
-    virtual void func_001E0250(u8 value);
-    /** Program whose first message block the popup waits for. */
-    class BootClass1710B0* program;
-    u8 unk18;
+    /** @brief Turn the popup on or off. @param value Nonzero to allow the popup. */
+    virtual void set_enabled(u8 value);
+    /** Program whose message bank the popup uses. */
+    class BootProgram* program;
+    u8 enabled;
     u8 unk19[3];
-    BootClass178660* unk1C;
-    BootClass170E90* unk20;
-    BootClass170E90* unk24;
+    BootClass178660* container;
+    BootClass170E90* text;
+    /** Frame behind the text. */
+    BootClass170E90* panel;
 };
 
 /** Message keys in boot's English message bank (resource 38, block 0). */
 enum BootMessage
 {
+    BOOT_MSG_PROGRESSIVE_OFFER = 0x1,
+    BOOT_MSG_PROGRESSIVE_WIDE_STARTED = 0x2,
+    BOOT_MSG_PROGRESSIVE_NORMAL_STARTED = 0x7,
+    BOOT_MSG_UNIT_NOT_INITIALIZED = 0x8,
+    /** First of the descriptions for each page's options; see BootNewGameSettings::get_value_message. */
+    BOOT_MSG_TV_NORMAL = 0xA,
+    BOOT_MSG_SOUND_MONO = 0xC,
+    BOOT_MSG_SPEAKER_SETUP = 0xF,
+    BOOT_MSG_EVENT_SKIP_ON = 0x10,
+    BOOT_MSG_VOICE_SUBTITLES_AND_SOUND = 0x12,
+    BOOT_MSG_VIBRATION_ON = 0x15,
+    BOOT_MSG_DIFFICULTY_EARTH = 0x17,
+    BOOT_MSG_UNIVERSE_UNLOCKED = 0x1A,
+    BOOT_MSG_SOUND_HEADPHONES = 0x1B,
+    BOOT_MSG_VOICE_AUTO = 0x1C,
     BOOT_MSG_INSTALL_CONFIRM = 0x1E,
     BOOT_MSG_OVERWRITE_CONFIRM = 0x1F,
     BOOT_MSG_NOT_ENOUGH_SPACE = 0x20,
@@ -1100,7 +1126,22 @@ enum BootMessage
     BOOT_MSG_ABORT_CONFIRM = 0x25,
     BOOT_MSG_INSTALL_COMPLETE = 0x26,
     /** First of the eight battle-system tips shown while installing. */
-    BOOT_MSG_FIRST_TIP = 0x28
+    BOOT_MSG_FIRST_TIP = 0x28,
+    BOOT_MSG_UNIT_FIX = 0x32,
+    BOOT_MSG_UNIT_DATA_DELETED = 0x33,
+    BOOT_MSG_FOURTH_DIMENSION_LOCKED = 0x50,
+    BOOT_MSG_FOURTH_DIMENSION = 0x51,
+    /** The memory card free-space warnings shown at startup. */
+    BOOT_MSG_NO_CARD = 0x7D0,
+    BOOT_MSG_SLOT1_FULL = 0x7D1,
+    BOOT_MSG_SLOT2_FULL = 0x7D2,
+    BOOT_MSG_BOTH_SLOTS_FULL = 0x7D3,
+    BOOT_MSG_SLOT1_NO_TROPHY_SPACE = 0x7D5,
+    BOOT_MSG_SLOT2_NO_TROPHY_SPACE = 0x7D6,
+    BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE = 0x7D7,
+    BOOT_MSG_SLOT1_NO_SAVE_SPACE = 0x7D8,
+    BOOT_MSG_SLOT2_NO_SAVE_SPACE = 0x7D9,
+    BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE = 0x7DA
 };
 
 /** Resources the installer loads. */
@@ -1196,7 +1237,7 @@ struct BootProgramImage
 
 typedef struct BootGlobals205E38
 {
-    BootClass171070* unk00;
+    BootUnitErrorPopup* unk00;
     u8 unk04[0x10];
     u8 unk14;
     u8 unk15[3];

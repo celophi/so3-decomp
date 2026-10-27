@@ -60,17 +60,18 @@ struct BootTransferRequest0AF0
 };
 
 /**
- * Boot object that reads and writes the BASLUS-20488BTLCOL memory card file through a Lib memory card
- * object, with vtable D_170EB0 in main data. Mode 0 and mode 1 select the two card slots.
+ * Battle Trophies memory card file (BASLUS-20488BTLCOL), with vtable D_170EB0 in main data. It reads and writes the
+ * file through a Lib memory card object and reports each slot's free-space state for the startup checks. Mode 0
+ * and mode 1 select the two card slots.
  */
-class BootClass170EB0 : public BootClass170E90
+class BootBattleTrophyCard : public BootClass170E90
 {
 public:
     /** @brief Clear the transfer state, both modes, and the filename. */
-    BootClass170EB0();
+    BootBattleTrophyCard();
 
     /** @brief Destroy the object. */
-    virtual ~BootClass170EB0()
+    virtual ~BootBattleTrophyCard()
     {
     }
 
@@ -84,10 +85,10 @@ public:
     virtual void update();
 
     /**
-     * @brief Query which of the owner's two mode words equal 2.
-     * @return Bit 0 for unk48 and bit 1 for unk148; zero when the owner's gate is clear.
+     * @brief Report which card slots hold a ready card.
+     * @return Bit 0 for slot 1 and bit 1 for slot 2; zero while the card object is busy.
      */
-    u16 func_001E0910();
+    u16 get_ready_slots();
 
     /** @brief Apply transferred flags and header values, copy the payload, and release its buffer. */
     void func_001E0970();
@@ -119,12 +120,12 @@ public:
     void func_001E0DE0(u8 mode);
 
     /**
-     * @brief Query a mode's byte and reset selector 0 when the reset flag is set.
-     * @param mode Mode 0 or 1 to query; other values return zero without a reset.
+     * @brief Query a slot's state byte, resetting slot 0 when its reset flag is set.
+     * @param mode Slot 0 or 1 to query; other values return zero without a reset.
      * @param kind Select guarded values with 1, or the direct mode byte otherwise.
      * @return The selected byte before any reset.
      */
-    u16 func_001E1410(u16 mode, u16 kind);
+    u16 get_slot_state(u16 mode, u16 kind);
 
     /**
      * @brief Apply an event to the selected mode and update its reset and completion flags.
@@ -142,19 +143,20 @@ public:
     void func_001E17C0(u16 event, u8* result);
 
     /**
-     * @brief Reset the shared state and the fields selected by mode 0 or 1.
-     * @param mode Mode to store and reset; other values reset only shared fields.
+     * @brief Select a slot and reset its fields along with the shared state.
+     * @param mode Slot 0 or 1 to select; other values reset only the shared state.
      */
-    void func_001E1A40(s16 mode);
+    void reset_slot(s16 mode);
 
     /**
-     * @brief Create the memory card object and prepare the shared transfer buffer.
-     * @return 1 when initialized, or 0 when an owner, resource, or buffer is unavailable.
+     * @brief Create the memory card object for both slots and prepare the transfer buffer.
+     * @return 1 when initialized, or 0 when the card object, settings or buffer is unavailable.
      */
-    s32 func_001E1AD0();
+    s32 initialize();
 
-    BootModeOwner0910* unk14;
-    s16 unk18;
+    BootModeOwner0910* card;
+    /** Selected slot, or -1. */
+    s16 slot;
     s16 unk1A;
     s16 unk1C;
     u8 unk1E;
@@ -167,7 +169,7 @@ public:
     u8 unk2B;
     u8 unk2C;
     u8 unk2D;
-    char unk2E[BOOT_TRANSFER_NAME_CAPACITY];
+    char filename[BOOT_TRANSFER_NAME_CAPACITY];
     u8 unk6E[0xCC0];
     u8* unkD30;
     u8 unkD34;
@@ -176,42 +178,59 @@ public:
     u8 unkD39[0x80];
     u8* unkDBC;
     s16 unkDC0;
-    u8* unkDC4;
+    u8* transfer_buffer;
     void* unkDC8;
     s16 unkDCC;
     s16 unkDCE;
     s32 unkDD0;
     BootTransferBuffer0AF0 unkDD4;
     BootTransferRequest0AF0 unkDE4;
-    BootResource0970* unkDF4;
+    BootResource0970* settings;
     u8 unkDF8;
     u8 unkDF9;
     s32 unkDFC[2];
     s32 unkE04[2];
 };
 
-/** Partial 0x3C-byte boot object with vtable D_170ED0 in main data. */
-class BootClass170ED0 : public BootClass170E90
+/** Startup screens BootStartupChecks runs in turn. */
+enum BootStartupScreen
+{
+    /** Warns when neither memory card has room for a save and the Battle Trophies. */
+    BOOT_STARTUP_CARD_CHECK,
+    /** Offers progressive display when its button combination is held. */
+    BOOT_STARTUP_PROGRESSIVE,
+    /** Reports an uninitialized PlayStation BB Unit or damaged data on it. */
+    BOOT_STARTUP_UNIT_CHECK
+};
+
+/**
+ * Screens shown before the opening movie, with vtable D_170ED0 in main data: the memory card space warning,
+ * the progressive display offer and the PlayStation BB Unit status. Every step checks the main executable.
+ */
+class BootStartupChecks : public BootClass170E90
 {
 public:
-    /** @brief Clear the object's state. */
-    BootClass170ED0();
+    /** @brief Start on the memory card check. */
+    BootStartupChecks();
 
     /** @brief Destroy the object. */
-    virtual ~BootClass170ED0();
+    virtual ~BootStartupChecks();
 
-    /** @brief Advance the object's state. */
+    /** @brief Run the memory card, progressive display and BB Unit screens in turn, then start the opening movie. */
     virtual void update();
 
-    s32 unk14;
-    s32 unk18;
-    s32 unk1C;
-    s32 unk20;
+    s32 step;
+    /** Frames spent in the current step. */
+    s32 frames;
+    s32 screen;
+    /** Memory card warning being shown. */
+    s32 message;
     u8 unk24[8];
-    s32 unk2C;
-    s32 unk30;
-    BootClass178660* unk34;
-    BootClass178750* unk38;
+    /** Card states the warning was chosen for; it closes if either changes. */
+    s32 shown_slot1;
+    s32 shown_slot2;
+    BootClass178660* container;
+    BootClass178750* text;
 };
 
 /** Interface with one pure virtual function, with vtable D_170F20 in main data. */
@@ -294,35 +313,67 @@ public:
     u8 unk14[0x9C];
 };
 
-/** Partial boot menu object with vtable D_170EF0 in main data. */
-class BootClass170EF0 : public BootClass170E90
+/** Pages of the new-game settings, in the order the player sees them. */
+enum BootSettingsPage
+{
+    BOOT_SETTINGS_TV_MODE,
+    BOOT_SETTINGS_SOUND,
+    BOOT_SETTINGS_EVENT_SKIP,
+    BOOT_SETTINGS_VOICE,
+    BOOT_SETTINGS_VIBRATION,
+    BOOT_SETTINGS_DIFFICULTY
+};
+
+/** Stages of BootNewGameSettings::update. */
+enum BootSettingsStage
+{
+    BOOT_SETTINGS_STAGE_LOAD,
+    BOOT_SETTINGS_STAGE_LOAD_IMAGES,
+    BOOT_SETTINGS_STAGE_PAGE,
+    BOOT_SETTINGS_STAGE_EXIT,
+    BOOT_SETTINGS_STAGE_NEXT_PAGE,
+    BOOT_SETTINGS_STAGE_PREVIOUS_PAGE,
+    BOOT_SETTINGS_STAGE_ENTER_SPEAKERS,
+    BOOT_SETTINGS_STAGE_BUILD_SPEAKERS,
+    BOOT_SETTINGS_STAGE_SHOW_SPEAKERS,
+    BOOT_SETTINGS_STAGE_SPEAKERS,
+    BOOT_SETTINGS_STAGE_LEAVE_SPEAKERS,
+    BOOT_SETTINGS_STAGE_START_GAME
+};
+
+/**
+ * New-game settings screens, with vtable D_170EF0 in main data. The player steps through six pages (TV mode,
+ * sound output, event skip, voice playback, vibration, difficulty), with a speaker setup scene behind the sound
+ * page, then the game starts. Cancelling on the first page goes back to the title.
+ */
+class BootNewGameSettings : public BootClass170E90
 {
 public:
-    /** @brief Load the menu's resources and clear its owned objects. */
-    BootClass170EF0();
+    /** @brief Start loading the page images and the speaker setup scenes, and clear the owned objects. */
+    BootNewGameSettings();
 
-    /** @brief Release the menu's buffers and owned objects. */
-    virtual ~BootClass170EF0();
+    /** @brief Release the loaded data and owned objects. */
+    virtual ~BootNewGameSettings();
 
     /** @brief Report the list kind used when registration requests the default. @return Four. */
     virtual s32 get_default_list_kind();
 
-    /** @brief Advance the menu. */
+    /** @brief Run the current page or the speaker setup, then stream the next model block and place the rows. */
     virtual void update();
 
-    /** @brief Load the selected option's current value from the settings. */
-    void func_001E4B50();
+    /** @brief Select the option that matches the current page's saved setting. */
+    void load_option_value();
 
-    /** @brief Apply the selected option's value to the settings and the hardware. */
-    void func_001E4CE0();
+    /** @brief Save the selected option for the current page and apply it to the display, sound or pad. */
+    void apply_option_value();
 
     /**
-     * @brief Select the message describing the selected option's value.
-     * @return Message key, or zero for an unknown option.
+     * @brief Pick the message that describes the selected option.
+     * @return Message key, or zero for an unknown page.
      */
-    s32 func_001E5090();
+    s32 get_value_message();
 
-    /** @brief Show the message describing the selected option's value. */
+    /** @brief Show the message that describes the selected option. */
     void show_value_message();
 
     /**
@@ -330,111 +381,123 @@ public:
      * @param x Receives the horizontal position.
      * @param y Receives the vertical position; unchanged for an unknown row.
      */
-    void func_001E5250(float* x, float* y);
+    void get_cursor_position(float* x, float* y);
 
     /** @brief Rebuild the current page's option rows when the page changes, then place and highlight them. */
-    void func_001E5510();
+    void update_option_rows();
 
-    /** @brief Turn the camera to the current angle and roll, then step the camera animation states. */
-    void func_001E3FF0();
+    /** @brief Move the girl to her angle around the listener with her lean, then step her walk animations. */
+    void place_girl();
 
     /**
-     * @brief Read the cursor position for a speaker on the surround page.
+     * @brief Read the cursor position for a speaker on the speaker setup screen.
      * @param speaker Speaker index.
      * @param x Receives the horizontal position.
      * @param y Receives the vertical position.
      */
-    void func_001E4610(s32 speaker, float* x, float* y);
+    void get_speaker_cursor_position(s32 speaker, float* x, float* y);
 
-    /** @brief Place the five speaker models around the listener and pulse the selected one. */
-    void func_001E4760();
+    /** @brief Place the five speaker models around the listener and pulse the one being moved. */
+    void place_speakers();
 
     /** @brief Create the page's images once their textures are loaded, then place and highlight them. */
-    void func_001E63B0();
+    void update_page_images();
 
-    u8* unk14;
-    u8* unk18[5];
-    u8* unk2C;
-    u8* unk30[8];
-    s32 unk50;
-    /** Camera angle around the listener. */
-    float unk54;
-    /** Turn input; zero when idle. */
-    float unk58;
-    /** Time in the current camera animation. */
-    float unk5C;
-    /** Camera roll, eased toward the turn direction. */
-    float unk60;
-    /** Selected speaker's angle before adjusting it, restored on cancel. */
-    float unk64;
-    u8 unk68;
-    u8 unk69;
-    u8 unk6A;
-    u8 unk6B;
-    u8 unk6C;
-    u8 unk6D;
-    u8 unk6E;
-    /** Selected speaker on the surround page. */
-    u8 unk6F;
-    u8 unk70;
-    u8 unk71;
-    /** Selected speaker pulse: zero off, one growing, two shrinking. */
-    u8 unk72;
+    /** Resource 0x28: the page images. */
+    u8* image_data;
+    u8* image_blocks[5];
+    /** Resource 0x29: the speaker room, the girl and her six walk animations. */
+    u8* model_data;
+    u8* model_blocks[8];
+    s32 stage;
+    /** The girl's angle around the listener in the middle. */
+    float girl_angle;
+    /** Turn from the analog stick, eased back to zero when released. */
+    float turn_speed;
+    /** Frame within the current walk animation. */
+    float animation_frame;
+    /** The girl's lean into the turn. */
+    float girl_lean;
+    /** Angle of the speaker being moved, restored on cancel. */
+    float saved_speaker_angle;
+    u8 page;
+    /** Page the option rows were last built for, or 0xFF to rebuild them. */
+    u8 shown_page;
+    u8 selection;
+    u8 loaded_image_blocks;
+    /** Highlight pulse on the selected row: zero darkening, one brightening. */
+    u8 highlight_phase;
+    /** Nonzero while the speaker setup scene replaces the option rows. */
+    u8 on_speaker_setup;
+    u8 loaded_model_blocks;
+    u8 selected_speaker;
+    u8 walk_state;
+    /** Voice lines played so far; after twelve the later lines are used. */
+    u8 voice_count;
+    /** Nonzero while the selected speaker is being moved: one while its pulse grows, two while it shrinks. */
+    u8 adjusting_speaker;
     u8 unk73;
-    /** Voice line the face lip-syncs to, or zero. */
-    s32 unk74;
-    /** Blink frame counter, zero while the eyes are open. */
-    s32 unk78;
-    s32 unk7C;
+    /** Voice line the girl's face lip-syncs to, or zero. */
+    s32 voice_line;
+    /** Blink frame counter, zero while her eyes are open. */
+    s32 blink_frame;
+    /** Frames left of the vibration that confirms turning it on. */
+    s32 rumble_frames;
     /** Horizontal position of the current page's rows. */
-    float unk80;
-    BootImage* unk84[21];
-    BootClass175320* unkD8;
-    BootClass175320* unkDC;
-    BootClass170F30* unkE0[10];
-    /** Camera animations, one per state of unk70. */
-    BootClass178220* unk108[6];
-    BootClass178370* unk120[6];
+    float row_x;
+    BootImage* images[21];
+    BootClass175320* room_scene;
+    BootClass175320* girl_scene;
+    BootClass170F30* girl_models[10];
+    /** Walk animations, one per walk_state. */
+    BootClass178220* girl_animations[6];
+    BootClass178370* animation_targets[6];
     BootClass170F10 unk138;
-    BootClass178660* unk13C;
-    BootClass178750* unk140;
-    BootClass175070* unk144;
+    BootClass178660* container;
+    /** Description of the selected option. */
+    BootClass178750* description_text;
+    BootClass175070* cursor;
 };
 
-/** Partial 0x38-byte input object with vtable D_171030 in main data; reads the pad and the memory card state. */
-class BootClass171030 : public BootClass170E90
+/** Boot's pad and memory card monitor, with vtable D_171030 in main data; samples both every frame. */
+class BootInput : public BootClass170E90
 {
 public:
-    /** @brief Clear the retained values and enable the memory card query. */
-    BootClass171030();
+    /** @brief Clear the card states and start querying the cards. */
+    BootInput();
 
     /** @brief Destroy the object. */
-    virtual ~BootClass171030()
+    virtual ~BootInput()
     {
     }
 
-    /** @brief Refresh input samples and update retained mode values when enabled. */
+    /** @brief Sample the first pad, then keep the latest nonzero state of each memory card slot. */
     virtual void update();
 
     /** @brief Virtual slot 5. @return Always 0. */
     virtual s32 func_001E9640();
 
-    /** @brief Clear the retained memory card values and flags. */
-    void func_001E9650();
+    /** @brief Forget the memory card states so the next query starts fresh. */
+    void clear_card_states();
 
-    u8 unk14;
+    u8 card_query_enabled;
     u8 unk15;
-    u16 unk16;
-    u16 unk18;
+    /** Buttons held down. */
+    u16 held;
+    /** Buttons pressed this frame. */
+    u16 pressed;
     u16 unk1A;
-    u16 unk1C;
+    /** Buttons pressed this frame or auto-repeating. */
+    u16 repeated;
     u8 unk1E[2];
-    u32 unk20;
-    u32 unk24;
+    /** Last nonzero state of each card slot, as BootStartupChecks compares them. */
+    u32 slot1_state;
+    u32 slot2_state;
     u32 unk28;
     u32 unk2C;
-    s32 unk30;
-    s32 unk34;
+    /** Nonzero while the card in each slot is ready. */
+    s32 slot1_ready;
+    s32 slot2_ready;
 };
 
 /** Partial 0x58-byte resident object whose vtable pointer follows its data; boot calls the resident constructor. */
@@ -511,44 +574,44 @@ public:
     u8 unk15E795[0x2B];
 };
 
-/** Partial 0x38-byte boot object with vtable D_171050 in main data. */
-class BootClass171050 : public BootClass170E90
+/** The opening movie with its timed captions, with vtable D_171050 in main data; Start skips it. */
+class BootOpeningMovie : public BootClass170E90
 {
 public:
-    /** @brief Create the object's resources. */
-    BootClass171050();
+    /** @brief Create the movie player in its own heap, set up for 4:3 or widescreen. */
+    BootOpeningMovie();
 
-    /** @brief Release the owned objects. */
-    virtual ~BootClass171050();
+    /** @brief Release the caption objects, the player and its heap. */
+    virtual ~BootOpeningMovie();
 
-    /** @brief Advance the object's state. */
+    /** @brief Play the opening movie with its timed captions until it ends or the player skips it. */
     virtual void update();
 
     /** Step: start, captions, wait for the end, stop, hand over. */
-    s32 unk14;
+    s32 step;
     /** Caption being shown. */
-    s32 unk18;
+    s32 caption;
     /** Caption phase: zero none, one fading in, two shown, three fading out. */
-    s32 unk1C;
+    s32 caption_phase;
     /** Nonzero once the caption image exists. */
-    u8 unk20;
+    u8 caption_image_loaded;
     u8 unk21[3];
-    BootResident113E40* unk24;
-    BootClass172500* unk28;
-    BootImage* unk2C;
-    BootClass178660* unk30;
-    BootClass178750* unk34;
+    BootResident113E40* movie_heap;
+    BootClass172500* player;
+    BootImage* caption_image;
+    BootClass178660* container;
+    BootClass178750* caption_text;
 };
 
 /** Partial 0x20-byte boot object with vtable D_171090 in main data. */
-class BootClass171090 : public BootClass170E90
+class BootResourceLoader : public BootClass170E90
 {
 public:
     /**
      * @brief Start loading the program's resource 0x26.
      * @param owner Program that receives the decoded blocks.
      */
-    BootClass171090(class BootClass1710B0* owner)
+    BootResourceLoader(class BootProgram* owner)
     {
         data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x26));
         func_103E70(D_001B65E8, 0x26, data, 1, 0x34BC0, 0, 0, 0, 1);
@@ -557,12 +620,12 @@ public:
     }
 
     /** @brief Destroy the object. */
-    virtual ~BootClass171090();
+    virtual ~BootResourceLoader();
 
     /** @brief Decode the next of the program's three resource blocks, then destroy this object after the last. */
     virtual void update();
 
-    class BootClass1710B0* program;
+    class BootProgram* program;
     /** Loaded resource whose blocks are decoded. */
     u8* data;
     /** Next block to decode. */
@@ -583,65 +646,70 @@ public:
 /** Opaque resident input root queried by slot. */
 struct BootInputRoot9670;
 
-/** Boot program object D_205E10, with vtable D_1710B0 in main data. */
-class BootClass1710B0 : public BootResidentProgram
+/**
+ * The boot program, g_boot_program, with vtable D_1710B0 in main data. It owns the display, the pad monitor and
+ * resource 0x26 (messages, captions and images), and runs the boot screens until one asks to exit.
+ */
+class BootProgram : public BootResidentProgram
 {
 public:
     /** @brief Run the boot program. */
     virtual void run();
 
     /** @brief Release the program's objects, resources, and buffers. */
-    virtual ~BootClass1710B0();
+    virtual ~BootProgram();
 
-    /** @brief Copy the projection object into the resident context. */
-    void func_001EACC0();
+    /** @brief Make the boot projection the display manager's current display. */
+    void select_projection();
 
-    /** @brief Update projection parameters using the resource mode and stored dimensions. */
-    void func_001EACD0();
+    /** @brief Set the projections' aspect and field of view for the 4:3 or widescreen setting. */
+    void update_projection_aspect();
 
     /**
      * @brief Replace the display and, on a full rebuild, the scratch heap.
      * @param full Nonzero to also recreate the scratch heap and rebind the display.
      */
-    void func_001EAA40(u8 full);
+    void rebuild_display(u8 full);
 
     /**
-     * @brief Switch the widescreen setting, rebuild the display and rebind it everywhere.
-     * @param widescreen Nonzero for the widescreen projection.
+     * @brief Switch progressive output on or off, then rebuild the display and rebind it everywhere.
+     * @param progressive Nonzero for progressive (525p) output.
      */
-    void func_001EAE80(u8 widescreen);
+    void set_progressive(u8 progressive);
 
     /** @brief Fill the track pools, then create and register the projection. */
-    void func_001EB210();
+    void create_pools_and_projection();
 
     /** @brief Release the track pools and every object, resource and buffer the program owns. */
-    void func_001EBCF0();
+    void release_resources();
 
-    BootDimensionsACD0* unk04;
-    BootProjectionACD0* unk08;
-    BootClass171030* input;
-    u8* unk10;
-    /** Boot's message bank. */
     /** @brief Read the message bank handle. @return Bank handle. */
     s32 get_messages() const
     {
         return messages;
     }
 
+    BootDimensionsACD0* display;
+    BootProjectionACD0* projection;
+    BootInput* input;
+    /** Decoded blocks of resource 0x26: the message bank, the caption bank and the images. */
+    u8* message_block;
+    /** Boot's message bank. */
     s32 messages;
-    u8* unk18;
-    s32 unk1C;
-    u8* unk20;
-    BootClass170EB0* unk24;
-    BootClass170E90* unk28;
+    u8* caption_block;
+    /** The opening movie's caption bank. */
+    s32 captions;
+    u8* image_block;
+    BootBattleTrophyCard* trophy_card;
+    BootClass170E90* error_popup;
     s32 unk2C;
     /** Nonzero once the boot program should end; passed on to the resident runtime. */
-    s32 unk30;
-    /** Widescreen setting read from the saved settings, or 0xFF when there were none. */
-    u8 unk34;
+    s32 exit_code;
+    /** Widescreen setting kept across the display reset, or 0xFF when there were no saved settings. */
+    u8 saved_widescreen;
     u8 unk35[3];
     /** Frame counter. */
-    s32 unk38;
+    s32 frame;
     u8 unk3C;
     u8 unk3D[3];
     u8* unk40;
@@ -1083,7 +1151,7 @@ s32 func_001ED200(BootTrackPool<BootClass177C70>* pool, s32 count);
 }
 
 extern "C" {
-extern BootClass1710B0 D_205E10;
+extern BootProgram g_boot_program;
 extern BootInputRoot9670* D_001B65F0;
 u16 func_11E010(BootInputRoot9670* root, s32 slot);
 u16 func_11DFF0(BootInputRoot9670* root, s32 slot);
