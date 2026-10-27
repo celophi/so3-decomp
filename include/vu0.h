@@ -118,9 +118,7 @@ static inline void vu0_extend_bounds_vf1(void)
 /**
  * @brief Load a vector into vf5 and start VU0 microprogram 0.
  *
- * I don't know what program 0 does in general yet. The microcode gets
- * uploaded at runtime, so it could be different in each overlay. In boot's
- * speaker cursor it leaves the screen position in vf6.
+ * TODO: Work out what program 0 does; I've only seen it give a screen position.
  *
  * All 58 places that load vf5 and start program 0 have these two nops in
  * between, and I couldn't get a match without them. Sony's manual says
