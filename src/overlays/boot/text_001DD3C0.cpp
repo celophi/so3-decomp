@@ -351,9 +351,9 @@ void BootInstaller::update()
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             screen_images_loaded = 0;
             step++;
-            container = new (0) BootClass178660(0.0f, 0.0f, 0.0f);
+            container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
             func_465B20(D_001B657C, container);
-            message_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_INSTALL_CONFIRM, 48.0f, 88.0f, 512.0f, 224.0f);
+            message_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_INSTALL_CONFIRM, 1, 48.0f, 88.0f, 512.0f, 224.0f);
             message_text->set_color(0x34130F);
             lib_container_attach_widget(container, message_text);
             x = menu_cursor_x(selection);
@@ -593,7 +593,7 @@ void BootInstaller::update()
         icon_header = func_139700(0x40, 0x200);
         progress_bar = new (0) BootProgressBar;
         func_001F8720(progress_bar, 0xF0, 0x18, 0x80FFFFFF, 0);
-        tip_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_FIRST_TIP, 328.0f, 180.0f, 320.0f, 224.0f);
+        tip_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_FIRST_TIP, 1, 328.0f, 180.0f, 320.0f, 224.0f);
         tip_text->set_color(0x34130F);
         lib_container_attach_widget(container, tip_text);
         show_tip_image(0);
@@ -603,13 +603,13 @@ void BootInstaller::update()
         if (resource->widescreen)
         {
             progress_bar->unk18->func_001E0520(-366.0f, 180.0f, 0.0f);
-            progress_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_PERCENT, 240.0f, 438.0f, 512.0f, 32.0f);
+            progress_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_PERCENT, 1, 240.0f, 438.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
         else
         {
             progress_bar->unk18->func_001E0520(-280.0f, 180.0f, 0.0f);
-            progress_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_PERCENT, 290.0f, 432.0f, 512.0f, 32.0f);
+            progress_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_PERCENT, 1, 290.0f, 432.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
         lib_container_attach_widget(container, progress_text);

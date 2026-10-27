@@ -265,12 +265,6 @@ typedef struct BootScalarRangeFE50
 extern "C" {
 #endif
 
-/** Install the record's pointer at offset 0x1C, reset it, and return it. */
-void* func_001F0620(void* object);
-/** Install the record's pointer at offset 0x1C, reset it, and return it. */
-void* func_001F0680(void* object);
-/** Install the record's pointer at offset 0x10, reset it, and return it. */
-void* func_001F06E0(void* object);
 
 /** Initialize the receiver and install its primary vtable. */
 void* func_001EE080(void* object);
@@ -1488,12 +1482,6 @@ void func_001FA880(void* object);
  */
 void* func_001EFDB0(void* object);
 
-/**
- * @brief Set the pointer at offset 0x1C to D_171B88.
- * @param object Object to update.
- * @return The object pointer.
- */
-void* func_001EFE30(void* object);
 
 /**
  * @brief Clear the fields at offsets 0x10 through 0x18.
@@ -1583,8 +1571,6 @@ void func_001EEED0(void* object);
 /** Clear the vector at offset 0x90 and update the associated state. */
 void func_001EFEA0(void* object);
 
-/** Initialize the object, vtable, and first word, then return it. */
-void* func_001F05E0(void* receiver);
 
 #ifdef __cplusplus
 }

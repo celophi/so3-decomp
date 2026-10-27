@@ -92,3 +92,37 @@ rom:0xA74C reloc:MIPS_HI16 symbol:__vt__15BootClass170F30 addend:0xB4
 rom:0xA754 reloc:MIPS_LO16 symbol:__vt__15BootClass170F30 addend:0xB4
 rom:0xC030 reloc:MIPS_HI16 symbol:__vt__15BootClass170F30 addend:0xB4
 rom:0xC038 reloc:MIPS_LO16 symbol:__vt__15BootClass170F30 addend:0xB4
+
+// Uncached main-executable cursor in the inlined code check: a stride, not an address pair.
+rom:0x4D14 reloc:MIPS_NONE symbol:0x2050
+rom:0x4D90 reloc:MIPS_NONE symbol:0x8
+rom:0x5778 reloc:MIPS_NONE symbol:0x2050
+rom:0x57F0 reloc:MIPS_NONE symbol:0x8
+rom:0x5934 reloc:MIPS_NONE symbol:0x2050
+rom:0x59B0 reloc:MIPS_NONE symbol:0x8
+rom:0x5B24 reloc:MIPS_NONE symbol:0x2050
+rom:0x5B98 reloc:MIPS_NONE symbol:0x8
+rom:0x5CC0 reloc:MIPS_NONE symbol:0x2050
+rom:0x5D38 reloc:MIPS_NONE symbol:0x8
+rom:0x5DDC reloc:MIPS_NONE symbol:0x2050
+rom:0x5E50 reloc:MIPS_NONE symbol:0x8
+rom:0x5F6C reloc:MIPS_NONE symbol:0x2050
+rom:0x5FE0 reloc:MIPS_NONE symbol:0x8
+rom:0x6034 reloc:MIPS_NONE symbol:0x2050
+rom:0x60A8 reloc:MIPS_NONE symbol:0x8
+rom:0x6204 reloc:MIPS_NONE symbol:0x2050
+rom:0x6278 reloc:MIPS_NONE symbol:0x8
+rom:0x6348 reloc:MIPS_NONE symbol:0x2050
+rom:0x63C0 reloc:MIPS_NONE symbol:0x8
+rom:0x6418 reloc:MIPS_NONE symbol:0x2050
+rom:0x6490 reloc:MIPS_NONE symbol:0x8
+rom:0x64D0 reloc:MIPS_NONE symbol:0x2050
+rom:0x6548 reloc:MIPS_NONE symbol:0x8
+rom:0x660C reloc:MIPS_NONE symbol:0x2050
+rom:0x6680 reloc:MIPS_NONE symbol:0x8
+rom:0x684C reloc:MIPS_NONE symbol:0x2050
+rom:0x68C0 reloc:MIPS_NONE symbol:0x8
+rom:0x69A0 reloc:MIPS_NONE symbol:0x2050
+rom:0x6A18 reloc:MIPS_NONE symbol:0x8
+rom:0xE280 reloc:MIPS_NONE symbol:0x2050
+rom:0xE2F8 reloc:MIPS_NONE symbol:0x8

@@ -115,4 +115,48 @@ static inline void vu0_extend_bounds_vf1(void)
                      "vmax.xyz $vf27, $vf27, $vf1");
 }
 
+/**
+ * @brief Start VU0 microprogram 0 on a vector in vf5.
+ *
+ * The program projects vf5 through the matrices the caller has set up and
+ * leaves the result in vf6. It runs while the caller carries on, so finish
+ * with vu0_wait_microprogram, then vu0_read_vf6. The two nops are in every
+ * copy of this sequence in the game.
+ * @param vector Pointer to a 16-byte aligned vector.
+ * @see Sony's EE/VU manual describes VCALLMS starting a VU0 microprogram
+ *      straight after an LQC2 (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ *      The game repeats this exact sequence in about 40 functions, such as
+ *      lib func_004239C0.
+ */
+static inline void vu0_start_microprogram_vf5(const void* vector)
+{
+    asm __volatile__("lqc2 $vf5, 0(%0)\n"
+                     "nop\n"
+                     "nop\n"
+                     "vcallms 0" : : "r"(vector) : "memory");
+}
+
+/**
+ * @brief Wait for the running VU0 microprogram to finish.
+ *
+ * Reads vi0 with the interlocking cfc2.i and throws the value away. The game
+ * always reads it into t1, so t1 is clobbered.
+ * @see Sony's EE/VU manual, CFC2 with the I bit
+ *      (https://docs.alexrp.com/mips/ee_vu.pdf).
+ */
+static inline void vu0_wait_microprogram(void)
+{
+    asm __volatile__("cfc2.i $t1, $vi0" : : : "$t1", "memory");
+}
+
+/**
+ * @brief Store vf6, where VU0 microprogram 0 leaves its result.
+ * @param result Pointer to a 16-byte aligned destination.
+ * @see vu0_start_microprogram_vf5.
+ */
+static inline void vu0_read_vf6(void* result)
+{
+    asm __volatile__("sqc2 $vf6, 0(%0)" : : "r"(result) : "memory");
+}
+
 #endif
