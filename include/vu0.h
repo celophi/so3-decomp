@@ -116,17 +116,19 @@ static inline void vu0_extend_bounds_vf1(void)
 }
 
 /**
- * @brief Start VU0 microprogram 0 on a vector in vf5.
+ * @brief Load a vector into vf5 and start VU0 microprogram 0.
  *
- * The program projects vf5 through the matrices the caller has set up and
- * leaves the result in vf6. It runs while the caller carries on, so finish
- * with vu0_wait_microprogram, then vu0_read_vf6. The two nops are in every
- * copy of this sequence in the game.
+ * I don't know what program 0 does in general yet. The microcode gets
+ * uploaded at runtime, so it could be different in each overlay. In boot's
+ * speaker cursor it leaves the screen position in vf6.
+ *
+ * All 58 places that load vf5 and start program 0 have these two nops in
+ * between, and I couldn't get a match without them. Sony's manual says
+ * VCALLMS can follow the LQC2 straight away, so my guess is they were in the
+ * original helper rather than something the hardware needs.
  * @param vector Pointer to a 16-byte aligned vector.
- * @see Sony's EE/VU manual describes VCALLMS starting a VU0 microprogram
- *      straight after an LQC2 (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
- *      The game repeats this exact sequence in about 40 functions, such as
- *      lib func_004239C0.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ *      Lib's func_004239C0 uses the same sequence.
  */
 static inline void vu0_start_microprogram_vf5(const void* vector)
 {
@@ -139,10 +141,10 @@ static inline void vu0_start_microprogram_vf5(const void* vector)
 /**
  * @brief Wait for the running VU0 microprogram to finish.
  *
- * Reads vi0 with the interlocking cfc2.i and throws the value away. The game
- * always reads it into t1, so t1 is clobbered.
- * @see Sony's EE/VU manual, CFC2 with the I bit
- *      (https://docs.alexrp.com/mips/ee_vu.pdf).
+ * This reads vi0 with the interlocking cfc2.i and throws the value away. All
+ * 163 of these waits in the game read into t1, so I've hard-coded it and
+ * marked it clobbered.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf).
  */
 static inline void vu0_wait_microprogram(void)
 {
@@ -150,7 +152,10 @@ static inline void vu0_wait_microprogram(void)
 }
 
 /**
- * @brief Store vf6, where VU0 microprogram 0 leaves its result.
+ * @brief Store vf6.
+ *
+ * The 43 places that start program 0 and read its result straight away all
+ * read vf6.
  * @param result Pointer to a 16-byte aligned destination.
  * @see vu0_start_microprogram_vf5.
  */
