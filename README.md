@@ -1,5 +1,11 @@
 # SO3 Decompilation
 
+[![US Progress]][us progress site]
+[![Build and Progress](https://github.com/celophi/so3-decomp/actions/workflows/build.yaml/badge.svg)](https://github.com/celophi/so3-decomp/actions/workflows/build.yaml)
+
+[US Progress]: https://decomp.dev/celophi/so3-decomp/us.svg?mode=shield&measure=code&label=US%20Progress
+[us progress site]: https://decomp.dev/celophi/so3-decomp/us
+
 I'm working on a matching decompilation of **Star Ocean: Till the End of Time**
 for PS2, starting with the North American release. The goal is to write C and
 C++ that compile back to the same bytes as the original game.
