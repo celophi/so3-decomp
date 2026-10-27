@@ -1,54 +1,22 @@
 #include "include_asm.h"
-#include "overlays/boot/text_001DD3C0.h"
+#include "overlays/boot/text_001E0900.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "main/resident_001001E0.h"
 #include "main/resident_00101550.h"
 #include "vu0.h"
 
-/** Partial resident memory card and loading state reached through D_001B65E4. */
-typedef struct BootResident1B65E4
-{
-    u8 unk00[0x108];
-    u8 unk108;
-    u8 unk109[0x32];
-    u8 unk13b;
-    u8 unk13c[5];
-    u8 unk141;
-    u8 unk142[0x12041];
-    u8 unk12183;
-} BootResident1B65E4;
-
-/** Partial resident display runtime reached through D_001B657C. */
-typedef struct BootRuntime1B657C
-{
-    u8 unk00[0x568];
-    /** Number the next formatted message prints. */
-    u32 message_value;
-} BootRuntime1B657C;
-
 extern "C" {
 extern BootVector4DDAA0 D_50CD30;
-extern BootRuntime1B657C* D_001B657C;
-extern BootResident1B65E4* D_001B65E4;
 extern BootClass178DD0* D_001B661C;
-extern void* D_001B65E8;
-extern void* D_001B65F4;
-extern void* D_001B65F8;
 extern float D_001B6688;
 void func_4CE4C0(void* destination, const float* source);
-u32 func_11C8C0(void* table, s32 id);
-u8* func_139700(u32 alignment, u32 size);
-void func_103E70(void* queue, s32 id, void* destination, s32 first, u32 size, s32 second, s32 third, s32 fourth, s32 fifth);
 void func_11EE00(void* queue, void* allocation);
 void func_10F000(void* request, s32 first, s32 second);
-u8* func_102920(void* decoder, u8* source, s32 index, s32 aligned);
-s32 func_1025A0(void* decoder, u8* source, void* destination, s32 index);
 void func_001FA620(BootImage* object, void* image, s32 mode);
 void func_001F9FC0(BootImage* object, s32 first, s32 second, s32 width, s32 height, u32 color, s32 third);
 void func_001F8720(BootProgressBar* object, s32 width, s32 height, u32 color, s32 mode);
 void func_001F79A0(BootProgressBar* object, s32 done, s32 total);
 s32 func_102AA0(void* queue);
-s32 func_102D00(void* queue);
 s32 func_103640(void* queue, s32 id, s32 first, s32 second, s32 third, s32 fourth);
 void func_103B20(void* queue, s32 id, s32 first, s32 second, s32 third, s32 fourth);
 void func_112400(void* request, s32 sound, s32 first, s32 second, s32 volume, s32 pan, s32 third);
@@ -75,16 +43,6 @@ void func_467570(BootClass175070* object, s32 first, s32 second, s32 third, floa
 s32 func_465B20(BootRuntime1B657C* runtime, BootClass178A90* object);
 void lib_container_attach_widget(BootClass178660* object, BootClass178750* child);
 void lib_text_set_resource(BootClass178750* object, s32 slot, u32 key, u8 flag);
-}
-
-/**
- * @brief Copy all 128 bits of an aligned four-component vector.
- * @param destination Vector receiving the copy.
- * @param source Vector to copy.
- */
-static inline void copy_vector(BootVector4DDAA0* destination, const BootVector4DDAA0* source)
-{
-    *(unsigned __int128*)destination = *(const unsigned __int128*)source;
 }
 
 /**
@@ -284,7 +242,7 @@ void BootInstaller::update_choice_images()
 }
 
 /** @brief Store the component product of the two input vectors. */
-void BootClass170F30::func_001DDAA0()
+void BootClass174310::func_001DDAA0()
 {
     vu0_multiply_xyzw(&unk580, &unk560, &unk570);
 }
@@ -377,7 +335,7 @@ void BootInstaller::update()
     float x;
     s32 remaining;
     s32 percent;
-    BootInputStatus9670* input;
+    BootClass171030* input;
     input = D_205E10.input;
     resource = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
     switch (step)

@@ -3,12 +3,6 @@
 
 #include "types.h"
 
-typedef struct Record001E94E0 Record001E94E0;
-
-#define BOOT_TRANSFER_NAME_CAPACITY 64
-#define BOOT_TRANSFER_FLAG_COUNT 300
-#define BOOT_TRANSFER_FLAG_BYTES ((BOOT_TRANSFER_FLAG_COUNT + 7) / 8)
-
 /** @brief Four aligned floating-point vector components. */
 typedef struct BootVector4DDAA0
 {
@@ -18,53 +12,21 @@ typedef struct BootVector4DDAA0
     float w;
 } __attribute__((aligned(16))) BootVector4DDAA0;
 
+/**
+ * @brief Copy all 128 bits of an aligned four-component vector.
+ * @param destination Vector receiving the copy.
+ * @param source Vector to copy.
+ */
+static inline void copy_vector(BootVector4DDAA0* destination, const BootVector4DDAA0* source)
+{
+    *(unsigned __int128*)destination = *(const unsigned __int128*)source;
+}
+
 /** @brief Matrix storage containing four aligned four-component vectors. */
 typedef struct BootMatrix92D0
 {
     BootVector4DDAA0 vectors[4];
 } BootMatrix92D0;
-
-/** @brief Partial layout of the two queried mode words. */
-typedef struct BootModePair0910
-{
-    u8 unk00[0x48];
-    s32 unk48;
-    u8 unk4C[0xFC];
-    s32 unk148;
-} BootModePair0910;
-
-/** @brief Partial mode owner with a byte gating access to its mode words. */
-typedef struct BootModeOwner0910
-{
-    u8 unk00[0x14];
-    BootModePair0910* unk14;
-    u8 unk18[8];
-    u8 unk20;
-} BootModeOwner0910;
-
-enum BootModeFlags0910
-{
-    BOOT_MODE_0910_FLAG_0 = 0x1,
-    BOOT_MODE_0910_FLAG_1 = 0x2
-};
-
-/** @brief Stored filename, buffer address, extent, and an unknown word. */
-typedef struct BootTransferBuffer0AF0
-{
-    char* unk00;
-    void* unk04;
-    u32 unk08;
-    u32 unk0C;
-} BootTransferBuffer0AF0;
-
-/** @brief Request record retained by the mode owner's selected entry. */
-typedef struct BootTransferRequest0AF0
-{
-    char* unk00;
-    s32 unk04;
-    u32 unk08;
-    BootTransferBuffer0AF0* unk0C;
-} BootTransferRequest0AF0;
 
 /** @brief Partial resource storage for transferred flag bits and header values. */
 typedef struct BootResourceBits0970
@@ -76,84 +38,79 @@ typedef struct BootResourceBits0970
     u8 unk18[8];
 } BootResourceBits0970;
 
-/** @brief Partial selected resource containing the transferred flag storage. */
+/** @brief Partial system settings, with option bits and two checksummed blocks. */
 typedef struct BootResource0970
 {
     /** Button mask that confirms a selection. */
     u16 unk00;
     /** Button mask that cancels or skips. */
     u16 unk02;
-    u8 unk04[0x188];
+    u8 unk04[0x20];
+    u8 unk24_low : 2;
+    u8 unk24_mid : 2;
+    u8 unk24_bit4 : 1;
+    u8 unk24_bit5 : 1;
+    u8 unk24_bit6 : 1;
+    u8 unk24_bit7 : 1;
+    u8 unk25_low : 1;
+    u8 unk25_bit1 : 1;
+    u8 unk25_mode : 2;
+    u8 unk25_mid : 2;
+    u8 unk25_bit6 : 1;
+    u8 unk25_bit7 : 1;
+    /** First byte covered by checksum. */
+    u8 unk26;
+    u8 unk27;
+    u8 unk28;
+    u8 unk29[0x7B];
+    u16 checksum;
+    /** Seed for checksum, replaced on every write. */
+    u16 key;
+    u8 unkA8[0xE4];
     /** Nonzero for the 16:9 screen layout. */
     u8 widescreen;
-    u8 unk18D[0x1B];
+    u8 unk18D;
+    u8 unk18E;
+    u8 unk18F[0x11];
+    /** First byte covered by extra_checksum. */
+    u8 unk1A0;
+    u8 unk1A1;
+    u8 unk1A2;
+    u8 unk1A3;
+    u16 extra_checksum;
+    /** Seed for extra_checksum. */
+    u16 extra_key;
     BootResourceBits0970 unk1A8;
 } BootResource0970;
 
-/** @brief Partial state layout for the two selectable reset modes. */
-typedef struct BootState1E1A40
+/** Partial resident memory card and loading state reached through D_001B65E4. */
+typedef struct BootResident1B65E4
 {
-    u8 unk00[0x14];
-    BootModeOwner0910* unk14;
-    s16 unk18;
-    s16 unk1A;
-    s16 unk1C;
-    u8 unk1E;
-    u8 unk1F;
-    u32 unk20;
-    u8 unk24[4];
-    u8 unk28;
-    u8 unk29;
-    u8 unk2A;
-    u8 unk2B;
-    u8 unk2C;
-    u8 unk2D;
-    char unk2E[BOOT_TRANSFER_NAME_CAPACITY];
-    u8 unk6E[0xCC6];
-    u8 unkD34;
-    u8 unkD35[2];
-    u8 unkD37[2];
-    u8 unkD39[0x87];
-    s16 unkDC0;
-    u8 unkDC2[2];
-    void* unkDC4;
-    void* unkDC8;
-    s16 unkDCC;
-    s16 unkDCE;
-    s32 unkDD0;
-    BootTransferBuffer0AF0 unkDD4;
-    BootTransferRequest0AF0 unkDE4;
-    BootResource0970* unkDF4;
-    u8 unkDF8;
-    u8 unkDF9;
-    u8 unkDFA[2];
-    s32 unkDFC[2];
-    s32 unkE04[2];
-} BootState1E1A40;
+    u8 unk00[0x108];
+    u8 unk108;
+    u8 unk109[0x32];
+    u8 unk13b;
+    u8 unk13c[5];
+    u8 unk141;
+    u8 unk142[0x12041];
+    u8 unk12183;
+} BootResident1B65E4;
 
-/** @brief Partial receiver containing its matrix, cleanup gate, and attachment. */
-typedef struct BootCleanupState8D80
+/** Partial resident display runtime reached through D_001B657C. */
+typedef struct BootRuntime1B657C
 {
-    u8 unk00[0x50];
-    u8 unk50;
-    u8 unk51[0x3F];
-    BootMatrix92D0 unk90;
-    u8 unkD0[0x4D0];
-    u8 unk5A0;
-    u8 unk5A1[0x93];
-    void* unk634;
-} BootCleanupState8D80;
+    u8 unk00[0x568];
+    /** Number the next formatted message prints. */
+    u32 message_value;
+} BootRuntime1B657C;
 
-/** @brief Partial projection object containing its stored floating-point parameters. */
-typedef struct BootProjectionACD0
+/** @brief Partial resident sound object reached through D_001B65F8. */
+struct BootSound1B65F8
 {
-    u8 unk00[0x250];
-    float unk250;
-    u8 unk254[8];
-    float unk25C;
-    u8 unk260[0x18];
-    float unk278;
-} BootProjectionACD0;
+    u8 unk00[0x450];
+    /** Output mode the player selected in the options. */
+    u8 unk450;
+};
 
 /** @brief Partial object containing the two signed dimensions used by projection. */
 typedef struct BootDimensionsACD0
@@ -163,20 +120,6 @@ typedef struct BootDimensionsACD0
     s16 unk3C6E;
 } BootDimensionsACD0;
 
-/** @brief Partial owner containing the projection pointers and mode state. */
-typedef struct BootPointerOwnerACC0
-{
-    u8 unk00[4];
-    BootDimensionsACD0* unk04;
-    BootProjectionACD0* unk08;
-    struct BootInputStatus9670* input;
-    u8 unk10[4];
-    /** Boot's message bank. */
-    s32 messages;
-    u8 unk18[0xC];
-    BootState1E1A40* unk24;
-} BootPointerOwnerACC0;
-
 /** @brief Partial resident receiver of the copied pointer. */
 typedef struct BootPointerContextACC0
 {
@@ -184,349 +127,30 @@ typedef struct BootPointerContextACC0
     void* unk90;
 } BootPointerContextACC0;
 
-/** @brief Opaque resident input root queried by slot. */
-typedef struct BootInputRoot9670 BootInputRoot9670;
-
-/** @brief Partial input receiver containing samples, retained modes, and flags. */
-typedef struct BootInputStatus9670
-{
-    u8 unk00[0x14];
-    u8 unk14;
-    u8 unk15;
-    u16 unk16;
-    u16 unk18;
-    u16 unk1A;
-    u16 unk1C;
-    u8 unk1E[2];
-    u32 unk20;
-    u32 unk24;
-    u32 unk28;
-    u32 unk2C;
-    s32 unk30;
-    s32 unk34;
-} BootInputStatus9670;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief Refresh input samples and update retained mode values when enabled.
- * @param object Receiver containing the input samples and mode-update gate.
- */
-void func_001E9670(BootInputStatus9670* object);
-
-extern BootInputRoot9670* D_001B65F0;
-u16 func_11E010(BootInputRoot9670* root, s32 slot);
-u16 func_11DFF0(BootInputRoot9670* root, s32 slot);
-u16 func_11E000(BootInputRoot9670* root, s32 slot);
-u16 func_11DFB0(BootInputRoot9670* root, s32 slot);
-void func_11DF90(BootInputRoot9670* root, s32 slot);
-
-/**
- * @brief Copy the owner's stored pointer into the resident context.
- * @param object Owner containing the pointer to bind.
- */
-void func_001EACC0(BootPointerOwnerACC0* object);
-
 extern BootPointerContextACC0* D_001B6628;
 
-/**
- * @brief Update projection parameters using the resource mode and stored dimensions.
- * @param object Owner containing the projection object to update.
- */
-void func_001EACD0(BootPointerOwnerACC0* object);
+extern class BootProjectionACD0* D_001B6654;
 
-extern BootPointerOwnerACC0 D_205E10;
-extern BootProjectionACD0* D_001B6654;
-
-/**
- * @brief Detach the gated attached object, then perform the receiver cleanup.
- * @param object Receiver containing the cleanup gate and attached object.
- */
-void func_001E8D80(BootCleanupState8D80* object);
-
-void func_4D5C90(void* object);
-void func_448250(BootCleanupState8D80* object);
-
-/**
- * @brief Negate the second stored matrix vector, then update the receiver.
- * @param object Receiver containing the matrix and update flag.
- * @param first First opaque argument forwarded to the shared update routine.
- * @param second Second opaque argument forwarded to the shared update routine.
- */
-void func_001E92D0(BootCleanupState8D80* object, void* first, void* second);
-
-void func_4A5E60(BootCleanupState8D80* object, void* first, void* second);
-
-/**
- * @brief Query which of the owner's two mode words equal 2.
- * @param object State containing the mode owner.
- * @return Bit 0 for unk48 and bit 1 for unk148; zero when the owner's gate is clear.
- */
-u16 func_001E0910(BootState1E1A40* object);
-
-/**
- * @brief Advance the stored two-phase request and update its completion state.
- * @param object State containing the mode owner and request records.
- * @return Narrowed request status, or -1 when the phase is unsupported.
- */
-s16 func_001E0AF0(BootState1E1A40* object);
-
-/**
- * @brief Initialize the buffer and request records for a selected transfer mode.
- * @param object State receiving the destination and prepared request records.
- * @param mode Transfer mode 0 or 1.
- * @param destination Nonnull destination for the transfer.
- * @return 1 when prepared, or 0 for invalid arguments or allocation failure.
- */
-s32 func_001E0C30(BootState1E1A40* object, u16 mode, void* destination);
-
-/**
- * @brief Create the mode owner and prepare its shared transfer buffer.
- * @param object State receiving the owner, selected resource, and request records.
- * @return 1 when initialized, or 0 when an owner, resource, or buffer is unavailable.
- */
-s32 func_001E1AD0(BootState1E1A40* object);
-
-void* func_100AC0(u32 size, s32 flags);
-BootModeOwner0910* func_432900(BootModeOwner0910* owner);
-s32 func_432720(BootModeOwner0910* owner, void* queue);
-void func_432660(BootModeOwner0910* owner, s32 mode, u32 enabled, u32 flags);
-extern void* D_001B6614;
 void* func_10D8E0(void);
 void* func_101290(void* object);
 void* func_101440(void* table, s32 selector);
-
-void* func_100B00(u32 size, s32 flags);
 void* func_13A678(void* destination, s32 value, u32 size);
-char* func_13C948(char* destination, const char* source);
-extern const char D_205100[];
-extern const char D_205980[];
-
-/**
- * @brief Apply transferred flags and header values, copy the payload, and release its buffer.
- * @param object State containing the buffer, selected resource, and destination.
- */
-void func_001E0970(BootState1E1A40* object);
-void* func_13A4C0(void* destination, const void* source, u32 size);
 void func_100BE0(void* allocation);
-s32 func_432310(BootModeOwner0910* owner, u32 mode, BootTransferRequest0AF0* request);
-s32 func_432270(BootModeOwner0910* owner, s32 mode, s32* result);
-
-/**
- * @brief Reset the shared state and the fields selected by mode 0 or 1.
- * @param object State receiving the reset.
- * @param mode Mode to store and reset; other values reset only shared fields.
- */
-void func_001E1A40(BootState1E1A40* object, s16 mode);
-
-/**
- * @brief Select an event's byte status and update the current mode's stored status.
- * @param object State containing the selected mode and its counters and status.
- * @param event Event code to classify.
- * @param result Byte receiving the selected status, initially cleared to zero.
- */
-void func_001E17C0(BootState1E1A40* object, u16 event, u8* result);
-
-/**
- * @brief Apply an event to the selected mode and update its reset and completion flags.
- * @param object State receiving the event and any selected-mode reset.
- * @param enabled Process the event when this byte equals 1.
- * @param event Event code or direct byte status to store.
- * @param kind Classify the event with 1, or store its byte status with 2.
- */
-void func_001E1500(BootState1E1A40* object, u8 enabled, u16 event, u16 kind);
-
-/**
- * @brief Store mode 1 or 2 and reset the state for selector 0.
- * @param object State receiving the mode and reset.
- * @param mode Mode to store; values other than 1 or 2 have no effect.
- */
-void func_001E0DE0(BootState1E1A40* object, u8 mode);
-
-/**
- * @brief Query a mode's byte and reset selector 0 when the reset flag is set.
- * @param object State containing the mode bytes and reset flag.
- * @param mode Mode 0 or 1 to query; other values return zero without a reset.
- * @param kind Select guarded values with 1, or the direct mode byte otherwise.
- * @return The selected byte before any reset.
- */
-u16 func_001E1410(BootState1E1A40* object, u16 mode, u16 kind);
-
-/**
- * @brief Return the fixed value 2.
- * @param object Receiver or first argument; unused.
- * @return Always 2.
- */
-s32 func_001E0900(void* object);
-
-/**
- * @brief Return the fixed value 4.
- * @param object Receiver or first argument; unused.
- * @return Always 4.
- */
-s32 func_001E3FE0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_001E9400(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_001E9410(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_001E9440(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_001E9450(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_001E9490(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_001E9640(void* object);
-
-/**
- * @brief Return the stored signed request result.
- * @param object Object containing the value.
- * @return The stored value.
- */
-s32 func_001E0AD0(BootState1E1A40* object);
-
-/**
- * @brief Return the signed 16-bit value at offset 0xDCE.
- * @param object Object containing the value.
- * @return The stored value.
- */
-s16 func_001E0AE0(BootState1E1A40* object);
-
-/**
- * @brief Return the 8-bit value at offset 0x794.
- * @param object Object containing the value.
- * @return The stored value.
- */
-u8 func_001E9480(void* object);
-
-/**
- * @brief Return the supplied value.
- * @param object Receiver or first argument; unused.
- * @param value Value to return.
- * @return The supplied value.
- */
-s32 func_001E9420(void* object, s32 value);
-
-/**
- * @brief Return the supplied value.
- * @param object Receiver or first argument; unused.
- * @param value Value to return.
- * @return The supplied value.
- */
-s32 func_001E9430(void* object, s32 value);
-
-/**
- * @brief Return the address of the field at offset 0x79C.
- * @param object Object containing the field.
- * @return Pointer to the field.
- */
-u8* func_001E9470(void* object);
-
-/**
- * @brief Return the address of the field at offset 0x570.
- * @param object Object containing the field.
- * @return Pointer to the field.
- */
-u8* func_001E94D0(void* object);
-
-/**
- * @brief Return the address of the field at offset 0x90.
- * @param object Object containing the field.
- * @return Pointer to the field.
- */
-u8* func_001E9550(void* object);
-
-/**
- * @brief Return the address of the field at offset 0x1D0.
- * @param object Object containing the field.
- * @return Pointer to the field.
- */
-u8* func_001E9560(void* object);
-
-/**
- * @brief Return the address of the field at offset 0x1E0.
- * @param object Object containing the field.
- * @return Pointer to the field.
- */
-u8* func_001E9570(void* object);
-
-/**
- * @brief Return the address of the field at offset 0x1F0.
- * @param object Object containing the field.
- * @return Pointer to the field.
- */
-u8* func_001E9580(void* object);
-
-/**
- * @brief Return zero as a float.
- * @param object Receiver or first argument; unused.
- * @return Always 0.0f.
- */
-float func_001E9380(void* object);
-
-/**
- * @brief Check whether the word at offset 0x704 is nonzero.
- * @param object Object containing the word.
- * @return One if nonzero, otherwise zero.
- */
-s32 func_001E9460(void* object);
-
-/**
- * @brief Clear six consecutive words starting at offset 0x20.
- * @param object Record to clear.
- */
-void func_001E9650(u32* object);
-
-/**
- * @brief Forward to the owner 0x640 bytes before the embedded object.
- * @param object Pointer to the embedded object.
- */
-void func_001E9590(u8* object);
-
-/**
- * @brief Forward to the owner 0x640 bytes before the embedded object.
- * @param object Pointer to the embedded object.
- */
-void func_001E95A0(u8* object);
-
-/**
- * @brief Set the value byte and active flag.
- * @param object Record to update.
- * @param value Byte to store.
- */
-void func_001E94E0(Record001E94E0* object, u8 value);
+extern BootRuntime1B657C* D_001B657C;
+u8* func_102920(void* decoder, u8* source, s32 index, s32 aligned);
+s32 func_1025A0(void* decoder, u8* source, void* destination, s32 index);
+s32 func_102D00(void* queue);
+extern BootResident1B65E4* D_001B65E4;
+extern void* D_001B65E8;
+extern void* D_001B65F4;
+extern struct BootSound1B65F8* D_001B65F8;
+u32 func_11C8C0(void* table, s32 id);
+u8* func_139700(u32 alignment, u32 size);
+void func_103E70(void* queue, s32 id, void* destination, s32 first, u32 size, s32 second, s32 third, s32 fourth, s32 fifth);
 
 #ifdef __cplusplus
 }
@@ -544,6 +168,7 @@ class BootClass170F30;
 extern "C" s32 lib_container_init(BootClass178660* object, s32 code, float x, float y, s32 first, float z, s32 second);
 extern "C" s32 lib_text_init_resource_rectangle(void* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
 extern "C" void func_4E32F0(BootClass179150* object);
+extern "C" void func_4D5C90(void* object);
 
 /** Boot's copy of the virtual intrusive-link root, with vtable D_170E70 in main data. */
 class BootClass170E70
@@ -596,6 +221,18 @@ public:
     u8 is_listed;
     u8 unk0f;
     void* owner;
+};
+
+/** Partial 0x880-byte Lib projection object; boot calls the Lib constructor. */
+class BootProjectionACD0 : public BootClass170E90
+{
+public:
+    u8 unk14[0x23C];
+    float unk250;
+    u8 unk254[8];
+    float unk25C;
+    u8 unk260[0x18];
+    float unk278;
 };
 
 /** Boot's copy of the position transform, with vtable D_170D60 in main data. */
@@ -995,30 +632,256 @@ public:
     u8 unk1c[0x10];
 };
 
+/** Boot's view of the Lib model base that adds a matrix and three vectors, with the Lib vtable D_172080. */
+class BootClass172080 : public BootClass178A90
+{
+public:
+    /** @brief Destroy the model base; boot uses the Lib implementation. */
+    virtual ~BootClass172080();
+    /** @brief Rebuild the transformation matrix; boot uses the Lib implementation. */
+    virtual void update_transform_matrix();
+    /** @brief Read the transformation matrix. @return The matrix. */
+    virtual const void* get_transform_matrix()
+    {
+        return &unk90;
+    }
+    /** @brief Read the first stored vector. @return Vector at offset 0x1D0. */
+    virtual const BootVector4DDAA0* func_001E9560() const
+    {
+        return &unk1D0;
+    }
+    /** @brief Read the second stored vector. @return Vector at offset 0x1E0. */
+    virtual const BootVector4DDAA0* func_001E9570() const
+    {
+        return &unk1E0;
+    }
+    /** @brief Read the third stored vector. @return Vector at offset 0x1F0. */
+    virtual const BootVector4DDAA0* func_001E9580() const
+    {
+        return &unk1F0;
+    }
+    /** @brief Copy another model's state; boot uses the Lib implementation. @param source Model to copy. */
+    virtual void func_4D9F40(const BootClass172080* source);
+    BootMatrix92D0 unk90;
+    u8 unkD0[0x100];
+    BootVector4DDAA0 unk1D0;
+    BootVector4DDAA0 unk1E0;
+    BootVector4DDAA0 unk1F0;
+    u8 unk200[0x10];
+    u8 unk210;
+};
+
+/** Boot's view of the Lib model with color factors, with the Lib vtable D_174310. */
+class BootClass174310 : public BootClass172080
+{
+public:
+    /** @brief Destroy the model; boot uses the Lib implementation. */
+    virtual ~BootClass174310();
+    /** @brief Detach and queue the model; boot uses the Lib implementation. */
+    virtual void destroy();
+    /**
+     * @brief Store the byte at offset 0x210 and set its flag.
+     * @param value Byte to store.
+     */
+    virtual void func_001E94E0(u8 value)
+    {
+        unk210 = value;
+        unk59d_3 = 1;
+    }
+    /**
+     * @brief Copy another model's byte at offset 0x210 and its Lib state.
+     * @param source Model to copy.
+     */
+    virtual void func_001E9500(const BootClass174310* source)
+    {
+        func_001E94E0(source->unk210);
+        BootClass172080::func_4D9F40(source);
+    }
+    /** @brief Store the component product of the two input vectors. */
+    virtual void func_001DDAA0();
+    /**
+     * @brief Store the color modulation, then recompute the combined color factor.
+     * @param key Caller's key; unused here.
+     * @param modulation Color modulation to store.
+     */
+    virtual void func_001E94A0(s32 key, const BootVector4DDAA0* modulation)
+    {
+        copy_vector(&unk570, modulation);
+        func_001DDAA0();
+    }
+    /** @brief Read the color modulation. @return Vector at offset 0x570. */
+    virtual const BootVector4DDAA0* func_001E94D0() const
+    {
+        return &unk570;
+    }
+    /** @brief Virtual slot 0x98; boot uses the Lib implementation. */
+    virtual void func_slot98();
+    /** @brief Virtual slot 0x9C; boot uses the Lib implementation. */
+    virtual void func_448180();
+    u8 unk220[0x340];
+    BootVector4DDAA0 unk560;
+    BootVector4DDAA0 unk570;
+    BootVector4DDAA0 unk580;
+    u8 unk590[0xD];
+    u8 unk59d_0_2 : 3;
+    u8 unk59d_3 : 1;
+    u8 unk59d_4_7 : 4;
+    u8 unk59e[2];
+    u8 unk5a0;
+    u8 unk5a1[0x93];
+    void* unk634;
+    u8 unk638[8];
+};
+
+/** Boot's view of the Lib model base that adds five more slots; no vtable of its own appears in main data. */
+class BootClass177820Primary : public BootClass174310
+{
+public:
+    /** @brief Destroy the model; boot uses the Lib implementation. */
+    virtual ~BootClass177820Primary();
+    /** @brief Virtual slot 0xA0; boot uses the Lib implementation. */
+    virtual void func_4A3F50();
+    /** @brief Virtual slot 0xA4; boot uses the Lib implementation. */
+    virtual void func_4A3EC0();
+    /** @brief Virtual slot 0xA8; boot uses the Lib implementation. */
+    virtual void func_4A3E50();
+    /** @brief Virtual slot 0xAC. @return Nonzero when set. */
+    virtual s32 func_001E9460();
+    /** @brief Virtual slot 0xB0. @return Byte pointer. */
+    virtual u8* func_001E9470();
+};
+
+/** Boot's view of the Lib model's second base at offset 0x640. */
+class BootClass177820Secondary
+{
+public:
+    /** @brief First secondary slot. */
+    virtual void func_4A4510();
+    /** @brief Second secondary slot. */
+    virtual void func_4A4550();
+};
+
+/** Boot's view of the Lib model with vtable D_177820; boot calls its Lib destructor. */
+class BootClass177820 : public BootClass177820Primary, public BootClass177820Secondary
+{
+public:
+    /** @brief Destroy the model; boot uses the Lib implementation. */
+    virtual ~BootClass177820();
+    /** @brief Detach the attached object when the gate is set, then destroy the model through its base. */
+    virtual void destroy()
+    {
+        if (unk5a0 != 0 && unk634 != 0)
+        {
+            func_4D5C90(unk634);
+        }
+        BootClass174310::destroy();
+    }
+    /** @brief Advance the model; boot uses the Lib implementation. */
+    virtual void update();
+    /** @brief Virtual slot 4; boot uses the Lib implementation. */
+    virtual void func_001DD4C0();
+    /** @brief Boot uses the Lib implementation. */
+    virtual void func_001E0860();
+    /** @brief Boot uses the Lib implementation. @param output Opaque output object. @return Lib result. */
+    virtual s32 func_001E0880(void* output);
+    /** @brief Boot uses the Lib implementation. @param value Value to test. @param mode Mode. @return Lib result. */
+    virtual bool func_001E0890(float value, float mode);
+    /** @brief Boot uses the Lib implementation. @return Vector pointer. */
+    virtual const BootVector4DDAA0* func_001E08B0();
+    /**
+     * @brief Apply a matrix; boot uses the Lib implementation.
+     * @param matrix Matrix supplied by the caller.
+     * @param context Opaque caller context.
+     */
+    virtual void func_001E08C0(const void* matrix, void* context);
+    /** @brief Boot uses the Lib implementation. @return Transformation receiver. */
+    virtual BootClass178A90* func_001E08D0();
+    /** @brief Boot uses the Lib implementation. */
+    virtual void func_001E08E0();
+    /** @brief Virtual slot 0x98; boot uses the Lib implementation. */
+    virtual void func_slot98();
+    /** @brief Check whether the word at offset 0x704 is nonzero. @return One if nonzero, otherwise zero. */
+    virtual s32 func_001E9460()
+    {
+        return unk704 != 0;
+    }
+    /** @brief Return the address of the bytes at offset 0x79C. @return Pointer to the bytes. */
+    virtual u8* func_001E9470()
+    {
+        return unk79c;
+    }
+    /** @brief Return zero. @return Always 0. */
+    virtual s32 func_001E9400()
+    {
+        return 0;
+    }
+    /** @brief Return zero. @return Always 0. */
+    virtual s32 func_001E9410()
+    {
+        return 0;
+    }
+    /** @brief Return the supplied value. @param value Value to return. @return The supplied value. */
+    virtual s32 func_001E9420(s32 value)
+    {
+        return value;
+    }
+    /** @brief Return the supplied value. @param value Value to return. @return The supplied value. */
+    virtual s32 func_001E9430(s32 value)
+    {
+        return value;
+    }
+    /** @brief Return zero. @return Always 0. */
+    virtual s32 func_001E9440()
+    {
+        return 0;
+    }
+    /** @brief Return zero. @return Always 0. */
+    virtual s32 func_001E9450()
+    {
+        return 0;
+    }
+    /** @brief First secondary slot; boot uses the Lib implementation. */
+    virtual void func_4A4510();
+    /** @brief Second secondary slot; boot uses the Lib implementation. */
+    virtual void func_4A4550();
+    /** @brief Return the byte at offset 0x794. @return The stored byte. */
+    virtual u8 func_001E9480()
+    {
+        return unk794;
+    }
+    /** @brief Boot uses the Lib implementation. */
+    virtual void func_4A37C0();
+    /** @brief Boot uses the Lib implementation. */
+    virtual void func_4A7E80();
+    /** @brief Boot uses the Lib implementation. */
+    virtual void func_4A4ED0();
+    /** @brief Return zero. @return Always 0. */
+    virtual s32 func_001E9490()
+    {
+        return 0;
+    }
+    u8 unk644[0xC0];
+    u32 unk704;
+    u8 unk708[0x8C];
+    u8 unk794;
+    u8 unk795[7];
+    u8 unk79c[0x84];
+    BootVector4DDAA0 unk820;
+    u8 unk830[0x10];
+};
+
 /** Partial model object with vtable D_170F30 in main data. */
-class BootClass170F30 : public BootClass178A90
+class BootClass170F30 : public BootClass177820
 {
 public:
     /** @brief Destroy the model object. */
     virtual ~BootClass170F30();
-    /** @brief Virtual slot 0x74. */
-    virtual void func_slot74();
-    /** @brief Virtual slot 0x78. */
-    virtual void func_slot78();
-    /** @brief Virtual slot 0x7C. */
-    virtual void func_slot7c();
-    /** @brief Virtual slot 0x80. */
-    virtual void func_slot80();
-    /** @brief Virtual slot 0x84. */
-    virtual void func_slot84();
-    /** @brief Virtual slot 0x88. */
-    virtual void func_slot88();
-    /** @brief Store the component product of the two input vectors. */
-    virtual void func_001DDAA0();
-    u8 unk90[0x4D0];
-    BootVector4DDAA0 unk560;
-    BootVector4DDAA0 unk570;
-    BootVector4DDAA0 unk580;
+    /**
+     * @brief Negate the matrix's second vector, then apply the matrix through the Lib model.
+     * @param matrix Matrix supplied by the caller.
+     * @param context Opaque caller context.
+     */
+    virtual void func_001E08C0(const void* matrix, void* context);
 };
 
 /** Partial 0x30-byte image object with vtable D_171C90 in main data, drawn from a decoded FIS image. */
@@ -1041,10 +904,18 @@ class BootClass171070 : public BootClass170E90
 public:
     /** @brief Destroy the object. */
     virtual ~BootClass171070();
+    /** @brief Release the owned objects, then queue this object for deletion. */
+    virtual void destroy();
+    /** @brief Advance the object's state. */
+    virtual void update();
     /** @brief Store the byte at offset 0x18. @param value Byte to store. */
     virtual void func_001E0250(u8 value);
     u8 unk14[4];
     u8 unk18;
+    u8 unk19[3];
+    BootClass178660* unk1C;
+    BootClass170E90* unk20;
+    BootClass170E90* unk24;
 };
 
 /** Message keys in boot's English message bank (resource 38, block 0). */
