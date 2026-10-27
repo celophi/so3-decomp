@@ -56,7 +56,7 @@ segments:
       # Linker padding: .text starts on a 128-byte boundary after the 64-byte MWo3 header.
       - [0x40, pad, text_align]
       - [0x80, cpp, text_001DD3C0]
-      - [0x3580, c, text_001E0900]
+      - [0x3580, cpp, text_001E0900]
       - [0x10160, cpp, text_001ED4E0]
       - [0x21D20, c, text_001FF0A0]
       - [0x22660, cpp, text_001FF9E0]
@@ -72,6 +72,17 @@ segments:
           - {function: update__13BootInstallerFv, offset: 0x0, size: 0x80}
         linker_section_order: .rodata
       - [0x28600, rodatabin, data_00205980]
+      - start: 0x28700
+        type: .rodata
+        name: text_001E0900
+        linker_section: .rodata.00205A80
+        rodata_anchors:
+          - {function: func_001E4B50__15BootClass170EF0Fv, offset: 0x0, size: 0x18}
+          - {function: func_001E4CE0__15BootClass170EF0Fv, offset: 0x20, size: 0x18}
+          - {function: func_001E5090__15BootClass170EF0Fv, offset: 0x40, size: 0x18}
+        linker_section_order: .rodata
+      - [0x28758, pad, rodata_pad_00205AD8]
+      - [0x28760, rodatabin, data_00205AE0]
   - name: init
     type: code
     start: 0x28980
