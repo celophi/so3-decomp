@@ -6,6 +6,7 @@ options:
   target_path: disc/us-disc1/modules/0002-00.bin
   base_path: ../..
   symbol_addrs_path: [config/symbols/boot_symbol_addrs.txt]
+  reloc_addrs_path: [config/relocations/boot_reloc_addrs.txt]
   platform: ps2
   compiler: MWCCPS2
   asm_path: build/overlays/boot/asm
@@ -29,8 +30,8 @@ options:
   find_file_boundaries: false
   disasm_unknown: true
   gp_value: 0x1bdff0
-  global_vram_start: 0x1B65F0
-  global_vram_end: 0x205E38
+  global_vram_start: 0x1B6000
+  global_vram_end: 0x205E80
   # MWLDPS2 rejects the sized <function>.NON_MATCHING symbol splat's nonmatching
   # macro adds to every assembly function, so this module redefines it as empty.
   # The nonmatching lines stay in the .s files for the tools that read them.
@@ -52,16 +53,25 @@ segments:
     start: 0x40
     vram: 0x1dd3c0
     subsegments:
-      - [0x40, c, text_001DD3C0]
-      - [0x3310, cpp, text_001E0690]
-      - [0x3370, c, text_001E06F0]
+      # Linker padding: .text starts on a 128-byte boundary after the 64-byte MWo3 header.
+      - [0x40, pad, text_align]
+      - [0x80, cpp, text_001DD3C0]
+      - [0x3580, c, text_001E0900]
       - [0x10160, cpp, text_001ED4E0]
       - [0x21D20, c, text_001FF0A0]
       - [0x22660, cpp, text_001FF9E0]
       - [0x27D50, c, text_002050D0]
       # Linker padding: the data section starts on a 128-byte boundary.
       - [0x27D60, pad, text_end_align]
-  - [0x27d80, bin, data]
+      - [0x27D80, databin, data]
+      - start: 0x28580
+        type: .rodata
+        name: text_001DD3C0
+        linker_section: .rodata.00205900
+        rodata_anchors:
+          - {function: update__13BootInstallerFv, offset: 0x0, size: 0x80}
+        linker_section_order: .rodata
+      - [0x28600, rodatabin, data_00205980]
   - name: init
     type: code
     start: 0x28980

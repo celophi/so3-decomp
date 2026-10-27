@@ -24,15 +24,6 @@ typedef struct BootMatrix92D0
     BootVector4DDAA0 vectors[4];
 } BootMatrix92D0;
 
-/** @brief Partial layout of the vector product's two inputs and result. */
-typedef struct BootVectorStateDDAA0
-{
-    u8 unk00[0x560];
-    BootVector4DDAA0 unk560;
-    BootVector4DDAA0 unk570;
-    BootVector4DDAA0 unk580;
-} BootVectorStateDDAA0;
-
 /** @brief Partial layout of the two queried mode words. */
 typedef struct BootModePair0910
 {
@@ -88,8 +79,13 @@ typedef struct BootResourceBits0970
 /** @brief Partial selected resource containing the transferred flag storage. */
 typedef struct BootResource0970
 {
-    u8 unk00[0x18C];
-    u8 unk18C;
+    /** Button mask that confirms a selection. */
+    u16 unk00;
+    /** Button mask that cancels or skips. */
+    u16 unk02;
+    u8 unk04[0x188];
+    /** Nonzero for the 16:9 screen layout. */
+    u8 widescreen;
     u8 unk18D[0x1B];
     BootResourceBits0970 unk1A8;
 } BootResource0970;
@@ -173,7 +169,11 @@ typedef struct BootPointerOwnerACC0
     u8 unk00[4];
     BootDimensionsACD0* unk04;
     BootProjectionACD0* unk08;
-    u8 unk0C[0x18];
+    struct BootInputStatus9670* input;
+    u8 unk10[4];
+    /** Boot's message bank. */
+    s32 messages;
+    u8 unk18[0xC];
     BootState1E1A40* unk24;
 } BootPointerOwnerACC0;
 
@@ -209,11 +209,6 @@ typedef struct BootInputStatus9670
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/** Mark the transform as changed and copy a four-float value into it. */
-void func_001E0690(u8* object, const float* input);
-/** Mark the transform as changed and copy a four-float value into it. */
-void func_001E06C0(u8* object, const float* input);
 
 /**
  * @brief Refresh input samples and update retained mode values when enabled.
@@ -263,12 +258,6 @@ void func_448250(BootCleanupState8D80* object);
 void func_001E92D0(BootCleanupState8D80* object, void* first, void* second);
 
 void func_4A5E60(BootCleanupState8D80* object, void* first, void* second);
-
-/**
- * @brief Multiply the two stored vectors component by component.
- * @param object State containing both inputs and the result vector.
- */
-void func_001DDAA0(BootVectorStateDDAA0* object);
 
 /**
  * @brief Query which of the owner's two mode words equal 2.
@@ -366,75 +355,6 @@ void func_001E0DE0(BootState1E1A40* object, u8 mode);
 u16 func_001E1410(BootState1E1A40* object, u16 mode, u16 kind);
 
 /**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_001DD4C0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_001E04E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_001E04F0(void* object);
-
-/**
- * @brief Return the fixed value 3.
- * @param object Receiver or first argument; unused.
- * @return Always 3.
- */
-s32 func_001E05D0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_001E05E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_001E0870(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_001E0880(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_001E08C0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_001E08D0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_001E08E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_001E08F0(void* object);
-
-/**
  * @brief Return the fixed value 2.
  * @param object Receiver or first argument; unused.
  * @return Always 2.
@@ -512,40 +432,6 @@ s16 func_001E0AE0(BootState1E1A40* object);
 u8 func_001E9480(void* object);
 
 /**
- * @brief Return the fixed value 4.
- * @param object Receiver or first argument; unused.
- * @return Always 4.
- */
-s32 func_001DD400(void* object);
-
-/**
- * @brief Store the value at offset 0x6A.
- * @param object Object receiving the value.
- * @param value Value to store.
- */
-void func_001DFE30(void* object, u16 value);
-
-/**
- * @brief Store the value at offset 0x6C.
- * @param object Object receiving the value.
- * @param value Value to store.
- */
-void func_001DFE40(void* object, u16 value);
-
-/**
- * @brief Store the value at offset 0x18.
- * @param object Object receiving the value.
- * @param value Value to store.
- */
-void func_001E0250(void* object, u8 value);
-
-/**
- * @brief Clear the byte at offset 0x60.
- * @param object Object containing the byte.
- */
-void func_001E0860(void* object);
-
-/**
  * @brief Return the supplied value.
  * @param object Receiver or first argument; unused.
  * @param value Value to return.
@@ -618,132 +504,10 @@ float func_001E9380(void* object);
 s32 func_001E9460(void* object);
 
 /**
- * @brief Mark a record active and set its float values.
- * @param object Record to update.
- * @param first First float value.
- * @param second Second float value.
- * @param third Third float value.
- */
-void func_001DD620(u8* object, float first, float second, float third);
-
-/**
- * @brief Mark a record active and set three float values.
- * @param object Record to update.
- * @param first First float value.
- * @param second Second float value.
- * @param third Third float value.
- */
-void func_001DDED0(u8* object, float first, float second, float third);
-
-/**
- * @brief Set three float values and a final value of 1.0f.
- * @param object Record to update.
- * @param first First float value.
- * @param second Second float value.
- * @param third Third float value.
- */
-void func_001E0520(u8* object, float first, float second, float third);
-
-/**
- * @brief Mark a record active and set four float values.
- * @param object Record to update.
- * @param first First float value.
- * @param second Second float value.
- * @param third Third float value.
- * @param fourth Fourth float value.
- */
-void func_001E0630(u8* object, float first, float second, float third, float fourth);
-
-/**
- * @brief Clear the first four words of a record.
- * @param object Record to clear.
- * @return The record pointer.
- */
-void* func_001DFE50(u32* object);
-
-/**
- * @brief Initialize a record pointer to the fixed table.
- * @param object Pointer field to initialize.
- * @return The record pointer.
- */
-void* func_001DFE70(void** object);
-
-/**
- * @brief Check whether a float is negative.
- * @param object Receiver or first argument; unused.
- * @param value Float to test.
- * @return One if negative, otherwise zero.
- */
-s32 func_001E0890(void* object, float value);
-
-/**
- * @brief Return the fixed table address.
- * @param object Receiver or first argument; unused.
- * @return Address of the fixed table.
- */
-void* func_001E08B0(void* object);
-
-/**
  * @brief Clear six consecutive words starting at offset 0x20.
  * @param object Record to clear.
  */
 void func_001E9650(u32* object);
-
-/**
- * @brief Copy 16 bytes to offset 0x20.
- * @param object Destination record.
- * @param value 16-byte value to copy.
- */
-void func_001E0500(u8* object, const unsigned __int128* value);
-
-/**
- * @brief Copy 16 bytes to offset 0x20.
- * @param object Destination record.
- * @param value 16-byte value to copy.
- */
-void func_001E0510(u8* object, const unsigned __int128* value);
-
-/**
- * @brief Mark a record active and copy 16 bytes to offset 0x20.
- * @param object Destination record.
- * @param value 16-byte value to copy.
- */
-void func_001E05F0(u8* object, const unsigned __int128* value);
-
-/**
- * @brief Mark a record active and copy 16 bytes to offset 0x20.
- * @param object Destination record.
- * @param value 16-byte value to copy.
- */
-void func_001E0610(u8* object, const unsigned __int128* value);
-
-/**
- * @brief Mark a record active and copy 16 bytes to offset 0x30.
- * @param object Destination record.
- * @param value 16-byte value to copy.
- */
-void func_001E0650(u8* object, const unsigned __int128* value);
-
-/**
- * @brief Mark a record active and copy 16 bytes to offset 0x30.
- * @param object Destination record.
- * @param value 16-byte value to copy.
- */
-void func_001E0670(u8* object, const unsigned __int128* value);
-
-/**
- * @brief Mark a record active and copy 16 bytes to offset 0x40.
- * @param object Destination record.
- * @param value 16-byte value to copy.
- */
-void func_001E0730(u8* object, const unsigned __int128* value);
-
-/**
- * @brief Mark a record active and copy 16 bytes to offset 0x40.
- * @param object Destination record.
- * @param value 16-byte value to copy.
- */
-void func_001E0750(u8* object, const unsigned __int128* value);
 
 /**
  * @brief Forward to the owner 0x640 bytes before the embedded object.
@@ -764,17 +528,632 @@ void func_001E95A0(u8* object);
  */
 void func_001E94E0(Record001E94E0* object, u8 value);
 
-/**
- * @brief Mark a record active and copy a four-float value into it.
- * @param object Record to update.
- * @param first First float value.
- * @param second Second float value.
- * @param third Third float value.
- */
-void func_001E06F0(u8* object, float first, float second, float third);
-
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+#include "overlays/lib/text_0045AD10.h"
+
+/** @brief Detach an object from its owner. @param object Intrusive receiver. */
+extern "C" void lib_object_detach_owner(void* object);
+
+class BootClass178660;
+class BootClass179150;
+class BootClass170F30;
+extern "C" s32 lib_container_init(BootClass178660* object, s32 code, float x, float y, s32 first, float z, s32 second);
+extern "C" s32 lib_text_init_resource_rectangle(void* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
+extern "C" void func_4E32F0(BootClass179150* object);
+
+/** Boot's copy of the virtual intrusive-link root, with vtable D_170E70 in main data. */
+class BootClass170E70
+{
+public:
+    /** @brief Destroy the intrusive-link root. */
+    virtual ~BootClass170E70()
+    {
+    }
+};
+
+/** Boot's copy of the intrusive list sentinel, with vtable D_170E80 in main data. */
+class BootClass170E80 : public BootClass170E70
+{
+public:
+    /** @brief Clear the intrusive links. */
+    BootClass170E80() : previous(0), next(0)
+    {
+    }
+    /** @brief Destroy the list sentinel and its virtual root. */
+    virtual ~BootClass170E80()
+    {
+    }
+    BootClass170E80* previous;
+    BootClass170E80* next;
+};
+
+/** Boot's copy of the 0x14-byte owned list object, with vtable D_170E90 in main data. */
+class BootClass170E90 : public BootClass170E80
+{
+public:
+    /** @brief Clear the object flags and its owner after initializing the links. */
+    BootClass170E90() : is_listed(0), unk0f(0), owner(0)
+    {
+    }
+    /** @brief Detach from the owner, then destroy the intrusive links. */
+    virtual ~BootClass170E90()
+    {
+        lib_object_detach_owner(this);
+    }
+    /** @brief Report the list kind used when registration requests the default. @return Three in the base implementation. */
+    virtual s32 get_default_list_kind();
+    /** @brief Delete the object through its virtual destructor; null is ignored. */
+    virtual void destroy();
+    /** @brief Advance this registered object's state; the owning list's update pass calls it. */
+    virtual void update();
+    /** @brief Virtual slot 4; the base implementation does nothing. */
+    virtual void func_001DD4C0();
+    s16 list_kind;
+    u8 is_listed;
+    u8 unk0f;
+    void* owner;
+};
+
+/** Boot's copy of the position transform, with vtable D_170D60 in main data. */
+class BootClass170D60 : public BootClass170E90
+{
+public:
+    /** @brief Destroy the transform. */
+    virtual ~BootClass170D60()
+    {
+    }
+    /**
+     * @brief Set the position and a w component of one.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     */
+    virtual void func_001E0520(float x, float y, float z);
+    /** @brief Copy the position. @param value Source vector. */
+    virtual void func_001E0510(const BootVector4DDAA0* value);
+    /** @brief Copy the position. @param value Source vector. */
+    virtual void func_001E0500(const BootVector4DDAA0* value);
+    u8 unk14[0xC];
+    BootVector4DDAA0 unk20;
+};
+
+/** Boot's copy of the position, rotation and scale transform, with vtable D_170D90 in main data. */
+class BootClass170D90 : public BootClass170D60
+{
+public:
+    /** @brief Initialize the transform; boot calls the Lib copy of this constructor. */
+    BootClass170D90();
+    /** @brief Destroy the transform. */
+    virtual ~BootClass170D90()
+    {
+    }
+    /**
+     * @brief Set the position and a w component of one, and mark the transform dirty.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     */
+    virtual void func_001E0520(float x, float y, float z);
+    /** @brief Copy the position and mark the transform dirty. @param value Source vector. */
+    virtual void func_001E0510(const BootVector4DDAA0* value);
+    /** @brief Copy the position and mark the transform dirty. @param value Source vector. */
+    virtual void func_001E0500(const BootVector4DDAA0* value);
+    /**
+     * @brief Convert three rotation components into the rotation vector and mark the transform dirty.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     */
+    virtual void func_001E06F0(float x, float y, float z);
+    /** @brief Convert a rotation into the rotation vector and mark the transform dirty. @param value Source rotation. */
+    virtual void func_001E06C0(const BootVector4DDAA0* value);
+    /** @brief Convert a rotation into the rotation vector and mark the transform dirty. @param value Source rotation. */
+    virtual void func_001E0690(const BootVector4DDAA0* value);
+    /** @brief Copy the rotation vector and mark the transform dirty. @param value Source vector. */
+    virtual void func_001E0670(const BootVector4DDAA0* value);
+    /** @brief Copy the rotation vector and mark the transform dirty. @param value Source vector. */
+    virtual void func_001E0650(const BootVector4DDAA0* value);
+    /**
+     * @brief Set all four rotation components and mark the transform dirty.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     * @param w Fourth component.
+     */
+    virtual void func_001E0630(float x, float y, float z, float w);
+    /**
+     * @brief Set the scale's xyz components and mark the transform dirty.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     */
+    virtual void func_001DDED0(float x, float y, float z);
+    /** @brief Copy the scale vector and mark the transform dirty. @param value Source vector. */
+    virtual void func_001E0750(const BootVector4DDAA0* value);
+    /** @brief Copy the scale vector and mark the transform dirty. @param value Source vector. */
+    virtual void func_001E0730(const BootVector4DDAA0* value);
+    BootVector4DDAA0 unk30;
+    BootVector4DDAA0 unk40;
+    /** Nonzero when the transformation matrices need rebuilding. */
+    u8 transform_dirty;
+    u8 unk51;
+};
+
+extern "C" u32 D_001B65BC;
+extern "C" u8 D_001B65C0;
+
+/** Boot's view of the transform owner with the shared vtable D_178A90 in main data. */
+class BootClass178A90 : public BootClass170D90
+{
+public:
+    /** @brief Initialize the owner's state bytes and tracking words. */
+    BootClass178A90();
+    /** @brief Remove this object's mask from the resident flags, then destroy the transform. */
+    virtual ~BootClass178A90()
+    {
+        u32 mask = ~unk8c;
+        u32 previous = D_001B65BC;
+        unk8c &= mask;
+        D_001B65BC &= mask;
+        if (previous != D_001B65BC)
+        {
+            D_001B65C0 = 1;
+        }
+    }
+    /** @brief Virtual slot 4; the owner's implementation does nothing. */
+    virtual void func_001DD4C0();
+    /** @brief Detach and queue the owner; boot uses the Lib implementation. */
+    virtual void destroy();
+    /** @brief Clear the byte at offset 0x60. */
+    virtual void func_001E0860();
+    /** @brief Default output handler. @param output Opaque output object. @return Zero. */
+    virtual s32 func_001E0880(void* output);
+    /**
+     * @brief Test the supplied value.
+     * @param value Value to test.
+     * @param mode Additional mode used by derived implementations.
+     * @return Whether the value is negative.
+     */
+    virtual bool func_001E0890(float value, float mode);
+    /** @brief Return the shared fallback vector. @return Vector pointer. */
+    virtual const BootVector4DDAA0* func_001E08B0();
+    /**
+     * @brief Default matrix handler; does nothing.
+     * @param matrix Matrix supplied by the caller.
+     * @param context Opaque caller context.
+     */
+    virtual void func_001E08C0(const void* matrix, void* context);
+    /** @brief Mark the matrix state ready; boot uses the Lib implementation. */
+    virtual void update_transform_matrix();
+    /** @brief Read the stored transformation matrix; boot uses the Lib implementation. @return Matrix pointer. */
+    virtual const void* get_transform_matrix();
+    /** @brief Copy the source transformation state; boot uses the Lib implementation. @param source Transform source. */
+    virtual void func_004CFFA0(const BootClass178A90* source);
+    /** @brief Produce a transformation receiver. @return Null. */
+    virtual BootClass178A90* func_001E08D0();
+    /** @brief Default hook; does nothing. */
+    virtual void func_001E08E0();
+    /** @brief Store the halfword at offset 0x6A. @param value Value to store. */
+    void func_001DFE30(u16 value);
+    /** @brief Store the halfword at offset 0x6C. @param value Value to store. */
+    void func_001DFE40(u16 value);
+    u8 unk60;
+    u8 unk61;
+    u8 unk62;
+    u8 unk63;
+    u8 unk64;
+    u8 unk65;
+    u8 unk66;
+    u8 unk67;
+    u8 unk68;
+    u8 unk69;
+    u16 unk6a;
+    u16 unk6c;
+    u8 unk6e[0x12];
+    void* unk80;
+    u8 unk84[4];
+    u32 unk88;
+    u32 unk8c;
+};
+
+/** Boot's copy of the transform subclass between D_178A90 and D_174610, with vtable D_170DE0 in main data. */
+class BootClass170DE0 : public BootClass178A90
+{
+public:
+    /** @brief Destroy the transform subclass. */
+    virtual ~BootClass170DE0()
+    {
+    }
+};
+
+/** Boot's copy of the two-callback DMA interface, with vtable D_170D50 in main data. */
+class BootClass170D50
+{
+public:
+    /** @brief Install the interface's vtable. */
+    BootClass170D50();
+    /** @brief Default DMA notification hook; does nothing. @param value Notification value. */
+    virtual void func_001E04E0(u32 value);
+    /** @brief Default preparation hook; does nothing. @param value Notification word or packet address. */
+    virtual void func_001E04F0(u32 value);
+};
+
+/** Boot's view of the transform with callback interface, with the shared vtable D_174610 in main data. */
+class BootClass174610 : public BootClass170DE0, public BootClass170D50
+{
+public:
+    /** @brief Initialize the transform and callback interface; boot calls the Lib constructor. */
+    BootClass174610();
+    /** @brief Destroy the transform receiver. */
+    virtual ~BootClass174610()
+    {
+    }
+    /**
+     * @brief Run the default transform state hook.
+     * @param first First state value.
+     * @param second Second state value.
+     * @param third Third state value.
+     */
+    virtual void func_0044B100(u32 first, u32 second, u32 third);
+    u8 unk94[0x1A];
+    u8 unkae;
+    u8 unkaf;
+};
+
+/** Boot's view of the 0x14-byte list receiver with the shared vtable D_178A70 in main data. */
+class BootClass178A70
+{
+public:
+    BootClass170E80 sentinel;
+    u32 node_count;
+    /** @brief Initialize the list receiver; boot calls the Lib constructor. */
+    BootClass178A70();
+    /** @brief Destroy the list receiver. */
+    virtual ~BootClass178A70();
+    /** @brief Append a node to the end of the list. @param node Node to append. */
+    virtual void append(void* node);
+    /** @brief Prepend a node to the beginning of the list. @param node Node to prepend. */
+    virtual void prepend(void* node);
+    /**
+     * @brief Link a node after a list position.
+     * @param position Insertion position.
+     * @param node Node to insert.
+     */
+    virtual void insert_after(void* position, void* node);
+    /** @brief Unlink a node and clear its list links. @param node Node to remove. */
+    virtual void unlink(void* node);
+};
+
+/** Resident manager list that updates its nodes, with the Lib vtable D_178DD0. */
+class BootClass178DD0 : public BootClass178A70
+{
+public:
+    /** @brief Destroy the manager list. */
+    virtual ~BootClass178DD0();
+    /** @brief Remove a node. @param object Node to remove. */
+    virtual void remove_node(void* object);
+    /** @brief Update every node. */
+    virtual void update_nodes();
+    /** @brief Append a node of a kind. @param object Node. @param kind Node kind, or -1 for the node's default. */
+    virtual void append_node(void* object, s32 kind);
+    /** @brief Prepend a node of a kind. @param object Node. @param kind Node kind, or -1 for the node's default. */
+    virtual void prepend_node(void* object, s32 kind);
+};
+
+/** Boot's view of the 0xF0-byte container with the Lib vtable D_178660. */
+class BootClass178660 : public BootClass178A70, public BootClass174610
+{
+public:
+    /**
+     * @brief Initialize the container with its transform.
+     * @param x First transform component.
+     * @param y Second transform component.
+     * @param z Third transform component.
+     */
+    BootClass178660(float x, float y, float z)
+    {
+        unk6c = 0x6FF1;
+        lib_container_init(this, 9, x, y, 0, z, 0);
+    }
+    /** @brief Destroy the container. */
+    virtual ~BootClass178660();
+    LibStorageBlock0C unkd0;
+    u8 unkdc[0x14];
+};
+
+/** Four words cleared by an out-of-line constructor. */
+class BootWordQuad
+{
+public:
+    /** @brief Clear all four words. */
+    BootWordQuad();
+    u32 unk00;
+    u32 unk04;
+    u32 unk08;
+    u32 unk0c;
+};
+
+/** Partial 0xC0-byte transform with the Lib vtable D_179150. */
+class BootClass179150 : public BootClass178A90, public BootClass170D50
+{
+public:
+    /** @brief Initialize the transform's modes and timing. */
+    BootClass179150()
+    {
+        func_4E32F0(this);
+        unk94 = 0x80000000;
+        unk9c = 0x80000000;
+        unk98 = 0;
+        unka4 = 30.0f;
+        func_001DFE40(0x300);
+        unk65 = 1;
+        func_001DFE30(0x400);
+    }
+    /** @brief Destroy the transform. */
+    virtual ~BootClass179150();
+    u32 unk94;
+    u32 unk98;
+    u32 unk9c;
+    u8 unka0[4];
+    float unka4;
+    BootWordQuad unka8;
+    u8 unkb8[8];
+};
+
+/** Partial 0xF0-byte selection cursor with the Lib vtable D_175070. */
+class BootClass175070 : public BootClass174610, public ItemCreationClass185050
+{
+public:
+    /** @brief Initialize the cursor transform. */
+    BootClass175070()
+    {
+        unk6c = 0x6FF0;
+    }
+    /** @brief Destroy the cursor. */
+    virtual ~BootClass175070();
+};
+
+/** Boot's view of the Lib drawing widget with vtable D_174EF0. */
+class BootClass174EF0 : public BootClass170E90
+{
+public:
+    /** @brief Initialize the widget; boot calls the Lib constructor. */
+    BootClass174EF0();
+    /** @brief Destroy the widget. */
+    virtual ~BootClass174EF0();
+    /** @brief Set the draw color and mark the widget visible. @param color Packed color. */
+    void set_color(u32 color)
+    {
+        unk98 = color;
+        unk3c = 1;
+    }
+    u8 unk14[0x24];
+    u8 unk38;
+    u8 unk39[3];
+    u8 unk3c;
+    u8 unk3d[2];
+    u8 unk3f;
+    u8 unk40[0x58];
+    u32 unk98;
+    u8 unk9c[0x78];
+};
+
+/** Boot's view of the 0x114-byte Lib text widget with vtable D_178750. */
+class BootClass178750 : public BootClass174EF0
+{
+public:
+    /**
+     * @brief Initialize the text widget with a resource string and rectangle.
+     * @param slot Resource slot.
+     * @param key Resource key.
+     * @param x Origin x.
+     * @param y Origin y.
+     * @param width Rectangle width.
+     * @param height Rectangle height.
+     */
+    BootClass178750(s32 slot, s32 key, float x, float y, float width, float height)
+    {
+        unk38 = 11;
+        lib_text_init_resource_rectangle(this, slot, key, 1, x, y, width, height);
+    }
+    /** @brief Destroy the text widget. */
+    virtual ~BootClass178750();
+};
+
+/** Partial 0xE0-byte screen fade with vtable D_171C00 in main data. */
+class BootClass171C00 : public BootClass178A90, public BootClass170D50
+{
+public:
+    /** @brief Initialize the fade for the display. @param display Display dimensions. */
+    BootClass171C00(BootDimensionsACD0* display);
+    u8 unk94[0x3C];
+    float unkd0;
+    u8 unkd4[0xC];
+};
+
+/** Partial 0x3C-byte list object with vtable D_171BB0 in main data. */
+class BootClass171BB0 : public BootClass170E90
+{
+public:
+    /** @brief Initialize the object. @param mode Start mode. */
+    BootClass171BB0(s32 mode);
+    u8 unk14[0x28];
+};
+
+/** Partial 0x2C-byte progress bar with vtable D_171BD0 in main data; driven with a done/total pair. */
+class BootProgressBar : public BootClass170E90
+{
+public:
+    /** @brief Initialize the progress bar. */
+    BootProgressBar();
+    u8 unk14[4];
+    BootClass170F30* unk18;
+    u8 unk1c[0x10];
+};
+
+/** Partial model object with vtable D_170F30 in main data. */
+class BootClass170F30 : public BootClass178A90
+{
+public:
+    /** @brief Destroy the model object. */
+    virtual ~BootClass170F30();
+    /** @brief Virtual slot 0x74. */
+    virtual void func_slot74();
+    /** @brief Virtual slot 0x78. */
+    virtual void func_slot78();
+    /** @brief Virtual slot 0x7C. */
+    virtual void func_slot7c();
+    /** @brief Virtual slot 0x80. */
+    virtual void func_slot80();
+    /** @brief Virtual slot 0x84. */
+    virtual void func_slot84();
+    /** @brief Virtual slot 0x88. */
+    virtual void func_slot88();
+    /** @brief Store the component product of the two input vectors. */
+    virtual void func_001DDAA0();
+    u8 unk90[0x4D0];
+    BootVector4DDAA0 unk560;
+    BootVector4DDAA0 unk570;
+    BootVector4DDAA0 unk580;
+};
+
+/** Partial 0x30-byte image object with vtable D_171C90 in main data, drawn from a decoded FIS image. */
+class BootImage : public BootClass170E90
+{
+public:
+    /** @brief Clear the object's model and state bytes. */
+    BootImage();
+    u8 unk14[4];
+    BootClass170F30* unk18;
+    u8 unk1c[0x10];
+    u8 unk2c;
+    u8 unk2d;
+    u8 unk2e;
+};
+
+/** Partial list object with vtable D_171070 in main data. */
+class BootClass171070 : public BootClass170E90
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~BootClass171070();
+    /** @brief Store the byte at offset 0x18. @param value Byte to store. */
+    virtual void func_001E0250(u8 value);
+    u8 unk14[4];
+    u8 unk18;
+};
+
+/** Message keys in boot's English message bank (resource 38, block 0). */
+enum BootMessage
+{
+    BOOT_MSG_INSTALL_CONFIRM = 0x1E,
+    BOOT_MSG_OVERWRITE_CONFIRM = 0x1F,
+    BOOT_MSG_NOT_ENOUGH_SPACE = 0x20,
+    BOOT_MSG_ERROR = 0x21,
+    BOOT_MSG_UNIT_ERROR = 0x22,
+    BOOT_MSG_INSTALLING = 0x23,
+    BOOT_MSG_PERCENT = 0x24,
+    BOOT_MSG_ABORT_CONFIRM = 0x25,
+    BOOT_MSG_INSTALL_COMPLETE = 0x26,
+    /** First of the eight battle-system tips shown while installing. */
+    BOOT_MSG_FIRST_TIP = 0x28
+};
+
+/** Resources the installer loads. */
+enum BootInstallResource
+{
+    /** Two images: the screen sprite sheet and its banner. */
+    BOOT_RES_SCREEN_IMAGES = 0x2A,
+    /** SYSTEM.CNF, icon.sys and the icon written to the BB Unit partition. */
+    BOOT_RES_SYSTEM_FILES = 0x2D,
+    /** PlayStation BB Navigator icons and title file. */
+    BOOT_RES_NAVIGATOR_FILES = 0x2E,
+    /** The eight images shown with the battle-system tips. */
+    BOOT_RES_TIP_IMAGES = 0x2F,
+    BOOT_RES_SOUND = 0x427
+};
+
+/**
+ * Boot screen that offers to install the game on the PlayStation BB Unit (hard disk), with vtable D_170D30
+ * in main data. It asks yes/no, checks the unit and its free space, writes the partition files while
+ * showing a progress bar and battle-system tips, then hands over to the next boot stage.
+ */
+class BootInstaller : public BootClass170E90
+{
+public:
+    /** @brief Allocate the boot buffers and clear the owned objects. */
+    BootInstaller();
+    /** @brief Release the owned objects and buffers. */
+    virtual ~BootInstaller();
+    /** @brief Report the list kind used when registration requests the default. @return Four. */
+    virtual s32 get_default_list_kind();
+    /** @brief Advance the install sequence: load the screen, ask, check the BB Unit, install, then hand over. */
+    virtual void update();
+    /**
+     * @brief Replace the tip image with block @p index of the tip image resource.
+     * @param index Tip image to decode.
+     */
+    void show_tip_image(s32 index);
+    /** @brief Create the yes/no choice images and pulse the selected one; release them once installing starts. */
+    void update_choice_images();
+    /** @brief Create the four screen images once, then place them for the 4:3 or widescreen layout. */
+    void place_screen_images();
+    u8* screen_image_data;
+    u8* sound_data;
+    u8* screen_image_buffers[2];
+    u8* system_file_data;
+    u8* navigator_file_data;
+    u8* system_file_buffers[3];
+    u8* navigator_file_buffers[3];
+    u8* install_buffer;
+    BootImage* images[20];
+    BootProgressBar* progress_bar;
+    BootImage* tip_image;
+    u8* tip_image_buffer;
+    u8* tip_image_data;
+    /** Current step of the install sequence. */
+    s32 step;
+    /** Step taken when the player answers no or cancels. */
+    s32 no_step;
+    /** Step taken when the player answers yes. */
+    s32 yes_step;
+    u8 selection;
+    u8 screen_images_loaded;
+    u8 sound_started;
+    u8 exiting;
+    /** Nonzero while the selected choice image grows back to full size. */
+    u8 choice_growing;
+    u8 unkb9[3];
+    u8* unkbc;
+    /** Install size used as the progress denominator. */
+    s32 install_total;
+    /** Next tip to show. */
+    s32 tip_index;
+    /** Progress percentage at which the next tip is shown. */
+    s32 next_tip_percent;
+    s32 menu_frames;
+    s32 wait_frames;
+    /** 0x200-byte buffer the resident install code fills with the icon.sys header. */
+    u8* icon_header;
+    BootClass178660* container;
+    BootClass178750* message_text;
+    BootClass178750* progress_text;
+    BootClass178750* tip_text;
+    BootClass175070* cursor;
+};
+
+/** Partial boot globals; the first word is the object whose byte at offset 0x18 the boot object sets. */
+typedef struct BootGlobals205E38
+{
+    BootClass171070* unk00;
+    u8 unk04[0x18];
+} BootGlobals205E38;
+
+extern "C" BootGlobals205E38 D_205E38;
 #endif
 
 #endif
