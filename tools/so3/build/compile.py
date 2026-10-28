@@ -30,10 +30,10 @@ import sys
 from tools.so3.build.compiler_probe import COMPILER_EXE, COMPILERS, CONFIG, verify_compiler, working_candidate
 from tools.so3.build.assembly import ASSEMBLER, ASSEMBLER_ABI, ASSEMBLER_CPU, ASSEMBLER_FLAGS, assembly_inputs, assemble
 from tools.so3.build.rodata_ownership import owned_rodata_sections
+from tools.so3.build.static_initializers import trim_static_initializer_names
 from tools.so3.build.subsegments import configured_rodata_groups, segment_start
 from tools.so3.build.text_order import (CopyReport, compiled_vtables, normalize_symbol_aliases,
-                                        order_text_sections, symbol_addresses, symbol_aliases,
-                                        trim_static_initializer_names, unit_range)
+                                        order_text_sections, symbol_addresses, symbol_aliases, unit_range)
 
 LANGUAGES = {'.c': 'c', '.cpp': 'c++'}
 
