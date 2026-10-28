@@ -4,6 +4,7 @@
 #include "overlays/boot/text_001ED4E0.h"
 #include "overlays/boot/text_001DD3C0.h"
 #include "overlays/boot/text_001E0900.h"
+#include "overlays/boot/text_001FF0A0.h"
 
 extern "C" {
 
@@ -2292,7 +2293,8 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FB0B0)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", __ct__15BootClass171CB0Fv);
 
-s32 func_001FB220(void* object)
+/** @brief Report the list kind used when registration requests the default. @return Four. */
+s32 BootBattleTrophyViewer::get_default_list_kind()
 {
     return 4;
 }
@@ -2307,6 +2309,6 @@ INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FBB90)
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FC100);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FC410);
+INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", update__22BootBattleTrophyViewerFv);
 
 }

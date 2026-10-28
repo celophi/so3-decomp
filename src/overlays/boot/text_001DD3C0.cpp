@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/boot/text_001E0900.h"
+#include "overlays/boot/init.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "main/resident_001001E0.h"
 #include "main/resident_00101550.h"
@@ -1044,7 +1045,7 @@ BootInstaller::~BootInstaller()
     delete navigator_file_buffers[2];
     func_10F000(D_001B65F8, 0, -1);
     delete sound_data;
-    D_205E38.unk00->set_enabled(1);
+    g_boot_program.error_popup->set_enabled(1);
 }
 
 /** @brief Turn the popup on or off. @param value Nonzero to allow the popup. */
@@ -1080,7 +1081,7 @@ BootInstaller::BootInstaller()
     cursor = 0;
     sound_started = 0;
     exiting = 0;
-    D_205E38.unk00->set_enabled(0);
+    g_boot_program.error_popup->set_enabled(0);
     tip_image_buffer = 0;
     system_file_buffers[0] = 0;
     system_file_buffers[1] = 0;

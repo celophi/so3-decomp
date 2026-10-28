@@ -109,6 +109,56 @@ def symbol_aliases(path):
             for name, _ in entries[:-1]}
 
 
+def trim_static_initializer_names(data):
+    """Drop the spaces MWCC pads its static initializer names with.
+
+    A C++ file that defines a global object gets a `__sinit_<file>` function,
+    and MWCC pads that name (and its `.p__sinit_` and `@EX@__sinit_` helpers)
+    with spaces to 113 characters. The symbol maps can't hold a name with
+    spaces, so I trim them to match the map, e.g. `__sinit_init.cpp`.
+
+    Each global object with a destructor also gets a 12-byte record in .bss
+    that the initializer passes to __register_global_object, and MWCC names it
+    `@<number>`. That number moves around, so I name the record after the
+    initializer instead: `__sinit_init.cpp_destructor_chain`, then `..._chain2`
+    and so on in the order they appear.
+    """
+    shoff = struct.unpack_from('<I', data, 32)[0]
+    stride, count = struct.unpack_from('<HH', data, 46)
+    headers = [struct.unpack_from('<10I', data, shoff + i * stride) for i in range(count)]
+    out = bytearray(data)
+    for table in headers:
+        if table[1] != 2:
+            continue
+        strings_header = list(struct.unpack_from('<10I', data, shoff + table[6] * stride))
+        strings = bytearray(data[strings_header[4]:strings_header[4] + strings_header[5]])
+        symbols = []
+        for offset in range(table[4], table[4] + table[5], table[9]):
+            label, _, size, info, _, index = struct.unpack_from('<IIIBBH', data, offset)
+            symbols.append((offset, strings[label:].split(b'\0', 1)[0], size, info, index))
+        initializer = next((name.rstrip(b' ') for _, name, _, info, _ in symbols
+                            if name.startswith(b'__sinit_') and info & 0xF == 2), None)
+        if initializer is None:
+            continue
+        chains = 0
+        for offset, name, size, info, index in symbols:
+            if b'__sinit_' in name and name.endswith(b' '):
+                new_name = name.rstrip(b' ')
+            elif (re.fullmatch(rb'@\d+', name) and size == 12 and 0 < index < count
+                    and headers[index][1] == 8):
+                chains += 1
+                new_name = initializer + b'_destructor_chain' + (str(chains).encode() if chains > 1 else b'')
+            else:
+                continue
+            struct.pack_into('<I', out, offset, len(strings))
+            strings.extend(new_name + b'\0')
+        if len(strings) != strings_header[5]:
+            strings_header[4], strings_header[5] = len(out), len(strings)
+            out.extend(strings)
+            struct.pack_into('<10I', out, shoff + table[6] * stride, *strings_header)
+    return bytes(out)
+
+
 def normalize_symbol_aliases(data, aliases):
     """Rename undefined imports only; preserve code, definitions and relocation indices."""
     if not aliases:

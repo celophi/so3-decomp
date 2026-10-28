@@ -32,7 +32,8 @@ from tools.so3.build.assembly import ASSEMBLER, ASSEMBLER_ABI, ASSEMBLER_CPU, AS
 from tools.so3.build.rodata_ownership import owned_rodata_sections
 from tools.so3.build.subsegments import configured_rodata_groups, segment_start
 from tools.so3.build.text_order import (CopyReport, compiled_vtables, normalize_symbol_aliases,
-                                        order_text_sections, symbol_addresses, symbol_aliases, unit_range)
+                                        order_text_sections, symbol_addresses, symbol_aliases,
+                                        trim_static_initializer_names, unit_range)
 
 LANGUAGES = {'.c': 'c', '.cpp': 'c++'}
 
@@ -187,6 +188,10 @@ def match_original_layout(path, unit, unit_options, language, rodata_groups, rep
     # so those tables get their own sections.
     if rodata_groups:
         data, _ = owned_rodata_sections(data, rodata_groups)
+
+    # Static initializers come out with space-padded names the symbol map can't match.
+    if language == 'c++':
+        data = trim_static_initializer_names(data)
 
     # Rename references that use an alias so they match the symbol map's name.
     aliases = symbol_map_path(module_of(unit))
