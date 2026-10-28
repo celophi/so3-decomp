@@ -45,23 +45,29 @@ typedef struct BootResource0970
     u16 unk00;
     /** Button mask that cancels or skips. */
     u16 unk02;
-    u8 unk04[0x20];
+    /** Button mask for the other choice of a two-way prompt. */
+    u16 unk04;
+    u8 unk06[0x1E];
     u8 unk24_low : 2;
     u8 unk24_mid : 2;
     u8 unk24_bit4 : 1;
-    u8 unk24_bit5 : 1;
+    /** Controller vibration on. */
+    u8 vibration : 1;
     u8 unk24_bit6 : 1;
-    u8 unk24_bit7 : 1;
+    /** Offer to skip events as they start. */
+    u8 event_skip : 1;
     u8 unk25_low : 1;
     u8 unk25_bit1 : 1;
-    u8 unk25_mode : 2;
+    /** Event dialog: subtitles and voice, voice only, subtitles only, or auto-advancing subtitles and voice. */
+    u8 voice_mode : 2;
     u8 unk25_mid : 2;
     u8 unk25_bit6 : 1;
     u8 unk25_bit7 : 1;
     /** First byte covered by checksum. */
     u8 unk26;
     u8 unk27;
-    u8 unk28;
+    /** Difficulty: Earth, Galaxy, Universe or 4D. */
+    u8 difficulty;
     u8 unk29[0x7B];
     u16 checksum;
     /** Seed for checksum, replaced on every write. */
@@ -70,12 +76,17 @@ typedef struct BootResource0970
     /** Nonzero for the 16:9 screen layout. */
     u8 widescreen;
     u8 unk18D;
-    u8 unk18E;
-    u8 unk18F[0x11];
+    /** Sound output: mono, stereo, Dolby Pro Logic II or headphones. */
+    u8 sound_output;
+    u8 unk18F;
+    /** Angle of each of the four surround speakers, as saved. */
+    float speaker_angles[4];
     /** First byte covered by extra_checksum. */
     u8 unk1A0;
-    u8 unk1A1;
-    u8 unk1A2;
+    /** Nonzero once Universe difficulty can be chosen. */
+    u8 universe_unlocked;
+    /** Nonzero once 4D difficulty can be chosen. */
+    u8 fourth_dimension_unlocked;
     u8 unk1A3;
     u16 extra_checksum;
     /** Seed for extra_checksum. */
@@ -94,44 +105,68 @@ typedef struct BootResident1B65E4
     u8 unk141;
     u8 unk142[0x12041];
     u8 unk12183;
+    u8 unk12184;
 } BootResident1B65E4;
 
-/** Partial resident display runtime reached through D_001B657C. */
-typedef struct BootRuntime1B657C
+/** Partial resident display runtime reached through D_001B657C, with the Lib vtable D_174F50. */
+class BootRuntime1B657C
 {
-    u8 unk00[0x568];
+public:
+    /**
+     * @brief Initialize the runtime for a screen size; boot calls the Lib constructor.
+     * @param width Screen width.
+     * @param height Screen height.
+     * @param first First mode.
+     * @param second Second mode.
+     * @param scale Scale factor.
+     */
+    BootRuntime1B657C(float width, float height, s32 first, s32 second, float scale);
+    /** @brief Destroy the runtime. */
+    virtual ~BootRuntime1B657C();
+    u8 unk04[0x564];
     /** Number the next formatted message prints. */
     u32 message_value;
-} BootRuntime1B657C;
+    u8 unk56C[0x98];
+};
 
 /** @brief Partial resident sound object reached through D_001B65F8. */
 struct BootSound1B65F8
 {
     u8 unk00[0x450];
-    /** Output mode the player selected in the options. */
-    u8 unk450;
+    /** Sound output mode: 1 mono, 0 stereo, 2 Dolby Pro Logic II, 3 headphones. */
+    u8 output_mode;
+    u8 unk451[0xF4B];
+    /** Angle of each of the four surround speakers. */
+    float speaker_angles[4];
 };
 
-/** @brief Partial object containing the two signed dimensions used by projection. */
-typedef struct BootDimensionsACD0
+/** @brief Partial display area whose signed dimensions drive the projection. */
+struct BootDisplayArea3C60
 {
-    u8 unk00[0x3C6C];
-    s16 unk3C6C;
-    s16 unk3C6E;
-} BootDimensionsACD0;
+    u8 unk00[0xC];
+    s16 width;
+    s16 height;
+};
 
-/** @brief Partial resident receiver of the copied pointer. */
-typedef struct BootPointerContextACC0
+/** Partial 0x3F10-byte Lib display with vtable D_178FB0 in main data; its data comes before the vptr. */
+class BootDimensionsACD0
 {
-    u8 unk00[0x90];
-    void* unk90;
-} BootPointerContextACC0;
+public:
+    /** @brief Construct the display. */
+    BootDimensionsACD0();
+    u8 unk00[0x3C60];
+    BootDisplayArea3C60 unk3C60;
+    u8 unk3C70[8];
+    void* unk3C78;
+    u8 unk3C7C[0x290];
+    /** @brief Destroy the display. */
+    virtual ~BootDimensionsACD0();
+};
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern BootPointerContextACC0* D_001B6628;
 
 extern class BootProjectionACD0* D_001B6654;
 
@@ -167,6 +202,7 @@ class BootClass179150;
 class BootClass170F30;
 extern "C" s32 lib_container_init(BootClass178660* object, s32 code, float x, float y, s32 first, float z, s32 second);
 extern "C" s32 lib_text_init_resource_rectangle(void* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
+extern "C" s32 lib_panel_init_rectangle(void* object, s32 mode, float x, float y, float width, float height, float extra);
 extern "C" void func_4E32F0(BootClass179150* object);
 extern "C" void func_4D5C90(void* object);
 
@@ -227,12 +263,25 @@ public:
 class BootProjectionACD0 : public BootClass170E90
 {
 public:
+    /**
+     * @brief Initialize the projection; boot calls the Lib constructor.
+     * @param display Display the projection draws to.
+     */
+    BootProjectionACD0(BootDimensionsACD0* display);
+    /**
+     * @brief Set the position.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     */
+    virtual void func_001E0520(float x, float y, float z);
     u8 unk14[0x23C];
     float unk250;
     u8 unk254[8];
     float unk25C;
     u8 unk260[0x18];
     float unk278;
+    u8 unk27C[0x604];
 };
 
 /** Boot's copy of the position transform, with vtable D_170D60 in main data. */
@@ -481,20 +530,32 @@ public:
     virtual void prepend_node(void* object, s32 kind);
 };
 
+/** Partial resident display manager D_001B6628 with the Lib vtable D_178F30. */
+class BootClass178F30 : public BootClass178DD0
+{
+public:
+    u8 unk14[0x7C];
+    /** Display object the manager draws through. */
+    void* current_display;
+};
+
+extern "C" BootClass178F30* D_001B6628;
+
 /** Boot's view of the 0xF0-byte container with the Lib vtable D_178660. */
 class BootClass178660 : public BootClass178A70, public BootClass174610
 {
 public:
     /**
-     * @brief Initialize the container with its transform.
+     * @brief Initialize the container with its mode and transform.
+     * @param code Container mode.
      * @param x First transform component.
      * @param y Second transform component.
      * @param z Third transform component.
      */
-    BootClass178660(float x, float y, float z)
+    BootClass178660(s32 code, float x, float y, float z)
     {
         unk6c = 0x6FF1;
-        lib_container_init(this, 9, x, y, 0, z, 0);
+        lib_container_init(this, code, x, y, 0, z, 0);
     }
     /** @brief Destroy the container. */
     virtual ~BootClass178660();
@@ -568,15 +629,45 @@ public:
         unk98 = color;
         unk3c = 1;
     }
-    u8 unk14[0x24];
+    /** @brief Set the text scale and mark the widget for redraw. @param scale Scale factor. */
+    void set_scale(float scale)
+    {
+        unk80 = scale;
+        unk3c = 1;
+    }
+    /** @brief Set the alpha and mark the widget for redraw. @param alpha Alpha, 128 for opaque. */
+    void set_alpha(float alpha)
+    {
+        unk28 = alpha;
+        unk3c = 1;
+    }
+    /** @brief Set the horizontal alignment and mark the widget for redraw. @param align Alignment. */
+    void set_horizontal_align(s32 align)
+    {
+        unk9c = align;
+        unk3c = 1;
+    }
+    /** @brief Set the vertical alignment and mark the widget for redraw. @param align Alignment. */
+    void set_vertical_align(s32 align)
+    {
+        unka0 = align;
+        unk3c = 1;
+    }
+    u8 unk14[0x14];
+    float unk28;
+    u8 unk2c[0xC];
     u8 unk38;
     u8 unk39[3];
     u8 unk3c;
     u8 unk3d[2];
     u8 unk3f;
-    u8 unk40[0x58];
+    u8 unk40[0x40];
+    float unk80;
+    u8 unk84[0x14];
     u32 unk98;
-    u8 unk9c[0x78];
+    s32 unk9c;
+    s32 unka0;
+    u8 unka4[0x70];
 };
 
 /** Boot's view of the 0x114-byte Lib text widget with vtable D_178750. */
@@ -587,18 +678,72 @@ public:
      * @brief Initialize the text widget with a resource string and rectangle.
      * @param slot Resource slot.
      * @param key Resource key.
+     * @param flag Slot state flag.
      * @param x Origin x.
      * @param y Origin y.
      * @param width Rectangle width.
      * @param height Rectangle height.
      */
-    BootClass178750(s32 slot, s32 key, float x, float y, float width, float height)
+    BootClass178750(s32 slot, s32 key, u8 flag, float x, float y, float width, float height)
     {
         unk38 = 11;
-        lib_text_init_resource_rectangle(this, slot, key, 1, x, y, width, height);
+        lib_text_init_resource_rectangle(this, slot, key, flag, x, y, width, height);
     }
     /** @brief Destroy the text widget. */
     virtual ~BootClass178750();
+};
+
+/** Boot's view of the 0x40-byte Lib widget base with vtable D_178600; boot calls the Lib constructor. */
+class BootClass178600 : public BootClass170E90
+{
+public:
+    /** @brief Initialize the widget rectangle and state bytes. */
+    BootClass178600();
+    /** @brief Destroy the widget. */
+    virtual ~BootClass178600();
+    u8 unk14[0x24];
+    u8 unk38;
+    u8 unk39[7];
+};
+
+/** Four floats of a panel rectangle. */
+struct BootPanelRect50
+{
+    float unk00;
+    float unk04;
+    float unk08;
+    float unk0c;
+};
+
+/** Boot's view of the 0x90-byte Lib panel with vtable D_178630. */
+class BootClass178630 : public BootClass178600
+{
+public:
+    /**
+     * @brief Initialize the panel state and drawing rectangle.
+     * @param mode Drawing mode.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     * @param width Drawing width.
+     * @param height Drawing height.
+     * @param extra Extra drawing coordinate.
+     */
+    BootClass178630(s32 mode, float x, float y, float width, float height, float extra)
+    {
+        unk50.unk0c = 0.0f;
+        unk50.unk08 = 0.0f;
+        unk50.unk04 = 0.0f;
+        unk50.unk00 = 0.0f;
+        unk38 = 1;
+        lib_panel_init_rectangle(this, mode, x, y, width, height, extra);
+    }
+    /** @brief Destroy the panel. */
+    virtual ~BootClass178630();
+    LibStorageBlock0C unk40;
+    u8 unk4c[4];
+    BootPanelRect50 unk50;
+    void* unk60;
+    u8 unk64[0x2C];
 };
 
 /** Partial 0xE0-byte screen fade with vtable D_171C00 in main data. */
@@ -619,6 +764,15 @@ public:
     /** @brief Initialize the object. @param mode Start mode. */
     BootClass171BB0(s32 mode);
     u8 unk14[0x28];
+};
+
+/** Partial 0x2C-byte object with vtable D_171CB0 in main data, queued when the options menu closes. */
+class BootClass171CB0 : public BootClass170E90
+{
+public:
+    /** @brief Initialize the object. */
+    BootClass171CB0();
+    u8 unk14[0x18];
 };
 
 /** Partial 0x2C-byte progress bar with vtable D_171BD0 in main data; driven with a done/total pair. */
@@ -667,7 +821,9 @@ public:
     BootVector4DDAA0 unk1D0;
     BootVector4DDAA0 unk1E0;
     BootVector4DDAA0 unk1F0;
-    u8 unk200[0x10];
+    u8 unk200[8];
+    s32 unk208;
+    u8 unk20C[4];
     u8 unk210;
 };
 
@@ -728,7 +884,10 @@ public:
     u8 unk59d_4_7 : 4;
     u8 unk59e[2];
     u8 unk5a0;
-    u8 unk5a1[0x93];
+    u8 unk5a1[3];
+    /** Child objects, such as the face's morph targets. */
+    BootClass170E80 children;
+    u8 unk5b0[0x84];
     void* unk634;
     u8 unk638[8];
 };
@@ -761,10 +920,12 @@ public:
     virtual void func_4A4550();
 };
 
-/** Boot's view of the Lib model with vtable D_177820; boot calls its Lib destructor. */
+/** Boot's view of the Lib model with vtable D_177820; boot calls its Lib constructor and destructor. */
 class BootClass177820 : public BootClass177820Primary, public BootClass177820Secondary
 {
 public:
+    /** @brief Construct an empty model; boot uses the Lib implementation. */
+    BootClass177820();
     /** @brief Destroy the model; boot uses the Lib implementation. */
     virtual ~BootClass177820();
     /** @brief Detach the attached object when the gate is set, then destroy the model through its base. */
@@ -849,8 +1010,12 @@ public:
     {
         return unk794;
     }
-    /** @brief Boot uses the Lib implementation. */
-    virtual void func_4A37C0();
+    /**
+     * @brief Build this model from a model in a loaded scene; boot uses the Lib implementation.
+     * @param links Display list the model draws through.
+     * @param source Scene model to copy.
+     */
+    virtual void func_4A37C0(BootClass178DD0* links, BootClass170F30* source);
     /** @brief Boot uses the Lib implementation. */
     virtual void func_4A7E80();
     /** @brief Boot uses the Lib implementation. */
@@ -866,8 +1031,6 @@ public:
     u8 unk794;
     u8 unk795[7];
     u8 unk79c[0x84];
-    BootVector4DDAA0 unk820;
-    u8 unk830[0x10];
 };
 
 /** Partial model object with vtable D_170F30 in main data. */
@@ -898,29 +1061,61 @@ public:
     u8 unk2e;
 };
 
-/** Partial list object with vtable D_171070 in main data. */
-class BootClass171070 : public BootClass170E90
+/**
+ * Popup with vtable D_171070 in main data that tells the player to fix the PlayStation BB Unit while the resident
+ * loader reports an error, and removes itself once the error clears.
+ */
+class BootUnitErrorPopup : public BootClass170E90
 {
 public:
+    /**
+     * @brief Start enabled, with nothing shown.
+     * @param owner Program whose message bank the popup uses.
+     */
+    BootUnitErrorPopup(class BootProgram* owner)
+    {
+        program = owner;
+        container = 0;
+        text = 0;
+        panel = 0;
+        enabled = 1;
+    }
     /** @brief Destroy the object. */
-    virtual ~BootClass171070();
+    virtual ~BootUnitErrorPopup();
     /** @brief Release the owned objects, then queue this object for deletion. */
     virtual void destroy();
-    /** @brief Advance the object's state. */
+    /** @brief Show the popup while the loader reports a BB Unit error, and remove it once the error clears. */
     virtual void update();
-    /** @brief Store the byte at offset 0x18. @param value Byte to store. */
-    virtual void func_001E0250(u8 value);
-    u8 unk14[4];
-    u8 unk18;
+    /** @brief Turn the popup on or off. @param value Nonzero to allow the popup. */
+    virtual void set_enabled(u8 value);
+    /** Program whose message bank the popup uses. */
+    class BootProgram* program;
+    u8 enabled;
     u8 unk19[3];
-    BootClass178660* unk1C;
-    BootClass170E90* unk20;
-    BootClass170E90* unk24;
+    BootClass178660* container;
+    BootClass170E90* text;
+    /** Frame behind the text. */
+    BootClass170E90* panel;
 };
 
 /** Message keys in boot's English message bank (resource 38, block 0). */
 enum BootMessage
 {
+    BOOT_MSG_PROGRESSIVE_OFFER = 0x1,
+    BOOT_MSG_PROGRESSIVE_WIDE_STARTED = 0x2,
+    BOOT_MSG_PROGRESSIVE_NORMAL_STARTED = 0x7,
+    BOOT_MSG_UNIT_NOT_INITIALIZED = 0x8,
+    /** First of the descriptions for each page's options; see BootNewGameSettings::get_value_message. */
+    BOOT_MSG_TV_NORMAL = 0xA,
+    BOOT_MSG_SOUND_MONO = 0xC,
+    BOOT_MSG_SPEAKER_SETUP = 0xF,
+    BOOT_MSG_EVENT_SKIP_ON = 0x10,
+    BOOT_MSG_VOICE_SUBTITLES_AND_SOUND = 0x12,
+    BOOT_MSG_VIBRATION_ON = 0x15,
+    BOOT_MSG_DIFFICULTY_EARTH = 0x17,
+    BOOT_MSG_UNIVERSE_UNLOCKED = 0x1A,
+    BOOT_MSG_SOUND_HEADPHONES = 0x1B,
+    BOOT_MSG_VOICE_AUTO = 0x1C,
     BOOT_MSG_INSTALL_CONFIRM = 0x1E,
     BOOT_MSG_OVERWRITE_CONFIRM = 0x1F,
     BOOT_MSG_NOT_ENOUGH_SPACE = 0x20,
@@ -931,7 +1126,22 @@ enum BootMessage
     BOOT_MSG_ABORT_CONFIRM = 0x25,
     BOOT_MSG_INSTALL_COMPLETE = 0x26,
     /** First of the eight battle-system tips shown while installing. */
-    BOOT_MSG_FIRST_TIP = 0x28
+    BOOT_MSG_FIRST_TIP = 0x28,
+    BOOT_MSG_UNIT_FIX = 0x32,
+    BOOT_MSG_UNIT_DATA_DELETED = 0x33,
+    BOOT_MSG_FOURTH_DIMENSION_LOCKED = 0x50,
+    BOOT_MSG_FOURTH_DIMENSION = 0x51,
+    /** The memory card free-space warnings shown at startup. */
+    BOOT_MSG_NO_CARD = 0x7D0,
+    BOOT_MSG_SLOT1_FULL = 0x7D1,
+    BOOT_MSG_SLOT2_FULL = 0x7D2,
+    BOOT_MSG_BOTH_SLOTS_FULL = 0x7D3,
+    BOOT_MSG_SLOT1_NO_TROPHY_SPACE = 0x7D5,
+    BOOT_MSG_SLOT2_NO_TROPHY_SPACE = 0x7D6,
+    BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE = 0x7D7,
+    BOOT_MSG_SLOT1_NO_SAVE_SPACE = 0x7D8,
+    BOOT_MSG_SLOT2_NO_SAVE_SPACE = 0x7D9,
+    BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE = 0x7DA
 };
 
 /** Resources the installer loads. */
@@ -1018,10 +1228,20 @@ public:
 };
 
 /** Partial boot globals; the first word is the object whose byte at offset 0x18 the boot object sets. */
+/** Partial loaded program image; the offset locates the copy of the main executable's code. */
+struct BootProgramImage
+{
+    u8 unk00[0x38];
+    u32 code_offset;
+};
+
 typedef struct BootGlobals205E38
 {
-    BootClass171070* unk00;
-    u8 unk04[0x18];
+    BootUnitErrorPopup* unk00;
+    u8 unk04[0x10];
+    u8 unk14;
+    u8 unk15[3];
+    BootProgramImage* image;
 } BootGlobals205E38;
 
 extern "C" BootGlobals205E38 D_205E38;

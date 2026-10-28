@@ -72,17 +72,58 @@ segments:
           - {function: update__13BootInstallerFv, offset: 0x0, size: 0x80}
         linker_section_order: .rodata
       - [0x28600, rodatabin, data_00205980]
+      - start: 0x28610
+        type: .rodata
+        name: text_001E0900
+        linker_section: .rodata.00205990
+        rodata_anchors:
+          - {function: update__20BootBattleTrophyCardFv, offset: 0x0, size: 0x24}
+        linker_section_order: .rodata
+      - [0x28634, pad, rodata_pad_002059B4]
+      - start: 0x28640
+        type: .rodata
+        name: text_001E0900
+        linker_section: .rodata.002059C0
+        rodata_anchors:
+          - {function: update__17BootStartupChecksFv, offset: 0x0, size: 0x20}
+        linker_section_order: .rodata
+      - [0x28660, rodatabin, data_002059E0]
+      - start: 0x28670
+        type: .rodata
+        name: text_001E0900
+        linker_section: .rodata.002059F0
+        rodata_anchors:
+          - {function: place_girl__19BootNewGameSettingsFv, table: 1, offset: 0x0, size: 0x18}
+          - {function: place_girl__19BootNewGameSettingsFv, table: 0, offset: 0x20, size: 0x18}
+        linker_section_order: .rodata
+      - [0x286A8, rodatabin, data_00205A28]
       - start: 0x28700
         type: .rodata
         name: text_001E0900
         linker_section: .rodata.00205A80
         rodata_anchors:
-          - {function: func_001E4B50__15BootClass170EF0Fv, offset: 0x0, size: 0x18}
-          - {function: func_001E4CE0__15BootClass170EF0Fv, offset: 0x20, size: 0x18}
-          - {function: func_001E5090__15BootClass170EF0Fv, offset: 0x40, size: 0x18}
+          - {function: load_option_value__19BootNewGameSettingsFv, offset: 0x0, size: 0x18}
+          - {function: apply_option_value__19BootNewGameSettingsFv, offset: 0x20, size: 0x18}
+          - {function: get_value_message__19BootNewGameSettingsFv, offset: 0x40, size: 0x18}
         linker_section_order: .rodata
       - [0x28758, pad, rodata_pad_00205AD8]
-      - [0x28760, rodatabin, data_00205AE0]
+      - start: 0x28760
+        type: .rodata
+        name: text_001E0900
+        linker_section: .rodata.00205AE0
+        rodata_anchors:
+          - {function: update_option_rows__19BootNewGameSettingsFv, offset: 0x0, size: 0x18}
+        linker_section_order: .rodata
+      - [0x28778, rodatabin, data_00205AF8]
+      - start: 0x287B0
+        type: .rodata
+        name: text_001E0900
+        linker_section: .rodata.00205B30
+        rodata_anchors:
+          - {function: update__19BootNewGameSettingsFv, table: 1, offset: 0x0, size: 0x20}
+          - {function: update__19BootNewGameSettingsFv, table: 0, offset: 0x20, size: 0x30}
+        linker_section_order: .rodata
+      - [0x28800, rodatabin, data_00205B80]
   - name: init
     type: code
     start: 0x28980

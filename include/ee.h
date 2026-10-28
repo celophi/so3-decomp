@@ -18,7 +18,7 @@
 static inline float ee_max(float left, float right)
 {
     float result;
-    asm("max.s %0, %1, %2" : "=f"(result) : "f"(left), "f"(right));
+    asm __volatile__("max.s %0, %1, %2" : "=f"(result) : "f"(left), "f"(right));
     return result;
 }
 
@@ -36,6 +36,26 @@ static inline float ee_min(float left, float right)
     asm __volatile__("min.s %0, %1, %2" : "=f"(result) : "f"(left), "f"(right));
     return result;
 }
+
+#ifdef __cplusplus
+/**
+ * @brief Return the EE scalar maximum of a value and a float read in place.
+ *
+ * The same max.s as ee_max, but the second operand is read through the
+ * reference rather than copied into a parameter.
+ * @param left First operand.
+ * @param right Second operand, usually a field.
+ * @return Maximum produced by the EE scalar instruction.
+ * @see Silent Hill 2/3 (CodeWarrior) has the same one-instruction float_max
+ *      (https://github.com/dreamingmoths/memory-of-alessa, include/math.h).
+ */
+static inline float ee_max_in_place(float left, const float& right)
+{
+    float result;
+    asm __volatile__("max.s %0, %1, %2" : "=f"(result) : "f"(left), "f"(right));
+    return result;
+}
+#endif
 
 /**
  * @brief Request cache prefetch for the supplied address.

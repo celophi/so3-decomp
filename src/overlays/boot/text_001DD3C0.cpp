@@ -68,7 +68,7 @@ static inline float menu_cursor_x(u8 selection)
 /** @brief Queue a screen fade on the resident manager list. */
 static inline void queue_fade()
 {
-    BootClass171C00* fade = new (0) BootClass171C00(D_205E10.unk04);
+    BootClass171C00* fade = new (0) BootClass171C00(g_boot_program.display);
     fade->unkd0 = 2.0f;
     D_001B661C->append_node(fade, -1);
 }
@@ -335,8 +335,8 @@ void BootInstaller::update()
     float x;
     s32 remaining;
     s32 percent;
-    BootClass171030* input;
-    input = D_205E10.input;
+    BootInput* input;
+    input = g_boot_program.input;
     resource = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
     switch (step)
     {
@@ -347,13 +347,13 @@ void BootInstaller::update()
             func_103E70(D_001B65E8, BOOT_RES_SYSTEM_FILES, system_file_data, 1, 0x34BC0, 0, 0, 0, 1);
             func_103E70(D_001B65E8, BOOT_RES_NAVIGATOR_FILES, navigator_file_data, 1, 0x34BC0, 0, 0, 0, 1);
             func_103E70(D_001B65E8, BOOT_RES_TIP_IMAGES, tip_image_data, 1, 0x34BC0, 0, 0, 0, 1);
-            func_4DF6E0(D_205E10.unk04, 0x49, 0x47, 0x9D, 0x7F);
+            func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             screen_images_loaded = 0;
             step++;
-            container = new (0) BootClass178660(0.0f, 0.0f, 0.0f);
+            container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
             func_465B20(D_001B657C, container);
-            message_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_INSTALL_CONFIRM, 48.0f, 88.0f, 512.0f, 224.0f);
+            message_text = new (0) BootClass178750(g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 1, 48.0f, 88.0f, 512.0f, 224.0f);
             message_text->set_color(0x34130F);
             lib_container_attach_widget(container, message_text);
             x = menu_cursor_x(selection);
@@ -372,7 +372,7 @@ void BootInstaller::update()
         }
         break;
     case 2:
-        lib_text_set_resource(message_text, D_205E10.messages, BOOT_MSG_INSTALL_CONFIRM, 0);
+        lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 0);
         selection = 0;
         no_step = 4;
         yes_step = 5;
@@ -392,7 +392,7 @@ void BootInstaller::update()
         break;
     case 3:
         menu_frames++;
-        if ((input->unk1C & 0xA0) && cursor->unk35)
+        if ((input->repeated & 0xA0) && cursor->unk35)
         {
             selection = (selection + 1) & 1;
             choice_growing = 0;
@@ -401,7 +401,7 @@ void BootInstaller::update()
             choice_growing = 0;
             func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
         }
-        if (input->unk18 & resource->unk00)
+        if (input->pressed & resource->unk00)
         {
             func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
@@ -414,7 +414,7 @@ void BootInstaller::update()
                 step = no_step;
             }
         }
-        else if (input->unk18 & resource->unk02)
+        else if (input->pressed & resource->unk02)
         {
             func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
@@ -432,7 +432,7 @@ void BootInstaller::update()
         }
         else if (func_102AA0(D_001B65E8) == 0 && D_001B65E4->unk12183 == 0)
         {
-            func_4DF6E0(D_205E10.unk04, 0, 0, 0, 0x7F);
+            func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
             for (s32 i = 0; i < 20; i++)
             {
                 if (images[i] != 0)
@@ -532,7 +532,7 @@ void BootInstaller::update()
         }
         break;
     case 10:
-        lib_text_set_resource(message_text, D_205E10.messages, BOOT_MSG_OVERWRITE_CONFIRM, 0);
+        lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_OVERWRITE_CONFIRM, 0);
         yes_step = 0xB;
         no_step = 2;
         step = 3;
@@ -576,7 +576,7 @@ void BootInstaller::update()
     }
     case 14:
         D_001B657C->message_value = func_115840(D_001B65E4) >> 11;
-        lib_text_set_resource(message_text, D_205E10.messages, BOOT_MSG_NOT_ENOUGH_SPACE, 0);
+        lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_NOT_ENOUGH_SPACE, 0);
         step = 0x15;
         break;
     case 15:
@@ -589,11 +589,11 @@ void BootInstaller::update()
     case 16:
     {
         s32 sizes[3];
-        lib_text_set_resource(message_text, D_205E10.messages, BOOT_MSG_INSTALLING, 0);
+        lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
         icon_header = func_139700(0x40, 0x200);
         progress_bar = new (0) BootProgressBar;
         func_001F8720(progress_bar, 0xF0, 0x18, 0x80FFFFFF, 0);
-        tip_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_FIRST_TIP, 328.0f, 180.0f, 320.0f, 224.0f);
+        tip_text = new (0) BootClass178750(g_boot_program.messages, BOOT_MSG_FIRST_TIP, 1, 328.0f, 180.0f, 320.0f, 224.0f);
         tip_text->set_color(0x34130F);
         lib_container_attach_widget(container, tip_text);
         show_tip_image(0);
@@ -603,13 +603,13 @@ void BootInstaller::update()
         if (resource->widescreen)
         {
             progress_bar->unk18->func_001E0520(-366.0f, 180.0f, 0.0f);
-            progress_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_PERCENT, 240.0f, 438.0f, 512.0f, 32.0f);
+            progress_text = new (0) BootClass178750(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 240.0f, 438.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
         else
         {
             progress_bar->unk18->func_001E0520(-280.0f, 180.0f, 0.0f);
-            progress_text = new (0) BootClass178750(D_205E10.messages, BOOT_MSG_PERCENT, 290.0f, 432.0f, 512.0f, 32.0f);
+            progress_text = new (0) BootClass178750(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 290.0f, 432.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
         lib_container_attach_widget(container, progress_text);
@@ -693,18 +693,18 @@ void BootInstaller::update()
             remaining = func_115660(D_001B65E4);
             percent = 99 - remaining * 99 / install_total;
             D_001B657C->message_value = percent;
-            lib_text_set_resource(progress_text, D_205E10.messages, BOOT_MSG_PERCENT, 0);
+            lib_text_set_resource(progress_text, g_boot_program.messages, BOOT_MSG_PERCENT, 0);
             if (percent >= next_tip_percent && tip_index < 8)
             {
                 show_tip_image(tip_index);
-                lib_text_set_resource(tip_text, D_205E10.messages, tip_index + BOOT_MSG_FIRST_TIP, 0);
+                lib_text_set_resource(tip_text, g_boot_program.messages, tip_index + BOOT_MSG_FIRST_TIP, 0);
                 tip_index++;
                 next_tip_percent = tip_index * 100 / 8;
             }
             func_001F79A0(progress_bar, install_total - remaining, install_total);
-            if (input->unk18 & resource->unk02)
+            if (input->pressed & resource->unk02)
             {
-                lib_text_set_resource(message_text, D_205E10.messages, BOOT_MSG_ABORT_CONFIRM, 0);
+                lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_ABORT_CONFIRM, 0);
                 func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
                 queue_fade();
                 D_001B65E4->unk13b = 1;
@@ -723,7 +723,7 @@ void BootInstaller::update()
         break;
     case 23:
         D_001B657C->message_value = 100;
-        lib_text_set_resource(progress_text, D_205E10.messages, BOOT_MSG_PERCENT, 0);
+        lib_text_set_resource(progress_text, g_boot_program.messages, BOOT_MSG_PERCENT, 0);
         func_001F79A0(progress_bar, 100, 100);
         func_1156B0(D_001B65E4, 0);
         if (install_buffer != 0)
@@ -743,7 +743,7 @@ void BootInstaller::update()
         }
         break;
     case 25:
-        lib_text_set_resource(message_text, D_205E10.messages, BOOT_MSG_INSTALL_COMPLETE, 0);
+        lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALL_COMPLETE, 0);
         tip_text->unk3f = 0;
         tip_image->unk18->unk6a |= 1;
         step = 0x15;
@@ -762,17 +762,17 @@ void BootInstaller::update()
                 tip_image->destroy();
                 tip_image = 0;
             }
-            lib_text_set_resource(message_text, D_205E10.messages, BOOT_MSG_UNIT_ERROR, 0);
+            lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_UNIT_ERROR, 0);
             func_115420(D_001B65E4);
         }
         else
         {
-            lib_text_set_resource(message_text, D_205E10.messages, BOOT_MSG_ERROR, 0);
+            lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_ERROR, 0);
         }
         step = 0x15;
         break;
     case 21:
-        if (input->unk18 & resource->unk00)
+        if (input->pressed & resource->unk00)
         {
             func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
@@ -781,7 +781,7 @@ void BootInstaller::update()
         break;
     case 22:
         func_10F000(D_001B65F8, 0, -1);
-        func_4DF6E0(D_205E10.unk04, 0, 0, 0, 0x7F);
+        func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
         for (s32 i = 0; i < 20; i++)
         {
             if (images[i] != 0)
@@ -835,7 +835,7 @@ void BootInstaller::update()
     case 26:
         tip_text->unk3f = 1;
         tip_image->unk18->unk6a &= ~1;
-        lib_text_set_resource(message_text, D_205E10.messages, BOOT_MSG_INSTALLING, 0);
+        lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
         D_001B65E4->unk13b = 0;
         step = 0x13;
         break;
@@ -1044,13 +1044,13 @@ BootInstaller::~BootInstaller()
     delete navigator_file_buffers[2];
     func_10F000(D_001B65F8, 0, -1);
     delete sound_data;
-    D_205E38.unk00->func_001E0250(1);
+    D_205E38.unk00->set_enabled(1);
 }
 
-/** @brief Store the byte at offset 0x18. @param value Byte to store. */
-void BootClass171070::func_001E0250(u8 value)
+/** @brief Turn the popup on or off. @param value Nonzero to allow the popup. */
+void BootUnitErrorPopup::set_enabled(u8 value)
 {
-    unk18 = value;
+    enabled = value;
 }
 
 /** @brief Allocate the boot buffers and clear the owned objects. */
@@ -1080,7 +1080,7 @@ BootInstaller::BootInstaller()
     cursor = 0;
     sound_started = 0;
     exiting = 0;
-    D_205E38.unk00->func_001E0250(0);
+    D_205E38.unk00->set_enabled(0);
     tip_image_buffer = 0;
     system_file_buffers[0] = 0;
     system_file_buffers[1] = 0;
