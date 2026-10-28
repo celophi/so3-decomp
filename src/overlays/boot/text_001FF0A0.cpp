@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/boot/text_001FF0A0.h"
+#include "overlays/boot/text_001FF9E0.h"
 #include "main/resident_001001E0.h"
 
 extern "C" {
@@ -7,12 +8,6 @@ extern void* D_001B65F4;
 s32 func_10CAA0(s32 upper);
 void func_11EE00(void* queue, void* allocation);
 }
-
-typedef struct FieldU8At060
-{
-    u8 pad[0x60];
-    u8 value;
-} FieldU8At060;
 
 /** @brief Destroy every owned object and release the per-trophy allocations. */
 void BootBattleTrophyViewer::release()
@@ -327,7 +322,8 @@ BootBattleTrophyViewer::BootBattleTrophyViewer()
     unk80 = 0;
 }
 
-void func_001FF9D0(void* object)
+/** @brief Clear the byte at offset 0x60. */
+void BootNeedleMeter::func_001E0860()
 {
-    ((FieldU8At060*)object)->value = 0;
+    unk60 = 0;
 }

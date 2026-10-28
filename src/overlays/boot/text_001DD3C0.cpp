@@ -938,48 +938,7 @@ BootClass178A70::~BootClass178A70()
 {
 }
 
-/** @brief Store the halfword at offset 0x6A. @param value Value to store. */
-void BootClass178A90::func_001DFE30(u16 value)
-{
-    unk6a = value;
-}
-
-/** @brief Store the halfword at offset 0x6C. @param value Value to store. */
-void BootClass178A90::func_001DFE40(u16 value)
-{
-    unk6c = value;
-}
-
-/** @brief Clear all four words. */
-BootWordQuad::BootWordQuad()
-{
-    unk0c = 0;
-    unk08 = 0;
-    unk04 = 0;
-    unk00 = 0;
-}
-
-/** @brief Install the interface's vtable. */
-BootClass170D50::BootClass170D50()
-{
-}
-
-/** @brief Initialize the owner's state bytes and tracking words. */
-BootClass178A90::BootClass178A90()
-{
-    unk60 = 0;
-    unk61 = 0;
-    unk63 = 0;
-    unk66 = 0;
-    unk68 = 0;
-    unk69 = 0;
-    unk6a = 0x10;
-    unk6c = 1;
-    unk80 = 0;
-    unk88 = 0;
-    unk8c = 0;
-    unk0f = 2;
-}
+#include "overlays/boot/transform_inlines.h"
 
 /** @brief Release the owned objects and buffers. */
 BootInstaller::~BootInstaller()
