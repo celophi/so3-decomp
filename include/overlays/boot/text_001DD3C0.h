@@ -1227,7 +1227,6 @@ public:
     BootClass175070* cursor;
 };
 
-/** Partial boot globals; the first word is the object whose byte at offset 0x18 the boot object sets. */
 /** Partial loaded program image; the offset locates the copy of the main executable's code. */
 struct BootProgramImage
 {
@@ -1235,16 +1234,6 @@ struct BootProgramImage
     u32 code_offset;
 };
 
-typedef struct BootGlobals205E38
-{
-    BootUnitErrorPopup* unk00;
-    u8 unk04[0x10];
-    u8 unk14;
-    u8 unk15[3];
-    BootProgramImage* image;
-} BootGlobals205E38;
-
-extern "C" BootGlobals205E38 D_205E38;
 #endif
 
 #endif

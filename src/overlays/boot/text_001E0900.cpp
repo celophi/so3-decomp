@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/boot/text_001E0900.h"
+#include "overlays/boot/init.h"
 #include "main/resident_001001E0.h"
 #include "main/resident_0010A0E0.h"
 #include "main/resident_00101550.h"
@@ -1396,7 +1397,7 @@ static inline void check_main_code()
 {
     // Uncached cursor; the code it checks starts 0x400000 bytes (0x80000 words) below it.
     u64* code = (u64*)(0x20000000 | 0x500000);
-    u64* copy = (u64*)(D_205E38.image->code_offset + (u32)D_205E38.image);
+    u64* copy = (u64*)(g_boot_program.image->code_offset + (u32)g_boot_program.image);
     s32 index;
 
     for (index = 0; index < 0x8760; index++, code++, copy++)
@@ -1950,7 +1951,7 @@ void BootStartupChecks::update()
                         container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
                         func_465B20(D_001B657C, container);
                     }
-                    else if (D_205E38.unk14 != 0)
+                    else if (g_boot_program.unit_data_deleted != 0)
                     {
                         step = 3;
                         container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
@@ -4838,10 +4839,10 @@ void BootProgram::run()
     unk2C = 0;
     exit_code = 0;
     error_popup = 0;
-    unk40 = 0;
+    image = 0;
     messages = 0;
     captions = 0;
-    unk3C = 0;
+    unit_data_deleted = 0;
 
     buffer = new (0) u8[func_10CE00() + 0x40];
     size = func_11C8C0(func_1012C0(func_10D8E0()), 3);
@@ -4851,8 +4852,8 @@ void BootProgram::run()
         size = 0x50000;
     }
 
-    unk40 = func_139700(0x40, size);
-    func_103E70(func_101250(func_10D8E0()), 3, unk40, 1, 0x34BC0, 0, size, 0, 1);
+    image = (BootProgramImage*)func_139700(0x40, size);
+    func_103E70(func_101250(func_10D8E0()), 3, image, 1, 0x34BC0, 0, size, 0, 1);
     delete[] buffer;
 
     saved_widescreen = 0xFF;
@@ -4992,8 +4993,8 @@ void BootProgram::release_resources()
     func_001EE0C0(D_001B6678);
     func_001EE5C0(D_001B667C);
     func_001EEAE0(D_001B6680);
-    delete unk40;
-    unk40 = 0;
+    delete image;
+    image = 0;
 
     if (error_popup != 0)
     {
@@ -5062,7 +5063,7 @@ BootProgram::~BootProgram()
     delete message_block;
     delete caption_block;
     delete image_block;
-    delete unk40;
+    delete image;
 }
 
 /** @brief Destroy the object. */

@@ -1175,13 +1175,6 @@ s32 func_001F5B60(void* object);
 void func_001F5BA0(void* object);
 
 /**
- * @brief Return the fixed value 4.
- * @param object Receiver or first argument; unused.
- * @return Always 4.
- */
-s32 func_001FB220(void* object);
-
-/**
  * @brief Return the 32-bit word at offset 0x40.
  * @param object Object containing the value.
  * @return The stored value.

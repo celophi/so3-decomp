@@ -729,6 +729,25 @@ struct BootInputRoot9670;
 class BootProgram : public BootResidentProgram
 {
     public:
+        /** @brief Register the program and start with nothing loaded or created. */
+        BootProgram()
+        {
+            projection = 0;
+            input = 0;
+            message_block = 0;
+            display = 0;
+            image_block = 0;
+            trophy_card = 0;
+            caption_block = 0;
+            unk2C = 0;
+            exit_code = 0;
+            error_popup = 0;
+            image = 0;
+            messages = 0;
+            captions = 0;
+            unit_data_deleted = 0;
+        }
+
         /** @brief Run the boot program. */
         virtual void run();
 
@@ -785,7 +804,7 @@ class BootProgram : public BootResidentProgram
         u8* image_block;
 
         BootBattleTrophyCard* trophy_card;
-        BootClass170E90* error_popup;
+        BootUnitErrorPopup* error_popup;
         s32 unk2C;
 
         /** Nonzero once the boot program should end; passed on to the resident runtime. */
@@ -799,9 +818,11 @@ class BootProgram : public BootResidentProgram
         /** Frame counter. */
         s32 frame;
 
-        u8 unk3C;
+        /** Nonzero when damaged game data on the PlayStation BB Unit was deleted. */
+        u8 unit_data_deleted;
         u8 unk3D[3];
-        u8* unk40;
+        /** Resource 3: the program image, holding a copy of the main executable's code. */
+        BootProgramImage* image;
 };
 
 /** Partial resident object D_001B6658 that holds the current display. */
@@ -1286,7 +1307,6 @@ s32 func_001ED200(BootTrackPool<BootClass177C70>* pool, s32 count);
 }
 
 extern "C" {
-extern BootProgram g_boot_program;
 extern BootInputRoot9670* D_001B65F0;
 u16 func_11E010(BootInputRoot9670* root, s32 slot);
 u16 func_11DFF0(BootInputRoot9670* root, s32 slot);

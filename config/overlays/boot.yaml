@@ -58,7 +58,7 @@ segments:
       - [0x80, cpp, text_001DD3C0]
       - [0x3580, cpp, text_001E0900]
       - [0x10160, cpp, text_001ED4E0]
-      - [0x21D20, c, text_001FF0A0]
+      - [0x21D20, cpp, text_001FF0A0]
       - [0x22660, cpp, text_001FF9E0]
       - [0x27D50, c, text_002050D0]
       # Linker padding: the data section starts on a 128-byte boundary.
@@ -129,6 +129,7 @@ segments:
     start: 0x28980
     vram: 0x205d00
     subsegments:
-      - [0x28980, c, init]
-  - [0x28a40, bin, init_table]
+      - {start: 0x28980, type: cpp, name: init, linker_section: .init}
+      - {start: 0x28A40, type: .data, name: init, linker_section: .ctor}
+      - [0x28A44, pad, init_table_pad]
   - [0x28a80]
