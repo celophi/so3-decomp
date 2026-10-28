@@ -740,7 +740,7 @@ class BootProgram : public BootResidentProgram
             trophy_card = 0;
             caption_block = 0;
             unk2C = 0;
-            exit_code = 0;
+            next_program = 0;
             error_popup = 0;
             image = 0;
             messages = 0;
@@ -807,8 +807,8 @@ class BootProgram : public BootResidentProgram
         BootUnitErrorPopup* error_popup;
         s32 unk2C;
 
-        /** Nonzero once the boot program should end; passed on to the resident runtime. */
-        s32 exit_code;
+        /** Program to run next, set when the boot program should end; passed on to the resident runtime. */
+        u8* next_program;
 
         /** Widescreen setting kept across the display reset, or 0xFF when there were no saved settings. */
         u8 saved_widescreen;
@@ -897,89 +897,89 @@ struct BootSequenceTail
 /** Fixed pool of tracks with a bitmap of used slots. */
 template <class T> struct BootTrackPool
 {
-    /**
-     * @brief Allocate the tracks, mark them pooled and clear the used bitmap.
-     * @param count Number of tracks.
-     * @return One on success, or zero when the tracks could not be allocated.
-     */
-    s32 init(s32 count)
-    {
-        s32 index;
-        s32 word_count;
-        s32 word;
-        items = new (0) T[count];
-
-        if (items == 0)
+        /**
+         * @brief Allocate the tracks, mark them pooled and clear the used bitmap.
+         * @param count Number of tracks.
+         * @return One on success, or zero when the tracks could not be allocated.
+         */
+        s32 init(s32 count)
         {
-            return 0;
+            s32 index;
+            s32 word_count;
+            s32 word;
+            items = new (0) T[count];
+
+            if (items == 0)
+            {
+                return 0;
+            }
+
+            for (index = 0; index < count; index++)
+            {
+                items[index].state.pooled = true;
+            }
+
+            if (!external)
+            {
+                delete[] used;
+            }
+
+            capacity = count;
+            words = (u32)(count + 63) >> 6;
+            used = new (0) u64[words];
+            external = false;
+            this->count = count;
+            unk04 = 0;
+            word_count = words;
+
+            for (word = 0; word < word_count; word++)
+            {
+                used[word] = 0;
+            }
+
+            return 1;
         }
 
-        for (index = 0; index < count; index++)
+        /**
+         * @brief Mark a track's pool slot as free.
+         * @param track Track to release.
+         */
+        void free(T* track)
         {
-            items[index].state.pooled = true;
+            u32 index = ((u32)track - (u32)items) / ((u32)&items[1] - (u32)items);
+            used[index >> 6] &= ~((u64)1 << (index & 0x3F));
         }
 
-        if (!external)
+        /** @brief Release every track in the pool and its storage. */
+        void release()
         {
-            delete[] used;
+            s32 track_count = count;
+            s32 index;
+
+            for (index = 0; index < track_count; index++)
+            {
+                items[index].state.pooled = false;
+            }
+
+            delete[] items;
+
+            if (!external)
+            {
+                delete[] used;
+                used = 0;
+            }
+
+            items = 0;
+            count = 0;
         }
 
-        capacity = count;
-        words = (u32)(count + 63) >> 6;
-        used = new (0) u64[words];
-        external = false;
-        this->count = count;
-        unk04 = 0;
-        word_count = words;
-
-        for (word = 0; word < word_count; word++)
-        {
-            used[word] = 0;
-        }
-
-        return 1;
-    }
-
-    /**
-     * @brief Mark a track's pool slot as free.
-     * @param track Track to release.
-     */
-    void free(T* track)
-    {
-        u32 index = ((u32)track - (u32)items) / ((u32)&items[1] - (u32)items);
-        used[index >> 6] &= ~((u64)1 << (index & 0x3F));
-    }
-
-    /** @brief Release every track in the pool and its storage. */
-    void release()
-    {
-        s32 track_count = count;
-        s32 index;
-
-        for (index = 0; index < track_count; index++)
-        {
-            items[index].state.pooled = false;
-        }
-
-        delete[] items;
-
-        if (!external)
-        {
-            delete[] used;
-            used = 0;
-        }
-
-        items = 0;
-        count = 0;
-    }
-
-    s32 count;
-    s32 unk04;
-    T* items;
-    s32 capacity;
-    s32 words;
-    u64* used;
-    bool external;
+        s32 count;
+        s32 unk04;
+        T* items;
+        s32 capacity;
+        s32 words;
+        u64* used;
+        bool external;
 };
 
 /** Track record with vtable D_171B00 in main data; its data comes before the vptr. */
@@ -1301,10 +1301,12 @@ class BootClass171560 : public BootClass1717A0
         /** @brief Append a keyframe. @param value Keyframe value. @param key Sort key. @return Nonzero when the keyframe was stored. */
         virtual s32 func_001F26D0(const float* value, float key);
 
-        /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the keyframe was stored. */
+        /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the keyframe
+         * was stored. */
         virtual s32 func_001F2690(s32 index, float key, const float* value);
 
-        /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the keyframe was stored. */
+        /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the
+         * keyframe was stored. */
         virtual s32 func_001F2650(s32 index, float key, const float* value);
 
         /** @brief Store a single keyframe. @param value Keyframe value. @param key Sort key. */
@@ -1385,13 +1387,16 @@ class BootClass171830 : public BootClass171170
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Replacement status. */
+        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Replacement
+         * status. */
         virtual s32 func_001F2820(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Insertion status. */
+        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Insertion status.
+         */
         virtual s32 func_001F27E0(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
+         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
         virtual s32 func_001EED60(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
         /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param key Sort key. */
@@ -1556,13 +1561,16 @@ class BootClass1718C0 : public BootClass171170
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Replacement status. */
+        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Replacement
+         * status. */
         virtual s32 func_001F2BE0(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Insertion status. */
+        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Insertion status.
+         */
         virtual s32 func_001F2BA0(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
+         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
         virtual s32 func_001EED60(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
         /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param key Sort key. */
@@ -1709,46 +1717,56 @@ class BootClass171950 : public BootClass171170
         /** @brief Replace the entry array with count new entries. @param count Number of entries. */
         virtual void func_001F1210(s32 count);
 
-        /** @brief Install an entry array, set both counts, mark the array as installed and cache its span. @param count Number of entries; must be at least one. @param entries Entry array to install. */
+        /** @brief Install an entry array, set both counts, mark the array as installed and cache its span. @param count Number of entries; must be at least
+         * one. @param entries Entry array to install. */
         virtual void func_001F2F70(s32 count, void* entries);
 
-        /** @brief Store the low nibble at offset 0x2A, then set flag bit 0 at offset 0x2B when either nibble is 4. @param value Value whose low four bits are stored. */
+        /** @brief Store the low nibble at offset 0x2A, then set flag bit 0 at offset 0x2B when either nibble is 4. @param value Value whose low four bits are
+         * stored. */
         virtual void func_001F12B0(s32 value);
 
-        /** @brief Store the high nibble at offset 0x2A, then set flag bit 0 at offset 0x2B when either nibble is 4. @param value Value whose low four bits are stored. */
+        /** @brief Store the high nibble at offset 0x2A, then set flag bit 0 at offset 0x2B when either nibble is 4. @param value Value whose low four bits are
+         * stored. */
         virtual void func_001F1310(s32 value);
 
         /** @brief Read the signed cycle count at offset 0x18. @return The stored count. */
         virtual s32 func_001F1370() const;
 
-        /** @brief Append an entry through slot 24. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @param key Sort value. @return The result of slot 24. */
+        /** @brief Append an entry through slot 24. @param x First component, or null. @param y Second component, or null. @param z Third component, or null.
+         * @param key Sort value. @return The result of slot 24. */
         virtual s32 func_001F4FD0(const float* x, const float* y, const float* z, float key);
 
         /** @brief Default virtual handler that performs no work. */
         virtual void func_001EECA0();
 
-        /** @brief Set an entry through slot 25. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @return The result of slot 25. */
+        /** @brief Set an entry through slot 25. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second component,
+         * or null. @param z Third component, or null. @return The result of slot 25. */
         virtual s32 func_001F5000(s32 index, float key, const float* x, const float* y, const float* z);
 
-        /** @brief Insert an entry through slot 26. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @return The result of slot 26. */
+        /** @brief Insert an entry through slot 26. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second
+         * component, or null. @param z Third component, or null. @return The result of slot 26. */
         virtual s32 func_001F5030(s32 index, float key, const float* x, const float* y, const float* z);
 
-        /** @brief Default entry reader that returns zero. @param index Entry index. @param key Receives the sort value, or null. @param x Receives the first component, or null. @param y Receives the second component, or null. @param z Receives the third component, or null. @return Always 0. */
+        /** @brief Default entry reader that returns zero. @param index Entry index. @param key Receives the sort value, or null. @param x Receives the first
+         * component, or null. @param y Receives the second component, or null. @param z Receives the third component, or null. @return Always 0. */
         virtual s32 func_001EED60(s32 index, float* key, float* x, float* y, float* z) const;
 
-        /** @brief Add an entry through slot 27. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @param key Sort value. */
+        /** @brief Add an entry through slot 27. @param x First component, or null. @param y Second component, or null. @param z Third component, or null.
+         * @param key Sort value. */
         virtual void func_001F5060(const float* x, const float* y, const float* z, float key);
 
         /** @brief Default virtual handler that performs no work. */
         virtual void func_001EED80();
 
-        /** @brief Test whether an entry has exactly the given sort value. @param key Sort value to find. @return 1 when a matching entry exists, otherwise 0. */
+        /** @brief Test whether an entry has exactly the given sort value. @param key Sort value to find. @return 1 when a matching entry exists, otherwise 0.
+         */
         virtual s32 func_001F2F20(float key) const;
 
         // Pure virtual slot 0x40; only its position is known.
         virtual void func_slot40(float* output) const = 0;
 
-        /** @brief Wrap a value into the span between the first and last entry sort values. @param value Value to wrap. @return value reduced by a whole number of spans, or value unchanged when that number is zero. */
+        /** @brief Wrap a value into the span between the first and last entry sort values. @param value Value to wrap. @return value reduced by a whole number
+         * of spans, or value unchanged when that number is zero. */
         virtual float func_001F2DE0(float value) const;
 
         // Pure virtual slot 0x48; only its position is known.
@@ -1775,22 +1793,27 @@ class BootClass171950 : public BootClass171170
         /** @brief Read the signed halfword at offset 0x22. @return The stored halfword. */
         virtual s16 func_001F1390() const;
 
-        /** @brief Default append handler. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @param key Sort value. @return Always 0. */
+        /** @brief Default append handler. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @param key
+         * Sort value. @return Always 0. */
         virtual s32 func_001F13A0(const float* x, const float* y, const float* z, float key);
 
-        /** @brief Default set handler. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @return Always 0. */
+        /** @brief Default set handler. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second component, or null.
+         * @param z Third component, or null. @return Always 0. */
         virtual s32 func_001F13B0(s32 index, float key, const float* x, const float* y, const float* z);
 
-        /** @brief Default insert handler. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @return Always 0. */
+        /** @brief Default insert handler. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second component, or
+         * null. @param z Third component, or null. @return Always 0. */
         virtual s32 func_001F13C0(s32 index, float key, const float* x, const float* y, const float* z);
 
-        /** @brief Default add handler. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @param key Sort value. */
+        /** @brief Default add handler. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @param key
+         * Sort value. */
         virtual void func_001F13D0(const float* x, const float* y, const float* z, float key);
 
         /** @brief Report a fixed zero value for this receiver class. @return Always 0.0f. */
         virtual float func_001F13E0() const;
 
-        /** @brief Find the first entry with the requested sort value. @param key Sort value to find. @return The entry's first component, or zero when no entry matches. */
+        /** @brief Find the first entry with the requested sort value. @param key Sort value to find. @return The entry's first component, or zero when no entry
+         * matches. */
         virtual float func_001F2E70(float key);
 
         // Pure virtual slot 0x80; only its position is known.
@@ -1826,13 +1849,16 @@ class BootClass171280 : public BootClass171950
         virtual float func_slot80(float key);
         virtual s32 func_slot84(const float* x, const float* y, const float* z, float key);
 
-        /** @brief Replace an indexed entry. @param index Entry index. @param key Sort value. @param x First component. @param y Second component. @param z Third component. @return One when the entry was stored. */
+        /** @brief Replace an indexed entry. @param index Entry index. @param key Sort value. @param x First component. @param y Second component. @param z
+         * Third component. @return One when the entry was stored. */
         virtual s32 func_001F3FE0(s32 index, float key, const float* x, const float* y, const float* z);
 
-        /** @brief Insert an entry at an index. @param index Entry index. @param key Sort value. @param x First component. @param y Second component. @param z Third component. @return One when the entry was stored. */
+        /** @brief Insert an entry at an index. @param index Entry index. @param key Sort value. @param x First component. @param y Second component. @param z
+         * Third component. @return One when the entry was stored. */
         virtual s32 func_001F3EC0(s32 index, float key, const float* x, const float* y, const float* z);
 
-        /** @brief Store a single entry in the cached entry. @param x First component. @param y Second component. @param z Third component. @param key Sort value. */
+        /** @brief Store a single entry in the cached entry. @param x First component. @param y Second component. @param z Third component. @param key Sort
+         * value. */
         virtual void func_001F3E40(const float* x, const float* y, const float* z, float key);
 
         BootClass171270 unk2C;
@@ -1875,7 +1901,8 @@ class BootClass171B98
          * @param start Start key.
          * @param end End key.
          */
-        virtual void func_001EFDD0(const FieldVec4A* first, const FieldVec4A* second, const FieldVec4A* third, const FieldVec4A* fourth, float start, float end);
+        virtual void func_001EFDD0(const FieldVec4A* first, const FieldVec4A* second, const FieldVec4A* third, const FieldVec4A* fourth, float start,
+                                   float end);
 };
 
 /** 0x50-byte BootClass171B98 with vtable D_1710C0 in main data. */
@@ -1934,22 +1961,27 @@ class BootClass1719E0 : public BootClass171170
         /** @brief Return the stored word at offset 0x40. @return Stored word. */
         virtual s32 func_001F0E20() const;
 
-        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @param key Sort key. @return Append status. */
+        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary
+         * vector. @param key Sort key. @return Append status. */
         virtual s32 func_001F4CD0(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
+        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional
+         * first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
         virtual s32 func_001F4D00(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
+        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first
+         * auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
         virtual s32 func_001F4D30(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
+         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
         virtual s32 func_001EED60(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
-        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @param key Sort key. */
+        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param
+         * second Optional second auxiliary vector. @param key Sort key. */
         virtual void func_001F4D60(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default update hook. */
@@ -2043,13 +2075,16 @@ class BootClass1710D0 : public BootClass1719E0
         virtual FieldVec4A func_slot80(float key) const;
         virtual s32 func_slot84(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first First auxiliary vector. @param second Second auxiliary vector. @return Nonzero when the keyframe was stored. */
+        /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first First auxiliary
+         * vector. @param second Second auxiliary vector. @return Nonzero when the keyframe was stored. */
         virtual s32 func_001EF7D0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first First auxiliary vector. @param second Second auxiliary vector. @return Nonzero when the keyframe was stored. */
+        /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first First auxiliary
+         * vector. @param second Second auxiliary vector. @return Nonzero when the keyframe was stored. */
         virtual s32 func_001F45F0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Store a single keyframe in the cached vectors. @param value Keyframe value. @param first First auxiliary vector. @param second Second auxiliary vector. @param key Key. */
+        /** @brief Store a single keyframe in the cached vectors. @param value Keyframe value. @param first First auxiliary vector. @param second Second
+         * auxiliary vector. @param key Key. */
         virtual void func_001F4560(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         BootClass1710C0 unk60;
@@ -2109,22 +2144,27 @@ class BootClass171A70 : public BootClass171170
         /** @brief Return the stored word at offset 0x30. @return Stored word. */
         virtual s32 func_001F4B20() const;
 
-        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @param key Sort key. @return Append status. */
+        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary
+         * vector. @param key Sort key. @return Append status. */
         virtual s32 func_001F4B60(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
+        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional
+         * first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
         virtual s32 func_001F4BA0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
+        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first
+         * auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
         virtual s32 func_001F4BE0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
+         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
         virtual s32 func_001EED60(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
-        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @param key Sort key. */
+        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param
+         * second Optional second auxiliary vector. @param key Sort key. */
         virtual void func_001F4C20(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default update hook. */
@@ -2246,22 +2286,27 @@ class BootClass171680 : public BootClass171170
         /** @brief Return the stored word at offset 0x40. @return Stored word. */
         virtual s32 func_001F5AB0() const;
 
-        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @param key Sort key. @return Append status. */
+        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary
+         * vector. @param key Sort key. @return Append status. */
         virtual s32 func_001F5AF0(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
+        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional
+         * first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
         virtual s32 func_001F5B30(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
+        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first
+         * auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
         virtual s32 func_001F5B70(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
+         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
         virtual s32 func_001EED60(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
-        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @param key Sort key. */
+        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param
+         * second Optional second auxiliary vector. @param key Sort key. */
         virtual void func_001F5BB0(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default update hook. */
@@ -2394,22 +2439,27 @@ class BootClass171710 : public BootClass171170
         /** @brief Return the stored word at offset 0x10. @return Stored word. */
         virtual s32 func_001F54C0() const;
 
-        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @param key Sort key. @return Append status. */
+        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary
+         * vector. @param key Sort key. @return Append status. */
         virtual s32 func_001F5500(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
+        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional
+         * first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
         virtual s32 func_001F5540(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
+        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first
+         * auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
         virtual s32 func_001F5580(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
+         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
         virtual s32 func_001EED60(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
-        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @param key Sort key. */
+        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param
+         * second Optional second auxiliary vector. @param key Sort key. */
         virtual void func_001F55C0(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default update hook. */

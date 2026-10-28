@@ -1,12 +1,10 @@
 #include "include_asm.h"
 #include "overlays/boot/text_001FF0A0.h"
 #include "overlays/boot/text_001FF9E0.h"
+#include "overlays/boot/resident.h"
 #include "main/resident_001001E0.h"
 
 extern "C" {
-extern void* D_001B65F4;
-s32 func_10CAA0(s32 upper);
-void func_11EE00(void* queue, void* allocation);
 }
 
 /** @brief Destroy every owned object and release the per-trophy allocations. */
@@ -46,10 +44,10 @@ void BootBattleTrophyViewer::release()
         unk98 = 0;
     }
 
-    if (unk9C != 0)
+    if (number_label != 0)
     {
-        unk9C->destroy();
-        unk9C = 0;
+        number_label->destroy();
+        number_label = 0;
     }
 
     if (unkA0 != 0)
@@ -96,24 +94,24 @@ void BootBattleTrophyViewer::release()
 
     for (s32 i = 0; i < 300; i++)
     {
-        if (unk330[i] != 0)
+        if (trophy_images[i] != 0)
         {
-            lib_object_detach_owner(unk330[i]);
-            unk330[i]->destroy();
-            unk330[i] = 0;
+            lib_object_detach_owner(trophy_images[i]);
+            trophy_images[i]->destroy();
+            trophy_images[i] = 0;
         }
 
-        if (unk7E4[i] != 0)
+        if (textures[i] != 0)
         {
-            func_11EE00(D_001B65F4, unk7E4[i]);
-            unk7E4[i] = 0;
+            func_11EE00(D_001B65F4, textures[i]);
+            textures[i] = 0;
         }
     }
 
-    if (unk7E0 != 0)
+    if (records != 0)
     {
-        delete[] unk7E0;
-        unk7E0 = 0;
+        delete[] records;
+        records = 0;
     }
 
     if (unkB8 != 0)
@@ -161,21 +159,21 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
 
     for (s32 i = 0; i < 300; i++)
     {
-        if (unk330[i] != 0)
+        if (trophy_images[i] != 0)
         {
-            lib_object_detach_owner(unk330[i]);
-            unk330[i]->destroy();
+            lib_object_detach_owner(trophy_images[i]);
+            trophy_images[i]->destroy();
         }
 
-        if (unk7E4[i] != 0)
+        if (textures[i] != 0)
         {
-            func_11EE00(D_001B65F4, unk7E4[i]);
+            func_11EE00(D_001B65F4, textures[i]);
         }
     }
 
-    if (unk7E0 != 0)
+    if (records != 0)
     {
-        delete[] unk7E0;
+        delete[] records;
     }
 
     if (unk88 != 0)
@@ -203,9 +201,9 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
         unk98->destroy();
     }
 
-    if (unk9C != 0)
+    if (number_label != 0)
     {
-        unk9C->destroy();
+        number_label->destroy();
     }
 
     if (unkB0 != 0)
@@ -274,13 +272,13 @@ BootBattleTrophyViewer::BootBattleTrophyViewer()
 
     for (s32 i = 0; i < 300; i++)
     {
-        unk330[i] = 0;
-        unk7E4[i] = 0;
+        trophy_images[i] = 0;
+        textures[i] = 0;
     }
 
-    unk7E0 = 0;
+    records = 0;
     slot = 0;
-    unkCC = 0;
+    bar_fading = 0;
     unk88 = 0;
     unk8C = 0;
     unk90 = 0;
@@ -288,7 +286,7 @@ BootBattleTrophyViewer::BootBattleTrophyViewer()
     unk98 = 0;
     unkB8 = 0;
     unkBC = 0;
-    unk9C = 0;
+    number_label = 0;
     unkB0 = 0;
     unkA0 = 0;
     unkA4 = 0;
@@ -300,7 +298,7 @@ BootBattleTrophyViewer::BootBattleTrophyViewer()
     unk58 = 0;
     unk6C = 0x26;
     unk54 = 0;
-    unk56 = 0;
+    by_time = 0;
     unk50 = 0;
     unk1144 = 0;
     u32 step = 0;
