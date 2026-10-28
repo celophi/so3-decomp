@@ -1,11 +1,19 @@
-"""Rename MWCC's static initializer symbols so the symbol map can match them.
+"""The compiler has a bug that pads static initializer names with spaces.
 
 When a C++ file has a global object with a constructor, MWCC writes a
-`__sinit_<file>` function (a static initializer) that builds it. It pads that
-name with spaces, which a symbol map can't hold, so I trim them. It also makes
-a small record in .bss for the object's destructor, named `@` and a number that
-changes from build to build. I name it after the initializer instead, like
-`__sinit_init.cpp_destructor_chain`.
+`__sinit_<file>` function (a static initializer) that builds it. When it makes
+that name, it uses the file name's first letter as the width, so `init.cpp`
+gets padded with spaces to 105 characters (`i` is 105). objdiff pairs functions
+by name and a symbol map can't hold the spaces, so I trim them here.
+
+The Monster Hunter Portable 2nd G decomp fixes the same bug by patching its
+compiler instead:
+https://github.com/tclamb/mhp2g-decomp/blob/99ae1be058091f1468ced7d218352e5a1a9cf2f7/configure.py#L893-L907
+I'd rather keep our compiler stock, so I fix the names after compiling.
+
+MWCC also makes a small record in .bss for the object's destructor, named `@`
+and a number that changes from build to build. I name it after the initializer
+instead, like `__sinit_init.cpp_destructor_chain`.
 
 Only the names change, so the built image comes out the same.
 """

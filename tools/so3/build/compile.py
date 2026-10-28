@@ -189,7 +189,7 @@ def match_original_layout(path, unit, unit_options, language, rodata_groups, rep
     if rodata_groups:
         data, _ = owned_rodata_sections(data, rodata_groups)
 
-    # Static initializers come out with space-padded names the symbol map can't match.
+    # A compiler bug pads static initializer names with spaces, so objdiff can't pair them.
     if language == 'c++':
         data = trim_static_initializer_names(data)
 
