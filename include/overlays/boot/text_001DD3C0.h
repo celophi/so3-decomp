@@ -168,7 +168,9 @@ class BootDimensionsACD0
 public:
     /** @brief Construct the display. */
     BootDimensionsACD0();
-    u8 unk00[0x3C60];
+    u8 unk00[0x160];
+    u16 unk160;
+    u8 unk162[0x3AFE];
     BootDisplayArea3C60 unk3C60;
     u8 unk3C70[8];
     void* unk3C78;
@@ -761,34 +763,104 @@ public:
     u8 unk64[0x2C];
 };
 
-/** Partial 0xE0-byte screen fade with vtable D_171C00 in main data. */
+class BootClass171BF0;
+
+/** Partial 0x210-byte Lib image strip with vtable D_1735A0 in main data; boot calls the Lib constructor. */
+class BootClass1735A0 : public BootClass178A90, public BootClass170D50
+{
+public:
+    /** @brief Construct the strip. */
+    BootClass1735A0();
+    u8 unk94[0x17C];
+};
+
+/** 0xE0-byte screen fade with vtable D_171C00 in main data: ten strips copied from the display, faded out. */
 class BootClass171C00 : public BootClass178A90, public BootClass170D50
 {
 public:
-    /** @brief Initialize the fade for the display. @param display Display dimensions. */
+    /** @brief Copy the display into ten strips and show them, fully opaque. @param display Display to copy. */
     BootClass171C00(BootDimensionsACD0* display);
-    u8 unk94[0x3C];
+    /** @brief Destroy the strips, the copy buffer and the packet. */
+    virtual ~BootClass171C00();
+    /** @brief Fade out; once transparent, destroy the strips and the fade. */
+    virtual void update();
+    /** @brief Mark the fade active and submit its packet. */
+    virtual void func_001DD4C0();
+    /** @brief Set the byte at offset 0x60 to 10. */
+    virtual void func_001E0860();
+    /**
+     * @brief Draw the fade over the strips.
+     * @param matrix Matrix supplied by the caller.
+     * @param context Opaque caller context.
+     */
+    virtual void func_001E08C0(const void* matrix, void* context);
+    /** @brief Mark the fade inactive and run the Lib release helper. @param value Unused. */
+    virtual void func_001E04F0(u32 value);
+    BootClass1735A0* images[10];
+    u8* buffer;
+    BootDimensionsACD0* display;
+    BootClass171BF0* packet;
+    u8 unkc8;
+    u8 unkc9[3];
+    float unkcc;
     float unkd0;
     u8 unkd4[0xC];
 };
 
-/** Partial 0x3C-byte list object with vtable D_171BB0 in main data. */
+class BootClass175320;
+
+/** 0x3C-byte list object with vtable D_171BB0 in main data that shows a Lib scene loaded from resources 0x27 and 0xA. */
 class BootClass171BB0 : public BootClass170E90
 {
 public:
-    /** @brief Initialize the object. @param mode Start mode. */
+    /**
+     * @brief Queue the scene resources and remember the start mode.
+     * @param mode Start mode.
+     */
     BootClass171BB0(s32 mode);
-    u8 unk14[0x28];
+    /** @brief Free the resource buffers, then destroy the scene and its model. */
+    virtual ~BootClass171BB0();
+    /** @brief Run the scene state machine. */
+    virtual void update();
+    BootClass175320* scene;
+    s32 step;
+    void* unk1c;
+    BootClass174610* model;
+    u8* scene_data;
+    u8 unk28;
+    u8 unk29;
+    u8 unk2a;
+    u8 unk2b;
+    u8 unk2c;
+    u8 unk2d;
+    u8 unk2e[2];
+    u8* unk30;
+    s32 mode;
+    s32 unk38;
 };
 
-/** Partial 0x2C-byte object with vtable D_171CB0 in main data, queued when the options menu closes. */
+class BootResident113E40;
+class BootClass172500;
+
+/** 0x2C-byte movie object with vtable D_171CB0 in main data, queued when the options menu closes. */
 class BootClass171CB0 : public BootClass170E90
 {
 public:
-    /** @brief Initialize the object. */
+    /** @brief Clear the state and allocate the 0x12000-byte work buffer. */
     BootClass171CB0();
-    u8 unk14[0x18];
+    /** @brief Release the player, its heap and the work buffer. */
+    virtual ~BootClass171CB0();
+    /** @brief Run the movie state machine. */
+    virtual void update();
+    s32 unk14;
+    u8* buffer;
+    s32 step;
+    s32 unk20;
+    BootResident113E40* movie_heap;
+    BootClass172500* player;
 };
+
+class BootClass177820;
 
 /** Partial 0x2C-byte progress bar with vtable D_171BD0 in main data; driven with a done/total pair. */
 class BootProgressBar : public BootClass170E90
@@ -796,9 +868,16 @@ class BootProgressBar : public BootClass170E90
 public:
     /** @brief Initialize the progress bar. */
     BootProgressBar();
-    u8 unk14[4];
-    BootClass170F30* unk18;
-    u8 unk1c[0x10];
+    /** @brief Destroy the bar's model, then the bar. */
+    virtual ~BootProgressBar();
+    /** @brief Detach the bar and its model, destroy the model and delete the bar. */
+    virtual void destroy();
+    class LibDrawBuffer* draw_buffer;
+    BootClass177820* unk18;
+    s32 width;
+    s32 height;
+    u32 color;
+    s32 mode;
 };
 
 /** Boot's view of the Lib model base that adds a matrix and three vectors, with the Lib vtable D_172080. */
@@ -1062,15 +1141,44 @@ public:
     virtual void func_001E08C0(const void* matrix, void* context);
 };
 
+/** Block of a texture resource that holds its size; the width and height are powers of two. */
+struct BootTextureImage
+{
+    u8 unk00[0xE];
+    u8 width_log2;
+    u8 height_log2;
+};
+
+/** Header of a texture resource; the image block sits image_offset bytes after it. */
+struct BootTextureHeader
+{
+    u8 unk00[0xC];
+    u32 image_offset;
+};
+
+/** Partial texture resource with its header after a 0x10-byte prefix. */
+struct BootTextureResource
+{
+    u8 unk00[0x10];
+    BootTextureHeader header;
+};
+
 /** Partial 0x30-byte image object with vtable D_171C90 in main data, drawn from a decoded FIS image. */
 class BootImage : public BootClass170E90
 {
 public:
     /** @brief Clear the object's model and state bytes. */
     BootImage();
-    u8 unk14[4];
-    BootClass170F30* unk18;
-    u8 unk1c[0x10];
+    /** @brief Destroy the image's model, then the image. */
+    virtual ~BootImage();
+    /** @brief Detach the image and its model, destroy the model and delete the image. */
+    virtual void destroy();
+    class LibDrawBuffer* draw_buffer;
+    BootClass177820* unk18;
+    s32 width;
+    s32 height;
+    s32 palette_width;
+    s32 palette_height;
     u8 unk2c;
     u8 unk2d;
     u8 unk2e;
