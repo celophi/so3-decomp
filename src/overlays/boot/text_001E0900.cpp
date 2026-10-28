@@ -5165,3 +5165,5 @@ s32 func_001ED200(BootTrackPool<BootClass177C70>* pool, s32 count)
 {
     return pool->init(count);
 }
+
+#include "overlays/boot/transform_inlines.h"

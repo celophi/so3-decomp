@@ -129,10 +129,24 @@ public:
     u8 unk56C[0x98];
 };
 
+/** @brief Partial resident sound stream reached through the sound object. */
+struct BootSoundStream
+{
+    u8 unk00[0x90];
+
+    /** Stream handle. */
+    void* handle;
+};
+
 /** @brief Partial resident sound object reached through D_001B65F8. */
 struct BootSound1B65F8
 {
-    u8 unk00[0x450];
+    struct BootSoundStream* stream;
+    u8 unk04[0x36C];
+    u8 unk370;
+    u8 unk371[0x4B];
+    s32 unk3bc;
+    u8 unk3c0[0x90];
     /** Sound output mode: 1 mono, 0 stereo, 2 Dolby Pro Logic II, 3 headphones. */
     u8 output_mode;
     u8 unk451[0xF4B];
@@ -377,7 +391,7 @@ class BootClass178A90 : public BootClass170D90
 {
 public:
     /** @brief Initialize the owner's state bytes and tracking words. */
-    BootClass178A90();
+    inline BootClass178A90();
     /** @brief Remove this object's mask from the resident flags, then destroy the transform. */
     virtual ~BootClass178A90()
     {
@@ -424,9 +438,9 @@ public:
     /** @brief Default hook; does nothing. */
     virtual void func_001E08E0();
     /** @brief Store the halfword at offset 0x6A. @param value Value to store. */
-    void func_001DFE30(u16 value);
+    inline void func_001DFE30(u16 value);
     /** @brief Store the halfword at offset 0x6C. @param value Value to store. */
-    void func_001DFE40(u16 value);
+    inline void func_001DFE40(u16 value);
     u8 unk60;
     u8 unk61;
     u8 unk62;
@@ -461,7 +475,7 @@ class BootClass170D50
 {
 public:
     /** @brief Install the interface's vtable. */
-    BootClass170D50();
+    inline BootClass170D50();
     /** @brief Default DMA notification hook; does nothing. @param value Notification value. */
     virtual void func_001E04E0(u32 value);
     /** @brief Default preparation hook; does nothing. @param value Notification word or packet address. */
@@ -568,7 +582,7 @@ class BootWordQuad
 {
 public:
     /** @brief Clear all four words. */
-    BootWordQuad();
+    inline BootWordQuad();
     u32 unk00;
     u32 unk04;
     u32 unk08;
@@ -615,7 +629,7 @@ public:
     virtual ~BootClass175070();
 };
 
-/** Boot's view of the Lib drawing widget with vtable D_174EF0. */
+/** Boot's view of the 0xFC-byte Lib drawing widget with vtable D_174EF0. */
 class BootClass174EF0 : public BootClass170E90
 {
 public:
@@ -667,7 +681,7 @@ public:
     u32 unk98;
     s32 unk9c;
     s32 unka0;
-    u8 unka4[0x70];
+    u8 unka4[0x58];
 };
 
 /** Boot's view of the 0x114-byte Lib text widget with vtable D_178750. */
@@ -691,6 +705,7 @@ public:
     }
     /** @brief Destroy the text widget. */
     virtual ~BootClass178750();
+    u8 unkfc[0x18];
 };
 
 /** Boot's view of the 0x40-byte Lib widget base with vtable D_178600; boot calls the Lib constructor. */
