@@ -1,4 +1,4 @@
-"""Renaming MWCC's static initializer symbols, on synthetic objects."""
+"""Tests for renaming the static initializer symbols, using small made-up objects."""
 
 import struct
 import unittest
@@ -10,7 +10,7 @@ PADDED = b'__sinit_init.cpp' + b' ' * 97
 
 
 def object_with_initializer(initializer=PADDED, chain=b'@503', chain_size=12):
-    """An object with an initializer in .init, a record in .bss, and an unrelated symbol."""
+    """A made-up object with an initializer, a destructor record and one other symbol."""
     names = b'\0.init\0.bss\0.strtab\0.symtab\0.shstrtab\0'
     strings = b'\0' + initializer + b'\0' + chain + b'\0g_boot_program\0'
     chain_label = 2 + len(initializer)
