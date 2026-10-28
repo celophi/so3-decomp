@@ -130,3 +130,21 @@ rom:0x22D20 reloc:MIPS_HI16 symbol:__vt__15BootNeedleMeter addend:0x74
 rom:0x22D28 reloc:MIPS_LO16 symbol:__vt__15BootNeedleMeter addend:0x74
 rom:0x22E4C reloc:MIPS_HI16 symbol:__vt__15BootNeedleMeter addend:0x74
 rom:0x22E7C reloc:MIPS_LO16 symbol:__vt__15BootNeedleMeter addend:0x74
+rom:0x19544 reloc:MIPS_NONE symbol:0x2050
+rom:0x195C0 reloc:MIPS_NONE symbol:0x8
+rom:0x19838 reloc:MIPS_NONE symbol:0x2050
+rom:0x198B0 reloc:MIPS_NONE symbol:0x8
+rom:0x198D8 reloc:MIPS_NONE symbol:0x2050
+rom:0x19950 reloc:MIPS_NONE symbol:0x8
+rom:0x19CB8 reloc:MIPS_NONE symbol:0x2050
+rom:0x19D30 reloc:MIPS_NONE symbol:0x8
+rom:0x19DE8 reloc:MIPS_NONE symbol:0x2050
+rom:0x19E60 reloc:MIPS_NONE symbol:0x8
+rom:0x19F28 reloc:MIPS_NONE symbol:0x2050
+rom:0x19FA0 reloc:MIPS_NONE symbol:0x8
+rom:0x1A058 reloc:MIPS_NONE symbol:0x2050
+rom:0x1A0D0 reloc:MIPS_NONE symbol:0x8
+rom:0x1A188 reloc:MIPS_NONE symbol:0x2050
+rom:0x1A200 reloc:MIPS_NONE symbol:0x8
+rom:0x1A2E8 reloc:MIPS_NONE symbol:0x2050
+rom:0x1A360 reloc:MIPS_NONE symbol:0x8

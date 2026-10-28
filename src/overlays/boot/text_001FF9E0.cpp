@@ -1,11 +1,10 @@
 #include "include_asm.h"
 #include "overlays/boot/text_001FF9E0.h"
 #include "overlays/boot/init.h"
+#include "overlays/boot/resident.h"
 #include "main/resident_001001E0.h"
 
 extern "C" {
-extern float D_001B6688;
-extern float D_001B6690;
 float func_141DD0(float angle);
 float func_142270(float value);
 float sqrtf(float value);
@@ -13,10 +12,7 @@ void func_11F390(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s32 y1, u32 z, 
 void func_11F770(ResidentPacket* packet, void* notification);
 float func_4CC3E0(float angle);
 float func_4CC5B0(float angle);
-void func_001FA620(BootImage* object, void* image, s32 mode);
-void func_001F9FC0(BootImage* object, s32 first, s32 second, s32 width, s32 height, u32 color, s32 third);
 void func_109F40(void* handle, void* left, void* right, s32 size);
-void func_10DB10(BootSound1B65F8* sound, s32 value);
 }
 
 /**
@@ -448,62 +444,62 @@ void BootMusicPlayer::create_images()
     if (images[0] == 0)
     {
         images[0] = new (0) BootImage;
-        func_001FA620(images[0], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[0], 0, 1, 488, 223, 0x80808080, 0);
+        images[0]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[0]->set_rectangle(0, 1, 488, 223, 0x80808080, 0);
         images[0]->unk18->func_001E0520(-244.0f, -112.0f, 0.0f);
     }
 
     if (images[1] == 0)
     {
         images[1] = new (0) BootImage;
-        func_001FA620(images[1], (void*)(((u32)image_buffers[1] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[1], 0, 1, 640, 60, 0x80808080, 0);
+        images[1]->set_texture((const BootTextureResource*)(((u32)image_buffers[1] + 0x7F) & ~0x7F), 0);
+        images[1]->set_rectangle(0, 1, 640, 60, 0x80808080, 0);
         images[1]->unk18->func_001E0520(-320.0f, -216.0f, 0.0f);
     }
 
     if (images[2] == 0)
     {
         images[2] = new (0) BootImage;
-        func_001FA620(images[2], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[2], 20, 434, 373, 41, 0x80808080, 0);
+        images[2]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[2]->set_rectangle(20, 434, 373, 41, 0x80808080, 0);
     }
 
     if (images[4] == 0)
     {
         images[4] = new (0) BootImage;
-        func_001FA620(images[4], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[4], 17, 241, 105, 32, 0x80808080, 0);
+        images[4]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[4]->set_rectangle(17, 241, 105, 32, 0x80808080, 0);
         images[5] = new (0) BootImage;
-        func_001FA620(images[5], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[5], 17, 279, 78, 35, 0x80808080, 0);
+        images[5]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[5]->set_rectangle(17, 279, 78, 35, 0x80808080, 0);
         images[6] = new (0) BootImage;
-        func_001FA620(images[6], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[6], 17, 315, 83, 36, 0x80808080, 0);
+        images[6]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[6]->set_rectangle(17, 315, 83, 36, 0x80808080, 0);
         images[7] = new (0) BootImage;
-        func_001FA620(images[7], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[7], 17, 351, 274, 34, 0x80808080, 0);
+        images[7]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[7]->set_rectangle(17, 351, 274, 34, 0x80808080, 0);
         images[9] = new (0) BootImage;
-        func_001FA620(images[9], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[9], 21, 486, 455, 18, 0x80808080, 0);
+        images[9]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[9]->set_rectangle(21, 486, 455, 18, 0x80808080, 0);
     }
 
     if (images[10] == 0)
     {
         images[10] = new (0) BootImage;
-        func_001FA620(images[10], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[10], 393, 241, 98, 180, 0x80808080, 0);
+        images[10]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[10]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
         images[11] = new (0) BootImage;
-        func_001FA620(images[11], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[11], 393, 241, 98, 180, 0x80808080, 0);
+        images[11]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[11]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
         images[12] = new (0) BootImage;
-        func_001FA620(images[12], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[12], 393, 241, 98, 180, 0x80808080, 0);
+        images[12]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[12]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
         images[13] = new (0) BootImage;
-        func_001FA620(images[13], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[13], 393, 241, 98, 180, 0x80808080, 0);
+        images[13]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[13]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
         images[14] = new (0) BootImage;
-        func_001FA620(images[14], (void*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[14], 393, 241, 98, 180, 0x80808080, 0);
+        images[14]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[14]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
     }
 
     if (((BootResource0970*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)

@@ -7,13 +7,55 @@
 #include "overlays/boot/text_001FF0A0.h"
 #include "overlays/boot/text_001FF9E0.h"
 #include "overlays/boot/init.h"
+#include "overlays/boot/resident.h"
 #include "overlays/lib/render_buffer.h"
 
 extern "C" {
 
 extern void func_4D00B0(void* object);
+void func_4B1640(void* object);
+extern BootTrackPool<BootClass1711D0>* D_001B6674;
+void func_001F2320(BootTrackPool<BootClass1711D0>* pool, BootClass1711D0* track);
+float func_4B16C0(void* object, float key);
+extern BootTrackPool<BootClass1714D0>* D_001B6668;
+void func_001F22D0(BootTrackPool<BootClass1714D0>* pool, BootClass1714D0* track);
+u8 func_001F4E70(BootClass171950* track, float key, s32* lower, s32* upper);
+extern float D_001B668C;
+void func_001F79A0(BootProgressBar* object, s32 done, s32 total);
+void func_4D6430(BootClass177820* model, LibDrawBuffer* buffer);
+extern void* D_001B6630;
+void func_4333A0(BootClass1735A0* image, u8* data, s16 address, s16 width, s32 first, s16 x, s32 second, s32 strip_width, s16 height);
+char* func_13CD50(char* destination, const char* source, u32 size);
+
+/** Name given to every trophy texture. */
+extern const char g_trophy_texture_name[];
+
+extern const char g_new_game_node_name[];
+extern const char g_continue_node_name[];
+extern const char g_battle_collection_node_name[];
+extern const char g_install_node_name[];
+extern const char g_title_camera_node_name[];
+void func_455DF0(LibDrawBuffer* buffer, s32 first, s32 second);
+void func_455040(LibDrawBuffer* buffer, const BootTextureResource* resource);
+void func_455150(LibDrawBuffer* buffer, BootSettings1F86C0* settings);
+void func_4550F0(LibDrawBuffer* buffer, s32 count);
+void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
+void func_4791F0(BootClass175320* scene, u8* data);
+void func_40B3A0(u8* data);
+void func_473AA0(BootClass175320* scene);
+s32 func_112610(BootSound1B65F8* sound, s32 key);
+void func_100B40(void* allocation);
+s32 func_457220(BootTrophyRecordF10* record);
+void func_001F93B0(BootImage* image, s32 x, s32 y, s32 width, s32 height, s32 palette_x, s32 palette_y, s32 palette_width, s32 palette_height, u32 color,
+                   s32 depth);
+
+/**
+ * @brief Recompute the checksum of a flag block from its key.
+ * @param bits Flag block.
+ */
+void func_457520(BootResourceBits0970* bits);
+
 void func_11F510(void* owner, void* object);
-extern BootClass178DD0* D_001B661C;
 
 typedef struct FieldF32At050
 {
@@ -130,7 +172,6 @@ BootClass177C70::~BootClass177C70()
 BootClass177C70::BootClass177C70()
 {
 }
-
 
 /**
  * @brief Release every track in the pool and its storage.
@@ -253,8 +294,6 @@ void func_001EEAE0(BootTrackPool<BootClass1730F0>* pool)
     pool->release();
 }
 
-void func_4B1640(void* object);
-
 void func_001EEC80(void* object)
 {
     func_4B1640(object);
@@ -314,16 +353,11 @@ void BootClass1711D0::func_001EECB0()
     }
 }
 
-extern BootTrackPool<BootClass1711D0>* D_001B6674;
-void func_001F2320(BootTrackPool<BootClass1711D0>* pool, BootClass1711D0* track);
-
 void func_001EEDF0(BootClass1711D0* track)
 {
     func_001F10C0(track);
     func_001F2320(D_001B6674, track);
 }
-
-float func_4B16C0(void* object, float key);
 
 float func_001EEE20(void* object, float key)
 {
@@ -346,16 +380,17 @@ void BootClass1714D0::func_001EECB0()
     }
 }
 
-extern BootTrackPool<BootClass1714D0>* D_001B6668;
-void func_001F22D0(BootTrackPool<BootClass1714D0>* pool, BootClass1714D0* track);
-
 void func_001EEEA0(BootClass1714D0* track)
 {
     func_001F1DD0(track);
     func_001F22D0(D_001B6668, track);
 }
 
-struct ResetVectorB0_001ED4E0 { u8 pad[0xB0]; FieldVec4B value; };
+struct ResetVectorB0_001ED4E0
+{
+    u8 pad[0xB0];
+    FieldVec4B value;
+};
 
 void func_001EEED0(void* object)
 {
@@ -379,10 +414,12 @@ s32 BootClass1710D0::func_slot84(const FieldVec4A* value, const FieldVec4A* firs
     {
         return 0;
     }
+
     if (state.unk08 >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<BootTrackKey1719E0*>(unk04)[state.unk08].value = *value;
     static_cast<BootTrackKey1719E0*>(unk04)[state.unk08].first = *first;
     static_cast<BootTrackKey1719E0*>(unk04)[state.unk08].second = *second;
@@ -424,6 +461,7 @@ static inline const FieldVec4A* track_vector(const FieldVec4A* vector, FieldVec4
         zero->w = 0.0f;
         return zero;
     }
+
     return vector;
 }
 
@@ -452,18 +490,22 @@ s32 BootClass1710D0::func_001EF7D0(s32 index, float key, const FieldVec4A* value
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<BootTrackKey1719E0*>(unk04)[index].value = *value;
     static_cast<BootTrackKey1719E0*>(unk04)[index].first = *first;
     static_cast<BootTrackKey1719E0*>(unk04)[index].second = *second;
     static_cast<BootTrackKey1719E0*>(unk04)[index].value.w = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<BootTrackKey1719E0*>(unk04)[0].value.w;
     }
+
     return 1;
 }
 
@@ -512,26 +554,32 @@ s32 BootClass1710D0::func_001EED60(s32 index, float* key, FieldVec4B* value, Fie
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     if (key)
     {
         *key = static_cast<const BootTrackKey1719E0*>(unk04)[index].value.w;
     }
+
     if (value)
     {
         *value = static_cast<const BootTrackKey1719E0*>(unk04)[index].value;
     }
+
     if (first)
     {
         *first = static_cast<const BootTrackKey1719E0*>(unk04)[index].first;
     }
+
     if (second)
     {
         *second = static_cast<const BootTrackKey1719E0*>(unk04)[index].second;
     }
+
     return 1;
 }
 
@@ -555,7 +603,8 @@ void BootClass1710D0::func_slot40(FieldVec4B* output) const
 {
     if (unk04 != 0)
     {
-        *output = sequence_difference(static_cast<const BootTrackKey1719E0*>(unk04)[state.unk08 - 1].value, static_cast<const BootTrackKey1719E0*>(unk04)[0].value);
+        *output =
+            sequence_difference(static_cast<const BootTrackKey1719E0*>(unk04)[state.unk08 - 1].value, static_cast<const BootTrackKey1719E0*>(unk04)[0].value);
     }
 }
 
@@ -628,6 +677,7 @@ void func_001EFD70(void* object, float* value)
 void func_001EFD80(void* object, float* result)
 {
     float* values = *(float**)((u8*)object + 4);
+
     if (values != 0)
     {
         s16 count = *(s16*)((u8*)object + 0x20);
@@ -648,7 +698,8 @@ BootClass171B98::BootClass171B98()
  * @param start Start key.
  * @param end End key.
  */
-void BootClass171B98::func_001EFDD0(const FieldVec4A* first, const FieldVec4A* second, const FieldVec4A* third, const FieldVec4A* fourth, float start, float end)
+void BootClass171B98::func_001EFDD0(const FieldVec4A* first, const FieldVec4A* second, const FieldVec4A* third, const FieldVec4A* fourth, float start,
+                                    float end)
 {
     unk00 = *first;
     unk40 = start;
@@ -657,6 +708,7 @@ void BootClass171B98::func_001EFDD0(const FieldVec4A* first, const FieldVec4A* s
     unk44 = end;
     unk30 = *fourth;
     unk48 = end - start;
+
     if (unk48 == 0.0f)
     {
         unk48 = 1.0f;
@@ -667,9 +719,7 @@ BootClass171B88::BootClass171B88()
 {
 }
 
-void func_001EFE50(BootScalarRangeFE50* object, const float* first,
-    const float* second, const float* third, const float* fourth,
-    float start, float end)
+void func_001EFE50(BootScalarRangeFE50* object, const float* first, const float* second, const float* third, const float* fourth, float start, float end)
 {
     object->unk00 = *first;
     object->unk10 = start;
@@ -678,13 +728,18 @@ void func_001EFE50(BootScalarRangeFE50* object, const float* first,
     object->unk14 = end;
     object->unk0C = *fourth;
     object->unk18 = end - start;
+
     if (object->unk18 == 0.0f)
     {
         object->unk18 = 1.0f;
     }
 }
 
-struct ResetVector90_001ED4E0 { u8 pad[0x90]; FieldVec4B value; };
+struct ResetVector90_001ED4E0
+{
+    u8 pad[0x90];
+    FieldVec4B value;
+};
 
 void func_001EFEA0(void* object)
 {
@@ -702,7 +757,8 @@ void BootClass171440::func_slot40(FieldVec4B* output) const
 {
     if (unk04 != 0)
     {
-        *output = sequence_difference(static_cast<const BootTrackKey171830*>(unk04)[state.unk08 - 1].value, static_cast<const BootTrackKey171830*>(unk04)[0].value);
+        *output =
+            sequence_difference(static_cast<const BootTrackKey171830*>(unk04)[state.unk08 - 1].value, static_cast<const BootTrackKey171830*>(unk04)[0].value);
     }
 }
 
@@ -720,6 +776,7 @@ void func_001F0460(BootState1F1FC0* object)
 void func_001F0480(void* object, float* result)
 {
     float* values = *(float**)((u8*)object + 4);
+
     if (values != 0)
     {
         s16 count = *(s16*)((u8*)object + 0x18);
@@ -751,10 +808,12 @@ void BootClass171B50::func_001F0560(const FieldVec4A* value, float key)
 {
     unk20[unk12] = *value;
     unk40[unk12] = key;
+
     if (++unk12 >= 2)
     {
         unk12 = 0;
     }
+
     if (++unk10 > 2)
     {
         unk10 = 2;
@@ -817,10 +876,12 @@ s32 BootClass1713B0::func_001F2890(const FieldVec4A* value, float key)
     {
         return 0;
     }
+
     if (state.unk08 >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<BootTrackKey171830*>(unk04)[state.unk08].value = *value;
     static_cast<BootTrackKey171830*>(unk04)[state.unk08].value.w = key;
     state.span = key - static_cast<BootTrackKey171830*>(unk04)[0].value.w;
@@ -843,16 +904,20 @@ s32 BootClass1713B0::func_001F2850(s32 index, float key, const FieldVec4A* value
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<BootTrackKey171830*>(unk04)[index].value = *value;
     static_cast<BootTrackKey171830*>(unk04)[index].value.w = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<BootTrackKey171830*>(unk04)[0].value.w;
     }
+
     state.unk0e = -1;
     state.unk10 = -1;
     return 1;
@@ -873,18 +938,22 @@ s32 BootClass1713B0::func_001EED60(s32 index, float* key, FieldVec4B* value, Fie
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     if (key)
     {
         *key = static_cast<const BootTrackKey171830*>(unk04)[index].value.w;
     }
+
     if (value)
     {
         *value = static_cast<const BootTrackKey171830*>(unk04)[index].value;
     }
+
     return 1;
 }
 
@@ -903,6 +972,7 @@ void func_001F0960(BootClass171A70* track)
             func_100BE0((u8*)track->unk04 - 16);
         }
     }
+
     track->unk04 = 0;
 }
 
@@ -915,23 +985,28 @@ float func_001F09B0(BootState1F0D60* object, float key)
     {
         quotient -= 1.0f;
     }
+
     object->unk40 = quotient;
+
     if (object->unk40)
     {
         float result = key - (float)object->unk40 * object->span;
-        if ((object->unk52_lo == 3 && object->unk40 < 0) ||
-            (object->unk52_hi == 3 && object->unk40 > 0))
+
+        if ((object->unk52_lo == 3 && object->unk40 < 0) || (object->unk52_hi == 3 && object->unk40 > 0))
         {
             s32 last_index = object->count - 1;
             BootRecord48F0E90* last_entry = object->entries + last_index;
             float last = last_entry->key;
+
             if (object->unk40 & 1)
             {
                 result = first + (last - result);
             }
         }
+
         return result;
     }
+
     return key;
 }
 
@@ -1019,6 +1094,7 @@ void func_001F0E80(void* object)
 s32 func_001F0E90(BootState1F0D60* object, float key)
 {
     s32 index;
+
     for (index = 0; index < object->count; index++)
     {
         if (key == object->entries[index].key)
@@ -1026,6 +1102,7 @@ s32 func_001F0E90(BootState1F0D60* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1041,10 +1118,12 @@ float func_001F0F00(BootState1F0D60* object)
 {
     s32 last_index;
     BootRecord48F0E90* last_entry;
+
     if (object->count < 2)
     {
         return 0.0f;
     }
+
     last_index = object->count - 1;
     last_entry = object->entries + last_index;
     return last_entry->key - object->entries[0].key;
@@ -1071,15 +1150,19 @@ float func_001F1010(BootState1F0D60* object, float key)
     float span = last->key - first;
     float quotient = (key - first) / span;
     s32 periods;
+
     if (quotient < 0.0f)
     {
         quotient -= 1.0f;
     }
+
     periods = quotient;
+
     if (periods != 0)
     {
         return key - (float)periods * span;
     }
+
     return key;
 }
 
@@ -1097,6 +1180,7 @@ void func_001F10C0(BootClass1719E0* track)
             func_100BE0((u8*)track->unk04 - 16);
         }
     }
+
     track->unk04 = 0;
 }
 
@@ -1131,6 +1215,7 @@ void BootClass171950::func_001F1210(s32 count)
     delete[] unk04;
     unk04 = new (0) BootTrackKey171950[count];
     state.unk0a = count;
+
     if (!unk04)
     {
         state.unk0a = 0;
@@ -1212,6 +1297,7 @@ void func_001F1430(BootClass171950* track)
             func_100BE0((u8*)track->unk04 - 16);
         }
     }
+
     track->unk04 = 0;
 }
 
@@ -1295,6 +1381,7 @@ void func_001F16F0(BootClass1718C0* track)
             func_100BE0((u8*)track->unk04 - 16);
         }
     }
+
     track->unk04 = 0;
 }
 
@@ -1307,23 +1394,28 @@ float func_001F1740(BootState1F1AD0* object, float key)
     {
         quotient -= 1.0f;
     }
+
     object->unk20 = quotient;
+
     if (object->unk20)
     {
         float result = key - (float)object->unk20 * object->span;
-        if ((object->unk32_lo == 3 && object->unk20 < 0) ||
-            (object->unk32_hi == 3 && object->unk20 > 0))
+
+        if ((object->unk32_lo == 3 && object->unk20 < 0) || (object->unk32_hi == 3 && object->unk20 > 0))
         {
             s32 last_index = object->count - 1;
             BootVectorKeyEntry1F1D30* last_entry = object->entries + last_index;
             float last = last_entry->key;
+
             if (object->unk20 & 1)
             {
                 result = first + (last - result);
             }
         }
+
         return result;
     }
+
     return key;
 }
 
@@ -1392,6 +1484,7 @@ s16 func_001F1BB0(BootState1F1AD0* object)
 s32 func_001F1BC0(BootState1F1AD0* object, float key)
 {
     s32 index;
+
     for (index = 0; index < object->count; index++)
     {
         if (key == object->entries[index].key)
@@ -1399,6 +1492,7 @@ s32 func_001F1BC0(BootState1F1AD0* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1413,10 +1507,12 @@ void func_001F1C10(void* object)
 float func_001F1C30(BootState1F1AD0* object)
 {
     BootVectorKeyEntry1F1D30* last;
+
     if (object->count < 2)
     {
         return 0.0f;
     }
+
     last = object->entries + (object->count - 1);
     return last->key - object->entries[0].key;
 }
@@ -1440,15 +1536,19 @@ float func_001F1D30(BootState1F1AD0* object, float key)
     float span = last->key - first;
     float position = (key - first) / span;
     s32 cycles;
+
     if (position < 0.0f)
     {
         position -= 1.0f;
     }
+
     cycles = (s32)position;
+
     if (cycles != 0)
     {
         return key - cycles * span;
     }
+
     return key;
 }
 
@@ -1466,6 +1566,7 @@ void func_001F1DD0(BootClass171830* track)
             func_100BE0((u8*)track->unk04 - 16);
         }
     }
+
     track->unk04 = 0;
 }
 
@@ -1500,6 +1601,7 @@ void BootClass1717A0::func_001F1F20(s32 count)
     delete[] static_cast<BootTrackKey1717A0*>(unk04);
     unk04 = new (0) BootTrackKey1717A0[count];
     state.unk0a = count;
+
     if (!unk04)
     {
         state.unk0a = 0;
@@ -1562,6 +1664,7 @@ void func_001F2100(BootClass1717A0* track)
             func_100BE0((u8*)track->unk04 - 16);
         }
     }
+
     track->unk04 = 0;
 }
 
@@ -1580,6 +1683,7 @@ void func_001F21C0(BootClass171710* track)
             func_100BE0((u8*)track->unk04 - 16);
         }
     }
+
     track->unk04 = 0;
 }
 
@@ -1598,6 +1702,7 @@ void func_001F2280(BootClass171680* track)
             func_100BE0((u8*)track->unk04 - 16);
         }
     }
+
     track->unk04 = 0;
 }
 
@@ -1642,21 +1747,26 @@ float func_001F2450(BootState1F1FC0* object, float key)
     float span = object->entries[last_index].key - first;
     float position = (key - first) / span;
     s32 cycles;
+
     if (position < 0.0f)
     {
         position -= 1.0f;
     }
+
     cycles = (s32)position;
+
     if (cycles != 0)
     {
         return key - cycles * span;
     }
+
     return key;
 }
 
 float func_001F24E0(BootState1F1FC0* object, float key)
 {
     s32 index;
+
     for (index = 0; index < object->count; index++)
     {
         if (key == object->entries[index].key)
@@ -1665,16 +1775,19 @@ float func_001F24E0(BootState1F1FC0* object, float key)
             return entry->value;
         }
     }
+
     return 0.0f;
 }
 
 float func_001F2540(BootState1F1FC0* object)
 {
     s32 last_index;
+
     if (object->count < 2)
     {
         return 0.0f;
     }
+
     last_index = object->count - 1;
     return object->entries[last_index].key - object->entries[0].key;
 }
@@ -1682,6 +1795,7 @@ float func_001F2540(BootState1F1FC0* object)
 s32 func_001F2590(BootState1F1FC0* object, float key)
 {
     s32 index;
+
     for (index = 0; index < object->count; index++)
     {
         if (key == object->entries[index].key)
@@ -1689,6 +1803,7 @@ s32 func_001F2590(BootState1F1FC0* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1805,6 +1920,7 @@ void BootClass171830::func_001F28A0(s32 count)
     delete[] static_cast<BootTrackKey171830*>(unk04);
     unk04 = new (0) BootTrackKey171830[count];
     state.unk0a = count;
+
     if (!unk04)
     {
         state.unk0a = 0;
@@ -1827,15 +1943,19 @@ float func_001F29D0(BootState1F1580* object, float key)
     float span = last->key - first;
     float quotient = (key - first) / span;
     s32 periods;
+
     if (quotient < 0.0f)
     {
         quotient -= 1.0f;
     }
+
     periods = quotient;
+
     if (periods != 0)
     {
         return key - (float)periods * span;
     }
+
     return key;
 }
 
@@ -1845,10 +1965,12 @@ float func_001F2AC0(BootState1F1580* object)
 {
     s32 last_index;
     BootKeyEntry32* last_entry;
+
     if (object->count < 2)
     {
         return 0.0f;
     }
+
     last_index = object->count - 1;
     last_entry = object->entries + last_index;
     return last_entry->key - object->entries[0].key;
@@ -1857,6 +1979,7 @@ float func_001F2AC0(BootState1F1580* object)
 s32 func_001F2B10(BootState1F1580* object, float key)
 {
     s32 index;
+
     for (index = 0; index < object->count; index++)
     {
         if (key == object->entries[index].key)
@@ -1864,6 +1987,7 @@ s32 func_001F2B10(BootState1F1580* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1932,6 +2056,7 @@ void BootClass1718C0::func_001F2CB0(s32 count)
     delete[] static_cast<BootTrackKey1718C0*>(unk04);
     unk04 = new (0) BootTrackKey1718C0[count];
     state.unk0a = count;
+
     if (!unk04)
     {
         state.unk0a = 0;
@@ -1958,21 +2083,26 @@ float func_001F2DE0(BootState1F12B0* object, float key)
     float span = last->key - first;
     float quotient = (key - first) / span;
     s32 periods;
+
     if (quotient < 0.0f)
     {
         quotient -= 1.0f;
     }
+
     periods = quotient;
+
     if (periods != 0)
     {
         return key - (float)periods * span;
     }
+
     return key;
 }
 
 float func_001F2E70(BootState1F12B0* object, float key)
 {
     s32 index;
+
     for (index = 0; index < object->count; index++)
     {
         if (key == object->entries[index].key)
@@ -1981,6 +2111,7 @@ float func_001F2E70(BootState1F12B0* object, float key)
             return entry->value;
         }
     }
+
     return 0.0f;
 }
 
@@ -1988,10 +2119,12 @@ float func_001F2ED0(BootState1F12B0* object)
 {
     s32 last_index;
     BootKeyEntry16* last_entry;
+
     if (object->count < 2)
     {
         return 0.0f;
     }
+
     last_index = object->count - 1;
     last_entry = object->entries + last_index;
     return last_entry->key - object->entries[0].key;
@@ -2000,6 +2133,7 @@ float func_001F2ED0(BootState1F12B0* object)
 s32 func_001F2F20(BootState1F12B0* object, float key)
 {
     s32 index;
+
     for (index = 0; index < object->count; index++)
     {
         if (key == object->entries[index].key)
@@ -2007,6 +2141,7 @@ s32 func_001F2F20(BootState1F12B0* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -2039,6 +2174,7 @@ void BootClass1719E0::func_001F3030(s32 count)
     delete[] static_cast<BootTrackKey1719E0*>(unk04);
     unk04 = new (0) BootTrackKey1719E0[count];
     state.unk0a = count;
+
     if (!unk04)
     {
         state.unk0a = 0;
@@ -2077,18 +2213,22 @@ s32 func_001F3230(BootState1F1FC0* object, s32 index, float* key, float* value)
     {
         return 0;
     }
+
     if (index >= object->capacity)
     {
         return 0;
     }
+
     if (key != 0)
     {
         *key = object->entries[index].key;
     }
+
     if (value != 0)
     {
         *value = object->entries[index].value;
     }
+
     return 1;
 }
 
@@ -2100,14 +2240,17 @@ s32 func_001F32B0(BootState1F1FC0* object, s32 index, const float* value, float 
     {
         return 0;
     }
+
     if (index >= object->count)
     {
         return 0;
     }
+
     if (object->count >= object->capacity)
     {
         return 0;
     }
+
     for (cursor = object->count; cursor > index; cursor--)
     {
         BootFloatEntry1F33B0* destination = &object->entries[cursor];
@@ -2115,12 +2258,15 @@ s32 func_001F32B0(BootState1F1FC0* object, s32 index, const float* value, float 
         destination->key = source->key;
         destination->value = source->value;
     }
+
     object->entries[index].value = *value;
     object->entries[index].key = key;
+
     if (index == object->count - 1)
     {
         object->span = key - object->entries[0].key;
     }
+
     object->unk1E = -1;
     object->unk20 = -1;
     object->count++;
@@ -2133,16 +2279,20 @@ s32 func_001F33B0(BootState1F1FC0* object, s32 index, const float* value, float 
     {
         return 0;
     }
+
     if (index >= object->capacity)
     {
         return 0;
     }
+
     object->entries[index].value = *value;
     object->entries[index].key = key;
+
     if (index == object->count - 1)
     {
         object->span = key - object->entries[0].key;
     }
+
     object->unk1E = -1;
     object->unk20 = -1;
     return 1;
@@ -2154,10 +2304,12 @@ s32 func_001F3440(BootState1F1FC0* object, const float* value, float key)
     {
         return 0;
     }
+
     if (object->count >= object->capacity)
     {
         return 0;
     }
+
     object->entries[object->count].value = *value;
     object->entries[object->count].key = key;
     object->span = key - object->entries[0].key;
@@ -2190,29 +2342,37 @@ s32 BootClass1713B0::func_001F2810(s32 index, float key, const FieldVec4A* value
 {
     s32 count;
     s32 i;
+
     if (unk04 == 0)
     {
         return 0;
     }
+
     count = state.unk08;
+
     if (index >= count)
     {
         return 0;
     }
+
     if (count >= state.unk0a)
     {
         return 0;
     }
+
     for (i = count; i > index; i--)
     {
         static_cast<BootTrackKey171830*>(unk04)[i] = static_cast<BootTrackKey171830*>(unk04)[i - 1];
     }
+
     static_cast<BootTrackKey171830*>(unk04)[index].value = *value;
     static_cast<BootTrackKey171830*>(unk04)[index].value.w = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<BootTrackKey171830*>(unk04)[0].value.w;
     }
+
     state.unk0e = -1;
     state.unk10 = -1;
     state.unk08++;
@@ -2246,18 +2406,22 @@ s32 BootClass171320::func_001EED60(s32 index, float* key, FieldVec4B* value, Fie
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     if (key)
     {
         *key = static_cast<const BootTrackKey1718C0*>(unk04)[index].key;
     }
+
     if (value)
     {
         *value = static_cast<const BootTrackKey1718C0*>(unk04)[index].value;
     }
+
     return 1;
 }
 
@@ -2272,29 +2436,37 @@ s32 BootClass171320::func_001F2BD0(s32 index, float key, const FieldVec4A* value
 {
     s32 count;
     s32 i;
+
     if (unk04 == 0)
     {
         return 0;
     }
+
     count = state.unk08;
+
     if (index >= count)
     {
         return 0;
     }
+
     if (count >= state.unk0a)
     {
         return 0;
     }
+
     for (i = count; i > index; i--)
     {
         static_cast<BootTrackKey1718C0*>(unk04)[i] = static_cast<BootTrackKey1718C0*>(unk04)[i - 1];
     }
+
     static_cast<BootTrackKey1718C0*>(unk04)[index].value = *value;
     static_cast<BootTrackKey1718C0*>(unk04)[index].key = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<BootTrackKey1718C0*>(unk04)[0].key;
     }
+
     state.unk0e = -1;
     state.unk10 = -1;
     state.unk08++;
@@ -2314,16 +2486,20 @@ s32 BootClass171320::func_001F2C10(s32 index, float key, const FieldVec4A* value
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<BootTrackKey1718C0*>(unk04)[index].value = *value;
     static_cast<BootTrackKey1718C0*>(unk04)[index].key = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<BootTrackKey1718C0*>(unk04)[0].key;
     }
+
     state.unk0e = -1;
     state.unk10 = -1;
     return 1;
@@ -2341,10 +2517,12 @@ s32 BootClass171320::func_001F2C50(const FieldVec4A* value, float key)
     {
         return 0;
     }
+
     if (state.unk08 >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<BootTrackKey1718C0*>(unk04)[state.unk08].value = *value;
     static_cast<BootTrackKey1718C0*>(unk04)[state.unk08].key = key;
     state.span = key - static_cast<BootTrackKey1718C0*>(unk04)[0].key;
@@ -2378,26 +2556,32 @@ s32 func_001F3D80(BootState1F12B0* object, s32 index, float* key, float* first, 
     {
         return 0;
     }
+
     if (index >= object->capacity)
     {
         return 0;
     }
+
     if (key)
     {
         *key = object->entries[index].key;
     }
+
     if (first)
     {
         *first = object->entries[index].value;
     }
+
     if (second)
     {
         *second = object->entries[index].second;
     }
+
     if (third)
     {
         *third = object->entries[index].third;
     }
+
     return 1;
 }
 
@@ -2425,14 +2609,17 @@ s32 func_001F3EC0(BootState1F12B0* object, s32 index, const float* first, const 
     {
         return 0;
     }
+
     if (index >= object->count)
     {
         return 0;
     }
+
     if (object->count >= object->capacity)
     {
         return 0;
     }
+
     for (cursor = object->count; cursor > index; cursor--)
     {
         BootKeyEntry16* destination = &object->entries[cursor];
@@ -2442,14 +2629,17 @@ s32 func_001F3EC0(BootState1F12B0* object, s32 index, const float* first, const 
         destination->second = source->second;
         destination->third = source->third;
     }
+
     object->entries[index].value = *first;
     object->entries[index].second = *second;
     object->entries[index].third = *third;
     object->entries[index].key = key;
+
     if (index == object->count - 1)
     {
         object->span = key - object->entries[0].key;
     }
+
     object->count++;
     return 1;
 }
@@ -2460,18 +2650,22 @@ s32 func_001F3FE0(BootState1F12B0* object, s32 index, const float* first, const 
     {
         return 0;
     }
+
     if (index >= object->capacity)
     {
         return 0;
     }
+
     object->entries[index].value = *first;
     object->entries[index].second = *second;
     object->entries[index].third = *third;
     object->entries[index].key = key;
+
     if (index == object->count - 1)
     {
         object->span = key - object->entries[0].key;
     }
+
     return 1;
 }
 
@@ -2481,10 +2675,12 @@ s32 func_001F4080(BootState1F12B0* object, const float* first, const float* seco
     {
         return 0;
     }
+
     if (object->count >= object->capacity)
     {
         return 0;
     }
+
     object->entries[object->count].value = *first;
     object->entries[object->count].second = *second;
     object->entries[object->count].third = *third;
@@ -2493,10 +2689,6 @@ s32 func_001F4080(BootState1F12B0* object, const float* first, const float* seco
     object->count++;
     return 1;
 }
-
-extern float D_001B6690;
-u8 func_001F4E70(BootClass171950* track, float key, s32* lower, s32* upper);
-extern float D_001B668C;
 
 /**
  * @brief Evaluate the track with cached interpolation, wrapping and endpoint extrapolation.
@@ -2510,19 +2702,24 @@ float BootClass171280::func_slot80(float key)
     float wrapped_key;
     u8 extrapolate;
     float result;
+
     if (!unk04 || !state.unk08)
     {
         return 0.0f;
     }
+
     if (state.unk0c >= state.unk0a)
     {
         state.unk0c = 0;
     }
+
     if (state.unk08 == 1 && (!(key < unk04[0].unk00) || state.unk12_0_3 != 6))
     {
         return unk04[0].unk04;
     }
+
     extrapolate = 0;
+
     if (key < unk04[0].unk00 && state.unk12_0_3 == 6)
     {
         upper = 0;
@@ -2532,23 +2729,28 @@ float BootClass171280::func_slot80(float key)
     else
     {
         wrapped_key = func_001F4D90(reinterpret_cast<BootState1F12B0*>(this), key);
+
         if (state.unk00)
         {
             if (state.unk12_0_3 == 0 && state.unk00 < 0)
             {
                 return unk04[0].unk04;
             }
+
             if (state.unk12_4_7 == 0 && state.unk00 > 0)
             {
                 return unk04[state.unk08 - 1].unk04;
             }
         }
+
         extrapolate = func_001F4E70(this, wrapped_key, &lower, &upper);
+
         if (extrapolate)
         {
             wrapped_key = key;
         }
     }
+
     if (!extrapolate)
     {
         if (state.unk0e != lower || state.unk10 != upper)
@@ -2557,12 +2759,11 @@ float BootClass171280::func_slot80(float key)
             state.unk10 = upper;
             BootTrackKey171950* first = lower >= 0 ? unk04 + lower : &unk08;
             s32 last = state.unk08 - 1;
-            if (upper == last && ((!(key < unk04[0].unk00) && state.unk12_4_7 == 2) ||
-                                (key < unk04[0].unk00 && state.unk12_0_3 == 2)))
+
+            if (upper == last && ((!(key < unk04[0].unk00) && state.unk12_4_7 == 2) || (key < unk04[0].unk00 && state.unk12_0_3 == 2)))
             {
                 BootTrackKey171950* entries = unk04;
-                unk2C.func_001EFE50(&first->unk04, &first->unk0c, &entries[0].unk04, &entries[0].unk08,
-                                    first->unk00, entries[upper].unk00);
+                unk2C.func_001EFE50(&first->unk04, &first->unk0c, &entries[0].unk04, &entries[0].unk08, first->unk00, entries[upper].unk00);
             }
             else if (lower < upper)
             {
@@ -2575,7 +2776,9 @@ float BootClass171280::func_slot80(float key)
                 unk2C.func_001EFE50(&first->unk04, &first->unk0c, &second->unk04, &second->unk08, first->unk00, second->unk00);
             }
         }
+
         result = func_4B16C0(&unk2C, wrapped_key);
+
         if (state.unk00 && ((state.unk12_0_3 == 5 && state.unk00 < 0) || (state.unk12_4_7 == 5 && state.unk00 > 0)))
         {
             float delta = unk04[state.unk08 - 1].unk04 - unk04[0].unk04;
@@ -2599,6 +2802,7 @@ float BootClass171280::func_slot80(float key)
         float first_key = entries[0].unk00;
         result = entries[0].unk04 + (entries[0].unk0c / (entries[1].unk00 - first_key)) * (key - first_key);
     }
+
     unk50 = D_001B668C * (result - unk4c);
     unk4c = result;
     return result;
@@ -2633,31 +2837,39 @@ s32 BootClass1710D0::func_001F45F0(s32 index, float key, const FieldVec4A* value
 {
     s32 count;
     s32 i;
+
     if (unk04 == 0)
     {
         return 0;
     }
+
     count = state.unk08;
+
     if (index >= count)
     {
         return 0;
     }
+
     if (count >= state.unk0a)
     {
         return 0;
     }
+
     for (i = count; i > index; i--)
     {
         static_cast<BootTrackKey1719E0*>(unk04)[i] = static_cast<BootTrackKey1719E0*>(unk04)[i - 1];
     }
+
     static_cast<BootTrackKey1719E0*>(unk04)[index].value = *value;
     static_cast<BootTrackKey1719E0*>(unk04)[index].first = *first;
     static_cast<BootTrackKey1719E0*>(unk04)[index].second = *second;
     static_cast<BootTrackKey1719E0*>(unk04)[index].value.w = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<BootTrackKey1719E0*>(unk04)[0].value.w;
     }
+
     state.unk08++;
     return 1;
 }
@@ -2689,10 +2901,12 @@ void BootClass171B70::func_001F4850(const FieldVec4A* value, float key)
 {
     unk20[unk12] = *value;
     unk40[unk12] = key;
+
     if (++unk12 >= 2)
     {
         unk12 = 0;
     }
+
     if (++unk10 > 2)
     {
         unk10 = 2;
@@ -2703,10 +2917,12 @@ void func_001F48D0(BootFloatHistory1F48D0* history, const float* value, float as
 {
     history->values[history->next_index] = *value;
     history->unk1C[history->next_index] = associated;
+
     if (++history->next_index >= 2)
     {
         history->next_index = 0;
     }
+
     if (++history->count > 2)
     {
         history->count = 2;
@@ -2750,6 +2966,7 @@ void BootClass171A70::func_001F4A10(s32 count)
     delete[] static_cast<BootTrackKey171A70*>(unk04);
     unk04 = new (0) BootTrackKey171A70[count];
     state.unk0a = count;
+
     if (!unk04)
     {
         state.unk0a = 0;
@@ -2876,23 +3093,28 @@ float func_001F4D90(BootState1F12B0* object, float key)
     {
         quotient -= 1.0f;
     }
+
     object->unk18 = quotient;
+
     if (object->unk18)
     {
         float result = key - (float)object->unk18 * object->span;
-        if ((object->unk2A_lo == 3 && object->unk18 < 0) ||
-            (object->unk2A_hi == 3 && object->unk18 > 0))
+
+        if ((object->unk2A_lo == 3 && object->unk18 < 0) || (object->unk2A_hi == 3 && object->unk18 > 0))
         {
             s32 last_index = object->count - 1;
             BootKeyEntry16* last_entry = object->entries + last_index;
             float last = last_entry->key;
+
             if (object->unk18 & 1)
             {
                 result = first + (last - result);
             }
         }
+
         return result;
     }
+
     return key;
 }
 
@@ -2931,23 +3153,28 @@ float func_001F5090(BootState1F1FC0* object, float key)
     {
         quotient -= 1.0f;
     }
+
     object->unk10 = quotient;
+
     if (object->unk10)
     {
         float result = key - (float)object->unk10 * object->span;
-        if ((object->unk22_lo == 3 && object->unk10 < 0) ||
-            (object->unk22_hi == 3 && object->unk10 > 0))
+
+        if ((object->unk22_lo == 3 && object->unk10 < 0) || (object->unk22_hi == 3 && object->unk10 > 0))
         {
             s32 last_index = object->count - 1;
             BootFloatEntry1F33B0* last_entry = object->entries + last_index;
             float last = last_entry->key;
+
             if (object->unk10 & 1)
             {
                 result = first + (last - result);
             }
         }
+
         return result;
     }
+
     return key;
 }
 
@@ -2978,6 +3205,7 @@ void BootClass171710::func_001F5360(s32 count)
     delete[] static_cast<BootTrackKey171710*>(unk04);
     unk04 = new (0) BootTrackKey171710[count];
     state.unk0a = count;
+
     if (!unk04)
     {
         state.unk0a = 0;
@@ -3063,6 +3291,7 @@ void func_001F55C0(BootClass171710* object, const FieldVec4A* value, const Field
 s32 func_001F55F0(BootState1F4790* object, float key)
 {
     s32 index;
+
     for (index = 0; index < object->count; index++)
     {
         if (key == object->entries[index].key)
@@ -3070,6 +3299,7 @@ s32 func_001F55F0(BootState1F4790* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -3085,10 +3315,12 @@ float func_001F5670(BootState1F4790* object)
 {
     s32 last_index;
     BootShortKeyEntry8* last_entry;
+
     if (object->count < 2)
     {
         return 0.0f;
     }
+
     last_index = object->count - 1;
     last_entry = object->entries + last_index;
     return (float)last_entry->key - (float)object->entries[0].key;
@@ -3115,15 +3347,19 @@ float func_001F5810(BootState1F4790* object, float key)
     float span = last->key - first;
     float position = (key - first) / span;
     s32 cycles;
+
     if (position < 0.0f)
     {
         position -= 1.0f;
     }
+
     cycles = (s32)position;
+
     if (cycles != 0)
     {
         return key - cycles * span;
     }
+
     return key;
 }
 
@@ -3157,6 +3393,7 @@ void BootClass171680::func_001F5950(s32 count)
     delete[] static_cast<BootTrackKey171680*>(unk04);
     unk04 = new (0) BootTrackKey171680[count];
     state.unk0a = count;
+
     if (!unk04)
     {
         state.unk0a = 0;
@@ -3242,6 +3479,7 @@ void func_001F5BB0(BootClass171680* object, const FieldVec4A* value, const Field
 s32 func_001F5BE0(BootState1F4730* object, float key)
 {
     s32 index;
+
     for (index = 0; index < object->count; index++)
     {
         if (key == object->entries[index].key)
@@ -3249,6 +3487,7 @@ s32 func_001F5BE0(BootState1F4730* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -3264,10 +3503,12 @@ float func_001F5C50(BootState1F4730* object)
 {
     s32 last_index;
     BootKeyEntry48* last_entry;
+
     if (object->count < 2)
     {
         return 0.0f;
     }
+
     last_index = object->count - 1;
     last_entry = object->entries + last_index;
     return last_entry->key - object->entries[0].key;
@@ -3294,15 +3535,19 @@ float func_001F5D60(BootState1F4730* object, float key)
     float span = last->key - first;
     float quotient = (key - first) / span;
     s32 periods;
+
     if (quotient < 0.0f)
     {
         quotient -= 1.0f;
     }
+
     periods = quotient;
+
     if (periods != 0)
     {
         return key - (float)periods * span;
     }
+
     return key;
 }
 
@@ -3324,15 +3569,19 @@ float func_001F5E20(BootState1F47F0* object, float key)
     float span = last->key - first;
     float quotient = (key - first) / span;
     s32 periods;
+
     if (quotient < 0.0f)
     {
         quotient -= 1.0f;
     }
+
     periods = quotient;
+
     if (periods != 0)
     {
         return key - (float)periods * span;
     }
+
     return key;
 }
 
@@ -3342,10 +3591,12 @@ float func_001F5F10(BootState1F47F0* object)
 {
     s32 last_index;
     BootKeyEntry32* last_entry;
+
     if (object->count < 2)
     {
         return 0.0f;
     }
+
     last_index = object->count - 1;
     last_entry = object->entries + last_index;
     return last_entry->key - object->entries[0].key;
@@ -3354,6 +3605,7 @@ float func_001F5F10(BootState1F47F0* object)
 s32 func_001F5F60(BootState1F47F0* object, float key)
 {
     s32 index;
+
     for (index = 0; index < object->count; index++)
     {
         if (key == object->entries[index].key)
@@ -3361,6 +3613,7 @@ s32 func_001F5F60(BootState1F47F0* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -3380,16 +3633,513 @@ BootTrackKey171A70::BootTrackKey171A70()
 {
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F6010);
+/**
+ * @brief Find the scene node of a title menu item.
+ * @param menu Title menu.
+ * @param item Item number, from 0 to 3.
+ * @return The item's node, or null if the scene has none.
+ */
+static inline BootClass170F30* find_menu_item(BootTitleMenu* menu, s32 item)
+{
+    BootClass170F30* node;
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F6480);
+    switch (item)
+    {
+    case 0:
+        node = func_473940(menu->scene, g_new_game_node_name);
+        break;
+    case 1:
+        node = func_473940(menu->scene, g_continue_node_name);
+        break;
+    case 2:
+        node = func_473940(menu->scene, g_battle_collection_node_name);
+        break;
+    case 3:
+        node = func_473940(menu->scene, g_install_node_name);
+        break;
+    }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F6670);
+    return node;
+}
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", update__15BootClass171BB0Fv);
+/**
+ * @brief Grow and pulse the selected item and ease the others back to normal.
+ * @param snap Nonzero to put the selected item straight at full size.
+ */
+void BootTitleMenu::animate_items(u8 snap)
+{
+    if (scene == 0)
+    {
+        return;
+    }
+
+    for (s32 item = 0; item < 4; item++)
+    {
+        BootClass170F30* node = find_menu_item(this, item);
+
+        if (node == 0)
+        {
+            continue;
+        }
+
+        if (item == selected)
+        {
+            BootVector4DDAA0 value;
+            copy_vector(&value, &node->unk40);
+
+            if (value.x < 1.08f && !snap)
+            {
+                value.x += 0.02f * D_001B6688;
+                value.y += 0.02f * D_001B6688;
+                value.z += 0.02f * D_001B6688;
+            }
+            else
+            {
+                value.x = 1.1f;
+                value.y = 1.1f;
+                value.z = 1.1f;
+            }
+
+            node->func_001E0750(&value);
+            copy_vector(&value, &node->unk560);
+
+            if (value.w > 0.9f)
+            {
+                if (!pulse_up)
+                {
+                    value.x -= 0.01f * D_001B6688;
+                    value.y -= 0.005f * D_001B6688;
+
+                    if (value.y < 0.5f)
+                    {
+                        value.y = 0.5f;
+                    }
+
+                    if (value.x < 0.5f)
+                    {
+                        value.x = 0.5f;
+                        pulse_up = 1;
+                    }
+                }
+                else if (pulse_up)
+                {
+                    value.x += 0.01f * D_001B6688;
+                    value.y += 0.005f * D_001B6688;
+
+                    if (value.y > 1.0f)
+                    {
+                        value.y = 1.0f;
+                    }
+
+                    if (value.x > 1.0f)
+                    {
+                        value.x = 1.0f;
+                        pulse_up = 0;
+                    }
+                }
+
+                copy_vector(&node->unk560, &value);
+                node->func_001DDAA0();
+            }
+        }
+        else
+        {
+            BootVector4DDAA0 value;
+            copy_vector(&value, &node->unk40);
+
+            if (value.x > 1.05f)
+            {
+                value.x -= 0.05f * D_001B6688;
+                value.y -= 0.05f * D_001B6688;
+                value.z -= 0.05f * D_001B6688;
+            }
+            else
+            {
+                value.x = 1.0f;
+                value.y = 1.0f;
+                value.z = 1.0f;
+            }
+
+            node->func_001E0750(&value);
+            copy_vector(&value, &node->unk560);
+
+            if (value.x < 1.0f)
+            {
+                value.x += 0.025f * D_001B6688;
+                value.y += 0.05f * D_001B6688;
+
+                if (value.x > 1.0f)
+                {
+                    value.x = 1.0f;
+                }
+
+                if (value.y > 1.0f)
+                {
+                    value.y = 1.0f;
+                }
+            }
+
+            copy_vector(&node->unk560, &value);
+            node->func_001DDAA0();
+        }
+    }
+}
+
+/**
+ * @brief Work out the screen position of the cursor beside the selected item.
+ * @param x Receives the horizontal position, or zero if the item has no node.
+ * @param y Receives the vertical position, or zero if the item has no node.
+ */
+void BootTitleMenu::get_cursor_position(float* x, float* y)
+{
+    BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    BootClass170F30* node = find_menu_item(this, selected);
+
+    if (node == 0)
+    {
+        *x = 0.0f;
+        *y = 0.0f;
+        return;
+    }
+
+    if (!node->unk61)
+    {
+        node->update_transform_matrix();
+    }
+
+    float screen_x = node->unkD0.vectors[0].w;
+    float screen_y = node->unkD0.vectors[1].w;
+
+    if (settings->widescreen)
+    {
+        *x = 319.0f + 0.75f * screen_x;
+        *y = 224.0f + screen_y;
+    }
+    else
+    {
+        *x = 320.0f + screen_x;
+        *y = 224.0f + screen_y;
+    }
+
+    if (selected == 1)
+    {
+        *x -= 6.0f;
+    }
+
+    if (selected < 4)
+    {
+        *y += 24.0f;
+    }
+}
+
+/** @brief Dim Continue and Battle Collection unless a memory card holds the data they need. */
+void BootTitleMenu::update_item_availability()
+{
+    if (scene == 0)
+    {
+        return;
+    }
+
+    BootClass170F30* continue_node;
+    BootInput* input = g_boot_program.input;
+    u32 slot1 = input->slot1_state;
+    u32 slot2 = input->slot2_state;
+    u32 first = input->unk28;
+    u32 second = input->unk2C;
+    continue_node = func_473940(scene, g_continue_node_name);
+
+    if (continue_node == 0)
+    {
+        return;
+    }
+
+    BootClass170F30* collection_node = func_473940(scene, g_battle_collection_node_name);
+
+    if (collection_node == 0)
+    {
+        return;
+    }
+
+    BootVector4DDAA0 color;
+    copy_vector(&color, &collection_node->unk560);
+
+    if (first == 5 || second == 5)
+    {
+        color.w = 1.0f;
+        collection_ready = 1;
+        copy_vector(&collection_node->unk560, &color);
+        collection_node->func_001DDAA0();
+    }
+    else
+    {
+        color.x = 1.0f;
+        color.y = 1.0f;
+        color.z = 1.0f;
+        color.w = 0.5f;
+        collection_ready = 0;
+        copy_vector(&collection_node->unk560, &color);
+        collection_node->func_001DDAA0();
+    }
+
+    copy_vector(&color, &continue_node->unk560);
+
+    if (slot1 == 0x11 || slot2 == 0x11)
+    {
+        color.w = 1.0f;
+        continue_ready = 1;
+        copy_vector(&continue_node->unk560, &color);
+        continue_node->func_001DDAA0();
+    }
+    else
+    {
+        color.x = 1.0f;
+        color.y = 1.0f;
+        color.z = 1.0f;
+        color.w = 0.5f;
+        continue_ready = 0;
+        copy_vector(&continue_node->unk560, &color);
+        continue_node->func_001DDAA0();
+    }
+}
+
+/** @brief Run the menu state machine. */
+void BootTitleMenu::update()
+{
+    BootResource0970* settings;
+    BootInput* input = g_boot_program.input;
+    settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
+    switch (step)
+    {
+    case 0:
+    {
+        if (func_102D00(D_001B65E8) == 0)
+        {
+            break;
+        }
+
+        if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) == 0)
+        {
+            break;
+        }
+
+        check_main_code();
+        scene = new (0) BootClass175320;
+        func_4791F0(scene, scene_data);
+        func_474010(scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
+        delete[] scene_data;
+        scene_data = 0;
+        func_40B3A0(unk30);
+        delete[] unk30;
+        unk30 = 0;
+        camera = func_473680(scene, g_title_camera_node_name);
+        D_001B6628->current_display = camera;
+
+        if (initial_item != -1)
+        {
+            selected = initial_item;
+        }
+        else if (input->slot1_state == 0x11 || input->slot2_state == 0x11)
+        {
+            selected = 1;
+        }
+        else
+        {
+            selected = 0;
+        }
+
+        animate_items(1);
+        D_001B661C->prepend_node(new (0) BootClass179150, -1);
+        float x;
+        float y;
+        get_cursor_position(&x, &y);
+        cursor = new (0) BootClass175070;
+        func_467570(cursor, 1, 0, 0, x, y, 0.0f);
+        func_465B20(D_001B657C, cursor);
+        step++;
+        break;
+    }
+    case 1:
+        if (func_112990(D_001B65F8, 2, 1, 0, 0) == 0)
+        {
+            break;
+        }
+
+        check_main_code();
+        step++;
+        idle_time = 0.0f;
+        break;
+    case 2:
+    {
+        check_main_code();
+
+        if (input->repeated == 0x80 && cursor->unk35)
+        {
+            selected--;
+
+            if (selected > 2)
+            {
+                selected = 2;
+            }
+
+            float x;
+            float y;
+            get_cursor_position(&x, &y);
+            cursor->func_00466E40(x, y, 0.05f);
+            pulse_up = 0;
+            func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
+        }
+
+        if (input->repeated == 0x20 && cursor->unk35)
+        {
+            selected++;
+
+            if (selected > 2)
+            {
+                selected = 0;
+            }
+
+            float x;
+            float y;
+            get_cursor_position(&x, &y);
+            cursor->func_00466E40(x, y, 0.05f);
+            func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
+        }
+
+        idle_time += D_001B6690;
+
+        if (input->pressed & settings->unk00)
+        {
+            u8 accepted = 0;
+
+            if (selected == 0)
+            {
+                step++;
+                accepted = 1;
+            }
+
+            if (selected == 1 && continue_ready)
+            {
+                settings->unk25_mid = 1;
+                accepted = 1;
+                step = 5;
+            }
+
+            if (selected == 2 && collection_ready)
+            {
+                accepted = 1;
+                step = 7;
+            }
+
+            if (selected == 3 && unk2c)
+            {
+                accepted = 1;
+                step = 6;
+            }
+
+            if (accepted)
+            {
+                queue_fade();
+                func_10F000(D_001B65F8, 0x1E, -1);
+                func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
+            }
+            else
+            {
+                func_112400(D_001B65F8, 3, 0, 0, 0x7F, 0x40, 0);
+            }
+        }
+        else if (!(idle_time < 45.0f) && func_112610(D_001B65F8, -1) == 0 && func_115270(D_001B65E4, 1) == 1)
+        {
+            queue_fade();
+            func_10F000(D_001B65F8, 0x1E, -1);
+            step = 4;
+        }
+
+        break;
+    }
+    case 3:
+        check_main_code();
+        g_boot_program.select_projection();
+        step++;
+        func_473AA0(scene);
+        scene->destroy();
+        scene = 0;
+        cursor->destroy();
+        cursor = 0;
+        D_001B6614->append_node(new (0) BootNewGameSettings, -1);
+        lib_object_detach_owner(this);
+        destroy();
+        break;
+    case 4:
+        check_main_code();
+        g_boot_program.select_projection();
+        step++;
+        func_473AA0(scene);
+        scene->destroy();
+        scene = 0;
+        cursor->destroy();
+        cursor = 0;
+        func_10F000(D_001B65F8, 0, -1);
+        D_001B6614->append_node(new (0) BootOpeningMovie, -1);
+        lib_object_detach_owner(this);
+        destroy();
+        break;
+    case 5:
+        check_main_code();
+        g_boot_program.select_projection();
+        step++;
+        func_473AA0(scene);
+        scene->destroy();
+        scene = 0;
+        cursor->destroy();
+        cursor = 0;
+        D_001B6614->append_node(new (0) BootGameLauncher, -1);
+        lib_object_detach_owner(this);
+        destroy();
+        break;
+    case 6:
+        check_main_code();
+        g_boot_program.select_projection();
+        step++;
+        func_473AA0(scene);
+        scene->destroy();
+        scene = 0;
+        cursor->destroy();
+        cursor = 0;
+        D_001B6614->append_node(new (0) BootInstaller, -1);
+        lib_object_detach_owner(this);
+        destroy();
+        break;
+    case 7:
+    {
+        check_main_code();
+        g_boot_program.select_projection();
+        step++;
+        func_473AA0(scene);
+        scene->destroy();
+        scene = 0;
+        cursor->destroy();
+        cursor = 0;
+        void* block = func_100B00(func_10CE00(), 0);
+        D_001B6614->append_node(new (0) BootBattleTrophyViewer, -1);
+        func_100B40(block);
+        lib_object_detach_owner(this);
+        destroy();
+        break;
+    }
+    }
+
+    update_item_availability();
+    animate_items(0);
+
+    if (step > 0)
+    {
+        check_main_code();
+    }
+}
 
 /** @brief Free the resource buffers, then destroy the scene and its model. */
-BootClass171BB0::~BootClass171BB0()
+BootTitleMenu::~BootTitleMenu()
 {
     delete[] scene_data;
     delete[] unk30;
@@ -3399,17 +4149,17 @@ BootClass171BB0::~BootClass171BB0()
         scene->destroy();
     }
 
-    if (model != 0)
+    if (cursor != 0)
     {
-        model->destroy();
+        cursor->destroy();
     }
 }
 
 /**
- * @brief Queue the scene resources and remember the start mode.
- * @param mode Start mode.
+ * @brief Queue the scene resources and remember the item to start on.
+ * @param initial_item Item to select first, or -1 to pick Continue when a card holds a save.
  */
-BootClass171BB0::BootClass171BB0(s32 mode)
+BootTitleMenu::BootTitleMenu(s32 initial_item)
 {
     step = 0;
     scene_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x27));
@@ -3417,12 +4167,12 @@ BootClass171BB0::BootClass171BB0(s32 mode)
     unk30 = func_139700(0x40, func_11C8C0(D_001B65E4, 0xA));
     func_103E70(D_001B65E8, 0xA, unk30, 1, 0x34BC0, 0, 0, 0, 1);
     scene = 0;
-    model = 0;
-    unk2a = 0;
-    unk2b = 0;
+    cursor = 0;
+    pulse_up = 0;
+    continue_ready = 0;
     unk2c = 0;
-    unk2d = 0;
-    this->mode = mode;
+    collection_ready = 0;
+    this->initial_item = initial_item;
     g_boot_program.trophy_card->func_001E0DE0(2);
 }
 
@@ -3430,11 +4180,13 @@ BootClass171BB0::BootClass171BB0(s32 mode)
 void BootProgressBar::destroy()
 {
     lib_object_detach_owner(this);
+
     if (unk18 != 0)
     {
         lib_object_detach_owner(this);
         unk18->destroy();
     }
+
     unk18 = 0;
     delete this;
 }
@@ -3460,10 +4212,6 @@ void func_001F86C0(BootSettings1F86C0* settings)
     settings->unk1C = 0;
     settings->unk14 = 0.0f;
 }
-
-void func_001F79A0(BootProgressBar* object, s32 done, s32 total);
-void func_4D6430(BootClass177820* model, LibDrawBuffer* buffer);
-extern void* D_001B6630;
 
 /**
  * @brief Recreate the bar's draw buffer and model, then draw it empty and show it.
@@ -3580,8 +4328,6 @@ BootClass171BF0::~BootClass171BF0()
 
 #include "overlays/boot/transform_inlines.h"
 
-void func_4333A0(BootClass1735A0* image, u8* data, s16 address, s16 width, s32 first, s16 x, s32 second, s32 strip_width, s16 height);
-
 /** @brief Copy the display into ten strips and show them, fully opaque. @param display Display to copy. */
 BootClass171C00::BootClass171C00(BootDimensionsACD0* display)
 {
@@ -3614,20 +4360,131 @@ BootClass171C00::BootClass171C00(BootDimensionsACD0* display)
 void BootImage::destroy()
 {
     lib_object_detach_owner(this);
+
     if (unk18 != 0)
     {
         lib_object_detach_owner(this);
         unk18->destroy();
     }
+
     unk18 = 0;
     delete this;
 }
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F93B0);
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F9FC0);
+/**
+ * @brief Append one vertex to a draw buffer's streams.
+ * @param buffer Draw buffer.
+ * @param position Vertex position.
+ * @param unk Value for the second vector stream.
+ * @param texcoord Packed texture coordinates.
+ * @param color Vertex color.
+ */
+static inline void add_vertex(LibDrawBuffer* buffer, const FieldVec4A& position, const FieldVec4A& unk, u32 texcoord, u32 color)
+{
+    *buffer->positions = position;
+    buffer->positions++;
+    *buffer->unk4c = unk;
+    buffer->unk4c++;
+    *buffer->texcoords++ = texcoord;
+    *buffer->colors++ = color;
+    buffer->vertex_count++;
+}
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FA620);
+/**
+ * @brief Build the image's quad from a rectangle of its texture and queue the model for drawing.
+ * @param x Left edge of the rectangle in the texture, in texels.
+ * @param y Top edge of the rectangle in the texture.
+ * @param width Rectangle width, which is also the quad's width.
+ * @param height Rectangle height, which is also the quad's height.
+ * @param color Vertex color.
+ * @param depth Z position of the quad.
+ */
+void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s32 depth)
+{
+    BootSettings1F86C0 settings;
+
+    func_455DF0(draw_buffer, 0, 1);
+    func_001F86C0(&settings);
+    settings.unk06 = 0;
+    settings.unk02 = 2;
+    settings.unk00 = 0x5C;
+    settings.unk05 = 1;
+    func_455150(draw_buffer, &settings);
+    func_4550F0(draw_buffer, 4);
+    FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
+
+    if (centered)
+    {
+        float half_width = 0.5f * (float)width;
+        float half_height = 0.5f * (float)height;
+        add_vertex(draw_buffer, FieldVec4A(-half_width, -half_height, (float)depth, 1.0f), normal,
+                   ((x << 12) / texture_width) | (((y << 12) / texture_height) << 16), color);
+        add_vertex(draw_buffer, FieldVec4A(half_width, -half_height, (float)depth, 1.0f), normal,
+                   (((y << 12) / texture_height) << 16) | (((x + width) << 12) / texture_width), color);
+        add_vertex(draw_buffer, FieldVec4A(-half_width, half_height, (float)depth, 1.0f), normal,
+                   ((x << 12) / texture_width) | ((((y + height) << 12) / texture_height) << 16), color);
+        add_vertex(draw_buffer, FieldVec4A(half_width, half_height, (float)depth, 1.0f), normal,
+                   (((x + width) << 12) / texture_width) | ((((y + height) << 12) / texture_height) << 16), color);
+    }
+    else
+    {
+        add_vertex(draw_buffer, FieldVec4A(0.0f, 0.0f, (float)depth, 1.0f), normal, ((x << 12) / texture_width) | (((y << 12) / texture_height) << 16), color);
+        add_vertex(draw_buffer, FieldVec4A((float)width, 0.0f, (float)depth, 1.0f), normal,
+                   (((y << 12) / texture_height) << 16) | (((x + width) << 12) / texture_width), color);
+        add_vertex(draw_buffer, FieldVec4A(0.0f, (float)height, (float)depth, 1.0f), normal,
+                   ((x << 12) / texture_width) | ((((y + height) << 12) / texture_height) << 16), color);
+        add_vertex(draw_buffer, FieldVec4A((float)width, (float)height, (float)depth, 1.0f), normal,
+                   (((x + width) << 12) / texture_width) | ((((y + height) << 12) / texture_height) << 16), color);
+    }
+
+    func_455BD0(draw_buffer, unk2c, 500.0f, 0);
+    func_4D6430(unk18, draw_buffer);
+    unk18->unk80 = D_001B6630;
+    unk18->unk6a |= 0x400;
+    D_001B661C->append_node(unk18, -1);
+}
+
+/**
+ * @brief Recreate the image's draw buffer and model and upload a texture and optional palette.
+ * @param texture Texture resource.
+ * @param palette Palette resource, or null.
+ */
+void BootImage::set_texture(const BootTextureResource* texture, const BootTextureResource* palette)
+{
+    if (draw_buffer != 0)
+    {
+        delete draw_buffer;
+    }
+
+    if (unk18 != 0)
+    {
+        unk18->destroy();
+    }
+
+    draw_buffer = new (0) LibDrawBuffer;
+    unk18 = new (0) BootClass177820;
+    draw_buffer->allocate_storage(1, 0x600, 2, 8);
+    func_455040(draw_buffer, texture);
+
+    if (palette != 0)
+    {
+        func_455040(draw_buffer, palette);
+    }
+
+    const BootTextureImage* info = texture_image(texture);
+    texture_width = 1 << info->width_log2;
+    texture_height = 1 << info->height_log2;
+
+    if (palette != 0)
+    {
+        info = texture_image(palette);
+        palette_width = 1 << info->width_log2;
+        palette_height = 1 << info->height_log2;
+        has_palette = 1;
+    }
+}
 
 /** @brief Destroy the image's model, then the image. */
 BootImage::~BootImage()
@@ -3643,8 +4500,8 @@ BootImage::BootImage()
 {
     draw_buffer = 0;
     unk18 = 0;
-    unk2d = 0;
-    unk2e = 0;
+    centered = 0;
+    has_palette = 0;
     unk2c = 0;
 }
 
@@ -3654,12 +4511,191 @@ void BootClass171C00::func_001E0860()
     unk60 = 10;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", update__15BootClass171CB0Fv);
+/** @brief Run the launch steps: seed, movie, load, hand over. */
+void BootGameLauncher::update()
+{
+    BootResource0970* settings;
+    BootInput* input = g_boot_program.input;
+    settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    u32 previous;
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FAE40);
+    switch (step)
+    {
+    case 0:
+        previous = resident_next_random_word();
+
+        while (previous == resident_next_random_word())
+        {
+        }
+
+        previous = func_10CE00();
+
+        while (previous == func_10CE00())
+        {
+        }
+
+        previous = func_10CAA0(1000);
+
+        while (previous == func_10CAA0(1000))
+        {
+        }
+
+        previous = func_10CC40(0, 1000);
+
+        while (previous == func_10CC40(0, 1000))
+        {
+        }
+
+        if ((u8)settings->unk25_mid == 0)
+        {
+            BootSealedRecord* record = &settings->unkD4;
+            func_13A678(record, 0, sizeof(BootSealedRecord));
+            seal_record(record);
+            BootResourceBits0970* bits = &settings->unk1A8;
+            s32 size = bits->size;
+
+            for (s32 i = 0; i < size; i++)
+            {
+                bits->unk08[i] = 0;
+            }
+
+            bits->unk14 = resident_next_random_word();
+            func_457520(bits);
+        }
+
+        if ((u8)settings->unk25_mid == 0 && settings->sound_output == 2)
+        {
+            step++;
+            timer = 0;
+        }
+        else
+        {
+            step = 5;
+            timer = 0;
+        }
+
+        break;
+    case 1:
+        if (++timer > 60)
+        {
+            if (func_115430(D_001B65E4) == 0 && func_115670(D_001B65E4) != 0 && func_115650(D_001B65E4) != 0)
+            {
+                break;
+            }
+
+            movie_heap = new (0) BootResident113E40;
+            movie_heap->unk2C = 0x40;
+            func_113930(movie_heap, 0x579F2C);
+            void* heap = resident_exchange_allocation_heap(movie_heap);
+            player = new (0) BootClass172500(640, 448);
+            resident_exchange_allocation_heap(heap);
+            player->state->set_scale(1.0f, 1.0f);
+            player->state->set_words(0x800, 0x800, 1);
+
+            if (((BootResource0970*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
+            {
+                player->state->unk80D8 = 1;
+            }
+
+            func_419A70(player, 13, 1);
+            step++;
+        }
+        else if (input->held & 8)
+        {
+            step = 5;
+        }
+
+        break;
+    case 2:
+        timer++;
+
+        if ((input->held & 8) || !player->unk15E794)
+        {
+            step++;
+        }
+
+        break;
+    case 3:
+        func_41A210(player);
+        player->destroy();
+        player = 0;
+        step++;
+        break;
+    case 4:
+        delete movie_heap;
+        movie_heap = 0;
+        step++;
+        break;
+    case 5:
+        program = func_139700(0x40, func_11C8C0(D_001B65E4, 0x42B));
+        func_103E70(D_001B65E8, 0x42B, program, 1, 0x34BC0, 0, 0, 0, 1);
+        step++;
+        break;
+    case 6:
+        if (func_102D00(D_001B65E8) != 0 && ++timer > 40)
+        {
+            lib_object_detach_owner(this);
+            destroy();
+            g_boot_program.next_program = program;
+            return;
+        }
+
+        break;
+    }
+}
+
+/**
+ * @brief Encode a saved record and seal it with a fresh checksum; a damaged record is wiped instead.
+ * @param record Record to seal; an already sealed record is left alone.
+ */
+void seal_record(BootSealedRecord* record)
+{
+    s32 i;
+
+    if (record->sealed == 0)
+    {
+        record->sealed = BOOT_RECORD_SEALED;
+        record->unk00 ^= 0xD7;
+        record->unk02 ^= 0xF393;
+        record->unk04 ^= 0x7CE3C7F7;
+        record->unk08 ^= 0x7CE3C7F7;
+        record->unk0C ^= 0x7CE3C7F7;
+        record->unk10 ^= 0x7CE3C7F7;
+        record->unk14 ^= 0x7CE3C7F7;
+        record->unk18 ^= 0x7CE3C7F7;
+        record->unk1C ^= 0x7CE3C7F7;
+        record->unk20 ^= 0x7CE3C7F7;
+        record->unk24 ^= 0x7CE3C7F7;
+        record->unk28 ^= 0x7CE3C7F7;
+        record->unk2C ^= 0x7CE3C7F7;
+        record->unk30 ^= 0x7CE3C7F7;
+        record->unk34 ^= 0x7CE3C7F7;
+        record->unk38 ^= 0x7CE3C7F7;
+        record->unk3C ^= 0x7CE3C7F7;
+        record->unk40 ^= 0x7CE3C7F7;
+        record->unk44 ^= 0x7CE3C7F7;
+        record->unk48 ^= 0x7CE3C7F7;
+        record->unk4C ^= 0x7CE3C7F7;
+        record->unk50 ^= 0x7CE3C7F7;
+        record->unk54 ^= 0x7CE3C7F7;
+        record->unk58 ^= 0x7CE3C7F7;
+
+        for (i = 0; i < 76; i++)
+        {
+            record->unk64[i] ^= 0xD7;
+        }
+
+        record->key = resident_next_random_word();
+        record->checksum = func_457470(record->key * 37, record, (u8*)&record->checksum - (u8*)record);
+    }
+    else if (record->sealed != BOOT_RECORD_SEALED)
+    {
+        func_13A678(record, 0, sizeof(BootSealedRecord));
+    }
+}
 
 /** @brief Release the player, its heap and the work buffer. */
-BootClass171CB0::~BootClass171CB0()
+BootGameLauncher::~BootGameLauncher()
 {
     if (player != 0)
     {
@@ -3671,9 +4707,9 @@ BootClass171CB0::~BootClass171CB0()
 }
 
 /** @brief Clear the state and allocate the 0x12000-byte work buffer. */
-BootClass171CB0::BootClass171CB0()
+BootGameLauncher::BootGameLauncher()
 {
-    unk14 = 0;
+    program = 0;
     step = 0;
     buffer = func_139700(0x40, 0x12000);
     movie_heap = 0;
@@ -3686,16 +4722,309 @@ s32 BootBattleTrophyViewer::get_default_list_kind()
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FB230);
+/**
+ * @brief Return the time a trophy was earned, as one comparable number.
+ * @param viewer Viewer holding the records and display order.
+ * @param position List position of the trophy.
+ * @return Year, month, day, hour, minute and second packed from the highest byte down, or zero if not earned.
+ */
+static inline u64 trophy_time(BootBattleTrophyViewer* viewer, s32 position)
+{
+    BootResource0970* settings = boot_settings();
+    s32 index = viewer->order[position];
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FB510);
+    if (resource_bit(&settings->unk1A8, index))
+    {
+        BootTrophyTime* time = &viewer->records[index].time;
+        return time->second + (time->minute << 8) + (time->hour << 16) + (time->day << 24) + ((u64)time->month << 32) + ((u64)time->year << 40);
+    }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FB6A0);
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FBB90);
+/**
+ * @brief Reset the display order to trophy number order, then optionally sort it newest first.
+ * @param newest_first Nonzero to sort by the time each trophy was earned; unearned ones go last.
+ */
+void BootBattleTrophyViewer::sort_trophies(u8 newest_first)
+{
+    for (s32 i = 0; i < 300; i++)
+    {
+        order[i] = i;
+    }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001FC100);
+    if (!newest_first)
+    {
+        return;
+    }
+
+    BootResourceBits0970* bits = &boot_settings()->unk1A8;
+    u32 seed = bits->checksum_seed;
+    u32 checksum;
+    func_457670(bits, &seed, &checksum);
+
+    if (bits->checksum != checksum)
+    {
+        return;
+    }
+
+    for (s32 i = 1; i < 300; i++)
+    {
+        u64 time = trophy_time(this, i);
+        s16 current = order[i];
+        s32 j;
+
+        for (j = i - 1; j >= 0 && trophy_time(this, j) < time; j--)
+        {
+            order[j + 1] = order[j];
+        }
+
+        order[j + 1] = current;
+    }
+}
+
+/**
+ * @brief Build a trophy's texture from the picture template, the trophy's packed picture and the first palette.
+ * @param record Trophy record holding the picture.
+ * @param texture Texture resource to fill.
+ * @param index Trophy index.
+ */
+void BootBattleTrophyViewer::build_trophy_texture(const BootTrophyRecordF10* record, BootTextureResource* texture, s32 index)
+{
+    func_13A4C0(texture, (void*)(((u32)unk1C[2] + 0x7F) & ~0x7F), 0x4600);
+    BootTextureHeader* header = &texture->header;
+    u32* palette = (u32*)((u8*)header + header->palette_offset + 0x80);
+    u8* pixels = (u8*)header + ((BootTextureImage*)((u8*)header + header->image_offset))->pixel_offset + 0x80;
+    func_13CD50(header->name, g_trophy_texture_name, 4);
+    header->id = index + 1;
+
+    for (s32 i = 0; i < 32; i++)
+    {
+        palette[i] = palettes[0][i];
+    }
+
+    const u8* source = record->image;
+    u16 bits = *source++;
+    s32 bit_count = 8;
+
+    for (s32 y = 0; y < 96; y++)
+    {
+        for (s32 x = 0; x < 64; x++)
+        {
+            *pixels++ = bits & 0x1F;
+            bits >>= 5;
+            bit_count -= 5;
+
+            if (bit_count < 9)
+            {
+                bits |= *source++ << bit_count;
+                bit_count += 8;
+            }
+        }
+
+        pixels += 64;
+    }
+}
+
+INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", update_grid__22BootBattleTrophyViewerFv);
+
+/**
+ * @brief Check a flag block against its stored checksum.
+ * @param bits Flag block.
+ * @return True when the checksum matches.
+ */
+static inline bool flags_intact(BootResourceBits0970* bits)
+{
+    u32 seed = bits->checksum_seed;
+    u32 checksum;
+    func_457670(bits, &seed, &checksum);
+    return bits->checksum == checksum;
+}
+
+/**
+ * @brief Set a clip region's rectangle and clear its display.
+ * @param clip Clip region.
+ * @param left Left edge.
+ * @param top Top edge.
+ * @param right Right edge.
+ * @param bottom Bottom edge.
+ */
+static inline void set_clip(BootClass171DD0* clip, s32 left, s32 top, s32 right, s32 bottom)
+{
+    clip->left = left;
+    clip->top = top;
+    clip->right = right;
+    clip->bottom = bottom;
+    clip->display = 0;
+}
+
+/**
+ * @brief Check the trophy data and create a picture for each trophy: its own picture when earned, a blank frame
+ * otherwise.
+ * @return One when done, or zero when a trophy record fails its check, after clearing that trophy.
+ */
+s32 BootBattleTrophyViewer::create_trophy_images()
+{
+    BootResource0970* settings = boot_settings();
+    BootResourceBits0970* bits = &settings->unk1A8;
+
+    if (!flags_intact(bits))
+    {
+        return 0;
+    }
+
+    earned_count = 0;
+
+    if (flags_intact(bits))
+    {
+        for (s32 i = 0; i < 300; i++)
+        {
+            BootTrophyRecordF10* record = &records[i];
+
+            if (func_457220(record) == 0 || *((BootResidentRoot15CC0*)func_10D8E0())->status == 0x67)
+            {
+                set_resource_bit(bits, i, 0);
+                record->unk0C = 0;
+                func_457520(bits);
+                return 0;
+            }
+        }
+    }
+
+    for (s32 i = 0; i < 300; i++)
+    {
+        order[i] = i;
+        textures[i] = (BootTextureResource*)func_139700(0x80, 0x4600);
+    }
+
+    unkB8 = new (0) BootClass171DD0;
+    D_001B661C->append_node(unkB8, -1);
+
+    if (settings->widescreen)
+    {
+        set_clip(unkB8, 0, 0x4D, 0x27F, 0x180);
+    }
+    else
+    {
+        set_clip(unkB8, 0, 0x50, 0x27F, 0x17C);
+    }
+
+    if (flags_intact(bits))
+    {
+        for (s32 i = 0; i < 300; i++)
+        {
+            trophy_images[i] = new (0) BootImage;
+            trophy_images[i]->centered = 1;
+            unkC94[i] = 0.0f;
+
+            if (resource_bit(bits, i))
+            {
+                build_trophy_texture(&records[i], textures[i], i);
+                trophy_images[i]->set_texture((const BootTextureResource*)(((u32)unk1C[0] + 0x7F) & ~0x7F), textures[i]);
+                func_001F93B0(trophy_images[i], 0, 0xE2, 0x44, 0x64, 0, 0, 0x40, 0x60, 0x80808080, 0);
+                earned_count++;
+            }
+            else
+            {
+                trophy_images[i]->set_texture((const BootTextureResource*)(((u32)unk1C[0] + 0x7F) & ~0x7F), 0);
+                trophy_images[i]->set_rectangle(0, 0xE2, 0x44, 0x64, 0x80808080, 0);
+            }
+
+            trophy_images[i]->unk18->func_001E0520(-236.0f + (i & 7) * 68, -94.0f + i / 8 * 100, 0.0f);
+        }
+    }
+    else
+    {
+        for (s32 i = 0; i < 300; i++)
+        {
+            trophy_images[i] = new (0) BootImage;
+            trophy_images[i]->centered = 1;
+            trophy_images[i]->set_texture((const BootTextureResource*)(((u32)unk1C[0] + 0x7F) & ~0x7F), 0);
+            trophy_images[i]->set_rectangle(0, 0xE2, 0x44, 0x64, 0x80808080, 0);
+            trophy_images[i]->unk18->func_001E0520(-236.0f + (i & 7) * 68, -94.0f + i / 8 * 100, 0.0f);
+        }
+    }
+
+    func_121FE0(0);
+    unkBC = new (0) BootClass171DD0;
+    D_001B661C->append_node(unkBC, -1);
+    unkBC->display = g_boot_program.display;
+    return 1;
+}
+
+/**
+ * @brief Give the bar's model an even color modulation and recompute its combined color.
+ * @param bar Loading bar.
+ * @param red Red factor.
+ * @param green Green factor.
+ * @param blue Blue factor.
+ * @param alpha Alpha factor.
+ */
+static inline void set_bar_color(BootProgressBar* const& bar, float red, float green, float blue, float alpha)
+{
+    BootVector4DDAA0 color;
+    color.x = red;
+    color.y = green;
+    color.z = blue;
+    color.w = alpha;
+    BootClass177820* model = bar->unk18;
+    copy_vector(&model->unk560, &color);
+    model->func_001DDAA0();
+}
+
+/** @brief Create the two screen images once the pictures load, place them for the screen shape and fade out the bar. */
+void BootBattleTrophyViewer::update_images()
+{
+    if (unk1C[2] == 0)
+    {
+        return;
+    }
+
+    if (unk28[0] == 0)
+    {
+        unk28[0] = new (0) BootImage;
+        unk28[0]->set_texture((const BootTextureResource*)(((u32)unk1C[0] + 0x7F) & ~0x7F), 0);
+        unk28[0]->set_rectangle(0, 1, 488, 223, 0x80808080, 0);
+        unk28[0]->unk18->func_001E0520(-244.0f, -112.0f, 0.0f);
+    }
+
+    if (unk28[1] == 0)
+    {
+        unk28[1] = new (0) BootImage;
+        unk28[1]->set_texture((const BootTextureResource*)(((u32)unk1C[1] + 0x7F) & ~0x7F), 0);
+        unk28[1]->set_rectangle(0, 0, 640, 80, 0x80808080, 0);
+        unk28[1]->unk18->func_001E0520(-320.0f, -216.0f, 0.0f);
+    }
+
+    if (boot_settings()->widescreen)
+    {
+        if (unk28[1] != 0)
+        {
+            unk28[1]->unk18->func_001E0520(-422.66668f, -216.0f, 0.0f);
+            unk28[1]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
+        }
+    }
+    else if (unk28[1] != 0)
+    {
+        unk28[1]->unk18->func_001E0520(-320.0f, -216.0f, 0.0f);
+        unk28[1]->unk18->func_001DDED0(1.0f, 1.0f, 1.0f);
+    }
+
+    if (bar_fading && unkC0 != 0)
+    {
+        unkC0->unk18->func_001E94E0(2);
+        set_bar_color(unkC0, 1.0f, 1.0f, 1.0f, bar_alpha);
+        bar_alpha -= 2.0f * D_001B6690;
+
+        if (bar_alpha < 0.0f)
+        {
+            bar_fading = 0;
+            lib_object_detach_owner(unkC0);
+            unkC0->destroy();
+            unkC0 = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", update__22BootBattleTrophyViewerFv);
-
 }

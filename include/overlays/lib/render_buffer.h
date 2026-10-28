@@ -4,6 +4,7 @@
 #include "types.h"
 #include "main/resident_001001E0.h"
 #include "sdk/main/libkernl_00121940.h"
+#include "overlays/lib/vector.h"
 
 #ifdef __cplusplus
 class LibClass171E90;
@@ -122,7 +123,25 @@ public:
 
     u32* command_buffers[2];
     u32* command_begin;
-    u8 unk2c[0x34];
+    u8 unk2c[0x18];
+
+    /** Next free slot of the vertex position stream. */
+    FieldVec4A* positions;
+
+    u8 unk48[4];
+
+    /** Next free slot of the second per-vertex vector stream. */
+    FieldVec4A* unk4c;
+
+    u8 unk50[4];
+
+    /** Next free slot of the packed texture coordinate stream: u in the low half, v in the high half, 4.12 fixed point. */
+    u32* texcoords;
+
+    u8 unk58[4];
+
+    /** Next free slot of the vertex color stream. */
+    u32* colors;
     u32* block_sizes;
     u8* block_packets;
     u8* setup_packet;

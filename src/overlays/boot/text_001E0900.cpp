@@ -1,6 +1,7 @@
 #include "include_asm.h"
 #include "overlays/boot/text_001E0900.h"
 #include "overlays/boot/init.h"
+#include "overlays/boot/resident.h"
 #include "main/resident_001001E0.h"
 #include "main/resident_0010A0E0.h"
 #include "main/resident_00101550.h"
@@ -14,12 +15,10 @@
 
 extern "C" {
 extern BootClass170F20* D_001B65AC;
-u16 func_457470(u16 seed, const void* data, s32 size);
 void func_10DA70(BootSound1B65F8* sound, s32 mode);
 void func_11E030(BootInputRoot9670* root, s32 slot, s32 enabled);
 s32 func_4656B0(BootRuntime1B657C* runtime, void* data);
 void func_11E210(BootInputRoot9670* root, s32 first, s32 second, s32 third);
-extern void* D_001B65F4;
 void func_11ED90(void* queue, void* object);
 extern void* D_001B663C;
 extern void* D_001B65E0;
@@ -30,7 +29,6 @@ void func_4E0BC0(BootDimensionsACD0* display, s32 index, float first, float seco
 void func_4DD440(BootDimensionsACD0* display, s32 index, s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g, s32 width, s32 height);
 void func_4DF890(BootDimensionsACD0* display, s32 index, s32 width, s32 height, s32 depth, s32 mode);
 void func_4E03C0(BootDimensionsACD0* display, s32 index, s32 width, s32 height);
-void func_4DF6E0(BootDimensionsACD0* display, s32 red, s32 green, s32 blue, s32 alpha);
 void func_4DE250(BootDimensionsACD0* display, s32 index, s32 x, s32 y, s32 width, s32 height);
 void func_4DCFA0(BootDimensionsACD0* display);
 void func_4DCC10(void* object, void* value);
@@ -39,10 +37,8 @@ void func_42D940(void);
 void func_11DEE0(BootInputRoot9670* root, void* object, s32 enabled);
 void func_4DCEA0(BootDimensionsACD0* display, s32 first, s32 second);
 void func_101040(void* settings, s32 widescreen);
-extern struct BootDisplayLinks661C* D_001B661C;
 extern BootDimensionsACD0* D_001B6650;
 extern BootDimensionsACD0* D_001B6520;
-extern struct BootDisplay6624* D_001B6624;
 extern u8 D_001B6420;
 extern BootTrackPool<BootClass177F70>* D_001B6664;
 extern BootTrackPool<BootClass1714D0>* D_001B6668;
@@ -55,14 +51,10 @@ extern BootTrackPool<BootClass1730F0>* D_001B6680;
 void func_001ED610(BootTrackPool<BootClass177C70>* pool);
 void func_4C5B60(s32 first, s32 second);
 void func_4E14B0(BootProjectionACD0* projection, BootDimensionsACD0* display);
-u32 func_113930(BootResident113E40* heap, u32 size);
-s32 func_115430(BootResident1B65E4* object);
-s32 func_465B20(BootRuntime1B657C* runtime, BootClass178A90* object);
 void lib_container_attach_widget(BootClass178660* object, BootClass170E90* child);
 void func_100F60(void* root);
 void* func_1012C0(void* root);
 s32 func_11D9A0(void* clock_source, struct BootClock* clock);
-u32 func_10CE00(void);
 void* func_101250(void* root);
 void func_45A5D0(void);
 void func_45A770(void);
@@ -81,21 +73,10 @@ void func_4D4BE0(void* object);
 void func_11F770(void* owner, s32 flags);
 u32 func_4DCFF0(BootDimensionsACD0* display, s32 frame);
 s32 func_11DF00(BootInputRoot9670* root);
-extern float D_001B6688;
-extern float D_001B6690;
-s32 func_10CAA0(s32 upper);
-s32 func_10CC40(s32 lower, s32 upper);
-void func_1010D0(void* root, s32 value, s32 flag);
-void func_001FA620(BootImage* object, void* image, s32 mode);
-void func_001F9FC0(BootImage* object, s32 first, s32 second, s32 width, s32 height, u32 color, s32 third);
+void func_1010D0(void* root, u8* program, s32 flag);
 extern const struct BootLabelOffsets D_205170;
-s32 func_115270(BootResident1B65E4* object);
-void func_419A70(BootClass172500* player, s32 first, s32 second);
-void func_41A210(BootClass172500* player);
 const struct BootTextExtent* func_4C69B0(BootClass178750* text);
 extern const struct BootCaption g_opening_captions[];
-void func_112400(void* request, s32 sound, s32 first, s32 second, s32 volume, s32 pan, s32 third);
-BootClass170F30* func_473940(BootClass170E90* models, const char* name);
 void func_4CC2D0(BootVector4DDAA0* output, float angle);
 void func_4CBD20(BootMatrix92D0* output, const BootVector4DDAA0* position, const FieldVec4B* target, float roll);
 void func_4CBAC0(BootVector4DDAA0* output, const BootMatrix92D0* matrix);
@@ -119,29 +100,18 @@ extern const char g_empty_name[];
 extern const char g_bone_root_name[];
 extern const char g_camera_node_name[];
 extern const char g_face_model_name[];
-void func_112990(void* request, s32 sound, s32 first, s32 second, s32 third);
 void func_10DAA0(BootSound1B65F8* sound, s32 mode);
 void func_10DA30(BootSound1B65F8* sound);
-void func_10DB10(BootSound1B65F8* sound, s32 value);
 void func_10EA70(BootSound1B65F8* sound, BootClass178A90* listener, float first, float second);
 void func_10EA90(BootSound1B65F8* sound, s32 speaker, float angle);
 s32 func_110920(BootSound1B65F8* sound, s32 handle, s32 flag);
 s32 func_111C50(BootSound1B65F8* sound, s32 id, BootClass178A90* emitter, s32 first, s32 volume, s32 second);
 s32 func_110C10(BootSound1B65F8* sound, s32 handle);
 u32 func_10E310(BootSound1B65F8* sound, s32 handle, float time);
-void func_10F000(void* request, s32 first, s32 second);
-s32 func_103640(void* queue, s32 id, s32 first, s32 second, s32 third, s32 fourth);
-void func_103B20(void* queue, s32 id, s32 first, s32 second, s32 third, s32 fourth);
-void func_121FE0(s32 value);
 void func_11E020(BootInputRoot9670* root, s32 slot, s32 enabled);
 void func_11E320(BootInputRoot9670* root, s32 slot, s32* first, s32* second, s32* third, s32* fourth);
-void func_467570(BootClass175070* object, s32 first, s32 second, s32 third, float x, float y, float z);
 void lib_text_set_resource(BootClass178750* object, s32 source, s32 key, u8 flag);
-void func_479190(BootClass175320* scene, void* data);
-void func_474010(BootClass175320* scene, BootDimensionsACD0* display, BootClass178DD0* list, struct BootDisplay6624* state, BootClass178F30* manager,
-                 struct BootDisplayLinks661C* links, s32 flag);
 BootClass170F30* func_472EB0(BootClass170E90* models, BootClass170F30* model);
-void* func_473680(BootClass170E90* models, const char* name);
 void func_4BF100(BootClass178220* animation, BootClass170E90* models, void* optional);
 void func_4BDB50(BootClass178220* animation, BootClass178370* target, const char* name);
 void func_4B3DE0(BootClass178220* animation, BootClass178370* target);
@@ -213,62 +183,8 @@ struct BootRender6618
     void* packet;
 };
 
-/** Partial resident root whose word at 0x15CC0 points to the status byte. */
-struct BootResidentRoot15CC0
-{
-    u8 unk00[0x15CC0];
-    u8* status;
-};
-
-/** Partial resident display state D_001B6624 that points back at the display manager. */
-struct BootDisplay6624
-{
-    u8 unk00[0x360];
-    BootClass178F30* manager;
-};
-
-/** Partial resident object whose display pointer is at offset 0x8C. */
-struct BootDisplayUser8C
-{
-    u8 unk00[0x8C];
-    BootDimensionsACD0* display;
-};
-
-/** Partial resident object whose display pointer is at offset 0x94. */
-struct BootDisplayUser94
-{
-    u8 unk00[0x94];
-    BootDimensionsACD0* display;
-};
-
-/** Partial resident object whose display pointer is at offset 0x128. */
-struct BootDisplayUser128
-{
-    u8 unk00[0x128];
-    BootDimensionsACD0* display;
-};
-
-/** Partial resident manager D_001B661C and the objects that draw through the display. */
-struct BootDisplayLinks661C : public BootClass178DD0
-{
-    u8 unk14[0x406C];
-    BootDisplayUser8C* unk4080;
-    void* unk4084;
-    BootDimensionsACD0* unk4088;
-    u8 unk408C[0x42];
-    u8 unk40CE;
-    u8 unk40CF[0x389];
-    BootDisplayUser94* unk4458;
-    u8 unk445C[4];
-    BootDisplayUser94* unk4460;
-    BootDisplayUser94* unk4464;
-    BootDisplayUser94* unk4468;
-    BootDisplayUser128* unk446C;
-};
-
 static inline void copy_transfer_name(BootBattleTrophyCard* object, const char* base, const char* suffix);
 static inline s32 prepare_transfer_request(BootBattleTrophyCard* object);
-static inline void set_resource_bit(BootResourceBits0970* bits, u32 index, s32 enabled);
 
 /**
  * @brief Clear the stored filename and copy the optional base and suffix.
@@ -415,30 +331,6 @@ static inline u8 settings_fourth_dimension_unlocked(BootResource0970* settings)
     return settings->fourth_dimension_unlocked;
 }
 
-/**
- * @brief Set or clear a selected bit in the resource's flag array.
- * @param bits Resource storage containing the flag array.
- * @param index Unsigned flag index.
- * @param enabled Nonzero to set the bit, or zero to clear it.
- */
-static inline void set_resource_bit(BootResourceBits0970* bits, u32 index, s32 enabled)
-{
-    u32 byte_index = index / 8;
-    u32 bit_index = index % 8;
-    u8 mask;
-
-    if (enabled)
-    {
-        mask = 1ULL << bit_index;
-        bits->unk08[byte_index] |= mask;
-    }
-    else
-    {
-        mask = ~(1ULL << bit_index);
-        bits->unk08[byte_index] &= mask;
-    }
-}
-
 /** @brief Report the list kind used when registration requests the default. @return Two. */
 s32 BootBattleTrophyCard::get_default_list_kind()
 {
@@ -497,7 +389,7 @@ void BootBattleTrophyCard::func_001E0970()
         }
 
         bits->unk14 = *(u32*)transfer_buffer;
-        func_13A4C0(bits->unk18, saved + BOOT_TRANSFER_FLAG_BYTES, 8);
+        func_13A4C0(&bits->checksum_seed, saved + BOOT_TRANSFER_FLAG_BYTES, 8);
         func_13A4C0(unkDC8, (u8*)transfer_buffer + 0x4E2, 0x11A6C0);
 
         if (transfer_buffer != 0)
@@ -1380,30 +1272,6 @@ BootBattleTrophyCard::BootBattleTrophyCard()
 /** @brief Destroy the object. */
 BootStartupChecks::~BootStartupChecks()
 {
-}
-
-/**
- * @brief Hang when the main executable's code no longer matches the copy in the program image.
- */
-static inline void check_main_code()
-{
-    // Uncached cursor; the code it checks starts 0x400000 bytes (0x80000 words) below it.
-    u64* code = (u64*)(0x20000000 | 0x500000);
-    u64* copy = (u64*)(g_boot_program.image->code_offset + (u32)g_boot_program.image);
-    s32 index;
-
-    for (index = 0; index < 0x8760; index++, code++, copy++)
-    {
-        if (code[-0x80000] != *copy)
-        {
-            BootResidentRoot15CC0* root = (BootResidentRoot15CC0*)func_10D8E0();
-
-            *root->status = 0x67;
-            for (;;)
-            {
-            }
-        }
-    }
 }
 
 /**
@@ -2759,59 +2627,59 @@ void BootNewGameSettings::update_option_rows()
             {
             case BOOT_SETTINGS_TV_MODE:
                 row_x = -272.0f;
-                func_001FA620(images[16], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[16], 0, 8, 288, 40, 0x80808080, 0);
+                images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[16]->set_rectangle(0, 8, 288, 40, 0x80808080, 0);
                 images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
-                func_001FA620(images[17], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[17], 0, 68, 288, 40, 0x80808080, 0);
+                images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[17]->set_rectangle(0, 68, 288, 40, 0x80808080, 0);
                 images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_SOUND:
                 row_x = -272.0f;
-                func_001FA620(images[16], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[16], 0, 106, 288, 40, 0x80808080, 0);
+                images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[16]->set_rectangle(0, 106, 288, 40, 0x80808080, 0);
                 images[16]->unk18->func_001E0520(-272.0f, -162.0f, 0.0f);
-                func_001FA620(images[17], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[17], 0, 162, 200, 40, 0x80808080, 0);
+                images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[17]->set_rectangle(0, 162, 200, 40, 0x80808080, 0);
                 images[17]->unk18->func_001E0520(-272.0f, -126.0f, 0.0f);
-                func_001FA620(images[18], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[18], 0, 236, 424, 40, 0x80808080, 0);
+                images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[18]->set_rectangle(0, 236, 424, 40, 0x80808080, 0);
                 images[18]->unk18->func_001E0520(-272.0f, -90.0f, 0.0f);
-                func_001FA620(images[19], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[19], 224, 168, 237, 38, 0x80808080, 0);
+                images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[19]->set_rectangle(224, 168, 237, 38, 0x80808080, 0);
                 images[19]->unk18->func_001E0520(-272.0f, -55.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_EVENT_SKIP:
                 row_x = -272.0f;
-                func_001FA620(images[16], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[16], 0, 312, 340, 40, 0x80808080, 0);
+                images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[16]->set_rectangle(0, 312, 340, 40, 0x80808080, 0);
                 images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
-                func_001FA620(images[17], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[17], 0, 368, 340, 40, 0x80808080, 0);
+                images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[17]->set_rectangle(0, 368, 340, 40, 0x80808080, 0);
                 images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_VOICE:
                 row_x = -260.0f;
-                func_001FA620(images[16], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[16], 0, 0, 340, 40, 0x80808080, 0);
+                images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[16]->set_rectangle(0, 0, 340, 40, 0x80808080, 0);
                 images[16]->unk18->func_001E0520(-260.0f, -142.0f, 0.0f);
-                func_001FA620(images[17], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[17], 0, 55, 340, 40, 0x80808080, 0);
+                images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[17]->set_rectangle(0, 55, 340, 40, 0x80808080, 0);
                 images[17]->unk18->func_001E0520(-260.0f, -102.0f, 0.0f);
-                func_001FA620(images[18], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[18], 0, 110, 340, 40, 0x80808080, 0);
+                images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[18]->set_rectangle(0, 110, 340, 40, 0x80808080, 0);
                 images[18]->unk18->func_001E0520(-260.0f, -62.0f, 0.0f);
-                func_001FA620(images[19], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[19], 0, 416, 500, 40, 0x80808080, 0);
+                images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[19]->set_rectangle(0, 416, 500, 40, 0x80808080, 0);
                 images[19]->unk18->func_001E0520(-260.0f, -22.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_VIBRATION:
                 row_x = -254.0f;
-                func_001FA620(images[16], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[16], 0, 160, 340, 40, 0x80808080, 0);
+                images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[16]->set_rectangle(0, 160, 340, 40, 0x80808080, 0);
                 images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
-                func_001FA620(images[17], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[17], 0, 215, 340, 40, 0x80808080, 0);
+                images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[17]->set_rectangle(0, 215, 340, 40, 0x80808080, 0);
                 images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_DIFFICULTY:
@@ -2819,29 +2687,29 @@ void BootNewGameSettings::update_option_rows()
 
                 if (!settings_universe_unlocked(settings))
                 {
-                    func_001FA620(images[16], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                    func_001F9FC0(images[16], 0, 257, 340, 42, 0x80808080, 0);
+                    images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[16]->set_rectangle(0, 257, 340, 42, 0x80808080, 0);
                     images[16]->unk18->func_001E0520(-260.0f, -142.0f, 0.0f);
-                    func_001FA620(images[17], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                    func_001F9FC0(images[17], 0, 313, 340, 42, 0x80808080, 0);
+                    images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[17]->set_rectangle(0, 313, 340, 42, 0x80808080, 0);
                     images[17]->unk18->func_001E0520(-260.0f, -92.0f, 0.0f);
-                    func_001FA620(images[18], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                    func_001F9FC0(images[18], 0, 369, 340, 42, 0x80808080, 0);
+                    images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[18]->set_rectangle(0, 369, 340, 42, 0x80808080, 0);
                     images[18]->unk18->func_001E0520(-260.0f, -42.0f, 0.0f);
                 }
                 else
                 {
-                    func_001FA620(images[16], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                    func_001F9FC0(images[16], 3, 257, 340, 42, 0x80808080, 0);
+                    images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[16]->set_rectangle(3, 257, 340, 42, 0x80808080, 0);
                     images[16]->unk18->func_001E0520(-260.0f, -142.0f, 0.0f);
-                    func_001FA620(images[17], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                    func_001F9FC0(images[17], 3, 313, 340, 42, 0x80808080, 0);
+                    images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[17]->set_rectangle(3, 313, 340, 42, 0x80808080, 0);
                     images[17]->unk18->func_001E0520(-260.0f, -102.0f, 0.0f);
-                    func_001FA620(images[18], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                    func_001F9FC0(images[18], 3, 369, 340, 42, 0x80808080, 0);
+                    images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[18]->set_rectangle(3, 369, 340, 42, 0x80808080, 0);
                     images[18]->unk18->func_001E0520(-260.0f, -62.0f, 0.0f);
-                    func_001FA620(images[19], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                    func_001F9FC0(images[19], 0, 466, 340, 42, 0x80808080, 0);
+                    images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[19]->set_rectangle(0, 466, 340, 42, 0x80808080, 0);
                     images[19]->unk18->func_001E0520(-260.0f, -24.0f, 0.0f);
                 }
 
@@ -2979,30 +2847,30 @@ void BootNewGameSettings::update_page_images()
     if (images[0] == 0)
     {
         images[0] = new (0) BootImage;
-        func_001FA620(images[0], (void*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[0], 0, 1, 0x1E8, 0xDF, 0x80808080, 0);
+        images[0]->set_texture((const BootTextureResource*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
+        images[0]->set_rectangle(0, 1, 0x1E8, 0xDF, 0x80808080, 0);
         images[0]->unk18->func_001E0520(-244.0f, -112.0f, 0.0f);
     }
 
     if (images[1] == 0)
     {
         images[1] = new (0) BootImage;
-        func_001FA620(images[1], (void*)(((u32)image_blocks[1] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[1], 0, 0, 0x280, 0x50, 0x80808080, 0);
+        images[1]->set_texture((const BootTextureResource*)(((u32)image_blocks[1] + 0x7F) & ~0x7F), 0);
+        images[1]->set_rectangle(0, 0, 0x280, 0x50, 0x80808080, 0);
         images[1]->unk18->func_001E0520(-320.0f, -216.0f, 0.0f);
     }
 
     if (images[2] == 0 && on_speaker_setup == 0)
     {
         images[2] = new (0) BootImage;
-        func_001FA620(images[2], (void*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[2], 0x1A, 0xF5, 0x18, 0x16, 0x80808080, 0);
+        images[2]->set_texture((const BootTextureResource*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
+        images[2]->set_rectangle(0x1A, 0xF5, 0x18, 0x16, 0x80808080, 0);
 
         for (s32 i = 0; i < 6; i++)
         {
             images[3 + i] = new (0) BootImage;
-            func_001FA620(images[3 + i], (void*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[3 + i], 0x52, 0xF3 + i * 29, 0xEE, 0x1C, 0x80808080, 0);
+            images[3 + i]->set_texture((const BootTextureResource*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
+            images[3 + i]->set_rectangle(0x52, 0xF3 + i * 29, 0xEE, 0x1C, 0x80808080, 0);
         }
     }
 
@@ -3011,16 +2879,16 @@ void BootNewGameSettings::update_page_images()
         for (s32 i = 0; i < 6; i++)
         {
             images[9 + i] = new (0) BootImage;
-            func_001FA620(images[9 + i], (void*)(((u32)image_blocks[2] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[9 + i], 0, 2 + i * 32, 0x180, 0x20, 0x80808080, 0);
+            images[9 + i]->set_texture((const BootTextureResource*)(((u32)image_blocks[2] + 0x7F) & ~0x7F), 0);
+            images[9 + i]->set_rectangle(0, 2 + i * 32, 0x180, 0x20, 0x80808080, 0);
         }
     }
 
     if (images[15] == 0 && on_speaker_setup == 0)
     {
         images[15] = new (0) BootImage;
-        func_001FA620(images[15], (void*)(((u32)image_blocks[2] + 0x7F) & ~0x7F), 0);
-        func_001F9FC0(images[15], 0, 0xC2, 0x180, 0x20, 0x80808080, 0);
+        images[15]->set_texture((const BootTextureResource*)(((u32)image_blocks[2] + 0x7F) & ~0x7F), 0);
+        images[15]->set_rectangle(0, 0xC2, 0x180, 0x20, 0x80808080, 0);
     }
 
     settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
@@ -3155,14 +3023,6 @@ struct BootMorphTarget : public BootClass170E90
     /** Shape the target draws, such as a mouth shape or zero for closed eyes. */
     s32* shape;
 };
-
-/** @brief Queue a fade-out over the current screen. */
-static inline void queue_fade()
-{
-    BootClass171C00* fade = new (0) BootClass171C00(g_boot_program.display);
-    fade->unkd0 = 2.0f;
-    D_001B661C->append_node(fade, -1);
-}
 
 /** @brief Show the message that describes the selected option. */
 inline void BootNewGameSettings::show_value_message()
@@ -3380,7 +3240,7 @@ void BootNewGameSettings::update()
             cursor = 0;
         }
 
-        D_001B6614->append_node(new (0) BootClass171BB0(0), -1);
+        D_001B6614->append_node(new (0) BootTitleMenu(0), -1);
         lib_object_detach_owner(this);
         destroy();
         return;
@@ -3903,7 +3763,7 @@ void BootNewGameSettings::update()
         }
 
         settings->unk25_mid = 0;
-        D_001B6614->append_node(new (0) BootClass171CB0, -1);
+        D_001B6614->append_node(new (0) BootGameLauncher, -1);
         lib_object_detach_owner(this);
         destroy();
         return;
@@ -4212,7 +4072,7 @@ void BootOpeningMovie::update()
     switch (step)
     {
     case 0:
-        if ((input->held & 8) || func_115270(D_001B65E4) != 1)
+        if ((input->held & 8) || func_115270(D_001B65E4, 1) != 1)
         {
             step = 3;
             break;
@@ -4307,8 +4167,8 @@ void BootOpeningMovie::update()
             if (caption_image_loaded == 0)
             {
                 caption_image = new (0) BootImage;
-                func_001FA620(caption_image, (void*)(((u32)g_boot_program.image_block + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(caption_image, g_opening_captions[caption].x, g_opening_captions[caption].y, width, height, 0x80808080, 0);
+                caption_image->set_texture((const BootTextureResource*)(((u32)g_boot_program.image_block + 0x7F) & ~0x7F), 0);
+                caption_image->set_rectangle(g_opening_captions[caption].x, g_opening_captions[caption].y, width, height, 0x80808080, 0);
                 caption_image_loaded = 1;
             }
         }
@@ -4490,7 +4350,7 @@ void BootOpeningMovie::update()
     case 4:
         lib_object_detach_owner(this);
         destroy();
-        D_001B6614->append_node(new (0) BootClass171BB0(-1), -1);
+        D_001B6614->append_node(new (0) BootTitleMenu(-1), -1);
         return;
     }
 }
@@ -4829,7 +4689,7 @@ void BootProgram::run()
     trophy_card = 0;
     caption_block = 0;
     unk2C = 0;
-    exit_code = 0;
+    next_program = 0;
     error_popup = 0;
     image = 0;
     messages = 0;
@@ -4909,7 +4769,7 @@ void BootProgram::run()
     }
     else
     {
-        D_001B6614->append_node(new (0) BootClass171BB0(-1), -1);
+        D_001B6614->append_node(new (0) BootTitleMenu(-1), -1);
     }
 
     D_001B6420 = 1;
@@ -4918,7 +4778,7 @@ void BootProgram::run()
     D_001B661C->unk40CE = 0;
     D_001B6420 = 1;
 
-    while (exit_code == 0)
+    while (next_program == 0)
     {
         func_4DD830(display, frame++, D_001B65DC);
         func_4D8AC0();
@@ -4969,7 +4829,7 @@ void BootProgram::run()
     {
     }
 
-    func_1010D0(func_10D8E0(), exit_code, 1);
+    func_1010D0(func_10D8E0(), next_program, 1);
 }
 
 /** @brief Release the track pools and every object, resource and buffer the program owns. */

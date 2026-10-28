@@ -1,8 +1,8 @@
 #ifndef SO3_OVERLAYS_BOOT_TEXT_001ED4E0_H
 #define SO3_OVERLAYS_BOOT_TEXT_001ED4E0_H
 
-
 #include "types.h"
+#include "overlays/boot/text_001DD3C0.h"
 
 /** @brief A 48-byte record containing its observed scalar key at offset 0x0C. */
 typedef struct BootRecord48F0E90
@@ -273,8 +273,6 @@ class BootClass1711D0;
 class BootClass1714D0;
 extern "C" {
 #endif
-
-
 
 /**
  * @brief Copy an indexed entry's key and values to the requested outputs.
@@ -580,9 +578,7 @@ float func_001F0F00(BootState1F0D60* object);
  * @param start First endpoint.
  * @param end Second endpoint.
  */
-void func_001EFE50(BootScalarRangeFE50* object, const float* first,
-    const float* second, const float* third, const float* fourth,
-    float start, float end);
+void func_001EFE50(BootScalarRangeFE50* object, const float* first, const float* second, const float* third, const float* fourth, float start, float end);
 
 /**
  * @brief Reset vector-key storage, counts, control fields, and cached indices.
@@ -712,7 +708,6 @@ s32 func_001F33B0(BootState1F1FC0* object, s32 index, const float* value, float 
  * @return One if appended, or zero if storage is absent or full.
  */
 s32 func_001F3440(BootState1F1FC0* object, const float* value, float key);
-
 
 /**
  * @brief Set the low packed value and flag whether either packed value is 4.
@@ -1401,11 +1396,6 @@ s16 func_001F5AD0(void* object);
  */
 u32 func_001F5E00(void* object);
 
-
-
-
-
-
 /**
  * @brief Return zero as a float.
  * @param object Receiver or first argument; unused.
@@ -1433,10 +1423,6 @@ void func_001EFD70(void* object, float* value);
  * @param value Destination for the value.
  */
 void func_001F04B0(void* object, float* value);
-
-
-
-
 
 /**
  * @brief Clear the fields at offsets 0x10 through 0x18.
@@ -1512,12 +1498,16 @@ void func_001F0480(void* object, float* result);
  */
 void func_001EFD80(void* object, float* result);
 
-
 /** Clear the vector at offset 0xB0 and update the associated state. */
 void func_001EEED0(void* object);
 /** Clear the vector at offset 0x90 and update the associated state. */
 void func_001EFEA0(void* object);
 
+/**
+ * @brief Encode a saved record and seal it with a fresh checksum; a damaged record is wiped instead.
+ * @param record Record to seal; an already sealed record is left alone.
+ */
+void seal_record(BootSealedRecord* record);
 
 #ifdef __cplusplus
 }

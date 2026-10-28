@@ -123,6 +123,16 @@ segments:
           - {function: update__19BootNewGameSettingsFv, table: 0, offset: 0x20, size: 0x30}
         linker_section_order: .rodata
       - [0x28800, rodatabin, data_00205B80]
+      - start: 0x28850
+        type: .rodata
+        name: text_001ED4E0
+        linker_section: .rodata.00205BD0
+        rodata_anchors:
+          - {function: update__13BootTitleMenuFv, offset: 0x0, size: 0x20}
+          - {function: update__16BootGameLauncherFv, offset: 0x20, size: 0x1C}
+        linker_section_order: .rodata
+      - [0x2888C, pad, rodata_pad_00205C0C]
+      - [0x28890, rodatabin, data_00205C10]
   - name: init
     type: code
     start: 0x28980
