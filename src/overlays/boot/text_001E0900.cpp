@@ -145,7 +145,8 @@ void func_11E320(BootInputRoot9670* root, s32 slot, s32* first, s32* second, s32
 void func_467570(BootClass175070* object, s32 first, s32 second, s32 third, float x, float y, float z);
 void lib_text_set_resource(BootClass178750* object, s32 source, s32 key, u8 flag);
 void func_479190(BootClass175320* scene, void* data);
-void func_474010(BootClass175320* scene, BootDimensionsACD0* display, BootClass178DD0* list, struct BootDisplay6624* state, BootClass178F30* manager, struct BootDisplayLinks661C* links, s32 flag);
+void func_474010(BootClass175320* scene, BootDimensionsACD0* display, BootClass178DD0* list, struct BootDisplay6624* state, BootClass178F30* manager,
+                 struct BootDisplayLinks661C* links, s32 flag);
 BootClass170F30* func_472EB0(BootClass170E90* models, BootClass170F30* model);
 void* func_473680(BootClass170E90* models, const char* name);
 void func_4BF100(BootClass178220* animation, BootClass170E90* models, void* optional);
@@ -161,12 +162,16 @@ struct BootCaption
 {
     /** Movie frame the caption is centred on. */
     s16 frame;
+
     /** Screen corner, or zero for the centre. */
     s16 anchor;
+
     /** Nonzero for a message, zero for a picture from the third resource block. */
     s16 is_text;
+
     /** Picture x, or the message key. */
     s16 x;
+
     s16 y;
     s16 width;
     s16 height;
@@ -272,7 +277,6 @@ static inline void copy_transfer_name(BootBattleTrophyCard* object, const char* 
 static inline s32 prepare_transfer_request(BootBattleTrophyCard* object);
 static inline void set_resource_bit(BootResourceBits0970* bits, u32 index, s32 enabled);
 
-
 /**
  * @brief Clear the stored filename and copy the optional base and suffix.
  * @param object State containing the filename buffer.
@@ -282,13 +286,16 @@ static inline void set_resource_bit(BootResourceBits0970* bits, u32 index, s32 e
 static inline void copy_transfer_name(BootBattleTrophyCard* object, const char* base, const char* suffix)
 {
     s32 index;
+
     if (base != 0)
     {
         for (index = 0; index < BOOT_TRANSFER_NAME_CAPACITY; index++)
         {
             object->filename[index] = 0;
         }
+
         func_13C948(object->filename, base);
+
         if (suffix != 0)
         {
             strcat(object->filename, suffix);
@@ -304,6 +311,7 @@ static inline void copy_transfer_name(BootBattleTrophyCard* object, const char* 
 static inline s32 prepare_transfer_request(BootBattleTrophyCard* object)
 {
     u8 ready;
+
     if (object->transfer_buffer == 0)
     {
         ready = 0;
@@ -311,10 +319,12 @@ static inline s32 prepare_transfer_request(BootBattleTrophyCard* object)
     else
     {
         func_13A678(object->transfer_buffer, 0, BOOT_TRANSFER_BUFFER_SIZE);
+
         if (strlen(D_205100) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
         {
             copy_transfer_name(object, D_205100, D_205980);
         }
+
         object->unkDD4.unk00 = object->filename;
         object->unkDD4.unk04 = object->transfer_buffer;
         object->unkDD4.unk08 = BOOT_TRANSFER_BUFFER_SIZE;
@@ -325,6 +335,7 @@ static inline s32 prepare_transfer_request(BootBattleTrophyCard* object)
         object->unkDE4.unk0C = &object->unkDD4;
         ready = 1;
     }
+
     return ready;
 }
 
@@ -339,6 +350,7 @@ static inline u8 settings_difficulty(BootResource0970* settings)
     {
         return 0;
     }
+
     return settings->difficulty;
 }
 
@@ -350,6 +362,7 @@ static inline u8 settings_difficulty(BootResource0970* settings)
 static inline void settings_set_difficulty(BootResource0970* settings, u8 value)
 {
     s32 length = (u8*)&settings->checksum - &settings->unk26;
+
     if (settings->checksum == func_457470(settings->key, &settings->unk26, length))
     {
         settings->difficulty = value;
@@ -371,6 +384,7 @@ static inline u8 settings_extra_byte(BootResource0970* settings, u8* data, u8* v
     {
         return 0;
     }
+
     return *value;
 }
 
@@ -382,10 +396,12 @@ static inline u8 settings_extra_byte(BootResource0970* settings, u8* data, u8* v
 static inline u8 settings_universe_unlocked(BootResource0970* settings)
 {
     u8* data = &settings->unk1A0;
+
     if (settings->extra_checksum != func_457470(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
     {
         return 0;
     }
+
     return settings->universe_unlocked;
 }
 
@@ -397,10 +413,12 @@ static inline u8 settings_universe_unlocked(BootResource0970* settings)
 static inline u8 settings_fourth_dimension_unlocked(BootResource0970* settings)
 {
     u8* data = &settings->unk1A0;
+
     if (settings->extra_checksum != func_457470(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
     {
         return 0;
     }
+
     return settings->fourth_dimension_unlocked;
 }
 
@@ -415,6 +433,7 @@ static inline void set_resource_bit(BootResourceBits0970* bits, u32 index, s32 e
     u32 byte_index = index / 8;
     u32 bit_index = index % 8;
     u8 mask;
+
     if (enabled)
     {
         mask = 1ULL << bit_index;
@@ -426,8 +445,6 @@ static inline void set_resource_bit(BootResourceBits0970* bits, u32 index, s32 e
         bits->unk08[byte_index] &= mask;
     }
 }
-
-
 
 /** @brief Report the list kind used when registration requests the default. @return Two. */
 s32 BootBattleTrophyCard::get_default_list_kind()
@@ -452,14 +469,17 @@ u16 BootBattleTrophyCard::get_ready_slots()
 
     modes = owner->unk14;
     flags = 0;
+
     if (modes[0].unk48 == 2)
     {
         flags |= BOOT_MODE_0910_FLAG_0;
     }
+
     if (modes[1].unk48 == 2)
     {
         flags |= BOOT_MODE_0910_FLAG_1;
     }
+
     return flags;
 }
 
@@ -470,19 +490,23 @@ void BootBattleTrophyCard::func_001E0970()
     s32 index;
     u8* saved;
     BootResourceBits0970* bits;
+
     if (transfer_buffer != 0)
     {
         saved = (u8*)transfer_buffer + 0x4B4;
         bits = &settings->unk1A8;
         func_13A678(saved_bits, 0, BOOT_TRANSFER_FLAG_BYTES);
         func_13A4C0(saved_bits, saved, BOOT_TRANSFER_FLAG_BYTES);
+
         for (index = 0; index < BOOT_TRANSFER_FLAG_COUNT; index++)
         {
             set_resource_bit(bits, index, saved_bits[index / 8] & (1 << (index % 8)));
         }
+
         bits->unk14 = *(u32*)transfer_buffer;
         func_13A4C0(bits->unk18, saved + BOOT_TRANSFER_FLAG_BYTES, 8);
         func_13A4C0(unkDC8, (u8*)transfer_buffer + 0x4E2, 0x11A6C0);
+
         if (transfer_buffer != 0)
         {
             delete[] transfer_buffer;
@@ -510,11 +534,13 @@ s16 BootBattleTrophyCard::func_001E0AE0()
 s16 BootBattleTrophyCard::func_001E0AF0()
 {
     s16 result = -1;
+
     switch (unkDC0)
     {
     case 0:
         unkDF9 = 1;
         result = func_432310(card, unkDCC, &unkDE4);
+
         if (result == -1)
         {
             unkDF8 = 0;
@@ -527,16 +553,20 @@ s16 BootBattleTrophyCard::func_001E0AF0()
         {
             unkDC0++;
         }
+
         break;
     case 1:
         result = func_432270(card, unkDCC, &unkDD0);
+
         if (result == 0)
         {
             break;
         }
+
         if (result == 1)
         {
             unkDF8 = 0;
+
             if (unkDD0 >= 0)
             {
                 func_001E0970();
@@ -552,14 +582,17 @@ s16 BootBattleTrophyCard::func_001E0AF0()
                 unkDC0 = -1;
                 unk1C = 1;
                 unkDF8 = 0;
+
                 if (unkDF9 == 1)
                 {
                     unkDF9 = 0;
                 }
             }
         }
+
         break;
     }
+
     return result;
 }
 
@@ -572,14 +605,17 @@ s16 BootBattleTrophyCard::func_001E0AF0()
 s32 BootBattleTrophyCard::func_001E0C30(u16 mode, void* destination)
 {
     u8 ready;
+
     if (mode != 0 && mode != 1)
     {
         return 0;
     }
+
     if (destination == 0)
     {
         return 0;
     }
+
     unkDC8 = destination;
     unkDCC = mode;
     unkDD0 = -1;
@@ -587,15 +623,19 @@ s32 BootBattleTrophyCard::func_001E0C30(u16 mode, void* destination)
     unkDF8 = 1;
     slot = unkDCC;
     unk1E = 0;
+
     if (transfer_buffer == 0)
     {
         transfer_buffer = new (0) u8[BOOT_TRANSFER_BUFFER_SIZE];
     }
+
     ready = prepare_transfer_request(this);
+
     if (!ready)
     {
         return 0;
     }
+
     unkDF9 = 0;
     return 1;
 }
@@ -638,30 +678,36 @@ void BootBattleTrophyCard::update()
     if (card != 0 && card->unk20 != 0)
     {
         status = unk1A;
+
         if (unk1E == 0)
         {
             status = card->unk14[slot].unk48;
+
             if (status != unk1A)
             {
                 unk1A = status;
                 unk1C = 1;
                 unkDCE = -1;
+
                 if (unkDF9 != 0)
                 {
                     cancel_transfer(this);
                 }
+
                 return;
             }
         }
 
         progress = 0;
         done = 0;
+
         for (;;)
         {
             if (done)
             {
                 break;
             }
+
             switch (unk1C)
             {
             case 0:
@@ -678,10 +724,12 @@ void BootBattleTrophyCard::update()
                     {
                         cancel_transfer(this);
                     }
+
                     return;
                 }
 
                 unk20 = card->unk14[slot].unk50;
+
                 if (unk20 == 0)
                 {
                     if (unkD34 == 1)
@@ -692,27 +740,34 @@ void BootBattleTrophyCard::update()
                     {
                         func_001E1500(1, 16, unkD34);
                     }
+
                     return;
                 }
 
                 unk24 = card->unk14[slot].unk4C;
+
                 if (unk20 == 0 && unkD34 == 1)
                 {
                     unk24 = 8000;
                 }
+
                 unkDFC[slot] = unk24;
                 unk1C = 2;
+
                 if (unk24 < 175)
                 {
                     unk2D = 1;
                 }
+
                 break;
             case 2:
                 if (strlen(D_205100) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
                 {
                     copy_transfer_name(this, D_205100, D_205988);
                 }
+
                 status = func_431F90(card, slot, filename, 0, 1, unkD30);
+
                 if (status == -1)
                 {
                     done = 1;
@@ -721,9 +776,11 @@ void BootBattleTrophyCard::update()
                 {
                     unk1C = 3;
                 }
+
                 break;
             case 3:
                 status = func_432270(card, slot, &progress);
+
                 if (status != 0 && status == 1)
                 {
                     if (progress == 0)
@@ -766,13 +823,16 @@ void BootBattleTrophyCard::update()
                 {
                     done = 1;
                 }
+
                 break;
             case 4:
                 if (strlen(D_205100) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
                 {
                     copy_transfer_name(this, D_205100, D_205980);
                 }
+
                 status = func_431F90(card, slot, filename, 0, 1, unkDBC);
+
                 if (status == -1)
                 {
                     done = 1;
@@ -781,9 +841,11 @@ void BootBattleTrophyCard::update()
                 {
                     unk1C = 5;
                 }
+
                 break;
             case 5:
                 status = func_432270(card, slot, &progress);
+
                 if (status != 0 && status == 1)
                 {
                     if (progress == 0)
@@ -823,6 +885,7 @@ void BootBattleTrophyCard::update()
                         reset_slot(0);
                     }
                 }
+
                 done = 1;
                 break;
             case 8:
@@ -849,6 +912,7 @@ static inline u8 state_mode_value(BootBattleTrophyCard* object, u16 mode)
     {
         return 0;
     }
+
     return object->unkD37[mode];
 }
 
@@ -861,10 +925,12 @@ static inline u8 state_mode_value(BootBattleTrophyCard* object, u16 mode)
 u16 BootBattleTrophyCard::get_slot_state(u16 mode, u16 kind)
 {
     u16 value = 0;
+
     if (mode != 0 && mode != 1)
     {
         return 0;
     }
+
     if (kind == 1)
     {
         if (mode == 0)
@@ -894,10 +960,12 @@ u16 BootBattleTrophyCard::get_slot_state(u16 mode, u16 kind)
     {
         value = state_mode_value(this, mode);
     }
+
     if (unk28)
     {
         reset_slot(0);
     }
+
     return value;
 }
 
@@ -910,6 +978,7 @@ u16 BootBattleTrophyCard::get_slot_state(u16 mode, u16 kind)
 void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
 {
     u8 ready;
+
     if (enabled == 1)
     {
         if (slot == 1)
@@ -917,13 +986,16 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
             if (kind == 1)
             {
                 func_001E17C0(event, &unk2C);
+
                 if (unkD34 != 1)
                 {
                     unk2A = 1;
                 }
+
                 if (unkD34 == 1)
                 {
                     ready = 0;
+
                     switch (event)
                     {
                     case 16:
@@ -932,6 +1004,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                             unk2A = 1;
                             ready = 1;
                         }
+
                         break;
                     case 15:
                     case 5:
@@ -940,6 +1013,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                         ready = 1;
                         break;
                     }
+
                     if (ready)
                     {
                         unk28 = 1;
@@ -964,14 +1038,17 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                 unk28 = 1;
             }
         }
+
         if (slot == 0)
         {
             if (kind == 1)
             {
                 func_001E17C0(event, &unk2B);
+
                 if (unkD34 == 1)
                 {
                     ready = 0;
+
                     switch (event)
                     {
                     case 16:
@@ -980,6 +1057,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                             unk29 = 1;
                             ready = 1;
                         }
+
                         break;
                     case 15:
                     case 5:
@@ -988,6 +1066,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                         ready = 1;
                         break;
                     }
+
                     if (ready == 1)
                     {
                         reset_slot(1);
@@ -1004,6 +1083,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                             unkD35[0] = 1;
                             reset_slot(1);
                         }
+
                         /* fall through */
                     case 2:
                     case 16:
@@ -1011,6 +1091,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                         unk29 = 1;
                         break;
                     }
+
                     if (unkD34 == 1)
                     {
                         reset_slot(1);
@@ -1025,6 +1106,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
             }
         }
     }
+
     if (unk28 == 0)
     {
         unk1E = 0;
@@ -1043,10 +1125,12 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
 void BootBattleTrophyCard::func_001E17C0(u16 event, u8* result)
 {
     s32 value;
+
     *result = 0;
     if (unkD34 == 1)
     {
         value = unkDFC[slot];
+
         switch (event)
         {
         case 15:
@@ -1064,6 +1148,7 @@ void BootBattleTrophyCard::func_001E17C0(u16 event, u8* result)
             {
                 unkE04[slot] = 16;
             }
+
             break;
         case 17:
             unkE04[slot] = 17;
@@ -1075,6 +1160,7 @@ void BootBattleTrophyCard::func_001E17C0(u16 event, u8* result)
                 {
                     *result = 15;
                 }
+
                 *result = 17;
                 if (0 <= value && value < 1200)
                 {
@@ -1087,11 +1173,13 @@ void BootBattleTrophyCard::func_001E17C0(u16 event, u8* result)
                 {
                     *result = 15;
                 }
+
                 *result = unkE04[slot];
                 if (0 <= value && value < 1375)
                 {
                     *result = 12;
                 }
+
                 if (0 <= value && value < 175)
                 {
                     *result = 10;
@@ -1105,6 +1193,7 @@ void BootBattleTrophyCard::func_001E17C0(u16 event, u8* result)
                     *result = 12;
                 }
             }
+
             break;
         case 5:
             if (unkE04[slot] == 17)
@@ -1117,12 +1206,14 @@ void BootBattleTrophyCard::func_001E17C0(u16 event, u8* result)
                 {
                     *result = 15;
                 }
+
                 *result = unkE04[slot];
                 if (0 <= value && value < 175)
                 {
                     *result = 14;
                 }
             }
+
             break;
         }
     }
@@ -1158,6 +1249,7 @@ void BootBattleTrophyCard::reset_slot(s16 mode)
     unk1E = 0;
     unk1C = 0;
     unk2D = 0;
+
     if (selected == 0)
     {
         unk29 = 0;
@@ -1167,6 +1259,7 @@ void BootBattleTrophyCard::reset_slot(s16 mode)
         unkD37[0] = 0;
         unkD35[0] = 0;
     }
+
     if (selected == 1)
     {
         unk2A = 0;
@@ -1174,6 +1267,7 @@ void BootBattleTrophyCard::reset_slot(s16 mode)
         unkD37[1] = 0;
         unkD35[1] = 0;
     }
+
     if (selected == 0 || selected == 1)
     {
         unkDFC[selected] = -1;
@@ -1192,29 +1286,36 @@ s32 BootBattleTrophyCard::initialize()
 
     owner = new (0) BootModeOwner0910;
     card = owner;
+
     if (card == 0)
     {
         return 0;
     }
+
     func_432720(card, D_001B6614);
     func_432660(card, 0, 0, 0);
     func_432660(card, 1, 1, 0);
     unk1C = 0;
     reset_slot(0);
     settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
     if (settings == 0)
     {
         return 0;
     }
+
     if (transfer_buffer == 0)
     {
         transfer_buffer = new (0) u8[BOOT_TRANSFER_BUFFER_SIZE];
     }
+
     ready = prepare_transfer_request(this);
+
     if (!ready)
     {
         return 0;
     }
+
     return 1;
 }
 
@@ -1270,6 +1371,7 @@ BootBattleTrophyCard::BootBattleTrophyCard()
     unkDC8 = 0;
     settings = 0;
     unkDF8 = 0;
+
     for (index = 0; index < BOOT_TRANSFER_NAME_CAPACITY; index++)
     {
         filename[index] = 0;
@@ -1296,11 +1398,13 @@ static inline void check_main_code()
     u64* code = (u64*)(0x20000000 | 0x500000);
     u64* copy = (u64*)(D_205E38.image->code_offset + (u32)D_205E38.image);
     s32 index;
+
     for (index = 0; index < 0x8760; index++, code++, copy++)
     {
         if (code[-0x80000] != *copy)
         {
             BootResidentRoot15CC0* root = (BootResidentRoot15CC0*)func_10D8E0();
+
             *root->status = 0x67;
             for (;;)
             {
@@ -1338,6 +1442,7 @@ void BootStartupChecks::update()
     input = g_boot_program.input;
     slot1 = input->slot1_state;
     slot2 = input->slot2_state;
+
     if (screen == BOOT_STARTUP_CARD_CHECK)
     {
         switch (step)
@@ -1347,242 +1452,268 @@ void BootStartupChecks::update()
             {
                 check_main_code();
                 D_001B657C->message_value = 175;
-                if ((u32)(slot1 - 16) <= 1 || (u32)(slot2 - 16) <= 1 || (slot1 == 11 && slot2 == 12) ||
-                    (slot1 == 11 && slot2 == 14) || (slot1 == 12 && slot2 == 11) || (slot1 == 12 && slot2 == 12) ||
-                    (slot1 == 12 && slot2 == 13) || (slot1 == 12 && slot2 == 14) || (slot1 == 13 && slot2 == 12) ||
-                    (slot1 == 13 && slot2 == 14) || (slot1 == 14 && slot2 == 11) || (slot1 == 14 && slot2 == 12) ||
+
+                if ((u32)(slot1 - 16) <= 1 || (u32)(slot2 - 16) <= 1 || (slot1 == 11 && slot2 == 12) || (slot1 == 11 && slot2 == 14) ||
+                    (slot1 == 12 && slot2 == 11) || (slot1 == 12 && slot2 == 12) || (slot1 == 12 && slot2 == 13) || (slot1 == 12 && slot2 == 14) ||
+                    (slot1 == 13 && slot2 == 12) || (slot1 == 13 && slot2 == 14) || (slot1 == 14 && slot2 == 11) || (slot1 == 14 && slot2 == 12) ||
                     (slot1 == 14 && slot2 == 13))
                 {
                     screen = BOOT_STARTUP_PROGRESSIVE;
                     step = 0;
                     return;
                 }
-                    if (slot1 == 15 && slot2 == 15)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_NO_CARD;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 15 && slot2 == 10)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_SLOT2_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 15 && slot2 == 11)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_SLOT2_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 15 && slot2 == 12)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_SLOT2_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 15 && slot2 == 13)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_SLOT2_NO_TROPHY_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 15 && slot2 == 14)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_SLOT2_NO_SAVE_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 10 && slot2 == 15)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_SLOT1_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 10 && slot2 == 10)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 10 && slot2 == 11)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 10 && slot2 == 12)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 10 && slot2 == 13)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 10 && slot2 == 14)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 11 && slot2 == 15)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_SLOT1_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 11 && slot2 == 10)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 11 && slot2 == 11)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 11 && slot2 == 13)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 12 && slot2 == 15)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_SLOT1_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 12 && slot2 == 10)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_FULL;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 13 && slot2 == 15)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_SLOT1_NO_TROPHY_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 13 && slot2 == 10)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 13 && slot2 == 11)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 13 && slot2 == 13)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 14 && slot2 == 15)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_SLOT1_NO_SAVE_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 14 && slot2 == 10)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
-                    if (slot1 == 14 && slot2 == 14)
-                    {
-                        shown_slot1 = slot1;
-                        shown_slot2 = slot2;
-                        message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
-                        step = 1;
-                        func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                        return;
-                    }
+
+                if (slot1 == 15 && slot2 == 15)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_NO_CARD;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 15 && slot2 == 10)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_SLOT2_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 15 && slot2 == 11)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_SLOT2_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 15 && slot2 == 12)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_SLOT2_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 15 && slot2 == 13)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_SLOT2_NO_TROPHY_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 15 && slot2 == 14)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_SLOT2_NO_SAVE_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 10 && slot2 == 15)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_SLOT1_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 10 && slot2 == 10)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 10 && slot2 == 11)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 10 && slot2 == 12)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 10 && slot2 == 13)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 10 && slot2 == 14)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 11 && slot2 == 15)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_SLOT1_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 11 && slot2 == 10)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 11 && slot2 == 11)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 11 && slot2 == 13)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 12 && slot2 == 15)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_SLOT1_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 12 && slot2 == 10)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_FULL;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 13 && slot2 == 15)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_SLOT1_NO_TROPHY_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 13 && slot2 == 10)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 13 && slot2 == 11)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 13 && slot2 == 13)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 14 && slot2 == 15)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_SLOT1_NO_SAVE_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 14 && slot2 == 10)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
+
+                if (slot1 == 14 && slot2 == 14)
+                {
+                    shown_slot1 = slot1;
+                    shown_slot2 = slot2;
+                    message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
+                    step = 1;
+                    func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+                    return;
+                }
             }
+
             break;
         case 1:
             check_main_code();
@@ -1595,6 +1726,7 @@ void BootStartupChecks::update()
         case 2:
         {
             u16 pressed = input->pressed;
+
             if (pressed & settings->unk00)
             {
                 check_main_code();
@@ -1624,6 +1756,7 @@ void BootStartupChecks::update()
                 input->clear_card_states();
                 step = 0;
             }
+
             break;
         }
         }
@@ -1631,6 +1764,7 @@ void BootStartupChecks::update()
     else if (screen == BOOT_STARTUP_PROGRESSIVE)
     {
         finished = 0;
+
         do
         {
             switch (step)
@@ -1638,6 +1772,7 @@ void BootStartupChecks::update()
             case 0:
                 again = 0;
                 check_main_code();
+
                 if ((input->held & 0x1000) && (input->held & 0x4000))
                 {
                     step++;
@@ -1648,9 +1783,11 @@ void BootStartupChecks::update()
                 {
                     finished = 1;
                 }
+
                 break;
             case 1:
                 again = 0;
+
                 if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
                 {
                     check_main_code();
@@ -1658,10 +1795,12 @@ void BootStartupChecks::update()
                     lib_container_attach_widget(container, text);
                     step++;
                 }
+
                 break;
             case 2:
                 again = 0;
                 check_main_code();
+
                 if (input->pressed & settings->unk00)
                 {
                     step++;
@@ -1685,23 +1824,28 @@ void BootStartupChecks::update()
                     func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
                     finished = 1;
                 }
+
                 break;
             case 3:
                 again = 0;
                 check_main_code();
+
                 if (++frames > 10)
                 {
                     g_boot_program.set_progressive(1);
                     frames = 0;
                     step++;
                 }
+
                 break;
             case 4:
                 again = 0;
                 check_main_code();
+
                 if (++frames > 60)
                 {
                     step++;
+
                     if (settings->widescreen)
                     {
                         text = new (0) BootClass178750(g_boot_program.get_messages(), BOOT_MSG_PROGRESSIVE_WIDE_STARTED, 0, 32.0f, 128.0f, 576.0f, 320.0f);
@@ -1711,13 +1855,16 @@ void BootStartupChecks::update()
                     {
                         text = new (0) BootClass178750(g_boot_program.get_messages(), BOOT_MSG_PROGRESSIVE_NORMAL_STARTED, 0, 32.0f, 128.0f, 576.0f, 320.0f);
                     }
+
                     lib_container_attach_widget(container, text);
                     frames = 0;
                 }
+
                 break;
             case 5:
                 again = 0;
                 check_main_code();
+
                 if (input->pressed & settings->unk00)
                 {
                     finished = 1;
@@ -1731,10 +1878,12 @@ void BootStartupChecks::update()
                     frames = 0;
                     func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
                 }
+
                 break;
             case 6:
                 check_main_code();
                 again = 0;
+
                 if (++frames > 10)
                 {
                     settings->widescreen = 0;
@@ -1742,15 +1891,18 @@ void BootStartupChecks::update()
                     step++;
                     frames = 0;
                 }
+
                 break;
             case 7:
                 check_main_code();
                 again = 0;
+
                 if (++frames > 60)
                 {
                     step = 1;
                     frames = 0;
                 }
+
                 break;
             default:
                 check_main_code();
@@ -1762,22 +1914,26 @@ void BootStartupChecks::update()
         if (finished)
         {
             step = 0;
+
             if (text != 0)
             {
                 text->destroy();
                 text = 0;
             }
+
             if (container != 0)
             {
                 container->destroy();
                 container = 0;
             }
+
             screen = BOOT_STARTUP_UNIT_CHECK;
         }
     }
     else
     {
         finished = 0;
+
         do
         {
             switch (step)
@@ -1785,6 +1941,7 @@ void BootStartupChecks::update()
             case 0:
                 again = 0;
                 check_main_code();
+
                 if (unit_state(D_001B65E4) != 2)
                 {
                     if (unit_state(D_001B65E4) == 1)
@@ -1804,10 +1961,12 @@ void BootStartupChecks::update()
                         finished = 1;
                     }
                 }
+
                 break;
             case 1:
                 again = 0;
                 check_main_code();
+
                 if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
                 {
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
@@ -1815,18 +1974,22 @@ void BootStartupChecks::update()
                     lib_container_attach_widget(container, text);
                     step++;
                 }
+
                 break;
             case 2:
                 check_main_code();
                 again = 0;
+
                 if (input->pressed & settings->unk00)
                 {
                     func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
                     finished = 1;
                 }
+
                 break;
             case 3:
                 again = 0;
+
                 if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
                 {
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
@@ -1834,6 +1997,7 @@ void BootStartupChecks::update()
                     lib_container_attach_widget(container, text);
                     step = 2;
                 }
+
                 break;
             default:
                 again = 0;
@@ -1848,11 +2012,13 @@ void BootStartupChecks::update()
                 container->destroy();
                 container = 0;
             }
+
             if (text != 0)
             {
                 text->destroy();
                 text = 0;
             }
+
             lib_object_detach_owner(this);
             destroy();
             D_001B6614->append_node(new (0) BootOpeningMovie, -1);
@@ -1973,6 +2139,7 @@ void BootNewGameSettings::place_girl()
     root->func_001E0670((BootVector4DDAA0*)&rotation);
 
     bool again = true;
+
     while (again)
     {
         switch (walk_state)
@@ -1992,6 +2159,7 @@ void BootNewGameSettings::place_girl()
             {
                 again = false;
             }
+
             break;
         case 1:
             if (func_4B4550(girl_animations[1], animation_frame, 2) > 0)
@@ -2013,6 +2181,7 @@ void BootNewGameSettings::place_girl()
             {
                 again = false;
             }
+
             break;
         case 2:
             if (func_4B4550(girl_animations[2], animation_frame, 2) > 0)
@@ -2034,6 +2203,7 @@ void BootNewGameSettings::place_girl()
             {
                 again = false;
             }
+
             break;
         case 3:
             if (func_4B4550(girl_animations[3], animation_frame, 2) > 0)
@@ -2055,6 +2225,7 @@ void BootNewGameSettings::place_girl()
             {
                 again = false;
             }
+
             break;
         case 4:
             if (func_4B4550(girl_animations[4], animation_frame, 2) > 0)
@@ -2067,6 +2238,7 @@ void BootNewGameSettings::place_girl()
             {
                 again = false;
             }
+
             break;
         case 5:
             if (func_4B4550(girl_animations[5], animation_frame, 2) > 0)
@@ -2079,6 +2251,7 @@ void BootNewGameSettings::place_girl()
             {
                 again = false;
             }
+
             break;
         }
     }
@@ -2095,6 +2268,7 @@ void BootNewGameSettings::place_girl()
     case 3:
     {
         float step;
+
         if (turn_speed == 0.0f)
         {
             step = 1.0f;
@@ -2103,12 +2277,14 @@ void BootNewGameSettings::place_girl()
         {
             step = ee_max(0.5f, abs_float(turn_speed));
         }
+
         animation_frame += step;
         break;
     }
     }
 
     void* look = func_473390(girl_scene, g_look_node_name);
+
     if (look != 0)
     {
         offset.x = 0.0f;
@@ -2205,11 +2381,13 @@ void BootNewGameSettings::place_speakers()
             {
                 BootVector4DDAA0 scale;
                 copy_vector(&scale, &speakers[i]->unk560);
+
                 if (adjusting_speaker == 1)
                 {
                     scale.x += 2.0f * D_001B6690;
                     scale.y += 2.0f * D_001B6690;
                     scale.z += 2.0f * D_001B6690;
+
                     if (!(scale.x <= 2.0f))
                     {
                         scale.x = 2.0f;
@@ -2223,6 +2401,7 @@ void BootNewGameSettings::place_speakers()
                     scale.x -= 2.0f * D_001B6690;
                     scale.y -= 2.0f * D_001B6690;
                     scale.z -= 2.0f * D_001B6690;
+
                     if (scale.x < 1.0f)
                     {
                         scale.x = 1.0f;
@@ -2231,6 +2410,7 @@ void BootNewGameSettings::place_speakers()
                         adjusting_speaker = 1;
                     }
                 }
+
                 BootClass170F30* model = speakers[i];
                 copy_vector(&model->unk560, &scale);
                 model->func_001DDAA0();
@@ -2254,6 +2434,7 @@ void BootNewGameSettings::place_speakers()
 void BootNewGameSettings::load_option_value()
 {
     BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
     switch (page)
     {
     case BOOT_SETTINGS_TV_MODE:
@@ -2265,6 +2446,7 @@ void BootNewGameSettings::load_option_value()
         {
             selection = 0;
         }
+
         break;
     case BOOT_SETTINGS_SOUND:
         switch (D_001B65F8->output_mode)
@@ -2282,6 +2464,7 @@ void BootNewGameSettings::load_option_value()
             selection = 3;
             break;
         }
+
         break;
     case BOOT_SETTINGS_EVENT_SKIP:
         selection = !settings->event_skip;
@@ -2302,6 +2485,7 @@ void BootNewGameSettings::load_option_value()
 void BootNewGameSettings::apply_option_value()
 {
     BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
     switch (page)
     {
     case BOOT_SETTINGS_TV_MODE:
@@ -2322,6 +2506,7 @@ void BootNewGameSettings::apply_option_value()
             g_boot_program.update_projection_aspect();
             break;
         }
+
         break;
     case BOOT_SETTINGS_SOUND:
         switch (selection)
@@ -2343,6 +2528,7 @@ void BootNewGameSettings::apply_option_value()
             settings->sound_output = 3;
             break;
         }
+
         break;
     case BOOT_SETTINGS_EVENT_SKIP:
         switch (selection)
@@ -2354,6 +2540,7 @@ void BootNewGameSettings::apply_option_value()
             settings->event_skip = 0;
             break;
         }
+
         break;
     case BOOT_SETTINGS_VOICE:
         settings->voice_mode = selection;
@@ -2372,6 +2559,7 @@ void BootNewGameSettings::apply_option_value()
             func_11E030(D_001B65F0, 0, 0);
             break;
         }
+
         break;
     case BOOT_SETTINGS_DIFFICULTY:
         settings_set_difficulty(settings, selection);
@@ -2386,6 +2574,7 @@ void BootNewGameSettings::apply_option_value()
 s32 BootNewGameSettings::get_value_message()
 {
     BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
     switch (page)
     {
     case BOOT_SETTINGS_TV_MODE:
@@ -2395,6 +2584,7 @@ s32 BootNewGameSettings::get_value_message()
         {
             return BOOT_MSG_SOUND_HEADPHONES;
         }
+
         return selection + BOOT_MSG_SOUND_MONO;
     case BOOT_SETTINGS_EVENT_SKIP:
         return selection + BOOT_MSG_EVENT_SKIP_ON;
@@ -2403,6 +2593,7 @@ s32 BootNewGameSettings::get_value_message()
         {
             return BOOT_MSG_VOICE_AUTO;
         }
+
         return selection + BOOT_MSG_VOICE_SUBTITLES_AND_SOUND;
     case BOOT_SETTINGS_VIBRATION:
         return selection + BOOT_MSG_VIBRATION_ON;
@@ -2413,6 +2604,7 @@ s32 BootNewGameSettings::get_value_message()
             {
                 return BOOT_MSG_FOURTH_DIMENSION;
             }
+
             return BOOT_MSG_FOURTH_DIMENSION_LOCKED;
         }
 
@@ -2420,8 +2612,10 @@ s32 BootNewGameSettings::get_value_message()
         {
             return BOOT_MSG_UNIVERSE_UNLOCKED;
         }
+
         return selection + BOOT_MSG_DIFFICULTY_EARTH;
     }
+
     return 0;
 }
 
@@ -2433,6 +2627,7 @@ s32 BootNewGameSettings::get_value_message()
 void BootNewGameSettings::get_cursor_position(float* x, float* y)
 {
     BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
     *x = 58.0f;
     switch (page)
     {
@@ -2452,6 +2647,7 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
             *y = 194.0f;
             return;
         }
+
         break;
     case BOOT_SETTINGS_VOICE:
         switch (selection)
@@ -2469,6 +2665,7 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
             *y = 228.0f;
             return;
         }
+
         break;
     case BOOT_SETTINGS_DIFFICULTY:
         if (settings_universe_unlocked(settings))
@@ -2504,6 +2701,7 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
                 return;
             }
         }
+
         break;
     default:
         switch (selection)
@@ -2515,6 +2713,7 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
             *y = 176.0f;
             return;
         }
+
         break;
     }
 }
@@ -2546,9 +2745,11 @@ void BootNewGameSettings::update_option_rows()
     if (image_blocks[4] != 0 && on_speaker_setup == 0)
     {
         settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
         if (shown_page != page)
         {
             shown_page = page;
+
             for (s32 i = 0; i < 4; i++)
             {
                 if (images[16 + i] != 0)
@@ -2557,98 +2758,101 @@ void BootNewGameSettings::update_option_rows()
                     images[16 + i]->destroy();
                     images[16 + i] = 0;
                 }
+
                 images[16 + i] = new (0) BootImage;
             }
 
             switch (page)
             {
-        case BOOT_SETTINGS_TV_MODE:
-            row_x = -272.0f;
-            func_001FA620(images[16], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[16], 0, 8, 288, 40, 0x80808080, 0);
-            images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
-            func_001FA620(images[17], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[17], 0, 68, 288, 40, 0x80808080, 0);
-            images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
-            break;
-        case BOOT_SETTINGS_SOUND:
-            row_x = -272.0f;
-            func_001FA620(images[16], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[16], 0, 106, 288, 40, 0x80808080, 0);
-            images[16]->unk18->func_001E0520(-272.0f, -162.0f, 0.0f);
-            func_001FA620(images[17], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[17], 0, 162, 200, 40, 0x80808080, 0);
-            images[17]->unk18->func_001E0520(-272.0f, -126.0f, 0.0f);
-            func_001FA620(images[18], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[18], 0, 236, 424, 40, 0x80808080, 0);
-            images[18]->unk18->func_001E0520(-272.0f, -90.0f, 0.0f);
-            func_001FA620(images[19], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[19], 224, 168, 237, 38, 0x80808080, 0);
-            images[19]->unk18->func_001E0520(-272.0f, -55.0f, 0.0f);
-            break;
-        case BOOT_SETTINGS_EVENT_SKIP:
-            row_x = -272.0f;
-            func_001FA620(images[16], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[16], 0, 312, 340, 40, 0x80808080, 0);
-            images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
-            func_001FA620(images[17], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[17], 0, 368, 340, 40, 0x80808080, 0);
-            images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
-            break;
-        case BOOT_SETTINGS_VOICE:
-            row_x = -260.0f;
-            func_001FA620(images[16], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[16], 0, 0, 340, 40, 0x80808080, 0);
-            images[16]->unk18->func_001E0520(-260.0f, -142.0f, 0.0f);
-            func_001FA620(images[17], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[17], 0, 55, 340, 40, 0x80808080, 0);
-            images[17]->unk18->func_001E0520(-260.0f, -102.0f, 0.0f);
-            func_001FA620(images[18], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[18], 0, 110, 340, 40, 0x80808080, 0);
-            images[18]->unk18->func_001E0520(-260.0f, -62.0f, 0.0f);
-            func_001FA620(images[19], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[19], 0, 416, 500, 40, 0x80808080, 0);
-            images[19]->unk18->func_001E0520(-260.0f, -22.0f, 0.0f);
-            break;
-        case BOOT_SETTINGS_VIBRATION:
-            row_x = -254.0f;
-            func_001FA620(images[16], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[16], 0, 160, 340, 40, 0x80808080, 0);
-            images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
-            func_001FA620(images[17], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-            func_001F9FC0(images[17], 0, 215, 340, 40, 0x80808080, 0);
-            images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
-            break;
-        case BOOT_SETTINGS_DIFFICULTY:
-            row_x = -260.0f;
-            if (!settings_universe_unlocked(settings))
-            {
+            case BOOT_SETTINGS_TV_MODE:
+                row_x = -272.0f;
+                func_001FA620(images[16], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                func_001F9FC0(images[16], 0, 8, 288, 40, 0x80808080, 0);
+                images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
+                func_001FA620(images[17], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                func_001F9FC0(images[17], 0, 68, 288, 40, 0x80808080, 0);
+                images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
+                break;
+            case BOOT_SETTINGS_SOUND:
+                row_x = -272.0f;
+                func_001FA620(images[16], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                func_001F9FC0(images[16], 0, 106, 288, 40, 0x80808080, 0);
+                images[16]->unk18->func_001E0520(-272.0f, -162.0f, 0.0f);
+                func_001FA620(images[17], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                func_001F9FC0(images[17], 0, 162, 200, 40, 0x80808080, 0);
+                images[17]->unk18->func_001E0520(-272.0f, -126.0f, 0.0f);
+                func_001FA620(images[18], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                func_001F9FC0(images[18], 0, 236, 424, 40, 0x80808080, 0);
+                images[18]->unk18->func_001E0520(-272.0f, -90.0f, 0.0f);
+                func_001FA620(images[19], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                func_001F9FC0(images[19], 224, 168, 237, 38, 0x80808080, 0);
+                images[19]->unk18->func_001E0520(-272.0f, -55.0f, 0.0f);
+                break;
+            case BOOT_SETTINGS_EVENT_SKIP:
+                row_x = -272.0f;
+                func_001FA620(images[16], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                func_001F9FC0(images[16], 0, 312, 340, 40, 0x80808080, 0);
+                images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
+                func_001FA620(images[17], (void*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                func_001F9FC0(images[17], 0, 368, 340, 40, 0x80808080, 0);
+                images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
+                break;
+            case BOOT_SETTINGS_VOICE:
+                row_x = -260.0f;
                 func_001FA620(images[16], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[16], 0, 257, 340, 42, 0x80808080, 0);
+                func_001F9FC0(images[16], 0, 0, 340, 40, 0x80808080, 0);
                 images[16]->unk18->func_001E0520(-260.0f, -142.0f, 0.0f);
                 func_001FA620(images[17], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[17], 0, 313, 340, 42, 0x80808080, 0);
-                images[17]->unk18->func_001E0520(-260.0f, -92.0f, 0.0f);
-                func_001FA620(images[18], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[18], 0, 369, 340, 42, 0x80808080, 0);
-                images[18]->unk18->func_001E0520(-260.0f, -42.0f, 0.0f);
-            }
-            else
-            {
-                func_001FA620(images[16], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[16], 3, 257, 340, 42, 0x80808080, 0);
-                images[16]->unk18->func_001E0520(-260.0f, -142.0f, 0.0f);
-                func_001FA620(images[17], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[17], 3, 313, 340, 42, 0x80808080, 0);
+                func_001F9FC0(images[17], 0, 55, 340, 40, 0x80808080, 0);
                 images[17]->unk18->func_001E0520(-260.0f, -102.0f, 0.0f);
                 func_001FA620(images[18], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[18], 3, 369, 340, 42, 0x80808080, 0);
+                func_001F9FC0(images[18], 0, 110, 340, 40, 0x80808080, 0);
                 images[18]->unk18->func_001E0520(-260.0f, -62.0f, 0.0f);
                 func_001FA620(images[19], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
-                func_001F9FC0(images[19], 0, 466, 340, 42, 0x80808080, 0);
-                images[19]->unk18->func_001E0520(-260.0f, -24.0f, 0.0f);
-            }
-            break;
+                func_001F9FC0(images[19], 0, 416, 500, 40, 0x80808080, 0);
+                images[19]->unk18->func_001E0520(-260.0f, -22.0f, 0.0f);
+                break;
+            case BOOT_SETTINGS_VIBRATION:
+                row_x = -254.0f;
+                func_001FA620(images[16], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                func_001F9FC0(images[16], 0, 160, 340, 40, 0x80808080, 0);
+                images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
+                func_001FA620(images[17], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                func_001F9FC0(images[17], 0, 215, 340, 40, 0x80808080, 0);
+                images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
+                break;
+            case BOOT_SETTINGS_DIFFICULTY:
+                row_x = -260.0f;
+
+                if (!settings_universe_unlocked(settings))
+                {
+                    func_001FA620(images[16], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    func_001F9FC0(images[16], 0, 257, 340, 42, 0x80808080, 0);
+                    images[16]->unk18->func_001E0520(-260.0f, -142.0f, 0.0f);
+                    func_001FA620(images[17], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    func_001F9FC0(images[17], 0, 313, 340, 42, 0x80808080, 0);
+                    images[17]->unk18->func_001E0520(-260.0f, -92.0f, 0.0f);
+                    func_001FA620(images[18], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    func_001F9FC0(images[18], 0, 369, 340, 42, 0x80808080, 0);
+                    images[18]->unk18->func_001E0520(-260.0f, -42.0f, 0.0f);
+                }
+                else
+                {
+                    func_001FA620(images[16], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    func_001F9FC0(images[16], 3, 257, 340, 42, 0x80808080, 0);
+                    images[16]->unk18->func_001E0520(-260.0f, -142.0f, 0.0f);
+                    func_001FA620(images[17], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    func_001F9FC0(images[17], 3, 313, 340, 42, 0x80808080, 0);
+                    images[17]->unk18->func_001E0520(-260.0f, -102.0f, 0.0f);
+                    func_001FA620(images[18], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    func_001F9FC0(images[18], 3, 369, 340, 42, 0x80808080, 0);
+                    images[18]->unk18->func_001E0520(-260.0f, -62.0f, 0.0f);
+                    func_001FA620(images[19], (void*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    func_001F9FC0(images[19], 0, 466, 340, 42, 0x80808080, 0);
+                    images[19]->unk18->func_001E0520(-260.0f, -24.0f, 0.0f);
+                }
+
+                break;
             }
         }
 
@@ -2683,17 +2887,21 @@ void BootNewGameSettings::update_option_rows()
         BootClass170F30* model;
         // TODO: My guess; the original reads the extra block through a pointer formed before the loop.
         u8* extra = &settings->unk1A0;
+
         for (i = 0; i < 4; i++)
         {
             if (images[16 + i] == 0)
             {
                 continue;
             }
+
             model = images[16 + i]->unk18;
+
             if (model == 0)
             {
                 continue;
             }
+
             if (i == 2 && page == BOOT_SETTINGS_DIFFICULTY)
             {
                 if (!settings_extra_byte(settings, extra, &settings->universe_unlocked))
@@ -2702,6 +2910,7 @@ void BootNewGameSettings::update_option_rows()
                     continue;
                 }
             }
+
             if (i == 3 && page == BOOT_SETTINGS_DIFFICULTY)
             {
                 if (!settings_extra_byte(settings, extra, &settings->fourth_dimension_unlocked))
@@ -2710,18 +2919,22 @@ void BootNewGameSettings::update_option_rows()
                     continue;
                 }
             }
+
             if (selection == i)
             {
                 BootVector4DDAA0 scale;
                 copy_vector(&scale, &model->unk560);
+
                 if (highlight_phase == 0)
                 {
                     scale.x -= 0.01f * D_001B6688;
                     scale.y -= 0.005f * D_001B6688;
+
                     if (scale.y < 0.5f)
                     {
                         scale.y = 0.5f;
                     }
+
                     if (scale.x < 0.5f)
                     {
                         scale.x = 0.5f;
@@ -2732,16 +2945,19 @@ void BootNewGameSettings::update_option_rows()
                 {
                     scale.x += 0.01f * D_001B6688;
                     scale.y += 0.005f * D_001B6688;
+
                     if (!(scale.y <= 1.0f))
                     {
                         scale.y = 1.0f;
                     }
+
                     if (!(scale.x <= 1.0f))
                     {
                         scale.x = 1.0f;
                         highlight_phase = 0;
                     }
                 }
+
                 copy_vector(&model->unk560, &scale);
                 model->func_001DDAA0();
             }
@@ -2755,6 +2971,7 @@ void BootNewGameSettings::update_option_rows()
 
 // TODO: Only matches with this off to the end of the file; find the real cause.
 #pragma opt_pulloutconstants off
+
 /** @brief Create the page's images once their textures are loaded, then place and highlight them. */
 void BootNewGameSettings::update_page_images()
 {
@@ -2787,6 +3004,7 @@ void BootNewGameSettings::update_page_images()
         images[2] = new (0) BootImage;
         func_001FA620(images[2], (void*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
         func_001F9FC0(images[2], 0x1A, 0xF5, 0x18, 0x16, 0x80808080, 0);
+
         for (s32 i = 0; i < 6; i++)
         {
             images[3 + i] = new (0) BootImage;
@@ -2813,6 +3031,7 @@ void BootNewGameSettings::update_page_images()
     }
 
     settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
     if (settings->widescreen)
     {
         if (images[1] != 0)
@@ -2820,17 +3039,20 @@ void BootNewGameSettings::update_page_images()
             images[1]->unk18->func_001E0520(-414.66669f, -216.0f, 0.0f);
             images[1]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
         }
+
         for (s32 i = 0; i < 6; i++)
         {
             if (images[3 + i] != 0)
             {
                 images[3 + i]->unk18->func_001E0520(160.0f, 30.0f + (float)(i * 29), 0.0f);
             }
+
             if (images[9 + i] != 0)
             {
                 images[9 + i]->unk18->func_001E0520(21.0f, -204.0f, 0.0f);
             }
         }
+
         if (images[15] != 0)
         {
             images[15]->unk18->func_001E0520(-426.66669f, 170.0f, 0.0f);
@@ -2843,17 +3065,20 @@ void BootNewGameSettings::update_page_images()
             images[1]->unk18->func_001E0520(-320.0f, -216.0f, 0.0f);
             images[1]->unk18->func_001DDED0(1.0f, 1.0f, 1.0f);
         }
+
         for (s32 i = 0; i < 6; i++)
         {
             if (images[3 + i] != 0)
             {
                 images[3 + i]->unk18->func_001E0520(56.0f, 30.0f + (float)(i * 29), 0.0f);
             }
+
             if (images[9 + i] != 0)
             {
                 images[9 + i]->unk18->func_001E0520(-80.0f, -204.0f, 0.0f);
             }
         }
+
         if (images[15] != 0)
         {
             images[15]->unk18->func_001E0520(-320.0f, 170.0f, 0.0f);
@@ -2861,6 +3086,7 @@ void BootNewGameSettings::update_page_images()
     }
 
     offsets = D_205170;
+
     for (s32 i = 0; i < 6; i++)
     {
         if (page == i)
@@ -2876,18 +3102,19 @@ void BootNewGameSettings::update_page_images()
                 copy_vector(&model->unk560, &color);
                 model->func_001DDAA0();
             }
+
             if (images[2] != 0)
             {
                 if (settings->widescreen)
                 {
-                    images[2]->unk18->func_001E0520(142.0f + 1.3333334f * (float)offsets.values[i],
-                        (float)(31.0 + 29.0 * i), 0.0f);
+                    images[2]->unk18->func_001E0520(142.0f + 1.3333334f * (float)offsets.values[i], (float)(31.0 + 29.0 * i), 0.0f);
                 }
                 else
                 {
                     images[2]->unk18->func_001E0520(44.0f + (float)offsets.values[i], (float)(31.0 + 29.0 * i), 0.0f);
                 }
             }
+
             if (images[9 + i] != 0)
             {
                 images[9 + i]->unk18->unk6a &= ~1;
@@ -2906,6 +3133,7 @@ void BootNewGameSettings::update_page_images()
                 copy_vector(&model->unk560, &color);
                 model->func_001DDAA0();
             }
+
             if (images[9 + i] != 0)
             {
                 images[9 + i]->unk18->unk6a |= 1;
@@ -2930,6 +3158,7 @@ void BootNewGameSettings::update_page_images()
 struct BootMorphTarget : public BootClass170E90
 {
     u8 unk14[0x1C];
+
     /** Shape the target draws, such as a mouth shape or zero for closed eyes. */
     s32* shape;
 };
@@ -2986,6 +3215,7 @@ static inline bool at_end(const BootClass170E80* list, const BootClass170E80* no
     {
         return true;
     }
+
     return false;
 }
 
@@ -3007,6 +3237,7 @@ void BootNewGameSettings::update()
     BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
     u8 extra = settings_extra_byte(settings, &settings->unk1A0, &settings->universe_unlocked);
     g_difficulty_option_count = extra ? 4 : 3;
+
     switch (stage)
     {
     case BOOT_SETTINGS_STAGE_LOAD:
@@ -3034,16 +3265,19 @@ void BootNewGameSettings::update()
             func_465B20(D_001B657C, cursor);
             func_10DAA0(D_001B65F8, 2);
         }
+
         break;
     case BOOT_SETTINGS_STAGE_LOAD_IMAGES:
         image_blocks[loaded_image_blocks] = func_102920(D_001B65EC, image_data, loaded_image_blocks, 1);
         func_1025A0(D_001B65EC, image_data, (void*)(((u32)image_blocks[loaded_image_blocks] + 0x7F) & ~0x7F), loaded_image_blocks);
+
         if (++loaded_image_blocks >= 5)
         {
             stage++;
             shown_page = 0xFF;
             func_121FE0(0);
         }
+
         break;
     case BOOT_SETTINGS_STAGE_PAGE:
         if (input->repeated == 0x40 && cursor->unk35)
@@ -3058,6 +3292,7 @@ void BootNewGameSettings::update()
             func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
             show_value_message();
         }
+
         if (input->repeated == 0x10 && cursor->unk35)
         {
             u8 count = g_settings_option_counts[page];
@@ -3071,6 +3306,7 @@ void BootNewGameSettings::update()
             func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
             show_value_message();
         }
+
         if (button_pressed(input, settings->unk00))
         {
             if (selection == 2 && page == BOOT_SETTINGS_DIFFICULTY && !settings_extra_byte(settings, &settings->unk1A0, &settings->universe_unlocked))
@@ -3078,11 +3314,13 @@ void BootNewGameSettings::update()
                 func_112400(D_001B65F8, 3, 0, 0, 0x7F, 0x40, 0);
                 break;
             }
+
             if (selection == 3 && page == BOOT_SETTINGS_DIFFICULTY && !settings_extra_byte(settings, &settings->unk1A0, &settings->fourth_dimension_unlocked))
             {
                 func_112400(D_001B65F8, 3, 0, 0, 0x7F, 0x40, 0);
                 break;
             }
+
             func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
             stage = BOOT_SETTINGS_STAGE_NEXT_PAGE;
@@ -3104,19 +3342,23 @@ void BootNewGameSettings::update()
                 stage = BOOT_SETTINGS_STAGE_PREVIOUS_PAGE;
             }
         }
+
         if (button_pressed(input, settings->unk04) && page == BOOT_SETTINGS_SOUND && selection == 2)
         {
             func_112400(D_001B65F8, 4, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
             stage = BOOT_SETTINGS_STAGE_ENTER_SPEAKERS;
         }
+
         break;
     case BOOT_SETTINGS_STAGE_EXIT:
         func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
+
         if (func_103640(D_001B65E8, 0x29, 0, 0, -1, 0) != 0)
         {
             func_103B20(D_001B65E8, 0x29, 0, 0, -1, 0);
         }
+
         for (s32 i = 0; i < 21; i++)
         {
             if (images[i] != 0)
@@ -3126,21 +3368,25 @@ void BootNewGameSettings::update()
                 images[i] = 0;
             }
         }
+
         if (container != 0)
         {
             container->destroy();
             container = 0;
         }
+
         if (description_text != 0)
         {
             description_text->destroy();
             description_text = 0;
         }
+
         if (cursor != 0)
         {
             cursor->destroy();
             cursor = 0;
         }
+
         D_001B6614->append_node(new (0) BootClass171BB0(0), -1);
         lib_object_detach_owner(this);
         destroy();
@@ -3162,6 +3408,7 @@ void BootNewGameSettings::update()
             show_value_message();
             stage = BOOT_SETTINGS_STAGE_PAGE;
         }
+
         break;
     case BOOT_SETTINGS_STAGE_PREVIOUS_PAGE:
     {
@@ -3180,21 +3427,25 @@ void BootNewGameSettings::update()
         description_text->destroy();
         description_text = 0;
         stage = BOOT_SETTINGS_STAGE_BUILD_SPEAKERS;
+
         for (s32 i = 2; i < 9; i++)
         {
             lib_object_detach_owner(images[i]);
             images[i]->destroy();
             images[i] = 0;
         }
+
         images[15]->destroy();
         lib_object_detach_owner(images[15]);
         images[15] = 0;
+
         for (s32 i = 16; i < 20; i++)
         {
             lib_object_detach_owner(images[i]);
             images[i]->destroy();
             images[i] = 0;
         }
+
         break;
     case BOOT_SETTINGS_STAGE_BUILD_SPEAKERS:
         if (loaded_model_blocks == 8)
@@ -3207,6 +3458,7 @@ void BootNewGameSettings::update()
             func_479190(girl_scene, (void*)(((u32)model_blocks[1] + 0x7F) & ~0x7F));
             func_474010(girl_scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
             s32 count = 0;
+
             for (BootClass170F30* model = func_473940(girl_scene, g_empty_name); model != 0; model = func_472EB0(girl_scene, model))
             {
                 if (model->unk6c == 0x100)
@@ -3216,6 +3468,7 @@ void BootNewGameSettings::update()
                     girl_models[count++]->unk208 = model->unk208;
                 }
             }
+
             for (s32 i = 0; i < 6; i++)
             {
                 girl_animations[i] = new (0) BootClass178220;
@@ -3225,6 +3478,7 @@ void BootNewGameSettings::update()
                 func_4BDB50(girl_animations[i], animation_targets[i], g_bone_root_name);
                 func_4B3DE0(girl_animations[i], animation_targets[i]);
             }
+
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             D_001B6628->current_display = func_473680(room_scene, g_camera_node_name);
             girl_angle = 1.5707964f;
@@ -3245,6 +3499,7 @@ void BootNewGameSettings::update()
             func_10DB10(D_001B65F8, 10000);
             stage++;
         }
+
         break;
     case BOOT_SETTINGS_STAGE_SHOW_SPEAKERS:
     {
@@ -3277,31 +3532,38 @@ void BootNewGameSettings::update()
                 float turned = speaker_angle(D_001B65F8, selected_speaker);
                 float angle = turned;
                 turned += 1.5707964f * D_001B6690;
+
                 if (turned >= 6.2831855f)
                 {
                     turned -= 6.2831855f;
                 }
+
                 float upper = speaker_angle(D_001B65F8, (selected_speaker + 1) & 3) - 0.2617994f;
                 float lower = 0.2617994f + speaker_angle(D_001B65F8, (selected_speaker - 1) & 3);
+
                 if (angle < turned)
                 {
                     if (selected_speaker == 0 && angle <= 1.3089969f && turned > 1.3089969f)
                     {
                         turned = 1.3089969f;
                     }
+
                     if (upper - angle >= -0.000001f && turned > upper)
                     {
                         turned = upper;
                     }
+
                     if (angle - lower >= -0.000001f && turned < lower)
                     {
                         turned = lower;
                     }
                 }
+
                 func_10EA90(D_001B65F8, selected_speaker, turned);
                 settings->speaker_angles[selected_speaker] = turned;
             }
         }
+
         if (input->repeated & 0x30)
         {
             if (adjusting_speaker == 0)
@@ -3321,34 +3583,42 @@ void BootNewGameSettings::update()
                 float turned = speaker_angle(D_001B65F8, selected_speaker);
                 float angle = turned;
                 turned -= 1.5707964f * D_001B6690;
+
                 if (turned < 0.0f)
                 {
                     turned += 6.2831855f;
                 }
+
                 float upper = speaker_angle(D_001B65F8, (selected_speaker + 1) & 3) - 0.2617994f;
                 float lower = 0.2617994f + speaker_angle(D_001B65F8, (selected_speaker - 1) & 3);
+
                 if (angle > turned)
                 {
                     if (selected_speaker == 1 && angle >= 1.8325948f && turned < 1.8325957f)
                     {
                         turned = 1.8325957f;
                     }
+
                     if (upper - angle >= -0.000001f && turned > upper)
                     {
                         turned = upper;
                     }
+
                     if (angle - lower >= -0.000001f && turned < lower)
                     {
                         turned = lower;
                     }
                 }
+
                 func_10EA90(D_001B65F8, selected_speaker, turned);
                 settings->speaker_angles[selected_speaker] = turned;
             }
         }
+
         if (button_pressed(input, settings->unk04))
         {
             s32 line = func_10CAA0(9);
+
             if (voice_count < 12)
             {
                 voice_count++;
@@ -3357,13 +3627,16 @@ void BootNewGameSettings::update()
             {
                 line += 9;
             }
+
             if (voice_line != 0)
             {
                 func_110920(D_001B65F8, voice_line, 0);
                 voice_line = 0;
             }
+
             voice_line = func_111C50(D_001B65F8, g_voice_lines[line], func_473530(girl_scene, g_root_node_name), 0, 0x7F, 0);
         }
+
         if (button_pressed(input, settings->unk00))
         {
             if (adjusting_speaker == 0)
@@ -3378,6 +3651,7 @@ void BootNewGameSettings::update()
                 adjusting_speaker = 0;
             }
         }
+
         if (button_pressed(input, settings->unk02))
         {
             if (adjusting_speaker == 0)
@@ -3399,28 +3673,34 @@ void BootNewGameSettings::update()
                 place_cursor(cursor, x, y);
             }
         }
+
         if ((input->pressed & 9) && adjusting_speaker == 0)
         {
             func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
             func_10DA30(D_001B65F8);
             place_speakers();
+
             for (s32 i = 0; i < 4; i++)
             {
                 settings->speaker_angles[i] = speaker_angle(D_001B65F8, i);
             }
+
             float x;
             float y;
             get_speaker_cursor_position(selected_speaker, &x, &y);
             place_cursor(cursor, x, y);
         }
+
         if (voice_line != 0)
         {
             BootClass170F30* face = func_473940(girl_scene, g_face_model_name);
             BootClass170E80* end = &face->children;
             BootClass170E80* node = end->next;
+
             if (func_110C10(D_001B65F8, voice_line) != 0)
             {
                 s32 shape;
+
                 switch (func_10E310(D_001B65F8, voice_line, 2.0f))
                 {
                 case 0:
@@ -3448,9 +3728,11 @@ void BootNewGameSettings::update()
                     shape = -1;
                     break;
                 }
+
                 for (; !at_end(end, node); node = node->next)
                 {
                     BootMorphTarget* target = (BootMorphTarget*)node;
+
                     if (target->unk0f == 2)
                     {
                         if (shape == *target->shape)
@@ -3467,9 +3749,11 @@ void BootNewGameSettings::update()
             else
             {
                 voice_line = 0;
+
                 for (; !at_end(end, node); node = node->next)
                 {
                     BootMorphTarget* target = (BootMorphTarget*)node;
+
                     if (target->unk0f == 2)
                     {
                         func_4C96E0(target, 0.0f);
@@ -3477,19 +3761,23 @@ void BootNewGameSettings::update()
                 }
             }
         }
+
         if (blink_frame == 0 && func_10CE00() < 250)
         {
             blink_frame = 1;
         }
+
         if (blink_frame != 0)
         {
             BootClass170F30* face = func_473940(girl_scene, g_face_model_name);
             BootClass170E80* end = &face->children;
             BootClass170E80* node = end->next;
             blink_frame++;
+
             for (; !at_end(end, node); node = node->next)
             {
                 BootMorphTarget* target = (BootMorphTarget*)node;
+
                 if (target->unk0f == 2 && *target->shape == 0)
                 {
                     if (blink_frame < 5)
@@ -3501,10 +3789,12 @@ void BootNewGameSettings::update()
                         func_4C96E0(target, 0.0f);
                         blink_frame = 0;
                     }
+
                     break;
                 }
             }
         }
+
         {
             s32 first;
             s32 second;
@@ -3514,11 +3804,13 @@ void BootNewGameSettings::update()
             turn_speed -= 0.01f * (float)turn;
             turn_speed = ee_max(turn_speed, -1.0f);
             turn_speed = ee_min(turn_speed, 1.0f);
+
             if (turn == 0)
             {
                 if (turn_speed > 0.0f)
                 {
                     turn_speed -= 0.1f;
+
                     if (turn_speed < 0.0f)
                     {
                         turn_speed = 0.0f;
@@ -3527,6 +3819,7 @@ void BootNewGameSettings::update()
                 else if (turn_speed < 0.0f)
                 {
                     turn_speed += 0.1f;
+
                     if (turn_speed > 0.0f)
                     {
                         turn_speed = 0.0f;
@@ -3534,17 +3827,22 @@ void BootNewGameSettings::update()
                 }
             }
         }
+
         girl_angle += 0.017453292f * (0.35f * turn_speed);
+
         if (girl_angle > 6.2831855f)
         {
             girl_angle -= 6.2831855f;
         }
+
         if (girl_angle < 0.0f)
         {
             girl_angle += 6.2831855f;
         }
+
         place_girl();
         place_speakers();
+
         if (adjusting_speaker != 0)
         {
             float x;
@@ -3552,10 +3850,12 @@ void BootNewGameSettings::update()
             get_speaker_cursor_position(selected_speaker, &x, &y);
             place_cursor(cursor, x, y);
         }
+
         break;
     case BOOT_SETTINGS_STAGE_LEAVE_SPEAKERS:
     {
         func_11E020(D_001B65F0, 0, 1);
+
         for (s32 i = 0; i < 6; i++)
         {
             if (girl_animations[i] != 0)
@@ -3563,18 +3863,21 @@ void BootNewGameSettings::update()
                 girl_animations[i]->destroy();
                 girl_animations[i] = 0;
             }
+
             if (animation_targets[i] != 0)
             {
                 animation_targets[i]->destroy();
                 animation_targets[i] = 0;
             }
         }
+
         func_10DB10(D_001B65F8, 0x8000);
         room_scene->destroy();
         room_scene = 0;
         girl_scene->destroy();
         girl_scene = 0;
         shown_page = 0xFF;
+
         for (s32 i = 0; i < 10; i++)
         {
             if (girl_models[i] != 0)
@@ -3584,6 +3887,7 @@ void BootNewGameSettings::update()
                 girl_models[i] = 0;
             }
         }
+
         g_boot_program.select_projection();
         description_text->destroy();
         description_text = new (0) BootClass178750(g_boot_program.get_messages(), BOOT_MSG_TV_NORMAL, 1, 32.0f, 272.0f, 344.0f, 224.0f);
@@ -3604,6 +3908,7 @@ void BootNewGameSettings::update()
         {
             func_103B20(D_001B65E8, 0x29, 0, 0, -1, 0);
         }
+
         settings->unk25_mid = 0;
         D_001B6614->append_node(new (0) BootClass171CB0, -1);
         lib_object_detach_owner(this);
@@ -3618,10 +3923,12 @@ void BootNewGameSettings::update()
         loaded_model_blocks++;
         func_121FE0(0);
     }
+
     if (rumble_frames != 0 && --rumble_frames == 0)
     {
         func_11E210(D_001B65F0, 0, 0, 0);
     }
+
     update_page_images();
     update_option_rows();
 }
@@ -3631,6 +3938,7 @@ BootNewGameSettings::~BootNewGameSettings()
 {
     delete image_data;
     delete model_data;
+
     for (s32 i = 0; i < 5; i++)
     {
         delete image_blocks[i];
@@ -3713,6 +4021,7 @@ BootNewGameSettings::BootNewGameSettings()
     func_103E70(D_001B65E8, 0x28, image_data, 1, 0x34BC0, 0, 0, 0, 1);
     model_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x29));
     stage = BOOT_SETTINGS_STAGE_LOAD;
+
     for (s32 i = 0; i < 5; i++)
     {
         image_blocks[i] = 0;
@@ -3750,6 +4059,7 @@ BootNewGameSettings::BootNewGameSettings()
     page = 0;
     loaded_model_blocks = 0;
     resource = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
     switch (D_001B65F8->output_mode)
     {
     case 1:
@@ -3831,6 +4141,7 @@ void BootInput::update()
     repeated = func_11DFB0(D_001B65F0, 0);
     func_11DF90(D_001B65F0, 0);
     trophy_card = g_boot_program.trophy_card;
+
     if (card_query_enabled != 0)
     {
         slot1 = trophy_card->get_slot_state(0, 1);
@@ -3838,22 +4149,27 @@ void BootInput::update()
         third = trophy_card->get_slot_state(0, 2);
         fourth = trophy_card->get_slot_state(1, 2);
         ready = trophy_card->get_ready_slots();
+
         if (slot1 != 0)
         {
             slot1_state = slot1;
         }
+
         if (slot2 != 0)
         {
             slot2_state = slot2;
         }
+
         if (third != 0)
         {
             unk28 = third;
         }
+
         if (fourth != 0)
         {
             unk2C = fourth;
         }
+
         if (ready & 1)
         {
             slot1_ready = 1;
@@ -3862,6 +4178,7 @@ void BootInput::update()
         {
             slot1_ready = 0;
         }
+
         if (ready & 2)
         {
             slot2_ready = 1;
@@ -3907,10 +4224,12 @@ void BootOpeningMovie::update()
             step = 3;
             break;
         }
+
         if ((((u32)g_boot_program.image_block + 0x7F) & ~0x7F) == 0)
         {
             break;
         }
+
         container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
         func_465B20(D_001B657C, container);
         func_419A70(player, 12, 1);
@@ -3922,11 +4241,13 @@ void BootOpeningMovie::update()
     case 1:
         fade = 0;
         offset = player->state->unk80C0 - g_opening_captions[caption].frame;
+
         if (g_opening_captions[caption].frame == -1)
         {
             step++;
             break;
         }
+
         if (input->held & 8)
         {
             step = 3;
@@ -3934,25 +4255,30 @@ void BootOpeningMovie::update()
         }
 
         is_text = g_opening_captions[caption].is_text;
+
         if (offset >= -30 && offset < 0)
         {
             fade = -offset;
             caption_phase = 1;
         }
+
         if (offset >= 0 && offset < 90)
         {
             fade = offset;
             caption_phase = 2;
         }
+
         if (offset >= 90 && offset < 120)
         {
             fade = offset - 90;
             caption_phase = 3;
         }
+
         if (offset >= 120)
         {
             caption_phase = 0;
             caption++;
+
             if (is_text == 0)
             {
                 if (caption_image != 0)
@@ -3960,6 +4286,7 @@ void BootOpeningMovie::update()
                     caption_image->destroy();
                     caption_image = 0;
                 }
+
                 caption_image_loaded = 0;
             }
             else
@@ -3967,6 +4294,7 @@ void BootOpeningMovie::update()
                 caption_text->destroy();
                 caption_text = 0;
             }
+
             if (caption >= 18)
             {
                 break;
@@ -3982,6 +4310,7 @@ void BootOpeningMovie::update()
         {
             width = g_opening_captions[caption].width;
             height = g_opening_captions[caption].height;
+
             if (caption_image_loaded == 0)
             {
                 caption_image = new (0) BootImage;
@@ -4003,14 +4332,17 @@ void BootOpeningMovie::update()
                 {
                     caption_text = new (0) BootClass178750(g_boot_program.captions, g_opening_captions[caption].x, 1, 32.0f, 32.0f, 576.0f, 400.0f);
                 }
+
                 lib_container_attach_widget(container, caption_text);
             }
+
             const BootTextExtent* extent = func_4C69B0(caption_text);
             width = (s32)extent->width;
             height = (s32)extent->height;
         }
 
         anchor = g_opening_captions[caption].anchor;
+
         if (is_text == 0)
         {
             switch (anchor)
@@ -4067,6 +4399,7 @@ void BootOpeningMovie::update()
         if (is_text == 0)
         {
             caption_image->unk18->func_001E0520((float)x - 288.0f, (float)y - 192.0f, 0.0f);
+
             switch (caption_phase)
             {
             case 1:
@@ -4122,6 +4455,7 @@ void BootOpeningMovie::update()
                 break;
             }
         }
+
         break;
     case 2:
         if ((input->held & 8) || !player->unk15E794)
@@ -4129,29 +4463,35 @@ void BootOpeningMovie::update()
             D_001B661C->append_node(new (0) BootClass171C00(g_boot_program.display), -1);
             step = 3;
         }
+
         break;
     case 3:
         func_41A210(player);
+
         if (caption_image != 0)
         {
             caption_image->destroy();
             caption_image = 0;
         }
+
         if (container != 0)
         {
             container->destroy();
             container = 0;
         }
+
         if (caption_text != 0)
         {
             caption_text->destroy();
             caption_text = 0;
         }
+
         if (player != 0)
         {
             player->destroy();
             player = 0;
         }
+
         step++;
         break;
     case 4:
@@ -4203,14 +4543,16 @@ BootOpeningMovie::BootOpeningMovie()
     player->state->set_scale(1.0f, 1.0f);
     player->state->set_words(0x800, 0x800, 1);
     resource = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
     if (resource->widescreen != 0)
     {
         player->state->unk80D8 = 1;
         D_001B6654->unk278 =
-            (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->unk3C60.height)) /
-                (float)g_boot_program.display->unk3C60.width)) / 1.3333334f;
+            (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->unk3C60.height)) / (float)g_boot_program.display->unk3C60.width)) /
+            1.3333334f;
         D_001B6654->unk25C = 1.8325958f;
     }
+
     container = 0;
     caption_text = 0;
     caption_image = 0;
@@ -4307,12 +4649,14 @@ void BootProgram::rebuild_display(u8 full)
     func_4DE250(display, 0, 0, 0, area->width, area->height);
     func_4DE250(display, 1, 0, 0, area->width, area->height);
     func_4DCFA0(display);
+
     if (full)
     {
         if (D_001B663C != (void*)0x70000000)
         {
             ::operator delete(D_001B663C);
         }
+
         func_4DCC10(D_001B65E0, display->unk3C78);
         D_001B663C = new (0) BootScratchHeap(0x20000, 0x20);
         func_4D78F0(D_001B6618);
@@ -4320,6 +4664,7 @@ void BootProgram::rebuild_display(u8 full)
         func_11DEE0(D_001B65F0, display, 1);
         D_001B6658->display = display;
     }
+
     frame = 0;
 }
 
@@ -4334,30 +4679,23 @@ inline void BootProgram::update_projection_aspect()
 {
     BootResource0970* resource = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
     BootDimensionsACD0* dimensions;
+
     if (resource->widescreen != 0)
     {
         dimensions = g_boot_program.display;
-        projection->unk278 =
-            (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) /
-                (float)dimensions->unk3C60.width)) / 1.3333334f;
+        projection->unk278 = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) / (float)dimensions->unk3C60.width)) / 1.3333334f;
         projection->unk250 = 0.75f;
         dimensions = g_boot_program.display;
-        D_001B6654->unk278 =
-            (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) /
-                (float)dimensions->unk3C60.width)) / 1.3333334f;
+        D_001B6654->unk278 = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) / (float)dimensions->unk3C60.width)) / 1.3333334f;
         D_001B6654->unk25C = 1.8325958f;
     }
     else
     {
         dimensions = g_boot_program.display;
-        projection->unk278 =
-            (1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) /
-                (float)dimensions->unk3C60.width;
+        projection->unk278 = (1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) / (float)dimensions->unk3C60.width;
         projection->unk250 = 1.0f;
         dimensions = g_boot_program.display;
-        D_001B6654->unk278 =
-            (1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) /
-                (float)dimensions->unk3C60.width;
+        D_001B6654->unk278 = (1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) / (float)dimensions->unk3C60.width;
         D_001B6654->unk25C = 1.5707964f;
     }
 }
@@ -4370,6 +4708,7 @@ void BootProgram::set_progressive(u8 progressive)
 {
     BootDimensionsACD0* rebuilt;
     BootDisplayLinks661C* links;
+
     if (progressive)
     {
         func_4DCEA0(display, 0, 0);
@@ -4380,15 +4719,18 @@ void BootProgram::set_progressive(u8 progressive)
         func_4DCEA0(display, 0, 0);
         func_101040(func_10D8E0(), 0);
     }
+
     rebuild_display(1);
     rebuilt = display;
     links = D_001B661C;
     links->unk4088 = rebuilt;
     D_001B6650 = rebuilt;
+
     if (links->unk4080 != 0)
     {
         links->unk4080->display = rebuilt;
     }
+
     links->unk4458->display = rebuilt;
     links->unk4460->display = rebuilt;
     links->unk4464->display = rebuilt;
@@ -4403,6 +4745,7 @@ void BootResourceLoader::update()
 {
     u8* buffer;
     u8* aligned;
+
     if (func_102D00(D_001B65E8) != 0)
     {
         if (block >= 3)
@@ -4416,6 +4759,7 @@ void BootResourceLoader::update()
         buffer = func_102920(D_001B65EC, data, block, 1);
         aligned = (u8*)(((u32)buffer + 0x7F) & ~0x7F);
         func_1025A0(D_001B65EC, data, aligned, block);
+
         switch (block)
         {
         case 0:
@@ -4478,6 +4822,7 @@ void BootProgram::run()
 
     func_11D9A0(func_1012C0(func_10D8E0()), &clock);
     count = (u8)(TIMER0_COUNT + (clock.hour + (clock.second + clock.minute)));
+
     for (index = 0; index < count; index++)
     {
         resident_next_random_word();
@@ -4500,16 +4845,19 @@ void BootProgram::run()
 
     buffer = new (0) u8[func_10CE00() + 0x40];
     size = func_11C8C0(func_1012C0(func_10D8E0()), 3);
+
     if (size > 0x50000)
     {
         size = 0x50000;
     }
+
     unk40 = func_139700(0x40, size);
     func_103E70(func_101250(func_10D8E0()), 3, unk40, 1, 0x34BC0, 0, size, 0, 1);
     delete[] buffer;
 
     saved_widescreen = 0xFF;
     fresh = true;
+
     if (func_101440(func_101290(func_10D8E0()), 1) != 0)
     {
         saved_widescreen = ((BootResource0970*)func_101440(func_101290(func_10D8E0()), 1))->widescreen;
@@ -4545,6 +4893,7 @@ void BootProgram::run()
     func_45A770();
     create_pools_and_projection();
     settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
     if (saved_widescreen != 0xFF)
     {
         settings->widescreen = saved_widescreen != 0;
@@ -4560,6 +4909,7 @@ void BootProgram::run()
     D_001B6614->append_node(input, -1);
     loader = new (0) BootResourceLoader(this);
     D_001B6614->append_node(loader, -1);
+
     if (fresh)
     {
         D_001B6614->append_node(new (0) BootStartupChecks, -1);
@@ -4574,6 +4924,7 @@ void BootProgram::run()
     frame = 0;
     D_001B661C->unk40CE = 0;
     D_001B6420 = 1;
+
     while (exit_code == 0)
     {
         func_4DD830(display, frame++, D_001B65DC);
@@ -4584,10 +4935,12 @@ void BootProgram::run()
         func_11F770(D_001B6618->packet, 0);
         func_11ECD0(D_001B65F4);
         func_4DCFF0(display, frame);
+
         if (frame > 1)
         {
             func_4DCEA0(display, 1, 0);
         }
+
         D_001B6688 = (float)func_11DF00(D_001B65F0);
         D_001B6690 = D_001B6688 / 60.0f;
         TIMER0_COUNT = 0;
@@ -4600,18 +4953,25 @@ void BootProgram::run()
     func_11ECD0(D_001B65F4);
 
     previous = resident_next_random_word();
+
     while (previous == resident_next_random_word())
     {
     }
+
     previous = func_10CE00();
+
     while (previous == func_10CE00())
     {
     }
+
     previous = func_10CAA0(1000);
+
     while (previous == func_10CAA0(1000))
     {
     }
+
     previous = func_10CC40(0, 1000);
+
     while (previous == func_10CC40(0, 1000))
     {
     }
@@ -4634,33 +4994,40 @@ void BootProgram::release_resources()
     func_001EEAE0(D_001B6680);
     delete unk40;
     unk40 = 0;
+
     if (error_popup != 0)
     {
         lib_object_detach_owner(error_popup);
         error_popup->destroy();
         error_popup = 0;
     }
+
     if (messages != 0)
     {
         lib_release_resource_slot(D_001B657C, messages);
     }
+
     if (captions != 0)
     {
         lib_release_resource_slot(D_001B657C, captions);
     }
+
     delete D_001B657C;
     D_001B657C = 0;
+
     if (input != 0)
     {
         lib_object_detach_owner(input);
         input->destroy();
         input = 0;
     }
+
     if (trophy_card != 0)
     {
         trophy_card->destroy();
         trophy_card = 0;
     }
+
     projection->destroy();
     projection = 0;
     delete message_block;
