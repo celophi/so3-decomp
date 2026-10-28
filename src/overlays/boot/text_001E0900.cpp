@@ -48,19 +48,11 @@ extern BootTrackPool<BootClass177F70>* D_001B6664;
 extern BootTrackPool<BootClass1714D0>* D_001B6668;
 extern BootTrackPool<BootClass177EE0>* D_001B666C;
 extern BootTrackPool<BootClass177C70>* D_001B6670;
-extern void* D_001B6674;
-extern void* D_001B6678;
-extern void* D_001B667C;
-extern void* D_001B6680;
-s32 func_001ED7B0(void* pool, s32 count);
-s32 func_001EDD60(void* pool, s32 count);
-s32 func_001EE250(void* pool, s32 count);
-s32 func_001EE760(void* pool, s32 count);
+extern BootTrackPool<BootClass1711D0>* D_001B6674;
+extern BootTrackPool<BootClass177BE0>* D_001B6678;
+extern BootTrackPool<BootClass174440>* D_001B667C;
+extern BootTrackPool<BootClass1730F0>* D_001B6680;
 void func_001ED610(BootTrackPool<BootClass177C70>* pool);
-void func_001EDBC0(void* pool);
-void func_001EE0C0(void* pool);
-void func_001EE5C0(void* pool);
-void func_001EEAE0(void* pool);
 void func_4C5B60(s32 first, s32 second);
 void func_4E14B0(BootProjectionACD0* projection, BootDimensionsACD0* display);
 u32 func_113930(BootResident113E40* heap, u32 size);
@@ -2727,7 +2719,7 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
  * @param blue Blue factor.
  * @param alpha Alpha factor.
  */
-static inline void set_model_color(BootClass170F30* model, float red, float green, float blue, float alpha)
+static inline void set_model_color(BootClass177820* model, float red, float green, float blue, float alpha)
 {
     BootVector4DDAA0 color;
     color.x = red;
@@ -2885,7 +2877,7 @@ void BootNewGameSettings::update_option_rows()
         }
 
         s32 i;
-        BootClass170F30* model;
+        BootClass177820* model;
         // TODO: My guess; the original reads the extra block through a pointer formed before the loop.
         u8* extra = &settings->unk1A0;
 
@@ -3099,7 +3091,7 @@ void BootNewGameSettings::update_page_images()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = 1.0f;
-                BootClass170F30* model = images[3 + i]->unk18;
+                BootClass177820* model = images[3 + i]->unk18;
                 copy_vector(&model->unk560, &color);
                 model->func_001DDAA0();
             }
@@ -3130,7 +3122,7 @@ void BootNewGameSettings::update_page_images()
                 color.y = 0.5f;
                 color.z = 0.5f;
                 color.w = 1.0f;
-                BootClass170F30* model = images[3 + i]->unk18;
+                BootClass177820* model = images[3 + i]->unk18;
                 copy_vector(&model->unk560, &color);
                 model->func_001DDAA0();
             }
@@ -4412,7 +4404,7 @@ void BootOpeningMovie::update()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = alpha;
-                BootClass170F30* model = caption_image->unk18;
+                BootClass177820* model = caption_image->unk18;
                 copy_vector(&model->unk560, &color);
                 model->func_001DDAA0();
                 break;
@@ -4424,7 +4416,7 @@ void BootOpeningMovie::update()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = 1.0f;
-                BootClass170F30* model = caption_image->unk18;
+                BootClass177820* model = caption_image->unk18;
                 copy_vector(&model->unk560, &color);
                 model->func_001DDAA0();
                 break;
@@ -4436,7 +4428,7 @@ void BootOpeningMovie::update()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = (30.0f - (float)fade) / 30.0f;
-                BootClass170F30* model = caption_image->unk18;
+                BootClass177820* model = caption_image->unk18;
                 copy_vector(&model->unk560, &color);
                 model->func_001DDAA0();
                 break;

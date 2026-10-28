@@ -192,7 +192,7 @@ void BootInstaller::update_choice_images()
     {
         if (images[4 + i] != 0 && images[4 + i]->unk18 != 0)
         {
-            BootClass170F30* model = images[4 + i]->unk18;
+            BootClass177820* model = images[4 + i]->unk18;
             if (selection == i)
             {
                 BootVector4DDAA0 scale;

@@ -1,7 +1,6 @@
 #ifndef SO3_OVERLAYS_BOOT_TEXT_001ED4E0_H
 #define SO3_OVERLAYS_BOOT_TEXT_001ED4E0_H
 
-typedef struct N50OwnerC4_001ED4E0 N50OwnerC4_001ED4E0;
 
 #include "types.h"
 
@@ -262,16 +261,20 @@ typedef struct BootScalarRangeFE50
 } BootScalarRangeFE50;
 
 #ifdef __cplusplus
+class BootClass1717A0;
+class BootClass171830;
+class BootClass1718C0;
+class BootClass171950;
+class BootClass171A70;
+class BootClass1719E0;
+class BootClass171680;
+class BootClass171710;
+class BootClass1711D0;
+class BootClass1714D0;
 extern "C" {
 #endif
 
 
-/** Initialize the receiver and install its primary vtable. */
-void* func_001EE080(void* object);
-/** Initialize the receiver and install its primary vtable. */
-void* func_001EE580(void* object);
-/** Initialize the receiver and install its primary vtable. */
-void* func_001EEAA0(void* object);
 
 /**
  * @brief Copy an indexed entry's key and values to the requested outputs.
@@ -378,26 +381,26 @@ float func_001F1010(BootState1F0D60* object, float key);
  * @brief Release owned record-array storage and clear the array pointer.
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
-void func_001F10C0(BootState1F0D60* object);
-void func_001EEDF0(BootState1F0D60* object);
+void func_001F10C0(BootClass1719E0* track);
+void func_001EEDF0(BootClass1711D0* track);
 
 /**
  * @brief Release owned record-array storage and clear the array pointer.
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
-void func_001F0960(BootState1F47F0* object);
+void func_001F0960(BootClass171A70* track);
 
 /**
  * @brief Release owned record-array storage and clear the array pointer.
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
-void func_001F21C0(BootState1F4790* object);
+void func_001F21C0(BootClass171710* track);
 
 /**
  * @brief Release owned record-array storage and clear the array pointer.
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
-void func_001F2280(BootState1F4730* object);
+void func_001F2280(BootClass171680* track);
 
 /**
  * @brief Reset array storage, counts, packed controls, and cached indices.
@@ -415,26 +418,26 @@ void func_001F14F0(BootState1F1580* object);
  * @brief Release owned array storage and clear the array pointer.
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
-void func_001F1430(BootState1F12B0* object);
+void func_001F1430(BootClass171950* track);
 
 /**
  * @brief Release owned array storage and clear the array pointer.
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
-void func_001F16F0(BootState1F1580* object);
+void func_001F16F0(BootClass1718C0* track);
 
 /**
  * @brief Release owned array storage and clear the array pointer.
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
-void func_001F1DD0(BootState1F1AD0* object);
-void func_001EEEA0(BootState1F1AD0* object);
+void func_001F1DD0(BootClass171830* track);
+void func_001EEEA0(BootClass1714D0* track);
 
 /**
  * @brief Release owned array storage and clear the array pointer.
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
-void func_001F2100(BootState1F1FC0* object);
+void func_001F2100(BootClass1717A0* track);
 
 /**
  * @brief Adjust a scalar key by whole spans determined from the endpoint records.
@@ -1398,40 +1401,10 @@ s16 func_001F5AD0(void* object);
  */
 u32 func_001F5E00(void* object);
 
-/**
- * @brief Return the object pointer.
- * @param object Object to return.
- * @return The object pointer.
- */
-void* func_001F2950(void* object);
 
-/**
- * @brief Return the object pointer.
- * @param object Object to return.
- * @return The object pointer.
- */
-void* func_001F2D60(void* object);
 
-/**
- * @brief Return the object pointer.
- * @param object Object to return.
- * @return The object pointer.
- */
-void* func_001F30E0(void* object);
 
-/**
- * @brief Return the object pointer.
- * @param object Object to return.
- * @return The object pointer.
- */
-void* func_001F5E10(void* object);
 
-/**
- * @brief Return the object pointer.
- * @param object Object to return.
- * @return The object pointer.
- */
-void* func_001F6000(void* object);
 
 /**
  * @brief Return zero as a float.
@@ -1461,19 +1434,8 @@ void func_001EFD70(void* object, float* value);
  */
 void func_001F04B0(void* object, float* value);
 
-/**
- * @brief Set the byte at offset 0x60 to 10.
- * @param object Object containing the byte.
- */
-void func_001FA880(void* object);
 
 
-/**
- * @brief Set the pointer at offset 0x4C to D_171B98.
- * @param object Object to update.
- * @return The object pointer.
- */
-void* func_001EFDB0(void* object);
 
 
 /**
@@ -1550,14 +1512,6 @@ void func_001F0480(void* object, float* result);
  */
 void func_001EFD80(void* object, float* result);
 
-/**
- * @brief Clear the byte at offset 0x64 and run the cleanup helper.
- * @param object Object containing the byte.
- */
-void func_001F8A40(void* object);
-
-/** Set the active flag and forward the optional child pointer. */
-void func_001F8A60(N50OwnerC4_001ED4E0* object);
 
 /** Clear the vector at offset 0xB0 and update the associated state. */
 void func_001EEED0(void* object);
