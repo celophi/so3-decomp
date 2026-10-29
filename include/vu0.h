@@ -162,4 +162,61 @@ static inline void vu0_read_vf6(void* result)
     asm __volatile__("sqc2 $vf6, 0(%0)" : : "r"(result) : "memory");
 }
 
+/**
+ * @brief Start decoding a keyframe rotation stored as three signed halfwords.
+ *
+ * Packs x, y and z into one 128-bit register, converts them to floats with 15
+ * fraction bits, and starts the square root of 1 - x² - y² - z² for w. The
+ * same sequence, with the same fixed GPRs t0, t1, t2 and t7, appears in five
+ * modules, so I think it's a shared engine macro. Finish it with
+ * vu0_store_decoded_quaternion.
+ * @param packed Three signed halfwords: x, y and z.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf), and SO3's
+ *      own copies at lib 0x42A4E0, 1067-00 0x2BBE30, 1070-00 0x2DABA0,
+ *      3253-00 0x222DA0 and 3454-00 0x21B030.
+ */
+static inline void vu0_decode_short_quaternion(const void* packed)
+{
+    asm __volatile__(
+        "lh        $8, 0(%0)\n"
+        "ori       $15, $0, 0xffff\n"
+        "lh        $9, 2(%0)\n"
+        "dsll      $15, $15, 16\n"
+        "lh        $10, 4(%0)\n"
+        "ori       $15, $15, 0xffff\n"
+        "dsll32    $9, $9, 0\n"
+        "pcpyld    $10, $10, $0\n"
+        "and       $8, $8, $15\n"
+        "or        $8, $8, $9\n"
+        "daddu     $10, $8, $0\n"
+        "qmtc2.ni  $10, $vf1\n"
+        "vitof15.xyz $vf1, $vf1\n"
+        "vmul.xyz  $vf3, $vf1, $vf1\n"
+        "vaddw.xyz $vf31, $vf0, $vf0w\n"
+        "vaddaw.x  $ACC, $vf0, $vf0w\n"
+        "vmsuba.x  $ACC, $vf31, $vf3\n"
+        "vmsubay.x $ACC, $vf31, $vf3y\n"
+        "vmsubz.x  $vf5, $vf31, $vf3z\n"
+        "vsqrt     $Q, $vf5x\n"
+        :
+        : "r"(packed)
+        : "$8", "$9", "$10", "$15");
+}
+
+/**
+ * @brief Finish vu0_decode_short_quaternion: put the square root in w and store the rotation.
+ * @param out 16-byte aligned destination; all four words are written.
+ * @see vu0_decode_short_quaternion.
+ */
+static inline void vu0_store_decoded_quaternion(void* out)
+{
+    asm __volatile__(
+        "vwaitq\n"
+        "vmulq.w   $vf1, $vf0, $Q\n"
+        "sqc2      $vf1, 0(%0)\n"
+        :
+        : "r"(out)
+        : "memory");
+}
+
 #endif

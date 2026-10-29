@@ -24,10 +24,12 @@ struct BootTrophyTime
 /** Partial 0xF10-byte record the Battle Trophies viewer keeps for each of the 300 trophies. */
 struct BootTrophyRecordF10
 {
-    /** @brief Leave the record uninitialized. */
-    BootTrophyRecordF10()
-    {
-    }
+    /**
+     * @brief Copy a record; declared only, which keeps the array header on new[] and delete[].
+     * @param other Record to copy.
+     * @return This record.
+     */
+    BootTrophyRecordF10& operator=(const BootTrophyRecordF10& other);
 
     u8 unk00[4];
     BootTrophyTime time;
@@ -53,7 +55,7 @@ class BootBattleTrophyViewer : public BootClass170E90
         /** @brief Report the list kind used when registration requests the default. @return Four. */
         virtual s32 get_default_list_kind();
 
-        /** @brief Run the viewer. */
+        /** @brief Run the viewer: choose a memory card slot, load its trophy data, then browse the trophy grid. */
         virtual void update();
 
         /** @brief Destroy every owned object and release the per-trophy allocations. */
@@ -93,8 +95,12 @@ class BootBattleTrophyViewer : public BootClass170E90
 
         u8* unk1C[3];
         BootImage* unk28[10];
-        s32 unk50;
-        u8 unk54;
+
+        /** Screen state. */
+        s32 step;
+
+        /** Number of resource 0x2B's images decoded so far. */
+        u8 images_loaded;
 
         /** Memory card slot being read: zero for slot 1, one for slot 2. */
         u8 slot;
@@ -102,8 +108,9 @@ class BootBattleTrophyViewer : public BootClass170E90
         /** Nonzero to list the trophies newest first; see sort_trophies. */
         u8 by_time;
 
-        u8 unk57;
-        u8 unk58;
+        /** Nonzero while the card in each slot can be read, as last shown. */
+        u8 slot_ready[2];
+
         u8 unk59[3];
 
         /** Column of the cursor in the grid of eight. */
@@ -118,32 +125,64 @@ class BootBattleTrophyViewer : public BootClass170E90
         /** Scroll animation step: counts up to 5 scrolling down, down to -5 scrolling up, zero when still. */
         s32 scroll_step;
 
-        s32 unk6C;
-        u8 unk70[0x10];
-        s32 unk80;
+        /** Number of rows in the grid. */
+        s32 row_count;
+
+        s32 unk70;
+
+        /** Seconds the rank title has been shown. */
+        float rank_timer;
+
+        /** Highest rank title earned. */
+        s32 rank;
+
+        /** Rank title being shown; cycles down from rank. */
+        s32 shown_rank;
+
+        /** Frames before the next page jump. */
+        s32 page_delay;
+
         u8 unk84[4];
         BootClass178660* unk88;
-        BootClass170E90* unk8C;
-        BootClass170E90* unk90;
-        BootClass170E90* unk94;
-        BootClass170E90* unk98;
+
+        /** Prompt and status message. */
+        BootClass178750* message_text;
+
+        BootClass175070* cursor;
+
+        /** Slot 1 choice. */
+        BootClass178750* slot1_text;
+
+        /** Slot 2 choice. */
+        BootClass178750* slot2_text;
 
         /** Label showing the number of the trophy under the cursor. */
         BootClass175140* number_label;
 
-        BootClass170E90* unkA0;
-        BootClass170E90* unkA4;
-        BootClass170E90* unkA8;
-        BootClass170E90* unkAC;
-        BootClass170E90* unkB0;
-        BootClass170E90* unkB4;
+        /** Name of the trophy under the cursor. */
+        BootClass178750* name_text;
+
+        /** When the trophy under the cursor was earned. */
+        BootClass178750* date_text;
+
+        BootClass178750* unkA8;
+
+        /** Sort order. */
+        BootClass178750* sort_text;
+
+        /** Shows how far the grid is scrolled. */
+        BootClass1725D0* scroll_indicator;
+
+        /** Rank title, shown once enough trophies are earned. */
+        BootClass178750* rank_text;
         BootClass171DD0* unkB8;
         BootClass171DD0* unkBC;
 
         /** Loading bar, faded out once loading finishes. */
         BootProgressBar* unkC0;
 
-        u8 unkC4[4];
+        /** Seconds spent loading. */
+        float load_time;
 
         /** Opacity of the loading bar as it fades out. */
         float bar_alpha;

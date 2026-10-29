@@ -20,4 +20,18 @@ static inline s32 clamp(s32 value, s32 low, s32 high)
     return value;
 }
 
+/**
+ * @brief Raise value to low without branching.
+ *
+ * The lower half of clamp on its own, for the key searches that only have a
+ * floor.
+ * @param value Value to clamp.
+ * @param low Lowest allowed value.
+ * @return value, or low when value is below it.
+ */
+static inline s32 clamp_low(s32 value, s32 low)
+{
+    return ee_movn(value, low, value < low);
+}
+
 #endif

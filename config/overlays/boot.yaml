@@ -58,6 +58,7 @@ segments:
       - [0x80, cpp, text_001DD3C0]
       - [0x3580, cpp, text_001E0900]
       - [0x10160, cpp, text_001ED4E0]
+      - [0x1DEA0, cpp, text_001FB220]
       - [0x21D20, cpp, text_001FF0A0]
       - [0x22660, cpp, text_001FF9E0]
       # Linker padding: the data section starts on a 128-byte boundary.
@@ -133,6 +134,14 @@ segments:
         linker_section_order: .rodata
       - [0x2888C, pad, rodata_pad_00205C0C]
       - [0x28890, rodatabin, data_00205C10]
+      - start: 0x288B0
+        type: .rodata
+        name: text_001FB220
+        linker_section: .rodata.00205C30
+        rodata_anchors:
+          - {function: update__22BootBattleTrophyViewerFv, offset: 0x0, size: 0x44}
+        linker_section_order: .rodata
+      - [0x288F4, rodatabin, data_00205C74]
   - name: init
     type: code
     start: 0x28980

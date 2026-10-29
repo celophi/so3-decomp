@@ -41,7 +41,7 @@ typedef struct BootResourceBits0970
 
     u8* unk08;
     u8 unk0C[8];
-    u32 unk14;
+    s32 unk14;
     /** Seed for checksum. */
     u32 checksum_seed;
     u32 checksum;
@@ -95,7 +95,8 @@ typedef struct BootResource0970
     u16 unk02;
     /** Button mask for the other choice of a two-way prompt. */
     u16 unk04;
-    u8 unk06[0x1E];
+    u16 unk06;
+    u8 unk08[0x1C];
     u8 unk24_low : 2;
     u8 unk24_mid : 2;
     u8 unk24_bit4 : 1;
@@ -176,7 +177,11 @@ class BootRuntime1B657C
         u8 unk04[0x564];
         /** Number the next formatted message prints. */
         u32 message_value;
-        u8 unk56C[0x98];
+
+        /** Further numbers for messages that print more than one. */
+        s32 message_values[9];
+
+        u8 unk590[0x74];
 };
 
 /** @brief Partial resident sound stream reached through the sound object. */
@@ -261,6 +266,12 @@ u16 func_457470(u16 seed, const void* data, s32 size);
  */
 void func_457670(BootResourceBits0970* bits, u32* seed, u32* checksum);
 
+/**
+ * @brief Recompute the checksum of a flag block from its key.
+ * @param bits Flag block.
+ */
+void func_457520(BootResourceBits0970* bits);
+
 #ifdef __cplusplus
 }
 #endif
@@ -318,6 +329,18 @@ class BootClass170F30;
 extern "C" s32 lib_container_init(BootClass178660* object, s32 code, float x, float y, s32 first, float z, s32 second);
 extern "C" s32 lib_text_init_resource_rectangle(void* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
 extern "C" s32 lib_panel_init_rectangle(void* object, s32 mode, float x, float y, float width, float height, float extra);
+
+/**
+ * @brief Place a list indicator and set its scroll extent and position.
+ * @param object List indicator.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param height Bar height.
+ * @param extent Size of one scroll step, as a share of the bar.
+ * @param position Scroll position.
+ * @return One on success, or zero if its storage could not be initialized.
+ */
+extern "C" s32 lib_list_indicator_init(class BootClass1725D0* object, float x, float y, float height, float extent, float position);
 extern "C" void func_4E32F0(BootClass179150* object);
 extern "C" void func_4D5C90(void* object);
 
@@ -777,6 +800,12 @@ class BootClass174EF0 : public BootClass170E90
             unk28 = alpha;
             unk3c = 1;
         }
+        /** @brief Set the color the widget is modulated by and mark it for redraw. @param color Packed color, 0x808080 for unchanged. */
+        void set_tint(u32 color)
+        {
+            tint = color;
+            unk3c = 1;
+        }
         /** @brief Set the horizontal alignment and mark the widget for redraw. @param align Alignment. */
         void set_horizontal_align(s32 align)
         {
@@ -799,7 +828,8 @@ class BootClass174EF0 : public BootClass170E90
         u8 unk3f;
         u8 unk40[0x40];
         float unk80;
-        u8 unk84[0x14];
+        u8 unk84[0x10];
+        u32 tint;
         u32 unk98;
         s32 unk9c;
         s32 unka0;
@@ -840,7 +870,42 @@ class BootClass178600 : public BootClass170E90
         virtual ~BootClass178600();
         u8 unk14[0x24];
         u8 unk38;
-        u8 unk39[7];
+        u8 unk39[3];
+        u8 unk3c;
+        u8 unk3d[3];
+};
+
+/** Boot's view of the 0x58-byte Lib list indicator with vtable D_1725D0, a bar showing how far a list is scrolled. */
+class BootClass1725D0 : public BootClass178600
+{
+    public:
+        /**
+         * @brief Select widget kind 3, then place the indicator and set its scroll extent and position.
+         * @param x Horizontal position.
+         * @param y Vertical position.
+         * @param height Bar height.
+         * @param extent Size of one scroll step, as a share of the bar.
+         * @param position Scroll position.
+         */
+        BootClass1725D0(float x, float y, float height, float extent, float position)
+        {
+            unk38 = 3;
+            lib_list_indicator_init(this, x, y, height, extent, position);
+        }
+        /** @brief Destroy the indicator. */
+        virtual ~BootClass1725D0();
+        /** @brief Set the scroll position and mark the indicator for redraw. @param value Position, from 0 to 100. */
+        void set_position(float value)
+        {
+            position = value;
+            unk3c = 1;
+        }
+        LibStorageBlock0C unk40;
+        u8 unk4c[4];
+        float unk50;
+
+        /** Scroll position, from 0 to 100. */
+        float position;
 };
 
 /** Four floats of a panel rectangle. */
@@ -909,9 +974,10 @@ class BootClass171C00 : public BootClass178A90, public BootClass170D50
         /** @brief Set the byte at offset 0x60 to 10. */
         virtual void func_001E0860();
         /**
-         * @brief Draw the fade over the strips.
-         * @param matrix Matrix supplied by the caller.
-         * @param context Opaque caller context.
+         * @brief Build the fade's GS packet: upload each of the ten strips to VRAM and draw it as a sprite at the
+         * fade's alpha. The first call only arms the fade.
+         * @param matrix Matrix supplied by the caller; unused.
+         * @param context Opaque caller context; unused.
          */
         virtual void func_001E08C0(const void* matrix, void* context);
         /** @brief Mark the fade inactive and run the Lib release helper. @param value Unused. */

@@ -1,4 +1,6 @@
 #include "include_asm.h"
+#include "clamp.h"
+#include "vu0.h"
 #include "overlays/lib/vector.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/boot/text_001ED4E0.h"
@@ -11,24 +13,23 @@
 #include "overlays/lib/render_buffer.h"
 
 extern "C" {
+extern void* D_001B663C;
+u32 func_4D93A0(void* heap, BootVramRequest* request, u32 tag, s32 count, s32 unk4, s32 unk5, s32 unk6, s32 unk7);
+u8* func_11F860(ResidentPacket* packet, s32 quadwords);
+u8* func_11F830(ResidentPacket* packet, u8* cursor);
 
 extern void func_4D00B0(void* object);
-void func_4B1640(void* object);
+FieldVec4B func_4B1640(const BootClass171B98* range, float key);
 extern BootTrackPool<BootClass1711D0>* D_001B6674;
 void func_001F2320(BootTrackPool<BootClass1711D0>* pool, BootClass1711D0* track);
 float func_4B16C0(void* object, float key);
 extern BootTrackPool<BootClass1714D0>* D_001B6668;
 void func_001F22D0(BootTrackPool<BootClass1714D0>* pool, BootClass1714D0* track);
-u8 func_001F4E70(BootClass171950* track, float key, s32* lower, s32* upper);
 extern float D_001B668C;
-void func_001F79A0(BootProgressBar* object, s32 done, s32 total);
+void func_001F79A0(BootProgressBar* bar, s32 done, s32 total);
 void func_4D6430(BootClass177820* model, LibDrawBuffer* buffer);
 extern void* D_001B6630;
 void func_4333A0(BootClass1735A0* image, u8* data, s16 address, s16 width, s32 first, s16 x, s32 second, s32 strip_width, s16 height);
-char* func_13CD50(char* destination, const char* source, u32 size);
-
-/** Name given to every trophy texture. */
-extern const char g_trophy_texture_name[];
 
 extern const char g_new_game_node_name[];
 extern const char g_continue_node_name[];
@@ -45,15 +46,6 @@ void func_40B3A0(u8* data);
 void func_473AA0(BootClass175320* scene);
 s32 func_112610(BootSound1B65F8* sound, s32 key);
 void func_100B40(void* allocation);
-s32 func_457220(BootTrophyRecordF10* record);
-void func_001F93B0(BootImage* image, s32 x, s32 y, s32 width, s32 height, s32 palette_x, s32 palette_y, s32 palette_width, s32 palette_height, u32 color,
-                   s32 depth);
-
-/**
- * @brief Recompute the checksum of a flag block from its key.
- * @param bits Flag block.
- */
-void func_457520(BootResourceBits0970* bits);
 
 void func_11F510(void* owner, void* object);
 
@@ -294,9 +286,15 @@ void func_001EEAE0(BootTrackPool<BootClass1730F0>* pool)
     pool->release();
 }
 
-void func_001EEC80(void* object)
+/**
+ * @brief Evaluate a vector range at a key.
+ * @param range Range to evaluate.
+ * @param key Evaluation key.
+ * @return Evaluated vector.
+ */
+FieldVec4B func_001EEC80(const BootClass171B98* range, float key)
 {
-    func_4B1640(object);
+    return func_4B1640(range, key);
 }
 
 void func_001EECA0(void* object)
@@ -398,7 +396,193 @@ void func_001EEED0(void* object)
     func_001F0C80((BootState1F0D60*)object);
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EEF10);
+/**
+ * @brief Subtract the first three components of one vector from another.
+ * @param left Vector to subtract from.
+ * @param right Vector to subtract.
+ * @return left minus right, keeping left's fourth component.
+ */
+static inline FieldVec4B difference(const FieldVec4B& left, const FieldVec4B& right)
+{
+    FieldVec4B value(left);
+    value.x -= right.x;
+    value.y -= right.y;
+    value.z -= right.z;
+    return value;
+}
+
+/**
+ * @brief Scale all four components of a vector.
+ * @param scale Factor to multiply by.
+ * @param vector Vector to scale.
+ * @return The scaled vector.
+ */
+static inline FieldVec4B scaled(float scale, const FieldVec4B& vector)
+{
+    FieldVec4B value(vector);
+    return value *= scale;
+}
+
+/**
+ * @brief Add the first three components of two vectors.
+ * @param left First vector.
+ * @param right Vector to add.
+ * @return left plus right, keeping left's fourth component.
+ */
+static inline FieldVec4B sum(const FieldVec4B& left, const FieldVec4B& right)
+{
+    FieldVec4B value(left);
+    value.x += right.x;
+    value.y += right.y;
+    value.z += right.z;
+    return value;
+}
+
+/**
+ * @brief Return a vector track's last keyframe.
+ * @param track Track with at least one keyframe.
+ * @return The last keyframe.
+ */
+static inline BootTrackKey1719E0& last_entry(BootClass1719E0* track)
+{
+    return static_cast<BootTrackKey1719E0*>(track->unk04)[track->state.unk08 - 1];
+}
+
+/**
+ * @brief Return a keyframe's key.
+ * @param entry Keyframe.
+ * @return The key, stored in the value's fourth component.
+ */
+static inline float key_of(const BootTrackKey1719E0* entry)
+{
+    return entry->value.w;
+}
+
+/**
+ * @brief Evaluate the track at a key, extrapolating past either end, and cache the value and its change per frame.
+ * @param key Evaluation key.
+ * @return Evaluated vector.
+ */
+FieldVec4A BootClass1710D0::func_slot80(float key)
+{
+    s32 lower;
+    s32 upper;
+    float wrapped_key;
+    u8 extrapolate;
+    FieldVec4B result;
+
+    if (!unk04 || !state.unk08)
+    {
+        return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (state.unk0c >= state.unk0a)
+    {
+        state.unk0c = 0;
+    }
+
+    if (state.unk08 == 1 && (!(key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w) || state.unk12_0_3 != 6))
+    {
+        return *reinterpret_cast<FieldVec4A*>(&static_cast<BootTrackKey1719E0*>(unk04)[0].value);
+    }
+
+    extrapolate = 0;
+
+    if (key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w && state.unk12_0_3 == 6)
+    {
+        upper = 0;
+        wrapped_key = key;
+        lower = -1;
+    }
+    else
+    {
+        wrapped_key = func_001F09B0(reinterpret_cast<BootState1F0D60*>(this), key);
+
+        if (state.unk00)
+        {
+            if (state.unk12_0_3 == 0 && state.unk00 < 0)
+            {
+                return *reinterpret_cast<FieldVec4A*>(&static_cast<BootTrackKey1719E0*>(unk04)[0].value);
+            }
+
+            if (state.unk12_4_7 == 0 && state.unk00 > 0)
+            {
+                return *reinterpret_cast<FieldVec4A*>(&static_cast<BootTrackKey1719E0*>(unk04)[state.unk08 - 1].value);
+            }
+        }
+
+        extrapolate = func_001F0AA0(this, wrapped_key, &lower, &upper);
+
+        if (extrapolate)
+        {
+            wrapped_key = key;
+        }
+    }
+
+    if (!extrapolate)
+    {
+        if (state.unk0e != lower || state.unk10 != upper)
+        {
+            state.unk0e = lower;
+            state.unk10 = upper;
+            BootTrackKey1719E0* first = lower >= 0 ? static_cast<BootTrackKey1719E0*>(unk04) + lower : reinterpret_cast<BootTrackKey1719E0*>(&unk10);
+            s32 last = state.unk08 - 1;
+
+            if (upper == last && ((!(key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w) && state.unk12_4_7 == 2) ||
+                                  (key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w && state.unk12_0_3 == 2)))
+            {
+                BootTrackKey1719E0* entries = static_cast<BootTrackKey1719E0*>(unk04);
+                BootTrackKey1719E0* second = entries + upper;
+                unk60.func_001EFDD0(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
+                                    reinterpret_cast<const FieldVec4A*>(&first->second), reinterpret_cast<const FieldVec4A*>(&entries[0].value),
+                                    reinterpret_cast<const FieldVec4A*>(&entries[0].first));
+            }
+            else if (lower < upper)
+            {
+                BootTrackKey1719E0* second = static_cast<BootTrackKey1719E0*>(unk04) + upper;
+                unk60.func_001EFDD0(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
+                                    reinterpret_cast<const FieldVec4A*>(&first->second), reinterpret_cast<const FieldVec4A*>(&second->value),
+                                    reinterpret_cast<const FieldVec4A*>(&second->first));
+            }
+            else
+            {
+                BootTrackKey1719E0* second = static_cast<BootTrackKey1719E0*>(unk04) + last;
+                unk60.func_001EFDD0(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
+                                    reinterpret_cast<const FieldVec4A*>(&first->second), reinterpret_cast<const FieldVec4A*>(&second->value),
+                                    reinterpret_cast<const FieldVec4A*>(&second->first));
+            }
+        }
+
+        result = func_4B1640(&unk60, wrapped_key);
+
+        if (state.unk00 && ((state.unk12_0_3 == 5 && state.unk00 < 0) || (state.unk12_4_7 == 5 && state.unk00 > 0)))
+        {
+            FieldVec4B delta = difference(static_cast<BootTrackKey1719E0*>(unk04)[state.unk08 - 1].value, static_cast<BootTrackKey1719E0*>(unk04)[0].value);
+            result += scaled((float)state.unk00, delta);
+        }
+    }
+    else
+    {
+        FieldVec4B slope;
+
+        if (wrapped_key < key)
+        {
+            slope = scaled(1.0f / (last_entry(this).value.w - key_of(static_cast<BootTrackKey1719E0*>(unk04) + (state.unk08 - 2))),
+                           static_cast<BootTrackKey1719E0*>(unk04)[state.unk08 - 1].first);
+            result = sum(static_cast<BootTrackKey1719E0*>(unk04)[state.unk08 - 1].value, scaled(key - last_entry(this).value.w, slope));
+        }
+        else
+        {
+            slope = scaled(1.0f / (key_of(static_cast<BootTrackKey1719E0*>(unk04) + 1) - key_of(static_cast<BootTrackKey1719E0*>(unk04))),
+                           static_cast<BootTrackKey1719E0*>(unk04)[0].second);
+            result = sum(static_cast<BootTrackKey1719E0*>(unk04)[0].value, scaled(key - static_cast<BootTrackKey1719E0*>(unk04)[0].value.w, slope));
+        }
+    }
+
+    unkC0 = scaled(D_001B668C, difference(result, unkB0));
+    unkB0 = result;
+    return *reinterpret_cast<FieldVec4A*>(&result);
+}
 
 /**
  * @brief Append a keyframe.
@@ -691,15 +875,15 @@ BootClass171B98::BootClass171B98()
 
 /**
  * @brief Set the range from two endpoint vectors and their tangents.
+ * @param start Start key.
+ * @param end End key.
  * @param first First endpoint vector.
  * @param second First endpoint tangent.
  * @param third Second endpoint vector.
  * @param fourth Second endpoint tangent.
- * @param start Start key.
- * @param end End key.
  */
-void BootClass171B98::func_001EFDD0(const FieldVec4A* first, const FieldVec4A* second, const FieldVec4A* third, const FieldVec4A* fourth, float start,
-                                    float end)
+void BootClass171B98::func_001EFDD0(float start, float end, const FieldVec4A* first, const FieldVec4A* second, const FieldVec4A* third,
+                                    const FieldVec4A* fourth)
 {
     unk00 = *first;
     unk40 = start;
@@ -747,7 +931,102 @@ void func_001EFEA0(void* object)
     func_001F19F0((BootState1F1AD0*)object);
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001EFEE0);
+/**
+ * @brief Evaluate the track at a key and cache the value and its change per frame.
+ * @param key Evaluation key.
+ * @return Evaluated vector.
+ */
+FieldVec4A BootClass171440::func_slot80(float key)
+{
+    s32 lower;
+    s32 upper;
+    float wrapped_key;
+    u8 extrapolate;
+
+    if (!unk04 || !state.unk08)
+    {
+        return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (state.unk0c >= state.unk0a)
+    {
+        state.unk0c = 0;
+    }
+
+    if (state.unk08 == 1 && (!(key < unk04[0].value.w) || state.unk12_0_3 != 6))
+    {
+        return *reinterpret_cast<FieldVec4A*>(&unk04[0].value);
+    }
+
+    if (key < unk04[0].value.w && state.unk12_0_3 == 6)
+    {
+        upper = 0;
+        wrapped_key = key;
+        lower = -1;
+    }
+    else
+    {
+        wrapped_key = func_001F1740(reinterpret_cast<BootState1F1AD0*>(this), key);
+
+        if (state.unk12_0_3 == 0 && state.unk00 < 0)
+        {
+            return *reinterpret_cast<FieldVec4A*>(&unk04[0].value);
+        }
+
+        if (state.unk12_4_7 == 0 && state.unk00 > 0)
+        {
+            return *reinterpret_cast<FieldVec4A*>(&unk04[state.unk08 - 1].value);
+        }
+
+        extrapolate = func_001F1820(this, wrapped_key, &lower, &upper);
+
+        if (extrapolate)
+        {
+            wrapped_key = key;
+        }
+    }
+
+    if (state.unk0e != lower || state.unk10 != upper)
+    {
+        state.unk0e = lower;
+        state.unk10 = upper;
+        BootTrackKey171830* first = lower >= 0 ? unk04 + lower : reinterpret_cast<BootTrackKey171830*>(&unk10);
+        func_001F06C0(&unk40);
+        unk40.func_001F0560(first->value.w, reinterpret_cast<const FieldVec4A*>(&first->value));
+        s32 last = state.unk08 - 1;
+        // TODO: My guess; copying upper into its own local is the only way I found that matches.
+        s32 upper_index = upper;
+
+        if (upper_index == last && ((!(key < unk04[0].value.w) && state.unk12_4_7 == 2) || (key < unk04[0].value.w && state.unk12_0_3 == 2)))
+        {
+            BootTrackKey171830* entries = unk04;
+            BootTrackKey171830* second = entries + upper_index;
+            unk40.func_001F0560(second->value.w, reinterpret_cast<const FieldVec4A*>(&entries[0].value));
+        }
+        else if (lower < upper_index)
+        {
+            BootTrackKey171830* second = unk04 + upper_index;
+            unk40.func_001F0560(second->value.w, reinterpret_cast<const FieldVec4A*>(&second->value));
+        }
+        else
+        {
+            BootTrackKey171830* second = unk04 + last;
+            unk40.func_001F0560(second->value.w, reinterpret_cast<const FieldVec4A*>(&unk04[upper_index].value));
+        }
+    }
+
+    FieldVec4B result = unk40.func_slot0c(wrapped_key);
+
+    if ((state.unk12_0_3 == 5 && state.unk00 < 0) || (state.unk12_4_7 == 5 && state.unk00 > 0))
+    {
+        FieldVec4B delta = difference(unk04[state.unk08 - 1].value, unk04[0].value);
+        result += scaled((float)state.unk00, delta);
+    }
+
+    unkA0 = scaled(1.0f / D_001B6688, difference(result, unk90));
+    unk90 = result;
+    return *reinterpret_cast<FieldVec4A*>(&result);
+}
 
 /**
  * @brief Return the difference between the endpoint values.
@@ -801,10 +1080,10 @@ BootClass171B50::BootClass171B50()
 
 /**
  * @brief Store a value and key in the two-entry history and count it, up to two.
- * @param value Value to store.
  * @param key Key to store.
+ * @param value Value to store.
  */
-void BootClass171B50::func_001F0560(const FieldVec4A* value, float key)
+void BootClass171B50::func_001F0560(float key, const FieldVec4A* value)
 {
     unk20[unk12] = *value;
     unk40[unk12] = key;
@@ -1010,8 +1289,68 @@ float func_001F09B0(BootState1F0D60* object, float key)
     return key;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F0AA0);
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param track Track to search.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ */
+u8 func_001F0AA0(BootClass1719E0* track, float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
 
+    if (track->state.unk13_0)
+    {
+        if (track->state.unk12_0_3 == 4 && track->state.unk00 < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            track->state.unk0c = 0;
+            return 1;
+        }
+
+        if (track->state.unk12_4_7 == 4 && track->state.unk00 > 0)
+        {
+            *lower = track->state.unk08 - 2;
+            *upper = track->state.unk08 - 1;
+            track->state.unk0c = track->state.unk08 - 2;
+            return 1;
+        }
+    }
+
+    index = track->state.unk0c;
+    count = track->state.unk08;
+
+    while (index > 0 && key < static_cast<BootTrackKey1719E0*>(track->unk04)[index].value.w)
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < static_cast<BootTrackKey1719E0*>(track->unk04)[next].value.w))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    track->state.unk0c = index;
+    return 0;
+}
 /** @brief Release the keyframe storage. */
 BootClass1719E0::~BootClass1719E0()
 {
@@ -1129,14 +1468,34 @@ float func_001F0F00(BootState1F0D60* object)
     return last_entry->key - object->entries[0].key;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F0F50__15BootClass1719E0CFf);
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param object Receiver with 48-byte records, valid when its count is positive.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A func_001F0F50(BootState1F0D60* object, float key)
+{
+    s32 index;
+
+    for (index = 0; index < object->count; index++)
+    {
+        if (key == object->entries[index].key)
+        {
+            BootRecord48F0E90* entry = object->entries + index;
+            return *reinterpret_cast<const FieldVec4A*>(entry->value);
+        }
+    }
+
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+}
 
 /**
  * @brief Evaluate the track at a key.
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass1719E0::func_001F0FC0(float key, FieldVec4B* output) const
+void BootClass1719E0::func_001F0FC0(float key, FieldVec4B* output)
 {
     *output = func_slot80(key);
 }
@@ -1419,8 +1778,68 @@ float func_001F1740(BootState1F1AD0* object, float key)
     return key;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F1820);
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param track Track to search.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ */
+u8 func_001F1820(BootClass171830* track, float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
 
+    if (track->state.unk13_0)
+    {
+        if (track->state.unk12_0_3 == 4 && track->state.unk00 < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            track->state.unk0c = 0;
+            return 1;
+        }
+
+        if (track->state.unk12_4_7 == 4 && track->state.unk00 > 0)
+        {
+            *lower = track->state.unk08 - 2;
+            *upper = track->state.unk08 - 1;
+            track->state.unk0c = track->state.unk08 - 2;
+            return 1;
+        }
+    }
+
+    index = track->state.unk0c;
+    count = track->state.unk08;
+
+    while (index > 0 && key < static_cast<BootTrackKey171830*>(track->unk04)[index].value.w)
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < static_cast<BootTrackKey171830*>(track->unk04)[next].value.w))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    track->state.unk0c = index;
+    return 0;
+}
 /** @brief Release the keyframe storage. */
 BootClass171830::~BootClass171830()
 {
@@ -1517,14 +1936,34 @@ float func_001F1C30(BootState1F1AD0* object)
     return last->key - object->entries[0].key;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F1C80);
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param object Receiver with vector-key entries, valid when its count is positive.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A func_001F1C80(BootState1F1AD0* object, float key)
+{
+    s32 index;
+
+    for (index = 0; index < object->count; index++)
+    {
+        if (key == object->entries[index].key)
+        {
+            BootVectorKeyEntry1F1D30* entry = object->entries + index;
+            return *reinterpret_cast<const FieldVec4A*>(entry);
+        }
+    }
+
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+}
 
 /**
  * @brief Evaluate the track at a key.
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass171830::func_001F1CE0(float key, FieldVec4B* output) const
+void BootClass171830::func_001F1CE0(float key, FieldVec4B* output)
 {
     *output = func_slot80(key);
 }
@@ -1598,7 +2037,7 @@ void func_001F1E90(BootState1F1FC0* object)
 void BootClass1717A0::func_001F1F20(s32 count)
 {
     state.unk13_1 = 0;
-    delete[] static_cast<BootTrackKey1717A0*>(unk04);
+    delete[] unk04;
     unk04 = new (0) BootTrackKey1717A0[count];
     state.unk0a = count;
 
@@ -1645,7 +2084,7 @@ float func_001F20B0(void* object)
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass1717A0::func_001F20C0(float key, float* output) const
+void BootClass1717A0::func_001F20C0(float key, float* output)
 {
     *output = func_slot80(key);
 }
@@ -1959,7 +2398,27 @@ float func_001F29D0(BootState1F1580* object, float key)
     return key;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F2A60);
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param object Receiver with 32-byte records, valid when its count is positive.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A func_001F2A60(BootState1F1580* object, float key)
+{
+    s32 index;
+
+    for (index = 0; index < object->count; index++)
+    {
+        if (key == object->entries[index].key)
+        {
+            BootKeyEntry32* entry = object->entries + index;
+            return *reinterpret_cast<const FieldVec4A*>(entry->value);
+        }
+    }
+
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+}
 
 float func_001F2AC0(BootState1F1580* object)
 {
@@ -2203,8 +2662,8 @@ BootClass171A70::BootClass171A70()
 void BootClass171560::func_001F2610(const float* value, float key)
 {
     func_001F1FC0(6);
-    unk0c = *value;
-    unk08 = key;
+    unk08.value = *value;
+    unk08.key = key;
 }
 
 s32 func_001F3230(BootState1F1FC0* object, s32 index, float* key, float* value)
@@ -2540,7 +2999,104 @@ void BootClass1715F0::func_001EED80()
     func_001F1FC0(1);
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F3990);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @return Evaluated value.
+ */
+float BootClass1715F0::func_slot80(float key)
+{
+    s32 lower;
+    s32 upper;
+    float wrapped_key;
+    float result;
+    u8 extrapolate;
+
+    if (!unk04 || !state.unk08)
+    {
+        return 0.0f;
+    }
+
+    if (state.unk0c >= state.unk0a)
+    {
+        state.unk0c = 0;
+    }
+
+    if (state.unk08 == 1 && (!(key < unk04[0].key) || state.unk12_0_3 != 6))
+    {
+        return unk04[0].value;
+    }
+
+    if (key < unk04[0].key && state.unk12_0_3 == 6)
+    {
+        upper = 0;
+        wrapped_key = key;
+        lower = -1;
+    }
+    else
+    {
+        wrapped_key = func_001F5090(reinterpret_cast<BootState1F1FC0*>(this), key);
+
+        if (state.unk12_0_3 == 0 && state.unk00 < 0)
+        {
+            return unk04[0].value;
+        }
+
+        if (state.unk12_4_7 == 0 && state.unk00 > 0)
+        {
+            return unk04[state.unk08 - 1].value;
+        }
+
+        extrapolate = func_001F5170(this, wrapped_key, &lower, &upper);
+
+        if (extrapolate)
+        {
+            wrapped_key = key;
+        }
+    }
+
+    if (state.unk0e != lower || state.unk10 != upper)
+    {
+        state.unk0e = lower;
+        state.unk10 = upper;
+        BootTrackKey1717A0* first = lower >= 0 ? unk04 + lower : &unk08;
+        unk24.unk04 = 0;
+        unk24.unk06 = 0;
+        unk24.unk08 = 0;
+        unk24.unk0C = 0;
+        unk24.func_slot14(first->key, first->value);
+        s32 last = state.unk08 - 1;
+        // TODO: My guess; copying upper into its own local is the only way I found that matches.
+        s32 upper_index = upper;
+
+        if (upper_index == last && ((!(key < unk04[0].key) && state.unk12_4_7 == 2) || (key < unk04[0].key && state.unk12_0_3 == 2)))
+        {
+            BootTrackKey1717A0* entries = unk04;
+            unk24.func_slot14(entries[upper_index].key, entries[0].value);
+        }
+        else if (lower < upper_index)
+        {
+            BootTrackKey1717A0* second = unk04 + upper_index;
+            unk24.func_slot14(second->key, second->value);
+        }
+        else
+        {
+            unk24.func_slot14(unk04[last].key, unk04[upper_index].value);
+        }
+    }
+
+    result = unk24.func_slot0c(wrapped_key);
+
+    if ((state.unk12_0_3 == 5 && state.unk00 < 0) || (state.unk12_4_7 == 5 && state.unk00 > 0))
+    {
+        float delta = unk04[state.unk08 - 1].value - unk04[0].value;
+        result += delta * state.unk00;
+    }
+
+    unk4c = (result - unk48) / D_001B6688;
+    unk48 = result;
+    return result;
+}
 
 /** @brief Reset to a single zero keyframe at key zero, then set the lower mode to one. */
 void BootClass171440::func_001EED80()
@@ -3118,8 +3674,68 @@ float func_001F4D90(BootState1F12B0* object, float key)
     return key;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F4E70);
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param track Track to search.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ */
+u8 func_001F4E70(BootClass171950* track, float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
 
+    if (track->state.unk13_0)
+    {
+        if (track->state.unk12_0_3 == 4 && track->state.unk00 < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            track->state.unk0c = 0;
+            return 1;
+        }
+
+        if (track->state.unk12_4_7 == 4 && track->state.unk00 > 0)
+        {
+            *lower = track->state.unk08 - 2;
+            *upper = track->state.unk08 - 1;
+            track->state.unk0c = track->state.unk08 - 2;
+            return 1;
+        }
+    }
+
+    index = track->state.unk0c;
+    count = track->state.unk08;
+
+    while (index > 0 && key < track->unk04[index].unk00)
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < track->unk04[next].unk00))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    track->state.unk0c = index;
+    return 0;
+}
 /** @brief Forward to slot 0x68. */
 s32 func_001F4FD0(BootClass171950* object, const float* x, const float* y, const float* z, float key)
 {
@@ -3178,8 +3794,68 @@ float func_001F5090(BootState1F1FC0* object, float key)
     return key;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F5170);
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param track Track to search.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ */
+u8 func_001F5170(BootClass1717A0* track, float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
 
+    if (track->state.unk13_0)
+    {
+        if (track->state.unk12_0_3 == 4 && track->state.unk00 < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            track->state.unk0c = 0;
+            return 1;
+        }
+
+        if (track->state.unk12_4_7 == 4 && track->state.unk00 > 0)
+        {
+            *lower = track->state.unk08 - 2;
+            *upper = track->state.unk08 - 1;
+            track->state.unk0c = track->state.unk08 - 2;
+            return 1;
+        }
+    }
+
+    index = track->state.unk0c;
+    count = track->state.unk08;
+
+    while (index > 0 && key < track->unk04[index].key)
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < track->unk04[next].key))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    track->state.unk0c = index;
+    return 0;
+}
 void func_001F52D0(BootState1F4790* object)
 {
     object->entries = 0;
@@ -3326,7 +4002,48 @@ float func_001F5670(BootState1F4790* object)
     return (float)last_entry->key - (float)object->entries[0].key;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F56D0);
+/**
+ * @brief Read the result pointer back through its address.
+ * @param out Result pointer.
+ */
+static inline void reread_result(FieldVec4A*& out)
+{
+    // TODO: The original reads the result pointer again after the copy; a volatile read is the only way I found that matches.
+    FieldVec4A* volatile* slot = &out;
+    (void)*slot;
+}
+
+/**
+ * @brief Find the keyframe with a key and decode its rotation.
+ * @param out Receives the rotation, or zero when the key is absent.
+ * @param object Keyframe array.
+ * @param key Key to find.
+ */
+void func_001F56D0(FieldVec4A* out, BootState1F4790* object, float key)
+{
+    s32 index;
+
+    for (index = 0; index < object->count; index++)
+    {
+        BootShortKeyEntry8* entry = object->entries + index;
+
+        if (key == entry->key)
+        {
+            FieldVec4A value;
+            vu0_decode_short_quaternion(entry);
+            vu0_store_decoded_quaternion(&value);
+            *out = value;
+            reread_result(out);
+            return;
+        }
+    }
+
+    FieldVec4A* result = out;
+    result->x = 0.0f;
+    result->y = 0.0f;
+    result->z = 0.0f;
+    result->w = 0.0f;
+}
 
 /**
  * @brief Evaluate the track at a key.
@@ -3514,7 +4231,27 @@ float func_001F5C50(BootState1F4730* object)
     return last_entry->key - object->entries[0].key;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F5CA0);
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param object Receiver with 48-byte records, valid when its count is positive.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A func_001F5CA0(BootState1F4730* object, float key)
+{
+    s32 index;
+
+    for (index = 0; index < object->count; index++)
+    {
+        if (key == object->entries[index].key)
+        {
+            BootKeyEntry48* entry = object->entries + index;
+            return *reinterpret_cast<const FieldVec4A*>(entry->value);
+        }
+    }
+
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+}
 
 /**
  * @brief Evaluate the track at a key.
@@ -3585,7 +4322,27 @@ float func_001F5E20(BootState1F47F0* object, float key)
     return key;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F5EB0);
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param object Receiver with 32-byte records, valid when its count is positive.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A func_001F5EB0(BootState1F47F0* object, float key)
+{
+    s32 index;
+
+    for (index = 0; index < object->count; index++)
+    {
+        if (key == object->entries[index].key)
+        {
+            BootKeyEntry32* entry = object->entries + index;
+            return *reinterpret_cast<const FieldVec4A*>(entry->value);
+        }
+    }
+
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+}
 
 float func_001F5F10(BootState1F47F0* object)
 {
@@ -4191,7 +4948,96 @@ void BootProgressBar::destroy()
     delete this;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F79A0);
+/**
+ * @brief Append one vertex to a draw buffer's streams.
+ * @param buffer Draw buffer.
+ * @param position Vertex position.
+ * @param unk Value for the second vector stream.
+ * @param texcoord Packed texture coordinates.
+ * @param color Vertex color.
+ */
+static inline void add_vertex(LibDrawBuffer* buffer, const FieldVec4A& position, const FieldVec4A& unk, u32 texcoord, u32 color)
+{
+    *buffer->positions = position;
+    buffer->positions++;
+    *buffer->unk4c = unk;
+    buffer->unk4c++;
+    *buffer->texcoords++ = texcoord;
+    *buffer->colors++ = color;
+    buffer->vertex_count++;
+}
+
+/**
+ * @brief Draw a progress bar: a dark border, the bar outline and a fill proportional to done / total.
+ * @param bar Progress bar to draw.
+ * @param done Completed amount; clamped to total.
+ * @param total Total amount.
+ */
+void func_001F79A0(BootProgressBar* bar, s32 done, s32 total)
+{
+    BootSettings1F86C0 settings;
+    s32 fill;
+
+    func_455DF0(bar->draw_buffer, 0, 1);
+    func_001F86C0(&settings);
+    settings.unk00 = 0xC;
+    settings.unk02 = 0;
+    settings.unk05 = 1;
+    settings.unk06 = 0;
+    FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
+
+    if (total < done)
+    {
+        done = total;
+    }
+
+    if (total > 999)
+    {
+        fill = done / (total / 1000);
+    }
+    else
+    {
+        fill = done * 1000 / total;
+    }
+
+    func_455150(bar->draw_buffer, &settings);
+    s32 width = bar->width;
+    s32 height = bar->height;
+    u32 color = bar->color;
+    s32 depth = bar->mode;
+    func_4550F0(bar->draw_buffer, 4);
+    add_vertex(bar->draw_buffer, FieldVec4A(-2.0f, -1.0f, (float)depth, 1.0f), normal, 0, 0x80301004);
+    add_vertex(bar->draw_buffer, FieldVec4A(2.0f + width, -1.0f, (float)depth, 1.0f), normal, 0, 0x80301004);
+    add_vertex(bar->draw_buffer, FieldVec4A(-2.0f, 1.0f + height, (float)depth, 1.0f), normal, 0, 0x80301004);
+    add_vertex(bar->draw_buffer, FieldVec4A(2.0f + width, 1.0f + height, (float)depth, 1.0f), normal, 0, 0x80301004);
+    func_4550F0(bar->draw_buffer, 4);
+    add_vertex(bar->draw_buffer, FieldVec4A(0.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A((float)width, 0.0f, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A(0.0f, 1.0f, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A((float)width, 1.0f, (float)depth, 1.0f), normal, 0, color);
+    func_4550F0(bar->draw_buffer, 4);
+    add_vertex(bar->draw_buffer, FieldVec4A(0.0f, height - 1.0f, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A((float)width, height - 1.0f, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A(0.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A((float)width, (float)height, (float)depth, 1.0f), normal, 0, color);
+    func_4550F0(bar->draw_buffer, 4);
+    add_vertex(bar->draw_buffer, FieldVec4A(-1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A(1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A(-1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A(1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
+    func_4550F0(bar->draw_buffer, 4);
+    add_vertex(bar->draw_buffer, FieldVec4A(width - 1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A(1.0f + width, 0.0f, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A(width - 1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A(1.0f + width, (float)height, (float)depth, 1.0f), normal, 0, color);
+    func_4550F0(bar->draw_buffer, 4);
+    add_vertex(bar->draw_buffer, FieldVec4A(3.0f, 3.0f, (float)depth, 1.0f), normal, 0, color);
+    float right = 3.0f + ((width - 6.0f) * fill) / 1000.0f;
+    add_vertex(bar->draw_buffer, FieldVec4A(right, 3.0f, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A(3.0f, height - 3.0f, (float)depth, 1.0f), normal, 0, color);
+    add_vertex(bar->draw_buffer, FieldVec4A(right, height - 3.0f, (float)depth, 1.0f), normal, 0, color);
+    func_455BD0(bar->draw_buffer, 0, 1.0f, 0);
+}
 
 void func_001F86C0(BootSettings1F86C0* settings)
 {
@@ -4299,7 +5145,90 @@ void BootClass171C00::func_001DD4C0()
     func_11F510(packet, static_cast<BootClass170D50*>(this));
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001E08C0__15BootClass171C00FPCvPv);
+/**
+ * @brief Build the fade's GS packet: upload each of the ten strips to VRAM and draw it as a sprite at the fade's
+ * alpha. The first call only arms the fade.
+ * @param matrix Matrix supplied by the caller; unused.
+ * @param context Opaque caller context; unused.
+ */
+void BootClass171C00::func_001E08C0(const void* matrix, void* context)
+{
+    if (!unkc8)
+    {
+        unkc8 = 1;
+        return;
+    }
+
+    BootClass171BF0* buffer_packet = packet;
+    buffer_packet->unk08 = buffer_packet->unk00 + 0x40;
+    buffer_packet->unk0c = buffer_packet->unk08;
+    BootFadeStripPacket* strip = reinterpret_cast<BootFadeStripPacket*>(func_11F860(packet, 0));
+    BootVramRequest request;
+    request.width = 64;
+    request.height = 448;
+    request.size = 0x1C000;
+    request.unk0c = 1;
+    request.unk0e = 6;
+    request.unk0f = 10;
+    u32 address = func_4D93A0(D_001B663C, &request, 0x54744664, 1, 0, 0, 1, 0);
+
+    if (address != 0)
+    {
+        u32 base = address >> 6;
+        float top = 1824.0f;
+        float bottom = 2272.0f;
+        float left = 1728.0f;
+        float width = 64.0f;
+
+        for (s32 i = 0; i < 10; i++)
+        {
+            u8* image = buffer + 448 * (i * 64) * 3 / 16 * 16;
+            strip->transfer_dma = 0x10000006;
+            strip->transfer_tag.tag = 0x1000000000000004ULL;
+            strip->transfer_tag.registers = 0;
+            strip->transfer_tag.fields.register0 = 0xE;
+            strip->bitbltbuf = ((u64)base << 32) | 0x0101000000000000ULL;
+            strip->bitbltbuf_register = 0x50;
+            strip->trxpos = 1;
+            strip->trxpos_register = 0x51;
+            strip->trxreg = 0x000001C000000040ULL;
+            strip->trxreg_register = 0x52;
+            strip->trxdir = 0;
+            strip->trxdir_register = 0x53;
+            strip->image_tag = 0x1800000000001500ULL;
+            strip->image_dma = ((u64)(u32)image << 32) | 0x30001500;
+            strip->draw_dma = 0x10000008;
+            strip->draw_tag.tag = 0x1000000000008004ULL;
+            strip->draw_tag.registers = 0;
+            strip->draw_tag.fields.register0 = 0xE;
+            strip->texflush = 0;
+            strip->texflush_register = 0x3F;
+            strip->tex0 = base | 0x0000000298104000ULL;
+            strip->tex0_register = 7;
+            strip->prim = 0x356;
+            strip->prim_register = 0;
+            u32 color = 0x808080;
+            color |= (s32)(128.0f * unkcc) << 24;
+            strip->rgbaq = color;
+            strip->rgbaq_register = 1;
+            strip->sprite_tag.tag = 0x4400000000008001ULL;
+            strip->sprite_tag.registers = 0;
+            strip->sprite_tag.fields.register0 = 3;
+            strip->sprite_tag.fields.register1 = 5;
+            strip->sprite_tag.fields.register2 = 3;
+            strip->sprite_tag.fields.register3 = 5;
+            strip->uv0 = 0x80008;
+            strip->xyz0 = ((u64)(s32)(top * 16.0f) << 16) | (u64)((s32)(left + i * width) << 4) | ((u64)0xFFFFFF << 32);
+            strip->uv1 = 0x1C080408;
+            strip->xyz1 = ((u64)(s32)(bottom * 16.0f) << 16) | (u64)((s32)(left + (1.0f + i) * width) << 4) | ((u64)0xFFFFFF << 32);
+            strip++;
+        }
+
+        *reinterpret_cast<u64*>(strip) = 0x70000000;
+        func_11F830(packet, reinterpret_cast<u8*>(strip) + 0x10);
+        unk63 = 1;
+    }
+}
 
 /** @brief Destroy the strips, the copy buffer and the packet. */
 BootClass171C00::~BootClass171C00()
@@ -4371,25 +5300,105 @@ void BootImage::destroy()
     delete this;
 }
 
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", func_001F93B0);
-
 /**
- * @brief Append one vertex to a draw buffer's streams.
- * @param buffer Draw buffer.
- * @param position Vertex position.
- * @param unk Value for the second vector stream.
- * @param texcoord Packed texture coordinates.
+ * @brief Build an image's quad from a rectangle of its texture and a rectangle of its palette, and queue the
+ * model for drawing.
+ * @param image Image to build.
+ * @param x Left edge of the texture rectangle, in texels.
+ * @param y Top edge of the texture rectangle.
+ * @param width Rectangle width, which is also the quad's width.
+ * @param height Rectangle height, which is also the quad's height.
+ * @param palette_x Left edge of the palette rectangle.
+ * @param palette_y Top edge of the palette rectangle.
+ * @param palette_width Palette rectangle width.
+ * @param palette_height Palette rectangle height.
  * @param color Vertex color.
+ * @param depth Z position of the quad.
  */
-static inline void add_vertex(LibDrawBuffer* buffer, const FieldVec4A& position, const FieldVec4A& unk, u32 texcoord, u32 color)
+void func_001F93B0(BootImage* image, s32 x, s32 y, s32 width, s32 height, s32 palette_x, s32 palette_y, s32 palette_width, s32 palette_height, u32 color,
+                   s32 depth)
 {
-    *buffer->positions = position;
-    buffer->positions++;
-    *buffer->unk4c = unk;
-    buffer->unk4c++;
-    *buffer->texcoords++ = texcoord;
-    *buffer->colors++ = color;
-    buffer->vertex_count++;
+    BootSettings1F86C0 settings;
+
+    func_455DF0(image->draw_buffer, 1, 1);
+    func_001F86C0(&settings);
+    settings.unk06 = 0;
+    settings.unk02 = 2;
+    settings.unk00 = 0x5C;
+    settings.unk05 = 1;
+    FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
+    func_455150(image->draw_buffer, &settings);
+    func_4550F0(image->draw_buffer, 4);
+
+    if (image->centered)
+    {
+        float half_width = 0.5f * (float)width;
+        float half_height = 0.5f * (float)height;
+        add_vertex(image->draw_buffer, FieldVec4A(-half_width, -half_height, (float)depth, 1.0f), normal,
+                   ((x << 12) / image->texture_width) | (((y << 12) / image->texture_height) << 16), color);
+        add_vertex(image->draw_buffer, FieldVec4A(half_width, -half_height, (float)depth, 1.0f), normal,
+                   (((y << 12) / image->texture_height) << 16) | (((x + width) << 12) / image->texture_width), color);
+        add_vertex(image->draw_buffer, FieldVec4A(-half_width, half_height, (float)depth, 1.0f), normal,
+                   ((x << 12) / image->texture_width) | ((((y + height) << 12) / image->texture_height) << 16), color);
+        add_vertex(image->draw_buffer, FieldVec4A(half_width, half_height, (float)depth, 1.0f), normal,
+                   (((x + width) << 12) / image->texture_width) | ((((y + height) << 12) / image->texture_height) << 16), color);
+    }
+    else
+    {
+        add_vertex(image->draw_buffer, FieldVec4A(0.0f, 0.0f, (float)depth, 1.0f), normal,
+                   ((x << 12) / image->texture_width) | (((y << 12) / image->texture_height) << 16), color);
+        // TODO: right as its own variable shifted in place is a guess; it's what gets the
+        // sum and its shift to share a register like the original.
+        s32 right = x + width;
+        right = (u32)right << 12;
+        add_vertex(image->draw_buffer, FieldVec4A((float)width, 0.0f, (float)depth, 1.0f), normal,
+                   (((y << 12) / image->texture_height) << 16) | (right / image->texture_width), color);
+        add_vertex(image->draw_buffer, FieldVec4A(0.0f, (float)height, (float)depth, 1.0f), normal,
+                   ((x << 12) / image->texture_width) | ((((y + height) << 12) / image->texture_height) << 16), color);
+        add_vertex(image->draw_buffer, FieldVec4A((float)width, (float)height, (float)depth, 1.0f), normal,
+                   (right / image->texture_width) | ((((y + height) << 12) / image->texture_height) << 16), color);
+    }
+
+    if (image->has_palette)
+    {
+        settings.unk05 = 0;
+        settings.unk03 = 1;
+        func_455150(image->draw_buffer, &settings);
+        func_4550F0(image->draw_buffer, 4);
+
+        if (image->centered)
+        {
+            float half_width = 0.5f * (float)palette_width;
+            float half_height = 0.5f * (float)palette_height;
+            add_vertex(image->draw_buffer, FieldVec4A(-half_width, -half_height, (float)depth, 1.0f), normal,
+                       (((palette_y << 12) / image->palette_height) << 16) | (((palette_x + palette_width) << 12) / image->palette_width), color);
+            add_vertex(image->draw_buffer, FieldVec4A(half_width, -half_height, (float)depth, 1.0f), normal,
+                       ((palette_x << 12) / image->palette_width) | (((palette_y << 12) / image->palette_height) << 16), color);
+            add_vertex(image->draw_buffer, FieldVec4A(-half_width, half_height, (float)depth, 1.0f), normal,
+                       (((palette_x + palette_width) << 12) / image->palette_width) | ((((palette_y + palette_height) << 12) / image->palette_height) << 16),
+                       color);
+            add_vertex(image->draw_buffer, FieldVec4A(half_width, half_height, (float)depth, 1.0f), normal,
+                       ((palette_x << 12) / image->palette_width) | ((((palette_y + palette_height) << 12) / image->palette_height) << 16), color);
+        }
+        else
+        {
+            add_vertex(image->draw_buffer, FieldVec4A(0.0f, 0.0f, (float)depth, 1.0f), normal,
+                       (((palette_y << 12) / image->palette_height) << 16) | (((palette_x + palette_width) << 12) / image->texture_width), color);
+            add_vertex(image->draw_buffer, FieldVec4A((float)palette_width, 0.0f, (float)depth, 1.0f), normal,
+                       ((palette_x << 12) / image->texture_width) | (((palette_y << 12) / image->texture_height) << 16), color);
+            add_vertex(image->draw_buffer, FieldVec4A(0.0f, (float)palette_height, (float)depth, 1.0f), normal,
+                       (((palette_x + palette_width) << 12) / image->texture_width) | ((((palette_y + palette_height) << 12) / image->texture_height) << 16),
+                       color);
+            add_vertex(image->draw_buffer, FieldVec4A((float)palette_width, (float)palette_height, (float)depth, 1.0f), normal,
+                       ((palette_x << 12) / image->texture_width) | ((((palette_y + palette_height) << 12) / image->palette_height) << 16), color);
+        }
+    }
+
+    func_455BD0(image->draw_buffer, image->unk2c, 500.0f, 0);
+    func_4D6430(image->unk18, image->draw_buffer);
+    image->unk18->unk80 = D_001B6630;
+    image->unk18->unk6a |= 0x400;
+    D_001B661C->append_node(image->unk18, -1);
 }
 
 /**
@@ -4715,316 +5724,4 @@ BootGameLauncher::BootGameLauncher()
     movie_heap = 0;
     player = 0;
 }
-
-/** @brief Report the list kind used when registration requests the default. @return Four. */
-s32 BootBattleTrophyViewer::get_default_list_kind()
-{
-    return 4;
-}
-
-/**
- * @brief Return the time a trophy was earned, as one comparable number.
- * @param viewer Viewer holding the records and display order.
- * @param position List position of the trophy.
- * @return Year, month, day, hour, minute and second packed from the highest byte down, or zero if not earned.
- */
-static inline u64 trophy_time(BootBattleTrophyViewer* viewer, s32 position)
-{
-    BootResource0970* settings = boot_settings();
-    s32 index = viewer->order[position];
-
-    if (resource_bit(&settings->unk1A8, index))
-    {
-        BootTrophyTime* time = &viewer->records[index].time;
-        return time->second + (time->minute << 8) + (time->hour << 16) + (time->day << 24) + ((u64)time->month << 32) + ((u64)time->year << 40);
-    }
-
-    return 0;
-}
-
-/**
- * @brief Reset the display order to trophy number order, then optionally sort it newest first.
- * @param newest_first Nonzero to sort by the time each trophy was earned; unearned ones go last.
- */
-void BootBattleTrophyViewer::sort_trophies(u8 newest_first)
-{
-    for (s32 i = 0; i < 300; i++)
-    {
-        order[i] = i;
-    }
-
-    if (!newest_first)
-    {
-        return;
-    }
-
-    BootResourceBits0970* bits = &boot_settings()->unk1A8;
-    u32 seed = bits->checksum_seed;
-    u32 checksum;
-    func_457670(bits, &seed, &checksum);
-
-    if (bits->checksum != checksum)
-    {
-        return;
-    }
-
-    for (s32 i = 1; i < 300; i++)
-    {
-        u64 time = trophy_time(this, i);
-        s16 current = order[i];
-        s32 j;
-
-        for (j = i - 1; j >= 0 && trophy_time(this, j) < time; j--)
-        {
-            order[j + 1] = order[j];
-        }
-
-        order[j + 1] = current;
-    }
-}
-
-/**
- * @brief Build a trophy's texture from the picture template, the trophy's packed picture and the first palette.
- * @param record Trophy record holding the picture.
- * @param texture Texture resource to fill.
- * @param index Trophy index.
- */
-void BootBattleTrophyViewer::build_trophy_texture(const BootTrophyRecordF10* record, BootTextureResource* texture, s32 index)
-{
-    func_13A4C0(texture, (void*)(((u32)unk1C[2] + 0x7F) & ~0x7F), 0x4600);
-    BootTextureHeader* header = &texture->header;
-    u32* palette = (u32*)((u8*)header + header->palette_offset + 0x80);
-    u8* pixels = (u8*)header + ((BootTextureImage*)((u8*)header + header->image_offset))->pixel_offset + 0x80;
-    func_13CD50(header->name, g_trophy_texture_name, 4);
-    header->id = index + 1;
-
-    for (s32 i = 0; i < 32; i++)
-    {
-        palette[i] = palettes[0][i];
-    }
-
-    const u8* source = record->image;
-    u16 bits = *source++;
-    s32 bit_count = 8;
-
-    for (s32 y = 0; y < 96; y++)
-    {
-        for (s32 x = 0; x < 64; x++)
-        {
-            *pixels++ = bits & 0x1F;
-            bits >>= 5;
-            bit_count -= 5;
-
-            if (bit_count < 9)
-            {
-                bits |= *source++ << bit_count;
-                bit_count += 8;
-            }
-        }
-
-        pixels += 64;
-    }
-}
-
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", update_grid__22BootBattleTrophyViewerFv);
-
-/**
- * @brief Check a flag block against its stored checksum.
- * @param bits Flag block.
- * @return True when the checksum matches.
- */
-static inline bool flags_intact(BootResourceBits0970* bits)
-{
-    u32 seed = bits->checksum_seed;
-    u32 checksum;
-    func_457670(bits, &seed, &checksum);
-    return bits->checksum == checksum;
-}
-
-/**
- * @brief Set a clip region's rectangle and clear its display.
- * @param clip Clip region.
- * @param left Left edge.
- * @param top Top edge.
- * @param right Right edge.
- * @param bottom Bottom edge.
- */
-static inline void set_clip(BootClass171DD0* clip, s32 left, s32 top, s32 right, s32 bottom)
-{
-    clip->left = left;
-    clip->top = top;
-    clip->right = right;
-    clip->bottom = bottom;
-    clip->display = 0;
-}
-
-/**
- * @brief Check the trophy data and create a picture for each trophy: its own picture when earned, a blank frame
- * otherwise.
- * @return One when done, or zero when a trophy record fails its check, after clearing that trophy.
- */
-s32 BootBattleTrophyViewer::create_trophy_images()
-{
-    BootResource0970* settings = boot_settings();
-    BootResourceBits0970* bits = &settings->unk1A8;
-
-    if (!flags_intact(bits))
-    {
-        return 0;
-    }
-
-    earned_count = 0;
-
-    if (flags_intact(bits))
-    {
-        for (s32 i = 0; i < 300; i++)
-        {
-            BootTrophyRecordF10* record = &records[i];
-
-            if (func_457220(record) == 0 || *((BootResidentRoot15CC0*)func_10D8E0())->status == 0x67)
-            {
-                set_resource_bit(bits, i, 0);
-                record->unk0C = 0;
-                func_457520(bits);
-                return 0;
-            }
-        }
-    }
-
-    for (s32 i = 0; i < 300; i++)
-    {
-        order[i] = i;
-        textures[i] = (BootTextureResource*)func_139700(0x80, 0x4600);
-    }
-
-    unkB8 = new (0) BootClass171DD0;
-    D_001B661C->append_node(unkB8, -1);
-
-    if (settings->widescreen)
-    {
-        set_clip(unkB8, 0, 0x4D, 0x27F, 0x180);
-    }
-    else
-    {
-        set_clip(unkB8, 0, 0x50, 0x27F, 0x17C);
-    }
-
-    if (flags_intact(bits))
-    {
-        for (s32 i = 0; i < 300; i++)
-        {
-            trophy_images[i] = new (0) BootImage;
-            trophy_images[i]->centered = 1;
-            unkC94[i] = 0.0f;
-
-            if (resource_bit(bits, i))
-            {
-                build_trophy_texture(&records[i], textures[i], i);
-                trophy_images[i]->set_texture((const BootTextureResource*)(((u32)unk1C[0] + 0x7F) & ~0x7F), textures[i]);
-                func_001F93B0(trophy_images[i], 0, 0xE2, 0x44, 0x64, 0, 0, 0x40, 0x60, 0x80808080, 0);
-                earned_count++;
-            }
-            else
-            {
-                trophy_images[i]->set_texture((const BootTextureResource*)(((u32)unk1C[0] + 0x7F) & ~0x7F), 0);
-                trophy_images[i]->set_rectangle(0, 0xE2, 0x44, 0x64, 0x80808080, 0);
-            }
-
-            trophy_images[i]->unk18->func_001E0520(-236.0f + (i & 7) * 68, -94.0f + i / 8 * 100, 0.0f);
-        }
-    }
-    else
-    {
-        for (s32 i = 0; i < 300; i++)
-        {
-            trophy_images[i] = new (0) BootImage;
-            trophy_images[i]->centered = 1;
-            trophy_images[i]->set_texture((const BootTextureResource*)(((u32)unk1C[0] + 0x7F) & ~0x7F), 0);
-            trophy_images[i]->set_rectangle(0, 0xE2, 0x44, 0x64, 0x80808080, 0);
-            trophy_images[i]->unk18->func_001E0520(-236.0f + (i & 7) * 68, -94.0f + i / 8 * 100, 0.0f);
-        }
-    }
-
-    func_121FE0(0);
-    unkBC = new (0) BootClass171DD0;
-    D_001B661C->append_node(unkBC, -1);
-    unkBC->display = g_boot_program.display;
-    return 1;
-}
-
-/**
- * @brief Give the bar's model an even color modulation and recompute its combined color.
- * @param bar Loading bar.
- * @param red Red factor.
- * @param green Green factor.
- * @param blue Blue factor.
- * @param alpha Alpha factor.
- */
-static inline void set_bar_color(BootProgressBar* const& bar, float red, float green, float blue, float alpha)
-{
-    BootVector4DDAA0 color;
-    color.x = red;
-    color.y = green;
-    color.z = blue;
-    color.w = alpha;
-    BootClass177820* model = bar->unk18;
-    copy_vector(&model->unk560, &color);
-    model->func_001DDAA0();
-}
-
-/** @brief Create the two screen images once the pictures load, place them for the screen shape and fade out the bar. */
-void BootBattleTrophyViewer::update_images()
-{
-    if (unk1C[2] == 0)
-    {
-        return;
-    }
-
-    if (unk28[0] == 0)
-    {
-        unk28[0] = new (0) BootImage;
-        unk28[0]->set_texture((const BootTextureResource*)(((u32)unk1C[0] + 0x7F) & ~0x7F), 0);
-        unk28[0]->set_rectangle(0, 1, 488, 223, 0x80808080, 0);
-        unk28[0]->unk18->func_001E0520(-244.0f, -112.0f, 0.0f);
-    }
-
-    if (unk28[1] == 0)
-    {
-        unk28[1] = new (0) BootImage;
-        unk28[1]->set_texture((const BootTextureResource*)(((u32)unk1C[1] + 0x7F) & ~0x7F), 0);
-        unk28[1]->set_rectangle(0, 0, 640, 80, 0x80808080, 0);
-        unk28[1]->unk18->func_001E0520(-320.0f, -216.0f, 0.0f);
-    }
-
-    if (boot_settings()->widescreen)
-    {
-        if (unk28[1] != 0)
-        {
-            unk28[1]->unk18->func_001E0520(-422.66668f, -216.0f, 0.0f);
-            unk28[1]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
-        }
-    }
-    else if (unk28[1] != 0)
-    {
-        unk28[1]->unk18->func_001E0520(-320.0f, -216.0f, 0.0f);
-        unk28[1]->unk18->func_001DDED0(1.0f, 1.0f, 1.0f);
-    }
-
-    if (bar_fading && unkC0 != 0)
-    {
-        unkC0->unk18->func_001E94E0(2);
-        set_bar_color(unkC0, 1.0f, 1.0f, 1.0f, bar_alpha);
-        bar_alpha -= 2.0f * D_001B6690;
-
-        if (bar_alpha < 0.0f)
-        {
-            bar_fading = 0;
-            lib_object_detach_owner(unkC0);
-            unkC0->destroy();
-            unkC0 = 0;
-        }
-    }
-}
-
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001ED4E0", update__22BootBattleTrophyViewerFv);
 }

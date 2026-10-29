@@ -4,10 +4,10 @@
 #include "types.h"
 #include "overlays/boot/text_001DD3C0.h"
 
-/** @brief A 48-byte record containing its observed scalar key at offset 0x0C. */
+/** @brief A 48-byte record whose leading four-float value carries its scalar key as the fourth component. */
 typedef struct BootRecord48F0E90
 {
-    u8 unk00[0x0C];
+    float value[3];
     float key;
     u8 unk10[0x20];
 } BootRecord48F0E90;
@@ -61,11 +61,12 @@ typedef struct BootState1F12B0
     u8 unk2B_other : 6;
 } BootState1F12B0;
 
-/** @brief A 32-byte record with a scalar key and an aligned payload. */
+/** @brief A 32-byte record with a scalar key and an aligned four-float value. */
 typedef struct BootKeyEntry32
 {
     float key;
-    u8 unk04[0x1C];
+    u8 unk04[0xC];
+    float value[4];
 } __attribute__((aligned(16))) BootKeyEntry32;
 
 /** @brief Partial array receiver with counts, storage, and packed controls. */
@@ -142,11 +143,13 @@ typedef struct BootState1F1FC0
     u8 unk23_other : 6;
 } BootState1F1FC0;
 
-/** @brief A 48-byte record containing a scalar key and an aligned payload. */
+/** @brief A 48-byte record with a scalar key, an aligned four-float value and a further payload. */
 typedef struct BootKeyEntry48
 {
     float key;
-    u8 unk04[0x2C];
+    u8 unk04[0xC];
+    float value[4];
+    u8 unk20[0x10];
 } __attribute__((aligned(16))) BootKeyEntry48;
 
 /** @brief Partial 48-byte record-array receiver with packed control fields. */
@@ -261,6 +264,75 @@ typedef struct BootScalarRangeFE50
 } BootScalarRangeFE50;
 
 #ifdef __cplusplus
+/** GIF tag: the tag word and the register list, four bits per register. */
+struct BootGifTag
+{
+    u64 tag;
+
+    union
+    {
+        u64 registers;
+
+        struct
+        {
+            u64 register0 : 4;
+            u64 register1 : 4;
+            u64 register2 : 4;
+            u64 register3 : 4;
+            u64 unused : 48;
+        } fields;
+    };
+};
+
+/** One fade strip's packet: upload the strip's image to VRAM, then draw it as a textured sprite. */
+struct BootFadeStripPacket
+{
+    u64 transfer_dma;
+    u64 unk08;
+    BootGifTag transfer_tag;
+    u64 bitbltbuf;
+    u64 bitbltbuf_register;
+    u64 trxpos;
+    u64 trxpos_register;
+    u64 trxreg;
+    u64 trxreg_register;
+    u64 trxdir;
+    u64 trxdir_register;
+    u64 image_tag;
+    u64 unk68;
+    u64 image_dma;
+    u64 unk78;
+    u64 draw_dma;
+    u64 unk88;
+    BootGifTag draw_tag;
+    u64 texflush;
+    u64 texflush_register;
+    u64 tex0;
+    u64 tex0_register;
+    u64 prim;
+    u64 prim_register;
+    u64 rgbaq;
+    u64 rgbaq_register;
+    BootGifTag sprite_tag;
+    u64 uv0;
+    u64 xyz0;
+    u64 uv1;
+    u64 xyz1;
+};
+
+/** VRAM area request passed to func_4D93A0. */
+struct BootVramRequest
+{
+    s16 width;
+    s16 height;
+    s32 size;
+    u8 unk08[4];
+    s16 unk0c;
+    u8 unk0e;
+    u8 unk0f;
+};
+
+class FieldVec4A;
 class BootClass1717A0;
 class BootClass171830;
 class BootClass1718C0;
@@ -352,6 +424,46 @@ float func_001F5090(BootState1F1FC0* object, float key);
  * @return Normalized key, with odd-period reflection selected by the control fields.
  */
 float func_001F4D90(BootState1F12B0* object, float key);
+
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param track Track to search.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ */
+u8 func_001F0AA0(BootClass1719E0* track, float key, s32* lower, s32* upper);
+
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param track Track to search.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ */
+u8 func_001F1820(BootClass171830* track, float key, s32* lower, s32* upper);
+
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param track Track to search.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ */
+u8 func_001F4E70(BootClass171950* track, float key, s32* lower, s32* upper);
+
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param track Track to search.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ */
+u8 func_001F5170(BootClass1717A0* track, float key, s32* lower, s32* upper);
 
 /**
  * @brief Reset 48-byte record storage, counts, packed controls, and cached indices.
@@ -664,6 +776,46 @@ float func_001F2450(BootState1F1FC0* object, float key);
  * @return Associated value, or zero when no key matches.
  */
 float func_001F24E0(BootState1F1FC0* object, float key);
+
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param object Receiver with 48-byte records, valid when its count is positive.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A func_001F0F50(BootState1F0D60* object, float key);
+
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param object Receiver with vector-key entries, valid when its count is positive.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A func_001F1C80(BootState1F1AD0* object, float key);
+
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param object Receiver with 32-byte records, valid when its count is positive.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A func_001F2A60(BootState1F1580* object, float key);
+
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param object Receiver with 48-byte records, valid when its count is positive.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A func_001F5CA0(BootState1F4730* object, float key);
+
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param object Receiver with 32-byte records, valid when its count is positive.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A func_001F5EB0(BootState1F47F0* object, float key);
 
 /**
  * @brief Compute the difference between the last and first entry keys.
@@ -1502,6 +1654,24 @@ void func_001EFD80(void* object, float* result);
 void func_001EEED0(void* object);
 /** Clear the vector at offset 0x90 and update the associated state. */
 void func_001EFEA0(void* object);
+
+/**
+ * @brief Build an image's quad from a rectangle of its texture and a rectangle of its palette, and queue the
+ * model for drawing.
+ * @param image Image to build.
+ * @param x Left edge of the texture rectangle, in texels.
+ * @param y Top edge of the texture rectangle.
+ * @param width Rectangle width, which is also the quad's width.
+ * @param height Rectangle height, which is also the quad's height.
+ * @param palette_x Left edge of the palette rectangle.
+ * @param palette_y Top edge of the palette rectangle.
+ * @param palette_width Palette rectangle width.
+ * @param palette_height Palette rectangle height.
+ * @param color Vertex color.
+ * @param depth Z position of the quad.
+ */
+void func_001F93B0(BootImage* image, s32 x, s32 y, s32 width, s32 height, s32 palette_x, s32 palette_y, s32 palette_width, s32 palette_height, u32 color,
+                   s32 depth);
 
 /**
  * @brief Encode a saved record and seal it with a fresh checksum; a damaged record is wiped instead.

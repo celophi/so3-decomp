@@ -67,6 +67,10 @@
       "flags": ["-inline", "level=7"]
     },
     {
+      "source": "src/overlays/boot/text_001FB220.cpp",
+      "flags": ["-inline", "level=7"]
+    },
+    {
       "source": "src/overlays/boot/text_001FF9E0.cpp",
       "flags": ["-inline", "level=7"]
     },

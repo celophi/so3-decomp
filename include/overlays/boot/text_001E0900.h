@@ -784,6 +784,12 @@ class BootProgram : public BootResidentProgram
             return messages;
         }
 
+        /** @brief Read the pad and memory card monitor. @return Monitor. */
+        BootInput* get_input() const
+        {
+            return input;
+        }
+
         BootDimensionsACD0* display;
         BootProjectionACD0* projection;
         BootInput* input;
@@ -1006,9 +1012,10 @@ class BootClass171B30 : public BootClass171B00
         /** @brief Reset the record and clear its first word. */
         BootClass171B30();
 
-        // Virtual slots 0xC (pure) and 0x10; only their positions are known.
-        virtual void func_slot0c() = 0;
+        /** @brief Evaluate the record at a key. @param key Evaluation key. @return Evaluated value. */
+        virtual float func_slot0c(float key) const = 0;
 
+        // Virtual slot 0x10; only its position is known.
         virtual void func_001F48D0();
 };
 
@@ -1016,8 +1023,11 @@ class BootClass171B30 : public BootClass171B00
 class BootClass178200 : public BootClass171B30
 {
     public:
-        // Lib implementation of the pure slot; only its position is known.
-        virtual void func_slot0c();
+        /** @brief Evaluate the record at a key. @param key Evaluation key. @return Evaluated value. */
+        virtual float func_slot0c(float key) const;
+
+        /** @brief Add a key and its value to the record. @param key Key. @param value Value at the key. */
+        virtual void func_slot14(float key, float value);
 
         u8 unk14[0x10];
 };
@@ -1046,15 +1056,15 @@ class BootClass171B50 : public BootClass171B10
         /** @brief Reset the record and clear its vector. */
         BootClass171B50();
 
-        // Pure virtual slot 0xC; only its position is known.
-        virtual void func_slot0c() = 0;
+        /** @brief Evaluate the record at a key. @param key Evaluation key. @return Evaluated vector. */
+        virtual FieldVec4B func_slot0c(float key) = 0;
 
         /**
          * @brief Store a value and key in the two-entry history and count it, up to two.
-         * @param value Value to store.
          * @param key Key to store.
+         * @param value Value to store.
          */
-        virtual void func_001F0560(const FieldVec4A* value, float key);
+        virtual void func_001F0560(float key, const FieldVec4A* value);
 
         FieldVec4B unk20[2];
         float unk40[2];
@@ -1064,8 +1074,8 @@ class BootClass171B50 : public BootClass171B10
 class BootClass1781E0 : public BootClass171B50
 {
     public:
-        // Lib implementation of the pure slot; only its position is known.
-        virtual void func_slot0c();
+        /** @brief Evaluate the record at a key. @param key Evaluation key. @return Evaluated vector. */
+        virtual FieldVec4B func_slot0c(float key);
 };
 
 /** Vector record with vtable D_171B20 in main data; its data comes before the vptr. */
@@ -1240,7 +1250,7 @@ class BootClass1717A0 : public BootClass171170
         virtual float func_001F2540() const;
 
         /** @brief Evaluate the track at a key. @param key Evaluation key. @param output Receives the evaluated value. */
-        virtual void func_001F20C0(float key, float* output) const;
+        virtual void func_001F20C0(float key, float* output);
 
         /** @brief Return the stored keyframe count. @return Keyframe count. */
         virtual s16 func_001F2090() const;
@@ -1276,13 +1286,15 @@ class BootClass1717A0 : public BootClass171170
         virtual float func_001F24E0(float key) const;
 
         // Pure virtual slots 0x80 and 0x84; only their positions are known.
-        virtual float func_slot80(float key) const = 0;
+        virtual float func_slot80(float key) = 0;
 
         virtual void func_slot84() = 0;
 
-        void* unk04;
-        float unk08;
-        float unk0c;
+        BootTrackKey1717A0* unk04;
+
+        /** Single cached keyframe, used before an array is allocated. */
+        BootTrackKey1717A0 unk08;
+
         BootSequenceTail state;
 };
 
@@ -1335,10 +1347,10 @@ class BootClass1715F0 : public BootClass171560
         virtual void func_001F1E90();
 
         /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated value. */
-        virtual float func_slot80(float key) const;
+        virtual float func_slot80(float key);
 
         BootClass178200 unk24;
-        s32 unk48;
+        float unk48;
         float unk4c;
 };
 
@@ -1355,6 +1367,8 @@ class BootClass177F70 : public BootClass1715F0
         // Lib implementation of the pure slot 0x84; only its position is known.
         virtual void func_slot84();
 };
+
+struct BootTrackKey171830;
 
 /** Partial keyframe track with vtable D_171830 in main data; its constructor and destructor are out of line. */
 class BootClass171830 : public BootClass171170
@@ -1421,7 +1435,7 @@ class BootClass171830 : public BootClass171170
         virtual float func_001F1C30() const;
 
         /** @brief Evaluate the vector track at a key. @param key Evaluation key. @param output Receives the evaluated vector. */
-        virtual void func_001F1CE0(float key, FieldVec4B* output) const;
+        virtual void func_001F1CE0(float key, FieldVec4B* output);
 
         /** @brief Return the stored keyframe count. @return Keyframe count. */
         virtual s16 func_001F1BA0() const;
@@ -1457,12 +1471,12 @@ class BootClass171830 : public BootClass171170
         virtual FieldVec4A func_001F1C80(float key) const;
 
         // Pure virtual slot 0x80; only its position is known.
-        virtual FieldVec4A func_slot80(float key) const = 0;
+        virtual FieldVec4A func_slot80(float key) = 0;
 
         // Pure virtual slot 0x84; only its position is known.
         virtual void func_slot84() = 0;
 
-        void* unk04;
+        BootTrackKey171830* unk04;
         u8 unk08[8];
         FieldVec4B unk10;
         BootSequenceTail state;
@@ -1499,10 +1513,11 @@ class BootClass171440 : public BootClass1713B0
         virtual void func_slot40(FieldVec4B* output) const;
         virtual void func_slot48(FieldVec4B* output) const;
         virtual void func_001F19F0();
-        virtual FieldVec4A func_slot80(float key) const;
+        virtual FieldVec4A func_slot80(float key);
 
         BootClass1781E0 unk40;
-        u8 unk90[0x20];
+        FieldVec4B unk90;
+        FieldVec4B unkA0;
 };
 
 /** 0xB0-byte pooled track with vtable D_1714D0 in main data. */
@@ -1894,15 +1909,15 @@ class BootClass171B98
 
         /**
          * @brief Set the range from two endpoint vectors and their tangents.
+         * @param start Start key.
+         * @param end End key.
          * @param first First endpoint vector.
          * @param second First endpoint tangent.
          * @param third Second endpoint vector.
          * @param fourth Second endpoint tangent.
-         * @param start Start key.
-         * @param end End key.
          */
-        virtual void func_001EFDD0(const FieldVec4A* first, const FieldVec4A* second, const FieldVec4A* third, const FieldVec4A* fourth, float start,
-                                   float end);
+        virtual void func_001EFDD0(float start, float end, const FieldVec4A* first, const FieldVec4A* second, const FieldVec4A* third,
+                                   const FieldVec4A* fourth);
 };
 
 /** 0x50-byte BootClass171B98 with vtable D_1710C0 in main data. */
@@ -2003,7 +2018,7 @@ class BootClass1719E0 : public BootClass171170
         virtual float func_001F0F00() const;
 
         /** @brief Evaluate the vector track at a key. @param key Evaluation key. @param output Receives the evaluated vector. */
-        virtual void func_001F0FC0(float key, FieldVec4B* output) const;
+        virtual void func_001F0FC0(float key, FieldVec4B* output);
 
         /** @brief Return the stored keyframe count. @return Keyframe count. */
         virtual s16 func_001F0E30() const;
@@ -2039,7 +2054,7 @@ class BootClass1719E0 : public BootClass171170
         virtual FieldVec4A func_001F0F50(float key) const;
 
         // Pure virtual slot 0x80; only its position is known.
-        virtual FieldVec4A func_slot80(float key) const = 0;
+        virtual FieldVec4A func_slot80(float key) = 0;
 
         // Pure virtual slot 0x84; only its position is known.
         virtual s32 func_slot84(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key) = 0;
@@ -2072,7 +2087,7 @@ class BootClass1710D0 : public BootClass1719E0
         virtual void func_slot40(FieldVec4B* output) const;
         virtual void func_slot48(FieldVec4B* output) const;
         virtual void func_001F0C80();
-        virtual FieldVec4A func_slot80(float key) const;
+        virtual FieldVec4A func_slot80(float key);
         virtual s32 func_slot84(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first First auxiliary

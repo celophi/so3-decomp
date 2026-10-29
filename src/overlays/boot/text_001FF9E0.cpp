@@ -13,6 +13,22 @@ void func_11F770(ResidentPacket* packet, void* notification);
 float func_4CC3E0(float angle);
 float func_4CC5B0(float angle);
 void func_109F40(void* handle, void* left, void* right, s32 size);
+s32 func_109F20(void* handle, s32 channel, s32 count, float* destination);
+s32 func_109FB0(void* handle);
+s32 func_109FD0(void* handle);
+s32 func_112610(void* request, s32 sound);
+s32 func_13C4F0(char* buffer, const char* format, ...);
+void lib_container_attach_widget(BootClass178660* object, BootClass174EF0* child);
+void lib_text_set_resource(BootClass178750* object, s32 slot, u32 key, u8 flag);
+
+/** Sound played for each track. */
+extern const s32 g_music_track_sounds[];
+
+/** Text of the track number label before the first update. */
+extern const char g_first_track_number[];
+
+/** Format of the track number label. */
+extern const char g_track_number_format[];
 }
 
 /**
@@ -648,7 +664,457 @@ void BootMusicPlayer::create_images()
 }
 
 // Two of the band power loops still colour their FPU registers differently.
-INCLUDE_ASM("build/overlays/boot/asm/nonmatchings/text_001FF9E0", update__15BootMusicPlayerFv);
+/**
+ * @brief Return the cursor height for a menu row.
+ * @param row Menu row.
+ * @return Cursor y coordinate.
+ */
+static inline float row_y(u32 row)
+{
+    return 86.0f + 36.0f * row;
+}
+
+/** @brief Run the player. */
+void BootMusicPlayer::update()
+{
+    BootResource0970* resource;
+    s32 i;
+    BootInput* input = g_boot_program.input;
+    resource = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+
+    switch (step)
+    {
+    case 0:
+        if (func_102D00(D_001B65E8) != 0)
+        {
+            func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
+            step++;
+            D_001B661C->prepend_node(new (0) BootClass179150, -1);
+            container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
+            func_465B20(D_001B657C, container);
+        }
+
+        break;
+    case 1:
+        image_buffers[images_loaded] = func_102920(D_001B65EC, resource_data, images_loaded, 1);
+        func_1025A0(D_001B65EC, resource_data, (void*)(((u32)image_buffers[images_loaded] + 0x7F) & ~0x7F), images_loaded);
+
+        if (++images_loaded >= 2)
+        {
+            step++;
+            func_121FE0(0);
+        }
+
+        break;
+    case 2:
+        selection = 0;
+        track = 0;
+        play_mode = 0;
+        unk78 = 0;
+
+        {
+            float y = row_y(selection);
+            cursor = new (0) BootClass175070;
+            func_467570(cursor, 1, 0, 0, 54.0f, y, 0.0f);
+        }
+        func_465B20(D_001B657C, cursor);
+        D_001B661C->append_node(meters[0], -1);
+        D_001B661C->append_node(meters[1], -1);
+        D_001B661C->append_node(meters[2], -1);
+        D_001B661C->append_node(meters[3], -1);
+        D_001B661C->append_node(meters[4], -1);
+        step++;
+
+        if (resource->widescreen)
+        {
+            number_text = new (0) BootClass175140(g_first_track_number, 1, 150.0f, 71.0f, 512.0f, 24.0f);
+            name_text = new (0) BootClass178750(g_boot_program.messages, 0x44C, 1, 185.0f, 71.0f, 512.0f, 24.0f);
+            mode_text = new (0) BootClass178750(g_boot_program.messages, 0x3E8, 1, 270.0f, 186.0f, 512.0f, 224.0f);
+        }
+        else
+        {
+            number_text = new (0) BootClass175140(g_first_track_number, 1, 175.0f, 74.0f, 512.0f, 24.0f);
+            name_text = new (0) BootClass178750(g_boot_program.messages, 0x44C, 1, 210.0f, 74.0f, 512.0f, 24.0f);
+            mode_text = new (0) BootClass178750(g_boot_program.messages, 0x3E8, 1, 330.0f, 186.0f, 512.0f, 224.0f);
+        }
+
+        labels[0] = new (0) BootClass178750(g_boot_program.messages, 0x96, 1, 50.0f, 435.0f, 128.0f, 24.0f);
+        labels[1] = new (0) BootClass178750(g_boot_program.messages, 0x97, 1, 160.0f, 435.0f, 128.0f, 24.0f);
+        labels[2] = new (0) BootClass178750(g_boot_program.messages, 0x98, 1, 270.0f, 435.0f, 128.0f, 24.0f);
+        labels[3] = new (0) BootClass178750(g_boot_program.messages, 0x99, 1, 380.0f, 435.0f, 128.0f, 24.0f);
+        labels[4] = new (0) BootClass178750(g_boot_program.messages, 0x9A, 1, 490.0f, 435.0f, 128.0f, 24.0f);
+        name_text->set_vertical_align(2);
+        number_text->set_color(0x34130F);
+        name_text->set_color(0x34130F);
+        mode_text->set_color(0x34130F);
+        lib_container_attach_widget(container, number_text);
+        lib_container_attach_widget(container, name_text);
+        lib_container_attach_widget(container, mode_text);
+
+        for (s32 i = 0; i < 5; i++)
+        {
+            labels[i]->set_color(0x34130F);
+            lib_container_attach_widget(container, labels[i]);
+        }
+
+        next_track_delay = 0.0f;
+        func_10DB10(D_001B65F8, 0xFFFF);
+        break;
+    case 3:
+        if (input->repeated == 0x40 && cursor->unk35)
+        {
+            selection = (selection + 1) % 4;
+            cursor->func_00466E40(54.0f, row_y(selection), 0.05f);
+            brightening = 0;
+        }
+
+        if (input->repeated == 0x10 && cursor->unk35)
+        {
+            selection = (selection + 3) % 4;
+            brightening = 0;
+            cursor->func_00466E40(54.0f, row_y(selection), 0.05f);
+        }
+
+        if (input->repeated == 0x80 && cursor->unk35)
+        {
+            switch (selection)
+            {
+            case 0:
+                track = (track + BOOT_MUSIC_TRACK_COUNT - 1) % BOOT_MUSIC_TRACK_COUNT;
+                break;
+            case 3:
+                play_mode = (play_mode + 2) % 3;
+                break;
+            }
+        }
+
+        if (input->repeated == 0x20 && cursor->unk35)
+        {
+            switch (selection)
+            {
+            case 0:
+                track = (track + 1) % BOOT_MUSIC_TRACK_COUNT;
+                break;
+            case 3:
+                play_mode = (play_mode + 1) % 3;
+                break;
+            }
+        }
+
+        if (input->pressed & resource->unk00)
+        {
+            for (s32 i = 0; i < BOOT_MUSIC_TRACK_COUNT; i++)
+            {
+                shuffle_order[i] = i;
+            }
+
+            for (i = 0; i < 500; i++)
+            {
+                u32 first = func_10CE00() % BOOT_MUSIC_TRACK_COUNT;
+                u32 second = func_10CE00() % BOOT_MUSIC_TRACK_COUNT;
+                u8 swap = shuffle_order[first];
+                u8* other = &shuffle_order[second];
+                shuffle_order[first] = *other;
+                *other = swap;
+            }
+
+            shuffle_position = 0;
+            samples_analysed = 0.0f;
+            samples_played = 1024.0f;
+
+            switch (selection)
+            {
+            case 0:
+            case 1:
+                playing = 1;
+                func_109F40(D_001B65F8->stream->handle, stream_buffers[0], stream_buffers[1], 0x200000);
+
+                if (play_mode == 2)
+                {
+                    track = shuffle_order[shuffle_position++];
+
+                    if (func_112990(D_001B65F8, g_music_track_sounds[track], 1, 0, 0) == 0)
+                    {
+                        pending_track = g_music_track_sounds[track];
+                    }
+                }
+                else if (func_112990(D_001B65F8, g_music_track_sounds[track], 1, 0, 0) == 0)
+                {
+                    pending_track = g_music_track_sounds[track];
+                }
+
+                next_track_delay = 0.0f;
+                break;
+            case 2:
+                playing = 0;
+                func_10F000(D_001B65F8, 0x3C, -1);
+                next_track_delay = 0.0f;
+                break;
+            }
+        }
+
+        if (input->pressed & resource->unk02)
+        {
+            func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
+            func_10F000(D_001B65F8, 0x1E, -1);
+            BootClass171C00* fade = new (0) BootClass171C00(g_boot_program.display);
+            fade->unkd0 = 2.0f;
+            D_001B661C->append_node(fade, -1);
+            step = 4;
+            return;
+        }
+
+        if (play_mode > 0 && func_112610(D_001B65F8, -1) != 0 && func_109FB0(D_001B65F8->stream->handle) > 0 && playing)
+        {
+            func_10F000(D_001B65F8, 0x1E0, -1);
+            next_track_delay = 8.0f;
+            playing = 0;
+        }
+
+        if (func_112610(D_001B65F8, -1) == 0 && next_track_delay == 0.0f && play_mode > 0 && playing)
+        {
+            next_track_delay = 2.0f;
+            playing = 0;
+        }
+
+        if (next_track_delay > 0.0f)
+        {
+            next_track_delay -= D_001B6690;
+
+            if (next_track_delay <= 0.0f)
+            {
+                next_track_delay = 0.0f;
+
+                if (play_mode > 0)
+                {
+                    samples_analysed = 0.0f;
+                    samples_played = 4096.0f;
+                    func_109F40(D_001B65F8->stream->handle, stream_buffers[0], stream_buffers[1], 0x200000);
+                    playing = 1;
+
+                    switch (play_mode)
+                    {
+                    case 1:
+                        track = (track + 1) % BOOT_MUSIC_TRACK_COUNT;
+
+                        if (func_112990(D_001B65F8, g_music_track_sounds[track], 1, 0, 0) == 0)
+                        {
+                            pending_track = g_music_track_sounds[track];
+                        }
+
+                        break;
+                    case 2:
+                        track = shuffle_order[shuffle_position];
+                        shuffle_position = (shuffle_position + 1) % BOOT_MUSIC_TRACK_COUNT;
+
+                        if (func_112990(D_001B65F8, g_music_track_sounds[track], 1, 0, 0) == 0)
+                        {
+                            pending_track = g_music_track_sounds[track];
+                        }
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        func_13C4F0(number, g_track_number_format, track + 1);
+
+        if (number_text != 0)
+        {
+            number_text->set_text(number);
+        }
+
+        lib_text_set_resource(name_text, g_boot_program.messages, g_music_track_sounds[track] + 0x44B, 0);
+        lib_text_set_resource(mode_text, g_boot_program.messages, play_mode + 0x3E8, 0);
+
+        if ((func_112610(D_001B65F8, -1) != 0 && (D_001B65F8->unk370 ? 1 : D_001B65F8->unk3bc) > 0) || next_track_delay > 0.0f)
+        {
+            samples_played += 48000.0f * D_001B6688 / 59.94f;
+
+            if (samples_analysed < samples_played - 1024.0f)
+            {
+                samples_analysed += 1024.0f;
+                func_109F20(D_001B65F8->stream->handle, 0, 1024, spectra[0].real);
+
+                if ((u8)func_109F20(D_001B65F8->stream->handle, 1, 1024, spectra[1].real))
+                {
+                    for (s32 i = 0; i < 1024; i++)
+                    {
+                        spectra[0].imag[i] = 0.0f;
+                        spectra[1].imag[i] = 0.0f;
+                    }
+
+                    if (func_109FD0(D_001B65F8->stream->handle) != 0)
+                    {
+                        for (s32 i = 0; i < 1024; i++)
+                        {
+                            float left = spectra[0].real[i];
+                            float right = spectra[1].real[i];
+                            spectra[0].real[i] = left + right;
+                            spectra[1].real[i] = left - right;
+                        }
+                    }
+
+                    fft->transform(1024, spectra[0].real, spectra[0].imag);
+                    fft->transform(1024, spectra[1].real, spectra[1].imag);
+
+                    float sum;
+
+                    sum = 0.0f;
+
+                    for (s32 i = 2; i < 4; i++)
+                    {
+                        sum += spectra[0].real[i] * spectra[0].real[i] + spectra[0].imag[i] * spectra[0].imag[i];
+                    }
+
+                    meters[0]->levels[0] = 10.0f * func_142270(4.0f * sum / 2.0f);
+                    sum = 0.0f;
+
+                    {
+                        s32 i;
+
+                        // TODO: My guess is one loop over the 17 bins; unrolling it by hand is the only way I found that matches.
+                        for (i = 5; i < 14; i += 8)
+                        {
+                            sum += spectra[0].real[i + 0] * spectra[0].real[i + 0] + spectra[0].imag[i + 0] * spectra[0].imag[i + 0];
+                            sum += spectra[0].real[i + 1] * spectra[0].real[i + 1] + spectra[0].imag[i + 1] * spectra[0].imag[i + 1];
+                            sum += spectra[0].real[i + 2] * spectra[0].real[i + 2] + spectra[0].imag[i + 2] * spectra[0].imag[i + 2];
+                            sum += spectra[0].real[i + 3] * spectra[0].real[i + 3] + spectra[0].imag[i + 3] * spectra[0].imag[i + 3];
+                            sum += spectra[0].real[i + 4] * spectra[0].real[i + 4] + spectra[0].imag[i + 4] * spectra[0].imag[i + 4];
+                            sum += spectra[0].real[i + 5] * spectra[0].real[i + 5] + spectra[0].imag[i + 5] * spectra[0].imag[i + 5];
+                            sum += spectra[0].real[i + 6] * spectra[0].real[i + 6] + spectra[0].imag[i + 6] * spectra[0].imag[i + 6];
+                            sum += spectra[0].real[i + 7] * spectra[0].real[i + 7] + spectra[0].imag[i + 7] * spectra[0].imag[i + 7];
+                        }
+
+                        float im = spectra[0].imag[i];
+                        float re = spectra[0].real[i];
+                        sum += re * re + im * im;
+                    }
+
+                    meters[1]->levels[0] = 10.0f * func_142270(4.0f * sum / 17.0f);
+                    sum = 0.0f;
+
+                    for (s32 i = 22; i < 86; i++)
+                    {
+                        sum += spectra[0].real[i] * spectra[0].real[i] + spectra[0].imag[i] * spectra[0].imag[i];
+                    }
+
+                    meters[2]->levels[0] = 10.0f * func_142270(4.0f * sum / 64.0f);
+                    sum = 0.0f;
+
+                    for (s32 i = 86; i < 170; i++)
+                    {
+                        sum += spectra[0].real[i] * spectra[0].real[i] + spectra[0].imag[i] * spectra[0].imag[i];
+                    }
+
+                    meters[3]->levels[0] = 10.0f * func_142270(4.0f * sum / 84.0f);
+                    sum = 0.0f;
+
+                    for (s32 i = 170; i < 320; i++)
+                    {
+                        sum += spectra[0].real[i] * spectra[0].real[i] + spectra[0].imag[i] * spectra[0].imag[i];
+                    }
+
+                    meters[4]->levels[0] = 10.0f * func_142270(4.0f * sum / 150.0f);
+                    sum = 0.0f;
+
+                    for (s32 i = 2; i < 4; i++)
+                    {
+                        sum += spectra[1].real[i] * spectra[1].real[i] + spectra[1].imag[i] * spectra[1].imag[i];
+                    }
+
+                    meters[0]->levels[1] = 10.0f * func_142270(4.0f * sum / 2.0f);
+                    sum = 0.0f;
+
+                    {
+                        s32 i;
+
+                        // TODO: My guess is one loop over the 17 bins; unrolling it by hand is the only way I found that matches.
+                        for (i = 5; i < 14; i += 8)
+                        {
+                            sum += spectra[1].real[i + 0] * spectra[1].real[i + 0] + spectra[1].imag[i + 0] * spectra[1].imag[i + 0];
+                            sum += spectra[1].real[i + 1] * spectra[1].real[i + 1] + spectra[1].imag[i + 1] * spectra[1].imag[i + 1];
+                            sum += spectra[1].real[i + 2] * spectra[1].real[i + 2] + spectra[1].imag[i + 2] * spectra[1].imag[i + 2];
+                            sum += spectra[1].real[i + 3] * spectra[1].real[i + 3] + spectra[1].imag[i + 3] * spectra[1].imag[i + 3];
+                            sum += spectra[1].real[i + 4] * spectra[1].real[i + 4] + spectra[1].imag[i + 4] * spectra[1].imag[i + 4];
+                            sum += spectra[1].real[i + 5] * spectra[1].real[i + 5] + spectra[1].imag[i + 5] * spectra[1].imag[i + 5];
+                            sum += spectra[1].real[i + 6] * spectra[1].real[i + 6] + spectra[1].imag[i + 6] * spectra[1].imag[i + 6];
+                            sum += spectra[1].real[i + 7] * spectra[1].real[i + 7] + spectra[1].imag[i + 7] * spectra[1].imag[i + 7];
+                        }
+
+                        float im = spectra[1].imag[i];
+                        float re = spectra[1].real[i];
+                        sum += re * re + im * im;
+                    }
+
+                    meters[1]->levels[1] = 10.0f * func_142270(4.0f * sum / 17.0f);
+                    sum = 0.0f;
+
+                    for (s32 i = 22; i < 86; i++)
+                    {
+                        sum += spectra[1].real[i] * spectra[1].real[i] + spectra[1].imag[i] * spectra[1].imag[i];
+                    }
+
+                    meters[2]->levels[1] = 10.0f * func_142270(4.0f * sum / 64.0f);
+                    sum = 0.0f;
+
+                    for (s32 i = 86; i < 170; i++)
+                    {
+                        sum += spectra[1].real[i] * spectra[1].real[i] + spectra[1].imag[i] * spectra[1].imag[i];
+                    }
+
+                    meters[3]->levels[1] = 10.0f * func_142270(4.0f * sum / 84.0f);
+                    sum = 0.0f;
+
+                    for (s32 i = 170; i < 320; i++)
+                    {
+                        sum += spectra[1].real[i] * spectra[1].real[i] + spectra[1].imag[i] * spectra[1].imag[i];
+                    }
+
+                    meters[4]->levels[1] = 10.0f * func_142270(4.0f * sum / 150.0f);
+                }
+            }
+        }
+        else
+        {
+            for (s32 i = 0; i < 1024; i++)
+            {
+                spectra[0].real[i] = 0.0f;
+                spectra[1].real[i] = 0.0f;
+            }
+
+            meters[0]->levels[0] = 0.0f;
+            meters[1]->levels[0] = 0.0f;
+            meters[2]->levels[0] = 0.0f;
+            meters[3]->levels[0] = 0.0f;
+            meters[4]->levels[0] = 0.0f;
+            meters[0]->levels[1] = 0.0f;
+            meters[1]->levels[1] = 0.0f;
+            meters[2]->levels[1] = 0.0f;
+            meters[3]->levels[1] = 0.0f;
+            meters[4]->levels[1] = 0.0f;
+        }
+
+        break;
+    case 4:
+        func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
+        func_10F000(D_001B65F8, 0x1E, -1);
+        release();
+        D_001B6614->append_node(new (0) BootTitleMenu(-1), -1);
+        lib_object_detach_owner(this);
+        destroy();
+        return;
+    }
+
+    if (pending_track != 0 && func_112990(D_001B65F8, pending_track, 1, 0, 0) != 0)
+    {
+        pending_track = 0;
+    }
+
+    create_images();
+    update_row_colors();
+}
 
 /** @brief Destroy every owned object and release the resource. */
 void BootMusicPlayer::release()

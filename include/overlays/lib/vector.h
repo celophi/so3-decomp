@@ -171,6 +171,30 @@ public:
     }
 
     /**
+     * @brief Add the first three components of another vector.
+     * @param other Vector to add.
+     * @return A copy of this vector.
+     */
+    FieldVec4B add(const FieldVec4B& other)
+    {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+        return *this;
+    }
+
+    /**
+     * @brief Add the first three components of another vector.
+     * @param other Vector to add.
+     * @return A copy of this vector.
+     */
+    FieldVec4B operator+=(const FieldVec4B& other)
+    {
+        add(other);
+        return *this;
+    }
+
+    /**
      * @brief Subtract the first three components of another vector.
      * @param other Vector to subtract.
      * @return A copy of this vector.

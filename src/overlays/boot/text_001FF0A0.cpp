@@ -26,22 +26,22 @@ void BootBattleTrophyViewer::release()
         unk88 = 0;
     }
 
-    if (unk8C != 0)
+    if (message_text != 0)
     {
-        unk8C->destroy();
-        unk8C = 0;
+        message_text->destroy();
+        message_text = 0;
     }
 
-    if (unk94 != 0)
+    if (slot1_text != 0)
     {
-        unk94->destroy();
-        unk94 = 0;
+        slot1_text->destroy();
+        slot1_text = 0;
     }
 
-    if (unk98 != 0)
+    if (slot2_text != 0)
     {
-        unk98->destroy();
-        unk98 = 0;
+        slot2_text->destroy();
+        slot2_text = 0;
     }
 
     if (number_label != 0)
@@ -50,16 +50,16 @@ void BootBattleTrophyViewer::release()
         number_label = 0;
     }
 
-    if (unkA0 != 0)
+    if (name_text != 0)
     {
-        unkA0->destroy();
-        unkA0 = 0;
+        name_text->destroy();
+        name_text = 0;
     }
 
-    if (unkA4 != 0)
+    if (date_text != 0)
     {
-        unkA4->destroy();
-        unkA4 = 0;
+        date_text->destroy();
+        date_text = 0;
     }
 
     if (unkA8 != 0)
@@ -68,28 +68,28 @@ void BootBattleTrophyViewer::release()
         unkA8 = 0;
     }
 
-    if (unkAC != 0)
+    if (sort_text != 0)
     {
-        unkAC->destroy();
-        unkAC = 0;
+        sort_text->destroy();
+        sort_text = 0;
     }
 
-    if (unkB4 != 0)
+    if (rank_text != 0)
     {
-        unkB4->destroy();
-        unkB4 = 0;
+        rank_text->destroy();
+        rank_text = 0;
     }
 
-    if (unk90 != 0)
+    if (cursor != 0)
     {
-        unk90->destroy();
-        unk90 = 0;
+        cursor->destroy();
+        cursor = 0;
     }
 
-    if (unkB0 != 0)
+    if (scroll_indicator != 0)
     {
-        unkB0->destroy();
-        unkB0 = 0;
+        scroll_indicator->destroy();
+        scroll_indicator = 0;
     }
 
     for (s32 i = 0; i < 300; i++)
@@ -181,24 +181,24 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
         unk88->destroy();
     }
 
-    if (unk8C != 0)
+    if (message_text != 0)
     {
-        unk8C->destroy();
+        message_text->destroy();
     }
 
-    if (unk90 != 0)
+    if (cursor != 0)
     {
-        unk90->destroy();
+        cursor->destroy();
     }
 
-    if (unk94 != 0)
+    if (slot1_text != 0)
     {
-        unk94->destroy();
+        slot1_text->destroy();
     }
 
-    if (unk98 != 0)
+    if (slot2_text != 0)
     {
-        unk98->destroy();
+        slot2_text->destroy();
     }
 
     if (number_label != 0)
@@ -206,19 +206,19 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
         number_label->destroy();
     }
 
-    if (unkB0 != 0)
+    if (scroll_indicator != 0)
     {
-        unkB0->destroy();
+        scroll_indicator->destroy();
     }
 
-    if (unkA0 != 0)
+    if (name_text != 0)
     {
-        unkA0->destroy();
+        name_text->destroy();
     }
 
-    if (unkA4 != 0)
+    if (date_text != 0)
     {
-        unkA4->destroy();
+        date_text->destroy();
     }
 
     if (unkA8 != 0)
@@ -226,14 +226,14 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
         unkA8->destroy();
     }
 
-    if (unkAC != 0)
+    if (sort_text != 0)
     {
-        unkAC->destroy();
+        sort_text->destroy();
     }
 
-    if (unkB4 != 0)
+    if (rank_text != 0)
     {
-        unkB4->destroy();
+        rank_text->destroy();
     }
 
     if (unkC0 != 0)
@@ -280,26 +280,26 @@ BootBattleTrophyViewer::BootBattleTrophyViewer()
     slot = 0;
     bar_fading = 0;
     unk88 = 0;
-    unk8C = 0;
-    unk90 = 0;
-    unk94 = 0;
-    unk98 = 0;
+    message_text = 0;
+    cursor = 0;
+    slot1_text = 0;
+    slot2_text = 0;
     unkB8 = 0;
     unkBC = 0;
     number_label = 0;
-    unkB0 = 0;
-    unkA0 = 0;
-    unkA4 = 0;
+    scroll_indicator = 0;
+    name_text = 0;
+    date_text = 0;
     unkA8 = 0;
-    unkAC = 0;
-    unkB4 = 0;
+    sort_text = 0;
+    rank_text = 0;
     unkC0 = 0;
-    unk57 = 0;
-    unk58 = 0;
-    unk6C = 0x26;
-    unk54 = 0;
+    slot_ready[0] = 0;
+    slot_ready[1] = 0;
+    row_count = 0x26;
+    images_loaded = 0;
     by_time = 0;
-    unk50 = 0;
+    step = 0;
     unk1144 = 0;
     u32 step = 0;
 
@@ -317,7 +317,7 @@ BootBattleTrophyViewer::BootBattleTrophyViewer()
         }
     }
 
-    unk80 = 0;
+    page_delay = 0;
 }
 
 /** @brief Clear the byte at offset 0x60. */

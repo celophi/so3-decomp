@@ -231,6 +231,13 @@ struct BootSpectrum
     float imag[1024];
 };
 
+/** Music player limits. */
+enum BootMusicConstants
+{
+    /** Number of tracks the player can play. */
+    BOOT_MUSIC_TRACK_COUNT = 87
+};
+
 /**
  * Music player with vtable D_171D80 in main data, opened from the Battle Trophies screen. It streams one of 87 tracks
  * in order, on repeat or shuffled, and shows five frequency bands of each channel on a row of needle meters.
@@ -282,7 +289,7 @@ class BootMusicPlayer : public BootClass170E90
         u8 track;
 
         /** Shuffled track indices. */
-        u8 shuffle_order[87];
+        u8 shuffle_order[BOOT_MUSIC_TRACK_COUNT];
 
         /** Next entry of shuffle_order to play. */
         u8 shuffle_position;
