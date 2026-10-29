@@ -19,17 +19,17 @@ u8* func_11F860(ResidentPacket* packet, s32 quadwords);
 u8* func_11F830(ResidentPacket* packet, u8* cursor);
 
 extern void func_4D00B0(void* object);
-FieldVec4B func_4B1640(const BootClass171B98* range, float key);
-extern BootTrackPool<BootClass1711D0>* D_001B6674;
-void func_001F2320(BootTrackPool<BootClass1711D0>* pool, BootClass1711D0* track);
+FieldVec4B func_4B1640(const BootVectorSegmentBase* range, float key);
+extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
+void vector_curve_track_pool_free(BootTrackPool<BootPooledVectorCurveTrack>* pool, BootPooledVectorCurveTrack* track);
 float func_4B16C0(void* object, float key);
-extern BootTrackPool<BootClass1714D0>* D_001B6668;
-void func_001F22D0(BootTrackPool<BootClass1714D0>* pool, BootClass1714D0* track);
+extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
+void vector_track_pool_free(BootTrackPool<BootPooledVectorTrack>* pool, BootPooledVectorTrack* track);
 extern float D_001B668C;
-void func_001F79A0(BootProgressBar* bar, s32 done, s32 total);
-void func_4D6430(BootClass177820* model, LibDrawBuffer* buffer);
+void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total);
+void func_4D6430(BootModel* model, LibDrawBuffer* buffer);
 extern void* D_001B6630;
-void func_4333A0(BootClass1735A0* image, u8* data, s16 address, s16 width, s32 first, s16 x, s32 second, s32 strip_width, s16 height);
+void func_4333A0(BootImageStrip* image, u8* data, s16 address, s16 width, s32 first, s16 x, s32 second, s32 strip_width, s16 height);
 
 extern const char g_new_game_node_name[];
 extern const char g_continue_node_name[];
@@ -38,12 +38,12 @@ extern const char g_install_node_name[];
 extern const char g_title_camera_node_name[];
 void func_455DF0(LibDrawBuffer* buffer, s32 first, s32 second);
 void func_455040(LibDrawBuffer* buffer, const BootTextureResource* resource);
-void func_455150(LibDrawBuffer* buffer, BootSettings1F86C0* settings);
+void func_455150(LibDrawBuffer* buffer, BootDrawSettings* settings);
 void func_4550F0(LibDrawBuffer* buffer, s32 count);
 void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
-void func_4791F0(BootClass175320* scene, u8* data);
+void func_4791F0(BootScene* scene, u8* data);
 void func_40B3A0(u8* data);
-void func_473AA0(BootClass175320* scene);
+void func_473AA0(BootScene* scene);
 s32 func_112610(BootSound1B65F8* sound, s32 key);
 void func_100B40(void* allocation);
 
@@ -61,78 +61,6 @@ typedef struct FieldF32At04C
     float value;
 } FieldF32At04C;
 
-typedef struct FieldU32At004
-{
-    u8 pad[0x4];
-    u32 value;
-} FieldU32At004;
-
-typedef struct FieldU32At010
-{
-    u8 pad[0x10];
-    u32 value;
-} FieldU32At010;
-
-typedef struct FieldS16At018
-{
-    u8 pad[0x18];
-    s16 value;
-} FieldS16At018;
-
-typedef struct FieldU32At018
-{
-    u8 pad[0x18];
-    u32 value;
-} FieldU32At018;
-
-typedef struct FieldS16At01A
-{
-    u8 pad[0x1A];
-    s16 value;
-} FieldS16At01A;
-
-typedef struct FieldS16At020
-{
-    u8 pad[0x20];
-    s16 value;
-} FieldS16At020;
-
-typedef struct FieldU32At020
-{
-    u8 pad[0x20];
-    u32 value;
-} FieldU32At020;
-
-typedef struct FieldS16At022
-{
-    u8 pad[0x22];
-    s16 value;
-} FieldS16At022;
-
-typedef struct FieldU32At030
-{
-    u8 pad[0x30];
-    u32 value;
-} FieldU32At030;
-
-typedef struct FieldS16At038
-{
-    u8 pad[0x38];
-    s16 value;
-} FieldS16At038;
-
-typedef struct FieldS16At03A
-{
-    u8 pad[0x3A];
-    s16 value;
-} FieldS16At03A;
-
-typedef struct FieldU32At040
-{
-    u8 pad[0x40];
-    u32 value;
-} FieldU32At040;
-
 typedef struct FieldU32At048
 {
     u8 pad[0x48];
@@ -145,23 +73,11 @@ typedef struct FieldU32At04C
     u32 value;
 } FieldU32At04C;
 
-typedef struct FieldS16At048
-{
-    u8 pad[0x48];
-    s16 value;
-} FieldS16At048;
-
-typedef struct FieldS16At04A
-{
-    u8 pad[0x4A];
-    s16 value;
-} FieldS16At04A;
-
-BootClass177C70::~BootClass177C70()
+BootPooledFloatCurveTrack::~BootPooledFloatCurveTrack()
 {
 }
 
-BootClass177C70::BootClass177C70()
+BootPooledFloatCurveTrack::BootPooledFloatCurveTrack()
 {
 }
 
@@ -169,7 +85,7 @@ BootClass177C70::BootClass177C70()
  * @brief Release every track in the pool and its storage.
  * @param pool Pool to clear.
  */
-void func_001ED610(BootTrackPool<BootClass177C70>* pool)
+void float_curve_track_pool_release(BootTrackPool<BootPooledFloatCurveTrack>* pool)
 {
     pool->release();
 }
@@ -180,16 +96,16 @@ void func_001ED610(BootTrackPool<BootClass177C70>* pool)
  * @param count Number of tracks.
  * @return One on success, or zero when the tracks could not be allocated.
  */
-s32 func_001ED7B0(BootTrackPool<BootClass1711D0>* pool, s32 count)
+s32 vector_curve_track_pool_allocate(BootTrackPool<BootPooledVectorCurveTrack>* pool, s32 count)
 {
     return pool->init(count);
 }
 
-BootClass1711D0::~BootClass1711D0()
+BootPooledVectorCurveTrack::~BootPooledVectorCurveTrack()
 {
 }
 
-BootClass1711D0::BootClass1711D0()
+BootPooledVectorCurveTrack::BootPooledVectorCurveTrack()
 {
 }
 
@@ -197,7 +113,7 @@ BootClass1711D0::BootClass1711D0()
  * @brief Release every track in the pool and its storage.
  * @param pool Pool to clear.
  */
-void func_001EDBC0(BootTrackPool<BootClass1711D0>* pool)
+void vector_curve_track_pool_release(BootTrackPool<BootPooledVectorCurveTrack>* pool)
 {
     pool->release();
 }
@@ -264,16 +180,16 @@ void func_001EE5C0(BootTrackPool<BootClass174440>* pool)
  * @param count Number of tracks.
  * @return One on success, or zero when the tracks could not be allocated.
  */
-s32 func_001EE760(BootTrackPool<BootClass1730F0>* pool, s32 count)
+s32 quaternion_track_pool_allocate(BootTrackPool<BootPooledQuaternionTrack>* pool, s32 count)
 {
     return pool->init(count);
 }
 
-BootClass1730F0::~BootClass1730F0()
+BootPooledQuaternionTrack::~BootPooledQuaternionTrack()
 {
 }
 
-BootClass1730F0::BootClass1730F0()
+BootPooledQuaternionTrack::BootPooledQuaternionTrack()
 {
 }
 
@@ -281,7 +197,7 @@ BootClass1730F0::BootClass1730F0()
  * @brief Release every track in the pool and its storage.
  * @param pool Pool to clear.
  */
-void func_001EEAE0(BootTrackPool<BootClass1730F0>* pool)
+void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* pool)
 {
     pool->release();
 }
@@ -292,7 +208,7 @@ void func_001EEAE0(BootTrackPool<BootClass1730F0>* pool)
  * @param key Evaluation key.
  * @return Evaluated vector.
  */
-FieldVec4B func_001EEC80(const BootClass171B98* range, float key)
+FieldVec4B vector_segment_evaluate(const BootVectorSegmentBase* range, float key)
 {
     return func_4B1640(range, key);
 }
@@ -302,7 +218,7 @@ void func_001EECA0(void* object)
 }
 
 /** @brief Delete the track; pooled tracks override this to return to their pool. */
-void BootClass171950::func_001EECB0()
+void BootFloatCurveTrackBase::release()
 {
     delete this;
 }
@@ -336,7 +252,7 @@ void func_001EED80(void* object)
 }
 
 /** @brief Return a pooled track to its pool, or delete an ordinary track. */
-void BootClass1711D0::func_001EECB0()
+void BootPooledVectorCurveTrack::release()
 {
     if (this != 0)
     {
@@ -351,10 +267,10 @@ void BootClass1711D0::func_001EECB0()
     }
 }
 
-void func_001EEDF0(BootClass1711D0* track)
+void func_001EEDF0(BootPooledVectorCurveTrack* track)
 {
-    func_001F10C0(track);
-    func_001F2320(D_001B6674, track);
+    vector_curve_track_free_keys(track);
+    vector_curve_track_pool_free(g_vector_curve_track_pool, track);
 }
 
 float func_001EEE20(void* object, float key)
@@ -363,7 +279,7 @@ float func_001EEE20(void* object, float key)
 }
 
 /** @brief Return a pooled track to its pool, or delete an ordinary track. */
-void BootClass1714D0::func_001EECB0()
+void BootPooledVectorTrack::release()
 {
     if (this != 0)
     {
@@ -378,10 +294,10 @@ void BootClass1714D0::func_001EECB0()
     }
 }
 
-void func_001EEEA0(BootClass1714D0* track)
+void func_001EEEA0(BootPooledVectorTrack* track)
 {
-    func_001F1DD0(track);
-    func_001F22D0(D_001B6668, track);
+    vector_track_free_keys(track);
+    vector_track_pool_free(g_vector_track_pool, track);
 }
 
 struct ResetVectorB0_001ED4E0
@@ -393,7 +309,7 @@ struct ResetVectorB0_001ED4E0
 void func_001EEED0(void* object)
 {
     ((ResetVectorB0_001ED4E0*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
-    func_001F0C80((BootState1F0D60*)object);
+    vector_curve_track_reset_state((BootVectorCurveTrackState*)object);
 }
 
 /**
@@ -443,9 +359,9 @@ static inline FieldVec4B sum(const FieldVec4B& left, const FieldVec4B& right)
  * @param track Track with at least one keyframe.
  * @return The last keyframe.
  */
-static inline BootTrackKey1719E0& last_entry(BootClass1719E0* track)
+static inline BootTrackKey1719E0& last_entry(BootVectorCurveTrackBase* track)
 {
-    return static_cast<BootTrackKey1719E0*>(track->unk04)[track->state.unk08 - 1];
+    return static_cast<BootTrackKey1719E0*>(track->unk04)[track->state.key_count - 1];
 }
 
 /**
@@ -463,7 +379,7 @@ static inline float key_of(const BootTrackKey1719E0* entry)
  * @param key Evaluation key.
  * @return Evaluated vector.
  */
-FieldVec4A BootClass1710D0::func_slot80(float key)
+FieldVec4A BootVectorCurveTrack::sample(float key)
 {
     s32 lower;
     s32 upper;
@@ -471,24 +387,24 @@ FieldVec4A BootClass1710D0::func_slot80(float key)
     u8 extrapolate;
     FieldVec4B result;
 
-    if (!unk04 || !state.unk08)
+    if (!unk04 || !state.key_count)
     {
         return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
     }
 
-    if (state.unk0c >= state.unk0a)
+    if (state.unk0c >= state.key_capacity)
     {
         state.unk0c = 0;
     }
 
-    if (state.unk08 == 1 && (!(key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w) || state.unk12_0_3 != 6))
+    if (state.key_count == 1 && (!(key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w) || state.before_mode != 6))
     {
         return *reinterpret_cast<FieldVec4A*>(&static_cast<BootTrackKey1719E0*>(unk04)[0].value);
     }
 
     extrapolate = 0;
 
-    if (key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w && state.unk12_0_3 == 6)
+    if (key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w && state.before_mode == 6)
     {
         upper = 0;
         wrapped_key = key;
@@ -496,22 +412,22 @@ FieldVec4A BootClass1710D0::func_slot80(float key)
     }
     else
     {
-        wrapped_key = func_001F09B0(reinterpret_cast<BootState1F0D60*>(this), key);
+        wrapped_key = vector_curve_track_update_cycle_count(reinterpret_cast<BootVectorCurveTrackState*>(this), key);
 
-        if (state.unk00)
+        if (state.cycle_count)
         {
-            if (state.unk12_0_3 == 0 && state.unk00 < 0)
+            if (state.before_mode == 0 && state.cycle_count < 0)
             {
                 return *reinterpret_cast<FieldVec4A*>(&static_cast<BootTrackKey1719E0*>(unk04)[0].value);
             }
 
-            if (state.unk12_4_7 == 0 && state.unk00 > 0)
+            if (state.after_mode == 0 && state.cycle_count > 0)
             {
-                return *reinterpret_cast<FieldVec4A*>(&static_cast<BootTrackKey1719E0*>(unk04)[state.unk08 - 1].value);
+                return *reinterpret_cast<FieldVec4A*>(&static_cast<BootTrackKey1719E0*>(unk04)[state.key_count - 1].value);
             }
         }
 
-        extrapolate = func_001F0AA0(this, wrapped_key, &lower, &upper);
+        extrapolate = vector_curve_track_find_surrounding_keys(this, wrapped_key, &lower, &upper);
 
         if (extrapolate)
         {
@@ -521,33 +437,33 @@ FieldVec4A BootClass1710D0::func_slot80(float key)
 
     if (!extrapolate)
     {
-        if (state.unk0e != lower || state.unk10 != upper)
+        if (state.unk0e != lower || state.cached_index != upper)
         {
             state.unk0e = lower;
-            state.unk10 = upper;
+            state.cached_index = upper;
             BootTrackKey1719E0* first = lower >= 0 ? static_cast<BootTrackKey1719E0*>(unk04) + lower : reinterpret_cast<BootTrackKey1719E0*>(&unk10);
-            s32 last = state.unk08 - 1;
+            s32 last = state.key_count - 1;
 
-            if (upper == last && ((!(key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w) && state.unk12_4_7 == 2) ||
-                                  (key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w && state.unk12_0_3 == 2)))
+            if (upper == last && ((!(key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w) && state.after_mode == 2) ||
+                                  (key < static_cast<BootTrackKey1719E0*>(unk04)[0].value.w && state.before_mode == 2)))
             {
                 BootTrackKey1719E0* entries = static_cast<BootTrackKey1719E0*>(unk04);
                 BootTrackKey1719E0* second = entries + upper;
-                unk60.func_001EFDD0(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
+                unk60.set_endpoints(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
                                     reinterpret_cast<const FieldVec4A*>(&first->second), reinterpret_cast<const FieldVec4A*>(&entries[0].value),
                                     reinterpret_cast<const FieldVec4A*>(&entries[0].first));
             }
             else if (lower < upper)
             {
                 BootTrackKey1719E0* second = static_cast<BootTrackKey1719E0*>(unk04) + upper;
-                unk60.func_001EFDD0(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
+                unk60.set_endpoints(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
                                     reinterpret_cast<const FieldVec4A*>(&first->second), reinterpret_cast<const FieldVec4A*>(&second->value),
                                     reinterpret_cast<const FieldVec4A*>(&second->first));
             }
             else
             {
                 BootTrackKey1719E0* second = static_cast<BootTrackKey1719E0*>(unk04) + last;
-                unk60.func_001EFDD0(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
+                unk60.set_endpoints(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
                                     reinterpret_cast<const FieldVec4A*>(&first->second), reinterpret_cast<const FieldVec4A*>(&second->value),
                                     reinterpret_cast<const FieldVec4A*>(&second->first));
             }
@@ -555,10 +471,10 @@ FieldVec4A BootClass1710D0::func_slot80(float key)
 
         result = func_4B1640(&unk60, wrapped_key);
 
-        if (state.unk00 && ((state.unk12_0_3 == 5 && state.unk00 < 0) || (state.unk12_4_7 == 5 && state.unk00 > 0)))
+        if (state.cycle_count && ((state.before_mode == 5 && state.cycle_count < 0) || (state.after_mode == 5 && state.cycle_count > 0)))
         {
-            FieldVec4B delta = difference(static_cast<BootTrackKey1719E0*>(unk04)[state.unk08 - 1].value, static_cast<BootTrackKey1719E0*>(unk04)[0].value);
-            result += scaled((float)state.unk00, delta);
+            FieldVec4B delta = difference(static_cast<BootTrackKey1719E0*>(unk04)[state.key_count - 1].value, static_cast<BootTrackKey1719E0*>(unk04)[0].value);
+            result += scaled((float)state.cycle_count, delta);
         }
     }
     else
@@ -567,9 +483,9 @@ FieldVec4A BootClass1710D0::func_slot80(float key)
 
         if (wrapped_key < key)
         {
-            slope = scaled(1.0f / (last_entry(this).value.w - key_of(static_cast<BootTrackKey1719E0*>(unk04) + (state.unk08 - 2))),
-                           static_cast<BootTrackKey1719E0*>(unk04)[state.unk08 - 1].first);
-            result = sum(static_cast<BootTrackKey1719E0*>(unk04)[state.unk08 - 1].value, scaled(key - last_entry(this).value.w, slope));
+            slope = scaled(1.0f / (last_entry(this).value.w - key_of(static_cast<BootTrackKey1719E0*>(unk04) + (state.key_count - 2))),
+                           static_cast<BootTrackKey1719E0*>(unk04)[state.key_count - 1].first);
+            result = sum(static_cast<BootTrackKey1719E0*>(unk04)[state.key_count - 1].value, scaled(key - last_entry(this).value.w, slope));
         }
         else
         {
@@ -592,24 +508,24 @@ FieldVec4A BootClass1710D0::func_slot80(float key)
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass1710D0::func_slot84(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+s32 BootVectorCurveTrack::append_curve_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     if (unk04 == 0)
     {
         return 0;
     }
 
-    if (state.unk08 >= state.unk0a)
+    if (state.key_count >= state.key_capacity)
     {
         return 0;
     }
 
-    static_cast<BootTrackKey1719E0*>(unk04)[state.unk08].value = *value;
-    static_cast<BootTrackKey1719E0*>(unk04)[state.unk08].first = *first;
-    static_cast<BootTrackKey1719E0*>(unk04)[state.unk08].second = *second;
-    static_cast<BootTrackKey1719E0*>(unk04)[state.unk08].value.w = key;
+    static_cast<BootTrackKey1719E0*>(unk04)[state.key_count].value = *value;
+    static_cast<BootTrackKey1719E0*>(unk04)[state.key_count].first = *first;
+    static_cast<BootTrackKey1719E0*>(unk04)[state.key_count].second = *second;
+    static_cast<BootTrackKey1719E0*>(unk04)[state.key_count].value.w = key;
     state.span = key - static_cast<BootTrackKey1719E0*>(unk04)[0].value.w;
-    state.unk08++;
+    state.key_count++;
     return 1;
 }
 
@@ -650,13 +566,13 @@ static inline const FieldVec4A* track_vector(const FieldVec4A* vector, FieldVec4
 }
 
 /** @brief Append a keyframe, using zero vectors for missing auxiliary vectors. */
-s32 BootClass1710D0::func_001F4CD0(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+s32 BootVectorCurveTrack::append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     FieldVec4A zero_first;
     FieldVec4A zero_second;
     second = track_vector(second, &zero_second);
     first = track_vector(first, &zero_first);
-    return func_slot84(value, first, second, key);
+    return append_curve_key(value, first, second, key);
 }
 
 /**
@@ -668,14 +584,14 @@ s32 BootClass1710D0::func_001F4CD0(const FieldVec4A* value, const FieldVec4A* fi
  * @param second Second auxiliary vector.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass1710D0::func_001EF7D0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+s32 BootVectorCurveTrack::replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     if (unk04 == 0)
     {
         return 0;
     }
 
-    if (index >= state.unk0a)
+    if (index >= state.key_capacity)
     {
         return 0;
     }
@@ -685,7 +601,7 @@ s32 BootClass1710D0::func_001EF7D0(s32 index, float key, const FieldVec4A* value
     static_cast<BootTrackKey1719E0*>(unk04)[index].second = *second;
     static_cast<BootTrackKey1719E0*>(unk04)[index].value.w = key;
 
-    if (index == state.unk08 - 1)
+    if (index == state.key_count - 1)
     {
         state.span = key - static_cast<BootTrackKey1719E0*>(unk04)[0].value.w;
     }
@@ -694,33 +610,33 @@ s32 BootClass1710D0::func_001EF7D0(s32 index, float key, const FieldVec4A* value
 }
 
 /** @brief Replace an indexed keyframe, using zero vectors for missing auxiliary vectors. */
-s32 BootClass1710D0::func_001F4D00(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+s32 BootVectorCurveTrack::replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     FieldVec4A zero_first;
     FieldVec4A zero_second;
     second = track_vector(second, &zero_second);
     first = track_vector(first, &zero_first);
-    return func_001EF7D0(index, key, value, first, second);
+    return replace_curve_key(index, key, value, first, second);
 }
 
 /** @brief Insert a keyframe, using zero vectors for missing auxiliary vectors. */
-s32 BootClass1710D0::func_001F4D30(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+s32 BootVectorCurveTrack::insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     FieldVec4A zero_first;
     FieldVec4A zero_second;
     second = track_vector(second, &zero_second);
     first = track_vector(first, &zero_first);
-    return func_001F45F0(index, key, value, first, second);
+    return insert_curve_key(index, key, value, first, second);
 }
 
 /** @brief Store a single keyframe, using zero vectors for missing auxiliary vectors. */
-void BootClass1710D0::func_001F4D60(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+void BootVectorCurveTrack::set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     FieldVec4A zero_first;
     FieldVec4A zero_second;
     second = track_vector(second, &zero_second);
     first = track_vector(first, &zero_first);
-    func_001F4560(value, first, second, key);
+    set_single_curve_key(value, first, second, key);
 }
 
 /**
@@ -732,14 +648,14 @@ void BootClass1710D0::func_001F4D60(const FieldVec4A* value, const FieldVec4A* f
  * @param second Receives the second auxiliary vector.
  * @return One when the index is within the capacity, otherwise zero.
  */
-s32 BootClass1710D0::func_001EED60(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const
+s32 BootVectorCurveTrack::read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const
 {
     if (unk04 == 0)
     {
         return 0;
     }
 
-    if (index >= state.unk0a)
+    if (index >= state.key_capacity)
     {
         return 0;
     }
@@ -768,10 +684,10 @@ s32 BootClass1710D0::func_001EED60(s32 index, float* key, FieldVec4B* value, Fie
 }
 
 /** @brief Reset to a single zero keyframe at key zero. */
-void BootClass1710D0::func_001EED80()
+void BootVectorCurveTrack::reset_keys()
 {
     FieldVec4A zero(0.0f, 0.0f, 0.0f, 0.0f);
-    func_001F4D60(&zero, &zero, &zero, 0.0f);
+    set_single_key(&zero, &zero, &zero, 0.0f);
 }
 
 extern "C" void func_001EFAF0(const void* object, FieldVec4B* output)
@@ -783,23 +699,23 @@ extern "C" void func_001EFAF0(const void* object, FieldVec4B* output)
  * @brief Return the difference between the endpoint vectors.
  * @param output Receives the difference.
  */
-void BootClass1710D0::func_slot40(FieldVec4B* output) const
+void BootVectorCurveTrack::get_end_delta(FieldVec4B* output) const
 {
     if (unk04 != 0)
     {
         *output =
-            sequence_difference(static_cast<const BootTrackKey1719E0*>(unk04)[state.unk08 - 1].value, static_cast<const BootTrackKey1719E0*>(unk04)[0].value);
+            sequence_difference(static_cast<const BootTrackKey1719E0*>(unk04)[state.key_count - 1].value, static_cast<const BootTrackKey1719E0*>(unk04)[0].value);
     }
 }
 
-void func_001EFB90(BootState1F12B0* object)
+void func_001EFB90(BootFloatCurveTrackState* object)
 {
     ((FieldU32At04C*)object)->value = 0;
-    func_001F1180(object);
+    float_curve_track_reset_state(object);
 }
 
 /** @brief Append an entry, using zero for missing components. */
-s32 BootClass171280::func_001F4FD0(const float* x, const float* y, const float* z, float key)
+s32 BootFloatCurveTrack::append_key(const float* x, const float* y, const float* z, float key)
 {
     float y_value;
     float z_value;
@@ -807,11 +723,11 @@ s32 BootClass171280::func_001F4FD0(const float* x, const float* y, const float* 
     z = &z_value;
     y_value = (y == 0) ? 0.0f : *y;
     y = &y_value;
-    return func_slot84(x, y, z, key);
+    return append_curve_key(x, y, z, key);
 }
 
 /** @brief Replace an indexed entry, using zero for missing components. */
-s32 BootClass171280::func_001F5000(s32 index, float key, const float* x, const float* y, const float* z)
+s32 BootFloatCurveTrack::replace_key(s32 index, float key, const float* x, const float* y, const float* z)
 {
     float y_value;
     float z_value;
@@ -819,11 +735,11 @@ s32 BootClass171280::func_001F5000(s32 index, float key, const float* x, const f
     z = &z_value;
     y_value = (y == 0) ? 0.0f : *y;
     y = &y_value;
-    return func_001F3FE0(index, key, x, y, z);
+    return replace_curve_key(index, key, x, y, z);
 }
 
 /** @brief Insert an entry, using zero for missing components. */
-s32 BootClass171280::func_001F5030(s32 index, float key, const float* x, const float* y, const float* z)
+s32 BootFloatCurveTrack::insert_key(s32 index, float key, const float* x, const float* y, const float* z)
 {
     float y_value;
     float z_value;
@@ -831,11 +747,11 @@ s32 BootClass171280::func_001F5030(s32 index, float key, const float* x, const f
     z = &z_value;
     y_value = (y == 0) ? 0.0f : *y;
     y = &y_value;
-    return func_001F3EC0(index, key, x, y, z);
+    return insert_curve_key(index, key, x, y, z);
 }
 
 /** @brief Store a single entry, using zero for missing components. */
-void BootClass171280::func_001F5060(const float* x, const float* y, const float* z, float key)
+void BootFloatCurveTrack::set_single_key(const float* x, const float* y, const float* z, float key)
 {
     float y_value;
     float z_value;
@@ -843,14 +759,14 @@ void BootClass171280::func_001F5060(const float* x, const float* y, const float*
     z = &z_value;
     y_value = (y == 0) ? 0.0f : *y;
     y = &y_value;
-    func_001F3E40(x, y, z, key);
+    set_single_curve_key(x, y, z, key);
 }
 
 /** @brief Reset to a single zero keyframe at key zero. */
-void BootClass171280::func_001EED80()
+void BootFloatCurveTrack::reset_keys()
 {
     float zero = 0.0f;
-    func_001F5060(&zero, &zero, &zero, 0.0f);
+    set_single_key(&zero, &zero, &zero, 0.0f);
 }
 
 void func_001EFD70(void* object, float* value)
@@ -869,7 +785,7 @@ void func_001EFD80(void* object, float* result)
     }
 }
 
-BootClass171B98::BootClass171B98()
+BootVectorSegmentBase::BootVectorSegmentBase()
 {
 }
 
@@ -882,7 +798,7 @@ BootClass171B98::BootClass171B98()
  * @param third Second endpoint vector.
  * @param fourth Second endpoint tangent.
  */
-void BootClass171B98::func_001EFDD0(float start, float end, const FieldVec4A* first, const FieldVec4A* second, const FieldVec4A* third,
+void BootVectorSegmentBase::set_endpoints(float start, float end, const FieldVec4A* first, const FieldVec4A* second, const FieldVec4A* third,
                                     const FieldVec4A* fourth)
 {
     unk00 = *first;
@@ -899,11 +815,11 @@ void BootClass171B98::func_001EFDD0(float start, float end, const FieldVec4A* fi
     }
 }
 
-BootClass171B88::BootClass171B88()
+BootFloatSegmentBase::BootFloatSegmentBase()
 {
 }
 
-void func_001EFE50(BootScalarRangeFE50* object, const float* first, const float* second, const float* third, const float* fourth, float start, float end)
+void float_segment_set_endpoints(BootFloatSegmentState* object, const float* first, const float* second, const float* third, const float* fourth, float start, float end)
 {
     object->unk00 = *first;
     object->unk10 = start;
@@ -928,7 +844,7 @@ struct ResetVector90_001ED4E0
 void func_001EFEA0(void* object)
 {
     ((ResetVector90_001ED4E0*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
-    func_001F19F0((BootState1F1AD0*)object);
+    vector_track_reset_state((BootVectorTrackState*)object);
 }
 
 /**
@@ -936,29 +852,29 @@ void func_001EFEA0(void* object)
  * @param key Evaluation key.
  * @return Evaluated vector.
  */
-FieldVec4A BootClass171440::func_slot80(float key)
+FieldVec4A BootVectorTrack::sample(float key)
 {
     s32 lower;
     s32 upper;
     float wrapped_key;
     u8 extrapolate;
 
-    if (!unk04 || !state.unk08)
+    if (!unk04 || !state.key_count)
     {
         return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
     }
 
-    if (state.unk0c >= state.unk0a)
+    if (state.unk0c >= state.key_capacity)
     {
         state.unk0c = 0;
     }
 
-    if (state.unk08 == 1 && (!(key < unk04[0].value.w) || state.unk12_0_3 != 6))
+    if (state.key_count == 1 && (!(key < unk04[0].value.w) || state.before_mode != 6))
     {
         return *reinterpret_cast<FieldVec4A*>(&unk04[0].value);
     }
 
-    if (key < unk04[0].value.w && state.unk12_0_3 == 6)
+    if (key < unk04[0].value.w && state.before_mode == 6)
     {
         upper = 0;
         wrapped_key = key;
@@ -966,19 +882,19 @@ FieldVec4A BootClass171440::func_slot80(float key)
     }
     else
     {
-        wrapped_key = func_001F1740(reinterpret_cast<BootState1F1AD0*>(this), key);
+        wrapped_key = vector_track_update_cycle_count(reinterpret_cast<BootVectorTrackState*>(this), key);
 
-        if (state.unk12_0_3 == 0 && state.unk00 < 0)
+        if (state.before_mode == 0 && state.cycle_count < 0)
         {
             return *reinterpret_cast<FieldVec4A*>(&unk04[0].value);
         }
 
-        if (state.unk12_4_7 == 0 && state.unk00 > 0)
+        if (state.after_mode == 0 && state.cycle_count > 0)
         {
-            return *reinterpret_cast<FieldVec4A*>(&unk04[state.unk08 - 1].value);
+            return *reinterpret_cast<FieldVec4A*>(&unk04[state.key_count - 1].value);
         }
 
-        extrapolate = func_001F1820(this, wrapped_key, &lower, &upper);
+        extrapolate = vector_track_find_surrounding_keys(this, wrapped_key, &lower, &upper);
 
         if (extrapolate)
         {
@@ -986,41 +902,41 @@ FieldVec4A BootClass171440::func_slot80(float key)
         }
     }
 
-    if (state.unk0e != lower || state.unk10 != upper)
+    if (state.unk0e != lower || state.cached_index != upper)
     {
         state.unk0e = lower;
-        state.unk10 = upper;
-        BootTrackKey171830* first = lower >= 0 ? unk04 + lower : reinterpret_cast<BootTrackKey171830*>(&unk10);
+        state.cached_index = upper;
+        BootVectorTrackKey* first = lower >= 0 ? unk04 + lower : reinterpret_cast<BootVectorTrackKey*>(&unk10);
         func_001F06C0(&unk40);
-        unk40.func_001F0560(first->value.w, reinterpret_cast<const FieldVec4A*>(&first->value));
-        s32 last = state.unk08 - 1;
+        unk40.push_sample(first->value.w, reinterpret_cast<const FieldVec4A*>(&first->value));
+        s32 last = state.key_count - 1;
         // TODO: My guess; copying upper into its own local is the only way I found that matches.
         s32 upper_index = upper;
 
-        if (upper_index == last && ((!(key < unk04[0].value.w) && state.unk12_4_7 == 2) || (key < unk04[0].value.w && state.unk12_0_3 == 2)))
+        if (upper_index == last && ((!(key < unk04[0].value.w) && state.after_mode == 2) || (key < unk04[0].value.w && state.before_mode == 2)))
         {
-            BootTrackKey171830* entries = unk04;
-            BootTrackKey171830* second = entries + upper_index;
-            unk40.func_001F0560(second->value.w, reinterpret_cast<const FieldVec4A*>(&entries[0].value));
+            BootVectorTrackKey* entries = unk04;
+            BootVectorTrackKey* second = entries + upper_index;
+            unk40.push_sample(second->value.w, reinterpret_cast<const FieldVec4A*>(&entries[0].value));
         }
         else if (lower < upper_index)
         {
-            BootTrackKey171830* second = unk04 + upper_index;
-            unk40.func_001F0560(second->value.w, reinterpret_cast<const FieldVec4A*>(&second->value));
+            BootVectorTrackKey* second = unk04 + upper_index;
+            unk40.push_sample(second->value.w, reinterpret_cast<const FieldVec4A*>(&second->value));
         }
         else
         {
-            BootTrackKey171830* second = unk04 + last;
-            unk40.func_001F0560(second->value.w, reinterpret_cast<const FieldVec4A*>(&unk04[upper_index].value));
+            BootVectorTrackKey* second = unk04 + last;
+            unk40.push_sample(second->value.w, reinterpret_cast<const FieldVec4A*>(&unk04[upper_index].value));
         }
     }
 
-    FieldVec4B result = unk40.func_slot0c(wrapped_key);
+    FieldVec4B result = unk40.sample(wrapped_key);
 
-    if ((state.unk12_0_3 == 5 && state.unk00 < 0) || (state.unk12_4_7 == 5 && state.unk00 > 0))
+    if ((state.before_mode == 5 && state.cycle_count < 0) || (state.after_mode == 5 && state.cycle_count > 0))
     {
-        FieldVec4B delta = difference(unk04[state.unk08 - 1].value, unk04[0].value);
-        result += scaled((float)state.unk00, delta);
+        FieldVec4B delta = difference(unk04[state.key_count - 1].value, unk04[0].value);
+        result += scaled((float)state.cycle_count, delta);
     }
 
     unkA0 = scaled(1.0f / D_001B6688, difference(result, unk90));
@@ -1032,12 +948,12 @@ FieldVec4A BootClass171440::func_slot80(float key)
  * @brief Return the difference between the endpoint values.
  * @param output Receives the difference.
  */
-void BootClass171440::func_slot40(FieldVec4B* output) const
+void BootVectorTrack::get_end_delta(FieldVec4B* output) const
 {
     if (unk04 != 0)
     {
         *output =
-            sequence_difference(static_cast<const BootTrackKey171830*>(unk04)[state.unk08 - 1].value, static_cast<const BootTrackKey171830*>(unk04)[0].value);
+            sequence_difference(static_cast<const BootVectorTrackKey*>(unk04)[state.key_count - 1].value, static_cast<const BootVectorTrackKey*>(unk04)[0].value);
     }
 }
 
@@ -1046,10 +962,10 @@ extern "C" void func_001F0440(const void* object, FieldVec4B* output)
     *output = *(const FieldVec4A*)((const u8*)object + 0xA0);
 }
 
-void func_001F0460(BootState1F1FC0* object)
+void func_001F0460(BootFloatTrackState* object)
 {
     ((FieldU32At048*)object)->value = 0;
-    func_001F1E90(object);
+    float_track_reset_state(object);
 }
 
 void func_001F0480(void* object, float* result)
@@ -1073,7 +989,7 @@ BootClass171B70::BootClass171B70()
     unk00 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-BootClass171B50::BootClass171B50()
+BootVectorHistory::BootVectorHistory()
 {
     unk00 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
 }
@@ -1083,7 +999,7 @@ BootClass171B50::BootClass171B50()
  * @param key Key to store.
  * @param value Value to store.
  */
-void BootClass171B50::func_001F0560(float key, const FieldVec4A* value)
+void BootVectorHistory::push_sample(float key, const FieldVec4A* value)
 {
     unk20[unk12] = *value;
     unk40[unk12] = key;
@@ -1099,7 +1015,7 @@ void BootClass171B50::func_001F0560(float key, const FieldVec4A* value)
     }
 }
 
-BootClass171B30::BootClass171B30()
+BootFloatHistory::BootFloatHistory()
 {
     unk00 = 0;
 }
@@ -1117,7 +1033,7 @@ void func_001F0660(void* object)
     *(u32*)((u8*)object + 0x18) = 0;
 }
 
-BootClass171B10::BootClass171B10()
+BootVectorHistoryBase::BootVectorHistoryBase()
 {
     func_001F06C0(this);
 }
@@ -1130,7 +1046,7 @@ void func_001F06C0(void* object)
     *(u32*)((u8*)object + 0x18) = 0;
 }
 
-BootClass171B00::BootClass171B00()
+BootFloatHistoryBase::BootFloatHistoryBase()
 {
     func_001F0720(this);
 }
@@ -1149,24 +1065,24 @@ void func_001F0720(void* object)
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass1713B0::func_001F2890(const FieldVec4A* value, float key)
+s32 BootVectorKeyTrack::on_append_key(const FieldVec4A* value, float key)
 {
     if (unk04 == 0)
     {
         return 0;
     }
 
-    if (state.unk08 >= state.unk0a)
+    if (state.key_count >= state.key_capacity)
     {
         return 0;
     }
 
-    static_cast<BootTrackKey171830*>(unk04)[state.unk08].value = *value;
-    static_cast<BootTrackKey171830*>(unk04)[state.unk08].value.w = key;
-    state.span = key - static_cast<BootTrackKey171830*>(unk04)[0].value.w;
+    static_cast<BootVectorTrackKey*>(unk04)[state.key_count].value = *value;
+    static_cast<BootVectorTrackKey*>(unk04)[state.key_count].value.w = key;
+    state.span = key - static_cast<BootVectorTrackKey*>(unk04)[0].value.w;
     state.unk0e = -1;
-    state.unk10 = -1;
-    state.unk08++;
+    state.cached_index = -1;
+    state.key_count++;
     return 1;
 }
 
@@ -1177,28 +1093,28 @@ s32 BootClass1713B0::func_001F2890(const FieldVec4A* value, float key)
  * @param value Keyframe value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass1713B0::func_001F2850(s32 index, float key, const FieldVec4A* value)
+s32 BootVectorKeyTrack::on_replace_key(s32 index, float key, const FieldVec4A* value)
 {
     if (unk04 == 0)
     {
         return 0;
     }
 
-    if (index >= state.unk0a)
+    if (index >= state.key_capacity)
     {
         return 0;
     }
 
-    static_cast<BootTrackKey171830*>(unk04)[index].value = *value;
-    static_cast<BootTrackKey171830*>(unk04)[index].value.w = key;
+    static_cast<BootVectorTrackKey*>(unk04)[index].value = *value;
+    static_cast<BootVectorTrackKey*>(unk04)[index].value.w = key;
 
-    if (index == state.unk08 - 1)
+    if (index == state.key_count - 1)
     {
-        state.span = key - static_cast<BootTrackKey171830*>(unk04)[0].value.w;
+        state.span = key - static_cast<BootVectorTrackKey*>(unk04)[0].value.w;
     }
 
     state.unk0e = -1;
-    state.unk10 = -1;
+    state.cached_index = -1;
     return 1;
 }
 
@@ -1211,26 +1127,26 @@ s32 BootClass1713B0::func_001F2850(s32 index, float key, const FieldVec4A* value
  * @param second Unused; this track has no auxiliary vectors.
  * @return One when the index is within the capacity, otherwise zero.
  */
-s32 BootClass1713B0::func_001EED60(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const
+s32 BootVectorKeyTrack::read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const
 {
     if (unk04 == 0)
     {
         return 0;
     }
 
-    if (index >= state.unk0a)
+    if (index >= state.key_capacity)
     {
         return 0;
     }
 
     if (key)
     {
-        *key = static_cast<const BootTrackKey171830*>(unk04)[index].value.w;
+        *key = static_cast<const BootVectorTrackKey*>(unk04)[index].value.w;
     }
 
     if (value)
     {
-        *value = static_cast<const BootTrackKey171830*>(unk04)[index].value;
+        *value = static_cast<const BootVectorTrackKey*>(unk04)[index].value;
     }
 
     return 1;
@@ -1244,7 +1160,7 @@ BootClass171A70::~BootClass171A70()
 
 void func_001F0960(BootClass171A70* track)
 {
-    if (!track->state.unk13_1)
+    if (!track->state.external_keys)
     {
         if (track->unk04)
         {
@@ -1255,7 +1171,7 @@ void func_001F0960(BootClass171A70* track)
     track->unk04 = 0;
 }
 
-float func_001F09B0(BootState1F0D60* object, float key)
+float vector_curve_track_update_cycle_count(BootVectorCurveTrackState* object, float key)
 {
     float first = object->entries[0].key;
     float quotient = (key - first) / object->span;
@@ -1265,19 +1181,19 @@ float func_001F09B0(BootState1F0D60* object, float key)
         quotient -= 1.0f;
     }
 
-    object->unk40 = quotient;
+    object->cycle_count = quotient;
 
-    if (object->unk40)
+    if (object->cycle_count)
     {
-        float result = key - (float)object->unk40 * object->span;
+        float result = key - (float)object->cycle_count * object->span;
 
-        if ((object->unk52_lo == 3 && object->unk40 < 0) || (object->unk52_hi == 3 && object->unk40 > 0))
+        if ((object->before_mode == 3 && object->cycle_count < 0) || (object->after_mode == 3 && object->cycle_count > 0))
         {
             s32 last_index = object->count - 1;
-            BootRecord48F0E90* last_entry = object->entries + last_index;
+            BootVectorCurveStateKey* last_entry = object->entries + last_index;
             float last = last_entry->key;
 
-            if (object->unk40 & 1)
+            if (object->cycle_count & 1)
             {
                 result = first + (last - result);
             }
@@ -1297,15 +1213,15 @@ float func_001F09B0(BootState1F0D60* object, float key)
  * @param upper Receives the upper entry index.
  * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
  */
-u8 func_001F0AA0(BootClass1719E0* track, float key, s32* lower, s32* upper)
+u8 vector_curve_track_find_surrounding_keys(BootVectorCurveTrackBase* track, float key, s32* lower, s32* upper)
 {
     s32 index;
     s32 count;
     s32 next;
 
-    if (track->state.unk13_0)
+    if (track->state.repeats)
     {
-        if (track->state.unk12_0_3 == 4 && track->state.unk00 < 0)
+        if (track->state.before_mode == 4 && track->state.cycle_count < 0)
         {
             *lower = 0;
             *upper = 1;
@@ -1313,17 +1229,17 @@ u8 func_001F0AA0(BootClass1719E0* track, float key, s32* lower, s32* upper)
             return 1;
         }
 
-        if (track->state.unk12_4_7 == 4 && track->state.unk00 > 0)
+        if (track->state.after_mode == 4 && track->state.cycle_count > 0)
         {
-            *lower = track->state.unk08 - 2;
-            *upper = track->state.unk08 - 1;
-            track->state.unk0c = track->state.unk08 - 2;
+            *lower = track->state.key_count - 2;
+            *upper = track->state.key_count - 1;
+            track->state.unk0c = track->state.key_count - 2;
             return 1;
         }
     }
 
     index = track->state.unk0c;
-    count = track->state.unk08;
+    count = track->state.key_count;
 
     while (index > 0 && key < static_cast<BootTrackKey1719E0*>(track->unk04)[index].value.w)
     {
@@ -1352,31 +1268,31 @@ u8 func_001F0AA0(BootClass1719E0* track, float key, s32* lower, s32* upper)
     return 0;
 }
 /** @brief Release the keyframe storage. */
-BootClass1719E0::~BootClass1719E0()
+BootVectorCurveTrackBase::~BootVectorCurveTrackBase()
 {
-    func_001F10C0(this);
+    vector_curve_track_free_keys(this);
 }
 
-void func_001F0C80(BootState1F0D60* object)
+void vector_curve_track_reset_state(BootVectorCurveTrackState* object)
 {
     object->entries = 0;
-    object->unk52_lo = 1;
-    object->unk52_hi = 1;
+    object->before_mode = 1;
+    object->after_mode = 1;
     object->capacity = 0;
     object->count = 0;
     object->unk4C = -1;
-    object->unk40 = 0;
+    object->cycle_count = 0;
     object->unk4E = -1;
-    object->unk50 = -1;
-    object->unk53_bit0 = 0;
-    object->unk53_bit1 = 0;
+    object->cached_index = -1;
+    object->repeats = 0;
+    object->external_keys = 0;
 }
 
-void func_001F0D10(BootState1F0D60* object, s32 count, BootRecord48F0E90* entries)
+void vector_curve_track_bind_keys(BootVectorCurveTrackState* object, s32 count, BootVectorCurveStateKey* entries)
 {
     s32 last_index = count - 1;
-    BootRecord48F0E90* last;
-    object->unk53_bit1 = 1;
+    BootVectorCurveStateKey* last;
+    object->external_keys = 1;
     object->entries = entries;
     object->capacity = count;
     object->count = count;
@@ -1384,53 +1300,53 @@ void func_001F0D10(BootState1F0D60* object, s32 count, BootRecord48F0E90* entrie
     object->span = last->key - object->entries[0].key;
 }
 
-void func_001F0D60(BootState1F0D60* state, u32 value)
+void vector_curve_track_set_before_mode(BootVectorCurveTrackState* state, u32 value)
 {
-    state->unk52_lo = value;
-    state->unk53_bit0 = state->unk52_lo == 4 || state->unk52_hi == 4;
+    state->before_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-void func_001F0DC0(BootState1F0D60* state, u32 value)
+void vector_curve_track_set_after_mode(BootVectorCurveTrackState* state, u32 value)
 {
-    state->unk52_hi = value;
-    state->unk53_bit0 = state->unk52_lo == 4 || state->unk52_hi == 4;
+    state->after_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-u32 func_001F0E20(void* object)
+s32 vector_curve_track_get_cycle_count(const BootVectorCurveTrackState* object)
 {
-    return ((FieldU32At040*)object)->value;
+    return object->cycle_count;
 }
 
-s16 func_001F0E30(void* object)
+s16 vector_curve_track_get_key_count(const BootVectorCurveTrackState* object)
 {
-    return ((FieldS16At048*)object)->value;
+    return object->count;
 }
 
-s16 func_001F0E40(void* object)
+s16 vector_curve_track_get_key_capacity(const BootVectorCurveTrackState* object)
 {
-    return ((FieldS16At04A*)object)->value;
+    return object->capacity;
 }
 
-s32 func_001F0E50(void* object)
-{
-    return 0;
-}
-
-s32 func_001F0E60(void* object)
+s32 vector_curve_track_on_append_key(void* object)
 {
     return 0;
 }
 
-s32 func_001F0E70(void* object)
+s32 vector_curve_track_on_replace_key(void* object)
 {
     return 0;
 }
 
-void func_001F0E80(void* object)
+s32 vector_curve_track_on_insert_key(void* object)
+{
+    return 0;
+}
+
+void vector_curve_track_on_set_single_key(void* object)
 {
 }
 
-s32 func_001F0E90(BootState1F0D60* object, float key)
+s32 vector_curve_track_has_key(BootVectorCurveTrackState* object, float key)
 {
     s32 index;
 
@@ -1445,7 +1361,7 @@ s32 func_001F0E90(BootState1F0D60* object, float key)
     return 0;
 }
 
-void func_001F0EE0(void* object)
+void vector_curve_track_get_zero_value(void* object)
 {
     *(u32*)((u8*)object + 0x0) = 0;
     *(u32*)((u8*)object + 0x4) = 0;
@@ -1453,10 +1369,10 @@ void func_001F0EE0(void* object)
     *(u32*)((u8*)object + 0xC) = 0;
 }
 
-float func_001F0F00(BootState1F0D60* object)
+float vector_curve_track_get_key_span(BootVectorCurveTrackState* object)
 {
     s32 last_index;
-    BootRecord48F0E90* last_entry;
+    BootVectorCurveStateKey* last_entry;
 
     if (object->count < 2)
     {
@@ -1474,7 +1390,7 @@ float func_001F0F00(BootState1F0D60* object)
  * @param key Key to find.
  * @return Associated value, or a zero vector when no key matches.
  */
-FieldVec4A func_001F0F50(BootState1F0D60* object, float key)
+FieldVec4A vector_curve_track_find_key_value(BootVectorCurveTrackState* object, float key)
 {
     s32 index;
 
@@ -1482,7 +1398,7 @@ FieldVec4A func_001F0F50(BootState1F0D60* object, float key)
     {
         if (key == object->entries[index].key)
         {
-            BootRecord48F0E90* entry = object->entries + index;
+            BootVectorCurveStateKey* entry = object->entries + index;
             return *reinterpret_cast<const FieldVec4A*>(entry->value);
         }
     }
@@ -1495,16 +1411,16 @@ FieldVec4A func_001F0F50(BootState1F0D60* object, float key)
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass1719E0::func_001F0FC0(float key, FieldVec4B* output)
+void BootVectorCurveTrackBase::evaluate(float key, FieldVec4B* output)
 {
-    *output = func_slot80(key);
+    *output = sample(key);
 }
 
-float func_001F1010(BootState1F0D60* object, float key)
+float vector_curve_track_wrap_key(BootVectorCurveTrackState* object, float key)
 {
     s32 last_index = object->count - 1;
-    BootRecord48F0E90* entries = object->entries;
-    BootRecord48F0E90* last = entries + last_index;
+    BootVectorCurveStateKey* entries = object->entries;
+    BootVectorCurveStateKey* last = entries + last_index;
     float first = entries[0].key;
     float span = last->key - first;
     float quotient = (key - first) / span;
@@ -1525,14 +1441,14 @@ float func_001F1010(BootState1F0D60* object, float key)
     return key;
 }
 
-u32 func_001F10B0(void* object)
+BootVectorCurveStateKey* vector_curve_track_get_keys(const BootVectorCurveTrackState* object)
 {
-    return ((FieldU32At004*)object)->value;
+    return object->entries;
 }
 
-void func_001F10C0(BootClass1719E0* track)
+void vector_curve_track_free_keys(BootVectorCurveTrackBase* track)
 {
-    if (!track->state.unk13_1)
+    if (!track->state.external_keys)
     {
         if (track->unk04)
         {
@@ -1544,90 +1460,90 @@ void func_001F10C0(BootClass1719E0* track)
 }
 
 /** @brief Release the keyframe storage. */
-BootClass171950::~BootClass171950()
+BootFloatCurveTrackBase::~BootFloatCurveTrackBase()
 {
-    func_001F1430(this);
+    float_curve_track_free_keys(this);
 }
 
-void func_001F1180(BootState1F12B0* object)
+void float_curve_track_reset_state(BootFloatCurveTrackState* object)
 {
     object->entries = 0;
-    object->unk2A_lo = 1;
-    object->unk2A_hi = 1;
+    object->before_mode = 1;
+    object->after_mode = 1;
     object->capacity = 0;
     object->count = 0;
     object->unk24 = -1;
-    object->unk18 = 0;
+    object->cycle_count = 0;
     object->unk26 = -1;
-    object->unk28 = -1;
-    object->unk2B_bit0 = 0;
-    object->unk2B_bit1 = 0;
+    object->cached_index = -1;
+    object->repeats = 0;
+    object->external_keys = 0;
 }
 
 /**
  * @brief Allocate storage for the requested keyframe count.
  * @param count Requested keyframe count.
  */
-void BootClass171950::func_001F1210(s32 count)
+void BootFloatCurveTrackBase::allocate_keys(s32 count)
 {
-    state.unk13_1 = 0;
+    state.external_keys = 0;
     delete[] unk04;
-    unk04 = new (0) BootTrackKey171950[count];
-    state.unk0a = count;
+    unk04 = new (0) BootFloatCurveTrackKey[count];
+    state.key_capacity = count;
 
     if (!unk04)
     {
-        state.unk0a = 0;
+        state.key_capacity = 0;
     }
 }
 
-void func_001F12B0(BootState1F12B0* state, u32 value)
+void float_curve_track_set_before_mode(BootFloatCurveTrackState* state, u32 value)
 {
-    state->unk2A_lo = value;
-    state->unk2B_bit0 = state->unk2A_lo == 4 || state->unk2A_hi == 4;
+    state->before_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-void func_001F1310(BootState1F12B0* state, u32 value)
+void float_curve_track_set_after_mode(BootFloatCurveTrackState* state, u32 value)
 {
-    state->unk2A_hi = value;
-    state->unk2B_bit0 = state->unk2A_lo == 4 || state->unk2A_hi == 4;
+    state->after_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-u32 func_001F1370(void* object)
+s32 float_curve_track_get_cycle_count(const BootFloatCurveTrackState* object)
 {
-    return ((FieldU32At018*)object)->value;
+    return object->cycle_count;
 }
 
-s16 func_001F1380(void* object)
+s16 float_curve_track_get_key_count(const BootFloatCurveTrackState* object)
 {
-    return ((FieldS16At020*)object)->value;
+    return object->count;
 }
 
-s16 func_001F1390(void* object)
+s16 float_curve_track_get_key_capacity(const BootFloatCurveTrackState* object)
 {
-    return ((FieldS16At022*)object)->value;
+    return object->capacity;
 }
 
-s32 func_001F13A0(void* object)
-{
-    return 0;
-}
-
-s32 func_001F13B0(void* object)
+s32 float_curve_track_on_append_key(void* object)
 {
     return 0;
 }
 
-s32 func_001F13C0(void* object)
+s32 float_curve_track_on_replace_key(void* object)
 {
     return 0;
 }
 
-void func_001F13D0(void* object)
+s32 float_curve_track_on_insert_key(void* object)
+{
+    return 0;
+}
+
+void float_curve_track_on_set_single_key(void* object)
 {
 }
 
-float func_001F13E0(void* object)
+float float_curve_track_get_zero_value(void* object)
 {
     return 0.0f;
 }
@@ -1637,19 +1553,19 @@ float func_001F13E0(void* object)
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass171950::func_001F13F0(float key, float* output)
+void BootFloatCurveTrackBase::evaluate(float key, float* output)
 {
-    *output = func_slot80(key);
+    *output = sample(key);
 }
 
-u32 func_001F1420(void* object)
+BootFloatCurveStateKey* float_curve_track_get_keys(const BootFloatCurveTrackState* object)
 {
-    return ((FieldU32At004*)object)->value;
+    return object->entries;
 }
 
-void func_001F1430(BootClass171950* track)
+void float_curve_track_free_keys(BootFloatCurveTrackBase* track)
 {
-    if (!track->state.unk13_1)
+    if (!track->state.external_keys)
     {
         if (track->unk04)
         {
@@ -1669,43 +1585,43 @@ BootClass1718C0::~BootClass1718C0()
 void func_001F14F0(BootState1F1580* object)
 {
     object->entries = 0;
-    object->unk42_lo = 1;
-    object->unk42_hi = 1;
+    object->before_mode = 1;
+    object->after_mode = 1;
     object->capacity = 0;
     object->count = 0;
     object->unk3C = -1;
-    object->unk30 = 0;
+    object->cycle_count = 0;
     object->unk3E = -1;
-    object->unk40 = -1;
-    object->unk43_bit0 = 0;
-    object->unk43_bit1 = 0;
+    object->cached_index = -1;
+    object->repeats = 0;
+    object->external_keys = 0;
 }
 
 void func_001F1580(BootState1F1580* state, u32 value)
 {
-    state->unk42_lo = value;
-    state->unk43_bit0 = state->unk42_lo == 4 || state->unk42_hi == 4;
+    state->before_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
 void func_001F15E0(BootState1F1580* state, u32 value)
 {
-    state->unk42_hi = value;
-    state->unk43_bit0 = state->unk42_lo == 4 || state->unk42_hi == 4;
+    state->after_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-u32 func_001F1640(void* object)
+s32 func_001F1640(const BootState1F1580* object)
 {
-    return ((FieldU32At030*)object)->value;
+    return object->cycle_count;
 }
 
-s16 func_001F1650(void* object)
+s16 func_001F1650(const BootState1F1580* object)
 {
-    return ((FieldS16At038*)object)->value;
+    return object->count;
 }
 
-s16 func_001F1660(void* object)
+s16 func_001F1660(const BootState1F1580* object)
 {
-    return ((FieldS16At03A*)object)->value;
+    return object->capacity;
 }
 
 void func_001F1670(void* object)
@@ -1721,19 +1637,19 @@ void func_001F1670(void* object)
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass1718C0::func_001F1690(float key, FieldVec4B* output) const
+void BootClass1718C0::evaluate(float key, FieldVec4B* output) const
 {
-    *output = func_slot80(key);
+    *output = sample(key);
 }
 
-u32 func_001F16E0(void* object)
+BootKeyEntry32* func_001F16E0(const BootState1F1580* object)
 {
-    return ((FieldU32At004*)object)->value;
+    return object->entries;
 }
 
 void func_001F16F0(BootClass1718C0* track)
 {
-    if (!track->state.unk13_1)
+    if (!track->state.external_keys)
     {
         if (track->unk04)
         {
@@ -1744,7 +1660,7 @@ void func_001F16F0(BootClass1718C0* track)
     track->unk04 = 0;
 }
 
-float func_001F1740(BootState1F1AD0* object, float key)
+float vector_track_update_cycle_count(BootVectorTrackState* object, float key)
 {
     float first = object->entries[0].key;
     float quotient = (key - first) / object->span;
@@ -1754,19 +1670,19 @@ float func_001F1740(BootState1F1AD0* object, float key)
         quotient -= 1.0f;
     }
 
-    object->unk20 = quotient;
+    object->cycle_count = quotient;
 
-    if (object->unk20)
+    if (object->cycle_count)
     {
-        float result = key - (float)object->unk20 * object->span;
+        float result = key - (float)object->cycle_count * object->span;
 
-        if ((object->unk32_lo == 3 && object->unk20 < 0) || (object->unk32_hi == 3 && object->unk20 > 0))
+        if ((object->before_mode == 3 && object->cycle_count < 0) || (object->after_mode == 3 && object->cycle_count > 0))
         {
             s32 last_index = object->count - 1;
-            BootVectorKeyEntry1F1D30* last_entry = object->entries + last_index;
+            BootVectorStateKey* last_entry = object->entries + last_index;
             float last = last_entry->key;
 
-            if (object->unk20 & 1)
+            if (object->cycle_count & 1)
             {
                 result = first + (last - result);
             }
@@ -1786,15 +1702,15 @@ float func_001F1740(BootState1F1AD0* object, float key)
  * @param upper Receives the upper entry index.
  * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
  */
-u8 func_001F1820(BootClass171830* track, float key, s32* lower, s32* upper)
+u8 vector_track_find_surrounding_keys(BootVectorTrackBase* track, float key, s32* lower, s32* upper)
 {
     s32 index;
     s32 count;
     s32 next;
 
-    if (track->state.unk13_0)
+    if (track->state.repeats)
     {
-        if (track->state.unk12_0_3 == 4 && track->state.unk00 < 0)
+        if (track->state.before_mode == 4 && track->state.cycle_count < 0)
         {
             *lower = 0;
             *upper = 1;
@@ -1802,26 +1718,26 @@ u8 func_001F1820(BootClass171830* track, float key, s32* lower, s32* upper)
             return 1;
         }
 
-        if (track->state.unk12_4_7 == 4 && track->state.unk00 > 0)
+        if (track->state.after_mode == 4 && track->state.cycle_count > 0)
         {
-            *lower = track->state.unk08 - 2;
-            *upper = track->state.unk08 - 1;
-            track->state.unk0c = track->state.unk08 - 2;
+            *lower = track->state.key_count - 2;
+            *upper = track->state.key_count - 1;
+            track->state.unk0c = track->state.key_count - 2;
             return 1;
         }
     }
 
     index = track->state.unk0c;
-    count = track->state.unk08;
+    count = track->state.key_count;
 
-    while (index > 0 && key < static_cast<BootTrackKey171830*>(track->unk04)[index].value.w)
+    while (index > 0 && key < static_cast<BootVectorTrackKey*>(track->unk04)[index].value.w)
     {
         index--;
     }
 
     index = clamp_low(index, 0);
 
-    while ((next = index + 1) < count && !(key < static_cast<BootTrackKey171830*>(track->unk04)[next].value.w))
+    while ((next = index + 1) < count && !(key < static_cast<BootVectorTrackKey*>(track->unk04)[next].value.w))
     {
         index++;
     }
@@ -1841,31 +1757,31 @@ u8 func_001F1820(BootClass171830* track, float key, s32* lower, s32* upper)
     return 0;
 }
 /** @brief Release the keyframe storage. */
-BootClass171830::~BootClass171830()
+BootVectorTrackBase::~BootVectorTrackBase()
 {
-    func_001F1DD0(this);
+    vector_track_free_keys(this);
 }
 
-void func_001F19F0(BootState1F1AD0* object)
+void vector_track_reset_state(BootVectorTrackState* object)
 {
     object->entries = 0;
-    object->unk32_lo = 1;
-    object->unk32_hi = 1;
+    object->before_mode = 1;
+    object->after_mode = 1;
     object->capacity = 0;
     object->count = 0;
     object->unk2C = -1;
-    object->unk20 = 0;
+    object->cycle_count = 0;
     object->unk2E = -1;
-    object->unk30 = -1;
-    object->unk33_bit0 = 0;
-    object->unk33_bit1 = 0;
+    object->cached_index = -1;
+    object->repeats = 0;
+    object->external_keys = 0;
 }
 
-void func_001F1A80(BootState1F1AD0* object, s32 count, BootVectorKeyEntry1F1D30* entries)
+void vector_track_bind_keys(BootVectorTrackState* object, s32 count, BootVectorStateKey* entries)
 {
     s32 last_index = count - 1;
-    BootVectorKeyEntry1F1D30* last;
-    object->unk33_bit1 = 1;
+    BootVectorStateKey* last;
+    object->external_keys = 1;
     object->entries = entries;
     object->capacity = count;
     object->count = count;
@@ -1873,34 +1789,34 @@ void func_001F1A80(BootState1F1AD0* object, s32 count, BootVectorKeyEntry1F1D30*
     object->span = last->key - object->entries[0].key;
 }
 
-void func_001F1AD0(BootState1F1AD0* state, u32 value)
+void vector_track_set_before_mode(BootVectorTrackState* state, u32 value)
 {
-    state->unk32_lo = value;
-    state->unk33_bit0 = state->unk32_lo == 4 || state->unk32_hi == 4;
+    state->before_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-void func_001F1B30(BootState1F1AD0* state, u32 value)
+void vector_track_set_after_mode(BootVectorTrackState* state, u32 value)
 {
-    state->unk32_hi = value;
-    state->unk33_bit0 = state->unk32_lo == 4 || state->unk32_hi == 4;
+    state->after_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-u32 func_001F1B90(void* object)
+s32 vector_track_get_cycle_count(const BootVectorTrackState* object)
 {
-    return ((FieldU32At020*)object)->value;
+    return object->cycle_count;
 }
 
-s16 func_001F1BA0(BootState1F1AD0* object)
+s16 vector_track_get_key_count(BootVectorTrackState* object)
 {
     return object->count;
 }
 
-s16 func_001F1BB0(BootState1F1AD0* object)
+s16 vector_track_get_key_capacity(BootVectorTrackState* object)
 {
     return object->capacity;
 }
 
-s32 func_001F1BC0(BootState1F1AD0* object, float key)
+s32 vector_track_has_key(BootVectorTrackState* object, float key)
 {
     s32 index;
 
@@ -1915,7 +1831,7 @@ s32 func_001F1BC0(BootState1F1AD0* object, float key)
     return 0;
 }
 
-void func_001F1C10(void* object)
+void vector_track_get_zero_value(void* object)
 {
     *(u32*)((u8*)object + 0x0) = 0;
     *(u32*)((u8*)object + 0x4) = 0;
@@ -1923,9 +1839,9 @@ void func_001F1C10(void* object)
     *(u32*)((u8*)object + 0xC) = 0;
 }
 
-float func_001F1C30(BootState1F1AD0* object)
+float vector_track_get_key_span(BootVectorTrackState* object)
 {
-    BootVectorKeyEntry1F1D30* last;
+    BootVectorStateKey* last;
 
     if (object->count < 2)
     {
@@ -1942,7 +1858,7 @@ float func_001F1C30(BootState1F1AD0* object)
  * @param key Key to find.
  * @return Associated value, or a zero vector when no key matches.
  */
-FieldVec4A func_001F1C80(BootState1F1AD0* object, float key)
+FieldVec4A vector_track_find_key_value(BootVectorTrackState* object, float key)
 {
     s32 index;
 
@@ -1950,7 +1866,7 @@ FieldVec4A func_001F1C80(BootState1F1AD0* object, float key)
     {
         if (key == object->entries[index].key)
         {
-            BootVectorKeyEntry1F1D30* entry = object->entries + index;
+            BootVectorStateKey* entry = object->entries + index;
             return *reinterpret_cast<const FieldVec4A*>(entry);
         }
     }
@@ -1963,14 +1879,14 @@ FieldVec4A func_001F1C80(BootState1F1AD0* object, float key)
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass171830::func_001F1CE0(float key, FieldVec4B* output)
+void BootVectorTrackBase::evaluate(float key, FieldVec4B* output)
 {
-    *output = func_slot80(key);
+    *output = sample(key);
 }
 
-float func_001F1D30(BootState1F1AD0* object, float key)
+float vector_track_wrap_key(BootVectorTrackState* object, float key)
 {
-    BootVectorKeyEntry1F1D30* last = object->entries + (object->count - 1);
+    BootVectorStateKey* last = object->entries + (object->count - 1);
     float first = object->entries[0].key;
     float span = last->key - first;
     float position = (key - first) / span;
@@ -1991,14 +1907,14 @@ float func_001F1D30(BootState1F1AD0* object, float key)
     return key;
 }
 
-u32 func_001F1DC0(void* object)
+BootVectorStateKey* vector_track_get_keys(const BootVectorTrackState* object)
 {
-    return ((FieldU32At004*)object)->value;
+    return object->entries;
 }
 
-void func_001F1DD0(BootClass171830* track)
+void vector_track_free_keys(BootVectorTrackBase* track)
 {
-    if (!track->state.unk13_1)
+    if (!track->state.external_keys)
     {
         if (track->unk04)
         {
@@ -2010,71 +1926,71 @@ void func_001F1DD0(BootClass171830* track)
 }
 
 /** @brief Release the keyframe storage. */
-BootClass1717A0::~BootClass1717A0()
+BootFloatTrackBase::~BootFloatTrackBase()
 {
-    func_001F2100(this);
+    float_track_free_keys(this);
 }
 
-void func_001F1E90(BootState1F1FC0* object)
+void float_track_reset_state(BootFloatTrackState* object)
 {
     object->entries = 0;
-    object->unk22_lo = 1;
-    object->unk22_hi = 1;
+    object->before_mode = 1;
+    object->after_mode = 1;
     object->capacity = 0;
     object->count = 0;
     object->unk1C = -1;
-    object->unk10 = 0;
+    object->cycle_count = 0;
     object->unk1E = -1;
-    object->unk20 = -1;
-    object->unk23_bit0 = 0;
-    object->unk23_bit1 = 0;
+    object->cached_index = -1;
+    object->repeats = 0;
+    object->external_keys = 0;
 }
 
 /**
  * @brief Allocate storage for the requested keyframe count.
  * @param count Requested keyframe count.
  */
-void BootClass1717A0::func_001F1F20(s32 count)
+void BootFloatTrackBase::allocate_keys(s32 count)
 {
-    state.unk13_1 = 0;
+    state.external_keys = 0;
     delete[] unk04;
-    unk04 = new (0) BootTrackKey1717A0[count];
-    state.unk0a = count;
+    unk04 = new (0) BootFloatTrackKey[count];
+    state.key_capacity = count;
 
     if (!unk04)
     {
-        state.unk0a = 0;
+        state.key_capacity = 0;
     }
 }
 
-void func_001F1FC0(BootState1F1FC0* state, u32 value)
+void float_track_set_before_mode(BootFloatTrackState* state, u32 value)
 {
-    state->unk22_lo = value;
-    state->unk23_bit0 = state->unk22_lo == 4 || state->unk22_hi == 4;
+    state->before_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-void func_001F2020(BootState1F1FC0* state, u32 value)
+void float_track_set_after_mode(BootFloatTrackState* state, u32 value)
 {
-    state->unk22_hi = value;
-    state->unk23_bit0 = state->unk22_lo == 4 || state->unk22_hi == 4;
+    state->after_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-u32 func_001F2080(void* object)
+s32 float_track_get_cycle_count(const BootFloatTrackState* object)
 {
-    return ((FieldU32At010*)object)->value;
+    return object->cycle_count;
 }
 
-s16 func_001F2090(void* object)
+s16 float_track_get_key_count(const BootFloatTrackState* object)
 {
-    return ((FieldS16At018*)object)->value;
+    return object->count;
 }
 
-s16 func_001F20A0(void* object)
+s16 float_track_get_key_capacity(const BootFloatTrackState* object)
 {
-    return ((FieldS16At01A*)object)->value;
+    return object->capacity;
 }
 
-float func_001F20B0(void* object)
+float float_track_get_zero_value(void* object)
 {
     return 0.0f;
 }
@@ -2084,19 +2000,19 @@ float func_001F20B0(void* object)
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass1717A0::func_001F20C0(float key, float* output)
+void BootFloatTrackBase::evaluate(float key, float* output)
 {
-    *output = func_slot80(key);
+    *output = sample(key);
 }
 
-u32 func_001F20F0(void* object)
+BootFloatStateKey* float_track_get_keys(const BootFloatTrackState* object)
 {
-    return ((FieldU32At004*)object)->value;
+    return object->entries;
 }
 
-void func_001F2100(BootClass1717A0* track)
+void float_track_free_keys(BootFloatTrackBase* track)
 {
-    if (!track->state.unk13_1)
+    if (!track->state.external_keys)
     {
         if (track->unk04)
         {
@@ -2108,14 +2024,14 @@ void func_001F2100(BootClass1717A0* track)
 }
 
 /** @brief Release the keyframe storage. */
-BootClass171710::~BootClass171710()
+BootQuaternionTrackBase::~BootQuaternionTrackBase()
 {
-    func_001F21C0(this);
+    quaternion_track_free_keys(this);
 }
 
-void func_001F21C0(BootClass171710* track)
+void quaternion_track_free_keys(BootQuaternionTrackBase* track)
 {
-    if (!track->state.unk13_1)
+    if (!track->state.external_keys)
     {
         if (track->unk04)
         {
@@ -2134,7 +2050,7 @@ BootClass171680::~BootClass171680()
 
 void func_001F2280(BootClass171680* track)
 {
-    if (!track->state.unk13_1)
+    if (!track->state.external_keys)
     {
         if (track->unk04)
         {
@@ -2150,7 +2066,7 @@ void func_001F2280(BootClass171680* track)
  * @param pool Pool that owns the track.
  * @param track Track to release.
  */
-void func_001F22D0(BootTrackPool<BootClass1714D0>* pool, BootClass1714D0* track)
+void vector_track_pool_free(BootTrackPool<BootPooledVectorTrack>* pool, BootPooledVectorTrack* track)
 {
     pool->free(track);
 }
@@ -2160,7 +2076,7 @@ void func_001F22D0(BootTrackPool<BootClass1714D0>* pool, BootClass1714D0* track)
  * @param pool Pool that owns the track.
  * @param track Track to release.
  */
-void func_001F2320(BootTrackPool<BootClass1711D0>* pool, BootClass1711D0* track)
+void vector_curve_track_pool_free(BootTrackPool<BootPooledVectorCurveTrack>* pool, BootPooledVectorCurveTrack* track)
 {
     pool->free(track);
 }
@@ -2169,17 +2085,17 @@ void func_001F2320(BootTrackPool<BootClass1711D0>* pool, BootClass1711D0* track)
 BootClass171680::BootClass171680()
 {
     state.pooled = false;
-    func_001F58C0();
+    reset_state();
 }
 
 /** @brief Clear the pooled flag and reset the sequence. */
-BootClass171710::BootClass171710()
+BootQuaternionTrackBase::BootQuaternionTrackBase()
 {
     state.pooled = false;
-    func_001F52D0();
+    reset_state();
 }
 
-float func_001F2450(BootState1F1FC0* object, float key)
+float float_track_wrap_key(BootFloatTrackState* object, float key)
 {
     s32 last_index = object->count - 1;
     float first = object->entries[0].key;
@@ -2202,7 +2118,7 @@ float func_001F2450(BootState1F1FC0* object, float key)
     return key;
 }
 
-float func_001F24E0(BootState1F1FC0* object, float key)
+float float_track_find_key_value(BootFloatTrackState* object, float key)
 {
     s32 index;
 
@@ -2210,7 +2126,7 @@ float func_001F24E0(BootState1F1FC0* object, float key)
     {
         if (key == object->entries[index].key)
         {
-            BootFloatEntry1F33B0* entry = object->entries + index;
+            BootFloatStateKey* entry = object->entries + index;
             return entry->value;
         }
     }
@@ -2218,7 +2134,7 @@ float func_001F24E0(BootState1F1FC0* object, float key)
     return 0.0f;
 }
 
-float func_001F2540(BootState1F1FC0* object)
+float float_track_get_key_span(BootFloatTrackState* object)
 {
     s32 last_index;
 
@@ -2231,7 +2147,7 @@ float func_001F2540(BootState1F1FC0* object)
     return object->entries[last_index].key - object->entries[0].key;
 }
 
-s32 func_001F2590(BootState1F1FC0* object, float key)
+s32 float_track_has_key(BootFloatTrackState* object, float key)
 {
     s32 index;
 
@@ -2247,52 +2163,52 @@ s32 func_001F2590(BootState1F1FC0* object, float key)
 }
 
 /** @brief Forward a keyframe with a key to slot 0x74. */
-void func_001F25E0(BootClass1717A0* object, const float* value, float key)
+void float_track_set_single_key(BootFloatTrackBase* object, const float* value, float key)
 {
-    object->func_001F2610(value, key);
+    object->on_set_single_key(value, key);
 }
 
-void func_001F2610(void* object)
+void float_track_on_set_single_key(void* object)
 {
 }
 
 /** @brief Forward an indexed keyframe with a key to slot 0x70. */
-s32 func_001F2620(BootClass1717A0* object, s32 index, float key, const float* value)
+s32 float_track_insert_key(BootFloatTrackBase* object, s32 index, float key, const float* value)
 {
-    return object->func_001F2650(index, key, value);
+    return object->on_insert_key(index, key, value);
 }
 
-s32 func_001F2650(void* object)
+s32 float_track_on_insert_key(void* object)
 {
     return 0;
 }
 
 /** @brief Forward an indexed keyframe with a key to slot 0x6C. */
-s32 func_001F2660(BootClass1717A0* object, s32 index, float key, const float* value)
+s32 float_track_replace_key(BootFloatTrackBase* object, s32 index, float key, const float* value)
 {
-    return object->func_001F2690(index, key, value);
+    return object->on_replace_key(index, key, value);
 }
 
-s32 func_001F2690(void* object)
+s32 float_track_on_replace_key(void* object)
 {
     return 0;
 }
 
 /** @brief Forward a keyframe with a key to slot 0x68. */
-s32 func_001F26A0(BootClass1717A0* object, const float* value, float key)
+s32 float_track_append_key(BootFloatTrackBase* object, const float* value, float key)
 {
-    return object->func_001F26D0(value, key);
+    return object->on_append_key(value, key);
 }
 
-s32 func_001F26D0(void* object)
+s32 float_track_on_append_key(void* object)
 {
     return 0;
 }
 
-void func_001F26E0(BootState1F1FC0* object, s32 count, BootFloatEntry1F33B0* entries)
+void float_track_bind_keys(BootFloatTrackState* object, s32 count, BootFloatStateKey* entries)
 {
     s32 last_index = count - 1;
-    object->unk23_bit1 = 1;
+    object->external_keys = 1;
     object->entries = entries;
     object->capacity = count;
     object->count = count;
@@ -2300,51 +2216,51 @@ void func_001F26E0(BootState1F1FC0* object, s32 count, BootFloatEntry1F33B0* ent
 }
 
 /** @brief Clear the pooled flag and reset the sequence. */
-BootClass1717A0::BootClass1717A0()
+BootFloatTrackBase::BootFloatTrackBase()
 {
     state.pooled = false;
-    func_001F1E90();
+    reset_state();
 }
 
 /** @brief Forward to slot 0x74. */
-void func_001F27A0(BootClass171830* object, const FieldVec4A* value, float key)
+void vector_track_set_single_key(BootVectorTrackBase* object, const FieldVec4A* value, float key)
 {
-    object->func_001F27D0(value, key);
+    object->on_set_single_key(value, key);
 }
 
-void func_001F27D0(void* object)
+void vector_track_on_set_single_key(void* object)
 {
 }
 
 /** @brief Forward to slot 0x70. */
-s32 func_001F27E0(BootClass171830* object, s32 index, float key, const FieldVec4A* value)
+s32 vector_track_insert_key(BootVectorTrackBase* object, s32 index, float key, const FieldVec4A* value)
 {
-    return object->func_001F2810(index, key, value);
+    return object->on_insert_key(index, key, value);
 }
 
-s32 func_001F2810(void* object)
+s32 vector_track_on_insert_key(void* object)
 {
     return 0;
 }
 
 /** @brief Forward to slot 0x6C. */
-s32 func_001F2820(BootClass171830* object, s32 index, float key, const FieldVec4A* value)
+s32 vector_track_replace_key(BootVectorTrackBase* object, s32 index, float key, const FieldVec4A* value)
 {
-    return object->func_001F2850(index, key, value);
+    return object->on_replace_key(index, key, value);
 }
 
-s32 func_001F2850(void* object)
+s32 vector_track_on_replace_key(void* object)
 {
     return 0;
 }
 
 /** @brief Forward to slot 0x68. */
-s32 func_001F2860(BootClass171830* object, const FieldVec4A* value, float key)
+s32 vector_track_append_key(BootVectorTrackBase* object, const FieldVec4A* value, float key)
 {
-    return object->func_001F2890(value, key);
+    return object->on_append_key(value, key);
 }
 
-s32 func_001F2890(void* object)
+s32 vector_track_on_append_key(void* object)
 {
     return 0;
 }
@@ -2353,24 +2269,24 @@ s32 func_001F2890(void* object)
  * @brief Allocate storage for the requested keyframe count.
  * @param count Requested keyframe count.
  */
-void BootClass171830::func_001F28A0(s32 count)
+void BootVectorTrackBase::allocate_keys(s32 count)
 {
-    state.unk13_1 = 0;
-    delete[] static_cast<BootTrackKey171830*>(unk04);
-    unk04 = new (0) BootTrackKey171830[count];
-    state.unk0a = count;
+    state.external_keys = 0;
+    delete[] static_cast<BootVectorTrackKey*>(unk04);
+    unk04 = new (0) BootVectorTrackKey[count];
+    state.key_capacity = count;
 
     if (!unk04)
     {
-        state.unk0a = 0;
+        state.key_capacity = 0;
     }
 }
 
 /** @brief Clear the pooled flag and reset the sequence. */
-BootClass171830::BootClass171830()
+BootVectorTrackBase::BootVectorTrackBase()
 {
     state.pooled = false;
-    func_001F19F0();
+    reset_state();
 }
 
 float func_001F29D0(BootState1F1580* object, float key)
@@ -2453,7 +2369,7 @@ s32 func_001F2B10(BootState1F1580* object, float key)
 /** @brief Forward to slot 0x74. */
 void func_001F2B60(BootClass1718C0* object, const FieldVec4A* value, float key)
 {
-    object->func_001F2B90(value, key);
+    object->on_set_single_key(value, key);
 }
 
 void func_001F2B90(void* object)
@@ -2463,7 +2379,7 @@ void func_001F2B90(void* object)
 /** @brief Forward to slot 0x70. */
 s32 func_001F2BA0(BootClass1718C0* object, s32 index, float key, const FieldVec4A* value)
 {
-    return object->func_001F2BD0(index, key, value);
+    return object->on_insert_key(index, key, value);
 }
 
 s32 func_001F2BD0(void* object)
@@ -2474,7 +2390,7 @@ s32 func_001F2BD0(void* object)
 /** @brief Forward to slot 0x6C. */
 s32 func_001F2BE0(BootClass1718C0* object, s32 index, float key, const FieldVec4A* value)
 {
-    return object->func_001F2C10(index, key, value);
+    return object->on_replace_key(index, key, value);
 }
 
 s32 func_001F2C10(void* object)
@@ -2485,7 +2401,7 @@ s32 func_001F2C10(void* object)
 /** @brief Forward to slot 0x68. */
 s32 func_001F2C20(BootClass1718C0* object, const FieldVec4A* value, float key)
 {
-    return object->func_001F2C50(value, key);
+    return object->on_append_key(value, key);
 }
 
 s32 func_001F2C50(void* object)
@@ -2497,7 +2413,7 @@ void func_001F2C60(BootState1F1580* object, s32 count, BootKeyEntry32* entries)
 {
     s32 last_index = count - 1;
     BootKeyEntry32* last;
-    object->unk43_bit1 = 1;
+    object->external_keys = 1;
     object->entries = entries;
     object->capacity = count;
     object->count = count;
@@ -2509,16 +2425,16 @@ void func_001F2C60(BootState1F1580* object, s32 count, BootKeyEntry32* entries)
  * @brief Allocate storage for the requested keyframe count.
  * @param count Requested keyframe count.
  */
-void BootClass1718C0::func_001F2CB0(s32 count)
+void BootClass1718C0::allocate_keys(s32 count)
 {
-    state.unk13_1 = 0;
+    state.external_keys = 0;
     delete[] static_cast<BootTrackKey1718C0*>(unk04);
     unk04 = new (0) BootTrackKey1718C0[count];
-    state.unk0a = count;
+    state.key_capacity = count;
 
     if (!unk04)
     {
-        state.unk0a = 0;
+        state.key_capacity = 0;
     }
 }
 
@@ -2530,14 +2446,14 @@ BootTrackKey1718C0::BootTrackKey1718C0()
 BootClass1718C0::BootClass1718C0()
 {
     state.pooled = false;
-    func_001F14F0();
+    reset_state();
 }
 
-float func_001F2DE0(BootState1F12B0* object, float key)
+float float_curve_track_wrap_key(BootFloatCurveTrackState* object, float key)
 {
     s32 last_index = object->count - 1;
-    BootKeyEntry16* entries = object->entries;
-    BootKeyEntry16* last = entries + last_index;
+    BootFloatCurveStateKey* entries = object->entries;
+    BootFloatCurveStateKey* last = entries + last_index;
     float first = entries[0].key;
     float span = last->key - first;
     float quotient = (key - first) / span;
@@ -2558,7 +2474,7 @@ float func_001F2DE0(BootState1F12B0* object, float key)
     return key;
 }
 
-float func_001F2E70(BootState1F12B0* object, float key)
+float float_curve_track_find_key_value(BootFloatCurveTrackState* object, float key)
 {
     s32 index;
 
@@ -2566,7 +2482,7 @@ float func_001F2E70(BootState1F12B0* object, float key)
     {
         if (key == object->entries[index].key)
         {
-            BootKeyEntry16* entry = object->entries + index;
+            BootFloatCurveStateKey* entry = object->entries + index;
             return entry->value;
         }
     }
@@ -2574,10 +2490,10 @@ float func_001F2E70(BootState1F12B0* object, float key)
     return 0.0f;
 }
 
-float func_001F2ED0(BootState1F12B0* object)
+float float_curve_track_get_key_span(BootFloatCurveTrackState* object)
 {
     s32 last_index;
-    BootKeyEntry16* last_entry;
+    BootFloatCurveStateKey* last_entry;
 
     if (object->count < 2)
     {
@@ -2589,7 +2505,7 @@ float func_001F2ED0(BootState1F12B0* object)
     return last_entry->key - object->entries[0].key;
 }
 
-s32 func_001F2F20(BootState1F12B0* object, float key)
+s32 float_curve_track_has_key(BootFloatCurveTrackState* object, float key)
 {
     s32 index;
 
@@ -2604,11 +2520,11 @@ s32 func_001F2F20(BootState1F12B0* object, float key)
     return 0;
 }
 
-void func_001F2F70(BootState1F12B0* object, s32 count, BootKeyEntry16* entries)
+void float_curve_track_bind_keys(BootFloatCurveTrackState* object, s32 count, BootFloatCurveStateKey* entries)
 {
     s32 last_index = count - 1;
-    BootKeyEntry16* last;
-    object->unk2B_bit1 = 1;
+    BootFloatCurveStateKey* last;
+    object->external_keys = 1;
     object->entries = entries;
     object->capacity = count;
     object->count = count;
@@ -2617,41 +2533,41 @@ void func_001F2F70(BootState1F12B0* object, s32 count, BootKeyEntry16* entries)
 }
 
 /** @brief Clear the pooled flag and reset the sequence. */
-BootClass171950::BootClass171950()
+BootFloatCurveTrackBase::BootFloatCurveTrackBase()
 {
     state.pooled = false;
-    func_001F1180();
+    reset_state();
 }
 
 /**
  * @brief Allocate storage for the requested keyframe count.
  * @param count Requested keyframe count.
  */
-void BootClass1719E0::func_001F3030(s32 count)
+void BootVectorCurveTrackBase::allocate_keys(s32 count)
 {
-    state.unk13_1 = 0;
+    state.external_keys = 0;
     delete[] static_cast<BootTrackKey1719E0*>(unk04);
     unk04 = new (0) BootTrackKey1719E0[count];
-    state.unk0a = count;
+    state.key_capacity = count;
 
     if (!unk04)
     {
-        state.unk0a = 0;
+        state.key_capacity = 0;
     }
 }
 
 /** @brief Clear the pooled flag and reset the sequence. */
-BootClass1719E0::BootClass1719E0()
+BootVectorCurveTrackBase::BootVectorCurveTrackBase()
 {
     state.pooled = false;
-    func_001F0C80();
+    reset_state();
 }
 
 /** @brief Clear the pooled flag and reset the sequence. */
 BootClass171A70::BootClass171A70()
 {
     state.pooled = false;
-    func_001F4980();
+    reset_state();
 }
 
 /**
@@ -2659,14 +2575,14 @@ BootClass171A70::BootClass171A70()
  * @param value Keyframe value.
  * @param key Sort key.
  */
-void BootClass171560::func_001F2610(const float* value, float key)
+void BootFloatKeyTrack::on_set_single_key(const float* value, float key)
 {
-    func_001F1FC0(6);
+    set_before_mode(6);
     unk08.value = *value;
     unk08.key = key;
 }
 
-s32 func_001F3230(BootState1F1FC0* object, s32 index, float* key, float* value)
+s32 float_track_read_entry(BootFloatTrackState* object, s32 index, float* key, float* value)
 {
     if (object->entries == 0)
     {
@@ -2691,7 +2607,7 @@ s32 func_001F3230(BootState1F1FC0* object, s32 index, float* key, float* value)
     return 1;
 }
 
-s32 func_001F32B0(BootState1F1FC0* object, s32 index, const float* value, float key)
+s32 float_track_insert_entry(BootFloatTrackState* object, s32 index, const float* value, float key)
 {
     s32 cursor;
 
@@ -2712,8 +2628,8 @@ s32 func_001F32B0(BootState1F1FC0* object, s32 index, const float* value, float 
 
     for (cursor = object->count; cursor > index; cursor--)
     {
-        BootFloatEntry1F33B0* destination = &object->entries[cursor];
-        BootFloatEntry1F33B0* source = &object->entries[cursor - 1];
+        BootFloatStateKey* destination = &object->entries[cursor];
+        BootFloatStateKey* source = &object->entries[cursor - 1];
         destination->key = source->key;
         destination->value = source->value;
     }
@@ -2727,12 +2643,12 @@ s32 func_001F32B0(BootState1F1FC0* object, s32 index, const float* value, float 
     }
 
     object->unk1E = -1;
-    object->unk20 = -1;
+    object->cached_index = -1;
     object->count++;
     return 1;
 }
 
-s32 func_001F33B0(BootState1F1FC0* object, s32 index, const float* value, float key)
+s32 float_track_replace_entry(BootFloatTrackState* object, s32 index, const float* value, float key)
 {
     if (object->entries == 0)
     {
@@ -2753,11 +2669,11 @@ s32 func_001F33B0(BootState1F1FC0* object, s32 index, const float* value, float 
     }
 
     object->unk1E = -1;
-    object->unk20 = -1;
+    object->cached_index = -1;
     return 1;
 }
 
-s32 func_001F3440(BootState1F1FC0* object, const float* value, float key)
+s32 float_track_append_entry(BootFloatTrackState* object, const float* value, float key)
 {
     if (object->entries == 0)
     {
@@ -2773,7 +2689,7 @@ s32 func_001F3440(BootState1F1FC0* object, const float* value, float key)
     object->entries[object->count].key = key;
     object->span = key - object->entries[0].key;
     object->unk1E = -1;
-    object->unk20 = -1;
+    object->cached_index = -1;
     object->count++;
     return 1;
 }
@@ -2783,9 +2699,9 @@ s32 func_001F3440(BootState1F1FC0* object, const float* value, float key)
  * @param value Keyframe value.
  * @param key Key, stored in the value's fourth component.
  */
-void BootClass1713B0::func_001F27D0(const FieldVec4A* value, float key)
+void BootVectorKeyTrack::on_set_single_key(const FieldVec4A* value, float key)
 {
-    func_001F1AD0(6);
+    set_before_mode(6);
     unk10 = *value;
     unk10.w = key;
 }
@@ -2797,7 +2713,7 @@ void BootClass1713B0::func_001F27D0(const FieldVec4A* value, float key)
  * @param value Keyframe value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass1713B0::func_001F2810(s32 index, float key, const FieldVec4A* value)
+s32 BootVectorKeyTrack::on_insert_key(s32 index, float key, const FieldVec4A* value)
 {
     s32 count;
     s32 i;
@@ -2807,34 +2723,34 @@ s32 BootClass1713B0::func_001F2810(s32 index, float key, const FieldVec4A* value
         return 0;
     }
 
-    count = state.unk08;
+    count = state.key_count;
 
     if (index >= count)
     {
         return 0;
     }
 
-    if (count >= state.unk0a)
+    if (count >= state.key_capacity)
     {
         return 0;
     }
 
     for (i = count; i > index; i--)
     {
-        static_cast<BootTrackKey171830*>(unk04)[i] = static_cast<BootTrackKey171830*>(unk04)[i - 1];
+        static_cast<BootVectorTrackKey*>(unk04)[i] = static_cast<BootVectorTrackKey*>(unk04)[i - 1];
     }
 
-    static_cast<BootTrackKey171830*>(unk04)[index].value = *value;
-    static_cast<BootTrackKey171830*>(unk04)[index].value.w = key;
+    static_cast<BootVectorTrackKey*>(unk04)[index].value = *value;
+    static_cast<BootVectorTrackKey*>(unk04)[index].value.w = key;
 
-    if (index == state.unk08 - 1)
+    if (index == state.key_count - 1)
     {
-        state.span = key - static_cast<BootTrackKey171830*>(unk04)[0].value.w;
+        state.span = key - static_cast<BootVectorTrackKey*>(unk04)[0].value.w;
     }
 
     state.unk0e = -1;
-    state.unk10 = -1;
-    state.unk08++;
+    state.cached_index = -1;
+    state.key_count++;
     return 1;
 }
 
@@ -2843,9 +2759,9 @@ s32 BootClass1713B0::func_001F2810(s32 index, float key, const FieldVec4A* value
  * @param value Keyframe value.
  * @param key Sort key.
  */
-void BootClass171320::func_001F2B90(const FieldVec4A* value, float key)
+void BootClass171320::on_set_single_key(const FieldVec4A* value, float key)
 {
-    func_001F1580(6);
+    set_before_mode(6);
     unk20 = *value;
     unk10 = key;
 }
@@ -2859,14 +2775,14 @@ void BootClass171320::func_001F2B90(const FieldVec4A* value, float key)
  * @param second Unused; this track has no auxiliary vectors.
  * @return One when the index is within the capacity, otherwise zero.
  */
-s32 BootClass171320::func_001EED60(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const
+s32 BootClass171320::read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const
 {
     if (unk04 == 0)
     {
         return 0;
     }
 
-    if (index >= state.unk0a)
+    if (index >= state.key_capacity)
     {
         return 0;
     }
@@ -2891,7 +2807,7 @@ s32 BootClass171320::func_001EED60(s32 index, float* key, FieldVec4B* value, Fie
  * @param value Keyframe value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass171320::func_001F2BD0(s32 index, float key, const FieldVec4A* value)
+s32 BootClass171320::on_insert_key(s32 index, float key, const FieldVec4A* value)
 {
     s32 count;
     s32 i;
@@ -2901,14 +2817,14 @@ s32 BootClass171320::func_001F2BD0(s32 index, float key, const FieldVec4A* value
         return 0;
     }
 
-    count = state.unk08;
+    count = state.key_count;
 
     if (index >= count)
     {
         return 0;
     }
 
-    if (count >= state.unk0a)
+    if (count >= state.key_capacity)
     {
         return 0;
     }
@@ -2921,14 +2837,14 @@ s32 BootClass171320::func_001F2BD0(s32 index, float key, const FieldVec4A* value
     static_cast<BootTrackKey1718C0*>(unk04)[index].value = *value;
     static_cast<BootTrackKey1718C0*>(unk04)[index].key = key;
 
-    if (index == state.unk08 - 1)
+    if (index == state.key_count - 1)
     {
         state.span = key - static_cast<BootTrackKey1718C0*>(unk04)[0].key;
     }
 
     state.unk0e = -1;
-    state.unk10 = -1;
-    state.unk08++;
+    state.cached_index = -1;
+    state.key_count++;
     return 1;
 }
 
@@ -2939,14 +2855,14 @@ s32 BootClass171320::func_001F2BD0(s32 index, float key, const FieldVec4A* value
  * @param value Keyframe value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass171320::func_001F2C10(s32 index, float key, const FieldVec4A* value)
+s32 BootClass171320::on_replace_key(s32 index, float key, const FieldVec4A* value)
 {
     if (unk04 == 0)
     {
         return 0;
     }
 
-    if (index >= state.unk0a)
+    if (index >= state.key_capacity)
     {
         return 0;
     }
@@ -2954,13 +2870,13 @@ s32 BootClass171320::func_001F2C10(s32 index, float key, const FieldVec4A* value
     static_cast<BootTrackKey1718C0*>(unk04)[index].value = *value;
     static_cast<BootTrackKey1718C0*>(unk04)[index].key = key;
 
-    if (index == state.unk08 - 1)
+    if (index == state.key_count - 1)
     {
         state.span = key - static_cast<BootTrackKey1718C0*>(unk04)[0].key;
     }
 
     state.unk0e = -1;
-    state.unk10 = -1;
+    state.cached_index = -1;
     return 1;
 }
 
@@ -2970,33 +2886,33 @@ s32 BootClass171320::func_001F2C10(s32 index, float key, const FieldVec4A* value
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass171320::func_001F2C50(const FieldVec4A* value, float key)
+s32 BootClass171320::on_append_key(const FieldVec4A* value, float key)
 {
     if (unk04 == 0)
     {
         return 0;
     }
 
-    if (state.unk08 >= state.unk0a)
+    if (state.key_count >= state.key_capacity)
     {
         return 0;
     }
 
-    static_cast<BootTrackKey1718C0*>(unk04)[state.unk08].value = *value;
-    static_cast<BootTrackKey1718C0*>(unk04)[state.unk08].key = key;
+    static_cast<BootTrackKey1718C0*>(unk04)[state.key_count].value = *value;
+    static_cast<BootTrackKey1718C0*>(unk04)[state.key_count].key = key;
     state.span = key - static_cast<BootTrackKey1718C0*>(unk04)[0].key;
     state.unk0e = -1;
-    state.unk10 = -1;
-    state.unk08++;
+    state.cached_index = -1;
+    state.key_count++;
     return 1;
 }
 
-/** @brief Reset to a single zero keyframe at key zero, then set the lower mode to one. */
-void BootClass1715F0::func_001EED80()
+/** @brief Reset to a single zero keyframe at key zero, then set before_mode to one. */
+void BootFloatTrack::reset_keys()
 {
     float zero = 0.0f;
-    func_001F2610(&zero, 0.0f);
-    func_001F1FC0(1);
+    on_set_single_key(&zero, 0.0f);
+    set_before_mode(1);
 }
 
 /**
@@ -3004,7 +2920,7 @@ void BootClass1715F0::func_001EED80()
  * @param key Evaluation key.
  * @return Evaluated value.
  */
-float BootClass1715F0::func_slot80(float key)
+float BootFloatTrack::sample(float key)
 {
     s32 lower;
     s32 upper;
@@ -3012,22 +2928,22 @@ float BootClass1715F0::func_slot80(float key)
     float result;
     u8 extrapolate;
 
-    if (!unk04 || !state.unk08)
+    if (!unk04 || !state.key_count)
     {
         return 0.0f;
     }
 
-    if (state.unk0c >= state.unk0a)
+    if (state.unk0c >= state.key_capacity)
     {
         state.unk0c = 0;
     }
 
-    if (state.unk08 == 1 && (!(key < unk04[0].key) || state.unk12_0_3 != 6))
+    if (state.key_count == 1 && (!(key < unk04[0].key) || state.before_mode != 6))
     {
         return unk04[0].value;
     }
 
-    if (key < unk04[0].key && state.unk12_0_3 == 6)
+    if (key < unk04[0].key && state.before_mode == 6)
     {
         upper = 0;
         wrapped_key = key;
@@ -3035,19 +2951,19 @@ float BootClass1715F0::func_slot80(float key)
     }
     else
     {
-        wrapped_key = func_001F5090(reinterpret_cast<BootState1F1FC0*>(this), key);
+        wrapped_key = float_track_update_cycle_count(reinterpret_cast<BootFloatTrackState*>(this), key);
 
-        if (state.unk12_0_3 == 0 && state.unk00 < 0)
+        if (state.before_mode == 0 && state.cycle_count < 0)
         {
             return unk04[0].value;
         }
 
-        if (state.unk12_4_7 == 0 && state.unk00 > 0)
+        if (state.after_mode == 0 && state.cycle_count > 0)
         {
-            return unk04[state.unk08 - 1].value;
+            return unk04[state.key_count - 1].value;
         }
 
-        extrapolate = func_001F5170(this, wrapped_key, &lower, &upper);
+        extrapolate = float_track_find_surrounding_keys(this, wrapped_key, &lower, &upper);
 
         if (extrapolate)
         {
@@ -3055,42 +2971,42 @@ float BootClass1715F0::func_slot80(float key)
         }
     }
 
-    if (state.unk0e != lower || state.unk10 != upper)
+    if (state.unk0e != lower || state.cached_index != upper)
     {
         state.unk0e = lower;
-        state.unk10 = upper;
-        BootTrackKey1717A0* first = lower >= 0 ? unk04 + lower : &unk08;
+        state.cached_index = upper;
+        BootFloatTrackKey* first = lower >= 0 ? unk04 + lower : &unk08;
         unk24.unk04 = 0;
         unk24.unk06 = 0;
         unk24.unk08 = 0;
         unk24.unk0C = 0;
-        unk24.func_slot14(first->key, first->value);
-        s32 last = state.unk08 - 1;
+        unk24.add_sample(first->key, first->value);
+        s32 last = state.key_count - 1;
         // TODO: My guess; copying upper into its own local is the only way I found that matches.
         s32 upper_index = upper;
 
-        if (upper_index == last && ((!(key < unk04[0].key) && state.unk12_4_7 == 2) || (key < unk04[0].key && state.unk12_0_3 == 2)))
+        if (upper_index == last && ((!(key < unk04[0].key) && state.after_mode == 2) || (key < unk04[0].key && state.before_mode == 2)))
         {
-            BootTrackKey1717A0* entries = unk04;
-            unk24.func_slot14(entries[upper_index].key, entries[0].value);
+            BootFloatTrackKey* entries = unk04;
+            unk24.add_sample(entries[upper_index].key, entries[0].value);
         }
         else if (lower < upper_index)
         {
-            BootTrackKey1717A0* second = unk04 + upper_index;
-            unk24.func_slot14(second->key, second->value);
+            BootFloatTrackKey* second = unk04 + upper_index;
+            unk24.add_sample(second->key, second->value);
         }
         else
         {
-            unk24.func_slot14(unk04[last].key, unk04[upper_index].value);
+            unk24.add_sample(unk04[last].key, unk04[upper_index].value);
         }
     }
 
-    result = unk24.func_slot0c(wrapped_key);
+    result = unk24.sample(wrapped_key);
 
-    if ((state.unk12_0_3 == 5 && state.unk00 < 0) || (state.unk12_4_7 == 5 && state.unk00 > 0))
+    if ((state.before_mode == 5 && state.cycle_count < 0) || (state.after_mode == 5 && state.cycle_count > 0))
     {
-        float delta = unk04[state.unk08 - 1].value - unk04[0].value;
-        result += delta * state.unk00;
+        float delta = unk04[state.key_count - 1].value - unk04[0].value;
+        result += delta * state.cycle_count;
     }
 
     unk4c = (result - unk48) / D_001B6688;
@@ -3098,15 +3014,15 @@ float BootClass1715F0::func_slot80(float key)
     return result;
 }
 
-/** @brief Reset to a single zero keyframe at key zero, then set the lower mode to one. */
-void BootClass171440::func_001EED80()
+/** @brief Reset to a single zero keyframe at key zero, then set before_mode to one. */
+void BootVectorTrack::reset_keys()
 {
     FieldVec4A zero(0.0f, 0.0f, 0.0f, 0.0f);
-    func_001F27D0(&zero, 0.0f);
-    func_001F1AD0(1);
+    on_set_single_key(&zero, 0.0f);
+    set_before_mode(1);
 }
 
-s32 func_001F3D80(BootState1F12B0* object, s32 index, float* key, float* first, float* second, float* third)
+s32 float_curve_track_read_entry(BootFloatCurveTrackState* object, s32 index, float* key, float* first, float* second, float* third)
 {
     if (!object->entries)
     {
@@ -3148,16 +3064,16 @@ s32 func_001F3D80(BootState1F12B0* object, s32 index, float* key, float* first, 
  * @param z Third component.
  * @param key Sort value.
  */
-void BootClass171280::func_001F3E40(const float* x, const float* y, const float* z, float key)
+void BootFloatCurveTrack::set_single_curve_key(const float* x, const float* y, const float* z, float key)
 {
-    func_001F12B0(6);
+    set_before_mode(6);
     unk08.unk04 = *x;
     unk08.unk08 = *y;
     unk08.unk0c = *z;
     unk08.unk00 = key;
 }
 
-s32 func_001F3EC0(BootState1F12B0* object, s32 index, const float* first, const float* second, const float* third, float key)
+s32 float_curve_track_insert_curve_key(BootFloatCurveTrackState* object, s32 index, const float* first, const float* second, const float* third, float key)
 {
     s32 cursor;
 
@@ -3178,8 +3094,8 @@ s32 func_001F3EC0(BootState1F12B0* object, s32 index, const float* first, const 
 
     for (cursor = object->count; cursor > index; cursor--)
     {
-        BootKeyEntry16* destination = &object->entries[cursor];
-        BootKeyEntry16* source = &object->entries[cursor - 1];
+        BootFloatCurveStateKey* destination = &object->entries[cursor];
+        BootFloatCurveStateKey* source = &object->entries[cursor - 1];
         destination->key = source->key;
         destination->value = source->value;
         destination->second = source->second;
@@ -3200,7 +3116,7 @@ s32 func_001F3EC0(BootState1F12B0* object, s32 index, const float* first, const 
     return 1;
 }
 
-s32 func_001F3FE0(BootState1F12B0* object, s32 index, const float* first, const float* second, const float* third, float key)
+s32 float_curve_track_replace_curve_key(BootFloatCurveTrackState* object, s32 index, const float* first, const float* second, const float* third, float key)
 {
     if (!object->entries)
     {
@@ -3225,7 +3141,7 @@ s32 func_001F3FE0(BootState1F12B0* object, s32 index, const float* first, const 
     return 1;
 }
 
-s32 func_001F4080(BootState1F12B0* object, const float* first, const float* second, const float* third, float key)
+s32 float_curve_track_append_entry(BootFloatCurveTrackState* object, const float* first, const float* second, const float* third, float key)
 {
     if (!object->entries)
     {
@@ -3251,7 +3167,7 @@ s32 func_001F4080(BootState1F12B0* object, const float* first, const float* seco
  * @param key Sort value.
  * @return Evaluated value; updates the cached value and its scaled change.
  */
-float BootClass171280::func_slot80(float key)
+float BootFloatCurveTrack::sample(float key)
 {
     s32 lower;
     s32 upper;
@@ -3259,24 +3175,24 @@ float BootClass171280::func_slot80(float key)
     u8 extrapolate;
     float result;
 
-    if (!unk04 || !state.unk08)
+    if (!unk04 || !state.key_count)
     {
         return 0.0f;
     }
 
-    if (state.unk0c >= state.unk0a)
+    if (state.unk0c >= state.key_capacity)
     {
         state.unk0c = 0;
     }
 
-    if (state.unk08 == 1 && (!(key < unk04[0].unk00) || state.unk12_0_3 != 6))
+    if (state.key_count == 1 && (!(key < unk04[0].unk00) || state.before_mode != 6))
     {
         return unk04[0].unk04;
     }
 
     extrapolate = 0;
 
-    if (key < unk04[0].unk00 && state.unk12_0_3 == 6)
+    if (key < unk04[0].unk00 && state.before_mode == 6)
     {
         upper = 0;
         wrapped_key = key;
@@ -3284,22 +3200,22 @@ float BootClass171280::func_slot80(float key)
     }
     else
     {
-        wrapped_key = func_001F4D90(reinterpret_cast<BootState1F12B0*>(this), key);
+        wrapped_key = float_curve_track_update_cycle_count(reinterpret_cast<BootFloatCurveTrackState*>(this), key);
 
-        if (state.unk00)
+        if (state.cycle_count)
         {
-            if (state.unk12_0_3 == 0 && state.unk00 < 0)
+            if (state.before_mode == 0 && state.cycle_count < 0)
             {
                 return unk04[0].unk04;
             }
 
-            if (state.unk12_4_7 == 0 && state.unk00 > 0)
+            if (state.after_mode == 0 && state.cycle_count > 0)
             {
-                return unk04[state.unk08 - 1].unk04;
+                return unk04[state.key_count - 1].unk04;
             }
         }
 
-        extrapolate = func_001F4E70(this, wrapped_key, &lower, &upper);
+        extrapolate = float_curve_track_find_surrounding_keys(this, wrapped_key, &lower, &upper);
 
         if (extrapolate)
         {
@@ -3309,44 +3225,44 @@ float BootClass171280::func_slot80(float key)
 
     if (!extrapolate)
     {
-        if (state.unk0e != lower || state.unk10 != upper)
+        if (state.unk0e != lower || state.cached_index != upper)
         {
             state.unk0e = lower;
-            state.unk10 = upper;
-            BootTrackKey171950* first = lower >= 0 ? unk04 + lower : &unk08;
-            s32 last = state.unk08 - 1;
+            state.cached_index = upper;
+            BootFloatCurveTrackKey* first = lower >= 0 ? unk04 + lower : &unk08;
+            s32 last = state.key_count - 1;
 
-            if (upper == last && ((!(key < unk04[0].unk00) && state.unk12_4_7 == 2) || (key < unk04[0].unk00 && state.unk12_0_3 == 2)))
+            if (upper == last && ((!(key < unk04[0].unk00) && state.after_mode == 2) || (key < unk04[0].unk00 && state.before_mode == 2)))
             {
-                BootTrackKey171950* entries = unk04;
-                unk2C.func_001EFE50(&first->unk04, &first->unk0c, &entries[0].unk04, &entries[0].unk08, first->unk00, entries[upper].unk00);
+                BootFloatCurveTrackKey* entries = unk04;
+                unk2C.set_endpoints(&first->unk04, &first->unk0c, &entries[0].unk04, &entries[0].unk08, first->unk00, entries[upper].unk00);
             }
             else if (lower < upper)
             {
-                BootTrackKey171950* second = unk04 + upper;
-                unk2C.func_001EFE50(&first->unk04, &first->unk0c, &second->unk04, &second->unk08, first->unk00, second->unk00);
+                BootFloatCurveTrackKey* second = unk04 + upper;
+                unk2C.set_endpoints(&first->unk04, &first->unk0c, &second->unk04, &second->unk08, first->unk00, second->unk00);
             }
             else
             {
-                BootTrackKey171950* second = unk04 + last;
-                unk2C.func_001EFE50(&first->unk04, &first->unk0c, &second->unk04, &second->unk08, first->unk00, second->unk00);
+                BootFloatCurveTrackKey* second = unk04 + last;
+                unk2C.set_endpoints(&first->unk04, &first->unk0c, &second->unk04, &second->unk08, first->unk00, second->unk00);
             }
         }
 
         result = func_4B16C0(&unk2C, wrapped_key);
 
-        if (state.unk00 && ((state.unk12_0_3 == 5 && state.unk00 < 0) || (state.unk12_4_7 == 5 && state.unk00 > 0)))
+        if (state.cycle_count && ((state.before_mode == 5 && state.cycle_count < 0) || (state.after_mode == 5 && state.cycle_count > 0)))
         {
-            float delta = unk04[state.unk08 - 1].unk04 - unk04[0].unk04;
-            result += delta * state.unk00;
+            float delta = unk04[state.key_count - 1].unk04 - unk04[0].unk04;
+            result += delta * state.cycle_count;
         }
     }
     else if (wrapped_key < key)
     {
-        s32 count = state.unk08;
-        BootTrackKey171950* entries = unk04;
-        BootTrackKey171950* last_entry = entries + (count - 1);
-        BootTrackKey171950* previous_entry = entries + (count - 2);
+        s32 count = state.key_count;
+        BootFloatCurveTrackKey* entries = unk04;
+        BootFloatCurveTrackKey* last_entry = entries + (count - 1);
+        BootFloatCurveTrackKey* previous_entry = entries + (count - 2);
         float last_key = last_entry->unk00;
         float previous_key = previous_entry->unk00;
         float slope = entries[count - 1].unk08 / (last_key - previous_key);
@@ -3354,7 +3270,7 @@ float BootClass171280::func_slot80(float key)
     }
     else
     {
-        BootTrackKey171950* entries = unk04;
+        BootFloatCurveTrackKey* entries = unk04;
         float first_key = entries[0].unk00;
         result = entries[0].unk04 + (entries[0].unk0c / (entries[1].unk00 - first_key)) * (key - first_key);
     }
@@ -3371,9 +3287,9 @@ float BootClass171280::func_slot80(float key)
  * @param second Second auxiliary vector.
  * @param key Key, stored in the value's fourth component.
  */
-void BootClass1710D0::func_001F4560(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+void BootVectorCurveTrack::set_single_curve_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
-    func_001F0D60(6);
+    set_before_mode(6);
     unk10 = *value;
     unk20 = *first;
     unk30 = *second;
@@ -3389,7 +3305,7 @@ void BootClass1710D0::func_001F4560(const FieldVec4A* value, const FieldVec4A* f
  * @param second Second auxiliary vector.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass1710D0::func_001F45F0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+s32 BootVectorCurveTrack::insert_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     s32 count;
     s32 i;
@@ -3399,14 +3315,14 @@ s32 BootClass1710D0::func_001F45F0(s32 index, float key, const FieldVec4A* value
         return 0;
     }
 
-    count = state.unk08;
+    count = state.key_count;
 
     if (index >= count)
     {
         return 0;
     }
 
-    if (count >= state.unk0a)
+    if (count >= state.key_capacity)
     {
         return 0;
     }
@@ -3421,31 +3337,31 @@ s32 BootClass1710D0::func_001F45F0(s32 index, float key, const FieldVec4A* value
     static_cast<BootTrackKey1719E0*>(unk04)[index].second = *second;
     static_cast<BootTrackKey1719E0*>(unk04)[index].value.w = key;
 
-    if (index == state.unk08 - 1)
+    if (index == state.key_count - 1)
     {
         state.span = key - static_cast<BootTrackKey1719E0*>(unk04)[0].value.w;
     }
 
-    state.unk08++;
+    state.key_count++;
     return 1;
 }
 
 void func_001F4730(BootState1F4730* state, u32 value)
 {
-    state->unk52_lo = value;
-    state->unk53_bit0 = state->unk52_lo == 4 || state->unk52_hi == 4;
+    state->before_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-void func_001F4790(BootState1F4790* state, u32 value)
+void quaternion_track_set_before_mode(BootQuaternionTrackState* state, u32 value)
 {
-    state->unk22_lo = value;
-    state->unk23_bit0 = state->unk22_lo == 4 || state->unk22_hi == 4;
+    state->before_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
 void func_001F47F0(BootState1F47F0* state, u32 value)
 {
-    state->unk42_lo = value;
-    state->unk43_bit0 = state->unk42_lo == 4 || state->unk42_hi == 4;
+    state->before_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
 /**
@@ -3453,7 +3369,7 @@ void func_001F47F0(BootState1F47F0* state, u32 value)
  * @param value Value to store.
  * @param key Key to store.
  */
-void BootClass171B70::func_001F4850(const FieldVec4A* value, float key)
+void BootClass171B70::push_sample(const FieldVec4A* value, float key)
 {
     unk20[unk12] = *value;
     unk40[unk12] = key;
@@ -3469,7 +3385,7 @@ void BootClass171B70::func_001F4850(const FieldVec4A* value, float key)
     }
 }
 
-void func_001F48D0(BootFloatHistory1F48D0* history, const float* value, float associated)
+void float_history_push(BootFloatHistoryState* history, const float* value, float associated)
 {
     history->values[history->next_index] = *value;
     history->unk1C[history->next_index] = associated;
@@ -3500,54 +3416,54 @@ void func_001F4970(void* object)
 void func_001F4980(BootState1F47F0* object)
 {
     object->entries = 0;
-    object->unk42_lo = 1;
-    object->unk42_hi = 1;
+    object->before_mode = 1;
+    object->after_mode = 1;
     object->capacity = 0;
     object->count = 0;
     object->unk3C = -1;
-    object->unk30 = 0;
+    object->cycle_count = 0;
     object->unk3E = -1;
-    object->unk40 = -1;
-    object->unk43_bit0 = 0;
-    object->unk43_bit1 = 0;
+    object->cached_index = -1;
+    object->repeats = 0;
+    object->external_keys = 0;
 }
 
 /**
  * @brief Allocate storage for the requested keyframe count.
  * @param count Requested keyframe count.
  */
-void BootClass171A70::func_001F4A10(s32 count)
+void BootClass171A70::allocate_keys(s32 count)
 {
-    state.unk13_1 = 0;
+    state.external_keys = 0;
     delete[] static_cast<BootTrackKey171A70*>(unk04);
     unk04 = new (0) BootTrackKey171A70[count];
-    state.unk0a = count;
+    state.key_capacity = count;
 
     if (!unk04)
     {
-        state.unk0a = 0;
+        state.key_capacity = 0;
     }
 }
 
 void func_001F4AC0(BootState1F47F0* state, u32 value)
 {
-    state->unk42_hi = value;
-    state->unk43_bit0 = state->unk42_lo == 4 || state->unk42_hi == 4;
+    state->after_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-u32 func_001F4B20(void* object)
+s32 func_001F4B20(const BootState1F47F0* object)
 {
-    return ((FieldU32At030*)object)->value;
+    return object->cycle_count;
 }
 
-s16 func_001F4B30(void* object)
+s16 func_001F4B30(const BootState1F47F0* object)
 {
-    return ((FieldS16At038*)object)->value;
+    return object->count;
 }
 
-s16 func_001F4B40(void* object)
+s16 func_001F4B40(const BootState1F47F0* object)
 {
-    return ((FieldS16At03A*)object)->value;
+    return object->capacity;
 }
 
 s32 func_001F4B50(void* object)
@@ -3558,7 +3474,7 @@ s32 func_001F4B50(void* object)
 /** @brief Forward to slot 0x68. */
 s32 func_001F4B60(BootClass171A70* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
-    return object->func_001F4B50(value, first, second, key);
+    return object->on_append_key(value, first, second, key);
 }
 
 s32 func_001F4B90(void* object)
@@ -3569,7 +3485,7 @@ s32 func_001F4B90(void* object)
 /** @brief Forward to slot 0x6C. */
 s32 func_001F4BA0(BootClass171A70* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
-    return object->func_001F4B90(index, key, value, first, second);
+    return object->on_replace_key(index, key, value, first, second);
 }
 
 s32 func_001F4BD0(void* object)
@@ -3580,7 +3496,7 @@ s32 func_001F4BD0(void* object)
 /** @brief Forward to slot 0x70. */
 s32 func_001F4BE0(BootClass171A70* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
-    return object->func_001F4BD0(index, key, value, first, second);
+    return object->on_insert_key(index, key, value, first, second);
 }
 
 void func_001F4C10(void* object)
@@ -3590,7 +3506,7 @@ void func_001F4C10(void* object)
 /** @brief Forward to slot 0x74. */
 void func_001F4C20(BootClass171A70* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
-    object->func_001F4C10(value, first, second, key);
+    object->on_set_single_key(value, first, second, key);
 }
 
 void func_001F4C50(void* object)
@@ -3606,41 +3522,43 @@ void func_001F4C50(void* object)
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass171A70::func_001F4C70(float key, FieldVec4B* output) const
+void BootClass171A70::evaluate(float key, FieldVec4B* output) const
 {
-    *output = func_slot80(key);
+    *output = sample(key);
 }
 
-u32 func_001F4CC0(void* object)
+BootKeyEntry32* func_001F4CC0(const BootState1F47F0* object)
 {
-    return ((FieldU32At004*)object)->value;
+    return object->entries;
 }
 
 /** @brief Forward to slot 0x68. */
-s32 func_001F4CD0(BootClass1719E0* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+s32 vector_curve_track_append_key(BootVectorCurveTrackBase* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
-    return object->func_001F0E50(value, first, second, key);
+    return object->on_append_key(value, first, second, key);
 }
 
 /** @brief Forward to slot 0x6C. */
-s32 func_001F4D00(BootClass1719E0* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+s32 vector_curve_track_replace_key(BootVectorCurveTrackBase* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first,
+                                   const FieldVec4A* second)
 {
-    return object->func_001F0E60(index, key, value, first, second);
+    return object->on_replace_key(index, key, value, first, second);
 }
 
 /** @brief Forward to slot 0x70. */
-s32 func_001F4D30(BootClass1719E0* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+s32 vector_curve_track_insert_key(BootVectorCurveTrackBase* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first,
+                                  const FieldVec4A* second)
 {
-    return object->func_001F0E70(index, key, value, first, second);
+    return object->on_insert_key(index, key, value, first, second);
 }
 
 /** @brief Forward to slot 0x74. */
-void func_001F4D60(BootClass1719E0* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+void vector_curve_track_set_single_key(BootVectorCurveTrackBase* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
-    object->func_001F0E80(value, first, second, key);
+    object->on_set_single_key(value, first, second, key);
 }
 
-float func_001F4D90(BootState1F12B0* object, float key)
+float float_curve_track_update_cycle_count(BootFloatCurveTrackState* object, float key)
 {
     float first = object->entries[0].key;
     float quotient = (key - first) / object->span;
@@ -3650,19 +3568,19 @@ float func_001F4D90(BootState1F12B0* object, float key)
         quotient -= 1.0f;
     }
 
-    object->unk18 = quotient;
+    object->cycle_count = quotient;
 
-    if (object->unk18)
+    if (object->cycle_count)
     {
-        float result = key - (float)object->unk18 * object->span;
+        float result = key - (float)object->cycle_count * object->span;
 
-        if ((object->unk2A_lo == 3 && object->unk18 < 0) || (object->unk2A_hi == 3 && object->unk18 > 0))
+        if ((object->before_mode == 3 && object->cycle_count < 0) || (object->after_mode == 3 && object->cycle_count > 0))
         {
             s32 last_index = object->count - 1;
-            BootKeyEntry16* last_entry = object->entries + last_index;
+            BootFloatCurveStateKey* last_entry = object->entries + last_index;
             float last = last_entry->key;
 
-            if (object->unk18 & 1)
+            if (object->cycle_count & 1)
             {
                 result = first + (last - result);
             }
@@ -3682,15 +3600,15 @@ float func_001F4D90(BootState1F12B0* object, float key)
  * @param upper Receives the upper entry index.
  * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
  */
-u8 func_001F4E70(BootClass171950* track, float key, s32* lower, s32* upper)
+u8 float_curve_track_find_surrounding_keys(BootFloatCurveTrackBase* track, float key, s32* lower, s32* upper)
 {
     s32 index;
     s32 count;
     s32 next;
 
-    if (track->state.unk13_0)
+    if (track->state.repeats)
     {
-        if (track->state.unk12_0_3 == 4 && track->state.unk00 < 0)
+        if (track->state.before_mode == 4 && track->state.cycle_count < 0)
         {
             *lower = 0;
             *upper = 1;
@@ -3698,17 +3616,17 @@ u8 func_001F4E70(BootClass171950* track, float key, s32* lower, s32* upper)
             return 1;
         }
 
-        if (track->state.unk12_4_7 == 4 && track->state.unk00 > 0)
+        if (track->state.after_mode == 4 && track->state.cycle_count > 0)
         {
-            *lower = track->state.unk08 - 2;
-            *upper = track->state.unk08 - 1;
-            track->state.unk0c = track->state.unk08 - 2;
+            *lower = track->state.key_count - 2;
+            *upper = track->state.key_count - 1;
+            track->state.unk0c = track->state.key_count - 2;
             return 1;
         }
     }
 
     index = track->state.unk0c;
-    count = track->state.unk08;
+    count = track->state.key_count;
 
     while (index > 0 && key < track->unk04[index].unk00)
     {
@@ -3737,30 +3655,30 @@ u8 func_001F4E70(BootClass171950* track, float key, s32* lower, s32* upper)
     return 0;
 }
 /** @brief Forward to slot 0x68. */
-s32 func_001F4FD0(BootClass171950* object, const float* x, const float* y, const float* z, float key)
+s32 float_curve_track_append_key(BootFloatCurveTrackBase* object, const float* x, const float* y, const float* z, float key)
 {
-    return object->func_001F13A0(x, y, z, key);
+    return object->on_append_key(x, y, z, key);
 }
 
 /** @brief Forward to slot 0x6C. */
-s32 func_001F5000(BootClass171950* object, s32 index, float key, const float* x, const float* y, const float* z)
+s32 float_curve_track_replace_key(BootFloatCurveTrackBase* object, s32 index, float key, const float* x, const float* y, const float* z)
 {
-    return object->func_001F13B0(index, key, x, y, z);
+    return object->on_replace_key(index, key, x, y, z);
 }
 
 /** @brief Forward to slot 0x70. */
-s32 func_001F5030(BootClass171950* object, s32 index, float key, const float* x, const float* y, const float* z)
+s32 float_curve_track_insert_key(BootFloatCurveTrackBase* object, s32 index, float key, const float* x, const float* y, const float* z)
 {
-    return object->func_001F13C0(index, key, x, y, z);
+    return object->on_insert_key(index, key, x, y, z);
 }
 
 /** @brief Forward to slot 0x74. */
-void func_001F5060(BootClass171950* object, const float* x, const float* y, const float* z, float key)
+void float_curve_track_set_single_key(BootFloatCurveTrackBase* object, const float* x, const float* y, const float* z, float key)
 {
-    object->func_001F13D0(x, y, z, key);
+    object->on_set_single_key(x, y, z, key);
 }
 
-float func_001F5090(BootState1F1FC0* object, float key)
+float float_track_update_cycle_count(BootFloatTrackState* object, float key)
 {
     float first = object->entries[0].key;
     float quotient = (key - first) / object->span;
@@ -3770,19 +3688,19 @@ float func_001F5090(BootState1F1FC0* object, float key)
         quotient -= 1.0f;
     }
 
-    object->unk10 = quotient;
+    object->cycle_count = quotient;
 
-    if (object->unk10)
+    if (object->cycle_count)
     {
-        float result = key - (float)object->unk10 * object->span;
+        float result = key - (float)object->cycle_count * object->span;
 
-        if ((object->unk22_lo == 3 && object->unk10 < 0) || (object->unk22_hi == 3 && object->unk10 > 0))
+        if ((object->before_mode == 3 && object->cycle_count < 0) || (object->after_mode == 3 && object->cycle_count > 0))
         {
             s32 last_index = object->count - 1;
-            BootFloatEntry1F33B0* last_entry = object->entries + last_index;
+            BootFloatStateKey* last_entry = object->entries + last_index;
             float last = last_entry->key;
 
-            if (object->unk10 & 1)
+            if (object->cycle_count & 1)
             {
                 result = first + (last - result);
             }
@@ -3802,15 +3720,15 @@ float func_001F5090(BootState1F1FC0* object, float key)
  * @param upper Receives the upper entry index.
  * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
  */
-u8 func_001F5170(BootClass1717A0* track, float key, s32* lower, s32* upper)
+u8 float_track_find_surrounding_keys(BootFloatTrackBase* track, float key, s32* lower, s32* upper)
 {
     s32 index;
     s32 count;
     s32 next;
 
-    if (track->state.unk13_0)
+    if (track->state.repeats)
     {
-        if (track->state.unk12_0_3 == 4 && track->state.unk00 < 0)
+        if (track->state.before_mode == 4 && track->state.cycle_count < 0)
         {
             *lower = 0;
             *upper = 1;
@@ -3818,17 +3736,17 @@ u8 func_001F5170(BootClass1717A0* track, float key, s32* lower, s32* upper)
             return 1;
         }
 
-        if (track->state.unk12_4_7 == 4 && track->state.unk00 > 0)
+        if (track->state.after_mode == 4 && track->state.cycle_count > 0)
         {
-            *lower = track->state.unk08 - 2;
-            *upper = track->state.unk08 - 1;
-            track->state.unk0c = track->state.unk08 - 2;
+            *lower = track->state.key_count - 2;
+            *upper = track->state.key_count - 1;
+            track->state.unk0c = track->state.key_count - 2;
             return 1;
         }
     }
 
     index = track->state.unk0c;
-    count = track->state.unk08;
+    count = track->state.key_count;
 
     while (index > 0 && key < track->unk04[index].key)
     {
@@ -3856,43 +3774,43 @@ u8 func_001F5170(BootClass1717A0* track, float key, s32* lower, s32* upper)
     track->state.unk0c = index;
     return 0;
 }
-void func_001F52D0(BootState1F4790* object)
+void quaternion_track_reset_state(BootQuaternionTrackState* object)
 {
     object->entries = 0;
-    object->unk22_lo = 1;
-    object->unk22_hi = 1;
+    object->before_mode = 1;
+    object->after_mode = 1;
     object->capacity = 0;
     object->count = 0;
     object->unk1C = -1;
-    object->unk10 = 0;
+    object->cycle_count = 0;
     object->unk1E = -1;
-    object->unk20 = -1;
-    object->unk23_bit0 = 0;
-    object->unk23_bit1 = 0;
+    object->cached_index = -1;
+    object->repeats = 0;
+    object->external_keys = 0;
 }
 
 /**
  * @brief Allocate storage for the requested keyframe count.
  * @param count Requested keyframe count.
  */
-void BootClass171710::func_001F5360(s32 count)
+void BootQuaternionTrackBase::allocate_keys(s32 count)
 {
-    state.unk13_1 = 0;
-    delete[] static_cast<BootTrackKey171710*>(unk04);
-    unk04 = new (0) BootTrackKey171710[count];
-    state.unk0a = count;
+    state.external_keys = 0;
+    delete[] static_cast<BootQuaternionTrackKey*>(unk04);
+    unk04 = new (0) BootQuaternionTrackKey[count];
+    state.key_capacity = count;
 
     if (!unk04)
     {
-        state.unk0a = 0;
+        state.key_capacity = 0;
     }
 }
 
-void func_001F5400(BootState1F4790* object, s32 count, BootShortKeyEntry8* entries)
+void quaternion_track_bind_keys(BootQuaternionTrackState* object, s32 count, BootQuaternionStateKey* entries)
 {
     s32 last_index = count - 1;
-    BootShortKeyEntry8* last;
-    object->unk23_bit1 = 1;
+    BootQuaternionStateKey* last;
+    object->external_keys = 1;
     object->entries = entries;
     object->capacity = count;
     object->count = count;
@@ -3900,71 +3818,73 @@ void func_001F5400(BootState1F4790* object, s32 count, BootShortKeyEntry8* entri
     object->span = (float)last->key - (float)object->entries[0].key;
 }
 
-void func_001F5460(BootState1F4790* state, u32 value)
+void quaternion_track_set_after_mode(BootQuaternionTrackState* state, u32 value)
 {
-    state->unk22_hi = value;
-    state->unk23_bit0 = state->unk22_lo == 4 || state->unk22_hi == 4;
+    state->after_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-u32 func_001F54C0(void* object)
+s32 quaternion_track_get_cycle_count(const BootQuaternionTrackState* object)
 {
-    return ((FieldU32At010*)object)->value;
+    return object->cycle_count;
 }
 
-s16 func_001F54D0(void* object)
+s16 quaternion_track_get_key_count(const BootQuaternionTrackState* object)
 {
-    return ((FieldS16At018*)object)->value;
+    return object->count;
 }
 
-s16 func_001F54E0(void* object)
+s16 quaternion_track_get_key_capacity(const BootQuaternionTrackState* object)
 {
-    return ((FieldS16At01A*)object)->value;
+    return object->capacity;
 }
 
-s32 func_001F54F0(void* object)
+s32 quaternion_track_on_append_key(void* object)
 {
     return 0;
 }
 
 /** @brief Forward to slot 0x68. */
-s32 func_001F5500(BootClass171710* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+s32 quaternion_track_append_key(BootQuaternionTrackBase* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
-    return object->func_001F54F0(value, first, second, key);
+    return object->on_append_key(value, first, second, key);
 }
 
-s32 func_001F5530(void* object)
+s32 quaternion_track_on_replace_key(void* object)
 {
     return 0;
 }
 
 /** @brief Forward to slot 0x6C. */
-s32 func_001F5540(BootClass171710* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+s32 quaternion_track_replace_key(BootQuaternionTrackBase* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first,
+                                 const FieldVec4A* second)
 {
-    return object->func_001F5530(index, key, value, first, second);
+    return object->on_replace_key(index, key, value, first, second);
 }
 
-s32 func_001F5570(void* object)
+s32 quaternion_track_on_insert_key(void* object)
 {
     return 0;
 }
 
 /** @brief Forward to slot 0x70. */
-s32 func_001F5580(BootClass171710* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+s32 quaternion_track_insert_key(BootQuaternionTrackBase* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first,
+                                const FieldVec4A* second)
 {
-    return object->func_001F5570(index, key, value, first, second);
+    return object->on_insert_key(index, key, value, first, second);
 }
 
-void func_001F55B0(void* object)
+void quaternion_track_on_set_single_key(void* object)
 {
 }
 
 /** @brief Forward to slot 0x74. */
-void func_001F55C0(BootClass171710* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+void quaternion_track_set_single_key(BootQuaternionTrackBase* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
-    object->func_001F55B0(value, first, second, key);
+    object->on_set_single_key(value, first, second, key);
 }
 
-s32 func_001F55F0(BootState1F4790* object, float key)
+s32 quaternion_track_has_key(BootQuaternionTrackState* object, float key)
 {
     s32 index;
 
@@ -3979,7 +3899,7 @@ s32 func_001F55F0(BootState1F4790* object, float key)
     return 0;
 }
 
-void func_001F5650(void* object)
+void quaternion_track_get_zero_value(void* object)
 {
     *(u32*)((u8*)object + 0x0) = 0;
     *(u32*)((u8*)object + 0x4) = 0;
@@ -3987,10 +3907,10 @@ void func_001F5650(void* object)
     *(u32*)((u8*)object + 0xC) = 0;
 }
 
-float func_001F5670(BootState1F4790* object)
+float quaternion_track_get_key_span(BootQuaternionTrackState* object)
 {
     s32 last_index;
-    BootShortKeyEntry8* last_entry;
+    BootQuaternionStateKey* last_entry;
 
     if (object->count < 2)
     {
@@ -4019,13 +3939,13 @@ static inline void reread_result(FieldVec4A*& out)
  * @param object Keyframe array.
  * @param key Key to find.
  */
-void func_001F56D0(FieldVec4A* out, BootState1F4790* object, float key)
+void quaternion_track_find_key_value(FieldVec4A* out, BootQuaternionTrackState* object, float key)
 {
     s32 index;
 
     for (index = 0; index < object->count; index++)
     {
-        BootShortKeyEntry8* entry = object->entries + index;
+        BootQuaternionStateKey* entry = object->entries + index;
 
         if (key == entry->key)
         {
@@ -4050,16 +3970,16 @@ void func_001F56D0(FieldVec4A* out, BootState1F4790* object, float key)
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass171710::func_001F57C0(float key, FieldVec4B* output) const
+void BootQuaternionTrackBase::evaluate(float key, FieldVec4B* output) const
 {
-    *output = func_slot80(key);
+    *output = sample(key);
 }
 
-float func_001F5810(BootState1F4790* object, float key)
+float quaternion_track_wrap_key(BootQuaternionTrackState* object, float key)
 {
     s32 last_index = object->count - 1;
-    BootShortKeyEntry8* entries = object->entries;
-    BootShortKeyEntry8* last = entries + last_index;
+    BootQuaternionStateKey* entries = object->entries;
+    BootQuaternionStateKey* last = entries + last_index;
     float first = entries[0].key;
     float span = last->key - first;
     float position = (key - first) / span;
@@ -4080,40 +4000,40 @@ float func_001F5810(BootState1F4790* object, float key)
     return key;
 }
 
-u32 func_001F58B0(void* object)
+BootQuaternionStateKey* quaternion_track_get_keys(const BootQuaternionTrackState* object)
 {
-    return ((FieldU32At004*)object)->value;
+    return object->entries;
 }
 
 void func_001F58C0(BootState1F4730* object)
 {
     object->entries = 0;
-    object->unk52_lo = 1;
-    object->unk52_hi = 1;
+    object->before_mode = 1;
+    object->after_mode = 1;
     object->capacity = 0;
     object->count = 0;
     object->unk4C = -1;
-    object->unk40 = 0;
+    object->cycle_count = 0;
     object->unk4E = -1;
-    object->unk50 = -1;
-    object->unk53_bit0 = 0;
-    object->unk53_bit1 = 0;
+    object->cached_index = -1;
+    object->repeats = 0;
+    object->external_keys = 0;
 }
 
 /**
  * @brief Allocate storage for the requested keyframe count.
  * @param count Requested keyframe count.
  */
-void BootClass171680::func_001F5950(s32 count)
+void BootClass171680::allocate_keys(s32 count)
 {
-    state.unk13_1 = 0;
+    state.external_keys = 0;
     delete[] static_cast<BootTrackKey171680*>(unk04);
     unk04 = new (0) BootTrackKey171680[count];
-    state.unk0a = count;
+    state.key_capacity = count;
 
     if (!unk04)
     {
-        state.unk0a = 0;
+        state.key_capacity = 0;
     }
 }
 
@@ -4121,7 +4041,7 @@ void func_001F5A00(BootState1F4730* object, s32 count, BootKeyEntry48* entries)
 {
     s32 last_index = count - 1;
     BootKeyEntry48* last;
-    object->unk53_bit1 = 1;
+    object->external_keys = 1;
     object->entries = entries;
     object->capacity = count;
     object->count = count;
@@ -4131,23 +4051,23 @@ void func_001F5A00(BootState1F4730* object, s32 count, BootKeyEntry48* entries)
 
 void func_001F5A50(BootState1F4730* state, u32 value)
 {
-    state->unk52_hi = value;
-    state->unk53_bit0 = state->unk52_lo == 4 || state->unk52_hi == 4;
+    state->after_mode = value;
+    state->repeats = state->before_mode == 4 || state->after_mode == 4;
 }
 
-u32 func_001F5AB0(void* object)
+s32 func_001F5AB0(const BootState1F4730* object)
 {
-    return ((FieldU32At040*)object)->value;
+    return object->cycle_count;
 }
 
-s16 func_001F5AC0(void* object)
+s16 func_001F5AC0(const BootState1F4730* object)
 {
-    return ((FieldS16At048*)object)->value;
+    return object->count;
 }
 
-s16 func_001F5AD0(void* object)
+s16 func_001F5AD0(const BootState1F4730* object)
 {
-    return ((FieldS16At04A*)object)->value;
+    return object->capacity;
 }
 
 s32 func_001F5AE0(void* object)
@@ -4158,7 +4078,7 @@ s32 func_001F5AE0(void* object)
 /** @brief Forward to slot 0x68. */
 s32 func_001F5AF0(BootClass171680* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
-    return object->func_001F5AE0(value, first, second, key);
+    return object->on_append_key(value, first, second, key);
 }
 
 s32 func_001F5B20(void* object)
@@ -4169,7 +4089,7 @@ s32 func_001F5B20(void* object)
 /** @brief Forward to slot 0x6C. */
 s32 func_001F5B30(BootClass171680* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
-    return object->func_001F5B20(index, key, value, first, second);
+    return object->on_replace_key(index, key, value, first, second);
 }
 
 s32 func_001F5B60(void* object)
@@ -4180,7 +4100,7 @@ s32 func_001F5B60(void* object)
 /** @brief Forward to slot 0x70. */
 s32 func_001F5B70(BootClass171680* object, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
-    return object->func_001F5B60(index, key, value, first, second);
+    return object->on_insert_key(index, key, value, first, second);
 }
 
 void func_001F5BA0(void* object)
@@ -4190,7 +4110,7 @@ void func_001F5BA0(void* object)
 /** @brief Forward to slot 0x74. */
 void func_001F5BB0(BootClass171680* object, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
-    object->func_001F5BA0(value, first, second, key);
+    object->on_set_single_key(value, first, second, key);
 }
 
 s32 func_001F5BE0(BootState1F4730* object, float key)
@@ -4258,9 +4178,9 @@ FieldVec4A func_001F5CA0(BootState1F4730* object, float key)
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass171680::func_001F5D10(float key, FieldVec4B* output) const
+void BootClass171680::evaluate(float key, FieldVec4B* output) const
 {
-    *output = func_slot80(key);
+    *output = sample(key);
 }
 
 float func_001F5D60(BootState1F4730* object, float key)
@@ -4288,9 +4208,9 @@ float func_001F5D60(BootState1F4730* object, float key)
     return key;
 }
 
-u32 func_001F5E00(void* object)
+BootKeyEntry48* func_001F5E00(const BootState1F4730* object)
 {
-    return ((FieldU32At004*)object)->value;
+    return object->entries;
 }
 
 BootTrackKey171680::BootTrackKey171680()
@@ -4378,7 +4298,7 @@ void func_001F5FB0(BootState1F47F0* object, s32 count, BootKeyEntry32* entries)
 {
     s32 last_index = count - 1;
     BootKeyEntry32* last;
-    object->unk43_bit1 = 1;
+    object->external_keys = 1;
     object->entries = entries;
     object->capacity = count;
     object->count = count;
@@ -4403,16 +4323,16 @@ static inline BootClass170F30* find_menu_item(BootTitleMenu* menu, s32 item)
     switch (item)
     {
     case 0:
-        node = func_473940(menu->scene, g_new_game_node_name);
+        node = lib_find_renderable_entry(menu->scene, g_new_game_node_name);
         break;
     case 1:
-        node = func_473940(menu->scene, g_continue_node_name);
+        node = lib_find_renderable_entry(menu->scene, g_continue_node_name);
         break;
     case 2:
-        node = func_473940(menu->scene, g_battle_collection_node_name);
+        node = lib_find_renderable_entry(menu->scene, g_battle_collection_node_name);
         break;
     case 3:
-        node = func_473940(menu->scene, g_install_node_name);
+        node = lib_find_renderable_entry(menu->scene, g_install_node_name);
         break;
     }
 
@@ -4457,8 +4377,8 @@ void BootTitleMenu::animate_items(u8 snap)
                 value.z = 1.1f;
             }
 
-            node->func_001E0750(&value);
-            copy_vector(&value, &node->unk560);
+            node->set_scale_vector(&value);
+            copy_vector(&value, &node->base_color_factor);
 
             if (value.w > 0.9f)
             {
@@ -4495,8 +4415,8 @@ void BootTitleMenu::animate_items(u8 snap)
                     }
                 }
 
-                copy_vector(&node->unk560, &value);
-                node->func_001DDAA0();
+                copy_vector(&node->base_color_factor, &value);
+                node->update_combined_color_factor();
             }
         }
         else
@@ -4517,8 +4437,8 @@ void BootTitleMenu::animate_items(u8 snap)
                 value.z = 1.0f;
             }
 
-            node->func_001E0750(&value);
-            copy_vector(&value, &node->unk560);
+            node->set_scale_vector(&value);
+            copy_vector(&value, &node->base_color_factor);
 
             if (value.x < 1.0f)
             {
@@ -4536,8 +4456,8 @@ void BootTitleMenu::animate_items(u8 snap)
                 }
             }
 
-            copy_vector(&node->unk560, &value);
-            node->func_001DDAA0();
+            copy_vector(&node->base_color_factor, &value);
+            node->update_combined_color_factor();
         }
     }
 }
@@ -4549,7 +4469,7 @@ void BootTitleMenu::animate_items(u8 snap)
  */
 void BootTitleMenu::get_cursor_position(float* x, float* y)
 {
-    BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
     BootClass170F30* node = find_menu_item(this, selected);
 
     if (node == 0)
@@ -4559,7 +4479,7 @@ void BootTitleMenu::get_cursor_position(float* x, float* y)
         return;
     }
 
-    if (!node->unk61)
+    if (!node->matrix_ready)
     {
         node->update_transform_matrix();
     }
@@ -4603,14 +4523,14 @@ void BootTitleMenu::update_item_availability()
     u32 slot2 = input->slot2_state;
     u32 first = input->unk28;
     u32 second = input->unk2C;
-    continue_node = func_473940(scene, g_continue_node_name);
+    continue_node = lib_find_renderable_entry(scene, g_continue_node_name);
 
     if (continue_node == 0)
     {
         return;
     }
 
-    BootClass170F30* collection_node = func_473940(scene, g_battle_collection_node_name);
+    BootClass170F30* collection_node = lib_find_renderable_entry(scene, g_battle_collection_node_name);
 
     if (collection_node == 0)
     {
@@ -4618,14 +4538,14 @@ void BootTitleMenu::update_item_availability()
     }
 
     BootVector4DDAA0 color;
-    copy_vector(&color, &collection_node->unk560);
+    copy_vector(&color, &collection_node->base_color_factor);
 
     if (first == 5 || second == 5)
     {
         color.w = 1.0f;
         collection_ready = 1;
-        copy_vector(&collection_node->unk560, &color);
-        collection_node->func_001DDAA0();
+        copy_vector(&collection_node->base_color_factor, &color);
+        collection_node->update_combined_color_factor();
     }
     else
     {
@@ -4634,18 +4554,18 @@ void BootTitleMenu::update_item_availability()
         color.z = 1.0f;
         color.w = 0.5f;
         collection_ready = 0;
-        copy_vector(&collection_node->unk560, &color);
-        collection_node->func_001DDAA0();
+        copy_vector(&collection_node->base_color_factor, &color);
+        collection_node->update_combined_color_factor();
     }
 
-    copy_vector(&color, &continue_node->unk560);
+    copy_vector(&color, &continue_node->base_color_factor);
 
     if (slot1 == 0x11 || slot2 == 0x11)
     {
         color.w = 1.0f;
         continue_ready = 1;
-        copy_vector(&continue_node->unk560, &color);
-        continue_node->func_001DDAA0();
+        copy_vector(&continue_node->base_color_factor, &color);
+        continue_node->update_combined_color_factor();
     }
     else
     {
@@ -4654,17 +4574,17 @@ void BootTitleMenu::update_item_availability()
         color.z = 1.0f;
         color.w = 0.5f;
         continue_ready = 0;
-        copy_vector(&continue_node->unk560, &color);
-        continue_node->func_001DDAA0();
+        copy_vector(&continue_node->base_color_factor, &color);
+        continue_node->update_combined_color_factor();
     }
 }
 
 /** @brief Run the menu state machine. */
 void BootTitleMenu::update()
 {
-    BootResource0970* settings;
+    BootSystemSettings* settings;
     BootInput* input = g_boot_program.input;
-    settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
     switch (step)
     {
@@ -4681,7 +4601,7 @@ void BootTitleMenu::update()
         }
 
         check_main_code();
-        scene = new (0) BootClass175320;
+        scene = new (0) BootScene;
         func_4791F0(scene, scene_data);
         func_474010(scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
         delete[] scene_data;
@@ -4689,7 +4609,7 @@ void BootTitleMenu::update()
         func_40B3A0(unk30);
         delete[] unk30;
         unk30 = 0;
-        camera = func_473680(scene, g_title_camera_node_name);
+        camera = lib_find_camera_entry(scene, g_title_camera_node_name);
         D_001B6628->current_display = camera;
 
         if (initial_item != -1)
@@ -4710,7 +4630,7 @@ void BootTitleMenu::update()
         float x;
         float y;
         get_cursor_position(&x, &y);
-        cursor = new (0) BootClass175070;
+        cursor = new (0) BootSelectionCursor;
         func_467570(cursor, 1, 0, 0, x, y, 0.0f);
         func_465B20(D_001B657C, cursor);
         step++;
@@ -4765,7 +4685,7 @@ void BootTitleMenu::update()
 
         idle_time += D_001B6690;
 
-        if (input->pressed & settings->unk00)
+        if (input->pressed & settings->confirm_buttons)
         {
             u8 accepted = 0;
 
@@ -4930,7 +4850,7 @@ BootTitleMenu::BootTitleMenu(s32 initial_item)
     unk2c = 0;
     collection_ready = 0;
     this->initial_item = initial_item;
-    g_boot_program.trophy_card->func_001E0DE0(2);
+    g_boot_program.trophy_card->set_mode(2);
 }
 
 /** @brief Detach the bar and its model, destroy the model and delete the bar. */
@@ -4973,13 +4893,13 @@ static inline void add_vertex(LibDrawBuffer* buffer, const FieldVec4A& position,
  * @param done Completed amount; clamped to total.
  * @param total Total amount.
  */
-void func_001F79A0(BootProgressBar* bar, s32 done, s32 total)
+void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
 {
-    BootSettings1F86C0 settings;
+    BootDrawSettings settings;
     s32 fill;
 
     func_455DF0(bar->draw_buffer, 0, 1);
-    func_001F86C0(&settings);
+    init_draw_settings(&settings);
     settings.unk00 = 0xC;
     settings.unk02 = 0;
     settings.unk05 = 1;
@@ -5039,7 +4959,7 @@ void func_001F79A0(BootProgressBar* bar, s32 done, s32 total)
     func_455BD0(bar->draw_buffer, 0, 1.0f, 0);
 }
 
-void func_001F86C0(BootSettings1F86C0* settings)
+void init_draw_settings(BootDrawSettings* settings)
 {
     settings->unk00 = 12;
     settings->unk03 = 0;
@@ -5067,7 +4987,7 @@ void func_001F86C0(BootSettings1F86C0* settings)
  * @param color Bar color.
  * @param mode Draw mode.
  */
-void func_001F8720(BootProgressBar* bar, s32 width, s32 height, u32 color, s32 mode)
+void progress_bar_reset(BootProgressBar* bar, s32 width, s32 height, u32 color, s32 mode)
 {
     if (bar->draw_buffer != 0)
     {
@@ -5080,13 +5000,13 @@ void func_001F8720(BootProgressBar* bar, s32 width, s32 height, u32 color, s32 m
     }
 
     bar->draw_buffer = new (0) LibDrawBuffer;
-    bar->unk18 = new (0) BootClass177820;
+    bar->unk18 = new (0) BootModel;
     bar->draw_buffer->allocate_storage(2, 0x600, 1, 8);
     bar->width = width;
     bar->height = height;
     bar->color = color;
     bar->mode = mode;
-    func_001F79A0(bar, 0, 1);
+    progress_bar_draw(bar, 0, 1);
     func_4D6430(bar->unk18, bar->draw_buffer);
     bar->unk18->unk80 = D_001B6630;
     bar->unk18->unk6a |= 0x400;
@@ -5110,7 +5030,7 @@ BootProgressBar::BootProgressBar()
 }
 
 /** @brief Fade out; once transparent, destroy the strips and the fade. */
-void BootClass171C00::update()
+void BootScreenFade::update()
 {
     unkcc -= unkd0 * D_001B6690;
 
@@ -5132,17 +5052,17 @@ void BootClass171C00::update()
 }
 
 /** @brief Mark the fade inactive and run the Lib release helper. @param value Unused. */
-void BootClass171C00::func_001E04F0(u32 value)
+void BootScreenFade::on_packet_complete(u32 value)
 {
-    unk64 = 0;
+    dma_pending = 0;
     func_4D00B0(this);
 }
 
 /** @brief Mark the fade active and submit its packet. */
-void BootClass171C00::func_001DD4C0()
+void BootScreenFade::render()
 {
-    unk64 = 1;
-    func_11F510(packet, static_cast<BootClass170D50*>(this));
+    dma_pending = 1;
+    func_11F510(packet, static_cast<BootDmaCallbacks*>(this));
 }
 
 /**
@@ -5151,7 +5071,7 @@ void BootClass171C00::func_001DD4C0()
  * @param matrix Matrix supplied by the caller; unused.
  * @param context Opaque caller context; unused.
  */
-void BootClass171C00::func_001E08C0(const void* matrix, void* context)
+void BootScreenFade::build_packet(const void* matrix, void* context)
 {
     if (!unkc8)
     {
@@ -5159,7 +5079,7 @@ void BootClass171C00::func_001E08C0(const void* matrix, void* context)
         return;
     }
 
-    BootClass171BF0* buffer_packet = packet;
+    BootPacketBuffer* buffer_packet = packet;
     buffer_packet->unk08 = buffer_packet->unk00 + 0x40;
     buffer_packet->unk0c = buffer_packet->unk08;
     BootFadeStripPacket* strip = reinterpret_cast<BootFadeStripPacket*>(func_11F860(packet, 0));
@@ -5231,7 +5151,7 @@ void BootClass171C00::func_001E08C0(const void* matrix, void* context)
 }
 
 /** @brief Destroy the strips, the copy buffer and the packet. */
-BootClass171C00::~BootClass171C00()
+BootScreenFade::~BootScreenFade()
 {
     for (s32 i = 0; i < 10; i++)
     {
@@ -5247,7 +5167,7 @@ BootClass171C00::~BootClass171C00()
 }
 
 /** @brief Release the packet storage unless it is external. */
-BootClass171BF0::~BootClass171BF0()
+BootPacketBuffer::~BootPacketBuffer()
 {
     if (!unk14)
     {
@@ -5258,7 +5178,7 @@ BootClass171BF0::~BootClass171BF0()
 #include "overlays/boot/transform_inlines.h"
 
 /** @brief Copy the display into ten strips and show them, fully opaque. @param display Display to copy. */
-BootClass171C00::BootClass171C00(BootDimensionsACD0* display)
+BootScreenFade::BootScreenFade(BootDimensionsACD0* display)
 {
     s32 width;
     s32 height;
@@ -5270,7 +5190,7 @@ BootClass171C00::BootClass171C00(BootDimensionsACD0* display)
 
     for (i = 0; i < 10; i++)
     {
-        images[i] = new (0) BootClass1735A0;
+        images[i] = new (0) BootImageStrip;
         images[i]->unk65 = 1;
         func_4333A0(images[i], buffer + height * (i * 64) * 3 / 16 * 16, (display->unk160 & 0x1FF) << 5, width / 64, 1, i * 64, 0, 0x40, height);
         D_001B661C->append_node(images[i], -1);
@@ -5279,7 +5199,7 @@ BootClass171C00::BootClass171C00(BootDimensionsACD0* display)
     func_001DFE40(0x4000);
     unk65 = 1;
     func_001DFE30(0x400);
-    packet = new (0) BootClass171BF0(0x400);
+    packet = new (0) BootPacketBuffer(0x400);
     unkcc = 1.0f;
     unkd0 = 1.0f;
     unkc8 = 0;
@@ -5315,13 +5235,13 @@ void BootImage::destroy()
  * @param color Vertex color.
  * @param depth Z position of the quad.
  */
-void func_001F93B0(BootImage* image, s32 x, s32 y, s32 width, s32 height, s32 palette_x, s32 palette_y, s32 palette_width, s32 palette_height, u32 color,
-                   s32 depth)
+void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width, s32 height, s32 palette_x, s32 palette_y, s32 palette_width,
+                                      s32 palette_height, u32 color, s32 depth)
 {
-    BootSettings1F86C0 settings;
+    BootDrawSettings settings;
 
     func_455DF0(image->draw_buffer, 1, 1);
-    func_001F86C0(&settings);
+    init_draw_settings(&settings);
     settings.unk06 = 0;
     settings.unk02 = 2;
     settings.unk00 = 0x5C;
@@ -5412,10 +5332,10 @@ void func_001F93B0(BootImage* image, s32 x, s32 y, s32 width, s32 height, s32 pa
  */
 void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s32 depth)
 {
-    BootSettings1F86C0 settings;
+    BootDrawSettings settings;
 
     func_455DF0(draw_buffer, 0, 1);
-    func_001F86C0(&settings);
+    init_draw_settings(&settings);
     settings.unk06 = 0;
     settings.unk02 = 2;
     settings.unk00 = 0x5C;
@@ -5473,7 +5393,7 @@ void BootImage::set_texture(const BootTextureResource* texture, const BootTextur
     }
 
     draw_buffer = new (0) LibDrawBuffer;
-    unk18 = new (0) BootClass177820;
+    unk18 = new (0) BootModel;
     draw_buffer->allocate_storage(1, 0x600, 2, 8);
     func_455040(draw_buffer, texture);
 
@@ -5515,7 +5435,7 @@ BootImage::BootImage()
 }
 
 /** @brief Set the byte at offset 0x60 to 10. */
-void BootClass171C00::func_001E0860()
+void BootScreenFade::func_001E0860()
 {
     unk60 = 10;
 }
@@ -5523,9 +5443,9 @@ void BootClass171C00::func_001E0860()
 /** @brief Run the launch steps: seed, movie, load, hand over. */
 void BootGameLauncher::update()
 {
-    BootResource0970* settings;
+    BootSystemSettings* settings;
     BootInput* input = g_boot_program.input;
-    settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
     u32 previous;
 
     switch (step)
@@ -5557,18 +5477,18 @@ void BootGameLauncher::update()
 
         if ((u8)settings->unk25_mid == 0)
         {
-            BootSealedRecord* record = &settings->unkD4;
+            BootSealedRecord* record = &settings->sealed_record;
             func_13A678(record, 0, sizeof(BootSealedRecord));
             seal_record(record);
-            BootResourceBits0970* bits = &settings->unk1A8;
+            BootTrophyFlags* bits = &settings->trophy_flags;
             s32 size = bits->size;
 
             for (s32 i = 0; i < size; i++)
             {
-                bits->unk08[i] = 0;
+                bits->flag_bytes[i] = 0;
             }
 
-            bits->unk14 = resident_next_random_word();
+            bits->trophy_key = resident_next_random_word();
             func_457520(bits);
         }
 
@@ -5596,12 +5516,12 @@ void BootGameLauncher::update()
             movie_heap->unk2C = 0x40;
             func_113930(movie_heap, 0x579F2C);
             void* heap = resident_exchange_allocation_heap(movie_heap);
-            player = new (0) BootClass172500(640, 448);
+            player = new (0) BootMoviePlayer(640, 448);
             resident_exchange_allocation_heap(heap);
             player->state->set_scale(1.0f, 1.0f);
             player->state->set_words(0x800, 0x800, 1);
 
-            if (((BootResource0970*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
+            if (((BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
             {
                 player->state->unk80D8 = 1;
             }

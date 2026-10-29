@@ -31,21 +31,23 @@ typedef struct BootMatrix92D0
     BootVector4DDAA0 vectors[4];
 } BootMatrix92D0;
 
-/** @brief Partial resource storage for transferred flag bits and header values. */
-typedef struct BootResourceBits0970
+/** @brief The battle trophy flags kept with the system settings, one bit per trophy, under their own checksum. */
+typedef struct BootTrophyFlags
 {
     u8 unk00[4];
 
     /** Size of the flag array in bytes. */
     s32 size;
 
-    u8* unk08;
+    /** Flag array: bit i of the array is set once trophy i is earned. */
+    u8* flag_bytes;
     u8 unk0C[8];
-    s32 unk14;
+    /** Random word mixed into each trophy record's key; replaced when the flags are reset. */
+    s32 trophy_key;
     /** Seed for checksum. */
     u32 checksum_seed;
     u32 checksum;
-} BootResourceBits0970;
+} BootTrophyFlags;
 
 /**
  * @brief 0xB4-byte saved record that is kept XOR-encoded, with a checksum over the encoded bytes.
@@ -87,14 +89,14 @@ typedef struct BootSealedRecord
 } BootSealedRecord;
 
 /** @brief Partial system settings, with option bits and two checksummed blocks. */
-typedef struct BootResource0970
+typedef struct BootSystemSettings
 {
     /** Button mask that confirms a selection. */
-    u16 unk00;
+    u16 confirm_buttons;
     /** Button mask that cancels or skips. */
-    u16 unk02;
+    u16 cancel_buttons;
     /** Button mask for the other choice of a two-way prompt. */
-    u16 unk04;
+    u16 alternate_buttons;
     u16 unk06;
     u8 unk08[0x1C];
     u8 unk24_low : 2;
@@ -122,7 +124,7 @@ typedef struct BootResource0970
     /** Seed for checksum, replaced on every write. */
     u16 key;
     u8 unkA8[0x2C];
-    BootSealedRecord unkD4;
+    BootSealedRecord sealed_record;
     u8 unk188[4];
     /** Nonzero for the 16:9 screen layout. */
     u8 widescreen;
@@ -142,8 +144,8 @@ typedef struct BootResource0970
     u16 extra_checksum;
     /** Seed for extra_checksum. */
     u16 extra_key;
-    BootResourceBits0970 unk1A8;
-} BootResource0970;
+    BootTrophyFlags trophy_flags;
+} BootSystemSettings;
 
 /** Partial resident memory card and loading state reached through D_001B65E4. */
 typedef struct BootResident1B65E4
@@ -264,13 +266,13 @@ u16 func_457470(u16 seed, const void* data, s32 size);
  * @param seed Seed, passed by address.
  * @param checksum Receives the checksum.
  */
-void func_457670(BootResourceBits0970* bits, u32* seed, u32* checksum);
+void func_457670(BootTrophyFlags* bits, u32* seed, u32* checksum);
 
 /**
  * @brief Recompute the checksum of a flag block from its key.
  * @param bits Flag block.
  */
-void func_457520(BootResourceBits0970* bits);
+void func_457520(BootTrophyFlags* bits);
 
 #ifdef __cplusplus
 }
@@ -278,9 +280,9 @@ void func_457520(BootResourceBits0970* bits);
 
 #ifdef __cplusplus
 /** @brief Return the system settings in the resident save data. */
-static inline BootResource0970* boot_settings()
+static inline BootSystemSettings* boot_settings()
 {
-    return (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    return (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 }
 
 /**
@@ -289,9 +291,9 @@ static inline BootResource0970* boot_settings()
  * @param index Unsigned flag index.
  * @return One if the bit is set, otherwise zero.
  */
-static inline s32 resource_bit(BootResourceBits0970* bits, u32 index)
+static inline s32 resource_bit(BootTrophyFlags* bits, u32 index)
 {
-    return (bits->unk08[index / 8] >> (index % 8)) & 1;
+    return (bits->flag_bytes[index / 8] >> (index % 8)) & 1;
 }
 
 /**
@@ -300,7 +302,7 @@ static inline s32 resource_bit(BootResourceBits0970* bits, u32 index)
  * @param index Unsigned flag index.
  * @param enabled Nonzero to set the bit, or zero to clear it.
  */
-static inline void set_resource_bit(BootResourceBits0970* bits, u32 index, s32 enabled)
+static inline void set_resource_bit(BootTrophyFlags* bits, u32 index, s32 enabled)
 {
     u32 byte_index = index / 8;
     u32 bit_index = index % 8;
@@ -309,12 +311,12 @@ static inline void set_resource_bit(BootResourceBits0970* bits, u32 index, s32 e
     if (enabled)
     {
         mask = 1ULL << bit_index;
-        bits->unk08[byte_index] |= mask;
+        bits->flag_bytes[byte_index] |= mask;
     }
     else
     {
         mask = ~(1ULL << bit_index);
-        bits->unk08[byte_index] &= mask;
+        bits->flag_bytes[byte_index] &= mask;
     }
 }
 
@@ -323,10 +325,10 @@ static inline void set_resource_bit(BootResourceBits0970* bits, u32 index, s32 e
 /** @brief Detach an object from its owner. @param object Intrusive receiver. */
 extern "C" void lib_object_detach_owner(void* object);
 
-class BootClass178660;
+class BootContainer;
 class BootClass179150;
 class BootClass170F30;
-extern "C" s32 lib_container_init(BootClass178660* object, s32 code, float x, float y, s32 first, float z, s32 second);
+extern "C" s32 lib_container_init(BootContainer* object, s32 code, float x, float y, s32 first, float z, s32 second);
 extern "C" s32 lib_text_init_resource_rectangle(void* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
 extern "C" s32 lib_panel_init_rectangle(void* object, s32 mode, float x, float y, float width, float height, float extra);
 
@@ -340,46 +342,46 @@ extern "C" s32 lib_panel_init_rectangle(void* object, s32 mode, float x, float y
  * @param position Scroll position.
  * @return One on success, or zero if its storage could not be initialized.
  */
-extern "C" s32 lib_list_indicator_init(class BootClass1725D0* object, float x, float y, float height, float extent, float position);
+extern "C" s32 lib_list_indicator_init(class BootListIndicator* object, float x, float y, float height, float extent, float position);
 extern "C" void func_4E32F0(BootClass179150* object);
 extern "C" void func_4D5C90(void* object);
 
 /** Boot's copy of the virtual intrusive-link root, with vtable D_170E70 in main data. */
-class BootClass170E70
+class BootLink
 {
     public:
         /** @brief Destroy the intrusive-link root. */
-        virtual ~BootClass170E70()
+        virtual ~BootLink()
         {
         }
 };
 
 /** Boot's copy of the intrusive list sentinel, with vtable D_170E80 in main data. */
-class BootClass170E80 : public BootClass170E70
+class BootListSentinel : public BootLink
 {
     public:
         /** @brief Clear the intrusive links. */
-        BootClass170E80() : previous(0), next(0)
+        BootListSentinel() : previous(0), next(0)
         {
         }
         /** @brief Destroy the list sentinel and its virtual root. */
-        virtual ~BootClass170E80()
+        virtual ~BootListSentinel()
         {
         }
-        BootClass170E80* previous;
-        BootClass170E80* next;
+        BootListSentinel* previous;
+        BootListSentinel* next;
 };
 
 /** Boot's copy of the 0x14-byte owned list object, with vtable D_170E90 in main data. */
-class BootClass170E90 : public BootClass170E80
+class BootListObject : public BootListSentinel
 {
     public:
         /** @brief Clear the object flags and its owner after initializing the links. */
-        BootClass170E90() : is_listed(0), unk0f(0), owner(0)
+        BootListObject() : is_listed(0), unk0f(0), owner(0)
         {
         }
         /** @brief Detach from the owner, then destroy the intrusive links. */
-        virtual ~BootClass170E90()
+        virtual ~BootListObject()
         {
             lib_object_detach_owner(this);
         }
@@ -390,7 +392,7 @@ class BootClass170E90 : public BootClass170E80
         /** @brief Advance this registered object's state; the owning list's update pass calls it. */
         virtual void update();
         /** @brief Virtual slot 4; the base implementation does nothing. */
-        virtual void func_001DD4C0();
+        virtual void render();
         s16 list_kind;
         u8 is_listed;
         u8 unk0f;
@@ -398,7 +400,7 @@ class BootClass170E90 : public BootClass170E80
 };
 
 /** Partial 0x880-byte Lib projection object; boot calls the Lib constructor. */
-class BootProjectionACD0 : public BootClass170E90
+class BootProjectionACD0 : public BootListObject
 {
     public:
         /**
@@ -412,7 +414,7 @@ class BootProjectionACD0 : public BootClass170E90
          * @param y Second component.
          * @param z Third component.
          */
-        virtual void func_001E0520(float x, float y, float z);
+        virtual void set_translation(float x, float y, float z);
         u8 unk14[0x23C];
         float unk250;
         u8 unk254[8];
@@ -423,11 +425,11 @@ class BootProjectionACD0 : public BootClass170E90
 };
 
 /** Boot's copy of the position transform, with vtable D_170D60 in main data. */
-class BootClass170D60 : public BootClass170E90
+class BootPositionTransform : public BootListObject
 {
     public:
         /** @brief Destroy the transform. */
-        virtual ~BootClass170D60()
+        virtual ~BootPositionTransform()
         {
         }
         /**
@@ -436,23 +438,23 @@ class BootClass170D60 : public BootClass170E90
          * @param y Second component.
          * @param z Third component.
          */
-        virtual void func_001E0520(float x, float y, float z);
+        virtual void set_translation(float x, float y, float z);
         /** @brief Copy the position. @param value Source vector. */
-        virtual void func_001E0510(const BootVector4DDAA0* value);
+        virtual void set_translation_vector(const BootVector4DDAA0* value);
         /** @brief Copy the position. @param value Source vector. */
-        virtual void func_001E0500(const BootVector4DDAA0* value);
+        virtual void copy_translation(const BootVector4DDAA0* value);
         u8 unk14[0xC];
         BootVector4DDAA0 unk20;
 };
 
 /** Boot's copy of the position, rotation and scale transform, with vtable D_170D90 in main data. */
-class BootClass170D90 : public BootClass170D60
+class BootTransform : public BootPositionTransform
 {
     public:
         /** @brief Initialize the transform; boot calls the Lib copy of this constructor. */
-        BootClass170D90();
+        BootTransform();
         /** @brief Destroy the transform. */
-        virtual ~BootClass170D90()
+        virtual ~BootTransform()
         {
         }
         /**
@@ -461,26 +463,26 @@ class BootClass170D90 : public BootClass170D60
          * @param y Second component.
          * @param z Third component.
          */
-        virtual void func_001E0520(float x, float y, float z);
+        virtual void set_translation(float x, float y, float z);
         /** @brief Copy the position and mark the transform dirty. @param value Source vector. */
-        virtual void func_001E0510(const BootVector4DDAA0* value);
+        virtual void set_translation_vector(const BootVector4DDAA0* value);
         /** @brief Copy the position and mark the transform dirty. @param value Source vector. */
-        virtual void func_001E0500(const BootVector4DDAA0* value);
+        virtual void copy_translation(const BootVector4DDAA0* value);
         /**
          * @brief Convert three rotation components into the rotation vector and mark the transform dirty.
          * @param x First component.
          * @param y Second component.
          * @param z Third component.
          */
-        virtual void func_001E06F0(float x, float y, float z);
+        virtual void set_rotation(float x, float y, float z);
         /** @brief Convert a rotation into the rotation vector and mark the transform dirty. @param value Source rotation. */
-        virtual void func_001E06C0(const BootVector4DDAA0* value);
+        virtual void set_rotation_vector(const BootVector4DDAA0* value);
         /** @brief Convert a rotation into the rotation vector and mark the transform dirty. @param value Source rotation. */
-        virtual void func_001E0690(const BootVector4DDAA0* value);
+        virtual void convert_rotation(const BootVector4DDAA0* value);
         /** @brief Copy the rotation vector and mark the transform dirty. @param value Source vector. */
-        virtual void func_001E0670(const BootVector4DDAA0* value);
+        virtual void set_orientation(const BootVector4DDAA0* value);
         /** @brief Copy the rotation vector and mark the transform dirty. @param value Source vector. */
-        virtual void func_001E0650(const BootVector4DDAA0* value);
+        virtual void copy_orientation(const BootVector4DDAA0* value);
         /**
          * @brief Set all four rotation components and mark the transform dirty.
          * @param x First component.
@@ -488,18 +490,18 @@ class BootClass170D90 : public BootClass170D60
          * @param z Third component.
          * @param w Fourth component.
          */
-        virtual void func_001E0630(float x, float y, float z, float w);
+        virtual void set_orientation_components(float x, float y, float z, float w);
         /**
          * @brief Set the scale's xyz components and mark the transform dirty.
          * @param x First component.
          * @param y Second component.
          * @param z Third component.
          */
-        virtual void func_001DDED0(float x, float y, float z);
+        virtual void set_scale(float x, float y, float z);
         /** @brief Copy the scale vector and mark the transform dirty. @param value Source vector. */
-        virtual void func_001E0750(const BootVector4DDAA0* value);
+        virtual void set_scale_vector(const BootVector4DDAA0* value);
         /** @brief Copy the scale vector and mark the transform dirty. @param value Source vector. */
-        virtual void func_001E0730(const BootVector4DDAA0* value);
+        virtual void copy_scale(const BootVector4DDAA0* value);
         BootVector4DDAA0 unk30;
         BootVector4DDAA0 unk40;
         /** Nonzero when the transformation matrices need rebuilding. */
@@ -511,13 +513,13 @@ extern "C" u32 D_001B65BC;
 extern "C" u8 D_001B65C0;
 
 /** Boot's view of the transform owner with the shared vtable D_178A90 in main data. */
-class BootClass178A90 : public BootClass170D90
+class BootTransformOwner : public BootTransform
 {
     public:
         /** @brief Initialize the owner's state bytes and tracking words. */
-        inline BootClass178A90();
+        inline BootTransformOwner();
         /** @brief Remove this object's mask from the resident flags, then destroy the transform. */
-        virtual ~BootClass178A90()
+        virtual ~BootTransformOwner()
         {
             u32 mask = ~unk8c;
             u32 previous = D_001B65BC;
@@ -530,7 +532,7 @@ class BootClass178A90 : public BootClass170D90
             }
         }
         /** @brief Virtual slot 4; the owner's implementation does nothing. */
-        virtual void func_001DD4C0();
+        virtual void render();
         /** @brief Detach and queue the owner; boot uses the Lib implementation. */
         virtual void destroy();
         /** @brief Clear the byte at offset 0x60. */
@@ -551,15 +553,15 @@ class BootClass178A90 : public BootClass170D90
          * @param matrix Matrix supplied by the caller.
          * @param context Opaque caller context.
          */
-        virtual void func_001E08C0(const void* matrix, void* context);
+        virtual void build_packet(const void* matrix, void* context);
         /** @brief Mark the matrix state ready; boot uses the Lib implementation. */
         virtual void update_transform_matrix();
         /** @brief Read the stored transformation matrix; boot uses the Lib implementation. @return Matrix pointer. */
         virtual const void* get_transform_matrix();
         /** @brief Copy the source transformation state; boot uses the Lib implementation. @param source Transform source. */
-        virtual void func_004CFFA0(const BootClass178A90* source);
+        virtual void copy_transform_state(const BootTransformOwner* source);
         /** @brief Produce a transformation receiver. @return Null. */
-        virtual BootClass178A90* func_001E08D0();
+        virtual BootTransformOwner* func_001E08D0();
         /** @brief Default hook; does nothing. */
         virtual void func_001E08E0();
         /** @brief Store the halfword at offset 0x6A. @param value Value to store. */
@@ -567,10 +569,10 @@ class BootClass178A90 : public BootClass170D90
         /** @brief Store the halfword at offset 0x6C. @param value Value to store. */
         inline void func_001DFE40(u16 value);
         u8 unk60;
-        u8 unk61;
+        u8 matrix_ready;
         u8 unk62;
         u8 unk63;
-        u8 unk64;
+        u8 dma_pending;
         u8 unk65;
         u8 unk66;
         u8 unk67;
@@ -586,7 +588,7 @@ class BootClass178A90 : public BootClass170D90
 };
 
 /** Boot's copy of the transform subclass between D_178A90 and D_174610, with vtable D_170DE0 in main data. */
-class BootClass170DE0 : public BootClass178A90
+class BootClass170DE0 : public BootTransformOwner
 {
     public:
         /** @brief Destroy the transform subclass. */
@@ -596,25 +598,25 @@ class BootClass170DE0 : public BootClass178A90
 };
 
 /** Boot's copy of the two-callback DMA interface, with vtable D_170D50 in main data. */
-class BootClass170D50
+class BootDmaCallbacks
 {
     public:
         /** @brief Install the interface's vtable. */
-        inline BootClass170D50();
+        inline BootDmaCallbacks();
         /** @brief Default DMA notification hook; does nothing. @param value Notification value. */
-        virtual void func_001E04E0(u32 value);
+        virtual void on_packet_notify(u32 value);
         /** @brief Default preparation hook; does nothing. @param value Notification word or packet address. */
-        virtual void func_001E04F0(u32 value);
+        virtual void on_packet_complete(u32 value);
 };
 
 /** Boot's view of the transform with callback interface, with the shared vtable D_174610 in main data. */
-class BootClass174610 : public BootClass170DE0, public BootClass170D50
+class BootCallbackTransform : public BootClass170DE0, public BootDmaCallbacks
 {
     public:
         /** @brief Initialize the transform and callback interface; boot calls the Lib constructor. */
-        BootClass174610();
+        BootCallbackTransform();
         /** @brief Destroy the transform receiver. */
-        virtual ~BootClass174610()
+        virtual ~BootCallbackTransform()
         {
         }
         /**
@@ -630,15 +632,15 @@ class BootClass174610 : public BootClass170DE0, public BootClass170D50
 };
 
 /** Boot's view of the 0x14-byte list receiver with the shared vtable D_178A70 in main data. */
-class BootClass178A70
+class BootListReceiver
 {
     public:
-        BootClass170E80 sentinel;
+        BootListSentinel sentinel;
         u32 node_count;
         /** @brief Initialize the list receiver; boot calls the Lib constructor. */
-        BootClass178A70();
+        BootListReceiver();
         /** @brief Destroy the list receiver. */
-        virtual ~BootClass178A70();
+        virtual ~BootListReceiver();
         /** @brief Append a node to the end of the list. @param node Node to append. */
         virtual void append(void* node);
         /** @brief Prepend a node to the beginning of the list. @param node Node to prepend. */
@@ -654,11 +656,11 @@ class BootClass178A70
 };
 
 /** Resident manager list that updates its nodes, with the Lib vtable D_178DD0. */
-class BootClass178DD0 : public BootClass178A70
+class BootUpdateList : public BootListReceiver
 {
     public:
         /** @brief Destroy the manager list. */
-        virtual ~BootClass178DD0();
+        virtual ~BootUpdateList();
         /** @brief Remove a node. @param object Node to remove. */
         virtual void remove_node(void* object);
         /** @brief Update every node. */
@@ -670,7 +672,7 @@ class BootClass178DD0 : public BootClass178A70
 };
 
 /** Partial resident display manager D_001B6628 with the Lib vtable D_178F30. */
-class BootClass178F30 : public BootClass178DD0
+class BootDisplayManager : public BootUpdateList
 {
     public:
         u8 unk14[0x7C];
@@ -678,10 +680,10 @@ class BootClass178F30 : public BootClass178DD0
         void* current_display;
 };
 
-extern "C" BootClass178F30* D_001B6628;
+extern "C" BootDisplayManager* D_001B6628;
 
 /** Boot's view of the 0xF0-byte container with the Lib vtable D_178660. */
-class BootClass178660 : public BootClass178A70, public BootClass174610
+class BootContainer : public BootListReceiver, public BootCallbackTransform
 {
     public:
         /**
@@ -691,13 +693,13 @@ class BootClass178660 : public BootClass178A70, public BootClass174610
          * @param y Second transform component.
          * @param z Third transform component.
          */
-        BootClass178660(s32 code, float x, float y, float z)
+        BootContainer(s32 code, float x, float y, float z)
         {
             unk6c = 0x6FF1;
             lib_container_init(this, code, x, y, 0, z, 0);
         }
         /** @brief Destroy the container. */
-        virtual ~BootClass178660();
+        virtual ~BootContainer();
         LibStorageBlock0C unkd0;
         u8 unkdc[0x14];
 };
@@ -715,7 +717,7 @@ class BootWordQuad
 };
 
 /** Partial 0xC0-byte transform with the Lib vtable D_179150. */
-class BootClass179150 : public BootClass178A90, public BootClass170D50
+class BootClass179150 : public BootTransformOwner, public BootDmaCallbacks
 {
     public:
         /** @brief Initialize the transform's modes and timing. */
@@ -742,14 +744,14 @@ class BootClass179150 : public BootClass178A90, public BootClass170D50
 };
 
 /** Partial 0xC0-byte Lib transform with vtable D_171DD0 in main data; boot calls its Lib constructor. */
-class BootClass171DD0 : public BootClass178A90, public BootClass170D50
+class BootClipRegion : public BootTransformOwner, public BootDmaCallbacks
 {
     public:
         /** @brief Initialize the object; boot calls the Lib constructor. */
-        BootClass171DD0();
+        BootClipRegion();
 
         /** @brief Destroy the object. */
-        virtual ~BootClass171DD0();
+        virtual ~BootClipRegion();
 
         BootDimensionsACD0* display;
         void* unk98;
@@ -762,82 +764,82 @@ class BootClass171DD0 : public BootClass178A90, public BootClass170D50
 };
 
 /** Partial 0xF0-byte selection cursor with the Lib vtable D_175070. */
-class BootClass175070 : public BootClass174610, public ItemCreationClass185050
+class BootSelectionCursor : public BootCallbackTransform, public ItemCreationClass185050
 {
     public:
         /** @brief Initialize the cursor transform. */
-        BootClass175070()
+        BootSelectionCursor()
         {
             unk6c = 0x6FF0;
         }
         /** @brief Destroy the cursor. */
-        virtual ~BootClass175070();
+        virtual ~BootSelectionCursor();
 };
 
 /** Boot's view of the 0xFC-byte Lib drawing widget with vtable D_174EF0. */
-class BootClass174EF0 : public BootClass170E90
+class BootDrawWidget : public BootListObject
 {
     public:
         /** @brief Initialize the widget; boot calls the Lib constructor. */
-        BootClass174EF0();
+        BootDrawWidget();
         /** @brief Destroy the widget. */
-        virtual ~BootClass174EF0();
+        virtual ~BootDrawWidget();
         /** @brief Set the draw color and mark the widget visible. @param color Packed color. */
         void set_color(u32 color)
         {
-            unk98 = color;
-            unk3c = 1;
+            draw_color = color;
+            needs_redraw = 1;
         }
         /** @brief Set the text scale and mark the widget for redraw. @param scale Scale factor. */
         void set_scale(float scale)
         {
-            unk80 = scale;
-            unk3c = 1;
+            draw_scale = scale;
+            needs_redraw = 1;
         }
         /** @brief Set the alpha and mark the widget for redraw. @param alpha Alpha, 128 for opaque. */
         void set_alpha(float alpha)
         {
-            unk28 = alpha;
-            unk3c = 1;
+            draw_alpha = alpha;
+            needs_redraw = 1;
         }
         /** @brief Set the color the widget is modulated by and mark it for redraw. @param color Packed color, 0x808080 for unchanged. */
         void set_tint(u32 color)
         {
             tint = color;
-            unk3c = 1;
+            needs_redraw = 1;
         }
         /** @brief Set the horizontal alignment and mark the widget for redraw. @param align Alignment. */
         void set_horizontal_align(s32 align)
         {
-            unk9c = align;
-            unk3c = 1;
+            horizontal_align = align;
+            needs_redraw = 1;
         }
         /** @brief Set the vertical alignment and mark the widget for redraw. @param align Alignment. */
         void set_vertical_align(s32 align)
         {
-            unka0 = align;
-            unk3c = 1;
+            vertical_align = align;
+            needs_redraw = 1;
         }
         u8 unk14[0x14];
-        float unk28;
+        float draw_alpha;
         u8 unk2c[0xC];
         u8 unk38;
         u8 unk39[3];
-        u8 unk3c;
+        u8 needs_redraw;
         u8 unk3d[2];
         u8 unk3f;
         u8 unk40[0x40];
-        float unk80;
+        float draw_scale;
         u8 unk84[0x10];
         u32 tint;
-        u32 unk98;
-        s32 unk9c;
-        s32 unka0;
+        u32 draw_color;
+        s32 horizontal_align;
+        s32 vertical_align;
         u8 unka4[0x58];
 };
 
 /** Boot's view of the 0x114-byte Lib text widget with vtable D_178750. */
-class BootClass178750 : public BootClass174EF0
+class BootTextWidget : public BootDrawWidget
 {
     public:
         /**
@@ -850,24 +852,24 @@ class BootClass178750 : public BootClass174EF0
          * @param width Rectangle width.
          * @param height Rectangle height.
          */
-        BootClass178750(s32 slot, s32 key, u8 flag, float x, float y, float width, float height)
+        BootTextWidget(s32 slot, s32 key, u8 flag, float x, float y, float width, float height)
         {
             unk38 = 11;
             lib_text_init_resource_rectangle(this, slot, key, flag, x, y, width, height);
         }
         /** @brief Destroy the text widget. */
-        virtual ~BootClass178750();
+        virtual ~BootTextWidget();
         u8 unkfc[0x18];
 };
 
 /** Boot's view of the 0x40-byte Lib widget base with vtable D_178600; boot calls the Lib constructor. */
-class BootClass178600 : public BootClass170E90
+class BootWidget : public BootListObject
 {
     public:
         /** @brief Initialize the widget rectangle and state bytes. */
-        BootClass178600();
+        BootWidget();
         /** @brief Destroy the widget. */
-        virtual ~BootClass178600();
+        virtual ~BootWidget();
         u8 unk14[0x24];
         u8 unk38;
         u8 unk39[3];
@@ -876,7 +878,7 @@ class BootClass178600 : public BootClass170E90
 };
 
 /** Boot's view of the 0x58-byte Lib list indicator with vtable D_1725D0, a bar showing how far a list is scrolled. */
-class BootClass1725D0 : public BootClass178600
+class BootListIndicator : public BootWidget
 {
     public:
         /**
@@ -887,13 +889,13 @@ class BootClass1725D0 : public BootClass178600
          * @param extent Size of one scroll step, as a share of the bar.
          * @param position Scroll position.
          */
-        BootClass1725D0(float x, float y, float height, float extent, float position)
+        BootListIndicator(float x, float y, float height, float extent, float position)
         {
             unk38 = 3;
             lib_list_indicator_init(this, x, y, height, extent, position);
         }
         /** @brief Destroy the indicator. */
-        virtual ~BootClass1725D0();
+        virtual ~BootListIndicator();
         /** @brief Set the scroll position and mark the indicator for redraw. @param value Position, from 0 to 100. */
         void set_position(float value)
         {
@@ -918,7 +920,7 @@ struct BootPanelRect50
 };
 
 /** Boot's view of the 0x90-byte Lib panel with vtable D_178630. */
-class BootClass178630 : public BootClass178600
+class BootPanel : public BootWidget
 {
     public:
         /**
@@ -930,7 +932,7 @@ class BootClass178630 : public BootClass178600
          * @param height Drawing height.
          * @param extra Extra drawing coordinate.
          */
-        BootClass178630(s32 mode, float x, float y, float width, float height, float extra)
+        BootPanel(s32 mode, float x, float y, float width, float height, float extra)
         {
             unk50.unk0c = 0.0f;
             unk50.unk08 = 0.0f;
@@ -940,7 +942,7 @@ class BootClass178630 : public BootClass178600
             lib_panel_init_rectangle(this, mode, x, y, width, height, extra);
         }
         /** @brief Destroy the panel. */
-        virtual ~BootClass178630();
+        virtual ~BootPanel();
         LibStorageBlock0C unk40;
         u8 unk4c[4];
         BootPanelRect50 unk50;
@@ -948,29 +950,29 @@ class BootClass178630 : public BootClass178600
         u8 unk64[0x2C];
 };
 
-class BootClass171BF0;
+class BootPacketBuffer;
 
 /** Partial 0x210-byte Lib image strip with vtable D_1735A0 in main data; boot calls the Lib constructor. */
-class BootClass1735A0 : public BootClass178A90, public BootClass170D50
+class BootImageStrip : public BootTransformOwner, public BootDmaCallbacks
 {
     public:
         /** @brief Construct the strip. */
-        BootClass1735A0();
+        BootImageStrip();
         u8 unk94[0x17C];
 };
 
 /** 0xE0-byte screen fade with vtable D_171C00 in main data: ten strips copied from the display, faded out. */
-class BootClass171C00 : public BootClass178A90, public BootClass170D50
+class BootScreenFade : public BootTransformOwner, public BootDmaCallbacks
 {
     public:
         /** @brief Copy the display into ten strips and show them, fully opaque. @param display Display to copy. */
-        BootClass171C00(BootDimensionsACD0* display);
+        BootScreenFade(BootDimensionsACD0* display);
         /** @brief Destroy the strips, the copy buffer and the packet. */
-        virtual ~BootClass171C00();
+        virtual ~BootScreenFade();
         /** @brief Fade out; once transparent, destroy the strips and the fade. */
         virtual void update();
         /** @brief Mark the fade active and submit its packet. */
-        virtual void func_001DD4C0();
+        virtual void render();
         /** @brief Set the byte at offset 0x60 to 10. */
         virtual void func_001E0860();
         /**
@@ -979,13 +981,13 @@ class BootClass171C00 : public BootClass178A90, public BootClass170D50
          * @param matrix Matrix supplied by the caller; unused.
          * @param context Opaque caller context; unused.
          */
-        virtual void func_001E08C0(const void* matrix, void* context);
+        virtual void build_packet(const void* matrix, void* context);
         /** @brief Mark the fade inactive and run the Lib release helper. @param value Unused. */
-        virtual void func_001E04F0(u32 value);
-        BootClass1735A0* images[10];
+        virtual void on_packet_complete(u32 value);
+        BootImageStrip* images[10];
         u8* buffer;
         BootDimensionsACD0* display;
-        BootClass171BF0* packet;
+        BootPacketBuffer* packet;
         u8 unkc8;
         u8 unkc9[3];
         float unkcc;
@@ -993,13 +995,13 @@ class BootClass171C00 : public BootClass178A90, public BootClass170D50
         u8 unkd4[0xC];
 };
 
-class BootClass175320;
+class BootScene;
 
 /**
  * Title menu, with vtable D_171BB0 in main data: a Lib scene from resources 0x27 and 0xA whose nodes are the New Game,
  * Continue, Battle Collection and Install entries.
  */
-class BootTitleMenu : public BootClass170E90
+class BootTitleMenu : public BootListObject
 {
     public:
         /**
@@ -1030,14 +1032,14 @@ class BootTitleMenu : public BootClass170E90
         /** @brief Dim Continue and Battle Collection unless a memory card holds the data they need. */
         void update_item_availability();
 
-        BootClass175320* scene;
+        BootScene* scene;
         s32 step;
 
         /** The scene's camera node, made the current display. */
         void* camera;
 
         /** Arrow beside the selected item. */
-        class BootClass175070* cursor;
+        class BootSelectionCursor* cursor;
 
         u8* scene_data;
 
@@ -1068,13 +1070,13 @@ class BootTitleMenu : public BootClass170E90
 };
 
 class BootResident113E40;
-class BootClass172500;
+class BootMoviePlayer;
 
 /**
  * Starts the game, with vtable D_171CB0 in main data. On a new game with Dolby Pro Logic II output it first plays
  * movie 13, then loads resource 0x42B and hands it to the boot program to run next.
  */
-class BootGameLauncher : public BootClass170E90
+class BootGameLauncher : public BootListObject
 {
     public:
         /** @brief Clear the state and allocate the 0x12000-byte work buffer. */
@@ -1093,13 +1095,13 @@ class BootGameLauncher : public BootClass170E90
         s32 step;
         s32 timer;
         BootResident113E40* movie_heap;
-        BootClass172500* player;
+        BootMoviePlayer* player;
 };
 
-class BootClass177820;
+class BootModel;
 
 /** Partial 0x2C-byte progress bar with vtable D_171BD0 in main data; driven with a done/total pair. */
-class BootProgressBar : public BootClass170E90
+class BootProgressBar : public BootListObject
 {
     public:
         /** @brief Initialize the progress bar. */
@@ -1109,7 +1111,7 @@ class BootProgressBar : public BootClass170E90
         /** @brief Detach the bar and its model, destroy the model and delete the bar. */
         virtual void destroy();
         class LibDrawBuffer* draw_buffer;
-        BootClass177820* unk18;
+        BootModel* unk18;
         s32 width;
         s32 height;
         u32 color;
@@ -1117,11 +1119,11 @@ class BootProgressBar : public BootClass170E90
 };
 
 /** Boot's view of the Lib model base that adds a matrix and three vectors, with the Lib vtable D_172080. */
-class BootClass172080 : public BootClass178A90
+class BootModelBase : public BootTransformOwner
 {
     public:
         /** @brief Destroy the model base; boot uses the Lib implementation. */
-        virtual ~BootClass172080();
+        virtual ~BootModelBase();
         /** @brief Rebuild the transformation matrix; boot uses the Lib implementation. */
         virtual void update_transform_matrix();
         /** @brief Read the transformation matrix. @return The matrix. */
@@ -1145,7 +1147,7 @@ class BootClass172080 : public BootClass178A90
             return &unk1F0;
         }
         /** @brief Copy another model's state; boot uses the Lib implementation. @param source Model to copy. */
-        virtual void func_4D9F40(const BootClass172080* source);
+        virtual void func_4D9F40(const BootModelBase* source);
         BootMatrix92D0 unk90;
         BootMatrix92D0 unkD0;
         u8 unk110[0xC0];
@@ -1159,11 +1161,11 @@ class BootClass172080 : public BootClass178A90
 };
 
 /** Boot's view of the Lib model with color factors, with the Lib vtable D_174310. */
-class BootClass174310 : public BootClass172080
+class BootColorModel : public BootModelBase
 {
     public:
         /** @brief Destroy the model; boot uses the Lib implementation. */
-        virtual ~BootClass174310();
+        virtual ~BootColorModel();
         /** @brief Detach and queue the model; boot uses the Lib implementation. */
         virtual void destroy();
         /**
@@ -1179,36 +1181,36 @@ class BootClass174310 : public BootClass172080
          * @brief Copy another model's byte at offset 0x210 and its Lib state.
          * @param source Model to copy.
          */
-        virtual void func_001E9500(const BootClass174310* source)
+        virtual void func_001E9500(const BootColorModel* source)
         {
             func_001E94E0(source->unk210);
-            BootClass172080::func_4D9F40(source);
+            BootModelBase::func_4D9F40(source);
         }
         /** @brief Store the component product of the two input vectors. */
-        virtual void func_001DDAA0();
+        virtual void update_combined_color_factor();
         /**
          * @brief Store the color modulation, then recompute the combined color factor.
          * @param key Caller's key; unused here.
          * @param modulation Color modulation to store.
          */
-        virtual void func_001E94A0(s32 key, const BootVector4DDAA0* modulation)
+        virtual void set_color_modulation(s32 key, const BootVector4DDAA0* modulation)
         {
-            copy_vector(&unk570, modulation);
-            func_001DDAA0();
+            copy_vector(&color_modulation, modulation);
+            update_combined_color_factor();
         }
         /** @brief Read the color modulation. @return Vector at offset 0x570. */
-        virtual const BootVector4DDAA0* func_001E94D0() const
+        virtual const BootVector4DDAA0* get_color_modulation() const
         {
-            return &unk570;
+            return &color_modulation;
         }
         /** @brief Virtual slot 0x98; boot uses the Lib implementation. */
         virtual void func_slot98();
         /** @brief Virtual slot 0x9C; boot uses the Lib implementation. */
         virtual void func_448180();
         u8 unk220[0x340];
-        BootVector4DDAA0 unk560;
-        BootVector4DDAA0 unk570;
-        BootVector4DDAA0 unk580;
+        BootVector4DDAA0 base_color_factor;
+        BootVector4DDAA0 color_modulation;
+        BootVector4DDAA0 combined_color_factor;
         u8 unk590[0xD];
         u8 unk59d_0_2 : 3;
         u8 unk59d_3 : 1;
@@ -1217,18 +1219,18 @@ class BootClass174310 : public BootClass172080
         u8 unk5a0;
         u8 unk5a1[3];
         /** Child objects, such as the face's morph targets. */
-        BootClass170E80 children;
+        BootListSentinel children;
         u8 unk5b0[0x84];
         void* unk634;
         u8 unk638[8];
 };
 
 /** Boot's view of the Lib model base that adds five more slots; no vtable of its own appears in main data. */
-class BootClass177820Primary : public BootClass174310
+class BootModelPrimaryBase : public BootColorModel
 {
     public:
         /** @brief Destroy the model; boot uses the Lib implementation. */
-        virtual ~BootClass177820Primary();
+        virtual ~BootModelPrimaryBase();
         /** @brief Virtual slot 0xA0; boot uses the Lib implementation. */
         virtual void func_4A3F50();
         /** @brief Virtual slot 0xA4; boot uses the Lib implementation. */
@@ -1242,7 +1244,7 @@ class BootClass177820Primary : public BootClass174310
 };
 
 /** Boot's view of the Lib model's second base at offset 0x640. */
-class BootClass177820Secondary
+class BootModelSecondaryBase
 {
     public:
         /** @brief First secondary slot. */
@@ -1252,13 +1254,13 @@ class BootClass177820Secondary
 };
 
 /** Boot's view of the Lib model with vtable D_177820; boot calls its Lib constructor and destructor. */
-class BootClass177820 : public BootClass177820Primary, public BootClass177820Secondary
+class BootModel : public BootModelPrimaryBase, public BootModelSecondaryBase
 {
     public:
         /** @brief Construct an empty model; boot uses the Lib implementation. */
-        BootClass177820();
+        BootModel();
         /** @brief Destroy the model; boot uses the Lib implementation. */
-        virtual ~BootClass177820();
+        virtual ~BootModel();
         /** @brief Detach the attached object when the gate is set, then destroy the model through its base. */
         virtual void destroy()
         {
@@ -1267,12 +1269,12 @@ class BootClass177820 : public BootClass177820Primary, public BootClass177820Sec
                 func_4D5C90(unk634);
             }
 
-            BootClass174310::destroy();
+            BootColorModel::destroy();
         }
         /** @brief Advance the model; boot uses the Lib implementation. */
         virtual void update();
         /** @brief Virtual slot 4; boot uses the Lib implementation. */
-        virtual void func_001DD4C0();
+        virtual void render();
         /** @brief Boot uses the Lib implementation. */
         virtual void func_001E0860();
         /** @brief Boot uses the Lib implementation. @param output Opaque output object. @return Lib result. */
@@ -1286,9 +1288,9 @@ class BootClass177820 : public BootClass177820Primary, public BootClass177820Sec
          * @param matrix Matrix supplied by the caller.
          * @param context Opaque caller context.
          */
-        virtual void func_001E08C0(const void* matrix, void* context);
+        virtual void build_packet(const void* matrix, void* context);
         /** @brief Boot uses the Lib implementation. @return Transformation receiver. */
-        virtual BootClass178A90* func_001E08D0();
+        virtual BootTransformOwner* func_001E08D0();
         /** @brief Boot uses the Lib implementation. */
         virtual void func_001E08E0();
         /** @brief Virtual slot 0x98; boot uses the Lib implementation. */
@@ -1347,7 +1349,7 @@ class BootClass177820 : public BootClass177820Primary, public BootClass177820Sec
          * @param links Display list the model draws through.
          * @param source Scene model to copy.
          */
-        virtual void func_4A37C0(BootClass178DD0* links, BootClass170F30* source);
+        virtual void func_4A37C0(BootUpdateList* links, BootClass170F30* source);
         /** @brief Boot uses the Lib implementation. */
         virtual void func_4A7E80();
         /** @brief Boot uses the Lib implementation. */
@@ -1366,7 +1368,7 @@ class BootClass177820 : public BootClass177820Primary, public BootClass177820Sec
 };
 
 /** Partial model object with vtable D_170F30 in main data. */
-class BootClass170F30 : public BootClass177820
+class BootClass170F30 : public BootModel
 {
     public:
         /** @brief Destroy the model object. */
@@ -1376,7 +1378,7 @@ class BootClass170F30 : public BootClass177820
          * @param matrix Matrix supplied by the caller.
          * @param context Opaque caller context.
          */
-        virtual void func_001E08C0(const void* matrix, void* context);
+        virtual void build_packet(const void* matrix, void* context);
 };
 
 /** Block of a texture resource that holds its size; the width and height are powers of two. */
@@ -1421,7 +1423,7 @@ static inline const BootTextureImage* texture_image(const BootTextureResource* r
 }
 
 /** Partial 0x30-byte image object with vtable D_171C90 in main data, drawn from a decoded FIS image. */
-class BootImage : public BootClass170E90
+class BootImage : public BootListObject
 {
     public:
         /** @brief Clear the object's model and state bytes. */
@@ -1450,7 +1452,7 @@ class BootImage : public BootClass170E90
         void set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s32 depth);
 
         class LibDrawBuffer* draw_buffer;
-        BootClass177820* unk18;
+        BootModel* unk18;
 
         /** Texture width in texels. */
         s32 texture_width;
@@ -1473,7 +1475,7 @@ class BootImage : public BootClass170E90
  * Popup with vtable D_171070 in main data that tells the player to fix the PlayStation BB Unit while the resident
  * loader reports an error, and removes itself once the error clears.
  */
-class BootUnitErrorPopup : public BootClass170E90
+class BootUnitErrorPopup : public BootListObject
 {
     public:
         /**
@@ -1500,10 +1502,10 @@ class BootUnitErrorPopup : public BootClass170E90
         class BootProgram* program;
         u8 enabled;
         u8 unk19[3];
-        BootClass178660* container;
-        BootClass170E90* text;
+        BootContainer* container;
+        BootListObject* text;
         /** Frame behind the text. */
-        BootClass170E90* panel;
+        BootListObject* panel;
 };
 
 /** Message keys in boot's English message bank (resource 38, block 0). */
@@ -1571,7 +1573,7 @@ enum BootInstallResource
  * in main data. It asks yes/no, checks the unit and its free space, writes the partition files while
  * showing a progress bar and battle-system tips, then hands over to the next boot stage.
  */
-class BootInstaller : public BootClass170E90
+class BootInstaller : public BootListObject
 {
     public:
         /** @brief Allocate the boot buffers and clear the owned objects. */
@@ -1628,11 +1630,11 @@ class BootInstaller : public BootClass170E90
         s32 wait_frames;
         /** 0x200-byte buffer the resident install code fills with the icon.sys header. */
         u8* icon_header;
-        BootClass178660* container;
-        BootClass178750* message_text;
-        BootClass178750* progress_text;
-        BootClass178750* tip_text;
-        BootClass175070* cursor;
+        BootContainer* container;
+        BootTextWidget* message_text;
+        BootTextWidget* progress_text;
+        BootTextWidget* tip_text;
+        BootSelectionCursor* cursor;
 };
 
 /** Partial loaded program image; the offset locates the copy of the main executable's code. */

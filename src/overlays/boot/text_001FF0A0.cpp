@@ -12,18 +12,18 @@ void BootBattleTrophyViewer::release()
 {
     for (s32 i = 0; i < 10; i++)
     {
-        if (unk28[i] != 0)
+        if (images[i] != 0)
         {
-            lib_object_detach_owner(unk28[i]);
-            unk28[i]->destroy();
-            unk28[i] = 0;
+            lib_object_detach_owner(images[i]);
+            images[i]->destroy();
+            images[i] = 0;
         }
     }
 
-    if (unk88 != 0)
+    if (container != 0)
     {
-        unk88->destroy();
-        unk88 = 0;
+        container->destroy();
+        container = 0;
     }
 
     if (message_text != 0)
@@ -62,10 +62,10 @@ void BootBattleTrophyViewer::release()
         date_text = 0;
     }
 
-    if (unkA8 != 0)
+    if (percentage_text != 0)
     {
-        unkA8->destroy();
-        unkA8 = 0;
+        percentage_text->destroy();
+        percentage_text = 0;
     }
 
     if (sort_text != 0)
@@ -114,24 +114,24 @@ void BootBattleTrophyViewer::release()
         records = 0;
     }
 
-    if (unkB8 != 0)
+    if (grid_clip != 0)
     {
-        lib_object_detach_owner(unkB8);
-        unkB8->destroy();
-        unkB8 = 0;
+        lib_object_detach_owner(grid_clip);
+        grid_clip->destroy();
+        grid_clip = 0;
     }
 
-    if (unkBC != 0)
+    if (screen_clip != 0)
     {
-        lib_object_detach_owner(unkBC);
-        unkBC->destroy();
-        unkBC = 0;
+        lib_object_detach_owner(screen_clip);
+        screen_clip->destroy();
+        screen_clip = 0;
     }
 
-    if (unkC0 != 0)
+    if (progress_bar != 0)
     {
-        unkC0->destroy();
-        unkC0 = 0;
+        progress_bar->destroy();
+        progress_bar = 0;
     }
 }
 
@@ -142,16 +142,16 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
 
     for (s32 i = 0; i < 3; i++)
     {
-        delete unk1C[i];
+        delete image_blocks[i];
     }
 
     for (s32 i = 0; i < 10; i++)
     {
-        if (unk28[i] != 0)
+        if (images[i] != 0)
         {
-            lib_object_detach_owner(unk28[i]);
-            unk28[i]->destroy();
-            unk28[i] = 0;
+            lib_object_detach_owner(images[i]);
+            images[i]->destroy();
+            images[i] = 0;
         }
     }
 
@@ -176,9 +176,9 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
         delete[] records;
     }
 
-    if (unk88 != 0)
+    if (container != 0)
     {
-        unk88->destroy();
+        container->destroy();
     }
 
     if (message_text != 0)
@@ -221,9 +221,9 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
         date_text->destroy();
     }
 
-    if (unkA8 != 0)
+    if (percentage_text != 0)
     {
-        unkA8->destroy();
+        percentage_text->destroy();
     }
 
     if (sort_text != 0)
@@ -236,22 +236,22 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
         rank_text->destroy();
     }
 
-    if (unkC0 != 0)
+    if (progress_bar != 0)
     {
-        unkC0->destroy();
-        unkC0 = 0;
+        progress_bar->destroy();
+        progress_bar = 0;
     }
 
-    if (unkB8 != 0)
+    if (grid_clip != 0)
     {
-        lib_object_detach_owner(unkB8);
-        unkB8->destroy();
+        lib_object_detach_owner(grid_clip);
+        grid_clip->destroy();
     }
 
-    if (unkBC != 0)
+    if (screen_clip != 0)
     {
-        lib_object_detach_owner(unkBC);
-        unkBC->destroy();
+        lib_object_detach_owner(screen_clip);
+        screen_clip->destroy();
     }
 }
 
@@ -261,13 +261,13 @@ BootBattleTrophyViewer::BootBattleTrophyViewer()
     resource_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x2B));
     func_103E70(D_001B65E8, 0x2B, resource_data, 1, 0x34BC0, 0, 0, 0, 1);
     unk14 = new (0) u8[func_10CAA0(0x400) * 4 + 0x400];
-    unk1C[0] = 0;
-    unk1C[1] = 0;
-    unk1C[2] = 0;
+    image_blocks[0] = 0;
+    image_blocks[1] = 0;
+    image_blocks[2] = 0;
 
     for (s32 i = 0; i < 10; i++)
     {
-        unk28[i] = 0;
+        images[i] = 0;
     }
 
     for (s32 i = 0; i < 300; i++)
@@ -279,28 +279,28 @@ BootBattleTrophyViewer::BootBattleTrophyViewer()
     records = 0;
     slot = 0;
     bar_fading = 0;
-    unk88 = 0;
+    container = 0;
     message_text = 0;
     cursor = 0;
     slot1_text = 0;
     slot2_text = 0;
-    unkB8 = 0;
-    unkBC = 0;
+    grid_clip = 0;
+    screen_clip = 0;
     number_label = 0;
     scroll_indicator = 0;
     name_text = 0;
     date_text = 0;
-    unkA8 = 0;
+    percentage_text = 0;
     sort_text = 0;
     rank_text = 0;
-    unkC0 = 0;
+    progress_bar = 0;
     slot_ready[0] = 0;
     slot_ready[1] = 0;
     row_count = 0x26;
     images_loaded = 0;
     by_time = 0;
     step = 0;
-    unk1144 = 0;
+    reveal_index = 0;
     u32 step = 0;
 
     for (s32 i = 0; i < 2; i++)

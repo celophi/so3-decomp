@@ -6,13 +6,13 @@
 #ifdef __cplusplus
 
 /** @brief Store the halfword at offset 0x6A. @param value Value to store. */
-inline void BootClass178A90::func_001DFE30(u16 value)
+inline void BootTransformOwner::func_001DFE30(u16 value)
 {
     unk6a = value;
 }
 
 /** @brief Store the halfword at offset 0x6C. @param value Value to store. */
-inline void BootClass178A90::func_001DFE40(u16 value)
+inline void BootTransformOwner::func_001DFE40(u16 value)
 {
     unk6c = value;
 }
@@ -27,15 +27,15 @@ inline BootWordQuad::BootWordQuad()
 }
 
 /** @brief Install the interface's vtable. */
-inline BootClass170D50::BootClass170D50()
+inline BootDmaCallbacks::BootDmaCallbacks()
 {
 }
 
 /** @brief Initialize the owner's state bytes and tracking words. */
-inline BootClass178A90::BootClass178A90()
+inline BootTransformOwner::BootTransformOwner()
 {
     unk60 = 0;
-    unk61 = 0;
+    matrix_ready = 0;
     unk63 = 0;
     unk66 = 0;
     unk68 = 0;

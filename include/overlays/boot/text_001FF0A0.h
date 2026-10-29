@@ -6,7 +6,7 @@
 #ifdef __cplusplus
 #include "overlays/boot/text_001DD3C0.h"
 
-class BootClass175140;
+class BootStringLabel;
 
 /** Time a trophy was earned, laid out like the console clock: stat, second, minute, hour, pad, day, month, year. */
 struct BootTrophyTime
@@ -43,7 +43,7 @@ struct BootTrophyRecordF10
  * Battle Trophies viewer, with vtable D_171CD0 in main data. It loads the trophy data from a memory card slot and
  * lists the 300 battle trophies.
  */
-class BootBattleTrophyViewer : public BootClass170E90
+class BootBattleTrophyViewer : public BootListObject
 {
     public:
         /** @brief Start loading resource 0x2B, clear the owned objects and build the three palettes. */
@@ -93,8 +93,10 @@ class BootBattleTrophyViewer : public BootClass170E90
         /** Resource 0x2B. */
         u8* resource_data;
 
-        u8* unk1C[3];
-        BootImage* unk28[10];
+        /** Decoded image blocks of resource 0x2B. */
+        u8* image_blocks[3];
+        /** Screen images built from the image blocks. */
+        BootImage* images[10];
 
         /** Screen state. */
         s32 step;
@@ -128,7 +130,8 @@ class BootBattleTrophyViewer : public BootClass170E90
         /** Number of rows in the grid. */
         s32 row_count;
 
-        s32 unk70;
+        /** Frames before the cursor reads input again; counts down to zero. */
+        s32 input_delay;
 
         /** Seconds the rank title has been shown. */
         float rank_timer;
@@ -143,43 +146,46 @@ class BootBattleTrophyViewer : public BootClass170E90
         s32 page_delay;
 
         u8 unk84[4];
-        BootClass178660* unk88;
+        BootContainer* container;
 
         /** Prompt and status message. */
-        BootClass178750* message_text;
+        BootTextWidget* message_text;
 
-        BootClass175070* cursor;
+        BootSelectionCursor* cursor;
 
         /** Slot 1 choice. */
-        BootClass178750* slot1_text;
+        BootTextWidget* slot1_text;
 
         /** Slot 2 choice. */
-        BootClass178750* slot2_text;
+        BootTextWidget* slot2_text;
 
         /** Label showing the number of the trophy under the cursor. */
-        BootClass175140* number_label;
+        BootStringLabel* number_label;
 
         /** Name of the trophy under the cursor. */
-        BootClass178750* name_text;
+        BootTextWidget* name_text;
 
         /** When the trophy under the cursor was earned. */
-        BootClass178750* date_text;
+        BootTextWidget* date_text;
 
-        BootClass178750* unkA8;
+        /** "Percentage Achieved" line (message 0x6A). */
+        BootTextWidget* percentage_text;
 
         /** Sort order. */
-        BootClass178750* sort_text;
+        BootTextWidget* sort_text;
 
         /** Shows how far the grid is scrolled. */
-        BootClass1725D0* scroll_indicator;
+        BootListIndicator* scroll_indicator;
 
         /** Rank title, shown once enough trophies are earned. */
-        BootClass178750* rank_text;
-        BootClass171DD0* unkB8;
-        BootClass171DD0* unkBC;
+        BootTextWidget* rank_text;
+        /** Clips the trophy grid to the area between the header and footer. */
+        BootClipRegion* grid_clip;
+        /** Restores drawing to the whole display after the grid. */
+        BootClipRegion* screen_clip;
 
         /** Loading bar, faded out once loading finishes. */
-        BootProgressBar* unkC0;
+        BootProgressBar* progress_bar;
 
         /** Seconds spent loading. */
         float load_time;
@@ -207,8 +213,10 @@ class BootBattleTrophyViewer : public BootClass170E90
         /** Texture built for each earned trophy. */
         BootTextureResource* textures[300];
 
-        float unkC94[300];
-        s32 unk1144;
+        /** How far each trophy picture has turned from its back to its front, zero when unrevealed. */
+        float flip_progress[300];
+        /** Next trophy to start turning over as the screen opens. */
+        s32 reveal_index;
 
         /** Number of trophies earned. */
         s32 earned_count;

@@ -10,16 +10,16 @@ float func_142270(float value);
 float sqrtf(float value);
 void func_11F390(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s32 y1, u32 z, u32 color);
 void func_11F770(ResidentPacket* packet, void* notification);
-float func_4CC3E0(float angle);
-float func_4CC5B0(float angle);
+float lib_cosine(float angle);
+float lib_sine(float angle);
 void func_109F40(void* handle, void* left, void* right, s32 size);
 s32 func_109F20(void* handle, s32 channel, s32 count, float* destination);
 s32 func_109FB0(void* handle);
 s32 func_109FD0(void* handle);
 s32 func_112610(void* request, s32 sound);
 s32 func_13C4F0(char* buffer, const char* format, ...);
-void lib_container_attach_widget(BootClass178660* object, BootClass174EF0* child);
-void lib_text_set_resource(BootClass178750* object, s32 slot, u32 key, u8 flag);
+void lib_container_attach_widget(BootContainer* object, BootDrawWidget* child);
+void lib_text_set_resource(BootTextWidget* object, s32 slot, u32 key, u8 flag);
 
 /** Sound played for each track. */
 extern const s32 g_music_track_sounds[];
@@ -35,17 +35,17 @@ extern const char g_track_number_format[];
  * @brief Clear the byte at offset 0x64 and run the Lib hook.
  * @param value Notification value; unused.
  */
-void BootNeedleMeter::func_001E04F0(u32 value)
+void BootNeedleMeter::on_packet_complete(u32 value)
 {
-    unk64 = 0;
+    dma_pending = 0;
     func_4D00B0(this);
 }
 
 /** @brief Mark the meter active and submit its packet. */
-void BootNeedleMeter::func_001DD4C0()
+void BootNeedleMeter::render()
 {
-    unk64 = 1;
-    func_11F770(packet, static_cast<BootClass170D50*>(this));
+    dma_pending = 1;
+    func_11F770(packet, static_cast<BootDmaCallbacks*>(this));
 }
 
 /**
@@ -53,7 +53,7 @@ void BootNeedleMeter::func_001DD4C0()
  * @param matrix Matrix supplied by the caller; unused.
  * @param context Opaque caller context; unused.
  */
-void BootNeedleMeter::func_001E08C0(const void* matrix, void* context)
+void BootNeedleMeter::build_packet(const void* matrix, void* context)
 {
     ResidentPacket* buffer = packet;
     buffer->unk08 = buffer->unk00 + 0x40;
@@ -181,12 +181,12 @@ void BootNeedleMeter::func_001E08C0(const void* matrix, void* context)
     float left_angle = 4.5465827f - 0.017453292f * (157.0f * needles[0] / 96.0f);
     float right_angle = 4.5465827f - 0.017453292f * (157.0f * needles[1] / 96.0f);
     float peak_angle = 4.5465827f - 0.017453292f * (157.0f * peak / 96.0f);
-    float left_x = func_4CC3E0(left_angle);
-    float left_y = -func_4CC5B0(left_angle);
-    float right_x = func_4CC3E0(right_angle);
-    float right_y = -func_4CC5B0(right_angle);
-    float peak_x = func_4CC3E0(peak_angle);
-    float peak_y = -func_4CC5B0(peak_angle);
+    float left_x = lib_cosine(left_angle);
+    float left_y = -lib_sine(left_angle);
+    float right_x = lib_cosine(right_angle);
+    float right_y = -lib_sine(right_angle);
+    float peak_x = lib_cosine(peak_angle);
+    float peak_y = -lib_sine(peak_angle);
     s32 left_tip_x = x + 75.0f * left_x;
     s32 left_tip_y = y + 75.0f * left_y;
     s32 left_tail_x = x - 10.0f * left_x;
@@ -392,12 +392,12 @@ void BootMusicPlayer::update_row_colors()
     {
         if (images[4 + i] != 0 && images[4 + i]->unk18 != 0)
         {
-            BootClass177820* model = images[4 + i]->unk18;
+            BootModel* model = images[4 + i]->unk18;
 
             if (selection == i)
             {
                 BootVector4DDAA0 scale;
-                copy_vector(&scale, &model->unk560);
+                copy_vector(&scale, &model->base_color_factor);
 
                 if (brightening == 0)
                 {
@@ -432,8 +432,8 @@ void BootMusicPlayer::update_row_colors()
                     }
                 }
 
-                copy_vector(&model->unk560, &scale);
-                model->func_001DDAA0();
+                copy_vector(&model->base_color_factor, &scale);
+                model->update_combined_color_factor();
             }
             else
             {
@@ -442,8 +442,8 @@ void BootMusicPlayer::update_row_colors()
                 scale.y = 1.0f;
                 scale.z = 1.0f;
                 scale.w = 1.0f;
-                copy_vector(&model->unk560, &scale);
-                model->func_001DDAA0();
+                copy_vector(&model->base_color_factor, &scale);
+                model->update_combined_color_factor();
             }
         }
     }
@@ -462,7 +462,7 @@ void BootMusicPlayer::create_images()
         images[0] = new (0) BootImage;
         images[0]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
         images[0]->set_rectangle(0, 1, 488, 223, 0x80808080, 0);
-        images[0]->unk18->func_001E0520(-244.0f, -112.0f, 0.0f);
+        images[0]->unk18->set_translation(-244.0f, -112.0f, 0.0f);
     }
 
     if (images[1] == 0)
@@ -470,7 +470,7 @@ void BootMusicPlayer::create_images()
         images[1] = new (0) BootImage;
         images[1]->set_texture((const BootTextureResource*)(((u32)image_buffers[1] + 0x7F) & ~0x7F), 0);
         images[1]->set_rectangle(0, 1, 640, 60, 0x80808080, 0);
-        images[1]->unk18->func_001E0520(-320.0f, -216.0f, 0.0f);
+        images[1]->unk18->set_translation(-320.0f, -216.0f, 0.0f);
     }
 
     if (images[2] == 0)
@@ -518,147 +518,147 @@ void BootMusicPlayer::create_images()
         images[14]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
     }
 
-    if (((BootResource0970*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
+    if (((BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->func_001E0520(-422.6667f, -216.0f, 0.0f);
-            images[1]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
+            images[1]->unk18->set_translation(-422.6667f, -216.0f, 0.0f);
+            images[1]->unk18->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[2] != 0)
         {
-            images[2]->unk18->func_001E0520(3e+01f, -217.0f, 0.0f);
+            images[2]->unk18->set_translation(3e+01f, -217.0f, 0.0f);
         }
 
         if (images[3] != 0)
         {
-            images[3]->unk18->func_001E0520(-373.33334f, 28.0f, 0.0f);
-            images[3]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
+            images[3]->unk18->set_translation(-373.33334f, 28.0f, 0.0f);
+            images[3]->unk18->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[4] != 0)
         {
-            images[4]->unk18->func_001E0520(-341.33334f, -1.6e+02f, 0.0f);
+            images[4]->unk18->set_translation(-341.33334f, -1.6e+02f, 0.0f);
         }
 
         if (images[5] != 0)
         {
-            images[5]->unk18->func_001E0520(-341.33334f, -125.0f, 0.0f);
+            images[5]->unk18->set_translation(-341.33334f, -125.0f, 0.0f);
         }
 
         if (images[6] != 0)
         {
-            images[6]->unk18->func_001E0520(-341.33334f, -9e+01f, 0.0f);
+            images[6]->unk18->set_translation(-341.33334f, -9e+01f, 0.0f);
         }
 
         if (images[7] != 0)
         {
-            images[7]->unk18->func_001E0520(-341.33334f, -55.0f, 0.0f);
+            images[7]->unk18->set_translation(-341.33334f, -55.0f, 0.0f);
         }
 
         if (images[9] != 0)
         {
-            images[9]->unk18->func_001E0520(-232.0f, -138.0f, 0.0f);
-            images[9]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
+            images[9]->unk18->set_translation(-232.0f, -138.0f, 0.0f);
+            images[9]->unk18->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[10] != 0)
         {
-            images[10]->unk18->func_001E0520(-356.6667f, -1.0f, 0.0f);
-            images[10]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
+            images[10]->unk18->set_translation(-356.6667f, -1.0f, 0.0f);
+            images[10]->unk18->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[11] != 0)
         {
-            images[11]->unk18->func_001E0520(-212.66667f, -1.0f, 0.0f);
-            images[11]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
+            images[11]->unk18->set_translation(-212.66667f, -1.0f, 0.0f);
+            images[11]->unk18->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[12] != 0)
         {
-            images[12]->unk18->func_001E0520(-68.66667f, -1.0f, 0.0f);
-            images[12]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
+            images[12]->unk18->set_translation(-68.66667f, -1.0f, 0.0f);
+            images[12]->unk18->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[13] != 0)
         {
-            images[13]->unk18->func_001E0520(78.66667f, -1.0f, 0.0f);
-            images[13]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
+            images[13]->unk18->set_translation(78.66667f, -1.0f, 0.0f);
+            images[13]->unk18->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[14] != 0)
         {
-            images[14]->unk18->func_001E0520(222.66667f, -1.0f, 0.0f);
-            images[14]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
+            images[14]->unk18->set_translation(222.66667f, -1.0f, 0.0f);
+            images[14]->unk18->set_scale(1.31f, 1.0f, 1.0f);
         }
     }
     else
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->func_001E0520(-3.2e+02f, -216.0f, 0.0f);
-            images[1]->unk18->func_001DDED0(1.0f, 1.0f, 1.0f);
+            images[1]->unk18->set_translation(-3.2e+02f, -216.0f, 0.0f);
+            images[1]->unk18->set_scale(1.0f, 1.0f, 1.0f);
         }
 
         if (images[2] != 0)
         {
-            images[2]->unk18->func_001E0520(-64.0f, -217.0f, 0.0f);
+            images[2]->unk18->set_translation(-64.0f, -217.0f, 0.0f);
         }
 
         if (images[3] != 0)
         {
-            images[3]->unk18->func_001E0520(-286.0f, 32.0f, 0.0f);
+            images[3]->unk18->set_translation(-286.0f, 32.0f, 0.0f);
         }
 
         if (images[4] != 0)
         {
-            images[4]->unk18->func_001E0520(-2.6e+02f, -1.6e+02f, 0.0f);
+            images[4]->unk18->set_translation(-2.6e+02f, -1.6e+02f, 0.0f);
         }
 
         if (images[5] != 0)
         {
-            images[5]->unk18->func_001E0520(-2.6e+02f, -125.0f, 0.0f);
+            images[5]->unk18->set_translation(-2.6e+02f, -125.0f, 0.0f);
         }
 
         if (images[6] != 0)
         {
-            images[6]->unk18->func_001E0520(-2.6e+02f, -9e+01f, 0.0f);
+            images[6]->unk18->set_translation(-2.6e+02f, -9e+01f, 0.0f);
         }
 
         if (images[7] != 0)
         {
-            images[7]->unk18->func_001E0520(-2.6e+02f, -55.0f, 0.0f);
+            images[7]->unk18->set_translation(-2.6e+02f, -55.0f, 0.0f);
         }
 
         if (images[9] != 0)
         {
-            images[9]->unk18->func_001E0520(-154.0f, -138.0f, 0.0f);
+            images[9]->unk18->set_translation(-154.0f, -138.0f, 0.0f);
         }
 
         if (images[10] != 0)
         {
-            images[10]->unk18->func_001E0520(-272.0f, 0.0f, 0.0f);
+            images[10]->unk18->set_translation(-272.0f, 0.0f, 0.0f);
         }
 
         if (images[11] != 0)
         {
-            images[11]->unk18->func_001E0520(-162.0f, 0.0f, 0.0f);
+            images[11]->unk18->set_translation(-162.0f, 0.0f, 0.0f);
         }
 
         if (images[12] != 0)
         {
-            images[12]->unk18->func_001E0520(-52.0f, 0.0f, 0.0f);
+            images[12]->unk18->set_translation(-52.0f, 0.0f, 0.0f);
         }
 
         if (images[13] != 0)
         {
-            images[13]->unk18->func_001E0520(62.0f, 0.0f, 0.0f);
+            images[13]->unk18->set_translation(62.0f, 0.0f, 0.0f);
         }
 
         if (images[14] != 0)
         {
-            images[14]->unk18->func_001E0520(172.0f, 0.0f, 0.0f);
+            images[14]->unk18->set_translation(172.0f, 0.0f, 0.0f);
         }
     }
 }
@@ -677,10 +677,10 @@ static inline float row_y(u32 row)
 /** @brief Run the player. */
 void BootMusicPlayer::update()
 {
-    BootResource0970* resource;
+    BootSystemSettings* resource;
     s32 i;
     BootInput* input = g_boot_program.input;
-    resource = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    resource = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
     switch (step)
     {
@@ -690,7 +690,7 @@ void BootMusicPlayer::update()
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
             step++;
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
-            container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
+            container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
             func_465B20(D_001B657C, container);
         }
 
@@ -714,7 +714,7 @@ void BootMusicPlayer::update()
 
         {
             float y = row_y(selection);
-            cursor = new (0) BootClass175070;
+            cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, 54.0f, y, 0.0f);
         }
         func_465B20(D_001B657C, cursor);
@@ -727,22 +727,22 @@ void BootMusicPlayer::update()
 
         if (resource->widescreen)
         {
-            number_text = new (0) BootClass175140(g_first_track_number, 1, 150.0f, 71.0f, 512.0f, 24.0f);
-            name_text = new (0) BootClass178750(g_boot_program.messages, 0x44C, 1, 185.0f, 71.0f, 512.0f, 24.0f);
-            mode_text = new (0) BootClass178750(g_boot_program.messages, 0x3E8, 1, 270.0f, 186.0f, 512.0f, 224.0f);
+            number_text = new (0) BootStringLabel(g_first_track_number, 1, 150.0f, 71.0f, 512.0f, 24.0f);
+            name_text = new (0) BootTextWidget(g_boot_program.messages, 0x44C, 1, 185.0f, 71.0f, 512.0f, 24.0f);
+            mode_text = new (0) BootTextWidget(g_boot_program.messages, 0x3E8, 1, 270.0f, 186.0f, 512.0f, 224.0f);
         }
         else
         {
-            number_text = new (0) BootClass175140(g_first_track_number, 1, 175.0f, 74.0f, 512.0f, 24.0f);
-            name_text = new (0) BootClass178750(g_boot_program.messages, 0x44C, 1, 210.0f, 74.0f, 512.0f, 24.0f);
-            mode_text = new (0) BootClass178750(g_boot_program.messages, 0x3E8, 1, 330.0f, 186.0f, 512.0f, 224.0f);
+            number_text = new (0) BootStringLabel(g_first_track_number, 1, 175.0f, 74.0f, 512.0f, 24.0f);
+            name_text = new (0) BootTextWidget(g_boot_program.messages, 0x44C, 1, 210.0f, 74.0f, 512.0f, 24.0f);
+            mode_text = new (0) BootTextWidget(g_boot_program.messages, 0x3E8, 1, 330.0f, 186.0f, 512.0f, 224.0f);
         }
 
-        labels[0] = new (0) BootClass178750(g_boot_program.messages, 0x96, 1, 50.0f, 435.0f, 128.0f, 24.0f);
-        labels[1] = new (0) BootClass178750(g_boot_program.messages, 0x97, 1, 160.0f, 435.0f, 128.0f, 24.0f);
-        labels[2] = new (0) BootClass178750(g_boot_program.messages, 0x98, 1, 270.0f, 435.0f, 128.0f, 24.0f);
-        labels[3] = new (0) BootClass178750(g_boot_program.messages, 0x99, 1, 380.0f, 435.0f, 128.0f, 24.0f);
-        labels[4] = new (0) BootClass178750(g_boot_program.messages, 0x9A, 1, 490.0f, 435.0f, 128.0f, 24.0f);
+        labels[0] = new (0) BootTextWidget(g_boot_program.messages, 0x96, 1, 50.0f, 435.0f, 128.0f, 24.0f);
+        labels[1] = new (0) BootTextWidget(g_boot_program.messages, 0x97, 1, 160.0f, 435.0f, 128.0f, 24.0f);
+        labels[2] = new (0) BootTextWidget(g_boot_program.messages, 0x98, 1, 270.0f, 435.0f, 128.0f, 24.0f);
+        labels[3] = new (0) BootTextWidget(g_boot_program.messages, 0x99, 1, 380.0f, 435.0f, 128.0f, 24.0f);
+        labels[4] = new (0) BootTextWidget(g_boot_program.messages, 0x9A, 1, 490.0f, 435.0f, 128.0f, 24.0f);
         name_text->set_vertical_align(2);
         number_text->set_color(0x34130F);
         name_text->set_color(0x34130F);
@@ -801,7 +801,7 @@ void BootMusicPlayer::update()
             }
         }
 
-        if (input->pressed & resource->unk00)
+        if (input->pressed & resource->confirm_buttons)
         {
             for (s32 i = 0; i < BOOT_MUSIC_TRACK_COUNT; i++)
             {
@@ -853,11 +853,11 @@ void BootMusicPlayer::update()
             }
         }
 
-        if (input->pressed & resource->unk02)
+        if (input->pressed & resource->cancel_buttons)
         {
             func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
             func_10F000(D_001B65F8, 0x1E, -1);
-            BootClass171C00* fade = new (0) BootClass171C00(g_boot_program.display);
+            BootScreenFade* fade = new (0) BootScreenFade(g_boot_program.display);
             fade->unkd0 = 2.0f;
             D_001B661C->append_node(fade, -1);
             step = 4;
@@ -1358,7 +1358,7 @@ BootMusicPlayer::BootMusicPlayer()
 
     for (s32 i = 0; i < 1024; i++)
     {
-        window[i] = func_4CC5B0(3.1415927f * i / 1024.0f);
+        window[i] = lib_sine(3.1415927f * i / 1024.0f);
         window[i] = window[i] * window[i];
     }
 }
@@ -1377,7 +1377,7 @@ BootNeedleMeter::BootNeedleMeter()
     func_001DFE40(0x4001);
     unk65 = 1;
     func_001DFE30(0x400);
-    packet = new (0) BootClass171BF0(0x800);
+    packet = new (0) BootPacketBuffer(0x800);
     levels[0] = 0.0f;
     levels[1] = 0.0f;
     peak = 0.0f;

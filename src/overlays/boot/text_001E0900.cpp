@@ -40,18 +40,18 @@ void func_101040(void* settings, s32 widescreen);
 extern BootDimensionsACD0* D_001B6650;
 extern BootDimensionsACD0* D_001B6520;
 extern u8 D_001B6420;
-extern BootTrackPool<BootClass177F70>* D_001B6664;
-extern BootTrackPool<BootClass1714D0>* D_001B6668;
+extern BootTrackPool<BootPooledFloatTrack>* g_float_track_pool;
+extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
 extern BootTrackPool<BootClass177EE0>* D_001B666C;
-extern BootTrackPool<BootClass177C70>* D_001B6670;
-extern BootTrackPool<BootClass1711D0>* D_001B6674;
+extern BootTrackPool<BootPooledFloatCurveTrack>* g_float_curve_track_pool;
+extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
 extern BootTrackPool<BootClass177BE0>* D_001B6678;
 extern BootTrackPool<BootClass174440>* D_001B667C;
-extern BootTrackPool<BootClass1730F0>* D_001B6680;
-void func_001ED610(BootTrackPool<BootClass177C70>* pool);
+extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
+void float_curve_track_pool_release(BootTrackPool<BootPooledFloatCurveTrack>* pool);
 void func_4C5B60(s32 first, s32 second);
 void func_4E14B0(BootProjectionACD0* projection, BootDimensionsACD0* display);
-void lib_container_attach_widget(BootClass178660* object, BootClass170E90* child);
+void lib_container_attach_widget(BootContainer* object, BootListObject* child);
 void func_100F60(void* root);
 void* func_1012C0(void* root);
 s32 func_11D9A0(void* clock_source, struct BootClock* clock);
@@ -75,15 +75,15 @@ u32 func_4DCFF0(BootDimensionsACD0* display, s32 frame);
 s32 func_11DF00(BootInputRoot9670* root);
 void func_1010D0(void* root, u8* program, s32 flag);
 extern const struct BootLabelOffsets D_205170;
-const struct BootTextExtent* func_4C69B0(BootClass178750* text);
+const struct BootTextExtent* lib_text_measure_bounds(BootTextWidget* text);
 extern const struct BootCaption g_opening_captions[];
-void func_4CC2D0(BootVector4DDAA0* output, float angle);
+void lib_compute_sine_cosine_pair_degree9(BootVector4DDAA0* output, float angle);
 void func_4CBD20(BootMatrix92D0* output, const BootVector4DDAA0* position, const FieldVec4B* target, float roll);
 void func_4CBAC0(BootVector4DDAA0* output, const BootMatrix92D0* matrix);
 void func_4CD810(FieldVec4B* output, const BootVector4DDAA0* axis_angle);
-BootClass178A90* func_473530(BootClass170E90* models, const char* name);
-void* func_473390(BootClass170E90* models, const char* name);
-s32 func_4B4550(BootClass178220* animation, float frame, s32 mode);
+BootTransformOwner* func_473530(BootListObject* models, const char* name);
+void* func_473390(BootListObject* models, const char* name);
+s32 func_4B4550(BootAnimation* animation, float frame, s32 mode);
 void func_4DA2F0(void* object, const BootVector4DDAA0* offset, s32 first, s32 second, s32 third, float value);
 extern const char g_root_node_name[];
 extern const char g_look_node_name[];
@@ -92,7 +92,7 @@ extern const char g_left_speaker_name[];
 extern const char g_rear_left_speaker_name[];
 extern const char g_rear_right_speaker_name[];
 extern const char g_center_speaker_name[];
-void func_4DAFE0(BootClass178F30* manager, BootDimensionsACD0* display, bool enabled, bool first_flag, bool second_flag, s32 level, u32 mask);
+void func_4DAFE0(BootDisplayManager* manager, BootDimensionsACD0* display, bool enabled, bool first_flag, bool second_flag, s32 level, u32 mask);
 extern u8 g_settings_option_counts[5];
 extern u8 g_difficulty_option_count;
 extern const s16 g_voice_lines[];
@@ -102,19 +102,19 @@ extern const char g_camera_node_name[];
 extern const char g_face_model_name[];
 void func_10DAA0(BootSound1B65F8* sound, s32 mode);
 void func_10DA30(BootSound1B65F8* sound);
-void func_10EA70(BootSound1B65F8* sound, BootClass178A90* listener, float first, float second);
+void func_10EA70(BootSound1B65F8* sound, BootTransformOwner* listener, float first, float second);
 void func_10EA90(BootSound1B65F8* sound, s32 speaker, float angle);
 s32 func_110920(BootSound1B65F8* sound, s32 handle, s32 flag);
-s32 func_111C50(BootSound1B65F8* sound, s32 id, BootClass178A90* emitter, s32 first, s32 volume, s32 second);
+s32 func_111C50(BootSound1B65F8* sound, s32 id, BootTransformOwner* emitter, s32 first, s32 volume, s32 second);
 s32 func_110C10(BootSound1B65F8* sound, s32 handle);
 u32 func_10E310(BootSound1B65F8* sound, s32 handle, float time);
 void func_11E020(BootInputRoot9670* root, s32 slot, s32 enabled);
 void func_11E320(BootInputRoot9670* root, s32 slot, s32* first, s32* second, s32* third, s32* fourth);
-void lib_text_set_resource(BootClass178750* object, s32 source, s32 key, u8 flag);
-BootClass170F30* func_472EB0(BootClass170E90* models, BootClass170F30* model);
-void func_4BF100(BootClass178220* animation, BootClass170E90* models, void* optional);
-void func_4BDB50(BootClass178220* animation, BootClass178370* target, const char* name);
-void func_4B3DE0(BootClass178220* animation, BootClass178370* target);
+void lib_text_set_resource(BootTextWidget* object, s32 source, s32 key, u8 flag);
+BootClass170F30* func_472EB0(BootListObject* models, BootClass170F30* model);
+void func_4BF100(BootAnimation* animation, BootListObject* models, void* optional);
+void lib_animation_bind_state(BootAnimation* animation, BootAnimationTarget* target, const char* name);
+void func_4B3DE0(BootAnimation* animation, BootAnimationTarget* target);
 void func_4C96E0(struct BootMorphTarget* target, float weight);
 void func_4E24D0(void* display);
 void func_4D5870(void* display);
@@ -229,19 +229,19 @@ static inline s32 prepare_transfer_request(BootBattleTrophyCard* object)
     {
         func_13A678(object->transfer_buffer, 0, BOOT_TRANSFER_BUFFER_SIZE);
 
-        if (strlen(D_205100) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
+        if (strlen(g_card_product_code) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
         {
-            copy_transfer_name(object, D_205100, D_205980);
+            copy_transfer_name(object, g_card_product_code, g_trophy_file_suffix);
         }
 
-        object->unkDD4.unk00 = object->filename;
-        object->unkDD4.unk04 = object->transfer_buffer;
-        object->unkDD4.unk08 = BOOT_TRANSFER_BUFFER_SIZE;
-        object->unkDD4.unk0C = 0;
-        object->unkDE4.unk00 = object->filename;
-        object->unkDE4.unk04 = 1;
-        object->unkDE4.unk08 = 0;
-        object->unkDE4.unk0C = &object->unkDD4;
+        object->file_buffer.unk00 = object->filename;
+        object->file_buffer.unk04 = object->transfer_buffer;
+        object->file_buffer.unk08 = BOOT_TRANSFER_BUFFER_SIZE;
+        object->file_buffer.unk0C = 0;
+        object->file_request.unk00 = object->filename;
+        object->file_request.unk04 = 1;
+        object->file_request.unk08 = 0;
+        object->file_request.unk0C = &object->file_buffer;
         ready = 1;
     }
 
@@ -253,7 +253,7 @@ static inline s32 prepare_transfer_request(BootBattleTrophyCard* object)
  * @param settings System settings.
  * @return Difficulty, or zero (Earth) when the checksum fails.
  */
-static inline u8 settings_difficulty(BootResource0970* settings)
+static inline u8 settings_difficulty(BootSystemSettings* settings)
 {
     if (settings->checksum != func_457470(settings->key, &settings->unk26, (u8*)&settings->checksum - &settings->unk26))
     {
@@ -268,7 +268,7 @@ static inline u8 settings_difficulty(BootResource0970* settings)
  * @param settings System settings.
  * @param value Difficulty to save.
  */
-static inline void settings_set_difficulty(BootResource0970* settings, u8 value)
+static inline void settings_set_difficulty(BootSystemSettings* settings, u8 value)
 {
     s32 length = (u8*)&settings->checksum - &settings->unk26;
 
@@ -287,7 +287,7 @@ static inline void settings_set_difficulty(BootResource0970* settings, u8 value)
  * @param value Byte to read.
  * @return Stored byte, or zero when the checksum fails.
  */
-static inline u8 settings_extra_byte(BootResource0970* settings, u8* data, u8* value)
+static inline u8 settings_extra_byte(BootSystemSettings* settings, u8* data, u8* value)
 {
     if (settings->extra_checksum != func_457470(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
     {
@@ -302,7 +302,7 @@ static inline u8 settings_extra_byte(BootResource0970* settings, u8* data, u8* v
  * @param settings System settings.
  * @return The unlock flag, or zero when the checksum fails.
  */
-static inline u8 settings_universe_unlocked(BootResource0970* settings)
+static inline u8 settings_universe_unlocked(BootSystemSettings* settings)
 {
     u8* data = &settings->unk1A0;
 
@@ -319,7 +319,7 @@ static inline u8 settings_universe_unlocked(BootResource0970* settings)
  * @param settings System settings.
  * @return The unlock flag, or zero when the checksum fails.
  */
-static inline u8 settings_fourth_dimension_unlocked(BootResource0970* settings)
+static inline u8 settings_fourth_dimension_unlocked(BootSystemSettings* settings)
 {
     u8* data = &settings->unk1A0;
 
@@ -369,17 +369,17 @@ u16 BootBattleTrophyCard::get_ready_slots()
 }
 
 /** @brief Apply transferred flags and header values, copy the payload, and release its buffer. */
-void BootBattleTrophyCard::func_001E0970()
+void BootBattleTrophyCard::finish_transfer()
 {
     u8 saved_bits[BOOT_TRANSFER_FLAG_BYTES];
     s32 index;
     u8* saved;
-    BootResourceBits0970* bits;
+    BootTrophyFlags* bits;
 
     if (transfer_buffer != 0)
     {
         saved = (u8*)transfer_buffer + 0x4B4;
-        bits = &settings->unk1A8;
+        bits = &settings->trophy_flags;
         func_13A678(saved_bits, 0, BOOT_TRANSFER_FLAG_BYTES);
         func_13A4C0(saved_bits, saved, BOOT_TRANSFER_FLAG_BYTES);
 
@@ -388,9 +388,9 @@ void BootBattleTrophyCard::func_001E0970()
             set_resource_bit(bits, index, saved_bits[index / 8] & (1 << (index % 8)));
         }
 
-        bits->unk14 = *(u32*)transfer_buffer;
+        bits->trophy_key = *(u32*)transfer_buffer;
         func_13A4C0(&bits->checksum_seed, saved + BOOT_TRANSFER_FLAG_BYTES, 8);
-        func_13A4C0(unkDC8, (u8*)transfer_buffer + 0x4E2, 0x11A6C0);
+        func_13A4C0(transfer_destination, (u8*)transfer_buffer + 0x4E2, 0x11A6C0);
 
         if (transfer_buffer != 0)
         {
@@ -401,47 +401,47 @@ void BootBattleTrophyCard::func_001E0970()
 }
 
 /** @brief Return the stored signed request result. @return The stored value. */
-s32 BootBattleTrophyCard::func_001E0AD0()
+s32 BootBattleTrophyCard::get_transfer_result()
 {
-    return unkDD0;
+    return transfer_result;
 }
 
 /** @brief Return the signed 16-bit value at offset 0xDCE. @return The stored value. */
-s16 BootBattleTrophyCard::func_001E0AE0()
+s16 BootBattleTrophyCard::get_transfer_state()
 {
-    return unkDCE;
+    return transfer_state;
 }
 
 /**
  * @brief Advance the stored two-phase request and update its completion state.
  * @return Narrowed request status, or -1 when the phase is unsupported.
  */
-s16 BootBattleTrophyCard::func_001E0AF0()
+s16 BootBattleTrophyCard::advance_transfer()
 {
     s16 result = -1;
 
-    switch (unkDC0)
+    switch (transfer_phase)
     {
     case 0:
         unkDF9 = 1;
-        result = func_432310(card, unkDCC, &unkDE4);
+        result = func_432310(card, transfer_slot, &file_request);
 
         if (result == -1)
         {
             unkDF8 = 0;
-            unkDCE = 1;
+            transfer_state = 1;
             unk1C = 0;
-            unkDCC = -1;
-            unkDC0 = -1;
+            transfer_slot = -1;
+            transfer_phase = -1;
         }
         else if (result == 0)
         {
-            unkDC0++;
+            transfer_phase++;
         }
 
         break;
     case 1:
-        result = func_432270(card, unkDCC, &unkDD0);
+        result = func_432270(card, transfer_slot, &transfer_result);
 
         if (result == 0)
         {
@@ -452,19 +452,19 @@ s16 BootBattleTrophyCard::func_001E0AF0()
         {
             unkDF8 = 0;
 
-            if (unkDD0 >= 0)
+            if (transfer_result >= 0)
             {
-                func_001E0970();
-                unkDCE = 1;
+                finish_transfer();
+                transfer_state = 1;
                 unk1C = 0;
-                unkDCC = -1;
-                unkDC0 = -1;
+                transfer_slot = -1;
+                transfer_phase = -1;
             }
             else
             {
-                unkDCE = 1;
-                unkDCC = -1;
-                unkDC0 = -1;
+                transfer_state = 1;
+                transfer_slot = -1;
+                transfer_phase = -1;
                 unk1C = 1;
                 unkDF8 = 0;
 
@@ -487,7 +487,7 @@ s16 BootBattleTrophyCard::func_001E0AF0()
  * @param destination Nonnull destination for the transfer.
  * @return 1 when prepared, or 0 for invalid arguments or allocation failure.
  */
-s32 BootBattleTrophyCard::func_001E0C30(u16 mode, void* destination)
+s32 BootBattleTrophyCard::start_transfer(u16 mode, void* destination)
 {
     u8 ready;
 
@@ -501,12 +501,12 @@ s32 BootBattleTrophyCard::func_001E0C30(u16 mode, void* destination)
         return 0;
     }
 
-    unkDC8 = destination;
-    unkDCC = mode;
-    unkDD0 = -1;
-    unkDC0 = 0;
+    transfer_destination = destination;
+    transfer_slot = mode;
+    transfer_result = -1;
+    transfer_phase = 0;
     unkDF8 = 1;
-    slot = unkDCC;
+    slot = transfer_slot;
     unk1E = 0;
 
     if (transfer_buffer == 0)
@@ -529,11 +529,11 @@ s32 BootBattleTrophyCard::func_001E0C30(u16 mode, void* destination)
  * @brief Store mode 1 or 2 and reset the state for selector 0.
  * @param mode Mode to store; values other than 1 or 2 have no effect.
  */
-void BootBattleTrophyCard::func_001E0DE0(u8 mode)
+void BootBattleTrophyCard::set_mode(u8 mode)
 {
     if (mode == 1 || mode == 2)
     {
-        unkD34 = mode;
+        card_mode = mode;
         reset_slot(0);
     }
 }
@@ -544,10 +544,10 @@ void BootBattleTrophyCard::func_001E0DE0(u8 mode)
  */
 static inline void cancel_transfer(BootBattleTrophyCard* object)
 {
-    object->unkDCE = 1;
-    object->unkDD0 = -12;
-    object->unkDCC = -1;
-    object->unkDC0 = -1;
+    object->transfer_state = 1;
+    object->transfer_result = -12;
+    object->transfer_slot = -1;
+    object->transfer_phase = -1;
     object->unk1C = 1;
     object->unkDF9 = 0;
     object->unkDF8 = 0;
@@ -572,7 +572,7 @@ void BootBattleTrophyCard::update()
             {
                 unk1A = status;
                 unk1C = 1;
-                unkDCE = -1;
+                transfer_state = -1;
 
                 if (unkDF9 != 0)
                 {
@@ -603,7 +603,7 @@ void BootBattleTrophyCard::update()
                 {
                     if (unkDF8 == 0)
                     {
-                        func_001E1500(1, 15, 1);
+                        handle_card_event(1, 15, 1);
                     }
                     else
                     {
@@ -617,38 +617,38 @@ void BootBattleTrophyCard::update()
 
                 if (unk20 == 0)
                 {
-                    if (unkD34 == 1)
+                    if (card_mode == 1)
                     {
-                        func_001E1500(1, 16, 1);
+                        handle_card_event(1, 16, 1);
                     }
                     else
                     {
-                        func_001E1500(1, 16, unkD34);
+                        handle_card_event(1, 16, card_mode);
                     }
 
                     return;
                 }
 
-                unk24 = card->unk14[slot].unk4C;
+                free_space = card->unk14[slot].unk4C;
 
-                if (unk20 == 0 && unkD34 == 1)
+                if (unk20 == 0 && card_mode == 1)
                 {
-                    unk24 = 8000;
+                    free_space = 8000;
                 }
 
-                unkDFC[slot] = unk24;
+                slot_free_space[slot] = free_space;
                 unk1C = 2;
 
-                if (unk24 < 175)
+                if (free_space < 175)
                 {
                     unk2D = 1;
                 }
 
                 break;
             case 2:
-                if (strlen(D_205100) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
+                if (strlen(g_card_product_code) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
                 {
-                    copy_transfer_name(this, D_205100, D_205988);
+                    copy_transfer_name(this, g_card_product_code, g_any_file_suffix);
                 }
 
                 status = func_431F90(card, slot, filename, 0, 1, unkD30);
@@ -672,24 +672,24 @@ void BootBattleTrophyCard::update()
                     {
                         if (unk2D != 0)
                         {
-                            func_001E1500(1, 2, 1);
+                            handle_card_event(1, 2, 1);
                         }
                         else
                         {
-                            func_001E1500(1, 16, 1);
+                            handle_card_event(1, 16, 1);
                         }
                     }
                     else if (progress > 0)
                     {
-                        func_001E1500(1, 17, 1);
+                        handle_card_event(1, 17, 1);
                     }
                     else
                     {
-                        func_001E1500(1, 0, 1);
+                        handle_card_event(1, 0, 1);
                     }
                 }
 
-                if (unkD34 == 1)
+                if (card_mode == 1)
                 {
                     if (status == 1)
                     {
@@ -711,9 +711,9 @@ void BootBattleTrophyCard::update()
 
                 break;
             case 4:
-                if (strlen(D_205100) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
+                if (strlen(g_card_product_code) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
                 {
-                    copy_transfer_name(this, D_205100, D_205980);
+                    copy_transfer_name(this, g_card_product_code, g_trophy_file_suffix);
                 }
 
                 status = func_431F90(card, slot, filename, 0, 1, unkDBC);
@@ -735,38 +735,38 @@ void BootBattleTrophyCard::update()
                 {
                     if (progress == 0)
                     {
-                        if (unkD34 == 1)
+                        if (card_mode == 1)
                         {
-                            func_001E1500(1, 6, 1);
+                            handle_card_event(1, 6, 1);
                         }
                         else
                         {
-                            func_001E1500(1, 6, 2);
+                            handle_card_event(1, 6, 2);
                         }
                     }
                     else if (progress > 0)
                     {
-                        if (unkD34 == 1)
+                        if (card_mode == 1)
                         {
-                            func_001E1500(1, 5, 1);
+                            handle_card_event(1, 5, 1);
                         }
                         else if (unkDF8 != 0)
                         {
                             unk1C = 8;
-                            unkDCE = -1;
+                            transfer_state = -1;
                         }
                         else
                         {
-                            func_001E1500(1, 5, 2);
+                            handle_card_event(1, 5, 2);
                         }
                     }
-                    else if (unkD34 == 1)
+                    else if (card_mode == 1)
                     {
-                        func_001E1500(1, 15, 1);
+                        handle_card_event(1, 15, 1);
                     }
                     else
                     {
-                        func_001E1500(1, 0, 1);
+                        handle_card_event(1, 0, 1);
                         reset_slot(0);
                     }
                 }
@@ -774,7 +774,7 @@ void BootBattleTrophyCard::update()
                 done = 1;
                 break;
             case 8:
-                func_001E0AF0();
+                advance_transfer();
                 done = 1;
                 break;
             default:
@@ -820,24 +820,24 @@ u16 BootBattleTrophyCard::get_slot_state(u16 mode, u16 kind)
     {
         if (mode == 0)
         {
-            if (!unk29)
+            if (!slot1_status_valid)
             {
                 value = 0;
             }
             else
             {
-                value = unk2B;
+                value = slot1_status;
             }
         }
         else if (mode == 1)
         {
-            if (!unk2A)
+            if (!slot2_status_valid)
             {
                 value = 0;
             }
             else
             {
-                value = unk2C;
+                value = slot2_status;
             }
         }
     }
@@ -860,7 +860,7 @@ u16 BootBattleTrophyCard::get_slot_state(u16 mode, u16 kind)
  * @param event Event code or direct byte status to store.
  * @param kind Classify the event with 1, or store its byte status with 2.
  */
-void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
+void BootBattleTrophyCard::handle_card_event(u8 enabled, u16 event, u16 kind)
 {
     u8 ready;
 
@@ -870,14 +870,14 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
         {
             if (kind == 1)
             {
-                func_001E17C0(event, &unk2C);
+                classify_card_event(event, &slot2_status);
 
-                if (unkD34 != 1)
+                if (card_mode != 1)
                 {
-                    unk2A = 1;
+                    slot2_status_valid = 1;
                 }
 
-                if (unkD34 == 1)
+                if (card_mode == 1)
                 {
                     ready = 0;
 
@@ -886,7 +886,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                     case 16:
                         if (unk20 == 0)
                         {
-                            unk2A = 1;
+                            slot2_status_valid = 1;
                             ready = 1;
                         }
 
@@ -894,7 +894,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                     case 15:
                     case 5:
                     case 6:
-                        unk2A = 1;
+                        slot2_status_valid = 1;
                         ready = 1;
                         break;
                     }
@@ -904,7 +904,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                         unk28 = 1;
                     }
                 }
-                else if (unkD34 == 2)
+                else if (card_mode == 2)
                 {
                     switch (event)
                     {
@@ -928,9 +928,9 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
         {
             if (kind == 1)
             {
-                func_001E17C0(event, &unk2B);
+                classify_card_event(event, &slot1_status);
 
-                if (unkD34 == 1)
+                if (card_mode == 1)
                 {
                     ready = 0;
 
@@ -939,7 +939,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                     case 16:
                         if (unk20 == 0)
                         {
-                            unk29 = 1;
+                            slot1_status_valid = 1;
                             ready = 1;
                         }
 
@@ -947,7 +947,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                     case 15:
                     case 5:
                     case 6:
-                        unk29 = 1;
+                        slot1_status_valid = 1;
                         ready = 1;
                         break;
                     }
@@ -962,7 +962,7 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                     switch (event)
                     {
                     case 15:
-                        if (unkD34 == 2)
+                        if (card_mode == 2)
                         {
                             unkD37[0] = 15;
                             unkD35[0] = 1;
@@ -973,11 +973,11 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
                     case 2:
                     case 16:
                     case 17:
-                        unk29 = 1;
+                        slot1_status_valid = 1;
                         break;
                     }
 
-                    if (unkD34 == 1)
+                    if (card_mode == 1)
                     {
                         reset_slot(1);
                     }
@@ -1007,14 +1007,14 @@ void BootBattleTrophyCard::func_001E1500(u8 enabled, u16 event, u16 kind)
  * @param event Event code to classify.
  * @param result Byte receiving the selected status, initially cleared to zero.
  */
-void BootBattleTrophyCard::func_001E17C0(u16 event, u8* result)
+void BootBattleTrophyCard::classify_card_event(u16 event, u8* result)
 {
     s32 value;
 
     *result = 0;
-    if (unkD34 == 1)
+    if (card_mode == 1)
     {
-        value = unkDFC[slot];
+        value = slot_free_space[slot];
 
         switch (event)
         {
@@ -1137,8 +1137,8 @@ void BootBattleTrophyCard::reset_slot(s16 mode)
 
     if (selected == 0)
     {
-        unk29 = 0;
-        unk2B = 0;
+        slot1_status_valid = 0;
+        slot1_status = 0;
         unk28 = 0;
         unk1E = 0;
         unkD37[0] = 0;
@@ -1147,15 +1147,15 @@ void BootBattleTrophyCard::reset_slot(s16 mode)
 
     if (selected == 1)
     {
-        unk2A = 0;
-        unk2C = 0;
+        slot2_status_valid = 0;
+        slot2_status = 0;
         unkD37[1] = 0;
         unkD35[1] = 0;
     }
 
     if (selected == 0 || selected == 1)
     {
-        unkDFC[selected] = -1;
+        slot_free_space[selected] = -1;
         unkE04[selected] = -1;
     }
 }
@@ -1182,7 +1182,7 @@ s32 BootBattleTrophyCard::initialize()
     func_432660(card, 1, 1, 0);
     unk1C = 0;
     reset_slot(0);
-    settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
     if (settings == 0)
     {
@@ -1231,29 +1231,29 @@ BootBattleTrophyCard::BootBattleTrophyCard()
     unk1A = -1;
     unk1E = 0;
     unk20 = 0;
-    unk24 = 0;
+    free_space = 0;
     unk28 = 0;
     func_13A678(unk6E, 0, sizeof(unk6E));
     unkD30 = (u8*)(((u32)unk6E + 0x3F) & ~0x3F);
     unk2D = 0;
-    unk29 = 0;
+    slot1_status_valid = 0;
     unkD35[0] = 0;
-    unk2B = 0;
+    slot1_status = 0;
     unkD37[0] = 0;
-    unk2A = 0;
+    slot2_status_valid = 0;
     unkD35[1] = 0;
-    unk2C = 0;
+    slot2_status = 0;
     unkD37[1] = 0;
-    unkD34 = 1;
+    card_mode = 1;
     unkDBC = 0;
     func_13A678(unkD39, 0, sizeof(unkD39));
     unkDBC = (u8*)(((u32)unkD39 + 0x3F) & ~0x3F);
-    unkDC0 = -1;
+    transfer_phase = -1;
     transfer_buffer = 0;
-    unkDCC = -1;
-    unkDD0 = -1;
-    unkDCE = -1;
-    unkDC8 = 0;
+    transfer_slot = -1;
+    transfer_result = -1;
+    transfer_state = -1;
+    transfer_destination = 0;
     settings = 0;
     unkDF8 = 0;
 
@@ -1263,9 +1263,9 @@ BootBattleTrophyCard::BootBattleTrophyCard()
     }
 
     unkDF9 = 0;
-    unkDFC[0] = -1;
+    slot_free_space[0] = -1;
     unkE04[0] = -1;
-    unkDFC[1] = -1;
+    slot_free_space[1] = -1;
     unkE04[1] = -1;
 }
 
@@ -1287,7 +1287,7 @@ static inline u8 unit_state(BootResident1B65E4* resident)
 /** @brief Run the memory card, progressive display and BB Unit screens in turn, then start the opening movie. */
 void BootStartupChecks::update()
 {
-    BootResource0970* settings;
+    BootSystemSettings* settings;
     BootInput* input;
     s32 slot1;
     s32 slot2;
@@ -1299,7 +1299,7 @@ void BootStartupChecks::update()
         return;
     }
 
-    settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
     input = g_boot_program.input;
     slot1 = input->slot1_state;
     slot2 = input->slot2_state;
@@ -1578,9 +1578,9 @@ void BootStartupChecks::update()
             break;
         case 1:
             check_main_code();
-            container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
+            container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
             func_465B20(D_001B657C, container);
-            text = new (0) BootClass178750(g_boot_program.get_messages(), message, 0, 32.0f, 128.0f, 576.0f, 320.0f);
+            text = new (0) BootTextWidget(g_boot_program.get_messages(), message, 0, 32.0f, 128.0f, 576.0f, 320.0f);
             lib_container_attach_widget(container, text);
             step = 2;
             break;
@@ -1588,7 +1588,7 @@ void BootStartupChecks::update()
         {
             u16 pressed = input->pressed;
 
-            if (pressed & settings->unk00)
+            if (pressed & settings->confirm_buttons)
             {
                 check_main_code();
                 screen = BOOT_STARTUP_PROGRESSIVE;
@@ -1599,7 +1599,7 @@ void BootStartupChecks::update()
                 container = 0;
                 func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
             }
-            else if (pressed & settings->unk02)
+            else if (pressed & settings->cancel_buttons)
             {
                 text->destroy();
                 text = 0;
@@ -1637,7 +1637,7 @@ void BootStartupChecks::update()
                 if ((input->held & 0x1000) && (input->held & 0x4000))
                 {
                     step++;
-                    container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
+                    container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
                     func_465B20(D_001B657C, container);
                 }
                 else if (++frames >= 30 && (((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
@@ -1652,7 +1652,7 @@ void BootStartupChecks::update()
                 if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
                 {
                     check_main_code();
-                    text = new (0) BootClass178750(g_boot_program.get_messages(), BOOT_MSG_PROGRESSIVE_OFFER, 0, 32.0f, 96.0f, 576.0f, 320.0f);
+                    text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_PROGRESSIVE_OFFER, 0, 32.0f, 96.0f, 576.0f, 320.0f);
                     lib_container_attach_widget(container, text);
                     step++;
                 }
@@ -1662,7 +1662,7 @@ void BootStartupChecks::update()
                 again = 0;
                 check_main_code();
 
-                if (input->pressed & settings->unk00)
+                if (input->pressed & settings->confirm_buttons)
                 {
                     step++;
                     frames = 0;
@@ -1671,7 +1671,7 @@ void BootStartupChecks::update()
                     func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
                     settings->widescreen = BOOT_STARTUP_PROGRESSIVE;
                 }
-                else if (input->pressed & settings->unk04)
+                else if (input->pressed & settings->alternate_buttons)
                 {
                     step++;
                     frames = 0;
@@ -1680,7 +1680,7 @@ void BootStartupChecks::update()
                     func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
                     settings->widescreen = 0;
                 }
-                else if (input->pressed & settings->unk02)
+                else if (input->pressed & settings->cancel_buttons)
                 {
                     func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
                     finished = 1;
@@ -1709,12 +1709,12 @@ void BootStartupChecks::update()
 
                     if (settings->widescreen)
                     {
-                        text = new (0) BootClass178750(g_boot_program.get_messages(), BOOT_MSG_PROGRESSIVE_WIDE_STARTED, 0, 32.0f, 128.0f, 576.0f, 320.0f);
+                        text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_PROGRESSIVE_WIDE_STARTED, 0, 32.0f, 128.0f, 576.0f, 320.0f);
                         text->set_scale(0.75f);
                     }
                     else
                     {
-                        text = new (0) BootClass178750(g_boot_program.get_messages(), BOOT_MSG_PROGRESSIVE_NORMAL_STARTED, 0, 32.0f, 128.0f, 576.0f, 320.0f);
+                        text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_PROGRESSIVE_NORMAL_STARTED, 0, 32.0f, 128.0f, 576.0f, 320.0f);
                     }
 
                     lib_container_attach_widget(container, text);
@@ -1726,12 +1726,12 @@ void BootStartupChecks::update()
                 again = 0;
                 check_main_code();
 
-                if (input->pressed & settings->unk00)
+                if (input->pressed & settings->confirm_buttons)
                 {
                     finished = 1;
                     func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
                 }
-                else if (++frames > 539 || (input->pressed & settings->unk02))
+                else if (++frames > 539 || (input->pressed & settings->cancel_buttons))
                 {
                     text->destroy();
                     text = 0;
@@ -1808,13 +1808,13 @@ void BootStartupChecks::update()
                     if (unit_state(D_001B65E4) == 1)
                     {
                         step++;
-                        container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
+                        container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
                         func_465B20(D_001B657C, container);
                     }
                     else if (g_boot_program.unit_data_deleted != 0)
                     {
                         step = 3;
-                        container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
+                        container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
                         func_465B20(D_001B657C, container);
                     }
                     else
@@ -1831,7 +1831,7 @@ void BootStartupChecks::update()
                 if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
                 {
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                    text = new (0) BootClass178750(g_boot_program.get_messages(), BOOT_MSG_UNIT_NOT_INITIALIZED, 0, 32.0f, 96.0f, 576.0f, 320.0f);
+                    text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_UNIT_NOT_INITIALIZED, 0, 32.0f, 96.0f, 576.0f, 320.0f);
                     lib_container_attach_widget(container, text);
                     step++;
                 }
@@ -1841,7 +1841,7 @@ void BootStartupChecks::update()
                 check_main_code();
                 again = 0;
 
-                if (input->pressed & settings->unk00)
+                if (input->pressed & settings->confirm_buttons)
                 {
                     func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
                     finished = 1;
@@ -1854,7 +1854,7 @@ void BootStartupChecks::update()
                 if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
                 {
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
-                    text = new (0) BootClass178750(g_boot_program.get_messages(), BOOT_MSG_UNIT_DATA_DELETED, 0, 32.0f, 128.0f, 576.0f, 320.0f);
+                    text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_UNIT_DATA_DELETED, 0, 32.0f, 128.0f, 576.0f, 320.0f);
                     lib_container_attach_widget(container, text);
                     step = 2;
                 }
@@ -1956,7 +1956,7 @@ void BootNewGameSettings::place_girl()
     BootVector4DDAA0 axis;
     BootVector4DDAA0 offset;
     float angle = girl_angle;
-    func_4CC2D0(&angles, angle);
+    lib_compute_sine_cosine_pair_degree9(&angles, angle);
     position.x = 300.0f * angles.z;
     position.z = 300.0f * angles.w;
     position.y = 0.0f;
@@ -1995,9 +1995,9 @@ void BootNewGameSettings::place_girl()
         girl_lean = ee_max(-1.5707964f, girl_lean);
     }
 
-    BootClass178A90* root = func_473530(girl_scene, g_root_node_name);
-    root->func_001E0510(&position);
-    root->func_001E0670((BootVector4DDAA0*)&rotation);
+    BootTransformOwner* root = func_473530(girl_scene, g_root_node_name);
+    root->set_translation_vector(&position);
+    root->set_orientation((BootVector4DDAA0*)&rotation);
 
     bool again = true;
 
@@ -2167,17 +2167,17 @@ void BootNewGameSettings::get_speaker_cursor_position(s32 speaker, float* x, flo
     BootClass170F30* speakers[4];
     BootVector4DDAA0 position;
     BootVector4DDAA0 screen;
-    speakers[0] = func_473940(room_scene, g_right_speaker_name);
-    speakers[1] = func_473940(room_scene, g_left_speaker_name);
-    speakers[2] = func_473940(room_scene, g_rear_left_speaker_name);
-    speakers[3] = func_473940(room_scene, g_rear_right_speaker_name);
+    speakers[0] = lib_find_renderable_entry(room_scene, g_right_speaker_name);
+    speakers[1] = lib_find_renderable_entry(room_scene, g_left_speaker_name);
+    speakers[2] = lib_find_renderable_entry(room_scene, g_rear_left_speaker_name);
+    speakers[3] = lib_find_renderable_entry(room_scene, g_rear_right_speaker_name);
     speakers[speaker]->update_transform_matrix();
     BootClass170F30* model = speakers[speaker];
     position.x = model->unk90.vectors[0].w;
     position.y = model->unk90.vectors[1].w;
     position.z = model->unk90.vectors[2].w;
     position.w = 1.0f;
-    BootClass178F30* manager = D_001B6628;
+    BootDisplayManager* manager = D_001B6628;
     func_4E24D0(manager->current_display);
     func_4D5870(D_001B6628->current_display);
     vu0_wait_microprogram();
@@ -2201,19 +2201,19 @@ static inline void set_speaker_color(BootClass170F30* const& model, float shade)
     color.z = shade;
     color.w = 1.0f;
     BootClass170F30* speaker = model;
-    copy_vector(&speaker->unk560, &color);
-    speaker->func_001DDAA0();
+    copy_vector(&speaker->base_color_factor, &color);
+    speaker->update_combined_color_factor();
 }
 
 /** @brief Place the five speaker models around the listener and pulse the one being moved. */
 void BootNewGameSettings::place_speakers()
 {
     BootClass170F30* speakers[5];
-    speakers[0] = func_473940(room_scene, g_right_speaker_name);
-    speakers[1] = func_473940(room_scene, g_left_speaker_name);
-    speakers[2] = func_473940(room_scene, g_rear_left_speaker_name);
-    speakers[3] = func_473940(room_scene, g_rear_right_speaker_name);
-    speakers[4] = func_473940(room_scene, g_center_speaker_name);
+    speakers[0] = lib_find_renderable_entry(room_scene, g_right_speaker_name);
+    speakers[1] = lib_find_renderable_entry(room_scene, g_left_speaker_name);
+    speakers[2] = lib_find_renderable_entry(room_scene, g_rear_left_speaker_name);
+    speakers[3] = lib_find_renderable_entry(room_scene, g_rear_right_speaker_name);
+    speakers[4] = lib_find_renderable_entry(room_scene, g_center_speaker_name);
 
     for (s32 i = 0; i < 5; i++)
     {
@@ -2222,16 +2222,16 @@ void BootNewGameSettings::place_speakers()
         BootMatrix92D0 matrix;
         FieldVec4B target;
         BootVector4DDAA0 rotation;
-        func_4CC2D0(&angles, i < 4 ? D_001B65F8->speaker_angles[i] : 1.5707964f);
+        lib_compute_sine_cosine_pair_degree9(&angles, i < 4 ? D_001B65F8->speaker_angles[i] : 1.5707964f);
         position.x = 250.0f * angles.z;
         position.z = 250.0f * angles.w;
         position.y = 0.0f;
         position.w = 1.0f;
-        speakers[i]->func_001E0510(&position);
+        speakers[i]->set_translation_vector(&position);
         target = scale_components(FieldVec4A(-1.0f, -1.0f, -1.0f, -1.0f), position);
         func_4CBD20(&matrix, &position, &target, 0.0f);
         func_4CBAC0(&rotation, &matrix);
-        speakers[i]->func_001E0670(&rotation);
+        speakers[i]->set_orientation(&rotation);
     }
 
     if (adjusting_speaker != 0)
@@ -2241,7 +2241,7 @@ void BootNewGameSettings::place_speakers()
             if (i == selected_speaker)
             {
                 BootVector4DDAA0 scale;
-                copy_vector(&scale, &speakers[i]->unk560);
+                copy_vector(&scale, &speakers[i]->base_color_factor);
 
                 if (adjusting_speaker == 1)
                 {
@@ -2273,8 +2273,8 @@ void BootNewGameSettings::place_speakers()
                 }
 
                 BootClass170F30* model = speakers[i];
-                copy_vector(&model->unk560, &scale);
-                model->func_001DDAA0();
+                copy_vector(&model->base_color_factor, &scale);
+                model->update_combined_color_factor();
             }
             else
             {
@@ -2294,7 +2294,7 @@ void BootNewGameSettings::place_speakers()
 /** @brief Select the option that matches the current page's saved setting. */
 void BootNewGameSettings::load_option_value()
 {
-    BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
     switch (page)
     {
@@ -2345,7 +2345,7 @@ void BootNewGameSettings::load_option_value()
 /** @brief Save the selected option for the current page and apply it to the display, sound or pad. */
 void BootNewGameSettings::apply_option_value()
 {
-    BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
     switch (page)
     {
@@ -2434,7 +2434,7 @@ void BootNewGameSettings::apply_option_value()
  */
 s32 BootNewGameSettings::get_value_message()
 {
-    BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
     switch (page)
     {
@@ -2487,7 +2487,7 @@ s32 BootNewGameSettings::get_value_message()
  */
 void BootNewGameSettings::get_cursor_position(float* x, float* y)
 {
-    BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
     *x = 58.0f;
     switch (page)
@@ -2587,25 +2587,25 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
  * @param blue Blue factor.
  * @param alpha Alpha factor.
  */
-static inline void set_model_color(BootClass177820* model, float red, float green, float blue, float alpha)
+static inline void set_model_color(BootModel* model, float red, float green, float blue, float alpha)
 {
     BootVector4DDAA0 color;
     color.x = red;
     color.y = green;
     color.z = blue;
     color.w = alpha;
-    copy_vector(&model->unk560, &color);
-    model->func_001DDAA0();
+    copy_vector(&model->base_color_factor, &color);
+    model->update_combined_color_factor();
 }
 
 /** @brief Rebuild the current page's option rows when the page changes, then place and highlight them. */
 void BootNewGameSettings::update_option_rows()
 {
-    BootResource0970* settings;
+    BootSystemSettings* settings;
 
     if (image_blocks[4] != 0 && on_speaker_setup == 0)
     {
-        settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+        settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
         if (shown_page != page)
         {
@@ -2629,58 +2629,58 @@ void BootNewGameSettings::update_option_rows()
                 row_x = -272.0f;
                 images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[16]->set_rectangle(0, 8, 288, 40, 0x80808080, 0);
-                images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
+                images[16]->unk18->set_translation(-272.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[17]->set_rectangle(0, 68, 288, 40, 0x80808080, 0);
-                images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
+                images[17]->unk18->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_SOUND:
                 row_x = -272.0f;
                 images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[16]->set_rectangle(0, 106, 288, 40, 0x80808080, 0);
-                images[16]->unk18->func_001E0520(-272.0f, -162.0f, 0.0f);
+                images[16]->unk18->set_translation(-272.0f, -162.0f, 0.0f);
                 images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[17]->set_rectangle(0, 162, 200, 40, 0x80808080, 0);
-                images[17]->unk18->func_001E0520(-272.0f, -126.0f, 0.0f);
+                images[17]->unk18->set_translation(-272.0f, -126.0f, 0.0f);
                 images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[18]->set_rectangle(0, 236, 424, 40, 0x80808080, 0);
-                images[18]->unk18->func_001E0520(-272.0f, -90.0f, 0.0f);
+                images[18]->unk18->set_translation(-272.0f, -90.0f, 0.0f);
                 images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[19]->set_rectangle(224, 168, 237, 38, 0x80808080, 0);
-                images[19]->unk18->func_001E0520(-272.0f, -55.0f, 0.0f);
+                images[19]->unk18->set_translation(-272.0f, -55.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_EVENT_SKIP:
                 row_x = -272.0f;
                 images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[16]->set_rectangle(0, 312, 340, 40, 0x80808080, 0);
-                images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
+                images[16]->unk18->set_translation(-272.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[17]->set_rectangle(0, 368, 340, 40, 0x80808080, 0);
-                images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
+                images[17]->unk18->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_VOICE:
                 row_x = -260.0f;
                 images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[16]->set_rectangle(0, 0, 340, 40, 0x80808080, 0);
-                images[16]->unk18->func_001E0520(-260.0f, -142.0f, 0.0f);
+                images[16]->unk18->set_translation(-260.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[17]->set_rectangle(0, 55, 340, 40, 0x80808080, 0);
-                images[17]->unk18->func_001E0520(-260.0f, -102.0f, 0.0f);
+                images[17]->unk18->set_translation(-260.0f, -102.0f, 0.0f);
                 images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[18]->set_rectangle(0, 110, 340, 40, 0x80808080, 0);
-                images[18]->unk18->func_001E0520(-260.0f, -62.0f, 0.0f);
+                images[18]->unk18->set_translation(-260.0f, -62.0f, 0.0f);
                 images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[19]->set_rectangle(0, 416, 500, 40, 0x80808080, 0);
-                images[19]->unk18->func_001E0520(-260.0f, -22.0f, 0.0f);
+                images[19]->unk18->set_translation(-260.0f, -22.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_VIBRATION:
                 row_x = -254.0f;
                 images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[16]->set_rectangle(0, 160, 340, 40, 0x80808080, 0);
-                images[16]->unk18->func_001E0520(-272.0f, -142.0f, 0.0f);
+                images[16]->unk18->set_translation(-272.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[17]->set_rectangle(0, 215, 340, 40, 0x80808080, 0);
-                images[17]->unk18->func_001E0520(-272.0f, -74.0f, 0.0f);
+                images[17]->unk18->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_DIFFICULTY:
                 row_x = -260.0f;
@@ -2689,28 +2689,28 @@ void BootNewGameSettings::update_option_rows()
                 {
                     images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[16]->set_rectangle(0, 257, 340, 42, 0x80808080, 0);
-                    images[16]->unk18->func_001E0520(-260.0f, -142.0f, 0.0f);
+                    images[16]->unk18->set_translation(-260.0f, -142.0f, 0.0f);
                     images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[17]->set_rectangle(0, 313, 340, 42, 0x80808080, 0);
-                    images[17]->unk18->func_001E0520(-260.0f, -92.0f, 0.0f);
+                    images[17]->unk18->set_translation(-260.0f, -92.0f, 0.0f);
                     images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[18]->set_rectangle(0, 369, 340, 42, 0x80808080, 0);
-                    images[18]->unk18->func_001E0520(-260.0f, -42.0f, 0.0f);
+                    images[18]->unk18->set_translation(-260.0f, -42.0f, 0.0f);
                 }
                 else
                 {
                     images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[16]->set_rectangle(3, 257, 340, 42, 0x80808080, 0);
-                    images[16]->unk18->func_001E0520(-260.0f, -142.0f, 0.0f);
+                    images[16]->unk18->set_translation(-260.0f, -142.0f, 0.0f);
                     images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[17]->set_rectangle(3, 313, 340, 42, 0x80808080, 0);
-                    images[17]->unk18->func_001E0520(-260.0f, -102.0f, 0.0f);
+                    images[17]->unk18->set_translation(-260.0f, -102.0f, 0.0f);
                     images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[18]->set_rectangle(3, 369, 340, 42, 0x80808080, 0);
-                    images[18]->unk18->func_001E0520(-260.0f, -62.0f, 0.0f);
+                    images[18]->unk18->set_translation(-260.0f, -62.0f, 0.0f);
                     images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[19]->set_rectangle(0, 466, 340, 42, 0x80808080, 0);
-                    images[19]->unk18->func_001E0520(-260.0f, -24.0f, 0.0f);
+                    images[19]->unk18->set_translation(-260.0f, -24.0f, 0.0f);
                 }
 
                 break;
@@ -2726,7 +2726,7 @@ void BootNewGameSettings::update_option_rows()
                     BootVector4DDAA0 position;
                     copy_vector(&position, &images[16 + i]->unk18->unk20);
                     position.x = 8.0f + 1.3333334f * row_x;
-                    images[16 + i]->unk18->func_001E0510(&position);
+                    images[16 + i]->unk18->set_translation_vector(&position);
                 }
             }
         }
@@ -2739,13 +2739,13 @@ void BootNewGameSettings::update_option_rows()
                     BootVector4DDAA0 position;
                     copy_vector(&position, &images[16 + i]->unk18->unk20);
                     position.x = row_x;
-                    images[16 + i]->unk18->func_001E0510(&position);
+                    images[16 + i]->unk18->set_translation_vector(&position);
                 }
             }
         }
 
         s32 i;
-        BootClass177820* model;
+        BootModel* model;
         // TODO: My guess; the original reads the extra block through a pointer formed before the loop.
         u8* extra = &settings->unk1A0;
 
@@ -2784,7 +2784,7 @@ void BootNewGameSettings::update_option_rows()
             if (selection == i)
             {
                 BootVector4DDAA0 scale;
-                copy_vector(&scale, &model->unk560);
+                copy_vector(&scale, &model->base_color_factor);
 
                 if (highlight_phase == 0)
                 {
@@ -2819,8 +2819,8 @@ void BootNewGameSettings::update_option_rows()
                     }
                 }
 
-                copy_vector(&model->unk560, &scale);
-                model->func_001DDAA0();
+                copy_vector(&model->base_color_factor, &scale);
+                model->update_combined_color_factor();
             }
             else
             {
@@ -2836,7 +2836,7 @@ void BootNewGameSettings::update_option_rows()
 /** @brief Create the page's images once their textures are loaded, then place and highlight them. */
 void BootNewGameSettings::update_page_images()
 {
-    BootResource0970* settings;
+    BootSystemSettings* settings;
     BootLabelOffsets offsets;
 
     if (image_blocks[4] == 0)
@@ -2849,7 +2849,7 @@ void BootNewGameSettings::update_page_images()
         images[0] = new (0) BootImage;
         images[0]->set_texture((const BootTextureResource*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
         images[0]->set_rectangle(0, 1, 0x1E8, 0xDF, 0x80808080, 0);
-        images[0]->unk18->func_001E0520(-244.0f, -112.0f, 0.0f);
+        images[0]->unk18->set_translation(-244.0f, -112.0f, 0.0f);
     }
 
     if (images[1] == 0)
@@ -2857,7 +2857,7 @@ void BootNewGameSettings::update_page_images()
         images[1] = new (0) BootImage;
         images[1]->set_texture((const BootTextureResource*)(((u32)image_blocks[1] + 0x7F) & ~0x7F), 0);
         images[1]->set_rectangle(0, 0, 0x280, 0x50, 0x80808080, 0);
-        images[1]->unk18->func_001E0520(-320.0f, -216.0f, 0.0f);
+        images[1]->unk18->set_translation(-320.0f, -216.0f, 0.0f);
     }
 
     if (images[2] == 0 && on_speaker_setup == 0)
@@ -2891,58 +2891,58 @@ void BootNewGameSettings::update_page_images()
         images[15]->set_rectangle(0, 0xC2, 0x180, 0x20, 0x80808080, 0);
     }
 
-    settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
     if (settings->widescreen)
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->func_001E0520(-414.66669f, -216.0f, 0.0f);
-            images[1]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
+            images[1]->unk18->set_translation(-414.66669f, -216.0f, 0.0f);
+            images[1]->unk18->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         for (s32 i = 0; i < 6; i++)
         {
             if (images[3 + i] != 0)
             {
-                images[3 + i]->unk18->func_001E0520(160.0f, 30.0f + (float)(i * 29), 0.0f);
+                images[3 + i]->unk18->set_translation(160.0f, 30.0f + (float)(i * 29), 0.0f);
             }
 
             if (images[9 + i] != 0)
             {
-                images[9 + i]->unk18->func_001E0520(21.0f, -204.0f, 0.0f);
+                images[9 + i]->unk18->set_translation(21.0f, -204.0f, 0.0f);
             }
         }
 
         if (images[15] != 0)
         {
-            images[15]->unk18->func_001E0520(-426.66669f, 170.0f, 0.0f);
+            images[15]->unk18->set_translation(-426.66669f, 170.0f, 0.0f);
         }
     }
     else
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->func_001E0520(-320.0f, -216.0f, 0.0f);
-            images[1]->unk18->func_001DDED0(1.0f, 1.0f, 1.0f);
+            images[1]->unk18->set_translation(-320.0f, -216.0f, 0.0f);
+            images[1]->unk18->set_scale(1.0f, 1.0f, 1.0f);
         }
 
         for (s32 i = 0; i < 6; i++)
         {
             if (images[3 + i] != 0)
             {
-                images[3 + i]->unk18->func_001E0520(56.0f, 30.0f + (float)(i * 29), 0.0f);
+                images[3 + i]->unk18->set_translation(56.0f, 30.0f + (float)(i * 29), 0.0f);
             }
 
             if (images[9 + i] != 0)
             {
-                images[9 + i]->unk18->func_001E0520(-80.0f, -204.0f, 0.0f);
+                images[9 + i]->unk18->set_translation(-80.0f, -204.0f, 0.0f);
             }
         }
 
         if (images[15] != 0)
         {
-            images[15]->unk18->func_001E0520(-320.0f, 170.0f, 0.0f);
+            images[15]->unk18->set_translation(-320.0f, 170.0f, 0.0f);
         }
     }
 
@@ -2959,20 +2959,20 @@ void BootNewGameSettings::update_page_images()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = 1.0f;
-                BootClass177820* model = images[3 + i]->unk18;
-                copy_vector(&model->unk560, &color);
-                model->func_001DDAA0();
+                BootModel* model = images[3 + i]->unk18;
+                copy_vector(&model->base_color_factor, &color);
+                model->update_combined_color_factor();
             }
 
             if (images[2] != 0)
             {
                 if (settings->widescreen)
                 {
-                    images[2]->unk18->func_001E0520(142.0f + 1.3333334f * (float)offsets.values[i], (float)(31.0 + 29.0 * i), 0.0f);
+                    images[2]->unk18->set_translation(142.0f + 1.3333334f * (float)offsets.values[i], (float)(31.0 + 29.0 * i), 0.0f);
                 }
                 else
                 {
-                    images[2]->unk18->func_001E0520(44.0f + (float)offsets.values[i], (float)(31.0 + 29.0 * i), 0.0f);
+                    images[2]->unk18->set_translation(44.0f + (float)offsets.values[i], (float)(31.0 + 29.0 * i), 0.0f);
                 }
             }
 
@@ -2990,9 +2990,9 @@ void BootNewGameSettings::update_page_images()
                 color.y = 0.5f;
                 color.z = 0.5f;
                 color.w = 1.0f;
-                BootClass177820* model = images[3 + i]->unk18;
-                copy_vector(&model->unk560, &color);
-                model->func_001DDAA0();
+                BootModel* model = images[3 + i]->unk18;
+                copy_vector(&model->base_color_factor, &color);
+                model->update_combined_color_factor();
             }
 
             if (images[9 + i] != 0)
@@ -3016,7 +3016,7 @@ void BootNewGameSettings::update_page_images()
 }
 
 /** Partial Lib morph target, one of a face model's children; unk0f is two for a morph target. */
-struct BootMorphTarget : public BootClass170E90
+struct BootMorphTarget : public BootListObject
 {
     u8 unk14[0x1C];
 
@@ -3047,7 +3047,7 @@ static inline s32 button_pressed(BootInput* input, u16 mask)
  * @param x Horizontal position.
  * @param y Vertical position.
  */
-static inline void place_cursor(BootClass175070* cursor, float x, float y)
+static inline void place_cursor(BootSelectionCursor* cursor, float x, float y)
 {
     ItemCreationClass185050& motion = *cursor;
     motion.unk10 = x;
@@ -3062,7 +3062,7 @@ static inline void place_cursor(BootClass175070* cursor, float x, float y)
  * @param node Current node.
  * @return Whether node is the sentinel.
  */
-static inline bool at_end(const BootClass170E80* list, const BootClass170E80* node)
+static inline bool at_end(const BootListSentinel* list, const BootListSentinel* node)
 {
     if (list == node)
     {
@@ -3087,7 +3087,7 @@ static inline float speaker_angle(BootSound1B65F8* sound, s32 speaker)
 void BootNewGameSettings::update()
 {
     BootInput* input = g_boot_program.input;
-    BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
     u8 extra = settings_extra_byte(settings, &settings->unk1A0, &settings->universe_unlocked);
     g_difficulty_option_count = extra ? 4 : 3;
 
@@ -3103,9 +3103,9 @@ void BootNewGameSettings::update()
             loaded_image_blocks = 0;
             stage++;
             highlight_phase = 0;
-            container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
+            container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
             func_465B20(D_001B657C, container);
-            description_text = new (0) BootClass178750(g_boot_program.get_messages(), BOOT_MSG_TV_NORMAL, 1, 32.0f, 272.0f, 344.0f, 224.0f);
+            description_text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_TV_NORMAL, 1, 32.0f, 272.0f, 344.0f, 224.0f);
             description_text->set_color(0x34130F);
             lib_container_attach_widget(container, description_text);
             load_option_value();
@@ -3113,7 +3113,7 @@ void BootNewGameSettings::update()
             float x;
             float y;
             get_cursor_position(&x, &y);
-            cursor = new (0) BootClass175070;
+            cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0xF42400, x, y, 0.0f);
             func_465B20(D_001B657C, cursor);
             func_10DAA0(D_001B65F8, 2);
@@ -3160,7 +3160,7 @@ void BootNewGameSettings::update()
             show_value_message();
         }
 
-        if (button_pressed(input, settings->unk00))
+        if (button_pressed(input, settings->confirm_buttons))
         {
             if (selection == 2 && page == BOOT_SETTINGS_DIFFICULTY && !settings_extra_byte(settings, &settings->unk1A0, &settings->universe_unlocked))
             {
@@ -3178,7 +3178,7 @@ void BootNewGameSettings::update()
             queue_fade();
             stage = BOOT_SETTINGS_STAGE_NEXT_PAGE;
         }
-        else if (button_pressed(input, settings->unk02))
+        else if (button_pressed(input, settings->cancel_buttons))
         {
             if (page == BOOT_SETTINGS_TV_MODE)
             {
@@ -3196,7 +3196,7 @@ void BootNewGameSettings::update()
             }
         }
 
-        if (button_pressed(input, settings->unk04) && page == BOOT_SETTINGS_SOUND && selection == 2)
+        if (button_pressed(input, settings->alternate_buttons) && page == BOOT_SETTINGS_SOUND && selection == 2)
         {
             func_112400(D_001B65F8, 4, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
@@ -3304,15 +3304,15 @@ void BootNewGameSettings::update()
         if (loaded_model_blocks == 8)
         {
             func_11E020(D_001B65F0, 0, 0);
-            room_scene = new (0) BootClass175320;
+            room_scene = new (0) BootScene;
             func_479190(room_scene, (void*)(((u32)model_blocks[0] + 0x7F) & ~0x7F));
             func_474010(room_scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
-            girl_scene = new (0) BootClass175320;
+            girl_scene = new (0) BootScene;
             func_479190(girl_scene, (void*)(((u32)model_blocks[1] + 0x7F) & ~0x7F));
             func_474010(girl_scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
             s32 count = 0;
 
-            for (BootClass170F30* model = func_473940(girl_scene, g_empty_name); model != 0; model = func_472EB0(girl_scene, model))
+            for (BootClass170F30* model = lib_find_renderable_entry(girl_scene, g_empty_name); model != 0; model = func_472EB0(girl_scene, model))
             {
                 if (model->unk6c == 0x100)
                 {
@@ -3324,16 +3324,16 @@ void BootNewGameSettings::update()
 
             for (s32 i = 0; i < 6; i++)
             {
-                girl_animations[i] = new (0) BootClass178220;
+                girl_animations[i] = new (0) BootAnimation;
                 girl_animations[i]->set_resource((void*)(((u32)model_blocks[2 + i] + 0x7F) & ~0x7F));
                 func_4BF100(girl_animations[i], girl_scene, 0);
-                animation_targets[i] = new (0) BootClass178370;
-                func_4BDB50(girl_animations[i], animation_targets[i], g_bone_root_name);
+                animation_targets[i] = new (0) BootAnimationTarget;
+                lib_animation_bind_state(girl_animations[i], animation_targets[i], g_bone_root_name);
                 func_4B3DE0(girl_animations[i], animation_targets[i]);
             }
 
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
-            D_001B6628->current_display = func_473680(room_scene, g_camera_node_name);
+            D_001B6628->current_display = lib_find_camera_entry(room_scene, g_camera_node_name);
             girl_angle = 1.5707964f;
             animation_frame = 0.0f;
             turn_speed = 0.0f;
@@ -3342,7 +3342,7 @@ void BootNewGameSettings::update()
             blink_frame = 0;
             adjusting_speaker = 0;
             func_10EA70(D_001B65F8, func_473530(room_scene, g_root_node_name), 0.0f, 500.0f);
-            description_text = new (0) BootClass178750(g_boot_program.get_messages(), BOOT_MSG_SPEAKER_SETUP, 1, 32.0f, 352.0f, 576.0f, 112.0f);
+            description_text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_SPEAKER_SETUP, 1, 32.0f, 352.0f, 576.0f, 112.0f);
             description_text->set_color(0x34130F);
             lib_container_attach_widget(container, description_text);
             place_girl();
@@ -3468,7 +3468,7 @@ void BootNewGameSettings::update()
             }
         }
 
-        if (button_pressed(input, settings->unk04))
+        if (button_pressed(input, settings->alternate_buttons))
         {
             s32 line = func_10CAA0(9);
 
@@ -3490,7 +3490,7 @@ void BootNewGameSettings::update()
             voice_line = func_111C50(D_001B65F8, g_voice_lines[line], func_473530(girl_scene, g_root_node_name), 0, 0x7F, 0);
         }
 
-        if (button_pressed(input, settings->unk00))
+        if (button_pressed(input, settings->confirm_buttons))
         {
             if (adjusting_speaker == 0)
             {
@@ -3505,7 +3505,7 @@ void BootNewGameSettings::update()
             }
         }
 
-        if (button_pressed(input, settings->unk02))
+        if (button_pressed(input, settings->cancel_buttons))
         {
             if (adjusting_speaker == 0)
             {
@@ -3546,9 +3546,9 @@ void BootNewGameSettings::update()
 
         if (voice_line != 0)
         {
-            BootClass170F30* face = func_473940(girl_scene, g_face_model_name);
-            BootClass170E80* end = &face->children;
-            BootClass170E80* node = end->next;
+            BootClass170F30* face = lib_find_renderable_entry(girl_scene, g_face_model_name);
+            BootListSentinel* end = &face->children;
+            BootListSentinel* node = end->next;
 
             if (func_110C10(D_001B65F8, voice_line) != 0)
             {
@@ -3622,9 +3622,9 @@ void BootNewGameSettings::update()
 
         if (blink_frame != 0)
         {
-            BootClass170F30* face = func_473940(girl_scene, g_face_model_name);
-            BootClass170E80* end = &face->children;
-            BootClass170E80* node = end->next;
+            BootClass170F30* face = lib_find_renderable_entry(girl_scene, g_face_model_name);
+            BootListSentinel* end = &face->children;
+            BootListSentinel* node = end->next;
             blink_frame++;
 
             for (; !at_end(end, node); node = node->next)
@@ -3743,7 +3743,7 @@ void BootNewGameSettings::update()
 
         g_boot_program.select_projection();
         description_text->destroy();
-        description_text = new (0) BootClass178750(g_boot_program.get_messages(), BOOT_MSG_TV_NORMAL, 1, 32.0f, 272.0f, 344.0f, 224.0f);
+        description_text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_TV_NORMAL, 1, 32.0f, 272.0f, 344.0f, 224.0f);
         description_text->set_color(0x34130F);
         lib_container_attach_widget(container, description_text);
         load_option_value();
@@ -3869,7 +3869,7 @@ BootNewGameSettings::~BootNewGameSettings()
 /** @brief Start loading the page images and the speaker setup scenes, and clear the owned objects. */
 BootNewGameSettings::BootNewGameSettings()
 {
-    BootResource0970* resource;
+    BootSystemSettings* resource;
     image_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x28));
     func_103E70(D_001B65E8, 0x28, image_data, 1, 0x34BC0, 0, 0, 0, 1);
     model_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x29));
@@ -3911,7 +3911,7 @@ BootNewGameSettings::BootNewGameSettings()
     D_001B65AC = &unk138;
     page = 0;
     loaded_model_blocks = 0;
-    resource = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    resource = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
     switch (D_001B65F8->output_mode)
     {
@@ -3935,7 +3935,7 @@ BootNewGameSettings::BootNewGameSettings()
  * @param matrix Matrix supplied by the caller.
  * @param context Opaque caller context.
  */
-void BootClass170F30::func_001E08C0(const void* matrix, void* context)
+void BootClass170F30::build_packet(const void* matrix, void* context)
 {
     BootMatrix92D0 negated;
     BootVector4DDAA0* vector1 = &negated.vectors[1];
@@ -3954,7 +3954,7 @@ void BootClass170F30::func_001E08C0(const void* matrix, void* context)
     copy_vector(&unk90.vectors[2], vector2);
     copy_vector(&unk90.vectors[3], vector3);
     transform_dirty = 1;
-    BootClass177820::func_001E08C0(matrix, context);
+    BootModel::build_packet(matrix, context);
 }
 
 /** @brief Destroy the model object. */
@@ -4064,7 +4064,7 @@ void BootOpeningMovie::update()
     s32 x;
     s32 y;
     BootInput* input = g_boot_program.input;
-    BootResource0970* settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
     s32 width;
     s32 height;
     s32 anchor;
@@ -4083,7 +4083,7 @@ void BootOpeningMovie::update()
             break;
         }
 
-        container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
+        container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
         func_465B20(D_001B657C, container);
         func_419A70(player, 12, 1);
         caption = 0;
@@ -4104,7 +4104,7 @@ void BootOpeningMovie::update()
         if (input->held & 8)
         {
             step = 3;
-            D_001B661C->append_node(new (0) BootClass171C00(g_boot_program.display), -1);
+            D_001B661C->append_node(new (0) BootScreenFade(g_boot_program.display), -1);
         }
 
         is_text = g_opening_captions[caption].is_text;
@@ -4178,18 +4178,18 @@ void BootOpeningMovie::update()
             {
                 if (settings->widescreen)
                 {
-                    caption_text = new (0) BootClass178750(g_boot_program.captions, g_opening_captions[caption].x, 1, 32.0f, 32.0f, 576.0f, 400.0f);
+                    caption_text = new (0) BootTextWidget(g_boot_program.captions, g_opening_captions[caption].x, 1, 32.0f, 32.0f, 576.0f, 400.0f);
                     caption_text->set_scale(0.75f);
                 }
                 else
                 {
-                    caption_text = new (0) BootClass178750(g_boot_program.captions, g_opening_captions[caption].x, 1, 32.0f, 32.0f, 576.0f, 400.0f);
+                    caption_text = new (0) BootTextWidget(g_boot_program.captions, g_opening_captions[caption].x, 1, 32.0f, 32.0f, 576.0f, 400.0f);
                 }
 
                 lib_container_attach_widget(container, caption_text);
             }
 
-            const BootTextExtent* extent = func_4C69B0(caption_text);
+            const BootTextExtent* extent = lib_text_measure_bounds(caption_text);
             width = (s32)extent->width;
             height = (s32)extent->height;
         }
@@ -4251,7 +4251,7 @@ void BootOpeningMovie::update()
 
         if (is_text == 0)
         {
-            caption_image->unk18->func_001E0520((float)x - 288.0f, (float)y - 192.0f, 0.0f);
+            caption_image->unk18->set_translation((float)x - 288.0f, (float)y - 192.0f, 0.0f);
 
             switch (caption_phase)
             {
@@ -4264,9 +4264,9 @@ void BootOpeningMovie::update()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = alpha;
-                BootClass177820* model = caption_image->unk18;
-                copy_vector(&model->unk560, &color);
-                model->func_001DDAA0();
+                BootModel* model = caption_image->unk18;
+                copy_vector(&model->base_color_factor, &color);
+                model->update_combined_color_factor();
                 break;
             }
             case 2:
@@ -4276,9 +4276,9 @@ void BootOpeningMovie::update()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = 1.0f;
-                BootClass177820* model = caption_image->unk18;
-                copy_vector(&model->unk560, &color);
-                model->func_001DDAA0();
+                BootModel* model = caption_image->unk18;
+                copy_vector(&model->base_color_factor, &color);
+                model->update_combined_color_factor();
                 break;
             }
             case 3:
@@ -4288,9 +4288,9 @@ void BootOpeningMovie::update()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = (30.0f - (float)fade) / 30.0f;
-                BootClass177820* model = caption_image->unk18;
-                copy_vector(&model->unk560, &color);
-                model->func_001DDAA0();
+                BootModel* model = caption_image->unk18;
+                copy_vector(&model->base_color_factor, &color);
+                model->update_combined_color_factor();
                 break;
             }
             }
@@ -4313,7 +4313,7 @@ void BootOpeningMovie::update()
     case 2:
         if ((input->held & 8) || !player->unk15E794)
         {
-            D_001B661C->append_node(new (0) BootClass171C00(g_boot_program.display), -1);
+            D_001B661C->append_node(new (0) BootScreenFade(g_boot_program.display), -1);
             step = 3;
         }
 
@@ -4385,17 +4385,17 @@ BootOpeningMovie::~BootOpeningMovie()
 BootOpeningMovie::BootOpeningMovie()
 {
     void* heap;
-    BootResource0970* resource;
+    BootSystemSettings* resource;
     step = 0;
     movie_heap = new (0) BootResident113E40;
     movie_heap->unk2C = 0x40;
     func_113930(movie_heap, 0x579F2C);
     heap = resident_exchange_allocation_heap(movie_heap);
-    player = new (0) BootClass172500(640, 448);
+    player = new (0) BootMoviePlayer(640, 448);
     resident_exchange_allocation_heap(heap);
     player->state->set_scale(1.0f, 1.0f);
     player->state->set_words(0x800, 0x800, 1);
-    resource = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    resource = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
     if (resource->widescreen != 0)
     {
@@ -4423,11 +4423,11 @@ void BootUnitErrorPopup::update()
     {
         if (container == 0 && (((u32)program->message_block + 0x7F) & ~0x7F) != 0)
         {
-            container = new (0) BootClass178660(8, 0.0f, 0.0f, 0.0f);
+            container = new (0) BootContainer(8, 0.0f, 0.0f, 0.0f);
             func_465B20(D_001B657C, container);
-            panel = new (0) BootClass178630(0, 64.0f, 160.0f, 520.0f, 160.0f, 88.0f);
+            panel = new (0) BootPanel(0, 64.0f, 160.0f, 520.0f, 160.0f, 88.0f);
             lib_container_attach_widget(container, panel);
-            text = new (0) BootClass178750(program->messages, BOOT_MSG_UNIT_FIX, 0, 80.0f, 176.0f, 576.0f, 320.0f);
+            text = new (0) BootTextWidget(program->messages, BOOT_MSG_UNIT_FIX, 0, 80.0f, 176.0f, 576.0f, 320.0f);
             lib_container_attach_widget(container, text);
         }
     }
@@ -4530,7 +4530,7 @@ void BootProgram::select_projection()
 /** @brief Set the projections' aspect and field of view for the 4:3 or widescreen setting. */
 inline void BootProgram::update_projection_aspect()
 {
-    BootResource0970* resource = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* resource = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
     BootDimensionsACD0* dimensions;
 
     if (resource->widescreen != 0)
@@ -4636,17 +4636,17 @@ void BootResourceLoader::update()
 void BootProgram::create_pools_and_projection()
 {
     func_4C5B60(0, 0);
-    func_001EC010(D_001B6664, 500);
-    func_001EC630(D_001B6668, 500);
+    float_track_pool_allocate(g_float_track_pool, 500);
+    vector_track_pool_allocate(g_vector_track_pool, 500);
     func_001ECC60(D_001B666C, 500);
-    func_001ED200(D_001B6670, 2000);
-    func_001ED7B0(D_001B6674, 2000);
+    float_curve_track_pool_allocate(g_float_curve_track_pool, 2000);
+    vector_curve_track_pool_allocate(g_vector_curve_track_pool, 2000);
     func_001EDD60(D_001B6678, 2000);
     func_001EE250(D_001B667C, 1000);
-    func_001EE760(D_001B6680, 1000);
+    quaternion_track_pool_allocate(g_quaternion_track_pool, 1000);
     projection = new (0) BootProjectionACD0(display);
     func_4E14B0(projection, display);
-    projection->func_001E0520(0.0f, 0.0f, -500.0f);
+    projection->set_translation(0.0f, 0.0f, -500.0f);
     D_001B6628->append_node(projection, -1);
     D_001B6628->current_display = projection;
     func_4DAFE0(D_001B6628, display, false, true, false, 2, 0xFFFFFF);
@@ -4665,7 +4665,7 @@ void BootProgram::run()
     s32 index;
     bool fresh;
     s32 previous;
-    BootResource0970* settings;
+    BootSystemSettings* settings;
     BootResourceLoader* loader;
 
     if (((BootResidentRoot15CC0*)func_10D8E0())->status == 0)
@@ -4713,7 +4713,7 @@ void BootProgram::run()
 
     if (func_101440(func_101290(func_10D8E0()), 1) != 0)
     {
-        saved_widescreen = ((BootResource0970*)func_101440(func_101290(func_10D8E0()), 1))->widescreen;
+        saved_widescreen = ((BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1))->widescreen;
         func_45A5D0();
         fresh = false;
     }
@@ -4745,7 +4745,7 @@ void BootProgram::run()
     check_main_code();
     func_45A770();
     create_pools_and_projection();
-    settings = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
     if (saved_widescreen != 0xFF)
     {
@@ -4837,14 +4837,14 @@ void BootProgram::release_resources()
 {
     func_11DEE0(D_001B65F0, 0, 0);
     D_001B6420 = 0;
-    func_001EC490(D_001B6664);
-    func_001ECAC0(D_001B6668);
+    float_track_pool_release(g_float_track_pool);
+    vector_track_pool_release(g_vector_track_pool);
     func_001ED060(D_001B666C);
-    func_001ED610(D_001B6670);
-    func_001EDBC0(D_001B6674);
+    float_curve_track_pool_release(g_float_curve_track_pool);
+    vector_curve_track_pool_release(g_vector_curve_track_pool);
     func_001EE0C0(D_001B6678);
     func_001EE5C0(D_001B667C);
-    func_001EEAE0(D_001B6680);
+    quaternion_track_pool_release(g_quaternion_track_pool);
     delete image;
     image = 0;
 
@@ -4929,16 +4929,16 @@ BootResourceLoader::~BootResourceLoader()
  * @param count Number of tracks.
  * @return One on success, or zero when the tracks could not be allocated.
  */
-s32 func_001EC010(BootTrackPool<BootClass177F70>* pool, s32 count)
+s32 float_track_pool_allocate(BootTrackPool<BootPooledFloatTrack>* pool, s32 count)
 {
     return pool->init(count);
 }
 
-BootClass177F70::~BootClass177F70()
+BootPooledFloatTrack::~BootPooledFloatTrack()
 {
 }
 
-BootClass177F70::BootClass177F70()
+BootPooledFloatTrack::BootPooledFloatTrack()
 {
 }
 
@@ -4946,7 +4946,7 @@ BootClass177F70::BootClass177F70()
  * @brief Release every track in the pool and its storage.
  * @param pool Pool to clear.
  */
-void func_001EC490(BootTrackPool<BootClass177F70>* pool)
+void float_track_pool_release(BootTrackPool<BootPooledFloatTrack>* pool)
 {
     pool->release();
 }
@@ -4957,16 +4957,16 @@ void func_001EC490(BootTrackPool<BootClass177F70>* pool)
  * @param count Number of tracks.
  * @return One on success, or zero when the tracks could not be allocated.
  */
-s32 func_001EC630(BootTrackPool<BootClass1714D0>* pool, s32 count)
+s32 vector_track_pool_allocate(BootTrackPool<BootPooledVectorTrack>* pool, s32 count)
 {
     return pool->init(count);
 }
 
-BootClass1714D0::~BootClass1714D0()
+BootPooledVectorTrack::~BootPooledVectorTrack()
 {
 }
 
-BootClass1714D0::BootClass1714D0()
+BootPooledVectorTrack::BootPooledVectorTrack()
 {
 }
 
@@ -4974,7 +4974,7 @@ BootClass1714D0::BootClass1714D0()
  * @brief Release every track in the pool and its storage.
  * @param pool Pool to clear.
  */
-void func_001ECAC0(BootTrackPool<BootClass1714D0>* pool)
+void vector_track_pool_release(BootTrackPool<BootPooledVectorTrack>* pool)
 {
     pool->release();
 }
@@ -5013,7 +5013,7 @@ void func_001ED060(BootTrackPool<BootClass177EE0>* pool)
  * @param count Number of tracks.
  * @return One on success, or zero when the tracks could not be allocated.
  */
-s32 func_001ED200(BootTrackPool<BootClass177C70>* pool, s32 count)
+s32 float_curve_track_pool_allocate(BootTrackPool<BootPooledFloatCurveTrack>* pool, s32 count)
 {
     return pool->init(count);
 }
