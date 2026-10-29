@@ -406,7 +406,7 @@ s32 BootBattleTrophyCard::get_transfer_result()
     return transfer_result;
 }
 
-/** @brief Return the signed 16-bit value at offset 0xDCE. @return The stored value. */
+/** @brief Return the transfer state. @return 1 once the transfer has finished, -1 while it runs or after a reset. */
 s16 BootBattleTrophyCard::get_transfer_state()
 {
     return transfer_state;
@@ -2629,58 +2629,58 @@ void BootNewGameSettings::update_option_rows()
                 row_x = -272.0f;
                 images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[16]->set_rectangle(0, 8, 288, 40, 0x80808080, 0);
-                images[16]->unk18->set_translation(-272.0f, -142.0f, 0.0f);
+                images[16]->model->set_translation(-272.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[17]->set_rectangle(0, 68, 288, 40, 0x80808080, 0);
-                images[17]->unk18->set_translation(-272.0f, -74.0f, 0.0f);
+                images[17]->model->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_SOUND:
                 row_x = -272.0f;
                 images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[16]->set_rectangle(0, 106, 288, 40, 0x80808080, 0);
-                images[16]->unk18->set_translation(-272.0f, -162.0f, 0.0f);
+                images[16]->model->set_translation(-272.0f, -162.0f, 0.0f);
                 images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[17]->set_rectangle(0, 162, 200, 40, 0x80808080, 0);
-                images[17]->unk18->set_translation(-272.0f, -126.0f, 0.0f);
+                images[17]->model->set_translation(-272.0f, -126.0f, 0.0f);
                 images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[18]->set_rectangle(0, 236, 424, 40, 0x80808080, 0);
-                images[18]->unk18->set_translation(-272.0f, -90.0f, 0.0f);
+                images[18]->model->set_translation(-272.0f, -90.0f, 0.0f);
                 images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[19]->set_rectangle(224, 168, 237, 38, 0x80808080, 0);
-                images[19]->unk18->set_translation(-272.0f, -55.0f, 0.0f);
+                images[19]->model->set_translation(-272.0f, -55.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_EVENT_SKIP:
                 row_x = -272.0f;
                 images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[16]->set_rectangle(0, 312, 340, 40, 0x80808080, 0);
-                images[16]->unk18->set_translation(-272.0f, -142.0f, 0.0f);
+                images[16]->model->set_translation(-272.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
                 images[17]->set_rectangle(0, 368, 340, 40, 0x80808080, 0);
-                images[17]->unk18->set_translation(-272.0f, -74.0f, 0.0f);
+                images[17]->model->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_VOICE:
                 row_x = -260.0f;
                 images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[16]->set_rectangle(0, 0, 340, 40, 0x80808080, 0);
-                images[16]->unk18->set_translation(-260.0f, -142.0f, 0.0f);
+                images[16]->model->set_translation(-260.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[17]->set_rectangle(0, 55, 340, 40, 0x80808080, 0);
-                images[17]->unk18->set_translation(-260.0f, -102.0f, 0.0f);
+                images[17]->model->set_translation(-260.0f, -102.0f, 0.0f);
                 images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[18]->set_rectangle(0, 110, 340, 40, 0x80808080, 0);
-                images[18]->unk18->set_translation(-260.0f, -62.0f, 0.0f);
+                images[18]->model->set_translation(-260.0f, -62.0f, 0.0f);
                 images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[19]->set_rectangle(0, 416, 500, 40, 0x80808080, 0);
-                images[19]->unk18->set_translation(-260.0f, -22.0f, 0.0f);
+                images[19]->model->set_translation(-260.0f, -22.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_VIBRATION:
                 row_x = -254.0f;
                 images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[16]->set_rectangle(0, 160, 340, 40, 0x80808080, 0);
-                images[16]->unk18->set_translation(-272.0f, -142.0f, 0.0f);
+                images[16]->model->set_translation(-272.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                 images[17]->set_rectangle(0, 215, 340, 40, 0x80808080, 0);
-                images[17]->unk18->set_translation(-272.0f, -74.0f, 0.0f);
+                images[17]->model->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_DIFFICULTY:
                 row_x = -260.0f;
@@ -2689,28 +2689,28 @@ void BootNewGameSettings::update_option_rows()
                 {
                     images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[16]->set_rectangle(0, 257, 340, 42, 0x80808080, 0);
-                    images[16]->unk18->set_translation(-260.0f, -142.0f, 0.0f);
+                    images[16]->model->set_translation(-260.0f, -142.0f, 0.0f);
                     images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[17]->set_rectangle(0, 313, 340, 42, 0x80808080, 0);
-                    images[17]->unk18->set_translation(-260.0f, -92.0f, 0.0f);
+                    images[17]->model->set_translation(-260.0f, -92.0f, 0.0f);
                     images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[18]->set_rectangle(0, 369, 340, 42, 0x80808080, 0);
-                    images[18]->unk18->set_translation(-260.0f, -42.0f, 0.0f);
+                    images[18]->model->set_translation(-260.0f, -42.0f, 0.0f);
                 }
                 else
                 {
                     images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[16]->set_rectangle(3, 257, 340, 42, 0x80808080, 0);
-                    images[16]->unk18->set_translation(-260.0f, -142.0f, 0.0f);
+                    images[16]->model->set_translation(-260.0f, -142.0f, 0.0f);
                     images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[17]->set_rectangle(3, 313, 340, 42, 0x80808080, 0);
-                    images[17]->unk18->set_translation(-260.0f, -102.0f, 0.0f);
+                    images[17]->model->set_translation(-260.0f, -102.0f, 0.0f);
                     images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[18]->set_rectangle(3, 369, 340, 42, 0x80808080, 0);
-                    images[18]->unk18->set_translation(-260.0f, -62.0f, 0.0f);
+                    images[18]->model->set_translation(-260.0f, -62.0f, 0.0f);
                     images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
                     images[19]->set_rectangle(0, 466, 340, 42, 0x80808080, 0);
-                    images[19]->unk18->set_translation(-260.0f, -24.0f, 0.0f);
+                    images[19]->model->set_translation(-260.0f, -24.0f, 0.0f);
                 }
 
                 break;
@@ -2721,12 +2721,12 @@ void BootNewGameSettings::update_option_rows()
         {
             for (s32 i = 0; i < 4; i++)
             {
-                if (images[16 + i] != 0 && images[16 + i]->unk18 != 0)
+                if (images[16 + i] != 0 && images[16 + i]->model != 0)
                 {
                     BootVector4DDAA0 position;
-                    copy_vector(&position, &images[16 + i]->unk18->unk20);
+                    copy_vector(&position, &images[16 + i]->model->unk20);
                     position.x = 8.0f + 1.3333334f * row_x;
-                    images[16 + i]->unk18->set_translation_vector(&position);
+                    images[16 + i]->model->set_translation_vector(&position);
                 }
             }
         }
@@ -2734,12 +2734,12 @@ void BootNewGameSettings::update_option_rows()
         {
             for (s32 i = 0; i < 4; i++)
             {
-                if (images[16 + i] != 0 && images[16 + i]->unk18 != 0)
+                if (images[16 + i] != 0 && images[16 + i]->model != 0)
                 {
                     BootVector4DDAA0 position;
-                    copy_vector(&position, &images[16 + i]->unk18->unk20);
+                    copy_vector(&position, &images[16 + i]->model->unk20);
                     position.x = row_x;
-                    images[16 + i]->unk18->set_translation_vector(&position);
+                    images[16 + i]->model->set_translation_vector(&position);
                 }
             }
         }
@@ -2756,7 +2756,7 @@ void BootNewGameSettings::update_option_rows()
                 continue;
             }
 
-            model = images[16 + i]->unk18;
+            model = images[16 + i]->model;
 
             if (model == 0)
             {
@@ -2849,7 +2849,7 @@ void BootNewGameSettings::update_page_images()
         images[0] = new (0) BootImage;
         images[0]->set_texture((const BootTextureResource*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
         images[0]->set_rectangle(0, 1, 0x1E8, 0xDF, 0x80808080, 0);
-        images[0]->unk18->set_translation(-244.0f, -112.0f, 0.0f);
+        images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
 
     if (images[1] == 0)
@@ -2857,7 +2857,7 @@ void BootNewGameSettings::update_page_images()
         images[1] = new (0) BootImage;
         images[1]->set_texture((const BootTextureResource*)(((u32)image_blocks[1] + 0x7F) & ~0x7F), 0);
         images[1]->set_rectangle(0, 0, 0x280, 0x50, 0x80808080, 0);
-        images[1]->unk18->set_translation(-320.0f, -216.0f, 0.0f);
+        images[1]->model->set_translation(-320.0f, -216.0f, 0.0f);
     }
 
     if (images[2] == 0 && on_speaker_setup == 0)
@@ -2897,52 +2897,52 @@ void BootNewGameSettings::update_page_images()
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->set_translation(-414.66669f, -216.0f, 0.0f);
-            images[1]->unk18->set_scale(1.31f, 1.0f, 1.0f);
+            images[1]->model->set_translation(-414.66669f, -216.0f, 0.0f);
+            images[1]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         for (s32 i = 0; i < 6; i++)
         {
             if (images[3 + i] != 0)
             {
-                images[3 + i]->unk18->set_translation(160.0f, 30.0f + (float)(i * 29), 0.0f);
+                images[3 + i]->model->set_translation(160.0f, 30.0f + (float)(i * 29), 0.0f);
             }
 
             if (images[9 + i] != 0)
             {
-                images[9 + i]->unk18->set_translation(21.0f, -204.0f, 0.0f);
+                images[9 + i]->model->set_translation(21.0f, -204.0f, 0.0f);
             }
         }
 
         if (images[15] != 0)
         {
-            images[15]->unk18->set_translation(-426.66669f, 170.0f, 0.0f);
+            images[15]->model->set_translation(-426.66669f, 170.0f, 0.0f);
         }
     }
     else
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->set_translation(-320.0f, -216.0f, 0.0f);
-            images[1]->unk18->set_scale(1.0f, 1.0f, 1.0f);
+            images[1]->model->set_translation(-320.0f, -216.0f, 0.0f);
+            images[1]->model->set_scale(1.0f, 1.0f, 1.0f);
         }
 
         for (s32 i = 0; i < 6; i++)
         {
             if (images[3 + i] != 0)
             {
-                images[3 + i]->unk18->set_translation(56.0f, 30.0f + (float)(i * 29), 0.0f);
+                images[3 + i]->model->set_translation(56.0f, 30.0f + (float)(i * 29), 0.0f);
             }
 
             if (images[9 + i] != 0)
             {
-                images[9 + i]->unk18->set_translation(-80.0f, -204.0f, 0.0f);
+                images[9 + i]->model->set_translation(-80.0f, -204.0f, 0.0f);
             }
         }
 
         if (images[15] != 0)
         {
-            images[15]->unk18->set_translation(-320.0f, 170.0f, 0.0f);
+            images[15]->model->set_translation(-320.0f, 170.0f, 0.0f);
         }
     }
 
@@ -2959,7 +2959,7 @@ void BootNewGameSettings::update_page_images()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = 1.0f;
-                BootModel* model = images[3 + i]->unk18;
+                BootModel* model = images[3 + i]->model;
                 copy_vector(&model->base_color_factor, &color);
                 model->update_combined_color_factor();
             }
@@ -2968,17 +2968,17 @@ void BootNewGameSettings::update_page_images()
             {
                 if (settings->widescreen)
                 {
-                    images[2]->unk18->set_translation(142.0f + 1.3333334f * (float)offsets.values[i], (float)(31.0 + 29.0 * i), 0.0f);
+                    images[2]->model->set_translation(142.0f + 1.3333334f * (float)offsets.values[i], (float)(31.0 + 29.0 * i), 0.0f);
                 }
                 else
                 {
-                    images[2]->unk18->set_translation(44.0f + (float)offsets.values[i], (float)(31.0 + 29.0 * i), 0.0f);
+                    images[2]->model->set_translation(44.0f + (float)offsets.values[i], (float)(31.0 + 29.0 * i), 0.0f);
                 }
             }
 
             if (images[9 + i] != 0)
             {
-                images[9 + i]->unk18->unk6a &= ~1;
+                images[9 + i]->model->unk6a &= ~1;
             }
         }
         else
@@ -2990,14 +2990,14 @@ void BootNewGameSettings::update_page_images()
                 color.y = 0.5f;
                 color.z = 0.5f;
                 color.w = 1.0f;
-                BootModel* model = images[3 + i]->unk18;
+                BootModel* model = images[3 + i]->model;
                 copy_vector(&model->base_color_factor, &color);
                 model->update_combined_color_factor();
             }
 
             if (images[9 + i] != 0)
             {
-                images[9 + i]->unk18->unk6a |= 1;
+                images[9 + i]->model->unk6a |= 1;
             }
         }
     }
@@ -3006,11 +3006,11 @@ void BootNewGameSettings::update_page_images()
     {
         if (page == BOOT_SETTINGS_DIFFICULTY)
         {
-            images[15]->unk18->unk6a |= 1;
+            images[15]->model->unk6a |= 1;
         }
         else
         {
-            images[15]->unk18->unk6a &= ~1;
+            images[15]->model->unk6a &= ~1;
         }
     }
 }
@@ -3762,7 +3762,7 @@ void BootNewGameSettings::update()
             func_103B20(D_001B65E8, 0x29, 0, 0, -1, 0);
         }
 
-        settings->unk25_mid = 0;
+        settings->continue_selected = 0;
         D_001B6614->append_node(new (0) BootGameLauncher, -1);
         lib_object_detach_owner(this);
         destroy();
@@ -3973,8 +3973,8 @@ void BootInput::clear_card_states()
 {
     slot1_state = 0;
     slot2_state = 0;
-    unk28 = 0;
-    unk2C = 0;
+    slot1_raw_state = 0;
+    slot2_raw_state = 0;
     slot1_ready = 0;
     slot2_ready = 0;
 }
@@ -4015,12 +4015,12 @@ void BootInput::update()
 
         if (third != 0)
         {
-            unk28 = third;
+            slot1_raw_state = third;
         }
 
         if (fourth != 0)
         {
-            unk2C = fourth;
+            slot2_raw_state = fourth;
         }
 
         if (ready & 1)
@@ -4048,8 +4048,8 @@ BootInput::BootInput()
 {
     slot1_state = 0;
     slot2_state = 0;
-    unk28 = 0;
-    unk2C = 0;
+    slot1_raw_state = 0;
+    slot2_raw_state = 0;
     slot1_ready = 0;
     slot2_ready = 0;
     card_query_enabled = 1;
@@ -4251,20 +4251,20 @@ void BootOpeningMovie::update()
 
         if (is_text == 0)
         {
-            caption_image->unk18->set_translation((float)x - 288.0f, (float)y - 192.0f, 0.0f);
+            caption_image->model->set_translation((float)x - 288.0f, (float)y - 192.0f, 0.0f);
 
             switch (caption_phase)
             {
             case 1:
             {
                 float alpha = (30.0f - (float)fade) / 30.0f;
-                caption_image->unk18->unk6a &= ~1;
+                caption_image->model->unk6a &= ~1;
                 BootVector4DDAA0 color;
                 color.x = 1.0f;
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = alpha;
-                BootModel* model = caption_image->unk18;
+                BootModel* model = caption_image->model;
                 copy_vector(&model->base_color_factor, &color);
                 model->update_combined_color_factor();
                 break;
@@ -4276,7 +4276,7 @@ void BootOpeningMovie::update()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = 1.0f;
-                BootModel* model = caption_image->unk18;
+                BootModel* model = caption_image->model;
                 copy_vector(&model->base_color_factor, &color);
                 model->update_combined_color_factor();
                 break;
@@ -4288,7 +4288,7 @@ void BootOpeningMovie::update()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = (30.0f - (float)fade) / 30.0f;
-                BootModel* model = caption_image->unk18;
+                BootModel* model = caption_image->model;
                 copy_vector(&model->base_color_factor, &color);
                 model->update_combined_color_factor();
                 break;
@@ -4311,7 +4311,7 @@ void BootOpeningMovie::update()
 
         break;
     case 2:
-        if ((input->held & 8) || !player->unk15E794)
+        if ((input->held & 8) || !player->is_playing)
         {
             D_001B661C->append_node(new (0) BootScreenFade(g_boot_program.display), -1);
             step = 3;
@@ -4638,11 +4638,11 @@ void BootProgram::create_pools_and_projection()
     func_4C5B60(0, 0);
     float_track_pool_allocate(g_float_track_pool, 500);
     vector_track_pool_allocate(g_vector_track_pool, 500);
-    func_001ECC60(D_001B666C, 500);
+    track_1718C0_pool_allocate(D_001B666C, 500);
     float_curve_track_pool_allocate(g_float_curve_track_pool, 2000);
     vector_curve_track_pool_allocate(g_vector_curve_track_pool, 2000);
-    func_001EDD60(D_001B6678, 2000);
-    func_001EE250(D_001B667C, 1000);
+    track_171A70_pool_allocate(D_001B6678, 2000);
+    track_171680_pool_allocate(D_001B667C, 1000);
     quaternion_track_pool_allocate(g_quaternion_track_pool, 1000);
     projection = new (0) BootProjectionACD0(display);
     func_4E14B0(projection, display);
@@ -4839,11 +4839,11 @@ void BootProgram::release_resources()
     D_001B6420 = 0;
     float_track_pool_release(g_float_track_pool);
     vector_track_pool_release(g_vector_track_pool);
-    func_001ED060(D_001B666C);
+    track_1718C0_pool_release(D_001B666C);
     float_curve_track_pool_release(g_float_curve_track_pool);
     vector_curve_track_pool_release(g_vector_curve_track_pool);
-    func_001EE0C0(D_001B6678);
-    func_001EE5C0(D_001B667C);
+    track_171A70_pool_release(D_001B6678);
+    track_171680_pool_release(D_001B667C);
     quaternion_track_pool_release(g_quaternion_track_pool);
     delete image;
     image = 0;
@@ -4934,10 +4934,12 @@ s32 float_track_pool_allocate(BootTrackPool<BootPooledFloatTrack>* pool, s32 cou
     return pool->init(count);
 }
 
+/** @brief Destroy the track. */
 BootPooledFloatTrack::~BootPooledFloatTrack()
 {
 }
 
+/** @brief Construct the track. */
 BootPooledFloatTrack::BootPooledFloatTrack()
 {
 }
@@ -4962,10 +4964,12 @@ s32 vector_track_pool_allocate(BootTrackPool<BootPooledVectorTrack>* pool, s32 c
     return pool->init(count);
 }
 
+/** @brief Destroy the track. */
 BootPooledVectorTrack::~BootPooledVectorTrack()
 {
 }
 
+/** @brief Construct the track. */
 BootPooledVectorTrack::BootPooledVectorTrack()
 {
 }
@@ -4985,15 +4989,17 @@ void vector_track_pool_release(BootTrackPool<BootPooledVectorTrack>* pool)
  * @param count Number of tracks.
  * @return One on success, or zero when the tracks could not be allocated.
  */
-s32 func_001ECC60(BootTrackPool<BootClass177EE0>* pool, s32 count)
+s32 track_1718C0_pool_allocate(BootTrackPool<BootClass177EE0>* pool, s32 count)
 {
     return pool->init(count);
 }
 
+/** @brief Destroy the track. */
 BootClass177EE0::~BootClass177EE0()
 {
 }
 
+/** @brief Construct the track. */
 BootClass177EE0::BootClass177EE0()
 {
 }
@@ -5002,7 +5008,7 @@ BootClass177EE0::BootClass177EE0()
  * @brief Release every track in the pool and its storage.
  * @param pool Pool to clear.
  */
-void func_001ED060(BootTrackPool<BootClass177EE0>* pool)
+void track_1718C0_pool_release(BootTrackPool<BootClass177EE0>* pool)
 {
     pool->release();
 }

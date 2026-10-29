@@ -37,8 +37,8 @@ typedef struct BootFloatCurveStateKey
 {
     float key;
     float value;
-    float second;
-    float third;
+    float in_tangent;
+    float out_tangent;
 } BootFloatCurveStateKey;
 
 /** @brief Partial array receiver with counts, storage, and packed controls. */
@@ -254,13 +254,13 @@ typedef struct BootFloatHistoryState
 /** @brief Partial scalar record containing four inputs and its endpoint range. */
 typedef struct BootFloatSegmentState
 {
-    float unk00;
-    float unk04;
-    float unk08;
-    float unk0C;
-    float unk10;
-    float unk14;
-    float unk18;
+    float start_value;
+    float end_value;
+    float start_tangent;
+    float end_tangent;
+    float start_key;
+    float end_key;
+    float key_span;
 } BootFloatSegmentState;
 
 #ifdef __cplusplus
@@ -333,6 +333,11 @@ struct BootVramRequest
 };
 
 class FieldVec4A;
+class BootVectorTrack;
+class BootClass171B20;
+class BootVectorHistoryBase;
+class BootFloatHistoryBase;
+class BootVectorCurveTrack;
 class BootFloatTrackBase;
 class BootVectorTrackBase;
 class BootClass1718C0;
@@ -348,82 +353,84 @@ extern "C" {
 
 /**
  * @brief Copy an indexed entry's key and values to the requested outputs.
- * @param object Record-array receiver.
+ * @param track Record-array receiver.
  * @param index Nonnegative entry index, checked against capacity.
  * @param key Optional output for the entry key.
- * @param first Optional output for the first value.
- * @param second Optional output for the second value.
- * @param third Optional output for the third value.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
  * @return One if read, or zero if storage is absent or the index is outside capacity.
  */
-s32 float_curve_track_read_entry(BootFloatCurveTrackState* object, s32 index, float* key, float* first, float* second, float* third);
+s32 float_curve_track_read_entry(BootFloatCurveTrackState* track, s32 index, float* key, float* value, float* in_tangent, float* out_tangent);
 
 /**
  * @brief Insert three values and their key before an existing entry.
- * @param object Record-array receiver with a nonnegative entry count.
+ * @param track Record-array receiver with a nonnegative entry count.
  * @param index Nonnegative insertion index, less than the current entry count.
- * @param first First value to copy after moving existing entries.
- * @param second Second value to copy after moving existing entries.
- * @param third Third value to copy after moving existing entries.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
  * @param key Key associated with the inserted entry.
  * @return One if inserted, or zero if storage, index, or remaining capacity is invalid.
  */
-s32 float_curve_track_insert_curve_key(BootFloatCurveTrackState* object, s32 index, const float* first, const float* second, const float* third, float key);
+s32 float_curve_track_insert_curve_key(BootFloatCurveTrackState* track, s32 index, const float* value, const float* in_tangent, const float* out_tangent,
+                                       float key);
 
 /**
  * @brief Replace an indexed three-value entry and update the span for the last entry.
- * @param object Record-array receiver.
+ * @param track Record-array receiver.
  * @param index Nonnegative entry index, checked against capacity.
- * @param first First value to copy.
- * @param second Second value to copy.
- * @param third Third value to copy.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
  * @param key Key associated with the entry.
  * @return One if stored, or zero if storage is absent or the index is outside capacity.
  */
-s32 float_curve_track_replace_curve_key(BootFloatCurveTrackState* object, s32 index, const float* first, const float* second, const float* third, float key);
+s32 float_curve_track_replace_curve_key(BootFloatCurveTrackState* track, s32 index, const float* value, const float* in_tangent, const float* out_tangent,
+                                        float key);
 
 /**
  * @brief Append three values and their key, updating the span and entry count.
- * @param object Record-array receiver with a nonnegative entry count.
- * @param first First value to copy.
- * @param second Second value to copy.
- * @param third Third value to copy.
+ * @param track Record-array receiver with a nonnegative entry count.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
  * @param key Key associated with the new entry.
  * @return One if appended, or zero if storage is absent or capacity is exhausted.
  */
-s32 float_curve_track_append_entry(BootFloatCurveTrackState* object, const float* first, const float* second, const float* third, float key);
+s32 float_curve_track_append_entry(BootFloatCurveTrackState* track, const float* value, const float* in_tangent, const float* out_tangent, float key);
 
 /**
  * @brief Normalize a key across the cached span and store its signed period count.
- * @param object Receiver with 48-byte records and a nonzero cached key span.
+ * @param track Receiver with 48-byte records and a nonzero cached key span.
  * @param key Key whose period count is representable as a signed 32-bit integer.
  * @return Normalized key, with odd-period reflection selected by the control fields.
  */
-float vector_curve_track_update_cycle_count(BootVectorCurveTrackState* object, float key);
+float vector_curve_track_update_cycle_count(BootVectorCurveTrackState* track, float key);
 
 /**
  * @brief Normalize a key across the cached span and store its signed period count.
- * @param object Receiver with vector-key records and a nonzero cached key span.
+ * @param track Receiver with vector-key records and a nonzero cached key span.
  * @param key Key whose period count is representable as a signed 32-bit integer.
  * @return Normalized key, with odd-period reflection selected by the control fields.
  */
-float vector_track_update_cycle_count(BootVectorTrackState* object, float key);
+float vector_track_update_cycle_count(BootVectorTrackState* track, float key);
 
 /**
  * @brief Normalize a key across the cached span and store its signed period count.
- * @param object Receiver with float-key entries and a nonzero cached key span.
+ * @param track Receiver with float-key entries and a nonzero cached key span.
  * @param key Key whose period count is representable as a signed 32-bit integer.
  * @return Normalized key, with odd-period reflection selected by the control fields.
  */
-float float_track_update_cycle_count(BootFloatTrackState* object, float key);
+float float_track_update_cycle_count(BootFloatTrackState* track, float key);
 
 /**
  * @brief Normalize a key across the cached span and store its signed period count.
- * @param object Receiver with record storage and a nonzero cached key span.
+ * @param track Receiver with record storage and a nonzero cached key span.
  * @param key Key whose period count is representable as a signed 32-bit integer.
  * @return Normalized key, with odd-period reflection selected by the control fields.
  */
-float float_curve_track_update_cycle_count(BootFloatCurveTrackState* object, float key);
+float float_curve_track_update_cycle_count(BootFloatCurveTrackState* track, float key);
 
 /**
  * @brief Find the entries around a key, starting from the cached cursor.
@@ -467,25 +474,25 @@ u8 float_track_find_surrounding_keys(BootFloatTrackBase* track, float key, s32* 
 
 /**
  * @brief Reset 48-byte record storage, counts, packed controls, and cached indices.
- * @param object Receiver to reset without releasing its current storage.
+ * @param track Receiver to reset without releasing its current storage.
  */
-void vector_curve_track_reset_state(BootVectorCurveTrackState* object);
+void vector_curve_track_reset_state(BootVectorCurveTrackState* track);
 
 /**
  * @brief Bind external 48-byte records and cache their first-to-last key span.
- * @param object Array receiver.
+ * @param track Array receiver.
  * @param count Positive entry count representable in the receiver count fields.
  * @param entries External storage containing the specified number of entries.
  */
-void vector_curve_track_bind_keys(BootVectorCurveTrackState* object, s32 count, BootVectorCurveStateKey* entries);
+void vector_curve_track_bind_keys(BootVectorCurveTrackState* track, s32 count, BootVectorCurveStateKey* entries);
 
 /**
  * @brief Adjust a scalar key by whole spans determined from the endpoint records.
- * @param object Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param track Receiver with positive count, valid storage, and distinct endpoint keys.
  * @param key Scalar key whose normalized span quotient must fit in a signed word.
  * @return Key minus the computed number of endpoint spans, or the key for zero spans.
  */
-float vector_curve_track_wrap_key(BootVectorCurveTrackState* object, float key);
+float vector_curve_track_wrap_key(BootVectorCurveTrackState* track, float key);
 
 /**
  * @brief Release owned record-array storage and clear the array pointer.
@@ -498,7 +505,7 @@ void func_001EEDF0(BootPooledVectorCurveTrack* track);
  * @brief Release owned record-array storage and clear the array pointer.
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
-void func_001F0960(BootClass171A70* track);
+void track_171A70_free_keys(BootClass171A70* track);
 
 /**
  * @brief Release owned record-array storage and clear the array pointer.
@@ -510,19 +517,19 @@ void quaternion_track_free_keys(BootQuaternionTrackBase* track);
  * @brief Release owned record-array storage and clear the array pointer.
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
-void func_001F2280(BootClass171680* track);
+void track_171680_free_keys(BootClass171680* track);
 
 /**
  * @brief Reset array storage, counts, packed controls, and cached indices.
- * @param object Receiver to reset without releasing its current storage.
+ * @param track Receiver to reset without releasing its current storage.
  */
-void float_curve_track_reset_state(BootFloatCurveTrackState* object);
+void float_curve_track_reset_state(BootFloatCurveTrackState* track);
 
 /**
  * @brief Reset array storage, counts, packed controls, and cached indices.
- * @param object Receiver to reset without releasing its current storage.
+ * @param track Receiver to reset without releasing its current storage.
  */
-void func_001F14F0(BootState1F1580* object);
+void track_1718C0_reset_state(BootState1F1580* track);
 
 /**
  * @brief Release owned array storage and clear the array pointer.
@@ -534,7 +541,7 @@ void float_curve_track_free_keys(BootFloatCurveTrackBase* track);
  * @brief Release owned array storage and clear the array pointer.
  * @param object Receiver whose packed ownership flag distinguishes external storage.
  */
-void func_001F16F0(BootClass1718C0* track);
+void track_1718C0_free_keys(BootClass1718C0* track);
 
 /**
  * @brief Release owned array storage and clear the array pointer.
@@ -551,278 +558,279 @@ void float_track_free_keys(BootFloatTrackBase* track);
 
 /**
  * @brief Adjust a scalar key by whole spans determined from the endpoint records.
- * @param object Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param track Receiver with positive count, valid storage, and distinct endpoint keys.
  * @param key Scalar key whose normalized span quotient must fit in a signed word.
  * @return Key minus the computed number of endpoint spans, or the key for zero spans.
  */
-float func_001F29D0(BootState1F1580* object, float key);
+float track_1718C0_wrap_key(BootState1F1580* track, float key);
 
 /**
  * @brief Return the last-to-first key difference, or zero below two records.
- * @param object Receiver with valid storage when its count is at least two.
+ * @param track Receiver with valid storage when its count is at least two.
  * @return Difference between the last and first scalar keys, or zero.
  */
-float func_001F2AC0(BootState1F1580* object);
+float track_1718C0_get_key_span(BootState1F1580* track);
 
 /**
  * @brief Test whether the 32-byte record array contains an exactly equal key.
- * @param object Receiver with valid storage when its count is positive.
+ * @param track Receiver with valid storage when its count is positive.
  * @param key Scalar key to find.
  * @return One for an equal key, or zero when none is present.
  */
-s32 func_001F2B10(BootState1F1580* object, float key);
+s32 track_1718C0_has_key(BootState1F1580* track, float key);
 
 /**
  * @brief Bind external 32-byte records and cache their first-to-last key span.
- * @param object Array receiver.
+ * @param track Array receiver.
  * @param count Positive entry count representable in the receiver count fields.
  * @param entries External storage containing the specified number of entries.
  */
-void func_001F2C60(BootState1F1580* object, s32 count, BootKeyEntry32* entries);
+void track_1718C0_bind_keys(BootState1F1580* track, s32 count, BootKeyEntry32* entries);
 
 /**
  * @brief Adjust a scalar key by whole spans determined from the endpoint records.
- * @param object Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param track Receiver with positive count, valid storage, and distinct endpoint keys.
  * @param key Scalar key whose normalized span quotient must fit in a signed word.
  * @return Key minus the computed number of endpoint spans, or the key for zero spans.
  */
-float float_curve_track_wrap_key(BootFloatCurveTrackState* object, float key);
+float float_curve_track_wrap_key(BootFloatCurveTrackState* track, float key);
 
 /**
  * @brief Find the value stored with the first exactly equal scalar key.
- * @param object Receiver with valid storage when its count is positive.
+ * @param track Receiver with valid storage when its count is positive.
  * @param key Scalar key to find.
  * @return The first matching value, or zero when the key is absent.
  */
-float float_curve_track_find_key_value(BootFloatCurveTrackState* object, float key);
+float float_curve_track_find_key_value(BootFloatCurveTrackState* track, float key);
 
 /**
  * @brief Return the last-to-first key difference, or zero below two records.
- * @param object Receiver with valid storage when its count is at least two.
+ * @param track Receiver with valid storage when its count is at least two.
  * @return Difference between the last and first scalar keys, or zero.
  */
-float float_curve_track_get_key_span(BootFloatCurveTrackState* object);
+float float_curve_track_get_key_span(BootFloatCurveTrackState* track);
 
 /**
  * @brief Test whether the 16-byte record array contains an exactly equal key.
- * @param object Receiver with valid storage when its count is positive.
+ * @param track Receiver with valid storage when its count is positive.
  * @param key Scalar key to find.
  * @return One for an equal key, or zero when none is present.
  */
-s32 float_curve_track_has_key(BootFloatCurveTrackState* object, float key);
+s32 float_curve_track_has_key(BootFloatCurveTrackState* track, float key);
 
 /**
  * @brief Bind external 16-byte records and cache their first-to-last key span.
- * @param object Array receiver.
+ * @param track Array receiver.
  * @param count Positive entry count representable in the receiver count fields.
  * @param entries External storage containing the specified number of entries.
  */
-void float_curve_track_bind_keys(BootFloatCurveTrackState* object, s32 count, BootFloatCurveStateKey* entries);
+void float_curve_track_bind_keys(BootFloatCurveTrackState* track, s32 count, BootFloatCurveStateKey* entries);
 
 /**
  * @brief Adjust a scalar key by whole spans determined from the endpoint records.
- * @param object Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param track Receiver with positive count, valid storage, and distinct endpoint keys.
  * @param key Scalar key whose normalized span quotient must fit in a signed word.
  * @return Key minus the computed number of endpoint spans, or the key for zero spans.
  */
-float func_001F5E20(BootState1F47F0* object, float key);
+float track_171A70_wrap_key(BootState1F47F0* track, float key);
 
 /**
  * @brief Return the last-to-first key difference, or zero below two records.
- * @param object Receiver with valid storage when its count is at least two.
+ * @param track Receiver with valid storage when its count is at least two.
  * @return Difference between the last and first scalar keys, or zero.
  */
-float func_001F5F10(BootState1F47F0* object);
+float track_171A70_get_key_span(BootState1F47F0* track);
 
 /**
  * @brief Test whether the 32-byte record array contains an exactly equal key.
- * @param object Receiver with valid storage when its count is positive.
+ * @param track Receiver with valid storage when its count is positive.
  * @param key Scalar key to find.
  * @return One for an equal key, or zero when none is present.
  */
-s32 func_001F5F60(BootState1F47F0* object, float key);
+s32 track_171A70_has_key(BootState1F47F0* track, float key);
 
 /**
  * @brief Return the last-to-first key difference, or zero below two records.
- * @param object Receiver with valid storage when its count is at least two.
+ * @param track Receiver with valid storage when its count is at least two.
  * @return Difference between the last and first scalar keys, or zero.
  */
-float func_001F5C50(BootState1F4730* object);
+float track_171680_get_key_span(BootState1F4730* track);
 
 /**
  * @brief Test whether the 48-byte record array contains an exactly equal key.
- * @param object Receiver with valid storage when its count is positive.
+ * @param track Receiver with valid storage when its count is positive.
  * @param key Scalar key to find.
  * @return One for an equal key, or zero when none is present.
  */
-s32 func_001F5BE0(BootState1F4730* object, float key);
+s32 track_171680_has_key(BootState1F4730* track, float key);
 
 /**
  * @brief Bind external 48-byte records and cache their first-to-last key span.
- * @param object Array receiver.
+ * @param track Array receiver.
  * @param count Positive entry count representable in the receiver count fields.
  * @param entries External storage containing the specified number of entries.
  */
-void func_001F5A00(BootState1F4730* object, s32 count, BootKeyEntry48* entries);
+void track_171680_bind_keys(BootState1F4730* track, s32 count, BootKeyEntry48* entries);
 
 /**
  * @brief Test whether the 48-byte record array contains an exactly equal key.
- * @param object Receiver with valid storage when its count is positive.
+ * @param track Receiver with valid storage when its count is positive.
  * @param key Scalar key to find.
  * @return One for an equal key, or zero when none is present.
  */
-s32 vector_curve_track_has_key(BootVectorCurveTrackState* object, float key);
+s32 vector_curve_track_has_key(BootVectorCurveTrackState* track, float key);
 
 /**
  * @brief Return the last-to-first key difference, or zero below two records.
- * @param object Receiver with valid storage when its count is at least two.
+ * @param track Receiver with valid storage when its count is at least two.
  * @return Difference between the last and first scalar keys, or zero.
  */
-float vector_curve_track_get_key_span(BootVectorCurveTrackState* object);
+float vector_curve_track_get_key_span(BootVectorCurveTrackState* track);
 
 /**
  * @brief Store four scalar inputs and an endpoint span, substituting one for zero.
- * @param object Receiver of the inputs, endpoints, and span.
- * @param first Input stored at offset 0x00.
- * @param second Input stored at offset 0x08.
- * @param third Input stored at offset 0x04.
- * @param fourth Input stored at offset 0x0C.
- * @param start First endpoint.
- * @param end Second endpoint.
+ * @param segment Receiver of the inputs, endpoints, and span.
+ * @param start_value Value at the start_key key.
+ * @param start_tangent Tangent at the start_key key.
+ * @param end_value Value at the end_key key.
+ * @param end_tangent Tangent at the end_key key.
+ * @param start_key Key the segment starts at.
+ * @param end_key Key the segment ends at.
  */
-void float_segment_set_endpoints(BootFloatSegmentState* object, const float* first, const float* second, const float* third, const float* fourth, float start, float end);
+void float_segment_set_endpoints(BootFloatSegmentState* segment, const float* start_value, const float* start_tangent, const float* end_value,
+                                 const float* end_tangent, float start_key, float end_key);
 
 /**
  * @brief Reset vector-key storage, counts, control fields, and cached indices.
- * @param object Array receiver to reset without releasing its current storage.
+ * @param track Array receiver to reset without releasing its current storage.
  */
-void vector_track_reset_state(BootVectorTrackState* object);
+void vector_track_reset_state(BootVectorTrackState* track);
 
 /**
  * @brief Bind external vector-key storage and cache its first-to-last key span.
- * @param object Array receiver.
+ * @param track Array receiver.
  * @param count Positive entry count representable in the receiver count fields.
  * @param entries External storage containing the specified number of entries.
  */
-void vector_track_bind_keys(BootVectorTrackState* object, s32 count, BootVectorStateKey* entries);
+void vector_track_bind_keys(BootVectorTrackState* track, s32 count, BootVectorStateKey* entries);
 
 /**
  * @brief Test whether the vector-key array contains an exactly equal key.
- * @param object Receiver with valid storage when its count is positive.
+ * @param track Receiver with valid storage when its count is positive.
  * @param key Key to find.
  * @return One if a key matches, or zero otherwise.
  */
-s32 vector_track_has_key(BootVectorTrackState* object, float key);
+s32 vector_track_has_key(BootVectorTrackState* track, float key);
 
 /**
  * @brief Compute the span between the last and first vector-entry keys.
- * @param object Receiver with valid storage when it has at least two entries.
+ * @param track Receiver with valid storage when it has at least two entries.
  * @return Key span, or zero when fewer than two entries exist.
  */
-float vector_track_get_key_span(BootVectorTrackState* object);
+float vector_track_get_key_span(BootVectorTrackState* track);
 
 /**
  * @brief Wrap a key by the first-to-last vector-entry key span.
- * @param object Receiver with valid nonempty storage and a nonzero key span.
+ * @param track Receiver with valid nonempty storage and a nonzero key span.
  * @param key Key to wrap using truncation after adjusting negative positions.
  * @return Key with the computed whole spans subtracted.
  */
-float vector_track_wrap_key(BootVectorTrackState* object, float key);
+float vector_track_wrap_key(BootVectorTrackState* track, float key);
 
 /**
  * @brief Read either or both members of an indexed float entry.
- * @param object Array receiver.
+ * @param track Array receiver.
  * @param index Nonnegative entry index, checked against capacity.
  * @param key Optional destination for the entry key.
  * @param value Optional destination for the entry value.
  * @return One for an available slot, or zero if storage is absent or the index is too large.
  */
-s32 float_track_read_entry(BootFloatTrackState* object, s32 index, float* key, float* value);
+s32 float_track_read_entry(BootFloatTrackState* track, s32 index, float* key, float* value);
 
 /**
  * @brief Test whether the float-entry array contains an exactly equal key.
- * @param object Receiver with valid storage when its count is positive.
+ * @param track Receiver with valid storage when its count is positive.
  * @param key Key to find.
  * @return One if a matching key exists, or zero otherwise.
  */
-s32 float_track_has_key(BootFloatTrackState* object, float key);
+s32 float_track_has_key(BootFloatTrackState* track, float key);
 
 /**
  * @brief Reset float-entry storage, counts, control fields, and cached indices.
- * @param object Array receiver to reset without releasing its current storage.
+ * @param track Array receiver to reset without releasing its current storage.
  */
-void float_track_reset_state(BootFloatTrackState* object);
+void float_track_reset_state(BootFloatTrackState* track);
 
 /**
  * @brief Bind external entry storage and cache its first-to-last key span.
- * @param object Array receiver.
+ * @param track Array receiver.
  * @param count Positive entry count representable in the receiver count fields.
  * @param entries External storage containing the specified number of entries.
  */
-void float_track_bind_keys(BootFloatTrackState* object, s32 count, BootFloatStateKey* entries);
+void float_track_bind_keys(BootFloatTrackState* track, s32 count, BootFloatStateKey* entries);
 
 /**
  * @brief Wrap a key by the span between the first and last entries.
- * @param object Receiver with valid nonempty storage and a nonzero key span.
+ * @param track Receiver with valid nonempty storage and a nonzero key span.
  * @param key Key to wrap using truncation after adjusting negative positions.
  * @return Key with the computed whole spans subtracted.
  */
-float float_track_wrap_key(BootFloatTrackState* object, float key);
+float float_track_wrap_key(BootFloatTrackState* track, float key);
 
 /**
  * @brief Read the value associated with the first exactly equal key.
- * @param object Receiver with valid storage when its count is positive.
+ * @param track Receiver with valid storage when its count is positive.
  * @param key Key to find.
  * @return Associated value, or zero when no key matches.
  */
-float float_track_find_key_value(BootFloatTrackState* object, float key);
+float float_track_find_key_value(BootFloatTrackState* track, float key);
 
 /**
  * @brief Read the vector value associated with the first exactly equal key.
- * @param object Receiver with 48-byte records, valid when its count is positive.
+ * @param track Receiver with 48-byte records, valid when its count is positive.
  * @param key Key to find.
  * @return Associated value, or a zero vector when no key matches.
  */
-FieldVec4A vector_curve_track_find_key_value(BootVectorCurveTrackState* object, float key);
+FieldVec4A vector_curve_track_find_key_value(BootVectorCurveTrackState* track, float key);
 
 /**
  * @brief Read the vector value associated with the first exactly equal key.
- * @param object Receiver with vector-key entries, valid when its count is positive.
+ * @param track Receiver with vector-key entries, valid when its count is positive.
  * @param key Key to find.
  * @return Associated value, or a zero vector when no key matches.
  */
-FieldVec4A vector_track_find_key_value(BootVectorTrackState* object, float key);
+FieldVec4A vector_track_find_key_value(BootVectorTrackState* track, float key);
 
 /**
  * @brief Read the vector value associated with the first exactly equal key.
- * @param object Receiver with 32-byte records, valid when its count is positive.
+ * @param track Receiver with 32-byte records, valid when its count is positive.
  * @param key Key to find.
  * @return Associated value, or a zero vector when no key matches.
  */
-FieldVec4A func_001F2A60(BootState1F1580* object, float key);
+FieldVec4A track_1718C0_find_key_value(BootState1F1580* track, float key);
 
 /**
  * @brief Read the vector value associated with the first exactly equal key.
- * @param object Receiver with 48-byte records, valid when its count is positive.
+ * @param track Receiver with 48-byte records, valid when its count is positive.
  * @param key Key to find.
  * @return Associated value, or a zero vector when no key matches.
  */
-FieldVec4A func_001F5CA0(BootState1F4730* object, float key);
+FieldVec4A track_171680_find_key_value(BootState1F4730* track, float key);
 
 /**
  * @brief Read the vector value associated with the first exactly equal key.
- * @param object Receiver with 32-byte records, valid when its count is positive.
+ * @param track Receiver with 32-byte records, valid when its count is positive.
  * @param key Key to find.
  * @return Associated value, or a zero vector when no key matches.
  */
-FieldVec4A func_001F5EB0(BootState1F47F0* object, float key);
+FieldVec4A track_171A70_find_key_value(BootState1F47F0* track, float key);
 
 /**
  * @brief Compute the difference between the last and first entry keys.
- * @param object Receiver with valid storage when it has at least two entries.
+ * @param track Receiver with valid storage when it has at least two entries.
  * @return Key span, or zero when fewer than two entries exist.
  */
-float float_track_get_key_span(BootFloatTrackState* object);
+float float_track_get_key_span(BootFloatTrackState* track);
 
 /**
  * @brief Store paired float values in the next slot of a two-entry history.
@@ -834,32 +842,32 @@ void float_history_push(BootFloatHistoryState* history, const float* value, floa
 
 /**
  * @brief Insert a float entry before an existing index and shift following entries.
- * @param object Array receiver with spare capacity.
+ * @param track Array receiver with spare capacity.
  * @param index Nonnegative index less than the current count.
  * @param value Entry value to copy.
  * @param key Key associated with the entry.
  * @return One if inserted, or zero if storage is absent, full, or the index is too large.
  */
-s32 float_track_insert_entry(BootFloatTrackState* object, s32 index, const float* value, float key);
+s32 float_track_insert_entry(BootFloatTrackState* track, s32 index, const float* value, float key);
 
 /**
  * @brief Replace an indexed float entry and update the span when it is the last entry.
- * @param object Array receiver.
+ * @param track Array receiver.
  * @param index Nonnegative entry index, checked against capacity.
  * @param value Entry value to copy.
  * @param key Key associated with the entry.
  * @return One if stored, or zero if storage is absent or the index is outside capacity.
  */
-s32 float_track_replace_entry(BootFloatTrackState* object, s32 index, const float* value, float key);
+s32 float_track_replace_entry(BootFloatTrackState* track, s32 index, const float* value, float key);
 
 /**
  * @brief Append a float entry and update the cached key span.
- * @param object Array receiver.
+ * @param track Array receiver.
  * @param value Entry value to copy.
  * @param key Key associated with the entry.
  * @return One if appended, or zero if storage is absent or full.
  */
-s32 float_track_append_entry(BootFloatTrackState* object, const float* value, float key);
+s32 float_track_append_entry(BootFloatTrackState* track, const float* value, float key);
 
 /**
  * @brief Set the low packed value and flag whether either packed value is 4.
@@ -894,14 +902,14 @@ void float_curve_track_set_after_mode(BootFloatCurveTrackState* state, u32 value
  * @param state Receiver containing the packed values and status bit.
  * @param value Value to store, truncated to four bits.
  */
-void func_001F1580(BootState1F1580* state, u32 value);
+void track_1718C0_set_before_mode(BootState1F1580* state, u32 value);
 
 /**
  * @brief Set the high packed value and flag whether either packed value is 4.
  * @param state Receiver containing the packed values and status bit.
  * @param value Value to store, truncated to four bits.
  */
-void func_001F15E0(BootState1F1580* state, u32 value);
+void track_1718C0_set_after_mode(BootState1F1580* state, u32 value);
 
 /**
  * @brief Set the low packed value and flag whether either packed value is 4.
@@ -936,7 +944,7 @@ void float_track_set_after_mode(BootFloatTrackState* state, u32 value);
  * @param state Receiver containing the packed values and status bit.
  * @param value Value to store, truncated to four bits.
  */
-void func_001F4730(BootState1F4730* state, u32 value);
+void track_171680_set_before_mode(BootState1F4730* state, u32 value);
 
 /**
  * @brief Set the low packed value and flag whether either packed value is 4.
@@ -950,65 +958,65 @@ void quaternion_track_set_before_mode(BootQuaternionTrackState* state, u32 value
  * @param state Receiver containing the packed values and status bit.
  * @param value Value to store, truncated to four bits.
  */
-void func_001F47F0(BootState1F47F0* state, u32 value);
+void track_171A70_set_before_mode(BootState1F47F0* state, u32 value);
 
 /**
  * @brief Reset array storage, counts, packed controls, and cached indices.
- * @param object Receiver to reset without releasing its current storage.
+ * @param track Receiver to reset without releasing its current storage.
  */
-void func_001F4980(BootState1F47F0* object);
+void track_171A70_reset_state(BootState1F47F0* track);
 
 /**
  * @brief Bind external 32-byte records and cache their first-to-last key span.
- * @param object Array receiver.
+ * @param track Array receiver.
  * @param count Positive entry count representable in the receiver count fields.
  * @param entries External storage containing the specified number of entries.
  */
-void func_001F5FB0(BootState1F47F0* object, s32 count, BootKeyEntry32* entries);
+void track_171A70_bind_keys(BootState1F47F0* track, s32 count, BootKeyEntry32* entries);
 
 /**
  * @brief Reset signed-key entry storage, counts, control fields, and cached indices.
- * @param object Array receiver to reset without releasing its current storage.
+ * @param track Array receiver to reset without releasing its current storage.
  */
-void quaternion_track_reset_state(BootQuaternionTrackState* object);
+void quaternion_track_reset_state(BootQuaternionTrackState* track);
 
 /**
  * @brief Bind external entry storage and cache its first-to-last key span.
- * @param object Array receiver.
+ * @param track Array receiver.
  * @param count Positive entry count representable in the receiver count fields.
  * @param entries External storage containing the specified number of entries.
  */
-void quaternion_track_bind_keys(BootQuaternionTrackState* object, s32 count, BootQuaternionStateKey* entries);
+void quaternion_track_bind_keys(BootQuaternionTrackState* track, s32 count, BootQuaternionStateKey* entries);
 
 /**
  * @brief Test whether the array contains a signed entry key equal to the given float.
- * @param object Receiver with valid storage when its count is positive.
+ * @param track Receiver with valid storage when its count is positive.
  * @param key Key to find.
  * @return One if a matching key exists, or zero otherwise.
  */
-s32 quaternion_track_has_key(BootQuaternionTrackState* object, float key);
+s32 quaternion_track_has_key(BootQuaternionTrackState* track, float key);
 
 /**
  * @brief Compute the difference between the last and first entry keys.
- * @param object Receiver with valid storage when it has at least two entries.
+ * @param track Receiver with valid storage when it has at least two entries.
  * @return Key span, or zero when fewer than two entries exist.
  */
-float quaternion_track_get_key_span(BootQuaternionTrackState* object);
+float quaternion_track_get_key_span(BootQuaternionTrackState* track);
 
 /**
  * @brief Wrap a key by the span between the first and last entries.
- * @param object Receiver with valid nonempty storage and a nonzero key span.
+ * @param track Receiver with valid nonempty storage and a nonzero key span.
  * @param key Key whose normalized span quotient must fit in a signed word.
  * @return Key with the computed whole spans subtracted.
  */
-float quaternion_track_wrap_key(BootQuaternionTrackState* object, float key);
+float quaternion_track_wrap_key(BootQuaternionTrackState* track, float key);
 
 /**
  * @brief Set the high packed value and flag whether either packed value is 4.
  * @param state Receiver containing the packed values and status bit.
  * @param value Value to store, truncated to four bits.
  */
-void func_001F4AC0(BootState1F47F0* state, u32 value);
+void track_171A70_set_after_mode(BootState1F47F0* state, u32 value);
 
 /**
  * @brief Set the high packed value and flag whether either packed value is 4.
@@ -1019,24 +1027,24 @@ void quaternion_track_set_after_mode(BootQuaternionTrackState* state, u32 value)
 
 /**
  * @brief Reset 48-byte record storage, counts, packed controls, and cached indices.
- * @param object Receiver to reset without releasing its current storage.
+ * @param track Receiver to reset without releasing its current storage.
  */
-void func_001F58C0(BootState1F4730* object);
+void track_171680_reset_state(BootState1F4730* track);
 
 /**
  * @brief Adjust a scalar key by whole spans determined from the endpoint records.
- * @param object Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param track Receiver with positive count, valid storage, and distinct endpoint keys.
  * @param key Scalar key whose normalized span quotient must fit in a signed word.
  * @return Key minus the computed number of endpoint spans, or the key for zero spans.
  */
-float func_001F5D60(BootState1F4730* object, float key);
+float track_171680_wrap_key(BootState1F4730* track, float key);
 
 /**
  * @brief Set the high packed value and flag whether either packed value is 4.
  * @param state Receiver containing the packed values and status bit.
  * @param value Value to store, truncated to four bits.
  */
-void func_001F5A50(BootState1F4730* state, u32 value);
+void track_171680_set_after_mode(BootState1F4730* state, u32 value);
 
 /**
  * @brief Initialize the settings record to its default values.
@@ -1092,57 +1100,57 @@ void func_001EED80(void* object);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 vector_curve_track_on_append_key(void* object);
+s32 vector_curve_track_on_append_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 vector_curve_track_on_replace_key(void* object);
+s32 vector_curve_track_on_replace_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 vector_curve_track_on_insert_key(void* object);
+s32 vector_curve_track_on_insert_key(void* track);
 
 /**
  * @brief Perform no work.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  */
-void vector_curve_track_on_set_single_key(void* object);
+void vector_curve_track_on_set_single_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 float_curve_track_on_append_key(void* object);
+s32 float_curve_track_on_append_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 float_curve_track_on_replace_key(void* object);
+s32 float_curve_track_on_replace_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 float_curve_track_on_insert_key(void* object);
+s32 float_curve_track_on_insert_key(void* track);
 
 /**
  * @brief Perform no work.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  */
-void float_curve_track_on_set_single_key(void* object);
+void float_curve_track_on_set_single_key(void* track);
 
 /**
  * @brief Perform no work.
@@ -1200,30 +1208,30 @@ s32 vector_track_on_append_key(void* object);
 
 /**
  * @brief Perform no work.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  */
-void func_001F2B90(void* object);
+void track_1718C0_on_set_single_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_001F2BD0(void* object);
+s32 track_1718C0_on_insert_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_001F2C10(void* object);
+s32 track_1718C0_on_replace_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_001F2C50(void* object);
+s32 track_1718C0_on_append_key(void* track);
 
 /**
  * @brief Perform no work.
@@ -1245,384 +1253,382 @@ void func_001F4970(void* object);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_001F4B50(void* object);
+s32 track_171A70_on_append_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_001F4B90(void* object);
+s32 track_171A70_on_replace_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_001F4BD0(void* object);
+s32 track_171A70_on_insert_key(void* track);
 
 /**
  * @brief Perform no work.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  */
-void func_001F4C10(void* object);
+void track_171A70_on_set_single_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 quaternion_track_on_append_key(void* object);
+s32 quaternion_track_on_append_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 quaternion_track_on_replace_key(void* object);
+s32 quaternion_track_on_replace_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 quaternion_track_on_insert_key(void* object);
+s32 quaternion_track_on_insert_key(void* track);
 
 /**
  * @brief Perform no work.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  */
-void quaternion_track_on_set_single_key(void* object);
+void quaternion_track_on_set_single_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_001F5AE0(void* object);
+s32 track_171680_on_append_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_001F5B20(void* object);
+s32 track_171680_on_replace_key(void* track);
 
 /**
  * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  * @return Always 0.
  */
-s32 func_001F5B60(void* object);
+s32 track_171680_on_insert_key(void* track);
 
 /**
  * @brief Perform no work.
- * @param object Receiver or first argument; unused.
+ * @param track Receiver or first argument; unused.
  */
-void func_001F5BA0(void* object);
+void track_171680_on_set_single_key(void* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x40.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @param track Track to read.
+ * @return Signed cycle count.
  */
-s32 vector_curve_track_get_cycle_count(const BootVectorCurveTrackState* object);
+s32 vector_curve_track_get_cycle_count(const BootVectorCurveTrackState* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x48.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of stored keys.
+ * @param track Track to read.
+ * @return Key count.
  */
-s16 vector_curve_track_get_key_count(const BootVectorCurveTrackState* object);
+s16 vector_curve_track_get_key_count(const BootVectorCurveTrackState* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x4A.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of keys the storage can hold.
+ * @param track Track to read.
+ * @return Key capacity.
  */
-s16 vector_curve_track_get_key_capacity(const BootVectorCurveTrackState* object);
+s16 vector_curve_track_get_key_capacity(const BootVectorCurveTrackState* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x4.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the key storage.
+ * @param track Track to read.
+ * @return Key array, or null.
  */
-BootVectorCurveStateKey* vector_curve_track_get_keys(const BootVectorCurveTrackState* object);
+BootVectorCurveStateKey* vector_curve_track_get_keys(const BootVectorCurveTrackState* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x18.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @param track Track to read.
+ * @return Signed cycle count.
  */
-s32 float_curve_track_get_cycle_count(const BootFloatCurveTrackState* object);
+s32 float_curve_track_get_cycle_count(const BootFloatCurveTrackState* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x20.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of stored keys.
+ * @param track Track to read.
+ * @return Key count.
  */
-s16 float_curve_track_get_key_count(const BootFloatCurveTrackState* object);
+s16 float_curve_track_get_key_count(const BootFloatCurveTrackState* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x22.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of keys the storage can hold.
+ * @param track Track to read.
+ * @return Key capacity.
  */
-s16 float_curve_track_get_key_capacity(const BootFloatCurveTrackState* object);
+s16 float_curve_track_get_key_capacity(const BootFloatCurveTrackState* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x4.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the key storage.
+ * @param track Track to read.
+ * @return Key array, or null.
  */
-BootFloatCurveStateKey* float_curve_track_get_keys(const BootFloatCurveTrackState* object);
+BootFloatCurveStateKey* float_curve_track_get_keys(const BootFloatCurveTrackState* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x30.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @param track Track to read.
+ * @return Signed cycle count.
  */
-s32 func_001F1640(const BootState1F1580* object);
+s32 track_1718C0_get_cycle_count(const BootState1F1580* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x38.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of stored keys.
+ * @param track Track to read.
+ * @return Key count.
  */
-s16 func_001F1650(const BootState1F1580* object);
+s16 track_1718C0_get_key_count(const BootState1F1580* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x3A.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of keys the storage can hold.
+ * @param track Track to read.
+ * @return Key capacity.
  */
-s16 func_001F1660(const BootState1F1580* object);
+s16 track_1718C0_get_key_capacity(const BootState1F1580* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x4.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the key storage.
+ * @param track Track to read.
+ * @return Key array, or null.
  */
-BootKeyEntry32* func_001F16E0(const BootState1F1580* object);
+BootKeyEntry32* track_1718C0_get_keys(const BootState1F1580* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x20.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @param track Track to read.
+ * @return Signed cycle count.
  */
-s32 vector_track_get_cycle_count(const BootVectorTrackState* object);
+s32 vector_track_get_cycle_count(const BootVectorTrackState* track);
 
 /**
- * @brief Return the vector-key array count.
- * @param object Array receiver.
- * @return Stored entry count.
+ * @brief Return the number of stored keys.
+ * @param track Track to read.
+ * @return Key count.
  */
-s16 vector_track_get_key_count(BootVectorTrackState* object);
+s16 vector_track_get_key_count(BootVectorTrackState* track);
 
 /**
- * @brief Return the vector-key array capacity.
- * @param object Array receiver.
- * @return Stored entry capacity.
+ * @brief Return the number of keys the storage can hold.
+ * @param track Track to read.
+ * @return Key capacity.
  */
-s16 vector_track_get_key_capacity(BootVectorTrackState* object);
+s16 vector_track_get_key_capacity(BootVectorTrackState* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x4.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the key storage.
+ * @param track Track to read.
+ * @return Key array, or null.
  */
-BootVectorStateKey* vector_track_get_keys(const BootVectorTrackState* object);
+BootVectorStateKey* vector_track_get_keys(const BootVectorTrackState* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x10.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @param track Track to read.
+ * @return Signed cycle count.
  */
-s32 float_track_get_cycle_count(const BootFloatTrackState* object);
+s32 float_track_get_cycle_count(const BootFloatTrackState* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x18.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of stored keys.
+ * @param track Track to read.
+ * @return Key count.
  */
-s16 float_track_get_key_count(const BootFloatTrackState* object);
+s16 float_track_get_key_count(const BootFloatTrackState* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x1A.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of keys the storage can hold.
+ * @param track Track to read.
+ * @return Key capacity.
  */
-s16 float_track_get_key_capacity(const BootFloatTrackState* object);
+s16 float_track_get_key_capacity(const BootFloatTrackState* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x4.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the key storage.
+ * @param track Track to read.
+ * @return Key array, or null.
  */
-BootFloatStateKey* float_track_get_keys(const BootFloatTrackState* object);
+BootFloatStateKey* float_track_get_keys(const BootFloatTrackState* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x30.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @param track Track to read.
+ * @return Signed cycle count.
  */
-s32 func_001F4B20(const BootState1F47F0* object);
+s32 track_171A70_get_cycle_count(const BootState1F47F0* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x38.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of stored keys.
+ * @param track Track to read.
+ * @return Key count.
  */
-s16 func_001F4B30(const BootState1F47F0* object);
+s16 track_171A70_get_key_count(const BootState1F47F0* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x3A.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of keys the storage can hold.
+ * @param track Track to read.
+ * @return Key capacity.
  */
-s16 func_001F4B40(const BootState1F47F0* object);
+s16 track_171A70_get_key_capacity(const BootState1F47F0* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x4.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the key storage.
+ * @param track Track to read.
+ * @return Key array, or null.
  */
-BootKeyEntry32* func_001F4CC0(const BootState1F47F0* object);
+BootKeyEntry32* track_171A70_get_keys(const BootState1F47F0* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x10.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @param track Track to read.
+ * @return Signed cycle count.
  */
-s32 quaternion_track_get_cycle_count(const BootQuaternionTrackState* object);
+s32 quaternion_track_get_cycle_count(const BootQuaternionTrackState* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x18.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of stored keys.
+ * @param track Track to read.
+ * @return Key count.
  */
-s16 quaternion_track_get_key_count(const BootQuaternionTrackState* object);
+s16 quaternion_track_get_key_count(const BootQuaternionTrackState* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x1A.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of keys the storage can hold.
+ * @param track Track to read.
+ * @return Key capacity.
  */
-s16 quaternion_track_get_key_capacity(const BootQuaternionTrackState* object);
+s16 quaternion_track_get_key_capacity(const BootQuaternionTrackState* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x4.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the key storage.
+ * @param track Track to read.
+ * @return Key array, or null.
  */
-BootQuaternionStateKey* quaternion_track_get_keys(const BootQuaternionTrackState* object);
+BootQuaternionStateKey* quaternion_track_get_keys(const BootQuaternionTrackState* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x40.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @param track Track to read.
+ * @return Signed cycle count.
  */
-s32 func_001F5AB0(const BootState1F4730* object);
+s32 track_171680_get_cycle_count(const BootState1F4730* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x48.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of stored keys.
+ * @param track Track to read.
+ * @return Key count.
  */
-s16 func_001F5AC0(const BootState1F4730* object);
+s16 track_171680_get_key_count(const BootState1F4730* track);
 
 /**
- * @brief Return the signed 16-bit value at offset 0x4A.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the number of keys the storage can hold.
+ * @param track Track to read.
+ * @return Key capacity.
  */
-s16 func_001F5AD0(const BootState1F4730* object);
+s16 track_171680_get_key_capacity(const BootState1F4730* track);
 
 /**
- * @brief Return the 32-bit word at offset 0x4.
- * @param object Object containing the value.
- * @return The stored value.
+ * @brief Return the key storage.
+ * @param track Track to read.
+ * @return Key array, or null.
  */
-BootKeyEntry48* func_001F5E00(const BootState1F4730* object);
+BootKeyEntry48* track_171680_get_keys(const BootState1F4730* track);
 
 /**
- * @brief Return zero as a float.
- * @param object Receiver or first argument; unused.
- * @return Always 0.0f.
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
  */
-float float_curve_track_get_zero_value(void* object);
+float float_curve_track_get_zero_value(void* track);
 
 /**
- * @brief Return zero as a float.
- * @param object Receiver or first argument; unused.
- * @return Always 0.0f.
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
  */
-float float_track_get_zero_value(void* object);
+float float_track_get_zero_value(void* track);
 
 /**
- * @brief Copy the float at offset 0x50.
- * @param object Object containing the value.
- * @param value Destination for the value.
+ * @brief Return how fast the value changed at the last sample, per second.
+ * @param object Track to read.
+ * @param value Receives the rate.
  */
-void func_001EFD70(void* object, float* value);
+void float_curve_track_get_value_rate(void* object, float* value);
 
 /**
- * @brief Copy the float at offset 0x4C.
- * @param object Object containing the value.
- * @param value Destination for the value.
+ * @brief Return how fast the value changed at the last sample, per second.
+ * @param object Track to read.
+ * @param value Receives the rate.
  */
-void func_001F04B0(void* object, float* value);
+void float_track_get_value_rate(void* object, float* value);
 
 /**
- * @brief Clear the fields at offsets 0x10 through 0x18.
- * @param object Object to clear.
+ * @brief Forget the stored samples.
+ * @param history History to clear.
  */
-void func_001F0660(void* object);
+void history_171B20_reset(BootClass171B20* history);
 
 /**
- * @brief Clear the fields at offsets 0x10 through 0x18.
- * @param object Object to clear.
+ * @brief Forget the stored samples.
+ * @param history History to clear.
  */
-void func_001F06C0(void* object);
+void vector_history_reset(BootVectorHistoryBase* history);
 
 /**
- * @brief Clear the fields at offsets 0x4 through 0xC.
- * @param object Object to clear.
+ * @brief Forget the stored samples.
+ * @param history History to clear.
  */
-void func_001F0720(void* object);
+void float_history_reset(BootFloatHistoryBase* history);
 
 /**
- * @brief Clear four words starting at offset 0.
- * @param object Object to clear.
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
  */
-void func_001F1670(void* object);
+void track_1718C0_get_zero_value(u32* result);
 
 /**
- * @brief Clear four words starting at offset 0.
- * @param object Object to clear.
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
  */
-void vector_track_get_zero_value(void* object);
+void vector_track_get_zero_value(u32* result);
 
 /**
- * @brief Clear four words starting at offset 0.
- * @param object Object to clear.
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
  */
-void func_001F4C50(void* object);
+void track_171A70_get_zero_value(u32* result);
 
 /**
- * @brief Clear four words starting at offset 0.
- * @param object Object to clear.
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
  */
-void quaternion_track_get_zero_value(void* object);
+void quaternion_track_get_zero_value(u32* result);
 
 /**
- * @brief Clear four words starting at offset 0.
- * @param object Object to clear.
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
  */
-void func_001F5C30(void* object);
+void track_171680_get_zero_value(u32* result);
 
 /**
  * @brief Forward to the cleanup routine for the containing object.
@@ -1631,29 +1637,29 @@ void func_001F5C30(void* object);
 void func_001FA890(void* object);
 
 /**
- * @brief Clear four words starting at offset 0.
- * @param object Object to clear.
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
  */
-void vector_curve_track_get_zero_value(void* object);
+void vector_curve_track_get_zero_value(u32* result);
 
 /**
  * @brief Write the difference between the last and first float values in an eight-byte record array.
  * @param object Object containing the array pointer and count.
  * @param result Destination for the difference; unchanged if the array is absent.
  */
-void func_001F0480(void* object, float* result);
+void float_track_get_end_delta(void* object, float* result);
 
 /**
  * @brief Write the difference between the last and first float values in a sixteen-byte record array.
  * @param object Object containing the array pointer and count.
  * @param result Destination for the difference; unchanged if the array is absent.
  */
-void func_001EFD80(void* object, float* result);
+void float_curve_track_get_end_delta(void* object, float* result);
 
-/** Clear the vector at offset 0xB0 and update the associated state. */
-void func_001EEED0(void* object);
-/** Clear the vector at offset 0x90 and update the associated state. */
-void func_001EFEA0(void* object);
+/** Clear the last sampled value, then reset the key state. */
+void vector_curve_track_reset_sampling(void* object);
+/** Clear the last sampled value, then reset the key state. */
+void vector_track_reset_sampling(void* object);
 
 /**
  * @brief Build an image's quad from a rectangle of its texture and a rectangle of its palette, and queue the

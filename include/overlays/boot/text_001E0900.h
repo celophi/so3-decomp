@@ -554,8 +554,11 @@ class BootInput : public BootListObject
         /** Last nonzero state of card slot 2. */
         u32 slot2_state;
 
-        u32 unk28;
-        u32 unk2C;
+        /** Last nonzero raw status byte of card slot 1 (get_slot_state kind 2). */
+        u32 slot1_raw_state;
+
+        /** Last nonzero raw status byte of card slot 2. */
+        u32 slot2_raw_state;
 
         /** Nonzero while the card in slot 1 is ready. */
         s32 slot1_ready;
@@ -640,7 +643,7 @@ class BootMoviePlayer : public BootListObject
         u8 unk15E704[0x90];
 
         /** Nonzero while the movie plays. */
-        u8 unk15E794;
+        u8 is_playing;
 
         u8 unk15E795[0x2B];
 };
@@ -1008,8 +1011,8 @@ class BootFloatHistoryBase
         BootFloatHistoryBase();
 
         u32 unk00;
-        u16 unk04;
-        u16 unk06;
+        u16 sample_count;
+        u16 next_index;
         u32 unk08;
         u32 unk0C;
 
@@ -1052,8 +1055,8 @@ class BootVectorHistoryBase
         BootVectorHistoryBase();
 
         FieldVec4B unk00;
-        s16 unk10;
-        s16 unk12;
+        s16 sample_count;
+        s16 next_index;
         u32 unk14;
         u32 unk18;
 
@@ -1098,8 +1101,8 @@ class BootClass171B20
         BootClass171B20();
 
         FieldVec4B unk00;
-        s16 unk10;
-        s16 unk12;
+        s16 sample_count;
+        s16 next_index;
         u32 unk14;
         u32 unk18;
 
@@ -1143,24 +1146,25 @@ class BootFloatSegmentBase
         /** @brief Install the vtable; the range is left unset. */
         BootFloatSegmentBase();
 
-        float unk00;
-        float unk04;
-        float unk08;
-        float unk0C;
-        float unk10;
-        float unk14;
-        float unk18;
+        float start_value;
+        float end_value;
+        float start_tangent;
+        float end_tangent;
+        float start_key;
+        float end_key;
+        float key_span;
 
         /**
          * @brief Set the range from two endpoint values and their tangents.
-         * @param first First endpoint value.
-         * @param second First endpoint tangent.
-         * @param third Second endpoint value.
-         * @param fourth Second endpoint tangent.
-         * @param start Start key.
-         * @param end End key.
+         * @param start_value Value at the start_key key.
+         * @param start_tangent Tangent at the start_key key.
+         * @param end_value Value at the end_key key.
+         * @param end_tangent Tangent at the end_key key.
+         * @param start_key Key the segment starts at.
+         * @param end_key Key the segment ends at.
          */
-        virtual void set_endpoints(const float* first, const float* second, const float* third, const float* fourth, float start, float end);
+        virtual void set_endpoints(const float* start_value, const float* start_tangent, const float* end_value, const float* end_tangent, float start_key,
+                                   float end_key);
 };
 
 /** 0x20-byte BootFloatSegmentBase with vtable D_171270 in main data. */
@@ -1256,7 +1260,7 @@ class BootFloatTrackBase : public BootTrack
         virtual float wrap_key(float key) const;
 
         // Pure virtual slot 0x48; only its position is known.
-        virtual void get_cached_value(float* output) const = 0;
+        virtual void get_value_rate(float* output) const = 0;
 
         /** @brief Return the span between the first and last keys. @return Key span, or zero with fewer than two keys. */
         virtual float get_key_span() const;
@@ -1302,10 +1306,10 @@ class BootFloatTrackBase : public BootTrack
 
         virtual void func_slot84() = 0;
 
-        BootFloatTrackKey* unk04;
+        BootFloatTrackKey* key_array;
 
         /** Single cached keyframe, used before an array is allocated. */
-        BootFloatTrackKey unk08;
+        BootFloatTrackKey single_key;
 
         BootSequenceTail state;
 };
@@ -1352,18 +1356,18 @@ class BootFloatTrack : public BootFloatKeyTrack
         /** @brief Return the difference between the endpoint values. @param output Receives the difference. */
         virtual void get_end_delta(float* output) const;
 
-        /** @brief Return the cached value. @param output Receives the cached value. */
-        virtual void get_cached_value(float* output) const;
+        /** @brief Return how fast the value changed at the last sample, per second. @param output Receives the rate. */
+        virtual void get_value_rate(float* output) const;
 
-        /** @brief Clear the word at offset 0x48 and reset the sequence. */
+        /** @brief Clear the last sampled value, then reset the key state. */
         virtual void reset_state();
 
         /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated value. */
         virtual float sample(float key);
 
-        BootClass178200 unk24;
-        float unk48;
-        float unk4c;
+        BootClass178200 sample_history;
+        float last_value;
+        float value_rate;
 };
 
 /** 0x50-byte float track allocated from a BootTrackPool, with the Lib vtable D_177F70. */
@@ -1441,7 +1445,7 @@ class BootVectorTrackBase : public BootTrack
         virtual float wrap_key(float key) const;
 
         // Pure virtual slot 0x48; only its position is known.
-        virtual void get_cached_value(FieldVec4B* output) const = 0;
+        virtual void get_value_rate(FieldVec4B* output) const = 0;
 
         /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
         virtual float get_key_span() const;
@@ -1488,7 +1492,7 @@ class BootVectorTrackBase : public BootTrack
         // Pure virtual slot 0x84; only its position is known.
         virtual void func_slot84() = 0;
 
-        BootVectorTrackKey* unk04;
+        BootVectorTrackKey* key_array;
         u8 unk08[8];
         FieldVec4B unk10;
         BootSequenceTail state;
@@ -1523,13 +1527,13 @@ class BootVectorTrack : public BootVectorKeyTrack
         // Overrides of base slots; only their positions are known.
         virtual void reset_keys();
         virtual void get_end_delta(FieldVec4B* output) const;
-        virtual void get_cached_value(FieldVec4B* output) const;
+        virtual void get_value_rate(FieldVec4B* output) const;
         virtual void reset_state();
         virtual FieldVec4A sample(float key);
 
-        BootClass1781E0 unk40;
-        FieldVec4B unk90;
-        FieldVec4B unkA0;
+        BootClass1781E0 sample_history;
+        FieldVec4B last_value;
+        FieldVec4B value_rate;
 };
 
 /** 0xB0-byte vector track allocated from a BootTrackPool (vtable D_1714D0 in main data). */
@@ -1616,7 +1620,7 @@ class BootClass1718C0 : public BootTrack
         virtual float wrap_key(float key) const;
 
         // Pure virtual slot 0x48; only its position is known.
-        virtual void get_cached_value(FieldVec4B* output) const = 0;
+        virtual void get_value_rate(FieldVec4B* output) const = 0;
 
         /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
         virtual float get_key_span() const;
@@ -1663,7 +1667,7 @@ class BootClass1718C0 : public BootTrack
         // Pure virtual slot 0x84; only its position is known.
         virtual void func_slot84() = 0;
 
-        void* unk04;
+        void* key_array;
         u8 unk08[8];
         float unk10;
         u8 unk14[0xC];
@@ -1700,7 +1704,7 @@ class BootClass177EE0 : public BootClass171320
 
         // Lib implementations of the pure slots; only their positions are known.
         virtual void get_end_delta(FieldVec4B* output) const;
-        virtual void get_cached_value(FieldVec4B* output) const;
+        virtual void get_value_rate(FieldVec4B* output) const;
         virtual FieldVec4A sample(float key) const;
         virtual void func_slot84();
 
@@ -1718,17 +1722,17 @@ struct BootFloatCurveTrackKey
      */
     BootFloatCurveTrackKey& operator=(const BootFloatCurveTrackKey& entry)
     {
-        unk00 = entry.unk00;
-        unk04 = entry.unk04;
-        unk08 = entry.unk08;
-        unk0c = entry.unk0c;
+        key = entry.key;
+        value = entry.value;
+        in_tangent = entry.in_tangent;
+        out_tangent = entry.out_tangent;
         return *this;
     }
 
-    float unk00;
-    float unk04;
-    float unk08;
-    float unk0c;
+    float key;
+    float value;
+    float in_tangent;
+    float out_tangent;
 };
 
 /** Key storage for float tracks whose keys carry a value and two tangents (vtable D_171950 in main data). */
@@ -1748,39 +1752,38 @@ class BootFloatCurveTrackBase : public BootTrack
          * one. @param entries Entry array to install. */
         virtual void bind_keys(s32 count, void* entries);
 
-        /** @brief Store the low nibble at offset 0x2A, then set flag bit 0 at offset 0x2B when either nibble is 4. @param value Value whose low four bits are
+        /** @brief Set what the track does before its first key, and whether it repeats. @param value Value whose low four bits are
          * stored. */
         virtual void set_before_mode(s32 value);
 
-        /** @brief Store the high nibble at offset 0x2A, then set flag bit 0 at offset 0x2B when either nibble is 4. @param value Value whose low four bits are
+        /** @brief Set what the track does after its last key, and whether it repeats. @param value Value whose low four bits are
          * stored. */
         virtual void set_after_mode(s32 value);
 
         /** @brief Return how many key spans the last wrapped key was past the first key. @return Signed cycle count. */
         virtual s32 get_cycle_count() const;
 
-        /** @brief Append an entry through slot 24. @param x First component, or null. @param y Second component, or null. @param z Third component, or null.
+        /** @brief Append an entry through slot 24. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null. @param out_tangent Tangent leaving the key, or null.
          * @param key Sort value. @return The result of slot 24. */
-        virtual s32 append_key(const float* x, const float* y, const float* z, float key);
+        virtual s32 append_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
         /** @brief Default virtual handler that performs no work. */
         virtual void func_001EECA0();
 
-        /** @brief Set an entry through slot 25. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second component,
-         * or null. @param z Third component, or null. @return The result of slot 25. */
-        virtual s32 replace_key(s32 index, float key, const float* x, const float* y, const float* z);
+        /** @brief Set an entry through slot 25. @param index Entry index. @param key Sort value. @param value Key value, or null. @param in_tangent Tangent arriving at the key,
+         * or null. @param out_tangent Tangent leaving the key, or null. @return The result of slot 25. */
+        virtual s32 replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
-        /** @brief Insert an entry through slot 26. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second
-         * component, or null. @param z Third component, or null. @return The result of slot 26. */
-        virtual s32 insert_key(s32 index, float key, const float* x, const float* y, const float* z);
+        /** @brief Insert an entry through slot 26. @param index Entry index. @param key Sort value. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null. @param out_tangent Tangent leaving the key, or null. @return The result of slot 26. */
+        virtual s32 insert_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
         /** @brief Default entry reader that returns zero. @param index Entry index. @param key Receives the sort value, or null. @param x Receives the first
          * component, or null. @param y Receives the second component, or null. @param z Receives the third component, or null. @return Always 0. */
-        virtual s32 read_key(s32 index, float* key, float* x, float* y, float* z) const;
+        virtual s32 read_key(s32 index, float* key, float* value, float* in_tangent, float* out_tangent) const;
 
-        /** @brief Add an entry through slot 27. @param x First component, or null. @param y Second component, or null. @param z Third component, or null.
+        /** @brief Add an entry through slot 27. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null. @param out_tangent Tangent leaving the key, or null.
          * @param key Sort value. */
-        virtual void set_single_key(const float* x, const float* y, const float* z, float key);
+        virtual void set_single_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
         /** @brief Default virtual handler that performs no work. */
         virtual void reset_keys();
@@ -1797,7 +1800,7 @@ class BootFloatCurveTrackBase : public BootTrack
         virtual float wrap_key(float value) const;
 
         // Pure virtual slot 0x48; only its position is known.
-        virtual void get_cached_value(float* output) const = 0;
+        virtual void get_value_rate(float* output) const = 0;
 
         /** @brief Compute the span between the first and last entry sort values. @return The span, or 0.0f when fewer than two entries exist. */
         virtual float get_key_span() const;
@@ -1820,21 +1823,21 @@ class BootFloatCurveTrackBase : public BootTrack
         /** @brief Return the number of keys the storage can hold. @return Key capacity. */
         virtual s16 get_key_capacity() const;
 
-        /** @brief Default append handler. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @param key
+        /** @brief Default append handler. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null. @param out_tangent Tangent leaving the key, or null. @param key
          * Sort value. @return Always 0. */
-        virtual s32 on_append_key(const float* x, const float* y, const float* z, float key);
+        virtual s32 on_append_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
-        /** @brief Default set handler. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second component, or null.
-         * @param z Third component, or null. @return Always 0. */
-        virtual s32 on_replace_key(s32 index, float key, const float* x, const float* y, const float* z);
+        /** @brief Default set handler. @param index Entry index. @param key Sort value. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null.
+         * @param out_tangent Tangent leaving the key, or null. @return Always 0. */
+        virtual s32 on_replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
-        /** @brief Default insert handler. @param index Entry index. @param key Sort value. @param x First component, or null. @param y Second component, or
-         * null. @param z Third component, or null. @return Always 0. */
-        virtual s32 on_insert_key(s32 index, float key, const float* x, const float* y, const float* z);
+        /** @brief Default insert handler. @param index Entry index. @param key Sort value. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or
+         * null. @param out_tangent Tangent leaving the key, or null. @return Always 0. */
+        virtual s32 on_insert_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
-        /** @brief Default add handler. @param x First component, or null. @param y Second component, or null. @param z Third component, or null. @param key
+        /** @brief Default add handler. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null. @param out_tangent Tangent leaving the key, or null. @param key
          * Sort value. */
-        virtual void on_set_single_key(const float* x, const float* y, const float* z, float key);
+        virtual void on_set_single_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
         /** @brief Report a fixed zero value for this receiver class. @return Always 0.0f. */
         virtual float get_zero_value() const;
@@ -1847,10 +1850,10 @@ class BootFloatCurveTrackBase : public BootTrack
         virtual float sample(float key) = 0;
 
         // Pure virtual slot 0x84; only its position is known.
-        virtual s32 append_curve_key(const float* x, const float* y, const float* z, float key) = 0;
+        virtual s32 append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key) = 0;
 
-        BootFloatCurveTrackKey* unk04;
-        BootFloatCurveTrackKey unk08;
+        BootFloatCurveTrackKey* key_array;
+        BootFloatCurveTrackKey single_key;
         BootSequenceTail state;
 };
 
@@ -1864,33 +1867,33 @@ class BootFloatCurveTrack : public BootFloatCurveTrackBase
         }
 
         // Overrides of base slots; only their positions are known.
-        virtual s32 append_key(const float* x, const float* y, const float* z, float key);
-        virtual s32 replace_key(s32 index, float key, const float* x, const float* y, const float* z);
-        virtual s32 insert_key(s32 index, float key, const float* x, const float* y, const float* z);
-        virtual s32 read_key(s32 index, float* key, float* x, float* y, float* z) const;
-        virtual void set_single_key(const float* x, const float* y, const float* z, float key);
+        virtual s32 append_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
+        virtual s32 replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
+        virtual s32 insert_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
+        virtual s32 read_key(s32 index, float* key, float* value, float* in_tangent, float* out_tangent) const;
+        virtual void set_single_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
         virtual void reset_keys();
         virtual void get_end_delta(float* output) const;
-        virtual void get_cached_value(float* output) const;
+        virtual void get_value_rate(float* output) const;
         virtual void reset_state();
         virtual float sample(float key);
-        virtual s32 append_curve_key(const float* x, const float* y, const float* z, float key);
+        virtual s32 append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
-        /** @brief Replace an indexed entry. @param index Entry index. @param key Sort value. @param x First component. @param y Second component. @param z
-         * Third component. @return One when the entry was stored. */
-        virtual s32 replace_curve_key(s32 index, float key, const float* x, const float* y, const float* z);
+        /** @brief Replace an indexed entry. @param index Entry index. @param key Sort value. @param value Key value. @param in_tangent Tangent arriving at the
+         * key. @param out_tangent Tangent leaving the key. @return One when the entry was stored. */
+        virtual s32 replace_curve_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
-        /** @brief Insert an entry at an index. @param index Entry index. @param key Sort value. @param x First component. @param y Second component. @param z
-         * Third component. @return One when the entry was stored. */
-        virtual s32 insert_curve_key(s32 index, float key, const float* x, const float* y, const float* z);
+        /** @brief Insert an entry at an index. @param index Entry index. @param key Sort value. @param value Key value. @param in_tangent Tangent arriving at
+         * the key. @param out_tangent Tangent leaving the key. @return One when the entry was stored. */
+        virtual s32 insert_curve_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
-        /** @brief Store a single entry in the cached entry. @param x First component. @param y Second component. @param z Third component. @param key Sort
-         * value. */
-        virtual void set_single_curve_key(const float* x, const float* y, const float* z, float key);
+        /** @brief Store a single entry in the cached entry. @param value Key value. @param in_tangent Tangent arriving at the key. @param out_tangent Tangent
+         * leaving the key. @param key Sort value. */
+        virtual void set_single_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
-        BootFloatSegment unk2C;
-        float unk4c;
-        float unk50;
+        BootFloatSegment curve_segment;
+        float last_value;
+        float value_rate;
 };
 
 /** 0x54-byte float curve track allocated from a BootTrackPool, with the Lib vtable D_177C70. */
@@ -1911,25 +1914,25 @@ class BootVectorSegmentBase
         /** @brief Install the vtable; the range is left unset. */
         BootVectorSegmentBase();
 
-        FieldVec4B unk00;
-        FieldVec4B unk10;
-        FieldVec4B unk20;
-        FieldVec4B unk30;
-        float unk40;
-        float unk44;
-        float unk48;
+        FieldVec4B start_value;
+        FieldVec4B end_value;
+        FieldVec4B start_tangent;
+        FieldVec4B end_tangent;
+        float start_key;
+        float end_key;
+        float key_span;
 
         /**
-         * @brief Set the range from two endpoint vectors and their tangents.
-         * @param start Start key.
-         * @param end End key.
-         * @param first First endpoint vector.
-         * @param second First endpoint tangent.
-         * @param third Second endpoint vector.
-         * @param fourth Second endpoint tangent.
+         * @brief Set the segment from the keys, values and tangents at its two ends.
+         * @param from_key Key the segment starts at.
+         * @param to_key Key the segment ends at.
+         * @param from_value Value at the start key.
+         * @param from_tangent Tangent at the start key.
+         * @param to_value Value at the end key.
+         * @param to_tangent Tangent at the end key.
          */
-        virtual void set_endpoints(float start, float end, const FieldVec4A* first, const FieldVec4A* second, const FieldVec4A* third,
-                                   const FieldVec4A* fourth);
+        virtual void set_endpoints(float from_key, float to_key, const FieldVec4A* from_value, const FieldVec4A* from_tangent, const FieldVec4A* to_value,
+                                   const FieldVec4A* to_tangent);
 };
 
 /** 0x50-byte BootVectorSegmentBase with vtable D_1710C0 in main data. */
@@ -1952,15 +1955,15 @@ struct BootVectorTrackKey
 };
 
 /** 48-byte vector keyframe of BootVectorCurveTrackBase: a BootVectorTrackBase keyframe and two auxiliary vectors. */
-struct BootTrackKey1719E0 : public BootVectorTrackKey
+struct BootVectorCurveTrackKey : public BootVectorTrackKey
 {
     /** @brief Leave the vectors uninitialized. */
-    BootTrackKey1719E0()
+    BootVectorCurveTrackKey()
     {
     }
 
-    FieldVec4B first;
-    FieldVec4B second;
+    FieldVec4B in_tangent;
+    FieldVec4B out_tangent;
 };
 
 /** Key storage for vector tracks whose keys carry a value and two tangent vectors (vtable D_1719E0 in main data). */
@@ -2024,7 +2027,7 @@ class BootVectorCurveTrackBase : public BootTrack
         virtual float wrap_key(float key) const;
 
         // Pure virtual slot 0x48; only its position is known.
-        virtual void get_cached_value(FieldVec4B* output) const = 0;
+        virtual void get_value_rate(FieldVec4B* output) const = 0;
 
         /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
         virtual float get_key_span() const;
@@ -2071,7 +2074,7 @@ class BootVectorCurveTrackBase : public BootTrack
         // Pure virtual slot 0x84; only its position is known.
         virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key) = 0;
 
-        void* unk04;
+        void* key_array;
         u8 unk08[8];
         FieldVec4B unk10;
         FieldVec4B unk20;
@@ -2097,26 +2100,26 @@ class BootVectorCurveTrack : public BootVectorCurveTrackBase
         virtual void set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
         virtual void reset_keys();
         virtual void get_end_delta(FieldVec4B* output) const;
-        virtual void get_cached_value(FieldVec4B* output) const;
+        virtual void get_value_rate(FieldVec4B* output) const;
         virtual void reset_state();
         virtual FieldVec4A sample(float key);
-        virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+        virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 
-        /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first First auxiliary
-         * vector. @param second Second auxiliary vector. @return Nonzero when the keyframe was stored. */
-        virtual s32 replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+        /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param in_tangent Tangent
+         * arriving at the key. @param out_tangent Tangent leaving the key. @return Nonzero when the keyframe was stored. */
+        virtual s32 replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent);
 
-        /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first First auxiliary
-         * vector. @param second Second auxiliary vector. @return Nonzero when the keyframe was stored. */
-        virtual s32 insert_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+        /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param in_tangent Tangent
+         * arriving at the key. @param out_tangent Tangent leaving the key. @return Nonzero when the keyframe was stored. */
+        virtual s32 insert_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent);
 
-        /** @brief Store a single keyframe in the cached vectors. @param value Keyframe value. @param first First auxiliary vector. @param second Second
-         * auxiliary vector. @param key Key. */
-        virtual void set_single_curve_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+        /** @brief Store a single keyframe in the cached vectors. @param value Keyframe value. @param in_tangent Tangent arriving at the key. @param out_tangent
+         * Tangent leaving the key. auxiliary vector. @param key Key. */
+        virtual void set_single_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 
-        BootVectorSegment unk60;
-        FieldVec4B unkB0;
-        FieldVec4B unkC0;
+        BootVectorSegment curve_segment;
+        FieldVec4B last_value;
+        FieldVec4B value_rate;
 };
 
 /** 0xD0-byte vector curve track allocated from a BootTrackPool (vtable D_1711D0 in main data). */
@@ -2207,7 +2210,7 @@ class BootClass171A70 : public BootTrack
         virtual float wrap_key(float key) const;
 
         // Pure virtual slot 0x48; only its position is known.
-        virtual void get_cached_value(FieldVec4B* output) const = 0;
+        virtual void get_value_rate(FieldVec4B* output) const = 0;
 
         /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
         virtual float get_key_span() const;
@@ -2254,7 +2257,7 @@ class BootClass171A70 : public BootTrack
         // Pure virtual slot 0x84; only its position is known.
         virtual void func_slot84() = 0;
 
-        void* unk04;
+        void* key_array;
         u8 unk08[0x28];
         BootSequenceTail state;
 };
@@ -2271,7 +2274,7 @@ class BootClass177BE0 : public BootClass171A70
 
         // Lib implementations of the pure slots; only their positions are known.
         virtual void get_end_delta(FieldVec4B* output) const;
-        virtual void get_cached_value(FieldVec4B* output) const;
+        virtual void get_value_rate(FieldVec4B* output) const;
         virtual FieldVec4A sample(float key) const;
         virtual void func_slot84();
 
@@ -2349,7 +2352,7 @@ class BootClass171680 : public BootTrack
         virtual float wrap_key(float key) const;
 
         // Pure virtual slot 0x48; only its position is known.
-        virtual void get_cached_value(FieldVec4B* output) const = 0;
+        virtual void get_value_rate(FieldVec4B* output) const = 0;
 
         /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
         virtual float get_key_span() const;
@@ -2396,7 +2399,7 @@ class BootClass171680 : public BootTrack
         // Pure virtual slot 0x84; only its position is known.
         virtual void func_slot84() = 0;
 
-        void* unk04;
+        void* key_array;
         u8 unk08[0x38];
         BootSequenceTail state;
 };
@@ -2413,7 +2416,7 @@ class BootClass174440 : public BootClass171680
 
         // Lib implementations of the pure slots; only their positions are known.
         virtual void get_end_delta(FieldVec4B* output) const;
-        virtual void get_cached_value(FieldVec4B* output) const;
+        virtual void get_value_rate(FieldVec4B* output) const;
         virtual FieldVec4A sample(float key) const;
         virtual void func_slot84();
 
@@ -2502,7 +2505,7 @@ class BootQuaternionTrackBase : public BootTrack
         virtual float wrap_key(float key) const;
 
         // Pure virtual slot 0x48; only its position is known.
-        virtual void get_cached_value(FieldVec4B* output) const = 0;
+        virtual void get_value_rate(FieldVec4B* output) const = 0;
 
         /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
         virtual float get_key_span() const;
@@ -2549,7 +2552,7 @@ class BootQuaternionTrackBase : public BootTrack
         // Pure virtual slot 0x84; only its position is known.
         virtual void func_slot84() = 0;
 
-        void* unk04;
+        void* key_array;
         u8 unk08[8];
         BootSequenceTail state;
 };
@@ -2566,7 +2569,7 @@ class BootPooledQuaternionTrack : public BootQuaternionTrackBase
 
         // Lib implementations of the pure slots; only their positions are known.
         virtual void get_end_delta(FieldVec4B* output) const;
-        virtual void get_cached_value(FieldVec4B* output) const;
+        virtual void get_value_rate(FieldVec4B* output) const;
         virtual FieldVec4A sample(float key) const;
         virtual void func_slot84();
 
@@ -2578,15 +2581,15 @@ s32 float_track_pool_allocate(BootTrackPool<BootPooledFloatTrack>* pool, s32 cou
 void float_track_pool_release(BootTrackPool<BootPooledFloatTrack>* pool);
 s32 vector_track_pool_allocate(BootTrackPool<BootPooledVectorTrack>* pool, s32 count);
 void vector_track_pool_release(BootTrackPool<BootPooledVectorTrack>* pool);
-s32 func_001ECC60(BootTrackPool<BootClass177EE0>* pool, s32 count);
-void func_001ED060(BootTrackPool<BootClass177EE0>* pool);
+s32 track_1718C0_pool_allocate(BootTrackPool<BootClass177EE0>* pool, s32 count);
+void track_1718C0_pool_release(BootTrackPool<BootClass177EE0>* pool);
 s32 float_curve_track_pool_allocate(BootTrackPool<BootPooledFloatCurveTrack>* pool, s32 count);
 s32 vector_curve_track_pool_allocate(BootTrackPool<BootPooledVectorCurveTrack>* pool, s32 count);
 void vector_curve_track_pool_release(BootTrackPool<BootPooledVectorCurveTrack>* pool);
-s32 func_001EDD60(BootTrackPool<BootClass177BE0>* pool, s32 count);
-void func_001EE0C0(BootTrackPool<BootClass177BE0>* pool);
-s32 func_001EE250(BootTrackPool<BootClass174440>* pool, s32 count);
-void func_001EE5C0(BootTrackPool<BootClass174440>* pool);
+s32 track_171A70_pool_allocate(BootTrackPool<BootClass177BE0>* pool, s32 count);
+void track_171A70_pool_release(BootTrackPool<BootClass177BE0>* pool);
+s32 track_171680_pool_allocate(BootTrackPool<BootClass174440>* pool, s32 count);
+void track_171680_pool_release(BootTrackPool<BootClass174440>* pool);
 s32 quaternion_track_pool_allocate(BootTrackPool<BootPooledQuaternionTrack>* pool, s32 count);
 void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* pool);
 }

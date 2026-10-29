@@ -111,7 +111,8 @@ typedef struct BootSystemSettings
     u8 unk25_bit1 : 1;
     /** Event dialog: subtitles and voice, voice only, subtitles only, or auto-advancing subtitles and voice. */
     u8 voice_mode : 2;
-    u8 unk25_mid : 2;
+    /** Set when Continue is chosen on the title screen, cleared when a new game starts. */
+    u8 continue_selected : 2;
     u8 unk25_bit6 : 1;
     u8 unk25_bit7 : 1;
     /** First byte covered by checksum. */
@@ -140,7 +141,8 @@ typedef struct BootSystemSettings
     u8 universe_unlocked;
     /** Nonzero once 4D difficulty can be chosen. */
     u8 fourth_dimension_unlocked;
-    u8 unk1A3;
+    /** Extra player colors unlocked by battle trophy score: 1 for 2P, 2 for 3P, 3 for 4P. */
+    u8 color_unlock_level;
     u16 extra_checksum;
     /** Seed for extra_checksum. */
     u16 extra_key;
@@ -988,10 +990,10 @@ class BootScreenFade : public BootTransformOwner, public BootDmaCallbacks
         u8* buffer;
         BootDimensionsACD0* display;
         BootPacketBuffer* packet;
-        u8 unkc8;
+        u8 armed;
         u8 unkc9[3];
-        float unkcc;
-        float unkd0;
+        float alpha;
+        float fade_speed;
         u8 unkd4[0xC];
 };
 
@@ -1111,7 +1113,7 @@ class BootProgressBar : public BootListObject
         /** @brief Detach the bar and its model, destroy the model and delete the bar. */
         virtual void destroy();
         class LibDrawBuffer* draw_buffer;
-        BootModel* unk18;
+        BootModel* model;
         s32 width;
         s32 height;
         u32 color;
@@ -1452,7 +1454,7 @@ class BootImage : public BootListObject
         void set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s32 depth);
 
         class LibDrawBuffer* draw_buffer;
-        BootModel* unk18;
+        BootModel* model;
 
         /** Texture width in texels. */
         s32 texture_width;

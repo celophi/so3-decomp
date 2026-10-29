@@ -238,7 +238,7 @@ void BootBattleTrophyViewer::update_grid()
         {
             BootModel* model;
 
-            if (trophy_images[i] != 0 && (model = trophy_images[i]->unk18) != 0)
+            if (trophy_images[i] != 0 && (model = trophy_images[i]->model) != 0)
             {
                 if (flip_progress[i] > 0.0f && flip_progress[i] < 1.0f)
                 {
@@ -269,7 +269,7 @@ void BootBattleTrophyViewer::update_grid()
 
         if (image != 0)
         {
-            BootModel* model = image->unk18;
+            BootModel* model = image->model;
             copy_vector(&value, &model->unk20);
             value.x = -236.0f + (i & 7) * 68;
             value.y = scrolled(-94.0f + i / 8 * 100, scroll);
@@ -404,7 +404,7 @@ s32 BootBattleTrophyViewer::create_trophy_images()
                 trophy_images[i]->set_rectangle(0, 0xE2, 0x44, 0x64, 0x80808080, 0);
             }
 
-            trophy_images[i]->unk18->set_translation(-236.0f + (i & 7) * 68, -94.0f + i / 8 * 100, 0.0f);
+            trophy_images[i]->model->set_translation(-236.0f + (i & 7) * 68, -94.0f + i / 8 * 100, 0.0f);
         }
     }
     else
@@ -415,7 +415,7 @@ s32 BootBattleTrophyViewer::create_trophy_images()
             trophy_images[i]->centered = 1;
             trophy_images[i]->set_texture((const BootTextureResource*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
             trophy_images[i]->set_rectangle(0, 0xE2, 0x44, 0x64, 0x80808080, 0);
-            trophy_images[i]->unk18->set_translation(-236.0f + (i & 7) * 68, -94.0f + i / 8 * 100, 0.0f);
+            trophy_images[i]->model->set_translation(-236.0f + (i & 7) * 68, -94.0f + i / 8 * 100, 0.0f);
         }
     }
 
@@ -441,7 +441,7 @@ static inline void set_bar_color(BootProgressBar* const& bar, float red, float g
     color.y = green;
     color.z = blue;
     color.w = alpha;
-    BootModel* model = bar->unk18;
+    BootModel* model = bar->model;
     copy_vector(&model->base_color_factor, &color);
     model->update_combined_color_factor();
 }
@@ -459,7 +459,7 @@ void BootBattleTrophyViewer::update_images()
         images[0] = new (0) BootImage;
         images[0]->set_texture((const BootTextureResource*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
         images[0]->set_rectangle(0, 1, 488, 223, 0x80808080, 0);
-        images[0]->unk18->set_translation(-244.0f, -112.0f, 0.0f);
+        images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
 
     if (images[1] == 0)
@@ -467,26 +467,26 @@ void BootBattleTrophyViewer::update_images()
         images[1] = new (0) BootImage;
         images[1]->set_texture((const BootTextureResource*)(((u32)image_blocks[1] + 0x7F) & ~0x7F), 0);
         images[1]->set_rectangle(0, 0, 640, 80, 0x80808080, 0);
-        images[1]->unk18->set_translation(-320.0f, -216.0f, 0.0f);
+        images[1]->model->set_translation(-320.0f, -216.0f, 0.0f);
     }
 
     if (boot_settings()->widescreen)
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->set_translation(-422.66668f, -216.0f, 0.0f);
-            images[1]->unk18->set_scale(1.31f, 1.0f, 1.0f);
+            images[1]->model->set_translation(-422.66668f, -216.0f, 0.0f);
+            images[1]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
     }
     else if (images[1] != 0)
     {
-        images[1]->unk18->set_translation(-320.0f, -216.0f, 0.0f);
-        images[1]->unk18->set_scale(1.0f, 1.0f, 1.0f);
+        images[1]->model->set_translation(-320.0f, -216.0f, 0.0f);
+        images[1]->model->set_scale(1.0f, 1.0f, 1.0f);
     }
 
     if (bar_fading && progress_bar != 0)
     {
-        progress_bar->unk18->func_001E94E0(2);
+        progress_bar->model->func_001E94E0(2);
         set_bar_color(progress_bar, 1.0f, 1.0f, 1.0f, bar_alpha);
         bar_alpha -= 2.0f * D_001B6690;
 
@@ -573,8 +573,8 @@ void BootBattleTrophyViewer::update()
     BootInput* input = g_boot_program.get_input();
     BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
     s32 card_states[2];
-    card_states[0] = input->unk28;
-    card_states[1] = input->unk2C;
+    card_states[0] = input->slot1_raw_state;
+    card_states[1] = input->slot2_raw_state;
     s32 slot1_ready = input->slot1_ready;
     s32 slot2_ready = input->slot2_ready;
     BootTrophyFlags* bits = &settings->trophy_flags;
@@ -787,7 +787,7 @@ void BootBattleTrophyViewer::update()
                 progress_bar_reset(progress_bar, 0xF0, 0x18, 0x80FFFFFF, 0);
             }
 
-            progress_bar->unk18->set_translation(-120.0f, 184.0f, 0.0f);
+            progress_bar->model->set_translation(-120.0f, 184.0f, 0.0f);
             load_time = 0.0f;
             bar_fading = 0;
             bar_alpha = 1.0f;
@@ -906,7 +906,7 @@ void BootBattleTrophyViewer::update()
 
             if (score >= 585)
             {
-                settings_set_extra_byte(settings, &settings->unk1A3, 1);
+                settings_set_extra_byte(settings, &settings->color_unlock_level, 1);
                 rank = 0;
             }
 
@@ -918,7 +918,7 @@ void BootBattleTrophyViewer::update()
 
             if (score >= 1560)
             {
-                settings_set_extra_byte(settings, &settings->unk1A3, 2);
+                settings_set_extra_byte(settings, &settings->color_unlock_level, 2);
                 rank = 2;
             }
 
@@ -935,7 +935,7 @@ void BootBattleTrophyViewer::update()
 
             if (score >= 3120)
             {
-                settings_set_extra_byte(settings, &settings->unk1A3, 3);
+                settings_set_extra_byte(settings, &settings->color_unlock_level, 3);
                 rank = 5;
             }
 
@@ -985,7 +985,7 @@ void BootBattleTrophyViewer::update()
                         rank_text = 0;
                     }
 
-                    settings_set_extra_byte(settings, &settings->unk1A3, 0);
+                    settings_set_extra_byte(settings, &settings->color_unlock_level, 0);
                     rank = 0;
                 }
                 else if (score < 1275)
@@ -995,7 +995,7 @@ void BootBattleTrophyViewer::update()
                 }
                 else if (score < 2040)
                 {
-                    settings_set_extra_byte(settings, &settings->unk1A3, 1);
+                    settings_set_extra_byte(settings, &settings->color_unlock_level, 1);
                     rank = 1;
                 }
                 else if (score < 2805)
@@ -1009,7 +1009,7 @@ void BootBattleTrophyViewer::update()
                 }
                 else if (score < 4080)
                 {
-                    settings_set_extra_byte(settings, &settings->unk1A3, 2);
+                    settings_set_extra_byte(settings, &settings->color_unlock_level, 2);
                     rank = 4;
                 }
                 else if (score < 4845)

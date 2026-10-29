@@ -32,7 +32,7 @@ extern const char g_track_number_format[];
 }
 
 /**
- * @brief Clear the byte at offset 0x64 and run the Lib hook.
+ * @brief Clear dma_pending and run the Lib hook.
  * @param value Notification value; unused.
  */
 void BootNeedleMeter::on_packet_complete(u32 value)
@@ -390,9 +390,9 @@ void BootMusicPlayer::update_row_colors()
 
     for (s32 i = 0; i < 5; i++)
     {
-        if (images[4 + i] != 0 && images[4 + i]->unk18 != 0)
+        if (images[4 + i] != 0 && images[4 + i]->model != 0)
         {
-            BootModel* model = images[4 + i]->unk18;
+            BootModel* model = images[4 + i]->model;
 
             if (selection == i)
             {
@@ -462,7 +462,7 @@ void BootMusicPlayer::create_images()
         images[0] = new (0) BootImage;
         images[0]->set_texture((const BootTextureResource*)(((u32)image_buffers[0] + 0x7F) & ~0x7F), 0);
         images[0]->set_rectangle(0, 1, 488, 223, 0x80808080, 0);
-        images[0]->unk18->set_translation(-244.0f, -112.0f, 0.0f);
+        images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
 
     if (images[1] == 0)
@@ -470,7 +470,7 @@ void BootMusicPlayer::create_images()
         images[1] = new (0) BootImage;
         images[1]->set_texture((const BootTextureResource*)(((u32)image_buffers[1] + 0x7F) & ~0x7F), 0);
         images[1]->set_rectangle(0, 1, 640, 60, 0x80808080, 0);
-        images[1]->unk18->set_translation(-320.0f, -216.0f, 0.0f);
+        images[1]->model->set_translation(-320.0f, -216.0f, 0.0f);
     }
 
     if (images[2] == 0)
@@ -522,143 +522,143 @@ void BootMusicPlayer::create_images()
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->set_translation(-422.6667f, -216.0f, 0.0f);
-            images[1]->unk18->set_scale(1.31f, 1.0f, 1.0f);
+            images[1]->model->set_translation(-422.6667f, -216.0f, 0.0f);
+            images[1]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[2] != 0)
         {
-            images[2]->unk18->set_translation(3e+01f, -217.0f, 0.0f);
+            images[2]->model->set_translation(3e+01f, -217.0f, 0.0f);
         }
 
         if (images[3] != 0)
         {
-            images[3]->unk18->set_translation(-373.33334f, 28.0f, 0.0f);
-            images[3]->unk18->set_scale(1.31f, 1.0f, 1.0f);
+            images[3]->model->set_translation(-373.33334f, 28.0f, 0.0f);
+            images[3]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[4] != 0)
         {
-            images[4]->unk18->set_translation(-341.33334f, -1.6e+02f, 0.0f);
+            images[4]->model->set_translation(-341.33334f, -1.6e+02f, 0.0f);
         }
 
         if (images[5] != 0)
         {
-            images[5]->unk18->set_translation(-341.33334f, -125.0f, 0.0f);
+            images[5]->model->set_translation(-341.33334f, -125.0f, 0.0f);
         }
 
         if (images[6] != 0)
         {
-            images[6]->unk18->set_translation(-341.33334f, -9e+01f, 0.0f);
+            images[6]->model->set_translation(-341.33334f, -9e+01f, 0.0f);
         }
 
         if (images[7] != 0)
         {
-            images[7]->unk18->set_translation(-341.33334f, -55.0f, 0.0f);
+            images[7]->model->set_translation(-341.33334f, -55.0f, 0.0f);
         }
 
         if (images[9] != 0)
         {
-            images[9]->unk18->set_translation(-232.0f, -138.0f, 0.0f);
-            images[9]->unk18->set_scale(1.31f, 1.0f, 1.0f);
+            images[9]->model->set_translation(-232.0f, -138.0f, 0.0f);
+            images[9]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[10] != 0)
         {
-            images[10]->unk18->set_translation(-356.6667f, -1.0f, 0.0f);
-            images[10]->unk18->set_scale(1.31f, 1.0f, 1.0f);
+            images[10]->model->set_translation(-356.6667f, -1.0f, 0.0f);
+            images[10]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[11] != 0)
         {
-            images[11]->unk18->set_translation(-212.66667f, -1.0f, 0.0f);
-            images[11]->unk18->set_scale(1.31f, 1.0f, 1.0f);
+            images[11]->model->set_translation(-212.66667f, -1.0f, 0.0f);
+            images[11]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[12] != 0)
         {
-            images[12]->unk18->set_translation(-68.66667f, -1.0f, 0.0f);
-            images[12]->unk18->set_scale(1.31f, 1.0f, 1.0f);
+            images[12]->model->set_translation(-68.66667f, -1.0f, 0.0f);
+            images[12]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[13] != 0)
         {
-            images[13]->unk18->set_translation(78.66667f, -1.0f, 0.0f);
-            images[13]->unk18->set_scale(1.31f, 1.0f, 1.0f);
+            images[13]->model->set_translation(78.66667f, -1.0f, 0.0f);
+            images[13]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[14] != 0)
         {
-            images[14]->unk18->set_translation(222.66667f, -1.0f, 0.0f);
-            images[14]->unk18->set_scale(1.31f, 1.0f, 1.0f);
+            images[14]->model->set_translation(222.66667f, -1.0f, 0.0f);
+            images[14]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
     }
     else
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->set_translation(-3.2e+02f, -216.0f, 0.0f);
-            images[1]->unk18->set_scale(1.0f, 1.0f, 1.0f);
+            images[1]->model->set_translation(-3.2e+02f, -216.0f, 0.0f);
+            images[1]->model->set_scale(1.0f, 1.0f, 1.0f);
         }
 
         if (images[2] != 0)
         {
-            images[2]->unk18->set_translation(-64.0f, -217.0f, 0.0f);
+            images[2]->model->set_translation(-64.0f, -217.0f, 0.0f);
         }
 
         if (images[3] != 0)
         {
-            images[3]->unk18->set_translation(-286.0f, 32.0f, 0.0f);
+            images[3]->model->set_translation(-286.0f, 32.0f, 0.0f);
         }
 
         if (images[4] != 0)
         {
-            images[4]->unk18->set_translation(-2.6e+02f, -1.6e+02f, 0.0f);
+            images[4]->model->set_translation(-2.6e+02f, -1.6e+02f, 0.0f);
         }
 
         if (images[5] != 0)
         {
-            images[5]->unk18->set_translation(-2.6e+02f, -125.0f, 0.0f);
+            images[5]->model->set_translation(-2.6e+02f, -125.0f, 0.0f);
         }
 
         if (images[6] != 0)
         {
-            images[6]->unk18->set_translation(-2.6e+02f, -9e+01f, 0.0f);
+            images[6]->model->set_translation(-2.6e+02f, -9e+01f, 0.0f);
         }
 
         if (images[7] != 0)
         {
-            images[7]->unk18->set_translation(-2.6e+02f, -55.0f, 0.0f);
+            images[7]->model->set_translation(-2.6e+02f, -55.0f, 0.0f);
         }
 
         if (images[9] != 0)
         {
-            images[9]->unk18->set_translation(-154.0f, -138.0f, 0.0f);
+            images[9]->model->set_translation(-154.0f, -138.0f, 0.0f);
         }
 
         if (images[10] != 0)
         {
-            images[10]->unk18->set_translation(-272.0f, 0.0f, 0.0f);
+            images[10]->model->set_translation(-272.0f, 0.0f, 0.0f);
         }
 
         if (images[11] != 0)
         {
-            images[11]->unk18->set_translation(-162.0f, 0.0f, 0.0f);
+            images[11]->model->set_translation(-162.0f, 0.0f, 0.0f);
         }
 
         if (images[12] != 0)
         {
-            images[12]->unk18->set_translation(-52.0f, 0.0f, 0.0f);
+            images[12]->model->set_translation(-52.0f, 0.0f, 0.0f);
         }
 
         if (images[13] != 0)
         {
-            images[13]->unk18->set_translation(62.0f, 0.0f, 0.0f);
+            images[13]->model->set_translation(62.0f, 0.0f, 0.0f);
         }
 
         if (images[14] != 0)
         {
-            images[14]->unk18->set_translation(172.0f, 0.0f, 0.0f);
+            images[14]->model->set_translation(172.0f, 0.0f, 0.0f);
         }
     }
 }
@@ -858,7 +858,7 @@ void BootMusicPlayer::update()
             func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
             func_10F000(D_001B65F8, 0x1E, -1);
             BootScreenFade* fade = new (0) BootScreenFade(g_boot_program.display);
-            fade->unkd0 = 2.0f;
+            fade->fade_speed = 2.0f;
             D_001B661C->append_node(fade, -1);
             step = 4;
             return;

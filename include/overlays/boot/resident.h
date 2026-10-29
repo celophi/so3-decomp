@@ -123,7 +123,7 @@ static inline void check_main_code()
 static inline void queue_fade()
 {
     BootScreenFade* fade = new (0) BootScreenFade(g_boot_program.display);
-    fade->unkd0 = 2.0f;
+    fade->fade_speed = 2.0f;
     D_001B661C->append_node(fade, -1);
 }
 

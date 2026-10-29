@@ -99,7 +99,7 @@ void BootInstaller::show_tip_image(s32 index)
     tip_image->set_texture((const BootTextureResource*)(((u32)tip_image_buffer + 0x7F) & ~0x7F), 0);
     func_101440(func_101290(func_10D8E0()), 1);
     tip_image->set_rectangle(0, 1, 0x120, 0xC9, 0x80808080, 0);
-    tip_image->unk18->set_translation(-296.0f, -64.0f, 0.0f);
+    tip_image->model->set_translation(-296.0f, -64.0f, 0.0f);
 }
 
 /**
@@ -157,32 +157,32 @@ void BootInstaller::update_choice_images()
     {
         if (images[4] != 0)
         {
-            images[4]->unk18->set_translation(-174.0f, 0.0f, 0.0f);
+            images[4]->model->set_translation(-174.0f, 0.0f, 0.0f);
         }
 
         if (images[5] != 0)
         {
-            images[5]->unk18->set_translation(78.0f, 0.0f, 0.0f);
+            images[5]->model->set_translation(78.0f, 0.0f, 0.0f);
         }
     }
     else
     {
         if (images[4] != 0)
         {
-            images[4]->unk18->set_translation(-132.0f, 0.0f, 0.0f);
+            images[4]->model->set_translation(-132.0f, 0.0f, 0.0f);
         }
 
         if (images[5] != 0)
         {
-            images[5]->unk18->set_translation(60.0f, 0.0f, 0.0f);
+            images[5]->model->set_translation(60.0f, 0.0f, 0.0f);
         }
     }
 
     for (s32 i = 0; i < 2; i++)
     {
-        if (images[4 + i] != 0 && images[4 + i]->unk18 != 0)
+        if (images[4 + i] != 0 && images[4 + i]->model != 0)
         {
-            BootModel* model = images[4 + i]->unk18;
+            BootModel* model = images[4 + i]->model;
 
             if (selection == i)
             {
@@ -258,7 +258,7 @@ void BootInstaller::place_screen_images()
         images[0] = new (0) BootImage;
         images[0]->set_texture((const BootTextureResource*)(((u32)screen_image_buffers[0] + 0x7F) & ~0x7F), 0);
         images[0]->set_rectangle(0, 1, 0x1E8, 0xDF, 0x80808080, 0);
-        images[0]->unk18->set_translation(-244.0f, -112.0f, 0.0f);
+        images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
 
     if (images[1] == 0)
@@ -266,7 +266,7 @@ void BootInstaller::place_screen_images()
         images[1] = new (0) BootImage;
         images[1]->set_texture((const BootTextureResource*)(((u32)screen_image_buffers[1] + 0x7F) & ~0x7F), 0);
         images[1]->set_rectangle(0, 0, 0x280, 0x50, 0x80808080, 0);
-        images[1]->unk18->set_translation(-312.0f, -216.0f, 0.0f);
+        images[1]->model->set_translation(-312.0f, -216.0f, 0.0f);
     }
 
     if (images[2] == 0)
@@ -287,36 +287,36 @@ void BootInstaller::place_screen_images()
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->set_translation(-404.0f, -216.0f, 0.0f);
-            images[1]->unk18->set_scale(1.31f, 1.0f, 1.0f);
+            images[1]->model->set_translation(-404.0f, -216.0f, 0.0f);
+            images[1]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[2] != 0)
         {
-            images[2]->unk18->set_translation(220.0f, 180.0f, 0.0f);
+            images[2]->model->set_translation(220.0f, 180.0f, 0.0f);
         }
 
         if (images[3] != 0)
         {
-            images[3]->unk18->set_translation(-32.0f, -221.0f, 0.0f);
+            images[3]->model->set_translation(-32.0f, -221.0f, 0.0f);
         }
     }
     else
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->set_translation(-312.0f, -216.0f, 0.0f);
-            images[1]->unk18->set_scale(1.0f, 1.0f, 1.0f);
+            images[1]->model->set_translation(-312.0f, -216.0f, 0.0f);
+            images[1]->model->set_scale(1.0f, 1.0f, 1.0f);
         }
 
         if (images[2] != 0)
         {
-            images[2]->unk18->set_translation(150.0f, 180.0f, 0.0f);
+            images[2]->model->set_translation(150.0f, 180.0f, 0.0f);
         }
 
         if (images[3] != 0)
         {
-            images[3]->unk18->set_translation(-128.0f, -221.0f, 0.0f);
+            images[3]->model->set_translation(-128.0f, -221.0f, 0.0f);
         }
     }
 }
@@ -641,13 +641,13 @@ void BootInstaller::update()
 
         if (resource->widescreen)
         {
-            progress_bar->unk18->set_translation(-366.0f, 180.0f, 0.0f);
+            progress_bar->model->set_translation(-366.0f, 180.0f, 0.0f);
             progress_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 240.0f, 438.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
         else
         {
-            progress_bar->unk18->set_translation(-280.0f, 180.0f, 0.0f);
+            progress_bar->model->set_translation(-280.0f, 180.0f, 0.0f);
             progress_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 290.0f, 432.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
@@ -765,7 +765,7 @@ void BootInstaller::update()
                 func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
                 func_465B20(D_001B657C, cursor);
                 tip_text->unk3f = 0;
-                tip_image->unk18->unk6a |= 1;
+                tip_image->model->unk6a |= 1;
                 step = 3;
                 yes_step = 0x1B;
                 no_step = 0x1A;
@@ -800,7 +800,7 @@ void BootInstaller::update()
     case 25:
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALL_COMPLETE, 0);
         tip_text->unk3f = 0;
-        tip_image->unk18->unk6a |= 1;
+        tip_image->model->unk6a |= 1;
         step = 0x15;
         break;
     case 20:
@@ -902,7 +902,7 @@ void BootInstaller::update()
         return;
     case 26:
         tip_text->unk3f = 1;
-        tip_image->unk18->unk6a &= ~1;
+        tip_image->model->unk6a &= ~1;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
         D_001B65E4->unk13b = 0;
         step = 0x13;

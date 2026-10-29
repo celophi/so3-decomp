@@ -156,7 +156,7 @@ class BootNeedleMeter : public BootTransformOwner, public BootDmaCallbacks
          */
         virtual void build_packet(const void* matrix, void* context);
 
-        /** @brief Clear the byte at offset 0x64 and run the Lib hook. @param value Notification value; unused. */
+        /** @brief Clear dma_pending and run the Lib hook. @param value Notification value; unused. */
         virtual void on_packet_complete(u32 value);
 
         /**
